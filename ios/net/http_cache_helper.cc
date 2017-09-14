@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/sdch_manager.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -63,15 +62,6 @@ void ClearHttpCacheOnIOThread(
   http_cache->GetSession()
       ->quic_stream_factory()
       ->ClearCachedStatesInCryptoConfig(base::Callback<bool(const GURL&)>());
-
-  // Clear SDCH dictionary state.
-  net::SdchManager* sdch_manager =
-      getter->GetURLRequestContext()->sdch_manager();
-  // The test is probably overkill, since chrome should always have an
-  // SdchManager.  But in general the URLRequestContext  is *not*
-  // guaranteed to have an SdchManager, so checking is wise.
-  if (sdch_manager)
-    sdch_manager->ClearData();
 
   std::unique_ptr<disk_cache::Backend*> backend(
       new disk_cache::Backend*(nullptr));

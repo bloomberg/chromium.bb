@@ -47,7 +47,6 @@ class NetworkDelegate;
 class NetworkErrorLoggingDelegate;
 class NetworkQualityEstimator;
 class ReportingService;
-class SdchManager;
 class ProxyService;
 class URLRequest;
 class URLRequestBackoffManager;
@@ -216,11 +215,6 @@ class NET_EXPORT URLRequestContext
   void set_backoff_manager(URLRequestBackoffManager* backoff_manager) {
     backoff_manager_ = backoff_manager;
   }
-
-  // May return nullptr.
-  // TODO(xunjieli): Remove this when SdchManager is removed. crbug.com/762686
-  SdchManager* sdch_manager() const { return nullptr; }
-  void set_sdch_manager(SdchManager* sdch_manager) { NOTREACHED(); }
 
   // Gets the URLRequest objects that hold a reference to this
   // URLRequestContext.

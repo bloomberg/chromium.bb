@@ -4,8 +4,3 @@ include_rules = [
   "+components/user_manager",
 ]
 
-specific_include_rules = {
-  ".*sdch_browsertest.cc": [
-    "+sdch/open-vcdiff",
-  ],
-}

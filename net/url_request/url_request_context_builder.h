@@ -338,13 +338,6 @@ class NET_EXPORT URLRequestContextBuilder {
       std::unique_ptr<CookieStore> cookie_store,
       std::unique_ptr<ChannelIDService> channel_id_service);
 
-  // Note that if SDCH is enabled without a policy object observing
-  // the SDCH manager and handling at least Get-Dictionary events, the
-  // result will be "Content-Encoding: sdch" advertisements, but no
-  // dictionaries fetches and no specific dictionaries advertised.
-  // SdchOwner in net/sdch/sdch_owner.h is a simple policy object.
-  void set_sdch_enabled(bool enable) { sdch_enabled_ = enable; }
-
   // Sets a specific HttpServerProperties for use in the
   // URLRequestContext rather than creating a default HttpServerPropertiesImpl.
   void SetHttpServerProperties(
@@ -395,7 +388,6 @@ class NET_EXPORT URLRequestContextBuilder {
 #endif
   bool http_cache_enabled_;
   bool throttling_enabled_;
-  bool sdch_enabled_;
   bool cookie_store_set_by_client_;
 
   HttpCacheParams http_cache_params_;

@@ -2966,49 +2966,6 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_BEGIN)
 // contains no parameters.
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_END)
 
-// ------------------------------------------------------------------------
-// SDCH
-// ------------------------------------------------------------------------
-
-// This event is created when some problem occurs during sdch-encoded resource
-// handling. It contains the following parameters:
-//   {
-//     "sdch_problem_code": <SDCH problem code>,
-//     "net_error": <Always ERR_FAILED, present just to indicate this is a
-//                   failure>,
-//   }
-EVENT_TYPE(SDCH_DECODING_ERROR)
-
-// This event is created when SdchFilter initialization fails due to the
-// response corruption. It contains the following parameters:
-//   {
-//     "cause": <Response corruption detection cause>,
-//     "cached": <True if response was read from cache>,
-//   }
-EVENT_TYPE(SDCH_RESPONSE_CORRUPTION_DETECTION)
-
-// This event is created when some problem occurs during sdch dictionary fetch.
-// It contains the following parameters:
-//   {
-//     "dictionary_url": <Dictionary url>,
-//     "sdch_problem_code": <SDCH problem code>,
-//     "net_error": <Only present on unexpected errors. Always ERR_FAILED when
-//                   present. Used to indicate this is a real failure>,
-//   }
-EVENT_TYPE(SDCH_DICTIONARY_ERROR)
-
-// This event is created when SdchDictionaryFetcher starts fetch.  It contains
-// no parameters.
-EVENT_TYPE(SDCH_DICTIONARY_FETCH)
-
-// This event is created if the SdchDictionaryFetcher URLRequest returns
-// no error, but signals an error through bytes_read < 0.
-// It contains the following parameters:
-//   {
-//     "net_error": <error created>
-//   }
-EVENT_TYPE(SDCH_DICTIONARY_FETCH_IMPLIED_ERROR)
-
 // -----------------------------------------------------------------------------
 // Data Reduction Proxy events.
 // -----------------------------------------------------------------------------

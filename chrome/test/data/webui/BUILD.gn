@@ -72,7 +72,6 @@ js2gtest("browser_tests_js_webui") {
     "net_internals/main.js",
     "net_internals/net_internals_test.js",
     "net_internals/prerender_view.js",
-    "net_internals/sdch_view.js",
     "net_internals/timeline_view.js",
     "ntp4.js",
     "polymer_browser_test_base.js",

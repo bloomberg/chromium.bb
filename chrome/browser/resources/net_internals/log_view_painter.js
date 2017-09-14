@@ -356,12 +356,6 @@ function defaultWriteParameter(key, value, out) {
     return;
   }
 
-  if (key == 'sdch_problem_code' && typeof value == 'number') {
-    var valueStr = value + ' (' + sdchProblemCodeToString(value) + ')';
-    out.writeArrowKeyValue(key, valueStr);
-    return;
-  }
-
   // Otherwise just default to JSON formatting of the value.
   out.writeArrowKeyValue(key, JSON.stringify(value));
 }

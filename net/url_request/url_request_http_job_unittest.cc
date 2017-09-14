@@ -190,9 +190,6 @@ TEST_F(URLRequestHttpJobSetUpSourceTest, SdchNotAdvertisedGotSdchResponse) {
                                        arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
 
-  // This test expects TestURLRequestContexts to have no SdchManager.
-  DCHECK(!context_.sdch_manager());
-
   std::unique_ptr<URLRequest> request =
       context_.CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
                              &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
