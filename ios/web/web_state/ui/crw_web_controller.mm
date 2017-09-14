@@ -3319,7 +3319,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (web::NavigationItemImpl*)currentNavItem {
-  return self.navigationManagerImpl->GetCurrentItemImpl();
+  return self.navigationManagerImpl
+             ? self.navigationManagerImpl->GetCurrentItemImpl()
+             : nullptr;
 }
 
 - (ui::PageTransition)currentTransition {
