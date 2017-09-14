@@ -405,19 +405,8 @@ public class LocationBarLayout extends FrameLayout
 
             String suggestionMatchUrl = updateSuggestionUrlIfNeeded(suggestionMatch,
                         suggestionMatchPosition, skipOutOfBoundsCheck);
-
-
-            // It's important to use the page transition from the suggestion or we might end
-            // up saving generated URLs as typed URLs, which would then pollute the subsequent
-            // omnibox results. There is one special case where the suggestion text was pasted,
-            // where we want the transition type to be LINK.
-            int transition = suggestionMatch.getType() == OmniboxSuggestionType.URL_WHAT_YOU_TYPED
-                            && mUrlBar.wasLastEditPaste()
-                    ? PageTransition.LINK
-                    : suggestionMatch.getTransition();
-
-            loadUrlFromOmniboxMatch(suggestionMatchUrl, transition, suggestionMatchPosition,
-                    suggestionMatch.getType());
+            loadUrlFromOmniboxMatch(suggestionMatchUrl, suggestionMatch.getTransition(),
+                    suggestionMatchPosition, suggestionMatch.getType());
         }
     }
 
@@ -2192,6 +2181,26 @@ public class LocationBarLayout extends FrameLayout
                     mUrlFocusedFromFakebox, elapsedTimeSinceModified,
                     mUrlBar.getAutocompleteLength(),
                     webContents);
+        }
+        if (((transition & PageTransition.CORE_MASK) == PageTransition.TYPED)
+                && TextUtils.equals(url, mToolbarDataProvider.getCurrentUrl())) {
+            // When the user hit enter on the existing permanent URL, treat it like a
+            // reload for scoring purposes.  We could detect this by just checking
+            // user_input_in_progress_, but it seems better to treat "edits" that end
+            // up leaving the URL unchanged (e.g. deleting the last character and then
+            // retyping it) as reloads too.  We exclude non-TYPED transitions because if
+            // the transition is GENERATED, the user input something that looked
+            // different from the current URL, even if it wound up at the same place
+            // (e.g. manually retyping the same search query), and it seems wrong to
+            // treat this as a reload.
+            transition = PageTransition.RELOAD;
+        } else if (type == OmniboxSuggestionType.URL_WHAT_YOU_TYPED && mUrlBar.wasLastEditPaste()) {
+            // It's important to use the page transition from the suggestion or we might end
+            // up saving generated URLs as typed URLs, which would then pollute the subsequent
+            // omnibox results. There is one special case where the suggestion text was pasted,
+            // where we want the transition type to be LINK.
+
+            transition = PageTransition.LINK;
         }
         loadUrl(url, transition);
     }
