@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define _USE_MATH_DEFINES // For VC++ to get M_PI. This has to be first.
-
 #include "ui/compositor/debug_utils.h"
 
 #include <stddef.h>
 
-#include <cmath>
 #include <iomanip>
 #include <ostream>
 #include <string>
 
 #include "base/logging.h"
+#include "base/numerics/math_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -92,7 +90,7 @@ void PrintLayerHierarchyImp(const Layer* layer,
 
     *out << '\n' << property_indent_str;
     *out << "rotation: ";
-    *out << std::acos(decomp.quaternion.w()) * 360.0 / M_PI;
+    *out << std::acos(decomp.quaternion.w()) * 360.0 / base::kPiDouble;
 
     *out << '\n' << property_indent_str;
     *out << "scale: " << decomp.scale[0];

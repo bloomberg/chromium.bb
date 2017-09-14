@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include "media/filters/wsola_internals.h"
 
 #include <algorithm>
@@ -13,6 +10,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/numerics/math_constants.h"
 #include "media/base/audio_bus.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -38,8 +36,8 @@ float MultiChannelSimilarityMeasure(const float* dot_prod_a_b,
   const float kEpsilon = 1e-12f;
   float similarity_measure = 0.0f;
   for (int n = 0; n < channels; ++n) {
-    similarity_measure += dot_prod_a_b[n] / sqrt(energy_a[n] * energy_b[n] +
-                                                 kEpsilon);
+    similarity_measure +=
+        dot_prod_a_b[n] / std::sqrt(energy_a[n] * energy_b[n] + kEpsilon);
   }
   return similarity_measure;
 }
@@ -309,9 +307,9 @@ int OptimalIndex(const AudioBus* search_block,
 }
 
 void GetSymmetricHanningWindow(int window_length, float* window) {
-  const float scale = 2.0f * M_PI / window_length;
+  const float scale = 2.0f * base::kPiFloat / window_length;
   for (int n = 0; n < window_length; ++n)
-    window[n] = 0.5f * (1.0f - cosf(n * scale));
+    window[n] = 0.5f * (1.0f - std::cos(n * scale));
 }
 
 }  // namespace internal

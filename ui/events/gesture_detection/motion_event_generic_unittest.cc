@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include "ui/events/gesture_detection/motion_event_generic.h"
 
-#include <cmath>
 #include <utility>
 
+#include "base/numerics/math_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/motion_event_test_utils.h"
@@ -193,7 +190,7 @@ TEST(MotionEventGenericTest, AxisAndOrientation) {
     properties.SetAxesAndOrientation(radius_x, radius_y, rotation_angle_deg);
     EXPECT_EQ(20, properties.touch_major);
     EXPECT_EQ(10, properties.touch_minor);
-    EXPECT_NEAR(-M_PI_2, properties.orientation, 0.001);
+    EXPECT_NEAR(-base::kPiDouble / 2, properties.orientation, 0.001);
   }
   {
     PointerProperties properties;
@@ -213,7 +210,7 @@ TEST(MotionEventGenericTest, AxisAndOrientation) {
     properties.SetAxesAndOrientation(radius_x, radius_y, rotation_angle_deg);
     EXPECT_EQ(20, properties.touch_major);
     EXPECT_EQ(10, properties.touch_minor);
-    EXPECT_NEAR(M_PI_2, properties.orientation, 0.001);
+    EXPECT_NEAR(base::kPiDouble / 2, properties.orientation, 0.001);
   }
   {
     PointerProperties properties;

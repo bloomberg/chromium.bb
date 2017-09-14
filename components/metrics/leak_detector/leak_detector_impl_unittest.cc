@@ -4,7 +4,6 @@
 
 #include "components/metrics/leak_detector/leak_detector_impl.h"
 
-#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -15,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/numerics/math_constants.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -407,7 +407,7 @@ void LeakDetectorImplTest::JuliaSet(bool enable_leaks) {
         double angle = arg(root);
         // To generate other roots, rotate the principal root by increments of
         // 1/N of a full circle.
-        const double kAngleIncrement = M_PI * 2 / 5;
+        const double kAngleIncrement = base::kPiDouble * 2 / 5;
 
         // Second root.
         root = std::polar(magnitude, angle + kAngleIncrement);

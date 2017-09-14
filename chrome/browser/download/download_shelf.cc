@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define _USE_MATH_DEFINES  // For VC++ to get M_PI. This has to be first.
-
 #include "chrome/browser/download/download_shelf.h"
-
-#include <cmath>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/numerics/math_constants.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -50,7 +47,8 @@ int GetOpacity(double animation_progress) {
   // How many times to cycle the complete animation. This should be an odd
   // number so that the animation ends faded out.
   static const int kCompleteAnimationCycles = 5;
-  double temp = animation_progress * kCompleteAnimationCycles * M_PI + M_PI_2;
+  double temp =
+      ((animation_progress * kCompleteAnimationCycles) + 0.5) * base::kPiDouble;
   temp = sin(temp) / 2 + 0.5;
   return static_cast<int>(255.0 * temp);
 }

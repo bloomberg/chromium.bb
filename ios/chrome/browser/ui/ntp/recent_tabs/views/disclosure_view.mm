@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/ui/ntp/recent_tabs/views/disclosure_view.h"
 
+#include "base/numerics/math_constants.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -18,7 +20,7 @@ const NSTimeInterval kDisclosureIconRotateDuration = 0.25;
 // |kCollapsedIconAngle| to a value slightly less then 0 forces the animation to
 // always happen in the same half-plane.
 const CGFloat kCollapsedIconAngle = -0.00001;
-const CGFloat kExpandedIconAngle = M_PI;
+const CGFloat kExpandedIconAngle = base::kPiFloat;
 
 }  // anonymous namespace
 

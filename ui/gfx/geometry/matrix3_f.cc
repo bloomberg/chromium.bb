@@ -8,9 +8,7 @@
 #include <cmath>
 #include <limits>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include "base/numerics/math_constants.h"
 
 namespace {
 
@@ -171,13 +169,13 @@ Vector3dF Matrix3F::SolveEigenproblem(Matrix3F* eigenvectors) const {
     // half_det_b should be in <-1, 1>, but beware of rounding error.
     double phi = 0.0f;
     if (half_det_b <= -1.0)
-      phi = M_PI / 3;
+      phi = base::kPiDouble / 3;
     else if (half_det_b < 1.0)
       phi = acos(half_det_b) / 3;
 
     eigenvalues[0] = q + 2 * p * static_cast<float>(cos(phi));
-    eigenvalues[2] = q + 2 * p *
-        static_cast<float>(cos(phi + 2.0 * M_PI / 3.0));
+    eigenvalues[2] =
+        q + 2 * p * static_cast<float>(cos(phi + 2.0 * base::kPiDouble / 3.0));
     eigenvalues[1] = 3 * q - eigenvalues[0] - eigenvalues[2];
   }
 
