@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 6997 tests; 6863 PASS, 134 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6997 tests; 6897 PASS, 100 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS picture.title: 32 tests
 PASS picture.lang: 32 tests
 PASS picture.dir: 62 tests
@@ -274,52 +274,8 @@ PASS canvas.className (<canvas class>): 32 tests
 PASS canvas.hidden: 33 tests
 PASS canvas.accessKey: 32 tests
 PASS canvas.tabIndex: 24 tests
-PASS canvas.width: 18 tests
-NOTRUN test
-PASS canvas.width: 6 tests
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-PASS canvas.width: 16 tests
-NOTRUN test
-NOTRUN test
-PASS canvas.height: 18 tests
-NOTRUN test
-PASS canvas.height: 6 tests
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-PASS canvas.height: 16 tests
-NOTRUN test
-NOTRUN test
+PASS canvas.width: 60 tests
+PASS canvas.height: 60 tests
 PASS map.title: 32 tests
 PASS map.lang: 32 tests
 PASS map.dir: 62 tests

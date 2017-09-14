@@ -58,6 +58,7 @@
 #include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/imagebitmap/ImageBitmap.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/layout/HitTestCanvasResult.h"
@@ -194,24 +195,26 @@ Node::InsertionNotificationRequest HTMLCanvasElement::InsertedInto(
   return HTMLElement::InsertedInto(node);
 }
 
-void HTMLCanvasElement::setHeight(int value, ExceptionState& exception_state) {
+void HTMLCanvasElement::setHeight(unsigned value,
+                                  ExceptionState& exception_state) {
   if (IsPlaceholderRegistered()) {
     exception_state.ThrowDOMException(
         kInvalidStateError,
         "Cannot resize canvas after call to transferControlToOffscreen().");
     return;
   }
-  SetIntegralAttribute(heightAttr, value);
+  SetUnsignedIntegralAttribute(heightAttr, value, kDefaultHeight);
 }
 
-void HTMLCanvasElement::setWidth(int value, ExceptionState& exception_state) {
+void HTMLCanvasElement::setWidth(unsigned value,
+                                 ExceptionState& exception_state) {
   if (IsPlaceholderRegistered()) {
     exception_state.ThrowDOMException(
         kInvalidStateError,
         "Cannot resize canvas after call to transferControlToOffscreen().");
     return;
   }
-  SetIntegralAttribute(widthAttr, value);
+  SetUnsignedIntegralAttribute(widthAttr, value, kDefaultWidth);
 }
 
 void HTMLCanvasElement::SetSize(const IntSize& new_size) {
@@ -466,15 +469,18 @@ void HTMLCanvasElement::Reset() {
 
   dirty_rect_ = FloatRect();
 
-  bool ok;
   bool had_image_buffer = GetImageBuffer();
 
-  int w = getAttribute(widthAttr).ToInt(&ok);
-  if (!ok || w < 0)
+  unsigned w = 0;
+  AtomicString value = getAttribute(widthAttr);
+  if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, w) ||
+      w > 0x7fffffffu)
     w = kDefaultWidth;
 
-  int h = getAttribute(heightAttr).ToInt(&ok);
-  if (!ok || h < 0)
+  unsigned h = 0;
+  value = getAttribute(heightAttr);
+  if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, h) ||
+      h > 0x7fffffffu)
     h = kDefaultHeight;
 
   if (Is2d()) {
