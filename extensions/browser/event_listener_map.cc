@@ -30,7 +30,7 @@ std::unique_ptr<EventListener> EventListener::ForExtension(
     content::RenderProcessHost* process,
     std::unique_ptr<base::DictionaryValue> filter) {
   return base::WrapUnique(new EventListener(event_name, extension_id, GURL(),
-                                            process, false, kNonWorkerThreadId,
+                                            process, false, kMainThreadId,
                                             std::move(filter)));
 }
 
@@ -46,7 +46,7 @@ std::unique_ptr<EventListener> EventListener::ForURL(
   // we dispatched events to processes more intelligently this could be avoided.
   return base::WrapUnique(new EventListener(
       event_name, ExtensionId(), url::Origin(listener_url).GetURL(), process,
-      false, kNonWorkerThreadId, std::move(filter)));
+      false, kMainThreadId, std::move(filter)));
 }
 
 std::unique_ptr<EventListener> EventListener::ForExtensionServiceWorker(
@@ -90,7 +90,7 @@ bool EventListener::IsLazy() const {
 }
 
 void EventListener::MakeLazy() {
-  DCHECK_EQ(worker_thread_id_, kNonWorkerThreadId);
+  DCHECK_EQ(worker_thread_id_, kMainThreadId);
   process_ = nullptr;
 }
 

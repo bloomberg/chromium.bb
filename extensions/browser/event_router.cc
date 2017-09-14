@@ -134,9 +134,9 @@ void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
   }
 
   DispatchExtensionMessage(ipc_sender,
-                           // TODO(lazyboy): |kNonWorkerThreadId| means these
+                           // TODO(lazyboy): |kMainThreadId| means these
                            // will not work for extension SW.
-                           kNonWorkerThreadId, browser_context_id, extension_id,
+                           kMainThreadId, browser_context_id, extension_id,
                            event_id, event_name, event_args.get(), user_gesture,
                            info);
 }
@@ -305,7 +305,7 @@ void EventRouter::AddLazyServiceWorkerEventListener(
   std::unique_ptr<EventListener> listener =
       EventListener::ForExtensionServiceWorker(
           event_name, extension_id, nullptr, service_worker_scope,
-          kNonWorkerThreadId,  // Lazy, without worker thread id.
+          kMainThreadId,  // Lazy, without worker thread id.
           nullptr);
   AddLazyEventListenerImpl(std::move(listener),
                            RegisteredEventType::kServiceWorker);
@@ -318,7 +318,7 @@ void EventRouter::RemoveLazyServiceWorkerEventListener(
   std::unique_ptr<EventListener> listener =
       EventListener::ForExtensionServiceWorker(
           event_name, extension_id, nullptr, service_worker_scope,
-          kNonWorkerThreadId,  // Lazy, without worker thread id.
+          kMainThreadId,  // Lazy, without worker thread id.
           nullptr);
   RemoveLazyEventListenerImpl(std::move(listener),
                               RegisteredEventType::kServiceWorker);

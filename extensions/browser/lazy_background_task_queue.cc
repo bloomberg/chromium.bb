@@ -36,8 +36,8 @@ void PendingTaskAdapter(const LazyContextTaskQueue::PendingTask& original_task,
     original_task.Run(nullptr);
   } else {
     original_task.Run(std::make_unique<LazyContextTaskQueue::ContextInfo>(
-        host->extension()->id(), host->render_process_host(),
-        kNonWorkerThreadId, host->GetURL()));
+        host->extension()->id(), host->render_process_host(), kMainThreadId,
+        host->GetURL()));
   }
 }
 

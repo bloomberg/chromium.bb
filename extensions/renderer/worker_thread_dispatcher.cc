@@ -90,7 +90,7 @@ bool WorkerThreadDispatcher::OnControlMessageReceived(
     // IPC. Probably using mojo?
     bool found = base::PickleIterator(message).ReadInt(&worker_thread_id);
     CHECK(found);
-    if (worker_thread_id == kNonWorkerThreadId)
+    if (worker_thread_id == kMainThreadId)
       return false;
     base::TaskRunner* runner = GetTaskRunnerFor(worker_thread_id);
     bool task_posted = runner->PostTask(
