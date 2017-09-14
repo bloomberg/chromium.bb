@@ -5304,7 +5304,8 @@
         "boards": [
             "caroline-userdebug"
         ],
-        "buildslave_type": "baremetal"
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
     },
     "caroline-userdebug-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -6479,8 +6480,8 @@
             "{\n    \"name\": \"robo360\",\n    \"test_suites\": []\n}",
             "{\n    \"name\": \"santa\",\n    \"test_suites\": []\n}",
             "{\n    \"name\": \"thresher\",\n    \"test_suites\": []\n}",
-            "{\n    \"name\": \"whitetip1\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
-            "{\n    \"name\": \"whitetip2\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}"
+            "{\n    \"name\": \"whitetip1\",\n    \"test_suites\": []\n}",
+            "{\n    \"name\": \"whitetip2\",\n    \"test_suites\": []\n}"
         ],
         "vm_tests": [],
         "vm_tests_override": null
