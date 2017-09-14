@@ -35,6 +35,7 @@ class DeviceChooserContentView : public views::View,
   ~DeviceChooserContentView() override;
 
   // views::View:
+  gfx::Size GetMinimumSize() const override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
 
