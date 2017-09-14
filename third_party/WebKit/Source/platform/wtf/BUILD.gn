@@ -294,10 +294,12 @@ component("wtf") {
     all_dependent_configs = [ "//tools/win/DebugVisualizers:webkit" ]
   } else {
     # Non-Windows.
-    sources -= [
-      "ThreadSpecificWin.cpp",
-      "ThreadingWin.cpp",
-    ]
+    if (!snake_case_source_files) {
+      sources -= [
+        "ThreadSpecificWin.cpp",
+        "ThreadingWin.cpp",
+      ]
+    }
   }
 
   if (is_android) {
