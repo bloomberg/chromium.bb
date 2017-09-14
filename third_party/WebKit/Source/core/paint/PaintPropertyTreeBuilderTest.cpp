@@ -70,11 +70,12 @@ const ScrollPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameScroll(
 
 const ObjectPaintProperties*
 PaintPropertyTreeBuilderTest::PaintPropertiesForElement(const char* name) {
-  return GetDocument()
-      .getElementById(name)
-      ->GetLayoutObject()
-      ->FirstFragment()
-      ->PaintProperties();
+  if (const auto* first_fragment = GetDocument()
+                                       .getElementById(name)
+                                       ->GetLayoutObject()
+                                       ->FirstFragment())
+    return first_fragment->PaintProperties();
+  return nullptr;
 }
 
 void PaintPropertyTreeBuilderTest::SetUp() {
@@ -3607,33 +3608,6 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskInline) {
             overflowing->FirstFragment()->LocalBorderBoxProperties()->Clip());
   EXPECT_EQ(properties->Effect(),
             overflowing->FirstFragment()->LocalBorderBoxProperties()->Effect());
-}
-
-TEST_P(PaintPropertyTreeBuilderTest, MaskClipNodeInvalidation) {
-  // This test verifies the clip node generated for mask's implicit clip
-  // is correctly invalidated when a box resizes.
-  SetBodyInnerHTML(
-      "<style>"
-      "#mask {"
-      "  width: 100px;"
-      "  height:100px;"
-      "  -webkit-mask:linear-gradient(red,red);"
-      "}"
-      "</style>"
-      "<div id='mask'>"
-      "  <div style='width:500px; height:500px; background:green;'></div>"
-      "</div>");
-  const ObjectPaintProperties* properties = PaintPropertiesForElement("mask");
-  const ClipPaintPropertyNode* mask_clip = properties->MaskClip();
-  EXPECT_EQ(FloatRoundedRect(8, 8, 100, 100), mask_clip->ClipRect());
-
-  Element* mask = GetDocument().getElementById("mask");
-  mask->setAttribute(HTMLNames::styleAttr, "height: 200px");
-  GetDocument().View()->UpdateAllLifecyclePhases();
-
-  ASSERT_EQ(properties, PaintPropertiesForElement("mask"));
-  ASSERT_EQ(mask_clip, properties->MaskClip());
-  EXPECT_EQ(FloatRoundedRect(8, 8, 100, 200), mask_clip->ClipRect());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGResource) {
