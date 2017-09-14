@@ -452,13 +452,5 @@ void NonClientFrameController::OnTransientChildWindowRemoved(
     renderer->Detach();
 }
 
-void NonClientFrameController::OnWillRestackTransientChildAbove(
-    aura::Window* parent,
-    aura::Window* transient_child) {}
-
-void NonClientFrameController::OnDidRestackTransientChildAbove(
-    aura::Window* parent,
-    aura::Window* transient_child) {}
-
 }  // namespace mus
 }  // namespace ash

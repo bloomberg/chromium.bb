@@ -25,16 +25,6 @@ class AURA_EXPORT TransientWindowClientObserver {
   virtual void OnTransientChildWindowRemoved(Window* parent,
                                              Window* transient_child) = 0;
 
-  // Called when adding or removing a transient results in restacking.
-  // |transient_child| is the window being stacked above |parent|. |parent| is
-  // the window the transient was added or removed from. This is followed by a
-  // call to Window::StackChildAbove() and then
-  // OnDidRestackTransientChildAbove().
-  virtual void OnWillRestackTransientChildAbove(Window* parent,
-                                                Window* transient_child) = 0;
-  virtual void OnDidRestackTransientChildAbove(Window* parent,
-                                               Window* transient_child) = 0;
-
  protected:
   virtual ~TransientWindowClientObserver() {}
 };

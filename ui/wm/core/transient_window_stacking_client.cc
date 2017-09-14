@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
 
@@ -76,6 +77,9 @@ bool TransientWindowStackingClient::AdjustStacking(
   const TransientWindowManager* transient_manager =
       TransientWindowManager::GetIfExists(*child);
   if (transient_manager && transient_manager->IsStackingTransient(*target))
+    return true;
+
+  if (!(*child)->parent()->ShouldRestackTransientChildren())
     return true;
 
   // For windows that have transient children stack the transient ancestors that

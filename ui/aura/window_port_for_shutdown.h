@@ -46,6 +46,7 @@ class WindowPortForShutdown : public WindowPort {
   void OnWindowAddedToRootWindow() override;
   void OnWillRemoveWindowFromRootWindow() override;
   void OnEventTargetingPolicyChanged() override;
+  bool ShouldRestackTransientChildren() override;
 
  private:
   viz::LocalSurfaceId local_surface_id_;

@@ -106,6 +106,9 @@ class AURA_EXPORT WindowPort {
 
   virtual void OnEventTargetingPolicyChanged() = 0;
 
+  // See description of function with same name in transient_window_client.
+  virtual bool ShouldRestackTransientChildren() = 0;
+
  protected:
   // Returns the WindowPort associated with a Window.
   static WindowPort* Get(Window* window);

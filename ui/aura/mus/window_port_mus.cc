@@ -168,7 +168,6 @@ WindowPortMus::ServerChanges::iterator WindowPortMus::FindChangeByTypeAndData(
       case ServerChangeType::REMOVE:
       case ServerChangeType::REMOVE_TRANSIENT:
       case ServerChangeType::REORDER:
-      case ServerChangeType::TRANSIENT_REORDER:
         if (iter->data.child_id == data.child_id)
           return iter;
         break;
@@ -425,20 +424,6 @@ void WindowPortMus::PrepareForDestroy() {
   ScheduleChange(ServerChangeType::DESTROY, ServerChangeData());
 }
 
-void WindowPortMus::PrepareForTransientRestack(WindowMus* window) {
-  ServerChangeData change_data;
-  change_data.child_id = window->server_id();
-  ScheduleChange(ServerChangeType::TRANSIENT_REORDER, change_data);
-}
-
-void WindowPortMus::OnTransientRestackDone(WindowMus* window) {
-  ServerChangeData change_data;
-  change_data.child_id = window->server_id();
-  const bool removed = RemoveChangeByTypeAndData(
-      ServerChangeType::TRANSIENT_REORDER, change_data);
-  DCHECK(removed);
-}
-
 void WindowPortMus::NotifyEmbeddedAppDisconnected() {
   for (WindowObserver& observer : *GetObservers(window_))
     observer.OnEmbeddedAppDisconnected(window_);
@@ -491,11 +476,8 @@ void WindowPortMus::OnWillMoveChild(size_t current_index, size_t dest_index) {
   change_data.child_id = Get(window_->children()[current_index])->server_id();
   // See description of TRANSIENT_REORDER for details on why it isn't removed
   // here.
-  if (!RemoveChangeByTypeAndData(ServerChangeType::REORDER, change_data) &&
-      FindChangeByTypeAndData(ServerChangeType::TRANSIENT_REORDER,
-                              change_data) == server_changes_.end()) {
+  if (!RemoveChangeByTypeAndData(ServerChangeType::REORDER, change_data))
     window_tree_client_->OnWindowMusMoveChild(this, current_index, dest_index);
-  }
 }
 
 void WindowPortMus::OnVisibilityChanged(bool visible) {
@@ -577,6 +559,10 @@ void WindowPortMus::OnWillRemoveWindowFromRootWindow() {}
 
 void WindowPortMus::OnEventTargetingPolicyChanged() {
   SetEventTargetingPolicy(window_->event_targeting_policy());
+}
+
+bool WindowPortMus::ShouldRestackTransientChildren() {
+  return should_restack_transient_children_;
 }
 
 void WindowPortMus::UpdatePrimarySurfaceInfo() {

@@ -470,6 +470,10 @@ gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
   return delegate_ ? delegate_->GetCursor(point) : gfx::kNullCursor;
 }
 
+bool Window::ShouldRestackTransientChildren() {
+  return port_->ShouldRestackTransientChildren();
+}
+
 void Window::AddObserver(WindowObserver* observer) {
   observer->OnObservingWindow(this);
   observers_.AddObserver(observer);

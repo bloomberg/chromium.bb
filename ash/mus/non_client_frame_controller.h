@@ -100,10 +100,6 @@ class NonClientFrameController
                                    aura::Window* transient_child) override;
   void OnTransientChildWindowRemoved(aura::Window* parent,
                                      aura::Window* transient_child) override;
-  void OnWillRestackTransientChildAbove(aura::Window* parent,
-                                        aura::Window* transient_child) override;
-  void OnDidRestackTransientChildAbove(aura::Window* parent,
-                                       aura::Window* transient_child) override;
 
   aura::WindowManagerClient* window_manager_client_;
 

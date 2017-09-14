@@ -29,6 +29,7 @@ class WindowTree;
 namespace aura {
 
 class Window;
+class WindowMus;
 class WindowTreeClient;
 class WindowTreeHostMus;
 
@@ -70,6 +71,9 @@ class WindowTreeClientPrivate {
   bool HasPointerWatcher();
 
   Window* GetWindowByServerId(Id id);
+
+  WindowMus* NewWindowFromWindowData(WindowMus* parent,
+                                     const ui::mojom::WindowData& window_data);
 
  private:
   WindowTreeClient* tree_client_impl_;
