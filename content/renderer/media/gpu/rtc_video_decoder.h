@@ -30,15 +30,20 @@
 
 namespace base {
 class WaitableEvent;
-};
+};  // namespace base
 
 namespace media {
 class GpuVideoAcceleratorFactories;
-}
+}  // namespace media
 
 namespace gpu {
 struct SyncToken;
-}
+}  // namespace gpu
+
+namespace rtc_video_decoder {
+// Maximum number of pending WebRTC buffers that are waiting for shared memory.
+static const size_t kMaxNumOfPendingBuffers = 8;
+}  // namespace rtc_video_decoder
 
 namespace content {
 
@@ -110,7 +115,10 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsBufferAfterReset);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsFirstBufferAfterReset);
-  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, GetVDAErrorCounterForTesting);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest,
+                           GetVDAErrorCounterForNotifyError);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest,
+                           GetVDAErrorCounterForRunningOutOfPendingBuffers);
 
   RTCVideoDecoder(webrtc::VideoCodecType type,
                   media::GpuVideoAcceleratorFactories* factories);
@@ -202,6 +210,9 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // Clears the pending_buffers_ queue, freeing memory.
   void ClearPendingBuffers();
+
+  // Checks |vda_error_counter_| to see if we should ask for SW fallback.
+  bool ShouldFallbackToSoftwareDecode();
 
   enum State {
     UNINITIALIZED,  // The decoder has not initialized.

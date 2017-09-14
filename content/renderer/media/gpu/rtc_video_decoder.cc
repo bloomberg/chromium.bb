@@ -47,9 +47,6 @@ static const size_t kMaxInFlightDecodes = 8;
 // Number of allocated shared memory segments.
 static const size_t kNumSharedMemorySegments = 16;
 
-// Maximum number of pending WebRTC buffers that are waiting for shared memory.
-static const size_t kMaxNumOfPendingBuffers = 8;
-
 RTCVideoDecoder::BufferData::BufferData(int32_t bitstream_buffer_id,
                                         uint32_t timestamp,
                                         size_t size,
@@ -173,14 +170,8 @@ int32_t RTCVideoDecoder::Decode(
   if (state_ == DECODE_ERROR) {
     LOG(ERROR) << "Decoding error occurred.";
     // Try reseting the session up to |kNumVDAErrorsHandled| times.
-    // Check if SW H264 implementation is available before falling back.
-    if (vda_error_counter_ > kNumVDAErrorsBeforeSWFallback &&
-        (video_codec_type_ != webrtc::kVideoCodecH264 ||
-         webrtc::H264Decoder::IsSupported())) {
-      DLOG(ERROR) << vda_error_counter_
-                  << " errors reported by VDA, falling back to software decode";
+    if (ShouldFallbackToSoftwareDecode())
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
-    }
     base::AutoUnlock auto_unlock(lock_);
     Release();
     return WEBRTC_VIDEO_CODEC_ERROR;
@@ -256,6 +247,9 @@ int32_t RTCVideoDecoder::Decode(
       // remaining buffers, and will provide us with a new keyframe instead.
       // Better to drop any pending buffers and start afresh to catch up faster.
       DVLOG(1) << "Exceeded maximum pending buffer count, dropping";
+      ++vda_error_counter_;
+      if (ShouldFallbackToSoftwareDecode())
+        return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
       ClearPendingBuffers();
       return WEBRTC_VIDEO_CODEC_ERROR;
     }
@@ -604,7 +598,7 @@ bool RTCVideoDecoder::SaveToPendingBuffers_Locked(
            << ". decode_buffers_ size=" << decode_buffers_.size()
            << ". available_shm size=" << available_shm_segments_.size();
   // Queued too many buffers. Something goes wrong.
-  if (pending_buffers_.size() >= kMaxNumOfPendingBuffers) {
+  if (pending_buffers_.size() >= rtc_video_decoder::kMaxNumOfPendingBuffers) {
     LOG(WARNING) << "Too many pending buffers!";
     return false;
   }
@@ -804,7 +798,7 @@ std::unique_ptr<base::SharedMemory> RTCVideoDecoder::GetSHM_Locked(
     // enough. In the former case we need to wait for buffers to be returned,
     // in the latter we need to wait for all buffers to be returned to drop
     // them and reallocate with a new size.
-    return NULL;
+    return nullptr;
   }
 
   if (num_shm_buffers_ != 0) {
@@ -819,7 +813,7 @@ std::unique_ptr<base::SharedMemory> RTCVideoDecoder::GetSHM_Locked(
                      kNumSharedMemorySegments, min_size * 2));
 
   // We'll be called again after the shared memory is created.
-  return NULL;
+  return nullptr;
 }
 
 void RTCVideoDecoder::PutSHM_Locked(
@@ -893,6 +887,19 @@ void RTCVideoDecoder::ClearPendingBuffers() {
   for (const auto& pending_buffer : pending_buffers_)
     delete[] pending_buffer.first._buffer;
   pending_buffers_.clear();
+}
+
+bool RTCVideoDecoder::ShouldFallbackToSoftwareDecode() {
+  // Check if SW H264 implementation is available before falling back, because
+  // it might not available on the platform due to licensing issues.
+  if (vda_error_counter_ > kNumVDAErrorsBeforeSWFallback &&
+      (video_codec_type_ != webrtc::kVideoCodecH264 ||
+       webrtc::H264Decoder::IsSupported())) {
+    DLOG(ERROR) << vda_error_counter_
+                << " errors reported by VDA, falling back to software decode";
+    return true;
+  }
+  return false;
 }
 
 }  // namespace content
