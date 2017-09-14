@@ -262,21 +262,13 @@ class RendererSchedulerImplTest : public ::testing::Test {
 
   RendererSchedulerImplTest()
       : clock_(new base::SimpleTestTickClock()),
-        fake_task_(TaskQueue::PostedTask(base::Bind([] {}),
-                                         FROM_HERE,
-                                         base::TimeDelta(),
-                                         true),
-                   base::TimeTicks()) {
+        fake_task_(FROM_HERE, base::Bind([] {}), base::TimeTicks(), true) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
   RendererSchedulerImplTest(base::MessageLoop* message_loop)
       : clock_(new base::SimpleTestTickClock()),
-        fake_task_(TaskQueue::PostedTask(base::Bind([] {}),
-                                         FROM_HERE,
-                                         base::TimeDelta(),
-                                         true),
-                   base::TimeTicks()),
+        fake_task_(FROM_HERE, base::Bind([] {}), base::TimeTicks(), true),
         message_loop_(message_loop) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }

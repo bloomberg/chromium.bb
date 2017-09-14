@@ -66,9 +66,8 @@ class TaskQueueSelectorTest : public ::testing::Test {
     for (size_t i = 0; i < num_tasks; i++) {
       changed_queue_set.insert(queue_indices[i]);
       task_queues_[queue_indices[i]]->immediate_work_queue()->Push(
-          TaskQueueImpl::Task(TaskQueue::PostedTask(test_closure_, FROM_HERE,
-                                                    base::TimeDelta(), true),
-                              base::TimeTicks(), 0, i));
+          TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
+                              true, i));
     }
   }
 
@@ -79,9 +78,8 @@ class TaskQueueSelectorTest : public ::testing::Test {
     for (size_t i = 0; i < num_tasks; i++) {
       changed_queue_set.insert(queue_indices[i]);
       task_queues_[queue_indices[i]]->immediate_work_queue()->Push(
-          TaskQueueImpl::Task(TaskQueue::PostedTask(test_closure_, FROM_HERE,
-                                                    base::TimeDelta(), true),
-                              base::TimeTicks(), 0, enqueue_orders[i]));
+          TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
+                              true, enqueue_orders[i]));
     }
   }
 
@@ -405,8 +403,7 @@ TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_Empty) {
 
 TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyDelayed) {
   task_queues_[0]->delayed_work_queue()->Push(TaskQueueImpl::Task(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE, base::TimeDelta(), true),
-      base::TimeTicks(), 0, 0));
+      FROM_HERE, test_closure_, base::TimeTicks(), 0, true, 0));
 
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
@@ -419,8 +416,7 @@ TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyDelayed) {
 
 TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyImmediate) {
   task_queues_[0]->immediate_work_queue()->Push(TaskQueueImpl::Task(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE, base::TimeDelta(), true),
-      base::TimeTicks(), 0, 0));
+      FROM_HERE, test_closure_, base::TimeTicks(), 0, true, 0));
 
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
@@ -444,9 +440,8 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   task_queue->SetQueueEnabledForTest(false);
   selector.DisableQueue(task_queue.get());
 
-  TaskQueueImpl::Task task(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE, base::TimeDelta(), true),
-      base::TimeTicks(), 0);
+  TaskQueueImpl::Task task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
+                           true);
   task.set_enqueue_order(0);
   task_queue->immediate_work_queue()->Push(std::move(task));
 
@@ -477,12 +472,10 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
 
   selector.SetQueuePriority(task_queue2.get(), TaskQueue::CONTROL_PRIORITY);
 
-  TaskQueueImpl::Task task1(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE, base::TimeDelta(), true),
-      base::TimeTicks(), 0);
-  TaskQueueImpl::Task task2(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE, base::TimeDelta(), true),
-      base::TimeTicks(), 1);
+  TaskQueueImpl::Task task1(FROM_HERE, test_closure_, base::TimeTicks(), 0,
+                            true);
+  TaskQueueImpl::Task task2(FROM_HERE, test_closure_, base::TimeTicks(), 1,
+                            true);
   task1.set_enqueue_order(0);
   task2.set_enqueue_order(1);
   task_queue->immediate_work_queue()->Push(std::move(task1));
@@ -534,15 +527,15 @@ class ChooseOldestWithPriorityTest
 };
 
 TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
-  task_queues_[0]->immediate_work_queue()->Push(TaskQueueImpl::Task(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE, base::TimeDelta(), true),
-      base::TimeTicks(), GetParam().immediate_task_enqueue_order,
-      GetParam().immediate_task_enqueue_order));
+  task_queues_[0]->immediate_work_queue()->Push(
+      TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(),
+                          GetParam().immediate_task_enqueue_order, true,
+                          GetParam().immediate_task_enqueue_order));
 
-  task_queues_[0]->delayed_work_queue()->Push(TaskQueueImpl::Task(
-      TaskQueue::PostedTask(test_closure_, FROM_HERE, base::TimeDelta(), true),
-      base::TimeTicks(), GetParam().delayed_task_enqueue_order,
-      GetParam().delayed_task_enqueue_order));
+  task_queues_[0]->delayed_work_queue()->Push(
+      TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(),
+                          GetParam().delayed_task_enqueue_order, true,
+                          GetParam().delayed_task_enqueue_order));
 
   selector_.SetImmediateStarvationCountForTest(
       GetParam().immediate_starvation_count);

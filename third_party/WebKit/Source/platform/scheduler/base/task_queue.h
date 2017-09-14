@@ -132,7 +132,10 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // Interface to pass per-task metadata to RendererScheduler.
   class PLATFORM_EXPORT Task : public base::PendingTask {
    public:
-    Task(PostedTask posted_task, base::TimeTicks desired_run_time);
+    Task(const base::Location& posted_from,
+         base::OnceClosure task,
+         base::TimeTicks desired_run_time,
+         bool nestable);
   };
 
   // An interface that lets the owner vote on whether or not the associated
