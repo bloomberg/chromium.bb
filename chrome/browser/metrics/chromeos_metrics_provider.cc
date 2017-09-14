@@ -228,6 +228,11 @@ void ChromeOSMetricsProvider::ProvideStabilityMetrics(
 void ChromeOSMetricsProvider::ProvidePreviousSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   ProvideStabilityMetrics(uma_proto->mutable_system_profile());
+  // The enrollment status and ARC state of a client are not likely to change
+  // between browser restarts.  Hence, it's safe and useful to attach these
+  // values to a previous session log.
+  RecordEnrollmentStatus();
+  RecordArcState();
 }
 
 void ChromeOSMetricsProvider::ProvideCurrentSessionData(
@@ -338,7 +343,7 @@ void ChromeOSMetricsProvider::SetHardwareClass(base::Closure callback,
 }
 
 void ChromeOSMetricsProvider::RecordEnrollmentStatus() {
-  UMA_HISTOGRAM_ENUMERATION(
+  UMA_STABILITY_HISTOGRAM_ENUMERATION(
       "UMA.EnrollmentStatus", GetEnrollmentStatus(), ENROLLMENT_STATUS_MAX);
 }
 
