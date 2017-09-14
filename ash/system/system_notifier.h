@@ -27,7 +27,6 @@ ASH_EXPORT extern const char kNotifierDisplayResolutionChange[];
 ASH_EXPORT extern const char kNotifierDisplayError[];
 ASH_EXPORT extern const char kNotifierDualRole[];
 ASH_EXPORT extern const char kNotifierFingerprintUnlock[];
-ASH_EXPORT extern const char kNotifierHats[];
 ASH_EXPORT extern const char kNotifierLocale[];
 ASH_EXPORT extern const char kNotifierMultiProfileFirstRun[];
 ASH_EXPORT extern const char kNotifierNetwork[];

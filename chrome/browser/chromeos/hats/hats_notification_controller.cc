@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/hats/hats_notification_controller.h"
 
-#include "ash/strings/grit/ash_strings.h"
-#include "ash/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -21,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
 #include "components/prefs/pref_service.h"
@@ -36,6 +35,8 @@
 namespace {
 
 const char kNotificationOriginUrl[] = "chrome://hats";
+
+const char kNotifierHats[] = "ash.hats";
 
 // Minimum amount of time before the notification is displayed again after a
 // user has interacted with it.
@@ -202,19 +203,18 @@ void HatsNotificationController::OnPortalDetectionCompleted(
 Notification* HatsNotificationController::CreateNotification() {
   message_center::RichNotificationData optional;
   if (!message_center::IsNewStyleNotificationEnabled()) {
-    optional.buttons.push_back(
-        message_center::ButtonInfo(l10n_util::GetStringUTF16(
-            IDS_ASH_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON)));
+    optional.buttons.push_back(message_center::ButtonInfo(
+        l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON)));
   }
 
   Notification* notification = new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-      l10n_util::GetStringUTF16(IDS_ASH_HATS_NOTIFICATION_TITLE),
-      l10n_util::GetStringUTF16(IDS_ASH_HATS_NOTIFICATION_BODY),
+      l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_TITLE),
+      l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_BODY),
       gfx::Image(
           gfx::CreateVectorIcon(kGoogleGLogoIcon, gfx::kPlaceholderColor)),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 ash::system_notifier::kNotifierHats),
+                                 kNotifierHats),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
       GURL(kNotificationOriginUrl), kNotificationId, optional, this);
   if (message_center::IsNewStyleNotificationEnabled()) {
