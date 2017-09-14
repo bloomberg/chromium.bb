@@ -541,7 +541,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
       audio_stream_monitor_(this),
       bluetooth_connected_device_count_(0),
-      virtual_keyboard_requested_(false),
 #if !defined(OS_ANDROID)
       page_scale_factor_is_one_(true),
 #endif  // !defined(OS_ANDROID)
@@ -2680,14 +2679,6 @@ SessionStorageNamespaceMap WebContentsImpl::GetSessionStorageNamespaceMap() {
 
 FrameTree* WebContentsImpl::GetFrameTree() {
   return &frame_tree_;
-}
-
-void WebContentsImpl::SetIsVirtualKeyboardRequested(bool requested) {
-  virtual_keyboard_requested_ = requested;
-}
-
-bool WebContentsImpl::IsVirtualKeyboardRequested() {
-  return virtual_keyboard_requested_;
 }
 
 bool WebContentsImpl::IsOverridingUserAgent() {

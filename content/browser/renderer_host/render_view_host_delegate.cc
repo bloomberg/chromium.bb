@@ -45,10 +45,6 @@ bool RenderViewHostDelegate::IsNeverVisible() {
   return false;
 }
 
-bool RenderViewHostDelegate::IsVirtualKeyboardRequested() {
-  return false;
-}
-
 bool RenderViewHostDelegate::IsOverridingUserAgent() {
   return false;
 }
