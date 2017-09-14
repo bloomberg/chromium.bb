@@ -107,6 +107,8 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'AlertsTest.testPromptShouldUseDefaultValueIfNoKeysSent',
     'UnexpectedAlertBehaviorTest.canAcceptUnhandledAlert',
     'UnexpectedAlertBehaviorTest.canSpecifyUnhandledAlertBehaviourUsingCapabilities',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=764519
+    'FrameSwitchingTest.testShouldBeAbleToClickInAFrameThatRewritesTopWindowLocation',
 ]
 
 _OS_NEGATIVE_FILTER = {}
