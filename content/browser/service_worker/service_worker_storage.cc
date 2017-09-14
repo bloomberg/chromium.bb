@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 
 #include <stddef.h>
+#include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -1024,6 +1025,8 @@ void ServiceWorkerStorage::DidReadInitialData(
     registered_origins_.swap(data->origins);
     foreign_fetch_origins_.swap(data->foreign_fetch_origins);
     state_ = INITIALIZED;
+    ServiceWorkerMetrics::RecordRegisteredOriginCount(
+        registered_origins_.size());
   } else {
     DVLOG(2) << "Failed to initialize: "
              << ServiceWorkerDatabase::StatusToString(status);

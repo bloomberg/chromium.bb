@@ -1081,4 +1081,8 @@ void ServiceWorkerMetrics::RecordStartServiceWorkerForNavigationHintResult(
       StartServiceWorkerForNavigationHintResult::NUM_TYPES);
 }
 
+void ServiceWorkerMetrics::RecordRegisteredOriginCount(size_t origin_count) {
+  UMA_HISTOGRAM_COUNTS_1M("ServiceWorker.RegisteredOriginCount", origin_count);
+}
+
 }  // namespace content
