@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/system/power/power_status.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -26,6 +27,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 
 namespace arc {
 
@@ -91,19 +93,32 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
           : l10n_util::GetStringUTF16(
                 IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE);
 
-  message_center::RichNotificationData data;
-  data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
-      IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_RESTART_BUTTON)));
-  message_center::MessageCenter::Get()->AddNotification(
-      base::MakeUnique<message_center::Notification>(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
-          l10n_util::GetStringUTF16(
-              IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
-          message,
-          gfx::Image(gfx::CreateVectorIcon(
-              kArcMigrateEncryptionNotificationIcon, gfx::kPlaceholderColor)),
-          base::string16(), GURL(), notifier_id, data,
-          new ArcMigrationGuideNotificationDelegate()));
+  if (message_center::IsNewStyleNotificationEnabled()) {
+    message_center::MessageCenter::Get()->AddNotification(
+        message_center::Notification::CreateSystemNotification(
+            message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
+            l10n_util::GetStringUTF16(
+                IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
+            message, gfx::Image(), base::string16(), GURL(), notifier_id,
+            message_center::RichNotificationData(),
+            new ArcMigrationGuideNotificationDelegate(),
+            ash::kNotificationSettingsIcon,
+            message_center::SystemNotificationWarningLevel::NORMAL));
+  } else {
+    message_center::RichNotificationData data;
+    data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
+        IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_RESTART_BUTTON)));
+    message_center::MessageCenter::Get()->AddNotification(
+        base::MakeUnique<message_center::Notification>(
+            message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
+            l10n_util::GetStringUTF16(
+                IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
+            message,
+            gfx::Image(gfx::CreateVectorIcon(
+                kArcMigrateEncryptionNotificationIcon, gfx::kPlaceholderColor)),
+            base::string16(), GURL(), notifier_id, data,
+            new ArcMigrationGuideNotificationDelegate()));
+  }
 }
 
 void ShowArcMigrationSuccessNotificationIfNeeded(Profile* profile) {
