@@ -5539,6 +5539,12 @@ weston_output_enable(struct weston_output *output)
 		return -1;
 	}
 
+	if (wl_list_empty(&output->mode_list) || !output->current_mode) {
+		weston_log("Error: no video mode for output '%s'.\n",
+			   output->name);
+		return -1;
+	}
+
 	wl_list_for_each(head, &output->head_list, output_link) {
 		assert(head->make);
 		assert(head->model);
