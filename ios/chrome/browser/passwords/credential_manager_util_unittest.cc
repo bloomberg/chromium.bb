@@ -133,34 +133,39 @@ TEST(CredentialManagerUtilTest, ParseCommonCredentialFields) {
   // Credential containing only common fields would return false.
   base::DictionaryValue json = BuildExampleValidPasswordCredential();
   CredentialInfo credential;
+  std::string reason;
 
   // Valid dictionary should be parsed correctly and ParseCredentialDictionary
   // should return true.
-  EXPECT_TRUE(ParseCredentialDictionary(json, &credential));
+  EXPECT_TRUE(ParseCredentialDictionary(json, &credential, &reason));
   EXPECT_EQ(base::ASCIIToUTF16("john@doe.com"), credential.id);
   EXPECT_EQ(base::ASCIIToUTF16("John Doe"), credential.name);
   EXPECT_EQ(GURL(kTestIconUrl), credential.icon);
 
   // |id| field is required.
   json.Remove(kCredentialIdKey, nullptr);
-  EXPECT_FALSE(ParseCredentialDictionary(json, &credential));
+  EXPECT_FALSE(ParseCredentialDictionary(json, &credential, &reason));
+  EXPECT_EQ(reason, "no valid 'id' field");
 
   // |iconURL| field is not required.
   json = BuildExampleValidPasswordCredential();
   json.Remove(kCredentialIconKey, nullptr);
-  EXPECT_TRUE(ParseCredentialDictionary(json, &credential));
+  EXPECT_TRUE(ParseCredentialDictionary(json, &credential, &reason));
 
   // If Credential has |iconURL| field, it must be a valid URL.
   json.SetString(kCredentialIconKey, "not a valid url");
-  EXPECT_FALSE(ParseCredentialDictionary(json, &credential));
+  EXPECT_FALSE(ParseCredentialDictionary(json, &credential, &reason));
+  EXPECT_EQ(reason, "iconURL is either invalid or insecure URL");
 
   // If Credential has |iconURL| field, it must be a secure URL.
+  reason = std::string();
   json.SetString(kCredentialIconKey, "http://example.com");
-  EXPECT_FALSE(ParseCredentialDictionary(json, &credential));
+  EXPECT_FALSE(ParseCredentialDictionary(json, &credential, &reason));
+  EXPECT_EQ(reason, "iconURL is either invalid or insecure URL");
 
   // Check that empty |iconURL| field is treated as no |iconURL| field.
   json.SetString(kCredentialIconKey, "");
-  EXPECT_TRUE(ParseCredentialDictionary(json, &credential));
+  EXPECT_TRUE(ParseCredentialDictionary(json, &credential, &reason));
 }
 
 // Checks that |password| and |type| fields of PasswordCredential are parsed
@@ -168,20 +173,23 @@ TEST(CredentialManagerUtilTest, ParseCommonCredentialFields) {
 TEST(CredentialManagerUtilTest, ParsePasswordCredential) {
   base::DictionaryValue json = BuildExampleValidPasswordCredential();
   CredentialInfo credential;
+  std::string reason;
 
   // Valid dictionary should be parsed correctly and ParseCredentialDictionary
   // should return true.
-  EXPECT_TRUE(ParseCredentialDictionary(json, &credential));
+  EXPECT_TRUE(ParseCredentialDictionary(json, &credential, &reason));
   EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_PASSWORD, credential.type);
   EXPECT_EQ(base::ASCIIToUTF16("admin123"), credential.password);
 
   // |password| field is required.
   json.Remove(kPasswordCredentialPasswordKey, nullptr);
-  EXPECT_FALSE(ParseCredentialDictionary(json, &credential));
+  EXPECT_FALSE(ParseCredentialDictionary(json, &credential, &reason));
+  EXPECT_EQ(reason, "no valid 'password' field");
 
   // |password| field is cannot be an empty string.
   json.SetString(kPasswordCredentialPasswordKey, "");
-  EXPECT_FALSE(ParseCredentialDictionary(json, &credential));
+  EXPECT_FALSE(ParseCredentialDictionary(json, &credential, &reason));
+  EXPECT_EQ(reason, "no valid 'password' field");
 }
 
 // Checks that |provider| and |type| fields of FederatedCredential are parsed
@@ -189,24 +197,28 @@ TEST(CredentialManagerUtilTest, ParsePasswordCredential) {
 TEST(CredentialManagerUtilTest, ParseFederatedCredential) {
   base::DictionaryValue json = BuildExampleValidFederatedCredential();
   CredentialInfo credential;
+  std::string reason;
 
   // Valid dictionary should be parsed correctly and ParseCredentialDictionary
   // should return true.
-  EXPECT_TRUE(ParseCredentialDictionary(json, &credential));
+  EXPECT_TRUE(ParseCredentialDictionary(json, &credential, &reason));
   EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_FEDERATED, credential.type);
   EXPECT_EQ(GURL(kTestWebOrigin), credential.federation.GetURL());
 
   // |provider| field is required.
   json.Remove(kFederatedCredentialProviderKey, nullptr);
-  EXPECT_FALSE(ParseCredentialDictionary(json, &credential));
+  EXPECT_FALSE(ParseCredentialDictionary(json, &credential, &reason));
+  EXPECT_EQ(reason, "no valid 'provider' field");
 
   // |provider| field cannot be an empty string.
   json.SetString(kFederatedCredentialProviderKey, "");
-  EXPECT_FALSE(ParseCredentialDictionary(json, &credential));
+  EXPECT_FALSE(ParseCredentialDictionary(json, &credential, &reason));
+  EXPECT_EQ(reason, "no valid 'provider' field");
 
   // |provider| field must be a valid URL.
   json.SetString(kFederatedCredentialProviderKey, "not a valid URL");
-  EXPECT_FALSE(ParseCredentialDictionary(json, &credential));
+  EXPECT_FALSE(ParseCredentialDictionary(json, &credential, &reason));
+  EXPECT_EQ(reason, "no valid 'provider' field");
 }
 
 // Checks that |providers| field of FederatedCredentialRequestOptions is
