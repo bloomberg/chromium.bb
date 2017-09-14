@@ -186,11 +186,6 @@ chrome_browser_net::Predictor* FakeProfile::GetNetworkPredictor() {
   return nullptr;
 }
 
-DevToolsNetworkControllerHandle*
-FakeProfile::GetDevToolsNetworkControllerHandle() {
-  return nullptr;
-}
-
 void FakeProfile::ClearNetworkingHistorySince(
     base::Time time,
     const base::Closure& completion) {

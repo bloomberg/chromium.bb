@@ -519,11 +519,6 @@ chrome_browser_net::Predictor* OffTheRecordProfileImpl::GetNetworkPredictor() {
   return NULL;
 }
 
-DevToolsNetworkControllerHandle*
-OffTheRecordProfileImpl::GetDevToolsNetworkControllerHandle() {
-  return io_data_->GetDevToolsNetworkControllerHandle();
-}
-
 void OffTheRecordProfileImpl::ClearNetworkingHistorySince(
     base::Time time,
     const base::Closure& completion) {

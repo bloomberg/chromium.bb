@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/devtools/devtools_network_protocol_handler.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/grit/browser_resources.h"
@@ -192,20 +191,9 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHostForTab(TabAndroid* tab) {
 
 } //  namespace
 
-DevToolsManagerDelegateAndroid::DevToolsManagerDelegateAndroid()
-    : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
-  content::DevToolsAgentHost::AddObserver(this);
-}
+DevToolsManagerDelegateAndroid::DevToolsManagerDelegateAndroid() = default;
 
-DevToolsManagerDelegateAndroid::~DevToolsManagerDelegateAndroid() {
-  content::DevToolsAgentHost::RemoveObserver(this);
-}
-
-base::DictionaryValue* DevToolsManagerDelegateAndroid::HandleCommand(
-    DevToolsAgentHost* agent_host,
-    base::DictionaryValue* command_dict) {
-  return network_protocol_handler_->HandleCommand(agent_host, command_dict);
-}
+DevToolsManagerDelegateAndroid::~DevToolsManagerDelegateAndroid() = default;
 
 std::string DevToolsManagerDelegateAndroid::GetTargetType(
     content::WebContents* web_contents) {
@@ -272,14 +260,4 @@ std::string DevToolsManagerDelegateAndroid::GetDiscoveryPageHTML() {
 
 bool DevToolsManagerDelegateAndroid::IsBrowserTargetDiscoverable() {
   return true;
-}
-
-void DevToolsManagerDelegateAndroid::DevToolsAgentHostAttached(
-    content::DevToolsAgentHost* agent_host) {
-  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, true);
-}
-
-void DevToolsManagerDelegateAndroid::DevToolsAgentHostDetached(
-    content::DevToolsAgentHost* agent_host) {
-  network_protocol_handler_->DevToolsAgentStateChanged(agent_host, false);
 }

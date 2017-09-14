@@ -32,8 +32,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "chrome/browser/devtools/devtools_network_controller.h"
-#include "chrome/browser/devtools/devtools_network_transaction_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -78,6 +76,7 @@
 #include "components/sync/base/pref_names.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_network_transaction_factory.h"
 #include "content/public/browser/ignore_errors_cert_verifier.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
@@ -243,13 +242,6 @@ class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
   }
 };
 #endif  // BUILDFLAG(DEBUG_DEVTOOLS)
-
-std::unique_ptr<net::HttpTransactionFactory> CreateDevToolsTransactionFactory(
-    DevToolsNetworkController* devtools_network_controller,
-    net::HttpNetworkSession* session) {
-  return base::WrapUnique(new DevToolsNetworkTransactionFactory(
-      devtools_network_controller, session));
-}
 
 #if defined(OS_CHROMEOS)
 // The following four functions are responsible for initializing NSS for each
@@ -1157,8 +1149,7 @@ void ProfileIOData::Init(
                      std::move(request_interceptors));
 
   builder->SetCreateHttpTransactionFactoryCallback(
-      base::BindOnce(&CreateDevToolsTransactionFactory,
-                     network_controller_handle_.GetController()));
+      base::BindOnce(&content::CreateDevToolsNetworkTransactionFactory));
 
   main_network_context_ =
       io_thread_globals->network_service->CreateNetworkContextWithBuilder(
@@ -1401,8 +1392,7 @@ std::unique_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
     net::HttpNetworkSession* session,
     std::unique_ptr<net::HttpCache::BackendFactory> main_backend) const {
   return base::MakeUnique<net::HttpCache>(
-      base::WrapUnique(new DevToolsNetworkTransactionFactory(
-          network_controller_handle_.GetController(), session)),
+      content::CreateDevToolsNetworkTransactionFactory(session),
       std::move(main_backend), true /* is_main_cache */);
 }
 
@@ -1412,8 +1402,7 @@ std::unique_ptr<net::HttpCache> ProfileIOData::CreateHttpFactory(
   DCHECK(main_http_factory);
   net::HttpNetworkSession* shared_session = main_http_factory->GetSession();
   return base::MakeUnique<net::HttpCache>(
-      base::WrapUnique(new DevToolsNetworkTransactionFactory(
-          network_controller_handle_.GetController(), shared_session)),
+      content::CreateDevToolsNetworkTransactionFactory(shared_session),
       std::move(backend), false /* is_main_cache */);
 }
 

@@ -17,8 +17,6 @@
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "net/base/host_port_pair.h"
 
-class DevToolsNetworkProtocolHandler;
-
 class ChromeDevToolsManagerDelegate :
     public content::DevToolsManagerDelegate,
     public content::DevToolsAgentHostObserver {
@@ -81,7 +79,6 @@ class ChromeDevToolsManagerDelegate :
 
   void TogglePageEnable(bool enable, content::DevToolsAgentHost* agent_host);
 
-  std::unique_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;
   std::map<content::DevToolsAgentHost*, std::unique_ptr<HostData>> host_data_;
 
   std::unique_ptr<AndroidDeviceManager> device_manager_;

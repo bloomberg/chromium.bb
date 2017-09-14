@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/devtools/devtools_network_controller.h"
+#include "content/common/devtools/devtools_network_controller.h"
 
 #include <stdint.h>
 
@@ -14,17 +14,17 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/devtools/devtools_network_conditions.h"
-#include "chrome/browser/devtools/devtools_network_interceptor.h"
-#include "chrome/browser/devtools/devtools_network_transaction.h"
-#include "chrome/browser/devtools/devtools_network_upload_data_stream.h"
+#include "content/common/devtools/devtools_network_conditions.h"
+#include "content/common/devtools/devtools_network_interceptor.h"
+#include "content/common/devtools/devtools_network_transaction.h"
+#include "content/common/devtools/devtools_network_upload_data_stream.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/log/net_log_with_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace test {
+namespace content {
 
 using net::kSimpleGET_Transaction;
 using net::MockHttpRequest;
@@ -54,11 +54,11 @@ class TestCallback {
 
 class DevToolsNetworkControllerHelper {
  public:
-  DevToolsNetworkControllerHelper() :
-      completion_callback_(
-          base::Bind(&TestCallback::Run, base::Unretained(&callback_))),
-      mock_transaction_(kSimpleGET_Transaction),
-      buffer_(new net::IOBuffer(64)) {
+  DevToolsNetworkControllerHelper()
+      : completion_callback_(
+            base::Bind(&TestCallback::Run, base::Unretained(&callback_))),
+        mock_transaction_(kSimpleGET_Transaction),
+        buffer_(new net::IOBuffer(64)) {
     mock_transaction_.test_mode = TEST_MODE_SYNC_NET_START;
     mock_transaction_.url = "http://dot.com";
     mock_transaction_.request_headers =
@@ -66,22 +66,23 @@ class DevToolsNetworkControllerHelper {
     AddMockTransaction(&mock_transaction_);
 
     std::unique_ptr<net::HttpTransaction> network_transaction;
-    network_layer_.CreateTransaction(
-        net::DEFAULT_PRIORITY, &network_transaction);
-    transaction_.reset(new DevToolsNetworkTransaction(
-        &controller_, std::move(network_transaction)));
+    network_layer_.CreateTransaction(net::DEFAULT_PRIORITY,
+                                     &network_transaction);
+    transaction_.reset(
+        new DevToolsNetworkTransaction(std::move(network_transaction)));
   }
 
   void SetNetworkState(bool offline, double download, double upload) {
     std::unique_ptr<DevToolsNetworkConditions> conditions(
         new DevToolsNetworkConditions(offline, 0, download, upload));
-    controller_.SetNetworkState(kClientId, std::move(conditions));
+    DevToolsNetworkController::SetNetworkState(kClientId,
+                                               std::move(conditions));
   }
 
   void SetNetworkState(const std::string& id, bool offline) {
     std::unique_ptr<DevToolsNetworkConditions> conditions(
         new DevToolsNetworkConditions(offline));
-    controller_.SetNetworkState(id, std::move(conditions));
+    DevToolsNetworkController::SetNetworkState(id, std::move(conditions));
   }
 
   int Start(bool with_upload) {
@@ -90,8 +91,8 @@ class DevToolsNetworkControllerHelper {
     if (with_upload) {
       upload_data_stream_.reset(
           new net::ChunkedUploadDataStream(kUploadIdentifier));
-      upload_data_stream_->AppendData(
-          kUploadData, arraysize(kUploadData), true);
+      upload_data_stream_->AppendData(kUploadData, arraysize(kUploadData),
+                                      true);
       request_->upload_data_stream = upload_data_stream_.get();
     }
 
@@ -109,28 +110,22 @@ class DevToolsNetworkControllerHelper {
     if (transaction_->interceptor_)
       return transaction_->interceptor_->IsOffline();
     DevToolsNetworkInterceptor* interceptor =
-        controller_.GetInterceptor(kClientId);
+        DevToolsNetworkController::GetInterceptor(kClientId);
     EXPECT_TRUE(!!interceptor);
     return interceptor->IsOffline();
   }
 
-  bool HasStarted() {
-    return !!transaction_->request_;
-  }
+  bool HasStarted() { return !!transaction_->request_; }
 
-  bool HasFailed() {
-    return transaction_->failed_;
-  }
+  bool HasFailed() { return transaction_->failed_; }
 
-  void CancelTransaction() {
-    transaction_.reset();
-  }
+  void CancelTransaction() { transaction_.reset(); }
 
   int ReadUploadData() {
     EXPECT_EQ(net::OK, transaction_->custom_upload_data_stream_->Init(
                            completion_callback_, net::NetLogWithSource()));
-    return transaction_->custom_upload_data_stream_->Read(
-        buffer_.get(), 64, completion_callback_);
+    return transaction_->custom_upload_data_stream_->Read(buffer_.get(), 64,
+                                                          completion_callback_);
   }
 
   ~DevToolsNetworkControllerHelper() {
@@ -138,7 +133,6 @@ class DevToolsNetworkControllerHelper {
   }
 
   TestCallback* callback() { return &callback_; }
-  DevToolsNetworkController* controller() { return &controller_; }
   DevToolsNetworkTransaction* transaction() { return transaction_.get(); }
 
  private:
@@ -147,7 +141,6 @@ class DevToolsNetworkControllerHelper {
   TestCallback callback_;
   net::CompletionCallback completion_callback_;
   MockTransaction mock_transaction_;
-  DevToolsNetworkController controller_;
   std::unique_ptr<DevToolsNetworkTransaction> transaction_;
   scoped_refptr<net::IOBuffer> buffer_;
   std::unique_ptr<net::ChunkedUploadDataStream> upload_data_stream_;
@@ -326,4 +319,4 @@ TEST(DevToolsNetworkControllerTest, UploadOnly) {
   EXPECT_EQ(callback->value(), static_cast<int>(arraysize(kUploadData)));
 }
 
-}  // namespace test
+}  // namespace content

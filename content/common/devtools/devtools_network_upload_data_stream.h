@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_UPLOAD_DATA_STREAM_H_
-#define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_UPLOAD_DATA_STREAM_H_
+#ifndef CONTENT_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_UPLOAD_DATA_STREAM_H_
+#define CONTENT_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_UPLOAD_DATA_STREAM_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/devtools/devtools_network_interceptor.h"
+#include "content/common/devtools/devtools_network_interceptor.h"
 #include "net/base/completion_callback.h"
 #include "net/base/upload_data_stream.h"
+
+namespace content {
 
 class DevToolsNetworkInterceptor;
 
@@ -48,4 +50,6 @@ class DevToolsNetworkUploadDataStream : public net::UploadDataStream {
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkUploadDataStream);
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_NETWORK_UPLOAD_DATA_STREAM_H_
+}  // namespace content
+
+#endif  // CONTENT_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_UPLOAD_DATA_STREAM_H_

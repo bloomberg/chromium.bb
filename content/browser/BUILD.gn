@@ -544,6 +544,7 @@ source_set("browser") {
     "devtools/devtools_io_context.h",
     "devtools/devtools_manager.cc",
     "devtools/devtools_manager.h",
+    "devtools/devtools_network_transaction_factory.cc",
     "devtools/devtools_session.cc",
     "devtools/devtools_session.h",
     "devtools/devtools_url_interceptor_request_job.cc",

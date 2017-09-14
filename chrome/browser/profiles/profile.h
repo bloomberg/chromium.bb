@@ -22,7 +22,6 @@
 class ChromeZoomLevelPrefs;
 #endif
 
-class DevToolsNetworkControllerHandle;
 class ExtensionSpecialStoragePolicy;
 class PrefProxyConfigTracker;
 class PrefService;
@@ -254,10 +253,6 @@ class Profile : public content::BrowserContext {
 
   // Returns the Predictor object used for dns prefetch.
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() = 0;
-
-  // Returns the DevToolsNetworkControllerHandle for this profile.
-  virtual DevToolsNetworkControllerHandle*
-  GetDevToolsNetworkControllerHandle() = 0;
 
   // Deletes all network related data since |time|. It deletes transport
   // security state since |time| and it also deletes HttpServerProperties data.

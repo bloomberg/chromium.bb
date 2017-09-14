@@ -12,34 +12,19 @@
 #include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
-class DevToolsNetworkProtocolHandler;
-
-class DevToolsManagerDelegateAndroid :
-    public content::DevToolsManagerDelegate,
-    public content::DevToolsAgentHostObserver {
+class DevToolsManagerDelegateAndroid : public content::DevToolsManagerDelegate {
  public:
   DevToolsManagerDelegateAndroid();
   ~DevToolsManagerDelegateAndroid() override;
 
  private:
   // content::DevToolsManagerDelegate implementation.
-  base::DictionaryValue* HandleCommand(
-      content::DevToolsAgentHost* agent_host,
-      base::DictionaryValue* command_dict) override;
   std::string GetTargetType(content::WebContents* web_contents) override;
   content::DevToolsAgentHost::List RemoteDebuggingTargets() override;
   scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(
       const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
   bool IsBrowserTargetDiscoverable() override;
-
-  // content::DevToolsAgentHostObserver overrides.
-  void DevToolsAgentHostAttached(
-      content::DevToolsAgentHost* agent_host) override;
-  void DevToolsAgentHostDetached(
-      content::DevToolsAgentHost* agent_host) override;
-
-  std::unique_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManagerDelegateAndroid);
 };

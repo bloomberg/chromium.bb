@@ -32,7 +32,7 @@ void WorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   }
   session->SetFallThroughForNotFound(true);
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::NetworkHandler()));
+  session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(GetId())));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
   OnAttachedStateChanged(true);
 }
