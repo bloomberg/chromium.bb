@@ -212,6 +212,9 @@ class CORE_EXPORT EventTarget : public GarbageCollectedFinalized<EventTarget>,
                                          EventListener*,
                                          AddEventListenerOptionsResolved&);
 
+  RegisteredEventListener* GetAttributeRegisteredEventListener(
+      const AtomicString& event_type);
+
   bool FireEventListeners(Event*, EventTargetData*, EventListenerVector&);
   void CountLegacyEvents(const AtomicString& legacy_type_name,
                          EventListenerVector*,

@@ -458,15 +458,7 @@ void EventTarget::RemovedEventListener(
     const AtomicString& event_type,
     const RegisteredEventListener& registered_listener) {}
 
-bool EventTarget::SetAttributeEventListener(const AtomicString& event_type,
-                                            EventListener* listener) {
-  ClearAttributeEventListener(event_type);
-  if (!listener)
-    return false;
-  return addEventListener(event_type, listener, false);
-}
-
-EventListener* EventTarget::GetAttributeEventListener(
+RegisteredEventListener* EventTarget::GetAttributeRegisteredEventListener(
     const AtomicString& event_type) {
   EventListenerVector* listener_vector = GetEventListeners(event_type);
   if (!listener_vector)
@@ -476,8 +468,33 @@ EventListener* EventTarget::GetAttributeEventListener(
     EventListener* listener = event_listener.Listener();
     if (listener->IsAttribute() &&
         listener->BelongsToTheCurrentWorld(GetExecutionContext()))
-      return listener;
+      return &event_listener;
   }
+  return nullptr;
+}
+
+bool EventTarget::SetAttributeEventListener(const AtomicString& event_type,
+                                            EventListener* listener) {
+  RegisteredEventListener* registered_listener =
+      GetAttributeRegisteredEventListener(event_type);
+  if (!listener) {
+    if (registered_listener)
+      removeEventListener(event_type, registered_listener->Listener(), false);
+    return false;
+  }
+  if (registered_listener) {
+    registered_listener->SetListener(listener);
+    return true;
+  }
+  return addEventListener(event_type, listener, false);
+}
+
+EventListener* EventTarget::GetAttributeEventListener(
+    const AtomicString& event_type) {
+  RegisteredEventListener* registered_listener =
+      GetAttributeRegisteredEventListener(event_type);
+  if (registered_listener)
+    return registered_listener->Listener();
   return nullptr;
 }
 
