@@ -12,7 +12,7 @@ DeltaSymbolGroup (extends SymbolGroup): CountsByDiffStatus, WhereDiffStatusIs, d
 
 canned_queries: CategorizeByChromeComponent, CategorizeGenerated, StaticInitializers, TemplatesByName
 
-Functions: Diff(), Disassemble(), ExpandRegex(), Print(), ShowExamples()
+Functions: Csv(), Diff(), Disassemble(), ExpandRegex(), Print(), ShowExamples()
 Variables:
   printed: List of objects passed to Print().
   size_info: Loaded from {redacted}
@@ -23,6 +23,9 @@ help(models)
 
 # Show all attributes of all symbols & per-section totals:
 Print(size_info, verbose=True)
+
+# Dump section info and all symbols in CSV format:
+Csv(size_info)
 
 # Show two levels of .text, grouped by first two subdirectories
 text_syms = size_info.symbols.WhereInSection("t")

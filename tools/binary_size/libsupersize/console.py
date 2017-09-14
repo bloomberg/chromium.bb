@@ -71,6 +71,7 @@ class _Session(object):
     self._printed_variables = []
     self._variables = {
         'Print': self._PrintFunc,
+        'Csv': self._CsvFunc,
         'Diff': self._DiffFunc,
         'Disassemble': self._DisassembleFunc,
         'ExpandRegex': match_util.ExpandRegexIdentifierPlaceholder,
@@ -104,6 +105,14 @@ class _Session(object):
       ret.symbols = ret.symbols.Sorted()
     return ret
 
+  def _GetObjToPrint(self, obj=None):
+    if isinstance(obj, int):
+      obj = self._printed_variables[obj]
+    elif not self._printed_variables or self._printed_variables[-1] != obj:
+      if not isinstance(obj, models.SymbolGroup) or len(obj) > 0:
+        self._printed_variables.append(obj)
+    return obj if obj is not None else self._size_infos[-1]
+
   def _PrintFunc(self, obj=None, verbose=False, summarize=True, recursive=False,
                  use_pager=None, to_file=None):
     """Prints out the given Symbol / SymbolGroup / SizeInfo.
@@ -111,8 +120,9 @@ class _Session(object):
     For convenience, |obj| will be appended to the global "printed" list.
 
     Args:
-      obj: The object to be printed. Defaults to size_infos[-1]. Also accepts an
-          index into the |printed| array for showing previous results.
+      obj: The object to be printed. Defaults to |size_infos[-1]|. Also accepts
+          an index into the |_printed_variables| array for showing previous
+          results.
       verbose: Show more detailed output.
       summarize: If False, show symbols only (no headers / summaries).
       recursive: Print children of nested SymbolGroups.
@@ -120,14 +130,28 @@ class _Session(object):
           default is to automatically pipe when output is long.
       to_file: Rather than print to stdio, write to the given file.
     """
-    if isinstance(obj, int):
-      obj = self._printed_variables[obj]
-    elif not self._printed_variables or self._printed_variables[-1] != obj:
-      if not isinstance(obj, models.SymbolGroup) or len(obj) > 0:
-        self._printed_variables.append(obj)
-    obj = obj if obj is not None else self._size_infos[-1]
+    obj = self._GetObjToPrint(obj)
     lines = describe.GenerateLines(
-        obj, verbose=verbose, recursive=recursive, summarize=summarize)
+        obj, verbose=verbose, recursive=recursive, summarize=summarize,
+        format_name='text')
+    _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
+
+  def _CsvFunc(self, obj=None, verbose=False, use_pager=None, to_file=None):
+    """Prints out the given Symbol / SymbolGroup / SizeInfo in CSV format.
+
+    For convenience, |obj| will be appended to the global "printed" list.
+
+    Args:
+      obj: The object to be printed as CSV. Defaults to |size_infos[-1]|. Also
+          accepts an index into the |_printed_variables| array for showing
+          previous results.
+      use_pager: Pipe output through `less`. Ignored when |obj| is a Symbol.
+          default is to automatically pipe when output is long.
+      to_file: Rather than print to stdio, write to the given file.
+    """
+    obj = self._GetObjToPrint(obj)
+    lines = describe.GenerateLines(obj, verbose=verbose, recursive=False,
+                                   format_name='csv')
     _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
 
   def _ElfPathAndToolPrefixForSymbol(self, size_info, elf_path):
@@ -264,6 +288,9 @@ class _Session(object):
         '',
         '# Show all attributes of all symbols & per-section totals:',
         'Print(size_info, verbose=True)',
+        '',
+        '# Dump section info and all symbols in CSV format:',
+        'Csv(size_info)',
         '',
         '# Show two levels of .text, grouped by first two subdirectories',
         'text_syms = size_info.symbols.WhereInSection("t")',
