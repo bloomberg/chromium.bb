@@ -751,7 +751,7 @@ class IDLParser(object):
     p[0] = self.BuildProduction('Maplike', p, 2, childlist)
 
   def p_SetlikeRest(self, p):
-    """SetlikeRest : SETLIKE '<' Type '>' ';'"""
+    """SetlikeRest : SETLIKE '<' TypeWithExtendedAttributes '>' ';'"""
     p[0] = self.BuildProduction('Setlike', p, 2, p[3])
 
   # This rule has custom additions (i.e. SpecialComments).

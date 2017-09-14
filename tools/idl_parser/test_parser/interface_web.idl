@@ -391,10 +391,16 @@ interface MyIfaceMaplike {
  *  Setlike()
  *    Type()
  *      PrimitiveType(double)
+ *  Setlike()
+ *    Type()
+ *      PrimitiveType(long)
+ *      ExtAttributes()
+ *        ExtAttribute(EnforceRange)
  */
 interface MyIfaceSetlike {
   readonly setlike<long>;
   setlike<double>;
+  setlike<[EnforceRange] long>;
 };
 
 /** TREE

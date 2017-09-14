@@ -198,7 +198,7 @@ static void hasMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  V8StringResource<> value;
+  V8StringResource<kTreatNullAsEmptyString> value;
   value = info[0];
   if (!value.Prepare())
     return;
@@ -222,7 +222,7 @@ static void addMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  V8StringResource<> value;
+  V8StringResource<kTreatNullAsEmptyString> value;
   value = info[0];
   if (!value.Prepare())
     return;
@@ -259,7 +259,7 @@ static void deleteMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  V8StringResource<> value;
+  V8StringResource<kTreatNullAsEmptyString> value;
   value = info[0];
   if (!value.Prepare())
     return;
