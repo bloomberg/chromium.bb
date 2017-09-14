@@ -127,61 +127,36 @@ TEST_F(QuicVersionsTest, QuicVersionToString) {
   }
 }
 
-TEST_F(QuicVersionsTest, FilterSupportedVersionsNo36) {
-  QuicVersionVector all_versions = {QUIC_VERSION_35, QUIC_VERSION_36,
-                                    QUIC_VERSION_37, QUIC_VERSION_38,
-                                    QUIC_VERSION_39};
-
-  FLAGS_quic_reloadable_flag_quic_disable_version_36 = true;
-  FLAGS_quic_reloadable_flag_quic_enable_version_38 = true;
-  FLAGS_quic_reloadable_flag_quic_enable_version_39 = true;
-
-  QuicVersionVector filtered_versions = FilterSupportedVersions(all_versions);
-  ASSERT_EQ(4u, filtered_versions.size());
-  EXPECT_EQ(QUIC_VERSION_35, filtered_versions[0]);
-  EXPECT_EQ(QUIC_VERSION_37, filtered_versions[1]);
-  EXPECT_EQ(QUIC_VERSION_38, filtered_versions[2]);
-  EXPECT_EQ(QUIC_VERSION_39, filtered_versions[3]);
-}
-
 TEST_F(QuicVersionsTest, FilterSupportedVersionsNo38) {
-  QuicVersionVector all_versions = {QUIC_VERSION_35, QUIC_VERSION_36,
-                                    QUIC_VERSION_37, QUIC_VERSION_38,
-                                    QUIC_VERSION_39};
+  QuicVersionVector all_versions = {QUIC_VERSION_35, QUIC_VERSION_37,
+                                    QUIC_VERSION_38, QUIC_VERSION_39};
 
-  FLAGS_quic_reloadable_flag_quic_disable_version_36 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = false;
 
   QuicVersionVector filtered_versions = FilterSupportedVersions(all_versions);
-  ASSERT_EQ(3u, filtered_versions.size());
+  ASSERT_EQ(2u, filtered_versions.size());
   EXPECT_EQ(QUIC_VERSION_35, filtered_versions[0]);
-  EXPECT_EQ(QUIC_VERSION_36, filtered_versions[1]);
-  EXPECT_EQ(QUIC_VERSION_37, filtered_versions[2]);
+  EXPECT_EQ(QUIC_VERSION_37, filtered_versions[1]);
 }
 
 TEST_F(QuicVersionsTest, FilterSupportedVersionsNo39) {
-  QuicVersionVector all_versions = {QUIC_VERSION_35, QUIC_VERSION_36,
-                                    QUIC_VERSION_37, QUIC_VERSION_38,
-                                    QUIC_VERSION_39};
+  QuicVersionVector all_versions = {QUIC_VERSION_35, QUIC_VERSION_37,
+                                    QUIC_VERSION_38, QUIC_VERSION_39};
 
-  FLAGS_quic_reloadable_flag_quic_disable_version_36 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = true;
   FLAGS_quic_reloadable_flag_quic_enable_version_39 = false;
 
   QuicVersionVector filtered_versions = FilterSupportedVersions(all_versions);
-  ASSERT_EQ(4u, filtered_versions.size());
+  ASSERT_EQ(3u, filtered_versions.size());
   EXPECT_EQ(QUIC_VERSION_35, filtered_versions[0]);
-  EXPECT_EQ(QUIC_VERSION_36, filtered_versions[1]);
-  EXPECT_EQ(QUIC_VERSION_37, filtered_versions[2]);
-  EXPECT_EQ(QUIC_VERSION_38, filtered_versions[3]);
+  EXPECT_EQ(QUIC_VERSION_37, filtered_versions[1]);
+  EXPECT_EQ(QUIC_VERSION_38, filtered_versions[2]);
 }
 
 TEST_F(QuicVersionsTest, FilterSupportedVersionsAllVersions) {
-  QuicVersionVector all_versions = {QUIC_VERSION_35, QUIC_VERSION_36,
-                                    QUIC_VERSION_37, QUIC_VERSION_38,
-                                    QUIC_VERSION_39};
+  QuicVersionVector all_versions = {QUIC_VERSION_35, QUIC_VERSION_37,
+                                    QUIC_VERSION_38, QUIC_VERSION_39};
 
-  FLAGS_quic_reloadable_flag_quic_disable_version_36 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = true;
   FLAGS_quic_reloadable_flag_quic_enable_version_39 = true;
 
@@ -190,9 +165,8 @@ TEST_F(QuicVersionsTest, FilterSupportedVersionsAllVersions) {
 }
 
 TEST_F(QuicVersionsTest, LookUpVersionByIndex) {
-  QuicVersionVector all_versions = {QUIC_VERSION_35, QUIC_VERSION_36,
-                                    QUIC_VERSION_37, QUIC_VERSION_38,
-                                    QUIC_VERSION_39};
+  QuicVersionVector all_versions = {QUIC_VERSION_35, QUIC_VERSION_37,
+                                    QUIC_VERSION_38, QUIC_VERSION_39};
   int version_count = all_versions.size();
   for (int i = -5; i <= version_count + 1; ++i) {
     if (i >= 0 && i < version_count) {

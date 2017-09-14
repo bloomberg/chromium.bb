@@ -8,6 +8,7 @@
 #include "base/logging.h"
 
 #define QUIC_LOG_IMPL(severity) QUIC_CHROMIUM_LOG_##severity
+#define QUIC_VLOG_IMPL(verbose_level) VLOG(verbose_level)
 #define QUIC_LOG_EVERY_N_SEC_IMPL(severity, seconds) QUIC_LOG_IMPL(severity)
 #define QUIC_LOG_FIRST_N_IMPL(severity, n) QUIC_LOG_IMPL(severity)
 #define QUIC_DLOG_IMPL(severity) QUIC_CHROMIUM_DLOG_##severity

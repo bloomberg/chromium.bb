@@ -52,10 +52,6 @@ QuicVersionVector FilterSupportedVersions(QuicVersionVector versions) {
       if (FLAGS_quic_reloadable_flag_quic_enable_version_38) {
         filtered_versions.push_back(version);
       }
-    } else if (version == QUIC_VERSION_36) {
-      if (!FLAGS_quic_reloadable_flag_quic_disable_version_36) {
-        filtered_versions.push_back(version);
-      }
     } else {
       filtered_versions.push_back(version);
     }
@@ -78,8 +74,6 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
   switch (version) {
     case QUIC_VERSION_35:
       return MakeQuicTag('Q', '0', '3', '5');
-    case QUIC_VERSION_36:
-      return MakeQuicTag('Q', '0', '3', '6');
     case QUIC_VERSION_37:
       return MakeQuicTag('Q', '0', '3', '7');
     case QUIC_VERSION_38:
@@ -117,7 +111,6 @@ QuicVersion QuicTagToQuicVersion(const QuicTag version_tag) {
 string QuicVersionToString(const QuicVersion version) {
   switch (version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_35);
-    RETURN_STRING_LITERAL(QUIC_VERSION_36);
     RETURN_STRING_LITERAL(QUIC_VERSION_37);
     RETURN_STRING_LITERAL(QUIC_VERSION_38);
     RETURN_STRING_LITERAL(QUIC_VERSION_39);

@@ -20,12 +20,10 @@ TEST_F(QuicVersionManagerTest, QuicVersionManager) {
   FLAGS_quic_reloadable_flag_quic_enable_version_40 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_39 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = false;
-  FLAGS_quic_reloadable_flag_quic_disable_version_36 = false;
   QuicVersionManager manager(AllSupportedVersions());
   EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
             manager.GetSupportedVersions());
 
-  FLAGS_quic_reloadable_flag_quic_disable_version_36 = true;
   EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
             manager.GetSupportedVersions());
   ASSERT_EQ(2u, manager.GetSupportedVersions().size());

@@ -64,10 +64,5 @@ void QuicConfigPeer::SetConnectionOptionsToSend(QuicConfig* config,
   config->SetConnectionOptionsToSend(options);
 }
 
-// static
-void QuicConfigPeer::SetReceivedForceHolBlocking(QuicConfig* config) {
-  config->force_hol_blocking_.SetReceivedValue(1);
-}
-
 }  // namespace test
 }  // namespace net

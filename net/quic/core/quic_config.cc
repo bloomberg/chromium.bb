@@ -337,7 +337,6 @@ QuicConfig::QuicConfig()
       socket_receive_buffer_(kSRBF, PRESENCE_OPTIONAL),
       connection_migration_disabled_(kNCMR, PRESENCE_OPTIONAL),
       alternate_server_address_(kASAD, PRESENCE_OPTIONAL),
-      force_hol_blocking_(kFHL2, PRESENCE_OPTIONAL),
       support_max_header_list_size_(kSMHL, PRESENCE_OPTIONAL) {
   SetDefaults();
 }
@@ -560,18 +559,6 @@ const QuicSocketAddress& QuicConfig::ReceivedAlternateServerAddress() const {
   return alternate_server_address_.GetReceivedValue();
 }
 
-void QuicConfig::SetForceHolBlocking() {
-  force_hol_blocking_.SetSendValue(1);
-}
-
-bool QuicConfig::ForceHolBlocking(Perspective perspective) const {
-  if (perspective == Perspective::IS_SERVER) {
-    return force_hol_blocking_.HasReceivedValue();
-  } else {
-    return force_hol_blocking_.HasSendValue();
-  }
-}
-
 void QuicConfig::SetSupportMaxHeaderListSize() {
   support_max_header_list_size_.SetSendValue(1);
 }
@@ -620,7 +607,6 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   connection_migration_disabled_.ToHandshakeMessage(out);
   connection_options_.ToHandshakeMessage(out);
   alternate_server_address_.ToHandshakeMessage(out);
-  force_hol_blocking_.ToHandshakeMessage(out);
   support_max_header_list_size_.ToHandshakeMessage(out);
 }
 
@@ -674,10 +660,6 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
   if (error == QUIC_NO_ERROR) {
     error = alternate_server_address_.ProcessPeerHello(peer_hello, hello_type,
                                                        error_details);
-  }
-  if (error == QUIC_NO_ERROR) {
-    error = force_hol_blocking_.ProcessPeerHello(peer_hello, hello_type,
-                                                 error_details);
   }
   if (error == QUIC_NO_ERROR) {
     error = support_max_header_list_size_.ProcessPeerHello(

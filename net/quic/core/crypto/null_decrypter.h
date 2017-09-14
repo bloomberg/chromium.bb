@@ -43,7 +43,6 @@ class QUIC_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
   QuicStringPiece GetKey() const override;
   QuicStringPiece GetNoncePrefix() const override;
 
-  const char* cipher_name() const override;
   uint32_t cipher_id() const override;
 
  private:

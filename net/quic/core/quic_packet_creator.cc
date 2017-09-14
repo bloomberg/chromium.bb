@@ -281,12 +281,6 @@ void QuicPacketCreator::OnSerializedPacket() {
     return;
   }
 
-  if (!FLAGS_quic_reloadable_flag_quic_clear_packet_before_handed_over) {
-    delegate_->OnSerializedPacket(&packet_);
-    ClearPacket();
-    return;
-  }
-  QUIC_FLAG_COUNT(quic_reloadable_flag_quic_clear_packet_before_handed_over);
   SerializedPacket packet(std::move(packet_));
   ClearPacket();
   delegate_->OnSerializedPacket(&packet);

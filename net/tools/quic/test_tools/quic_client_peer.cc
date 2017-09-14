@@ -10,11 +10,6 @@ namespace net {
 namespace test {
 
 // static
-QuicCryptoClientConfig* QuicClientPeer::GetCryptoConfig(QuicClient* client) {
-  return client->crypto_config();
-}
-
-// static
 bool QuicClientPeer::CreateUDPSocketAndBind(QuicClient* client) {
   return client->network_helper()->CreateUDPSocketAndBind(
       client->server_address(), client->bind_to_address(),

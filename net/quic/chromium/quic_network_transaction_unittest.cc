@@ -4847,7 +4847,6 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
 
 TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
   FLAGS_quic_reloadable_flag_quic_use_stream_notifier2 = false;
-  session_params_.quic_force_hol_blocking = true;
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
 
@@ -4860,14 +4859,8 @@ TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
       GetRequestHeaders("POST", "https", "/"), &offset));
 
   std::unique_ptr<QuicEncryptedPacket> packet;
-  if (version_ == QUIC_VERSION_36 &&
-      !FLAGS_quic_reloadable_flag_quic_use_stream_notifier2) {
-    packet = ConstructClientForceHolDataPacket(
-        3, GetNthClientInitiatedStreamId(0), true, true, &offset, "1");
-  } else {
-    packet = ConstructClientDataPacket(3, GetNthClientInitiatedStreamId(0),
-                                       true, true, 0, "1");
-  }
+  packet = ConstructClientDataPacket(3, GetNthClientInitiatedStreamId(0), true,
+                                     true, 0, "1");
   mock_quic_data.AddWrite(std::move(packet));
 
   mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(

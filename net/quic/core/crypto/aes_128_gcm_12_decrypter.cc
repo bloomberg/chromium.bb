@@ -28,10 +28,6 @@ Aes128Gcm12Decrypter::Aes128Gcm12Decrypter()
 
 Aes128Gcm12Decrypter::~Aes128Gcm12Decrypter() {}
 
-const char* Aes128Gcm12Decrypter::cipher_name() const {
-  return TLS1_TXT_ECDHE_RSA_WITH_AES_128_GCM_SHA256;
-}
-
 uint32_t Aes128Gcm12Decrypter::cipher_id() const {
   // This OpenSSL macro has the value 0x0300C02F. The two most significant bytes
   // 0x0300 are OpenSSL specific and are NOT part of the TLS CipherSuite value

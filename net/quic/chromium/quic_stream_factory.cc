@@ -689,7 +689,6 @@ QuicStreamFactory::QuicStreamFactory(
     bool migrate_sessions_on_network_change,
     bool migrate_sessions_early,
     bool allow_server_migration,
-    bool force_hol_blocking,
     bool race_cert_verification,
     bool estimate_initial_rtt,
     const QuicTagVector& connection_options,
@@ -733,7 +732,6 @@ QuicStreamFactory::QuicStreamFactory(
       migrate_sessions_early_(migrate_sessions_early &&
                               migrate_sessions_on_network_change_),
       allow_server_migration_(allow_server_migration),
-      force_hol_blocking_(force_hol_blocking),
       race_cert_verification_(race_cert_verification),
       estimate_initial_rtt(estimate_initial_rtt),
       need_to_check_persisted_supports_quic_(true),
@@ -1539,9 +1537,6 @@ int QuicStreamFactory::CreateSession(const QuicSessionKey& key,
   config.SetInitialStreamFlowControlWindowToSend(kQuicStreamMaxRecvWindowSize);
   config.SetBytesForConnectionIdToSend(0);
   ConfigureInitialRttEstimate(server_id, &config);
-
-  if (force_hol_blocking_)
-    config.SetForceHolBlocking();
 
   // Use the factory to create a new socket performance watcher, and pass the
   // ownership to QuicChromiumClientSession.

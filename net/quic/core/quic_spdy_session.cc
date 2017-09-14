@@ -121,9 +121,6 @@ class QuicSpdySession::SpdyFramerVisitor
   void OnStreamFrameData(SpdyStreamId stream_id,
                          const char* data,
                          size_t len) override {
-    if (session_->OnStreamFrameData(stream_id, data, len)) {
-      return;
-    }
     CloseConnection("SPDY DATA frame received.",
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
@@ -156,9 +153,6 @@ class QuicSpdySession::SpdyFramerVisitor
   void OnDataFrameHeader(SpdyStreamId stream_id,
                          size_t length,
                          bool fin) override {
-    if (session_->OnDataFrameHeader(stream_id, length, fin)) {
-      return;
-    }
     CloseConnection("SPDY DATA frame received.",
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
@@ -335,7 +329,6 @@ QuicSpdySession::QuicSpdySession(QuicConnection* connection,
                                  const QuicConfig& config)
     : QuicSession(connection, visitor, config),
       max_inbound_header_list_size_(kDefaultMaxUncompressedHeaderSize),
-      force_hol_blocking_(false),
       server_push_enabled_(true),
       stream_id_(kInvalidStreamId),
       promised_stream_id_(kInvalidStreamId),
@@ -489,85 +482,6 @@ size_t QuicSpdySession::WritePushPromise(QuicStreamId original_stream_id,
   return frame.size();
 }
 
-void QuicSpdySession::WriteDataFrame(
-    QuicStreamId id,
-    QuicStringPiece data,
-    bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  // Note that certain SpdyDataIR constructors perform a deep copy of |data|
-  // which should be avoided here.
-  SpdyDataIR spdy_data(id);
-  spdy_data.SetDataShallow(data);
-  spdy_data.set_fin(fin);
-  SpdySerializedFrame frame(spdy_framer_.SerializeFrame(spdy_data));
-  QuicReferenceCountedPointer<ForceHolAckListener> force_hol_ack_listener;
-  if (ack_listener != nullptr) {
-    force_hol_ack_listener = new ForceHolAckListener(
-        std::move(ack_listener), frame.size() - data.length());
-  }
-  // Use buffered writes so that coherence of framing is preserved
-  // between streams.
-  headers_stream_->WriteOrBufferData(
-      QuicStringPiece(frame.data(), frame.size()), false,
-      std::move(force_hol_ack_listener));
-}
-
-QuicConsumedData QuicSpdySession::WritevStreamData(
-    QuicStreamId id,
-    QuicIOVector iov,
-    QuicStreamOffset offset,
-    bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  const size_t max_len =
-      kSpdyInitialFrameSizeLimit - kDataFrameMinimumSize;
-
-  QuicConsumedData result(0, false);
-  size_t total_length = iov.total_length;
-
-  if (total_length == 0 && fin) {
-    WriteDataFrame(id, QuicStringPiece(), true, std::move(ack_listener));
-    result.fin_consumed = true;
-    return result;
-  }
-
-  // Encapsulate the data into HTTP/2 DATA frames.  The outer loop
-  // handles each element of the source iov, the inner loop handles
-  // the possibility of fragmenting each of those into multiple DATA
-  // frames, as the DATA frames have a max size of 16KB.
-  for (int i = 0; i < iov.iov_count; i++) {
-    size_t src_iov_offset = 0;
-    const struct iovec* src_iov = &iov.iov[i];
-    do {
-      if (headers_stream_->queued_data_bytes() > 0) {
-        // Limit the amount of buffering to the minimum needed to
-        // preserve framing.
-        return result;
-      }
-      size_t len = std::min(
-          std::min(src_iov->iov_len - src_iov_offset, max_len), total_length);
-      char* data = static_cast<char*>(src_iov->iov_base) + src_iov_offset;
-      src_iov_offset += len;
-      offset += len;
-      // fin handling, only set it for the final HTTP/2 DATA frame.
-      bool last_iov = i == iov.iov_count - 1;
-      bool last_fragment_within_iov = src_iov_offset >= src_iov->iov_len;
-      bool frame_fin = (last_iov && last_fragment_within_iov) ? fin : false;
-      WriteDataFrame(id, QuicStringPiece(data, len), frame_fin, ack_listener);
-      result.bytes_consumed += len;
-      if (frame_fin) {
-        result.fin_consumed = true;
-      }
-      DCHECK_GE(total_length, len);
-      total_length -= len;
-      if (total_length <= 0) {
-        return result;
-      }
-    } while (src_iov_offset < src_iov->iov_len);
-  }
-
-  return result;
-}
-
 size_t QuicSpdySession::SendMaxHeaderListSize(size_t value) {
   SpdySettingsIR settings_frame;
   settings_frame.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE, value);
@@ -628,37 +542,6 @@ void QuicSpdySession::OnConfigNegotiated() {
   if (config()->HasClientSentConnectionOption(kDHDT, perspective())) {
     DisableHpackDynamicTable();
   }
-  const QuicVersion version = connection()->version();
-  if (!use_stream_notifier() &&
-      version == QUIC_VERSION_36 && config()->ForceHolBlocking(perspective())) {
-    force_hol_blocking_ = true;
-    // Since all streams are tunneled through the headers stream, it
-    // is important that headers stream never flow control blocks.
-    // Otherwise, busy-loop behaviour can ensue where data streams
-    // data try repeatedly to write data not realizing that the
-    // tunnel through the headers stream is blocked.
-    headers_stream_->flow_controller()->UpdateReceiveWindowSize(
-        kStreamReceiveWindowLimit);
-    headers_stream_->flow_controller()->UpdateSendWindowOffset(
-        kStreamReceiveWindowLimit);
-  }
-}
-
-void QuicSpdySession::OnStreamFrameData(QuicStreamId stream_id,
-                                        const char* data,
-                                        size_t len,
-                                        bool fin) {
-  QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
-  if (stream == nullptr) {
-    return;
-  }
-  const QuicStreamOffset offset =
-      stream->flow_controller()->highest_received_byte_offset();
-  const QuicStreamFrame frame(stream_id, fin, offset,
-                              QuicStringPiece(data, len));
-  QUIC_DVLOG(1) << "De-encapsulating DATA frame for stream " << stream_id
-                << " offset " << offset << " len " << len << " fin " << fin;
-  OnStreamFrame(frame);
 }
 
 bool QuicSpdySession::ShouldReleaseHeadersStreamSequencerBuffer() {
@@ -756,40 +639,6 @@ void QuicSpdySession::UpdateHeaderEncoderTableSize(uint32_t value) {
 
 void QuicSpdySession::UpdateEnableServerPush(bool value) {
   set_server_push_enabled(value);
-}
-
-bool QuicSpdySession::OnDataFrameHeader(QuicStreamId stream_id,
-                                        size_t length,
-                                        bool fin) {
-  if (!force_hol_blocking()) {
-    return false;
-  }
-  if (!IsConnected()) {
-    return true;
-  }
-  QUIC_DVLOG(1) << "DATA frame header for stream " << stream_id << " length "
-                << length << " fin " << fin;
-  fin_ = fin;
-  frame_len_ = length;
-  if (fin && length == 0) {
-    OnStreamFrameData(stream_id, "", 0);
-  }
-  return true;
-}
-
-bool QuicSpdySession::OnStreamFrameData(QuicStreamId stream_id,
-                                        const char* data,
-                                        size_t len) {
-  if (!force_hol_blocking()) {
-    return false;
-  }
-  if (!IsConnected()) {
-    return true;
-  }
-  frame_len_ -= len;
-  // Ignore fin_ while there is more data coming, if frame_len_ > 0.
-  OnStreamFrameData(stream_id, data, len, frame_len_ > 0 ? false : fin_);
-  return true;
 }
 
 void QuicSpdySession::set_max_uncompressed_header_bytes(

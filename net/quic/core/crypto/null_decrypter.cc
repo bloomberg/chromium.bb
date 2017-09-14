@@ -73,10 +73,6 @@ QuicStringPiece NullDecrypter::GetNoncePrefix() const {
   return QuicStringPiece();
 }
 
-const char* NullDecrypter::cipher_name() const {
-  return "NULL";
-}
-
 uint32_t NullDecrypter::cipher_id() const {
   return 0;
 }
@@ -95,7 +91,7 @@ uint128 NullDecrypter::ComputeHash(QuicVersion version,
                                    const QuicStringPiece data1,
                                    const QuicStringPiece data2) const {
   uint128 correct_hash;
-  if (version > QUIC_VERSION_36) {
+  if (version > QUIC_VERSION_35) {
     if (perspective_ == Perspective::IS_CLIENT) {
       // Peer is a server.
       correct_hash = QuicUtils::FNV1a_128_Hash_Three(data1, data2, "Server");

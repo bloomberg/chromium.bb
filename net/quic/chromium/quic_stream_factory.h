@@ -214,7 +214,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool migrate_sessions_on_network_change,
       bool migrate_sessions_early,
       bool allow_server_migration,
-      bool force_hol_blocking,
       bool race_cert_verification,
       bool estimate_initial_rtt,
       const QuicTagVector& connection_options,
@@ -546,9 +545,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // If set, allows migration of connection to server-specified alternate
   // server address.
   const bool allow_server_migration_;
-
-  // If set, force HOL blocking.  For measurement purposes.
-  const bool force_hol_blocking_;
 
   // Set if cert verification is to be raced with host resolution.
   bool race_cert_verification_;

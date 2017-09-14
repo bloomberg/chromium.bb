@@ -25,12 +25,6 @@ void QuicSpdySessionPeer::SetHeadersStream(QuicSpdySession* session,
 }
 
 // static
-void QuicSpdySessionPeer::SetForceHolBlocking(QuicSpdySession* session,
-                                              bool value) {
-  session->force_hol_blocking_ = value;
-}
-
-// static
 const SpdyFramer& QuicSpdySessionPeer::GetSpdyFramer(
     QuicSpdySession* session) {
   return session->spdy_framer_;

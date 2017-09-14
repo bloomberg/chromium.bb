@@ -29,7 +29,6 @@ class QUIC_EXPORT_PRIVATE Aes128Gcm12Decrypter : public AeadBaseDecrypter {
   Aes128Gcm12Decrypter();
   ~Aes128Gcm12Decrypter() override;
 
-  const char* cipher_name() const override;
   uint32_t cipher_id() const override;
 
  private:

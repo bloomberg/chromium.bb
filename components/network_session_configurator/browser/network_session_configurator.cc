@@ -167,11 +167,6 @@ net::QuicTagVector GetQuicClientConnectionOptions(
   return net::ParseQuicConnectionOptions(it->second);
 }
 
-bool ShouldForceHolBlocking(const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "force_hol_blocking"), "true");
-}
-
 bool ShouldQuicCloseSessionsOnIpChange(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -274,7 +269,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
       ShouldRetryWithoutAltSvcOnQuicErrors(quic_trial_params);
 
   if (params->enable_quic) {
-    params->quic_force_hol_blocking = ShouldForceHolBlocking(quic_trial_params);
     params->quic_connection_options =
         GetQuicConnectionOptions(quic_trial_params);
     params->quic_client_connection_options =

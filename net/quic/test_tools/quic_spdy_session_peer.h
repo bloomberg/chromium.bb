@@ -23,7 +23,6 @@ class QuicSpdySessionPeer {
   static QuicHeadersStream* GetHeadersStream(QuicSpdySession* session);
   static void SetHeadersStream(QuicSpdySession* session,
                                QuicHeadersStream* headers_stream);
-  static void SetForceHolBlocking(QuicSpdySession* session, bool value);
   static const SpdyFramer& GetSpdyFramer(QuicSpdySession* session);
   static void SetHpackEncoderDebugVisitor(
       QuicSpdySession* session,

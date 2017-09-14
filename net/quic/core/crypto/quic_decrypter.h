@@ -75,8 +75,6 @@ class QUIC_EXPORT_PRIVATE QuicDecrypter {
                              size_t* output_length,
                              size_t max_output_length) = 0;
 
-  // The name of the cipher.
-  virtual const char* cipher_name() const = 0;
   // The ID of the cipher. Return 0x03000000 ORed with the 'cryptographic suite
   // selector'.
   virtual uint32_t cipher_id() const = 0;
