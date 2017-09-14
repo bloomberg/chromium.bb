@@ -8,9 +8,11 @@
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 
+#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
@@ -51,11 +53,6 @@ namespace net {
 
 namespace {
 
-// True if OS supports TCP FastOpen.
-bool g_tcp_fastopen_supported = false;
-// True if TCP FastOpen is user-enabled for all connections.
-// TODO(jri): Change global variable to param in HttpNetworkSession::Params.
-bool g_tcp_fastopen_user_enabled = false;
 // True if TCP FastOpen connect-with-write has failed at least once.
 bool g_tcp_fastopen_has_failed = false;
 
@@ -95,32 +92,60 @@ bool SetTCPKeepAlive(int fd, bool enable, int delay) {
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-// Checks if the kernel supports TCP FastOpen.
-bool SystemSupportsTCPFastOpen() {
-  const base::FilePath::CharType kTCPFastOpenProcFilePath[] =
-      "/proc/sys/net/ipv4/tcp_fastopen";
-  std::string system_supports_tcp_fastopen;
-  if (!base::ReadFileToString(base::FilePath(kTCPFastOpenProcFilePath),
-                              &system_supports_tcp_fastopen)) {
-    return false;
+// Probes if TCP FastOpen is supported, on another thread.
+class FastOpenProbe {
+ public:
+  // Returns true if TCP FastOpen suport was detected. Returns false if it was
+  // not detected, or the probe has not yet completed.
+  bool IsTCPFastOpenSupported() const {
+    return base::subtle::NoBarrier_Load(&tcp_fastopen_supported_) != 0;
   }
-  // The read value from /proc will be set in its least significant bit if
-  // TCP FastOpen is enabled.
-  int read_int = 0;
-  base::StringToInt(
-      HttpUtil::TrimLWS(base::StringPiece(system_supports_tcp_fastopen)),
-      &read_int);
-  if ((read_int & 0x1) == 1)
-    return true;
-  return false;
-}
 
-void RegisterTCPFastOpenIntentAndSupport(bool user_enabled,
-                                         bool system_supported) {
-  g_tcp_fastopen_supported = system_supported;
-  g_tcp_fastopen_user_enabled = user_enabled;
-}
-#endif
+ private:
+  friend struct base::LazyInstanceTraitsBase<FastOpenProbe>;
+
+  FastOpenProbe() {
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::Bind(&FastOpenProbe::DetectTCPFastOpenSupport,
+                   base::Unretained(this)));
+  }
+
+  ~FastOpenProbe() {}
+
+  // Checks if the kernel supports TCP FastOpen. Called only once, on startup.
+  void DetectTCPFastOpenSupport() {
+    // Since this method should only be called once, and is the only thing that
+    // modifies |tcp_fastopen_supported_|, no need for this read to be atomic.
+    DCHECK_EQ(tcp_fastopen_supported_, 0);
+
+    const base::FilePath::CharType kTCPFastOpenProcFilePath[] =
+        "/proc/sys/net/ipv4/tcp_fastopen";
+    std::string system_supports_tcp_fastopen;
+    if (!base::ReadFileToString(base::FilePath(kTCPFastOpenProcFilePath),
+                                &system_supports_tcp_fastopen)) {
+      return;
+    }
+    // The read value from /proc will be set in its least significant bit if
+    // TCP FastOpen is enabled.
+    int read_int = 0;
+    base::StringToInt(
+        HttpUtil::TrimLWS(base::StringPiece(system_supports_tcp_fastopen)),
+        &read_int);
+    if ((read_int & 0x1) != 1)
+      return;
+    base::subtle::NoBarrier_Store(&tcp_fastopen_supported_, 1);
+  }
+
+  base::subtle::Atomic32 tcp_fastopen_supported_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(FastOpenProbe);
+};
+
+base::LazyInstance<FastOpenProbe>::Leaky g_fast_open_probe =
+    LAZY_INSTANCE_INITIALIZER;
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(HAVE_TCP_INFO)
 bool GetTcpInfo(SocketDescriptor fd, tcp_info* info) {
@@ -135,22 +160,10 @@ bool GetTcpInfo(SocketDescriptor fd, tcp_info* info) {
 //-----------------------------------------------------------------------------
 
 bool IsTCPFastOpenSupported() {
-  return g_tcp_fastopen_supported;
-}
-
-bool IsTCPFastOpenUserEnabled() {
-  return g_tcp_fastopen_user_enabled;
-}
-
-// This is asynchronous because it needs to do file IO, and it isn't allowed to
-// do that on the IO thread.
-void CheckSupportAndMaybeEnableTCPFastOpen(bool user_enabled) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(SystemSupportsTCPFastOpen),
-      base::Bind(RegisterTCPFastOpenIntentAndSupport, user_enabled));
+  return g_fast_open_probe.Get().IsTCPFastOpenSupported();
+#else
+  return false;
 #endif
 }
 

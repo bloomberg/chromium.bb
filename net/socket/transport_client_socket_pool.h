@@ -36,14 +36,9 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   // TCP FastOpen should not be used if the first write to the socket may
   // be non-idempotent, as the underlying socket could retransmit the data
   // on failure of the first transmission.
-  // NOTE: Currently, COMBINE_CONNECT_AND_WRITE_DESIRED is used if the data in
-  // the write is known to be idempotent, and COMBINE_CONNECT_AND_WRITE_DEFAULT
-  // is used as a default for other cases (including non-idempotent writes).
   enum CombineConnectAndWritePolicy {
-    COMBINE_CONNECT_AND_WRITE_DEFAULT,    // Default policy, implemented in
-                                          // TransportSocketParams constructor.
-    COMBINE_CONNECT_AND_WRITE_DESIRED,    // Combine if supported by socket.
-    COMBINE_CONNECT_AND_WRITE_PROHIBITED  // Do not combine.
+    COMBINE_CONNECT_AND_WRITE_DEFAULT,  // Default policy, don't combine.
+    COMBINE_CONNECT_AND_WRITE_DESIRED,  // Combine if supported by socket.
   };
 
   // |host_resolution_callback| will be invoked after the the hostname is

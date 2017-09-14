@@ -59,7 +59,8 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(params_.ignore_certificate_errors);
   EXPECT_EQ(0u, params_.testing_fixed_http_port);
   EXPECT_EQ(0u, params_.testing_fixed_https_port);
-  EXPECT_FALSE(params_.enable_tcp_fast_open_for_ssl);
+  EXPECT_EQ(params_.tcp_fast_open_mode,
+            net::HttpNetworkSession::Params::TcpFastOpenMode::DISABLED);
   EXPECT_FALSE(params_.enable_user_alternate_protocol_ports);
 
   EXPECT_TRUE(params_.enable_http2);
@@ -380,12 +381,28 @@ TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {
   EXPECT_EQ(expected_settings, params_.http2_settings);
 }
 
+TEST_F(NetworkSessionConfiguratorTest, TCPFastOpenEnabled) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableTcpFastOpen);
+  ParseCommandLineAndFieldTrials(command_line);
+  EXPECT_EQ(params_.tcp_fast_open_mode,
+            net::HttpNetworkSession::Params::TcpFastOpenMode::ENABLED_FOR_ALL);
+}
+
 TEST_F(NetworkSessionConfiguratorTest, TCPFastOpenHttpsEnabled) {
   base::FieldTrialList::CreateFieldTrial("TCPFastOpen", "HttpsEnabled");
 
   ParseFieldTrials();
+  EXPECT_EQ(
+      params_.tcp_fast_open_mode,
+      net::HttpNetworkSession::Params::TcpFastOpenMode::ENABLED_FOR_SSL_ONLY);
 
-  EXPECT_TRUE(params_.enable_tcp_fast_open_for_ssl);
+  // Make sure that the command line flag overrides the field trial.
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableTcpFastOpen);
+  ParseCommandLineAndFieldTrials(command_line);
+  EXPECT_EQ(params_.tcp_fast_open_mode,
+            net::HttpNetworkSession::Params::TcpFastOpenMode::ENABLED_FOR_ALL);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicForceHolBlocking) {
