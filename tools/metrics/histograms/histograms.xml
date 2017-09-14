@@ -92318,6 +92318,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebsiteSettings.Menu.PermissionChanged.SessionOnly"
+    enum="ContentType">
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Count of how often a specific content type (permission) is changed to the
+    session only value using the content settings menu. This option only exists
+    for cookies.
+  </summary>
+</histogram>
+
 <histogram name="WebsiteSettings.OriginInfo.PermissionChanged"
     enum="ContentType">
   <owner>sashab@chromium.org</owner>
