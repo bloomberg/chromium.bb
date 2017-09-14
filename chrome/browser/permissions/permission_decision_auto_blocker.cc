@@ -26,25 +26,29 @@
 
 namespace {
 
+constexpr int kDefaultDismissalsBeforeBlock = 3;
+constexpr int kDefaultIgnoresBeforeBlock = 4;
+constexpr int kDefaultEmbargoDays = 7;
+
 // The number of times that users may explicitly dismiss a permission prompt
 // from an origin before it is automatically blocked.
-int g_dismissals_before_block = 3;
+int g_dismissals_before_block = kDefaultDismissalsBeforeBlock;
 
 // The number of times that users may ignore a permission prompt from an origin
 // before it is automatically blocked.
-int g_ignores_before_block = 4;
+int g_ignores_before_block = kDefaultIgnoresBeforeBlock;
 
 // The number of days that an origin will stay under embargo for a requested
 // permission due to repeated dismissals.
-int g_dismissal_embargo_days = 7;
+int g_dismissal_embargo_days = kDefaultEmbargoDays;
 
 // The number of days that an origin will stay under embargo for a requested
 // permission due to repeated ignores.
-int g_ignore_embargo_days = 7;
+int g_ignore_embargo_days = kDefaultEmbargoDays;
 
 // The number of days that an origin will stay under embargo for a requested
 // permission due to blacklisting.
-int g_blacklist_embargo_days = 7;
+int g_blacklist_embargo_days = kDefaultEmbargoDays;
 
 // Maximum time in milliseconds to wait for safe browsing service to check a
 // url for blacklisting. After this amount of time, the check will be aborted
@@ -129,6 +133,16 @@ bool IsUnderEmbargo(base::DictionaryValue* permission_dict,
   }
 
   return false;
+}
+
+void UpdateValueFromVariation(const std::string& variation_value,
+                              int* value_store,
+                              const int default_value) {
+  int tmp_value = -1;
+  if (base::StringToInt(variation_value, &tmp_value) && tmp_value > 0)
+    *value_store = tmp_value;
+  else
+    *value_store = default_value;
 }
 
 }  // namespace
@@ -234,12 +248,6 @@ PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
 
 // static
 void PermissionDecisionAutoBlocker::UpdateFromVariations() {
-  int dismissals_before_block = -1;
-  int ignores_before_block = -1;
-  int dismissal_embargo_days = -1;
-  int ignore_embargo_days = -1;
-  int blacklist_embargo_days = -1;
-
   std::string dismissals_before_block_value =
       variations::GetVariationParamValueByFeature(
           features::kBlockPromptsIfDismissedOften, kPromptDismissCountKey);
@@ -257,30 +265,18 @@ void PermissionDecisionAutoBlocker::UpdateFromVariations() {
       variations::GetVariationParamValueByFeature(
           features::kPermissionsBlacklist, kPermissionBlacklistEmbargoKey);
 
-  // If converting the value fails, stick with the current value.
-  if (base::StringToInt(dismissals_before_block_value,
-                        &dismissals_before_block) &&
-      dismissals_before_block > 0) {
-    g_dismissals_before_block = dismissals_before_block;
-  }
-  if (base::StringToInt(ignores_before_block_value, &ignores_before_block) &&
-      ignores_before_block > 0) {
-    g_ignores_before_block = ignores_before_block;
-  }
-  if (base::StringToInt(dismissal_embargo_days_value,
-                        &dismissal_embargo_days) &&
-      dismissal_embargo_days > 0) {
-    g_dismissal_embargo_days = dismissal_embargo_days;
-  }
-  if (base::StringToInt(ignore_embargo_days_value, &ignore_embargo_days) &&
-      ignore_embargo_days > 0) {
-    g_ignore_embargo_days = ignore_embargo_days;
-  }
-  if (base::StringToInt(blacklist_embargo_days_value,
-                        &blacklist_embargo_days) &&
-      blacklist_embargo_days > 0) {
-    g_blacklist_embargo_days = blacklist_embargo_days;
-  }
+  // If converting the value fails, revert to the original value.
+  UpdateValueFromVariation(dismissals_before_block_value,
+                           &g_dismissals_before_block,
+                           kDefaultDismissalsBeforeBlock);
+  UpdateValueFromVariation(ignores_before_block_value, &g_ignores_before_block,
+                           kDefaultIgnoresBeforeBlock);
+  UpdateValueFromVariation(dismissal_embargo_days_value,
+                           &g_dismissal_embargo_days, kDefaultEmbargoDays);
+  UpdateValueFromVariation(ignore_embargo_days_value, &g_ignore_embargo_days,
+                           kDefaultEmbargoDays);
+  UpdateValueFromVariation(blacklist_embargo_days_value,
+                           &g_blacklist_embargo_days, kDefaultEmbargoDays);
 }
 
 void PermissionDecisionAutoBlocker::CheckSafeBrowsingBlacklist(
