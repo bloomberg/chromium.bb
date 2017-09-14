@@ -7290,11 +7290,15 @@ interface VisualViewport : EventTarget
     getter height
     getter offsetLeft
     getter offsetTop
+    getter onresize
+    getter onscroll
     getter pageLeft
     getter pageTop
     getter scale
     getter width
     method constructor
+    setter onresize
+    setter onscroll
 interface WaveShaperNode : AudioNode
     attribute @@toStringTag
     getter curve
