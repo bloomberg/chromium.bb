@@ -323,9 +323,12 @@ AppsGridView::AppsGridView(ContentsView* contents_view)
     all_apps_indicator_ = new IndicatorChipView(
         l10n_util::GetStringUTF16(IDS_ALL_APPS_INDICATOR));
     AddChildView(all_apps_indicator_);
-
-    fadeout_layer_delegate_.reset(new FadeoutLayerDelegate);
-    layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
+    if (features::IsAppListMaskLayerEnabled()) {
+      // TODO(newcomer): Improve implementation of the mask layer so we can
+      // enable it on all devices crbug.com/765292.
+      fadeout_layer_delegate_.reset(new FadeoutLayerDelegate);
+      layer()->SetMaskLayer(fadeout_layer_delegate_->layer());
+    }
 
     expand_arrow_view_ =
         new ExpandArrowView(contents_view_, contents_view_->app_list_view());
@@ -844,7 +847,8 @@ void AppsGridView::Layout() {
     return;
 
   if (is_fullscreen_app_list_enabled_) {
-    fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
+    if (fadeout_layer_delegate_)
+      fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
     rect.Inset(0, kSearchBoxFullscreenBottomPadding, 0, 0);
   }
 

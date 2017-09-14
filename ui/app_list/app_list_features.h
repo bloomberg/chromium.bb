@@ -34,12 +34,17 @@ APP_LIST_EXPORT extern const base::Feature kEnableFullscreenAppList;
 // Enables the Play Store app search.
 APP_LIST_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
 
+// Enable the AppsGridView mask layer. In this mode, slower devices may have
+// choppier app list animations. crbug.com/765292.
+APP_LIST_EXPORT extern const base::Feature kEnableAppListMaskLayer;
+
 bool APP_LIST_EXPORT IsAnswerCardEnabled();
 bool APP_LIST_EXPORT IsAnswerCardDarkRunEnabled();
 bool APP_LIST_EXPORT IsBackgroundBlurEnabled();
 bool APP_LIST_EXPORT IsFullscreenAppListEnabled();
 bool APP_LIST_EXPORT IsTouchFriendlySearchResultsPageEnabled();
 bool APP_LIST_EXPORT IsPlayStoreAppSearchEnabled();
+bool APP_LIST_EXPORT IsAppListMaskLayerEnabled();
 std::string APP_LIST_EXPORT AnswerServerUrl();
 std::string APP_LIST_EXPORT AnswerServerQuerySuffix();
 
