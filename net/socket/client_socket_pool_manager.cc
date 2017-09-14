@@ -121,15 +121,34 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
       ClientSocketPool::RespectLimits::ENABLED;
   if ((request_load_flags & LOAD_IGNORE_LIMITS) != 0)
     respect_limits = ClientSocketPool::RespectLimits::DISABLED;
+
+  // CombineConnectAndWritePolicy for SSL and non-SSL connections.
+  TransportSocketParams::CombineConnectAndWritePolicy
+      non_ssl_combine_connect_and_write_policy =
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT;
+  TransportSocketParams::CombineConnectAndWritePolicy
+      ssl_combine_connect_and_write_policy =
+          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT;
+
+  if (session->params().tcp_fast_open_mode ==
+      HttpNetworkSession::Params::TcpFastOpenMode::ENABLED_FOR_SSL_ONLY) {
+    ssl_combine_connect_and_write_policy =
+        TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DESIRED;
+  } else if (session->params().tcp_fast_open_mode ==
+             HttpNetworkSession::Params::TcpFastOpenMode::ENABLED_FOR_ALL) {
+    non_ssl_combine_connect_and_write_policy =
+        TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DESIRED;
+    ssl_combine_connect_and_write_policy =
+        TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DESIRED;
+  }
+
   if (!proxy_info.is_direct()) {
     ProxyServer proxy_server = proxy_info.proxy_server();
     proxy_host_port.reset(new HostPortPair(proxy_server.host_port_pair()));
     scoped_refptr<TransportSocketParams> proxy_tcp_params(
-        new TransportSocketParams(
-            *proxy_host_port,
-            disable_resolver_cache,
-            resolution_callback,
-            TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+        new TransportSocketParams(*proxy_host_port, disable_resolver_cache,
+                                  resolution_callback,
+                                  non_ssl_combine_connect_and_write_policy));
 
     if (proxy_info.is_http() || proxy_info.is_https()) {
       std::string user_agent;
@@ -137,17 +156,9 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
                                       &user_agent);
       scoped_refptr<SSLSocketParams> ssl_params;
       if (proxy_info.is_https()) {
-        // Combine connect and write for SSL sockets in TCP FastOpen
-        // field trial.
-        TransportSocketParams::CombineConnectAndWritePolicy
-            combine_connect_and_write =
-                session->params().enable_tcp_fast_open_for_ssl ?
-                    TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DESIRED :
-                    TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT;
-        proxy_tcp_params = new TransportSocketParams(*proxy_host_port,
-                                                     disable_resolver_cache,
-                                                     resolution_callback,
-                                                     combine_connect_and_write);
+        proxy_tcp_params = new TransportSocketParams(
+            *proxy_host_port, disable_resolver_cache, resolution_callback,
+            ssl_combine_connect_and_write_policy);
         // Set ssl_params, and unset proxy_tcp_params
         ssl_params =
             new SSLSocketParams(proxy_tcp_params, NULL, NULL,
@@ -185,17 +196,9 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
   if (using_ssl) {
     scoped_refptr<TransportSocketParams> ssl_tcp_params;
     if (proxy_info.is_direct()) {
-      // Setup TCP params if non-proxied SSL connection.
-      // Combine connect and write for SSL sockets in TCP FastOpen field trial.
-      TransportSocketParams::CombineConnectAndWritePolicy
-          combine_connect_and_write =
-              session->params().enable_tcp_fast_open_for_ssl ?
-                  TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DESIRED :
-                  TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT;
-      ssl_tcp_params = new TransportSocketParams(origin_host_port,
-                                                 disable_resolver_cache,
-                                                 resolution_callback,
-                                                 combine_connect_and_write);
+      ssl_tcp_params = new TransportSocketParams(
+          origin_host_port, disable_resolver_cache, resolution_callback,
+          ssl_combine_connect_and_write_policy);
     }
     scoped_refptr<SSLSocketParams> ssl_params = new SSLSocketParams(
         ssl_tcp_params, socks_params, http_proxy_params, origin_host_port,
@@ -248,12 +251,9 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
   }
 
   DCHECK(proxy_info.is_direct());
-  scoped_refptr<TransportSocketParams> tcp_params =
-      new TransportSocketParams(
-          origin_host_port,
-          disable_resolver_cache,
-          resolution_callback,
-          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
+  scoped_refptr<TransportSocketParams> tcp_params = new TransportSocketParams(
+      origin_host_port, disable_resolver_cache, resolution_callback,
+      non_ssl_combine_connect_and_write_policy);
   TransportClientSocketPool* pool =
       session->GetTransportSocketPool(socket_pool_type);
   if (num_preconnect_streams) {

@@ -95,10 +95,7 @@ bool SetNonBlockingAndGetError(int fd, int* os_error) {
 //-----------------------------------------------------------------------------
 
 // Nothing to do for Windows since it doesn't support TCP FastOpen.
-// TODO(jri): Remove these along with the corresponding global variables.
 bool IsTCPFastOpenSupported() { return false; }
-bool IsTCPFastOpenUserEnabled() { return false; }
-void CheckSupportAndMaybeEnableTCPFastOpen(bool user_enabled) {}
 
 // This class encapsulates all the state that has to be preserved as long as
 // there is a network IO operation in progress. If the owner TCPSocketWin is

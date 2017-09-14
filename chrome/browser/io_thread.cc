@@ -93,7 +93,6 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/tcp_client_socket.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -529,15 +528,6 @@ void IOThread::Init() {
   globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());
   globals_->enable_brotli =
       base::FeatureList::IsEnabled(features::kBrotliEncoding);
-
-  // Check for OS support of TCP FastOpen, and turn it on for all connections if
-  // indicated by user.
-  // TODO(rch): Make the client socket factory a per-network session instance,
-  // constructed from a NetworkSession::Params, to allow us to move this option
-  // to IOThread::Globals & HttpNetworkSession::Params.
-  bool always_enable_tfo_if_supported =
-      command_line.HasSwitch(switches::kEnableTcpFastOpen);
-  net::CheckSupportAndMaybeEnableTCPFastOpen(always_enable_tfo_if_supported);
 
   if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
     net::URLFetcher::SetIgnoreCertificateRequests(true);

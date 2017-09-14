@@ -60,13 +60,6 @@ TransportSocketParams::TransportSocketParams(
       combine_connect_and_write_(combine_connect_and_write_if_supported) {
   if (disable_resolver_cache)
     destination_.set_allow_cached_response(false);
-  // combine_connect_and_write currently translates to TCP FastOpen.
-  // Enable TCP FastOpen if user wants it.
-  if (combine_connect_and_write_ == COMBINE_CONNECT_AND_WRITE_DEFAULT) {
-    IsTCPFastOpenUserEnabled() ? combine_connect_and_write_ =
-        COMBINE_CONNECT_AND_WRITE_DESIRED :
-        COMBINE_CONNECT_AND_WRITE_PROHIBITED;
-  }
 }
 
 TransportSocketParams::~TransportSocketParams() {}

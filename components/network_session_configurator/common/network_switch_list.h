@@ -18,6 +18,10 @@ NETWORK_SWITCH(kEnableUserAlternateProtocolPorts,
 // Enables the QUIC protocol.  This is a temporary testing flag.
 NETWORK_SWITCH(kEnableQuic, "enable-quic")
 
+// Enable use of experimental TCP sockets API for sending data in the
+// SYN packet.
+NETWORK_SWITCH(kEnableTcpFastOpen, "enable-tcp-fastopen")
+
 // Ignores certificate-related errors.
 NETWORK_SWITCH(kIgnoreCertificateErrors, "ignore-certificate-errors")
 

@@ -32,14 +32,6 @@ typedef TCPSocketPosix TCPSocket;
 // Check if TCP FastOpen is supported by the OS.
 bool IsTCPFastOpenSupported();
 
-// Check if TCP FastOpen is enabled by the user.
-bool IsTCPFastOpenUserEnabled();
-
-// Checks if TCP FastOpen is supported by the kernel. Also enables TFO for all
-// connections if indicated by user.
-// Not thread safe.  Must be called during initialization/startup only.
-NET_EXPORT void CheckSupportAndMaybeEnableTCPFastOpen(bool user_enabled);
-
 }  // namespace net
 
 #endif  // NET_SOCKET_TCP_SOCKET_H_
