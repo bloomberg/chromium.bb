@@ -1320,10 +1320,6 @@ void Layer::SetScrollbarsHiddenFromImplSide(bool hidden) {
     inputs_.client->didChangeScrollbarsHidden(hidden);
 }
 
-gfx::ScrollOffset Layer::ScrollOffsetForAnimation() const {
-  return CurrentScrollOffset();
-}
-
 // On<Property>Animated is called due to an ongoing accelerated animation.
 // Since this animation is also being run on the compositor thread, there
 // is no need to request a commit to push this value over, so the value is

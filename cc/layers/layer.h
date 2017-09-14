@@ -487,7 +487,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   friend class LayerTreeHost;
 
   // Interactions with attached animations.
-  gfx::ScrollOffset ScrollOffsetForAnimation() const;
   void OnFilterAnimated(const FilterOperations& filters);
   void OnOpacityAnimated(float opacity);
   void OnTransformAnimated(const gfx::Transform& transform);
