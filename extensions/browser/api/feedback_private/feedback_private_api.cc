@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/tracing_manager.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/feedback_private/feedback_private_delegate.h"
 #include "extensions/browser/api/feedback_private/feedback_service.h"
@@ -134,12 +135,22 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
         feedback_private::OnFeedbackRequested::kEventName, std::move(args),
         browser_context_);
 
-    // TODO(weidongg/754329): Using DispatchEventWithLazyListener() is a
-    // temporary fix to the bug. Investigate a better solution that apply to all
-    // scenarios.
-    EventRouter::Get(browser_context_)
-        ->DispatchEventWithLazyListener(extension_misc::kFeedbackExtensionId,
-                                        std::move(event));
+    if (content::IsBrowserSideNavigationEnabled()) {
+      // LoginFeedbackTest.Basic times out when this flag is enabled if we are
+      // using DispatchEventWithLazyListener(). It is a temporary solution to
+      // fix the test failure. Please track crbug.com/765289 for further
+      // investigation.
+      EventRouter::Get(browser_context_)
+          ->DispatchEventToExtension(extension_misc::kFeedbackExtensionId,
+                                     std::move(event));
+    } else {
+      // TODO(weidongg/754329): Using DispatchEventWithLazyListener() is a
+      // temporary fix to the bug. Investigate a better solution that applies to
+      // all scenarios.
+      EventRouter::Get(browser_context_)
+          ->DispatchEventWithLazyListener(extension_misc::kFeedbackExtensionId,
+                                          std::move(event));
+    }
   }
 }
 
