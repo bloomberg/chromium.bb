@@ -373,7 +373,7 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void IsKeyCaptureEnabled(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // Logs information from the iframes/titles on the NTP.
+  // Logs information from the NTP.
   static void LogEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Logs an impression on one of the Most Visited tile on the NTP.
@@ -832,6 +832,11 @@ void SearchBoxExtensionWrapper::LogEvent(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   content::RenderFrame* render_frame = GetRenderFrameWithCheckedOrigin(
       GURL(chrome::kChromeSearchMostVisitedUrl));
+
+  if (!render_frame) {
+    render_frame =
+        GetRenderFrameWithCheckedOrigin(GURL(chrome::kChromeSearchLocalNtpUrl));
+  }
   if (!render_frame)
     return;
 

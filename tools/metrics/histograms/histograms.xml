@@ -49055,6 +49055,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.VoiceActions" enum="NewTabPageVoiceAction">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Actions taken by users of Voice Search on the local New Tab Page on Desktop.
+    These actions may navigate away from the NTP (e.g. submitting a speech
+    query), but can also happen without navigating away from the NTP (e.g.
+    initiating or retrying Voice Search).
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.VoiceErrors" enum="NewTabPageVoiceError">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Errors that occur during Voice Search use on the local New Tab Page on
+    Desktop. These may be user-induced (e.g. the user's utterance could not be
+    recognized - no match), or resulting from external circumstances (e.g.
+    offline, lack of microphone permission).
+  </summary>
+</histogram>
+
 <histogram name="Notifications.Actions" enum="NotificationActionType">
   <owner>dewittj@chromium.org</owner>
   <summary>

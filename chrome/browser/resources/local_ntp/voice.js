@@ -36,6 +36,43 @@ function getChromeUILanguage() {
 
 
 /**
+ * The different types of user action and error events that are logged
+ * from Voice Search. This enum is used to transfer information to
+ * the renderer and is not used as a UMA enum histogram's logged value.
+ * Note: Keep in sync with common/ntp_logging_events.h
+ * @enum {!number}
+ * @const
+ */
+const LOG_TYPE = {
+  // Activated by clicking on the fakebox icon.
+  ACTION_ACTIVATE_FAKEBOX: 13,
+  // Activated by keyboard shortcut.
+  ACTION_ACTIVATE_KEYBOARD: 14,
+  // Close the voice overlay by a user's explicit action.
+  ACTION_CLOSE_OVERLAY: 15,
+  // Submitted voice query.
+  ACTION_QUERY_SUBMITTED: 16,
+  // Clicked on support link in error message.
+  ACTION_SUPPORT_LINK_CLICKED: 17,
+  // Retried by clicking Try Again link.
+  ACTION_TRY_AGAIN_LINK: 18,
+  // Retried by clicking microphone button.
+  ACTION_TRY_AGAIN_MIC_BUTTON: 10,
+  // Errors received from the Speech Recognition API.
+  ERROR_NO_SPEECH: 20,
+  ERROR_ABORTED: 21,
+  ERROR_AUDIO_CAPTURE: 22,
+  ERROR_NETWORK: 23,
+  ERROR_NOT_ALLOWED: 24,
+  ERROR_SERVICE_NOT_ALLOWED: 25,
+  ERROR_BAD_GRAMMAR: 26,
+  ERROR_LANGUAGE_NOT_SUPPORTED: 27,
+  ERROR_NO_MATCH: 28,
+  ERROR_OTHER: 29
+};
+
+
+/**
  * Enum for keyboard event codes.
  * @enum {!string}
  * @const
@@ -260,6 +297,15 @@ speech.recognition_;
 
 
 /**
+ * Log an event from Voice Search.
+ * @param {!number} eventType Event from |LOG_TYPE|.
+ */
+speech.logEvent = function(eventType) {
+  window.chrome.embeddedSearch.newTabPage.logEvent(eventType);
+};
+
+
+/**
  * Initialize the speech module as part of the local NTP. Adds event handlers
  * and shows the fakebox microphone icon.
  * @param {!string} googleBaseUrl Base URL for sending queries to Search.
@@ -280,6 +326,7 @@ speech.init = function(
   fakeboxMicrophoneElem.title = translatedStrings.fakeboxMicrophoneTooltip;
   fakeboxMicrophoneElem.onmouseup = function(event) {
     // If propagated, closes the overlay (click on the background).
+    speech.logEvent(LOG_TYPE.ACTION_ACTIVATE_FAKEBOX);
     event.stopPropagation();
     speech.start();
   };
@@ -490,6 +537,38 @@ speech.handleRecognitionResult_ = function(responseEvent) {
 
 
 /**
+ * Convert a |RecognitionError| to a |LOG_TYPE| error constant,
+ * for UMA logging.
+ * @param {RecognitionError} error The received error.
+ * @private
+ */
+speech.errorToLogType_ = function(error) {
+  switch (error) {
+    case RecognitionError.ABORTED:
+      return LOG_TYPE.ERROR_ABORTED;
+    case RecognitionError.AUDIO_CAPTURE:
+      return LOG_TYPE.ERROR_AUDIO_CAPTURE;
+    case RecognitionError.BAD_GRAMMAR:
+      return LOG_TYPE.ERROR_BAD_GRAMMAR;
+    case RecognitionError.LANGUAGE_NOT_SUPPORTED:
+      return LOG_TYPE.ERROR_LANGUAGE_NOT_SUPPORTED;
+    case RecognitionError.NETWORK:
+      return LOG_TYPE.ERROR_NETWORK;
+    case RecognitionError.NO_MATCH:
+      return LOG_TYPE.ERROR_NO_MATCH;
+    case RecognitionError.NO_SPEECH:
+      return LOG_TYPE.ERROR_NO_SPEECH;
+    case RecognitionError.NOT_ALLOWED:
+      return LOG_TYPE.ERROR_NOT_ALLOWED;
+    case RecognitionError.SERVICE_NOT_ALLOWED:
+      return LOG_TYPE.ERROR_SERVICE_NOT_ALLOWED;
+    default:
+      return LOG_TYPE.ERROR_OTHER;
+  }
+};
+
+
+/**
  * Handles state transition for the controller when an error occurs
  * during speech recognition.
  * @param {RecognitionError} error The appropriate error state from
@@ -497,6 +576,7 @@ speech.handleRecognitionResult_ = function(responseEvent) {
  * @private
  */
 speech.onErrorReceived_ = function(error) {
+  speech.logEvent(speech.errorToLogType_(error));
   speech.resetIdleTimer_(speech.IDLE_TIMEOUT_MS_);
   speech.errorTimeoutMs_ = speech.getRecognitionErrorTimeout_(error);
   if (error != RecognitionError.ABORTED) {
@@ -586,12 +666,14 @@ speech.onKeyDown = function(event) {
         event.ctrlKey || (speech.isUserAgentMac_() && event.metaKey);
     if (speech.currentState_ == speech.State_.READY &&
         event.code == KEYCODE.PERIOD && event.shiftKey && ctrlKeyPressed) {
+      speech.logEvent(LOG_TYPE.ACTION_ACTIVATE_KEYBOARD);
       speech.start();
     }
   } else {
     // Ensures that keyboard events are not propagated during voice input.
     event.stopPropagation();
     if (event.code == KEYCODE.ESC) {
+      speech.logEvent(LOG_TYPE.ACTION_CLOSE_OVERLAY);
       speech.stop();
     } else if (
         (event.code == KEYCODE.ENTER || event.code == KEYCODE.NUMPAD_ENTER) &&
@@ -648,6 +730,7 @@ speech.onVisibilityChange_ = function() {
  */
 speech.onOmniboxFocused = function() {
   if (!speech.isUiDefinitelyHidden_()) {
+    speech.logEvent(LOG_TYPE.ACTION_CLOSE_OVERLAY);
     speech.stop();
   }
 };
@@ -684,6 +767,7 @@ speech.submitFinalResult_ = function() {
   const queryUrl = new URL('/search', speech.googleBaseUrl_);
   queryUrl.search = searchParams;
 
+  speech.logEvent(LOG_TYPE.ACTION_QUERY_SUBMITTED);
   speech.stop();
   speech.navigateToUrl_(queryUrl);
 };
@@ -829,6 +913,7 @@ speech.onClick_ = function(shouldSubmit, shouldRetry, navigatingAway) {
     // If the user clicks on a "Learn more" or "Details" support page link
     // from an error message, do nothing, and let Chrome navigate to that page.
   } else {
+    speech.logEvent(LOG_TYPE.ACTION_CLOSE_OVERLAY);
     speech.stop();
   }
 };
@@ -1541,7 +1626,7 @@ view.stopMicrophoneAnimations_ = function() {
 
 /**
  * Makes sure that a click anywhere closes the UI when it is active.
- * @param {Event} event The click event.
+ * @param {!MouseEvent} event The click event.
  * @private
  */
 view.onWindowClick_ = function(event) {
@@ -1556,6 +1641,18 @@ view.onWindowClick_ = function(event) {
   const shouldRetry =
       retryLinkClicked || (micIconClicked && view.isNoMatchShown_);
   const navigatingAway = supportLinkClicked;
+
+  if (shouldRetry) {
+    if (micIconClicked) {
+      speech.logEvent(LOG_TYPE.ACTION_TRY_AGAIN_MIC_BUTTON);
+    } else if (retryLinkClicked) {
+      speech.logEvent(LOG_TYPE.ACTION_TRY_AGAIN_LINK);
+    }
+  }
+  if (supportLinkClicked) {
+    speech.logEvent(LOG_TYPE.ACTION_SUPPORT_LINK_CLICKED);
+  }
+
   view.onClick_(submitQuery, shouldRetry, navigatingAway);
 };
 /* END VIEW */
