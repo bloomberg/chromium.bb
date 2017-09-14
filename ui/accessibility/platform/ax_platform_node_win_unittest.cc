@@ -136,10 +136,11 @@ class AXPlatformNodeWinTest : public testing::Test {
 
   void CheckVariantHasName(ScopedVariant& variant,
                            const wchar_t* expected_name) {
+    ASSERT_NE(nullptr, variant.ptr());
     ScopedComPtr<IAccessible> accessible;
-    HRESULT hr =
-        V_DISPATCH(variant.ptr())->QueryInterface(IID_PPV_ARGS(&accessible));
-    EXPECT_EQ(S_OK, hr);
+    ASSERT_HRESULT_SUCCEEDED(
+        V_DISPATCH(variant.ptr())
+            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
     ScopedBstr name;
     EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
     EXPECT_STREQ(expected_name, name);
@@ -157,7 +158,7 @@ class AXPlatformNodeWinTest : public testing::Test {
 
   AXTreeUpdate Build3X3Table() {
     /*
-      Build a table the looks like:
+      Build a table that looks like:
 
       ----------------------        (A) Column Header
       |        | (A) | (B) |        (B) Column Header
@@ -202,7 +203,7 @@ class AXPlatformNodeWinTest : public testing::Test {
     AXNodeData table_column_header_2;
     table_column_header_2.id = 52;
     table_column_header_2.role = AX_ROLE_COLUMN_HEADER;
-    table_column_header_2.AddStringAttribute(AX_ATTR_NAME, "column header 1");
+    table_column_header_2.SetName("column header 1");
 
     AXNodeData table_column_header_3;
     table_column_header_3.id = 53;
@@ -223,17 +224,17 @@ class AXPlatformNodeWinTest : public testing::Test {
     AXNodeData table_row_header_1;
     table_row_header_1.id = 2;
     table_row_header_1.role = AX_ROLE_ROW_HEADER;
-    table_row_header_1.AddStringAttribute(AX_ATTR_NAME, "row header 1");
+    table_row_header_1.SetName("row header 1");
 
     AXNodeData table_cell_1;
     table_cell_1.id = 3;
     table_cell_1.role = AX_ROLE_CELL;
-    table_cell_1.AddStringAttribute(AX_ATTR_NAME, "1");
+    table_cell_1.SetName("1");
 
     AXNodeData table_cell_2;
     table_cell_2.id = 4;
     table_cell_2.role = AX_ROLE_CELL;
-    table_cell_2.AddStringAttribute(AX_ATTR_NAME, "2");
+    table_cell_2.SetName("2");
 
     // Row 2
     AXNodeData table_row_2;
@@ -253,12 +254,12 @@ class AXPlatformNodeWinTest : public testing::Test {
     AXNodeData table_cell_3;
     table_cell_3.id = 12;
     table_cell_3.role = AX_ROLE_CELL;
-    table_cell_3.AddStringAttribute(AX_ATTR_NAME, "3");
+    table_cell_3.SetName("3");
 
     AXNodeData table_cell_4;
     table_cell_4.id = 13;
     table_cell_4.role = AX_ROLE_CELL;
-    table_cell_4.AddStringAttribute(AX_ATTR_NAME, "4");
+    table_cell_4.SetName("4");
 
     AXTreeUpdate update;
     update.root_id = table.id;
@@ -426,161 +427,352 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleShortcut) {
             root_obj->get_accKeyboardShortcut(bad_id, k2.Receive()));
 }
 
-TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionNotListBox) {
-  // We only support AX_ROLE_LIST_BOX as this point, so, this should return
-  // not implemented. We're choosing AX_ROLE_ALERT, but it could be anything
-  // but AX_ROLE_LIST_BOX_OPTION.
-
-  AXNodeData not_supported;
-  not_supported.id = 0;
-  not_supported.role = AX_ROLE_ALERT;
-
-  Init(not_supported);
-  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
-
-  ScopedVariant selection;
-  EXPECT_EQ(E_NOTIMPL, root_obj->get_accSelection(selection.Receive()));
-}
-
-TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionNothingSelected) {
-  // We're going to set up a AX_ROLE_LIST_BOX_OPTION with 2 options with
-  // nothing selected
+TEST_F(AXPlatformNodeWinTest,
+       TestIAccessibleSelectionListBoxOptionNothingSelected) {
   AXNodeData list;
   list.id = 0;
   list.role = AX_ROLE_LIST_BOX;
 
-  list.child_ids.push_back(2);
-  list.child_ids.push_back(3);
+  AXNodeData list_item_1;
+  list_item_1.id = 1;
+  list_item_1.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_1.SetName("Name1");
 
   AXNodeData list_item_2;
   list_item_2.id = 2;
   list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_2.AddStringAttribute(AX_ATTR_NAME, "Name2");
+  list_item_2.SetName("Name2");
 
-  AXNodeData list_item_3;
-  list_item_3.id = 3;
-  list_item_3.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_3.AddStringAttribute(AX_ATTR_NAME, "Name3");
+  list.child_ids.push_back(list_item_1.id);
+  list.child_ids.push_back(list_item_2.id);
 
-  // Nothing is selected.  This should return S_OK and the selection should
-  // be VT_EMPTY.
+  Init(list, list_item_1, list_item_2);
 
-  Init(list, list_item_2, list_item_3);
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ASSERT_NE(nullptr, root_obj.Get());
 
   ScopedVariant selection;
   EXPECT_EQ(S_OK, root_obj->get_accSelection(selection.Receive()));
   EXPECT_EQ(VT_EMPTY, selection.type());
 }
 
-TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionOneSelected) {
-  // We're going to set up a AX_ROLE_LIST_BOX_OPTION with 2 options with
-  // one selected.
+TEST_F(AXPlatformNodeWinTest,
+       TestIAccessibleSelectionListBoxOptionOneSelected) {
   AXNodeData list;
   list.id = 0;
   list.role = AX_ROLE_LIST_BOX;
 
-  list.child_ids.push_back(2);
-  list.child_ids.push_back(3);
+  AXNodeData list_item_1;
+  list_item_1.id = 1;
+  list_item_1.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_1.AddState(AX_STATE_SELECTED);
+  list_item_1.SetName("Name1");
 
   AXNodeData list_item_2;
   list_item_2.id = 2;
   list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_2.state = 1 << AX_STATE_SELECTED;
-  list_item_2.AddStringAttribute(AX_ATTR_NAME, "Name2");
+  list_item_2.SetName("Name2");
 
-  AXNodeData list_item_3;
-  list_item_3.id = 3;
-  list_item_3.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_3.AddStringAttribute(AX_ATTR_NAME, "Name3");
+  list.child_ids.push_back(list_item_1.id);
+  list.child_ids.push_back(list_item_2.id);
 
-  Init(list, list_item_2, list_item_3);
+  Init(list, list_item_1, list_item_2);
 
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ASSERT_NE(nullptr, root_obj.Get());
 
   ScopedVariant selection;
   EXPECT_EQ(S_OK, root_obj->get_accSelection(selection.Receive()));
-  ASSERT_NE(nullptr, selection.ptr());
+  EXPECT_EQ(VT_DISPATCH, selection.type());
 
-  CheckVariantHasName(selection, L"Name2");
+  CheckVariantHasName(selection, L"Name1");
 }
 
-TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionMultipleSelected) {
-  // We're going to set up a AX_ROLE_LIST_BOX_OPTION with 3 options with
-  // two selected.
+TEST_F(AXPlatformNodeWinTest,
+       TestIAccessibleSelectionListBoxOptionMultipleSelected) {
   AXNodeData list;
   list.id = 0;
   list.role = AX_ROLE_LIST_BOX;
 
-  list.child_ids.push_back(2);
-  list.child_ids.push_back(3);
-  list.child_ids.push_back(4);
+  AXNodeData list_item_1;
+  list_item_1.id = 1;
+  list_item_1.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_1.AddState(AX_STATE_SELECTED);
+  list_item_1.SetName("Name1");
 
   AXNodeData list_item_2;
   list_item_2.id = 2;
   list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_2.state = 1 << AX_STATE_SELECTED;
-  list_item_2.AddStringAttribute(AX_ATTR_NAME, "Name2");
+  list_item_2.AddState(AX_STATE_SELECTED);
+  list_item_2.SetName("Name2");
 
   AXNodeData list_item_3;
   list_item_3.id = 3;
   list_item_3.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_3.state = 1 << AX_STATE_SELECTED;
-  list_item_3.AddStringAttribute(AX_ATTR_NAME, "Name3");
+  list_item_3.SetName("Name3");
 
-  AXNodeData list_item_4;
-  list_item_4.id = 4;
-  list_item_4.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_4.AddStringAttribute(AX_ATTR_NAME, "Name4");
-  Init(list, list_item_2, list_item_3, list_item_4);
+  list.child_ids.push_back(list_item_1.id);
+  list.child_ids.push_back(list_item_2.id);
+  list.child_ids.push_back(list_item_3.id);
+
+  Init(list, list_item_1, list_item_2, list_item_3);
 
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ASSERT_NE(nullptr, root_obj.Get());
 
   ScopedVariant selection;
   EXPECT_EQ(S_OK, root_obj->get_accSelection(selection.Receive()));
+  EXPECT_EQ(VT_UNKNOWN, selection.type());
   ASSERT_NE(nullptr, selection.ptr());
 
-  // Loop through the selections and  make sure we have the right ones
+  // Loop through the selections and  make sure we have the right ones.
   ScopedComPtr<IEnumVARIANT> accessibles;
-  HRESULT hr =
-      V_DISPATCH(selection.ptr())->QueryInterface(IID_PPV_ARGS(&accessibles));
-  EXPECT_EQ(S_OK, hr);
-  ULONG ignore;
+  ASSERT_HRESULT_SUCCEEDED(
+      V_UNKNOWN(selection.ptr())
+          ->QueryInterface(IID_PPV_ARGS(accessibles.GetAddressOf())));
+  ULONG retrieved_count;
 
   // Check out the first selected item.
   {
     ScopedVariant item;
-    hr = accessibles->Next(1, item.Receive(), &ignore);
+    HRESULT hr = accessibles->Next(1, item.Receive(), &retrieved_count);
     EXPECT_EQ(S_OK, hr);
 
     ScopedComPtr<IAccessible> accessible;
-    HRESULT hr =
-        V_DISPATCH(item.ptr())->QueryInterface(IID_PPV_ARGS(&accessible));
+    ASSERT_HRESULT_SUCCEEDED(
+        V_DISPATCH(item.ptr())
+            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+    ScopedBstr name;
+    EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
+    EXPECT_STREQ(L"Name1", name);
+  }
+
+  // And the second selected element.
+  {
+    ScopedVariant item;
+    HRESULT hr = accessibles->Next(1, item.Receive(), &retrieved_count);
     EXPECT_EQ(S_OK, hr);
+
+    ScopedComPtr<IAccessible> accessible;
+    ASSERT_HRESULT_SUCCEEDED(
+        V_DISPATCH(item.ptr())
+            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
     ScopedBstr name;
     EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
     EXPECT_STREQ(L"Name2", name);
   }
 
-  // and the second selected element.
+  // There shouldn't be any more selected.
   {
     ScopedVariant item;
-    hr = accessibles->Next(1, item.Receive(), &ignore);
+    HRESULT hr = accessibles->Next(1, item.Receive(), &retrieved_count);
+    EXPECT_EQ(S_FALSE, hr);
+  }
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionTableNothingSelected) {
+  Init(Build3X3Table());
+
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ASSERT_NE(nullptr, root_obj.Get());
+
+  ScopedVariant selection;
+  EXPECT_EQ(S_OK, root_obj->get_accSelection(selection.Receive()));
+  EXPECT_EQ(VT_EMPTY, selection.type());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionTableRowOneSelected) {
+  AXTreeUpdate update = Build3X3Table();
+
+  // 5 == table_row_1
+  update.nodes[5].AddState(AX_STATE_SELECTED);
+
+  Init(update);
+
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ASSERT_NE(nullptr, root_obj.Get());
+
+  ScopedVariant selection;
+  EXPECT_EQ(S_OK, root_obj->get_accSelection(selection.Receive()));
+  EXPECT_EQ(VT_DISPATCH, selection.type());
+  ASSERT_NE(nullptr, selection.ptr());
+
+  ScopedComPtr<IAccessible> row;
+  ASSERT_HRESULT_SUCCEEDED(
+      V_DISPATCH(selection.ptr())
+          ->QueryInterface(IID_PPV_ARGS(row.GetAddressOf())));
+
+  ScopedVariant role;
+  EXPECT_HRESULT_SUCCEEDED(row->get_accRole(SELF, role.Receive()));
+  EXPECT_EQ(ROLE_SYSTEM_ROW, V_I4(role.ptr()));
+}
+
+TEST_F(AXPlatformNodeWinTest,
+       TestIAccessibleSelectionTableRowMultipleSelected) {
+  AXTreeUpdate update = Build3X3Table();
+
+  // 5 == table_row_1
+  // 9 == table_row_2
+  update.nodes[5].AddState(AX_STATE_SELECTED);
+  update.nodes[9].AddState(AX_STATE_SELECTED);
+
+  Init(update);
+
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ASSERT_NE(nullptr, root_obj.Get());
+
+  ScopedVariant selection;
+  EXPECT_EQ(S_OK, root_obj->get_accSelection(selection.Receive()));
+  EXPECT_EQ(VT_UNKNOWN, selection.type());
+  ASSERT_NE(nullptr, selection.ptr());
+
+  // Loop through the selections and  make sure we have the right ones.
+  ScopedComPtr<IEnumVARIANT> accessibles;
+  ASSERT_HRESULT_SUCCEEDED(
+      V_UNKNOWN(selection.ptr())
+          ->QueryInterface(IID_PPV_ARGS(accessibles.GetAddressOf())));
+  ULONG retrieved_count;
+
+  // Check out the first selected row.
+  {
+    ScopedVariant item;
+    HRESULT hr = accessibles->Next(1, item.Receive(), &retrieved_count);
     EXPECT_EQ(S_OK, hr);
 
     ScopedComPtr<IAccessible> accessible;
-    HRESULT hr =
-        V_DISPATCH(item.ptr())->QueryInterface(IID_PPV_ARGS(&accessible));
+    ASSERT_HRESULT_SUCCEEDED(
+        V_DISPATCH(item.ptr())
+            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+    ScopedVariant role;
+    EXPECT_HRESULT_SUCCEEDED(accessible->get_accRole(SELF, role.Receive()));
+    EXPECT_EQ(ROLE_SYSTEM_ROW, V_I4(role.ptr()));
+  }
+
+  // And the second selected element.
+  {
+    ScopedVariant item;
+    HRESULT hr = accessibles->Next(1, item.Receive(), &retrieved_count);
     EXPECT_EQ(S_OK, hr);
-    ScopedBstr name;
-    EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
-    EXPECT_STREQ(L"Name3", name);
+
+    ScopedComPtr<IAccessible> accessible;
+    ASSERT_HRESULT_SUCCEEDED(
+        V_DISPATCH(item.ptr())
+            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+    ScopedVariant role;
+    EXPECT_HRESULT_SUCCEEDED(accessible->get_accRole(SELF, role.Receive()));
+    EXPECT_EQ(ROLE_SYSTEM_ROW, V_I4(role.ptr()));
   }
 
   // There shouldn't be any more selected.
   {
     ScopedVariant item;
-    hr = accessibles->Next(1, item.Receive(), &ignore);
+    HRESULT hr = accessibles->Next(1, item.Receive(), &retrieved_count);
+    EXPECT_EQ(S_FALSE, hr);
+  }
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionTableCellOneSelected) {
+  AXTreeUpdate update = Build3X3Table();
+
+  // 7 == table_cell_1
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+
+  Init(update);
+
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ASSERT_NE(nullptr, root_obj.Get());
+
+  ScopedComPtr<IDispatch> row2;
+  ASSERT_HRESULT_SUCCEEDED(
+      root_obj->get_accChild(ScopedVariant(2), row2.GetAddressOf()));
+  ScopedComPtr<IAccessible> row2_accessible;
+  ASSERT_HRESULT_SUCCEEDED(row2.As(&row2_accessible));
+
+  ScopedVariant selection;
+  EXPECT_EQ(S_OK, row2_accessible->get_accSelection(selection.Receive()));
+  EXPECT_EQ(VT_DISPATCH, selection.type());
+  ASSERT_NE(nullptr, selection.ptr());
+
+  ScopedComPtr<IAccessible> cell;
+  ASSERT_HRESULT_SUCCEEDED(
+      V_DISPATCH(selection.ptr())
+          ->QueryInterface(IID_PPV_ARGS(cell.GetAddressOf())));
+
+  ScopedVariant role;
+  EXPECT_HRESULT_SUCCEEDED(cell->get_accRole(SELF, role.Receive()));
+  EXPECT_EQ(ROLE_SYSTEM_CELL, V_I4(role.ptr()));
+
+  ScopedBstr name;
+  EXPECT_EQ(S_OK, cell->get_accName(SELF, name.Receive()));
+  EXPECT_STREQ(L"1", name);
+}
+
+TEST_F(AXPlatformNodeWinTest,
+       TestIAccessibleSelectionTableCellMultipleSelected) {
+  AXTreeUpdate update = Build3X3Table();
+
+  // 11 == table_cell_3
+  // 12 == table_cell_4
+  update.nodes[11].AddState(AX_STATE_SELECTED);
+  update.nodes[12].AddState(AX_STATE_SELECTED);
+
+  Init(update);
+
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ASSERT_NE(nullptr, root_obj.Get());
+
+  ScopedComPtr<IDispatch> row3;
+  ASSERT_HRESULT_SUCCEEDED(
+      root_obj->get_accChild(ScopedVariant(3), row3.GetAddressOf()));
+  ScopedComPtr<IAccessible> row3_accessible;
+  ASSERT_HRESULT_SUCCEEDED(row3.As(&row3_accessible));
+
+  ScopedVariant selection;
+  EXPECT_EQ(S_OK, row3_accessible->get_accSelection(selection.Receive()));
+  EXPECT_EQ(VT_UNKNOWN, selection.type());
+  ASSERT_NE(nullptr, selection.ptr());
+
+  // Loop through the selections and  make sure we have the right ones.
+  ScopedComPtr<IEnumVARIANT> accessibles;
+  ASSERT_HRESULT_SUCCEEDED(
+      V_UNKNOWN(selection.ptr())
+          ->QueryInterface(IID_PPV_ARGS(accessibles.GetAddressOf())));
+  ULONG retrieved_count;
+
+  // Check out the first selected cell.
+  {
+    ScopedVariant item;
+    HRESULT hr = accessibles->Next(1, item.Receive(), &retrieved_count);
+    EXPECT_EQ(S_OK, hr);
+
+    ScopedComPtr<IAccessible> accessible;
+    ASSERT_HRESULT_SUCCEEDED(
+        V_DISPATCH(item.ptr())
+            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+    ScopedBstr name;
+    EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
+    EXPECT_STREQ(L"3", name);
+  }
+
+  // And the second selected cell.
+  {
+    ScopedVariant item;
+    HRESULT hr = accessibles->Next(1, item.Receive(), &retrieved_count);
+    EXPECT_EQ(S_OK, hr);
+
+    ScopedComPtr<IAccessible> accessible;
+    ASSERT_HRESULT_SUCCEEDED(
+        V_DISPATCH(item.ptr())
+            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
+    ScopedBstr name;
+    EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
+    EXPECT_STREQ(L"4", name);
+  }
+
+  // There shouldn't be any more selected.
+  {
+    ScopedVariant item;
+    HRESULT hr = accessibles->Next(1, item.Receive(), &retrieved_count);
     EXPECT_EQ(S_FALSE, hr);
   }
 }
