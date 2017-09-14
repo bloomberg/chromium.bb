@@ -13,6 +13,7 @@ import android.util.Pair;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.sync.SyncConstants;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.WebContents;
@@ -268,7 +269,7 @@ public class TabState {
             tabState.mIsIncognito = encrypted;
             try {
                 tabState.themeColor = stream.readInt();
-                tabState.mHasThemeColor = true;
+                tabState.mHasThemeColor = ColorUtils.isValidThemeColor(tabState.themeColor);
             } catch (EOFException eof) {
                 // Could happen if reading a version of TabState without a theme color.
                 tabState.themeColor = Color.WHITE;
