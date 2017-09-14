@@ -102,11 +102,12 @@ class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
 
 struct CompositorDependencies {
   CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {
+    // TODO(kylechar): Switch this back to kDisableSurfaceReferences.
     auto surface_lifetime_type =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSurfaceReferences)
-            ? viz::SurfaceManager::LifetimeType::SEQUENCES
-            : viz::SurfaceManager::LifetimeType::REFERENCES;
+            "enable-surface-references")
+            ? viz::SurfaceManager::LifetimeType::REFERENCES
+            : viz::SurfaceManager::LifetimeType::SEQUENCES;
 
     // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
