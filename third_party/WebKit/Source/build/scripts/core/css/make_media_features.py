@@ -4,11 +4,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+
 import media_feature_symbol
 import json5_generator
 import template_expander
 import name_utilities
-import sys
 
 
 class MakeMediaFeaturesWriter(json5_generator.Writer):
@@ -33,7 +36,7 @@ class MakeMediaFeaturesWriter(json5_generator.Writer):
             'input_files': self._input_files,
         }
 
-    @template_expander.use_jinja('templates/MediaFeatures.h.tmpl', filters=filters)
+    @template_expander.use_jinja('core/css/templates/MediaFeatures.h.tmpl', filters=filters)
     def generate_header(self):
         return self._template_context
 
