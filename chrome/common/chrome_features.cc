@@ -280,7 +280,7 @@ const base::Feature kMediaRouterUIRouteController{
 
 // Enables or disables modal permission prompts.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_WIN)
 // Enables or disables the ModuleDatabase backend for the conflicts UI.
