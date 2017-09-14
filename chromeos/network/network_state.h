@@ -145,6 +145,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns true if the network properties are stored in a user profile.
   bool IsPrivate() const;
 
+  // Returns true if the network is a default Cellular network (see
+  // NetworkStateHandler::EnsureCellularNetwork()).
+  bool IsDefaultCellular() const;
+
   // Returns the |raw_ssid| as a hex-encoded string
   std::string GetHexSsid() const;
 
@@ -171,6 +175,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   static bool NetworkStateIsCaptivePortal(
       const base::DictionaryValue& shill_properties);
   static bool ErrorIsValid(const std::string& error);
+  static std::unique_ptr<NetworkState> CreateDefaultCellular(
+      const std::string& device_path);
 
  private:
   friend class MobileActivatorTest;

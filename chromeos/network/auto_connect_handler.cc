@@ -251,7 +251,7 @@ void AutoConnectHandler::DisconnectFromUnmanagedSharedWiFiNetworks() {
 
   NetworkStateHandler::NetworkStateList networks;
   network_state_handler_->GetVisibleNetworkListByType(
-      NetworkTypePattern::Wireless(), &networks);
+      NetworkTypePattern::WiFi(), &networks);
   for (const NetworkState* network : networks) {
     if (!(network->IsConnectingState() || network->IsConnectedState()))
       break;  // Connected and connecting networks are listed first.

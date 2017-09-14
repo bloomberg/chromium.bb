@@ -890,13 +890,6 @@ int GetCellularUninitializedMsg() {
 
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
-  // Never show messages if the list of Cellular networks is non-empty.
-  NetworkStateHandler::NetworkStateList cellular_networks;
-  handler->GetVisibleNetworkListByType(chromeos::NetworkTypePattern::Cellular(),
-                                       &cellular_networks);
-  if (!cellular_networks.empty())
-    return 0;
-
   if (handler->GetTechnologyState(NetworkTypePattern::Cellular()) ==
       NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
     s_uninitialized_msg = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
