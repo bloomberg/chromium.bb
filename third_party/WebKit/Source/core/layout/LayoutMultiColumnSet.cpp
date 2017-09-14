@@ -29,7 +29,6 @@
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/MultiColumnFragmentainerGroup.h"
 #include "core/paint/MultiColumnSetPainter.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

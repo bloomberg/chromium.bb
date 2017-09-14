@@ -39,7 +39,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/DragData.h"
 #include "platform/FileMetadata.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"

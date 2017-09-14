@@ -34,7 +34,7 @@
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/NonCopyingSort.h"
 
 namespace blink {

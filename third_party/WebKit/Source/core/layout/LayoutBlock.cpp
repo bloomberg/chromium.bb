@@ -56,7 +56,7 @@
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 

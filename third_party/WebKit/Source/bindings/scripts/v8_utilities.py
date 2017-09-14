@@ -470,7 +470,7 @@ def runtime_enabled_feature_name(definition_or_member):
     extended_attributes = definition_or_member.extended_attributes
     if 'RuntimeEnabled' not in extended_attributes:
         return None
-    includes.add('platform/RuntimeEnabledFeatures.h')
+    includes.add('platform/runtime_enabled_features.h')
     return extended_attributes['RuntimeEnabled']
 
 

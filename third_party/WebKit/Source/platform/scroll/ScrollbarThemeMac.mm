@@ -23,7 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarThemeMac.h"
 
 #include <Carbon/Carbon.h>
@@ -34,6 +33,7 @@
 #include "platform/mac/LocalCurrentGraphicsContext.h"
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/mac/ScrollAnimatorMac.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/RetainPtr.h"

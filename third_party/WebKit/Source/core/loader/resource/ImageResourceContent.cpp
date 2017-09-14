@@ -11,7 +11,6 @@
 #include "core/loader/resource/ImageResourceObserver.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/Histogram.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/BitmapImage.h"

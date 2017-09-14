@@ -7,10 +7,10 @@
 
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/CanvasColorParams.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
+#include "platform/runtime_enabled_features.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

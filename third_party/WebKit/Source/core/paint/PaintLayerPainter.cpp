@@ -17,7 +17,6 @@
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/Transform3DRecorder.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CompositingRecorder.h"
@@ -26,6 +25,7 @@
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/graphics/paint/SubsequenceRecorder.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {

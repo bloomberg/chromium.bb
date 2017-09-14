@@ -17,7 +17,6 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"

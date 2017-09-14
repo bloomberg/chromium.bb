@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "build/build_config.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
@@ -15,6 +14,7 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SubsequenceRecorder.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/testing/FakeDisplayItemClient.h"
 #include "platform/testing/PaintPropertyTestHelpers.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"

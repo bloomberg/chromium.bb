@@ -7,7 +7,6 @@
 #include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

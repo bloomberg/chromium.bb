@@ -45,12 +45,12 @@
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/Histogram.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 

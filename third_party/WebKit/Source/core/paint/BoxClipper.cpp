@@ -9,10 +9,10 @@
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 

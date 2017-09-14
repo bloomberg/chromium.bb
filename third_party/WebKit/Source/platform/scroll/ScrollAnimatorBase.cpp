@@ -30,7 +30,6 @@
 
 #include "platform/scroll/ScrollAnimatorBase.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/wtf/MathExtras.h"
 

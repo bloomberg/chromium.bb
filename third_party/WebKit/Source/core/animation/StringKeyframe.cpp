@@ -9,7 +9,6 @@
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/svg/SVGElement.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

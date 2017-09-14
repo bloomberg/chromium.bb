@@ -10,7 +10,6 @@
 #include "core/paint/PaintInfo.h"
 #include "core/style/BorderEdge.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/wtf/Vector.h"

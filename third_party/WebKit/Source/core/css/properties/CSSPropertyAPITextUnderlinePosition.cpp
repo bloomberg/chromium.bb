@@ -5,7 +5,6 @@
 #include "core/css/properties/CSSPropertyAPITextUnderlinePosition.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 

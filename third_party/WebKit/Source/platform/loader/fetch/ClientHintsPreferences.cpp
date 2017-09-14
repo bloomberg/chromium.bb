@@ -5,9 +5,9 @@
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 
 #include "platform/HTTPNames.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 
 namespace blink {

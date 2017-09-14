@@ -25,7 +25,7 @@
 
 #include "platform/text/TextRun.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/text/Character.h"
 
 namespace blink {

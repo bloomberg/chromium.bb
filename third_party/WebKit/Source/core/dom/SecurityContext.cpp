@@ -27,7 +27,7 @@
 #include "core/dom/SecurityContext.h"
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 

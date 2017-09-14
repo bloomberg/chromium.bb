@@ -8,7 +8,6 @@
 #include <memory>
 #include "base/memory/ref_counted.h"
 #include "platform/PlatformExport.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/compositing/PropertyTreeManager.h"
 #include "platform/graphics/paint/PaintController.h"

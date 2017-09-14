@@ -61,10 +61,10 @@
 #include "core/typed_arrays/DOMArrayBufferView.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/Histogram.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 

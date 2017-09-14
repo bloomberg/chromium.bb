@@ -31,11 +31,11 @@
 #include <memory>
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/PushPullFIFO.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"

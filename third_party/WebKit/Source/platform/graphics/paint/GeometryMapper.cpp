@@ -4,8 +4,8 @@
 
 #include "platform/graphics/paint/GeometryMapper.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/runtime_enabled_features.h"
 
 namespace blink {
 

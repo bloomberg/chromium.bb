@@ -30,7 +30,6 @@
 #include "core/geometry/DOMRectReadOnly.h"
 #include "core/html/ImageData.h"
 #include "core/typed_arrays/DOMArrayBufferBase.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/allocator/Partitions.h"

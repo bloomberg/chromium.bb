@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "platform/PlatformExport.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 

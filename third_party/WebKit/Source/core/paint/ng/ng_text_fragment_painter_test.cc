@@ -13,9 +13,9 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/runtime_enabled_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

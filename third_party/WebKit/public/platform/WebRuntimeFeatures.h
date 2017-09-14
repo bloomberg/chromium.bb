@@ -42,19 +42,19 @@ namespace blink {
 class WebRuntimeFeatures {
  public:
   // Enable or disable features with status=experimental listed in
-  // Source/platform/RuntimeEnabledFeatures.in.
+  // Source/platform/runtime_enabled_features.json5.
   BLINK_PLATFORM_EXPORT static void EnableExperimentalFeatures(bool);
 
   // Enable or disable features with status=test listed in
-  // Source/platform/RuntimeEnabledFeatures.in.
+  // Source/platform/runtime_enabled_features.json5.
   BLINK_PLATFORM_EXPORT static void EnableTestOnlyFeatures(bool);
 
   // Enable or disable features with non-empty origin_trial_feature_name in
-  // Source/platform/RuntimeEnabledFeatures.in.
+  // Source/platform/runtime_enabled_features.json5.
   BLINK_PLATFORM_EXPORT static void EnableOriginTrialControlledFeatures(bool);
 
   // Enables or disables a feature by its string identifier from
-  // Source/platform/RuntimeEnabledFeatures.in.
+  // Source/platform/runtime_enabled_features.json5.
   // Note: We use std::string instead of WebString because this API can
   // be called before blink::Initalize(). We can't create WebString objects
   // before blink::Initialize().

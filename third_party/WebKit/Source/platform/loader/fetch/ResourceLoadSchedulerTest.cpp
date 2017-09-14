@@ -4,8 +4,8 @@
 
 #include "platform/loader/fetch/ResourceLoadScheduler.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/testing/MockFetchContext.h"
+#include "platform/runtime_enabled_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

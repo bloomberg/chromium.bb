@@ -3,9 +3,9 @@
 
 #include "platform/feature_policy/FeaturePolicy.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/json/JSONValues.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/BitVector.h"
