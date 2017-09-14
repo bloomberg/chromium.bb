@@ -152,10 +152,13 @@ static constexpr float kUnderDevelopmentNoticeVerticalOffsetM =
     0.5f * kUnderDevelopmentNoticeHeightM + kUrlBarHeight;
 static constexpr float kUnderDevelopmentNoticeRotationRad = -0.19;
 
-// If the screen space bounds of the content quad changes beyond this threshold
-// we propagate the new content bounds so that the content's resolution can be
-// adjusted.
+// If the screen space bounds or the aspect ratio of the content quad change
+// beyond these thresholds we propagate the new content bounds so that the
+// content's resolution can be adjusted.
 static constexpr float kContentBoundsPropagationThreshold = 0.2f;
+// Changes of the aspect ratio lead to a
+// distorted content much more quickly. Thus, have a smaller threshold here.
+static constexpr float kContentAspectRatioPropagationThreshold = 0.01f;
 
 }  // namespace
 
@@ -727,11 +730,14 @@ void UiSceneManager::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
   if (std::abs(screen_bounds.width() - last_content_screen_bounds_.width()) >
           kContentBoundsPropagationThreshold ||
       std::abs(screen_bounds.height() - last_content_screen_bounds_.height()) >
-          kContentBoundsPropagationThreshold) {
+          kContentBoundsPropagationThreshold ||
+      std::abs(aspect_ratio - last_content_aspect_ratio_) >
+          kContentAspectRatioPropagationThreshold) {
     browser_->OnContentScreenBoundsChanged(screen_bounds);
 
     last_content_screen_bounds_.set_width(screen_bounds.width());
     last_content_screen_bounds_.set_height(screen_bounds.height());
+    last_content_aspect_ratio_ = aspect_ratio;
   }
 }
 
