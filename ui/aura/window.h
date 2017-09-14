@@ -239,6 +239,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns the cursor for the specified point, in window coordinates.
   gfx::NativeCursor GetCursor(const gfx::Point& point) const;
 
+  // Returns true if the children of thisshould be restacked by the
+  // transient window related classes to honor transient window stacking.
+  bool ShouldRestackTransientChildren();
+
   // Add/remove observer.
   void AddObserver(WindowObserver* observer);
   void RemoveObserver(WindowObserver* observer);

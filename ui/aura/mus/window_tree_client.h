@@ -563,10 +563,6 @@ class AURA_EXPORT WindowTreeClient
                                    Window* transient_child) override;
   void OnTransientChildWindowRemoved(Window* parent,
                                      Window* transient_child) override;
-  void OnWillRestackTransientChildAbove(Window* parent,
-                                        Window* transient_child) override;
-  void OnDidRestackTransientChildAbove(Window* parent,
-                                       Window* transient_child) override;
 
   // Overriden from DragDropControllerHost:
   uint32_t CreateChangeIdForDrag(WindowMus* window) override;

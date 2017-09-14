@@ -77,4 +77,8 @@ void WindowPortForShutdown::OnWillRemoveWindowFromRootWindow() {}
 
 void WindowPortForShutdown::OnEventTargetingPolicyChanged() {}
 
+bool WindowPortForShutdown::ShouldRestackTransientChildren() {
+  return true;
+}
+
 }  // namespace aura

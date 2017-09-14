@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/stl_util.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/client/transient_window_client_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
@@ -123,7 +124,7 @@ TransientWindowManager::TransientWindowManager(Window* window)
 
 void TransientWindowManager::RestackTransientDescendants() {
   Window* parent = window_->parent();
-  if (!parent)
+  if (!parent || !parent->ShouldRestackTransientChildren())
     return;
 
   // Stack any transient children that share the same parent to be in front of
@@ -137,15 +138,7 @@ void TransientWindowManager::RestackTransientDescendants() {
       base::AutoReset<Window*> resetter(
           &descendant_manager->stacking_target_,
           window_);
-      for (aura::client::TransientWindowClientObserver& observer :
-           TransientWindowController::Get()->observers_) {
-        observer.OnWillRestackTransientChildAbove(window_, *it);
-      }
       parent->StackChildAbove((*it), window_);
-      for (aura::client::TransientWindowClientObserver& observer :
-           TransientWindowController::Get()->observers_) {
-        observer.OnDidRestackTransientChildAbove(window_, *it);
-      }
     }
   }
 }

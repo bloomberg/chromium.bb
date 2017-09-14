@@ -183,4 +183,8 @@ void WindowPortLocal::OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {
   window_->layer()->SetFallbackSurface(surface_info);
 }
 
+bool WindowPortLocal::ShouldRestackTransientChildren() {
+  return true;
+}
+
 }  // namespace aura

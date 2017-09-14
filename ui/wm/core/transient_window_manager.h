@@ -27,11 +27,9 @@ class TransientWindowObserver;
 // . If a transient parent is hidden, it hides all transient children.
 //   For show operation, please refer to |set_parent_controls_visibility(bool)|.
 // Transient windows are typically used for popups and menus.
-// TODO(sky): when we nuke TransientWindowClient rename this to
-// TransientWindowController.
 class WM_CORE_EXPORT TransientWindowManager : public aura::WindowObserver {
  public:
-  typedef std::vector<aura::Window*> Windows;
+  using Windows = std::vector<aura::Window*>;
 
   ~TransientWindowManager() override;
 

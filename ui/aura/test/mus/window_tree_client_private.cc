@@ -111,4 +111,10 @@ Window* WindowTreeClientPrivate::GetWindowByServerId(Id id) {
   return window ? window->GetWindow() : nullptr;
 }
 
+WindowMus* WindowTreeClientPrivate::NewWindowFromWindowData(
+    WindowMus* parent,
+    const ui::mojom::WindowData& window_data) {
+  return tree_client_impl_->NewWindowFromWindowData(parent, window_data);
+}
+
 }  // namespace aura

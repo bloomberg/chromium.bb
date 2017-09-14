@@ -246,14 +246,6 @@ class ServerWindow : public viz::HostFrameSinkClient {
   // Called when this window's stacking order among its siblings is changed.
   void OnStackingChanged();
 
-  static void ReorderImpl(ServerWindow* window,
-                          ServerWindow* relative,
-                          mojom::OrderDirection diretion);
-
-  // Returns a pointer to the stacking target that can be used by
-  // RestackTransientDescendants.
-  static ServerWindow** GetStackingTarget(ServerWindow* window);
-
   ServerWindowDelegate* const delegate_;
   const WindowId id_;
   viz::FrameSinkId frame_sink_id_;
