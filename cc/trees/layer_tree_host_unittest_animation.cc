@@ -977,8 +977,12 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
+        EXPECT_EQ(scroll_layer_->scroll_offset().x(), 100);
+        EXPECT_EQ(scroll_layer_->scroll_offset().y(), 200);
         break;
       case 1: {
+        EXPECT_GE(scroll_layer_->scroll_offset().x(), 100);
+        EXPECT_GE(scroll_layer_->scroll_offset().y(), 200);
         Animation* animation =
             player_child_->GetAnimation(TargetProperty::SCROLL_OFFSET);
         player_child_->RemoveAnimation(animation->id());

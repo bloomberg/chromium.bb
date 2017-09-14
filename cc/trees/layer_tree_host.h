@@ -349,6 +349,7 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
   // UseLayerLists() is true, which also implies that Slimming Paint
   // v2 is enabled.
   PropertyTrees* property_trees() { return &property_trees_; }
+  const PropertyTrees* property_trees() const { return &property_trees_; }
 
   void SetNeedsDisplayOnAllLayers();
 
