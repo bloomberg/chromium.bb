@@ -10,6 +10,8 @@
 // UI Util containing functions that do not require Objective-C.
 
 // Running on an iPad?
+// TODO(crbug.com/330493): deprecated, use GetDeviceFormFactor() from
+// ui/base/device_form_factor.h instead.
 bool IsIPadIdiom();
 
 // Enum for arrays by UI idiom.
