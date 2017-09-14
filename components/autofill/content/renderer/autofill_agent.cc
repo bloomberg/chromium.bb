@@ -741,6 +741,7 @@ void AutofillAgent::DoFillFieldWithValue(const base::string16& value,
   base::AutoReset<bool> auto_reset(&ignore_text_changes_, true);
   node->SetEditingValue(
       blink::WebString::FromUTF16(value.substr(0, node->MaxLength())));
+  password_autofill_agent_->UpdateStateForTextChange(*node);
 }
 
 void AutofillAgent::DoPreviewFieldWithValue(const base::string16& value,
