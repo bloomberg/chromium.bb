@@ -1574,7 +1574,9 @@ component("platform") {
       "/wd4724",  # Modulo by 0.
     ]
   } else {
-    sources -= [ "text/LocaleWin.cpp" ]
+    if (!snake_case_source_files) {
+      sources -= [ "text/LocaleWin.cpp" ]
+    }
   }
 
   if (is_android) {
@@ -1588,7 +1590,9 @@ component("platform") {
     ]
     set_sources_assignment_filter(sources_assignment_filter)
   } else {
-    sources -= [ "scroll/ScrollbarThemeAndroid.cpp" ]
+    if (!snake_case_source_files) {
+      sources -= [ "scroll/ScrollbarThemeAndroid.cpp" ]
+    }
   }
 
   if (is_fuchsia) {
