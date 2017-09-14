@@ -30,6 +30,7 @@ source_set("test_helpers") {
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/overlays",
     "//ios/clean/chrome/browser/ui/overlays:overlays_internal",
+    "//ios/testing:ios_test_support",
     "//ios/web",
     "//testing/gtest",
   ]

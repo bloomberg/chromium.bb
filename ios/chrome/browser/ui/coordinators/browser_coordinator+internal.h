@@ -35,7 +35,7 @@
 
 // YES if the receiver has been started; NO (the default) otherwise. Stopping
 // the receiver resets this property to NO.
-@property(nonatomic, readonly) BOOL started;
+@property(nonatomic, readonly, getter=isStarted) BOOL started;
 
 // YES if the receiver is acting as an overlay coordinator; NO (the default)
 // otherwise.
@@ -61,6 +61,12 @@
 // Called when this coordinator is going to be removed from its parent
 // coordinator.
 - (void)willBeRemovedFromParentCoordinator;
+
+// Called when this coordinator's UIViewController has finished being presented.
+- (void)viewControllerWasActivated;
+
+// Called when this coordinator's UIViewController has finished being dismissed.
+- (void)viewControllerWasDeactivated;
 
 // Called when a child coordinator did start. This is a blank template method.
 // Subclasses can override this method when they need to know when their

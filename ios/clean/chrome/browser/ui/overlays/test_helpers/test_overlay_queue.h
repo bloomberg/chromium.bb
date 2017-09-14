@@ -16,8 +16,14 @@ class Browser;
 class TestOverlayQueue : public OverlayQueue {
  public:
   TestOverlayQueue();
-  void StartNextOverlay() override;
+
+  // Adds |overlay| to queue to be started over |parent_|.
   void AddOverlay(OverlayCoordinator* overlay);
+
+  // Starts the first overlay in the queue using |parent_| as the parent
+  // coordinator.  Waits until the overlay's view controller has finished being
+  // presented before returning.
+  void StartNextOverlay() override;
 
   // Seting the Browser also sets the Browser of |parent_|, which will be passed
   // along to OverlayCoordinators presented by this queue when they are started.
