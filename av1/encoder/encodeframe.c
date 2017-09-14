@@ -5328,9 +5328,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     }
     cpi->global_motion_search_done = 1;
   }
-  if (!cm->error_resilient_mode)
-    memcpy(cm->cur_frame->global_motion, cm->global_motion,
-           TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
+  memcpy(cm->cur_frame->global_motion, cm->global_motion,
+         TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
 #endif  // CONFIG_GLOBAL_MOTION
 
   for (i = 0; i < MAX_SEGMENTS; ++i) {

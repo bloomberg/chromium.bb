@@ -4400,9 +4400,8 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
            cm->global_motion[frame].wmmat[3]);
            */
   }
-  if (!cm->error_resilient_mode)
-    memcpy(cm->cur_frame->global_motion, cm->global_motion,
-           TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
+  memcpy(cm->cur_frame->global_motion, cm->global_motion,
+         TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
