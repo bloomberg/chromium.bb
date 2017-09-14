@@ -57,7 +57,7 @@ class PowerTracingAgent : public base::trace_event::TracingAgent,
   PowerTracingAgent();
   ~PowerTracingAgent() override;
 
-  void FindBattOrOnFileThread(const StartAgentTracingCallback& callback);
+  void FindBattOrOnBackgroundThread(const StartAgentTracingCallback& callback);
   void StartAgentTracingOnIOThread(const std::string& path,
                                    const StartAgentTracingCallback& callback);
   void StopAgentTracingOnIOThread(const StopAgentTracingCallback& callback);
