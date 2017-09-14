@@ -230,12 +230,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   if (SiteEngagementService::IsEnabled())
     SiteEngagementService::Helper::CreateForWebContents(web_contents);
-#if !defined(OS_ANDROID)
-  // For now, even when the flag is enabled, this will only be enabled on
-  // desktop.
   if (base::FeatureList::IsEnabled(features::kSoundContentSetting))
     SoundContentSettingObserver::CreateForWebContents(web_contents);
-#endif
   sync_sessions::SyncSessionsRouterTabHelper::CreateForWebContents(
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(

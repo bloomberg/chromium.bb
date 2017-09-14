@@ -45,6 +45,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kServiceWorkerPaymentApps,
     &features::kSiteNotificationChannels,
     &features::kSimplifiedFullscreenUI,
+    &features::kSoundContentSetting,
     &features::kVrShell,
     &features::kWebPayments,
     &features::kTabsInCbd,
