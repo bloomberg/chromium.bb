@@ -86,17 +86,13 @@ class PLATFORM_EXPORT TaskQueueImpl {
   class PLATFORM_EXPORT Task : public TaskQueue::Task {
    public:
     Task();
-    Task(const base::Location& posted_from,
-         base::OnceClosure task,
+    Task(TaskQueue::PostedTask task,
          base::TimeTicks desired_run_time,
-         EnqueueOrder sequence_number,
-         bool nestable);
+         EnqueueOrder sequence_number);
 
-    Task(const base::Location& posted_from,
-         base::OnceClosure task,
+    Task(TaskQueue::PostedTask task,
          base::TimeTicks desired_run_time,
          EnqueueOrder sequence_number,
-         bool nestable,
          EnqueueOrder enqueue_order);
 
     DelayedWakeUp delayed_wake_up() const {
