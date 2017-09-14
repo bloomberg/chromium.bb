@@ -33,6 +33,8 @@ using leveldb_env::DBTracker;
 using leveldb_env::MethodID;
 using leveldb_env::Options;
 
+namespace leveldb_env {
+
 static const int kReadOnlyFileLimit = 4;
 
 TEST(ErrorEncoding, OnlyAMethod) {
@@ -380,5 +382,30 @@ TEST_F(ChromiumEnvDBTrackerTest, OpenDBTracking) {
   ASSERT_EQ(1u, visited_dbs.size());
   ASSERT_EQ(db.get(), *visited_dbs.begin());
 }
+
+TEST_F(ChromiumEnvDBTrackerTest, IsTrackedDB) {
+  leveldb_env::Options options;
+  options.create_if_missing = true;
+  leveldb::DB* untracked_db;
+  base::ScopedTempDir untracked_temp_dir;
+  ASSERT_TRUE(untracked_temp_dir.CreateUniqueTempDir());
+  leveldb::Status s = leveldb::DB::Open(
+      options, untracked_temp_dir.GetPath().AsUTF8Unsafe(), &untracked_db);
+  ASSERT_TRUE(s.ok());
+  EXPECT_FALSE(DBTracker::GetInstance()->IsTrackedDB(untracked_db));
+
+  // Now a tracked db.
+  std::unique_ptr<leveldb::DB> tracked_db;
+  base::ScopedTempDir tracked_temp_dir;
+  ASSERT_TRUE(tracked_temp_dir.CreateUniqueTempDir());
+  s = leveldb_env::OpenDB(options, tracked_temp_dir.GetPath().AsUTF8Unsafe(),
+                          &tracked_db);
+  ASSERT_TRUE(s.ok());
+  EXPECT_TRUE(DBTracker::GetInstance()->IsTrackedDB(tracked_db.get()));
+
+  delete untracked_db;
+}
+
+}  // namespace leveldb_env
 
 int main(int argc, char** argv) { return base::TestSuite(argc, argv).Run(); }

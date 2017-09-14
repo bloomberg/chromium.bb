@@ -1338,6 +1338,7 @@ DBTracker::~DBTracker() {
   NOTREACHED();  // DBTracker is a singleton
 }
 
+// static
 DBTracker* DBTracker::GetInstance() {
   static DBTracker* instance = new DBTracker();
   return instance;
@@ -1347,12 +1348,22 @@ DBTracker* DBTracker::GetInstance() {
 base::trace_event::MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
     base::trace_event::ProcessMemoryDump* pmd,
     leveldb::DB* tracked_db) {
+  DCHECK(GetInstance()->IsTrackedDB(tracked_db))
+      << std::hex << tracked_db << " is not tracked";
+  return GetOrCreateAllocatorDump(pmd,
+                                  reinterpret_cast<TrackedDB*>(tracked_db));
+}
+
+// static
+base::trace_event::MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
+    base::trace_event::ProcessMemoryDump* pmd,
+    TrackedDB* db) {
   if (pmd->dump_args().level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
     return nullptr;
   }
-  std::string dump_name = base::StringPrintf(
-      "leveldatabase/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(tracked_db));
+  std::string dump_name = base::StringPrintf("leveldatabase/0x%" PRIXPTR,
+                                             reinterpret_cast<uintptr_t>(db));
   auto* dump = pmd->GetAllocatorDump(dump_name);
   if (dump)
     return dump;
@@ -1360,9 +1371,9 @@ base::trace_event::MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
 
   uint64_t memory_usage = 0;
   std::string usage_string;
-  bool success = tracked_db->GetProperty("leveldb.approximate-memory-usage",
-                                         &usage_string) &&
-                 base::StringToUint64(usage_string, &memory_usage);
+  bool success =
+      db->GetProperty("leveldb.approximate-memory-usage", &usage_string) &&
+      base::StringToUint64(usage_string, &memory_usage);
   DCHECK(success);
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
@@ -1374,6 +1385,15 @@ base::trace_event::MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
   if (system_allocator_name)
     pmd->AddSuballocation(dump->guid(), system_allocator_name);
   return dump;
+}
+
+bool DBTracker::IsTrackedDB(const leveldb::DB* db) const {
+  base::AutoLock lock(databases_lock_);
+  for (auto* i = databases_.head(); i != databases_.end(); i = i->next()) {
+    if (i->value() == db)
+      return true;
+  }
+  return false;
 }
 
 leveldb::Status DBTracker::OpenDatabase(const leveldb::Options& options,
