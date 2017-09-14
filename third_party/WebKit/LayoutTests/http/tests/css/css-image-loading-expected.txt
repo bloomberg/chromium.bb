@@ -2,7 +2,6 @@ CONSOLE WARNING: line 5: Synchronous XMLHttpRequest on the main thread is deprec
 item
 Resource requests:
 
-
 background2.jpg
 content-image2.jpg
 content-image3.jpg

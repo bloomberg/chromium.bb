@@ -1,6 +1,5 @@
 This is a Header for this page
 Heading
-
 Division
 Paragraph
 
@@ -11,9 +10,7 @@ Milk
 - white cold drink
 x + a / b
 Most important heading here
-
 Google Chrome
-
 Google Chrome is a free, open-source web browser developed by Google, released in 2008.
 
 Footer in article
@@ -24,7 +21,6 @@ Text that appears under aside
 Text in a    pre
 element
 Most important heading here
-
 Section
 
 Footer in section

@@ -1,5 +1,4 @@
 Test innerText
-
 Check lists, tables, styled text, and images.
 Block flow elements get line breaks before and after. Table cells are tab separated.
 Item 1
@@ -20,7 +19,6 @@ This line contains  an image.
 The innerText of the above:
 
 Test innerText
-
 Check lists, tables, styled text, and images.
 Block flow elements get line breaks before and after. Table cells are tab separated.
 Item 1

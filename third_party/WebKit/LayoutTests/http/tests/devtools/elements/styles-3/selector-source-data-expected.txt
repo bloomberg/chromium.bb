@@ -1,7 +1,6 @@
 Tests that WebInspector.CSSStyleSheet methods work as expected.
 
 Inspect Me
-
 h1: [user-agent] {
     ['display':'block'] @[undefined-undefined] 
     ['font-size':'2em'] @[undefined-undefined] 

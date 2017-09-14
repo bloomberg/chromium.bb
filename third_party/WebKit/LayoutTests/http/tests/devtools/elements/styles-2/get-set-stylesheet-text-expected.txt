@@ -2,7 +2,6 @@ Tests that WebInspector.CSSStyleSheet methods work as expected.
 
 Inspect Me
 
-
 Running: testSetText
 === Original stylesheet text: ===
 body {

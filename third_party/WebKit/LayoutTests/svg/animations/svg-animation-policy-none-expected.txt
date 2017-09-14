@@ -1,6 +1,5 @@
 SVG with animation policy, none
 
-
 This tests svg animation with animation policy none
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -642,31 +642,13 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineBeforeNode(Node& node) {
 }
 
 static bool ShouldEmitExtraNewlineForNode(Node* node) {
-  // When there is a significant collapsed bottom margin, emit an extra
-  // newline for a more realistic result. We end up getting the right
-  // result even without margin collapsing. For example: <div><p>text</p></div>
-  // will work right even if both the <div> and the <p> have bottom margins.
+  // https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
+  // Append two required linebreaks after a P element.
   LayoutObject* r = node->GetLayoutObject();
   if (!r || !r->IsBox())
     return false;
 
-  // NOTE: We only do this for a select set of nodes, and fwiw WinIE appears
-  // not to do this at all
-
-  if (node->HasTagName(pTag))
-    return true;
-
-  if (node->HasTagName(h1Tag) || node->HasTagName(h2Tag)) {
-    const ComputedStyle* style = r->Style();
-    if (style) {
-      int bottom_margin = ToLayoutBox(r)->CollapsedMarginAfter().ToInt();
-      int font_size = style->GetFontDescription().ComputedPixelSize();
-      if (bottom_margin * 2 >= font_size)
-        return true;
-    }
-  }
-
-  return false;
+  return node->HasTagName(pTag);
 }
 
 // Whether or not we should emit a character as we enter m_node (if it's a
