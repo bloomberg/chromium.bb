@@ -671,8 +671,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Set data producer in framer.
   void SetDataProducer(QuicStreamFrameDataProducer* data_producer);
 
-  // Return the name of the cipher of the primary decrypter of the framer.
-  const char* cipher_name() const { return framer_.decrypter()->cipher_name(); }
   // Return the id of the cipher of the primary decrypter of the framer.
   uint32_t cipher_id() const { return framer_.decrypter()->cipher_id(); }
 

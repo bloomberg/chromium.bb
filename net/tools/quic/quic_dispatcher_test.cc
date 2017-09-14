@@ -139,8 +139,8 @@ class TestDispatcher : public QuicDispatcher {
   MOCK_METHOD1(ShouldCreateOrBufferPacketForConnection,
                bool(QuicConnectionId connection_id));
 
-  using QuicDispatcher::current_server_address;
   using QuicDispatcher::current_client_address;
+  using QuicDispatcher::current_server_address;
 };
 
 // A Connection class which unregisters the session from the dispatcher when
@@ -547,7 +547,7 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
 }
 
 TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {
-  static_assert(arraysize(kSupportedQuicVersions) == 7u,
+  static_assert(arraysize(kSupportedQuicVersions) == 6u,
                 "Supported versions out of sync");
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = true;
   FLAGS_quic_reloadable_flag_quic_enable_version_39 = true;

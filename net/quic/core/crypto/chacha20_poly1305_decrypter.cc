@@ -28,10 +28,6 @@ ChaCha20Poly1305Decrypter::ChaCha20Poly1305Decrypter()
 
 ChaCha20Poly1305Decrypter::~ChaCha20Poly1305Decrypter() {}
 
-const char* ChaCha20Poly1305Decrypter::cipher_name() const {
-  return TLS1_TXT_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256;
-}
-
 uint32_t ChaCha20Poly1305Decrypter::cipher_id() const {
   return TLS1_CK_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256;
 }

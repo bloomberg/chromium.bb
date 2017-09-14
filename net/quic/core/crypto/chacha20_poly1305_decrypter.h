@@ -30,7 +30,6 @@ class QUIC_EXPORT_PRIVATE ChaCha20Poly1305Decrypter : public AeadBaseDecrypter {
   ChaCha20Poly1305Decrypter();
   ~ChaCha20Poly1305Decrypter() override;
 
-  const char* cipher_name() const override;
   uint32_t cipher_id() const override;
 
  private:

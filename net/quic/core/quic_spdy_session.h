@@ -98,15 +98,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
                                   QuicStreamId promised_stream_id,
                                   SpdyHeaderBlock headers);
 
-  // For forcing HOL blocking.  This encapsulates data from other
-  // streams into HTTP/2 data frames on the headers stream.
-  QuicConsumedData WritevStreamData(
-      QuicStreamId id,
-      QuicIOVector iov,
-      QuicStreamOffset offset,
-      bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
-
   // Sends SETTINGS_MAX_HEADER_LIST_SIZE SETTINGS frame.
   size_t SendMaxHeaderListSize(size_t value);
 
@@ -126,14 +117,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   void UpdateStreamPriority(QuicStreamId id, SpdyPriority new_priority);
 
   void OnConfigNegotiated() override;
-
-  // Called by |headers_stream_| when |force_hol_blocking_| is true.
-  virtual void OnStreamFrameData(QuicStreamId stream_id,
-                                 const char* data,
-                                 size_t len,
-                                 bool fin);
-
-  bool force_hol_blocking() const { return force_hol_blocking_; }
 
   bool server_push_enabled() const { return server_push_enabled_; }
 
@@ -233,19 +216,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // Called when the size of the compressed frame payload is available.
   void OnCompressedFrameSize(size_t frame_len);
 
-  // For force HOL blocking, where stream frames from all streams are
-  // plumbed through headers stream as HTTP/2 data frames.
-  // The following two return false if force_hol_blocking_ is false.
-  bool OnDataFrameHeader(QuicStreamId stream_id, size_t length, bool fin);
-  bool OnStreamFrameData(QuicStreamId stream_id, const char* data, size_t len);
-
-  // Helper for |WritevStreamData()|.
-  void WriteDataFrame(
-      QuicStreamId stream_id,
-      QuicStringPiece data,
-      bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
-
   // This was formerly QuicHeadersStream::WriteHeaders.  Needs to be
   // separate from QuicSpdySession::WriteHeaders because tests call
   // this but mock the latter.
@@ -261,11 +231,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // The maximum size of a header block that will be accepted from the peer,
   // defined per spec as key + value + overhead per field (uncompressed).
   size_t max_inbound_header_list_size_;
-
-  // If set, redirect all data through the headers stream in order to
-  // simulate forced HOL blocking between streams as happens in
-  // HTTP/2 over TCP.
-  bool force_hol_blocking_;
 
   // Set during handshake. If true, resources in x-associated-content and link
   // headers will be pushed.

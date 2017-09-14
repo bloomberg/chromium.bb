@@ -437,7 +437,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   if (QuicHostnameUtils::IsValidSNI(server_id.host())) {
     out->SetStringPiece(kSNI, server_id.host());
   }
-  out->SetValue(kVER, QuicVersionToQuicTag(preferred_version));
+  out->SetVersion(kVER, preferred_version);
 
   if (!user_agent_id_.empty()) {
     out->SetStringPiece(kUAID, user_agent_id_);

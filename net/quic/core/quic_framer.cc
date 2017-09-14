@@ -478,10 +478,8 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
 
   uint8_t flags = static_cast<uint8_t>(PACKET_PUBLIC_FLAGS_RST |
                                        PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID);
-  if (FLAGS_quic_reloadable_flag_quic_use_old_public_reset_packets) {
-    // TODO(rch): Remove this QUIC_VERSION_32 is retired.
-    flags |= static_cast<uint8_t>(PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID_OLD);
-  }
+  // This hack makes post-v33 public reset packet look like pre-v33 packets.
+  flags |= static_cast<uint8_t>(PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID_OLD);
   if (!writer.WriteUInt8(flags)) {
     return nullptr;
   }
@@ -715,8 +713,7 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
       break;
     case PACKET_8BYTE_CONNECTION_ID:
       public_flags |= PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID;
-      if (!FLAGS_quic_reloadable_flag_quic_remove_v33_hacks2 &&
-          perspective_ == Perspective::IS_CLIENT) {
+      if (perspective_ == Perspective::IS_CLIENT) {
         public_flags |= PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID_OLD;
       }
       if (!writer->WriteUInt8(public_flags) ||

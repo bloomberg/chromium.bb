@@ -10,14 +10,12 @@
 namespace net {
 
 class QuicClient;
-class QuicCryptoClientConfig;
 class QuicPacketWriter;
 
 namespace test {
 
 class QuicClientPeer {
  public:
-  static QuicCryptoClientConfig* GetCryptoConfig(QuicClient* client);
   static bool CreateUDPSocketAndBind(QuicClient* client);
   static void CleanUpUDPSocket(QuicClient* client, int fd);
   static void SetClientPort(QuicClient* client, int port);

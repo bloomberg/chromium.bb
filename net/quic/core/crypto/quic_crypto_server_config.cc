@@ -981,12 +981,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
   }
 
   out->set_tag(kSHLO);
-  QuicTagVector supported_version_tags;
-  for (size_t i = 0; i < supported_versions.size(); ++i) {
-    supported_version_tags.push_back(
-        QuicVersionToQuicTag(supported_versions[i]));
-  }
-  out->SetVector(kVER, supported_version_tags);
+  out->SetVersionVector(kVER, supported_versions);
   out->SetStringPiece(
       kSourceAddressTokenTag,
       NewSourceAddressToken(*requested_config, info.source_address_tokens,

@@ -200,7 +200,6 @@ class QuicStreamFactoryTestBase {
         migrate_sessions_on_network_change_(false),
         migrate_sessions_early_(false),
         allow_server_migration_(false),
-        force_hol_blocking_(false),
         race_cert_verification_(false),
         estimate_initial_rtt_(false) {
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
@@ -220,8 +219,8 @@ class QuicStreamFactoryTestBase {
         /*mark_quic_broken_when_network_blackholes*/ false,
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
         migrate_sessions_on_network_change_, migrate_sessions_early_,
-        allow_server_migration_, force_hol_blocking_, race_cert_verification_,
-        estimate_initial_rtt_, connection_options_, client_connection_options_,
+        allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
+        connection_options_, client_connection_options_,
         /*enable_token_binding*/ false));
   }
 
@@ -733,7 +732,6 @@ class QuicStreamFactoryTestBase {
   bool migrate_sessions_on_network_change_;
   bool migrate_sessions_early_;
   bool allow_server_migration_;
-  bool force_hol_blocking_;
   bool race_cert_verification_;
   bool estimate_initial_rtt_;
   QuicTagVector connection_options_;
@@ -4785,36 +4783,6 @@ TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-}
-
-TEST_P(QuicStreamFactoryTest, ForceHolBlockingEnabled) {
-  FLAGS_quic_reloadable_flag_quic_use_stream_notifier2 = false;
-  force_hol_blocking_ = true;
-  Initialize();
-
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  MockQuicData socket_data;
-  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  socket_data.AddWrite(ConstructInitialSettingsPacket());
-  socket_data.AddSocketDataToFactory(&socket_factory_);
-
-  QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, "GET", net_log_,
-                            &net_error_details_, callback_.callback()));
-
-  EXPECT_EQ(OK, callback_.WaitForResult());
-
-  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
-  if (session->connection()->version() == QUIC_VERSION_36 &&
-      !FLAGS_quic_reloadable_flag_quic_use_stream_notifier2) {
-    EXPECT_TRUE(session->force_hol_blocking());
-  } else {
-    EXPECT_FALSE(session->force_hol_blocking());
-  }
 }
 
 class QuicStreamFactoryWithDestinationTest

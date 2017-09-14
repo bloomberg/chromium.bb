@@ -40,8 +40,6 @@ class QuicConfigPeer {
   static void SetConnectionOptionsToSend(QuicConfig* config,
                                          const QuicTagVector& options);
 
-  static void SetReceivedForceHolBlocking(QuicConfig* config);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);
 };

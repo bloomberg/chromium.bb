@@ -70,6 +70,19 @@ void CryptoHandshakeMessage::MarkDirty() {
   serialized_.reset();
 }
 
+void CryptoHandshakeMessage::SetVersionVector(QuicTag tag,
+                                              QuicVersionVector versions) {
+  QuicTagVector version_tags;
+  for (QuicVersion version : versions) {
+    version_tags.push_back(QuicVersionToQuicTag(version));
+  }
+  SetVector(tag, version_tags);
+}
+
+void CryptoHandshakeMessage::SetVersion(QuicTag tag, QuicVersion version) {
+  SetValue(tag, QuicVersionToQuicTag(version));
+}
+
 void CryptoHandshakeMessage::SetStringPiece(QuicTag tag,
                                             QuicStringPiece value) {
   tag_value_map_[tag] = value.as_string();

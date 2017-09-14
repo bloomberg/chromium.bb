@@ -186,15 +186,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   QuicSpdySession* spdy_session() const { return spdy_session_; }
   Visitor* visitor() { return visitor_; }
 
-  // Redirects to the headers stream if force HOL blocking enabled,
-  // otherwise just pass through.
-  QuicConsumedData WritevDataInner(
-      QuicIOVector iov,
-      QuicStreamOffset offset,
-      bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener)
-      override;
-
   void set_headers_decompressed(bool val) { headers_decompressed_ = val; }
 
  private:
