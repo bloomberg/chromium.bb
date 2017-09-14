@@ -157,6 +157,7 @@ class UiSceneManager {
   std::vector<UiElement*> control_elements_;
 
   gfx::SizeF last_content_screen_bounds_;
+  float last_content_aspect_ratio_ = 0.0f;
 
   base::WeakPtrFactory<UiSceneManager> weak_ptr_factory_;
 
