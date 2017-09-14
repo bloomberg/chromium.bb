@@ -28,7 +28,6 @@
 
 namespace midi {
 
-class MidiScheduler;
 class MidiService;
 
 // MidiManager for USB-MIDI.
@@ -69,6 +68,9 @@ class USB_MIDI_EXPORT MidiManagerUsb : public MidiManager,
   }
   const UsbMidiInputStream* input_stream() const { return input_stream_.get(); }
 
+ private:
+  using Callback = base::OnceCallback<void(mojom::Result)>;
+
   // Initializes this object.
   // When the initialization finishes, |callback| will be called with the
   // result.
@@ -76,26 +78,25 @@ class USB_MIDI_EXPORT MidiManagerUsb : public MidiManager,
   // will be canceled silently (i.e. |callback| will not be called).
   // The function is public just for unit tests. Do not call this function
   // outside code for testing.
-  void Initialize(base::OnceCallback<void(mojom::Result result)> callback);
+  void Initialize(Callback callback);
 
- private:
   void OnEnumerateDevicesDone(bool result, UsbMidiDevice::Devices* devices);
   bool AddPorts(UsbMidiDevice* device, int device_id);
+
+  // TODO(toyoshim): Remove |lock_| once dynamic instantiation mode is enabled
+  // by default. This protects objects allocated on the I/O thread from doubly
+  // released on the main thread.
+  base::Lock lock_;
 
   std::unique_ptr<UsbMidiDevice::Factory> device_factory_;
   std::vector<std::unique_ptr<UsbMidiDevice>> devices_;
   std::vector<std::unique_ptr<UsbMidiOutputStream>> output_streams_;
   std::unique_ptr<UsbMidiInputStream> input_stream_;
 
-  base::OnceCallback<void(mojom::Result result)> initialize_callback_;
+  Callback initialize_callback_;
 
   // A map from <endpoint_number, cable_number> to the index of input jacks.
   base::hash_map<std::pair<int, int>, size_t> input_jack_dictionary_;
-
-  // Lock to ensure the MidiScheduler is being destructed only once in
-  // Finalize() on Chrome_IOThread.
-  base::Lock scheduler_lock_;
-  std::unique_ptr<MidiScheduler> scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerUsb);
 };
