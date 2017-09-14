@@ -17,6 +17,6 @@ struct EnumTraits<content::mojom::ResourceType, content::ResourceType> {
   static bool FromMojom(content::mojom::ResourceType input,
                         content::ResourceType* output);
 };
-}
+}  // namespace mojo
 
 #endif  // CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_ENUM_TRAITS_H_
