@@ -547,7 +547,7 @@ void RendererSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
       main_thread_only().renderer_backgrounded == backgrounded)
     return;
   main_thread_only().backgrounding_tracer.SetState(
-      BackgroundStateToString(main_thread_only().renderer_backgrounded));
+      BackgroundStateToString(backgrounded));
 
   main_thread_only().renderer_backgrounded = backgrounded;
   if (!backgrounded)
