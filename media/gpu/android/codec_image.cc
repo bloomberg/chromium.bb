@@ -10,7 +10,7 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "media/gpu/surface_texture_gl_owner.h"
+#include "media/gpu/android/surface_texture_gl_owner.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_make_current.h"
 

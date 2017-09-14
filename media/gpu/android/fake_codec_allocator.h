@@ -5,8 +5,8 @@
 #include <memory>
 
 #include "media/base/android/mock_media_codec_bridge.h"
-#include "media/gpu/avda_codec_allocator.h"
-#include "media/gpu/avda_surface_bundle.h"
+#include "media/gpu/android/avda_codec_allocator.h"
+#include "media/gpu/android/avda_surface_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/android/surface_texture.h"

@@ -27,10 +27,10 @@
 #include "ui/gl/gl_surface_egl.h"
 #endif
 #if defined(OS_ANDROID)
+#include "media/gpu/android/android_video_decode_accelerator.h"
+#include "media/gpu/android/android_video_surface_chooser_impl.h"
+#include "media/gpu/android/avda_codec_allocator.h"
 #include "media/gpu/android/device_info.h"
-#include "media/gpu/android_video_decode_accelerator.h"
-#include "media/gpu/android_video_surface_chooser_impl.h"
-#include "media/gpu/avda_codec_allocator.h"
 #endif
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi_video_decode_accelerator.h"

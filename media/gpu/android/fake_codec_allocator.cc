@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "media/gpu/avda_codec_allocator.h"
+#include "media/gpu/android/avda_codec_allocator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

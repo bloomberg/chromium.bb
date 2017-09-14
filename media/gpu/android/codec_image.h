@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "media/gpu/android/codec_wrapper.h"
+#include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/surface_texture_gl_owner.h"
 
 namespace media {
 
