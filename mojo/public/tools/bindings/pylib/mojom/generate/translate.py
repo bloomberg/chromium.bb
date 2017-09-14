@@ -273,6 +273,9 @@ def _Struct(module, parsed_struct):
       raise Exception("Native-only struct declarations must include a " +
                       "Native attribute.")
 
+  if struct.attributes and struct.attributes.get('CustomSerializer', False):
+    struct.custom_serializer = True
+
   return struct
 
 def _Union(module, parsed_union):

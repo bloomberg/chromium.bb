@@ -3,9 +3,13 @@
 # found in the LICENSE file.
 
 mojom = "//mojo/public/interfaces/bindings/tests/test_native_types.mojom"
-public_headers = [ "//mojo/public/cpp/bindings/tests/pickled_types_chromium.h" ]
+public_headers = [
+  "//mojo/public/cpp/bindings/tests/pickled_types_chromium.h",
+  "//mojo/public/cpp/bindings/tests/test_native_types.h",
+]
 sources = [
   "//mojo/public/cpp/bindings/tests/pickled_types_chromium.cc",
+  "//mojo/public/cpp/bindings/tests/test_native_types.cc",
 ]
 deps = [
   "//ipc",
@@ -14,4 +18,6 @@ deps = [
 type_mappings = [
   "mojo.test.PickledEnum=mojo::test::PickledEnumChromium",
   "mojo.test.PickledStruct=mojo::test::PickledStructChromium[move_only]",
+  "mojo.test.TestNativeStructMojom=mojo::test::TestNativeStruct",
+  "mojo.test.TestNativeStructWithAttachmentsMojom=mojo::test::TestNativeStructWithAttachments[move_only]",
 ]

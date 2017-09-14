@@ -28,6 +28,7 @@ source_set("tests") {
     "message_queue.cc",
     "message_queue.h",
     "multiplex_router_unittest.cc",
+    "native_struct_unittest.cc",
     "report_bad_message_unittest.cc",
     "request_response_unittest.cc",
     "router_test_util.cc",

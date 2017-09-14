@@ -208,7 +208,8 @@ class MojomProcessor(object):
             export_attribute=args.export_attribute,
             export_header=args.export_header,
             generate_non_variant_code=args.generate_non_variant_code,
-            support_lazy_serialization=args.support_lazy_serialization)
+            support_lazy_serialization=args.support_lazy_serialization,
+            allow_native_structs=args.allow_native_structs)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -367,6 +368,11 @@ def main():
       "--support_lazy_serialization",
       help="If set, generated bindings will serialize lazily when possible.",
       action="store_true")
+  generate_parser.add_argument(
+      "--allow_native_structs",
+      help="Allows the [Native] attribute to be specified on structs within "
+      "the mojom file. Must not be specified on internal bindings mojom or "
+      "other dependencies thereof.", action="store_true")
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",

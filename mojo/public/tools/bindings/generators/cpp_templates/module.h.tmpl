@@ -52,7 +52,6 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
 #include "mojo/public/cpp/bindings/lib/control_message_proxy.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
-#include "mojo/public/cpp/bindings/native_struct.h"
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
@@ -76,6 +75,10 @@ namespace {{variant}} {
 #include "third_party/WebKit/Source/platform/wtf/HashFunctions.h"
 #include "third_party/WebKit/Source/platform/wtf/Optional.h"
 #include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
+{%- endif %}
+
+{% if allow_native_structs %}
+#include "mojo/public/cpp/bindings/lib/native_struct_serialization.h"
 {%- endif %}
 
 {%- for header in extra_public_headers %}
@@ -131,8 +134,8 @@ using {{interface.name}}AssociatedRequest =
 {#--- Struct Forward Declarations -#}
 {%  for struct in structs %}
 {%-   if struct|is_native_only_kind %}
-using {{struct.name}} = mojo::NativeStruct;
-using {{struct.name}}Ptr = mojo::NativeStructPtr;
+using {{struct.name}} = mojo::native::NativeStruct;
+using {{struct.name}}Ptr = mojo::native::NativeStructPtr;
 {%-   else %}
 class {{struct.name}};
 {%-     if struct|should_inline %}

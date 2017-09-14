@@ -9,14 +9,15 @@
 
 #include "base/win/scoped_handle.h"
 #include "ipc/handle_win.h"
-#include "ipc/ipc_export.h"
 #include "ipc/ipc_message_attachment.h"
+#include "ipc/ipc_message_support_export.h"
 
 namespace IPC {
 namespace internal {
 
 // This class represents a Windows HANDLE attached to a Chrome IPC message.
-class IPC_EXPORT HandleAttachmentWin : public MessageAttachment {
+class IPC_MESSAGE_SUPPORT_EXPORT HandleAttachmentWin
+    : public MessageAttachment {
  public:
   // This constructor makes a copy of |handle| and takes ownership of the
   // result. Should only be called by the sender of a Chrome IPC message.

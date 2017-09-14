@@ -174,6 +174,16 @@ if (enable_mojom_typemapping) {
 #       deserialization, and validation logic at the expensive of increased
 #       code size. Defaults to |false|.
 #
+#   disable_variants (optional)
+#       If |true|, no variant sources will be generated for the target. Defaults
+#       to |false|.
+#
+#   allow_native_structs (optional)
+#       If set to |true| (the default), mojoms in this target may apply the
+#       [Native] attribute to struct declarations, causing that mojom struct to
+#       be serialized and deserialized using a legacy IPC::ParamTraits
+#       specialization.
+#
 #   component_output_prefix (optional)
 #       The prefix to use for the output_name of any component library emitted
 #       for generated C++ bindings. If this is omitted, C++ bindings targets are
@@ -312,6 +322,10 @@ template("mojom") {
       "--bytecode_path",
       rebase_path("$root_gen_dir/mojo/public/tools/bindings", root_build_dir),
     ]
+
+    if (!defined(invoker.allow_native_structs) || invoker.allow_native_structs) {
+      common_generator_args += [ "--allow_native_structs" ]
+    }
 
     if (defined(invoker.import_dirs)) {
       foreach(import_dir, invoker.import_dirs) {
@@ -476,7 +490,14 @@ template("mojom") {
   }
 
   # Generate code for variants.
-  foreach(bindings_configuration, _bindings_configurations) {
+  if (!defined(invoker.disable_variants) || !invoker.disable_variants) {
+    enabled_configurations = _bindings_configurations
+  } else {
+    first_config = _bindings_configurations[0]
+    assert(!defined(first_config.variant))
+    enabled_configurations = [ first_config ]
+  }
+  foreach(bindings_configuration, enabled_configurations) {
     cpp_only = false
     if (defined(invoker.cpp_only)) {
       cpp_only = invoker.cpp_only

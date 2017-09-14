@@ -22,14 +22,6 @@ TEST_F(HashTest, NestedStruct) {
                              SimpleNestedStruct::New(ContainsOther::New(1))));
 }
 
-TEST_F(HashTest, UnmappedNativeStruct) {
-  // Just check that this template instantiation compiles.
-  ASSERT_EQ(::mojo::internal::Hash(::mojo::internal::kHashSeed,
-                                   UnmappedNativeStruct::New()),
-            ::mojo::internal::Hash(::mojo::internal::kHashSeed,
-                                   UnmappedNativeStruct::New()));
-}
-
 }  // namespace
 }  // namespace test
 }  // namespace mojo

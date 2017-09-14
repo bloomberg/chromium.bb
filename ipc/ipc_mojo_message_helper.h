@@ -5,14 +5,14 @@
 #ifndef IPC_IPC_MOJO_MESSAGE_HELPER_H_
 #define IPC_IPC_MOJO_MESSAGE_HELPER_H_
 
-#include "ipc/ipc_export.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_message_support_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
 
 // Reads and writes |mojo::MessagePipe| from/to |Message|.
-class IPC_EXPORT MojoMessageHelper {
+class IPC_MESSAGE_SUPPORT_EXPORT MojoMessageHelper {
  public:
   static bool WriteMessagePipeTo(base::Pickle* message,
                                  mojo::ScopedMessagePipeHandle handle);

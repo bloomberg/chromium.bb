@@ -8,7 +8,7 @@
 #include "base/files/file.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
-#include "ipc/ipc_export.h"
+#include "ipc/ipc_message_support_export.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -17,7 +17,7 @@
 namespace IPC {
 
 #if defined(OS_WIN)
-class IPC_EXPORT PlatformFileForTransit {
+class IPC_MESSAGE_SUPPORT_EXPORT PlatformFileForTransit {
  public:
   // Creates an invalid platform file.
   PlatformFileForTransit();
@@ -72,14 +72,14 @@ inline base::File PlatformFileForTransitToFile(
 
 // Creates a new handle that can be passed through IPC. The result must be
 // passed to the IPC layer as part of a message, or else it will leak.
-IPC_EXPORT PlatformFileForTransit GetPlatformFileForTransit(
-    base::PlatformFile file,
-    bool close_source_handle);
+IPC_MESSAGE_SUPPORT_EXPORT PlatformFileForTransit
+GetPlatformFileForTransit(base::PlatformFile file, bool close_source_handle);
 
 // Creates a new handle that can be passed through IPC. The result must be
 // passed to the IPC layer as part of a message, or else it will leak.
 // Note that this function takes ownership of |file|.
-IPC_EXPORT PlatformFileForTransit TakePlatformFileForTransit(base::File file);
+IPC_MESSAGE_SUPPORT_EXPORT PlatformFileForTransit
+TakePlatformFileForTransit(base::File file);
 
 }  // namespace IPC
 
