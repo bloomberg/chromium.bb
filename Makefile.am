@@ -1377,6 +1377,7 @@ EXTRA_DIST = \
 	src/processor/testdata/microdump.stackwalk-arm.out \
 	src/processor/testdata/microdump.stackwalk.machine_readable-arm64.out \
 	src/processor/testdata/microdump.stackwalk.machine_readable-arm.out \
+	src/processor/testdata/microdump-withcrashreason.dmp \
 	src/processor/testdata/microdump-x86.dmp \
 	src/processor/testdata/minidump2.dmp \
 	src/processor/testdata/minidump2.dump.out \
