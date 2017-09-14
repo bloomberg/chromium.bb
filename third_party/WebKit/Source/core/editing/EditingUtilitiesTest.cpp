@@ -6,6 +6,7 @@
 
 #include "core/dom/StaticNodeList.h"
 #include "core/editing/EditingTestBase.h"
+#include "core/editing/VisiblePosition.h"
 
 namespace blink {
 

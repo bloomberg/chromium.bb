@@ -34,6 +34,7 @@
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -2362,6 +2363,10 @@ const AtomicString& AXObject::InternalRoleName(AccessibilityRole role) {
       CreateInternalRoleNameVector();
 
   return internal_role_name_vector->at(role);
+}
+
+VisiblePosition AXObject::VisiblePositionForIndex(int) const {
+  return VisiblePosition();
 }
 
 DEFINE_TRACE(AXObject) {

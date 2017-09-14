@@ -39,6 +39,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/RelocatablePosition.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/AppendNodeCommand.h"
@@ -1218,6 +1219,10 @@ void CompositeEditCommand::CloneParagraphUnderNewElement(
 // before and after the table/list collapse onto one line.
 // Deleting a paragraph will leave a placeholder. Remove it (and prune
 // empty or unrendered parents).
+
+void CompositeEditCommand::CleanupAfterDeletion(EditingState* editing_state) {
+  CleanupAfterDeletion(editing_state, VisiblePosition());
+}
 
 void CompositeEditCommand::CleanupAfterDeletion(EditingState* editing_state,
                                                 VisiblePosition destination) {

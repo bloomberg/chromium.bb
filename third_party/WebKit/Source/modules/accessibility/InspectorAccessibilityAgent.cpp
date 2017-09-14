@@ -10,6 +10,7 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementShadow.h"
+#include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
 #include "core/inspector/IdentifiersFactory.h"

@@ -10,7 +10,6 @@
 #include "core/editing/Position.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/TextAffinity.h"
-#include "core/editing/VisiblePosition.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

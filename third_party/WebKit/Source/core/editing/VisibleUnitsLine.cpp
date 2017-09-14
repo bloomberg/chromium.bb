@@ -32,6 +32,7 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/RenderedPosition.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
