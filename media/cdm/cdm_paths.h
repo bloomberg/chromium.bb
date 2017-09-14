@@ -22,6 +22,9 @@ extern const char kClearKeyCdmAdapterFileName[];
 // Display name for Clear Key CDM.
 extern const char kClearKeyCdmDisplayName[];
 
+// The CDM type used to register Clear Key CDM.
+extern const char kClearKeyCdmType[];
+
 // Pepper type for Clear Key CDM.
 // TODO(xhwang): Remove after switching to mojo CDM.
 extern const char kClearKeyCdmPepperMimeType[];

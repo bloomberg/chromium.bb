@@ -82,6 +82,8 @@ MEDIA_EXPORT extern const char kMSEVideoBufferSizeLimit[];
 
 MEDIA_EXPORT extern const char kIgnoreAutoplayRestrictionsForTests[];
 
+MEDIA_EXPORT extern const char kClearKeyCdmPathForTesting[];
+
 #if !defined(OS_ANDROID)
 MEDIA_EXPORT extern const char kEnableInternalMediaSession[];
 #endif  // !defined(OS_ANDROID)

@@ -56,7 +56,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#include "chrome/browser/media/pepper_cdm_test_helper.h"
+#include "chrome/browser/media/library_cdm_test_helper.h"
 #endif
 
 using content::BrowserThread;
@@ -497,6 +497,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Flash) {
 // The following tests verify that Pepper plugins that use JavaScript settings
 // instead of Plugins settings still work when Plugins are blocked.
 
+// TODO(crbug.com/403462): Remove after pepper CDM is deprecated.
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE) && \
     !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
@@ -527,6 +528,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
   RunJavaScriptBlockedTest("/load_flash_no_js.html", false);
 }
 
+// TODO(crbug.com/403462): Remove after pepper CDM is deprecated.
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        WidevineCdm) {

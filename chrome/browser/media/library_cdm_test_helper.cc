@@ -2,18 +2,52 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/pepper_cdm_test_helper.h"
+#include "chrome/browser/media/library_cdm_test_helper.h"
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "content/public/browser/cdm_registry.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/common/cdm_info.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
+#include "media/base/media_switches.h"
 #include "media/cdm/cdm_paths.h"
 
-#include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
+void RegisterExternalClearKey(base::CommandLine* command_line,
+                              bool expect_cdm_exists) {
+  base::FilePath cdm_path;
+  base::PathService::Get(base::DIR_MODULE, &cdm_path);
+  cdm_path = cdm_path
+                 .Append(media::GetPlatformSpecificDirectory(
+                     media::kClearKeyCdmBaseDirectory))
+                 .AppendASCII(base::GetNativeLibraryName(
+                     media::kClearKeyCdmLibraryName));
+  DCHECK_EQ(expect_cdm_exists, base::PathExists(cdm_path))
+      << cdm_path.MaybeAsASCII();
+
+  // Append the switch to register the Clear Key CDM path.
+  command_line->AppendSwitchNative(switches::kClearKeyCdmPathForTesting,
+                                   cdm_path.value());
+}
+
+bool IsLibraryCdmRegistered(const std::string& cdm_type) {
+  std::vector<content::CdmInfo> cdm_info_vector =
+      content::CdmRegistry::GetInstance()->GetAllRegisteredCdms();
+  for (const auto& cdm_info : cdm_info_vector) {
+    if (cdm_info.type == cdm_type) {
+      DVLOG(2) << "CDM registered for " << cdm_type << " with path "
+               << cdm_info.path.value();
+      return true;
+    }
+  }
+
+  return false;
+}
 
 base::FilePath GetPepperCdmPath(const std::string& adapter_base_dir,
                                 const std::string& adapter_file_name) {
