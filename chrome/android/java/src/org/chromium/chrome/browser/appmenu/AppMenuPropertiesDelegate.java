@@ -78,7 +78,7 @@ public class AppMenuPropertiesDelegate {
         } else {
             boolean isBottomSheetNtpMenu = mActivity.getBottomSheet() != null
                     && mActivity.getBottomSheet().isShowingNewTab();
-            return !isBottomSheetNtpMenu && !isOverview;
+            return !isBottomSheetNtpMenu && !isOverview && mActivity.getActivityTab() != null;
         }
     }
 
