@@ -126,23 +126,22 @@ class CORE_EXPORT SerializedScriptValue
     WasmSerializationPolicy wasm_policy = kTransfer;
     StoragePolicy for_storage = kNotForStorage;
   };
-  static PassRefPtr<SerializedScriptValue> Serialize(v8::Isolate*,
-                                                     v8::Local<v8::Value>,
-                                                     const SerializeOptions&,
-                                                     ExceptionState&);
-  static PassRefPtr<SerializedScriptValue> SerializeAndSwallowExceptions(
+  static RefPtr<SerializedScriptValue> Serialize(v8::Isolate*,
+                                                 v8::Local<v8::Value>,
+                                                 const SerializeOptions&,
+                                                 ExceptionState&);
+  static RefPtr<SerializedScriptValue> SerializeAndSwallowExceptions(
       v8::Isolate*,
       v8::Local<v8::Value>);
 
-  static PassRefPtr<SerializedScriptValue> Create();
-  static PassRefPtr<SerializedScriptValue> Create(const String&);
-  static PassRefPtr<SerializedScriptValue> Create(RefPtr<const SharedBuffer>);
-  static PassRefPtr<SerializedScriptValue> Create(const char* data,
-                                                  size_t length);
+  static RefPtr<SerializedScriptValue> Create();
+  static RefPtr<SerializedScriptValue> Create(const String&);
+  static RefPtr<SerializedScriptValue> Create(RefPtr<const SharedBuffer>);
+  static RefPtr<SerializedScriptValue> Create(const char* data, size_t length);
 
   ~SerializedScriptValue();
 
-  static PassRefPtr<SerializedScriptValue> NullValue();
+  static RefPtr<SerializedScriptValue> NullValue();
 
   String ToWireString() const;
   void ToWireBytes(Vector<char>&) const;
@@ -276,7 +275,7 @@ class CORE_EXPORT SerializedScriptValue
 template <>
 struct NativeValueTraits<SerializedScriptValue>
     : public NativeValueTraitsBase<SerializedScriptValue> {
-  CORE_EXPORT static inline PassRefPtr<SerializedScriptValue> NativeValue(
+  CORE_EXPORT static inline RefPtr<SerializedScriptValue> NativeValue(
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       const SerializedScriptValue::SerializeOptions& options,

@@ -43,7 +43,6 @@
 #include "core/dom/events/EventTarget.h"
 #include "core/html/custom/CEReactionsScope.h"
 #include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"

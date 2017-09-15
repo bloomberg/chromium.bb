@@ -19,7 +19,7 @@ class SerializedScriptValueForModulesFactory final
   SerializedScriptValueForModulesFactory() : SerializedScriptValueFactory() {}
 
  protected:
-  PassRefPtr<SerializedScriptValue> Create(
+  RefPtr<SerializedScriptValue> Create(
       v8::Isolate*,
       v8::Local<v8::Value>,
       const SerializedScriptValue::SerializeOptions&,

@@ -9,7 +9,7 @@
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/webgl/WebGLObject.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

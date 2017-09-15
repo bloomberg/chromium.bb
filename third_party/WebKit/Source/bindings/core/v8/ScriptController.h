@@ -112,7 +112,7 @@ class CORE_EXPORT ScriptController final
 
   // Creates a new isolated world for DevTools with the given human readable
   // |world_name| and returns it id or nullptr on failure.
-  PassRefPtr<DOMWrapperWorld> CreateNewInspectorIsolatedWorld(
+  RefPtr<DOMWrapperWorld> CreateNewInspectorIsolatedWorld(
       const String& world_name);
 
   // Returns true if the current world is isolated, and has its own Content

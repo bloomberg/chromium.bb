@@ -32,7 +32,7 @@
 #define V8ErrorHandler_h
 
 #include "bindings/core/v8/V8EventListener.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "v8/include/v8.h"
 
 namespace blink {

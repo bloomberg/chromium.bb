@@ -209,7 +209,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
         return CPP_SPECIAL_CONVERSION_RULES[base_idl_type]
 
     if base_idl_type == 'SerializedScriptValue':
-        return ('PassRefPtr<%s>' if used_as_rvalue_type else 'RefPtr<%s>') % base_idl_type
+        return 'RefPtr<%s>' % base_idl_type
     if idl_type.is_string_type:
         if not raw_type:
             return 'const String&' if used_as_rvalue_type else 'String'
@@ -1061,7 +1061,7 @@ def cpp_type_has_null_value(idl_type):
     # - String types (String/AtomicString) represent null as a null string,
     #   i.e. one for which String::IsNull() returns true.
     # - Enum types, as they are implemented as Strings.
-    # - Interface types (raw pointer or RefPtr/PassRefPtr) represent null as
+    # - Interface types (raw pointer or RefPtr) represent null as
     #   a null pointer.
     # - Union types, as thier container classes can represent null value.
     # - 'Object' and 'any' type. We use ScriptValue for object type.

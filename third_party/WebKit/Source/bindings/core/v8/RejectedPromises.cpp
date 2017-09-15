@@ -255,7 +255,7 @@ void RejectedPromises::ProcessQueue() {
       ->Scheduler()
       ->TimerTaskRunner()
       ->PostTask(BLINK_FROM_HERE, WTF::Bind(&RejectedPromises::ProcessQueueNow,
-                                            PassRefPtr<RejectedPromises>(this),
+                                            RefPtr<RejectedPromises>(this),
                                             WTF::Passed(std::move(queue))));
 }
 

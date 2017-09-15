@@ -67,7 +67,7 @@
 
 namespace blink {
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::Serialize(
+RefPtr<SerializedScriptValue> SerializedScriptValue::Serialize(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
     const SerializeOptions& options,
@@ -76,7 +76,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::Serialize(
                                                          options, exception);
 }
 
-PassRefPtr<SerializedScriptValue>
+RefPtr<SerializedScriptValue>
 SerializedScriptValue::SerializeAndSwallowExceptions(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value) {
@@ -88,11 +88,11 @@ SerializedScriptValue::SerializeAndSwallowExceptions(
   return serialized;
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::Create() {
+RefPtr<SerializedScriptValue> SerializedScriptValue::Create() {
   return AdoptRef(new SerializedScriptValue);
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::Create(
+RefPtr<SerializedScriptValue> SerializedScriptValue::Create(
     const String& data) {
   CheckedNumeric<size_t> data_buffer_size = data.length();
   data_buffer_size *= 2;
@@ -217,9 +217,8 @@ static void SwapWiredDataIfNeeded(uint8_t* buffer, size_t buffer_size) {
     uchars[i] = ntohs(uchars[i]);
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::Create(
-    const char* data,
-    size_t length) {
+RefPtr<SerializedScriptValue> SerializedScriptValue::Create(const char* data,
+                                                            size_t length) {
   if (!data)
     return Create();
 
@@ -230,7 +229,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::Create(
   return AdoptRef(new SerializedScriptValue(std::move(data_buffer), length));
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::Create(
+RefPtr<SerializedScriptValue> SerializedScriptValue::Create(
     RefPtr<const SharedBuffer> buffer) {
   if (!buffer)
     return Create();
@@ -277,7 +276,7 @@ SerializedScriptValue::~SerializedScriptValue() {
   }
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::NullValue() {
+RefPtr<SerializedScriptValue> SerializedScriptValue::NullValue() {
   // The format here may fall a bit out of date, because we support
   // deserializing SSVs written by old browser versions.
   static const uint8_t kNullData[] = {0xFF, 17, 0xFF, 13, '0', 0x00};

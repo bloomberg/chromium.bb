@@ -229,7 +229,7 @@ class IdlType(IdlTypeBase):
         # Anything that is not another type is an interface type.
         # http://www.w3.org/TR/WebIDL/#idl-types
         # http://www.w3.org/TR/WebIDL/#idl-interface
-        # In C++ these are RefPtr or PassRefPtr types.
+        # In C++ these are RefPtr types.
         return not(self.is_basic_type or
                    self.is_callback_function or
                    self.is_dictionary or
