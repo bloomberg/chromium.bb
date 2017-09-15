@@ -81,6 +81,18 @@ class DemuxerStreamAdapter {
   // or base::nullopt if the flushing state was unchanged.
   base::Optional<uint32_t> SignalFlush(bool flushing);
 
+  bool is_processing_read_request() const {
+    // |read_until_callback_handle_| is set when RPC_DS_READUNTIL message is
+    // received, and will be reset to invalid value after
+    // RPC_DS_READUNTIL_CALLBACK is sent back to receiver. Therefore it can be
+    // used to determine if the class is in the reading state or not.
+    return read_until_callback_handle_ != RpcBroker::kInvalidHandle;
+  }
+
+  // Indicates whether there is data waiting to be written to the mojo data
+  // pipe.
+  bool is_data_pending() const { return !pending_frame_.empty(); }
+
   // Creates a Mojo data pipe configured appropriately for use with a
   // DemuxerStreamAdapter.
   static mojo::DataPipe* CreateDataPipe();
@@ -103,13 +115,6 @@ class DemuxerStreamAdapter {
                    const scoped_refptr<DecoderBuffer>& input);
   void TryWriteData(MojoResult result);
   void ResetPendingFrame();
-  bool IsProcessingReadRequest() const {
-    // |read_until_callback_handle_| is set when RPC_DS_READUNTIL message is
-    // received, and will be reset to invalid value after
-    // RPC_DS_READUNTIL_CALLBACK is sent back to receiver. Therefore it can be
-    // used to determine if the class is in the reading state or not.
-    return read_until_callback_handle_ != RpcBroker::kInvalidHandle;
-  }
 
   // Callback function when a fatal runtime error occurs.
   void OnFatalError(StopTrigger stop_trigger);

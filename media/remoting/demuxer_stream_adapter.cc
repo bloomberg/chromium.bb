@@ -224,7 +224,7 @@ void DemuxerStreamAdapter::ReadUntil(std::unique_ptr<pb::RpcMessage> message) {
     return;
   }
 
-  if (IsProcessingReadRequest()) {
+  if (is_processing_read_request()) {
     DEMUXER_VLOG(2) << "Ignore read request while it's in the reading state.";
     return;
   }
@@ -253,7 +253,7 @@ void DemuxerStreamAdapter::EnableBitstreamConverter() {
 
 void DemuxerStreamAdapter::RequestBuffer() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  if (!IsProcessingReadRequest() || pending_flush_) {
+  if (!is_processing_read_request() || pending_flush_) {
     DEMUXER_VLOG(2) << "Skip actions since it's not in the reading state";
     return;
   }
@@ -266,7 +266,7 @@ void DemuxerStreamAdapter::OnNewBuffer(
     const scoped_refptr<DecoderBuffer>& input) {
   DEMUXER_VLOG(3) << "status=" << status;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  if (!IsProcessingReadRequest() || pending_flush_) {
+  if (!is_processing_read_request() || pending_flush_) {
     DEMUXER_VLOG(2) << "Skip actions since it's not in the reading state";
     return;
   }
@@ -311,7 +311,7 @@ void DemuxerStreamAdapter::TryWriteData(MojoResult result) {
   // The Mojo watcher will also call TryWriteData() sometimes as a notification
   // that data pipe is ready. But that does not necessarily mean the data for a
   // read request is ready to be written into the pipe.
-  if (!IsProcessingReadRequest() || pending_flush_) {
+  if (!is_processing_read_request() || pending_flush_) {
     DEMUXER_VLOG(3) << "Skip actions since it's not in the reading state";
     return;
   }
