@@ -156,6 +156,45 @@ class AXPlatformNodeWinTest : public testing::Test {
     EXPECT_STREQ(expected_name, name);
   }
 
+  AXTreeUpdate BuildTextFieldWithSelectionRange(int32_t start, int32_t stop) {
+    AXNodeData text_field_node;
+    text_field_node.id = 1;
+    text_field_node.role = AX_ROLE_TEXT_FIELD;
+    text_field_node.AddState(AX_STATE_EDITABLE);
+    text_field_node.AddState(AX_STATE_SELECTED);
+    text_field_node.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, start);
+    text_field_node.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, stop);
+    text_field_node.SetValue("How now brown cow.");
+
+    AXTreeUpdate update;
+    update.root_id = text_field_node.id;
+    update.nodes.push_back(text_field_node);
+    return update;
+  }
+
+  AXTreeUpdate BuildContentEditableWithSelectionRange(int32_t start,
+                                                      int32_t end) {
+    AXNodeData content_editable_node;
+    content_editable_node.id = 1;
+    content_editable_node.role = AX_ROLE_GROUP;
+    content_editable_node.AddState(AX_STATE_EDITABLE);
+    content_editable_node.AddState(AX_STATE_SELECTED);
+    content_editable_node.AddBoolAttribute(ui::AX_ATTR_EDITABLE_ROOT, true);
+    content_editable_node.SetValue("How now brown cow.");
+
+    AXTreeUpdate update;
+    update.root_id = content_editable_node.id;
+    update.nodes.push_back(content_editable_node);
+
+    update.has_tree_data = true;
+    update.tree_data.sel_anchor_object_id = content_editable_node.id;
+    update.tree_data.sel_focus_object_id = content_editable_node.id;
+    update.tree_data.sel_anchor_offset = start;
+    update.tree_data.sel_focus_offset = end;
+
+    return update;
+  }
+
   AXTreeUpdate Build3X3Table() {
     /*
       Build a table that looks like:
@@ -311,7 +350,7 @@ class AXPlatformNodeWinTest : public testing::Test {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
   AXNodeData root;
   root.id = 1;
-  root.AddStringAttribute(AX_ATTR_NAME, "Name");
+  root.SetName("Name");
   Init(root);
 
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
@@ -334,12 +373,12 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
   AXNodeData node1;
   node1.id = 1;
   node1.location = gfx::RectF(0, 0, 10, 10);
-  node1.AddStringAttribute(AX_ATTR_NAME, "Name1");
+  node1.SetName("Name1");
 
   AXNodeData node2;
   node2.id = 2;
   node2.location = gfx::RectF(20, 20, 10, 10);
-  node2.AddStringAttribute(AX_ATTR_NAME, "Name2");
+  node2.SetName("Name2");
 
   Init(root, node1, node2);
 
@@ -361,7 +400,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {
   AXNodeData root;
   root.id = 1;
-  root.AddStringAttribute(AX_ATTR_NAME, "Name");
+  root.SetName("Name");
   Init(root);
 
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
@@ -1083,7 +1122,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2SetSelection) {
   AXNodeData text_field_node;
   text_field_node.id = 1;
   text_field_node.role = AX_ROLE_TEXT_FIELD;
-  text_field_node.state = 1 << AX_STATE_EDITABLE;
+  text_field_node.AddState(AX_STATE_EDITABLE);
   text_field_node.SetValue("Hi");
 
   Init(text_field_node);
@@ -1725,7 +1764,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedChildrenOne) {
   AXTreeUpdate update = Build3X3Table();
 
   // 7 == table_cell_1
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].AddState(AX_STATE_SELECTED);
   Init(update);
 
   ScopedComPtr<IAccessibleTableCell> cell = GetCellInTable();
@@ -1750,10 +1789,10 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedChildrenMany) {
   // 8 == table_cell_2
   // 11 == table_cell_3
   // 12 == table_cell_4
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[8].AddState(AX_STATE_SELECTED);
+  update.nodes[11].AddState(AX_STATE_SELECTED);
+  update.nodes[12].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -1796,9 +1835,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedColumnsOne) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << AX_STATE_SELECTED;
+  update.nodes[3].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[11].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -1823,16 +1862,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedColumnsMany) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << AX_STATE_SELECTED;
+  update.nodes[3].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[11].AddState(AX_STATE_SELECTED);
 
   // 4 == table_column_header_3
   // 8 == table_cell_2
   // 12 == table_cell_4
-  update.nodes[4].state = 1 << AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << AX_STATE_SELECTED;
+  update.nodes[4].AddState(AX_STATE_SELECTED);
+  update.nodes[8].AddState(AX_STATE_SELECTED);
+  update.nodes[12].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -1875,9 +1914,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedRowsOne) {
   // 6 == table_row_header_1
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << AX_STATE_SELECTED;
+  update.nodes[6].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[8].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -1902,16 +1941,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedRowsMany) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << AX_STATE_SELECTED;
+  update.nodes[6].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[8].AddState(AX_STATE_SELECTED);
 
   // 10 == table_row_header_3
   // 11 == table_cell_1
   // 12 == table_cell_2
-  update.nodes[10].state = 1 << AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << AX_STATE_SELECTED;
+  update.nodes[10].AddState(AX_STATE_SELECTED);
+  update.nodes[11].AddState(AX_STATE_SELECTED);
+  update.nodes[12].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -1935,8 +1974,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedChildren) {
 
   // 7 == table_cell_1
   // 12 == table_cell_4
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[12].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -1964,8 +2003,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedChildrenZeroMax) {
 
   // 7 == table_cell_1
   // 12 == table_cell_4
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[12].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -1989,8 +2028,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedColumnsZero) {
 
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[11].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -2018,9 +2057,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedColumnsOne) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << AX_STATE_SELECTED;
+  update.nodes[3].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[11].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -2049,16 +2088,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedColumnsMany) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << AX_STATE_SELECTED;
+  update.nodes[3].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[11].AddState(AX_STATE_SELECTED);
 
   // 4 == table_column_header_3
   // 8 == table_cell_2
   // 12 == table_cell_4
-  update.nodes[4].state = 1 << AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << AX_STATE_SELECTED;
+  update.nodes[4].AddState(AX_STATE_SELECTED);
+  update.nodes[8].AddState(AX_STATE_SELECTED);
+  update.nodes[12].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -2108,9 +2147,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedRowsOne) {
   // 6 == table_row_header_1
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << AX_STATE_SELECTED;
+  update.nodes[6].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[8].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -2138,16 +2177,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedRowsMany) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << AX_STATE_SELECTED;
+  update.nodes[6].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[8].AddState(AX_STATE_SELECTED);
 
   // 10 == table_row_header_3
   // 11 == table_cell_1
   // 12 == table_cell_2
-  update.nodes[10].state = 1 << AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << AX_STATE_SELECTED;
+  update.nodes[10].AddState(AX_STATE_SELECTED);
+  update.nodes[11].AddState(AX_STATE_SELECTED);
+  update.nodes[12].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -2176,9 +2215,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsColumnSelected) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << AX_STATE_SELECTED;
+  update.nodes[3].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[11].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -2212,9 +2251,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsRowSelected) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << AX_STATE_SELECTED;
+  update.nodes[6].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[8].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -2248,9 +2287,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsSelected) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << AX_STATE_SELECTED;
+  update.nodes[6].AddState(AX_STATE_SELECTED);
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[8].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -2313,8 +2352,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTable2GetSelectedChildren) {
 
   // 7 == table_cell_1
   // 12 == table_cell_4
-  update.nodes[7].state = 1 << AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].AddState(AX_STATE_SELECTED);
+  update.nodes[12].AddState(AX_STATE_SELECTED);
 
   Init(update);
 
@@ -2399,29 +2438,126 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextGetNCharacters) {
   EXPECT_EQ(4, count);
 }
 
-TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextRemoveSelection) {
-  AXNodeData text_field_node;
-  text_field_node.id = 1;
-  text_field_node.role = AX_ROLE_TEXT_FIELD;
-  text_field_node.state = 1 << AX_STATE_EDITABLE;
-  text_field_node.state |= 1 << AX_STATE_SELECTED;
-  text_field_node.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, 1);
-  text_field_node.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, 2);
-  text_field_node.SetValue("Hi");
-  Init(text_field_node);
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextTextFieldRemoveSelection) {
+  Init(BuildTextFieldWithSelectionRange(1, 2));
+
   ScopedComPtr<IAccessible2> ia2_text_field =
       ToIAccessible2(GetRootIAccessible());
   ScopedComPtr<IAccessibleText> text_field;
   ia2_text_field.CopyTo(text_field.GetAddressOf());
   ASSERT_NE(nullptr, text_field.Get());
 
+  LONG start_offset, end_offset;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_field->get_selection(0, &start_offset, &end_offset));
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(2, end_offset);
+
   EXPECT_HRESULT_SUCCEEDED(text_field->removeSelection(0));
+
+  // There is no selection, just a caret.
+  EXPECT_EQ(E_INVALIDARG,
+            text_field->get_selection(0, &start_offset, &end_offset));
+}
+
+TEST_F(AXPlatformNodeWinTest,
+       TestIAccessibleTextContentEditableRemoveSelection) {
+  Init(BuildTextFieldWithSelectionRange(1, 2));
+
+  ScopedComPtr<IAccessible2> ia2_text_field =
+      ToIAccessible2(GetRootIAccessible());
+  ScopedComPtr<IAccessibleText> text_field;
+  ia2_text_field.CopyTo(text_field.GetAddressOf());
+  ASSERT_NE(nullptr, text_field.Get());
 
   LONG start_offset, end_offset;
   EXPECT_HRESULT_SUCCEEDED(
       text_field->get_selection(0, &start_offset, &end_offset));
-  ASSERT_EQ(2, start_offset);
-  ASSERT_EQ(2, end_offset);
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(2, end_offset);
+
+  EXPECT_HRESULT_SUCCEEDED(text_field->removeSelection(0));
+
+  // There is no selection, just a caret.
+  EXPECT_EQ(E_INVALIDARG,
+            text_field->get_selection(0, &start_offset, &end_offset));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextTextFieldGetSelected) {
+  Init(BuildTextFieldWithSelectionRange(1, 2));
+
+  ScopedComPtr<IAccessible2> ia2_text_field =
+      ToIAccessible2(GetRootIAccessible());
+  ScopedComPtr<IAccessibleText> text_field;
+  ia2_text_field.CopyTo(text_field.GetAddressOf());
+  ASSERT_NE(nullptr, text_field.Get());
+
+  LONG start_offset, end_offset;
+
+  // We only care about selection_index of zero, so passing anything but 0 as
+  // the first parameter should fail.
+  EXPECT_EQ(E_INVALIDARG,
+            text_field->get_selection(1, &start_offset, &end_offset));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_field->get_selection(0, &start_offset, &end_offset));
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(2, end_offset);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextTextFieldGetSelectedBackward) {
+  Init(BuildTextFieldWithSelectionRange(1, 2));
+
+  ScopedComPtr<IAccessible2> ia2_text_field =
+      ToIAccessible2(GetRootIAccessible());
+  ScopedComPtr<IAccessibleText> text_field;
+  ia2_text_field.CopyTo(text_field.GetAddressOf());
+  ASSERT_NE(nullptr, text_field.Get());
+
+  LONG start_offset, end_offset;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_field->get_selection(0, &start_offset, &end_offset));
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(2, end_offset);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleContentEditabledGetSelected) {
+  Init(BuildContentEditableWithSelectionRange(1, 2));
+
+  ScopedComPtr<IAccessible2> ia2_text_field =
+      ToIAccessible2(GetRootIAccessible());
+  ScopedComPtr<IAccessibleText> text_field;
+  ia2_text_field.CopyTo(text_field.GetAddressOf());
+  ASSERT_NE(nullptr, text_field.Get());
+
+  LONG start_offset, end_offset;
+
+  // We only care about selection_index of zero, so passing anything but 0 as
+  // the first parameter should fail.
+  EXPECT_EQ(E_INVALIDARG,
+            text_field->get_selection(1, &start_offset, &end_offset));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_field->get_selection(0, &start_offset, &end_offset));
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(2, end_offset);
+}
+
+TEST_F(AXPlatformNodeWinTest,
+       TestIAccessibleContentEditabledGetSelectedBackward) {
+  Init(BuildContentEditableWithSelectionRange(1, 2));
+
+  ScopedComPtr<IAccessible2> ia2_text_field =
+      ToIAccessible2(GetRootIAccessible());
+  ScopedComPtr<IAccessibleText> text_field;
+  ia2_text_field.CopyTo(text_field.GetAddressOf());
+  ASSERT_NE(nullptr, text_field.Get());
+
+  LONG start_offset, end_offset;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_field->get_selection(0, &start_offset, &end_offset));
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(2, end_offset);
 }
 
 }  // namespace ui

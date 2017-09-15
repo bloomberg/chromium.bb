@@ -2288,13 +2288,32 @@ STDMETHODIMP AXPlatformNodeWin::get_nSelections(LONG* n_selections) {
 STDMETHODIMP AXPlatformNodeWin::get_selection(LONG selection_index,
                                               LONG* start_offset,
                                               LONG* end_offset) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_SELECTION);
   COM_OBJECT_VALIDATE_2_ARGS(start_offset, end_offset);
-  if (selection_index != 0)
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  if (!start_offset || !end_offset || selection_index != 0)
     return E_INVALIDARG;
 
-  *start_offset = static_cast<LONG>(GetIntAttribute(AX_ATTR_TEXT_SEL_START));
-  *end_offset = static_cast<LONG>(GetIntAttribute(AX_ATTR_TEXT_SEL_END));
-  return S_OK;
+  *start_offset = 0;
+  *end_offset = 0;
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  if (selection_start >= 0 && selection_end >= 0 &&
+      selection_start != selection_end) {
+    // We should ignore the direction of the selection when exposing start and
+    // end offsets. According to the IA2 Spec the end offset is always increased
+    // by one past the end of the selection. This wouldn't make sense if
+    // end < start.
+    if (selection_end < selection_start)
+      std::swap(selection_start, selection_end);
+
+    *start_offset = selection_start;
+    *end_offset = selection_end;
+    return S_OK;
+  }
+
+  return E_INVALIDARG;
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_text(LONG start_offset,
