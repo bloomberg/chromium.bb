@@ -155,6 +155,7 @@ source_set("common") {
     "font_list_win.cc",
     "frame_message_enums.h",
     "frame_messages.h",
+    "frame_messages_forward.h",
     "frame_owner_properties.cc",
     "frame_owner_properties.h",
     "frame_replication_state.cc",

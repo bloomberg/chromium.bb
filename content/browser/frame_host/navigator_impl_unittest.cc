@@ -947,7 +947,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_EQ(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
   EXPECT_FALSE(node->render_manager()->pending_frame_host());
 
-  // Invoke OnDidCommitProvisionalLoad.
+  // Invoke DidCommitProvisionalLoad.
   speculative_rfh->SendNavigate(entry_id, true, kUrl);
   EXPECT_EQ(site_instance_id, main_test_rfh()->GetSiteInstance()->GetId());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -1018,7 +1018,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_NE(init_site_instance_id, redirect_site_instance_id);
   EXPECT_NE(site_instance_id, redirect_site_instance_id);
 
-  // Invoke OnDidCommitProvisionalLoad.
+  // Invoke DidCommitProvisionalLoad.
   speculative_rfh->SendNavigate(entry_id, true, kUrlRedirect);
 
   // Check that the speculative RenderFrameHost was swapped in.
@@ -1205,9 +1205,9 @@ void SetWithinSameDocument(
 }
 
 // A renderer process might try and claim that a cross site navigation was
-// within the same document by setting was_within_same_document = true for
-// FrameHostMsg_DidCommitProvisionalLoad. Such case should be detected on the
-// browser side and the renderer process should be killed.
+// within the same document by setting was_within_same_document = true in
+// FrameHostMsg_DidCommitProvisionalLoad_Params. Such case should be detected on
+// the browser side and the renderer process should be killed.
 TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteClaimWithinPage) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
