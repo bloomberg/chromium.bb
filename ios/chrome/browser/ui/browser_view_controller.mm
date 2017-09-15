@@ -1237,7 +1237,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 // Perform additional set up after loading the view, typically from a nib.
 - (void)viewDidLoad {
-  CGRect initialViewsRect = self.view.frame;
+  CGRect initialViewsRect = self.view.bounds;
   initialViewsRect.origin.y += StatusBarHeight();
   initialViewsRect.size.height -= StatusBarHeight();
   UIViewAutoresizing initialViewAutoresizing =

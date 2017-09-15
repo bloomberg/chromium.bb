@@ -32,9 +32,6 @@
   MainViewController* mainViewController = [[MainViewController alloc] init];
   _mainViewController = mainViewController;
   self.window.rootViewController = self.mainViewController;
-
-  // Size the main view controller to fit the whole screen.
-  [self.mainViewController.view setFrame:self.window.bounds];
 }
 
 @end
