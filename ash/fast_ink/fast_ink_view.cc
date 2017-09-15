@@ -359,11 +359,16 @@ void FastInkView::UpdateSurface() {
   gfx::Rect quad_rect(buffer_size);
   bool needs_blending = true;
 
+  gfx::Rect damage_rect(
+      gfx::ScaleToEnclosingRect(surface_damage_rect_, device_scale_factor));
+  surface_damage_rect_ = gfx::Rect();
+  // Constrain damage rectangle to output rectangle.
+  damage_rect.Intersect(output_rect);
+
   const int kRenderPassId = 1;
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
-  render_pass->SetNew(kRenderPassId, output_rect, surface_damage_rect_,
+  render_pass->SetNew(kRenderPassId, output_rect, damage_rect,
                       buffer_to_target_transform);
-  surface_damage_rect_ = gfx::Rect();
 
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();

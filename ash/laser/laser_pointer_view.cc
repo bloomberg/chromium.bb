@@ -182,6 +182,7 @@ void LaserPointerView::AddNewPoint(const gfx::PointF& new_point,
                                       .Length())
                      : 0);
   AddPoint(new_point, new_time);
+  stationary_point_location_ = new_point;
   stationary_timer_->Reset();
 }
 
@@ -213,8 +214,7 @@ void LaserPointerView::FadeOut(const base::Closure& done) {
 void LaserPointerView::UpdateTime() {
   if (fadeout_done_.is_null()) {
     // Pointer still active but stationary, repeat the most recent position.
-    DCHECK(!laser_points_.IsEmpty());
-    AddPoint(laser_points_.GetNewest().location, ui::EventTimeForNow());
+    AddPoint(stationary_point_location_, ui::EventTimeForNow());
     return;
   }
 
@@ -237,10 +237,28 @@ void LaserPointerView::UpdateTime() {
 }
 
 gfx::Rect LaserPointerView::GetBoundingBox() {
+  // Early out if there are no points.
+  if (laser_points_.IsEmpty() && predicted_laser_points_.IsEmpty())
+    return gfx::Rect();
+
+  // Merge bounding boxes. Note that this is not a union as the bounding box
+  // for a single point is empty.
+  gfx::Rect bounding_box;
+  if (laser_points_.IsEmpty()) {
+    bounding_box = predicted_laser_points_.GetBoundingBox();
+  } else if (predicted_laser_points_.IsEmpty()) {
+    bounding_box = laser_points_.GetBoundingBox();
+  } else {
+    gfx::Rect rect = laser_points_.GetBoundingBox();
+    gfx::Rect predicted_rect = predicted_laser_points_.GetBoundingBox();
+    bounding_box.SetByBounds(std::min(predicted_rect.x(), rect.x()),
+                             std::min(predicted_rect.y(), rect.y()),
+                             std::max(predicted_rect.right(), rect.right()),
+                             std::max(predicted_rect.bottom(), rect.bottom()));
+  }
+
   // Expand the bounding box so that it includes the radius of the points on the
   // edges and antialiasing.
-  gfx::Rect bounding_box = laser_points_.GetBoundingBox();
-  bounding_box.Union(predicted_laser_points_.GetBoundingBox());
   const int kOutsetForAntialiasing = 1;
   int outset = kPointInitialRadius + kOutsetForAntialiasing;
   bounding_box.Inset(-outset, -outset);
