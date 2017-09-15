@@ -35,7 +35,7 @@ class CORE_EXPORT SerializedScriptValueFactory {
   // be thrown using v8::ThrowException(), and sets |didThrow|. In this case
   // the caller must not invoke any V8 operations until control returns to
   // V8. When serialization is successful, |didThrow| is false.
-  virtual PassRefPtr<SerializedScriptValue> Create(
+  virtual RefPtr<SerializedScriptValue> Create(
       v8::Isolate*,
       v8::Local<v8::Value>,
       const SerializedScriptValue::SerializeOptions&,

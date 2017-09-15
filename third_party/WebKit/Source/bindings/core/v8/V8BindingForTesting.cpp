@@ -11,9 +11,9 @@
 
 namespace blink {
 
-PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::Create(
+RefPtr<ScriptStateForTesting> ScriptStateForTesting::Create(
     v8::Local<v8::Context> context,
-    PassRefPtr<DOMWrapperWorld> world) {
+    RefPtr<DOMWrapperWorld> world) {
   RefPtr<ScriptStateForTesting> script_state =
       AdoptRef(new ScriptStateForTesting(context, std::move(world)));
   // This ref() is for keeping this ScriptState alive as long as the v8::Context
@@ -23,7 +23,7 @@ PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::Create(
 }
 
 ScriptStateForTesting::ScriptStateForTesting(v8::Local<v8::Context> context,
-                                             PassRefPtr<DOMWrapperWorld> world)
+                                             RefPtr<DOMWrapperWorld> world)
     : ScriptState(context, std::move(world)) {}
 
 V8TestingScope::V8TestingScope()

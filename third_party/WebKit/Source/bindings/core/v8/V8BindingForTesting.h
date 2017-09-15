@@ -22,10 +22,11 @@ class Page;
 
 class ScriptStateForTesting : public ScriptState {
  public:
-  static PassRefPtr<ScriptStateForTesting> Create(v8::Local<v8::Context>,
-                                                  PassRefPtr<DOMWrapperWorld>);
+  static RefPtr<ScriptStateForTesting> Create(v8::Local<v8::Context>,
+                                              RefPtr<DOMWrapperWorld>);
+
  private:
-  ScriptStateForTesting(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+  ScriptStateForTesting(v8::Local<v8::Context>, RefPtr<DOMWrapperWorld>);
 };
 
 class V8TestingScope {

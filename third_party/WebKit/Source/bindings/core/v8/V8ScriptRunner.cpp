@@ -155,7 +155,7 @@ v8::MaybeLocal<v8::Script> CompileWithoutOptions(
 // Compile a script, and consume a V8 cache that was generated previously.
 static v8::MaybeLocal<v8::Script> CompileAndConsumeCache(
     CachedMetadataHandler* cache_handler,
-    PassRefPtr<CachedMetadata> cached_metadata,
+    RefPtr<CachedMetadata> cached_metadata,
     v8::ScriptCompiler::CompileOptions compile_options,
     v8::Isolate* isolate,
     v8::Local<v8::String> code,
@@ -327,7 +327,7 @@ typedef Function<v8::MaybeLocal<v8::Script>(v8::Isolate*,
 static CompileFn SelectCompileFunction(
     V8CacheOptions cache_options,
     CachedMetadataHandler* cache_handler,
-    PassRefPtr<CachedMetadata> code_cache,
+    RefPtr<CachedMetadata> code_cache,
     v8::Local<v8::String> code,
     V8CompileHistogram::Cacheability cacheability_if_no_handler) {
   static const int kMinimalCodeLength = 1024;

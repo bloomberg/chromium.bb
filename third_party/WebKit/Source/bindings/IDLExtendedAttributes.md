@@ -205,7 +205,7 @@ var x = new XXX(1.0, 2.0, "hello");
 The Blink implementation must have the following method as a constructor callback:
 
 ```c++
-PassRefPtr<XXX> XXX::create(float x, float y, String str)
+RefPtr<XXX> XXX::create(float x, float y, String str)
 {
     ...;
 }
@@ -678,7 +678,7 @@ Then XXX::create(...) can have the following signature
 ***
 
 ```c++
-PassRefPtr<XXX> XXX::create(ExecutionContext* context, float x, float y, String str)
+RefPtr<XXX> XXX::create(ExecutionContext* context, float x, float y, String str)
 {
     ...;
 }
@@ -1103,7 +1103,7 @@ interface XXX {
 Blink needs to implement the following method as a constructor callback:
 
 ```c++
-PassRefPtr<XXX> XXX::create(float x, ExceptionState& exceptionState)
+RefPtr<XXX> XXX::create(float x, ExceptionState& exceptionState)
 {
     ...;
     if (...) {

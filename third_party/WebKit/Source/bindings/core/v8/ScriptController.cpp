@@ -361,7 +361,7 @@ void ScriptController::ExecuteScriptInIsolatedWorld(
   }
 }
 
-PassRefPtr<DOMWrapperWorld> ScriptController::CreateNewInspectorIsolatedWorld(
+RefPtr<DOMWrapperWorld> ScriptController::CreateNewInspectorIsolatedWorld(
     const String& world_name) {
   RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::Create(
       GetIsolate(), DOMWrapperWorld::WorldType::kInspectorIsolated);

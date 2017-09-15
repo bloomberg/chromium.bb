@@ -25,7 +25,7 @@ class RejectedPromises final : public RefCounted<RejectedPromises> {
   USING_FAST_MALLOC(RejectedPromises);
 
  public:
-  static PassRefPtr<RejectedPromises> Create() {
+  static RefPtr<RejectedPromises> Create() {
     return AdoptRef(new RejectedPromises());
   }
 

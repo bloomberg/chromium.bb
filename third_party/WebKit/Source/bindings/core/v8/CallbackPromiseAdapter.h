@@ -64,7 +64,7 @@ namespace blink {
 // class MyClass {
 // public:
 //     using WebType = std::unique_ptr<WebMyClass>;
-//     static PassRefPtr<MyClass> take(ScriptPromiseResolver* resolver,
+//     static RefPtr<MyClass> take(ScriptPromiseResolver* resolver,
 //         std::unique_ptr<WebMyClass> webInstance)
 //     {
 //         return MyClass::create(webInstance);

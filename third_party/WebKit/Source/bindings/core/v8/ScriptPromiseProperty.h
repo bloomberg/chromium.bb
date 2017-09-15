@@ -10,7 +10,7 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
