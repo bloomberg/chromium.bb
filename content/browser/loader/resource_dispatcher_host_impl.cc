@@ -99,6 +99,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/upload_data_stream.h"
+#include "net/base/url_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_request_headers.h"
@@ -695,6 +696,11 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
     if (loader->request()->url().SchemeIsCryptographic()) {
       if (loader->request()->url().host_piece() == "www.google.com") {
         UMA_HISTOGRAM_SPARSE_SLOWLY("Net.ErrorCodesForHTTPSGoogleMainFrame2",
+                                    -loader->request()->status().error());
+      }
+
+      if (net::IsTLS13ExperimentHost(loader->request()->url().host_piece())) {
+        UMA_HISTOGRAM_SPARSE_SLOWLY("Net.ErrorCodesForTLS13ExperimentMainFrame",
                                     -loader->request()->status().error());
       }
 

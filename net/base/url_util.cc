@@ -419,6 +419,11 @@ bool HasGoogleHost(const GURL& url) {
   return false;
 }
 
+bool IsTLS13ExperimentHost(base::StringPiece host) {
+  return host == "inbox.google.com" || host == "mail.google.com" ||
+         host == "gmail.com";
+}
+
 bool IsLocalHostname(base::StringPiece host, bool* is_local6) {
   std::string normalized_host = base::ToLowerASCII(host);
   // Remove any trailing '.'.

@@ -39424,6 +39424,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ErrorCodesForTLS13ExperimentMainFrame"
+    enum="NetErrorCodes">
+  <owner>svaldez@chromium.org</owner>
+  <summary>
+    Positive net error codes that requests for pages end with, including net::OK
+    and net::ERR_ABORTED.  This only counts loads in &quot;main frames&quot; for
+    endpoints used in the initial TLS 1.3 deployment. Subresources or main frame
+    navigations to other origins are not included.
+  </summary>
+</histogram>
+
 <histogram name="Net.ErrorPageButtonPressedWhileInUnexpectedState"
     enum="ErrorPageButton">
   <obsolete>
