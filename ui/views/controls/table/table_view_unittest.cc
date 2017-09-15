@@ -15,7 +15,10 @@
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_header.h"
 #include "ui/views/controls/table/table_view_observer.h"
+#include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 // Put the tests in the views namespace to make it easier to declare them as
 // friend classes.
@@ -210,10 +213,11 @@ class TableViewTest : public ViewsTestBase {
     parent->Layout();
     helper_.reset(new TableViewTestHelper(table_));
 
+    widget_ = base::MakeUnique<Widget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
-    widget_.reset(new Widget);
+    params.delegate = GetWidgetDelegate(widget_.get());
     widget_->Init(params);
     widget_->GetContentsView()->AddChildView(parent);
     widget_->Show();
@@ -260,6 +264,8 @@ class TableViewTest : public ViewsTestBase {
   }
 
  protected:
+  virtual WidgetDelegate* GetWidgetDelegate(Widget* widget) { return nullptr; }
+
   std::unique_ptr<TestTableModel2> model_;
 
   // Owned by |parent_|.
@@ -267,13 +273,13 @@ class TableViewTest : public ViewsTestBase {
 
   std::unique_ptr<TableViewTestHelper> helper_;
 
+  std::unique_ptr<Widget> widget_;
+
  private:
   gfx::Point GetPointForRow(int row) {
     const int y = (row + 0.5) * table_->row_height();
     return table_->GetBoundsInScreen().origin() + gfx::Vector2d(5, y);
   }
-
-  std::unique_ptr<Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(TableViewTest);
 };
@@ -1036,6 +1042,82 @@ TEST_F(TableViewTest, FocusAfterRemovingAnchor) {
   helper_->SetSelectionModel(new_selection);
   model_->RemoveRow(0);
   table_->RequestFocus();
+}
+
+namespace {
+
+class RemoveFocusChangeListenerDelegate : public WidgetDelegate {
+ public:
+  explicit RemoveFocusChangeListenerDelegate(Widget* widget)
+      : widget_(widget), listener_(nullptr) {}
+  ~RemoveFocusChangeListenerDelegate() override {}
+
+  // WidgetDelegate overrides:
+  void DeleteDelegate() override;
+  Widget* GetWidget() override { return widget_; }
+  const Widget* GetWidget() const override { return widget_; }
+
+  void SetFocusChangeListener(FocusChangeListener* listener);
+
+ private:
+  Widget* widget_;
+  FocusChangeListener* listener_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveFocusChangeListenerDelegate);
+};
+
+void RemoveFocusChangeListenerDelegate::DeleteDelegate() {
+  widget_->GetFocusManager()->RemoveFocusChangeListener(listener_);
+}
+
+void RemoveFocusChangeListenerDelegate::SetFocusChangeListener(
+    FocusChangeListener* listener) {
+  listener_ = listener;
+}
+
+}  // namespace
+
+class TableViewFocusTest : public TableViewTest {
+ public:
+  TableViewFocusTest() = default;
+
+ protected:
+  WidgetDelegate* GetWidgetDelegate(Widget* widget) override;
+
+  RemoveFocusChangeListenerDelegate* GetFocusChangeListenerDelegate() {
+    return delegate_.get();
+  }
+
+ private:
+  std::unique_ptr<RemoveFocusChangeListenerDelegate> delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(TableViewFocusTest);
+};
+
+WidgetDelegate* TableViewFocusTest::GetWidgetDelegate(Widget* widget) {
+  delegate_ = base::MakeUnique<RemoveFocusChangeListenerDelegate>(widget);
+  return delegate_.get();
+}
+
+// Verifies that the active focus is cleared when the widget is destroyed.
+// In MD mode, if that doesn't happen a DCHECK in View::DoRemoveChildView(...)
+// will trigger due to an attempt to modify the child view list while iterating.
+TEST_F(TableViewFocusTest, FocusClearedDuringWidgetDestruction) {
+  TestFocusChangeListener listener;
+  GetFocusChangeListenerDelegate()->SetFocusChangeListener(&listener);
+
+  widget_->GetFocusManager()->AddFocusChangeListener(&listener);
+  table_->RequestFocus();
+
+  ASSERT_EQ(1u, listener.focus_changes().size());
+  EXPECT_EQ(listener.focus_changes()[0], ViewPair(nullptr, table_));
+  listener.ClearFocusChanges();
+
+  // Now destroy the widget. This should *not* cause a DCHECK in
+  // View::DoRemoveChildView(...).
+  widget_.reset();
+  ASSERT_EQ(1u, listener.focus_changes().size());
+  EXPECT_EQ(listener.focus_changes()[0], ViewPair(table_, nullptr));
 }
 
 }  // namespace views
