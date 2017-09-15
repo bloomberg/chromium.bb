@@ -24,7 +24,7 @@ to see
 [[1](https://chromium-review.googlesource.com/c/554510/8/content/child/runtime_features.cc)]
 [[2](https://chromium-review.googlesource.com/c/554510/8/third_party/WebKit/public/platform/WebRuntimeFeatures.h)]
 [[3](https://chromium-review.googlesource.com/c/554510/third_party/WebKit/Source/platform/exported/WebRuntimeFeatures.cpp)]
-[[4](https://chromium-review.googlesource.com/c/554510/8/third_party/WebKit/Source/platform/RuntimeEnabledFeatures.json5)]
+[[4](https://chromium-review.googlesource.com/c/554510/8/third_party/WebKit/Source/platform/runtime_enabled_features.json5)]
 4. how to use it in blink
 [[1](https://chromium-review.googlesource.com/c/554510/8/third_party/WebKit/Source/core/workers/WorkerThread.cpp)]
 

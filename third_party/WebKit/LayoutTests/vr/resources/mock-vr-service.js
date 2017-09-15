@@ -69,7 +69,7 @@ class MockVRPresentationProvider {
     // current execution context finishes. As a workaround, use the alternate
     // "WebVRExperimentalRendering" mode which works without reentrant calls,
     // the code only checks for completion on the *next* frame, see the
-    // corresponding option setting in RuntimeEnabledFeatures.json5.
+    // corresponding option setting in runtime_enabled_features.json5.
     this.submitFrameClient_.onSubmitFrameTransferred();
     this.submitFrameClient_.onSubmitFrameRendered();
   }

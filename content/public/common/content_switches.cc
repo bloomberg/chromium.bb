@@ -112,7 +112,7 @@ const char kDisableBackgroundTimerThrottling[] =
     "disable-background-timer-throttling";
 
 // Disable one or more Blink runtime-enabled features.
-// Use names from RuntimeEnabledFeatures.json5, separated by commas.
+// Use names from runtime_enabled_features.json5, separated by commas.
 // Applied after kEnableBlinkFeatures, and after other flags that change these
 // features.
 const char kDisableBlinkFeatures[]          = "disable-blink-features";
@@ -347,7 +347,7 @@ const char kEnableBackgroundFetchPersistence[] =
     "enable-background-fetch-persistence";
 
 // Enable one or more Blink runtime-enabled features.
-// Use names from RuntimeEnabledFeatures.json5, separated by commas.
+// Use names from runtime_enabled_features.json5, separated by commas.
 // Applied before kDisableBlinkFeatures, and after other flags that change these
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
