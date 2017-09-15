@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "CaseMappingHarfBuzzBufferFiller.h"
+#include "platform/fonts/shaping/CaseMappingHarfBuzzBufferFiller.h"
 
 #include "platform/wtf/text/WTFString.h"
 

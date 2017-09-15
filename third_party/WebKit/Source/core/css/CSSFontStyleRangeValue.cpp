@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CSSFontStyleRangeValue.h"
+#include "core/css/CSSFontStyleRangeValue.h"
 
 #include "platform/wtf/text/StringBuilder.h"
 

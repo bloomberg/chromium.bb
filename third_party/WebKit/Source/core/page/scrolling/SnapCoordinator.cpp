@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "SnapCoordinator.h"
+#include "core/page/scrolling/SnapCoordinator.h"
 
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"

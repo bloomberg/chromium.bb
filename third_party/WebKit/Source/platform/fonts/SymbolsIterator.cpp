@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "SymbolsIterator.h"
+#include "platform/fonts/SymbolsIterator.h"
 
 #include <unicode/uchar.h>
 #include <unicode/uniset.h>

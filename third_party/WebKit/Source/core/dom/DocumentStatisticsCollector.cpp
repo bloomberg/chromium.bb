@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "DocumentStatisticsCollector.h"
+#include "core/dom/DocumentStatisticsCollector.h"
 
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"

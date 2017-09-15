@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "InternalsNavigatorContentUtils.h"
+#include "modules/navigatorcontentutils/testing/InternalsNavigatorContentUtils.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"

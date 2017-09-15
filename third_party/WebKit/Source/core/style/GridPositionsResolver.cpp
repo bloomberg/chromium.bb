@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "GridPositionsResolver.h"
+#include "core/style/GridPositionsResolver.h"
 
 #include "core/layout/LayoutBox.h"
 #include "core/style/GridArea.h"
