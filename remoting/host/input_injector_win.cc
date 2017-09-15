@@ -424,7 +424,8 @@ void InputInjectorWin::Core::SetLockStates(uint32_t states) {
 // static
 std::unique_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    ui::SystemInputInjectorFactory* chromeos_system_input_injector_factory) {
   return base::WrapUnique(
       new InputInjectorWin(main_task_runner, ui_task_runner));
 }

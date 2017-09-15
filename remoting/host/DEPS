@@ -19,7 +19,12 @@ include_rules = [
   "+third_party/skia",
   "+third_party/webrtc",
   "+third_party/libjingle_xmpp/xmpp",
-  "+ui",
+  "+ui/aura",
+  "+ui/base",
+  "+ui/compositor",
+  "+ui/events",
+  "+ui/gfx",
+  "+ui/views",
 ]
 
 specific_include_rules = {

@@ -13,6 +13,7 @@ mojom("interfaces") {
     "event_matcher.mojom",
     "gpu.mojom",
     "mus_constants.mojom",
+    "remote_event_dispatcher.mojom",
     "user_access_manager.mojom",
     "user_activity_monitor.mojom",
     "window_manager.mojom",

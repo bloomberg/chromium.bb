@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "ui/events/system_input_injector.h"
 #include "ui/ozone/ozone_export.h"
 
 namespace display {
@@ -54,7 +55,7 @@ class SystemInputInjector;
 // interface depending on the context. You can, for example, create
 // different objects depending on the underlying hardware, command
 // line flags, or whatever is appropriate for the platform.
-class OZONE_EXPORT OzonePlatform {
+class OZONE_EXPORT OzonePlatform : public SystemInputInjectorFactory {
  public:
   OzonePlatform();
   virtual ~OzonePlatform();
@@ -109,12 +110,14 @@ class OZONE_EXPORT OzonePlatform {
   virtual ui::InputController* GetInputController() = 0;
   virtual IPC::MessageFilter* GetGpuMessageFilter();
   virtual ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() = 0;
-  virtual std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() = 0;
   virtual std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) = 0;
   virtual std::unique_ptr<display::NativeDisplayDelegate>
   CreateNativeDisplayDelegate() = 0;
+
+  // Factory getters which come through from SystemInputInjector:
+  std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override = 0;
 
   // Returns the message loop type required for OzonePlatform instance that
   // will be initialized for the GPU process.

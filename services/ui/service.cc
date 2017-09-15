@@ -31,6 +31,7 @@
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/gpu_host.h"
+#include "services/ui/ws/remote_event_dispatcher.h"
 #include "services/ui/ws/threaded_image_cursors.h"
 #include "services/ui/ws/threaded_image_cursors_factory.h"
 #include "services/ui/ws/user_activity_monitor.h"
@@ -321,6 +322,8 @@ void Service::OnStart() {
     registry_.AddInterface<WindowServerTest>(base::Bind(
         &Service::BindWindowServerTestRequest, base::Unretained(this)));
   }
+  registry_.AddInterface<mojom::RemoteEventDispatcher>(base::Bind(
+      &Service::BindRemoteEventDispatcherRequest, base::Unretained(this)));
 
   // On non-Linux platforms there will be no DeviceDataManager instance and no
   // purpose in adding the Mojo interface to connect to.
@@ -531,5 +534,11 @@ void Service::BindWindowServerTestRequest(
       std::move(request));
 }
 
+void Service::BindRemoteEventDispatcherRequest(
+    mojom::RemoteEventDispatcherRequest request) {
+  mojo::MakeStrongBinding(
+      base::MakeUnique<ws::RemoteEventDispatcherImpl>(window_server_.get()),
+      std::move(request));
+}
 
 }  // namespace ui

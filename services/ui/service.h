@@ -27,6 +27,7 @@
 #include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ui/public/interfaces/remote_event_dispatcher.mojom.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
@@ -169,6 +170,9 @@ class Service : public service_manager::Service,
       const service_manager::BindSourceInfo& source_info);
 
   void BindWindowServerTestRequest(mojom::WindowServerTestRequest request);
+
+  void BindRemoteEventDispatcherRequest(
+      mojom::RemoteEventDispatcherRequest request);
 
   std::unique_ptr<ws::WindowServer> window_server_;
   std::unique_ptr<PlatformEventSource> event_source_;

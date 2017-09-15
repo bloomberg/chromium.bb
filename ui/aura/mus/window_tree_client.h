@@ -22,6 +22,7 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/ui/public/interfaces/remote_event_dispatcher.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/transient_window_client_observer.h"
@@ -509,6 +510,7 @@ class AURA_EXPORT WindowTreeClient
   void SetCursorSize(ui::CursorSize cursor_size) override;
   void SetGlobalOverrideCursor(base::Optional<ui::CursorData> cursor) override;
   void SetCursorTouchVisible(bool enabled) override;
+  void InjectEvent(const ui::Event& event, int64_t display_id) override;
   void SetKeyEventsThatDontHideCursor(
       std::vector<ui::mojom::EventMatcherPtr> cursor_key_list) override;
   void RequestClose(Window* window) override;
@@ -636,6 +638,8 @@ class AURA_EXPORT WindowTreeClient
   // |window_manager_internal_client_|) are null. Tests that need to test
   // WindowManagerClient set this, but not |window_manager_internal_client_|.
   ui::mojom::WindowManagerClient* window_manager_client_ = nullptr;
+
+  ui::mojom::RemoteEventDispatcherPtr event_injector_;
 
   bool has_pointer_watcher_ = false;
 

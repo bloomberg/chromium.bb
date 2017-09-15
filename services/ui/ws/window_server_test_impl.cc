@@ -5,8 +5,6 @@
 #include "services/ui/ws/window_server_test_impl.h"
 
 #include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "services/ui/ws/display.h"
-#include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/window_server.h"
 #include "services/ui/ws/window_tree.h"
@@ -48,29 +46,6 @@ void WindowServerTestImpl::EnsureClientHasDrawnWindow(
   window_server_->SetPaintCallback(
       base::Bind(&WindowServerTestImpl::OnWindowPaint, base::Unretained(this),
                  client_name, std::move(callback)));
-}
-
-void WindowServerTestImpl::DispatchEvent(int64_t display_id,
-                                         std::unique_ptr<ui::Event> event,
-                                         const DispatchEventCallback& cb) {
-  DisplayManager* manager = window_server_->display_manager();
-  if (!manager) {
-    DVLOG(1) << "No display manager in DispatchEvent.";
-    cb.Run(false);
-    return;
-  }
-
-  Display* display = manager->GetDisplayById(display_id);
-  if (!display) {
-    DVLOG(1) << "Invalid display_id in DispatchEvent.";
-    cb.Run(false);
-    return;
-  }
-
-  ignore_result(static_cast<PlatformDisplayDelegate*>(display)
-                    ->GetEventSink()
-                    ->OnEventFromSource(event.get()));
-  cb.Run(true);
 }
 
 }  // namespace ws

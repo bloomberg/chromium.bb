@@ -91,6 +91,9 @@ class AURA_EXPORT WindowManagerClient {
   // cleared when the mouse moves.
   virtual void SetCursorTouchVisible(bool enabled) = 0;
 
+  // Sends |event| to mus to be dispatched.
+  virtual void InjectEvent(const ui::Event& event, int64_t display_id) = 0;
+
   // Sets the list of keys which don't hide the cursor.
   virtual void SetKeyEventsThatDontHideCursor(
       std::vector<ui::mojom::EventMatcherPtr> cursor_key_list) = 0;

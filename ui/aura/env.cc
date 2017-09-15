@@ -15,6 +15,7 @@
 #include "ui/aura/local/window_port_local.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
+#include "ui/aura/mus/system_input_injector_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
@@ -43,6 +44,8 @@ base::LazyInstance<base::ThreadLocalPointer<Env>>::Leaky lazy_tls_ptr =
 Env::~Env() {
   if (is_os_exchange_data_provider_factory_)
     ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
+  if (is_override_input_injector_factory_)
+    ui::SetOverrideInputInjectorFactory(nullptr);
 
 #if defined(USE_OZONE)
   gfx::ClientNativePixmapFactory::ResetInstance();
@@ -163,6 +166,7 @@ Env::Env(Mode mode)
 void Env::Init() {
   if (mode_ == Mode::MUS) {
     EnableMusOSExchangeDataProvider();
+    EnableMusOverrideInputInjector();
 #if defined(USE_OZONE)
     // Required by all Aura-using clients of services/ui
     gfx::ClientNativePixmapFactory::SetInstance(native_pixmap_factory_.get());
@@ -191,6 +195,13 @@ void Env::EnableMusOSExchangeDataProvider() {
   if (!is_os_exchange_data_provider_factory_) {
     ui::OSExchangeDataProviderFactory::SetFactory(this);
     is_os_exchange_data_provider_factory_ = true;
+  }
+}
+
+void Env::EnableMusOverrideInputInjector() {
+  if (!is_override_input_injector_factory_) {
+    ui::SetOverrideInputInjectorFactory(this);
+    is_override_input_injector_factory_ = true;
   }
 }
 
@@ -241,6 +252,10 @@ ui::EventTargeter* Env::GetEventTargeter() {
 
 std::unique_ptr<ui::OSExchangeData::Provider> Env::BuildProvider() {
   return base::MakeUnique<aura::OSExchangeDataProviderMus>();
+}
+
+std::unique_ptr<ui::SystemInputInjector> Env::CreateSystemInputInjector() {
+  return base::MakeUnique<SystemInputInjectorMus>(window_tree_client_);
 }
 
 }  // namespace aura

@@ -8,10 +8,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_modifiers.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
@@ -27,37 +27,37 @@ const int kRepeatIntervalMs = 50;
 int EventFlagToEvdevModifier(int flag) {
   switch (flag) {
     case EF_SHIFT_DOWN:
-      return EVDEV_MODIFIER_SHIFT;
+      return MODIFIER_SHIFT;
     case EF_CONTROL_DOWN:
-      return EVDEV_MODIFIER_CONTROL;
+      return MODIFIER_CONTROL;
     case EF_ALT_DOWN:
-      return EVDEV_MODIFIER_ALT;
+      return MODIFIER_ALT;
     case EF_COMMAND_DOWN:
-      return EVDEV_MODIFIER_COMMAND;
+      return MODIFIER_COMMAND;
     case EF_ALTGR_DOWN:
-      return EVDEV_MODIFIER_ALTGR;
+      return MODIFIER_ALTGR;
     case EF_MOD3_DOWN:
-      return EVDEV_MODIFIER_MOD3;
+      return MODIFIER_MOD3;
     case EF_CAPS_LOCK_ON:
-      return EVDEV_MODIFIER_CAPS_LOCK;
+      return MODIFIER_CAPS_LOCK;
     case EF_LEFT_MOUSE_BUTTON:
-      return EVDEV_MODIFIER_LEFT_MOUSE_BUTTON;
+      return MODIFIER_LEFT_MOUSE_BUTTON;
     case EF_MIDDLE_MOUSE_BUTTON:
-      return EVDEV_MODIFIER_MIDDLE_MOUSE_BUTTON;
+      return MODIFIER_MIDDLE_MOUSE_BUTTON;
     case EF_RIGHT_MOUSE_BUTTON:
-      return EVDEV_MODIFIER_RIGHT_MOUSE_BUTTON;
+      return MODIFIER_RIGHT_MOUSE_BUTTON;
     case EF_BACK_MOUSE_BUTTON:
-      return EVDEV_MODIFIER_BACK_MOUSE_BUTTON;
+      return MODIFIER_BACK_MOUSE_BUTTON;
     case EF_FORWARD_MOUSE_BUTTON:
-      return EVDEV_MODIFIER_FORWARD_MOUSE_BUTTON;
+      return MODIFIER_FORWARD_MOUSE_BUTTON;
     default:
-      return EVDEV_MODIFIER_NONE;
+      return MODIFIER_NONE;
   }
 }
 
 }  // namespace
 
-KeyboardEvdev::KeyboardEvdev(EventModifiersEvdev* modifiers,
+KeyboardEvdev::KeyboardEvdev(EventModifiers* modifiers,
                              KeyboardLayoutEngine* keyboard_layout_engine,
                              const EventDispatchCallback& callback)
     : callback_(callback),
@@ -90,7 +90,7 @@ void KeyboardEvdev::OnKeyChange(unsigned int key,
 }
 
 void KeyboardEvdev::SetCapsLockEnabled(bool enabled) {
-  modifiers_->SetModifierLock(EVDEV_MODIFIER_CAPS_LOCK, enabled);
+  modifiers_->SetModifierLock(MODIFIER_CAPS_LOCK, enabled);
 }
 
 bool KeyboardEvdev::IsCapsLockEnabled() {
@@ -128,7 +128,7 @@ void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
     return;
 
   int modifier = EventFlagToEvdevModifier(modifier_flag);
-  if (modifier == EVDEV_MODIFIER_NONE)
+  if (modifier == MODIFIER_NONE)
     return;
 
   // TODO post-X11: Revise remapping to not use EF_MOD3_DOWN.
@@ -138,8 +138,8 @@ void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
   // to be two different flags, since the physical CapsLock key is subject
   // to remapping, but the caps lock state (which can be triggered in a
   // variety of ways) is not.
-  if (modifier == EVDEV_MODIFIER_CAPS_LOCK)
-    modifiers_->UpdateModifier(EVDEV_MODIFIER_MOD3, down);
+  if (modifier == MODIFIER_CAPS_LOCK)
+    modifiers_->UpdateModifier(MODIFIER_MOD3, down);
   else
     modifiers_->UpdateModifier(modifier, down);
 }

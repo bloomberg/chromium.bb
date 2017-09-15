@@ -91,12 +91,17 @@ LocalInputMonitorChromeos::Core::Core(
 }
 
 void LocalInputMonitorChromeos::Core::Start() {
-  ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
+  // TODO(erg): Need to handle the mus case where PlatformEventSource is null
+  // because we are in mus. This class looks like it can be rewritten with mus
+  // EventMatchers. (And if that doesn't work, maybe a PointerObserver.)
+  if (ui::PlatformEventSource::GetInstance())
+    ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
   point_transformer_.reset(new PointTransformer());
 }
 
 LocalInputMonitorChromeos::Core::~Core() {
-  ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
+  if (ui::PlatformEventSource::GetInstance())
+    ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
 }
 
 void LocalInputMonitorChromeos::Core::WillProcessEvent(

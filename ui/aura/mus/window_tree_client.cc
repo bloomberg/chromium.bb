@@ -2035,6 +2035,17 @@ void WindowTreeClient::SetCursorTouchVisible(bool enabled) {
     window_manager_client_->WmSetCursorTouchVisible(enabled);
 }
 
+void WindowTreeClient::InjectEvent(const ui::Event& event, int64_t display_id) {
+  if (!event_injector_)
+    connector()->BindInterface(ui::mojom::kServiceName, &event_injector_);
+  // Check event_injector_ so we don't crash if access to the interface was
+  // refused.
+  if (event_injector_) {
+    event_injector_->DispatchEvent(display_id, ui::Event::Clone(event),
+                                   base::Bind([](bool result) {}));
+  }
+}
+
 void WindowTreeClient::SetKeyEventsThatDontHideCursor(
     std::vector<ui::mojom::EventMatcherPtr> cursor_key_list) {
   if (window_manager_client_) {
