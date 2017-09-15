@@ -461,4 +461,11 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
     public BookmarkActionBar getToolbarForTests() {
         return mToolbar;
     }
+
+    /**
+     * Called to scroll to the top of the bookmarks list.
+     */
+    public void scrollToTop() {
+        mRecyclerView.smoothScrollToPosition(0);
+    }
 }

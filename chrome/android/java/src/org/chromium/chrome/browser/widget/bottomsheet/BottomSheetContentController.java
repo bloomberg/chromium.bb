@@ -321,7 +321,10 @@ public class BottomSheetContentController extends BottomNavigationView
         mHighlightedView = null;
         mHighlightItemId = null;
 
-        if (mSelectedItemId == item.getItemId()) return false;
+        if (mSelectedItemId == item.getItemId()) {
+            getSheetContentForId(mSelectedItemId).scrollToTop();
+            return false;
+        }
 
         mBottomSheet.defocusOmnibox();
 

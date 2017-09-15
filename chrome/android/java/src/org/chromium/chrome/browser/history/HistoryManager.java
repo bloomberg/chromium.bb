@@ -470,4 +470,11 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     public void onDismissNoAction(Object actionData) {
         // Handler for the link copied snackbar. Do nothing.
     }
+
+    /**
+     * Called to scroll to the top of the history list.
+     */
+    public void scrollToTop() {
+        mRecyclerView.smoothScrollToPosition(0);
+    }
 }
