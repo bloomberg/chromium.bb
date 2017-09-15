@@ -1479,7 +1479,6 @@ void PasswordFormManager::SendVotesOnSave() {
     // to detect username autofill type.
     form_data.fields[0].value = pending_credentials_.username_value;
     SendSignInVote(form_data);
-    return;
   }
 
   // Upload credentials the first time they are saved. This data is used
