@@ -195,11 +195,6 @@ wallpaper::WallpaperFilesId HashWallpaperFilesIdStr(
   return wallpaper::WallpaperFilesId::FromString(result);
 }
 
-// Returns true if HashWallpaperFilesIdStr will not assert().
-bool CanGetFilesId() {
-  return SystemSaltGetter::Get()->GetRawSalt();
-}
-
 // Call |closure| when HashWallpaperFilesIdStr will not assert().
 void CallWhenCanGetFilesId(const base::Closure& closure) {
   SystemSaltGetter::Get()->AddOnSystemSaltReady(closure);
@@ -592,7 +587,7 @@ void WallpaperManager::RemoveUserWallpaperInfo(const AccountId& account_id) {
   DictionaryPrefUpdate wallpaper_colors_update(prefs,
                                                ash::prefs::kWallpaperColors);
   wallpaper_colors_update->RemoveWithoutPathExpansion(info.location, nullptr);
-  DeleteUserWallpapers(account_id, info.location);
+  DeleteUserWallpapers(account_id);
 }
 
 void WallpaperManager::OnPolicyFetched(const std::string& policy,
@@ -1017,7 +1012,7 @@ void WallpaperManager::RemovePendingWallpaperFromList(
 void WallpaperManager::SetPolicyControlledWallpaper(
     const AccountId& account_id,
     std::unique_ptr<user_manager::UserImage> user_image) {
-  if (!CanGetFilesId()) {
+  if (!CanGetWallpaperFilesId()) {
     CallWhenCanGetFilesId(
         base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
                    weak_factory_.GetWeakPtr(), account_id,
@@ -1493,6 +1488,11 @@ void WallpaperManager::RecordWallpaperAppType() {
           ? WALLPAPERS_APP_ANDROID
           : WALLPAPERS_PICKER_APP_CHROMEOS,
       WALLPAPERS_APPS_NUM);
+}
+
+bool WallpaperManager::CanGetWallpaperFilesId() const {
+  return SystemSaltGetter::IsInitialized() &&
+         SystemSaltGetter::Get()->GetRawSalt();
 }
 
 }  // namespace chromeos

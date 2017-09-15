@@ -421,8 +421,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   virtual void ClearDisposableWallpaperCache();
 
   // Deletes all |account_id| related custom wallpapers and directories.
-  virtual void DeleteUserWallpapers(const AccountId& account_id,
-                                    const std::string& path_to_file);
+  virtual void DeleteUserWallpapers(const AccountId& account_id);
 
   // Gets the CommandLine representing the current process's command line.
   virtual base::CommandLine* GetCommandLine();
@@ -555,6 +554,9 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
 
   // Record the Wallpaper App that the user is using right now on Chrome OS.
   virtual void RecordWallpaperAppType() = 0;
+
+  // Returns true if wallpaper files id can be returned successfully.
+  virtual bool CanGetWallpaperFilesId() const = 0;
 
   // Returns wallpaper subdirectory name for current resolution.
   virtual const char* GetCustomWallpaperSubdirForCurrentResolution();

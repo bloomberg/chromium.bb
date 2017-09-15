@@ -81,12 +81,8 @@ void DeleteWallpaperInList(const std::vector<base::FilePath>& file_list) {
   for (std::vector<base::FilePath>::const_iterator it = file_list.begin();
        it != file_list.end(); ++it) {
     base::FilePath path = *it;
-    // Some users may still have legacy wallpapers with png extension. We need
-    // to delete these wallpapers too.
-    if (!base::DeleteFile(path, true) &&
-        !base::DeleteFile(path.AddExtension(".png"), false)) {
+    if (!base::DeleteFile(path, true))
       LOG(ERROR) << "Failed to remove user wallpaper at " << path.value();
-    }
   }
 }
 
@@ -710,34 +706,30 @@ void WallpaperManagerBase::CacheUserWallpaper(const AccountId& account_id) {
   }
 }
 
-void WallpaperManagerBase::DeleteUserWallpapers(
-    const AccountId& account_id,
-    const std::string& path_to_file) {
+void WallpaperManagerBase::DeleteUserWallpapers(const AccountId& account_id) {
+  // System salt might not be ready in tests. Thus we don't have a valid
+  // wallpaper files id here.
+  if (!CanGetWallpaperFilesId())
+    return;
+
   std::vector<base::FilePath> file_to_remove;
-  // Remove small user wallpaper.
+  wallpaper::WallpaperFilesId wallpaper_files_id = GetFilesId(account_id);
+
+  // Remove small user wallpapers.
   base::FilePath wallpaper_path = GetCustomWallpaperDir(kSmallWallpaperSubDir);
-  // Remove old directory if exists
-  file_to_remove.push_back(wallpaper_path.Append(account_id.GetUserEmail()));
-  wallpaper_path = wallpaper_path.Append(path_to_file).DirName();
-  file_to_remove.push_back(wallpaper_path);
+  file_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id.id()));
 
-  // Remove large user wallpaper.
+  // Remove large user wallpapers.
   wallpaper_path = GetCustomWallpaperDir(kLargeWallpaperSubDir);
-  file_to_remove.push_back(wallpaper_path.Append(account_id.GetUserEmail()));
-  wallpaper_path = wallpaper_path.Append(path_to_file);
-  file_to_remove.push_back(wallpaper_path);
+  file_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id.id()));
 
-  // Remove user wallpaper thumbnail.
+  // Remove user wallpaper thumbnails.
   wallpaper_path = GetCustomWallpaperDir(kThumbnailWallpaperSubDir);
-  file_to_remove.push_back(wallpaper_path.Append(account_id.GetUserEmail()));
-  wallpaper_path = wallpaper_path.Append(path_to_file);
-  file_to_remove.push_back(wallpaper_path);
+  file_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id.id()));
 
-  // Remove original user wallpaper.
+  // Remove original user wallpapers.
   wallpaper_path = GetCustomWallpaperDir(kOriginalWallpaperSubDir);
-  file_to_remove.push_back(wallpaper_path.Append(account_id.GetUserEmail()));
-  wallpaper_path = wallpaper_path.Append(path_to_file);
-  file_to_remove.push_back(wallpaper_path);
+  file_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id.id()));
 
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BACKGROUND,

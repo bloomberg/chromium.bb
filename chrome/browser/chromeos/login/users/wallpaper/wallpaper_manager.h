@@ -217,6 +217,7 @@ class WallpaperManager
       const base::FilePath& customized_default_wallpaper_file_large,
       std::unique_ptr<gfx::ImageSkia> large_wallpaper_image) override;
   void RecordWallpaperAppType() override;
+  bool CanGetWallpaperFilesId() const override;
 
   mojo::Binding<ash::mojom::WallpaperPicker> binding_;
 
