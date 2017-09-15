@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -154,9 +155,8 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
     // See http://crbug.com/177163 for details.
     return true;
 #else
-    GURL crx_url = GetTestServerURL(crx_file);
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAppsGalleryUpdateURL, crx_url.spec());
+    const GURL crx_url = GetTestServerURL(crx_file);
+    extension_test_util::SetGalleryUpdateURL(crx_url);
 
     GURL page_url = GetTestServerURL(page);
     return RunPageTest(page_url.spec());

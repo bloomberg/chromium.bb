@@ -16,6 +16,7 @@
 class GURL;
 
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -40,6 +41,10 @@ class ExtensionsClient {
   // can create additional ExtensionsClients because the utility thread runs
   // in-process.
   virtual void Initialize() = 0;
+
+  // Initializes web store URLs.
+  // Default values could be overriden with command line.
+  virtual void InitializeWebStoreUrls(base::CommandLine* command_line) = 0;
 
   // Returns the global PermissionMessageProvider to use to provide permission
   // warning strings.

@@ -124,9 +124,23 @@ void ChromeExtensionsClient::Initialize() {
   // TODO(dmazzoni): remove this once we have an extension API that
   // allows any extension to request read-only access to webui pages.
   scripting_whitelist_.push_back(extension_misc::kChromeVoxExtensionId);
+  InitializeWebStoreUrls(base::CommandLine::ForCurrentProcess());
+}
 
-  webstore_base_url_ = GURL(extension_urls::kChromeWebstoreBaseURL);
-  webstore_update_url_ = GURL(extension_urls::GetDefaultWebstoreUpdateUrl());
+void ChromeExtensionsClient::InitializeWebStoreUrls(
+    base::CommandLine* command_line) {
+  if (command_line->HasSwitch(switches::kAppsGalleryURL)) {
+    webstore_base_url_ =
+        GURL(command_line->GetSwitchValueASCII(switches::kAppsGalleryURL));
+  } else {
+    webstore_base_url_ = GURL(extension_urls::kChromeWebstoreBaseURL);
+  }
+  if (command_line->HasSwitch(switches::kAppsGalleryUpdateURL)) {
+    webstore_update_url_ = GURL(
+        command_line->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL));
+  } else {
+    webstore_update_url_ = GURL(extension_urls::GetDefaultWebstoreUpdateUrl());
+  }
 }
 
 const PermissionMessageProvider&
@@ -265,29 +279,10 @@ void ChromeExtensionsClient::RecordDidSuppressFatalError() {
 }
 
 const GURL& ChromeExtensionsClient::GetWebstoreBaseURL() const {
-  // Browser tests like to alter the command line at runtime with new update
-  // URLs. Just update the cached value of the base url (to avoid reparsing
-  // it) if the value has changed.
-  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(switches::kAppsGalleryURL)) {
-    std::string url = cmdline->GetSwitchValueASCII(switches::kAppsGalleryURL);
-    if (webstore_base_url_.possibly_invalid_spec() != url)
-      webstore_base_url_ = GURL(url);
-  }
   return webstore_base_url_;
 }
 
 const GURL& ChromeExtensionsClient::GetWebstoreUpdateURL() const {
-  // Browser tests like to alter the command line at runtime with new update
-  // URLs. Just update the cached value of the update url (to avoid reparsing
-  // it) if the value has changed.
-  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(switches::kAppsGalleryUpdateURL)) {
-    std::string url =
-        cmdline->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL);
-    if (webstore_update_url_.possibly_invalid_spec() != url)
-      webstore_update_url_ = GURL(url);
-  }
   return webstore_update_url_;
 }
 

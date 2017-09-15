@@ -34,7 +34,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -1573,14 +1573,19 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataEnableDisable) {
   }
 }
 
-TEST_F(ExtensionServiceSyncTest, ProcessSyncDataDeferredEnable) {
-  // The permissions_increase test extension has a different update URL.
-  // In order to make it syncable, we have to pretend it syncs from the
-  // webstore.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kAppsGalleryUpdateURL,
-      "http://localhost/autoupdate/updates.xml");
+class ExtensionServiceSyncCustomGalleryTest : public ExtensionServiceSyncTest {
+ public:
+  void SetUp() override {
+    ExtensionServiceSyncTest::SetUp();
 
+    // This is the update URL specified in the permissions test extension.
+    // Setting it here is necessary to make the extension considered syncable.
+    extension_test_util::SetGalleryUpdateURL(
+        GURL("http://localhost/autoupdate/updates.xml"));
+  }
+};
+
+TEST_F(ExtensionServiceSyncCustomGalleryTest, ProcessSyncDataDeferredEnable) {
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
@@ -1623,19 +1628,6 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataDeferredEnable) {
   path = base_path.AppendASCII("v3");
   PackCRXAndUpdateExtension(id, path, pem_path, ENABLED);
 }
-
-class ExtensionServiceSyncCustomGalleryTest : public ExtensionServiceSyncTest {
- public:
-  void SetUp() override {
-    ExtensionServiceSyncTest::SetUp();
-
-    // This is the update URL specified in the permissions test extension.
-    // Setting it here is necessary to make the extension considered syncable.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAppsGalleryUpdateURL,
-        "http://localhost/autoupdate/updates.xml");
-  }
-};
 
 TEST_F(ExtensionServiceSyncCustomGalleryTest,
        ProcessSyncDataPermissionApproval) {

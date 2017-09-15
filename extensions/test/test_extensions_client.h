@@ -29,6 +29,7 @@ class TestExtensionsClient : public ExtensionsClient {
 
  private:
   void Initialize() override;
+  void InitializeWebStoreUrls(base::CommandLine* command_line) override;
   const PermissionMessageProvider& GetPermissionMessageProvider()
       const override;
   const std::string GetProductName() override;

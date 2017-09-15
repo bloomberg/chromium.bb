@@ -27,6 +27,8 @@ class ChromeExtensionsClient : public ExtensionsClient {
 
   void Initialize() override;
 
+  void InitializeWebStoreUrls(base::CommandLine* command_line) override;
+
   const PermissionMessageProvider& GetPermissionMessageProvider()
       const override;
   const std::string GetProductName() override;
@@ -69,9 +71,8 @@ class ChromeExtensionsClient : public ExtensionsClient {
   // added to this list.
   ScriptingWhitelist scripting_whitelist_;
 
-  // Mutable to allow caching in a const method.
-  mutable GURL webstore_base_url_;
-  mutable GURL webstore_update_url_;
+  GURL webstore_base_url_;
+  GURL webstore_update_url_;
 
   friend struct base::LazyInstanceTraitsBase<ChromeExtensionsClient>;
 

@@ -60,6 +60,9 @@ void TestExtensionsClient::Initialize() {
                                               GetExtensionsPermissionAliases());
 }
 
+void TestExtensionsClient::InitializeWebStoreUrls(
+    base::CommandLine* command_line) {}
+
 const PermissionMessageProvider&
 TestExtensionsClient::GetPermissionMessageProvider() const {
   static TestPermissionMessageProvider provider;
