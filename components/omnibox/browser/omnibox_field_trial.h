@@ -190,10 +190,6 @@ class OmniboxFieldTrial {
   // pages.
   static bool InZeroSuggestMostVisitedWithoutSerpFieldTrial();
 
-  // Returns whether the user is in a ZeroSuggest field trial and URL-based
-  // suggestions can continue to appear after the user has started typing.
-  static bool InZeroSuggestAfterTypingFieldTrial();
-
   // Returns whether the user is in a ZeroSuggest field trial, but should
   // show recently searched-for queries instead.
   static bool InZeroSuggestPersonalizedFieldTrial();
@@ -448,7 +444,6 @@ class OmniboxFieldTrial {
   static const char kHQPAllowMatchInSchemeRule[];
   static const char kZeroSuggestRule[];
   static const char kZeroSuggestVariantRule[];
-  static const char kSuggestVariantRule[];
   static const char kDisableResultsCachingRule[];
   static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
   static const char kSuggestPollingDelayMsRule[];
