@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
-#include "base/threading/thread_checker.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/events/event_handler.h"
@@ -188,8 +187,6 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // This is set to true when the WindowTreeClient is destroyed. It triggers
   // creating a different WindowPort implementation.
   bool in_mus_shutdown_ = false;
-
-  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(Env);
 };
