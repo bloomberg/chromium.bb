@@ -5,7 +5,6 @@
 // https://w3c.github.io/performance-timeline/#the-performance-observer-interface
 
 [
-    RuntimeEnabled=PerformanceObserver,
     Exposed=(Window,Worker)
 ] interface PerformanceObserverEntryList {
     // TODO(foolip): getEntries() should take an optional FilterOptions argument.

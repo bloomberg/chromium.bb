@@ -11,8 +11,7 @@ callback PerformanceObserverCallback = void (PerformanceObserverEntryList entrie
     DependentLifetime,
     Constructor(PerformanceObserverCallback callback),
     ConstructorCallWith=ScriptState,
-    Exposed=(Window,Worker),
-    RuntimeEnabled=PerformanceObserver
+    Exposed=(Window,Worker)
 ] interface PerformanceObserver {
     [RaisesException] void observe(PerformanceObserverInit options);
     void disconnect();
