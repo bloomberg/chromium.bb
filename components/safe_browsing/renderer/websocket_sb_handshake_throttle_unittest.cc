@@ -91,6 +91,8 @@ class FakeWebCallbacks
 
   void RunUntilCalled() { run_loop_.Run(); }
 
+  void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
+
   Result result_;
   blink::WebString message_;
   base::RunLoop run_loop_;
@@ -132,7 +134,7 @@ TEST_F(WebSocketSBHandshakeThrottleTest, CheckArguments) {
 TEST_F(WebSocketSBHandshakeThrottleTest, Safe) {
   throttle_->ThrottleHandshake(GURL(kTestUrl), nullptr, &fake_callbacks_);
   safe_browsing_.RunUntilCalled();
-  std::move(safe_browsing_.callback_).Run(true, false);
+  std::move(safe_browsing_.callback_).Run(nullptr, true, false);
   fake_callbacks_.RunUntilCalled();
   EXPECT_EQ(FakeWebCallbacks::RESULT_SUCCESS, fake_callbacks_.result_);
 }
@@ -140,13 +142,28 @@ TEST_F(WebSocketSBHandshakeThrottleTest, Safe) {
 TEST_F(WebSocketSBHandshakeThrottleTest, Unsafe) {
   throttle_->ThrottleHandshake(GURL(kTestUrl), nullptr, &fake_callbacks_);
   safe_browsing_.RunUntilCalled();
-  std::move(safe_browsing_.callback_).Run(false, false);
+  std::move(safe_browsing_.callback_).Run(nullptr, false, false);
   fake_callbacks_.RunUntilCalled();
   EXPECT_EQ(FakeWebCallbacks::RESULT_ERROR, fake_callbacks_.result_);
   EXPECT_EQ(
       blink::WebString(
           "WebSocket connection to wss://test/ failed safe browsing check"),
       fake_callbacks_.message_);
+}
+
+TEST_F(WebSocketSBHandshakeThrottleTest, SlowCheckNotifier) {
+  throttle_->ThrottleHandshake(GURL(kTestUrl), nullptr, &fake_callbacks_);
+  safe_browsing_.RunUntilCalled();
+
+  mojom::UrlCheckNotifierPtr slow_check_notifier;
+  std::move(safe_browsing_.callback_)
+      .Run(mojo::MakeRequest(&slow_check_notifier), false, false);
+  fake_callbacks_.RunUntilIdle();
+  EXPECT_EQ(FakeWebCallbacks::RESULT_NOT_CALLED, fake_callbacks_.result_);
+
+  slow_check_notifier->OnCompleteCheck(true, false);
+  fake_callbacks_.RunUntilCalled();
+  EXPECT_EQ(FakeWebCallbacks::RESULT_SUCCESS, fake_callbacks_.result_);
 }
 
 TEST_F(WebSocketSBHandshakeThrottleTest, MojoServiceNotThere) {

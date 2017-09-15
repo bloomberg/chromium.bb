@@ -33,17 +33,21 @@ content::WebContents* GetWebContentsFromID(int render_process_id,
 // if it hasn't been run yet.
 class CheckUrlCallbackWrapper {
  public:
-  using Callback = base::OnceCallback<void(bool, bool)>;
+  using Callback =
+      base::OnceCallback<void(mojom::UrlCheckNotifierRequest, bool, bool)>;
 
   explicit CheckUrlCallbackWrapper(Callback callback)
       : callback_(std::move(callback)) {}
   ~CheckUrlCallbackWrapper() {
     if (callback_)
-      Run(true, false);
+      Run(nullptr, true, false);
   }
 
-  void Run(bool proceed, bool showed_interstitial) {
-    std::move(callback_).Run(proceed, showed_interstitial);
+  void Run(mojom::UrlCheckNotifierRequest slow_check_notifier,
+           bool proceed,
+           bool showed_interstitial) {
+    std::move(callback_).Run(std::move(slow_check_notifier), proceed,
+                             showed_interstitial);
   }
 
  private:

@@ -45,13 +45,21 @@ class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
   void set_net_event_logger(NetEventLogger* net_event_logger);
 
  private:
+  using NativeUrlCheckNotifier =
+      base::OnceCallback<void(bool /* proceed */,
+                              bool /* showed_interstitial */)>;
+
   // |web_contents_getter| is used for displaying SafeBrowsing UI when
   // necessary.
   BrowserURLLoaderThrottle(
       scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
       const base::Callback<content::WebContents*()>& web_contents_getter);
 
-  void OnCheckUrlResult(bool proceed, bool showed_interstitial);
+  void OnCompleteCheck(bool proceed, bool showed_interstitial);
+
+  void OnCheckUrlResult(NativeUrlCheckNotifier* slow_check_notifier,
+                        bool proceed,
+                        bool showed_interstitial);
 
   // The following member stays valid until |url_checker_| is created.
   scoped_refptr<UrlCheckerDelegate> url_checker_delegate_;

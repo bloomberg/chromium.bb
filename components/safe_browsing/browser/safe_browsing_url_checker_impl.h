@@ -34,6 +34,18 @@ class UrlCheckerDelegate;
 class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                                    public SafeBrowsingDatabaseManager::Client {
  public:
+  using NativeUrlCheckNotifier =
+      base::OnceCallback<void(bool /* proceed */,
+                              bool /* showed_interstitial */)>;
+
+  // If |slow_check_notifier| is not null, the callback is supposed to update
+  // this output parameter with a callback to receive complete notification. In
+  // that case, |proceed| and |showed_interstitial| should be ignored.
+  using NativeCheckUrlCallback =
+      base::OnceCallback<void(NativeUrlCheckNotifier* /* slow_check_notifier */,
+                              bool /* proceed */,
+                              bool /* showed_interstitial */)>;
+
   SafeBrowsingUrlCheckerImpl(
       const net::HttpRequestHeaders& headers,
       int load_flags,
@@ -51,6 +63,12 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                 const std::string& method,
                 CheckUrlCallback callback) override;
 
+  // NOTE: |callback| could be run synchronously before this method returns. Be
+  // careful if |callback| could destroy this object.
+  void CheckUrl(const GURL& url,
+                const std::string& method,
+                NativeCheckUrlCallback callback);
+
   const GURL& GetCurrentlyCheckingUrl() const;
 
   void set_net_event_logger(NetEventLogger* net_event_logger) {
@@ -58,12 +76,39 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   }
 
  private:
+  class Notifier {
+   public:
+    explicit Notifier(CheckUrlCallback callback);
+    explicit Notifier(NativeCheckUrlCallback native_callback);
+
+    ~Notifier();
+
+    Notifier(Notifier&& other);
+    Notifier& operator=(Notifier&& other);
+
+    void OnStartSlowCheck();
+    void OnCompleteCheck(bool proceed, bool showed_interstitial);
+
+   private:
+    // Used in the mojo interface case.
+    CheckUrlCallback callback_;
+    mojom::UrlCheckNotifierPtr slow_check_notifier_;
+
+    // Used in the native call case.
+    NativeCheckUrlCallback native_callback_;
+    NativeUrlCheckNotifier native_slow_check_notifier_;
+  };
+
   // SafeBrowsingDatabaseManager::Client implementation:
   void OnCheckBrowseUrlResult(const GURL& url,
                               SBThreatType threat_type,
                               const ThreatMetadata& metadata) override;
 
   void OnCheckUrlTimeout();
+
+  void CheckUrlImpl(const GURL& url,
+                    const std::string& method,
+                    Notifier notifier);
 
   // NOTE: this method runs callbacks which could destroy this object.
   void ProcessUrls();
@@ -91,16 +136,14 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   };
 
   struct UrlInfo {
-    UrlInfo(const GURL& url,
-            const std::string& method,
-            CheckUrlCallback callback);
+    UrlInfo(const GURL& url, const std::string& method, Notifier notifier);
     UrlInfo(UrlInfo&& other);
 
     ~UrlInfo();
 
     GURL url;
     std::string method;
-    CheckUrlCallback callback;
+    Notifier notifier;
   };
 
   const net::HttpRequestHeaders headers_;

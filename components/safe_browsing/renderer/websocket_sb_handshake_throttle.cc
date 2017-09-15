@@ -73,8 +73,8 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
                      base::Unretained(this)));
 }
 
-void WebSocketSBHandshakeThrottle::OnCheckResult(bool proceed,
-                                                 bool showed_interstitial) {
+void WebSocketSBHandshakeThrottle::OnCompleteCheck(bool proceed,
+                                                   bool showed_interstitial) {
   DCHECK(!start_time_.is_null());
   base::TimeDelta elapsed = base::TimeTicks::Now() - start_time_;
   if (proceed) {
@@ -93,10 +93,29 @@ void WebSocketSBHandshakeThrottle::OnCheckResult(bool proceed,
   // |this| is destroyed here.
 }
 
+void WebSocketSBHandshakeThrottle::OnCheckResult(
+    mojom::UrlCheckNotifierRequest slow_check_notifier,
+    bool proceed,
+    bool showed_interstitial) {
+  if (!slow_check_notifier.is_pending()) {
+    OnCompleteCheck(proceed, showed_interstitial);
+    return;
+  }
+
+  // TODO(yzshen): Notify the network service to pause processing response body.
+  if (!notifier_binding_) {
+    notifier_binding_ =
+        std::make_unique<mojo::Binding<mojom::UrlCheckNotifier>>(this);
+  }
+  notifier_binding_->Bind(std::move(slow_check_notifier));
+}
+
 void WebSocketSBHandshakeThrottle::OnConnectionError() {
   DCHECK_EQ(result_, Result::UNKNOWN);
 
   url_checker_.reset();
+  notifier_binding_.reset();
+
   // Make the destructor record NOT_SUPPORTED in the result histogram.
   result_ = Result::NOT_SUPPORTED;
   // Don't record the time elapsed because it's unlikely to be meaningful.
