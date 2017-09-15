@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_STORE_KIT_STORE_KIT_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_STORE_KIT_STORE_KIT_TAB_HELPER_H_
 
-#include "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #import "ios/chrome/browser/store_kit/store_kit_launcher.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
@@ -23,7 +22,7 @@ class StoreKitTabHelper : public web::WebStateUserData<StoreKitTabHelper> {
   void OpenAppStore(NSString* app_id);
 
  private:
-  base::WeakNSProtocol<id<StoreKitLauncher>> store_kit_launcher_;
+  __weak id<StoreKitLauncher> store_kit_launcher_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(StoreKitTabHelper);
 };

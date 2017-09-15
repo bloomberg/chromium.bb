@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
@@ -480,7 +479,7 @@ enum BeaconType {
       [[PhysicalWebRequest alloc] initWithDevice:device]);
   PhysicalWebRequest* strongRequest = request.get();
   [pendingRequests_ addObject:strongRequest];
-  base::WeakNSObject<PhysicalWebScanner> weakSelf(self);
+  __weak PhysicalWebScanner* weakSelf = self;
   [request start:^(PhysicalWebDevice* device, NSError* error) {
     base::scoped_nsobject<PhysicalWebScanner> strongSelf(weakSelf);
     if (!strongSelf) {

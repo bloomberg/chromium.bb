@@ -5,7 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_TABS_TAB_MODEL_WEB_STATE_LIST_DELEGATE_H_
 #define IOS_CHROME_BROWSER_TABS_TAB_MODEL_WEB_STATE_LIST_DELEGATE_H_
 
-#import "base/ios/weak_nsobject.h"
+#import <Foundation/Foundation.h>
+
 #include "base/macros.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 
@@ -22,7 +23,7 @@ class TabModelWebStateListDelegate : public WebStateListDelegate {
   void WebStateDetached(web::WebState* web_state) override;
 
  private:
-  base::WeakNSObject<TabModel> tab_model_;
+  __weak TabModel* tab_model_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(TabModelWebStateListDelegate);
 };

@@ -12,7 +12,7 @@ namespace ntp_tiles {
 
 MostVisitedSitesObserverBridge::MostVisitedSitesObserverBridge(
     id<MostVisitedSitesObserving> observer) {
-  observer_.reset(observer);
+  observer_ = observer;
 }
 
 MostVisitedSitesObserverBridge::~MostVisitedSitesObserverBridge() {}

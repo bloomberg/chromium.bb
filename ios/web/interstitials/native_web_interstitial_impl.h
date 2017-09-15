@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
 
 namespace web {

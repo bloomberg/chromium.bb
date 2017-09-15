@@ -6,7 +6,6 @@
 #define IOS_CHROME_BROWSER_WEB_DOM_ALTERING_LOCK_H_
 
 #include "base/ios/block_types.h"
-#import "base/ios/weak_nsobject.h"
 #include "ios/web/public/web_state/web_state_user_data.h"
 
 namespace web {
@@ -57,7 +56,7 @@ class DOMAlteringLock : public web::WebStateUserData<DOMAlteringLock> {
 
  private:
   // DOMAltering object currently having the lock.
-  base::WeakNSProtocol<id<DOMAltering>> current_dom_altering_feature_;
+  __weak id<DOMAltering> current_dom_altering_feature_ = nil;
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_DOM_ALTERING_LOCK_H_

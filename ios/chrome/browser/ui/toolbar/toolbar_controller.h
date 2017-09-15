@@ -11,7 +11,6 @@
 
 #include <map>
 
-#include "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
@@ -90,15 +89,14 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 
 // Create a thin wrapper around UIImageView to catch frame change and window
 // events.
-@protocol ToolbarFrameDelegate
+@protocol ToolbarFrameDelegate<NSObject>
 - (void)frameDidChangeFrame:(CGRect)newFrame fromFrame:(CGRect)oldFrame;
 - (void)windowDidChange;
 @end
 
-@interface ToolbarView : UIImageView<RelaxedBoundsConstraintsHitTestSupport> {
-  base::WeakNSProtocol<id<ToolbarFrameDelegate>> delegate_;
-}
-- (void)setDelegate:(id<ToolbarFrameDelegate>)delegate;
+@interface ToolbarView : UIImageView<RelaxedBoundsConstraintsHitTestSupport>
+// The delegate used to handle frame changes and windows events.
+@property(nonatomic, weak) id<ToolbarFrameDelegate> delegate;
 // Records whether or not the toolbar is currently involved in a transition
 // animation.
 @property(nonatomic, assign, getter=isAnimatingTransition)

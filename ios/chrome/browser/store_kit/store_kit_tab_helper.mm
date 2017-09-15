@@ -15,7 +15,7 @@ StoreKitTabHelper::StoreKitTabHelper(web::WebState* web_state) {}
 StoreKitTabHelper::~StoreKitTabHelper() {}
 
 void StoreKitTabHelper::SetLauncher(id<StoreKitLauncher> launcher) {
-  store_kit_launcher_.reset(launcher);
+  store_kit_launcher_ = launcher;
 }
 
 id<StoreKitLauncher> StoreKitTabHelper::GetLauncher() {

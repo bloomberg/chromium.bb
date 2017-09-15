@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 
