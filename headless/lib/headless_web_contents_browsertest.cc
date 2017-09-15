@@ -22,6 +22,7 @@
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_web_contents.h"
+#include "headless/public/util/testing/test_in_memory_protocol_handler.h"
 #include "headless/test/headless_browser_test.h"
 #include "headless/test/tab_socket_test.h"
 #include "printing/features/features.h"
@@ -42,7 +43,10 @@
 #endif
 
 using testing::ElementsAre;
+using testing::ElementsAreArray;
+using testing::Not;
 using testing::UnorderedElementsAre;
+using testing::UnorderedElementsAreArray;
 
 namespace headless {
 
@@ -913,4 +917,113 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, BrowserOpenInTab) {
   EXPECT_EQ(2u, browser_context->GetAllWebContents().size());
   browser_context->RemoveObserver(&observer);
 }
+
+namespace {
+const char* kRequestOrderTestPage = R"(
+<html>
+  <body>
+    <img src="img0">
+    <img src="img1">
+    <img src="img2">
+    <img src="img3">
+    <img src="img4">
+    <img src="img5">
+    <img src="img6">
+    <script src='script7' async></script>
+    <script>
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'xhr8');
+      xhr.send();
+    </script>
+    <iframe src=frame9></iframe>
+    <img src="img10">
+    <img src="img11">
+  </body>
+</html> )";
+
+const char* kRequestOrderTestPageUrls[] = {
+    "http://foo.com/index.html", "http://foo.com/img0",
+    "http://foo.com/img1",       "http://foo.com/img2",
+    "http://foo.com/img3",       "http://foo.com/img4",
+    "http://foo.com/img5",       "http://foo.com/img6",
+    "http://foo.com/script7",    "http://foo.com/img10",
+    "http://foo.com/img11",      "http://foo.com/xhr8",
+    "http://foo.com/frame9"};
+}  // namespace
+
+class ResourceSchedulerTest : public HeadlessAsyncDevTooledBrowserTest,
+                              public page::Observer {
+ public:
+  void SetUp() override {
+    options()->enable_resource_scheduler = GetEnableResourceScheduler();
+    HeadlessBrowserTest::SetUp();
+  }
+
+  void RunDevTooledTest() override {
+    http_handler_->SetHeadlessBrowserContext(browser_context_);
+    devtools_client_->GetPage()->AddObserver(this);
+
+    base::RunLoop run_loop;
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
+
+    devtools_client_->GetPage()->Navigate("http://foo.com/index.html");
+  }
+
+  virtual bool GetEnableResourceScheduler() = 0;
+
+  ProtocolHandlerMap GetProtocolHandlers() override {
+    ProtocolHandlerMap protocol_handlers;
+    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
+        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(),
+                                        /* simulate_slow_fetch */ true));
+    http_handler_ = http_handler.get();
+    http_handler_->InsertResponse("http://foo.com/index.html",
+                                  {kRequestOrderTestPage, "text/html"});
+    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
+    return protocol_handlers;
+  }
+
+  const TestInMemoryProtocolHandler* http_handler() const {
+    return http_handler_;
+  }
+
+ private:
+  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
+};
+
+class DisableResourceSchedulerTest : public ResourceSchedulerTest {
+ public:
+  bool GetEnableResourceScheduler() override { return false; }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    EXPECT_THAT(http_handler()->urls_requested(),
+                ElementsAreArray(kRequestOrderTestPageUrls));
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(DisableResourceSchedulerTest);
+
+class EnableResourceSchedulerTest : public ResourceSchedulerTest {
+ public:
+  bool GetEnableResourceScheduler() override {
+    return true;  // The default value.
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    // We expect a different resource order when the ResourceScheduler is used.
+    EXPECT_THAT(http_handler()->urls_requested(),
+                Not(ElementsAreArray(kRequestOrderTestPageUrls)));
+    // However all the same urls should still be requested.
+    EXPECT_THAT(http_handler()->urls_requested(),
+                UnorderedElementsAreArray(kRequestOrderTestPageUrls));
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(EnableResourceSchedulerTest);
+
 }  // namespace headless

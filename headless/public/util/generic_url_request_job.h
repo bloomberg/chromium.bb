@@ -18,11 +18,11 @@
 #include "headless/public/util/managed_dispatch_url_request_job.h"
 #include "headless/public/util/url_fetcher.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 namespace net {
-class HttpResponseHeaders;
 class IOBuffer;
 }  // namespace net
 

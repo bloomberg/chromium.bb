@@ -12,9 +12,7 @@
 #include "headless/public/devtools/domains/network.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/headless_devtools_client.h"
-#include "headless/public/util/expedited_dispatcher.h"
-#include "headless/public/util/generic_url_request_job.h"
-#include "headless/public/util/url_fetcher.h"
+#include "headless/public/util/testing/test_in_memory_protocol_handler.h"
 #include "headless/test/headless_browser_test.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -27,118 +25,6 @@ using testing::ContainerEq;
 namespace headless {
 
 namespace {
-class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  explicit TestProtocolHandler(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
-      : test_delegate_(new TestDelegate()),
-        dispatcher_(new ExpeditedDispatcher(io_thread_task_runner)),
-        headless_browser_context_(nullptr) {}
-
-  ~TestProtocolHandler() override {}
-
-  void SetHeadlessBrowserContext(
-      HeadlessBrowserContext* headless_browser_context) {
-    headless_browser_context_ = headless_browser_context;
-  }
-
-  struct Response {
-    Response() {}
-    Response(const std::string& body, const std::string& mime_type)
-        : data("HTTP/1.1 200 OK\r\nContent-Type: " + mime_type + "\r\n\r\n" +
-               body) {}
-
-    std::string data;
-  };
-
-  void InsertResponse(const std::string& url, const Response& response) {
-    response_map_[url] = response;
-  }
-
-  const Response* GetResponse(const std::string& url) const {
-    std::map<std::string, Response>::const_iterator find_it =
-        response_map_.find(url);
-    if (find_it == response_map_.end())
-      return nullptr;
-    return &find_it->second;
-  }
-
-  class MockURLFetcher : public URLFetcher {
-   public:
-    explicit MockURLFetcher(TestProtocolHandler* protocol_handler)
-        : protocol_handler_(protocol_handler) {}
-    ~MockURLFetcher() override {}
-
-    // URLFetcher implementation:
-    void StartFetch(const Request* request,
-                    ResultListener* result_listener) override {
-      GURL url = request->GetURLRequest()->url();
-      EXPECT_EQ("GET", request->GetURLRequest()->method());
-
-      const Response* response = protocol_handler_->GetResponse(url.spec());
-      if (!response)
-        result_listener->OnFetchStartError(net::ERR_FILE_NOT_FOUND);
-
-      net::LoadTimingInfo load_timing_info;
-      result_listener->OnFetchCompleteExtractHeaders(
-          url, response->data.c_str(), response->data.size(), load_timing_info);
-
-      int frame_tree_node_id = request->GetFrameTreeNodeId();
-      DCHECK_NE(frame_tree_node_id, -1) << " For url " << url;
-      protocol_handler_->url_to_frame_tree_node_id_[url.spec()] =
-          frame_tree_node_id;
-    }
-
-   private:
-    TestProtocolHandler* protocol_handler_;
-
-    DISALLOW_COPY_AND_ASSIGN(MockURLFetcher);
-  };
-
-  class TestDelegate : public GenericURLRequestJob::Delegate {
-   public:
-    TestDelegate() {}
-    ~TestDelegate() override {}
-
-    // GenericURLRequestJob::Delegate implementation:
-    void OnResourceLoadFailed(const Request* request,
-                              net::Error error) override {}
-
-    void OnResourceLoadComplete(
-        const Request* request,
-        const GURL& final_url,
-        scoped_refptr<net::HttpResponseHeaders> response_headers,
-        const char* body,
-        size_t body_size) override {}
-
-   private:
-    scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestDelegate);
-  };
-
-  // net::URLRequestJobFactory::ProtocolHandler implementation::
-  net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return new GenericURLRequestJob(
-        request, network_delegate, dispatcher_.get(),
-        base::MakeUnique<MockURLFetcher>(
-            const_cast<TestProtocolHandler*>(this)),
-        test_delegate_.get(), headless_browser_context_);
-  }
-
-  std::map<std::string, int> url_to_frame_tree_node_id_;
-
- private:
-  std::unique_ptr<TestDelegate> test_delegate_;
-  std::unique_ptr<ExpeditedDispatcher> dispatcher_;
-  std::map<std::string, Response> response_map_;
-  HeadlessBrowserContext* headless_browser_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProtocolHandler);
-};
-
 const char* kIndexHtml = R"(
 <html>
 <head><link rel="stylesheet" type="text/css" href="style1.css"></head>
@@ -215,8 +101,9 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
 
   ProtocolHandlerMap GetProtocolHandlers() override {
     ProtocolHandlerMap protocol_handlers;
-    std::unique_ptr<TestProtocolHandler> http_handler(
-        new TestProtocolHandler(browser()->BrowserIOThread()));
+    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
+        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(),
+                                        /* simulate_slow_fetch */ false));
     http_handler_ = http_handler.get();
     http_handler_->InsertResponse("http://foo.com/index.html",
                                   {kIndexHtml, "text/html"});
@@ -243,7 +130,7 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
   // page::Observer implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
     std::map<std::string, std::string> protocol_handler_url_to_frame_id_;
-    for (const auto& pair : http_handler_->url_to_frame_tree_node_id_) {
+    for (const auto& pair : http_handler_->url_to_frame_tree_node_id()) {
       // TODO(alexclarke): This will probably break with OOPIF, fix this.
       // See https://bugs.chromium.org/p/chromium/issues/detail?id=715924
       protocol_handler_url_to_frame_id_[pair.first] =
@@ -264,7 +151,7 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
 
  private:
   std::map<std::string, std::string> url_to_frame_id_;
-  TestProtocolHandler* http_handler_;  // NOT OWNED
+  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(FrameIdTest);

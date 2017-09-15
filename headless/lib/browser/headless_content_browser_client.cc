@@ -292,7 +292,8 @@ void HeadlessContentBrowserClient::AllowCertificateError(
 
 void HeadlessContentBrowserClient::ResourceDispatcherHostCreated() {
   resource_dispatcher_host_delegate_.reset(
-      new HeadlessResourceDispatcherHostDelegate);
+      new HeadlessResourceDispatcherHostDelegate(
+          browser_->options()->enable_resource_scheduler));
   content::ResourceDispatcherHost::Get()->SetDelegate(
       resource_dispatcher_host_delegate_.get());
 }

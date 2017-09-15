@@ -142,6 +142,11 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       ResourceContext* resource_context);
 
+  // Whether or not to enable ResourceScheduling. This will almost always be
+  // enabled, except for some C++ headless embedders who may implement their own
+  // resource scheduling via protocol handlers.
+  virtual bool ShouldUseResourceScheduler() const;
+
  protected:
   virtual ~ResourceDispatcherHostDelegate();
 };

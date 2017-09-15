@@ -39,6 +39,7 @@ Options::Options(int argc, const char** argv)
       message_pump(nullptr),
       single_process_mode(false),
       disable_sandbox(false),
+      enable_resource_scheduler(true),
 #if defined(USE_OZONE)
       // TODO(skyostil): Implement SwiftShader backend for headless ozone.
       gl_implementation("osmesa"),
@@ -122,6 +123,11 @@ Builder& Builder::SetSingleProcessMode(bool single_process_mode) {
 
 Builder& Builder::SetDisableSandbox(bool disable_sandbox) {
   options_.disable_sandbox = disable_sandbox;
+  return *this;
+}
+
+Builder& Builder::SetEnableResourceScheduler(bool enable_resource_scheduler) {
+  options_.enable_resource_scheduler = enable_resource_scheduler;
   return *this;
 }
 

@@ -12,10 +12,15 @@ namespace headless {
 class HeadlessResourceDispatcherHostDelegate
     : public content::ResourceDispatcherHostDelegate {
  public:
-  HeadlessResourceDispatcherHostDelegate();
+  explicit HeadlessResourceDispatcherHostDelegate(
+      bool enable_resource_scheduler);
   ~HeadlessResourceDispatcherHostDelegate() override;
 
+  bool ShouldUseResourceScheduler() const override;
+
  private:
+  const bool enable_resource_scheduler_;
+
   DISALLOW_COPY_AND_ASSIGN(HeadlessResourceDispatcherHostDelegate);
 };
 

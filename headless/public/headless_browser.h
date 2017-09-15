@@ -137,6 +137,9 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // a security risk and should be used with caution.
   bool disable_sandbox;
 
+  // Whether or not to enable content::ResourceScheduler. Enabled by default.
+  bool enable_resource_scheduler;
+
   // Choose the GL implementation to use for rendering. A suitable
   // implementantion is selected by default. Setting this to an empty
   // string can be used to disable GL rendering (e.g., WebGL support).
@@ -205,6 +208,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetMessagePump(base::MessagePump* message_pump);
   Builder& SetSingleProcessMode(bool single_process_mode);
   Builder& SetDisableSandbox(bool disable_sandbox);
+  Builder& SetEnableResourceScheduler(bool enable_resource_scheduler);
   Builder& SetGLImplementation(const std::string& gl_implementation);
   Builder& AddMojoServiceName(const std::string& mojo_service_name);
 #if defined(OS_WIN)

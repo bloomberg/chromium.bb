@@ -737,7 +737,11 @@ std::unique_ptr<net::ClientCertStore>
 }
 
 void ResourceDispatcherHostImpl::OnInit() {
-  scheduler_.reset(new ResourceScheduler);
+  // In some tests |delegate_| does not get set, when that happens assume the
+  // scheduler is enabled.
+  bool enable_resource_scheduler =
+      delegate_ ? delegate_->ShouldUseResourceScheduler() : true;
+  scheduler_.reset(new ResourceScheduler(enable_resource_scheduler));
 }
 
 void ResourceDispatcherHostImpl::OnShutdown() {
