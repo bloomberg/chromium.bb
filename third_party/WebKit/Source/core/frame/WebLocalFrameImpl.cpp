@@ -1485,8 +1485,9 @@ void WebLocalFrameImpl::PrintPagesForTesting(
 }
 
 WebRect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
-  return HasSelection() ? WebRect(IntRect(GetFrame()->Selection().Bounds()))
-                        : WebRect();
+  return HasSelection()
+             ? WebRect(IntRect(GetFrame()->Selection().UnclippedBounds()))
+             : WebRect();
 }
 
 WebString WebLocalFrameImpl::GetLayerTreeAsTextForTesting(

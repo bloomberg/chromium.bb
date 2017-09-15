@@ -47,6 +47,8 @@ class FrameSelectionTest : public EditingTestBase {
     return Selection().frame_caret_->CaretPosition();
   }
 
+  Page& GetPage() const { return GetDummyPageHolder().GetPage(); }
+
  private:
   Persistent<Text> text_node_;
 };
@@ -1006,6 +1008,51 @@ TEST_F(FrameSelectionTest, InconsistentVisibleSelectionNoCrash) {
 
   // Shouldn't crash inside.
   EXPECT_FALSE(Selection().SelectionHasFocus());
+}
+
+TEST_F(FrameSelectionTest, SelectionBounds) {
+  SetBodyContent(
+      "<style>"
+      "  * { margin: 0; } "
+      "  html, body { height: 2000px; }"
+      "  div {"
+      "    width: 20px;"
+      "    height: 1000px;"
+      "    font-size: 30px;"
+      "    overflow: hidden;"
+      "    margin-top: 2px;"
+      "  }"
+      "</style>"
+      "<div>"
+      "  a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>"
+      "  a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>"
+      "  a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>"
+      "</div>");
+  Selection().SelectAll();
+
+  const int node_width = 20;
+  const int node_height = 1000;
+  const int node_margin_top = 2;
+  // The top of the node should be visible but the bottom should be outside
+  // by the viewport. The unclipped selection bounds should not be clipped.
+  EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
+            Selection().UnclippedBounds());
+
+  // Scroll 500px down so the top of the node is outside the viewport and the
+  // bottom is visible. The unclipped selection bounds should not be clipped.
+  const int scroll_offset = 500;
+  LocalFrameView* frame_view = GetDocument().View();
+  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, scroll_offset), kProgrammaticScroll);
+  EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
+            Selection().UnclippedBounds());
+
+  // Adjust the page scale factor which changes the selection bounds as seen
+  // through the viewport. The unclipped selection bounds should not be clipped.
+  const int page_scale_factor = 2;
+  GetPage().SetPageScaleFactor(page_scale_factor);
+  EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
+            Selection().UnclippedBounds());
 }
 
 }  // namespace blink

@@ -52,6 +52,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -982,8 +983,17 @@ static IntPoint DragLocationForDHTMLDrag(const IntPoint& mouse_dragged_point,
                   drag_origin.Y() + y_offset);
 }
 
-static IntPoint DragLocationForSelectionDrag(LocalFrame* source_frame) {
-  IntRect dragging_rect = EnclosingIntRect(source_frame->Selection().Bounds());
+FloatRect DragController::ClippedSelection(const LocalFrame& frame) {
+  Page* page = frame.GetPage();
+  if (!page)
+    return FloatRect();
+  return Intersection(FloatRect(frame.Selection().UnclippedBounds()),
+                      page->GetVisualViewport().VisibleRectInDocument());
+}
+
+static IntPoint DragLocationForSelectionDrag(const LocalFrame& frame) {
+  IntRect dragging_rect =
+      EnclosingIntRect(DragController::ClippedSelection(frame));
   int xpos = dragging_rect.MaxX();
   xpos = dragging_rect.X() < xpos ? dragging_rect.X() : xpos;
   int ypos = dragging_rect.MaxY();
@@ -1098,7 +1108,7 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
   frame.View()->UpdateAllLifecyclePhasesExceptPaint();
   DCHECK(frame.GetDocument()->IsActive());
 
-  FloatRect painting_rect = FloatRect(frame.Selection().Bounds());
+  FloatRect painting_rect = ClippedSelection(frame);
   GlobalPaintFlags paint_flags =
       kGlobalPaintSelectionOnly | kGlobalPaintFlattenCompositingLayers;
 
@@ -1156,7 +1166,7 @@ bool DragController::StartDrag(LocalFrame* src,
   if (state.drag_type_ == kDragSourceActionSelection) {
     if (!drag_image) {
       drag_image = DragImageForSelection(*src, kDragImageAlpha);
-      drag_location = DragLocationForSelectionDrag(src);
+      drag_location = DragLocationForSelectionDrag(*src);
     }
     DoSystemDrag(drag_image.get(), drag_location, drag_origin, data_transfer,
                  src, false);

@@ -125,4 +125,72 @@ TEST_P(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
       WebView().GetPage()->GetAutoscrollController().AutoscrollInProgress());
 }
 
+TEST_F(DragControllerTest, DragImageForSelectionClipsToViewport) {
+  SetBodyContent(
+      "<style>"
+      "  * { margin: 0; } "
+      "  html, body { height: 2000px; }"
+      "  div {"
+      "    width: 20px;"
+      "    height: 1000px;"
+      "    font-size: 30px;"
+      "    overflow: hidden;"
+      "    margin-top: 2px;"
+      "  }"
+      "</style>"
+      "<div>"
+      "  a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>"
+      "  a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>"
+      "  a<br>b<br>c<br>d<br>e<br>f<br>g<br>h<br>i<br>j<br>k<br>l<br>m<br>n<br>"
+      "</div>");
+  const int page_scale_factor = 2;
+  GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
+  GetFrame().Selection().SelectAll();
+
+  const int node_width = 20;
+  const int node_height = 1000;
+  const int node_margin_top = 2;
+  const int viewport_height_dip = 600;
+  const int viewport_height_css = viewport_height_dip / page_scale_factor;
+
+  // The top of the node should be visible but the bottom should be outside the
+  // viewport.
+  FloatRect expected_selection(0, node_margin_top, node_width,
+                               viewport_height_css - node_margin_top);
+  EXPECT_EQ(expected_selection, DragController::ClippedSelection(GetFrame()));
+  auto selection_image(DragController::DragImageForSelection(GetFrame(), 1));
+  IntSize expected_image_size(RoundedIntSize(expected_selection.Size()));
+  expected_image_size.Scale(page_scale_factor);
+  EXPECT_EQ(expected_image_size, selection_image->Size());
+
+  // Scroll 500 css px down so the top of the node is outside the viewport.
+  // Because the viewport is scaled to 300 css px tall, the bottom of the node
+  // should also be outside the viewport. Therefore, the selection should cover
+  // the entire viewport.
+  int scroll_offset = 500;
+  LocalFrameView* frame_view = GetDocument().View();
+  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, scroll_offset), kProgrammaticScroll);
+  expected_selection =
+      FloatRect(0, scroll_offset, node_width, viewport_height_css);
+  EXPECT_EQ(expected_selection, DragController::ClippedSelection(GetFrame()));
+  selection_image = DragController::DragImageForSelection(GetFrame(), 1);
+  expected_image_size = IntSize(RoundedIntSize(expected_selection.Size()));
+  expected_image_size.Scale(page_scale_factor);
+  EXPECT_EQ(expected_image_size, selection_image->Size());
+
+  // Scroll 800 css px down so the top of the node is outside the viewport and
+  // the bottom of the node is now visible.
+  scroll_offset = 800;
+  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, scroll_offset), kProgrammaticScroll);
+  expected_selection = FloatRect(0, scroll_offset, node_width,
+                                 node_height + node_margin_top - scroll_offset);
+  EXPECT_EQ(expected_selection, DragController::ClippedSelection(GetFrame()));
+  selection_image = DragController::DragImageForSelection(GetFrame(), 1);
+  expected_image_size = IntSize(RoundedIntSize(expected_selection.Size()));
+  expected_image_size.Scale(page_scale_factor);
+  EXPECT_EQ(expected_image_size, selection_image->Size());
+}
+
 }  // namespace blink
