@@ -671,10 +671,14 @@ void AppListView::EndDrag(const gfx::Point& location) {
     }
     switch (app_list_state_) {
       case FULLSCREEN_ALL_APPS:
-        if (std::abs(drag_delta) > app_list_threshold)
-          SetState(is_tablet_mode_ || is_side_shelf_ ? CLOSED : PEEKING);
-        else
+        if (std::abs(drag_delta) > app_list_threshold) {
+          if (is_tablet_mode_ || is_side_shelf_)
+            Dismiss();
+          else
+            SetState(PEEKING);
+        } else {
           SetState(app_list_state_);
+        }
         break;
       case FULLSCREEN_SEARCH:
         if (std::abs(drag_delta) > app_list_threshold)
@@ -684,7 +688,10 @@ void AppListView::EndDrag(const gfx::Point& location) {
         break;
       case HALF:
         if (std::abs(drag_delta) > app_list_threshold) {
-          SetState(drag_delta > 0 ? FULLSCREEN_SEARCH : CLOSED);
+          if (drag_delta > 0)
+            SetState(FULLSCREEN_SEARCH);
+          else
+            Dismiss();
         } else {
           SetState(app_list_state_);
         }
