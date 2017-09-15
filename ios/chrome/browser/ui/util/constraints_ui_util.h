@@ -97,4 +97,7 @@ void AddSameCenterYConstraint(UIView* unused_parentView,
 // trailing, top and bottom anchors.
 void AddSameConstraints(UIView* view1, UIView* view2);
 
+// Returns a safeAreaLayoutGuide for a given view.
+UILayoutGuide* SafeAreaLayoutGuideForView(UIView* view);
+
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_CONSTRAINTS_UI_UTIL_H_
