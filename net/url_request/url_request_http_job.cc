@@ -1013,15 +1013,21 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
       case SourceStream::TYPE_NONE:
         // Identity encoding type. Pass through raw response body.
         return upstream;
-      case SourceStream::TYPE_SDCH:
-      // Pass through raw sdch response.
-      default:
+      case SourceStream::TYPE_UNKNOWN:
         // Unknown encoding type. Pass through raw response body.
         // Despite of reporting to UMA, request will not be canceled; though
         // it is expected that user will see malformed / garbage response.
         FilterSourceStream::ReportContentDecodingFailed(
             FilterSourceStream::TYPE_UNKNOWN);
         return upstream;
+      case SourceStream::TYPE_GZIP_FALLBACK_DEPRECATED:
+      case SourceStream::TYPE_SDCH_DEPRECATED:
+      case SourceStream::TYPE_SDCH_POSSIBLE_DEPRECATED:
+      case SourceStream::TYPE_REJECTED:
+      case SourceStream::TYPE_INVALID:
+      case SourceStream::TYPE_MAX:
+        NOTREACHED();
+        return nullptr;
     }
   }
 
@@ -1036,11 +1042,11 @@ std::unique_ptr<SourceStream> URLRequestHttpJob::SetUpSourceStream() {
         break;
       case SourceStream::TYPE_GZIP:
       case SourceStream::TYPE_DEFLATE:
-      case SourceStream::TYPE_GZIP_FALLBACK:
         downstream = GzipSourceStream::Create(std::move(upstream), type);
         break;
-      case SourceStream::TYPE_SDCH:
-      case SourceStream::TYPE_SDCH_POSSIBLE:
+      case SourceStream::TYPE_GZIP_FALLBACK_DEPRECATED:
+      case SourceStream::TYPE_SDCH_DEPRECATED:
+      case SourceStream::TYPE_SDCH_POSSIBLE_DEPRECATED:
       case SourceStream::TYPE_NONE:
       case SourceStream::TYPE_INVALID:
       case SourceStream::TYPE_REJECTED:

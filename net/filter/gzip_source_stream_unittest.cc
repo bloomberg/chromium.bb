@@ -60,11 +60,10 @@ class GzipSourceStreamTest : public ::testing::TestWithParam<GzipTestParam> {
   GzipSourceStreamTest() : output_buffer_size_(GetParam().buffer_size) {}
 
   // Helpful function to initialize the test fixture.|type| specifies which type
-  // of GzipSourceStream to create. It must be one of TYPE_GZIP,
-  // TYPE_GZIP_FALLBACK and TYPE_DEFLATE.
+  // of GzipSourceStream to create. It must be one of TYPE_GZIP and
+  // TYPE_DEFLATE.
   void Init(SourceStream::SourceType type) {
     EXPECT_TRUE(SourceStream::TYPE_GZIP == type ||
-                SourceStream::TYPE_GZIP_FALLBACK == type ||
                 SourceStream::TYPE_DEFLATE == type);
     source_data_len_ = kBigBufferSize - kEOFMargin;
 
@@ -270,19 +269,6 @@ TEST_P(GzipSourceStreamTest, CorruptGzipHeader) {
   int rv = ReadStream(&actual_output);
   EXPECT_EQ(ERR_CONTENT_DECODING_FAILED, rv);
   EXPECT_EQ("GZIP", stream()->Description());
-}
-
-TEST_P(GzipSourceStreamTest, GzipFallback) {
-  Init(SourceStream::TYPE_GZIP_FALLBACK);
-  source()->AddReadResult(source_data(), source_data_len(), OK,
-                          GetParam().mode);
-  source()->AddReadResult(nullptr, 0, OK, GetParam().mode);
-
-  std::string actual_output;
-  int rv = ReadStream(&actual_output);
-  EXPECT_EQ(static_cast<int>(source_data_len()), rv);
-  EXPECT_EQ(std::string(source_data(), source_data_len()), actual_output);
-  EXPECT_EQ("GZIP_FALLBACK", stream()->Description());
 }
 
 // This test checks that the gzip stream source works correctly on 'golden' data

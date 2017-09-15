@@ -82,11 +82,6 @@ class NET_EXPORT_PRIVATE GzipSourceStream : public FilterSourceStream {
   // success.
   bool InsertZlibHeader();
 
-  // Returns whether this stream looks like it could be plain text (ie, not
-  // actually gzipped). Right now this uses an extremely simple heuristic; see
-  // the source for details. This method checks the first byte of the stream.
-  bool ShouldFallbackToPlain(char first_byte);
-
   // The control block of zlib which actually does the decoding.
   // This data structure is initialized by Init and updated only by
   // FilterData(), with InsertZlibHeader() being the exception as a workaround.
