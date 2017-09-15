@@ -41,6 +41,11 @@ crbug.com/754222 external/wpt/pointerevents/pointerevent_releasepointercapture_o
 crbug.com/755625 external/wpt/beacon/beacon-error.window.html [ Leak ]
 
 # -----------------------------------------------------------------
+# Flakily leaks
+# -----------------------------------------------------------------
+crbug.com/762353 external/wpt/beacon/headers/header-referrer-no-referrer.html [ Leak Pass ]
+
+# -----------------------------------------------------------------
 # Known as false positives
 # -----------------------------------------------------------------
 crbug.com/726218 [ Linux ] fast/dom/inert/inert-node-is-uneditable.html [ Leak ]
