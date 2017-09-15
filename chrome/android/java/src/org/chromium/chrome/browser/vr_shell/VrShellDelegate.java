@@ -193,6 +193,8 @@ public class VrShellDelegate
             sInstance.mDonSucceeded = true;
             sInstance.mProbablyInDon = false;
             sInstance.mExpectPauseOrDonSucceeded.removeCallbacksAndMessages(null);
+            sInstance.mVrClassesWrapper.setVrModeEnabled(sInstance.mActivity, true);
+            sInstance.setWindowModeForVr(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             if (sInstance.mPaused) {
                 if (sInstance.mInVrAtChromeLaunch == null) sInstance.mInVrAtChromeLaunch = false;
                 // We add a black overlay view so that we can show black while the VR UI is loading.
@@ -1114,12 +1116,6 @@ public class VrShellDelegate
 
     private void onStart() {
         mStopped = false;
-        if (mDonSucceeded) {
-            // We're about to enter VR, so set the VR Mode as early as possible to avoid screen
-            // brightness flickering while in the headset.
-            mVrClassesWrapper.setVrModeEnabled(mActivity, true);
-            setWindowModeForVr(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }
     }
 
     private void onStop() {
