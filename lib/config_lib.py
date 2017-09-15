@@ -1178,7 +1178,7 @@ class SiteConfig(dict):
     return BuildConfig(**self._defaults)
 
   def GetTemplates(self):
-    """Create the canonical default build configuration."""
+    """Get the templates of the build configs"""
     return self._templates
 
   @property
@@ -1187,7 +1187,7 @@ class SiteConfig(dict):
 
   @property
   def params(self):
-    """Create the canonical default build configuration."""
+    """Get the site-wide configuration parameters."""
     return SiteParameters(**self._site_params)
 
   #
