@@ -30,7 +30,6 @@ namespace x509_util {
 
 // Supported digest algorithms for signing certificates.
 enum DigestAlgorithm {
-  DIGEST_SHA1,
   DIGEST_SHA256
 };
 
@@ -66,8 +65,7 @@ NET_EXPORT bool CreateKeyAndSelfSignedCert(
     std::string* der_cert);
 
 // Creates a self-signed certificate from a provided key, using the specified
-// hash algorithm.  You should not re-use a key for signing data with multiple
-// signature algorithms or parameters.
+// hash algorithm.
 NET_EXPORT bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
                                      DigestAlgorithm alg,
                                      const std::string& subject,

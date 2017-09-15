@@ -137,12 +137,8 @@ TEST(X509UtilTest, CreateSelfSigned) {
 
   std::string der_cert;
   ASSERT_TRUE(x509_util::CreateSelfSignedCert(
-      private_key.get(),
-      x509_util::DIGEST_SHA1,
-      "CN=subject",
-      1,
-      base::Time::Now(),
-      base::Time::Now() + base::TimeDelta::FromDays(1),
+      private_key.get(), x509_util::DIGEST_SHA256, "CN=subject", 1,
+      base::Time::Now(), base::Time::Now() + base::TimeDelta::FromDays(1),
       &der_cert));
 
   scoped_refptr<X509Certificate> cert =
