@@ -1361,6 +1361,15 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::NONE, security_info.security_level);
 
+  // Verify an InsertText operation isn't treated as user-input.
+  EXPECT_TRUE(content::ExecuteScript(
+      contents, "document.execCommand('InsertText',false,'a');"));
+  InjectScript(contents);
+  base::RunLoop().RunUntilIdle();
+  helper->GetSecurityInfo(&security_info);
+  ASSERT_EQ(security_state::NONE, security_info.security_level);
+  ASSERT_FALSE(security_info.field_edit_downgraded_security_level);
+
   // Type one character into the focused input control and wait for a security
   // state change.
   SecurityStyleTestObserver observer(contents);
