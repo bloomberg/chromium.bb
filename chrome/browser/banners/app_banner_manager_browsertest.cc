@@ -75,9 +75,7 @@ class AppBannerManagerTest : public AppBannerManager {
 
   State state() { return AppBannerManager::state(); }
 
-  bool waiting_to_log_status() {
-    return status_reporter_ && status_reporter_->Waiting();
-  }
+  bool need_to_log_status() { return need_to_log_status_; }
 
   void Prepare(base::Closure quit_closure) {
     quit_closure_ = quit_closure;
@@ -241,7 +239,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
                                   (manager->will_show() ? 1 : 0));
       histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
                                     expected_code_for_histogram, 1);
-      EXPECT_FALSE(manager->waiting_to_log_status());
+      EXPECT_FALSE(manager->need_to_log_status());
     }
   }
 
@@ -249,7 +247,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
                                        AppBannerManagerTest* manager,
                                        const GURL& url,
                                        bool expected_will_show,
-                                       bool expected_waiting_to_log_status,
+                                       bool expected_need_to_log_status,
                                        State expected_state) {
     // Use NavigateToURLWithDisposition as it isn't overloaded, so can be used
     // with Bind.
@@ -258,14 +256,14 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
         base::BindOnce(&ui_test_utils::NavigateToURLWithDisposition, browser,
                        url, WindowOpenDisposition::CURRENT_TAB,
                        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION),
-        expected_will_show, expected_waiting_to_log_status, expected_state);
+        expected_will_show, expected_need_to_log_status, expected_state);
   }
 
   void TriggerBannerFlow(Browser* browser,
                          AppBannerManagerTest* manager,
                          base::OnceClosure trigger_task,
                          bool expected_will_show,
-                         bool expected_waiting_to_log_status,
+                         bool expected_need_to_log_status,
                          State expected_state) {
     base::RunLoop run_loop;
     manager->clear_will_show();
@@ -274,7 +272,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
     run_loop.Run();
 
     EXPECT_EQ(expected_will_show, manager->will_show());
-    EXPECT_EQ(expected_waiting_to_log_status, manager->waiting_to_log_status());
+    EXPECT_EQ(expected_need_to_log_status, manager->need_to_log_status());
     EXPECT_EQ(expected_state, manager->state());
   }
 };
@@ -510,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   // state, without showing a banner.
   TriggerBannerFlowWithNavigation(
       browser(), manager.get(), test_url, false /* expected_will_show */,
-      true /* expected_waiting_to_log_status */, State::PENDING_ENGAGEMENT);
+      true /* expected_need_to_log_status */, State::PENDING_ENGAGEMENT);
 
   // Trigger an engagement increase that signals observers and expect the banner
   // to be shown.
@@ -520,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                      base::Unretained(service),
                      browser()->tab_strip_model()->GetActiveWebContents(),
                      ui::PageTransition::PAGE_TRANSITION_TYPED),
-      true /* expected_will_show */, false /* expected_waiting_to_log_status */,
+      true /* expected_will_show */, false /* expected_need_to_log_status */,
       State::COMPLETE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 1);
@@ -543,12 +541,12 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CheckOnLoadThenNavigate) {
   // state, without showing a banner.
   TriggerBannerFlowWithNavigation(
       browser(), manager.get(), test_url, false /* expected_will_show */,
-      true /* expected_waiting_to_log_status */, State::PENDING_ENGAGEMENT);
+      true /* expected_need_to_log_status */, State::PENDING_ENGAGEMENT);
 
   // Navigate and expect Stop() to be called.
   TriggerBannerFlowWithNavigation(browser(), manager.get(), GURL("about:blank"),
                                   false /* expected_will_show */,
-                                  false /* expected_waiting_to_log_status */,
+                                  false /* expected_need_to_log_status */,
                                   State::INACTIVE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
@@ -573,12 +571,12 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   // Navigate and expect the manager to end up waiting for prompt to be called.
   TriggerBannerFlowWithNavigation(
       browser(), manager.get(), test_url, false /* expected_will_show */,
-      true /* expected_waiting_to_log_status */, State::PENDING_PROMPT);
+      true /* expected_need_to_log_status */, State::PENDING_PROMPT);
 
   // Navigate and expect Stop() to be called.
   TriggerBannerFlowWithNavigation(browser(), manager.get(), GURL("about:blank"),
                                   false /* expected_will_show */,
-                                  false /* expected_waiting_to_log_status */,
+                                  false /* expected_need_to_log_status */,
                                   State::INACTIVE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
@@ -603,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   // Navigate to page and get the pipeline started.
   TriggerBannerFlowWithNavigation(
       browser(), manager.get(), test_url, false /* expected_will_show */,
-      true /* expected_waiting_to_log_status */, State::PENDING_PROMPT);
+      true /* expected_need_to_log_status */, State::PENDING_PROMPT);
 
   // Now let the page call prompt without a gesture, an error should be
   // generated.
@@ -611,8 +609,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                     base::BindOnce(&ExecuteScript, browser(), "callPrompt();",
                                    false /* with_gesture */),
                     false /* expected_will_show */,
-                    false /* expected_waiting_to_log_status */,
-                    State::COMPLETE);
+                    false /* expected_need_to_log_status */, State::COMPLETE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
@@ -636,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   // Navigate to page and get the pipeline started.
   TriggerBannerFlowWithNavigation(
       browser(), manager.get(), test_url, false /* expected_will_show */,
-      true /* expected_waiting_to_log_status */, State::PENDING_PROMPT);
+      true /* expected_need_to_log_status */, State::PENDING_PROMPT);
 
   // Now let the page call prompt without a gesture, an error should be
   // generated.
@@ -644,8 +641,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                     base::BindOnce(&ExecuteScript, browser(), "callPrompt();",
                                    true /* with_gesture */),
                     true /* expected_will_show */,
-                    false /* expected_waiting_to_log_status */,
-                    State::COMPLETE);
+                    false /* expected_need_to_log_status */, State::COMPLETE);
 
   histograms.ExpectTotalCount(banners::kMinutesHistogram, 1);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
