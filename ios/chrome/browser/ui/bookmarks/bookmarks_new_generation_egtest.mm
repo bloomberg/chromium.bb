@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -1694,6 +1695,111 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [self verifyEmptyBackgroundAppears];
 }
 
+- (void)testCachePositionIsRecreated {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Select Folder 1.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Close bookmarks
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+      performAction:grey_tap()];
+
+  // Reopen bookmarks.
+  [BookmarksNewGenTestCase openBookmarks];
+
+  // Ensure the contents of Folder 1 is visible.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (void)testCachePositionIsRecreatedWhenNodeIsDeleted {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Select Folder 1.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Select Folder 2.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
+      performAction:grey_tap()];
+
+  // Close bookmarks
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+      performAction:grey_tap()];
+
+  // Delete Folder 2.
+  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Folder 2"];
+
+  // Reopen bookmarks.
+  [BookmarksNewGenTestCase openBookmarks];
+
+  // Ensure the root node is opened, by verifying folders at this level.
+  [BookmarksNewGenTestCase verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
+}
+
+- (void)testCachePositionIsRecreatedWhenNodeIsMoved {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Select Folder 1.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Select Folder 2.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
+      performAction:grey_tap()];
+
+  // Select Folder 3
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 3")]
+      performAction:grey_tap()];
+
+  // Close bookmarks
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+      performAction:grey_tap()];
+
+  // Move Folder 3 under Folder 1.
+  [BookmarksNewGenTestCase moveBookmarkWithTitle:@"Folder 3"
+                               toFolderWithTitle:@"Folder 1"];
+
+  // Reopen bookmarks.
+  [BookmarksNewGenTestCase openBookmarks];
+
+  // Go back 1 level.
+  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+      performAction:grey_tap()];
+
+  // Ensure Folder 1 is seen, by verifying folders at this level.
+  [BookmarksNewGenTestCase verifyBookmarkFolderIsSeen:@"Folder 2"];
+}
+
 #pragma mark - Helpers
 
 // Navigates to the bookmark manager UI.
@@ -1961,6 +2067,65 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Removes programmatically the first bookmark with the given title.
++ (void)removeBookmarkWithTitle:(NSString*)title {
+  base::string16 name16(base::SysNSStringToUTF16(title));
+  bookmarks::BookmarkModel* bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState());
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+      bookmarkModel->root_node());
+  while (iterator.has_next()) {
+    const bookmarks::BookmarkNode* bookmark = iterator.Next();
+    if (bookmark->GetTitle() == name16) {
+      bookmarkModel->Remove(bookmark);
+      return;
+    }
+  }
+  GREYFail(@"Could not remove bookmark with name %@", title);
+}
+
++ (void)moveBookmarkWithTitle:(NSString*)bookmarkTitle
+            toFolderWithTitle:(NSString*)newFolder {
+  base::string16 name16(base::SysNSStringToUTF16(bookmarkTitle));
+  bookmarks::BookmarkModel* bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState());
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+      bookmarkModel->root_node());
+  const bookmarks::BookmarkNode* bookmark = iterator.Next();
+  while (iterator.has_next()) {
+    if (bookmark->GetTitle() == name16) {
+      break;
+    }
+    bookmark = iterator.Next();
+  }
+
+  base::string16 folderName16(base::SysNSStringToUTF16(newFolder));
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iteratorFolder(
+      bookmarkModel->root_node());
+  const bookmarks::BookmarkNode* folder = iteratorFolder.Next();
+  while (iteratorFolder.has_next()) {
+    if (folder->GetTitle() == folderName16) {
+      break;
+    }
+    folder = iteratorFolder.Next();
+  }
+  std::set<const bookmarks::BookmarkNode*> toMove;
+  toMove.insert(bookmark);
+  bookmark_utils_ios::MoveBookmarks(toMove, bookmarkModel, folder);
+}
+
++ (void)verifyBookmarkFolderIsSeen:(NSString*)bookmarkFolder {
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_kindOfClass(
+                                       NSClassFromString(@"UITableViewCell")),
+                                   grey_descendant(grey_text(bookmarkFolder)),
+                                   nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Context bar strings.
 + (NSString*)contextBarNewFolderString {
   return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_NEW_FOLDER);
@@ -2005,5 +2170,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 // disabled and empty background appears when _currentRootNode becomes NULL
 // (maybe programmatically remove the current root node from model, and trigger
 // a sync).
+// 4. Restoring y position when opening from cache.
 
 @end

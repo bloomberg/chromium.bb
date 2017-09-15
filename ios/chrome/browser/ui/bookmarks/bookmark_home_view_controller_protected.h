@@ -118,6 +118,13 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 // The current state of the context bar UI.
 @property(nonatomic, assign) BookmarksContextBarState contextBarState;
 
+// When the view is first shown on the screen, this property represents the
+// cached value of the y of the content offset of the folder view. This
+// property is set to nil after it is used.
+// In the new UI, this value represents the visible row position of the cached
+// UI stack.
+@property(nonatomic, strong) NSNumber* cachedContentPosition;
+
 // This method should be called at most once in the life-cycle of the class.
 // It should be called at the soonest possible time after the view has been
 // loaded, and the bookmark model is loaded.

@@ -178,6 +178,11 @@ using bookmarks::BookmarkNode;
 
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
+    // If cache is present then reconstruct the last visited bookmark from
+    // cache.
+    if (bookmark_utils_ios::GetBookmarkUIPositionCache(self.bookmarkModel)) {
+      self.bookmarkBrowser.isReconstructingFromCache = YES;
+    }
     UINavigationController* navController = [[UINavigationController alloc]
         initWithRootViewController:self.bookmarkBrowser];
     [navController setModalPresentationStyle:UIModalPresentationFormSheet];

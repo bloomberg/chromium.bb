@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_item.h"
 
+// TODO(crbug.com/753599) : Delete this file after new bookmarks ui is launched.
+
 // Caches the user's position in the bookmark hierarchy navigator, as well as
 // enough information to recreate the primary menu item.
 @interface BookmarkPositionCache : NSObject<NSCoding>

@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_menu_item.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #include "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -199,6 +200,50 @@ TEST_F(BookmarkIOSUtilsUnitTest, TestPositionCache) {
   EXPECT_NEAR(position, outPosition, 0.01);
   EXPECT_EQ(f1, outItem.folder);
   EXPECT_EQ(bookmarks::MenuItemFolder, outItem.type);
+}
+
+TEST_F(BookmarkIOSUtilsUnitTest, TestPathCache) {
+  // Try to store and retrieve a cache for the folderMenuItem.
+  const BookmarkNode* mobileNode = _bookmarkModel->mobile_node();
+  const BookmarkNode* f1 = AddFolder(mobileNode, @"f1");
+  CGFloat position = 23;
+  BookmarkPathCache* cache =
+      [BookmarkPathCache cacheForBookmarkFolder:f1->id() position:position];
+  bookmark_utils_ios::CacheBookmarkUIPosition(cache);
+  BookmarkPathCache* resultCache =
+      bookmark_utils_ios::GetBookmarkUIPositionCache(_bookmarkModel);
+  EXPECT_NSEQ(cache, resultCache);
+}
+
+TEST_F(BookmarkIOSUtilsUnitTest, TestNilPathCache) {
+  // Try to store and retrieve a cache for the folderMenuItem.
+  const BookmarkNode* mobileNode = _bookmarkModel->mobile_node();
+  const BookmarkNode* f1 = AddFolder(mobileNode, @"f1");
+  CGFloat position = 23;
+  BookmarkPathCache* cache =
+      [BookmarkPathCache cacheForBookmarkFolder:f1->id() position:position];
+  bookmark_utils_ios::CacheBookmarkUIPosition(cache);
+  _bookmarkModel->Remove(f1);
+  BookmarkPathCache* resultCache =
+      bookmark_utils_ios::GetBookmarkUIPositionCache(_bookmarkModel);
+  EXPECT_TRUE(resultCache == nil);
+}
+
+TEST_F(BookmarkIOSUtilsUnitTest, TestCreateBookmarkPath) {
+  const BookmarkNode* mobileNode = _bookmarkModel->mobile_node();
+  const BookmarkNode* f1 = AddFolder(mobileNode, @"f1");
+  NSArray* path =
+      bookmark_utils_ios::CreateBookmarkPath(_bookmarkModel, f1->id());
+  NSMutableArray* expectedPath = [NSMutableArray array];
+  [expectedPath addObject:@0];
+  [expectedPath addObject:[NSNumber numberWithLongLong:mobileNode->id()]];
+  [expectedPath addObject:[NSNumber numberWithLongLong:f1->id()]];
+  EXPECT_TRUE([expectedPath isEqualToArray:path]);
+}
+
+TEST_F(BookmarkIOSUtilsUnitTest, TestCreateNilBookmarkPath) {
+  NSArray* path = bookmark_utils_ios::CreateBookmarkPath(_bookmarkModel, 999);
+  EXPECT_TRUE(path == nil);
 }
 
 TEST_F(BookmarkIOSUtilsUnitTest, TestBookmarkModelChangesPositionCache) {
