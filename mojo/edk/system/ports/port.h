@@ -111,14 +111,14 @@ class Port : public base::RefCountedThreadSafe<Port> {
   uint64_t next_sequence_num_to_send;
 
   // The sequence number of the last message this Port should ever expect to
-  // receive in its lifetime. May be used to determine that proxying port is
+  // receive in its lifetime. May be used to determine that a proxying port is
   // ready to be destroyed or that a receiving port's conjugate has been closed
   // and we know the sequence number of the last message it sent.
   uint64_t last_sequence_num_to_receive;
 
   // The queue of incoming user messages received by this Port. Only non-empty
   // for buffering or receiving Ports. When a buffering port enters the proxying
-  // state, it fluses its queue and the proxy then bypasses the queue
+  // state, it flushes its queue and the proxy then bypasses the queue
   // indefinitely.
   //
   // A receiving port's queue only has elements removed by user code reading

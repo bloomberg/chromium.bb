@@ -22,11 +22,10 @@ class Event;
 
 using ScopedEvent = std::unique_ptr<Event>;
 
-// A Event is the fundmanetal unit of operation and communication within and
+// A Event is the fundamental unit of operation and communication within and
 // between Nodes.
 class Event {
  public:
-  // The type of the event.
   enum Type : uint32_t {
     // A user message event contains arbitrary user-specified payload data
     // which may include any number of ports and/or system handles (e.g. FDs).
