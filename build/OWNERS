@@ -6,6 +6,9 @@ scottmg@chromium.org
 thakis@chromium.org
 brucedawson@chromium.org
 
+# Clang build config changes
+hans@chromium.org
+
 per-file .gitignore=*
 per-file check_gn_headers_whitelist.txt=*
 per-file mac_toolchain.py=erikchen@chromium.org
