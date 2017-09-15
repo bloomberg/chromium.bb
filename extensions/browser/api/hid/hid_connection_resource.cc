@@ -26,11 +26,10 @@ ApiResourceManager<HidConnectionResource>::GetFactoryInstance() {
 
 HidConnectionResource::HidConnectionResource(
     const std::string& owner_extension_id,
-    scoped_refptr<device::HidConnection> connection)
-    : ApiResource(owner_extension_id), connection_(connection) {}
+    device::mojom::HidConnectionPtr connection)
+    : ApiResource(owner_extension_id), connection_(std::move(connection)) {}
 
 HidConnectionResource::~HidConnectionResource() {
-  connection_->Close();
 }
 
 bool HidConnectionResource::IsPersistent() const {

@@ -11,27 +11,24 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "device/base/mock_device_client.h"
 #include "device/hid/hid_collection_info.h"
-#include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_usage_and_page.h"
-#include "device/hid/mock_hid_service.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
-#include "net/base/io_buffer.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 using base::ThreadTaskRunnerHandle;
 using device::HidCollectionInfo;
-using device::HidDeviceInfo;
 using device::HidPlatformDeviceId;
 using device::HidUsageAndPage;
-using device::MockDeviceClient;
-using net::IOBuffer;
-using testing::_;
 
 #if defined(OS_MACOSX)
 const uint64_t kTestDeviceIds[] = {1, 2, 3, 4, 5};
@@ -54,75 +51,170 @@ const uint8_t kReportDescriptorWithIDs[] = {
 
 namespace extensions {
 
-class MockHidConnection : public device::HidConnection {
+class FakeHidConnectionImpl : public device::mojom::HidConnection {
  public:
-  explicit MockHidConnection(scoped_refptr<HidDeviceInfo> device_info)
-      : HidConnection(device_info) {}
+  explicit FakeHidConnectionImpl(scoped_refptr<device::HidDeviceInfo> device)
+      : device_(device) {}
 
-  void PlatformClose() override {}
+  ~FakeHidConnectionImpl() override = default;
 
-  void PlatformRead(ReadCallback callback) override {
+  // device::mojom::HidConnection implemenation:
+  void Read(device::mojom::HidConnection::ReadCallback callback) override {
     const char kResult[] = "This is a HID input report.";
-    uint8_t report_id = device_info()->has_report_id() ? 1 : 0;
-    scoped_refptr<IOBuffer> buffer(new IOBuffer(sizeof(kResult)));
-    buffer->data()[0] = report_id;
-    memcpy(buffer->data() + 1, kResult, sizeof(kResult) - 1);
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), true, buffer, sizeof(kResult)));
+    uint8_t report_id = device_->has_report_id() ? 1 : 0;
+
+    std::vector<uint8_t> buffer(kResult, kResult + sizeof(kResult) - 1);
+
+    std::move(callback).Run(true, report_id, buffer);
   }
 
-  void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
-                     size_t size,
-                     WriteCallback callback) override {
+  void Write(uint8_t report_id,
+             const std::vector<uint8_t>& buffer,
+             device::mojom::HidConnection::WriteCallback callback) override {
     const char kExpected[] = "o-report";  // 8 bytes
-    bool result = false;
-    if (size == sizeof(kExpected)) {
-      uint8_t report_id = buffer->data()[0];
-      uint8_t expected_report_id = device_info()->has_report_id() ? 1 : 0;
-      if (report_id == expected_report_id) {
-        if (memcmp(buffer->data() + 1, kExpected, sizeof(kExpected) - 1) == 0) {
-          result = true;
-        }
-      }
+    if (buffer.size() != sizeof(kExpected) - 1) {
+      std::move(callback).Run(false);
+      return;
     }
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), result));
+
+    int expected_report_id = device_->has_report_id() ? 1 : 0;
+    if (report_id != expected_report_id) {
+      std::move(callback).Run(false);
+      return;
+    }
+
+    if (memcmp(buffer.data(), kExpected, sizeof(kExpected) - 1) != 0) {
+      std::move(callback).Run(false);
+      return;
+    }
+
+    std::move(callback).Run(true);
   }
 
-  void PlatformGetFeatureReport(uint8_t report_id,
-                                ReadCallback callback) override {
+  void GetFeatureReport(uint8_t report_id,
+                        device::mojom::HidConnection::GetFeatureReportCallback
+                            callback) override {
+    uint8_t expected_report_id = device_->has_report_id() ? 1 : 0;
+    if (report_id != expected_report_id) {
+      std::move(callback).Run(false, base::nullopt);
+      return;
+    }
+
     const char kResult[] = "This is a HID feature report.";
-    scoped_refptr<IOBuffer> buffer(new IOBuffer(sizeof(kResult)));
-    size_t offset = 0;
-    if (device_info()->has_report_id()) {
-      buffer->data()[offset++] = report_id;
-    }
-    memcpy(buffer->data() + offset, kResult, sizeof(kResult) - 1);
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), true, buffer,
-                                  sizeof(kResult) - 1 + offset));
+    std::vector<uint8_t> buffer;
+    if (device_->has_report_id())
+      buffer.push_back(report_id);
+    buffer.insert(buffer.end(), kResult, kResult + sizeof(kResult) - 1);
+
+    std::move(callback).Run(true, buffer);
   }
 
-  void PlatformSendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
-                                 size_t size,
-                                 WriteCallback callback) override {
+  void SendFeatureReport(uint8_t report_id,
+                         const std::vector<uint8_t>& buffer,
+                         device::mojom::HidConnection::SendFeatureReportCallback
+                             callback) override {
     const char kExpected[] = "The app is setting this HID feature report.";
-    bool result = false;
-    if (size == sizeof(kExpected)) {
-      uint8_t report_id = buffer->data()[0];
-      uint8_t expected_report_id = device_info()->has_report_id() ? 1 : 0;
-      if (report_id == expected_report_id &&
-          memcmp(buffer->data() + 1, kExpected, sizeof(kExpected) - 1) == 0) {
-        result = true;
-      }
+    if (buffer.size() != sizeof(kExpected) - 1) {
+      std::move(callback).Run(false);
+      return;
     }
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), result));
+
+    int expected_report_id = device_->has_report_id() ? 1 : 0;
+    if (report_id != expected_report_id) {
+      std::move(callback).Run(false);
+      return;
+    }
+
+    if (memcmp(buffer.data(), kExpected, sizeof(kExpected) - 1) != 0) {
+      std::move(callback).Run(false);
+      return;
+    }
+
+    std::move(callback).Run(true);
   }
 
  private:
-  ~MockHidConnection() override {}
+  scoped_refptr<device::HidDeviceInfo> device_;
+};
+
+class FakeHidManager : public device::mojom::HidManager {
+ public:
+  FakeHidManager() {}
+  ~FakeHidManager() override = default;
+
+  void Bind(const std::string& interface_name,
+            mojo::ScopedMessagePipeHandle handle,
+            const service_manager::BindSourceInfo& source_info) {
+    bindings_.AddBinding(this,
+                         device::mojom::HidManagerRequest(std::move(handle)));
+  }
+
+  // device::mojom::HidManager implementation:
+  void GetDevicesAndSetClient(
+      device::mojom::HidManagerClientAssociatedPtrInfo client,
+      device::mojom::HidManager::GetDevicesCallback callback) override {
+    std::vector<device::mojom::HidDeviceInfoPtr> device_list;
+    for (auto& map_entry : devices_)
+      device_list.push_back(map_entry.second->device()->Clone());
+
+    std::move(callback).Run(std::move(device_list));
+
+    device::mojom::HidManagerClientAssociatedPtr client_ptr;
+    client_ptr.Bind(std::move(client));
+    clients_.AddPtr(std::move(client_ptr));
+  }
+
+  void GetDevices(
+      device::mojom::HidManager::GetDevicesCallback callback) override {
+    // Clients of HidManager in extensions only use GetDevicesAndSetClient().
+    NOTREACHED();
+  }
+
+  void Connect(const std::string& device_guid,
+               device::mojom::HidManager::ConnectCallback callback) override {
+    scoped_refptr<device::HidDeviceInfo> device = devices_[device_guid];
+
+    // Strong binds a instance of FakeHidConnctionImpl.
+    device::mojom::HidConnectionPtr client;
+    mojo::MakeStrongBinding(base::MakeUnique<FakeHidConnectionImpl>(device),
+                            mojo::MakeRequest(&client));
+    std::move(callback).Run(std::move(client));
+  }
+
+  void AddDevice(scoped_refptr<device::HidDeviceInfo> device) {
+    devices_[device->device_guid()] = device;
+
+    device::mojom::HidDeviceInfo* device_info = device->device().get();
+    clients_.ForAllPtrs([device_info](device::mojom::HidManagerClient* client) {
+      client->DeviceAdded(device_info->Clone());
+    });
+  }
+
+  void RemoveDevice(const HidPlatformDeviceId& platform_device_id) {
+    std::string guid;
+    scoped_refptr<device::HidDeviceInfo> device;
+    for (const auto& map_entry : devices_) {
+      if (map_entry.second->platform_device_id() == platform_device_id) {
+        guid = map_entry.first;
+        device = map_entry.second;
+        break;
+      }
+    }
+
+    if (!guid.empty()) {
+      device::mojom::HidDeviceInfo* device_info = device->device().get();
+      clients_.ForAllPtrs(
+          [device_info](device::mojom::HidManagerClient* client) {
+            client->DeviceRemoved(device_info->Clone());
+          });
+      devices_.erase(guid);
+    }
+  }
+
+ private:
+  std::map<std::string, scoped_refptr<device::HidDeviceInfo>> devices_;
+  mojo::AssociatedInterfacePtrSet<device::mojom::HidManagerClient> clients_;
+  mojo::BindingSet<device::mojom::HidManager> bindings_;
 };
 
 class TestDevicePermissionsPrompt
@@ -180,34 +272,18 @@ class HidApiTest : public ShellApiTest {
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
 
-    // MockDeviceClient replaces ShellDeviceClient.
-    device_client_.reset(new MockDeviceClient());
+    fake_hid_manager_ = base::MakeUnique<FakeHidManager>();
+    // Because Device Service also runs in this process(browser process), here
+    // we can directly set our binder to intercept interface requests against
+    // it.
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::HidManager::Name_,
+        base::Bind(&FakeHidManager::Bind,
+                   base::Unretained(fake_hid_manager_.get())));
 
-    ON_CALL(*device_client_->hid_service(), Connect(_, _))
-        .WillByDefault(Invoke(this, &HidApiTest::Connect));
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&HidApiTest::LazyFirstEnumeration, base::Unretained(this)));
-  }
-
-  void Connect(const std::string& device_guid,
-               const device::HidService::ConnectCallback& callback) {
-    const auto& devices = device_client_->hid_service()->devices();
-    const auto& device_entry = devices.find(device_guid);
-    scoped_refptr<MockHidConnection> connection;
-    if (device_entry != devices.end()) {
-      connection = new MockHidConnection(device_entry->second);
-    }
-
-    ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                            base::Bind(callback, connection));
-  }
-
-  void LazyFirstEnumeration() {
     AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, false, "A");
     AddDevice(kTestDeviceIds[1], 0x18D1, 0x58F0, true, "B");
     AddDevice(kTestDeviceIds[2], 0x18D1, 0x58F1, false, "C");
-    device_client_->hid_service()->FirstEnumerationComplete();
   }
 
   void AddDevice(const HidPlatformDeviceId& platform_device_id,
@@ -224,13 +300,15 @@ class HidApiTest : public ShellApiTest {
       report_descriptor.insert(report_descriptor.begin(), kReportDescriptor,
                                kReportDescriptor + sizeof(kReportDescriptor));
     }
-    device_client_->hid_service()->AddDevice(new HidDeviceInfo(
+    fake_hid_manager_->AddDevice(new device::HidDeviceInfo(
         platform_device_id, vendor_id, product_id, "Test Device", serial_number,
         device::mojom::HidBusType::kHIDBusTypeUSB, report_descriptor));
   }
 
+  FakeHidManager* GetFakeHidManager() { return fake_hid_manager_.get(); }
+
  protected:
-  std::unique_ptr<MockDeviceClient> device_client_;
+  std::unique_ptr<FakeHidManager> fake_hid_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(HidApiTest, HidApp) {
@@ -263,9 +341,9 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceRemoved) {
 
   // Device C was not returned by chrome.hid.getDevices, the app will not get
   // a notification.
-  device_client_->hid_service()->RemoveDevice(kTestDeviceIds[2]);
+  GetFakeHidManager()->RemoveDevice(kTestDeviceIds[2]);
   // Device A was returned, the app will get a notification.
-  device_client_->hid_service()->RemoveDevice(kTestDeviceIds[0]);
+  GetFakeHidManager()->RemoveDevice(kTestDeviceIds[0]);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
@@ -278,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, GetUserSelectedDevices) {
   ASSERT_TRUE(open_listener.WaitUntilSatisfied());
 
   ExtensionTestMessageListener remove_listener("removed", false);
-  device_client_->hid_service()->RemoveDevice(kTestDeviceIds[0]);
+  GetFakeHidManager()->RemoveDevice(kTestDeviceIds[0]);
   ASSERT_TRUE(remove_listener.WaitUntilSatisfied());
 
   ExtensionTestMessageListener add_listener("added", false);

@@ -16,18 +16,10 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<device::mojom::HidPage, device::HidUsageAndPage::Page> {
-  static device::mojom::HidPage ToMojom(device::HidUsageAndPage::Page input);
-  static bool FromMojom(device::mojom::HidPage input,
-                        device::HidUsageAndPage::Page* output);
-};
-
-template <>
 struct StructTraits<device::mojom::HidUsageAndPageDataView,
                     device::HidUsageAndPage> {
   static uint16_t usage(const device::HidUsageAndPage& r) { return r.usage; }
-  static const device::HidUsageAndPage::Page& usage_page(
-      const device::HidUsageAndPage& r) {
+  static uint16_t usage_page(const device::HidUsageAndPage& r) {
     return r.usage_page;
   }
   static bool Read(device::mojom::HidUsageAndPageDataView data,

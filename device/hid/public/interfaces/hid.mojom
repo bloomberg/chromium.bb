@@ -9,45 +9,9 @@ enum HidBusType {
   kHIDBusTypeBluetooth = 1,
 };
 
-enum HidPage {
-    PageUndefined = 0x00,
-    PageGenericDesktop = 0x01,
-    PageSimulation = 0x02,
-    PageVirtualReality = 0x03,
-    PageSport = 0x04,
-    PageGame = 0x05,
-    PageKeyboard = 0x07,
-    PageLed = 0x08,
-    PageButton = 0x09,
-    PageOrdinal = 0x0A,
-    PageTelephony = 0x0B,
-    PageConsumer = 0x0C,
-    PageDigitizer = 0x0D,
-    PagePidPage = 0x0F,
-    PageUnicode = 0x10,
-    PageAlphanumericDisplay = 0x14,
-    PageMedicalInstruments = 0x40,
-    PageMonitor0 = 0x80,
-    PageMonitor1 = 0x81,
-    PageMonitor2 = 0x82,
-    PageMonitor3 = 0x83,
-    PagePower0 = 0x84,
-    PagePower1 = 0x85,
-    PagePower2 = 0x86,
-    PagePower3 = 0x87,
-    PageBarCodeScanner = 0x8C,
-    PageScale = 0x8D,
-    PageMagneticStripeReader = 0x8E,
-    PageReservedPointOfSale = 0x8F,
-    PageCameraControl = 0x90,
-    PageArcade = 0x91,
-    PageVendor = 0xFF00,
-    PageMediaCenter = 0xFFBC
-};
-
 struct HidUsageAndPage {
   uint16 usage;
-  HidPage usage_page;
+  uint16 usage_page;
 };
 
 struct HidCollectionInfo {
@@ -69,4 +33,44 @@ struct HidDeviceInfo {
   uint64 max_output_report_size;
   uint64 max_feature_report_size;
   string device_node;
+};
+
+interface HidManagerClient{
+  // Notifies the client that a device is added.
+  DeviceAdded(HidDeviceInfo device_info);
+
+  // Notifies the client that a device is being removed, called before
+  // removing the device from HidService.
+  DeviceRemoved(HidDeviceInfo device_info);
+};
+
+interface HidManager {
+  // Enumerates available devices and set as a client of HidManager.
+  // The implementation of HidManager guarantees that the returned callback
+  // will always be posted earlier than DeviceAdded() and DeviceRemoved().
+  GetDevicesAndSetClient(associated HidManagerClient client) =>
+                       (array<HidDeviceInfo> devices);
+
+  // Enumerates available devices only.
+  GetDevices() => (array<HidDeviceInfo> devices);
+
+  // Opens a connection to a device by given guid. The callback will be run
+  // with null on failure.
+  Connect(string device_guid) => (HidConnection? connection);
+};
+
+interface HidConnection {
+  // The report_id is returned as 0 if not supported by the device.
+  Read() => (bool success, uint8 report_id, array<uint8>? buffer);
+
+  // Pass the report_id as 0 if not supported by the device.
+  Write(uint8 report_id, array<uint8> buffer) => (bool success);
+
+  // The buffer will contain whatever report data was received from the device.
+  // This may include the report ID. The report ID is not stripped because a
+  // device may respond with other data in place of the report ID.
+  GetFeatureReport(uint8 report_id) => (bool success, array<uint8>? buffer);
+
+  // Pass the report_id as 0 if not supported by the device.
+  SendFeatureReport(uint8 report_id, array<uint8> buffer) => (bool success);
 };
