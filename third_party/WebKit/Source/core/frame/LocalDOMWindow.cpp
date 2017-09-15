@@ -416,8 +416,7 @@ void LocalDOMWindow::EnqueuePopstateEvent(
   DispatchEvent(PopStateEvent::Create(std::move(state_object), history()));
 }
 
-void LocalDOMWindow::StatePopped(
-    PassRefPtr<SerializedScriptValue> state_object) {
+void LocalDOMWindow::StatePopped(RefPtr<SerializedScriptValue> state_object) {
   if (!GetFrame())
     return;
 
