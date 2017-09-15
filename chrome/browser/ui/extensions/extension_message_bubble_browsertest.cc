@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,6 +24,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/disable_reason.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/extension_test_message_listener.h"
 
@@ -102,10 +103,10 @@ void ExtensionMessageBubbleBrowserTest::CloseBubble(Browser* browser) {
 
 void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToExtensionAction() {
   scoped_refptr<const extensions::Extension> action_extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "action_extension",
-          extensions::extension_action_test_util::BROWSER_ACTION,
-          extensions::Manifest::UNPACKED);
+      extensions::ExtensionBuilder("action_extension")
+          .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::UNPACKED)
+          .Build();
   extension_service()->AddExtension(action_extension.get());
 
   Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
@@ -119,10 +120,9 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToExtensionAction() {
 
 void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToAppMenu() {
   scoped_refptr<const extensions::Extension> no_action_extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "no_action_extension",
-          extensions::extension_action_test_util::NO_ACTION,
-          extensions::Manifest::INTERNAL);
+      extensions::ExtensionBuilder("no_action_extension")
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   extension_service()->AddExtension(no_action_extension.get());
   // The 'suspicious extension' bubble warns the user about extensions that are
   // disabled for not being from the webstore. This is one of the few bubbles
@@ -142,17 +142,16 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToAppMenu() {
 void ExtensionMessageBubbleBrowserTest::
     TestBubbleAnchoredToAppMenuWithOtherAction() {
   scoped_refptr<const extensions::Extension> no_action_extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "no_action_extension",
-          extensions::extension_action_test_util::NO_ACTION,
-          extensions::Manifest::INTERNAL);
+      extensions::ExtensionBuilder("no_action_extension")
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   extension_service()->AddExtension(no_action_extension.get());
 
   scoped_refptr<const extensions::Extension> action_extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "action_extension",
-          extensions::extension_action_test_util::BROWSER_ACTION,
-          extensions::Manifest::INTERNAL);
+      extensions::ExtensionBuilder("action_extension")
+          .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   extension_service()->AddExtension(action_extension.get());
 
   // The 'suspicious extension' bubble warns the user about extensions that are
@@ -233,10 +232,10 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleShowsOnStartup() {
 
 void ExtensionMessageBubbleBrowserTest::TestDevModeBubbleIsntShownTwice() {
   scoped_refptr<const extensions::Extension> action_extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "action_extension",
-          extensions::extension_action_test_util::BROWSER_ACTION,
-          extensions::Manifest::UNPACKED);
+      extensions::ExtensionBuilder("action_extension")
+          .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::UNPACKED)
+          .Build();
   extension_service()->AddExtension(action_extension.get());
 
   Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));

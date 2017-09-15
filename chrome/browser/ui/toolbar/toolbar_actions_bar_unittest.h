@@ -11,13 +11,14 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
-#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "extensions/common/extension_builder.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 class ExtensionAction;
 class ScopedTestingLocalState;
 class ToolbarActionsBar;
+class ToolbarActionsModel;
 
 namespace content {
 class WebContents;
@@ -56,7 +57,7 @@ class ToolbarActionsBarUnitTest :
   // safe to ignore the returned value.)
   scoped_refptr<const extensions::Extension> CreateAndAddExtension(
       const std::string& name,
-      extensions::extension_action_test_util::ActionType action_type);
+      extensions::ExtensionBuilder::ActionType action_type);
 
   // Verifies that the toolbar is in order specified by |expected_names|, has
   // the total action count of |total_size|, and has the same |visible_count|.

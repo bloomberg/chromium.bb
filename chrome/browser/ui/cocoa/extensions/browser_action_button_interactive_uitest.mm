@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -35,6 +34,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "extensions/common/extension_builder.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
@@ -46,6 +46,8 @@
 @end
 
 namespace {
+
+using ActionType = extensions::ExtensionBuilder::ActionType;
 
 const int kMenuPadding = 26;
 
@@ -322,9 +324,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
                        ContextMenusOnMainAndOverflow) {
   // Add an extension with a browser action.
   scoped_refptr<const extensions::Extension> extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "browser_action",
-          extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("browser_action")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .Build();
   extension_service()->AddExtension(extension.get());
   ASSERT_EQ(1u, model()->toolbar_items().size());
 
@@ -481,9 +483,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
   const int kNumExtensions = 12;
   for (int i = 0; i < kNumExtensions; ++i) {
     scoped_refptr<const extensions::Extension> extension =
-        extensions::extension_action_test_util::CreateActionExtension(
-            base::StringPrintf("extension%d", i),
-            extensions::extension_action_test_util::BROWSER_ACTION);
+        extensions::ExtensionBuilder(base::StringPrintf("extension%d", i))
+            .SetAction(ActionType::BROWSER_ACTION)
+            .Build();
     extension_service()->AddExtension(extension.get());
   }
   ASSERT_EQ(kNumExtensions, static_cast<int>(model()->toolbar_items().size()));
@@ -536,9 +538,9 @@ void AddExtensionWithMenuOpen(ToolbarController* toolbarController,
   EXPECT_TRUE([appMenuController isMenuOpen]);
 
   scoped_refptr<const extensions::Extension> extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "extension",
-          extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("extension")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .Build();
   extensionService->AddExtension(extension.get());
 
   base::RunLoop().RunUntilIdle();
@@ -556,9 +558,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
                        AddExtensionWithMenuOpen) {
   // Add an extension to ensure the overflow menu is present.
   scoped_refptr<const extensions::Extension> extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "original extension",
-          extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("original extension")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .Build();
   extension_service()->AddExtension(extension.get());
   ASSERT_EQ(1, static_cast<int>(model()->toolbar_items().size()));
   model()->SetVisibleIconCount(0);
@@ -586,8 +588,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
                        OpenMenuOnDisabledActionWithMouseOrKeyboard) {
   // Add an extension with a page action.
   scoped_refptr<const extensions::Extension> extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "page action", extensions::extension_action_test_util::PAGE_ACTION);
+      extensions::ExtensionBuilder("page action")
+          .SetAction(ActionType::PAGE_ACTION)
+          .Build();
   extension_service()->AddExtension(extension.get());
   ASSERT_EQ(1u, model()->toolbar_items().size());
 
@@ -651,9 +654,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
                        TestReopeningAppMenuWithOverflowNotNeeded) {
   // Add an extension with a browser action and overflow it in the menu.
   scoped_refptr<const extensions::Extension> extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "browser_action",
-          extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("browser_action")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .Build();
   extension_service()->AddExtension(extension.get());
   ASSERT_EQ(1u, model()->toolbar_items().size());
   model()->SetVisibleIconCount(0);

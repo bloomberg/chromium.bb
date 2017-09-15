@@ -49,6 +49,8 @@
 
 namespace {
 
+using ActionType = extensions::ExtensionBuilder::ActionType;
+
 // A simple observer that tracks the number of times certain events occur.
 class ToolbarActionsModelTestObserver : public ToolbarActionsModel::Observer {
  public:
@@ -277,16 +279,17 @@ testing::AssertionResult ToolbarActionsModelUnitTest::RemoveExtension(
 }
 
 testing::AssertionResult ToolbarActionsModelUnitTest::AddActionExtensions() {
-  browser_action_extension_ =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "browser_action",
-          extensions::extension_action_test_util::BROWSER_ACTION);
-  page_action_extension_ =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "page_action", extensions::extension_action_test_util::PAGE_ACTION);
-  no_action_extension_ =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "no_action", extensions::extension_action_test_util::NO_ACTION);
+  browser_action_extension_ = extensions::ExtensionBuilder("browser_action")
+                                  .SetAction(ActionType::BROWSER_ACTION)
+                                  .SetLocation(extensions::Manifest::INTERNAL)
+                                  .Build();
+  page_action_extension_ = extensions::ExtensionBuilder("page_action")
+                               .SetAction(ActionType::PAGE_ACTION)
+                               .SetLocation(extensions::Manifest::INTERNAL)
+                               .Build();
+  no_action_extension_ = extensions::ExtensionBuilder("no_action")
+                             .SetLocation(extensions::Manifest::INTERNAL)
+                             .Build();
 
   extensions::ExtensionList extensions;
   extensions.push_back(browser_action_extension_);
@@ -298,18 +301,18 @@ testing::AssertionResult ToolbarActionsModelUnitTest::AddActionExtensions() {
 
 testing::AssertionResult
 ToolbarActionsModelUnitTest::AddBrowserActionExtensions() {
-  browser_action_a_ =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "browser_actionA",
-          extensions::extension_action_test_util::BROWSER_ACTION);
-  browser_action_b_ =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "browser_actionB",
-          extensions::extension_action_test_util::BROWSER_ACTION);
-  browser_action_c_ =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "browser_actionC",
-          extensions::extension_action_test_util::BROWSER_ACTION);
+  browser_action_a_ = extensions::ExtensionBuilder("browser_actionA")
+                          .SetAction(ActionType::BROWSER_ACTION)
+                          .SetLocation(extensions::Manifest::INTERNAL)
+                          .Build();
+  browser_action_b_ = extensions::ExtensionBuilder("browser_actionB")
+                          .SetAction(ActionType::BROWSER_ACTION)
+                          .SetLocation(extensions::Manifest::INTERNAL)
+                          .Build();
+  browser_action_c_ = extensions::ExtensionBuilder("browser_actionC")
+                          .SetAction(ActionType::BROWSER_ACTION)
+                          .SetLocation(extensions::Manifest::INTERNAL)
+                          .Build();
 
   extensions::ExtensionList extensions;
   extensions.push_back(browser_action_a_);
@@ -360,9 +363,10 @@ TEST_F(ToolbarActionsModelUnitTest, BasicToolbarActionsModelTest) {
 
   // Load an extension with a browser action.
   scoped_refptr<const extensions::Extension> extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "browser_action",
-          extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("browser_action")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   ASSERT_TRUE(AddExtension(extension));
 
   // We should now find our extension in the model.
@@ -558,17 +562,25 @@ TEST_F(ToolbarActionsModelUnitTest, NewToolbarExtensionsAreVisible) {
 
   // Three extensions with actions.
   scoped_refptr<const extensions::Extension> extension_a =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "a", extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("a")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   scoped_refptr<const extensions::Extension> extension_b =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "b", extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("b")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   scoped_refptr<const extensions::Extension> extension_c =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "c", extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("c")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   scoped_refptr<const extensions::Extension> extension_d =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "d", extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("d")
+          .SetAction(ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
 
   // We should start off without any actions.
   EXPECT_EQ(0u, num_toolbar_items());
@@ -870,10 +882,9 @@ TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesEnabledSwitch) {
 
   // Component extensions shouldn't be given an icon.
   scoped_refptr<const extensions::Extension> component_extension_no_action =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "component ext no action",
-          extensions::extension_action_test_util::NO_ACTION,
-          extensions::Manifest::COMPONENT);
+      extensions::ExtensionBuilder("component ext no action")
+          .SetLocation(extensions::Manifest::COMPONENT)
+          .Build();
   EXPECT_TRUE(AddExtension(component_extension_no_action.get()));
   EXPECT_EQ(3u, num_toolbar_items());
   EXPECT_FALSE(ModelHasActionForId(component_extension_no_action->id()));
@@ -881,10 +892,9 @@ TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesEnabledSwitch) {
   // Sanity check: A new extension that's installed from the webstore should
   // have an icon.
   scoped_refptr<const extensions::Extension> internal_extension_no_action =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "internal ext no action",
-          extensions::extension_action_test_util::NO_ACTION,
-          extensions::Manifest::INTERNAL);
+      extensions::ExtensionBuilder("internal ext no action")
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   EXPECT_TRUE(AddExtension(internal_extension_no_action.get()));
   EXPECT_EQ(4u, num_toolbar_items());
   EXPECT_TRUE(ModelHasActionForId(internal_extension_no_action->id()));

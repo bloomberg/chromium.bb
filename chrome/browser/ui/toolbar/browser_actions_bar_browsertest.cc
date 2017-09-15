@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -264,8 +263,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
 
   // Load an extension with a page action.
   scoped_refptr<const extensions::Extension> page_action_extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "page action", extensions::extension_action_test_util::PAGE_ACTION);
+      extensions::ExtensionBuilder("page action")
+          .SetAction(extensions::ExtensionBuilder::ActionType::PAGE_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   extension_service()->AddExtension(page_action_extension.get());
 
   // Verify that the extension was added at the last index.
@@ -525,16 +526,22 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, RemovePoppedOutAction) {
   // First, load up three separate extensions and reduce the visible count to
   // one (so that two are in the overflow).
   scoped_refptr<const extensions::Extension> extension1 =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "extension1", extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("extension1")
+          .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   extension_service()->AddExtension(extension1.get());
   scoped_refptr<const extensions::Extension> extension2 =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "extension2", extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("extension2")
+          .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   extension_service()->AddExtension(extension2.get());
   scoped_refptr<const extensions::Extension> extension3 =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "extension3", extensions::extension_action_test_util::BROWSER_ACTION);
+      extensions::ExtensionBuilder("extension3")
+          .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   extension_service()->AddExtension(extension3.get());
 
   toolbar_model()->SetVisibleIconCount(1);
