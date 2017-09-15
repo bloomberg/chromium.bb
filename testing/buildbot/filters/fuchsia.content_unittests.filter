@@ -37,3 +37,9 @@
 
 # https://crbug.com/762125
 -VideoCaptureBufferPoolTest.BufferPool/*
+
+# Flaky: https://crbug.com/760687.
+-CacheStorageManagerTest.GetAllOriginsUsageWithOldIndex
+
+# Flaky: https://crbug.com/759653.
+-RenderWidgetHostViewAuraTest.Resize
