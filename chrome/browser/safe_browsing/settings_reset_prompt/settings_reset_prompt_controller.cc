@@ -54,89 +54,6 @@ bool ResetHomepageEnabled(const SettingsResetPromptModel& model) {
          SettingsResetPromptModel::RESET_REQUIRED;
 }
 
-void TryToShowSettingsResetPrompt(
-    std::unique_ptr<SettingsResetPromptModel> model,
-    std::unique_ptr<BrandcodedDefaultSettings> default_settings) {
-  DCHECK(model);
-  DCHECK(default_settings);
-
-  // Ensure that there is at least one non-incognito browser open for the
-  // profile before attempting to show the dialog.
-  Browser* browser = chrome::FindTabbedBrowser(
-      model->profile(), /*match_original_profiles=*/false);
-  if (!browser)
-    return;
-
-  // First, show the browser window, and only then show the dialog so that the
-  // dialog will have focus.
-  if (browser->window()->IsMinimized())
-    browser->window()->Restore();
-  browser->window()->Show();
-
-  // The |SettingsResetPromptController| object will delete itself after the
-  // reset prompt dialog has been closed.
-  SettingsResetPromptController::ShowSettingsResetPrompt(
-      browser, new SettingsResetPromptController(std::move(model),
-                                                 std::move(default_settings)));
-}
-
-// Will display the settings reset prompt if required and if there is at least
-// one non-incognito browser available for the corresponding profile.
-void MaybeShowSettingsResetPrompt(
-    std::unique_ptr<SettingsResetPromptConfig> config) {
-  DCHECK(config);
-
-  Browser* browser = chrome::FindLastActive();
-  if (!browser)
-    return;
-
-  // Get the original profile in case the last active browser was incognito. We
-  // ensure that there is at least one non-incognito browser open before
-  // displaying the dialog.
-  Profile* profile = browser->profile()->GetOriginalProfile();
-
-  auto model = base::MakeUnique<SettingsResetPromptModel>(
-      profile, std::move(config), base::MakeUnique<ProfileResetter>(profile));
-
-  model->ReportUmaMetrics();
-
-  if (!model->ShouldPromptForReset())
-    return;
-
-  DefaultSettingsFetcher::FetchDefaultSettings(
-      base::Bind(&TryToShowSettingsResetPrompt, base::Passed(&model)));
-}
-
-class SettingsResetPromptDelegateImpl : public SettingsResetPromptDelegate {
- public:
-  SettingsResetPromptDelegateImpl();
-  ~SettingsResetPromptDelegateImpl() override;
-
-  void ShowSettingsResetPromptWithDelay() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SettingsResetPromptDelegateImpl);
-};
-
-SettingsResetPromptDelegateImpl::SettingsResetPromptDelegateImpl() = default;
-
-SettingsResetPromptDelegateImpl::~SettingsResetPromptDelegateImpl() = default;
-
-void SettingsResetPromptDelegateImpl::ShowSettingsResetPromptWithDelay() const {
-  std::unique_ptr<SettingsResetPromptConfig> config =
-      SettingsResetPromptConfig::Create();
-  if (!config)
-    return;
-
-  base::TimeDelta delay = config->delay_before_prompt();
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(MaybeShowSettingsResetPrompt, base::Passed(&config)),
-      delay);
-}
-
-SettingsResetPromptDelegate* g_settings_reset_prompt_delegate = nullptr;
-
 }  // namespace.
 
 SettingsResetPromptController::SettingsResetPromptController(
@@ -284,22 +201,6 @@ void SettingsResetPromptController::InitMainText() {
 
 void SettingsResetPromptController::OnInteractionDone() {
   delete this;
-}
-
-void MaybeShowSettingsResetPromptWithDelay() {
-  if (g_settings_reset_prompt_delegate) {
-    g_settings_reset_prompt_delegate->ShowSettingsResetPromptWithDelay();
-  } else {
-    SettingsResetPromptDelegateImpl().ShowSettingsResetPromptWithDelay();
-  }
-}
-
-SettingsResetPromptDelegate::SettingsResetPromptDelegate() = default;
-
-SettingsResetPromptDelegate::~SettingsResetPromptDelegate() = default;
-
-void SetSettingsResetPromptDelegate(SettingsResetPromptDelegate* delegate) {
-  g_settings_reset_prompt_delegate = delegate;
 }
 
 }  // namespace safe_browsing

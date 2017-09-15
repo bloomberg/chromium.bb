@@ -50,6 +50,7 @@ class PaymentRequestDialog;
 namespace safe_browsing {
 class ChromeCleanerController;
 class ChromeCleanerDialogController;
+class SettingsResetPromptController;
 }
 
 namespace task_manager {
@@ -256,6 +257,12 @@ enum class DialogIdentifier {
 void RecordDialogCreation(DialogIdentifier identifier);
 
 #if defined(OS_WIN)
+
+// Shows the settings reset prompt dialog asking the user if they want to reset
+// some of their settings.
+void ShowSettingsResetPrompt(
+    Browser* browser,
+    safe_browsing::SettingsResetPromptController* controller);
 
 // Shows the Chrome Cleanup dialog asking the user if they want to clean their
 // system from unwanted software. This is called when unwanted software has been

@@ -22,6 +22,7 @@
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_model.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -167,7 +168,7 @@ class SettingsResetPromptDialogTest : public DialogBrowserTest {
     auto model = base::MakeUnique<NiceMock<MockSettingsResetPromptModel>>(
         browser()->profile(), name_to_model_params.find(name)->second);
 
-    safe_browsing::SettingsResetPromptController::ShowSettingsResetPrompt(
+    chrome::ShowSettingsResetPrompt(
         browser(),
         new safe_browsing::SettingsResetPromptController(
             std::move(model), base::MakeUnique<BrandcodedDefaultSettings>()));
