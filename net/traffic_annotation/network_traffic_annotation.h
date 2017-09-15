@@ -27,6 +27,8 @@ constexpr uint32_t recursive_hash<1>(const char* str) {
 #define COMPUTE_STRING_HASH(S) \
   static_cast<int32_t>(recursive_hash<sizeof(S) - 1>(S))
 
+constexpr int TRAFFIC_ANNOTATION_UNINITIALIZED = -1;
+
 }  // namespace
 
 namespace net {
@@ -37,6 +39,11 @@ struct NetworkTrafficAnnotationTag {
 
   bool operator==(const NetworkTrafficAnnotationTag& other) const {
     return unique_id_hash_code == other.unique_id_hash_code;
+  }
+
+  static NetworkTrafficAnnotationTag NotReached() {
+    NOTREACHED();
+    return net::NetworkTrafficAnnotationTag({TRAFFIC_ANNOTATION_UNINITIALIZED});
   }
 };
 struct PartialNetworkTrafficAnnotationTag {
@@ -198,8 +205,6 @@ NetworkTrafficAnnotationTag BranchedCompleteNetworkTrafficAnnotation(
 //     net::URLFetcher::Create(url2, ..., final_tag);
 //   }
 // }
-
-#define TRAFFIC_ANNOTATION_UNINITIALIZED -1
 
 // Do not use this unless net-serialization is required.
 // TODO(crbug.com/690323): Add tools to check constructor of this structure is

@@ -206,7 +206,8 @@ class NetworkAnnotationTagCallback : public MatchFinder::MatchCallback {
   // API. These functions are all defined in
   // 'net/traffic_annotation/network_traffic_annotation.h'.
   bool IsAPIFunction(const std::string& function_name) {
-    return function_name == "net::DefineNetworkTrafficAnnotation" ||
+    return function_name == "net::NetworkTrafficAnnotationTag::NotReached" ||
+           function_name == "net::DefineNetworkTrafficAnnotation" ||
            function_name == "net::DefinePartialNetworkTrafficAnnotation" ||
            function_name == "net::CompleteNetworkTrafficAnnotation" ||
            function_name == "net::BranchedCompleteNetworkTrafficAnnotation" ||
