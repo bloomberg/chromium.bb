@@ -14,6 +14,8 @@ class PrefRegistrySimple;
 
 namespace ash {
 
+class LoginDataDispatcher;
+
 // LockScreenController implements mojom::LockScreen and wraps the
 // mojom::LockScreenClient interface. This lets a consumer of ash provide a
 // LockScreenClient, which we will dispatch to if one has been provided to us.
@@ -81,6 +83,9 @@ class ASH_EXPORT LockScreenController : public mojom::LockScreen {
       const std::string& system_salt);
 
   void OnGetSystemSalt(const std::string& system_salt);
+
+  // Returns the active data dispatcher or nullptr if there is no lock screen.
+  LoginDataDispatcher* DataDispatcher() const;
 
   // Client interface in chrome browser. May be null in tests.
   mojom::LockScreenClientPtr lock_screen_client_;

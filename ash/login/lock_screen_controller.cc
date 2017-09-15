@@ -5,6 +5,7 @@
 #include "ash/login/lock_screen_controller.h"
 
 #include "ash/login/ui/lock_screen.h"
+#include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -87,15 +88,20 @@ void LockScreenController::SetAuthType(
 
 void LockScreenController::LoadUsers(std::vector<mojom::LoginUserInfoPtr> users,
                                      bool show_guest) {
-  NOTIMPLEMENTED();
+  DCHECK(DataDispatcher());
+
+  std::vector<mojom::UserInfoPtr> basic_users;
+  for (auto& user : users)
+    basic_users.push_back(user->basic_user_info->Clone());
+  DataDispatcher()->NotifyUsers(basic_users);
 }
 
 void LockScreenController::SetPinEnabledForUser(const AccountId& account_id,
                                                 bool is_enabled) {
   // Chrome will update pin pod state every time user tries to authenticate.
   // LockScreen is destroyed in the case of authentication success.
-  if (ash::LockScreen::IsShown())
-    ash::LockScreen::Get()->SetPinEnabledForUser(account_id, is_enabled);
+  if (DataDispatcher())
+    DataDispatcher()->SetPinEnabledForUser(account_id, is_enabled);
 }
 
 void LockScreenController::AuthenticateUser(
@@ -193,6 +199,12 @@ void LockScreenController::DoAuthenticateUser(
 
 void LockScreenController::OnGetSystemSalt(const std::string& system_salt) {
   std::move(pending_user_auth_).Run(system_salt);
+}
+
+LoginDataDispatcher* LockScreenController::DataDispatcher() const {
+  if (!ash::LockScreen::IsShown())
+    return nullptr;
+  return ash::LockScreen::Get()->data_dispatcher();
 }
 
 }  // namespace ash

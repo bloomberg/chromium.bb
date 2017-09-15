@@ -144,8 +144,8 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   // All non-auth users; |primary_auth_| and |secondary_auth_| are not contained
   // in this list.
   std::vector<LoginUserView*> user_views_;
-  views::ScrollView* scroller_;
-  views::BoxLayout* root_layout_;
+  views::ScrollView* scroller_ = nullptr;
+  views::BoxLayout* root_layout_ = nullptr;
 
   // Actions that should be executed when rotation changes. A full layout pass
   // is performed after all actions are executed.

@@ -180,7 +180,8 @@ void LockContentsView::AddedToWidget() {
   DoLayout();
 
   // Focus the primary user when showing the UI. This will focus the password.
-  primary_auth_->RequestFocus();
+  if (primary_auth_)
+    primary_auth_->RequestFocus();
 }
 
 void LockContentsView::OnFocus() {
@@ -188,7 +189,8 @@ void LockContentsView::OnFocus() {
   // under typical circumstances), immediately forward the focus to the
   // primary_auth_ since LockContentsView has no real focusable content by
   // itself.
-  primary_auth_->RequestFocus();
+  if (primary_auth_)
+    primary_auth_->RequestFocus();
 }
 
 void LockContentsView::AboutToRequestFocusFromTabTraversal(bool reverse) {
