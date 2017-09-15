@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

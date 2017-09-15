@@ -12,26 +12,17 @@
 #error "This file requires ARC support."
 #endif
 
-TabModelSnapshot::TabModelSnapshot(TabModel* tabModel) {
-  for (Tab* tab in tabModel) {
-    _hashes.push_back(hashOfTheVisiblePropertiesOfATab(tab));
-    _tabs.push_back(base::WeakNSObject<Tab>(tab));
+TabModelSnapshot::TabModelSnapshot(TabModel* tab_model) {
+  for (Tab* tab in tab_model) {
+    hashes_.push_back(HashOfTheVisiblePropertiesOfATab(tab));
+    tabs_.push_back(tab);
   }
 }
 
 TabModelSnapshot::~TabModelSnapshot() {}
 
-std::vector<size_t> const& TabModelSnapshot::hashes() const {
-  DCHECK_EQ(_tabs.size(), _hashes.size());
-  return _hashes;
-}
-
-std::vector<base::WeakNSObject<Tab>> const& TabModelSnapshot::tabs() const {
-  DCHECK_EQ(_tabs.size(), _hashes.size());
-  return _tabs;
-}
-
-size_t TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(Tab* tab) {
+// static
+size_t TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(Tab* tab) {
   DCHECK(tab);
   std::stringstream ss;
   // lastVisitedTimestamp is used as an approximation for whether the tab's

@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/ios/weak_nsobject.h"
-
 @protocol FormSuggestionViewClient;
 
 // A scrollable view for displaying user-selectable autofill form suggestions.

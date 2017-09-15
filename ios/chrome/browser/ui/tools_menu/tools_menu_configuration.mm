@@ -4,15 +4,10 @@
 
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 
-#import "base/ios/weak_nsobject.h"
 #import "base/logging.h"
 #include "ios/web/public/user_agent.h"
 
-@implementation ToolsMenuConfiguration {
-  base::WeakNSObject<UIView> _displayView;
-  base::WeakNSObject<UIButton> _toolsMenuButton;
-  base::WeakNSObject<ReadingListMenuNotifier> _readingListMenuNotifier;
-}
+@implementation ToolsMenuConfiguration
 
 @synthesize inTabSwitcher = _inTabSwitcher;
 @synthesize noOpenedTabs = _noOpenedTabs;
@@ -23,12 +18,15 @@
 @synthesize requestStartTime = _requestStartTime;
 @synthesize inNewTabPage = _inNewTabPage;
 @synthesize engagementTracker = _engagementTracker;
+@synthesize displayView = _displayView;
+@synthesize toolsMenuButton = _toolsMenuButton;
+@synthesize readingListMenuNotifier = _readingListMenuNotifier;
 
 - (instancetype)initWithDisplayView:(UIView*)displayView {
   if (self = [super init]) {
     _userAgentType = web::UserAgentType::NONE;
-    _displayView.reset(displayView);
-    _readingListMenuNotifier.reset();
+    _displayView = displayView;
+    _readingListMenuNotifier = nil;
     _engagementTracker = nullptr;
   }
   return self;
@@ -51,27 +49,6 @@
              ? [self.displayView convertRect:self.toolsMenuButton.bounds
                                     fromView:self.toolsMenuButton]
              : CGRectZero;
-}
-
-- (void)setToolsMenuButton:(UIButton*)toolsMenuButton {
-  _toolsMenuButton.reset(toolsMenuButton);
-}
-
-- (UIButton*)toolsMenuButton {
-  return _toolsMenuButton;
-}
-
-- (UIView*)displayView {
-  return _displayView;
-}
-
-- (void)setReadingListMenuNotifier:
-    (ReadingListMenuNotifier*)readingListMenuNotifier {
-  _readingListMenuNotifier.reset(readingListMenuNotifier);
-}
-
-- (ReadingListMenuNotifier*)readingListMenuNotifier {
-  return _readingListMenuNotifier;
 }
 
 @end

@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "google_apis/google_api_keys.h"

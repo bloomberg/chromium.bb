@@ -5,8 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_SYNC_SYNC_OBSERVER_BRIDGE_H_
 #define IOS_CHROME_BROWSER_SYNC_SYNC_OBSERVER_BRIDGE_H_
 
+#import <Foundation/Foundation.h>
+
 #include "base/compiler_specific.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -35,7 +36,7 @@ class SyncObserverBridge : public syncer::SyncServiceObserver {
   void OnStateChanged(syncer::SyncService* sync) override;
   void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
 
-  base::WeakNSProtocol<id<SyncObserverModelBridge>> delegate_;
+  __weak id<SyncObserverModelBridge> delegate_ = nil;
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       scoped_observer_;
 

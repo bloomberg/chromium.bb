@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_DIALOGS_JAVA_SCRIPT_DIALOG_PRESENTER_IMPL_H_
 #define IOS_CHROME_BROWSER_UI_DIALOGS_JAVA_SCRIPT_DIALOG_PRESENTER_IMPL_H_
 
-#import "base/ios/weak_nsobject.h"
 #import "base/mac/scoped_nsobject.h"
 #include "ios/web/public/java_script_dialog_presenter.h"
 

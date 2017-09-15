@@ -4,7 +4,6 @@
 
 #import "ios/chrome/common/physical_web/physical_web_request.h"
 
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
@@ -129,7 +128,7 @@ std::string GetUserAgent() {
       [NSURLSession sessionWithConfiguration:sessionConfiguration
                                     delegate:nil
                                delegateQueue:[NSOperationQueue mainQueue]];
-  base::WeakNSObject<PhysicalWebRequest> weakSelf(self);
+  __weak PhysicalWebRequest* weakSelf = self;
   SessionCompletionProceduralBlock completionHandler =
       ^(NSData* data, NSURLResponse* response, NSError* error) {
         base::scoped_nsobject<PhysicalWebRequest> strongSelf(weakSelf);

@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
@@ -104,7 +103,7 @@ class WebStateListObserverBridge : public WebStateListObserver {
                            int active_index,
                            bool user_action) override;
 
-  base::WeakNSProtocol<id<WebStateListObserving>> observer_;
+  __weak id<WebStateListObserving> observer_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateListObserverBridge);
 };

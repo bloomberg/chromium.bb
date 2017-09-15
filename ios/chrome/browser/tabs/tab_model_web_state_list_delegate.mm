@@ -28,7 +28,7 @@ void TabModelWebStateListDelegate::WillAddWebState(web::WebState* web_state) {
 
   DCHECK(LegacyTabHelper::FromWebState(web_state));
   Tab* tab = LegacyTabHelper::GetTabForWebState(web_state);
-  [tab setParentTabModel:tab_model_.get()];
+  [tab setParentTabModel:tab_model_];
 }
 
 void TabModelWebStateListDelegate::WebStateDetached(web::WebState* web_state) {

@@ -79,7 +79,7 @@ const char kScriptCommandPrefix[] = "webui";
     _webState = webState;
     _webStateObserverBridge.reset(
         new web::WebStateObserverBridge(webState, self));
-    base::WeakNSObject<CRWWebUIManager> weakSelf(self);
+    __weak CRWWebUIManager* weakSelf = self;
     _webState->AddScriptCommandCallback(
         base::BindBlockArc(
             ^bool(const base::DictionaryValue& message, const GURL&, bool) {
@@ -104,7 +104,7 @@ const char kScriptCommandPrefix[] = "webui";
   if (!web::GetWebClient()->IsAppSpecificURL(URL))
     return;
 
-  base::WeakNSObject<CRWWebUIManager> weakSelf(self);
+  __weak CRWWebUIManager* weakSelf = self;
   [self loadWebUIPageForURL:URL completionHandler:^(NSString* HTML) {
     web::WebStateImpl* webState = [weakSelf webState];
     if (webState) {
@@ -149,7 +149,7 @@ const char kScriptCommandPrefix[] = "webui";
 
 - (void)fetchResourceWithURL:(const GURL&)URL
            completionHandler:(void (^)(NSData*))completionHandler {
-  base::WeakNSObject<CRWWebUIManager> weakSelf(self);
+  __weak CRWWebUIManager* weakSelf = self;
   web::URLFetcherBlockAdapterCompletion fetcherCompletion =
       ^(NSData* data, web::URLFetcherBlockAdapter* fetcher) {
         completionHandler(data);

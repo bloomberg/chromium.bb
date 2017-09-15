@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#import "base/ios/weak_nsobject.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 
 @protocol CRWJSInjectionEvaluator;
@@ -126,7 +125,7 @@ class MojoFacade {
   // Provides interfaces.
   service_manager::mojom::InterfaceProvider* interface_provider_;
   // Runs JavaScript on WebUI page.
-  base::WeakNSProtocol<id<CRWJSInjectionEvaluator>> script_evaluator_;
+  __weak id<CRWJSInjectionEvaluator> script_evaluator_ = nil;
   // Id of the last created watch.
   int last_watch_id_;
   // Currently active watches created through this facade.

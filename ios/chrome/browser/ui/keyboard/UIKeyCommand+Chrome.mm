@@ -6,7 +6,6 @@
 
 #import <objc/runtime.h>
 
-#import "base/ios/weak_nsobject.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 
@@ -15,7 +14,7 @@
 #endif
 
 ChromeCommandBlock ChromeCommandBlockWithResponder(UIResponder* responder) {
-  base::WeakNSObject<UIResponder> weakResponder(responder);
+  __weak UIResponder* weakResponder = responder;
   return [^(NSInteger tag) {
     [weakResponder
         chromeExecuteCommand:[GenericChromeCommand commandWithTag:tag]];

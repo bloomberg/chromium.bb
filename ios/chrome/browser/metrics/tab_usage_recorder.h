@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"

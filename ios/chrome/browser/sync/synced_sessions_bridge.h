@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/driver/sync_service_observer.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
@@ -52,7 +51,7 @@ class SyncedSessionsObserverBridge : public SyncObserverBridge,
   void CheckIfFirstSyncIsCompleted();
 
  private:
-  base::WeakNSProtocol<id<SyncedSessionsObserver>> owner_;
+  __weak id<SyncedSessionsObserver> owner_ = nil;
   SigninManager* signin_manager_;
   syncer::SyncService* sync_service_;
   ios::ChromeBrowserState* browser_state_;

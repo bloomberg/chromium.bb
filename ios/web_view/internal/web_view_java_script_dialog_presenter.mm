@@ -111,7 +111,7 @@ void WebViewJavaScriptDialogPresenter::CancelDialogs(web::WebState* web_state) {
 
 void WebViewJavaScriptDialogPresenter::SetUIDelegate(
     id<CWVUIDelegate> ui_delegate) {
-  ui_delegate_.reset(ui_delegate);
+  ui_delegate_ = ui_delegate;
 }
 
 }  // namespace ios_web_view

@@ -42,9 +42,9 @@ class Tracker;
 @property(nonatomic, assign) web::UserAgentType userAgentType;
 
 // View that the menu will be displayed in.
-@property(nonatomic, readonly) UIView* displayView;
+@property(nonatomic, weak, readonly) UIView* displayView;
 // Button from which popup menu will be opened.
-@property(nonatomic, assign) UIButton* toolsMenuButton;
+@property(nonatomic, weak) UIButton* toolsMenuButton;
 // Menu's origin relative to the |displayView|'s coordinate system, calculated
 // from |toolsMenuButton| and |displayView|.
 @property(nonatomic, readonly) CGRect sourceRect;
@@ -53,7 +53,7 @@ class Tracker;
 @property(nonatomic, readonly) UIEdgeInsets toolsButtonInsets;
 // Notifier for changes to the reading list requiring the menu to be updated.
 // Menus needing to be updated should set themselves as this object's delegate.
-@property(nonatomic, assign) ReadingListMenuNotifier* readingListMenuNotifier;
+@property(nonatomic, weak) ReadingListMenuNotifier* readingListMenuNotifier;
 // Records the time that the tools menu was requested; value is the time
 // interval since the NSDate referenceDate.
 @property(nonatomic, assign) NSTimeInterval requestStartTime;

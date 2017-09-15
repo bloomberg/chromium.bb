@@ -156,6 +156,7 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
 
 @implementation ToolbarView
 
+@synthesize delegate = delegate_;
 @synthesize animatingTransition = animatingTransition_;
 @synthesize hitTestBoundsContraintRelaxed = hitTestBoundsContraintRelaxed_;
 
@@ -179,10 +180,6 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
     }
   }
   return hitView;
-}
-
-- (void)setDelegate:(id<ToolbarFrameDelegate>)delegate {
-  delegate_.reset(delegate);
 }
 
 - (void)setFrame:(CGRect)frame {

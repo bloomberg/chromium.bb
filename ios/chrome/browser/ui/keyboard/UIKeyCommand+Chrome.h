@@ -47,7 +47,7 @@ extern UIKeyModifierFlags Cr_UIKeyModifierNone;
 // foo.mm:
 //
 // - (NSArray*)keyCommands {
-//   base::WeakNSObject<AccountsTableViewController> weakSelf(self);
+//   __weak AccountsTableViewController* weakSelf = self;
 //   return @[
 //     [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
 //                           modifierFlags:Cr_UIKeyModifierNone

@@ -54,23 +54,23 @@ TEST_F(TabModelSnapshotTest, TestSingleHash) {
   Tab* tab4 = TabMock(@"id1", @"url1", 12345);
 
   // Same tab
-  size_t hash1 = TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(tab1);
-  size_t hash2 = TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(tab1);
+  size_t hash1 = TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(tab1);
+  size_t hash2 = TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(tab1);
   EXPECT_EQ(hash1, hash2);
 
   // Different ids
-  size_t hash3 = TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(tab1);
-  size_t hash4 = TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(tab2);
+  size_t hash3 = TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(tab1);
+  size_t hash4 = TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(tab2);
   EXPECT_NE(hash3, hash4);
 
   // Different urls
-  size_t hash5 = TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(tab1);
-  size_t hash6 = TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(tab3);
+  size_t hash5 = TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(tab1);
+  size_t hash6 = TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(tab3);
   EXPECT_NE(hash5, hash6);
 
   // Different timestamps
-  size_t hash7 = TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(tab1);
-  size_t hash8 = TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(tab4);
+  size_t hash7 = TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(tab1);
+  size_t hash8 = TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(tab4);
   EXPECT_NE(hash7, hash8);
 }
 
@@ -84,9 +84,9 @@ TEST_F(TabModelSnapshotTest, TestSnapshotHashes) {
 
   EXPECT_EQ(tabModelSnapshot.hashes().size(), 2UL);
   EXPECT_EQ(tabModelSnapshot.hashes()[0],
-            TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(tab1));
+            TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(tab1));
   EXPECT_EQ(tabModelSnapshot.hashes()[1],
-            TabModelSnapshot::hashOfTheVisiblePropertiesOfATab(tab2));
+            TabModelSnapshot::HashOfTheVisiblePropertiesOfATab(tab2));
 }
 
 }  // namespace

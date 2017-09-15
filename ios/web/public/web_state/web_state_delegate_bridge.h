@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/ios/weak_nsobject.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 
 // Objective-C interface for web::WebStateDelegate.
@@ -91,7 +90,7 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
 
  private:
   // CRWWebStateDelegate which receives forwarded calls.
-  base::WeakNSProtocol<id<CRWWebStateDelegate>> delegate_;
+  __weak id<CRWWebStateDelegate> delegate_ = nil;
   DISALLOW_COPY_AND_ASSIGN(WebStateDelegateBridge);
 };
 
