@@ -29,6 +29,8 @@
 #include "modules/credentialmanager/MakeCredentialOptions.h"
 #include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/credentialmanager/PublicKeyCredential.h"
+#include "platform/credentialmanager/PlatformFederatedCredential.h"
+#include "platform/credentialmanager/PlatformPasswordCredential.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
@@ -39,10 +41,10 @@
 #include "public/platform/WebPasswordCredential.h"
 
 namespace blink {
+namespace {
 
-static void RejectDueToCredentialManagerError(
-    ScriptPromiseResolver* resolver,
-    WebCredentialManagerError reason) {
+void RejectDueToCredentialManagerError(ScriptPromiseResolver* resolver,
+                                       WebCredentialManagerError reason) {
   switch (reason) {
     case kWebCredentialManagerDisabledError:
       resolver->Reject(DOMException::Create(
@@ -83,6 +85,56 @@ static void RejectDueToCredentialManagerError(
       break;
   }
 }
+
+bool CheckBoilerplate(ScriptPromiseResolver* resolver) {
+  Frame* frame = ToDocument(ExecutionContext::From(resolver->GetScriptState()))
+                     ->GetFrame();
+  if (!frame || frame != frame->Tree().Top()) {
+    resolver->Reject(DOMException::Create(kSecurityError,
+                                          "CredentialContainer methods may "
+                                          "only be executed in a top-level "
+                                          "document."));
+    return false;
+  }
+
+  String error_message;
+  if (!ExecutionContext::From(resolver->GetScriptState())
+           ->IsSecureContext(error_message)) {
+    resolver->Reject(DOMException::Create(kSecurityError, error_message));
+    return false;
+  }
+
+  CredentialManagerClient* client = CredentialManagerClient::From(
+      ExecutionContext::From(resolver->GetScriptState()));
+  if (!client) {
+    resolver->Reject(DOMException::Create(
+        kInvalidStateError,
+        "Could not establish connection to the credential manager."));
+    return false;
+  }
+
+  return true;
+}
+
+bool IsIconURLInsecure(const Credential* credential) {
+  PlatformCredential* platform_credential = credential->GetPlatformCredential();
+  auto is_insecure = [](const KURL& url) {
+    return !url.IsEmpty() && !url.ProtocolIs("https");
+  };
+  if (platform_credential->IsFederated()) {
+    return is_insecure(
+        static_cast<PlatformFederatedCredential*>(platform_credential)
+            ->IconURL());
+  }
+  if (platform_credential->IsPassword()) {
+    return is_insecure(
+        static_cast<PlatformPasswordCredential*>(platform_credential)
+            ->IconURL());
+  }
+  return false;
+}
+
+}  // namespace
 
 class NotificationCallbacks
     : public WebCredentialManagerClient::NotificationCallbacks {
@@ -215,36 +267,6 @@ CredentialsContainer* CredentialsContainer::Create() {
 
 CredentialsContainer::CredentialsContainer() {}
 
-static bool CheckBoilerplate(ScriptPromiseResolver* resolver) {
-  Frame* frame = ToDocument(ExecutionContext::From(resolver->GetScriptState()))
-                     ->GetFrame();
-  if (!frame || frame != frame->Tree().Top()) {
-    resolver->Reject(DOMException::Create(kSecurityError,
-                                          "CredentialContainer methods may "
-                                          "only be executed in a top-level "
-                                          "document."));
-    return false;
-  }
-
-  String error_message;
-  if (!ExecutionContext::From(resolver->GetScriptState())
-           ->IsSecureContext(error_message)) {
-    resolver->Reject(DOMException::Create(kSecurityError, error_message));
-    return false;
-  }
-
-  CredentialManagerClient* client = CredentialManagerClient::From(
-      ExecutionContext::From(resolver->GetScriptState()));
-  if (!client) {
-    resolver->Reject(DOMException::Create(
-        kInvalidStateError,
-        "Could not establish connection to the credential manager."));
-    return false;
-  }
-
-  return true;
-}
-
 ScriptPromise CredentialsContainer::get(
     ScriptState* script_state,
     const CredentialRequestOptions& options) {
@@ -315,6 +337,12 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   if (!CheckBoilerplate(resolver))
     return promise;
+
+  if (IsIconURLInsecure(credential)) {
+    resolver->Reject(DOMException::Create(kSecurityError,
+                                          "'iconURL' should be a secure URL"));
+    return promise;
+  }
 
   auto web_credential =
       WebCredential::Create(credential->GetPlatformCredential());
