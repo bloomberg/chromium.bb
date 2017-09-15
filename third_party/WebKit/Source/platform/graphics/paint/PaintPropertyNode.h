@@ -6,7 +6,6 @@
 #define PaintPropertyNode_h
 
 #include "platform/PlatformExport.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
 
@@ -76,10 +75,10 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   }
 
  protected:
-  PaintPropertyNode(PassRefPtr<const NodeType> parent)
+  PaintPropertyNode(RefPtr<const NodeType> parent)
       : parent_(std::move(parent)), changed_(false) {}
 
-  bool Update(PassRefPtr<const NodeType> parent) {
+  bool Update(RefPtr<const NodeType> parent) {
     DCHECK(!IsRoot());
     DCHECK(parent != this);
     if (parent == parent_)

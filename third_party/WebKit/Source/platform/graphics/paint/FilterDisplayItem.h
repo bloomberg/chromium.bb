@@ -8,7 +8,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #ifndef NDEBUG
 #include "platform/wtf/text/WTFString.h"
 #endif

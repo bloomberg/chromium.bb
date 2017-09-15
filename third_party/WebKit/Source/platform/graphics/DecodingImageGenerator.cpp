@@ -71,9 +71,9 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
 
 // static
 sk_sp<DecodingImageGenerator> DecodingImageGenerator::Create(
-    PassRefPtr<ImageFrameGenerator> frame_generator,
+    RefPtr<ImageFrameGenerator> frame_generator,
     const SkImageInfo& info,
-    PassRefPtr<SegmentReader> data,
+    RefPtr<SegmentReader> data,
     std::vector<FrameMetadata> frames,
     PaintImage::ContentId content_id,
     bool all_data_received) {
@@ -83,9 +83,9 @@ sk_sp<DecodingImageGenerator> DecodingImageGenerator::Create(
 }
 
 DecodingImageGenerator::DecodingImageGenerator(
-    PassRefPtr<ImageFrameGenerator> frame_generator,
+    RefPtr<ImageFrameGenerator> frame_generator,
     const SkImageInfo& info,
-    PassRefPtr<SegmentReader> data,
+    RefPtr<SegmentReader> data,
     std::vector<FrameMetadata> frames,
     PaintImage::ContentId complete_frame_content_id,
     bool all_data_received)

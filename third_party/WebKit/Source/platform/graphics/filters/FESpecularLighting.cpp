@@ -34,7 +34,7 @@ FESpecularLighting::FESpecularLighting(Filter* filter,
                                        float surface_scale,
                                        float specular_constant,
                                        float specular_exponent,
-                                       PassRefPtr<LightSource> light_source)
+                                       RefPtr<LightSource> light_source)
     : FELighting(filter,
                  kSpecularLighting,
                  lighting_color,
@@ -50,7 +50,7 @@ FESpecularLighting* FESpecularLighting::Create(
     float surface_scale,
     float specular_constant,
     float specular_exponent,
-    PassRefPtr<LightSource> light_source) {
+    RefPtr<LightSource> light_source) {
   return new FESpecularLighting(filter, lighting_color, surface_scale,
                                 specular_constant, specular_exponent,
                                 std::move(light_source));
@@ -108,7 +108,7 @@ const LightSource* FESpecularLighting::GetLightSource() const {
   return light_source_.Get();
 }
 
-void FESpecularLighting::SetLightSource(PassRefPtr<LightSource> light_source) {
+void FESpecularLighting::SetLightSource(RefPtr<LightSource> light_source) {
   light_source_ = std::move(light_source);
 }
 

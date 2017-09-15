@@ -23,7 +23,7 @@
 
 namespace blink {
 
-PassRefPtr<AcceleratedStaticBitmapImage>
+RefPtr<AcceleratedStaticBitmapImage>
 AcceleratedStaticBitmapImage::CreateFromSkImage(
     sk_sp<SkImage> image,
     WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper) {
@@ -32,7 +32,7 @@ AcceleratedStaticBitmapImage::CreateFromSkImage(
       std::move(image), std::move(context_provider_wrapper)));
 }
 
-PassRefPtr<AcceleratedStaticBitmapImage>
+RefPtr<AcceleratedStaticBitmapImage>
 AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,

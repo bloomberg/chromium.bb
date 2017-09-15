@@ -69,7 +69,7 @@ static bool g_should_fail_drawing_buffer_creation_for_testing = false;
 
 }  // namespace
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::Create(
+RefPtr<DrawingBuffer> DrawingBuffer::Create(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     Client* client,
     const IntSize& size,
@@ -132,7 +132,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::Create(
       chromium_image_usage, color_params));
   if (!drawing_buffer->Initialize(size, multisample_supported)) {
     drawing_buffer->BeginDestruction();
-    return PassRefPtr<DrawingBuffer>();
+    return RefPtr<DrawingBuffer>();
   }
   return drawing_buffer;
 }
@@ -470,7 +470,7 @@ void DrawingBuffer::MailboxReleasedSoftware(
   recycled_bitmaps_.push_back(std::move(recycled));
 }
 
-PassRefPtr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
+RefPtr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
   ScopedStateRestorer scoped_state_restorer(this);
 
   // This can be null if the context is lost before the first call to
@@ -573,8 +573,7 @@ DrawingBuffer::TextureColorBufferParameters() {
   return parameters;
 }
 
-PassRefPtr<DrawingBuffer::ColorBuffer>
-DrawingBuffer::CreateOrRecycleColorBuffer() {
+RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateOrRecycleColorBuffer() {
   DCHECK(state_restorer_);
   if (!recycled_color_buffer_queue_.IsEmpty()) {
     RefPtr<ColorBuffer> recycled = recycled_color_buffer_queue_.TakeLast();

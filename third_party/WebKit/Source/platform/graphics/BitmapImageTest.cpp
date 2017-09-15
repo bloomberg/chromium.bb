@@ -68,7 +68,7 @@ class BitmapImageTest : public ::testing::Test {
     int last_decoded_size_changed_delta_;
   };
 
-  static PassRefPtr<SharedBuffer> ReadFile(const char* file_name) {
+  static RefPtr<SharedBuffer> ReadFile(const char* file_name) {
     String file_path = testing::BlinkRootDir();
     file_path.append(file_name);
     return testing::ReadFromFile(file_path);
@@ -121,7 +121,7 @@ class BitmapImageTest : public ::testing::Test {
 
   int AnimationFinished() { return image_->animation_finished_; }
 
-  PassRefPtr<Image> ImageForDefaultFrame() {
+  RefPtr<Image> ImageForDefaultFrame() {
     return image_->ImageForDefaultFrame();
   }
 
@@ -129,7 +129,7 @@ class BitmapImageTest : public ::testing::Test {
     return image_observer_->last_decoded_size_changed_delta_;
   }
 
-  PassRefPtr<SharedBuffer> Data() { return image_->Data(); }
+  RefPtr<SharedBuffer> Data() { return image_->Data(); }
 
  protected:
   void SetUp() override {

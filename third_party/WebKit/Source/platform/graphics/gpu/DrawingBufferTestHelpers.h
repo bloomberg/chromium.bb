@@ -387,7 +387,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
 class DrawingBufferForTests : public DrawingBuffer {
  public:
-  static PassRefPtr<DrawingBufferForTests> Create(
+  static RefPtr<DrawingBufferForTests> Create(
       std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
       DrawingBuffer::Client* client,
       const IntSize& size,

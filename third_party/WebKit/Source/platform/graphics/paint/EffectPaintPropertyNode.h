@@ -30,10 +30,10 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   // This node is really a sentinel, and does not represent a real effect.
   static EffectPaintPropertyNode* Root();
 
-  static PassRefPtr<EffectPaintPropertyNode> Create(
-      PassRefPtr<const EffectPaintPropertyNode> parent,
-      PassRefPtr<const TransformPaintPropertyNode> local_transform_space,
-      PassRefPtr<const ClipPaintPropertyNode> output_clip,
+  static RefPtr<EffectPaintPropertyNode> Create(
+      RefPtr<const EffectPaintPropertyNode> parent,
+      RefPtr<const TransformPaintPropertyNode> local_transform_space,
+      RefPtr<const ClipPaintPropertyNode> output_clip,
       ColorFilter color_filter,
       CompositorFilterOperations filter,
       float opacity,
@@ -49,9 +49,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   }
 
   bool Update(
-      PassRefPtr<const EffectPaintPropertyNode> parent,
-      PassRefPtr<const TransformPaintPropertyNode> local_transform_space,
-      PassRefPtr<const ClipPaintPropertyNode> output_clip,
+      RefPtr<const EffectPaintPropertyNode> parent,
+      RefPtr<const TransformPaintPropertyNode> local_transform_space,
+      RefPtr<const ClipPaintPropertyNode> output_clip,
       ColorFilter color_filter,
       CompositorFilterOperations filter,
       float opacity,
@@ -103,7 +103,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // an effect node before it has been updated, to later detect changes.
-  PassRefPtr<EffectPaintPropertyNode> Clone() const {
+  RefPtr<EffectPaintPropertyNode> Clone() const {
     return AdoptRef(new EffectPaintPropertyNode(
         Parent(), local_transform_space_, output_clip_, color_filter_, filter_,
         opacity_, blend_mode_, direct_compositing_reasons_,
@@ -143,9 +143,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
 
  private:
   EffectPaintPropertyNode(
-      PassRefPtr<const EffectPaintPropertyNode> parent,
-      PassRefPtr<const TransformPaintPropertyNode> local_transform_space,
-      PassRefPtr<const ClipPaintPropertyNode> output_clip,
+      RefPtr<const EffectPaintPropertyNode> parent,
+      RefPtr<const TransformPaintPropertyNode> local_transform_space,
+      RefPtr<const ClipPaintPropertyNode> output_clip,
       ColorFilter color_filter,
       CompositorFilterOperations filter,
       float opacity,

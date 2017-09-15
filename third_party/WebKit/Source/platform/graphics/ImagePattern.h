@@ -14,7 +14,7 @@ class Image;
 
 class PLATFORM_EXPORT ImagePattern final : public Pattern {
  public:
-  static PassRefPtr<ImagePattern> Create(PassRefPtr<Image>, RepeatMode);
+  static RefPtr<ImagePattern> Create(RefPtr<Image>, RepeatMode);
 
   bool IsTextureBacked() const override;
 
@@ -23,7 +23,7 @@ class PLATFORM_EXPORT ImagePattern final : public Pattern {
   bool IsLocalMatrixChanged(const SkMatrix&) const override;
 
  private:
-  ImagePattern(PassRefPtr<Image>, RepeatMode);
+  ImagePattern(RefPtr<Image>, RepeatMode);
   SkMatrix previous_local_matrix_;
 
   PaintImage tile_image_;

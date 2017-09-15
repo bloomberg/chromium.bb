@@ -13,8 +13,8 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
     : public StaticBitmapImage {
  public:
   ~UnacceleratedStaticBitmapImage() override;
-  static PassRefPtr<UnacceleratedStaticBitmapImage> Create(sk_sp<SkImage>);
-  static PassRefPtr<UnacceleratedStaticBitmapImage> Create(PaintImage);
+  static RefPtr<UnacceleratedStaticBitmapImage> Create(sk_sp<SkImage>);
+  static RefPtr<UnacceleratedStaticBitmapImage> Create(PaintImage);
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
   IntSize Size() const override;

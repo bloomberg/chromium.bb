@@ -37,12 +37,12 @@
 
 namespace blink {
 
-PassRefPtr<Pattern> Pattern::CreateImagePattern(PassRefPtr<Image> tile_image,
-                                                RepeatMode repeat_mode) {
+RefPtr<Pattern> Pattern::CreateImagePattern(RefPtr<Image> tile_image,
+                                            RepeatMode repeat_mode) {
   return ImagePattern::Create(std::move(tile_image), repeat_mode);
 }
 
-PassRefPtr<Pattern> Pattern::CreatePaintRecordPattern(
+RefPtr<Pattern> Pattern::CreatePaintRecordPattern(
     sk_sp<PaintRecord> record,
     const FloatRect& record_bounds,
     RepeatMode repeat_mode) {

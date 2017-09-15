@@ -43,7 +43,7 @@ FELighting::FELighting(Filter* filter,
                        float diffuse_constant,
                        float specular_constant,
                        float specular_exponent,
-                       PassRefPtr<LightSource> light_source)
+                       RefPtr<LightSource> light_source)
     : FilterEffect(filter),
       lighting_type_(lighting_type),
       light_source_(std::move(light_source)),

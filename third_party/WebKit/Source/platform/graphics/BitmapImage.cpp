@@ -41,8 +41,8 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/web/WebSettings.h"
 
@@ -85,7 +85,7 @@ void BitmapImage::DestroyDecodedData() {
   NotifyMemoryChanged();
 }
 
-PassRefPtr<SharedBuffer> BitmapImage::Data() {
+RefPtr<SharedBuffer> BitmapImage::Data() {
   return decoder_ ? decoder_->Data() : nullptr;
 }
 
@@ -379,7 +379,7 @@ PaintImage BitmapImage::PaintImageForCurrentFrame() {
   return FrameAtIndex(current_frame_index_);
 }
 
-PassRefPtr<Image> BitmapImage::ImageForDefaultFrame() {
+RefPtr<Image> BitmapImage::ImageForDefaultFrame() {
   if (FrameCount() > 1) {
     return StaticBitmapImage::Create(FrameAtIndex(0u));
   }

@@ -65,7 +65,7 @@ Image* Image::NullImage() {
   return null_image;
 }
 
-PassRefPtr<Image> Image::LoadPlatformResource(const char* name) {
+RefPtr<Image> Image::LoadPlatformResource(const char* name) {
   const WebData& resource = Platform::Current()->GetDataResource(name);
   if (resource.IsEmpty())
     return Image::NullImage();
@@ -338,7 +338,7 @@ void Image::DrawPattern(GraphicsContext& context,
     PlatformInstrumentation::DidDrawLazyPixelRef(image_id);
 }
 
-PassRefPtr<Image> Image::ImageForDefaultFrame() {
+RefPtr<Image> Image::ImageForDefaultFrame() {
   RefPtr<Image> image(this);
 
   return image;

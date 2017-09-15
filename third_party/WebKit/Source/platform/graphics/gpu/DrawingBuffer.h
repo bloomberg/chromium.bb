@@ -113,7 +113,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     kDisallowChromiumImage,
   };
 
-  static PassRefPtr<DrawingBuffer> Create(
+  static RefPtr<DrawingBuffer> Create(
       std::unique_ptr<WebGraphicsContext3DProvider>,
       Client*,
       const IntSize&,
@@ -203,7 +203,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // contents of the front buffer. This is done without any pixel copies. The
   // texture in the ImageBitmap is from the active ContextProvider on the
   // DrawingBuffer.
-  PassRefPtr<StaticBitmapImage> TransferToStaticBitmapImage();
+  RefPtr<StaticBitmapImage> TransferToStaticBitmapImage();
 
   bool CopyToPlatformTexture(gpu::gles2::GLES2Interface*,
                              GLenum target,
@@ -438,7 +438,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   RefPtr<ColorBuffer> CreateColorBuffer(const IntSize&);
 
   // Creates or recycles a ColorBuffer of size |m_size|.
-  PassRefPtr<ColorBuffer> CreateOrRecycleColorBuffer();
+  RefPtr<ColorBuffer> CreateOrRecycleColorBuffer();
 
   // Attaches |m_backColorBuffer| to |m_fbo|, which is always the source for
   // read operations.

@@ -34,7 +34,7 @@ class PLATFORM_EXPORT FESpecularLighting final : public FELighting {
                                     float,
                                     float,
                                     float,
-                                    PassRefPtr<LightSource>);
+                                    RefPtr<LightSource>);
   ~FESpecularLighting() override;
 
   Color LightingColor() const;
@@ -50,7 +50,7 @@ class PLATFORM_EXPORT FESpecularLighting final : public FELighting {
   bool SetSpecularExponent(float);
 
   const LightSource* GetLightSource() const;
-  void SetLightSource(PassRefPtr<LightSource>);
+  void SetLightSource(RefPtr<LightSource>);
 
   TextStream& ExternalRepresentation(TextStream&, int indention) const override;
 
@@ -60,7 +60,7 @@ class PLATFORM_EXPORT FESpecularLighting final : public FELighting {
                      float,
                      float,
                      float,
-                     PassRefPtr<LightSource>);
+                     RefPtr<LightSource>);
 };
 
 }  // namespace blink
