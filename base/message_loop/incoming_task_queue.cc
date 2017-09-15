@@ -50,12 +50,8 @@ TimeTicks CalculateDelayedRuntime(TimeDelta delay) {
 }  // namespace
 
 IncomingTaskQueue::IncomingTaskQueue(MessageLoop* message_loop)
-    : high_res_task_count_(0),
-      message_loop_(message_loop),
-      next_sequence_num_(0),
-      message_loop_scheduled_(false),
-      always_schedule_work_(AlwaysNotifyPump(message_loop_->type())),
-      is_ready_for_scheduling_(false) {
+    : always_schedule_work_(AlwaysNotifyPump(message_loop->type())),
+      message_loop_(message_loop) {
   // The constructing sequence is not necessarily the running sequence in the
   // case of base::Thread.
   DETACH_FROM_SEQUENCE(sequence_checker_);
