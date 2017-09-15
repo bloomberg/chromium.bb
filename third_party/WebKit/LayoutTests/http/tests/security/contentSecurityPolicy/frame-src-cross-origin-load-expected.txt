@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 24: Refused to frame 'https://localhost:8443/security/contentSecurityPolicy/resources/alert-fail.html' because it violates the following Content Security Policy directive: "frame-src 'self' http://localhost:8080".
+CONSOLE ERROR: line 24: Refused to frame 'https://localhost:8443/' because it violates the following Content Security Policy directive: "frame-src 'self' http://localhost:8080".
 
 ALERT: PASS
 ALERT: PASS

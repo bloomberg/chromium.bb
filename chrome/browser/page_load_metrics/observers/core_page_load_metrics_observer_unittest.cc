@@ -326,7 +326,8 @@ TEST_F(CorePageLoadMetricsObserverTest, FailedProvisionalLoad) {
   std::unique_ptr<content::NavigationSimulator> navigation =
       content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
   navigation->Fail(net::ERR_TIMED_OUT);
-  content::RenderFrameHostTester::For(main_rfh())->SimulateNavigationStop();
+  content::RenderFrameHostTester::For(navigation->GetFinalRenderFrameHost())
+      ->SimulateNavigationStop();
 
   histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
