@@ -11,6 +11,7 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/status.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -33,15 +34,16 @@ ntp_snippets::ContentSuggestion Suggestion(std::string title, GURL url) {
 
 // Returns the subview of |parentView| corresponding to the
 // ContentSuggestionsViewController. Returns nil if it is not in its subviews.
-UIView* SubviewWithCollectionViewIdentifier(UIView* parentView) {
-  if (parentView.accessibilityIdentifier ==
-      [ContentSuggestionsViewController collectionAccessibilityIdentifier]) {
+UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
+                                           UIView* parentView) {
+  if (parentView.accessibilityIdentifier == accessibilityID) {
     return parentView;
   }
   if (parentView.subviews.count == 0)
     return nil;
   for (UIView* view in parentView.subviews) {
-    UIView* resultView = SubviewWithCollectionViewIdentifier(view);
+    UIView* resultView =
+        SubviewWithAccessibilityIdentifier(accessibilityID, view);
     if (resultView)
       return resultView;
   }
@@ -83,9 +85,42 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 }
 
 UIView* CollectionView() {
-  return SubviewWithCollectionViewIdentifier(
+  return SubviewWithAccessibilityIdentifier(
+      [ContentSuggestionsViewController collectionAccessibilityIdentifier],
       [[UIApplication sharedApplication] keyWindow]);
 }
+
+UIView* FakeOmnibox() {
+  return SubviewWithAccessibilityIdentifier(
+      FakeOmniboxAccessibilityID(),
+      [[UIApplication sharedApplication] keyWindow]);
+}
+
+std::vector<ntp_snippets::ContentSuggestion> Suggestions() {
+  std::vector<ntp_snippets::ContentSuggestion> suggestions;
+  suggestions.emplace_back(
+      Suggestion("chromium1", GURL("http://chromium.org/1")));
+  suggestions.emplace_back(
+      Suggestion("chromium2", GURL("http://chromium.org/2")));
+  suggestions.emplace_back(
+      Suggestion("chromium3", GURL("http://chromium.org/3")));
+  suggestions.emplace_back(
+      Suggestion("chromium4", GURL("http://chromium.org/4")));
+  suggestions.emplace_back(
+      Suggestion("chromium5", GURL("http://chromium.org/5")));
+  suggestions.emplace_back(
+      Suggestion("chromium6", GURL("http://chromium.org/6")));
+  suggestions.emplace_back(
+      Suggestion("chromium7", GURL("http://chromium.org/7")));
+  suggestions.emplace_back(
+      Suggestion("chromium8", GURL("http://chromium.org/8")));
+  suggestions.emplace_back(
+      Suggestion("chromium9", GURL("http://chromium.org/9")));
+  suggestions.emplace_back(
+      Suggestion("chromium10", GURL("http://chromium.org/10")));
+  return suggestions;
+}
+
 }  // namespace ntp_home
 
 namespace ntp_snippets {

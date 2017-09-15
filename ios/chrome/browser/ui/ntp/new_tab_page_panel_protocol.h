@@ -58,6 +58,11 @@ extern const int kNewTabPageDistanceToFadeShadow;
 // Disable and enable scrollToTop
 - (void)setScrollsToTop:(BOOL)enable;
 
+@optional
+
+// Returns the scroll offset associated with this panel.
+- (CGPoint)scrollOffset;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_PANEL_PROTOCOL_H_
