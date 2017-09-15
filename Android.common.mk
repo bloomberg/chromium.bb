@@ -13,3 +13,5 @@ LOCAL_CFLAGS += \
 # Quiet down the build system and remove any .h files from the sources
 LOCAL_SRC_FILES := $(patsubst %.h, , $(LOCAL_SRC_FILES))
 LOCAL_EXPORT_C_INCLUDE_DIRS += $(LOCAL_PATH)
+
+LOCAL_PROPRIETARY_MODULE := true
