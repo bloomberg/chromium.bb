@@ -790,10 +790,6 @@
       status: "stable",
     },
     {
-      name: "PerformanceObserver",
-      status: "stable",
-    },
-    {
       name: "PerformancePaintTiming",
       status: "stable",
     },
