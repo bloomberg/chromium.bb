@@ -323,13 +323,36 @@ void TypingCommand::InsertText(
       CreateVisibleSelection(passed_selection_for_insertion);
 
   String new_text = text;
-  if (composition_type != kTextCompositionUpdate)
+  if (composition_type != kTextCompositionUpdate) {
     new_text = DispatchBeforeTextInsertedEvent(text, selection_for_insertion);
+    // event handler might destroy document.
+    if (!document.GetFrame() ||
+        document.GetFrame()->GetDocument() != &document) {
+      // editing/inserting/insert-text-remove-iframe-on-webkitBeforeTextInserted-event.html
+      // reaches here.
+      return;
+    }
+  }
 
   if (composition_type == kTextCompositionConfirm) {
     if (DispatchTextInputEvent(frame, new_text) !=
         DispatchEventResult::kNotCanceled)
       return;
+    // event handler might destroy document.
+    if (!document.GetFrame() ||
+        document.GetFrame()->GetDocument() != &document) {
+      // editing/inserting/insert-text-remove-iframe-on-textInput-event.html
+      // reaches here.
+      return;
+    }
+  }
+
+  if (!selection_for_insertion.IsValidFor(document)) {
+    // editing/inserting/insert-text-nodes-disconnect-on-textinput-event.html
+    // and
+    // editing/inserting/insert-text-nodes-disconnect-on-webkitBeforeTextInserted-event.html
+    // reaches here.
+    return;
   }
 
   // Do nothing if no need to delete and insert.
