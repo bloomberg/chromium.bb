@@ -43,6 +43,7 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
     return StoryExpectations()
 
 
+@benchmark.Owner(emails=['charliea@chromium.org', 'rnephew@chromium.org'])
 class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
   """Idle platform benchmark.
 
