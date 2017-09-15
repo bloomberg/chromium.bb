@@ -145,6 +145,12 @@ class MediaPipelineBackend {
     // called when playing or paused.
     virtual void GetStatistics(Statistics* statistics) = 0;
 
+    // Returns the minimum amount of audio data buffered (in microseconds)
+    // necessary to prevent underrun for the given |config|; ie, if the
+    // rendering delay falls below this value, then underrun may occur.
+    static int64_t GetMinimumBufferedTime(const AudioConfig& config)
+        __attribute__((__weak__));
+
    protected:
     ~AudioDecoder() override {}
   };
