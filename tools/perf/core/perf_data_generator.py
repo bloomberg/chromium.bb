@@ -142,7 +142,6 @@ def get_waterfall_config():
     swarming=[
       {
        'os': 'Android',
-       'android_devices': '1',
        'pool': 'Chrome-perf',
        'device_ids': [
            'build73-b1--device1', 'build73-b1--device2', 'build73-b1--device3',
@@ -167,7 +166,6 @@ def get_waterfall_config():
     swarming=[
       {
        'os': 'Android',
-       'android_devices': '1',
        'pool': 'Chrome-perf',
        'device_ids': [
            'build13-b1--device1', 'build13-b1--device2', 'build13-b1--device3',
@@ -193,7 +191,6 @@ def get_waterfall_config():
     swarming=[
       {
        'os': 'Android',
-       'android_devices': '1',
        'pool': 'Chrome-perf',
        'device_ids': [
            'build15-b1--device1', 'build15-b1--device2', 'build15-b1--device3',
@@ -219,7 +216,6 @@ def get_waterfall_config():
     swarming=[
       {
        'os': 'Android',
-       'android_devices': '1',
        'pool': 'Chrome-perf',
        'device_ids': [
            'build9-b1--device1', 'build9-b1--device2', 'build9-b1--device3',
@@ -245,7 +241,6 @@ def get_waterfall_config():
     swarming=[
       {
        'os': 'Android',
-       'android_devices': '1',
        'pool': 'Chrome-perf',
        'device_ids': [
            'build17-b1--device1', 'build17-b1--device2', 'build17-b1--device3',
@@ -271,7 +266,6 @@ def get_waterfall_config():
     'android', swarming=[
       {
        'os': 'Android',
-       'android_devices': '1',
        'pool': 'Chrome-perf',
        'device_ids': [
            'build164-b1--device1', 'build164-b1--device2',
@@ -295,7 +289,6 @@ def get_waterfall_config():
     'android', swarming=[
       {
        'os': 'Android',
-       'android_devices': '1',
        'pool': 'Chrome-perf',
        'device_ids': [
            'build112-b1--device1', 'build112-b1--device2',
@@ -691,8 +684,6 @@ def get_swarming_dimension(dimension, device_id):
   }
   if 'gpu' in dimension:
     complete_dimension['gpu'] = dimension['gpu']
-  if 'android_devices' in dimension:
-    complete_dimension['android_devices'] = dimension['android_devices']
   return complete_dimension
 
 
