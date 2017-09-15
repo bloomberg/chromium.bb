@@ -5,6 +5,7 @@
 // https://w3c.github.io/webpayments-payment-apps-api/#idl-def-serviceworkerregistration-partial-1
 
 [
+    ImplementedAs=PaymentAppServiceWorkerRegistration,
     RuntimeEnabled=PaymentApp
 ] partial interface ServiceWorkerRegistration {
     [CallWith=ScriptState] readonly attribute PaymentManager paymentManager;

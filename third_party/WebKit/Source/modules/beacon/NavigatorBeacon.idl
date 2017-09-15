@@ -4,6 +4,8 @@
 
 // https://w3c.github.io/beacon/#sec-sendBeacon-method
 
-partial interface Navigator {
+[
+    ImplementedAs=NavigatorBeacon
+] partial interface Navigator {
     [CallWith=ScriptState, MeasureAs=SendBeacon, RaisesException] boolean sendBeacon(DOMString url, optional (ArrayBufferView or Blob or DOMString or FormData)? data = null);
 };

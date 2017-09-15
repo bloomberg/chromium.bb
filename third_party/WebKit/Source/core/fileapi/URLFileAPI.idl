@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/FileAPI/#creating-revoking
-partial interface URL {
+[
+    ImplementedAs=URLFileAPI
+] partial interface URL {
     [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ScriptState, RaisesException] static DOMString createObjectURL(Blob blob);
     [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ScriptState] static void revokeObjectURL(DOMString url);
 };

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 [
+    ImplementedAs=WindowAnimationWorklet,
     RuntimeEnabled=CompositorWorker
 ] partial interface Window {
     readonly attribute Worklet animationWorklet;

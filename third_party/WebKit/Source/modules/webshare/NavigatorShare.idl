@@ -5,6 +5,7 @@
 // https://wicg.github.io/web-share/
 
 [
+  ImplementedAs=NavigatorShare,
   RuntimeEnabled=WebShare
 ] partial interface Navigator {
   [SecureContext, CallWith=ScriptState, MeasureAs=WebShareShare]

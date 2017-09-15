@@ -30,6 +30,8 @@
 
 // https://w3c.github.io/webcrypto/Overview.html#crypto-interface
 
-partial interface WorkerGlobalScope {
+[
+    ImplementedAs=WorkerGlobalScopeCrypto
+] partial interface WorkerGlobalScope {
     readonly attribute Crypto crypto;
 };

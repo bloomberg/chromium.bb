@@ -5,6 +5,7 @@
 // https://drafts.css-houdini.org/css-typed-om/#numeric-factory
 
 [
+  ImplementedAs=CSSUnitValues,
   RuntimeEnabled=CSSTypedOM
 ] partial interface CSS {
   [NewObject] static CSSUnitValue number(double value);

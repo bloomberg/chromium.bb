@@ -30,6 +30,8 @@
 
 // https://wicg.github.io/entries-api/#html-data
 
-partial interface DataTransferItem {
+[
+    ImplementedAs=DataTransferItemFileSystem
+] partial interface DataTransferItem {
     [CallWith=ScriptState, Measure] Entry? webkitGetAsEntry();
 };

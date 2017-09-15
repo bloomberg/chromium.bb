@@ -19,7 +19,9 @@
 
 // http://www.w3.org/TR/DOM-Level-3-XPath/xpath.html#XPathEvaluator
 
-partial interface Document {
+[
+    ImplementedAs=DocumentXPathEvaluator
+] partial interface Document {
     [MeasureAs=DocumentXPathCreateExpression, RaisesException] XPathExpression createExpression(DOMString expression, optional XPathNSResolver? resolver = null);
 
     [MeasureAs=DocumentXPathCreateNSResolver] XPathNSResolver createNSResolver(Node nodeResolver);

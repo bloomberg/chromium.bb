@@ -37,6 +37,7 @@ typedef DOMString PartialString;
 
 [Custom] callback PartialCallbackType = void (PartialString value);
 [
+    ImplementedAs=TestInterfacePartial,
     RuntimeEnabled=PartialFeatureName
 ] partial interface TestInterface {
     const unsigned short PARTIAL_UNSIGNED_SHORT = 0;

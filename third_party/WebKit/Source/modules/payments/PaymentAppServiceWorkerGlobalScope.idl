@@ -5,6 +5,7 @@
 // https://w3c.github.io/webpayments-payment-apps-api/#idl-def-serviceworkerglobalscope-partial-1
 
 [
+    ImplementedAs=PaymentAppServiceWorkerGlobalScope,
     RuntimeEnabled=PaymentApp
 ] partial interface ServiceWorkerGlobalScope {
     attribute EventHandler onabortpayment;

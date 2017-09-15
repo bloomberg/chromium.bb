@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 [
+    ImplementedAs=DevToolsHostFileSystem,
     RuntimeEnabled=FileSystem
 ] partial interface DevToolsHost {
     DOMFileSystem isolatedFileSystem(DOMString fileSystemId, DOMString registeredName);

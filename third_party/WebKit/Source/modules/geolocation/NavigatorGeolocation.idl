@@ -17,6 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-partial interface Navigator {
+[
+    ImplementedAs=NavigatorGeolocation
+] partial interface Navigator {
     readonly attribute Geolocation geolocation;
 };

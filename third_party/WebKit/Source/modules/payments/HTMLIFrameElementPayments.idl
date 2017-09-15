@@ -5,6 +5,7 @@
 // https://w3c.github.io/browser-payment-api/#paymentrequest-and-iframes
 
 [
+    ImplementedAs=HTMLIFrameElementPayments,
     RuntimeEnabled=PaymentRequest
 ] partial interface HTMLIFrameElement {
     [CEReactions, Reflect] attribute boolean allowPaymentRequest;

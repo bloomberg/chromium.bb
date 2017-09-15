@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 [
+    ImplementedAs=OriginTrialsTestPartial,
     OriginTrialEnabled=OriginTrialsSampleAPI
-]
-partial interface OriginTrialsTest {
+] partial interface OriginTrialsTest {
     const unsigned short CONSTANT_PARTIAL = 2;
     readonly attribute boolean normalAttributePartial;
     static readonly attribute boolean staticAttributePartial;

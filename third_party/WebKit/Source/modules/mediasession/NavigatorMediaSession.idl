@@ -6,6 +6,7 @@
 
 [
     Exposed=(Window),
+    ImplementedAs=NavigatorMediaSession,
     RuntimeEnabled=MediaSession
 ] partial interface Navigator {
     [CallWith=ScriptState, SameObject] readonly attribute MediaSession mediaSession;

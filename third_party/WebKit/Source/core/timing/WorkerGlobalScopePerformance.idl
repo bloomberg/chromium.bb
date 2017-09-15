@@ -32,6 +32,8 @@
 
 // TODO(foolip): This should be a GlobalPerformance interface implemented by
 // Window and WorkerGlobalScope.
-partial interface WorkerGlobalScope {
+[
+    ImplementedAs=WorkerGlobalScopePerformance
+] partial interface WorkerGlobalScope {
     readonly attribute WorkerPerformance performance;
 };

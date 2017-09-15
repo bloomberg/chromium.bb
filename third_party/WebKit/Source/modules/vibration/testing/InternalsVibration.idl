@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-partial interface Internals {
+[
+    ImplementedAs=InternalsVibration
+] partial interface Internals {
     boolean isVibrating(Navigator navigator);
     sequence<unsigned long> pendingVibrationPattern(Navigator navigator);
 };

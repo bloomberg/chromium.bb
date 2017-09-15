@@ -6,6 +6,7 @@
 
 [
     Exposed=(Window,Worker),
+    ImplementedAs=ServiceWorkerRegistrationBackgroundFetch,
     RuntimeEnabled=BackgroundFetch
 ] partial interface ServiceWorkerRegistration {
     readonly attribute BackgroundFetchManager backgroundFetch;
