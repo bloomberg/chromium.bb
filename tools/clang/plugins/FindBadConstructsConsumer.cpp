@@ -16,42 +16,6 @@ namespace chrome_checker {
 
 namespace {
 
-const char kMethodRequiresOverride[] =
-    "[chromium-style] Overriding method must be marked with 'override' or "
-    "'final'.";
-const char kRedundantVirtualSpecifier[] =
-    "[chromium-style] %0 is redundant; %1 implies %0.";
-// http://llvm.org/bugs/show_bug.cgi?id=21051 has been filed to make this a
-// Clang warning.
-const char kBaseMethodVirtualAndFinal[] =
-    "[chromium-style] The virtual method does not override anything and is "
-    "final; consider making it non-virtual.";
-const char kNoExplicitDtor[] =
-    "[chromium-style] Classes that are ref-counted should have explicit "
-    "destructors that are declared protected or private.";
-const char kPublicDtor[] =
-    "[chromium-style] Classes that are ref-counted should have "
-    "destructors that are declared protected or private.";
-const char kProtectedNonVirtualDtor[] =
-    "[chromium-style] Classes that are ref-counted and have non-private "
-    "destructors should declare their destructor virtual.";
-const char kWeakPtrFactoryOrder[] =
-    "[chromium-style] WeakPtrFactory members which refer to their outer class "
-    "must be the last member in the outer class definition.";
-const char kBadLastEnumValue[] =
-    "[chromium-style] _LAST/Last constants of enum types must have the maximal "
-    "value for any constant of that type.";
-const char kAutoDeducedToAPointerType[] =
-    "[chromium-style] auto variable type must not deduce to a raw pointer "
-    "type.";
-const char kNoteInheritance[] = "[chromium-style] %0 inherits from %1 here";
-const char kNoteImplicitDtor[] =
-    "[chromium-style] No explicit destructor for %0 defined";
-const char kNotePublicDtor[] =
-    "[chromium-style] Public destructor declared here";
-const char kNoteProtectedNonVirtualDtor[] =
-    "[chromium-style] Protected non-virtual destructor declared here";
-
 // Returns the underlying Type for |type| by expanding typedefs and removing
 // any namespace qualifiers. This is similar to desugaring, except that for
 // ElaboratedTypes, desugar will unwrap too much.
@@ -144,38 +108,62 @@ FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
   }
 
   // Messages for virtual method specifiers.
-  diag_method_requires_override_ =
-      diagnostic().getCustomDiagID(getErrorLevel(), kMethodRequiresOverride);
-  diag_redundant_virtual_specifier_ =
-      diagnostic().getCustomDiagID(getErrorLevel(), kRedundantVirtualSpecifier);
-  diag_base_method_virtual_and_final_ =
-      diagnostic().getCustomDiagID(getErrorLevel(), kBaseMethodVirtualAndFinal);
+  diag_method_requires_override_ = diagnostic().getCustomDiagID(
+      getErrorLevel(),
+      "[chromium-style] Overriding method must be marked with 'override' or "
+      "'final'.");
+  diag_redundant_virtual_specifier_ = diagnostic().getCustomDiagID(
+      getErrorLevel(), "[chromium-style] %0 is redundant; %1 implies %0.");
+  // http://llvm.org/bugs/show_bug.cgi?id=21051 has been filed to make this a
+  // Clang warning.
+  diag_base_method_virtual_and_final_ = diagnostic().getCustomDiagID(
+      getErrorLevel(),
+      "[chromium-style] The virtual method does not override anything and is "
+      "final; consider making it non-virtual.");
 
   // Messages for destructors.
-  diag_no_explicit_dtor_ =
-      diagnostic().getCustomDiagID(getErrorLevel(), kNoExplicitDtor);
-  diag_public_dtor_ =
-      diagnostic().getCustomDiagID(getErrorLevel(), kPublicDtor);
-  diag_protected_non_virtual_dtor_ =
-      diagnostic().getCustomDiagID(getErrorLevel(), kProtectedNonVirtualDtor);
+  diag_no_explicit_dtor_ = diagnostic().getCustomDiagID(
+      getErrorLevel(),
+
+      "[chromium-style] Classes that are ref-counted should have explicit "
+      "destructors that are declared protected or private.");
+  diag_public_dtor_ = diagnostic().getCustomDiagID(
+      getErrorLevel(),
+      "[chromium-style] Classes that are ref-counted should have "
+      "destructors that are declared protected or private.");
+  diag_protected_non_virtual_dtor_ = diagnostic().getCustomDiagID(
+      getErrorLevel(),
+      "[chromium-style] Classes that are ref-counted and have non-private "
+      "destructors should declare their destructor virtual.");
 
   // Miscellaneous messages.
-  diag_weak_ptr_factory_order_ =
-      diagnostic().getCustomDiagID(getErrorLevel(), kWeakPtrFactoryOrder);
+  diag_weak_ptr_factory_order_ = diagnostic().getCustomDiagID(
+      getErrorLevel(),
+      "[chromium-style] WeakPtrFactory members which refer to their outer "
+      "class "
+      "must be the last member in the outer class definition.");
   diag_bad_enum_last_value_ =
-      diagnostic().getCustomDiagID(getErrorLevel(), kBadLastEnumValue);
-  diag_auto_deduced_to_a_pointer_type_ =
-      diagnostic().getCustomDiagID(getErrorLevel(), kAutoDeducedToAPointerType);
+      diagnostic().getCustomDiagID(getErrorLevel(),
+                                   "[chromium-style] _LAST/Last constants of "
+                                   "enum types must have the maximal "
+                                   "value for any constant of that type.");
+  diag_auto_deduced_to_a_pointer_type_ = diagnostic().getCustomDiagID(
+      getErrorLevel(),
+      "[chromium-style] auto variable type must not deduce to a raw pointer "
+      "type.");
 
   // Registers notes to make it easier to interpret warnings.
-  diag_note_inheritance_ =
-      diagnostic().getCustomDiagID(DiagnosticsEngine::Note, kNoteInheritance);
-  diag_note_implicit_dtor_ =
-      diagnostic().getCustomDiagID(DiagnosticsEngine::Note, kNoteImplicitDtor);
-  diag_note_public_dtor_ =
-      diagnostic().getCustomDiagID(DiagnosticsEngine::Note, kNotePublicDtor);
+  diag_note_inheritance_ = diagnostic().getCustomDiagID(
+      DiagnosticsEngine::Note, "[chromium-style] %0 inherits from %1 here");
+  diag_note_implicit_dtor_ = diagnostic().getCustomDiagID(
+      DiagnosticsEngine::Note,
+      "[chromium-style] No explicit destructor for %0 defined");
+  diag_note_public_dtor_ = diagnostic().getCustomDiagID(
+      DiagnosticsEngine::Note,
+      "[chromium-style] Public destructor declared here");
   diag_note_protected_non_virtual_dtor_ = diagnostic().getCustomDiagID(
-      DiagnosticsEngine::Note, kNoteProtectedNonVirtualDtor);
+      DiagnosticsEngine::Note,
+      "[chromium-style] Protected non-virtual destructor declared here");
 }
 
 void FindBadConstructsConsumer::Traverse(ASTContext& context) {
