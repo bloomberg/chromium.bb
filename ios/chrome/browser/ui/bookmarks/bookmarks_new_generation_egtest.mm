@@ -287,14 +287,14 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
-  // Verify context bar shows enabled "Delete" enabled "Edit" enabled "Cancel".
+  // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
   [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
                                           [BookmarksNewGenTestCase
                                               contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
   [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
                                           [BookmarksNewGenTestCase
-                                              contextBarEditString])]
+                                              contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
   [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
                                           [BookmarksNewGenTestCase
@@ -372,14 +372,14 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_tap()];
 
-  // Verify context bar shows enabled "Delete" enabled "Edit" enabled "Cancel".
+  // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
   [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
                                           [BookmarksNewGenTestCase
                                               contextBarDeleteString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
   [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
                                           [BookmarksNewGenTestCase
-                                              contextBarEditString])]
+                                              contextBarMoreString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
   [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
                                           [BookmarksNewGenTestCase
@@ -677,24 +677,20 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
                                           @"context_bar_trailing_button")]
       performAction:grey_tap()];
 
-  // Select URL.
+  // Select Folder.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
-  // Center button is "Edit".
+  // Tap context menu.
   [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
                                           [BookmarksNewGenTestCase
-                                              contextBarEditString])]
-      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
 
+  // Tap Edit Folder.
   [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Tap Edit menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarEditString])]
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
       performAction:grey_tap()];
 
   // Verify it shows edit view controller.
@@ -802,8 +798,9 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify options on context menu.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -827,8 +824,9 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_longPress()];
 
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
       performAction:grey_tap()];
 
   // Verify that the editor is present.
@@ -1179,10 +1177,16 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
 
-  // Tap edit on context bar.
+  // Tap context menu.
   [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
                                           [BookmarksNewGenTestCase
-                                              contextBarEditString])]
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap Edit Folder.
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
       performAction:grey_tap()];
 
   // Delete it.
@@ -1972,10 +1976,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 + (NSString*)contextBarSelectString {
   return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_SELECT);
-}
-
-+ (NSString*)contextBarEditString {
-  return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_EDIT);
 }
 
 + (NSString*)contextBarMoreString {
