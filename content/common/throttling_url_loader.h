@@ -35,9 +35,8 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
                                            public URLLoaderThrottle::Delegate {
  public:
   // |factory| and |client| must stay alive during the lifetime of the returned
-  // object.
-  // Please note that the request may not start immediately since it could be
-  // deferred by throttles.
+  // object. Please note that the request may not start immediately since it
+  // could be deferred by throttles.
   static std::unique_ptr<ThrottlingURLLoader> CreateLoaderAndStart(
       mojom::URLLoaderFactory* factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
@@ -75,6 +74,8 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
   void DisconnectClient();
 
  private:
+  class ForwardingThrottleDelegate;
+
   ThrottlingURLLoader(
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       mojom::URLLoaderClient* client,
@@ -98,6 +99,19 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
                 StartLoaderCallback start_loader_callback,
                 const ResourceRequest& url_request,
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Processes the result of a URLLoaderThrottle call, adding the throttle to
+  // the blocking set if it deferred and updating |*should_defer| accordingly.
+  // Returns |true| if the request should continue to be processed (regardless
+  // of whether it's been deferred) or |false| if it's been cancelled.
+  bool HandleThrottleResult(URLLoaderThrottle* throttle,
+                            bool throttle_deferred,
+                            bool* should_defer);
+
+  // Stops a given throttle from deferring the request. If this was not the last
+  // deferring throttle, the request remains deferred. Otherwise it resumes
+  // progress.
+  void StopDeferringForThrottle(URLLoaderThrottle* throttle);
 
   // mojom::URLLoaderClient implementation:
   void OnReceiveResponse(const ResourceResponseHead& response_head,
@@ -131,7 +145,23 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
   bool loader_cancelled_ = false;
   bool is_synchronous_ = false;
 
-  std::unique_ptr<URLLoaderThrottle> throttle_;
+  struct ThrottleEntry {
+    ThrottleEntry(ThrottlingURLLoader* loader,
+                  std::unique_ptr<URLLoaderThrottle> the_throttle);
+    ThrottleEntry(ThrottleEntry&& other);
+    ~ThrottleEntry();
+
+    ThrottleEntry& operator=(ThrottleEntry&& other);
+
+    std::unique_ptr<ForwardingThrottleDelegate> delegate;
+    std::unique_ptr<URLLoaderThrottle> throttle;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ThrottleEntry);
+  };
+
+  std::vector<ThrottleEntry> throttles_;
+  std::set<URLLoaderThrottle*> deferring_throttles_;
 
   mojom::URLLoaderClient* forwarding_client_;
   mojo::Binding<mojom::URLLoaderClient> client_binding_;

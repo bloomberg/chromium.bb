@@ -9,6 +9,28 @@
 
 namespace content {
 
+class ThrottlingURLLoader::ForwardingThrottleDelegate
+    : public URLLoaderThrottle::Delegate {
+ public:
+  ForwardingThrottleDelegate(ThrottlingURLLoader* loader,
+                             URLLoaderThrottle* throttle)
+      : loader_(loader), throttle_(throttle) {}
+  ~ForwardingThrottleDelegate() override = default;
+
+  // URLLoaderThrottle::Delegate:
+  void CancelWithError(int error_code) override {
+    loader_->CancelWithError(error_code);
+  }
+
+  void Resume() override { loader_->StopDeferringForThrottle(throttle_); }
+
+ private:
+  ThrottlingURLLoader* const loader_;
+  URLLoaderThrottle* const throttle_;
+
+  DISALLOW_COPY_AND_ASSIGN(ForwardingThrottleDelegate);
+};
+
 ThrottlingURLLoader::StartInfo::StartInfo(
     mojom::URLLoaderFactory* in_url_loader_factory,
     int32_t in_routing_id,
@@ -119,13 +141,9 @@ ThrottlingURLLoader::ThrottlingURLLoader(
     : forwarding_client_(client),
       client_binding_(this),
       traffic_annotation_(traffic_annotation) {
-  if (throttles.size() > 0) {
-    // TODO(yzshen): Implement a URLLoaderThrottle subclass which handles a list
-    // of URLLoaderThrottles.
-    CHECK_EQ(1u, throttles.size());
-    throttle_ = std::move(throttles[0]);
-    throttle_->set_delegate(this);
-  }
+  throttles_.reserve(throttles.size());
+  for (auto& throttle : throttles)
+    throttles_.emplace_back(this, std::move(throttle));
 }
 
 void ThrottlingURLLoader::Start(
@@ -142,11 +160,16 @@ void ThrottlingURLLoader::Start(
   if (options & mojom::kURLLoadOptionSynchronous)
     is_synchronous_ = true;
 
-  if (throttle_) {
+  DCHECK(deferring_throttles_.empty());
+  if (!throttles_.empty()) {
     bool deferred = false;
-    throttle_->WillStartRequest(url_request, &deferred);
-    if (loader_cancelled_)
-      return;
+    for (auto& entry : throttles_) {
+      auto* throttle = entry.throttle.get();
+      bool throttle_deferred = false;
+      throttle->WillStartRequest(url_request, &throttle_deferred);
+      if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
+        return;
+    }
 
     if (deferred) {
       deferred_stage_ = DEFERRED_START;
@@ -195,18 +218,45 @@ void ThrottlingURLLoader::StartNow(
   }
 }
 
+bool ThrottlingURLLoader::HandleThrottleResult(URLLoaderThrottle* throttle,
+                                               bool throttle_deferred,
+                                               bool* should_defer) {
+  DCHECK(!deferring_throttles_.count(throttle));
+  if (loader_cancelled_)
+    return false;
+  *should_defer |= throttle_deferred;
+  if (throttle_deferred)
+    deferring_throttles_.insert(throttle);
+  return true;
+}
+
+void ThrottlingURLLoader::StopDeferringForThrottle(
+    URLLoaderThrottle* throttle) {
+  if (deferring_throttles_.find(throttle) == deferring_throttles_.end())
+    return;
+
+  deferring_throttles_.erase(throttle);
+  if (deferring_throttles_.empty() && !loader_cancelled_)
+    Resume();
+}
+
 void ThrottlingURLLoader::OnReceiveResponse(
     const ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_cancelled_);
+  DCHECK(deferring_throttles_.empty());
 
-  if (throttle_) {
+  if (!throttles_.empty()) {
     bool deferred = false;
-    throttle_->WillProcessResponse(&deferred);
-    if (loader_cancelled_)
-      return;
+    for (auto& entry : throttles_) {
+      auto* throttle = entry.throttle.get();
+      bool throttle_deferred = false;
+      throttle->WillProcessResponse(&throttle_deferred);
+      if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
+        return;
+    }
 
     if (deferred) {
       deferred_stage_ = DEFERRED_RESPONSE;
@@ -226,12 +276,17 @@ void ThrottlingURLLoader::OnReceiveRedirect(
     const ResourceResponseHead& response_head) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_cancelled_);
+  DCHECK(deferring_throttles_.empty());
 
-  if (throttle_) {
+  if (!throttles_.empty()) {
     bool deferred = false;
-    throttle_->WillRedirectRequest(redirect_info, &deferred);
-    if (loader_cancelled_)
-      return;
+    for (auto& entry : throttles_) {
+      auto* throttle = entry.throttle.get();
+      bool throttle_deferred = false;
+      throttle->WillRedirectRequest(redirect_info, &throttle_deferred);
+      if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
+        return;
+    }
 
     if (deferred) {
       deferred_stage_ = DEFERRED_REDIRECT;
@@ -359,5 +414,23 @@ void ThrottlingURLLoader::Resume() {
   }
   deferred_stage_ = DEFERRED_NONE;
 }
+
+ThrottlingURLLoader::ThrottleEntry::ThrottleEntry(
+    ThrottlingURLLoader* loader,
+    std::unique_ptr<URLLoaderThrottle> the_throttle)
+    : delegate(
+          base::MakeUnique<ForwardingThrottleDelegate>(loader,
+                                                       the_throttle.get())),
+      throttle(std::move(the_throttle)) {
+  throttle->set_delegate(delegate.get());
+}
+
+ThrottlingURLLoader::ThrottleEntry::ThrottleEntry(ThrottleEntry&& other) =
+    default;
+
+ThrottlingURLLoader::ThrottleEntry::~ThrottleEntry() = default;
+
+ThrottlingURLLoader::ThrottleEntry& ThrottlingURLLoader::ThrottleEntry::
+operator=(ThrottleEntry&& other) = default;
 
 }  // namespace content

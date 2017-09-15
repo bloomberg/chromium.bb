@@ -612,5 +612,138 @@ TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfAlreadyCanceled) {
   EXPECT_EQ(1u, client_.on_complete_called());
 }
 
+TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesBasicSupport) {
+  throttles_.emplace_back(base::MakeUnique<TestURLLoaderThrottle>());
+  auto* throttle2 =
+      static_cast<TestURLLoaderThrottle*>(throttles_.back().get());
+  CreateLoaderAndStart();
+  factory_.NotifyClientOnReceiveResponse();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(1u, throttle2->will_start_request_called());
+}
+
+TEST_F(ThrottlingURLLoaderTest, BlockWithOneOfMultipleThrottles) {
+  throttles_.emplace_back(base::MakeUnique<TestURLLoaderThrottle>());
+  auto* throttle2 =
+      static_cast<TestURLLoaderThrottle*>(throttles_.back().get());
+  throttle2->set_will_start_request_callback(
+      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+        *defer = true;
+      }));
+
+  base::RunLoop loop;
+  client_.set_on_complete_callback(base::Bind(
+      [](base::RunLoop* loop, int error) {
+        EXPECT_EQ(net::OK, error);
+        loop->Quit();
+      },
+      &loop));
+
+  CreateLoaderAndStart();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(1u, throttle2->will_start_request_called());
+  EXPECT_EQ(0u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle2->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle_->will_process_response_called());
+  EXPECT_EQ(0u, throttle2->will_process_response_called());
+
+  EXPECT_EQ(0u, factory_.create_loader_and_start_called());
+
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(0u, client_.on_complete_called());
+
+  throttle2->delegate()->Resume();
+  factory_.factory_ptr().FlushForTesting();
+
+  EXPECT_EQ(1u, factory_.create_loader_and_start_called());
+
+  factory_.NotifyClientOnReceiveResponse();
+  factory_.NotifyClientOnComplete(net::OK);
+
+  loop.Run();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(1u, throttle2->will_start_request_called());
+  EXPECT_EQ(0u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle2->will_redirect_request_called());
+  EXPECT_EQ(1u, throttle_->will_process_response_called());
+  EXPECT_EQ(1u, throttle2->will_process_response_called());
+
+  EXPECT_EQ(1u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(1u, client_.on_complete_called());
+}
+
+TEST_F(ThrottlingURLLoaderTest, BlockWithMultipleThrottles) {
+  throttles_.emplace_back(base::MakeUnique<TestURLLoaderThrottle>());
+  auto* throttle2 =
+      static_cast<TestURLLoaderThrottle*>(throttles_.back().get());
+
+  // Defers a request on both throttles.
+  throttle_->set_will_start_request_callback(
+      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+        *defer = true;
+      }));
+  throttle2->set_will_start_request_callback(
+      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+        *defer = true;
+      }));
+
+  base::RunLoop loop;
+  client_.set_on_complete_callback(base::Bind(
+      [](base::RunLoop* loop, int error) {
+        EXPECT_EQ(net::OK, error);
+        loop->Quit();
+      },
+      &loop));
+
+  CreateLoaderAndStart();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(1u, throttle2->will_start_request_called());
+  EXPECT_EQ(0u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle2->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle_->will_process_response_called());
+  EXPECT_EQ(0u, throttle2->will_process_response_called());
+
+  EXPECT_EQ(0u, factory_.create_loader_and_start_called());
+
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(0u, client_.on_complete_called());
+
+  throttle_->delegate()->Resume();
+
+  // Should still not have started because there's |throttle2| is still blocking
+  // the request.
+  factory_.factory_ptr().FlushForTesting();
+  EXPECT_EQ(0u, factory_.create_loader_and_start_called());
+
+  throttle2->delegate()->Resume();
+
+  // Now it should have started.
+  factory_.factory_ptr().FlushForTesting();
+  EXPECT_EQ(1u, factory_.create_loader_and_start_called());
+
+  factory_.NotifyClientOnReceiveResponse();
+  factory_.NotifyClientOnComplete(net::OK);
+
+  loop.Run();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(1u, throttle2->will_start_request_called());
+  EXPECT_EQ(0u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle2->will_redirect_request_called());
+  EXPECT_EQ(1u, throttle_->will_process_response_called());
+  EXPECT_EQ(1u, throttle2->will_process_response_called());
+
+  EXPECT_EQ(1u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(1u, client_.on_complete_called());
+}
+
 }  // namespace
 }  // namespace content
