@@ -109,23 +109,10 @@ void TouchSelectionController::OnSelectionBoundsChanged(
   base::AutoReset<InputEventType> auto_reset_response_pending_input_event(
       &response_pending_input_event_, causal_input_event);
 
-  const bool is_selection_dragging = active_status_ == SELECTION_ACTIVE &&
-                                     (start_selection_handle_->IsActive() ||
-                                      end_selection_handle_->IsActive());
-
-  // It's possible that the bounds temporarily overlap while a selection handle
-  // is being dragged, incorrectly reporting a CENTER orientation.
-  if (is_selection_dragging) {
-    if (start_orientation_ == TouchHandleOrientation::CENTER)
-      start_orientation_ = start_selection_handle_->orientation();
-    if (end_orientation_ == TouchHandleOrientation::CENTER)
-      end_orientation_ = end_selection_handle_->orientation();
-  }
-
-  if (GetStartPosition() != GetEndPosition() ||
-      (is_selection_dragging &&
-       start_orientation_ != TouchHandleOrientation::UNDEFINED &&
-       end_orientation_ != TouchHandleOrientation::UNDEFINED)) {
+  if ((start_orientation_ == TouchHandleOrientation::LEFT &&
+       end_orientation_ == TouchHandleOrientation::RIGHT) ||
+      (start_orientation_ == TouchHandleOrientation::RIGHT &&
+       end_orientation_ == TouchHandleOrientation::LEFT)) {
     OnSelectionChanged();
     return;
   }
