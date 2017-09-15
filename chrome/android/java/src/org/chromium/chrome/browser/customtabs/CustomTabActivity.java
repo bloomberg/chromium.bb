@@ -150,6 +150,10 @@ public class CustomTabActivity extends ChromeActivity {
         private final CustomTabsSessionToken mSession;
         private final WebContents mWebContents;
 
+        private int mEffectiveConnectionType; // See net::EffectiveConnectionType.
+        private long mHttpRttMs;
+        private long mTransportRttMs;
+
         public PageLoadMetricsObserver(CustomTabsConnection connection,
                 CustomTabsSessionToken session, Tab tab) {
             mConnection = connection;
@@ -158,11 +162,21 @@ public class CustomTabActivity extends ChromeActivity {
         }
 
         @Override
+        public void onNetworkQualityEstimate(WebContents webContents, int effectiveConnectionType,
+                long httpRttMs, long transportRttMs) {
+            if (webContents != mWebContents) return;
+
+            mEffectiveConnectionType = effectiveConnectionType;
+            mHttpRttMs = httpRttMs;
+            mTransportRttMs = transportRttMs;
+        }
+
+        @Override
         public void onFirstContentfulPaint(
                 WebContents webContents, long navigationStartTick, long firstContentfulPaintMs) {
             if (webContents != mWebContents) return;
 
-            mConnection.notifyPageLoadMetric(mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT,
+            mConnection.notifySinglePageLoadMetric(mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT,
                     navigationStartTick, firstContentfulPaintMs);
         }
 
@@ -170,9 +184,28 @@ public class CustomTabActivity extends ChromeActivity {
         public void onLoadEventStart(
                 WebContents webContents, long navigationStartTick, long loadEventStartMs) {
             if (webContents != mWebContents) return;
-
-            mConnection.notifyPageLoadMetric(mSession, PageLoadMetrics.LOAD_EVENT_START,
+            mConnection.notifySinglePageLoadMetric(mSession, PageLoadMetrics.LOAD_EVENT_START,
                     navigationStartTick, loadEventStartMs);
+        }
+
+        @Override
+        public void onLoadedMainResource(WebContents webContents, long dnsStartMs, long dnsEndMs,
+                long connectStartMs, long connectEndMs, long requestStartMs, long sendStartMs,
+                long sendEndMs) {
+            if (webContents != mWebContents) return;
+
+            Bundle args = new Bundle();
+            args.putLong(PageLoadMetrics.DOMAIN_LOOKUP_START, dnsStartMs);
+            args.putLong(PageLoadMetrics.DOMAIN_LOOKUP_END, dnsEndMs);
+            args.putLong(PageLoadMetrics.CONNECT_START, connectStartMs);
+            args.putLong(PageLoadMetrics.CONNECT_END, connectEndMs);
+            args.putLong(PageLoadMetrics.REQUEST_START, requestStartMs);
+            args.putLong(PageLoadMetrics.RESPONSE_START, sendStartMs);
+            args.putLong(PageLoadMetrics.RESPONSE_END, sendEndMs);
+            args.putLong(PageLoadMetrics.EFFECTIVE_CONNECTION_TYPE, mEffectiveConnectionType);
+            args.putLong(PageLoadMetrics.HTTP_RTT, mHttpRttMs);
+            args.putLong(PageLoadMetrics.TRANSPORT_RTT, mTransportRttMs);
+            mConnection.notifyPageLoadMetrics(mSession, args);
         }
     }
 

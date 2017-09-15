@@ -126,7 +126,10 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
           ? info.data_reduction_proxy_data->DeepCopy()
           : nullptr,
       info.raw_body_bytes, info.original_network_content_length,
-      base::TimeTicks::Now(), info.net_error, nullptr /* load_timing_info */);
+      base::TimeTicks::Now(), info.net_error,
+      info.load_timing_info
+          ? std::make_unique<net::LoadTimingInfo>(*info.load_timing_info)
+          : nullptr);
 }
 
 void PageLoadMetricsObserverTester::SimulateInputEvent(

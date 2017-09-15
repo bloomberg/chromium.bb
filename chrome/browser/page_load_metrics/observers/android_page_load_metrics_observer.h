@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "net/nqe/network_quality_estimator.h"
 
 namespace content {
 class WebContents;
@@ -23,15 +24,52 @@ class AndroidPageLoadMetricsObserver
   explicit AndroidPageLoadMetricsObserver(content::WebContents* web_contents);
 
   // page_load_metrics::PageLoadMetricsObserver:
+  ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
+                        const GURL& currently_committed_url,
+                        bool started_in_foreground) override;
   void OnFirstContentfulPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnLoadEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
+                            extra_request_complete_info) override;
+
+ protected:
+  AndroidPageLoadMetricsObserver(
+      content::WebContents* web_contents,
+      net::NetworkQualityEstimator::NetworkQualityProvider*
+          network_quality_provider)
+      : web_contents_(web_contents),
+        network_quality_provider_(network_quality_provider) {}
+
+  virtual void ReportNetworkQualityEstimate(
+      net::EffectiveConnectionType connection_type,
+      int64_t http_rtt_ms,
+      int64_t transport_rtt_ms);
+
+  virtual void ReportFirstContentfulPaint(int64_t navigation_start_tick,
+                                          int64_t first_contentful_paint_ms);
+
+  virtual void ReportLoadEventStart(int64_t navigation_start_tick,
+                                    int64_t load_event_start_ms);
+
+  virtual void ReportLoadedMainResource(int64_t dns_start_ms,
+                                        int64_t dns_end_ms,
+                                        int64_t connect_start_ms,
+                                        int64_t connect_end_ms,
+                                        int64_t request_start_ms,
+                                        int64_t send_start_ms,
+                                        int64_t send_end_ms);
 
  private:
   content::WebContents* web_contents_;
+
+  bool did_dispatch_on_main_resource_ = false;
+
+  net::NetworkQualityEstimator::NetworkQualityProvider*
+      network_quality_provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidPageLoadMetricsObserver);
 };

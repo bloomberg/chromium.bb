@@ -1187,6 +1187,11 @@ public class CustomTabActivityTest {
                 Assert.assertEquals(CustomTabsConnection.PAGE_LOAD_METRICS_CALLBACK, callbackName);
 
                 long navigationStart = args.getLong(PageLoadMetrics.NAVIGATION_START, -1);
+                if (navigationStart == -1) {
+                    // Return if the callback just had network quality information, which
+                    // isn't tested.
+                    return;
+                }
                 long current = SystemClock.uptimeMillis();
                 Assert.assertTrue(navigationStart <= current);
                 Assert.assertTrue(navigationStart >= activityStartTimeMs.get());

@@ -114,6 +114,11 @@ public class CustomTabsConnection {
     private static final int SPECULATION_STATUS_ON_SWAP_PRERENDER_NOT_MATCHED = 3;
     private static final int SPECULATION_STATUS_ON_SWAP_MAX = 4;
 
+    // Constants for sending connection characteristics.
+    private static final String EFFECTIVE_CONNECTION_TYPE = "effectiveConnectionType";
+    private static final String HTTP_RTT_MS = "httpRttMs";
+    private static final String TRANSPORT_RTT_MS = "transportRttMs";
+
     // For testing only, DO NOT USE.
     @VisibleForTesting
     static final String DEBUG_OVERRIDE_KEY =
@@ -280,6 +285,19 @@ public class CustomTabsConnection {
             }
         }
         return json;
+    }
+
+    /*
+     * Logging for page load metrics callback, if service has enabled logging.
+     *
+     * No rate-limiting, can be spammy if the app is misbehaved.
+     *
+     * @param args arguments of the callback.
+     */
+    void logPageLoadMetricsCallback(Bundle args) {
+        if (!mLogRequests) return; // Don't build args if not necessary.
+        logCallback(
+                "extraCallback(" + PAGE_LOAD_METRICS_CALLBACK + ")", bundleToJson(args).toString());
     }
 
     public boolean newSession(CustomTabsSessionToken session) {
@@ -979,7 +997,7 @@ public class CustomTabsConnection {
         try {
             callback.extraCallback(BOTTOM_BAR_SCROLL_STATE_CALLBACK, args);
         } catch (Exception e) {
-            // Pokemon exception handling, see above and crbug.com/517023.
+            // Pokemon exception handling, see below and crbug.com/517023.
             return;
         }
         if (mLogRequests) {
@@ -1027,7 +1045,7 @@ public class CustomTabsConnection {
     }
 
     /**
-     * Notifies the application of a page load metric.
+     * Notifies the application of a page load metric for a single metric.
      *
      * TODD(lizeb): Move this to a proper method in {@link CustomTabsCallback} once one is
      * available.
@@ -1035,14 +1053,10 @@ public class CustomTabsConnection {
      * @param session Session identifier.
      * @param metricName Name of the page load metric.
      * @param navigationStartTick Absolute navigation start time, as TimeTicks taken from native.
-     *
-     * @param offsetMs Offset in ms from navigationStart.
+     * @param offsetMs Offset in ms from navigationStart for the page load metric.
      */
-    boolean notifyPageLoadMetric(CustomTabsSessionToken session, String metricName,
+    boolean notifySinglePageLoadMetric(CustomTabsSessionToken session, String metricName,
             long navigationStartTick, long offsetMs) {
-        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
-        if (callback == null) return false;
-
         if (!mNativeTickOffsetUsComputed) {
             // Compute offset from time ticks to uptimeMillis.
             mNativeTickOffsetUsComputed = true;
@@ -1050,26 +1064,39 @@ public class CustomTabsConnection {
             long javaNowUs = SystemClock.uptimeMillis() * 1000;
             mNativeTickOffsetUs = nativeNowUs - javaNowUs;
         }
-
+        Bundle args = new Bundle();
+        args.putLong(metricName, offsetMs);
         // SystemClock.uptimeMillis() is used here as it (as of June 2017) uses the same system call
         // as all the native side of Chrome, that is clock_gettime(CLOCK_MONOTONIC). Meaning that
         // the offset relative to navigationStart is to be compared with a
         // SystemClock.uptimeMillis() value.
-        Bundle args = new Bundle();
         args.putLong(PageLoadMetrics.NAVIGATION_START,
                 (navigationStartTick - mNativeTickOffsetUs) / 1000);
-        args.putLong(metricName, offsetMs);
+
+        return notifyPageLoadMetrics(session, args);
+    }
+
+    /**
+     * Notifies the application of a general page load metrics.
+     *
+     * TODD(lizeb): Move this to a proper method in {@link CustomTabsCallback} once one is
+     * available.
+     *
+     * @param session Session identifier.
+     * @param args Bundle containing metric information to update. Each item in the bundle
+     *     should be a key specifying the metric name and the metric value as the value.
+     */
+    boolean notifyPageLoadMetrics(CustomTabsSessionToken session, Bundle args) {
+        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+        if (callback == null) return false;
+
         try {
             callback.extraCallback(PAGE_LOAD_METRICS_CALLBACK, args);
         } catch (Exception e) {
             // Pokemon exception handling, see above and crbug.com/517023.
             return false;
         }
-        if (mLogRequests) { // Don't always build the args.
-            // Pseudo-JSON (trailing comma).
-            logCallback("extraCallback(" + PAGE_LOAD_METRICS_CALLBACK + ")",
-                    bundleToJson(args).toString());
-        }
+        logPageLoadMetricsCallback(args);
         return true;
     }
 
