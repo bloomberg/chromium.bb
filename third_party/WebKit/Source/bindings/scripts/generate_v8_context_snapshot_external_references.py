@@ -194,10 +194,14 @@ class ExternalReferenceTableGenerator(object):
         interfaces = []
         for name in sorted(self._interface_contexts):
             interfaces.append(self._interface_contexts[name])
+        header_name = 'V8ContextSnapshotExternalReferences.h'
+        if self._opts.snake_case_generated_files:
+            header_name = 'v8_context_snapshot_external_references.h'
         return {
             'class': 'V8ContextSnapshotExternalReferences',
             'interfaces': interfaces,
             'include_files': sorted(list(self._include_files)),
+            'this_include_header_name': header_name,
         }
 
     # Applies a Jinja template on a context and generates a C++ code.
