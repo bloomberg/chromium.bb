@@ -5,6 +5,8 @@
 #import "ios/clean/chrome/browser/ui/omnibox/location_bar_coordinator.h"
 
 #include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer.h"
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
@@ -33,8 +35,12 @@
 - (void)start {
   DCHECK(self.parentCoordinator);
   self.viewController = [[LocationBarViewController alloc] init];
-
   Browser* browser = self.browser;
+
+  // Begin broadcasting the omnibox frame.
+  [browser->broadcaster() broadcastValue:@"omniboxFrame"
+                                ofObject:self.viewController
+                                selector:@selector(broadcastOmniboxFrame:)];
 
   self.mediator = [[LocationBarMediator alloc]
       initWithWebStateList:&(browser->web_state_list())];
@@ -49,6 +55,9 @@
 
 - (void)stop {
   [super stop];
+
+  [self.browser->broadcaster()
+      stopBroadcastingForSelector:@selector(broadcastOmniboxFrame:)];
   self.viewController = nil;
   self.mediator = nil;
 }

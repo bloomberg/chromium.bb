@@ -314,6 +314,9 @@ NSInvocation* InvocationForBroadcasterSelector(SEL selector) {
     CGFloat cgfloatValue = valueAsNumber.floatValue;
 #endif
     [invocation setArgument:&cgfloatValue atIndex:2];
+  } else if (type == @encode(CGRect)) {
+    CGRect rectValue = value.CGRectValue;
+    [invocation setArgument:&rectValue atIndex:2];
   } else if (type == @encode(int)) {
     DCHECK(valueAsNumber);
     int intValue = valueAsNumber.intValue;
