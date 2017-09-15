@@ -37,6 +37,8 @@ class TestOverlaySchedulerObserver : public OverlaySchedulerObserver {
   void OverlaySchedulerWillShowOverlay(OverlayScheduler* scheduler,
                                        web::WebState* web_state) override {
     active_index_ = web_state_list_->GetIndexOfWebState(web_state);
+    if (web_state)
+      web_state->WasShown();
   }
 
   int active_index() { return active_index_; }
@@ -104,6 +106,7 @@ TEST_F(OverlaySchedulerTest, AddWebStateOverlay) {
   web_state_list()->InsertWebState(0, base::MakeUnique<web::TestWebState>(),
                                    WebStateList::INSERT_FORCE_INDEX,
                                    WebStateOpener());
+  web_state_list()->ActivateWebStateAt(0);
   ASSERT_EQ(web_state_list()->count(), 1);
   web::WebState* web_state = web_state_list()->GetWebStateAt(0);
   WebStateOverlayQueue* queue = WebStateOverlayQueue::FromWebState(web_state);

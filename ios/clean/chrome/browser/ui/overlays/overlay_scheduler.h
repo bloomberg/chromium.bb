@@ -7,11 +7,13 @@
 
 #include <Foundation/Foundation.h>
 #include <list>
+#include <memory>
 
 #include "base/observer_list.h"
 #import "ios/chrome/browser/ui/browser_list/browser_user_data.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_queue_manager_observer.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_queue_observer.h"
+#include "ios/web/public/web_state/web_state_observer.h"
 
 @class OverlayCoordinator;
 class OverlaySchedulerObserver;
@@ -61,6 +63,22 @@ class OverlayScheduler : public BrowserUserData<OverlayScheduler>,
  private:
   friend class BrowserUserData<OverlayScheduler>;
 
+  // Observer that notifies the OverlayScheduler of a WebState's visibility.
+  class WebStateVisibilityObserver : public web::WebStateObserver {
+   public:
+    // Constructor for an observer that calls OnWebStateShown() on |scheduler|
+    // when |web_state|'s content area has been displayed.
+    WebStateVisibilityObserver(web::WebState* web_state,
+                               OverlayScheduler* scheduler);
+
+   private:
+    // WebStateObserver:
+    void WasShown() override;
+
+    // The OverlayScheduler that owns this observer.
+    OverlayScheduler* scheduler_;
+  };
+
   // Private constructor used by factory method.
   explicit OverlayScheduler(Browser* browser);
 
@@ -78,9 +96,13 @@ class OverlayScheduler : public BrowserUserData<OverlayScheduler>,
 
   // Attempts to show the next queued overlay.
   void TryToStartNextOverlay();
+  // Notifies the scheduler that |web_state|'s content area was shown.
+  void OnWebStateShown(web::WebState* web_state);
   // Cancels outstanding overlays for |queue| and removes this as an observer.
   void StopObservingQueue(OverlayQueue* queue);
 
+  // The WebStateList of the Browser whose overlays are being scheduled.
+  WebStateList* web_state_list_;
   // The OverlaySchedulerObservers.
   base::ObserverList<OverlaySchedulerObserver> observers_;
   // The OverlayQueueManager responsible for creating queues for the Browser
@@ -92,6 +114,10 @@ class OverlayScheduler : public BrowserUserData<OverlayScheduler>,
   std::list<OverlayQueue*> overlay_queues_;
   // Whether the scheduler is paused.
   bool paused_;
+  // The WebStateObsever that is waiting for a WebState's content area to be
+  // shown.  It will be nullptr when the scheduler is not waiting for a WebState
+  // to be displayed.
+  std::unique_ptr<WebStateVisibilityObserver> visibility_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayScheduler);
 };
