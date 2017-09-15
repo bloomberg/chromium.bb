@@ -428,7 +428,8 @@ TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcess) {
 TEST_F(RenderProcessHostUnitTest,
        ReuseNavigationProcessRedirectsRendererInitiated) {
   // This is only applicable to PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
+  // TODO(clamy): This test should work with --site-per-process.
+  if (!IsBrowserSideNavigationEnabled() || AreAllSitesIsolatedForTesting())
     return;
 
   const GURL kUrl("http://foo.com");
@@ -671,7 +672,8 @@ TEST_F(RenderProcessHostUnitTest, ReuseSiteURLChanges) {
 // URL we're navigating to changes.
 TEST_F(RenderProcessHostUnitTest, ReuseExpectedSiteURLChanges) {
   // This is only applicable to PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
+  // TODO(clamy): This test should work with --site-per-process.
+  if (!IsBrowserSideNavigationEnabled() || AreAllSitesIsolatedForTesting())
     return;
 
   const GURL kUrl("http://foo.com");

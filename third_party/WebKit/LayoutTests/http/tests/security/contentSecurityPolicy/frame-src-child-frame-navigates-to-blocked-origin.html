@@ -9,7 +9,7 @@
             .wait_for('securitypolicyviolation')
             .then(t.step_func(e => {
                 assert_equals(e.blockedURI, "http://localhost:8000", "The reported URL should be stripped.");
-                assert_equals(e.lineNumber, 7, "This shouldn't actually be 7, since it happens in a cross-origin frame. :/");
+                assert_equals(e.lineNumber, 0, "The script line number shouldn't be reported.");
                 t.done();
             }));
 

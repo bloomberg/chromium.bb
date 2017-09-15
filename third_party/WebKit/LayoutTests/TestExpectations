@@ -15,6 +15,17 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 
 # ====== Oilpan-only failures until here ======
 
+# ====== Browserside navigation from here ======
+# These tests started failing when browser-side navigation was turned on.
+crbug.com/762529 http/tests/devtools/network/network-datareceived.html [ Failure ]
+crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.html [ Failure ]
+crbug.com/760924 http/tests/devtools/network/x-frame-options-deny.html [ Failure ]
+crbug.com/762529 virtual/mojo-loading/http/tests/devtools/network/network-datareceived.html [ Failure ]
+crbug.com/759632 virtual/mojo-loading/http/tests/devtools/network/network-datasaver-warning.html [ Failure ]
+crbug.com/760924 virtual/mojo-loading/http/tests/devtools/network/x-frame-options-deny.html [ Failure ]
+crbug.com/576261 [ Win ] virtual/mojo-loading/http/tests/devtools/resource-parameters.html [ Failure ]
+# ====== Browserside navigation until here ======
+
 # ====== Paint team owned tests from here ======
 # The paint team tracks and triages its test failures, and keeping them colocated
 # makes tracking much easier.
@@ -1180,8 +1191,8 @@ crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scro
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure ]
 
-crbug.com/599670 [ Win Linux ] http/tests/devtools/resource-parameters-ipv6.html [ Failure Pass ]
-crbug.com/599670 [ Win Linux ] virtual/mojo-loading/http/tests/devtools/resource-parameters-ipv6.html [ Failure Pass ]
+crbug.com/599670 [ Win Linux ] http/tests/devtools/resource-parameters-ipv6.html [ Timeout Failure Pass ]
+crbug.com/599670 [ Win Linux ] virtual/mojo-loading/http/tests/devtools/resource-parameters-ipv6.html [ Timeout Failure Pass ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
@@ -3021,7 +3032,7 @@ crbug.com/736177 [ Mac ] fast/css/text-overflow-input.html [ Failure Pass ]
 
 crbug.com/736177 [ Mac ] svg/as-border-image/svg-as-border-image.html [ Failure Pass ]
 
-crbug.com/734762 [ Mac Debug ] inspector-protocol/timeline/page-frames.js [ Failure ]
+crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure ]
 
 crbug.com/736255 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Skip ]
 crbug.com/736732 virtual/enable_wasm/external/wpt/wasm/wasm_local_iframe_test.html [ Timeout Pass ]

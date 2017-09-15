@@ -352,7 +352,8 @@ const char kEnableBackgroundFetchPersistence[] =
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
-// PlzNavigate: Use the experimental browser-side navigation path.
+// PlzNavigate: Use or not the experimental browser-side navigation path.
+const char kDisableBrowserSideNavigation[] = "disable-browser-side-navigation";
 const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
 
 // Enables display list based 2d canvas implementation. Options:
