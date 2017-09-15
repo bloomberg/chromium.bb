@@ -72,7 +72,7 @@ class DocumentWebSocketChannel::BlobLoader final
     : public GarbageCollectedFinalized<DocumentWebSocketChannel::BlobLoader>,
       public FileReaderLoaderClient {
  public:
-  BlobLoader(PassRefPtr<BlobDataHandle>, DocumentWebSocketChannel*);
+  BlobLoader(RefPtr<BlobDataHandle>, DocumentWebSocketChannel*);
   ~BlobLoader() override {}
 
   void Cancel();
@@ -94,7 +94,7 @@ class DocumentWebSocketChannel::Message
     : public GarbageCollectedFinalized<DocumentWebSocketChannel::Message> {
  public:
   explicit Message(const CString&);
-  explicit Message(PassRefPtr<BlobDataHandle>);
+  explicit Message(RefPtr<BlobDataHandle>);
   explicit Message(DOMArrayBuffer*);
   // For WorkerWebSocketChannel
   explicit Message(std::unique_ptr<Vector<char>>, MessageType);
@@ -114,7 +114,7 @@ class DocumentWebSocketChannel::Message
 };
 
 DocumentWebSocketChannel::BlobLoader::BlobLoader(
-    PassRefPtr<BlobDataHandle> blob_data_handle,
+    RefPtr<BlobDataHandle> blob_data_handle,
     DocumentWebSocketChannel* channel)
     : channel_(channel),
       loader_(FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer,
@@ -298,8 +298,7 @@ void DocumentWebSocketChannel::Send(const CString& message) {
   ProcessSendQueue();
 }
 
-void DocumentWebSocketChannel::Send(
-    PassRefPtr<BlobDataHandle> blob_data_handle) {
+void DocumentWebSocketChannel::Send(RefPtr<BlobDataHandle> blob_data_handle) {
   NETWORK_DVLOG(1) << this << " Send(" << blob_data_handle->Uuid() << ", "
                    << blob_data_handle->GetType() << ", "
                    << blob_data_handle->size() << ") "
@@ -409,7 +408,7 @@ DocumentWebSocketChannel::Message::Message(const CString& text)
     : type(kMessageTypeText), text(text) {}
 
 DocumentWebSocketChannel::Message::Message(
-    PassRefPtr<BlobDataHandle> blob_data_handle)
+    RefPtr<BlobDataHandle> blob_data_handle)
     : type(kMessageTypeBlob), blob_data_handle(std::move(blob_data_handle)) {}
 
 DocumentWebSocketChannel::Message::Message(DOMArrayBuffer* array_buffer)
@@ -571,7 +570,7 @@ void DocumentWebSocketChannel::DidConnect(WebSocketHandle* handle,
 
 void DocumentWebSocketChannel::DidStartOpeningHandshake(
     WebSocketHandle* handle,
-    PassRefPtr<WebSocketHandshakeRequest> request) {
+    RefPtr<WebSocketHandshakeRequest> request) {
   NETWORK_DVLOG(1) << this << " DidStartOpeningHandshake(" << handle << ")";
 
   DCHECK(handle_);

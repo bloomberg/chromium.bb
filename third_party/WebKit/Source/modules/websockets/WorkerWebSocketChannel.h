@@ -75,7 +75,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
   void Send(const DOMArrayBuffer&,
             unsigned byte_offset,
             unsigned byte_length) override;
-  void Send(PassRefPtr<BlobDataHandle>) override;
+  void Send(RefPtr<BlobDataHandle>) override;
   void SendTextAsCharVector(std::unique_ptr<Vector<char>>) override {
     NOTREACHED();
   }
@@ -118,7 +118,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
                  mojom::blink::WebSocketPtr);
     void SendTextAsCharVector(std::unique_ptr<Vector<char>>);
     void SendBinaryAsCharVector(std::unique_ptr<Vector<char>>);
-    void SendBlob(PassRefPtr<BlobDataHandle>);
+    void SendBlob(RefPtr<BlobDataHandle>);
     void Close(int code, const String& reason);
     void Fail(const String& reason,
               MessageLevel,
@@ -169,7 +169,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     void Send(const DOMArrayBuffer&,
               unsigned byte_offset,
               unsigned byte_length);
-    void Send(PassRefPtr<BlobDataHandle>);
+    void Send(RefPtr<BlobDataHandle>);
     void Close(int code, const String& reason);
     void Fail(const String& reason,
               MessageLevel,

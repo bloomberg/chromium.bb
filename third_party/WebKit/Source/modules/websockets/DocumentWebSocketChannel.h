@@ -46,7 +46,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Deque.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"
@@ -101,7 +100,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   void Send(const DOMArrayBuffer&,
             unsigned byte_offset,
             unsigned byte_length) override;
-  void Send(PassRefPtr<BlobDataHandle>) override;
+  void Send(RefPtr<BlobDataHandle>) override;
   void SendTextAsCharVector(std::unique_ptr<Vector<char>> data) override;
   void SendBinaryAsCharVector(std::unique_ptr<Vector<char>> data) override;
   // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
@@ -163,7 +162,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
                   const String& selected_protocol,
                   const String& extensions) override;
   void DidStartOpeningHandshake(WebSocketHandle*,
-                                PassRefPtr<WebSocketHandshakeRequest>) override;
+                                RefPtr<WebSocketHandshakeRequest>) override;
   void DidFinishOpeningHandshake(WebSocketHandle*,
                                  const WebSocketHandshakeResponse*) override;
   void DidFail(WebSocketHandle*, const String& message) override;

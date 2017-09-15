@@ -562,7 +562,7 @@ TEST_F(DocumentWebSocketChannelTest,
   EXPECT_EQ(18ul, sum_of_consumed_buffered_amount_);
 }
 
-// FIXME: Add tests for WebSocketChannel::send(PassRefPtr<BlobDataHandle>)
+// FIXME: Add tests for WebSocketChannel::send(RefPtr<BlobDataHandle>)
 
 TEST_F(DocumentWebSocketChannelTest, receiveText) {
   Connect();
