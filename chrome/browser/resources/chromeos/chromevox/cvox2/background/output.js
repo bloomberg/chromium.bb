@@ -110,11 +110,13 @@ Output.SPACE = ' ';
  * @const {Object<{msgId: string,
  *                 earconId: (string|undefined),
  *                 inherits: (string|undefined),
- *                 outputContextFirst: (boolean|undefined)}>}
+ *                 outputContextFirst: (boolean|undefined),
+ *                 ignoreAncestry: (boolean|undefined)}>}
  * msgId: the message id of the role.
  * earconId: an optional earcon to play when encountering the role.
  * inherits: inherits rules from this role.
  * outputContextFirst: where to place the context output.
+ * ignoreAncestry: ignores ancestry (context) output for this role.
  * @private
  */
 Output.ROLE_INFO_ = {
@@ -132,7 +134,8 @@ Output.ROLE_INFO_ = {
   contentInfo: {msgId: 'role_contentinfo', inherits: 'abstractContainer'},
   date: {msgId: 'input_type_date', inherits: 'abstractContainer'},
   definition: {msgId: 'role_definition', inherits: 'abstractContainer'},
-  dialog: {msgId: 'role_dialog', outputContextFirst: true},
+  dialog:
+      {msgId: 'role_dialog', outputContextFirst: true, ignoreAncestry: true},
   directory: {msgId: 'role_directory', inherits: 'abstractContainer'},
   document: {msgId: 'role_document', inherits: 'abstractContainer'},
   form: {msgId: 'role_form', inherits: 'abstractContainer'},
@@ -157,7 +160,7 @@ Output.ROLE_INFO_ = {
     msgId: 'role_marquee',
   },
   math: {msgId: 'role_math', inherits: 'abstractContainer'},
-  menu: {msgId: 'role_menu', outputContextFirst: true},
+  menu: {msgId: 'role_menu', outputContextFirst: true, ignoreAncestry: true},
   menuBar: {
     msgId: 'role_menubar',
   },
@@ -196,10 +199,11 @@ Output.ROLE_INFO_ = {
   textField: {msgId: 'input_type_text', earconId: 'EDITABLE_TEXT'},
   time: {msgId: 'tag_time', inherits: 'abstractContainer'},
   timer: {msgId: 'role_timer'},
-  toolbar: {msgId: 'role_toolbar'},
+  toolbar: {msgId: 'role_toolbar', ignoreAncestry: true},
   toggleButton: {msgId: 'role_button', inherits: 'checkBox'},
   tree: {msgId: 'role_tree'},
-  treeItem: {msgId: 'role_treeitem'}
+  treeItem: {msgId: 'role_treeitem'},
+  window: {ignoreAncestry: true}
 };
 
 /**
@@ -1411,6 +1415,11 @@ Output.prototype = {
    * @private
    */
   ancestry_: function(node, prevNode, type, buff) {
+    if (Output.ROLE_INFO_[node.role] &&
+        Output.ROLE_INFO_[node.role].ignoreAncestry) {
+      return;
+    }
+
     // Expects |ancestors| to be ordered from root down to leaf. Outputs in
     // reverse; place context first nodes at the end.
     function byContextFirst(ancestors) {
