@@ -176,7 +176,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
     --child_shadow_root_count_;
   }
   void InvalidateDescendantInsertionPoints();
-  void SkipRebuildLayoutTree(WhitespaceAttacher&) const;
 
   Member<ShadowRootRareDataV0> shadow_root_rare_data_v0_;
   TraceWrapperMember<StyleSheetList> style_sheet_list_;

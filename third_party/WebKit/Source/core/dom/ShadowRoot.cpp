@@ -156,43 +156,9 @@ void ShadowRoot::RecalcStyle(StyleRecalcChange change) {
 }
 
 void ShadowRoot::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
-  if (!NeedsReattachLayoutTree() && !ChildNeedsReattachLayoutTree()) {
-    SkipRebuildLayoutTree(whitespace_attacher);
-    return;
-  }
-
   ClearNeedsReattachLayoutTree();
   RebuildChildrenLayoutTrees(whitespace_attacher);
   ClearChildNeedsReattachLayoutTree();
-}
-
-void ShadowRoot::SkipRebuildLayoutTree(
-    WhitespaceAttacher& whitespace_attacher) const {
-  // We call this method when neither this, nor our child nodes are marked
-  // for re-attachment, but the host has been marked with
-  // childNeedsReattachLayoutTree. That happens when ::before or ::after needs
-  // re-attachment. In that case, we update nextTextSibling with the first text
-  // node sibling not preceeded by any in-flow children to allow for correct
-  // whitespace re-attachment if the ::before element display changes.
-  DCHECK(GetDocument().InStyleRecalc());
-  DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
-  DCHECK(!NeedsStyleRecalc());
-  DCHECK(!ChildNeedsStyleRecalc());
-  DCHECK(!NeedsReattachLayoutTree());
-  DCHECK(!ChildNeedsReattachLayoutTree());
-
-  for (Node* sibling = firstChild(); sibling;
-       sibling = sibling->nextSibling()) {
-    if (sibling->IsTextNode()) {
-      whitespace_attacher.DidVisitText(ToText(sibling));
-      return;
-    }
-    LayoutObject* layout_object = sibling->GetLayoutObject();
-    if (layout_object && !layout_object->IsFloatingOrOutOfFlowPositioned()) {
-      whitespace_attacher.DidVisitElement(ToElement(sibling));
-      return;
-    }
-  }
 }
 
 void ShadowRoot::AttachLayoutTree(AttachContext& context) {
