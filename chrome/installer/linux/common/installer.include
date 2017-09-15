@@ -89,8 +89,6 @@ process_template() (
     -e "s#@@PREDEPENDS@@#${PREDEPENDS}#g" \
     -e "s#@@DEPENDS@@#${DEPENDS}#g" \
     -e "s#@@PROVIDES@@#${PROVIDES}#g" \
-    -e "s#@@REPLACES@@#${REPLACES}#g" \
-    -e "s#@@CONFLICTS@@#${CONFLICTS}#g" \
     -e "s#@@ARCHITECTURE@@#${ARCHITECTURE}#g" \
     -e "s#@@MAINTNAME@@#${MAINTNAME}#g" \
     -e "s#@@MAINTMAIL@@#${MAINTMAIL}#g" \
