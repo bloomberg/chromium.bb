@@ -2175,6 +2175,7 @@ if (enable_java_templates) {
                              [
                                "data",
                                "data_deps",
+                               "visibility",
                              ])
       public_deps = [
         ":$_ijar_target_name",
