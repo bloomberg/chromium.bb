@@ -39,10 +39,13 @@ class ArcMidisBridge : public KeyedService,
   void OnInstanceReady() override;
 
   // Midis Mojo host interface
-  void Connect() override;
+  void Connect(mojom::MidisServerRequest request,
+               mojom::MidisClientPtr client_ptr) override;
 
  private:
-  void OnBootstrapMojoConnection(chromeos::DBusMethodCallStatus result);
+  void OnBootstrapMojoConnection(mojom::MidisServerRequest request,
+                                 mojom::MidisClientPtr client_ptr,
+                                 chromeos::DBusMethodCallStatus result);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojo::Binding<mojom::MidisHost> binding_;

@@ -70,6 +70,8 @@ void ArcMidisBridge::OnInstanceReady() {
 }
 
 void ArcMidisBridge::OnBootstrapMojoConnection(
+    mojom::MidisServerRequest request,
+    mojom::MidisClientPtr client_ptr,
     chromeos::DBusMethodCallStatus result) {
   if (result != chromeos::DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "ArcMidisBridge had a failure in D-Bus with the daemon.";
@@ -77,14 +79,14 @@ void ArcMidisBridge::OnBootstrapMojoConnection(
     return;
   }
   DVLOG(1) << "ArcMidisBridge succeeded with Mojo bootstrapping.";
-  midis_host_ptr_->Connect();
+  midis_host_ptr_->Connect(std::move(request), std::move(client_ptr));
 }
 
-void ArcMidisBridge::Connect() {
-  DVLOG(1) << "ArcMidisBridge::Connect called.";
+void ArcMidisBridge::Connect(mojom::MidisServerRequest request,
+                             mojom::MidisClientPtr client_ptr) {
   if (midis_host_ptr_.is_bound()) {
-    DVLOG(1) << "Re-using bootstrap connection for MidisService Connect.";
-    midis_host_ptr_->Connect();
+    DVLOG(1) << "Re-using bootstrap connection for MidisServer Connect.";
+    midis_host_ptr_->Connect(std::move(request), std::move(client_ptr));
     return;
   }
   DVLOG(1) << "Bootstrapping the Midis connection via D-Bus.";
@@ -109,8 +111,10 @@ void ArcMidisBridge::Connect() {
   chromeos::DBusThreadManager::Get()
       ->GetArcMidisClient()
       ->BootstrapMojoConnection(
-          std::move(fd), base::Bind(&ArcMidisBridge::OnBootstrapMojoConnection,
-                                    weak_factory_.GetWeakPtr()));
+          std::move(fd),
+          base::Bind(&ArcMidisBridge::OnBootstrapMojoConnection,
+                     weak_factory_.GetWeakPtr(), base::Passed(&request),
+                     base::Passed(&client_ptr)));
 }
 
 }  // namespace arc
