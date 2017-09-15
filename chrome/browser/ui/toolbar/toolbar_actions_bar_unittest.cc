@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -28,6 +29,8 @@
 #include "ui/base/test/material_design_controller_test_api.h"
 
 namespace {
+
+using ActionType = extensions::ExtensionBuilder::ActionType;
 
 // Verifies that the toolbar order matches for the given |actions_bar|. If the
 // order matches, the return value is empty; otherwise, it contains the error.
@@ -135,12 +138,13 @@ void ToolbarActionsBarUnitTest::ActivateTab(int index) {
 }
 
 scoped_refptr<const extensions::Extension>
-ToolbarActionsBarUnitTest::CreateAndAddExtension(
-    const std::string& name,
-    extensions::extension_action_test_util::ActionType action_type) {
+ToolbarActionsBarUnitTest::CreateAndAddExtension(const std::string& name,
+                                                 ActionType action_type) {
   scoped_refptr<const extensions::Extension> extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          name, action_type);
+      extensions::ExtensionBuilder(name)
+          .SetAction(action_type)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
   extensions::ExtensionSystem::Get(profile())->extension_service()->
       AddExtension(extension.get());
   return extension;
@@ -188,9 +192,8 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // Add three extensions to the profile; this is the easiest way to have
   // toolbar actions.
   for (int i = 0; i < 3; ++i) {
-    CreateAndAddExtension(
-        base::StringPrintf("extension %d", i),
-        extensions::extension_action_test_util::BROWSER_ACTION);
+    CreateAndAddExtension(base::StringPrintf("extension %d", i),
+                          ActionType::BROWSER_ACTION);
   }
 
   const ToolbarActionsBar::PlatformSettings& platform_settings =
@@ -294,9 +297,8 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
 
 TEST_P(ToolbarActionsBarUnitTest, ToolbarActionsReorderOnPrefChange) {
   for (int i = 0; i < 3; ++i) {
-    CreateAndAddExtension(
-        base::StringPrintf("extension %d", i),
-        extensions::extension_action_test_util::BROWSER_ACTION);
+    CreateAndAddExtension(base::StringPrintf("extension %d", i),
+                          ActionType::BROWSER_ACTION);
   }
   EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
   // Change the value of the toolbar preference.
@@ -327,9 +329,8 @@ TEST_P(ToolbarActionsBarUnitTest, ToolbarActionsReorderOnPrefChange) {
 TEST_P(ToolbarActionsBarUnitTest, TestHighlightMode) {
   std::vector<std::string> ids;
   for (int i = 0; i < 3; ++i) {
-    ids.push_back(CreateAndAddExtension(
-                      base::StringPrintf("extension %d", i),
-                      extensions::extension_action_test_util::BROWSER_ACTION)
+    ids.push_back(CreateAndAddExtension(base::StringPrintf("extension %d", i),
+                                        ActionType::BROWSER_ACTION)
                       ->id());
   }
   EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
@@ -406,9 +407,8 @@ TEST_P(ToolbarActionsBarUnitTest, TestActionFrameBounds) {
   // Initialization: 7 total extensions, with 3 visible per row in overflow.
   // Start with all visible on the main bar.
   for (int i = 0; i < kNumExtensions; ++i) {
-    CreateAndAddExtension(
-        base::StringPrintf("extension %d", i),
-        extensions::extension_action_test_util::BROWSER_ACTION);
+    CreateAndAddExtension(base::StringPrintf("extension %d", i),
+                          ActionType::BROWSER_ACTION);
   }
   toolbar_model()->SetVisibleIconCount(kNumExtensions);
   overflow_bar()->SetOverflowRowWidth(
@@ -463,9 +463,8 @@ TEST_P(ToolbarActionsBarUnitTest, TestStartAndEndIndexes) {
   const int kIconSpacing = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
   for (int i = 0; i < 3; ++i) {
-    CreateAndAddExtension(
-        base::StringPrintf("extension %d", i),
-        extensions::extension_action_test_util::BROWSER_ACTION);
+    CreateAndAddExtension(base::StringPrintf("extension %d", i),
+                          ActionType::BROWSER_ACTION);
   }
   // At the start, all icons should be present on the main bar, and no
   // overflow should be needed.
@@ -514,9 +513,7 @@ TEST_P(ToolbarActionsBarUnitTest, TestStartAndEndIndexes) {
 
 // Tests the logic for determining if the container needs an overflow menu item.
 TEST_P(ToolbarActionsBarUnitTest, TestNeedsOverflow) {
-  CreateAndAddExtension(
-      "extension 1",
-      extensions::extension_action_test_util::BROWSER_ACTION);
+  CreateAndAddExtension("extension 1", ActionType::BROWSER_ACTION);
   // One extension on the main bar, none overflowed. Overflow not needed.
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
   EXPECT_EQ(0u, overflow_bar()->GetIconCount());
@@ -560,9 +557,7 @@ TEST_P(ToolbarActionsBarUnitTest, TestNeedsOverflow) {
   // Add another extension and verify that if one is still in overflow when
   // another is popped out, we still need overflow.
   toolbar_actions_bar()->UndoPopOut();
-  CreateAndAddExtension(
-      "extension 2",
-      extensions::extension_action_test_util::BROWSER_ACTION);
+  CreateAndAddExtension("extension 2", ActionType::BROWSER_ACTION);
   toolbar_model()->SetVisibleIconCount(0u);
   {
     base::RunLoop run_loop;

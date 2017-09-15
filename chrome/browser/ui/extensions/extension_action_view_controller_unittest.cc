@@ -21,7 +21,7 @@
 // Overflowed extensions that want to run should have an additional decoration.
 TEST_P(ToolbarActionsBarUnitTest, ExtensionActionWantsToRunAppearance) {
   CreateAndAddExtension("extension",
-                        extensions::extension_action_test_util::PAGE_ACTION);
+                        extensions::ExtensionBuilder::ActionType::PAGE_ACTION);
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
   EXPECT_EQ(0u, overflow_bar()->GetIconCount());
 
@@ -68,7 +68,7 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
   scoped_refptr<const extensions::Extension> browser_action_ext =
       CreateAndAddExtension(
           "browser action",
-          extensions::extension_action_test_util::BROWSER_ACTION);
+          extensions::ExtensionBuilder::ActionType::BROWSER_ACTION);
   ASSERT_EQ(1u, toolbar_actions_bar()->GetIconCount());
   AddTab(browser(), GURL("https://www.google.com/"));
 
@@ -109,7 +109,7 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
 
   scoped_refptr<const extensions::Extension> page_action_ext =
       CreateAndAddExtension(
-          "page action", extensions::extension_action_test_util::PAGE_ACTION);
+          "page action", extensions::ExtensionBuilder::ActionType::PAGE_ACTION);
   ASSERT_EQ(2u, toolbar_actions_bar()->GetIconCount());
   ExtensionActionViewController* page_action =
       static_cast<ExtensionActionViewController*>(
@@ -158,8 +158,8 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
 }
 
 TEST_P(ToolbarActionsBarUnitTest, ExtensionActionContextMenu) {
-  CreateAndAddExtension("extension",
-                        extensions::extension_action_test_util::BROWSER_ACTION);
+  CreateAndAddExtension(
+      "extension", extensions::ExtensionBuilder::ActionType::BROWSER_ACTION);
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
 
   // Check that the context menu has the proper string for the action's position

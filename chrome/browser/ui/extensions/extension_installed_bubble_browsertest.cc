@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/auto_reset.h"
-#include "chrome/browser/extensions/extension_action_test_util.h"
+#include "base/optional.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -11,10 +11,11 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
 
-using extensions::extension_action_test_util::ActionType;
 using extensions::Manifest;
+using ActionType = extensions::ExtensionBuilder::ActionType;
 
 class ExtensionInstalledBubbleBrowserTest
     : public SupportsTestDialog<ExtensionBrowserTest> {
@@ -25,7 +26,7 @@ class ExtensionInstalledBubbleBrowserTest
 
   std::unique_ptr<ExtensionInstalledBubble> MakeBubble(
       const std::string& name,
-      ActionType type,
+      base::Optional<ActionType> type,
       Manifest::Location location = Manifest::INTERNAL,
       std::unique_ptr<base::DictionaryValue> extra_keys = nullptr);
 
@@ -41,13 +42,17 @@ class ExtensionInstalledBubbleBrowserTest
 std::unique_ptr<ExtensionInstalledBubble>
 ExtensionInstalledBubbleBrowserTest::MakeBubble(
     const std::string& name,
-    ActionType type,
+    base::Optional<ActionType> type,
     Manifest::Location location,
     std::unique_ptr<base::DictionaryValue> extra_keys) {
   const SkBitmap kEmptyBitmap;
-  scoped_refptr<const extensions::Extension> extension =
-      extensions::extension_action_test_util::CreateActionExtension(
-          name, type, location, std::move(extra_keys));
+  extensions::ExtensionBuilder builder(name);
+  if (type)
+    builder.SetAction(*type);
+  builder.SetLocation(location);
+  if (extra_keys)
+    builder.MergeManifest(std::move(extra_keys));
+  scoped_refptr<const extensions::Extension> extension = builder.Build();
   extension_service()->AddExtension(extension.get());
   auto bubble = base::MakeUnique<ExtensionInstalledBubble>(
       extension.get(), browser(), SkBitmap());
@@ -60,7 +65,7 @@ void ExtensionInstalledBubbleBrowserTest::ShowDialog(const std::string& name) {
   // this, a page action is added automatically, which will always be the
   // preferred anchor.
   Manifest::Location location = Manifest::COMPONENT;
-  ActionType type = ActionType::NO_ACTION;
+  base::Optional<ActionType> type;
   if (name == "BrowserAction")
     type = ActionType::BROWSER_ACTION;
   else if (name == "PageAction")
@@ -118,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
                        DoNotShowHowToUseForSynthesizedActions) {
   {
-    auto bubble = MakeBubble("No action", ActionType::NO_ACTION);
+    auto bubble = MakeBubble("No action", base::nullopt);
     EXPECT_EQ(0, bubble->options() & ExtensionInstalledBubble::HOW_TO_USE);
   }
   {

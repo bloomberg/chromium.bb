@@ -8,7 +8,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -224,9 +224,10 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   // is spread across multiple rows.
   for (int i = 0; i < 15; ++i) {
     scoped_refptr<const extensions::Extension> extension =
-        extensions::extension_action_test_util::CreateActionExtension(
-            base::IntToString(i),
-            extensions::extension_action_test_util::BROWSER_ACTION);
+        extensions::ExtensionBuilder(base::IntToString(i))
+            .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+            .SetLocation(extensions::Manifest::INTERNAL)
+            .Build();
     extension_service()->AddExtension(extension.get());
   }
 
