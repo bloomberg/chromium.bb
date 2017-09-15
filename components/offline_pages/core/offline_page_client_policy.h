@@ -58,13 +58,16 @@ struct FeaturePolicy {
   // Whether the namespace should be disabled if prefetching-related preferences
   // are disabled.
   bool disabled_when_prefetch_disabled;
+  // Whether the pages originated from suggestions by zine or elsewhere.
+  bool is_suggested;
 
   FeaturePolicy()
       : is_supported_by_download(false),
         is_supported_by_recent_tabs(false),
         only_shown_in_original_tab(false),
         is_removed_on_cache_reset(true),
-        disabled_when_prefetch_disabled(false) {}
+        disabled_when_prefetch_disabled(false),
+        is_suggested(false) {}
 };
 
 // The struct describing policies for various namespaces (Bookmark, Last-N etc.)
@@ -152,6 +155,11 @@ class OfflinePageClientPolicyBuilder {
       const bool disabled_when_prefetch_disabled) {
     policy_.feature_policy.disabled_when_prefetch_disabled =
         disabled_when_prefetch_disabled;
+    return *this;
+  }
+
+  OfflinePageClientPolicyBuilder& SetIsSuggested(const bool is_suggested) {
+    policy_.feature_policy.is_suggested = is_suggested;
     return *this;
   }
 

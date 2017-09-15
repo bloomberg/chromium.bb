@@ -60,6 +60,10 @@ class ClientPolicyController {
   const std::vector<std::string>& GetNamespacesDisabledWhenPrefetchDisabled()
       const;
 
+  // Returns whether pages for |name_space| originate from suggested URLs and
+  // are downloaded on behalf of user.
+  bool IsSuggested(const std::string& name_space) const;
+
   void AddPolicyForTest(const std::string& name_space,
                         const OfflinePageClientPolicyBuilder& builder);
 
