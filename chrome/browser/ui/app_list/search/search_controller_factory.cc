@@ -137,8 +137,10 @@ std::unique_ptr<SearchController> CreateSearchController(
 
 #if defined(OS_CHROMEOS)
   if (features::IsPlayStoreAppSearchEnabled()) {
+    // Set same boost 5.0 as apps group since Play store results are placed with
+    // apps.
     size_t playstore_api_group_id =
-        controller->AddGroup(kMaxPlayStoreResults, 1.0, 0.0);
+        controller->AddGroup(kMaxPlayStoreResults, 1.0, 5.0);
     controller->AddProvider(
         playstore_api_group_id,
         base::MakeUnique<ArcPlayStoreSearchProvider>(kMaxPlayStoreResults,
