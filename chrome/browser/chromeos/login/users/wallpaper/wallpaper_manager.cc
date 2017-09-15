@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -36,7 +37,6 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_window_state_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -929,7 +929,7 @@ void WallpaperManager::OnWindowActivated(ActivationReason reason,
   ash::ShelfID shelf_id =
       ash::ShelfID::Deserialize(gained_active->GetProperty(ash::kShelfIDKey));
   if (shelf_id.app_id == arc_wallpapers_app_id) {
-    chromeos::WallpaperWindowStateManager::MinimizeInactiveWindows(
+    ash::WallpaperWindowStateManager::MinimizeInactiveWindows(
         user_manager::UserManager::Get()->GetActiveUser()->username_hash());
     DCHECK(!ash_util::IsRunningInMash() && ash::Shell::Get());
     activation_client_observer_.Remove(ash::Shell::Get()->activation_client());
@@ -939,7 +939,7 @@ void WallpaperManager::OnWindowActivated(ActivationReason reason,
 
 void WallpaperManager::OnWindowDestroying(aura::Window* window) {
   window_observer_.Remove(window);
-  chromeos::WallpaperWindowStateManager::RestoreWindows(
+  ash::WallpaperWindowStateManager::RestoreWindows(
       user_manager::UserManager::Get()->GetActiveUser()->username_hash());
 }
 

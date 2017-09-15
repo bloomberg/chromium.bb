@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_WALLPAPER_WALLPAPER_WINDOW_STATE_MANAGER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_WALLPAPER_WALLPAPER_WINDOW_STATE_MANAGER_H_
+#ifndef ASH_WALLPAPER_WALLPAPER_WINDOW_STATE_MANAGER_H_
+#define ASH_WALLPAPER_WALLPAPER_WINDOW_STATE_MANAGER_H_
 
 #include <map>
 #include <set>
 #include <string>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 
@@ -16,20 +17,22 @@ namespace aura {
 class Window;
 }
 
-namespace chromeos {
+namespace ash {
 
 // WallpaperWindowStateManager remembers which windows have been minimized in
 // order to restore them when the wallpaper viewer is hidden.
-class WallpaperWindowStateManager : public aura::WindowObserver {
+class ASH_EXPORT WallpaperWindowStateManager : public aura::WindowObserver {
  public:
   typedef std::map<std::string, std::set<aura::Window*>>
       UserIDHashWindowListMap;
 
   // Minimizes all windows except the active window.
+  // TODO(mash): Expose this via a mojo API. http://crbug.com/557405
   static void MinimizeInactiveWindows(const std::string& user_id_hash);
 
   // Unminimizes all minimized windows restoring them to their previous state.
   // This should only be called after calling MinimizeInactiveWindows.
+  // TODO(mash): Expose this via a mojo API. http://crbug.com/557405
   static void RestoreWindows(const std::string& user_id_hash);
 
  private:
@@ -62,6 +65,6 @@ class WallpaperWindowStateManager : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WallpaperWindowStateManager);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_WALLPAPER_WALLPAPER_WINDOW_STATE_MANAGER_H_
+#endif  // ASH_WALLPAPER_WALLPAPER_WINDOW_STATE_MANAGER_H_

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -26,7 +27,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_window_state_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -623,8 +623,11 @@ WallpaperPrivateMinimizeInactiveWindowsFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateMinimizeInactiveWindowsFunction::Run() {
-  chromeos::WallpaperWindowStateManager::MinimizeInactiveWindows(
-      user_manager::UserManager::Get()->GetActiveUser()->username_hash());
+  // TODO(mash): Convert to mojo API. http://crbug.com/557405
+  if (!ash_util::IsRunningInMash()) {
+    ash::WallpaperWindowStateManager::MinimizeInactiveWindows(
+        user_manager::UserManager::Get()->GetActiveUser()->username_hash());
+  }
   return RespondNow(NoArguments());
 }
 
@@ -638,8 +641,11 @@ WallpaperPrivateRestoreMinimizedWindowsFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateRestoreMinimizedWindowsFunction::Run() {
-  chromeos::WallpaperWindowStateManager::RestoreWindows(
-      user_manager::UserManager::Get()->GetActiveUser()->username_hash());
+  // TODO(mash): Convert to mojo API. http://crbug.com/557405
+  if (!ash_util::IsRunningInMash()) {
+    ash::WallpaperWindowStateManager::RestoreWindows(
+        user_manager::UserManager::Get()->GetActiveUser()->username_hash());
+  }
   return RespondNow(NoArguments());
 }
 
