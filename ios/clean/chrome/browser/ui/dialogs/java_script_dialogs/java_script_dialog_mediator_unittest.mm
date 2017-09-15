@@ -25,6 +25,18 @@
 #error "This file requires ARC support."
 #endif
 
+// Test dispatcher that performs no-ops for JavaScriptDialogDismissalCommands.
+@interface TestJavaScriptDialogDismissalDispatcher
+    : NSObject<JavaScriptDialogDismissalCommands>
+@end
+
+@implementation TestJavaScriptDialogDismissalDispatcher
+- (void)dismissJavaScriptDialog {
+}
+- (void)dismissJavaScriptDialogWithBlockingConfirmation {
+}
+@end
+
 namespace {
 // Tests whether |button| is a configuration for an OK button.
 void TestOKButtonConfig(DialogButtonConfiguration* button) {
@@ -37,16 +49,6 @@ void TestCancelButtonConfig(DialogButtonConfiguration* button) {
   EXPECT_NSEQ(button.text, l10n_util::GetNSString(IDS_CANCEL));
 }
 }
-
-// Test dispatcher that performs no-ops for JavaScriptDialogDismissalCommands.
-@interface TestJavaScriptDialogDismissalDispatcher
-    : NSObject<JavaScriptDialogDismissalCommands>
-@end
-
-@implementation TestJavaScriptDialogDismissalDispatcher
-- (void)dismissJavaScriptDialog {
-}
-@end
 
 // A test fixture for DialogMediators.
 class JavaScriptDialogMediatorTest : public PlatformTest {

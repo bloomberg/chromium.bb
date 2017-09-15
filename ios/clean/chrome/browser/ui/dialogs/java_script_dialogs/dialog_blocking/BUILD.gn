@@ -1,22 +1,16 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("java_script_dialogs") {
+source_set("dialog_blocking") {
   sources = [
-    "java_script_dialog_coordinator.h",
-    "java_script_dialog_coordinator.mm",
-    "java_script_dialog_mediator.h",
-    "java_script_dialog_mediator.mm",
-    "java_script_dialog_overlay_presenter.h",
-    "java_script_dialog_overlay_presenter.mm",
+    "java_script_dialog_blocking_confirmation_coordinator.h",
+    "java_script_dialog_blocking_confirmation_coordinator.mm",
+    "java_script_dialog_blocking_confirmation_mediator.h",
+    "java_script_dialog_blocking_confirmation_mediator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
-
-  public_deps = [
-    ":java_script_dialog_request",
-  ]
 
   deps = [
     "//components/strings",
@@ -29,25 +23,8 @@ source_set("java_script_dialogs") {
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/dialogs:dialog_coordinator_support",
     "//ios/clean/chrome/browser/ui/dialogs:dialogs_ui",
-    "//ios/clean/chrome/browser/ui/dialogs/java_script_dialogs/dialog_blocking",
+    "//ios/clean/chrome/browser/ui/dialogs/java_script_dialogs:java_script_dialog_request",
     "//ios/clean/chrome/browser/ui/overlays",
-    "//ios/web",
-    "//ui/base",
-    "//url",
-  ]
-}
-
-source_set("java_script_dialog_request") {
-  sources = [
-    "java_script_dialog_request.h",
-    "java_script_dialog_request.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    "//base",
-    "//components/strings",
     "//ios/web",
     "//ui/base",
     "//url",
@@ -57,17 +34,17 @@ source_set("java_script_dialog_request") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "java_script_dialog_mediator_unittest.mm",
+    "java_script_dialog_blocking_confirmation_mediator_unittest.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":java_script_dialog_request",
-    ":java_script_dialogs",
+    ":dialog_blocking",
     "//base",
     "//base/test:test_support",
     "//components/strings:components_strings_grit",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/coordinators",
@@ -76,8 +53,8 @@ source_set("unit_tests") {
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/dialogs:dialog_coordinator_support",
     "//ios/clean/chrome/browser/ui/dialogs:dialogs_ui",
+    "//ios/clean/chrome/browser/ui/dialogs/java_script_dialogs:java_script_dialog_request",
     "//ios/clean/chrome/browser/ui/dialogs/test_helpers",
-    "//ios/clean/chrome/browser/ui/overlays/test_helpers",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

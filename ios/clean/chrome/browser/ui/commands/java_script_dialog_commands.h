@@ -8,9 +8,11 @@
 // Command protocol for dismissing JavaScript dialogs.
 @protocol JavaScriptDialogDismissalCommands<NSObject>
 
-// Called after the user interaction with the JavaScript dialog has been handled
-// and the dialog can be dismissed.
+// Dismiss the current JavaScript dialog.
 - (void)dismissJavaScriptDialog;
+
+// Dismiss the current JavaScript dialog and show the blocking confirmation UI.
+- (void)dismissJavaScriptDialogWithBlockingConfirmation;
 
 @end
 

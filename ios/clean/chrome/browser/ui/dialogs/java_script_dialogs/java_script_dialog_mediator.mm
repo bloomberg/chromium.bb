@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/clean/chrome/browser/ui/commands/java_script_dialog_commands.h"
 #import "ios/clean/chrome/browser/ui/dialogs/dialog_button_configuration.h"
 #import "ios/clean/chrome/browser/ui/dialogs/dialog_button_style.h"
@@ -21,7 +23,7 @@
 
 @interface JavaScriptDialogMediator ()<DialogDismissalCommands>
 
-// The dismissal dispatcher
+// The dismissal dispatcher.
 @property(nonatomic, readonly, strong) id<JavaScriptDialogDismissalCommands>
     dismissalDispatcher;
 // The request passed on initializaton.
@@ -29,6 +31,7 @@
 // The configuration identifiers.
 @property(nonatomic, weak) DialogConfigurationIdentifier* OKButtonID;
 @property(nonatomic, weak) DialogConfigurationIdentifier* cancelButtonID;
+@property(nonatomic, weak) DialogConfigurationIdentifier* blockButtonID;
 @property(nonatomic, weak) DialogConfigurationIdentifier* promptTextFieldID;
 
 // Called when buttons are tapped to dispatch JavaScriptDialogDismissalCommands.
@@ -43,6 +46,7 @@
 @synthesize request = _request;
 @synthesize OKButtonID = _OKButtonID;
 @synthesize cancelButtonID = _cancelButtonID;
+@synthesize blockButtonID = _blockButtonID;
 @synthesize promptTextFieldID = _promptTextFieldID;
 
 - (instancetype)initWithRequest:(JavaScriptDialogRequest*)request
@@ -66,6 +70,8 @@
     [self OKButtonWasTappedWithTextFieldValues:textFieldValues];
   } else if (buttonID == self.cancelButtonID) {
     [self cancelButtonWasTapped];
+  } else if (buttonID == self.blockButtonID) {
+    [self.dismissalDispatcher dismissJavaScriptDialogWithBlockingConfirmation];
   } else {
     NOTREACHED() << "Received dialog dismissal for unknown button tag.";
   }
@@ -117,6 +123,17 @@
                            configWithText:cancelText
                                     style:DialogButtonStyle::CANCEL]];
     self.cancelButtonID = [configs lastObject].identifier;
+  }
+  // Add the blocking option if indicated to by the WebState's blocking state.
+  JavaScriptDialogBlockingState* blockingState =
+      JavaScriptDialogBlockingState::FromWebState(self.request.webState);
+  if (blockingState && blockingState->show_blocking_option()) {
+    NSString* blockingText =
+        l10n_util::GetNSString(IDS_IOS_JAVA_SCRIPT_DIALOG_BLOCKING_BUTTON_TEXT);
+    [configs addObject:[DialogButtonConfiguration
+                           configWithText:blockingText
+                                    style:DialogButtonStyle::DEFAULT]];
+    self.blockButtonID = [configs lastObject].identifier;
   }
   return [configs copy];
 }
