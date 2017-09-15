@@ -18,23 +18,6 @@
 class Browser;
 class Profile;
 
-// NotificationDelegate which does nothing, useful for testing when
-// the notification events are not important.
-class MockNotificationDelegate : public NotificationDelegate {
- public:
-  explicit MockNotificationDelegate(const std::string& id);
-
-  // NotificationDelegate interface.
-  std::string id() const override;
-
- private:
-  ~MockNotificationDelegate() override;
-
-  std::string id_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockNotificationDelegate);
-};
-
 class StubNotificationUIManager : public NotificationUIManager {
  public:
   StubNotificationUIManager();

@@ -75,10 +75,9 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
 
   Profile* profile() { return browser()->profile(); }
 
-  class TestDelegate : public NotificationDelegate {
+  class TestDelegate : public message_center::NotificationDelegate {
    public:
-    explicit TestDelegate(const std::string& id) : id_(id) {}
-
+    TestDelegate() = default;
     void Display() override { log_ += "Display_"; }
     void Close(bool by_user) override {
       log_ += "Close_";
@@ -89,41 +88,36 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
       log_ += "ButtonClick_";
       log_ += base::IntToString(button_index) + "_";
     }
-    std::string id() const override { return id_; }
 
     const std::string& log() { return log_; }
 
    private:
     ~TestDelegate() override {}
-    std::string id_;
     std::string log_;
 
     DISALLOW_COPY_AND_ASSIGN(TestDelegate);
   };
 
-  Notification CreateTestNotification(const std::string& delegate_id,
+  Notification CreateTestNotification(const std::string& id,
                                       TestDelegate** delegate = NULL) {
-    TestDelegate* new_delegate = new TestDelegate(delegate_id);
+    TestDelegate* new_delegate = new TestDelegate();
     if (delegate) {
       *delegate = new_delegate;
       new_delegate->AddRef();
     }
 
-    return Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
+    return Notification(message_center::NOTIFICATION_TYPE_SIMPLE, id,
                         base::ASCIIToUTF16("title"),
-                        base::ASCIIToUTF16("message"),
-                        gfx::Image(),
+                        base::ASCIIToUTF16("message"), gfx::Image(),
                         message_center::NotifierId(),
                         base::UTF8ToUTF16("chrome-test://testing/"),
-                        GURL("chrome-test://testing/"),
-                        "REPLACE-ME",
-                        message_center::RichNotificationData(),
-                        new_delegate);
+                        GURL("chrome-test://testing/"), "REPLACE-ME",
+                        message_center::RichNotificationData(), new_delegate);
   }
 
   Notification CreateRichTestNotification(const std::string& id,
                                           TestDelegate** delegate = NULL) {
-    TestDelegate* new_delegate = new TestDelegate(id);
+    TestDelegate* new_delegate = new TestDelegate();
     if (delegate) {
       *delegate = new_delegate;
       new_delegate->AddRef();
@@ -132,7 +126,7 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
     message_center::RichNotificationData data;
 
     return Notification(
-        message_center::NOTIFICATION_TYPE_BASE_FORMAT,
+        message_center::NOTIFICATION_TYPE_BASE_FORMAT, id,
         base::ASCIIToUTF16("title"), base::ASCIIToUTF16("message"),
         gfx::Image(),
         message_center::NotifierId(message_center::NotifierId::APPLICATION,

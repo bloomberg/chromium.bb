@@ -54,7 +54,7 @@ QuitWithAppsController::QuitWithAppsController()
 
   // There is only ever one notification to replace, so use the same tag
   // each time.
-  std::string tag = id();
+  std::string tag = kQuitWithAppsNotificationID;
 
   message_center::ButtonInfo quit_apps_button_info(
       l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_QUIT_LABEL));
@@ -67,7 +67,7 @@ QuitWithAppsController::QuitWithAppsController()
   }
 
   notification_.reset(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
+      message_center::NOTIFICATION_TYPE_SIMPLE, kQuitWithAppsNotificationID,
       l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_TITLE),
       l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_EXPLANATION),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -90,12 +90,14 @@ void QuitWithAppsController::Close(bool by_user) {
 
 void QuitWithAppsController::Click() {
   g_browser_process->notification_ui_manager()->CancelById(
-      id(), NotificationUIManager::GetProfileID(notification_profile_));
+      kQuitWithAppsNotificationID,
+      NotificationUIManager::GetProfileID(notification_profile_));
 }
 
 void QuitWithAppsController::ButtonClick(int button_index) {
   g_browser_process->notification_ui_manager()->CancelById(
-      id(), NotificationUIManager::GetProfileID(notification_profile_));
+      kQuitWithAppsNotificationID,
+      NotificationUIManager::GetProfileID(notification_profile_));
 
   if (button_index == kQuitAllAppsButtonIndex) {
     if (hosted_app_quit_notification_) {
@@ -111,10 +113,6 @@ void QuitWithAppsController::ButtonClick(int button_index) {
     g_browser_process->local_state()->SetBoolean(
         prefs::kNotifyWhenAppsKeepChromeAlive, false);
   }
-}
-
-std::string QuitWithAppsController::id() const {
-  return kQuitWithAppsNotificationID;
 }
 
 bool QuitWithAppsController::ShouldQuit() {
@@ -185,7 +183,8 @@ bool QuitWithAppsController::ShouldQuit() {
   // added by this class yet.
   if (notification_profile_) {
     g_browser_process->notification_ui_manager()->CancelById(
-        id(), NotificationUIManager::GetProfileID(notification_profile_));
+        kQuitWithAppsNotificationID,
+        NotificationUIManager::GetProfileID(notification_profile_));
   }
   notification_profile_ = profiles[0];
   g_browser_process->notification_ui_manager()->Add(*notification_,

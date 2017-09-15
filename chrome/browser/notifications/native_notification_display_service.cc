@@ -12,12 +12,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_display_service.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_event_dispatcher.h"
+#include "ui/message_center/notification_delegate.h"
 
 namespace {
 

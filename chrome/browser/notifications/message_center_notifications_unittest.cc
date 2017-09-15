@@ -71,16 +71,13 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
 
   const ::Notification GetANotification(const std::string& id) {
     return ::Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        base::string16(),
-        base::string16(),
-        gfx::Image(),
+        message_center::NOTIFICATION_TYPE_SIMPLE, id, base::string16(),
+        base::string16(), gfx::Image(),
         NotifierId(NotifierId::APPLICATION, "adflkjsdflkdsfdsflkjdsflkdjfs"),
         base::string16(),
-        GURL("chrome-extension://adflkjsdflkdsfdsflkjdsflkdjfs"),
-        id,
+        GURL("chrome-extension://adflkjsdflkdsfdsflkjdsflkdjfs"), id,
         message_center::RichNotificationData(),
-        new MockNotificationDelegate(id));
+        new message_center::NotificationDelegate());
   }
 
  private:

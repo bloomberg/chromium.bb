@@ -9,13 +9,6 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "content/public/test/test_utils.h"
 
-MockNotificationDelegate::MockNotificationDelegate(const std::string& id)
-    : id_(id) {}
-
-MockNotificationDelegate::~MockNotificationDelegate() {}
-
-std::string MockNotificationDelegate::id() const { return id_; }
-
 // -----------------------------------------------------------------------------
 
 StubNotificationUIManager::StubNotificationUIManager() {}

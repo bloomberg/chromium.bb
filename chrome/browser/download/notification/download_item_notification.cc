@@ -177,7 +177,7 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
 // interface. It exists because NotificationDelegate supports ref counting and
 // DownloadItemNotification does not.
 class DownloadItemNotification::DownloadItemNotificationDelegate
-    : public NotificationDelegate {
+    : public message_center::NotificationDelegate {
  public:
   explicit DownloadItemNotificationDelegate(DownloadItemNotification* item)
       : item_(item) {}
@@ -194,8 +194,6 @@ class DownloadItemNotification::DownloadItemNotificationDelegate
   void ButtonClick(int button_index) override {
     item_->OnNotificationButtonClick(button_index);
   }
-
-  std::string id() const override { return item_->GetNotificationId(); }
 
  private:
   ~DownloadItemNotificationDelegate() override {}
@@ -216,7 +214,7 @@ DownloadItemNotification::DownloadItemNotification(
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.should_make_spoken_feedback_for_popup_updates = false;
   notification_.reset(new Notification(
-      message_center::NOTIFICATION_TYPE_PROGRESS,
+      message_center::NOTIFICATION_TYPE_PROGRESS, GetNotificationId(),
       base::string16(),  // title
       base::string16(),  // body
       gfx::Image(),      // icon
