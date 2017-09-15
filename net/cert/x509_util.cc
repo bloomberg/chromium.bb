@@ -36,9 +36,6 @@ namespace x509_util {
 namespace {
 
 bool AddRSASignatureAlgorithm(CBB* cbb, DigestAlgorithm algorithm) {
-  // See RFC 3279.
-  static const uint8_t kSHA1WithRSAEncryption[] = {0x2a, 0x86, 0x48, 0x86, 0xf7,
-                                                   0x0d, 0x01, 0x01, 0x05};
   // See RFC 4055.
   static const uint8_t kSHA256WithRSAEncryption[] = {
       0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x0b};
@@ -51,11 +48,6 @@ bool AddRSASignatureAlgorithm(CBB* cbb, DigestAlgorithm algorithm) {
   }
 
   switch (algorithm) {
-    case DIGEST_SHA1:
-      if (!CBB_add_bytes(&oid, kSHA1WithRSAEncryption,
-                         sizeof(kSHA1WithRSAEncryption)))
-        return false;
-      break;
     case DIGEST_SHA256:
       if (!CBB_add_bytes(&oid, kSHA256WithRSAEncryption,
                          sizeof(kSHA256WithRSAEncryption)))
@@ -73,8 +65,6 @@ bool AddRSASignatureAlgorithm(CBB* cbb, DigestAlgorithm algorithm) {
 
 const EVP_MD* ToEVP(DigestAlgorithm alg) {
   switch (alg) {
-    case DIGEST_SHA1:
-      return EVP_sha1();
     case DIGEST_SHA256:
       return EVP_sha256();
   }
@@ -228,8 +218,8 @@ bool GetTLSServerEndPointChannelBinding(const X509Certificate& certificate,
 // RSA keys created by CreateKeyAndSelfSignedCert will be of this length.
 static const uint16_t kRSAKeyLength = 1024;
 
-// Certificates made by CreateKeyAndSelfSignedCert and
-//  CreateKeyAndChannelIDEC will be signed using this digest algorithm.
+// Certificates made by CreateKeyAndSelfSignedCert will be signed using this
+// digest algorithm.
 static const DigestAlgorithm kSignatureDigestAlgorithm = DIGEST_SHA256;
 
 bool CreateKeyAndSelfSignedCert(const std::string& subject,
