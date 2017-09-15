@@ -378,8 +378,13 @@ template("linux_package") {
     }
 
     inputs = packaging_files
+    if (is_chrome_branded) {
+      package = "google-chrome"
+    } else {
+      package = "chromium-browser"
+    }
     outputs = [
-      "$root_out_dir/google-chrome-${channel}_${chrome_version_full}-1_${deb_arch}.deb",
+      "$root_out_dir/${package}-${channel}_${chrome_version_full}-1_${deb_arch}.deb",
     ]
 
     args = [
@@ -423,8 +428,13 @@ template("linux_package") {
       }
 
       inputs = packaging_files
+      if (is_chrome_branded) {
+        package = "google-chrome"
+      } else {
+        package = "chromium-browser"
+      }
       outputs = [
-        "$root_out_dir/google-chrome-${channel}-${chrome_version_full}-1.${rpm_arch}.rpm",
+        "$root_out_dir/${package}-${channel}-${chrome_version_full}-1.${rpm_arch}.rpm",
       ]
 
       args = [
