@@ -220,6 +220,55 @@ FcCompareRange (const FcValue *v1, const FcValue *v2, FcValue *bestValue)
 }
 
 static double
+FcCompareSize (const FcValue *v1, const FcValue *v2, FcValue *bestValue)
+{
+    FcValue value1 = FcValueCanonicalize (v1);
+    FcValue value2 = FcValueCanonicalize (v2);
+    double b1, e1, b2, e2;
+
+    switch ((int) value1.type) {
+    case FcTypeInteger:
+        b1 = e1 = value1.u.i;
+	break;
+    case FcTypeDouble:
+        b1 = e1 = value1.u.d;
+	break;
+    case FcTypeRange:
+	abort();
+	b1 = value1.u.r->begin;
+	e1 = value1.u.r->end;
+	break;
+    default:
+	return -1;
+    }
+    switch ((int) value2.type) {
+    case FcTypeInteger:
+        b2 = e2 = value2.u.i;
+	break;
+    case FcTypeDouble:
+        b2 = e2 = value2.u.d;
+	break;
+    case FcTypeRange:
+	b2 = value2.u.r->begin;
+	e2 = value2.u.r->end;
+	break;
+    default:
+	return -1;
+    }
+
+    bestValue->type = FcTypeDouble;
+    bestValue->u.d = (b1 + e1) * .5;
+
+    /* If the ranges overlap, it's a match, otherwise return closest distance. */
+    if (e1 < b2 || e2 < b1)
+	return FC_MIN (fabs (b2 - e1), fabs (b1 - e2));
+    if (b2 != e2 && b1 == e2) /* Semi-closed interval. */
+        return 1e-15;
+    else
+	return 0.0;
+}
+
+static double
 FcCompareFilename (const FcValue *v1, const FcValue *v2, FcValue *bestValue)
 {
     const FcChar8 *s1 = FcValueString (v1), *s2 = FcValueString (v2);
@@ -250,6 +299,7 @@ FcCompareFilename (const FcValue *v1, const FcValue *v2, FcValue *bestValue)
 #define PRI_FcCompareLang(n)		PRI1(n)
 #define PRI_FcComparePostScript(n)	PRI1(n)
 #define PRI_FcCompareRange(n)		PRI1(n)
+#define PRI_FcCompareSize(n)		PRI1(n)
 
 #define FC_OBJECT(NAME, Type, Cmp)	PRI_##Cmp(NAME)
 
