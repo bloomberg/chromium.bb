@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#navigatorplugins
-partial interface Navigator {
+[
+    ImplementedAs=NavigatorPlugins
+] partial interface Navigator {
     readonly attribute PluginArray plugins;
     readonly attribute MimeTypeArray mimeTypes;
     boolean javaEnabled();

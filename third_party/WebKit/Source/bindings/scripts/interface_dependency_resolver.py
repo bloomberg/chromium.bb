@@ -162,10 +162,9 @@ def merge_interface_dependencies(definitions, component, target_interface, depen
         dependency_component = idl_filename_to_component(dependency_idl_filename)
 
         dependency_interface = next(dependency_definitions.interfaces.itervalues())
-        dependency_interface_basename, _ = os.path.splitext(os.path.basename(dependency_idl_filename))
 
         transfer_extended_attributes(dependency_interface,
-                                     dependency_interface_basename)
+                                     dependency_idl_filename)
 
         # We need to use different checkdeps here for partial interface and
         # inheritance.
@@ -247,7 +246,7 @@ def merge_interface_dependencies(definitions, component, target_interface, depen
     return resolved_definitions
 
 
-def transfer_extended_attributes(dependency_interface, dependency_interface_basename):
+def transfer_extended_attributes(dependency_interface, dependency_idl_filename):
     """Transfer extended attributes from dependency interface onto members.
 
     Merging consists of storing certain interface-level data in extended
@@ -276,10 +275,8 @@ def transfer_extended_attributes(dependency_interface, dependency_interface_base
 
     # A partial interface's members are implemented as static member functions
     # in a separate C++ class. This class name is stored in
-    # [PartialInterfaceImplementedAs] which defaults to the basename of
-    # dependency IDL file.
-    # This class name can be overridden by [ImplementedAs] on the partial
-    # interface definition.
+    # [PartialInterfaceImplementedAs] which is copied from [ImplementedAs] on
+    # the partial interface definition.
     #
     # Note that implemented interfaces do *not* need [ImplementedAs], since
     # they are implemented on the C++ object |impl| itself, just like members of
@@ -297,11 +294,17 @@ def transfer_extended_attributes(dependency_interface, dependency_interface_base
     # for Blink class name and function name (or constant name), respectively.
     # Thus we do not want to copy this from the interface to the member, but
     # instead extract it and handle it separately.
-    if (dependency_interface.is_partial or
-        'LegacyTreatAsPartialInterface' in dependency_interface.extended_attributes):
+    if dependency_interface.is_partial:
+        if 'ImplementedAs' not in dependency_interface.extended_attributes:
+            raise ValueError('Partial interface in %s must have ImplementedAs.'
+                             % dependency_idl_filename)
+        merged_extended_attributes['PartialInterfaceImplementedAs'] = \
+            dependency_interface.extended_attributes.pop('ImplementedAs')
+    elif 'LegacyTreatAsPartialInterface' in \
+         dependency_interface.extended_attributes:
         merged_extended_attributes['PartialInterfaceImplementedAs'] = (
             dependency_interface.extended_attributes.pop(
-                'ImplementedAs', dependency_interface_basename))
+                'ImplementedAs', dependency_interface.name))
 
     def update_attributes(attributes, extras):
         for key, value in extras.items():

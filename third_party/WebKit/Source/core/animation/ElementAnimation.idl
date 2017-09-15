@@ -34,7 +34,9 @@
 // TODO(dstockwell): This should be an Animatable interface, where Element
 // implements Animatable.
 
-partial interface Element {
+[
+    ImplementedAs=ElementAnimation
+] partial interface Element {
     // TODO(dstockwell): The argument types do not match the spec.
     [CallWith=ScriptState, Measure, RaisesException] Animation animate((sequence<Dictionary> or Dictionary)? effect, optional (unrestricted double or KeyframeAnimationOptions) options);
     [RuntimeEnabled=WebAnimationsAPI] sequence<Animation> getAnimations();

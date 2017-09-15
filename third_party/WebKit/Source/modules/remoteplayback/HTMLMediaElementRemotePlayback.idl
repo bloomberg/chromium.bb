@@ -4,7 +4,9 @@
 
 // https://w3c.github.io/remote-playback/#extension-to-the-htmlmediaelement
 
-partial interface HTMLMediaElement {
+[
+    ImplementedAs=HTMLMediaElementRemotePlayback
+] partial interface HTMLMediaElement {
     [RuntimeEnabled=RemotePlayback] readonly attribute RemotePlayback remote;
     [CEReactions, Reflect, RuntimeEnabled=RemotePlayback] attribute boolean disableRemotePlayback;
 };

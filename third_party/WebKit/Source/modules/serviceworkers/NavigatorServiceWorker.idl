@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/ServiceWorker/#navigator-serviceworker
-partial interface Navigator {
+[
+    ImplementedAs=NavigatorServiceWorker
+] partial interface Navigator {
     [RaisesException, CallWith=ScriptState] readonly attribute ServiceWorkerContainer serviceWorker;
 };

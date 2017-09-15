@@ -17,7 +17,9 @@
 // 4. cancelKeyboardLock() function is implicitly called whenever the unloading
 //    document cleanup steps run with a document.
 //    See https://github.com/w3c/keyboard-lock/issues/22
-partial interface Navigator {
+[
+    ImplementedAs=NavigatorKeyboardLock
+] partial interface Navigator {
     [SecureContext, RuntimeEnabled=KeyboardLock, CallWith=ScriptState] Promise<void> requestKeyboardLock(optional sequence<DOMString> keyCodes = []);
     [SecureContext, RuntimeEnabled=KeyboardLock] void cancelKeyboardLock();
 };

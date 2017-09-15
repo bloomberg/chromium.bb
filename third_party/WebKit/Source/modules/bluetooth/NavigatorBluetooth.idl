@@ -5,6 +5,7 @@
 // https://webbluetoothcg.github.io/web-bluetooth/#navigator-extensions
 
 [
+    ImplementedAs=NavigatorBluetooth,
     RuntimeEnabled=WebBluetooth
 ] partial interface Navigator {
     [SameObject] readonly attribute Bluetooth bluetooth;

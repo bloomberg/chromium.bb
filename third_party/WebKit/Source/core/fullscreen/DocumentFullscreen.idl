@@ -21,7 +21,9 @@
 
 // https://fullscreen.spec.whatwg.org/#api
 
-partial interface Document {
+[
+    ImplementedAs=DocumentFullscreen
+] partial interface Document {
     [RuntimeEnabled=FullscreenUnprefixed] readonly attribute boolean fullscreenEnabled;
 
     [RuntimeEnabled=FullscreenUnprefixed] void exitFullscreen();

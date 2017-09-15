@@ -34,6 +34,8 @@
 // TODO(foolip): Update link if it's revived in the spec:
 // https://github.com/w3c/mediacapture-main/issues/404
 
-partial interface URL {
+[
+    ImplementedAs=URLMediaStream
+] partial interface URL {
     [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ScriptState] static DOMString createObjectURL(MediaStream stream);
 };

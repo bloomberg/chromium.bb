@@ -20,7 +20,9 @@
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#custom-handlers
 
-partial interface Navigator {
+[
+    ImplementedAs=NavigatorContentUtils
+] partial interface Navigator {
     [RuntimeEnabled=NavigatorContentUtils, RaisesException] void registerProtocolHandler(DOMString scheme, DOMString url, DOMString title);
     [RuntimeEnabled=CustomSchemeHandler, RaisesException] DOMString isProtocolHandlerRegistered(DOMString scheme, DOMString url);
     [RuntimeEnabled=NavigatorContentUtils, RaisesException] void unregisterProtocolHandler(DOMString scheme, DOMString url);

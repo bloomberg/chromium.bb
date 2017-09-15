@@ -4,8 +4,10 @@
 
 // https://w3c.github.io/clipboard-apis/#navigator-interface
 
-[RuntimeEnabled=AsyncClipboard]
-partial interface Navigator {
+[
+  ImplementedAs=NavigatorClipboard,
+  RuntimeEnabled=AsyncClipboard
+] partial interface Navigator {
   [CallWith=ScriptState, SecureContext, SameObject]
   readonly attribute Clipboard clipboard;
 };

@@ -5,6 +5,7 @@
 // https://github.com/WICG/media-capabilities/blob/master/eme-extension-policy-check.md
 
 [
+    ImplementedAs=MediaKeysGetStatusForPolicy,
     RuntimeEnabled=EncryptedMediaHdcpPolicyCheck
 ] partial interface MediaKeys {
     [CallWith=ScriptState] Promise<MediaKeyStatus> getStatusForPolicy(MediaKeysPolicy policy);

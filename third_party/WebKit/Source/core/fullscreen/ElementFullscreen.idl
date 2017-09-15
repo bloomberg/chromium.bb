@@ -4,7 +4,9 @@
 
 // https://fullscreen.spec.whatwg.org/#api
 
-partial interface Element {
+[
+    ImplementedAs=ElementFullscreen
+] partial interface Element {
     [RuntimeEnabled=FullscreenUnprefixed] void requestFullscreen();
 
     [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenchange;

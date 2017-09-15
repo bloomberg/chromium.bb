@@ -5,6 +5,7 @@
 // https://wicg.github.io/background-fetch/#events
 
 [
+    ImplementedAs=ServiceWorkerGlobalScopeBackgroundFetch,
     RuntimeEnabled=BackgroundFetch
 ] partial interface ServiceWorkerGlobalScope {
     attribute EventHandler onbackgroundfetched;

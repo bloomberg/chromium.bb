@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-partial interface Navigator {
+[
+    ImplementedAs=NavigatorDoNotTrack
+] partial interface Navigator {
     readonly attribute DOMString? doNotTrack;
 };

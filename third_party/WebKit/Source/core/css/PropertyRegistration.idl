@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // https://drafts.css-houdini.org/css-properties-values-api/#registering-custom-properties
-partial interface CSS {
+[
+    ImplementedAs=PropertyRegistration
+] partial interface CSS {
     [RuntimeEnabled=CSSVariables2, MeasureAs=CSSRegisterProperty, CallWith=ExecutionContext, RaisesException]
         static void registerProperty(PropertyDescriptor descriptor);
 };

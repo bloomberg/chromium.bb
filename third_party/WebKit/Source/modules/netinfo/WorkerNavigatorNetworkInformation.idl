@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 [
-    Exposed=Worker
+    Exposed=Worker,
+    ImplementedAs=WorkerNavigatorNetworkInformation
 ] partial interface WorkerNavigator {
     [CallWith=ScriptState, MeasureAs=NetInfo] readonly attribute NetworkInformation connection;
 };

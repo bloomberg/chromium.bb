@@ -17,7 +17,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-partial interface WorkerNavigator {
+[
+    ImplementedAs=WorkerNavigatorStorageQuota
+] partial interface WorkerNavigator {
     // https://storage.spec.whatwg.org/#api
     [SecureContext] readonly attribute StorageManager storage;
 };
