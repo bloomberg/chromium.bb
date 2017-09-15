@@ -29,7 +29,6 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -58,23 +57,6 @@ const int kGetCertificateFailed = 3;
 const int kResetRequired = 4;
 
 const char kUserEmail[] = "test@google.com";
-
-// A simple functor to invoke a callback with predefined arguments.
-class FakeBoolDBusMethod {
- public:
-  FakeBoolDBusMethod(chromeos::DBusMethodCallStatus status, bool value)
-      : status_(status),
-        value_(value) {}
-
-  void operator() (const chromeos::BoolDBusMethodCallback& callback) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, status_, value_));
-  }
-
- private:
-  chromeos::DBusMethodCallStatus status_;
-  bool value_;
-};
 
 void RegisterKeyCallbackTrue(
     chromeos::attestation::AttestationKeyType key_type,
