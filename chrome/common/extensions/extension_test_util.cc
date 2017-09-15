@@ -6,14 +6,18 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using extensions::Extension;
 using extensions::Manifest;
@@ -79,6 +83,19 @@ scoped_refptr<Extension> LoadManifestStrict(const std::string& dir,
 scoped_refptr<Extension> LoadManifest(const std::string& dir,
                                       const std::string& test_file) {
   return LoadManifest(dir, test_file, Extension::NO_FLAGS);
+}
+
+void SetGalleryURL(const GURL& new_url) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(switches::kAppsGalleryURL, new_url.spec());
+  extensions::ExtensionsClient::Get()->InitializeWebStoreUrls(command_line);
+}
+
+void SetGalleryUpdateURL(const GURL& new_url) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(switches::kAppsGalleryUpdateURL,
+                                  new_url.spec());
+  extensions::ExtensionsClient::Get()->InitializeWebStoreUrls(command_line);
 }
 
 }  // namespace extension_test_util

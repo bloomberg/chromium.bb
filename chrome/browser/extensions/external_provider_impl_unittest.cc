@@ -22,8 +22,8 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -106,9 +106,8 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 
     test_extension_cache_.reset(new ExtensionCacheFake());
 
-    base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-    cmdline->AppendSwitchASCII(switches::kAppsGalleryUpdateURL,
-                               test_server_->GetURL(kManifestPath).spec());
+    extension_test_util::SetGalleryUpdateURL(
+        test_server_->GetURL(kManifestPath));
   }
 
  private:

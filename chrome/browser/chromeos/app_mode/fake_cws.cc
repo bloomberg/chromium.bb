@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "crypto/sha2.h"
+#include "extensions/common/extensions_client.h"
 #include "net/base/url_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -83,7 +84,7 @@ void FakeCWS::Init(net::EmbeddedTestServer* embedded_test_server) {
   update_check_end_point_ = "/update_check.xml";
 
   SetupWebStoreURL(embedded_test_server->base_url());
-  OverrideGalleryCommandlineSwitches();
+  OverrideGalleryCommandlineSwitches(GalleryUpdateMode::kOnlyCommandLine);
   embedded_test_server->RegisterRequestHandler(
       base::Bind(&FakeCWS::HandleRequest, base::Unretained(this)));
 }
@@ -95,7 +96,8 @@ void FakeCWS::InitAsPrivateStore(net::EmbeddedTestServer* embedded_test_server,
   update_check_end_point_ = update_check_end_point;
 
   SetupWebStoreURL(embedded_test_server->base_url());
-  OverrideGalleryCommandlineSwitches();
+  OverrideGalleryCommandlineSwitches(
+      GalleryUpdateMode::kModifyExtensionsClient);
 
   embedded_test_server->RegisterRequestHandler(
       base::Bind(&FakeCWS::HandleRequest, base::Unretained(this)));
@@ -150,7 +152,8 @@ void FakeCWS::SetupWebStoreURL(const GURL& test_server_url) {
   web_store_url_ = test_server_url.ReplaceComponents(replace_webstore_host);
 }
 
-void FakeCWS::OverrideGalleryCommandlineSwitches() {
+void FakeCWS::OverrideGalleryCommandlineSwitches(
+    GalleryUpdateMode gallery_update_mode) {
   DCHECK(web_store_url_.is_valid());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -167,6 +170,9 @@ void FakeCWS::OverrideGalleryCommandlineSwitches() {
   GURL update_url = web_store_url_.Resolve(update_check_end_point_);
   command_line->AppendSwitchASCII(::switches::kAppsGalleryUpdateURL,
                                   update_url.spec());
+
+  if (gallery_update_mode == GalleryUpdateMode::kModifyExtensionsClient)
+    extensions::ExtensionsClient::Get()->InitializeWebStoreUrls(command_line);
 }
 
 bool FakeCWS::GetUpdateCheckContent(const std::vector<std::string>& ids,

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/app_list/search/webstore/webstore_result.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension_urls.h"
@@ -171,9 +172,8 @@ class WebstoreProviderTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
     // Minor hack: the gallery URL is expected not to end with a slash. Just
     // append "path" to maintain this.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        ::switches::kAppsGalleryURL,
-        embedded_test_server()->base_url().spec() + "path");
+    const GURL gallery_url(embedded_test_server()->base_url().spec() + "path");
+    extension_test_util::SetGalleryURL(gallery_url);
 
     mock_controller_.reset(new AppListControllerDelegateForTest);
     webstore_provider_.reset(new WebstoreProvider(

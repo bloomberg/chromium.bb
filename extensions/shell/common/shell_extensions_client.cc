@@ -88,6 +88,9 @@ void ShellExtensionsClient::Initialize() {
                                               GetExtensionsPermissionAliases());
 }
 
+void ShellExtensionsClient::InitializeWebStoreUrls(
+    base::CommandLine* command_line) {}
+
 const PermissionMessageProvider&
 ShellExtensionsClient::GetPermissionMessageProvider() const {
   NOTIMPLEMENTED();

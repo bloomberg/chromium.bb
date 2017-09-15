@@ -19,7 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/model/attachments/attachment_id.h"
 #include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
@@ -162,8 +162,7 @@ class ThemeSyncableServiceTest : public testing::Test {
   void SetUp() override {
     // Setting a matching update URL is necessary to make the test theme
     // considered syncable.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAppsGalleryUpdateURL, kCustomThemeUrl);
+    extension_test_util::SetGalleryUpdateURL(GURL(kCustomThemeUrl));
 
     profile_.reset(new TestingProfile);
     fake_theme_service_ = BuildForProfile(profile_.get());
