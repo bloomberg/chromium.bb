@@ -44,7 +44,7 @@ class PaintControllerPaintTestBase : private ScopedSlimmingPaintV2ForTest,
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       if (GetLayoutView().Layer()->NeedsRepaint()) {
         GraphicsContext graphics_context(RootPaintController());
-        GetDocument().View()->Paint(graphics_context,
+        GetDocument().View()->Paint(graphics_context, kGlobalPaintNormalPhase,
                                     CullRect(LayoutRect::InfiniteIntRect()));
         return true;
       }

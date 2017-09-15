@@ -6,6 +6,7 @@
 #define EmbeddedContentView_h
 
 #include "core/CoreExport.h"
+#include "core/paint/PaintPhase.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -30,7 +31,9 @@ class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
   virtual void SetFrameRect(const IntRect&) = 0;
   virtual void FrameRectsChanged() = 0;
   virtual const IntRect& FrameRect() const = 0;
-  virtual void Paint(GraphicsContext&, const CullRect&) const = 0;
+  virtual void Paint(GraphicsContext&,
+                     const GlobalPaintFlags,
+                     const CullRect&) const = 0;
   // Called when the size of the view changes.  Implementations of
   // EmbeddedContentView should call LayoutEmbeddedContent::UpdateGeometry in
   // addition to any internal logic.

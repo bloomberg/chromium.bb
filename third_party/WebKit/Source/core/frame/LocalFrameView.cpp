@@ -4779,8 +4779,9 @@ ScrollBehavior LocalFrameView::ScrollBehaviorStyle() const {
 }
 
 void LocalFrameView::Paint(GraphicsContext& context,
+                           const GlobalPaintFlags global_paint_flags,
                            const CullRect& cull_rect) const {
-  PaintInternal(context, kGlobalPaintNormalPhase, cull_rect);
+  PaintInternal(context, global_paint_flags, cull_rect);
 }
 
 void LocalFrameView::PaintWithLifecycleUpdate(

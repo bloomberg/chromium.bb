@@ -146,6 +146,7 @@ void WebPluginContainerImpl::SetFrameRect(const IntRect& frame_rect) {
 }
 
 void WebPluginContainerImpl::Paint(GraphicsContext& context,
+                                   const GlobalPaintFlags,
                                    const CullRect& cull_rect) const {
   // Don't paint anything if the plugin doesn't intersect.
   if (!cull_rect.IntersectsCullRect(frame_rect_))
