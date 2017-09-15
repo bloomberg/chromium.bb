@@ -51,6 +51,7 @@ class ArcTermsOfServiceScreenHandler
   // OobeUI::Observer:
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
+  void OnScreenInitialized(OobeScreen screen) override{};
 
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;

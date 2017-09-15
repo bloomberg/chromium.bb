@@ -226,6 +226,7 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   void SetBaseScreen(BaseScreen* base_screen);
 
  private:
+  friend class OobeUI;
   // Calls Javascript method.
   //
   // Note that the Args template parameter pack should consist of types
