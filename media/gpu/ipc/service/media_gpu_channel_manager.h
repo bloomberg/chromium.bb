@@ -38,6 +38,7 @@ class MediaGpuChannelManager
   void DestroyAllChannels();
 
   void SetOverlayFactory(AndroidOverlayMojoFactoryCB overlay_factory_cb);
+  AndroidOverlayMojoFactoryCB GetOverlayFactory();
 
   // TODO(sandersd): Should we expose the MediaGpuChannel instead?
   gpu::GpuChannel* LookupChannel(const base::UnguessableToken& channel_token);

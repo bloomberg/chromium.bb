@@ -17,7 +17,6 @@
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/avda_codec_allocator.h"
-#include "media/gpu/android/content_video_view_overlay.h"
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #include "media/base/android/extract_sps_and_pps.h"
@@ -101,6 +100,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     DeviceInfo* device_info,
     AVDACodecAllocator* codec_allocator,
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
+    AndroidOverlayMojoFactoryCB overlay_factory_cb,
     std::unique_ptr<VideoFrameFactory> video_frame_factory,
     std::unique_ptr<service_manager::ServiceContextRef> context_ref)
     : state_(State::kInitializing),
@@ -113,6 +113,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       codec_allocator_(codec_allocator),
       surface_chooser_(std::move(surface_chooser)),
       video_frame_factory_(std::move(video_frame_factory)),
+      overlay_factory_cb_(std::move(overlay_factory_cb)),
       device_info_(device_info),
       context_ref_(std::move(context_ref)),
       weak_factory_(this),
@@ -621,10 +622,8 @@ void MediaCodecVideoDecoder::ReleaseCodec() {
 }
 
 AndroidOverlayFactoryCB MediaCodecVideoDecoder::CreateOverlayFactoryCb() {
-  if (overlay_info_.HasValidSurfaceId()) {
-    return base::Bind(&ContentVideoViewOverlay::Create,
-                      overlay_info_.surface_id);
-  } else if (overlay_info_.HasValidRoutingToken() && overlay_factory_cb_) {
+  DCHECK(!overlay_info_.HasValidSurfaceId());
+  if (overlay_info_.HasValidRoutingToken() && overlay_factory_cb_) {
     return base::Bind(overlay_factory_cb_, *overlay_info_.routing_token);
   }
   return AndroidOverlayFactoryCB();
