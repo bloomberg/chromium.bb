@@ -2186,8 +2186,10 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
       child_attacher = &whitespace_attacher;
     }
     RebuildPseudoElementLayoutTree(kPseudoIdAfter, *child_attacher);
-    RebuildShadowRootLayoutTree(*child_attacher);
-    RebuildChildrenLayoutTrees(*child_attacher);
+    if (Shadow())
+      RebuildShadowRootLayoutTree(*child_attacher);
+    else
+      RebuildChildrenLayoutTrees(*child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdBefore, *child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdBackdrop, *child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdFirstLetter, *child_attacher);
@@ -2200,10 +2202,12 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
 
 void Element::RebuildShadowRootLayoutTree(
     WhitespaceAttacher& whitespace_attacher) {
+  DCHECK(Shadow());
   for (ShadowRoot* root = YoungestShadowRoot(); root;
        root = root->OlderShadowRoot()) {
     root->RebuildLayoutTree(whitespace_attacher);
   }
+  RebuildNonDistributedChildren();
 }
 
 void Element::RebuildPseudoElementLayoutTree(

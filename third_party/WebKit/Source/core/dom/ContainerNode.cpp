@@ -1473,6 +1473,25 @@ void ContainerNode::RebuildLayoutTreeForChild(
     whitespace_attacher.DidVisitElement(element);
 }
 
+void ContainerNode::RebuildNonDistributedChildren() {
+  // Non-distributed children are:
+  // 1. Children of shadow hosts which are not slotted (v1) or distributed to an
+  //    insertion point (v0).
+  // 2. Children of <slot> (v1) and <content> (v0) elements which are not used
+  //    as fallback content when no nodes are slotted/distributed.
+  //
+  // These children will not take part in the flat tree, but we need to walk
+  // them in order to clear dirtiness flags during layout tree rebuild. We
+  // need to use a separate WhitespaceAttacher so that DidVisitText does not
+  // mess up the WhitespaceAttacher for the layout tree rebuild of the nodes
+  // which take part in the flat tree.
+  WhitespaceAttacher whitespace_attacher;
+  for (Node* child = lastChild(); child; child = child->previousSibling())
+    RebuildLayoutTreeForChild(child, whitespace_attacher);
+  ClearChildNeedsStyleRecalc();
+  ClearChildNeedsReattachLayoutTree();
+}
+
 void ContainerNode::RebuildChildrenLayoutTrees(
     WhitespaceAttacher& whitespace_attacher) {
   DCHECK(!NeedsReattachLayoutTree());
@@ -1485,6 +1504,8 @@ void ContainerNode::RebuildChildrenLayoutTrees(
       ToV0InsertionPoint(this)->RebuildDistributedChildrenLayoutTrees(
           whitespace_attacher);
     }
+    RebuildNonDistributedChildren();
+    return;
   }
 
   // This loop is deliberately backwards because we use insertBefore in the
