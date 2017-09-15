@@ -10,4 +10,7 @@
 // Waits for |coordinator|'s UI to finish being presented.
 void WaitForBrowserCoordinatorActivation(BrowserCoordinator* coordinator);
 
+// Waits for |coordinator|'s UI to finish being dismissed.
+void WaitForBrowserCoordinatorDeactivation(BrowserCoordinator* coordinator);
+
 #endif  // IOS_CHROME_BROWSER_UI_COORDINATORS_BROWSER_COORDINATOR_TEST_UTIL_H_

@@ -25,6 +25,11 @@ class TestOverlayQueue : public OverlayQueue {
   // presented before returning.
   void StartNextOverlay() override;
 
+  // Replaces the visible overlay with |overlay_coordinator|, waiting until the
+  // visible overlay's view controller has finished being dimissed before
+  // returning.
+  void ReplaceVisibleOverlay(OverlayCoordinator* overlay_coordinator) override;
+
   // Seting the Browser also sets the Browser of |parent_|, which will be passed
   // along to OverlayCoordinators presented by this queue when they are started.
   Browser* browser() const { return browser_; }
