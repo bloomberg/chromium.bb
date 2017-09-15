@@ -214,7 +214,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/VisualStateTest.java",
     "../javatests/src/org/chromium/android_webview/test/WebKitHitTestTest.java",
     "../javatests/src/org/chromium/android_webview/test/WebViewAsynchronousFindApisTest.java",
-    "../javatests/src/org/chromium/android_webview/test/WebViewFindApisTestBase.java",
+    "../javatests/src/org/chromium/android_webview/test/WebViewFindApisTestRule.java",
     "../javatests/src/org/chromium/android_webview/test/WebViewModalDialogOverrideTest.java",
     "../javatests/src/org/chromium/android_webview/test/WebViewWebVrTest.java",
     "../javatests/src/org/chromium/android_webview/test/crash/CrashReceiverServiceTest.java",
