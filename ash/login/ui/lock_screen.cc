@@ -63,15 +63,6 @@ void LockScreen::Show() {
   auto data_dispatcher = base::MakeUnique<LoginDataDispatcher>();
   auto* contents = BuildContentsView(data_dispatcher.get());
 
-  // TODO(jdufault|crbug.com/731191): Call NotifyUsers via
-  // LockScreenController::LoadUsers once it uses a mojom specific type.
-  std::vector<mojom::UserInfoPtr> users;
-  for (const mojom::UserSessionPtr& session :
-       Shell::Get()->session_controller()->GetUserSessions()) {
-    users.push_back(session->user_info->Clone());
-  }
-  data_dispatcher->NotifyUsers(users);
-
   auto* window = instance_->window_ = new LockWindow(Shell::GetAshConfig());
   window->SetBounds(display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
   window->SetContentsView(contents);
@@ -113,9 +104,8 @@ void LockScreen::ToggleBlurForDebug() {
   }
 }
 
-void LockScreen::SetPinEnabledForUser(const AccountId& account_id,
-                                      bool is_enabled) {
-  window_->data_dispatcher()->SetPinEnabledForUser(account_id, is_enabled);
+LoginDataDispatcher* LockScreen::data_dispatcher() const {
+  return window_->data_dispatcher();
 }
 
 }  // namespace ash

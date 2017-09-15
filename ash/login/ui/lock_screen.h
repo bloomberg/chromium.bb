@@ -10,8 +10,6 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 
-class AccountId;
-
 namespace ui {
 class Layer;
 }
@@ -19,6 +17,7 @@ class Layer;
 namespace ash {
 
 class LockWindow;
+class LoginDataDispatcher;
 
 class LockScreen {
  public:
@@ -39,8 +38,8 @@ class LockScreen {
   // Enables/disables background blur. Used for debugging purpose.
   void ToggleBlurForDebug();
 
-  // Enable or disable PIN for the given user.
-  void SetPinEnabledForUser(const AccountId& account_id, bool is_enabled);
+  // Returns the active data dispatcher.
+  LoginDataDispatcher* data_dispatcher() const;
 
  private:
   LockScreen();
