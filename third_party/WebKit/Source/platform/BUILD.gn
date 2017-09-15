@@ -4,6 +4,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -246,7 +247,7 @@ config("blink_platform_pch") {
   }
 }
 
-component("platform") {
+jumbo_component("platform") {
   visibility = []  # Allow re-assignment of list.
   visibility = [
     "//components/pdf/common:interfaces_blink",
@@ -1475,6 +1476,17 @@ component("platform") {
              get_target_outputs(":instrumentation_probes") +
              get_target_outputs(":runtime_enabled_features")
 
+  if (is_win && is_component_build) {
+    # https://crbug.com/764823 - Mixing certain //url/ headers and
+    # using url::RawCanonOutputT<char> in one translation unit breaks
+    # the Windows component build. These files use RawCanonOutput.
+    jumbo_excluded_sources = [
+      "LinkHash.cpp",
+      "weborigin/KURL.cpp",
+      "weborigin/OriginAccessEntry.cpp",
+      "weborigin/SecurityOrigin.cpp",
+    ]
+  }
   configs += [
     ":blink_platform_pch",
     ":blink_platform_config",
