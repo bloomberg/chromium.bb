@@ -48,10 +48,10 @@
 #include "modules/indexeddb/IDBValueWrapping.h"
 #include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,7 +81,7 @@ class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {
 class IDBTransactionTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    url_loader_mock_factory_ = Platform::Current()->GetURLLoaderMockFactory();
+    url_loader_mock_factory_ = platform_->GetURLLoaderMockFactory();
     WebURLResponse response;
     response.SetURL(KURL(NullURL(), "blob:"));
     url_loader_mock_factory_->RegisterURLProtocol(WebString("blob"), response,
@@ -113,6 +113,7 @@ class IDBTransactionTest : public ::testing::Test {
   Persistent<IDBDatabase> db_;
   Persistent<IDBTransaction> transaction_;
   Persistent<IDBObjectStore> store_;
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 
   static constexpr int64_t kTransactionId = 1234;
   static constexpr int64_t kStoreId = 5678;
