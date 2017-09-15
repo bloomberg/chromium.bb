@@ -62,6 +62,9 @@ static const int kEstimatedEntryOverhead = 512;
 
 namespace disk_cache {
 
+const base::Feature kSimpleCacheEvictionWithSize = {
+    "SimpleCacheEvictionWithSize", base::FEATURE_ENABLED_BY_DEFAULT};
+
 EntryMetadata::EntryMetadata()
     : last_used_time_seconds_since_epoch_(0),
       entry_size_256b_chunks_(0),
@@ -353,12 +356,7 @@ void SimpleIndex::StartEvictionIfNeeded() {
   std::vector<std::pair<uint64_t, const EntrySet::value_type*>> entries;
   entries.reserve(entries_set_.size());
   uint32_t now = (base::Time::Now() - base::Time::UnixEpoch()).InSeconds();
-  bool use_size = false;
-  SimpleExperiment experiment = GetSimpleExperiment(cache_type_);
-  if (experiment.type == SimpleExperimentType::EVICT_WITH_SIZE &&
-      experiment.param) {
-    use_size = true;
-  }
+  bool use_size = base::FeatureList::IsEnabled(kSimpleCacheEvictionWithSize);
   for (EntrySet::const_iterator i = entries_set_.begin();
        i != entries_set_.end(); ++i) {
     uint64_t sort_value = now - i->second.RawTimeForSorting();

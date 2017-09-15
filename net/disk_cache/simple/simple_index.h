@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -42,6 +43,8 @@ class BackendCleanupTracker;
 class SimpleIndexDelegate;
 class SimpleIndexFile;
 struct SimpleIndexLoadResult;
+
+NET_EXPORT_PRIVATE extern const base::Feature kSimpleCacheEvictionWithSize;
 
 class NET_EXPORT_PRIVATE EntryMetadata {
  public:
