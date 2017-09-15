@@ -55,6 +55,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
                                 BookmarkTableCellTitleEditDelegate,
                                 SigninPromoViewConsumer,
                                 SyncedSessionsObserver,
+                                UIGestureRecognizerDelegate,
                                 UITableViewDataSource,
                                 UITableViewDelegate> {
   // A vector of bookmark nodes to display in the table view.
@@ -180,6 +181,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
             initWithTarget:self
                     action:@selector(handleLongPress:)];
     longPressRecognizer.numberOfTouchesRequired = 1;
+    longPressRecognizer.delegate = self;
     [self.tableView addGestureRecognizer:longPressRecognizer];
     [self addSubview:self.tableView];
     [self bringSubviewToFront:self.tableView];
@@ -275,6 +277,26 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   // When the current root node has been removed remotely (becomes NULL),
   // creating new folder is forbidden.
   return _currentRootNode != NULL;
+}
+
+- (CGFloat)contentPosition {
+  UITableViewCell* cell = [[self.tableView visibleCells] firstObject];
+  if (cell) {
+    NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
+    if (indexPath.section == self.bookmarksSection) {
+      // Cache the content position only if the bookmarks section is visible.
+      return indexPath.row;
+    }
+  }
+  return 0;
+}
+
+- (void)setContentPosition:(CGFloat)position {
+  NSIndexPath* path =
+      [NSIndexPath indexPathForRow:position inSection:self.bookmarksSection];
+  [self.tableView scrollToRowAtIndexPath:path
+                        atScrollPosition:UITableViewScrollPositionTop
+                                animated:NO];
 }
 
 #pragma mark - UITableViewDataSource
@@ -556,6 +578,17 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (NSInteger)sectionCount {
   return [self shouldShowPromoCell] ? 2 : 1;
+}
+
+#pragma mark - Gesture recognizer
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
+       shouldReceiveTouch:(UITouch*)touch {
+  // Ignore long press in edit mode.
+  if (self.editing) {
+    return NO;
+  }
+  return YES;
 }
 
 #pragma mark - Private

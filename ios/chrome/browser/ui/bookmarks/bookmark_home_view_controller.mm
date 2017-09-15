@@ -30,6 +30,7 @@
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_panel_view.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -104,6 +105,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @synthesize contextBar = _contextBar;
 @synthesize contextBarState = _contextBarState;
 @synthesize dispatcher = _dispatcher;
+@synthesize cachedContentPosition = _cachedContentPosition;
+@synthesize isReconstructingFromCache = _isReconstructingFromCache;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -178,6 +181,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+  if (self.isReconstructingFromCache) {
+    [self setupUIStackCacheIfApplicable];
+  }
+}
+
 #pragma mark - Public
 
 - (void)dismissModals {
@@ -233,8 +242,17 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     bookmark_utils_ios::CachePosition(
         [self.folderView contentPositionInPortraitOrientation],
         [self primaryMenuItem]);
+    return;
   }
-  // TODO(crbug.com/695749): Cache position for BookmarkTableView in new UI.
+
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
+    // Cache position for BookmarkTableView in new UI.
+    BookmarkPathCache* cache = [BookmarkPathCache
+        cacheForBookmarkFolder:_rootNode->id()
+                      position:self.bookmarksTableView.contentPosition];
+    bookmark_utils_ios::CacheBookmarkUIPosition(cache);
+    return;
+  }
 }
 
 - (BOOL)shouldShowBackButtonOnNavigationBar {
@@ -404,15 +422,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)bookmarkTableView:(BookmarkTableView*)view
     selectedFolderForNavigation:(const bookmarks::BookmarkNode*)folder {
-  BookmarkControllerFactory* bookmarkControllerFactory =
-      [[BookmarkControllerFactory alloc] init];
   BookmarkHomeViewController* controller =
-      (BookmarkHomeViewController*)[bookmarkControllerFactory
-          bookmarkControllerWithBrowserState:self.browserState
-                                      loader:_loader
-                                  dispatcher:self.dispatcher];
-  [controller setRootNode:folder];
-  controller.homeDelegate = self.homeDelegate;
+      [self createControllerWithRootFolder:folder];
   [self.navigationController pushViewController:controller animated:YES];
 }
 
@@ -962,10 +973,55 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                           UIViewAutoresizingFlexibleHeight];
   [self.bookmarksTableView setTranslatesAutoresizingMaskIntoConstraints:NO];
+  if (self.cachedContentPosition) {
+    [self.bookmarksTableView
+        setContentPosition:self.cachedContentPosition.floatValue];
+  }
   [self.view addSubview:self.bookmarksTableView];
 
   if (_rootNode != self.bookmarks->root_node()) {
     [self setupContextBar];
+  }
+}
+
+- (void)setupUIStackCacheIfApplicable {
+  self.isReconstructingFromCache = NO;
+  BookmarkPathCache* pathCache =
+      bookmark_utils_ios::GetBookmarkUIPositionCache(self.bookmarks);
+  // If pathCache is nil or the cached folder is rootnode, then return.
+  if (!pathCache || pathCache.folderId == _rootNode->id()) {
+    return;
+  }
+
+  // Otherwise drill down until we recreate the UI stack for the cached bookmark
+  // path.
+  NSMutableArray* mutablePath = [bookmark_utils_ios::CreateBookmarkPath(
+      self.bookmarks, pathCache.folderId) mutableCopy];
+  if (!mutablePath) {
+    return;
+  }
+  NSArray* thisBookmarkPath =
+      bookmark_utils_ios::CreateBookmarkPath(self.bookmarks, _rootNode->id());
+  if (!thisBookmarkPath) {
+    return;
+  }
+
+  [mutablePath removeObjectsInArray:thisBookmarkPath];
+  const BookmarkNode* node = bookmark_utils_ios::FindFolderById(
+      self.bookmarks, [[mutablePath firstObject] longLongValue]);
+  DCHECK(node);
+  if (node) {
+    BookmarkHomeViewController* controller =
+        [self createControllerWithRootFolder:node];
+    // We only scroll to the last viewing position for the leaf
+    // node.
+    if (mutablePath.count == 1 && pathCache.position) {
+      [controller
+          setCachedContentPosition:[NSNumber
+                                       numberWithFloat:pathCache.position]];
+    }
+    controller.isReconstructingFromCache = YES;
+    [self.navigationController pushViewController:controller animated:NO];
   }
 }
 
@@ -1127,6 +1183,20 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     }
   }
   [super updateViewConstraints];
+}
+
+- (BookmarkHomeViewController*)createControllerWithRootFolder:
+    (const bookmarks::BookmarkNode*)folder {
+  BookmarkControllerFactory* bookmarkControllerFactory =
+      [[BookmarkControllerFactory alloc] init];
+  BookmarkHomeViewController* controller =
+      (BookmarkHomeViewController*)[bookmarkControllerFactory
+          bookmarkControllerWithBrowserState:self.browserState
+                                      loader:_loader
+                                  dispatcher:self.dispatcher];
+  [controller setRootNode:folder];
+  controller.homeDelegate = self.homeDelegate;
+  return controller;
 }
 
 #pragma mark - ContextBarDelegate implementation

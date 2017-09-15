@@ -108,6 +108,12 @@ class PrefRegistrySyncable;
 // Returns if current root node allows new folder to be created on it.
 - (BOOL)allowsNewFolder;
 
+// Returns the row position that is visible.
+- (CGFloat)contentPosition;
+
+// Scrolls the table view to the desired row position.
+- (void)setContentPosition:(CGFloat)position;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TABLE_VIEW_H_

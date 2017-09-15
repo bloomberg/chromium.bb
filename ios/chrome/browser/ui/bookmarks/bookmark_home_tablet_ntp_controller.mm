@@ -55,11 +55,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
 @interface BookmarkHomeTabletNTPController ()<BookmarkMenuViewDelegate>
 
-// When the view is first shown on the screen, this property represents the
-// cached value of the y of the content offset of the folder view. This
-// property is set to nil after it is used.
-@property(nonatomic, strong) NSNumber* cachedContentPosition;
-
 #pragma mark View loading, laying out, and switching.
 
 // Returns whether the menu should be in a side panel that slides in.
@@ -84,7 +79,6 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 @end
 
 @implementation BookmarkHomeTabletNTPController
-@synthesize cachedContentPosition = _cachedContentPosition;
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
 

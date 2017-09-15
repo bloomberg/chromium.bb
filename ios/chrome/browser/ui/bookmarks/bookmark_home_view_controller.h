@@ -62,6 +62,12 @@ class BookmarkNode;
                     dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
+// Set to YES, only when this view controller instance is being created
+// from cached path. Once the view controller is shown, this is set to NO.
+// This is so that the cache code is called only once in viewWillAppear, and
+// not every time the view appears.
+@property(nonatomic, assign) BOOL isReconstructingFromCache;
+
 // Setter to set _rootNode value.
 - (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode;
 
@@ -77,8 +83,6 @@ class BookmarkNode;
 // method is currently used in case of handset only. In the future it
 // will be used by both cases.
 - (void)dismissModals;
-- (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode;
-
 @end
 
 @interface BookmarkHomeViewController (ExposedForTesting)
