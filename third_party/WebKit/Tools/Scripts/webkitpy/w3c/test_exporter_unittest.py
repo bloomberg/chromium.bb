@@ -2,16 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import base64
 import json
 
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.executive_mock import MockExecutive, mock_git_commands
+from webkitpy.common.system.executive_mock import mock_git_commands
 from webkitpy.common.system.log_testing import LoggingTestCase
-from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
-from webkitpy.w3c.gerrit import GerritCL
-from webkitpy.w3c.gerrit_mock import MockGerritAPI
+from webkitpy.w3c.gerrit_mock import MockGerritAPI, MockGerritCL
 from webkitpy.w3c.test_exporter import TestExporter
 from webkitpy.w3c.wpt_github import PullRequest
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
@@ -40,11 +37,11 @@ class TestExporterTest(LoggingTestCase):
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[
             PullRequest(title='title1', number=1234, body='', state='open', labels=[]),
         ])
-        test_exporter.gerrit = MockGerritAPI(self.host, 'gerrit-username', 'gerrit-token')
+        test_exporter.gerrit = MockGerritAPI()
         test_exporter.get_exportable_commits = lambda: ([
-            ChromiumCommit(self.host, position='refs/heads/master@{#458475}'),
-            ChromiumCommit(self.host, position='refs/heads/master@{#458476}'),
-            ChromiumCommit(self.host, position='refs/heads/master@{#458477}'),
+            MockChromiumCommit(self.host, position='refs/heads/master@{#458475}'),
+            MockChromiumCommit(self.host, position='refs/heads/master@{#458476}'),
+            MockChromiumCommit(self.host, position='refs/heads/master@{#458477}'),
         ], [])
         success = test_exporter.main(['--credentials-json', '/tmp/credentials.json', '--dry-run'])
 
@@ -56,43 +53,18 @@ class TestExporterTest(LoggingTestCase):
         ])
 
     def test_creates_pull_request_for_all_exportable_commits(self):
-
-        # TODO(robertma): Use MockChromiumCommit instead.
-        def mock_command(args):
-            canned_git_outputs = {
-                'rev-list': '\n'.join([
-                    'c881563d734a86f7d9cd57ac509653a61c45c240',
-                    'add087a97844f4b9e307d9a216940582d96db306',
-                    'cbcd201627f19f81a1697aaaa93cc3a41e644dab',
-                ]),
-                'footers': 'fake-cr-position',
-                'remote': 'github',
-                'format-patch': 'fake patch',
-                'diff': 'fake patch diff',
-                'diff-tree': 'third_party/WebKit/LayoutTests/external/wpt/some_files',
-                'crrev-parse': 'c881563d734a86f7d9cd57ac509653a61c45c240',
-            }
-            if args[1] == 'show':
-                if 'c881563d734a86f7d9cd57ac509653a61c45c240' in args:
-                    return 'older fake text'
-                elif 'add087a97844f4b9e307d9a216940582d96db306' in args:
-                    return 'newer fake text'
-                elif 'cbcd201627f19f81a1697aaaa93cc3a41e644dab' in args:
-                    return 'newest fake text'
-            return canned_git_outputs.get(args[1], '')
-
-        self.host.executive = MockExecutive(run_command_fn=mock_command)
         test_exporter = TestExporter(self.host)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[], create_pr_fail_index=1)
-        test_exporter.gerrit = MockGerritAPI(self.host, 'gerrit-username', 'gerrit-token')
+        test_exporter.gerrit = MockGerritAPI()
+        test_exporter.get_exportable_commits = lambda: ([
+            MockChromiumCommit(self.host, position='refs/heads/master@{#1}', change_id='I001', subject='subject 1', body='body 1'),
+            MockChromiumCommit(self.host, position='refs/heads/master@{#2}', change_id='I002', subject='subject 2', body='body 2'),
+            MockChromiumCommit(self.host, position='refs/heads/master@{#3}', change_id='I003', subject='subject 3', body='body 3'),
+        ], [])
         success = test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
         self.assertTrue(success)
         self.assertEqual(test_exporter.wpt_github.calls, [
-            # get_exportable_commits
-            'pr_for_chromium_commit',
-            'pr_for_chromium_commit',
-            'pr_for_chromium_commit',
             # 1
             'pr_for_chromium_commit',
             'create_pr',
@@ -107,8 +79,8 @@ class TestExporterTest(LoggingTestCase):
             'add_label "chromium-export"',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [
-            ('chromium-export-c881563d73', 'older fake text', 'older fake text'),
-            ('chromium-export-cbcd201627', 'newest fake text', 'newest fake text'),
+            ('chromium-export-96862edfc1', 'subject 1', 'body 1\n\nChange-Id: I001'),
+            ('chromium-export-ce0e78bf18', 'subject 3', 'body 3\n\nChange-Id: I003'),
         ])
 
     def test_creates_and_merges_pull_requests(self):
@@ -153,7 +125,7 @@ class TestExporterTest(LoggingTestCase):
                 labels=[]  # It's important that this is empty.
             ),
         ], unsuccessful_merge_index=3)  # Mark the last PR as unmergable.
-        test_exporter.gerrit = MockGerritAPI(self.host, 'gerrit-username', 'gerrit-token')
+        test_exporter.gerrit = MockGerritAPI()
         test_exporter.get_exportable_commits = lambda: ([
             MockChromiumCommit(self.host, position='refs/heads/master@{#458475}', change_id='I0005'),
             MockChromiumCommit(self.host, position='refs/heads/master@{#458476}', change_id='I0476'),
@@ -198,11 +170,10 @@ class TestExporterTest(LoggingTestCase):
         test_exporter = TestExporter(self.host)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
         test_exporter.get_exportable_commits = lambda: ([], [])
-        test_exporter.gerrit = MockGerritAPI(self.host, 'gerrit-username', 'gerrit-token')
-        test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
-        test_exporter.gerrit.query_exportable_open_cls = lambda: [
-            GerritCL(data={
-                'change_id': '1',
+        test_exporter.gerrit = MockGerritAPI()
+        test_exporter.gerrit.exportable_open_cls = [MockGerritCL(
+            data={
+                'change_id': 'I001',
                 'subject': 'subject',
                 '_number': '1',
                 'current_revision': '1',
@@ -211,8 +182,10 @@ class TestExporterTest(LoggingTestCase):
                     '1': {'commit_with_footers': 'a commit with footers'}
                 },
                 'owner': {'email': 'test@chromium.org'},
-            }, api=test_exporter.gerrit),
-        ]
+            },
+            api=test_exporter.gerrit,
+            chromium_commit=MockChromiumCommit(self.host, subject='subject', body='fake body', change_id='I001')
+        )]
         test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
         self.assertEqual(test_exporter.wpt_github.calls, [
@@ -222,9 +195,9 @@ class TestExporterTest(LoggingTestCase):
             'add_label "do not merge yet"',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [
-            ('chromium-export-cl-1',
+            ('chromium-export-cl-I001',
              'subject',
-             'a commit with footers\nWPT-Export-Revision: 1'),
+             'fake body\n\nChange-Id: I001\nWPT-Export-Revision: 1'),
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_merged, [])
 
@@ -236,9 +209,9 @@ class TestExporterTest(LoggingTestCase):
                         state='open', labels=[]),
         ])
         test_exporter.get_exportable_commits = lambda: ([], [])
-        test_exporter.gerrit = MockGerritAPI(self.host, 'gerrit-username', 'gerrit-token')
-        test_exporter.gerrit.query_exportable_open_cls = lambda: [
-            GerritCL(data={
+        test_exporter.gerrit = MockGerritAPI()
+        test_exporter.gerrit.exportable_open_cls = [MockGerritCL(
+            data={
                 'change_id': '1',
                 'subject': 'subject',
                 '_number': '1',
@@ -248,8 +221,10 @@ class TestExporterTest(LoggingTestCase):
                     '1': {'commit_with_footers': 'a commit with footers'}
                 },
                 'owner': {'email': 'test@chromium.org'},
-            }, api=test_exporter.gerrit),
-        ]
+            },
+            api=test_exporter.gerrit,
+            chromium_commit=MockChromiumCommit(self.host)
+        )]
         success = test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
         self.assertTrue(success)
@@ -267,10 +242,9 @@ class TestExporterTest(LoggingTestCase):
                         state='open', labels=[]),
         ])
         test_exporter.get_exportable_commits = lambda: ([], [])
-        test_exporter.gerrit = MockGerritAPI(self.host, 'gerrit-username', 'gerrit-token')
-        test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
-        test_exporter.gerrit.query_exportable_open_cls = lambda: [
-            GerritCL(data={
+        test_exporter.gerrit = MockGerritAPI()
+        test_exporter.gerrit.exportable_open_cls = [MockGerritCL(
+            data={
                 'change_id': '1',
                 'subject': 'subject',
                 '_number': '1',
@@ -287,12 +261,15 @@ class TestExporterTest(LoggingTestCase):
                     },
                 },
                 'owner': {'email': 'test@chromium.org'},
-            }, api=test_exporter.gerrit),
-        ]
+            },
+            api=test_exporter.gerrit,
+            chromium_commit=MockChromiumCommit(self.host)
+        )]
         test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
         self.assertEqual(test_exporter.wpt_github.calls, [
             'pr_with_change_id',
+            'get_pr_branch',
             'update_pr',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [])
@@ -308,8 +285,7 @@ class TestExporterTest(LoggingTestCase):
         test_exporter.get_exportable_commits = lambda: ([
             MockChromiumCommit(self.host, change_id='decafbad'),
         ], [])
-        test_exporter.gerrit = MockGerritAPI(self.host, 'gerrit-username', 'gerrit-token')
-        test_exporter.gerrit.query_exportable_open_cls = lambda: []
+        test_exporter.gerrit = MockGerritAPI()
         success = test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
         self.assertTrue(success)
@@ -332,8 +308,7 @@ class TestExporterTest(LoggingTestCase):
         test_exporter.get_exportable_commits = lambda: ([
             MockChromiumCommit(self.host, change_id='decafbad'),
         ], [])
-        test_exporter.gerrit = MockGerritAPI(self.host, 'gerrit-username', 'gerrit-token')
-        test_exporter.gerrit.query_exportable_open_cls = lambda: []
+        test_exporter.gerrit = MockGerritAPI()
         success = test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
         self.assertTrue(success)
@@ -350,10 +325,9 @@ class TestExporterTest(LoggingTestCase):
         test_exporter = TestExporter(self.host)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
         test_exporter.get_exportable_commits = lambda: ([], [])
-        test_exporter.gerrit = MockGerritAPI(self.host, 'gerrit-username', 'gerrit-token')
-        test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
-        test_exporter.gerrit.query_exportable_open_cls = lambda: [
-            GerritCL(data={
+        test_exporter.gerrit = MockGerritAPI()
+        test_exporter.gerrit.exportable_open_cls = [MockGerritCL(
+            data={
                 'change_id': '1',
                 'subject': 'subject',
                 '_number': '1',
@@ -370,8 +344,10 @@ class TestExporterTest(LoggingTestCase):
                     },
                 },
                 'owner': {'email': 'test@chromium.org'},
-            }, api=test_exporter.gerrit),
-        ]
+            },
+            api=test_exporter.gerrit,
+            chromium_commit=MockChromiumCommit(self.host)
+        )]
         success = test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
         self.assertTrue(success)
@@ -383,10 +359,9 @@ class TestExporterTest(LoggingTestCase):
         test_exporter = TestExporter(self.host)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
         test_exporter.get_exportable_commits = lambda: ([], ['There was an error with the rutabaga.'])
-        test_exporter.gerrit = MockGerritAPI(self.host, 'gerrit-username', 'gerrit-token')
-        test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
+        test_exporter.gerrit = MockGerritAPI()
         success = test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
         self.assertFalse(success)
         self.assertLog(['INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
-                        'WARNING: There was an error with the rutabaga.\n'])
+                        'ERROR: There was an error with the rutabaga.\n'])
