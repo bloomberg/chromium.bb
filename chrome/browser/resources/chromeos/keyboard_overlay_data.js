@@ -4188,7 +4188,7 @@ var keyboardOverlayData = {
     'enter<>CTRL': 'keyboardOverlayAddWwwAndComAndOpenAddress',
     'enter<>SHIFT': 'keyboardOverlayFindPreviousText',
     'esc<>SEARCH': 'keyboardOverlayTaskManager',
-    'esc<>SEARCH<>SHIFT': 'keyboardOverlayUnPin',
+    'esc<>SEARCH<>SHIFT': 'keyboardOverlayUnpin',
     'f<>ALT': 'keyboardOverlayShowWrenchMenu',
     'f<>CTRL': 'keyboardOverlayFindText',
     'f1<>CTRL<>SEARCH': 'keyboardOverlayFocusPreviousPane',
