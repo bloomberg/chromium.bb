@@ -179,23 +179,23 @@ TEST_F(MetricsFinalizationTaskTest, MetricsAreReported) {
 
   // Attempt values match what was set above (non set values default to 0).
   histogram_tester.ExpectTotalCount(
-      "OfflinePages.Prefetching.ActionRetryAttempts.GeneratePageBundle", 2);
+      "OfflinePages.Prefetching.ActionAttempts.GeneratePageBundle", 2);
   histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.ActionRetryAttempts.GeneratePageBundle", 0, 1);
+      "OfflinePages.Prefetching.ActionAttempts.GeneratePageBundle", 0, 1);
   histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.ActionRetryAttempts.GeneratePageBundle", 1, 1);
+      "OfflinePages.Prefetching.ActionAttempts.GeneratePageBundle", 1, 1);
   histogram_tester.ExpectTotalCount(
-      "OfflinePages.Prefetching.ActionRetryAttempts.GetOperation", 2);
+      "OfflinePages.Prefetching.ActionAttempts.GetOperation", 2);
   histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.ActionRetryAttempts.GetOperation", 0, 1);
+      "OfflinePages.Prefetching.ActionAttempts.GetOperation", 0, 1);
   histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.ActionRetryAttempts.GetOperation", 1, 1);
+      "OfflinePages.Prefetching.ActionAttempts.GetOperation", 1, 1);
   histogram_tester.ExpectTotalCount(
-      "OfflinePages.Prefetching.ActionRetryAttempts.DownloadInitiation", 2);
+      "OfflinePages.Prefetching.ActionAttempts.DownloadInitiation", 2);
   histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.ActionRetryAttempts.DownloadInitiation", 0, 1);
+      "OfflinePages.Prefetching.ActionAttempts.DownloadInitiation", 0, 1);
   histogram_tester.ExpectBucketCount(
-      "OfflinePages.Prefetching.ActionRetryAttempts.DownloadInitiation", 1, 1);
+      "OfflinePages.Prefetching.ActionAttempts.DownloadInitiation", 1, 1);
 }
 
 TEST_F(MetricsFinalizationTaskTest, FileSizeMetricsAreReportedCorrectly) {

@@ -191,13 +191,13 @@ void ReportMetricsFor(const PrefetchItemStats& url, const base::Time now) {
   // Attempt counts reporting.
   static const int kMaxPossibleRetries = 20;
   UMA_HISTOGRAM_EXACT_LINEAR(
-      "OfflinePages.Prefetching.ActionRetryAttempts.GeneratePageBundle",
+      "OfflinePages.Prefetching.ActionAttempts.GeneratePageBundle",
       url.generate_bundle_attempts, kMaxPossibleRetries);
   UMA_HISTOGRAM_EXACT_LINEAR(
-      "OfflinePages.Prefetching.ActionRetryAttempts.GetOperation",
+      "OfflinePages.Prefetching.ActionAttempts.GetOperation",
       url.get_operation_attempts, kMaxPossibleRetries);
   UMA_HISTOGRAM_EXACT_LINEAR(
-      "OfflinePages.Prefetching.ActionRetryAttempts.DownloadInitiation",
+      "OfflinePages.Prefetching.ActionAttempts.DownloadInitiation",
       url.download_initiation_attempts, kMaxPossibleRetries);
 }
 
