@@ -190,10 +190,6 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
 
 // Verifies the existence and state of toolbar UI elements.
 - (void)testToolbarUI {
-  id<GREYMatcher> backButton =
-      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
-  id<GREYMatcher> forwardButton =
-      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_ACCNAME_FORWARD);
   id<GREYMatcher> reloadButton =
       chrome_test_util::ButtonWithAccessibilityLabelId(IDS_IOS_ACCNAME_RELOAD);
   id<GREYMatcher> bookmarkButton =
@@ -214,9 +210,9 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   if (IsIPadIdiom()) {
-    [[EarlGrey selectElementWithMatcher:backButton]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
         assertWithMatcher:grey_sufficientlyVisible()];
-    [[EarlGrey selectElementWithMatcher:forwardButton]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
         assertWithMatcher:grey_sufficientlyVisible()];
     [[EarlGrey selectElementWithMatcher:reloadButton]
         assertWithMatcher:grey_sufficientlyVisible()];
@@ -233,7 +229,7 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
 
   // Navigate to a page and verify the back button is enabled.
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
-  [[EarlGrey selectElementWithMatcher:backButton]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       assertWithMatcher:grey_interactable()];
 }
 
@@ -255,9 +251,8 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
       assertWithMatcher:grey_notNil()];
 
-  id<GREYMatcher> backButton =
-      chrome_test_util::ButtonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
-  [[EarlGrey selectElementWithMatcher:backButton] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
       assertWithMatcher:grey_notVisible()];
 
