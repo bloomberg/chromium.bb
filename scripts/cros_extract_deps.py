@@ -7,13 +7,15 @@
 from __future__ import print_function
 
 import json
-import portage  # pylint: disable=F0401
+import os
 
 from parallel_emerge import DepGraphGenerator
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import osutils
+from chromite.lib import portage_util
 
 def FlattenDepTree(deptree, pkgtable=None, parentcpv=None, get_cpe=False):
   """Simplify dependency json.
@@ -67,17 +69,18 @@ Turn something like this (the parallel_emerge DepsTree format):
     pkgtable = {}
   for cpv, record in deptree.iteritems():
     if cpv not in pkgtable:
-      cat, nam, ver, rev = portage.versions.catpkgsplit(cpv)
+      split = portage_util.SplitCPV(cpv)
       pkgtable[cpv] = {'deps': [],
                        'rev_deps': [],
-                       'name': nam,
-                       'category': cat,
-                       'version': '%s-%s' % (ver, rev),
+                       'name': split.package,
+                       'category': split.category,
+                       'version': '%s' % split.version,
                        'full_name': cpv,
                        'cpes': [],
                        'action': record['action']}
       if get_cpe:
-        pkgtable[cpv]['cpes'].extend(GetCPEFromCPV(cat, nam, ver))
+        pkgtable[cpv]['cpes'].extend(GetCPEFromCPV(
+            split.category, split.package, split.version_no_rev))
 
     # If we have a parent, that is a rev_dep for the current package.
     if parentcpv:
@@ -139,8 +142,73 @@ def GetCPEFromCPV(category, package, version):
   return cpes
 
 
-def ExtractCPEList(deps_list):
+def GenerateSDKCPVList(board):
+  """Find all SDK packages from package.provided
+
+  Args:
+    board: The board to use when finding SDK packages.
+
+  Returns:
+    A list of CPV Name strings, e.g.
+    ["sys-libs/glibc-2.23-r9", "dev-lang/go-1.8.3-r1"]
+  """
+  # Look at packages in package.provided.
+  board_root = cros_build_lib.GetSysroot(board)
+  sdk_file_path = os.path.join(board_root, 'etc', 'portage',
+                               'profile', 'package.provided')
+  for line in osutils.ReadFile(sdk_file_path).splitlines():
+    # Skip comments and empty lines.
+    line = line.split('#', 1)[0].strip()
+    if not line:
+      continue
+    yield line
+
+
+def GenerateCPEList(deps_list, board):
+  """Generate all CPEs for the packages included in deps_list and SDK packages
+
+  Args:
+    deps_list: A flattened dependency tree (cros_extract_deps format).
+    board: The board to use when finding SDK packages.
+
+  Returns:
+    A list of CPE info for packages in deps_list and SDK packages, e.g.
+    [
+      {
+        "ComponentName": "app-admin/sudo",
+        "Repository": "cros",
+        "Targets": [
+          "cpe:/a:todd_miller:sudo:1.8.19p2"
+        ]
+      },
+      {
+        "ComponentName": "sys-libs/glibc",
+        "Repository": "cros",
+        "Targets": [
+          "cpe:/a:gnu:glibc:2.23"
+        ]
+      }
+    ]
+  """
   cpe_dump = []
+
+  # Generage CPEs for SDK packages.
+  for sdk_cpv in GenerateSDKCPVList(board):
+    # Only add CPE for SDK CPVs missing in deps_list.
+    if deps_list.get(sdk_cpv) is not None:
+      continue
+
+    split = portage_util.SplitCPV(sdk_cpv)
+    cpes = GetCPEFromCPV(split.category, split.package, split.version_no_rev)
+    if cpes:
+      cpe_dump.append({'ComponentName': '%s/%s' % (split.category,
+                                                   split.package),
+                       'Repository': 'cros',
+                       'Targets': sorted(cpes)})
+    else:
+      logging.warning('No CPE entry for %s', sdk_cpv)
+
+  # Generage CPEs for packages in deps_list.
   for cpv, record in deps_list.iteritems():
     if record['cpes']:
       name = '%s/%s' % (record['category'], record['name'])
@@ -176,7 +244,7 @@ to stdout, in a serialized JSON format.""")
   deps_tree, _deps_info = deps.GenDependencyTree()
   deps_list = FlattenDepTree(deps_tree, get_cpe=(known_args.format == 'cpe'))
   if known_args.format == 'cpe':
-    deps_list = ExtractCPEList(deps_list)
+    deps_list = GenerateCPEList(deps_list, board=known_args.board)
 
   deps_output = json.dumps(deps_list, sort_keys=True, indent=2)
   if known_args.output_path:
