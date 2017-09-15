@@ -183,15 +183,15 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
     private void populateCacheFromProfileDataSource() {
         for (Map.Entry<String, ProfileDataSource.ProfileData> entry :
                 mProfileDataSource.getProfileDataMap().entrySet()) {
-            mCachedProfileData.put(
-                    entry.getKey(), createDisplayableProfileData(entry.getKey(), entry.getValue()));
+            mCachedProfileData.put(entry.getKey(), createDisplayableProfileData(entry.getValue()));
         }
     }
 
     private DisplayableProfileData createDisplayableProfileData(
-            String accountName, ProfileDataSource.ProfileData profileData) {
-        return new DisplayableProfileData(accountName, prepareAvatar(profileData.getAvatar()),
-                profileData.getFullName(), profileData.getGivenName());
+            ProfileDataSource.ProfileData profileData) {
+        return new DisplayableProfileData(profileData.getAccountName(),
+                prepareAvatar(profileData.getAvatar()), profileData.getFullName(),
+                profileData.getGivenName());
     }
 
     @Override
@@ -213,7 +213,7 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
         if (profileData == null) {
             mCachedProfileData.remove(accountId);
         } else {
-            mCachedProfileData.put(accountId, createDisplayableProfileData(accountId, profileData));
+            mCachedProfileData.put(accountId, createDisplayableProfileData(profileData));
         }
 
         for (Observer observer : mObservers) {
