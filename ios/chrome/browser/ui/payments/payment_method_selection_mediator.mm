@@ -133,6 +133,10 @@ using ::payment_request_util::
         item.methodTypeIcon = mobileApp->icon_image();
         break;
       }
+      case payments::PaymentInstrument::Type::SERVICE_WORKER_APP: {
+        NOTIMPLEMENTED();
+        break;
+      }
     }
 
     item.reserveRoomForAccessoryType = YES;

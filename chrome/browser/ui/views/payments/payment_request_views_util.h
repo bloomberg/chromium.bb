@@ -12,6 +12,7 @@
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/text_constants.h"
 
 namespace autofill {
@@ -72,11 +73,12 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     const base::string16& title,
     views::ButtonListener* delegate);
 
-// Returns an instrument image view for the given |icon_resource_id| and wanted
-// |opacity|. Includes a rounded rect border. Callers need to set the size of
-// the resulting ImageView. Callers should set a |tooltip_text|.
+// Returns an instrument image view for the given |img| or |icon_resource_id|
+// and wanted |opacity|. Includes a rounded rect border. Callers need to set the
+// size of the resulting ImageView. Callers should set a |tooltip_text|.
 std::unique_ptr<views::ImageView> CreateInstrumentIconView(
     int icon_resource_id,
+    const gfx::ImageSkia* img,
     const base::string16& tooltip_text,
     float opacity = 1.0f);
 

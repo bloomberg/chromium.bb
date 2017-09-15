@@ -15,6 +15,8 @@
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/core/address_normalizer.h"
 #include "components/payments/core/payments_profile_comparator.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/payment_app_provider.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace autofill {
@@ -42,6 +44,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // notification about the state changing.
   class Observer {
    public:
+    // Called when finished getting all available payment instruments.
+    virtual void OnGetAllPaymentInstrumentsFinished() = 0;
+
     // Called when the information (payment method, address/contact info,
     // shipping option) changes.
     virtual void OnSelectedInformationChanged() = 0;
@@ -67,7 +72,10 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
     virtual ~Delegate() {}
   };
 
-  PaymentRequestState(PaymentRequestSpec* spec,
+  using CanMakePaymentCallback = base::OnceCallback<void(bool)>;
+
+  PaymentRequestState(content::BrowserContext* context,
+                      PaymentRequestSpec* spec,
                       Delegate* delegate,
                       const std::string& app_locale,
                       autofill::PersonalDataManager* personal_data_manager,
@@ -88,9 +96,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override {}
   void OnSpecUpdated() override;
 
-  // Returns whether the user has at least one instrument that satisfies the
-  // specified supported payment methods.
-  bool CanMakePayment() const;
+  // Checks whether the user has at least one instrument that satisfies the
+  // specified supported payment methods asynchronously.
+  void CanMakePayment(CanMakePaymentCallback callback);
 
   // Returns true if the payment methods that the merchant website have
   // requested are supported. For example, may return true for "basic-card", but
@@ -171,6 +179,11 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   bool is_ready_to_pay() { return is_ready_to_pay_; }
 
+  // Checks whehter getting all available instruments is finished.
+  bool is_get_all_instruments_finished() {
+    return get_all_instruments_finished_;
+  }
+
   const std::string& GetApplicationLocale();
   autofill::PersonalDataManager* GetPersonalDataManager();
   autofill::RegionDataLoader* GetRegionDataLoader();
@@ -202,6 +215,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // required information is available. Will notify observers.
   void UpdateIsReadyToPayAndNotifyObservers();
 
+  // Notifies all observers that getting all payment instruments is finished.
+  void NotifyOnGetAllPaymentInstrumentsFinished();
+
   // Notifies all observers that selected information has changed.
   void NotifyOnSelectedInformationChanged();
 
@@ -212,7 +228,23 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // (contact info, shipping address).
   bool ArePaymentOptionsSatisfied();
 
+  // The PaymentAppProvider::GetAllPaymentAppsCallback.
+  void GetAllPaymentAppsCallback(content::PaymentAppProvider::PaymentApps apps);
+
+  // Creates ServiceWorkerPaymentInstrument according to requested payment
+  // methods of the payment request.
+  void CreateServiceWorkerPaymentApps(
+      content::PaymentAppProvider::PaymentApps& apps,
+      std::vector<GURL>& requested_method_urls);
+
+  // Checks whether the user has at least one instrument that satisfies the
+  // specified supported payment methods and call the |callback| to return the
+  // result.
+  void CheckCanMakePayment(CanMakePaymentCallback callback);
+
   bool is_ready_to_pay_;
+
+  bool get_all_instruments_finished_;
 
   // Whether the data is currently being validated by the merchant.
   bool is_waiting_for_merchant_validation_;
@@ -224,6 +256,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   Delegate* delegate_;
   autofill::PersonalDataManager* personal_data_manager_;
   JourneyLogger* journey_logger_;
+
+  CanMakePaymentCallback can_make_payment_callback_;
 
   autofill::AutofillProfile* selected_shipping_profile_;
   autofill::AutofillProfile* selected_shipping_option_error_profile_;
@@ -246,6 +280,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   PaymentsProfileComparator profile_comparator_;
 
   base::ObserverList<Observer> observers_;
+
+  base::WeakPtrFactory<PaymentRequestState> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestState);
 };

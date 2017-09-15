@@ -19,6 +19,8 @@ static_library("content") {
     "payment_request_web_contents_manager.h",
     "payment_response_helper.cc",
     "payment_response_helper.h",
+    "service_worker_payment_instrument.cc",
+    "service_worker_payment_instrument.h",
   ]
 
   deps = [

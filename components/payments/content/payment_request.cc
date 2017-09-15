@@ -92,8 +92,9 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
         std::vector<mojom::PaymentMethodDataPtr>(), this,
         delegate_->GetApplicationLocale());
     state_ = base::MakeUnique<PaymentRequestState>(
-        spec_.get(), this, delegate_->GetApplicationLocale(),
-        delegate_->GetPersonalDataManager(), delegate_.get(), &journey_logger_);
+        web_contents_->GetBrowserContext(), spec_.get(), this,
+        delegate_->GetApplicationLocale(), delegate_->GetPersonalDataManager(),
+        delegate_.get(), &journey_logger_);
     return;
   }
 
@@ -114,8 +115,9 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
       std::move(options), std::move(details), std::move(method_data), this,
       delegate_->GetApplicationLocale());
   state_ = base::MakeUnique<PaymentRequestState>(
-      spec_.get(), this, delegate_->GetApplicationLocale(),
-      delegate_->GetPersonalDataManager(), delegate_.get(), &journey_logger_);
+      web_contents_->GetBrowserContext(), spec_.get(), this,
+      delegate_->GetApplicationLocale(), delegate_->GetPersonalDataManager(),
+      delegate_.get(), &journey_logger_);
 
   journey_logger_.SetRequestedInformation(
       spec_->request_shipping(), spec_->request_payer_email(),
@@ -233,7 +235,14 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
 }
 
 void PaymentRequest::CanMakePayment() {
-  bool can_make_payment = state()->CanMakePayment();
+  state()->CanMakePayment(base::BindOnce(
+      &PaymentRequest::CanMakePaymentCallback, weak_ptr_factory_.GetWeakPtr()));
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnCanMakePaymentCalled();
+}
+
+void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
   if (delegate_->IsIncognito()) {
     client_->OnCanMakePayment(
         mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT);
@@ -259,7 +268,7 @@ void PaymentRequest::CanMakePayment() {
   }
 
   if (observer_for_testing_)
-    observer_for_testing_->OnCanMakePaymentCalled();
+    observer_for_testing_->OnCanMakePaymentReturned();
 }
 
 void PaymentRequest::OnPaymentResponseAvailable(

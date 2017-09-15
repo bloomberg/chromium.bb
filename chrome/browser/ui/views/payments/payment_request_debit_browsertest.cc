@@ -41,7 +41,8 @@ class PaymentRequestDebitTest : public PaymentRequestBrowserTestBase {
   }
 
   void CallCanMakePayment() {
-    ResetEventObserver(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(
         content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
     WaitForObservedEvent();

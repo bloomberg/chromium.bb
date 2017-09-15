@@ -41,6 +41,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   class ObserverForTest {
    public:
     virtual void OnCanMakePaymentCalled() = 0;
+    virtual void OnCanMakePaymentReturned() = 0;
     virtual void OnNotSupportedError() = 0;
     virtual void OnConnectionTerminated() = 0;
     virtual void OnAbortCalled() = 0;
@@ -104,6 +105,9 @@ class PaymentRequest : public mojom::PaymentRequest,
   // Request. This is necessary since the aborts cascade into one another with
   // the first one being the most precise.
   void RecordFirstAbortReason(JourneyLogger::AbortReason completion_status);
+
+  // The PaymentRequestState::CanMakePaymentCallback.
+  void CanMakePaymentCallback(bool can_make_payment);
 
   content::WebContents* web_contents_;
   std::unique_ptr<PaymentRequestDelegate> delegate_;

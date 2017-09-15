@@ -36,6 +36,16 @@ class PaymentRequestCanMakePaymentMetricsTest
     AddCreditCard(card);
   }
 
+  void CallCanMakePaymentAndThenShow() {
+    // Start the Payment Request and expect CanMakePayment to be called before
+    // the Payment Request is shown.
+    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED,
+                                   DialogEvent::DIALOG_OPENED});
+    ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
+    WaitForObservedEvent();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCanMakePaymentMetricsTest);
 };
@@ -48,12 +58,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   // returns true.
   SetupInitialAddressAndCreditCard();
 
-  // Start the Payment Request and expect CanMakePayment to be called before the
-  // Payment Request is shown.
-  ResetEventObserverForSequence(
-      {DialogEvent::CAN_MAKE_PAYMENT_CALLED, DialogEvent::DIALOG_OPENED});
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
-  WaitForObservedEvent();
+  CallCanMakePaymentAndThenShow();
 
   // Complete the Payment Request.
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
@@ -90,12 +95,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   // returns true.
   SetupInitialAddressAndCreditCard();
 
-  // Start the Payment Request and expect CanMakePayment to be called before the
-  // Payment Request is shown.
-  ResetEventObserverForSequence(
-      {DialogEvent::CAN_MAKE_PAYMENT_CALLED, DialogEvent::DIALOG_OPENED});
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
-  WaitForObservedEvent();
+  CallCanMakePaymentAndThenShow();
 
   // Simulate that an unexpected error occurs.
   ResetEventObserverForSequence(
@@ -138,12 +138,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   // returns true.
   SetupInitialAddressAndCreditCard();
 
-  // Start the Payment Request and expect CanMakePayment to be called before the
-  // Payment Request is shown.
-  ResetEventObserverForSequence(
-      {DialogEvent::CAN_MAKE_PAYMENT_CALLED, DialogEvent::DIALOG_OPENED});
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
-  WaitForObservedEvent();
+  CallCanMakePaymentAndThenShow();
 
   // Simulate that the user cancels the Payment Request.
   ClickOnCancel();
@@ -181,12 +176,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   AddAutofillProfile(billing_address);
 
   // Don't add a card on file, so CanMakePayment returns false.
-  // Start the Payment Request and expect CanMakePayment to be called before the
-  // Payment Request is shown.
-  ResetEventObserverForSequence(
-      {DialogEvent::CAN_MAKE_PAYMENT_CALLED, DialogEvent::DIALOG_OPENED});
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
-  WaitForObservedEvent();
+  CallCanMakePaymentAndThenShow();
 
   // Add a test credit card.
   OpenCreditCardEditorScreen();
@@ -233,12 +223,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   base::HistogramTester histogram_tester;
 
   // Don't add a card on file, so CanMakePayment returns false.
-  // Start the Payment Request and expect CanMakePayment to be called before the
-  // Payment Request is shown.
-  ResetEventObserverForSequence(
-      {DialogEvent::CAN_MAKE_PAYMENT_CALLED, DialogEvent::DIALOG_OPENED});
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
-  WaitForObservedEvent();
+  CallCanMakePaymentAndThenShow();
 
   // Simulate that an unexpected error occurs.
   ResetEventObserverForSequence(
@@ -278,12 +263,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   base::HistogramTester histogram_tester;
 
   // Don't add a card on file, so CanMakePayment returns false.
-  // Start the Payment Request and expect CanMakePayment to be called before the
-  // Payment Request is shown.
-  ResetEventObserverForSequence(
-      {DialogEvent::CAN_MAKE_PAYMENT_CALLED, DialogEvent::DIALOG_OPENED});
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
-  WaitForObservedEvent();
+  CallCanMakePaymentAndThenShow();
 
   // Simulate that the user cancels the Payment Request.
   ClickOnCancel();
@@ -321,7 +301,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
   SetupInitialAddressAndCreditCard();
 
   // Try to start the Payment Request, but only CanMakePayment should be called.
-  ResetEventObserver(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+  ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryNoShow();"));
   WaitForObservedEvent();
 
@@ -358,7 +339,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
 
   // Don't add a card on file, so CanMakePayment returns false.
   // Try to start the Payment Request, but only CanMakePayment should be called.
-  ResetEventObserver(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+  ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryNoShow();"));
   WaitForObservedEvent();
 
@@ -522,12 +504,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                        UserAborted_NavigationToSameOrigin) {
   base::HistogramTester histogram_tester;
 
-  // Start the Payment Request and expect CanMakePayment to be called before the
-  // Payment Request is shown.
-  ResetEventObserverForSequence(
-      {DialogEvent::CAN_MAKE_PAYMENT_CALLED, DialogEvent::DIALOG_OPENED});
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
-  WaitForObservedEvent();
+  CallCanMakePaymentAndThenShow();
 
   // Simulate that the user navigates away from the Payment Request by opening a
   // different page on the same origin.
@@ -563,12 +540,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                        UserAborted_NavigationToDifferentOrigin) {
   base::HistogramTester histogram_tester;
 
-  // Start the Payment Request and expect CanMakePayment to be called before the
-  // Payment Request is shown.
-  ResetEventObserverForSequence(
-      {DialogEvent::CAN_MAKE_PAYMENT_CALLED, DialogEvent::DIALOG_OPENED});
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
-  WaitForObservedEvent();
+  CallCanMakePaymentAndThenShow();
 
   // Simulate that the user navigates away from the Payment Request by opening a
   // different page on a different origin.
@@ -606,12 +578,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                        UserAborted_TabClose) {
   base::HistogramTester histogram_tester;
 
-  // Start the Payment Request and expect CanMakePayment to be called before the
-  // Payment Request is shown.
-  ResetEventObserverForSequence(
-      {DialogEvent::CAN_MAKE_PAYMENT_CALLED, DialogEvent::DIALOG_OPENED});
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
-  WaitForObservedEvent();
+  CallCanMakePaymentAndThenShow();
 
   // Simulate that the user closes the tab containing the Payment Request.
   ResetEventObserverForSequence({DialogEvent::DIALOG_CLOSED});
@@ -646,12 +613,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentMetricsTest,
                        UserAborted_Reload) {
   base::HistogramTester histogram_tester;
 
-  // Start the Payment Request and expect CanMakePayment to be called before the
-  // Payment Request is shown.
-  ResetEventObserverForSequence(
-      {DialogEvent::CAN_MAKE_PAYMENT_CALLED, DialogEvent::DIALOG_OPENED});
-  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryShow();"));
-  WaitForObservedEvent();
+  CallCanMakePaymentAndThenShow();
 
   // Simulate that the user reloads the page containing the Payment Request.
   ResetEventObserverForSequence({DialogEvent::DIALOG_CLOSED});

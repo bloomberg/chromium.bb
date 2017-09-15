@@ -709,8 +709,13 @@ class PaymentRequestNotShownTest : public PaymentRequestBrowserTestBase {
 IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
   base::HistogramTester histogram_tester;
 
+  ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+
   // Initiate a Payment Request without showing it.
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryNoShow();"));
+
+  WaitForObservedEvent();
 
   // Navigate away to abort the Payment Request and trigger the logs.
   NavigateTo("/payment_request_email_test.html");

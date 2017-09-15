@@ -41,6 +41,7 @@ class PaymentRequestStateTest : public testing::Test,
   ~PaymentRequestStateTest() override {}
 
   // PaymentRequestState::Observer:
+  void OnGetAllPaymentInstrumentsFinished() override {}
   void OnSelectedInformationChanged() override {
     num_on_selected_information_changed_called_++;
   }
@@ -63,8 +64,9 @@ class PaymentRequestStateTest : public testing::Test,
         std::move(options), std::move(details), std::move(method_data),
         /*observer=*/nullptr, "en-US");
     state_ = base::MakeUnique<PaymentRequestState>(
-        spec_.get(), this, "en-US", &test_personal_data_manager_,
-        &test_payment_request_delegate_, &journey_logger_);
+        nullptr /* context */, spec_.get(), this, "en-US",
+        &test_personal_data_manager_, &test_payment_request_delegate_,
+        &journey_logger_);
     state_->AddObserver(this);
   }
 
@@ -133,7 +135,8 @@ TEST_F(PaymentRequestStateTest, CanMakePayment) {
 
   // CanMakePayment returns true because the method data requires Visa, and the
   // user has a Visa card on file.
-  EXPECT_TRUE(state()->CanMakePayment());
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_TRUE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest, CanMakePayment_CannotMakePayment) {
@@ -148,7 +151,8 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_CannotMakePayment) {
 
   // CanMakePayment returns false because the method data requires MasterCard,
   // and the user doesn't have such an instrument.
-  EXPECT_FALSE(state()->CanMakePayment());
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_FALSE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest, CanMakePayment_OnlyBasicCard) {
@@ -163,7 +167,8 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_OnlyBasicCard) {
 
   // CanMakePayment returns true because the method data supports everything,
   // and the user has at least one instrument.
-  EXPECT_TRUE(state()->CanMakePayment());
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_TRUE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest, CanMakePayment_BasicCard_SpecificAvailable) {
@@ -179,7 +184,8 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_BasicCard_SpecificAvailable) {
 
   // CanMakePayment returns true because the method data supports visa, and the
   // user has a Visa instrument.
-  EXPECT_TRUE(state()->CanMakePayment());
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_TRUE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest,
@@ -196,7 +202,8 @@ TEST_F(PaymentRequestStateTest,
 
   // CanMakePayment returns false because the method data supports jcb, and the
   // user has a JCB instrument, but it's invalid.
-  EXPECT_FALSE(state()->CanMakePayment());
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_FALSE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest, CanMakePayment_BasicCard_SpecificUnavailable) {
@@ -212,7 +219,8 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_BasicCard_SpecificUnavailable) {
 
   // CanMakePayment returns false because the method data supports mastercard,
   // and the user doesn't have such an instrument.
-  EXPECT_FALSE(state()->CanMakePayment());
+  state()->CanMakePayment(base::BindOnce(
+      [](bool can_make_payment) { EXPECT_FALSE(can_make_payment); }));
 }
 
 TEST_F(PaymentRequestStateTest, ReadyToPay_DefaultSelections) {
