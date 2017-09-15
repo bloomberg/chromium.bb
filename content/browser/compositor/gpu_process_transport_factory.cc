@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
 #include "cc/base/switches.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -31,6 +30,7 @@
 #include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
@@ -634,7 +634,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       viz::ServerSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
       renderer_settings_, compositor->frame_sink_id(),
       std::move(display_output_surface), std::move(scheduler),
-      base::MakeUnique<cc::TextureMailboxDeleter>(
+      base::MakeUnique<viz::TextureMailboxDeleter>(
           compositor->task_runner().get()));
   GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source,
                                                   compositor->frame_sink_id());

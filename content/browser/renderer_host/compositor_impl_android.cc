@@ -35,7 +35,6 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/layer_tree_host.h"
@@ -48,6 +47,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
@@ -849,7 +849,7 @@ void CompositorImpl::InitializeDisplay(
       viz::ServerSharedBitmapManager::current(), gpu_memory_buffer_manager,
       renderer_settings, frame_sink_id_, std::move(display_output_surface),
       std::move(scheduler),
-      base::MakeUnique<cc::TextureMailboxDeleter>(task_runner));
+      base::MakeUnique<viz::TextureMailboxDeleter>(task_runner));
 
   auto layer_tree_frame_sink =
       vulkan_context_provider

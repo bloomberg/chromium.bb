@@ -14,7 +14,6 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "cc/output/software_renderer.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -27,6 +26,7 @@
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/service/display/gl_renderer.h"
+#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -178,7 +178,7 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
       settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
 
-  texture_mailbox_deleter_ = std::make_unique<TextureMailboxDeleter>(
+  texture_mailbox_deleter_ = std::make_unique<viz::TextureMailboxDeleter>(
       base::ThreadTaskRunnerHandle::Get());
 
   renderer_ = std::make_unique<viz::GLRenderer>(

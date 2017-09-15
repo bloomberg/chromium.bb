@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
@@ -21,6 +20,7 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -133,7 +133,7 @@ class DisplayTest : public testing::Test {
         &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
         settings, frame_sink_id, std::move(output_surface),
         std::move(scheduler),
-        base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
+        base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
     display->SetVisible(true);
     return display;
   }

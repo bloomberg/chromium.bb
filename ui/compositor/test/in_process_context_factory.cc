@@ -14,7 +14,6 @@
 #include "cc/base/switches.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
@@ -23,6 +22,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -261,7 +261,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
       &shared_bitmap_manager_, &gpu_memory_buffer_manager_, renderer_settings_,
       compositor->frame_sink_id(), std::move(display_output_surface),
       std::move(scheduler),
-      base::MakeUnique<cc::TextureMailboxDeleter>(
+      base::MakeUnique<viz::TextureMailboxDeleter>(
           compositor->task_runner().get()));
   GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source.get(),
                                                   compositor->frame_sink_id());
