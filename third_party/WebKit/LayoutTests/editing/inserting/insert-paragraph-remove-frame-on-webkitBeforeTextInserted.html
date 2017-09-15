@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<iframe src="../resources/contenteditable-iframe-src.html">
+</iframe>
+<script>
+// This test is specifically written as async because webkitBeforeTextInserted event
+// was unable fire the event listener on an iframe without any 'src' tag.
+
+async_test(function(t) {
+    var iframe = document.querySelector("iframe");
+    iframe.onload = t.step_func(function() {
+        iframe.contentDocument.body.addEventListener('webkitBeforeTextInserted', () => {
+            iframe.parentNode.removeChild(iframe);
+            t.done();
+        });
+        iframe.contentDocument.body.focus();
+        iframe.contentDocument.execCommand('insertParagraph');
+    }, "Should not crash when webkitBeforeTextInserted handler removes current frame when doing InsertParagraph");
+});
+ </script>
