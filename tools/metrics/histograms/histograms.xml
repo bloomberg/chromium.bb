@@ -92682,6 +92682,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Windows.CreateThreadTime" units="ms">
+  <owner>stanisc@chromium.org</owner>
+  <summary>
+    Time spent inside CreateThread() Windows API call creating a single thread.
+  </summary>
+</histogram>
+
 <histogram name="Windows.GetVersionExVersion" enum="WindowsVersion">
   <owner>scottmg@chromium.org</owner>
   <summary>
