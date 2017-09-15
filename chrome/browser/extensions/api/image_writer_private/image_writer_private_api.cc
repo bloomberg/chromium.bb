@@ -16,6 +16,17 @@ namespace image_writer_api = extensions::api::image_writer_private;
 
 namespace extensions {
 
+ImageWriterPrivateBaseFunction::ImageWriterPrivateBaseFunction() {}
+
+ImageWriterPrivateBaseFunction::~ImageWriterPrivateBaseFunction() {}
+
+void ImageWriterPrivateBaseFunction::OnComplete(bool success,
+                                                const std::string& error) {
+  if (!success)
+    error_ = error;
+  SendResponse(success);
+}
+
 ImageWriterPrivateWriteFromUrlFunction::
     ImageWriterPrivateWriteFromUrlFunction() {
 }
@@ -40,24 +51,12 @@ bool ImageWriterPrivateWriteFromUrlFunction::RunAsync() {
     hash = *params->options->image_hash;
   }
 
-  image_writer::OperationManager::Get(GetProfile())->StartWriteFromUrl(
-      extension_id(),
-      url,
-      hash,
-      params->storage_unit_id,
-      base::Bind(&ImageWriterPrivateWriteFromUrlFunction::OnWriteStarted,
-                 this));
+  image_writer::OperationManager::Get(GetProfile())
+      ->StartWriteFromUrl(
+          extension_id(), url, hash, params->storage_unit_id,
+          base::BindOnce(&ImageWriterPrivateWriteFromUrlFunction::OnComplete,
+                         this));
   return true;
-}
-
-void ImageWriterPrivateWriteFromUrlFunction::OnWriteStarted(
-    bool success,
-    const std::string& error) {
-  if (!success) {
-    error_ = error;
-  }
-
-  SendResponse(success);
 }
 
 ImageWriterPrivateWriteFromFileFunction::
@@ -84,22 +83,12 @@ bool ImageWriterPrivateWriteFromFileFunction::RunAsync() {
           render_frame_host()->GetProcess()->GetID(), &path, &error_))
     return false;
 
-  image_writer::OperationManager::Get(GetProfile())->StartWriteFromFile(
-      extension_id(),
-      path,
-      storage_unit_id,
-      base::Bind(&ImageWriterPrivateWriteFromFileFunction::OnWriteStarted,
-                 this));
+  image_writer::OperationManager::Get(GetProfile())
+      ->StartWriteFromFile(
+          extension_id(), path, storage_unit_id,
+          base::BindOnce(&ImageWriterPrivateWriteFromFileFunction::OnComplete,
+                         this));
   return true;
-}
-
-void ImageWriterPrivateWriteFromFileFunction::OnWriteStarted(
-    bool success,
-    const std::string& error) {
-  if (!success) {
-    error_ = error;
-  }
-  SendResponse(success);
 }
 
 ImageWriterPrivateCancelWriteFunction::ImageWriterPrivateCancelWriteFunction() {
@@ -110,20 +99,12 @@ ImageWriterPrivateCancelWriteFunction::
 }
 
 bool ImageWriterPrivateCancelWriteFunction::RunAsync() {
-  image_writer::OperationManager::Get(GetProfile())->CancelWrite(
-      extension_id(),
-      base::Bind(&ImageWriterPrivateCancelWriteFunction::OnWriteCancelled,
-                 this));
+  image_writer::OperationManager::Get(GetProfile())
+      ->CancelWrite(
+          extension_id(),
+          base::BindOnce(&ImageWriterPrivateCancelWriteFunction::OnComplete,
+                         this));
   return true;
-}
-
-void ImageWriterPrivateCancelWriteFunction::OnWriteCancelled(
-    bool success,
-    const std::string& error) {
-  if (!success) {
-    error_ = error;
-  }
-  SendResponse(success);
 }
 
 ImageWriterPrivateDestroyPartitionsFunction::
@@ -139,23 +120,12 @@ bool ImageWriterPrivateDestroyPartitionsFunction::RunAsync() {
       image_writer_api::DestroyPartitions::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  image_writer::OperationManager::Get(GetProfile())->DestroyPartitions(
-      extension_id(),
-      params->storage_unit_id,
-      base::Bind(
-          &ImageWriterPrivateDestroyPartitionsFunction::OnDestroyComplete,
-          this));
+  image_writer::OperationManager::Get(GetProfile())
+      ->DestroyPartitions(
+          extension_id(), params->storage_unit_id,
+          base::BindOnce(
+              &ImageWriterPrivateDestroyPartitionsFunction::OnComplete, this));
   return true;
-}
-
-void ImageWriterPrivateDestroyPartitionsFunction::OnDestroyComplete(
-    bool success,
-    const std::string& error) {
-  if (!success) {
-    error_ = error;
-  }
-
-  SendResponse(success);
 }
 
 ImageWriterPrivateListRemovableStorageDevicesFunction::
