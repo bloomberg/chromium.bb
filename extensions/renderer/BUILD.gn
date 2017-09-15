@@ -359,6 +359,7 @@ source_set("unit_tests") {
     "module_system_unittest.cc",
     "mojo/keep_alive_client_unittest.cc",
     "native_extension_bindings_system_unittest.cc",
+    "native_extension_bindings_system_unittest.h",
     "safe_builtins_unittest.cc",
     "scoped_web_frame.cc",
     "scoped_web_frame.h",
