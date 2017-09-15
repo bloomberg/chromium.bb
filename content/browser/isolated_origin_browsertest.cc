@@ -359,6 +359,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, Cookies) {
 // Check that isolated origins won't be placed into processes for other sites
 // when over the process limit.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
+  // TODO(alexmos): https://crbug.com/765711: the test is flaky with
+  // --site-per-process.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
