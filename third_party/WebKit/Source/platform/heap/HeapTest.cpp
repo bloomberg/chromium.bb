@@ -6097,7 +6097,7 @@ TEST(HeapTest, DequeExpand) {
 
 class SimpleRefValue : public RefCounted<SimpleRefValue> {
  public:
-  static PassRefPtr<SimpleRefValue> Create(int i) {
+  static RefPtr<SimpleRefValue> Create(int i) {
     return AdoptRef(new SimpleRefValue(i));
   }
 

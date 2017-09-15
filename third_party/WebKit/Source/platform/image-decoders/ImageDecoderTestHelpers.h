@@ -21,8 +21,8 @@ using DecoderCreator = std::unique_ptr<ImageDecoder> (*)();
 using DecoderCreatorWithAlpha =
     std::unique_ptr<ImageDecoder> (*)(ImageDecoder::AlphaOption);
 
-PassRefPtr<SharedBuffer> ReadFile(const char* file_name);
-PassRefPtr<SharedBuffer> ReadFile(const char* dir, const char* file_name);
+RefPtr<SharedBuffer> ReadFile(const char* file_name);
+RefPtr<SharedBuffer> ReadFile(const char* dir, const char* file_name);
 unsigned HashBitmap(const SkBitmap&);
 void CreateDecodingBaseline(DecoderCreator,
                             SharedBuffer*,

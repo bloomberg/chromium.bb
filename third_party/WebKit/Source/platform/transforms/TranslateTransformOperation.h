@@ -34,16 +34,16 @@ namespace blink {
 class PLATFORM_EXPORT TranslateTransformOperation final
     : public TransformOperation {
  public:
-  static PassRefPtr<TranslateTransformOperation> Create(const Length& tx,
-                                                        const Length& ty,
-                                                        OperationType type) {
+  static RefPtr<TranslateTransformOperation> Create(const Length& tx,
+                                                    const Length& ty,
+                                                    OperationType type) {
     return AdoptRef(new TranslateTransformOperation(tx, ty, 0, type));
   }
 
-  static PassRefPtr<TranslateTransformOperation> Create(const Length& tx,
-                                                        const Length& ty,
-                                                        double tz,
-                                                        OperationType type) {
+  static RefPtr<TranslateTransformOperation> Create(const Length& tx,
+                                                    const Length& ty,
+                                                    double tz,
+                                                    OperationType type) {
     return AdoptRef(new TranslateTransformOperation(tx, ty, tz, type));
   }
 
@@ -77,7 +77,7 @@ class PLATFORM_EXPORT TranslateTransformOperation final
            type == kTranslateZ || type == kTranslate3D;
   }
 
-  PassRefPtr<TranslateTransformOperation> ZoomTranslate(double factor);
+  RefPtr<TranslateTransformOperation> ZoomTranslate(double factor);
 
  private:
   OperationType GetType() const override { return type_; }
@@ -91,10 +91,10 @@ class PLATFORM_EXPORT TranslateTransformOperation final
     return x_ == t->x_ && y_ == t->y_ && z_ == t->z_;
   }
 
-  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
-                                       double progress,
-                                       bool blend_to_identity = false) override;
-  PassRefPtr<TransformOperation> Zoom(double factor) final {
+  RefPtr<TransformOperation> Blend(const TransformOperation* from,
+                                   double progress,
+                                   bool blend_to_identity = false) override;
+  RefPtr<TransformOperation> Zoom(double factor) final {
     return ZoomTranslate(factor);
   }
 

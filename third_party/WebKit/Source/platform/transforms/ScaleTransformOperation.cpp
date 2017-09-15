@@ -25,7 +25,7 @@
 
 namespace blink {
 
-PassRefPtr<TransformOperation> ScaleTransformOperation::Blend(
+RefPtr<TransformOperation> ScaleTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
     bool blend_to_identity) {

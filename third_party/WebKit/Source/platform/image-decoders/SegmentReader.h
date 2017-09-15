@@ -7,7 +7,7 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 
 class SkData;
@@ -34,12 +34,11 @@ class PLATFORM_EXPORT SegmentReader
   // This version is thread-safe so long as no thread is modifying the
   // underlying SharedBuffer. This class does not modify it, so that would
   // mean modifying it in another way.
-  static PassRefPtr<SegmentReader> CreateFromSharedBuffer(
-      PassRefPtr<SharedBuffer>);
+  static RefPtr<SegmentReader> CreateFromSharedBuffer(RefPtr<SharedBuffer>);
 
   // These versions use thread-safe input, so they are always thread-safe.
-  static PassRefPtr<SegmentReader> CreateFromSkData(sk_sp<SkData>);
-  static PassRefPtr<SegmentReader> CreateFromSkROBuffer(sk_sp<SkROBuffer>);
+  static RefPtr<SegmentReader> CreateFromSkData(sk_sp<SkData>);
+  static RefPtr<SegmentReader> CreateFromSkROBuffer(sk_sp<SkROBuffer>);
 
   SegmentReader() {}
   virtual ~SegmentReader() {}

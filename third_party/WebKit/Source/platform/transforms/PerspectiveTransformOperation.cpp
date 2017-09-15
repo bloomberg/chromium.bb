@@ -30,7 +30,7 @@
 
 namespace blink {
 
-PassRefPtr<TransformOperation> PerspectiveTransformOperation::Blend(
+RefPtr<TransformOperation> PerspectiveTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
     bool blend_to_identity) {
@@ -67,8 +67,7 @@ PassRefPtr<TransformOperation> PerspectiveTransformOperation::Blend(
   return PerspectiveTransformOperation::Create(0);
 }
 
-PassRefPtr<TransformOperation> PerspectiveTransformOperation::Zoom(
-    double factor) {
+RefPtr<TransformOperation> PerspectiveTransformOperation::Zoom(double factor) {
   return Create(p_ * factor);
 }
 

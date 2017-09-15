@@ -205,7 +205,7 @@ static bool SkipLinesUntilBoundaryFound(SharedBufferChunkReader& line_reader,
   return false;
 }
 
-MHTMLParser::MHTMLParser(PassRefPtr<const SharedBuffer> data)
+MHTMLParser::MHTMLParser(RefPtr<const SharedBuffer> data)
     : line_reader_(std::move(data), "\r\n") {}
 
 HeapVector<Member<ArchiveResource>> MHTMLParser::ParseArchive() {

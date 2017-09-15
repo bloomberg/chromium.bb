@@ -48,9 +48,9 @@ TestPaintArtifact::TestPaintArtifact() : display_item_list_(0), built_(false) {}
 TestPaintArtifact::~TestPaintArtifact() {}
 
 TestPaintArtifact& TestPaintArtifact::Chunk(
-    PassRefPtr<const TransformPaintPropertyNode> transform,
-    PassRefPtr<const ClipPaintPropertyNode> clip,
-    PassRefPtr<const EffectPaintPropertyNode> effect) {
+    RefPtr<const TransformPaintPropertyNode> transform,
+    RefPtr<const ClipPaintPropertyNode> clip,
+    RefPtr<const EffectPaintPropertyNode> effect) {
   PropertyTreeState property_tree_state(transform.Get(), clip.Get(),
                                         effect.Get());
   PaintChunkProperties properties(property_tree_state);
@@ -92,7 +92,7 @@ TestPaintArtifact& TestPaintArtifact::ForeignLayer(
 }
 
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
-    PassRefPtr<const TransformPaintPropertyNode> scroll_offset) {
+    RefPtr<const TransformPaintPropertyNode> scroll_offset) {
   auto client = WTF::MakeUnique<DummyRectClient>();
   display_item_list_.AllocateAndConstruct<ScrollHitTestDisplayItem>(
       *client, DisplayItem::kScrollHitTest, std::move(scroll_offset));

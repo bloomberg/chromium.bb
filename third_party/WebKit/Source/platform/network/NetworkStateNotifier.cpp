@@ -124,25 +124,25 @@ void NetworkStateNotifier::SetNetworkQuality(WebEffectiveConnectionType type,
 
 void NetworkStateNotifier::AddConnectionObserver(
     NetworkStateObserver* observer,
-    PassRefPtr<WebTaskRunner> task_runner) {
+    RefPtr<WebTaskRunner> task_runner) {
   AddObserver(connection_observers_, observer, std::move(task_runner));
 }
 
 void NetworkStateNotifier::AddOnLineObserver(
     NetworkStateObserver* observer,
-    PassRefPtr<WebTaskRunner> task_runner) {
+    RefPtr<WebTaskRunner> task_runner) {
   AddObserver(on_line_state_observers_, observer, std::move(task_runner));
 }
 
 void NetworkStateNotifier::RemoveConnectionObserver(
     NetworkStateObserver* observer,
-    PassRefPtr<WebTaskRunner> task_runner) {
+    RefPtr<WebTaskRunner> task_runner) {
   RemoveObserver(connection_observers_, observer, std::move(task_runner));
 }
 
 void NetworkStateNotifier::RemoveOnLineObserver(
     NetworkStateObserver* observer,
-    PassRefPtr<WebTaskRunner> task_runner) {
+    RefPtr<WebTaskRunner> task_runner) {
   RemoveObserver(on_line_state_observers_, observer, std::move(task_runner));
 }
 
@@ -248,7 +248,7 @@ void NetworkStateNotifier::NotifyObserversOnTaskRunner(
 
 void NetworkStateNotifier::AddObserver(ObserverListMap& map,
                                        NetworkStateObserver* observer,
-                                       PassRefPtr<WebTaskRunner> task_runner) {
+                                       RefPtr<WebTaskRunner> task_runner) {
   DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(observer);
 
@@ -286,7 +286,7 @@ void NetworkStateNotifier::RemoveObserver(ObserverListMap& map,
 NetworkStateNotifier::ObserverList*
 NetworkStateNotifier::LockAndFindObserverList(
     ObserverListMap& map,
-    PassRefPtr<WebTaskRunner> task_runner) {
+    RefPtr<WebTaskRunner> task_runner) {
   MutexLocker locker(mutex_);
   ObserverListMap::iterator it = map.find(task_runner);
   return it == map.end() ? nullptr : it->value.get();
@@ -295,7 +295,7 @@ NetworkStateNotifier::LockAndFindObserverList(
 void NetworkStateNotifier::CollectZeroedObservers(
     ObserverListMap& map,
     ObserverList* list,
-    PassRefPtr<WebTaskRunner> task_runner) {
+    RefPtr<WebTaskRunner> task_runner) {
   DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(!list->iterating);
 

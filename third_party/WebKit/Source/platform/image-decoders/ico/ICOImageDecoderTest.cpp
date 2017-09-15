@@ -108,7 +108,7 @@ TEST(ICOImageDecoderTests, NullData) {
   auto* frame = decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_EQ(nullptr, frame);
 
-  decoder->SetData(PassRefPtr<SegmentReader>(nullptr), false);
+  decoder->SetData(RefPtr<SegmentReader>(nullptr), false);
   decoder->ClearCacheExceptFrame(0);
   decoder->SetMemoryAllocator(nullptr);
   EXPECT_FALSE(decoder->Failed());

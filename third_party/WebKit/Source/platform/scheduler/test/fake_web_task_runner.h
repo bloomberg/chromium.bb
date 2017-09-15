@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "platform/WebTaskRunner.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
@@ -42,7 +41,7 @@ class FakeWebTaskRunner : public WebTaskRunner {
   RefPtr<Data> data_;
   scoped_refptr<BaseTaskRunner> base_task_runner_;
 
-  FakeWebTaskRunner(PassRefPtr<Data> data,
+  FakeWebTaskRunner(RefPtr<Data> data,
                     scoped_refptr<BaseTaskRunner> base_task_runner);
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebTaskRunner);

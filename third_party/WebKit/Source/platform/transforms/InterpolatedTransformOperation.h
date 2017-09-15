@@ -40,7 +40,7 @@ namespace blink {
 class PLATFORM_EXPORT InterpolatedTransformOperation final
     : public TransformOperation {
  public:
-  static PassRefPtr<InterpolatedTransformOperation> Create(
+  static RefPtr<InterpolatedTransformOperation> Create(
       const TransformOperations& from,
       const TransformOperations& to,
       double progress) {
@@ -58,10 +58,10 @@ class PLATFORM_EXPORT InterpolatedTransformOperation final
   void Apply(TransformationMatrix&,
              const FloatSize& border_box_size) const override;
 
-  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
-                                       double progress,
-                                       bool blend_to_identity = false) override;
-  PassRefPtr<TransformOperation> Zoom(double factor) final {
+  RefPtr<TransformOperation> Blend(const TransformOperation* from,
+                                   double progress,
+                                   bool blend_to_identity = false) override;
+  RefPtr<TransformOperation> Zoom(double factor) final {
     return Create(from.Zoom(factor), to.Zoom(factor), progress);
   }
 
