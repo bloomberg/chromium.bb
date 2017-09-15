@@ -40,7 +40,7 @@ class SpeechSynthesisVoice final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechSynthesisVoice* Create(PassRefPtr<PlatformSpeechSynthesisVoice>);
+  static SpeechSynthesisVoice* Create(RefPtr<PlatformSpeechSynthesisVoice>);
   ~SpeechSynthesisVoice();
 
   const String& voiceURI() const { return platform_voice_->VoiceURI(); }
@@ -56,7 +56,7 @@ class SpeechSynthesisVoice final
   DEFINE_INLINE_TRACE() {}
 
  private:
-  explicit SpeechSynthesisVoice(PassRefPtr<PlatformSpeechSynthesisVoice>);
+  explicit SpeechSynthesisVoice(RefPtr<PlatformSpeechSynthesisVoice>);
 
   RefPtr<PlatformSpeechSynthesisVoice> platform_voice_;
 };

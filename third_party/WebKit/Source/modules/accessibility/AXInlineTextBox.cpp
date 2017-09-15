@@ -38,13 +38,12 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXInlineTextBox::AXInlineTextBox(
-    PassRefPtr<AbstractInlineTextBox> inline_text_box,
-    AXObjectCacheImpl& ax_object_cache)
+AXInlineTextBox::AXInlineTextBox(RefPtr<AbstractInlineTextBox> inline_text_box,
+                                 AXObjectCacheImpl& ax_object_cache)
     : AXObject(ax_object_cache), inline_text_box_(std::move(inline_text_box)) {}
 
 AXInlineTextBox* AXInlineTextBox::Create(
-    PassRefPtr<AbstractInlineTextBox> inline_text_box,
+    RefPtr<AbstractInlineTextBox> inline_text_box,
     AXObjectCacheImpl& ax_object_cache) {
   return new AXInlineTextBox(std::move(inline_text_box), ax_object_cache);
 }

@@ -28,7 +28,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
   static PaintWorkletGlobalScope* Create(LocalFrame*,
                                          const KURL&,
                                          const String& user_agent,
-                                         PassRefPtr<SecurityOrigin>,
+                                         RefPtr<SecurityOrigin>,
                                          v8::Isolate*,
                                          WorkerReportingProxy&,
                                          PaintWorkletPendingGeneratorRegistry*,
@@ -51,7 +51,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
   PaintWorkletGlobalScope(LocalFrame*,
                           const KURL&,
                           const String& user_agent,
-                          PassRefPtr<SecurityOrigin>,
+                          RefPtr<SecurityOrigin>,
                           v8::Isolate*,
                           WorkerReportingProxy&,
                           PaintWorkletPendingGeneratorRegistry*);

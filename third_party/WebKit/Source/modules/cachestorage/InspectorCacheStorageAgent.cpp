@@ -22,7 +22,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
@@ -305,7 +304,7 @@ class GetCacheResponsesForRequestData
  public:
   GetCacheResponsesForRequestData(const DataRequestParams& params,
                                   const WebServiceWorkerRequest& request,
-                                  PassRefPtr<ResponsesAccumulator> accum)
+                                  RefPtr<ResponsesAccumulator> accum)
       : params_(params), request_(request), accumulator_(std::move(accum)) {}
   ~GetCacheResponsesForRequestData() override {}
 
@@ -485,7 +484,7 @@ class CachedResponseFileReaderLoaderClient final
 
  public:
   static void Load(ExecutionContext* context,
-                   PassRefPtr<BlobDataHandle> blob,
+                   RefPtr<BlobDataHandle> blob,
                    std::unique_ptr<RequestCachedResponseCallback> callback) {
     new CachedResponseFileReaderLoaderClient(context, std::move(blob),
                                              std::move(callback));
@@ -516,7 +515,7 @@ class CachedResponseFileReaderLoaderClient final
  private:
   CachedResponseFileReaderLoaderClient(
       ExecutionContext* context,
-      PassRefPtr<BlobDataHandle>&& blob,
+      RefPtr<BlobDataHandle>&& blob,
       std::unique_ptr<RequestCachedResponseCallback>&& callback)
       : loader_(
             FileReaderLoader::Create(FileReaderLoader::kReadByClient, this)),

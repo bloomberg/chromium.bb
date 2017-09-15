@@ -734,8 +734,7 @@ ScriptPromise WebGLRenderingContextBase::commit(
       script_state, exception_state);
 }
 
-PassRefPtr<StaticBitmapImage>
-WebGLRenderingContextBase::GetStaticBitmapImage() {
+RefPtr<StaticBitmapImage> WebGLRenderingContextBase::GetStaticBitmapImage() {
   if (!GetDrawingBuffer())
     return nullptr;
 
@@ -1053,7 +1052,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
   ADD_VALUES_TO_SET(supported_tex_image_source_types_, kSupportedTypesES2);
 }
 
-PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
+RefPtr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider) {
   bool premultiplied_alpha = CreationAttributes().premultipliedAlpha();
   bool want_alpha_channel = CreationAttributes().alpha();
@@ -4523,8 +4522,8 @@ bool WebGLRenderingContextBase::ValidateValueFitNonNegInt32(
 
 // TODO(fmalita): figure why WebGLImageConversion::ImageExtractor can't handle
 // SVG-backed images, and get rid of this intermediate step.
-PassRefPtr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
-    PassRefPtr<Image> pass_image,
+RefPtr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
+    RefPtr<Image> pass_image,
     int width,
     int height,
     const char* function_name) {
@@ -5156,7 +5155,7 @@ void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
       GetTextureSourceSize(canvas), 1, 0, exception_state);
 }
 
-PassRefPtr<Image> WebGLRenderingContextBase::VideoFrameToImage(
+RefPtr<Image> WebGLRenderingContextBase::VideoFrameToImage(
     HTMLVideoElement* video,
     int already_uploaded_id,
     WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) {

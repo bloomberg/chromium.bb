@@ -171,7 +171,7 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
     LocalFrame* frame,
     const KURL& url,
     const String& user_agent,
-    PassRefPtr<SecurityOrigin> security_origin,
+    RefPtr<SecurityOrigin> security_origin,
     v8::Isolate* isolate,
     WorkerReportingProxy& reporting_proxy,
     PaintWorkletPendingGeneratorRegistry* pending_generator_registry,
@@ -195,7 +195,7 @@ PaintWorkletGlobalScope::PaintWorkletGlobalScope(
     LocalFrame* frame,
     const KURL& url,
     const String& user_agent,
-    PassRefPtr<SecurityOrigin> security_origin,
+    RefPtr<SecurityOrigin> security_origin,
     v8::Isolate* isolate,
     WorkerReportingProxy& reporting_proxy,
     PaintWorkletPendingGeneratorRegistry* pending_generator_registry)

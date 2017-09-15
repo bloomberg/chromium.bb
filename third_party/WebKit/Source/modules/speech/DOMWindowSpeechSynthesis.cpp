@@ -34,7 +34,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

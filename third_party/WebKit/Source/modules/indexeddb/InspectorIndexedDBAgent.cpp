@@ -381,7 +381,7 @@ static std::unique_ptr<KeyPath> KeyPathFromIDBKeyPath(
 class DatabaseLoader final
     : public ExecutableWithDatabase<RequestDatabaseCallback> {
  public:
-  static PassRefPtr<DatabaseLoader> Create(
+  static RefPtr<DatabaseLoader> Create(
       ScriptState* script_state,
       std::unique_ptr<RequestDatabaseCallback> request_callback) {
     return AdoptRef(
@@ -628,7 +628,7 @@ class OpenCursorCallback final : public EventListener {
 
 class DataLoader final : public ExecutableWithDatabase<RequestDataCallback> {
  public:
-  static PassRefPtr<DataLoader> Create(
+  static RefPtr<DataLoader> Create(
       v8_inspector::V8InspectorSession* v8_session,
       ScriptState* script_state,
       std::unique_ptr<RequestDataCallback> request_callback,
@@ -910,7 +910,7 @@ class ClearObjectStoreListener final : public EventListener {
 class ClearObjectStore final
     : public ExecutableWithDatabase<ClearObjectStoreCallback> {
  public:
-  static PassRefPtr<ClearObjectStore> Create(
+  static RefPtr<ClearObjectStore> Create(
       ScriptState* script_state,
       const String& object_store_name,
       std::unique_ptr<ClearObjectStoreCallback> request_callback) {

@@ -235,7 +235,7 @@ class SnapshotFileCallback final : public FileSystemCallbacksBase {
                                                           ErrorCallbackBase*,
                                                           ExecutionContext*);
   virtual void DidCreateSnapshotFile(const FileMetadata&,
-                                     PassRefPtr<BlobDataHandle> snapshot);
+                                     RefPtr<BlobDataHandle> snapshot);
 
  private:
   SnapshotFileCallback(DOMFileSystemBase*,

@@ -50,7 +50,7 @@ class MODULES_EXPORT PasswordCredential final : public Credential {
   const KURL& iconURL() const;
 
   // Internal methods
-  PassRefPtr<EncodedFormData> EncodeFormData(String& content_type) const;
+  RefPtr<EncodedFormData> EncodeFormData(String& content_type) const;
   DECLARE_VIRTUAL_TRACE();
 
  private:

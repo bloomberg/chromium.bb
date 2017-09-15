@@ -12,7 +12,7 @@
 #include "modules/storage/Storage.h"
 #include "modules/storage/StorageNamespace.h"
 #include "modules/storage/StorageNamespaceController.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
