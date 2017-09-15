@@ -79,7 +79,11 @@ template("compute_interfaces_info_individual") {
     ]
 
     response_file_contents = rebase_path(invoker.sources, root_build_dir)
-    args = [
+    args = []
+    if (snake_case_source_files) {
+      args += [ "--snake-case-generated-files" ]
+    }
+    args += [
       "--cache-directory",
       rebase_path(bindings_scripts_output_dir, root_build_dir),
       "--idl-files-list",
@@ -89,9 +93,6 @@ template("compute_interfaces_info_individual") {
       "--component-info-file",
       rebase_path(invoker.component_info_file, root_build_dir),
     ]
-    if (snake_case_source_files) {
-      args += [ "--snake-case-generated-files" ]
-    }
 
     deps = [ "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables" ] + invoker.deps
   }
@@ -218,7 +219,11 @@ template("idl_compiler") {
       write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
       inputs += [ idl_files_list ]
 
-      args = [
+      args = []
+      if (snake_case_source_files) {
+        args += [ "--snake-case-generated-files" ]
+      }
+      args += [
         "--cache-dir",
         rebase_path(bindings_scripts_output_dir, root_build_dir),
         "--output-dir",
@@ -230,9 +235,6 @@ template("idl_compiler") {
         "--read-idl-list-from-file",
         rebase_path(idl_files_list, root_build_dir),
       ]
-      if (snake_case_source_files) {
-        args += [ "--snake-case-generated-files" ]
-      }
     }
   } else {
     action_foreach(target_name) {
@@ -367,14 +369,15 @@ template("aggregate_generated_bindings") {
     outputs = invoker.outputs
 
     response_file_contents = rebase_path(inputs, root_build_dir)
-    args = [
+    args = []
+    if (snake_case_source_files) {
+      args += [ "--snake-case-generated-files" ]
+    }
+    args += [
       "--component",
       invoker.component,
       "{{response_file_name}}",
     ]
-    if (snake_case_source_files) {
-      args += [ "--snake-case-generated-files" ]
-    }
     args += rebase_path(outputs, root_build_dir)
 
     public_deps = invoker.public_deps
@@ -501,7 +504,11 @@ template("generate_conditional_features") {
                idl_files_list,
              ] + invoker.sources
 
-    args = [
+    args = []
+    if (snake_case_source_files) {
+      args += [ "--snake-case-generated-files" ]
+    }
+    args += [
       "--output-directory",
       rebase_path(invoker.output_dir, root_build_dir),
       "--info-dir",
@@ -513,9 +520,6 @@ template("generate_conditional_features") {
       "--idl-files-list",
       rebase_path(idl_files_list, root_build_dir),
     ]
-    if (snake_case_source_files) {
-      args += [ "--snake-case-generated-files" ]
-    }
 
     outputs = [
       "${invoker.output_dir}/ConditionalFeaturesFor${invoker.component}.cpp",

@@ -325,6 +325,8 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
             self.info_provider.include_path_for_export)
         template_context['header_includes'] = normalize_and_sort_includes(
             template_context['header_includes'], self.snake_case_generated_files)
+        template_context['cpp_includes'] = normalize_and_sort_includes(
+            template_context['cpp_includes'], self.snake_case_generated_files)
         template_context['code_generator'] = self.generator_name
         template_context['exported'] = self.info_provider.specifier_for_export
         snake_base_name = to_snake_case(shorten_union_name(union_type))
@@ -383,6 +385,8 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
                 self.info_provider.include_path_for_export)
         template_context['header_includes'] = normalize_and_sort_includes(
             template_context['header_includes'], self.snake_case_generated_files)
+        template_context['cpp_includes'] = normalize_and_sort_includes(
+            template_context['cpp_includes'], self.snake_case_generated_files)
         template_context['code_generator'] = MODULE_PYNAME
         header_text = render_template(header_template, template_context)
         cpp_text = render_template(cpp_template, template_context)
