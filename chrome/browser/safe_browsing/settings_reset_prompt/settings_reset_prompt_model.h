@@ -16,19 +16,18 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/profile_resetter/profile_resetter.h"
+#include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/extension_info.h"
+#include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_config.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
 #include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
 class BrandcodedDefaultSettings;
 class Profile;
-class ProfileResetter;
-class ResettableSettingsSnapshot;
 
 namespace safe_browsing {
-
-class SettingsResetPromptConfig;
 
 // Encapsulates information about settings needed for the settings reset prompt
 // and implements the reset logic.
