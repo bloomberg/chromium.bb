@@ -4,6 +4,7 @@
 
 #include "components/pdf/renderer/pepper_pdf_host.h"
 
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
 #include "content/public/common/associated_interface_provider.h"

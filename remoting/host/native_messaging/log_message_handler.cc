@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/tracked_objects.h"
 
 namespace remoting {
 

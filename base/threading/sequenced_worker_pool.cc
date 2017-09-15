@@ -36,7 +36,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "base/tracked_objects.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
@@ -1002,10 +1001,7 @@ void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
           this_worker->set_running_task_info(
               SequenceToken(task.sequence_token_id), task.shutdown_behavior);
 
-          tracked_objects::TaskStopwatch stopwatch;
-          stopwatch.Start();
           std::move(task.task).Run();
-          stopwatch.Stop();
 
           // Make sure our task is erased outside the lock for the
           // same reason we do this with delete_these_oustide_lock.

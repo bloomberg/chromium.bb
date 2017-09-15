@@ -19,7 +19,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/tracked_objects.h"
 #include "components/sync/driver/async_directory_type_controller_mock.h"
 #include "components/sync/driver/data_type_controller_mock.h"
 #include "components/sync/driver/fake_sync_client.h"

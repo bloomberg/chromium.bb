@@ -17,7 +17,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/tracked_objects.h"
 #include "components/sync/base/encryptor.h"
 #include "components/sync/base/experiments.h"
 #include "components/sync/base/passphrase_type.h"

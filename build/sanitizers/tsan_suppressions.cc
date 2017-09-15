@@ -34,10 +34,6 @@ char kTSanDefaultSuppressions[] =
     "race:pcache1EnforceMaxPage\n"
     "race:pcache1AllocPage\n"
 
-    // http://crbug.com/102327.
-    // Test-only race, won't fix.
-    "race:tracked_objects::ThreadData::ShutdownSingleThreadedCleanup\n"
-
     // http://crbug.com/120808
     "race:base/threading/watchdog.cc\n"
 

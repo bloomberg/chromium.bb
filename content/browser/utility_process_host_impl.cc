@@ -270,7 +270,6 @@ bool UtilityProcessHostImpl::StartProcess() {
       switches::kHostResolverRules,
       switches::kLogNetLog,
       switches::kNoSandbox,
-      switches::kProfilerTiming,
       switches::kProxyServer,
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,

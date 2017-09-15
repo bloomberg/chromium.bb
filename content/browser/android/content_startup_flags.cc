@@ -69,12 +69,6 @@ void SetContentCommandLineFlags(bool single_process,
     parsed_command_line->AppendSwitchNative(
       switches::kRegisterPepperPlugins, plugin_descriptor);
   }
-
-  // Disable profiler timing by default.
-  if (!parsed_command_line->HasSwitch(switches::kProfilerTiming)) {
-    parsed_command_line->AppendSwitchASCII(
-        switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
-  }
 }
 
 }  // namespace content

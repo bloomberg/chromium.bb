@@ -9,7 +9,6 @@
 
 #include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/thread_id_name_manager.h"
-#include "base/tracked_objects.h"
 
 namespace base {
 
@@ -54,7 +53,6 @@ void PlatformThread::SetName(const std::string& name) {
   // (for the debugger, etc.), so for now only set to our internal mechanisms.
   ThreadIdNameManager::GetInstance()->SetName(PlatformThread::CurrentId(),
                                               name);
-  tracked_objects::ThreadData::InitializeThreadContext(name);
 }
 
 }  // namespace base

@@ -19,7 +19,6 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/worker_pool.h"
 #include "base/trace_event/trace_event.h"
-#include "base/tracked_objects.h"
 
 namespace base {
 
@@ -94,11 +93,7 @@ void WorkerThread::ThreadMain() {
     if (pending_task.task.is_null())
       break;
     TRACE_TASK_EXECUTION("WorkerThread::ThreadMain::Run", pending_task);
-
-    tracked_objects::TaskStopwatch stopwatch;
-    stopwatch.Start();
     std::move(pending_task.task).Run();
-    stopwatch.Stop();
   }
 
   // The WorkerThread is non-joinable, so it deletes itself.

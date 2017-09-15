@@ -17,7 +17,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
-#include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "components/variations/child_process_field_trial_syncer.h"
 #include "content/common/associated_interfaces.mojom.h"

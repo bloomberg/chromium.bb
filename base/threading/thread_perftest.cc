@@ -40,13 +40,7 @@ class ThreadPerfTest : public testing::Test {
  public:
   ThreadPerfTest()
       : done_(WaitableEvent::ResetPolicy::AUTOMATIC,
-              WaitableEvent::InitialState::NOT_SIGNALED) {
-    // Disable the task profiler as it adds significant cost!
-    CommandLine::Init(0, NULL);
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kProfilerTiming,
-        switches::kProfilerTimingDisabledValue);
-  }
+              WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   // To be implemented by each test. Subclass must uses threads_ such that
   // their cpu-time can be measured. Test must return from PingPong() _and_

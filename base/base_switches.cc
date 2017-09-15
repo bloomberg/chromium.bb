@@ -91,14 +91,6 @@ const char kTraceToFile[]                   = "trace-to-file";
 // go to a default file name.
 const char kTraceToFileName[]               = "trace-to-file-name";
 
-// Configure whether chrome://profiler will contain timing information. This
-// option is enabled by default. A value of "0" will disable profiler timing,
-// while all other values will enable it.
-const char kProfilerTiming[]                = "profiler-timing";
-// Value of the --profiler-timing flag that will disable timing information for
-// chrome://profiler.
-const char kProfilerTimingDisabledValue[]   = "0";
-
 // Specifies a location for profiling output. This will only work if chrome has
 // been built with the gyp variable profiling=1 or gn arg enable_profiling=true.
 //

@@ -8,7 +8,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/tracked_objects.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/protocol/sync.pb.h"

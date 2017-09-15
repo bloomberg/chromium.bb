@@ -12,7 +12,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/tracked_objects.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"

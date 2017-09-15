@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "base/tracked_objects.h"
 #include "components/tracing/common/trace_startup.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/common/content_switches.h"

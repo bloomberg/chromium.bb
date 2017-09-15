@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
 #include <X11/Xlib.h>
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
+#include <stddef.h>
 
 #include <memory>
 #include <set>
@@ -30,9 +32,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
-// These conflict with base/tracked_objects.h, so need to come last.
-#include <gdk/gdkx.h>
-#include <gtk/gtk.h>
 
 using content::BrowserThread;
 
