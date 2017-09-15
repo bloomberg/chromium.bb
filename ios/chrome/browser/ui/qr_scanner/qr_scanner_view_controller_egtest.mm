@@ -98,11 +98,6 @@ id<GREYMatcher> QrScannerViewportCaption() {
       IDS_IOS_QR_SCANNER_VIEWPORT_CAPTION);
 }
 
-// Returns the GREYMatcher for the back button in the web toolbar.
-id<GREYMatcher> WebToolbarBackButton() {
-  return ButtonWithAccessibilityLabelId(IDS_ACCNAME_BACK);
-}
-
 // Returns the GREYMatcher for the Cancel button to dismiss a UIAlertController.
 id<GREYMatcher> DialogCancelButton() {
   return grey_allOf(
@@ -772,7 +767,8 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [ChromeEarlGrey waitForWebViewContainingText:response];
 
   // Press the back button to get back to the NTP.
-  TapButton(WebToolbarBackButton());
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+      performAction:grey_tap()];
   [self assertModalOfClass:[QRScannerViewController class]
           isNotPresentedBy:[self currentBVC]];
 }
