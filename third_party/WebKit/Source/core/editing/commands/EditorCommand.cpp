@@ -2062,6 +2062,14 @@ static bool Supported(LocalFrame*) {
   return true;
 }
 
+static bool PasteSupported(LocalFrame* frame) {
+  const Settings* const settings = frame->GetSettings();
+  const bool default_value = settings &&
+                             settings->GetJavaScriptCanAccessClipboard() &&
+                             settings->GetDOMPasteAllowed();
+  return frame->GetEditor().Client().CanPaste(frame, default_value);
+}
+
 static bool SupportedFromMenuOrKeyBinding(LocalFrame*) {
   return false;
 }
@@ -2772,8 +2780,8 @@ static const EditorInternalCommand* InternalCommand(
       {WebEditingCommandType::kOverWrite, ExecuteToggleOverwrite,
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, kDoNotAllowExecutionWhenDisabled},
-      {WebEditingCommandType::kPaste, ExecutePaste, Supported, EnabledPaste,
-       StateNone, ValueStateOrNull, kNotTextInsertion,
+      {WebEditingCommandType::kPaste, ExecutePaste, PasteSupported,
+       EnabledPaste, StateNone, ValueStateOrNull, kNotTextInsertion,
        kAllowExecutionWhenDisabled},
       {WebEditingCommandType::kPasteAndMatchStyle, ExecutePasteAndMatchStyle,
        Supported, EnabledPaste, StateNone, ValueStateOrNull, kNotTextInsertion,
