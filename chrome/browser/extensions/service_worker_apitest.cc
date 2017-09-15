@@ -332,7 +332,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateRefreshesServiceWorker) {
   EXPECT_TRUE(listener_v2.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateWithoutSkipWaiting) {
+// TODO(crbug.com/765736) Fix the test.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, DISABLED_UpdateWithoutSkipWaiting) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
