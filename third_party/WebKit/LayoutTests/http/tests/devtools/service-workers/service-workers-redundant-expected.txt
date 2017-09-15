@@ -14,10 +14,6 @@ Status
 #N activated and is running
 stop
 Clients
-Errors
-0
-details
-clear
 ============================
 The second Serviceworker is installed.
 ==== ServiceWorkersView ====
@@ -38,10 +34,6 @@ Received
 Clients
 http://127.0.0.1:8000/devtools/service-workers/service-workers-redundant.html
 focus
-Errors
-0
-details
-clear
 ============================
 The first ServiceWorker worker became redundant and stopped.
 ==== ServiceWorkersView ====
@@ -57,10 +49,6 @@ Status
 #N activated and is running
 stop
 Clients
-Errors
-0
-details
-clear
 ============================
 DevTools frontend is reopened.
 ==== ServiceWorkersView ====
@@ -76,9 +64,5 @@ Status
 #N activated and is running
 stop
 Clients
-Errors
-0
-details
-clear
 ============================
 
