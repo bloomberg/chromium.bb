@@ -1017,11 +1017,15 @@ void ChromeClientImpl::DidChangeValueInTextField(
   if (auto* fill_client = AutofillClientFromFrame(doc.GetFrame()))
     fill_client->TextFieldDidChange(WebFormControlElement(&element));
 
-  UseCounter::Count(doc, doc.IsSecureContext()
-                             ? WebFeature::kFieldEditInSecureContext
-                             : WebFeature::kFieldEditInNonSecureContext);
-  doc.MaybeQueueSendDidEditFieldInInsecureContext();
-  web_view_->PageImportanceSignals()->SetHadFormInteraction();
+  // Value changes caused by |document.execCommand| calls should not be
+  // interpreted as a user action. See https://crbug.com/764760.
+  if (!doc.IsRunningExecCommand()) {
+    UseCounter::Count(doc, doc.IsSecureContext()
+                               ? WebFeature::kFieldEditInSecureContext
+                               : WebFeature::kFieldEditInNonSecureContext);
+    doc.MaybeQueueSendDidEditFieldInInsecureContext();
+    web_view_->PageImportanceSignals()->SetHadFormInteraction();
+  }
 }
 
 void ChromeClientImpl::DidEndEditingOnTextField(
