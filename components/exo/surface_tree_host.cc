@@ -306,7 +306,7 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   }
   frame.metadata.begin_frame_ack = current_begin_frame_ack_;
   const int kRenderPassId = 1;
-  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   render_pass->SetNew(kRenderPassId, gfx::Rect(), gfx::Rect(),
                       gfx::Transform());
   frame.render_pass_list.push_back(std::move(render_pass));

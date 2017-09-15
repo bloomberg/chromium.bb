@@ -52,6 +52,10 @@ class TracedValue;
 class DictionaryValue;
 }
 
+namespace viz {
+class RenderPass;
+}
+
 namespace cc {
 
 class AppendQuadsData;
@@ -59,7 +63,6 @@ class LayerTreeImpl;
 class MicroBenchmarkImpl;
 class MutatorHost;
 class PrioritizedTile;
-class RenderPass;
 class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
 class Tile;
@@ -138,7 +141,7 @@ class CC_EXPORT LayerImpl {
   // returns true.
   virtual bool WillDraw(DrawMode draw_mode,
                         ResourceProvider* resource_provider);
-  virtual void AppendQuads(RenderPass* render_pass,
+  virtual void AppendQuads(viz::RenderPass* render_pass,
                            AppendQuadsData* append_quads_data) {}
   virtual void DidDraw(ResourceProvider* resource_provider);
 
@@ -447,11 +450,11 @@ class CC_EXPORT LayerImpl {
   // Get the color and size of the layer's debug border.
   virtual void GetDebugBorderProperties(SkColor* color, float* width) const;
 
-  void AppendDebugBorderQuad(RenderPass* render_pass,
+  void AppendDebugBorderQuad(viz::RenderPass* render_pass,
                              const gfx::Size& bounds,
                              const viz::SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data) const;
-  void AppendDebugBorderQuad(RenderPass* render_pass,
+  void AppendDebugBorderQuad(viz::RenderPass* render_pass,
                              const gfx::Size& bounds,
                              const viz::SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data,

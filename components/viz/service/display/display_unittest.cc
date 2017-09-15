@@ -9,12 +9,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/render_pass.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/copy_output_result.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
@@ -145,7 +145,7 @@ class DisplayTest : public testing::Test {
   }
 
  protected:
-  void SubmitCompositorFrame(cc::RenderPassList* pass_list,
+  void SubmitCompositorFrame(RenderPassList* pass_list,
                              const LocalSurfaceId& local_surface_id) {
     cc::CompositorFrame frame = test::MakeCompositorFrame();
     pass_list->swap(frame.render_pass_list);
@@ -168,9 +168,8 @@ class DisplayTest : public testing::Test {
 class StubDisplayClient : public DisplayClient {
  public:
   void DisplayOutputSurfaceLost() override {}
-  void DisplayWillDrawAndSwap(
-      bool will_draw_and_swap,
-      const cc::RenderPassList& render_passes) override {}
+  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                              const RenderPassList& render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
 };
 
@@ -206,8 +205,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
   EXPECT_FALSE(scheduler_->has_new_root_surface);
 
   // First draw from surface should have full damage.
-  cc::RenderPassList pass_list;
-  auto pass = cc::RenderPass::Create();
+  RenderPassList pass_list;
+  auto pass = RenderPass::Create();
   pass->output_rect = gfx::Rect(0, 0, 100, 100);
   pass->damage_rect = gfx::Rect(10, 10, 1, 1);
   pass->id = 1u;
@@ -231,7 +230,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100), software_output_device_->damage_rect());
   {
     // Only damaged portion should be swapped.
-    pass = cc::RenderPass::Create();
+    pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
     pass->id = 1u;
@@ -257,7 +256,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   {
     // Pass has no damage so shouldn't be swapped.
-    pass = cc::RenderPass::Create();
+    pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1u;
@@ -277,7 +276,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   {
     // Pass is wrong size so shouldn't be swapped.
-    pass = cc::RenderPass::Create();
+    pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
     pass->damage_rect = gfx::Rect(10, 10, 10, 10);
     pass->id = 1u;
@@ -300,7 +299,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   {
     // Previous frame wasn't swapped, so next swap should have full damage.
-    pass = cc::RenderPass::Create();
+    pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1u;
@@ -325,7 +324,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   {
     // Pass has copy output request so should be swapped.
-    pass = cc::RenderPass::Create();
+    pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     bool copy_called = false;
@@ -351,7 +350,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   // Pass has no damage, so shouldn't be swapped, but latency info should be
   // saved for next swap.
   {
-    pass = cc::RenderPass::Create();
+    pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1u;
@@ -383,7 +382,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_FALSE(scheduler_->swapped);
     EXPECT_EQ(4u, output_surface_->num_sent_frames());
 
-    pass = cc::RenderPass::Create();
+    pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 200, 200);
     pass->damage_rect = gfx::Rect(10, 10, 10, 10);
     pass->id = 1u;
@@ -412,7 +411,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     local_surface_id = id_allocator_.GenerateId();
     display_->SetLocalSurfaceId(local_surface_id, 1.0f);
     // Surface that's damaged completely should be resized and swapped.
-    pass = cc::RenderPass::Create();
+    pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
     pass->damage_rect = gfx::Rect(0, 0, 99, 99);
     pass->id = 1u;
@@ -456,8 +455,8 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
   scheduler_->ResetDamageForTest();
   display_->Resize(gfx::Size(100, 100));
 
-  cc::RenderPassList pass_list;
-  auto pass = cc::RenderPass::Create();
+  RenderPassList pass_list;
+  auto pass = RenderPass::Create();
   pass->output_rect = gfx::Rect(0, 0, 100, 100);
   pass->damage_rect = gfx::Rect(10, 10, 1, 1);
   pass->id = 1u;
@@ -471,7 +470,7 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
   // This is the same as LatencyInfo::kMaxLatencyInfoNumber.
   const size_t max_latency_info_count = 100;
   for (size_t i = 0; i <= max_latency_info_count; ++i) {
-    pass = cc::RenderPass::Create();
+    pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1u;
@@ -523,8 +522,8 @@ TEST_F(DisplayTest, Finish) {
   display_->Resize(gfx::Size(100, 100));
 
   {
-    cc::RenderPassList pass_list;
-    auto pass = cc::RenderPass::Create();
+    RenderPassList pass_list;
+    auto pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
     pass->id = 1u;
@@ -550,8 +549,8 @@ TEST_F(DisplayTest, Finish) {
 
   EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
   {
-    cc::RenderPassList pass_list;
-    auto pass = cc::RenderPass::Create();
+    RenderPassList pass_list;
+    auto pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 200, 200);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
     pass->id = 1u;
@@ -637,8 +636,8 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   EXPECT_FALSE(scheduler2->damaged);
 
   // Submit a frame for display_ with full damage.
-  cc::RenderPassList pass_list;
-  auto pass = cc::RenderPass::Create();
+  RenderPassList pass_list;
+  auto pass = RenderPass::Create();
   pass->output_rect = gfx::Rect(0, 0, 100, 100);
   pass->damage_rect = gfx::Rect(10, 10, 1, 1);
   pass->id = 1;

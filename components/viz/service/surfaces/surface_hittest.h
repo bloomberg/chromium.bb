@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "cc/quads/render_pass.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/viz_service_export.h"
 
@@ -57,22 +57,21 @@ class VIZ_SERVICE_EXPORT SurfaceHittest {
  private:
   bool GetTargetSurfaceAtPointInternal(
       const SurfaceId& surface_id,
-      cc::RenderPassId render_pass_id,
+      RenderPassId render_pass_id,
       const gfx::Point& point_in_root_target,
-      std::set<const cc::RenderPass*>* referenced_passes,
+      std::set<const RenderPass*>* referenced_passes,
       SurfaceId* out_surface_id,
       gfx::Transform* out_transform);
 
   bool GetTransformToTargetSurfaceInternal(
       const SurfaceId& root_surface_id,
       const SurfaceId& target_surface_id,
-      cc::RenderPassId render_pass_id,
-      std::set<const cc::RenderPass*>* referenced_passes,
+      RenderPassId render_pass_id,
+      std::set<const RenderPass*>* referenced_passes,
       gfx::Transform* out_transform);
 
-  const cc::RenderPass* GetRenderPassForSurfaceById(
-      const SurfaceId& surface_id,
-      cc::RenderPassId render_pass_id);
+  const RenderPass* GetRenderPassForSurfaceById(const SurfaceId& surface_id,
+                                                RenderPassId render_pass_id);
 
   bool PointInQuad(const DrawQuad* quad,
                    const gfx::Point& point_in_render_pass_space,

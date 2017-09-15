@@ -116,7 +116,7 @@ void RootCompositorFrameSinkImpl::DisplayOutputSurfaceLost() {
 
 void RootCompositorFrameSinkImpl::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
-    const cc::RenderPassList& render_pass) {
+    const RenderPassList& render_pass) {
   hit_test_aggregator_.PostTaskAggregate(display_->CurrentSurfaceId());
 }
 

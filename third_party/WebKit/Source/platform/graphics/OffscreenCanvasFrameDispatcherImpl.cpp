@@ -5,7 +5,7 @@
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
@@ -137,7 +137,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
   bool is_clipped = false;
   // TODO(crbug.com/705019): optimize for contexts that have {alpha: false}
   bool are_contents_opaque = false;
-  std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
   pass->SetNew(kRenderPassId, bounds,
                gfx::Rect(damage_rect.x(), damage_rect.y(), damage_rect.width(),
                          damage_rect.height()),
@@ -193,8 +193,8 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
   offscreen_canvas_resource_provider_->IncNextResourceId();
   frame.resource_list.push_back(std::move(resource));
 
-  cc::TextureDrawQuad* quad =
-      pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
+  viz::TextureDrawQuad* quad =
+      pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
   gfx::Size rect_size(width_, height_);
 
   // TODO(crbug.com/705019): optimize for contexts that have {alpha: false}

@@ -61,7 +61,7 @@ gfx::Rect OverlayProcessor::GetAndResetOverlayDamage() {
 
 bool OverlayProcessor::ProcessForCALayers(
     DisplayResourceProvider* resource_provider,
-    RenderPass* render_pass,
+    viz::RenderPass* render_pass,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
     OverlayCandidateList* overlay_candidates,
@@ -89,7 +89,7 @@ bool OverlayProcessor::ProcessForCALayers(
 
 bool OverlayProcessor::ProcessForDCLayers(
     DisplayResourceProvider* resource_provider,
-    RenderPassList* render_passes,
+    viz::RenderPassList* render_passes,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
     OverlayCandidateList* overlay_candidates,
@@ -110,7 +110,7 @@ bool OverlayProcessor::ProcessForDCLayers(
 
 void OverlayProcessor::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
-    RenderPassList* render_passes,
+    viz::RenderPassList* render_passes,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
     OverlayCandidateList* candidates,
@@ -130,7 +130,7 @@ void OverlayProcessor::ProcessForOverlays(
   const gfx::Rect previous_frame_underlay_rect = previous_frame_underlay_rect_;
   previous_frame_underlay_rect_ = gfx::Rect();
 
-  RenderPass* render_pass = render_passes->back().get();
+  viz::RenderPass* render_pass = render_passes->back().get();
 
   // If we have any copy requests, we can't remove any quads for overlays or
   // CALayers because the framebuffer would be missing the removed quads'

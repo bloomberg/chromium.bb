@@ -18,13 +18,13 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/surface_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_client.h"
@@ -44,8 +44,8 @@ const char kUmaNoActiveFrame[] =
     "Compositing.SurfaceAggregator.SurfaceDrawQuad.NoActiveFrame";
 
 void MoveMatchingRequests(
-    cc::RenderPassId render_pass_id,
-    std::multimap<cc::RenderPassId, std::unique_ptr<CopyOutputRequest>>*
+    RenderPassId render_pass_id,
+    std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>*
         copy_requests,
     std::vector<std::unique_ptr<CopyOutputRequest>>* output_requests) {
   auto request_range = copy_requests->equal_range(render_pass_id);
@@ -122,9 +122,8 @@ SurfaceAggregator::ClipData SurfaceAggregator::CalculateClipRect(
   return out_clip;
 }
 
-cc::RenderPassId SurfaceAggregator::RemapPassId(
-    cc::RenderPassId surface_local_pass_id,
-    const SurfaceId& surface_id) {
+RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
+                                            const SurfaceId& surface_id) {
   auto key = std::make_pair(surface_id, surface_local_pass_id);
   auto it = render_pass_allocator_map_.find(key);
   if (it != render_pass_allocator_map_.end()) {
@@ -153,7 +152,7 @@ int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
 
 gfx::Rect SurfaceAggregator::DamageRectForSurface(
     const Surface* surface,
-    const cc::RenderPass& source,
+    const RenderPass& source,
     const gfx::Rect& full_rect) const {
   auto it = previous_contained_surfaces_.find(surface->surface_id());
   if (it != previous_contained_surfaces_.end()) {
@@ -185,10 +184,10 @@ void SurfaceAggregator::UnrefResources(
 }
 
 void SurfaceAggregator::HandleSurfaceQuad(
-    const cc::SurfaceDrawQuad* surface_quad,
+    const SurfaceDrawQuad* surface_quad,
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
-    cc::RenderPass* dest_pass,
+    RenderPass* dest_pass,
     bool ignore_undamaged,
     gfx::Rect* damage_rect_in_quad_space,
     bool* damage_rect_in_quad_space_valid) {
@@ -230,11 +229,11 @@ void SurfaceAggregator::HandleSurfaceQuad(
 
   const cc::CompositorFrame& frame = surface->GetActiveFrame();
 
-  // A map keyed by cc::RenderPass id.
+  // A map keyed by RenderPass id.
   Surface::CopyRequestsMap copy_requests;
   surface->TakeCopyOutputRequests(&copy_requests);
 
-  const cc::RenderPassList& render_pass_list = frame.render_pass_list;
+  const RenderPassList& render_pass_list = frame.render_pass_list;
   if (!valid_surfaces_.count(surface->surface_id())) {
     // As |copy_requests| goes out-of-scope, all copy requests in that container
     // will auto-send an empty result upon destruction.
@@ -251,18 +250,18 @@ void SurfaceAggregator::HandleSurfaceQuad(
   bool merge_pass =
       surface_quad->shared_quad_state->opacity == 1.f && copy_requests.empty();
 
-  const cc::RenderPassList& referenced_passes = render_pass_list;
+  const RenderPassList& referenced_passes = render_pass_list;
   size_t passes_to_copy =
       merge_pass ? referenced_passes.size() - 1 : referenced_passes.size();
   for (size_t j = 0; j < passes_to_copy; ++j) {
-    const cc::RenderPass& source = *referenced_passes[j];
+    const RenderPass& source = *referenced_passes[j];
 
     size_t sqs_size = source.shared_quad_state_list.size();
     size_t dq_size = source.quad_list.size();
-    std::unique_ptr<cc::RenderPass> copy_pass(
-        cc::RenderPass::Create(sqs_size, dq_size));
+    std::unique_ptr<RenderPass> copy_pass(
+        RenderPass::Create(sqs_size, dq_size));
 
-    cc::RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
+    RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
     copy_pass->SetAll(
         remapped_pass_id, source.output_rect, source.output_rect,
@@ -322,7 +321,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
 
   if (merge_pass) {
     // TODO(jamesr): Clean up last pass special casing.
-    const cc::QuadList& quads = last_pass.quad_list;
+    const QuadList& quads = last_pass.quad_list;
 
     // Intersect the transformed visible rect and the clip rect to create a
     // smaller cliprect for the quad.
@@ -342,13 +341,13 @@ void SurfaceAggregator::HandleSurfaceQuad(
                     child_to_parent_map, surface_transform, quads_clip,
                     dest_pass, surface_id);
   } else {
-    cc::RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
+    RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
 
     auto* shared_quad_state =
         CopySharedQuadState(surface_quad->shared_quad_state, target_transform,
                             clip_rect, dest_pass);
 
-    auto* quad = dest_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
+    auto* quad = dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     quad->SetNew(shared_quad_state, surface_quad->rect,
                  surface_quad->visible_rect, remapped_pass_id, 0, gfx::RectF(),
                  gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
@@ -373,7 +372,7 @@ void SurfaceAggregator::AddColorConversionPass() {
   if (!color_conversion_render_pass_id_)
     color_conversion_render_pass_id_ = next_render_pass_id_++;
 
-  auto color_conversion_pass = cc::RenderPass::Create(1, 1);
+  auto color_conversion_pass = RenderPass::Create(1, 1);
   color_conversion_pass->SetNew(color_conversion_render_pass_id_, output_rect,
                                 root_render_pass->damage_rect,
                                 root_render_pass->transform_to_root_target);
@@ -390,7 +389,7 @@ void SurfaceAggregator::AddColorConversionPass() {
       /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
 
   auto* quad =
-      color_conversion_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
+      color_conversion_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
                gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect));
@@ -401,7 +400,7 @@ SharedQuadState* SurfaceAggregator::CopySharedQuadState(
     const SharedQuadState* source_sqs,
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
-    cc::RenderPass* dest_render_pass) {
+    RenderPass* dest_render_pass) {
   auto* copy_shared_quad_state =
       dest_render_pass->CreateAndAppendSharedQuadState();
   // target_transform contains any transformation that may exist
@@ -426,12 +425,12 @@ SharedQuadState* SurfaceAggregator::CopySharedQuadState(
 }
 
 void SurfaceAggregator::CopyQuadsToPass(
-    const cc::QuadList& source_quad_list,
-    const cc::SharedQuadStateList& source_shared_quad_state_list,
+    const QuadList& source_quad_list,
+    const SharedQuadStateList& source_shared_quad_state_list,
     const std::unordered_map<ResourceId, ResourceId>& child_to_parent_map,
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
-    cc::RenderPass* dest_pass,
+    RenderPass* dest_pass,
     const SurfaceId& surface_id) {
   const SharedQuadState* last_copied_source_shared_quad_state = nullptr;
   // If the current frame has copy requests or cached render passes, then
@@ -461,15 +460,14 @@ void SurfaceAggregator::CopyQuadsToPass(
 
   for (auto* quad : source_quad_list) {
     if (quad->material == DrawQuad::SURFACE_CONTENT) {
-      const auto* surface_quad = cc::SurfaceDrawQuad::MaterialCast(quad);
+      const auto* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
       // HandleSurfaceQuad may add other shared quad state, so reset the
       // current data.
       last_copied_source_shared_quad_state = nullptr;
 
       // The primary SurfaceDrawQuad should have already dealt with the fallback
       // DrawQuad.
-      if (surface_quad->surface_draw_quad_type ==
-          cc::SurfaceDrawQuadType::FALLBACK)
+      if (surface_quad->surface_draw_quad_type == SurfaceDrawQuadType::FALLBACK)
         continue;
 
       HandleSurfaceQuad(surface_quad, target_transform, clip_rect, dest_pass,
@@ -497,9 +495,9 @@ void SurfaceAggregator::CopyQuadsToPass(
 
       DrawQuad* dest_quad;
       if (quad->material == DrawQuad::RENDER_PASS) {
-        const auto* pass_quad = cc::RenderPassDrawQuad::MaterialCast(quad);
-        cc::RenderPassId original_pass_id = pass_quad->render_pass_id;
-        cc::RenderPassId remapped_pass_id =
+        const auto* pass_quad = RenderPassDrawQuad::MaterialCast(quad);
+        RenderPassId original_pass_id = pass_quad->render_pass_id;
+        RenderPassId remapped_pass_id =
             RemapPassId(original_pass_id, surface_id);
 
         // If the RenderPassDrawQuad is referring to other render pass with the
@@ -511,11 +509,11 @@ void SurfaceAggregator::CopyQuadsToPass(
         dest_quad = dest_pass->CopyFromAndAppendRenderPassDrawQuad(
             pass_quad, remapped_pass_id);
       } else if (quad->material == DrawQuad::TEXTURE_CONTENT) {
-        const auto* texture_quad = cc::TextureDrawQuad::MaterialCast(quad);
+        const auto* texture_quad = TextureDrawQuad::MaterialCast(quad);
         if (texture_quad->secure_output_only &&
             (!output_is_secure_ || copy_request_passes_.count(dest_pass->id))) {
           auto* solid_color_quad =
-              dest_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+              dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
           solid_color_quad->SetNew(dest_pass->shared_quad_state_list.back(),
                                    quad->rect, quad->visible_rect,
                                    SK_ColorBLACK, false);
@@ -544,7 +542,7 @@ void SurfaceAggregator::CopyPasses(const cc::CompositorFrame& frame,
                                    Surface* surface) {
   // The root surface is allowed to have copy output requests, so grab them
   // off its render passes. This map contains a set of CopyOutputRequests
-  // keyed by each cc::RenderPass id.
+  // keyed by each RenderPass id.
   Surface::CopyRequestsMap copy_requests;
   surface->TakeCopyOutputRequests(&copy_requests);
 
@@ -564,11 +562,11 @@ void SurfaceAggregator::CopyPasses(const cc::CompositorFrame& frame,
 
     size_t sqs_size = source.shared_quad_state_list.size();
     size_t dq_size = source.quad_list.size();
-    auto copy_pass = cc::RenderPass::Create(sqs_size, dq_size);
+    auto copy_pass = RenderPass::Create(sqs_size, dq_size);
 
     MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
 
-    cc::RenderPassId remapped_pass_id =
+    RenderPassId remapped_pass_id =
         RemapPassId(source.id, surface->surface_id());
 
     copy_pass->SetAll(
@@ -666,7 +664,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
       provider_ ? provider_->GetChildToParentMap(child_id) : empty_map;
 
   CHECK(debug_weak_this.get());
-  cc::RenderPassId remapped_pass_id =
+  RenderPassId remapped_pass_id =
       RemapPassId(frame.render_pass_list.back()->id, surface_id);
   if (in_moved_pixel_surface)
     moved_pixel_passes_.insert(remapped_pass_id);
@@ -676,7 +674,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   struct SurfaceInfo {
     SurfaceInfo(const SurfaceId& id,
                 bool has_moved_pixels,
-                cc::RenderPassId parent_pass_id,
+                RenderPassId parent_pass_id,
                 const gfx::Transform& target_to_surface_transform)
         : id(id),
           has_moved_pixels(has_moved_pixels),
@@ -685,7 +683,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
 
     SurfaceId id;
     bool has_moved_pixels;
-    cc::RenderPassId parent_pass_id;
+    RenderPassId parent_pass_id;
     gfx::Transform target_to_surface_transform;
   };
   std::vector<SurfaceInfo> child_surfaces;
@@ -693,7 +691,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   gfx::Rect pixel_moving_background_filters_rect;
   // This data is created once and typically small or empty. Collect all items
   // and pass to a flat_vector to sort once.
-  std::vector<cc::RenderPassId> pixel_moving_background_filter_passes_data;
+  std::vector<RenderPassId> pixel_moving_background_filter_passes_data;
   for (const auto& render_pass : frame.render_pass_list) {
     if (render_pass->background_filters.HasFilterThatMovesPixels()) {
       pixel_moving_background_filter_passes_data.push_back(
@@ -706,13 +704,12 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
               render_pass->transform_to_root_target, render_pass->output_rect));
     }
   }
-  base::flat_set<cc::RenderPassId> pixel_moving_background_filter_passes(
+  base::flat_set<RenderPassId> pixel_moving_background_filter_passes(
       std::move(pixel_moving_background_filter_passes_data),
       base::KEEP_FIRST_OF_DUPES);
 
   for (const auto& render_pass : base::Reversed(frame.render_pass_list)) {
-    cc::RenderPassId remapped_pass_id =
-        RemapPassId(render_pass->id, surface_id);
+    RenderPassId remapped_pass_id = RemapPassId(render_pass->id, surface_id);
     bool has_pixel_moving_filter =
         render_pass->filters.HasFilterThatMovesPixels();
     if (has_pixel_moving_filter)
@@ -721,7 +718,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
                                !!moved_pixel_passes_.count(remapped_pass_id);
     for (auto* quad : render_pass->quad_list) {
       if (quad->material == DrawQuad::SURFACE_CONTENT) {
-        const auto* surface_quad = cc::SurfaceDrawQuad::MaterialCast(quad);
+        const auto* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
         gfx::Transform target_to_surface_transform(
             render_pass->transform_to_root_target,
             surface_quad->shared_quad_state->quad_to_target_transform);
@@ -729,8 +726,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
                                     in_moved_pixel_pass, remapped_pass_id,
                                     target_to_surface_transform);
       } else if (quad->material == DrawQuad::RENDER_PASS) {
-        const auto* render_pass_quad =
-            cc::RenderPassDrawQuad::MaterialCast(quad);
+        const auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
         if (in_moved_pixel_pass) {
           moved_pixel_passes_.insert(
               RemapPassId(render_pass_quad->render_pass_id, surface_id));
@@ -768,7 +764,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
 
   gfx::Rect damage_rect;
   gfx::Rect full_damage;
-  cc::RenderPass* last_pass = frame.render_pass_list.back().get();
+  RenderPass* last_pass = frame.render_pass_list.back().get();
   full_damage = last_pass->output_rect;
   damage_rect =
       DamageRectForSurface(surface, *last_pass, last_pass->output_rect);
@@ -812,8 +808,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   CHECK(debug_weak_this.get());
   for (const auto& render_pass : frame.render_pass_list) {
     if (!render_pass->copy_requests.empty()) {
-      cc::RenderPassId remapped_pass_id =
-          RemapPassId(render_pass->id, surface_id);
+      RenderPassId remapped_pass_id = RemapPassId(render_pass->id, surface_id);
       copy_request_passes_.insert(remapped_pass_id);
     }
     if (render_pass->cache_render_pass)
@@ -878,10 +873,10 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
 }
 
 void SurfaceAggregator::PropagateCopyRequestPasses() {
-  std::vector<cc::RenderPassId> copy_requests_to_iterate(
+  std::vector<RenderPassId> copy_requests_to_iterate(
       copy_request_passes_.begin(), copy_request_passes_.end());
   while (!copy_requests_to_iterate.empty()) {
-    cc::RenderPassId first = copy_requests_to_iterate.back();
+    RenderPassId first = copy_requests_to_iterate.back();
     copy_requests_to_iterate.pop_back();
     auto it = render_pass_dependencies_.find(first);
     if (it == render_pass_dependencies_.end())

@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
-#include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/test/layer_test_common.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -83,10 +83,10 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
     EXPECT_EQ(viz::DrawQuad::TEXTURE_CONTENT, thumb_draw_quad->material);
     EXPECT_EQ(viz::DrawQuad::TEXTURE_CONTENT, track_draw_quad->material);
 
-    const TextureDrawQuad* thumb_quad =
-        TextureDrawQuad::MaterialCast(thumb_draw_quad);
-    const TextureDrawQuad* track_quad =
-        TextureDrawQuad::MaterialCast(track_draw_quad);
+    const viz::TextureDrawQuad* thumb_quad =
+        viz::TextureDrawQuad::MaterialCast(thumb_draw_quad);
+    const viz::TextureDrawQuad* track_quad =
+        viz::TextureDrawQuad::MaterialCast(track_draw_quad);
 
     gfx::Rect scaled_thumb_rect = gfx::ScaleToEnclosingRect(thumb_rect, scale);
     EXPECT_EQ(track_quad->rect.ToString(),

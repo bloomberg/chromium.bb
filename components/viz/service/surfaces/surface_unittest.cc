@@ -80,11 +80,11 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   int max_frame = 3, start_id = 200;
   for (int i = 0; i < max_frame; ++i) {
     cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();
-    frame.render_pass_list.push_back(cc::RenderPass::Create());
+    frame.render_pass_list.push_back(RenderPass::Create());
     frame.render_pass_list.back()->id = i * 3 + start_id;
-    frame.render_pass_list.push_back(cc::RenderPass::Create());
+    frame.render_pass_list.push_back(RenderPass::Create());
     frame.render_pass_list.back()->id = i * 3 + start_id + 1;
-    frame.render_pass_list.push_back(cc::RenderPass::Create());
+    frame.render_pass_list.push_back(RenderPass::Create());
     frame.render_pass_list.back()->SetNew(i * 3 + start_id + 2,
                                           gfx::Rect(0, 0, 20, 20), gfx::Rect(),
                                           gfx::Transform());

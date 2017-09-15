@@ -7,16 +7,19 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
-#include "cc/quads/render_pass.h"
+#include "cc/cc_export.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 
-namespace cc {
-
+namespace viz {
 class DrawQuad;
 class RenderPassDrawQuad;
+}  // namespace viz
+
+namespace cc {
 class ResourceProvider;
 
 // Holds information that is frequently shared between consecutive
@@ -66,7 +69,7 @@ class CC_EXPORT CALayerOverlay {
   unsigned filter;
   // If |rpdq| is present, then the renderer must draw the filter effects and
   // copy the result into an IOSurface.
-  const RenderPassDrawQuad* rpdq = nullptr;
+  const viz::RenderPassDrawQuad* rpdq = nullptr;
 };
 
 typedef std::vector<CALayerOverlay> CALayerOverlayList;
@@ -76,9 +79,10 @@ typedef std::vector<CALayerOverlay> CALayerOverlayList;
 bool ProcessForCALayerOverlays(
     ResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
-    const QuadList& quad_list,
-    const base::flat_map<RenderPassId, FilterOperations*>& render_pass_filters,
-    const base::flat_map<RenderPassId, FilterOperations*>&
+    const viz::QuadList& quad_list,
+    const base::flat_map<viz::RenderPassId, FilterOperations*>&
+        render_pass_filters,
+    const base::flat_map<viz::RenderPassId, FilterOperations*>&
         render_pass_background_filters,
     CALayerOverlayList* ca_layer_overlays);
 

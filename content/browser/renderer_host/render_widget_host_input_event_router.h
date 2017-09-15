@@ -108,9 +108,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
     HittestDelegate(const std::unordered_map<viz::SurfaceId,
                                              HittestData,
                                              viz::SurfaceIdHash>& hittest_data);
-    bool RejectHitTarget(const cc::SurfaceDrawQuad* surface_quad,
+    bool RejectHitTarget(const viz::SurfaceDrawQuad* surface_quad,
                          const gfx::Point& point_in_quad_space) override;
-    bool AcceptHitTarget(const cc::SurfaceDrawQuad* surface_quad,
+    bool AcceptHitTarget(const viz::SurfaceDrawQuad* surface_quad,
                          const gfx::Point& point_in_quad_space) override;
 
     const std::unordered_map<viz::SurfaceId, HittestData, viz::SurfaceIdHash>&

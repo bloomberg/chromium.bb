@@ -13,7 +13,7 @@
 #include "cc/output/ca_layer_overlay.h"
 #include "cc/output/dc_layer_overlay.h"
 #include "cc/output/overlay_candidate.h"
-#include "cc/quads/render_pass.h"
+#include "components/viz/common/quads/render_pass.h"
 
 namespace cc {
 class DisplayResourceProvider;
@@ -29,7 +29,7 @@ class CC_EXPORT OverlayProcessor {
     // and adds any additional passes necessary to represent overlays to
     // |render_passes|.
     virtual bool Attempt(DisplayResourceProvider* resource_provider,
-                         RenderPass* render_pass,
+                         viz::RenderPass* render_pass,
                          OverlayCandidateList* candidates,
                          std::vector<gfx::Rect>* content_bounds) = 0;
   };
@@ -42,13 +42,14 @@ class CC_EXPORT OverlayProcessor {
 
   gfx::Rect GetAndResetOverlayDamage();
 
-  using FilterOperationsMap = base::flat_map<RenderPassId, FilterOperations*>;
+  using FilterOperationsMap =
+      base::flat_map<viz::RenderPassId, FilterOperations*>;
 
   // Attempt to replace quads from the specified root render pass with overlays
   // or CALayers. This must be called every frame.
   void ProcessForOverlays(
       DisplayResourceProvider* resource_provider,
-      RenderPassList* render_passes,
+      viz::RenderPassList* render_passes,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
@@ -66,7 +67,7 @@ class CC_EXPORT OverlayProcessor {
  private:
   bool ProcessForCALayers(
       DisplayResourceProvider* resource_provider,
-      RenderPass* render_pass,
+      viz::RenderPass* render_pass,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,
@@ -74,7 +75,7 @@ class CC_EXPORT OverlayProcessor {
       gfx::Rect* damage_rect);
   bool ProcessForDCLayers(
       DisplayResourceProvider* resource_provider,
-      RenderPassList* render_passes,
+      viz::RenderPassList* render_passes,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_background_filters,
       OverlayCandidateList* overlay_candidates,

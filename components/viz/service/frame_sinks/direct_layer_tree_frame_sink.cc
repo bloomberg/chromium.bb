@@ -129,7 +129,7 @@ void DirectLayerTreeFrameSink::DisplayOutputSurfaceLost() {
 
 void DirectLayerTreeFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
-    const cc::RenderPassList& render_passes) {
+    const RenderPassList& render_passes) {
   // This notification is not relevant to our client outside of tests.
 }
 

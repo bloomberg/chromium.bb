@@ -161,8 +161,8 @@ gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
   return window_rect;
 }
 
-const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
-    const RenderPass* pass) {
+const viz::TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
+    const viz::RenderPass* pass) {
   return nullptr;
 }
 
@@ -175,7 +175,7 @@ void DirectRenderer::SetVisible(bool visible) {
 }
 
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
-    const RenderPassList& render_passes_in_draw_order) {
+    const viz::RenderPassList& render_passes_in_draw_order) {
   render_pass_bypass_quads_.clear();
 
   auto& root_render_pass = render_passes_in_draw_order.back();
@@ -184,10 +184,12 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
     gfx::Size size;
     ResourceProvider::TextureHint hint;
   };
-  base::flat_map<RenderPassId, RenderPassRequirements> render_passes_in_frame;
+  base::flat_map<viz::RenderPassId, RenderPassRequirements>
+      render_passes_in_frame;
   for (const auto& pass : render_passes_in_draw_order) {
     if (pass != root_render_pass) {
-      if (const TileDrawQuad* tile_quad = CanPassBeDrawnDirectly(pass.get())) {
+      if (const viz::TileDrawQuad* tile_quad =
+              CanPassBeDrawnDirectly(pass.get())) {
         // If the render pass is drawn directly, it will not be drawn from as
         // a render pass so it's not added to the map.
         render_pass_bypass_quads_[pass->id] = *tile_quad;
@@ -198,7 +200,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
                                         RenderPassTextureHint(pass.get())};
   }
 
-  std::vector<RenderPassId> passes_to_delete;
+  std::vector<viz::RenderPassId> passes_to_delete;
   for (const auto& pair : render_pass_textures_) {
     auto it = render_passes_in_frame.find(pair.first);
     if (it == render_passes_in_frame.end()) {
@@ -237,7 +239,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   }
 }
 
-void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
+void DirectRenderer::DrawFrame(viz::RenderPassList* render_passes_in_draw_order,
                                float device_scale_factor,
                                const gfx::Size& device_viewport_size) {
   DCHECK(visible_);
@@ -246,7 +248,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       "Renderer4.renderPassCount",
       base::saturated_cast<int>(render_passes_in_draw_order->size()));
 
-  RenderPass* root_render_pass = render_passes_in_draw_order->back().get();
+  viz::RenderPass* root_render_pass = render_passes_in_draw_order->back().get();
   DCHECK(root_render_pass);
 
   bool overdraw_tracing_enabled;
@@ -470,13 +472,13 @@ void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
 }
 
 const FilterOperations* DirectRenderer::FiltersForPass(
-    RenderPassId render_pass_id) const {
+    viz::RenderPassId render_pass_id) const {
   auto it = render_pass_filters_.find(render_pass_id);
   return it == render_pass_filters_.end() ? nullptr : it->second;
 }
 
 const FilterOperations* DirectRenderer::BackgroundFiltersForPass(
-    RenderPassId render_pass_id) const {
+    viz::RenderPassId render_pass_id) const {
   auto it = render_pass_background_filters_.find(render_pass_id);
   return it == render_pass_background_filters_.end() ? nullptr : it->second;
 }
@@ -497,7 +499,7 @@ void DirectRenderer::FlushPolygons(
 }
 
 void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
-    RenderPass* render_pass) {
+    viz::RenderPass* render_pass) {
   if (render_pass_bypass_quads_.find(render_pass->id) !=
       render_pass_bypass_quads_.end()) {
     return;
@@ -519,7 +521,7 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
   }
 }
 
-void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
+void DirectRenderer::DrawRenderPass(const viz::RenderPass* render_pass) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawRenderPass");
   if (!UseRenderPass(render_pass))
     return;
@@ -573,7 +575,7 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
   PrepareSurfaceForPass(
       mode, MoveFromDrawToWindowSpace(render_pass_scissor_in_draw_space));
 
-  const QuadList& quad_list = render_pass->quad_list;
+  const viz::QuadList& quad_list = render_pass->quad_list;
   std::deque<std::unique_ptr<DrawPolygon>> poly_list;
 
   int next_polygon_id = 0;
@@ -619,7 +621,7 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
     GenerateMipmap();
 }
 
-bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
+bool DirectRenderer::UseRenderPass(const viz::RenderPass* render_pass) {
   current_frame()->current_render_pass = render_pass;
   current_frame()->current_texture = nullptr;
   if (render_pass == current_frame()->root_render_pass) {
@@ -664,19 +666,20 @@ bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
 }
 
 bool DirectRenderer::HasAllocatedResourcesForTesting(
-    RenderPassId render_pass_id) const {
+    viz::RenderPassId render_pass_id) const {
   auto iter = render_pass_textures_.find(render_pass_id);
   return iter != render_pass_textures_.end() && iter->second->id();
 }
 
 // static
-gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
+gfx::Size DirectRenderer::RenderPassTextureSize(
+    const viz::RenderPass* render_pass) {
   return render_pass->output_rect.size();
 }
 
 // static
 ResourceProvider::TextureHint DirectRenderer::RenderPassTextureHint(
-    const RenderPass* render_pass) {
+    const viz::RenderPass* render_pass) {
   return render_pass->generate_mipmap
              ? ResourceProvider::TEXTURE_HINT_IMMUTABLE_MIPMAP_FRAMEBUFFER
              : ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER;

@@ -8,7 +8,7 @@
 #include "base/test/test_suite.h"
 #include "cc/ipc/cc_param_traits.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/picture_draw_quad.h"
+#include "components/viz/common/quads/picture_draw_quad.h"
 #include "gpu/ipc/common/mailbox_holder_struct_traits.h"
 #include "gpu/ipc/common/mailbox_struct_traits.h"
 #include "gpu/ipc/common/sync_token_struct_traits.h"
@@ -237,7 +237,7 @@ class CCSerializationPerfTest : public testing::Test {
       resource_list.push_back(arbitrary_resource);
     }
 
-    RenderPassList& render_pass_list = frame.render_pass_list;
+    auto& render_pass_list = frame.render_pass_list;
 
     gfx::Transform arbitrary_matrix1;
     arbitrary_matrix1.Scale(3, 3);
@@ -301,7 +301,7 @@ class CCSerializationPerfTest : public testing::Test {
     arbitrary_filters2.Append(
         FilterOperation::CreateBrightnessFilter(arbitrary_float2));
 
-    std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
+    std::unique_ptr<viz::RenderPass> pass_in = viz::RenderPass::Create();
     pass_in->SetAll(root_id, arbitrary_rect1, arbitrary_rect2,
                     arbitrary_matrix1, arbitrary_filters2, arbitrary_filters1,
                     arbitrary_color_space, arbitrary_bool1, arbitrary_bool1,
@@ -316,8 +316,8 @@ class CCSerializationPerfTest : public testing::Test {
           arbitrary_bool1, arbitrary_bool1, arbitrary_float1,
           arbitrary_blend_mode1, arbitrary_context_id1);
 
-      TextureDrawQuad* texture_in =
-          pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      auto* texture_in =
+          pass_in->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       texture_in->SetAll(shared_state1_in, arbitrary_rect2,
                          arbitrary_rect1_inside_rect2, arbitrary_bool1,
                          arbitrary_resourceid1, arbitrary_size1,
@@ -325,8 +325,8 @@ class CCSerializationPerfTest : public testing::Test {
                          arbitrary_color, arbitrary_float_array,
                          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
 
-      TextureDrawQuad* texture_in2 =
-          pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      auto* texture_in2 =
+          pass_in->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       texture_in2->SetAll(shared_state1_in, arbitrary_rect2,
                           arbitrary_rect1_inside_rect2, arbitrary_bool1,
                           arbitrary_resourceid2, arbitrary_size1,
@@ -334,8 +334,8 @@ class CCSerializationPerfTest : public testing::Test {
                           arbitrary_color, arbitrary_float_array,
                           arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
 
-      TextureDrawQuad* texture_in3 =
-          pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      auto* texture_in3 =
+          pass_in->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       texture_in3->SetAll(shared_state1_in, arbitrary_rect2,
                           arbitrary_rect1_inside_rect2, arbitrary_bool1,
                           arbitrary_resourceid3, arbitrary_size1,
@@ -343,8 +343,8 @@ class CCSerializationPerfTest : public testing::Test {
                           arbitrary_color, arbitrary_float_array,
                           arbitrary_bool4, arbitrary_bool6, arbitrary_bool6);
 
-      TextureDrawQuad* texture_in4 =
-          pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      auto* texture_in4 =
+          pass_in->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       texture_in4->SetAll(shared_state1_in, arbitrary_rect2,
                           arbitrary_rect1_inside_rect2, arbitrary_bool1,
                           arbitrary_resourceid4, arbitrary_size2,
@@ -362,8 +362,7 @@ class CCSerializationPerfTest : public testing::Test {
           arbitrary_bool1, arbitrary_bool1, arbitrary_float2,
           arbitrary_blend_mode2, arbitrary_context_id2);
       for (uint32_t j = 0; j < 6; ++j) {
-        TileDrawQuad* tile_in =
-            pass_in->CreateAndAppendDrawQuad<TileDrawQuad>();
+        auto* tile_in = pass_in->CreateAndAppendDrawQuad<viz::TileDrawQuad>();
         tile_in->SetAll(shared_state2_in, arbitrary_rect2,
                         arbitrary_rect1_inside_rect2, arbitrary_bool1,
                         arbitrary_resourceid3, arbitrary_rectf1,
@@ -380,8 +379,8 @@ class CCSerializationPerfTest : public testing::Test {
           arbitrary_bool1, arbitrary_bool1, arbitrary_float3,
           arbitrary_blend_mode3, arbitrary_context_id3);
       for (uint32_t j = 0; j < 5; ++j) {
-        SolidColorDrawQuad* solidcolor_in =
-            pass_in->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+        auto* solidcolor_in =
+            pass_in->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
         solidcolor_in->SetAll(shared_state3_in, arbitrary_rect3,
                               arbitrary_rect2_inside_rect3, arbitrary_bool1,
                               arbitrary_color, arbitrary_bool2);
@@ -399,15 +398,15 @@ class CCSerializationPerfTest : public testing::Test {
     CompositorFrame frame;
 
     for (uint32_t i = 0; i < num_passes; ++i) {
-      std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+      std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
       render_pass->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
       for (uint32_t j = 0; j < num_quads; ++j) {
         if (j == 0 || single_sqs == UseSingleSharedQuadState::NO)
           render_pass->CreateAndAppendSharedQuadState();
         const gfx::Rect bounds(100, 100, 100, 100);
         const bool kForceAntiAliasingOff = true;
-        SolidColorDrawQuad* quad =
-            render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+        auto* quad =
+            render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
         quad->SetNew(render_pass->shared_quad_state_list.back(), bounds, bounds,
                      SK_ColorRED, kForceAntiAliasingOff);
       }

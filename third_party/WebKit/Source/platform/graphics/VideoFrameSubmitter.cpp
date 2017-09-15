@@ -73,7 +73,7 @@ void VideoFrameSubmitter::SubmitFrame(viz::BeginFrameAck begin_frame_ack) {
   cc::CompositorFrame compositor_frame;
   scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
 
-  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
 
   // TODO(lethalantidote): Replace with true size. Current is just for test.
   gfx::Size viewport_size(10000, 10000);

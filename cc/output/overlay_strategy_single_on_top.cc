@@ -26,13 +26,13 @@ OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
 bool OverlayStrategySingleOnTop::Attempt(
     DisplayResourceProvider* resource_provider,
-    RenderPass* render_pass,
+    viz::RenderPass* render_pass,
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
-  QuadList* quad_list = &render_pass->quad_list;
+  viz::QuadList* quad_list = &render_pass->quad_list;
   // Build a list of candidates with the associated quad.
   OverlayCandidate best_candidate;
-  QuadList::Iterator best_quad_it = quad_list->end();
+  auto best_quad_it = quad_list->end();
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     OverlayCandidate candidate;
     if (OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate) &&
@@ -65,10 +65,10 @@ bool OverlayStrategySingleOnTop::Attempt(
 }
 
 bool OverlayStrategySingleOnTop::TryOverlay(
-    QuadList* quad_list,
+    viz::QuadList* quad_list,
     OverlayCandidateList* candidate_list,
     const OverlayCandidate& candidate,
-    QuadList::Iterator candidate_iterator) {
+    viz::QuadList::Iterator candidate_iterator) {
   // Add the overlay.
   OverlayCandidateList new_candidate_list = *candidate_list;
   new_candidate_list.push_back(candidate);

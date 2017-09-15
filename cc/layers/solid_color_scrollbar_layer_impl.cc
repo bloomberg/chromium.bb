@@ -5,10 +5,10 @@
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/occlusion.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 
 namespace cc {
 
@@ -25,7 +25,7 @@ SolidColorScrollbarLayerImpl::Create(LayerTreeImpl* tree_impl,
       is_left_side_vertical_scrollbar, is_overlay));
 }
 
-SolidColorScrollbarLayerImpl::~SolidColorScrollbarLayerImpl() {}
+SolidColorScrollbarLayerImpl::~SolidColorScrollbarLayerImpl() = default;
 
 std::unique_ptr<LayerImpl> SolidColorScrollbarLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
@@ -92,7 +92,7 @@ bool SolidColorScrollbarLayerImpl::IsThumbResizable() const {
 }
 
 void SolidColorScrollbarLayerImpl::AppendQuads(
-    RenderPass* render_pass,
+    viz::RenderPass* render_pass,
     AppendQuadsData* append_quads_data) {
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
@@ -108,8 +108,7 @@ void SolidColorScrollbarLayerImpl::AppendQuads(
   if (visible_quad_rect.IsEmpty())
     return;
 
-  SolidColorDrawQuad* quad =
-      render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  auto* quad = render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   quad->SetNew(
       shared_quad_state, thumb_quad_rect, visible_quad_rect, color_, false);
 }

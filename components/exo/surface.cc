@@ -14,15 +14,15 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/layer_tree_frame_sink.h"
-#include "cc/quads/render_pass.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
 #include "components/exo/buffer.h"
 #include "components/exo/pointer.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/single_release_callback.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -705,7 +705,7 @@ void Surface::UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder) {
 void Surface::AppendContentsToFrame(const gfx::Point& origin,
                                     float device_scale_factor,
                                     cc::CompositorFrame* frame) {
-  const std::unique_ptr<cc::RenderPass>& render_pass =
+  const std::unique_ptr<viz::RenderPass>& render_pass =
       frame->render_pass_list.back();
   gfx::Rect output_rect(origin, content_size_);
   gfx::Rect quad_rect(current_resource_.size);
@@ -776,8 +776,8 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
     }
     // Texture quad is only needed if buffer is not fully transparent.
     if (state_.alpha) {
-      cc::TextureDrawQuad* texture_quad =
-          render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
+      viz::TextureDrawQuad* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
 
       texture_quad->SetNew(
@@ -791,8 +791,8 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
       frame->resource_list.push_back(current_resource_);
     }
   } else {
-    cc::SolidColorDrawQuad* solid_quad =
-        render_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+    viz::SolidColorDrawQuad* solid_quad =
+        render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
     solid_quad->SetNew(quad_state, quad_rect, quad_rect, SK_ColorBLACK,
                        false /* force_anti_aliasing_off */);
   }

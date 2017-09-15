@@ -47,7 +47,7 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
       const cc::CompositorFrame& frame) override {}
   void DisplayWillDrawAndSwap(
       bool will_draw_and_swap,
-      const cc::RenderPassList& render_passes) override {}
+      const viz::RenderPassList& render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
 
  private:

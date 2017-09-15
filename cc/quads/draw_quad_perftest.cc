@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "cc/base/lap_timer.h"
-#include "cc/quads/render_pass.h"
-#include "cc/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -20,7 +20,7 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-viz::SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
+viz::SharedQuadState* CreateSharedQuadState(viz::RenderPass* render_pass) {
   gfx::Transform quad_transform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
   gfx::Rect content_rect(26, 28);
   gfx::Rect visible_layer_rect(10, 12, 14, 16);
@@ -46,7 +46,7 @@ class DrawQuadPerfTest : public testing::Test {
                kTimeCheckInterval) {}
 
   void CreateRenderPass() {
-    render_pass_ = RenderPass::Create();
+    render_pass_ = viz::RenderPass::Create();
     viz::SharedQuadState* new_shared_state(
         CreateSharedQuadState(render_pass_.get()));
     shared_state_ = render_pass_->CreateAndAppendSharedQuadState();
@@ -60,8 +60,8 @@ class DrawQuadPerfTest : public testing::Test {
 
   void GenerateTextureDrawQuads(int count, std::vector<viz::DrawQuad*>* quads) {
     for (int i = 0; i < count; ++i) {
-      TextureDrawQuad* quad =
-          render_pass_->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      auto* quad =
+          render_pass_->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       gfx::Rect rect(0, 0, 100, 100);
       bool needs_blending = false;
       viz::ResourceId resource_id = 1;
@@ -101,7 +101,7 @@ class DrawQuadPerfTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<RenderPass> render_pass_;
+  std::unique_ptr<viz::RenderPass> render_pass_;
   viz::SharedQuadState* shared_state_;
   LapTimer timer_;
 };

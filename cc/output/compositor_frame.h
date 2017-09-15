@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/quads/render_pass.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/resources/transferable_resource.h"
 
 namespace cc {
@@ -42,7 +42,7 @@ class CC_EXPORT CompositorFrame {
   // This list is in the order that each RenderPass will be drawn. The last one
   // is the "root" RenderPass that all others are directly or indirectly drawn
   // into.
-  RenderPassList render_pass_list;
+  viz::RenderPassList render_pass_list;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompositorFrame);

@@ -11,8 +11,8 @@
 #include "ash/test/ash_test_helper.h"
 #include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -34,7 +34,7 @@ gfx::Rect GetQuadBoundsInScreen(const viz::DrawQuad* quad) {
 bool FindAnyQuad(const cc::CompositorFrame& frame,
                  const gfx::Rect& screen_rect) {
   DCHECK_EQ(1u, frame.render_pass_list.size());
-  const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+  const auto& quad_list = frame.render_pass_list[0]->quad_list;
   for (const auto* quad : quad_list) {
     if (GetQuadBoundsInScreen(quad) == screen_rect)
       return true;
@@ -46,12 +46,12 @@ bool FindColorQuad(const cc::CompositorFrame& frame,
                    const gfx::Rect& screen_rect,
                    SkColor color) {
   DCHECK_EQ(1u, frame.render_pass_list.size());
-  const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+  const auto& quad_list = frame.render_pass_list[0]->quad_list;
   for (const auto* quad : quad_list) {
     if (quad->material != viz::DrawQuad::Material::SOLID_COLOR)
       continue;
 
-    auto* color_quad = cc::SolidColorDrawQuad::MaterialCast(quad);
+    auto* color_quad = viz::SolidColorDrawQuad::MaterialCast(quad);
     if (color_quad->color != color)
       continue;
     if (GetQuadBoundsInScreen(quad) == screen_rect)
@@ -63,7 +63,7 @@ bool FindColorQuad(const cc::CompositorFrame& frame,
 bool FindTiledContentQuad(const cc::CompositorFrame& frame,
                           const gfx::Rect& screen_rect) {
   DCHECK_EQ(1u, frame.render_pass_list.size());
-  const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+  const auto& quad_list = frame.render_pass_list[0]->quad_list;
   for (const auto* quad : quad_list) {
     if (quad->material == viz::DrawQuad::Material::TILED_CONTENT &&
         GetQuadBoundsInScreen(quad) == screen_rect)

@@ -5,8 +5,8 @@
 #include "cc/output/overlay_strategy_underlay.h"
 
 #include "cc/output/overlay_candidate_validator.h"
-#include "cc/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 
 namespace cc {
 
@@ -20,10 +20,10 @@ OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
 bool OverlayStrategyUnderlay::Attempt(
     DisplayResourceProvider* resource_provider,
-    RenderPass* render_pass,
+    viz::RenderPass* render_pass,
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
-  QuadList& quad_list = render_pass->quad_list;
+  viz::QuadList& quad_list = render_pass->quad_list;
   for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
     OverlayCandidate candidate;
     if (!OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate))

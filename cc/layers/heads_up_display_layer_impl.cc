@@ -16,13 +16,13 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/debug/debug_colors.h"
-#include "cc/quads/texture_draw_quad.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/memory_history.h"
 #include "cc/trees/frame_rate_counter.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -128,9 +128,8 @@ bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
   return LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
-void HeadsUpDisplayLayerImpl::AppendQuads(
-    RenderPass* render_pass,
-    AppendQuadsData* append_quads_data) {
+void HeadsUpDisplayLayerImpl::AppendQuads(viz::RenderPass* render_pass,
+                                          AppendQuadsData* append_quads_data) {
   if (!resources_.back()->id())
     return;
 
@@ -148,8 +147,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
   const float vertex_opacity[] = { 1.f, 1.f, 1.f, 1.f };
   bool flipped = false;
   bool nearest_neighbor = false;
-  TextureDrawQuad* quad =
-      render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  auto* quad = render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
   quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
                resources_.back()->id(), premultiplied_alpha, uv_top_left,
                uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity, flipped,
@@ -161,7 +159,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     DrawMode draw_mode,
     ResourceProvider* resource_provider,
     viz::ContextProvider* context_provider,
-    const RenderPassList& list) {
+    const viz::RenderPassList& list) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE || !resources_.back()->id())
     return;
 
@@ -811,7 +809,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
   }
 }
 
-void HeadsUpDisplayLayerImpl::EvictHudQuad(const RenderPassList& list) {
+void HeadsUpDisplayLayerImpl::EvictHudQuad(const viz::RenderPassList& list) {
   viz::ResourceId evict_resource_id = resources_.back()->id();
   // This iterates over the render pass list of quads to evict the hud quad
   // appended during render pass preparation. We need this eviction when we

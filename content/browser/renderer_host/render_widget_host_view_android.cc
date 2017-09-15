@@ -1245,7 +1245,7 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
   DCHECK(!frame.render_pass_list.empty());
 
-  cc::RenderPass* root_pass = frame.render_pass_list.back().get();
+  viz::RenderPass* root_pass = frame.render_pass_list.back().get();
   current_surface_size_ = root_pass->output_rect.size();
   bool is_transparent = root_pass->has_transparent_background;
 

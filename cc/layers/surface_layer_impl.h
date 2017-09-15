@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/quads/surface_draw_quad.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 
@@ -45,21 +45,21 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   // LayerImpl overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer) override;
-  void AppendQuads(RenderPass* render_pass,
+  void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
 
  protected:
   SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
-  SurfaceDrawQuad* CreateSurfaceDrawQuad(
-      RenderPass* render_pass,
-      SurfaceDrawQuadType surface_draw_quad_type,
+  viz::SurfaceDrawQuad* CreateSurfaceDrawQuad(
+      viz::RenderPass* render_pass,
+      viz::SurfaceDrawQuadType surface_draw_quad_type,
       const viz::SurfaceInfo& surface_info,
       viz::SharedQuadState** common_shared_quad_state);
 
   void GetDebugBorderProperties(SkColor* color, float* width) const override;
-  void AppendRainbowDebugBorder(RenderPass* render_pass);
+  void AppendRainbowDebugBorder(viz::RenderPass* render_pass);
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
   const char* LayerTypeAsString() const override;
 

@@ -25,7 +25,7 @@ struct StructTraits<viz::mojom::CompositorFrameDataView, cc::CompositorFrame> {
     return input.resource_list;
   }
 
-  static const cc::RenderPassList& passes(const cc::CompositorFrame& input) {
+  static const viz::RenderPassList& passes(const cc::CompositorFrame& input) {
     return input.render_pass_list;
   }
 

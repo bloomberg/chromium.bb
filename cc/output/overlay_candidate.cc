@@ -8,11 +8,11 @@
 #include <limits>
 #include "base/logging.h"
 #include "cc/base/math_util.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/stream_video_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
-#include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/display_resource_provider.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/stream_video_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -207,13 +207,14 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
   switch (quad->material) {
     case viz::DrawQuad::TEXTURE_CONTENT:
       return FromTextureQuad(resource_provider,
-                             TextureDrawQuad::MaterialCast(quad), candidate);
+                             viz::TextureDrawQuad::MaterialCast(quad),
+                             candidate);
     case viz::DrawQuad::TILED_CONTENT:
-      return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
-                          candidate);
+      return FromTileQuad(resource_provider,
+                          viz::TileDrawQuad::MaterialCast(quad), candidate);
     case viz::DrawQuad::STREAM_VIDEO_CONTENT:
       return FromStreamVideoQuad(resource_provider,
-                                 StreamVideoDrawQuad::MaterialCast(quad),
+                                 viz::StreamVideoDrawQuad::MaterialCast(quad),
                                  candidate);
     default:
       break;
@@ -228,7 +229,7 @@ bool OverlayCandidate::IsInvisibleQuad(const viz::DrawQuad* quad) {
   if (opacity < std::numeric_limits<float>::epsilon())
     return true;
   if (quad->material == viz::DrawQuad::SOLID_COLOR) {
-    SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
+    SkColor color = viz::SolidColorDrawQuad::MaterialCast(quad)->color;
     float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
     return quad->ShouldDrawWithBlending() &&
            alpha < std::numeric_limits<float>::epsilon();
@@ -238,8 +239,8 @@ bool OverlayCandidate::IsInvisibleQuad(const viz::DrawQuad* quad) {
 
 // static
 bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
-                                  QuadList::ConstIterator quad_list_begin,
-                                  QuadList::ConstIterator quad_list_end) {
+                                  viz::QuadList::ConstIterator quad_list_begin,
+                                  viz::QuadList::ConstIterator quad_list_end) {
   // Check that no visible quad overlaps the candidate.
   for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
        ++overlap_iter) {
@@ -290,7 +291,7 @@ bool OverlayCandidate::FromDrawQuadResource(
 // static
 bool OverlayCandidate::FromTextureQuad(
     DisplayResourceProvider* resource_provider,
-    const TextureDrawQuad* quad,
+    const viz::TextureDrawQuad* quad,
     OverlayCandidate* candidate) {
   if (quad->background_color != SK_ColorTRANSPARENT)
     return false;
@@ -305,7 +306,7 @@ bool OverlayCandidate::FromTextureQuad(
 
 // static
 bool OverlayCandidate::FromTileQuad(DisplayResourceProvider* resource_provider,
-                                    const TileDrawQuad* quad,
+                                    const viz::TileDrawQuad* quad,
                                     OverlayCandidate* candidate) {
   if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(), false,
                             candidate)) {
@@ -319,7 +320,7 @@ bool OverlayCandidate::FromTileQuad(DisplayResourceProvider* resource_provider,
 // static
 bool OverlayCandidate::FromStreamVideoQuad(
     DisplayResourceProvider* resource_provider,
-    const StreamVideoDrawQuad* quad,
+    const viz::StreamVideoDrawQuad* quad,
     OverlayCandidate* candidate) {
   if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(), false,
                             candidate)) {

@@ -34,16 +34,16 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/quads/draw_polygon.h"
-#include "cc/quads/picture_draw_quad.h"
-#include "cc/quads/render_pass.h"
-#include "cc/quads/stream_video_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/picture_draw_quad.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/stream_video_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/service/display/dynamic_geometry_binding.h"
 #include "components/viz/service/display/layer_quad.h"
 #include "components/viz/service/display/static_geometry_binding.h"
@@ -74,7 +74,7 @@ using gpu::gles2::GLES2Interface;
 namespace viz {
 namespace {
 
-Float4 UVTransform(const cc::TextureDrawQuad* quad) {
+Float4 UVTransform(const TextureDrawQuad* quad) {
   gfx::PointF uv0 = quad->uv_top_left;
   gfx::PointF uv1 = quad->uv_bottom_right;
   Float4 xform = {{uv0.x(), uv0.y(), uv1.x() - uv0.x(), uv1.y() - uv0.y()}};
@@ -175,13 +175,13 @@ const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
 const size_t kMaxPendingSyncQueries = 16;
 }  // anonymous namespace
 
-// Parameters needed to draw a cc::RenderPassDrawQuad.
+// Parameters needed to draw a RenderPassDrawQuad.
 struct DrawRenderPassDrawQuadParams {
   DrawRenderPassDrawQuadParams() {}
   ~DrawRenderPassDrawQuadParams() {}
 
   // Required Inputs.
-  const cc::RenderPassDrawQuad* quad = nullptr;
+  const RenderPassDrawQuad* quad = nullptr;
   const cc::Resource* contents_texture = nullptr;
   const gfx::QuadF* clip_region = nullptr;
   bool flip_texture = false;
@@ -598,23 +598,20 @@ void GLRenderer::DoDrawQuad(const DrawQuad* quad,
       NOTREACHED();
       break;
     case DrawQuad::DEBUG_BORDER:
-      DrawDebugBorderQuad(cc::DebugBorderDrawQuad::MaterialCast(quad));
+      DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::PICTURE_CONTENT:
       // PictureDrawQuad should only be used for resourceless software draws.
       NOTREACHED();
       break;
     case DrawQuad::RENDER_PASS:
-      DrawRenderPassQuad(cc::RenderPassDrawQuad::MaterialCast(quad),
-                         clip_region);
+      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), clip_region);
       break;
     case DrawQuad::SOLID_COLOR:
-      DrawSolidColorQuad(cc::SolidColorDrawQuad::MaterialCast(quad),
-                         clip_region);
+      DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), clip_region);
       break;
     case DrawQuad::STREAM_VIDEO_CONTENT:
-      DrawStreamVideoQuad(cc::StreamVideoDrawQuad::MaterialCast(quad),
-                          clip_region);
+      DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), clip_region);
       break;
     case DrawQuad::SURFACE_CONTENT:
       // Surface content should be fully resolved to other quad types before
@@ -622,13 +619,13 @@ void GLRenderer::DoDrawQuad(const DrawQuad* quad,
       NOTREACHED();
       break;
     case DrawQuad::TEXTURE_CONTENT:
-      EnqueueTextureQuad(cc::TextureDrawQuad::MaterialCast(quad), clip_region);
+      EnqueueTextureQuad(TextureDrawQuad::MaterialCast(quad), clip_region);
       break;
     case DrawQuad::TILED_CONTENT:
-      DrawTileQuad(cc::TileDrawQuad::MaterialCast(quad), clip_region);
+      DrawTileQuad(TileDrawQuad::MaterialCast(quad), clip_region);
       break;
     case DrawQuad::YUV_VIDEO_CONTENT:
-      DrawYUVVideoQuad(cc::YUVVideoDrawQuad::MaterialCast(quad), clip_region);
+      DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), clip_region);
       break;
   }
 }
@@ -636,7 +633,7 @@ void GLRenderer::DoDrawQuad(const DrawQuad* quad,
 // This function does not handle 3D sorting right now, since the debug border
 // quads are just drawn as their original quads and not in split pieces. This
 // results in some debug border quads drawing over foreground quads.
-void GLRenderer::DrawDebugBorderQuad(const cc::DebugBorderDrawQuad* quad) {
+void GLRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
@@ -815,7 +812,7 @@ void GLRenderer::RestoreBlendFuncToDefault(SkBlendMode blend_mode) {
 }
 
 bool GLRenderer::ShouldApplyBackgroundFilters(
-    const cc::RenderPassDrawQuad* quad,
+    const RenderPassDrawQuad* quad,
     const cc::FilterOperations* background_filters) {
   if (!background_filters)
     return false;
@@ -865,7 +862,7 @@ bool GetScaledUVs(const gfx::Rect& rect, const gfx::QuadF* clip, float uvs[8]) {
 }
 
 gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
-    const cc::RenderPassDrawQuad* quad,
+    const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform,
     const cc::FilterOperations* filters,
     const cc::FilterOperations* background_filters,
@@ -928,7 +925,7 @@ std::unique_ptr<cc::ScopedResource> GLRenderer::GetBackdropTexture(
 }
 
 sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
-    const cc::RenderPassDrawQuad* quad,
+    const RenderPassDrawQuad* quad,
     const cc::FilterOperations& background_filters,
     cc::ScopedResource* background_texture,
     const gfx::RectF& rect,
@@ -1015,8 +1012,7 @@ gfx::QuadF MapQuadToLocalSpace(const gfx::Transform& device_transform,
   return local_quad;
 }
 
-const cc::TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(
-    const cc::RenderPass* pass) {
+const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
   // Can only collapse a single tile quad.
   if (pass->quad_list.size() != 1)
     return nullptr;
@@ -1042,7 +1038,7 @@ const cc::TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(
   if (quad->shared_quad_state->opacity != 1.0f)
     return nullptr;
 
-  const cc::TileDrawQuad* tile_quad = cc::TileDrawQuad::MaterialCast(quad);
+  const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(quad);
   // Hack: this could be supported by passing in a subrectangle to draw
   // render pass, although in practice if there is only one quad there
   // will be no border texels on the input.
@@ -1066,7 +1062,7 @@ const cc::TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(
   return tile_quad;
 }
 
-void GLRenderer::DrawRenderPassQuad(const cc::RenderPassDrawQuad* quad,
+void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
                                     const gfx::QuadF* clip_region) {
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
   DrawRenderPassDrawQuadParams params;
@@ -1076,7 +1072,7 @@ void GLRenderer::DrawRenderPassQuad(const cc::RenderPassDrawQuad* quad,
   params.projection_matrix = current_frame()->projection_matrix;
   params.tex_coord_rect = quad->tex_coord_rect;
   if (bypass != render_pass_bypass_quads_.end()) {
-    cc::TileDrawQuad* tile_quad = &bypass->second;
+    TileDrawQuad* tile_quad = &bypass->second;
     // RGBA_8888 and the gfx::ColorSpace() here are arbitrary and unused.
     cc::Resource tile_resource(tile_quad->resource_id(),
                                tile_quad->texture_size,
@@ -1120,7 +1116,7 @@ void GLRenderer::DrawRenderPassQuadInternal(
 
 bool GLRenderer::InitializeRPDQParameters(
     DrawRenderPassDrawQuadParams* params) {
-  const cc::RenderPassDrawQuad* quad = params->quad;
+  const RenderPassDrawQuad* quad = params->quad;
   SkMatrix local_matrix;
   local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
@@ -1147,7 +1143,7 @@ bool GLRenderer::InitializeRPDQParameters(
   if (!params->contents_device_transform.IsInvertible())
     return false;
 
-  // TODO(sunxd): unify the anti-aliasing logic of RPDQ and cc::TileDrawQuad.
+  // TODO(sunxd): unify the anti-aliasing logic of RPDQ and TileDrawQuad.
   params->surface_quad = SharedGeometryQuad();
   gfx::QuadF device_layer_quad;
   if (settings_->allow_antialiasing && quad->IsEdge()) {
@@ -1168,7 +1164,7 @@ bool GLRenderer::InitializeRPDQParameters(
 
 void GLRenderer::UpdateRPDQShadersForBlending(
     DrawRenderPassDrawQuadParams* params) {
-  const cc::RenderPassDrawQuad* quad = params->quad;
+  const RenderPassDrawQuad* quad = params->quad;
   SkBlendMode blend_mode = quad->shared_quad_state->blend_mode;
   params->use_shaders_for_blending =
       !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
@@ -1239,7 +1235,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
 
 bool GLRenderer::UpdateRPDQWithSkiaFilters(
     DrawRenderPassDrawQuadParams* params) {
-  const cc::RenderPassDrawQuad* quad = params->quad;
+  const RenderPassDrawQuad* quad = params->quad;
   // Apply filters to the contents texture.
   if (params->filters) {
     DCHECK(!params->filters->IsEmpty());
@@ -1388,7 +1384,7 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
   DCHECK(current_program_->vertex_tex_transform_location() != -1 ||
          IsContextLost());
   if (params->source_needs_flip) {
-    // Flip the content vertically in the shader, as the cc::RenderPass input
+    // Flip the content vertically in the shader, as the RenderPass input
     // texture is already oriented the same way as the framebuffer, but the
     // projection transform does a flip.
     gl_->Uniform4f(current_program_->vertex_tex_transform_location(),
@@ -1422,8 +1418,8 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
 
     if (params->source_needs_flip) {
       // Mask textures are oriented vertically flipped relative to the
-      // framebuffer and the cc::RenderPass contents texture, so we flip the tex
-      // coords from the cc::RenderPass texture to find the mask texture coords.
+      // framebuffer and the RenderPass contents texture, so we flip the tex
+      // coords from the RenderPass texture to find the mask texture coords.
       tex_to_mask.preTranslate(0, 1);
       tex_to_mask.preScale(1, -1);
     }
@@ -1728,7 +1724,7 @@ void GLRenderer::SetupQuadForClippingAndAntialiasing(
 // static
 void GLRenderer::SetupRenderPassQuadForClippingAndAntialiasing(
     const gfx::Transform& device_transform,
-    const cc::RenderPassDrawQuad* quad,
+    const RenderPassDrawQuad* quad,
     const gfx::QuadF* aa_quad,
     const gfx::QuadF* clip_region,
     gfx::QuadF* local_quad,
@@ -1765,7 +1761,7 @@ void GLRenderer::SetupRenderPassQuadForClippingAndAntialiasing(
   *local_quad = MapQuadToLocalSpace(device_transform, device_quad);
 }
 
-void GLRenderer::DrawSolidColorQuad(const cc::SolidColorDrawQuad* quad,
+void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
                                     const gfx::QuadF* clip_region) {
   gfx::Rect tile_rect = quad->visible_rect;
 
@@ -1855,7 +1851,7 @@ void GLRenderer::DrawSolidColorQuad(const cc::SolidColorDrawQuad* quad,
   RestoreBlendFuncToDefault(quad->shared_quad_state->blend_mode);
 }
 
-void GLRenderer::DrawTileQuad(const cc::TileDrawQuad* quad,
+void GLRenderer::DrawTileQuad(const TileDrawQuad* quad,
                               const gfx::QuadF* clip_region) {
   DrawContentQuad(quad, quad->resource_id(), clip_region);
   // Draw the border if requested.
@@ -1873,7 +1869,7 @@ void GLRenderer::DrawTileQuad(const cc::TileDrawQuad* quad,
   }
 }
 
-void GLRenderer::DrawContentQuad(const cc::ContentDrawQuadBase* quad,
+void GLRenderer::DrawContentQuad(const ContentDrawQuadBase* quad,
                                  ResourceId resource_id,
                                  const gfx::QuadF* clip_region) {
   gfx::Transform device_transform =
@@ -1905,7 +1901,7 @@ void GLRenderer::DrawContentQuad(const cc::ContentDrawQuadBase* quad,
     DrawContentQuadNoAA(quad, resource_id, clip_region);
 }
 
-void GLRenderer::DrawContentQuadAA(const cc::ContentDrawQuadBase* quad,
+void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
                                    ResourceId resource_id,
                                    const gfx::Transform& device_transform,
                                    const gfx::QuadF& aa_quad,
@@ -2013,7 +2009,7 @@ void GLRenderer::DrawContentQuadAA(const cc::ContentDrawQuadBase* quad,
                    centered_rect);
 }
 
-void GLRenderer::DrawContentQuadNoAA(const cc::ContentDrawQuadBase* quad,
+void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                                      ResourceId resource_id,
                                      const gfx::QuadF* clip_region) {
   gfx::RectF tex_coord_rect = cc::MathUtil::ScaleRectProportional(
@@ -2108,7 +2104,7 @@ void GLRenderer::DrawContentQuadNoAA(const cc::ContentDrawQuadBase* quad,
   num_triangles_drawn_ += 2;
 }
 
-void GLRenderer::DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
+void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                                   const gfx::QuadF* clip_region) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
@@ -2133,13 +2129,13 @@ void GLRenderer::DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
       !settings_->enable_color_correct_rendering) {
     dst_color_space = gfx::ColorSpace();
     switch (quad->color_space) {
-      case cc::YUVVideoDrawQuad::REC_601:
+      case YUVVideoDrawQuad::REC_601:
         src_color_space = gfx::ColorSpace::CreateREC601();
         break;
-      case cc::YUVVideoDrawQuad::REC_709:
+      case YUVVideoDrawQuad::REC_709:
         src_color_space = gfx::ColorSpace::CreateREC709();
         break;
-      case cc::YUVVideoDrawQuad::JPEG:
+      case YUVVideoDrawQuad::JPEG:
         src_color_space = gfx::ColorSpace::CreateJpeg();
         break;
     }
@@ -2277,7 +2273,7 @@ void GLRenderer::DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
   }
 }
 
-void GLRenderer::DrawStreamVideoQuad(const cc::StreamVideoDrawQuad* quad,
+void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                                      const gfx::QuadF* clip_region) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
@@ -2436,7 +2432,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   }
 }
 
-void GLRenderer::EnqueueTextureQuad(const cc::TextureDrawQuad* quad,
+void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
                                     const gfx::QuadF* clip_region) {
   // If we have a clip_region then we have to render the next quad
   // with dynamic geometry, therefore we must flush all pending
@@ -3459,7 +3455,7 @@ void GLRenderer::ScheduleOverlays() {
   }
 }
 
-// This function draws the cc::RenderPassDrawQuad into a temporary
+// This function draws the RenderPassDrawQuad into a temporary
 // texture/framebuffer, and then copies the result into an IOSurface. The
 // inefficient (but simple) way to do this would be to:
 //   1. Allocate a framebuffer the size of the screen.
@@ -3478,7 +3474,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
     const cc::CALayerOverlay* ca_layer_overlay,
     cc::Resource** resource,
     gfx::RectF* new_bounds) {
-  // Don't carry over any GL state from previous cc::RenderPass draw operations.
+  // Don't carry over any GL state from previous RenderPass draw operations.
   ReinitializeGLState();
 
   cc::ScopedResource* contents_texture =

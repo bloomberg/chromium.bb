@@ -4,14 +4,14 @@
 
 #include "platform/graphics/VideoFrameResourceProvider.h"
 
-#include "cc/quads/render_pass.h"
-#include "cc/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 
 namespace blink {
 
 VideoFrameResourceProvider::VideoFrameResourceProvider() = default;
 
-void VideoFrameResourceProvider::AppendQuads(cc::RenderPass& render_pass) {
+void VideoFrameResourceProvider::AppendQuads(viz::RenderPass& render_pass) {
   gfx::Rect rect(0, 0, 10000, 10000);
   gfx::Rect visible_rect(0, 0, 10000, 10000);
   bool is_clipped = false;
@@ -20,8 +20,8 @@ void VideoFrameResourceProvider::AppendQuads(cc::RenderPass& render_pass) {
       render_pass.CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), rect, rect, rect, is_clipped,
                        are_contents_opaque, 1, SkBlendMode::kSrcOver, 0);
-  cc::SolidColorDrawQuad* solid_color_quad =
-      render_pass.CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+  viz::SolidColorDrawQuad* solid_color_quad =
+      render_pass.CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   // Fluxuate colors for placeholder testing.
   static int r = 0;
   static int g = 0;

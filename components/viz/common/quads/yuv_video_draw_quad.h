@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_QUADS_YUV_VIDEO_DRAW_QUAD_H_
-#define CC_QUADS_YUV_VIDEO_DRAW_QUAD_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_YUV_VIDEO_DRAW_QUAD_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_YUV_VIDEO_DRAW_QUAD_H_
 
 #include <stddef.h>
 
 #include <memory>
 
-#include "cc/cc_export.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT YUVVideoDrawQuad : public viz::DrawQuad {
+class VIZ_COMMON_EXPORT YUVVideoDrawQuad : public DrawQuad {
  public:
   static const size_t kYPlaneResourceIdIndex = 0;
   static const size_t kUPlaneResourceIdIndex = 1;
@@ -38,7 +38,7 @@ class CC_EXPORT YUVVideoDrawQuad : public viz::DrawQuad {
   YUVVideoDrawQuad();
   YUVVideoDrawQuad(const YUVVideoDrawQuad& other);
 
-  void SetNew(const viz::SharedQuadState* shared_quad_state,
+  void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
@@ -59,7 +59,7 @@ class CC_EXPORT YUVVideoDrawQuad : public viz::DrawQuad {
               float multiplier,
               uint32_t bits_per_channel);
 
-  void SetAll(const viz::SharedQuadState* shared_quad_state,
+  void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
@@ -93,18 +93,18 @@ class CC_EXPORT YUVVideoDrawQuad : public viz::DrawQuad {
   gfx::ColorSpace video_color_space;
   bool require_overlay = false;
 
-  static const YUVVideoDrawQuad* MaterialCast(const viz::DrawQuad*);
+  static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
 
-  viz::ResourceId y_plane_resource_id() const {
+  ResourceId y_plane_resource_id() const {
     return resources.ids[kYPlaneResourceIdIndex];
   }
-  viz::ResourceId u_plane_resource_id() const {
+  ResourceId u_plane_resource_id() const {
     return resources.ids[kUPlaneResourceIdIndex];
   }
-  viz::ResourceId v_plane_resource_id() const {
+  ResourceId v_plane_resource_id() const {
     return resources.ids[kVPlaneResourceIdIndex];
   }
-  viz::ResourceId a_plane_resource_id() const {
+  ResourceId a_plane_resource_id() const {
     return resources.ids[kAPlaneResourceIdIndex];
   }
 
@@ -112,6 +112,6 @@ class CC_EXPORT YUVVideoDrawQuad : public viz::DrawQuad {
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_QUADS_YUV_VIDEO_DRAW_QUAD_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_YUV_VIDEO_DRAW_QUAD_H_

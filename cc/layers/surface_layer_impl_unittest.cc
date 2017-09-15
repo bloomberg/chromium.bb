@@ -173,12 +173,12 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
 
   impl.CalcDrawProps(viewport_size);
 
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
   EXPECT_THAT(data.activation_dependencies, UnorderedElementsAre(surface_id));
 
-  const QuadList& quads = render_pass->quad_list;
+  const auto& quads = render_pass->quad_list;
   ASSERT_EQ(2u, quads.size());
   const viz::SharedQuadState* shared_quad_state =
       quads.front()->shared_quad_state;
@@ -208,7 +208,7 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   EXPECT_EQ(transformed_quad_rect, transformed_layer_rect);
 }
 
-// This test verifies that two SurfaceDrawQuads are emitted if a
+// This test verifies that two viz::SurfaceDrawQuads are emitted if a
 // SurfaceLayerImpl holds both a primary and fallback viz::SurfaceInfo.
 TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   LayerTestCommon::LayerImplTest impl;
@@ -247,7 +247,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   gfx::Size viewport_size(1000, 1000);
   impl.CalcDrawProps(viewport_size);
 
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   {
     AppendQuadsData data;
     surface_layer_impl->AppendQuads(render_pass.get(), &data);
@@ -282,27 +282,27 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   }
 
   ASSERT_EQ(5u, render_pass->quad_list.size());
-  const SurfaceDrawQuad* surface_draw_quad1 =
-      SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(0));
+  const viz::SurfaceDrawQuad* surface_draw_quad1 =
+      viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(0));
   ASSERT_TRUE(surface_draw_quad1);
-  const SurfaceDrawQuad* surface_draw_quad2 =
-      SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(1));
+  const viz::SurfaceDrawQuad* surface_draw_quad2 =
+      viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(1));
   ASSERT_TRUE(surface_draw_quad2);
-  const SurfaceDrawQuad* surface_draw_quad3 =
-      SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(2));
+  const viz::SurfaceDrawQuad* surface_draw_quad3 =
+      viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(2));
   ASSERT_TRUE(surface_draw_quad3);
-  const SurfaceDrawQuad* surface_draw_quad4 =
-      SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(3));
+  const viz::SurfaceDrawQuad* surface_draw_quad4 =
+      viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(3));
   ASSERT_TRUE(surface_draw_quad4);
-  const SurfaceDrawQuad* surface_draw_quad5 =
-      SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(4));
+  const viz::SurfaceDrawQuad* surface_draw_quad5 =
+      viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(4));
   ASSERT_TRUE(surface_draw_quad5);
 
-  EXPECT_EQ(SurfaceDrawQuadType::PRIMARY,
+  EXPECT_EQ(viz::SurfaceDrawQuadType::PRIMARY,
             surface_draw_quad1->surface_draw_quad_type);
   EXPECT_EQ(surface_id1, surface_draw_quad1->surface_id);
   EXPECT_EQ(surface_draw_quad2, surface_draw_quad1->fallback_quad);
-  EXPECT_EQ(SurfaceDrawQuadType::FALLBACK,
+  EXPECT_EQ(viz::SurfaceDrawQuadType::FALLBACK,
             surface_draw_quad2->surface_draw_quad_type);
   EXPECT_EQ(surface_id2, surface_draw_quad2->surface_id);
   // If the device scale factor of the primary and fallback are different then
@@ -310,16 +310,16 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   EXPECT_NE(surface_draw_quad1->shared_quad_state,
             surface_draw_quad2->shared_quad_state);
 
-  EXPECT_EQ(SurfaceDrawQuadType::PRIMARY,
+  EXPECT_EQ(viz::SurfaceDrawQuadType::PRIMARY,
             surface_draw_quad3->surface_draw_quad_type);
   EXPECT_EQ(surface_id1, surface_draw_quad3->surface_id);
   EXPECT_EQ(nullptr, surface_draw_quad3->fallback_quad);
 
-  EXPECT_EQ(SurfaceDrawQuadType::PRIMARY,
+  EXPECT_EQ(viz::SurfaceDrawQuadType::PRIMARY,
             surface_draw_quad4->surface_draw_quad_type);
   EXPECT_EQ(surface_id1, surface_draw_quad4->surface_id);
   EXPECT_EQ(surface_draw_quad5, surface_draw_quad4->fallback_quad);
-  EXPECT_EQ(SurfaceDrawQuadType::FALLBACK,
+  EXPECT_EQ(viz::SurfaceDrawQuadType::FALLBACK,
             surface_draw_quad5->surface_draw_quad_type);
   EXPECT_EQ(surface_id2, surface_draw_quad5->surface_id);
   // If the device scale factor of the primary and fallback are the same then
@@ -328,7 +328,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
             surface_draw_quad5->shared_quad_state);
 }
 
-// This test verifies that one SurfaceDrawQuad is emitted if a
+// This test verifies that one viz::SurfaceDrawQuad is emitted if a
 // SurfaceLayerImpl holds the same surface ID for both the primary
 // and fallback viz::SurfaceInfo.
 TEST(SurfaceLayerImplTest,
@@ -358,7 +358,7 @@ TEST(SurfaceLayerImplTest,
   gfx::Size viewport_size(1000, 1000);
   impl.CalcDrawProps(viewport_size);
 
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
   // As the primary and fallback SurfaceInfos match, there is no reason to
@@ -368,11 +368,11 @@ TEST(SurfaceLayerImplTest,
   EXPECT_THAT(data.activation_dependencies, testing::IsEmpty());
 
   ASSERT_EQ(1u, render_pass->quad_list.size());
-  const SurfaceDrawQuad* surface_draw_quad1 =
-      SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(0));
+  const viz::SurfaceDrawQuad* surface_draw_quad1 =
+      viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(0));
   ASSERT_TRUE(surface_draw_quad1);
 
-  EXPECT_EQ(SurfaceDrawQuadType::PRIMARY,
+  EXPECT_EQ(viz::SurfaceDrawQuadType::PRIMARY,
             surface_draw_quad1->surface_draw_quad_type);
   EXPECT_EQ(surface_id1, surface_draw_quad1->surface_id);
   EXPECT_FALSE(surface_draw_quad1->fallback_quad);

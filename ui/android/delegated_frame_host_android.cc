@@ -87,7 +87,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     DestroyDelegatedContent();
     DCHECK(!content_layer_);
 
-    cc::RenderPass* root_pass = frame.render_pass_list.back().get();
+    viz::RenderPass* root_pass = frame.render_pass_list.back().get();
     gfx::Size frame_size = root_pass->output_rect.size();
     surface_info_ = viz::SurfaceInfo(
         viz::SurfaceId(frame_sink_id_, local_surface_id), 1.f, frame_size);

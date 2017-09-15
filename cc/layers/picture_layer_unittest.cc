@@ -223,7 +223,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   host_impl.ActivateSyncTree();
 
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData data;
   host_impl.active_tree()->root_layer_for_testing()->WillDraw(
       DRAW_MODE_SOFTWARE, nullptr);

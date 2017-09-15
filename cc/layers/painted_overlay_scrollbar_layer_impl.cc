@@ -65,7 +65,7 @@ bool PaintedOverlayScrollbarLayerImpl::WillDraw(
 }
 
 void PaintedOverlayScrollbarLayerImpl::AppendQuads(
-    RenderPass* render_pass,
+    viz::RenderPass* render_pass,
     AppendQuadsData* append_quads_data) {
   if (aperture_.IsEmpty())
     return;

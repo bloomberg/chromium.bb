@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/render_pass.h"
-#include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/surface_draw_quad.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
 
 namespace ui {
 
@@ -117,7 +117,7 @@ void FrameGenerator::OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
 cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
   const int render_pass_id = 1;
   const gfx::Rect bounds(pixel_size_);
-  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   render_pass->SetNew(render_pass_id, bounds, bounds, gfx::Transform());
 
   DrawWindow(render_pass.get());
@@ -125,7 +125,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
   cc::CompositorFrame frame;
   frame.render_pass_list.push_back(std::move(render_pass));
   if (high_contrast_mode_enabled_) {
-    std::unique_ptr<cc::RenderPass> invert_pass = cc::RenderPass::Create();
+    std::unique_ptr<viz::RenderPass> invert_pass = viz::RenderPass::Create();
     invert_pass->SetNew(2, bounds, bounds, gfx::Transform());
     viz::SharedQuadState* shared_state =
         invert_pass->CreateAndAppendSharedQuadState();
@@ -137,7 +137,8 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
     shared_state->SetAll(gfx::Transform(), gfx::Rect(scaled_bounds), bounds,
                          bounds, is_clipped, are_contents_opaque, 1.f,
                          SkBlendMode::kSrcOver, 0);
-    auto* quad = invert_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
+    auto* quad =
+        invert_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
     frame.render_pass_list.back()->filters.Append(
         cc::FilterOperation::CreateInvertFilter(1.f));
     quad->SetNew(
@@ -176,7 +177,7 @@ viz::mojom::HitTestRegionListPtr FrameGenerator::GenerateHitTestRegionList()
   return hit_test_region_list;
 }
 
-void FrameGenerator::DrawWindow(cc::RenderPass* pass) {
+void FrameGenerator::DrawWindow(viz::RenderPass* pass) {
   DCHECK(window_manager_surface_info_.is_valid());
 
   const gfx::Rect bounds_at_origin(
@@ -201,11 +202,11 @@ void FrameGenerator::DrawWindow(cc::RenderPass* pass) {
               bounds_at_origin /* clip_rect */, false /* is_clipped */,
               false /* are_contents_opaque */, 1.0f /* opacity */,
               SkBlendMode::kSrcOver, 0 /* sorting-context_id */);
-  auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+  auto* quad = pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
   quad->SetAll(sqs, bounds_at_origin /* rect */,
                bounds_at_origin /* visible_rect */, true /* needs_blending*/,
                window_manager_surface_info_.id(),
-               cc::SurfaceDrawQuadType::PRIMARY, nullptr);
+               viz::SurfaceDrawQuadType::PRIMARY, nullptr);
 }
 
 void FrameGenerator::SetNeedsBeginFrame(bool needs_begin_frame) {

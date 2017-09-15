@@ -15,8 +15,8 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
-#include "cc/quads/texture_draw_quad.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "ui/aura/env.h"
@@ -360,7 +360,7 @@ void FastInkView::UpdateSurface() {
   bool needs_blending = true;
 
   const int kRenderPassId = 1;
-  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   render_pass->SetNew(kRenderPassId, output_rect, surface_damage_rect_,
                       buffer_to_target_transform);
   surface_damage_rect_ = gfx::Rect();
@@ -381,8 +381,8 @@ void FastInkView::UpdateSurface() {
   frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.device_scale_factor = device_scale_factor;
-  cc::TextureDrawQuad* texture_quad =
-      render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
+  viz::TextureDrawQuad* texture_quad =
+      render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
   float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
   gfx::PointF uv_top_left(0.f, 0.f);
   gfx::PointF uv_bottom_right(1.f, 1.f);

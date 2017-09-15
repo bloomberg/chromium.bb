@@ -18,10 +18,10 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
-#include "cc/quads/render_pass.h"
-#include "cc/quads/surface_draw_quad.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
@@ -290,7 +290,7 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     embed_frame.metadata.begin_frame_ack = frame.metadata.begin_frame_ack;
     embed_frame.metadata.device_scale_factor =
         frame.metadata.device_scale_factor;
-    embed_frame.render_pass_list.push_back(cc::RenderPass::Create());
+    embed_frame.render_pass_list.push_back(viz::RenderPass::Create());
 
     // The embedding RenderPass covers the entire Display's area.
     const auto& embed_render_pass = embed_frame.render_pass_list.back();
@@ -304,7 +304,7 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     auto* shared_quad_state =
         embed_render_pass->CreateAndAppendSharedQuadState();
     auto* surface_quad =
-        embed_render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+        embed_render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
     shared_quad_state->SetAll(
         child_transform, gfx::Rect(child_size), gfx::Rect(child_size),
         gfx::Rect() /* clip_rect */, false /* is_clipped */,
@@ -313,7 +313,7 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     surface_quad->SetNew(
         shared_quad_state, gfx::Rect(child_size), gfx::Rect(child_size),
         viz::SurfaceId(kChildFrameSinkId, child_local_surface_id_),
-        cc::SurfaceDrawQuadType::PRIMARY, nullptr);
+        viz::SurfaceDrawQuadType::PRIMARY, nullptr);
 
     bool result = child_support_->SubmitCompositorFrame(child_local_surface_id_,
                                                         std::move(frame));

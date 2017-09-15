@@ -27,7 +27,6 @@
 #include "cc/layers/layer_collections.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/output/managed_memory_policy.h"
-#include "cc/quads/render_pass.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/begin_frame_tracker.h"
@@ -43,6 +42,7 @@
 #include "cc/trees/task_runner_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "ui/gfx/geometry/rect.h"
@@ -237,7 +237,7 @@ class CC_EXPORT LayerTreeHostImpl
     std::vector<viz::SurfaceId> activation_dependencies;
     std::vector<gfx::Rect> occluding_screen_space_rects;
     std::vector<gfx::Rect> non_occluding_screen_space_rects;
-    RenderPassList render_passes;
+    viz::RenderPassList render_passes;
     const RenderSurfaceList* render_surface_list;
     LayerImplList will_draw_layers;
     bool has_no_damage;

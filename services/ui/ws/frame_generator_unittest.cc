@@ -5,8 +5,8 @@
 #include "services/ui/ws/frame_generator.h"
 
 #include "base/macros.h"
-#include "cc/quads/render_pass.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,7 +82,7 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
     begin_frame_source_ = begin_frame_source;
   }
 
-  const cc::RenderPassList& last_render_pass_list() const {
+  const viz::RenderPassList& last_render_pass_list() const {
     return last_frame_.render_pass_list;
   }
 
@@ -160,7 +160,7 @@ class FrameGeneratorTest : public testing::Test {
     return binding_->last_metadata();
   }
 
-  const cc::RenderPassList& LastRenderPassList() const {
+  const viz::RenderPassList& LastRenderPassList() const {
     return binding_->last_render_pass_list();
   }
 
@@ -236,7 +236,7 @@ TEST_F(FrameGeneratorTest, SetHighContrastMode) {
   EXPECT_EQ(2, NumberOfFramesReceived());
 
   // Verify that the last frame has an invert filter.
-  const cc::RenderPassList& render_pass_list = LastRenderPassList();
+  const viz::RenderPassList& render_pass_list = LastRenderPassList();
   const cc::FilterOperations expected_filters(
       {cc::FilterOperation::CreateInvertFilter(1.f)});
   EXPECT_EQ(expected_filters, render_pass_list.front()->filters);
@@ -246,11 +246,11 @@ TEST_F(FrameGeneratorTest, WindowBoundsChanged) {
   InitWithSurfaceInfo();
 
   // Window bounds change triggers a BeginFrame.
-  constexpr cc::RenderPassId expected_render_pass_id = 1u;
+  constexpr viz::RenderPassId expected_render_pass_id = 1u;
   frame_generator()->OnWindowSizeChanged(kArbitrarySize);
   IssueBeginFrame();
   EXPECT_EQ(2, NumberOfFramesReceived());
-  cc::RenderPass* received_render_pass = LastRenderPassList().front().get();
+  viz::RenderPass* received_render_pass = LastRenderPassList().front().get();
   EXPECT_EQ(expected_render_pass_id, received_render_pass->id);
   EXPECT_EQ(kArbitrarySize, received_render_pass->output_rect.size());
   EXPECT_EQ(kArbitrarySize, received_render_pass->damage_rect.size());
@@ -266,7 +266,7 @@ TEST_F(FrameGeneratorTest, WindowBoundsChangedTwice) {
   frame_generator()->OnWindowSizeChanged(kAnotherArbitrarySize);
   IssueBeginFrame();
   EXPECT_EQ(2, NumberOfFramesReceived());
-  cc::RenderPass* received_render_pass = LastRenderPassList().front().get();
+  viz::RenderPass* received_render_pass = LastRenderPassList().front().get();
   EXPECT_EQ(kAnotherArbitrarySize, received_render_pass->output_rect.size());
   EXPECT_EQ(kAnotherArbitrarySize, received_render_pass->damage_rect.size());
 

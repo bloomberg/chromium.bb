@@ -634,11 +634,11 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
 TEST_F(CompositorFrameSinkSupportTest, SurfaceInfo) {
   auto frame = test::MakeCompositorFrame();
 
-  auto render_pass = cc::RenderPass::Create();
+  auto render_pass = RenderPass::Create();
   render_pass->SetNew(1, gfx::Rect(5, 6), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(render_pass));
 
-  render_pass = cc::RenderPass::Create();
+  render_pass = RenderPass::Create();
   render_pass->SetNew(2, gfx::Rect(7, 8), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(render_pass));
 
@@ -657,7 +657,7 @@ TEST_F(CompositorFrameSinkSupportTest, SurfaceInfo) {
 TEST_F(CompositorFrameSinkSupportTest, ZeroFrameSize) {
   SurfaceId id(support_->frame_sink_id(), local_surface_id_);
   auto frame = test::MakeEmptyCompositorFrame();
-  frame.render_pass_list.push_back(cc::RenderPass::Create());
+  frame.render_pass_list.push_back(RenderPass::Create());
   EXPECT_TRUE(
       support_->SubmitCompositorFrame(local_surface_id_, std::move(frame)));
   EXPECT_FALSE(GetSurfaceForId(id));
@@ -681,7 +681,7 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
 
   // Submit a frame with size (5,5).
   auto frame = test::MakeEmptyCompositorFrame();
-  auto pass = cc::RenderPass::Create();
+  auto pass = RenderPass::Create();
   pass->SetNew(1, gfx::Rect(5, 5), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   EXPECT_TRUE(
@@ -691,7 +691,7 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
   // Submit a frame with size (5,4). This frame should be rejected and the
   // surface should be destroyed.
   frame = test::MakeEmptyCompositorFrame();
-  pass = cc::RenderPass::Create();
+  pass = RenderPass::Create();
   pass->SetNew(1, gfx::Rect(5, 4), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   EXPECT_FALSE(

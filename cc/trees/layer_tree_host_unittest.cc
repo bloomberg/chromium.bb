@@ -27,8 +27,6 @@
 #include "cc/layers/video_layer.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
-#include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -62,6 +60,8 @@
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -6334,12 +6334,13 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     if (frame_data->has_no_damage)
       return 0.f;
     float frame_scale = 0.f;
-    RenderPass* root_pass = frame_data->render_passes.back().get();
+    viz::RenderPass* root_pass = frame_data->render_passes.back().get();
     for (auto* draw_quad : root_pass->quad_list) {
       // Checkerboards mean an incomplete frame.
       if (draw_quad->material != viz::DrawQuad::TILED_CONTENT)
         return 0.f;
-      const TileDrawQuad* quad = TileDrawQuad::MaterialCast(draw_quad);
+      const viz::TileDrawQuad* quad =
+          viz::TileDrawQuad::MaterialCast(draw_quad);
       float quad_scale =
           quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());
       float transform_scale = SkMScalarToFloat(
@@ -6642,9 +6643,10 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     if (frame_data->has_no_damage)
       return 0.f;
     float frame_scale = 0.f;
-    RenderPass* root_pass = frame_data->render_passes.back().get();
+    viz::RenderPass* root_pass = frame_data->render_passes.back().get();
     for (auto* draw_quad : root_pass->quad_list) {
-      const TileDrawQuad* quad = TileDrawQuad::MaterialCast(draw_quad);
+      const viz::TileDrawQuad* quad =
+          viz::TileDrawQuad::MaterialCast(draw_quad);
       float quad_scale =
           quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());
       float transform_scale = SkMScalarToFloat(
@@ -7026,7 +7028,7 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     EXPECT_EQ(2u, frame_data->render_passes.size());
-    RenderPass* root_pass = frame_data->render_passes.back().get();
+    viz::RenderPass* root_pass = frame_data->render_passes.back().get();
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
@@ -7035,8 +7037,8 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
 
     EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
               root_pass->quad_list.front()->material);
-    const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
+    const viz::RenderPassDrawQuad* render_pass_quad =
+        viz::RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
     EXPECT_EQ(gfx::Rect(50, 50, 50, 50).ToString(),
               render_pass_quad->rect.ToString());
     if (host_impl->settings().enable_mask_tiling) {
@@ -7155,7 +7157,7 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     EXPECT_EQ(2u, frame_data->render_passes.size());
-    RenderPass* root_pass = frame_data->render_passes.back().get();
+    viz::RenderPass* root_pass = frame_data->render_passes.back().get();
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
@@ -7165,8 +7167,8 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     // The surface is clipped to 10x20.
     EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
               root_pass->quad_list.front()->material);
-    const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
+    const viz::RenderPassDrawQuad* render_pass_quad =
+        viz::RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
     EXPECT_EQ(gfx::Rect(20, 10, 10, 20).ToString(),
               render_pass_quad->rect.ToString());
     // The masked layer is 50x50, but the surface size is 10x20. So the texture
@@ -7279,7 +7281,7 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     EXPECT_EQ(2u, frame_data->render_passes.size());
-    RenderPass* root_pass = frame_data->render_passes.back().get();
+    viz::RenderPass* root_pass = frame_data->render_passes.back().get();
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
@@ -7288,8 +7290,8 @@ class LayerTreeTestMaskLayerWithScaling : public LayerTreeTest {
 
     EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
               root_pass->quad_list.front()->material);
-    const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
+    const viz::RenderPassDrawQuad* render_pass_quad =
+        viz::RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
         // Check that the tree scaling is correctly taken into account for the
@@ -7410,7 +7412,7 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     EXPECT_EQ(2u, frame_data->render_passes.size());
-    RenderPass* root_pass = frame_data->render_passes.back().get();
+    viz::RenderPass* root_pass = frame_data->render_passes.back().get();
     EXPECT_EQ(2u, root_pass->quad_list.size());
 
     // There's a solid color quad under everything.
@@ -7420,8 +7422,8 @@ class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
     // The surface is 100x100
     EXPECT_EQ(viz::DrawQuad::RENDER_PASS,
               root_pass->quad_list.front()->material);
-    const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
+    const viz::RenderPassDrawQuad* render_pass_quad =
+        viz::RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
               render_pass_quad->rect.ToString());
     // The mask layer is 100x100, but is backed by a 120x150 image.
@@ -7710,14 +7712,14 @@ class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
                                    DrawResult draw_result) override {
     frame->render_passes.clear();
 
-    RenderPass* child_pass =
+    viz::RenderPass* child_pass =
         AddRenderPass(&frame->render_passes, 2, gfx::Rect(3, 3, 10, 10),
                       gfx::Transform(), FilterOperations());
     gpu::SyncToken mailbox_sync_token;
     AddOneOfEveryQuadType(child_pass, host_impl->resource_provider(), 0,
                           &mailbox_sync_token);
 
-    RenderPass* pass =
+    viz::RenderPass* pass =
         AddRenderPass(&frame->render_passes, 1, gfx::Rect(3, 3, 10, 10),
                       gfx::Transform(), FilterOperations());
     AddOneOfEveryQuadType(pass, host_impl->resource_provider(), child_pass->id,

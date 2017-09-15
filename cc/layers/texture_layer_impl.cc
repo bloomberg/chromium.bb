@@ -11,12 +11,12 @@
 
 #include "base/strings/stringprintf.h"
 #include "cc/output/output_surface.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/resources/single_release_callback_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
 
 namespace cc {
@@ -143,7 +143,7 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
          LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
-void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
+void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   DCHECK(external_texture_resource_ || valid_texture_copy_);
 
@@ -171,8 +171,7 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
       !vertex_opacity_[3])
     return;
 
-  TextureDrawQuad* quad =
-      render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  auto* quad = render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
   viz::ResourceId id =
       valid_texture_copy_ ? texture_copy_->id() : external_texture_resource_;
   quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, needs_blending,

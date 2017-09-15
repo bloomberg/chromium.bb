@@ -6,11 +6,11 @@
 
 namespace cc {
 
-CompositorFrame::CompositorFrame() {}
+CompositorFrame::CompositorFrame() = default;
 
 CompositorFrame::CompositorFrame(CompositorFrame&& other) = default;
 
-CompositorFrame::~CompositorFrame() {}
+CompositorFrame::~CompositorFrame() = default;
 
 CompositorFrame& CompositorFrame::operator=(CompositorFrame&& other) = default;
 

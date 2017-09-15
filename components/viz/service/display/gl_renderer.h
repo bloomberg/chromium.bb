@@ -12,12 +12,12 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "cc/output/direct_renderer.h"
-#include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/tile_draw_quad.h"
-#include "cc/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
+#include "components/viz/common/quads/debug_border_draw_quad.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/color_lut_cache.h"
 #include "components/viz/service/display/gl_renderer_draw_cache.h"
 #include "components/viz/service/display/program_binding.h"
@@ -32,7 +32,6 @@ class Resource;
 class ResourcePool;
 class ScopedResource;
 class StreamVideoDrawQuad;
-class TextureDrawQuad;
 }  // namespace cc
 
 namespace gpu {
@@ -45,6 +44,7 @@ namespace viz {
 
 class DynamicGeometryBinding;
 class StaticGeometryBinding;
+class TextureDrawQuad;
 class TextureMailboxDeleter;
 struct DrawRenderPassDrawQuadParams;
 
@@ -126,7 +126,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
       float edge[24]);
   static void SetupRenderPassQuadForClippingAndAntialiasing(
       const gfx::Transform& device_transform,
-      const cc::RenderPassDrawQuad* quad,
+      const RenderPassDrawQuad* quad,
       const gfx::QuadF* device_layer_quad,
       const gfx::QuadF* clip_region,
       gfx::QuadF* local_quad,
@@ -153,7 +153,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   void ClearFramebuffer();
   void SetViewport();
 
-  void DrawDebugBorderQuad(const cc::DebugBorderDrawQuad* quad);
+  void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
   static bool IsDefaultBlendMode(SkBlendMode blend_mode) {
     return blend_mode == SkBlendMode::kSrcOver;
   }
@@ -162,7 +162,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   void RestoreBlendFuncToDefault(SkBlendMode blend_mode);
 
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
-      const cc::RenderPassDrawQuad* quad,
+      const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
       const cc::FilterOperations* filters,
       const cc::FilterOperations* background_filters,
@@ -173,42 +173,40 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
       const gfx::Rect& bounding_rect);
 
   static bool ShouldApplyBackgroundFilters(
-      const cc::RenderPassDrawQuad* quad,
+      const RenderPassDrawQuad* quad,
       const cc::FilterOperations* background_filters);
   sk_sp<SkImage> ApplyBackgroundFilters(
-      const cc::RenderPassDrawQuad* quad,
+      const RenderPassDrawQuad* quad,
       const cc::FilterOperations& background_filters,
       cc::ScopedResource* background_texture,
       const gfx::RectF& rect,
       const gfx::RectF& unclipped_rect);
 
-  const cc::TileDrawQuad* CanPassBeDrawnDirectly(
-      const cc::RenderPass* pass) override;
+  const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
-  void DrawRenderPassQuad(const cc::RenderPassDrawQuad* quadi,
+  void DrawRenderPassQuad(const RenderPassDrawQuad* quadi,
                           const gfx::QuadF* clip_region);
   void DrawRenderPassQuadInternal(DrawRenderPassDrawQuadParams* params);
-  void DrawSolidColorQuad(const cc::SolidColorDrawQuad* quad,
+  void DrawSolidColorQuad(const SolidColorDrawQuad* quad,
                           const gfx::QuadF* clip_region);
-  void DrawStreamVideoQuad(const cc::StreamVideoDrawQuad* quad,
+  void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                            const gfx::QuadF* clip_region);
-  void EnqueueTextureQuad(const cc::TextureDrawQuad* quad,
+  void EnqueueTextureQuad(const TextureDrawQuad* quad,
                           const gfx::QuadF* clip_region);
   void FlushTextureQuadCache(BoundGeometry flush_binding);
-  void DrawTileQuad(const cc::TileDrawQuad* quad,
-                    const gfx::QuadF* clip_region);
-  void DrawContentQuad(const cc::ContentDrawQuadBase* quad,
+  void DrawTileQuad(const TileDrawQuad* quad, const gfx::QuadF* clip_region);
+  void DrawContentQuad(const ContentDrawQuadBase* quad,
                        ResourceId resource_id,
                        const gfx::QuadF* clip_region);
-  void DrawContentQuadAA(const cc::ContentDrawQuadBase* quad,
+  void DrawContentQuadAA(const ContentDrawQuadBase* quad,
                          ResourceId resource_id,
                          const gfx::Transform& device_transform,
                          const gfx::QuadF& aa_quad,
                          const gfx::QuadF* clip_region);
-  void DrawContentQuadNoAA(const cc::ContentDrawQuadBase* quad,
+  void DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                            ResourceId resource_id,
                            const gfx::QuadF* clip_region);
-  void DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
+  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                         const gfx::QuadF* clip_region);
   void DrawOverlayCandidateQuadBorder(float* gl_matrix);
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
@@ -10,22 +10,20 @@
 #include "components/viz/common/traced_value.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 
-namespace cc {
+namespace viz {
 
-RenderPassDrawQuad::RenderPassDrawQuad() {
-}
+RenderPassDrawQuad::RenderPassDrawQuad() = default;
 
 RenderPassDrawQuad::RenderPassDrawQuad(const RenderPassDrawQuad& other) =
     default;
 
-RenderPassDrawQuad::~RenderPassDrawQuad() {
-}
+RenderPassDrawQuad::~RenderPassDrawQuad() = default;
 
-void RenderPassDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
+void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 const gfx::Rect& rect,
                                 const gfx::Rect& visible_rect,
                                 RenderPassId render_pass_id,
-                                viz::ResourceId mask_resource_id,
+                                ResourceId mask_resource_id,
                                 const gfx::RectF& mask_uv_rect,
                                 const gfx::Size& mask_texture_size,
                                 const gfx::Vector2dF& filters_scale,
@@ -39,12 +37,12 @@ void RenderPassDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
          filters_origin, tex_coord_rect);
 }
 
-void RenderPassDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
+void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 const gfx::Rect& rect,
                                 const gfx::Rect& visible_rect,
                                 bool needs_blending,
                                 RenderPassId render_pass_id,
-                                viz::ResourceId mask_resource_id,
+                                ResourceId mask_resource_id,
                                 const gfx::RectF& mask_uv_rect,
                                 const gfx::Size& mask_texture_size,
                                 const gfx::Vector2dF& filters_scale,
@@ -52,8 +50,8 @@ void RenderPassDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                                 const gfx::RectF& tex_coord_rect) {
   DCHECK(render_pass_id);
 
-  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::RENDER_PASS, rect,
-                        visible_rect, needs_blending);
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::RENDER_PASS, rect, visible_rect,
+                   needs_blending);
   this->render_pass_id = render_pass_id;
   resources.ids[kMaskResourceIdIndex] = mask_resource_id;
   resources.count = mask_resource_id ? 1 : 0;
@@ -65,19 +63,19 @@ void RenderPassDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
 }
 
 const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
-    const viz::DrawQuad* quad) {
-  DCHECK_EQ(quad->material, viz::DrawQuad::RENDER_PASS);
+    const DrawQuad* quad) {
+  DCHECK_EQ(quad->material, DrawQuad::RENDER_PASS);
   return static_cast<const RenderPassDrawQuad*>(quad);
 }
 
 void RenderPassDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
-  viz::TracedValue::SetIDRef(reinterpret_cast<void*>(render_pass_id), value,
-                             "render_pass_id");
+  TracedValue::SetIDRef(reinterpret_cast<void*>(render_pass_id), value,
+                        "render_pass_id");
   value->SetInteger("mask_resource_id", resources.ids[kMaskResourceIdIndex]);
-  MathUtil::AddToTracedValue("mask_texture_size", mask_texture_size, value);
-  MathUtil::AddToTracedValue("mask_uv_rect", mask_uv_rect, value);
-  MathUtil::AddToTracedValue("tex_coord_rect", tex_coord_rect, value);
+  cc::MathUtil::AddToTracedValue("mask_texture_size", mask_texture_size, value);
+  cc::MathUtil::AddToTracedValue("mask_uv_rect", mask_uv_rect, value);
+  cc::MathUtil::AddToTracedValue("tex_coord_rect", tex_coord_rect, value);
 }
 
-}  // namespace cc
+}  // namespace viz

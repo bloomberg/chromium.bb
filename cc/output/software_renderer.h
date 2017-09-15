@@ -10,16 +10,19 @@
 #include "cc/output/direct_renderer.h"
 #include "ui/latency/latency_info.h"
 
-namespace cc {
+namespace viz {
 class DebugBorderDrawQuad;
-class OutputSurface;
 class PictureDrawQuad;
 class RenderPassDrawQuad;
-class DisplayResourceProvider;
-class SoftwareOutputDevice;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
+}  // namespace viz
+
+namespace cc {
+class OutputSurface;
+class DisplayResourceProvider;
+class SoftwareOutputDevice;
 
 class CC_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
@@ -62,28 +65,28 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void SetClipRect(const gfx::Rect& rect);
   bool IsSoftwareResource(viz::ResourceId resource_id) const;
 
-  void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
-  void DrawPictureQuad(const PictureDrawQuad* quad);
-  void DrawRenderPassQuad(const RenderPassDrawQuad* quad);
-  void DrawSolidColorQuad(const SolidColorDrawQuad* quad);
-  void DrawTextureQuad(const TextureDrawQuad* quad);
-  void DrawTileQuad(const TileDrawQuad* quad);
+  void DrawDebugBorderQuad(const viz::DebugBorderDrawQuad* quad);
+  void DrawPictureQuad(const viz::PictureDrawQuad* quad);
+  void DrawRenderPassQuad(const viz::RenderPassDrawQuad* quad);
+  void DrawSolidColorQuad(const viz::SolidColorDrawQuad* quad);
+  void DrawTextureQuad(const viz::TextureDrawQuad* quad);
+  void DrawTileQuad(const viz::TileDrawQuad* quad);
   void DrawUnsupportedQuad(const viz::DrawQuad* quad);
   bool ShouldApplyBackgroundFilters(
-      const RenderPassDrawQuad* quad,
+      const viz::RenderPassDrawQuad* quad,
       const FilterOperations* background_filters) const;
   sk_sp<SkImage> ApplyImageFilter(SkImageFilter* filter,
-                                  const RenderPassDrawQuad* quad,
+                                  const viz::RenderPassDrawQuad* quad,
                                   const SkBitmap& to_filter,
                                   SkIRect* auto_bounds) const;
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
-      const RenderPassDrawQuad* quad,
+      const viz::RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
       const FilterOperations* background_filters,
       gfx::Rect* unclipped_rect) const;
   SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
   sk_sp<SkShader> GetBackgroundFilterShader(
-      const RenderPassDrawQuad* quad,
+      const viz::RenderPassDrawQuad* quad,
       SkShader::TileMode content_tile_mode) const;
 
   bool disable_picture_quad_image_filtering_ = false;

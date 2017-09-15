@@ -11,7 +11,7 @@ namespace test {
 
 cc::CompositorFrame MakeCompositorFrame() {
   cc::CompositorFrame frame = MakeEmptyCompositorFrame();
-  std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetNew(1, gfx::Rect(0, 0, 20, 20), gfx::Rect(), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   return frame;
