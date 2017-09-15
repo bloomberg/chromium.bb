@@ -2108,7 +2108,6 @@ TEST_F(HistoryBackendTest, SetOnDemandFaviconsForEmptyDB) {
   std::vector<SkBitmap> bitmaps;
   bitmaps.push_back(CreateBitmap(SK_ColorRED, kSmallEdgeSize));
 
-  // Call SetOnDemandFavicons() with a different icon URL and bitmap data.
   EXPECT_TRUE(backend_->SetOnDemandFavicons(page_url, favicon_base::FAVICON,
                                             icon_url, bitmaps));
 
@@ -2119,10 +2118,17 @@ TEST_F(HistoryBackendTest, SetOnDemandFaviconsForEmptyDB) {
 
   FaviconBitmap favicon_bitmap;
   ASSERT_TRUE(GetOnlyFaviconBitmap(favicon_id, &favicon_bitmap));
-  // The original bitmap should have been retrieved.
+  // The newly set bitmap should have been retrieved.
   EXPECT_TRUE(BitmapColorEqual(SK_ColorRED, favicon_bitmap.bitmap_data));
-  // The favicon should not be marked as expired.
+  // The favicon should be marked as expired.
   EXPECT_EQ(base::Time(), favicon_bitmap.last_updated);
+
+  // The raw bitmap result is marked as fetched on-demand.
+  favicon_base::FaviconRawBitmapResult result;
+  backend_->GetLargestFaviconForURL(page_url,
+                                    std::vector<int>{favicon_base::FAVICON},
+                                    kSmallEdgeSize, &result);
+  EXPECT_FALSE(result.fetched_because_of_page_visit);
 }
 
 // Tests calling SetOnDemandFavicons(). |page_url| is known to the database
@@ -2154,6 +2160,13 @@ TEST_F(HistoryBackendTest, SetOnDemandFaviconsForPageInDB) {
   EXPECT_TRUE(BitmapColorEqual(SK_ColorBLUE, favicon_bitmap.bitmap_data));
   // The favicon should not be marked as expired.
   EXPECT_NE(base::Time(), favicon_bitmap.last_updated);
+
+  // The raw bitmap result is not marked as fetched on-demand.
+  favicon_base::FaviconRawBitmapResult result;
+  backend_->GetLargestFaviconForURL(page_url,
+                                    std::vector<int>{favicon_base::FAVICON},
+                                    kSmallEdgeSize, &result);
+  EXPECT_TRUE(result.fetched_because_of_page_visit);
 }
 
 // Tests calling SetOnDemandFavicons(). |page_url| is not known to the
@@ -2187,6 +2200,13 @@ TEST_F(HistoryBackendTest, SetOnDemandFaviconsForIconInDB) {
   EXPECT_TRUE(BitmapColorEqual(SK_ColorBLUE, favicon_bitmap.bitmap_data));
   // The favicon should not be marked as expired.
   EXPECT_NE(base::Time(), favicon_bitmap.last_updated);
+
+  // The raw bitmap result is not marked as fetched on-demand.
+  favicon_base::FaviconRawBitmapResult result;
+  backend_->GetLargestFaviconForURL(page_url,
+                                    std::vector<int>{favicon_base::FAVICON},
+                                    kSmallEdgeSize, &result);
+  EXPECT_TRUE(result.fetched_because_of_page_visit);
 }
 
 // Test repeatedly calling MergeFavicon(). |page_url| is initially not known

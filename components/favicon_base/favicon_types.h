@@ -73,6 +73,11 @@ struct FaviconRawBitmapResult {
 
   // The icon type of the containing favicon.
   IconType icon_type;
+
+  // Indicates whether the bitmap was fetched upon visiting a page. Value
+  // false means that it was fetched on-demand by the UI of chrome, without
+  // visiting the page.
+  bool fetched_because_of_page_visit;
 };
 
 // Define type with same structure as FaviconRawBitmapResult for passing data to

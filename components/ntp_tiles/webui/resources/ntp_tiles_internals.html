@@ -127,7 +127,10 @@ found in the LICENSE file.
         <tr jsselect="icons">
           <td class="detail" jscontent="type"></td>
           <td class="value"><a jsvalues="href:url"
-              jscontent="url + ' (' + width + 'x' + height + ')'"></a></td>
+              jscontent="url"></a>
+            (<span jscontent="width + 'x' + height"></span>
+            <span class="value" jsdisplay="onDemand">, on-demand</span>)
+          </td>
         </tr>
       </tbody>
     </table>
