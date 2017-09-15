@@ -80,6 +80,7 @@ source_set("bookmarks") {
     "resources:bookmark_gray_close",
     "resources:bookmark_gray_edit",
     "resources:bookmark_gray_folder",
+    "resources:bookmark_gray_folder_new",
     "resources:bookmark_gray_menu",
     "resources:bookmark_gray_new_folder",
     "resources:bookmark_gray_star_large",

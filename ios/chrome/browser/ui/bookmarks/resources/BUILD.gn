@@ -121,6 +121,15 @@ imageset("bookmark_gray_folder") {
   ]
 }
 
+imageset("bookmark_gray_folder_new") {
+  sources = [
+    "bookmark_gray_folder_new.imageset/Contents.json",
+    "bookmark_gray_folder_new.imageset/bookmark_gray_folder_new.png",
+    "bookmark_gray_folder_new.imageset/bookmark_gray_folder_new@2x.png",
+    "bookmark_gray_folder_new.imageset/bookmark_gray_folder_new@3x.png",
+  ]
+}
+
 imageset("bookmark_gray_menu") {
   sources = [
     "bookmark_gray_menu.imageset/Contents.json",
