@@ -14,7 +14,10 @@ class InitialRefCountIsZero : public base::RefCounted<InitialRefCountIsZero> {
   ~InitialRefCountIsZero() {}
 };
 
-#if defined(NCTEST_ADOPT_REF_TO_ZERO_START)  // [r"fatal error: static_assert failed \"Use AdoptRef only for the reference count starts from one\.\""]
+// TODO(hans): Remove .* and update the static_assert expectations once we roll
+// past Clang r313315. https://crbug.com/765692.
+
+#if defined(NCTEST_ADOPT_REF_TO_ZERO_START)  // [r"fatal error: static_assert failed .*\"Use AdoptRef only for the reference count starts from one\.\""]
 
 void WontCompile() {
   AdoptRef(new InitialRefCountIsZero());
