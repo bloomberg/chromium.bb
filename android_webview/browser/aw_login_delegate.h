@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/browser/resource_request_info.h"
 
 namespace net {
 class AuthChallengeInfo;
@@ -34,7 +35,10 @@ class AwLoginDelegate :
 
  private:
   ~AwLoginDelegate() override;
-  void HandleHttpAuthRequestOnUIThread(bool first_auth_attempt);
+  void HandleHttpAuthRequestOnUIThread(
+      bool first_auth_attempt,
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter);
   void CancelOnIOThread();
   void ProceedOnIOThread(const base::string16& user,
                          const base::string16& password);
@@ -43,8 +47,6 @@ class AwLoginDelegate :
   std::unique_ptr<AwHttpAuthHandler> aw_http_auth_handler_;
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
   net::URLRequest* request_;
-  int render_process_id_;
-  int render_frame_id_;
 };
 
 }  // namespace android_webview
