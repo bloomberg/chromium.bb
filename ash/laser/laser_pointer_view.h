@@ -47,6 +47,7 @@ class LaserPointerView : public FastInkView {
   // Timer which will add a new stationary point when the stylus stops moving.
   // This will remove points that are too old.
   std::unique_ptr<base::Timer> stationary_timer_;
+  gfx::PointF stationary_point_location_;
 
   // A callback for when the fadeout is complete.
   base::Closure fadeout_done_;
