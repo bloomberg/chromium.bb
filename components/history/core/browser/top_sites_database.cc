@@ -497,9 +497,10 @@ bool TopSitesDatabase::UpdatePageThumbnail(const MostVisitedURL& url,
   statement.BindDouble(3, score.boring_score);
   statement.BindBool(4, score.good_clipping);
   statement.BindBool(5, score.at_top);
-  statement.BindInt64(6, score.time_at_snapshot.ToInternalValue());
+  statement.BindInt64(6,
+                      score.time_at_snapshot.since_origin().InMicroseconds());
   statement.BindBool(7, score.load_completed);
-  statement.BindInt64(8, url.last_forced_time.ToInternalValue());
+  statement.BindInt64(8, url.last_forced_time.since_origin().InMicroseconds());
   statement.BindString(9, url.url.spec());
 
   return statement.Run();
@@ -526,9 +527,10 @@ void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
   statement.BindDouble(5, score.boring_score);
   statement.BindBool(6, score.good_clipping);
   statement.BindBool(7, score.at_top);
-  statement.BindInt64(8, score.time_at_snapshot.ToInternalValue());
+  statement.BindInt64(8,
+                      score.time_at_snapshot.since_origin().InMicroseconds());
   statement.BindBool(9, score.load_completed);
-  int64_t last_forced = url.last_forced_time.ToInternalValue();
+  int64_t last_forced = url.last_forced_time.since_origin().InMicroseconds();
   DCHECK((last_forced == 0) == (new_rank != kRankOfForcedURL))
       << "Thumbnail without a forced time stamp has a forced rank, or the "
       << "opposite.";
@@ -616,7 +618,8 @@ void TopSitesDatabase::UpdatePageRankNoTransaction(const MostVisitedURL& url,
       "SET url_rank = ?, last_forced = ? "
       "WHERE url == ?"));
   set_statement.BindInt(0, new_rank);
-  set_statement.BindInt64(1, url.last_forced_time.ToInternalValue());
+  set_statement.BindInt64(1,
+                          url.last_forced_time.since_origin().InMicroseconds());
   set_statement.BindString(2, url.url.spec());
   set_statement.Run();
 }
