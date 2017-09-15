@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -33,10 +34,6 @@ class ExtensionContextMenuApiTest : public ExtensionApiTest {
         test_data_dir_.AppendASCII("context_menus/item_visibility/"));
   }
 
-  int CountItemsInMenu(TestRenderViewContextMenu* menu) {
-    return menu->extension_items().extension_item_map_.size();
-  }
-
   // Sets up the top-level model, which is the list of menu items (both related
   // and unrelated to extensions) that is passed to UI code to be displayed.
   bool SetupTopLevelMenuModel() {
@@ -59,17 +56,35 @@ class ExtensionContextMenuApiTest : public ExtensionApiTest {
     return valid_setup;
   }
 
-  void CallAPI(const std::string& script) {
+  void CallAPI(const std::string& script) { CallAPI(extension_, script); }
+
+  void CallAPI(const Extension* extension, const std::string& script) {
     content::RenderViewHost* background_page =
-        GetBackgroundPage(extension_->id());
+        GetBackgroundPage(extension->id());
     bool error = false;
     ASSERT_TRUE(
         content::ExecuteScriptAndExtractBool(background_page, script, &error));
     ASSERT_FALSE(error);
   }
 
+  // Verifies that the UI menu model has the given number of extension menu
+  // items, |num_items|, of a menu model |type|.
+  void VerifyNumExtensionItemsInMenuModel(int num_items,
+                                          ui::MenuModel::ItemType type) {
+    int num_found = 0;
+    for (int i = 0; i < top_level_model_->GetItemCount(); i++) {
+      int command_id = top_level_model_->GetCommandIdAt(i);
+      if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+          command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST &&
+          top_level_model_->GetTypeAt(i) == type) {
+        num_found++;
+      }
+    }
+    ASSERT_TRUE(num_found == num_items);
+  }
+
   // Verifies that the context menu is valid and contains the given number of
-  // menu items, |numItems|.
+  // menu items, |num_items|.
   void VerifyNumContextMenuItems(int num_items) {
     ASSERT_TRUE(menu());
     EXPECT_EQ(num_items,
@@ -395,6 +410,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
                  true);
   VerifyMenuItem("child2", item3_submodel, 1, ui::MenuModel::TYPE_COMMAND,
                  true);
+}
+
+// Tests that more than one extension named top-level parent menu item can be
+// displayed in the context menu.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
+                       ShowMultipleExtensionNamedTopLevelItemsWithChidlren) {
+  const Extension* e1 =
+      LoadExtension(test_data_dir_.AppendASCII("context_menus/simple/one"));
+  const Extension* e2 =
+      LoadExtension(test_data_dir_.AppendASCII("context_menus/simple/two"));
+
+  CallAPI(e1, "create({title: 'item1'});");
+  CallAPI(e1, "create({title: 'item2'});");
+  CallAPI(e2, "create({title: 'item1'});");
+  CallAPI(e2, "create({title: 'item2'});");
+
+  ASSERT_TRUE(SetupTopLevelMenuModel());
+
+  VerifyNumExtensionItemsInMenuModel(2, ui::MenuModel::TYPE_SUBMENU);
+
+  // The UI menu model organizes extension menu items alphabetically by
+  // extension name, regardless of installation order. For example, if an
+  // extension named "aaa" was installed after extension "bbb", then extension
+  // "aaa" item would precede "bbb" in the context menu.
+  VerifyMenuItem(e1->name(), top_level_model_, top_level_index(),
+                 ui::MenuModel::TYPE_SUBMENU, true);
+  VerifyMenuItem(e2->name(), top_level_model_, top_level_index() + 1,
+                 ui::MenuModel::TYPE_SUBMENU, true);
 }
 
 }  // namespace extensions
