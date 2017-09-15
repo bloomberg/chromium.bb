@@ -86,6 +86,7 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
     public InputConnection onCreateInputConnection(InputConnection inputConnection) {
         mLastUpdateSelStart = mDelegate.getSelectionStart();
         mLastUpdateSelEnd = mDelegate.getSelectionEnd();
+        mBatchEditNestCount = 0;
         if (inputConnection == null) {
             if (DEBUG) Log.i(TAG, "onCreateInputConnection: null");
             mInputConnection = null;
@@ -179,8 +180,16 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             Log.i(TAG, "notifyAutocompleteTextStateChanged PRV[%s] CUR[%s] IGN[%b]",
                     mPreviouslyNotifiedState, mCurrentState, mIgnoreTextChangeFromAutocomplete);
         }
-        if (mBatchEditNestCount > 0) return;
-        if (mCurrentState.equals(mPreviouslyNotifiedState)) return;
+        if (mBatchEditNestCount > 0) {
+            // crbug.com/764749
+            Log.w(TAG, "Did not notify - in batch edit.");
+            return;
+        }
+        if (mCurrentState.equals(mPreviouslyNotifiedState)) {
+            // crbug.com/764749
+            Log.w(TAG, "Did not notify - no change.");
+            return;
+        }
         notifyAccessibilityService();
         if (mCurrentState.getUserText().equals(mPreviouslyNotifiedState.getUserText())
                 && (mCurrentState.hasAutocompleteText()
@@ -192,7 +201,11 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             return;
         }
         mPreviouslyNotifiedState.copyFrom(mCurrentState);
-        if (mIgnoreTextChangeFromAutocomplete) return;
+        if (mIgnoreTextChangeFromAutocomplete) {
+            // crbug.com/764749
+            Log.w(TAG, "Did not notify - ignored.");
+            return;
+        }
         // The current model's mechanism always moves the cursor at the end of user text, so we
         // don't need to update the display.
         mDelegate.onAutocompleteTextStateChanged(false /* updateDisplay */);

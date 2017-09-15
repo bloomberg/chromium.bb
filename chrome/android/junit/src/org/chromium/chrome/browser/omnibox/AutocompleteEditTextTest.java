@@ -1175,4 +1175,32 @@ public class AutocompleteEditTextTest {
         }
         mInOrder.verifyNoMoreInteractions();
     }
+
+    @Test
+    @Features(@Features.Register(
+            value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = true))
+    public void testNonMatchingBatchEditWithSpannableModel() {
+        internalNonMatchingBatchEdit();
+    }
+
+    @Test
+    @Features(@Features.Register(
+            value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = false))
+    public void testNonMatchingBatchEditWithoutSpannableModel() {
+        internalNonMatchingBatchEdit();
+    }
+
+    // crbug.com/764749
+    private void internalNonMatchingBatchEdit() {
+        // beginBatchEdit() was not matched by endBatchEdit(), for some reason.
+        mInputConnection.beginBatchEdit();
+
+        // Restart input should reset batch edit count.
+        assertNotNull(mAutocomplete.onCreateInputConnection(new EditorInfo()));
+        mInputConnection = mAutocomplete.getInputConnection();
+
+        assertTrue(mInputConnection.commitText("a", 1));
+        // Works again.
+        assertTrue(mAutocomplete.shouldAutocomplete());
+    }
 }
