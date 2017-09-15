@@ -1,1 +1,2 @@
 per-file proguard.flags=agrieve@chromium.org
+per-file *.grd=twellington@chomium.org

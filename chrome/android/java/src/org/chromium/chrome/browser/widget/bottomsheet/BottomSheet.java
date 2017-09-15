@@ -1133,7 +1133,6 @@ public class BottomSheet
 
         dismissSelectedText();
         for (BottomSheetObserver o : mObservers) o.onSheetOpened(reason);
-        announceForAccessibility(getResources().getString(R.string.bottom_sheet_opened));
         mActivity.addViewObscuringAllTabs(this);
 
         setFocusable(true);
@@ -1443,6 +1442,12 @@ public class BottomSheet
         }
 
         mCurrentState = state;
+
+        if (mCurrentState == SHEET_STATE_HALF) {
+            announceForAccessibility(getResources().getString(R.string.bottom_sheet_opened_half));
+        } else if (mCurrentState == SHEET_STATE_FULL) {
+            announceForAccessibility(getResources().getString(R.string.bottom_sheet_opened_full));
+        }
 
         for (BottomSheetObserver o : mObservers) {
             o.onSheetStateChanged(mCurrentState);
