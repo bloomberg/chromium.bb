@@ -116,9 +116,15 @@ class FindBadConstructsConsumer
   unsigned diag_method_requires_override_;
   unsigned diag_redundant_virtual_specifier_;
   unsigned diag_base_method_virtual_and_final_;
+  unsigned diag_virtual_with_inline_body_;
+  unsigned diag_no_explicit_ctor_;
+  unsigned diag_no_explicit_copy_ctor_;
+  unsigned diag_inline_complex_ctor_;
   unsigned diag_no_explicit_dtor_;
-  unsigned diag_public_dtor_;
-  unsigned diag_protected_non_virtual_dtor_;
+  unsigned diag_inline_complex_dtor_;
+  unsigned diag_refcounted_needs_explicit_dtor_;
+  unsigned diag_refcounted_with_public_dtor_;
+  unsigned diag_refcounted_with_protected_non_virtual_dtor_;
   unsigned diag_weak_ptr_factory_order_;
   unsigned diag_bad_enum_last_value_;
   unsigned diag_auto_deduced_to_a_pointer_type_;
