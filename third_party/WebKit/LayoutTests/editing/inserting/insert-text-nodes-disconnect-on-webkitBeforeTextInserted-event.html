@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+selection_test(
+    '<div id="sample" contenteditable>foo<br>^bar<div>b|az</div></div>',
+    selection => {
+        const sample = selection.document.getElementById("sample");
+        sample.addEventListener('webkitBeforeTextInserted', () => {
+            // disconnect the node here
+            const focusNode =  selection.focusNode;
+            focusNode.parentNode.removeChild(focusNode);
+        });
+        selection.document.execCommand('insertText', false, 'x');
+    },
+    '<div contenteditable id="sample">foo<br>^bar<div>|</div></div>',
+    'InsertText frame invalidation by disconnecting anchor and focus node on webkitBeforeTextInserted event');
+</script>
