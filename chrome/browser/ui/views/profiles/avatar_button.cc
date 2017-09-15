@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -36,12 +37,13 @@
 
 namespace {
 
-constexpr gfx::Insets kBorderInsets(2, 8, 4, 8);
-
 // TODO(emx): Calculate width based on caption button [http://crbug.com/716365]
 constexpr int kCondensibleButtonMinWidth = 46;
 // TODO(emx): Should this be calculated based on average character width?
 constexpr int kCondensibleButtonMaxWidth = 98;
+
+#if defined(OS_WIN)
+constexpr gfx::Insets kBorderInsets(2, 8, 4, 8);
 
 std::unique_ptr<views::Border> CreateThemedBorder(
     const int normal_image_set[],
@@ -61,6 +63,7 @@ std::unique_ptr<views::Border> CreateThemedBorder(
 
   return std::move(border);
 }
+#endif
 
 // This class draws the border (and background) of the avatar button for
 // "themed" browser windows, i.e. OpaqueBrowserFrameView. Currently it's only
@@ -211,7 +214,6 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
 #elif defined(OS_WIN)
     DCHECK_EQ(AvatarButtonStyle::NATIVE, button_style);
     SetBorder(views::CreateEmptyBorder(kBorderInsets));
-#endif  // defined(OS_WIN)
   } else if (button_style == AvatarButtonStyle::THEMED) {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_NORMAL);
     const int kHoverImageSet[] = IMAGE_GRID(IDR_AVATAR_THEMED_BUTTON_HOVER);
@@ -219,7 +221,6 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
     SetButtonAvatar(IDR_AVATAR_THEMED_BUTTON_AVATAR);
     SetBorder(
         CreateThemedBorder(kNormalImageSet, kHoverImageSet, kPressedImageSet));
-#if defined(OS_WIN)
   } else if (base::win::GetVersion() < base::win::VERSION_WIN8) {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_NORMAL);
     const int kHoverImageSet[] = IMAGE_GRID(IDR_AVATAR_GLASS_BUTTON_HOVER);
@@ -227,7 +228,6 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
     SetButtonAvatar(IDR_AVATAR_GLASS_BUTTON_AVATAR);
     SetBorder(
         CreateThemedBorder(kNormalImageSet, kHoverImageSet, kPressedImageSet));
-#endif
   } else {
     const int kNormalImageSet[] = IMAGE_GRID(IDR_AVATAR_NATIVE_BUTTON_NORMAL);
     const int kHoverImageSet[] = IMAGE_GRID(IDR_AVATAR_NATIVE_BUTTON_HOVER);
@@ -235,6 +235,7 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
     SetButtonAvatar(IDR_AVATAR_NATIVE_BUTTON_AVATAR);
     SetBorder(
         CreateThemedBorder(kNormalImageSet, kHoverImageSet, kPressedImageSet));
+#endif
   }
 
   profile_shutdown_notifier_ =
