@@ -681,10 +681,6 @@ std::unique_ptr<SourceStream> URLRequestJob::SetUpSourceStream() {
   return std::make_unique<URLRequestJobSourceStream>(this);
 }
 
-void URLRequestJob::DestroySourceStream() {
-  source_stream_.reset();
-}
-
 const URLRequestStatus URLRequestJob::GetStatus() {
   return request_->status();
 }

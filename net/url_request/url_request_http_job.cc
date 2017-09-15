@@ -268,12 +268,6 @@ URLRequestHttpJob::URLRequestHttpJob(
 URLRequestHttpJob::~URLRequestHttpJob() {
   CHECK(!awaiting_callback_);
 
-  // Make sure SdchSourceStream are told to emit histogram data while |this|
-  // is still alive.
-  // TODO(xunjieli): This is probably not needed. Remove once crbug.com/762686
-  // is fixed.
-  DestroySourceStream();
-
   DoneWithRequest(ABORTED);
 }
 

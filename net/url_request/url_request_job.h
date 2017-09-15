@@ -310,12 +310,6 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // or nullptr on error.
   virtual std::unique_ptr<SourceStream> SetUpSourceStream();
 
-  // At or near destruction time, a derived class may request that the filters
-  // be destroyed so that statistics can be gathered while the derived class is
-  // still present to assist in calculations. This is used by URLRequestHttpJob
-  // to get SDCH to emit stats.
-  void DestroySourceStream();
-
   // Provides derived classes with access to the request's network delegate.
   NetworkDelegate* network_delegate() { return network_delegate_; }
 
