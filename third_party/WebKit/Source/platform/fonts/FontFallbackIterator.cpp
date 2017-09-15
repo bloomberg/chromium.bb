@@ -13,9 +13,9 @@
 
 namespace blink {
 
-PassRefPtr<FontFallbackIterator> FontFallbackIterator::Create(
+RefPtr<FontFallbackIterator> FontFallbackIterator::Create(
     const FontDescription& description,
-    PassRefPtr<FontFallbackList> fallback_list,
+    RefPtr<FontFallbackList> fallback_list,
     FontFallbackPriority font_fallback_priority) {
   return AdoptRef(new FontFallbackIterator(
       description, std::move(fallback_list), font_fallback_priority));
@@ -23,7 +23,7 @@ PassRefPtr<FontFallbackIterator> FontFallbackIterator::Create(
 
 FontFallbackIterator::FontFallbackIterator(
     const FontDescription& description,
-    PassRefPtr<FontFallbackList> fallback_list,
+    RefPtr<FontFallbackList> fallback_list,
     FontFallbackPriority font_fallback_priority)
     : font_description_(description),
       font_fallback_list_(std::move(fallback_list)),
@@ -62,8 +62,8 @@ void FontFallbackIterator::WillUseRange(const AtomicString& family,
   selector->WillUseRange(font_description_, family, range_set);
 }
 
-PassRefPtr<FontDataForRangeSet> FontFallbackIterator::UniqueOrNext(
-    PassRefPtr<FontDataForRangeSet> candidate,
+RefPtr<FontDataForRangeSet> FontFallbackIterator::UniqueOrNext(
+    RefPtr<FontDataForRangeSet> candidate,
     const Vector<UChar32>& hint_list) {
   SkTypeface* candidate_typeface =
       candidate->FontData()->PlatformData().Typeface();
@@ -82,7 +82,7 @@ PassRefPtr<FontDataForRangeSet> FontFallbackIterator::UniqueOrNext(
   return candidate;
 }
 
-PassRefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
+RefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
     const Vector<UChar32>& hint_list) {
   if (fallback_stage_ == kOutOfLuck)
     return AdoptRef(new FontDataForRangeSet());
@@ -187,7 +187,7 @@ PassRefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
   return Next(hint_list);
 }
 
-PassRefPtr<SimpleFontData> FontFallbackIterator::FallbackPriorityFont(
+RefPtr<SimpleFontData> FontFallbackIterator::FallbackPriorityFont(
     UChar32 hint) {
   return FontCache::GetFontCache()->FallbackFontForCharacter(
       font_description_, hint,
@@ -223,7 +223,7 @@ static inline unsigned ChooseHintIndex(const Vector<UChar32>& hint_list) {
   return 0;
 }
 
-PassRefPtr<SimpleFontData> FontFallbackIterator::UniqueSystemFontForHintList(
+RefPtr<SimpleFontData> FontFallbackIterator::UniqueSystemFontForHintList(
     const Vector<UChar32>& hint_list) {
   // When we're asked for a fallback for the same characters again, we give up
   // because the shaper must have previously tried shaping with the font

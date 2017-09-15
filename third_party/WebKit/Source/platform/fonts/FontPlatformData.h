@@ -149,7 +149,7 @@ class PLATFORM_EXPORT FontPlatformData {
   bool IsHashTableDeletedValue() const { return is_hash_table_deleted_value_; }
   bool FontContainsCharacter(UChar32 character);
 
-  PassRefPtr<OpenTypeVerticalData> VerticalData() const;
+  RefPtr<OpenTypeVerticalData> VerticalData() const;
   Vector<char> OpenTypeTable(SkFontTableTag) const;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

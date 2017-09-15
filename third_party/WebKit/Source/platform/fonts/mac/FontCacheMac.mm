@@ -106,7 +106,7 @@ static inline bool IsAppKitFontWeightBold(NSInteger app_kit_font_weight) {
   return app_kit_font_weight >= 7;
 }
 
-PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
+RefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
     const FontDescription& font_description,
     UChar32 character,
     const SimpleFontData* font_data_to_substitute,
@@ -227,7 +227,7 @@ PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
   return FontDataFromFontPlatformData(&alternate_font, kDoNotRetain);
 }
 
-PassRefPtr<SimpleFontData> FontCache::GetLastResortFallbackFont(
+RefPtr<SimpleFontData> FontCache::GetLastResortFallbackFont(
     const FontDescription& font_description,
     ShouldRetain should_retain) {
   // FIXME: Would be even better to somehow get the user's default font here.

@@ -35,7 +35,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/CharacterNames.h"
@@ -51,8 +50,8 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
   WTF_MAKE_NONCOPYABLE(HarfBuzzFace);
 
  public:
-  static PassRefPtr<HarfBuzzFace> Create(FontPlatformData* platform_data,
-                                         uint64_t unique_id) {
+  static RefPtr<HarfBuzzFace> Create(FontPlatformData* platform_data,
+                                     uint64_t unique_id) {
     return AdoptRef(new HarfBuzzFace(platform_data, unique_id));
   }
   ~HarfBuzzFace();
@@ -60,7 +59,7 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
   // In order to support the restricting effect of unicode-range optionally a
   // range restriction can be passed in, which will restrict which glyphs we
   // return in the harfBuzzGetGlyph function.
-  hb_font_t* GetScaledFont(PassRefPtr<UnicodeRangeSet> = nullptr) const;
+  hb_font_t* GetScaledFont(RefPtr<UnicodeRangeSet> = nullptr) const;
 
  private:
   HarfBuzzFace(FontPlatformData*, uint64_t);

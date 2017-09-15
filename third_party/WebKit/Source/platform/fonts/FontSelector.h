@@ -30,7 +30,7 @@
 #include "platform/fonts/FontCacheClient.h"
 #include "platform/fonts/SegmentedFontData.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 
 namespace blink {

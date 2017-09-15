@@ -76,7 +76,7 @@ const AtomicString& FontCache::SystemFontFamily() {
 // static
 void FontCache::SetSystemFontFamily(const AtomicString&) {}
 
-PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
+RefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
     const FontDescription& font_description,
     UChar32 c,
     const SimpleFontData*,

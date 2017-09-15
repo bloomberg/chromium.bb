@@ -48,7 +48,7 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/Unicode.h"
@@ -110,7 +110,7 @@ class PLATFORM_EXPORT FontCache {
 
   // This method is implemented by the plaform and used by
   // FontFastPath to lookup the font for a given character.
-  PassRefPtr<SimpleFontData> FallbackFontForCharacter(
+  RefPtr<SimpleFontData> FallbackFontForCharacter(
       const FontDescription&,
       UChar32,
       const SimpleFontData* font_data_to_substitute,
@@ -119,13 +119,13 @@ class PLATFORM_EXPORT FontCache {
   // Also implemented by the platform.
   void PlatformInit();
 
-  PassRefPtr<SimpleFontData> GetFontData(
+  RefPtr<SimpleFontData> GetFontData(
       const FontDescription&,
       const AtomicString&,
       AlternateFontName = AlternateFontName::kAllowAlternate,
       ShouldRetain = kRetain);
-  PassRefPtr<SimpleFontData> GetLastResortFallbackFont(const FontDescription&,
-                                                       ShouldRetain = kRetain);
+  RefPtr<SimpleFontData> GetLastResortFallbackFont(const FontDescription&,
+                                                   ShouldRetain = kRetain);
   SimpleFontData* GetNonRetainedLastResortFallbackFont(const FontDescription&);
 
   // Should be used in determining whether family names listed in font-family:
@@ -206,8 +206,8 @@ class PLATFORM_EXPORT FontCache {
 #endif
 
   typedef uint32_t FontFileKey;
-  PassRefPtr<OpenTypeVerticalData> GetVerticalData(const FontFileKey&,
-                                                   const FontPlatformData&);
+  RefPtr<OpenTypeVerticalData> GetVerticalData(const FontFileKey&,
+                                               const FontPlatformData&);
 
   static void AcceptLanguagesChanged(const String&);
 
@@ -228,10 +228,9 @@ class PLATFORM_EXPORT FontCache {
                                   const char* preferred_locale,
                                   PlatformFallbackFont*);
 #endif
-  PassRefPtr<SimpleFontData> FontDataFromFontPlatformData(
-      const FontPlatformData*,
-      ShouldRetain = kRetain,
-      bool = false);
+  RefPtr<SimpleFontData> FontDataFromFontPlatformData(const FontPlatformData*,
+                                                      ShouldRetain = kRetain,
+                                                      bool = false);
 
   void InvalidateShapeCache();
 
@@ -289,8 +288,8 @@ class PLATFORM_EXPORT FontCache {
                                                 FontFallbackPriority);
 #endif
 
-  PassRefPtr<SimpleFontData> FallbackOnStandardFontStyle(const FontDescription&,
-                                                         UChar32);
+  RefPtr<SimpleFontData> FallbackOnStandardFontStyle(const FontDescription&,
+                                                     UChar32);
 
   // Don't purge if this count is > 0;
   int purge_prevent_count_;

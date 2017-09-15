@@ -121,7 +121,7 @@ AtomicString FontCache::GetFamilyNameForCharacter(
 
 void FontCache::PlatformInit() {}
 
-PassRefPtr<SimpleFontData> FontCache::FallbackOnStandardFontStyle(
+RefPtr<SimpleFontData> FontCache::FallbackOnStandardFontStyle(
     const FontDescription& font_description,
     UChar32 character) {
   FontDescription substitute_description(font_description);
@@ -146,7 +146,7 @@ PassRefPtr<SimpleFontData> FontCache::FallbackOnStandardFontStyle(
   return nullptr;
 }
 
-PassRefPtr<SimpleFontData> FontCache::GetLastResortFallbackFont(
+RefPtr<SimpleFontData> FontCache::GetLastResortFallbackFont(
     const FontDescription& description,
     ShouldRetain should_retain) {
   const FontFaceCreationParams fallback_creation_params(

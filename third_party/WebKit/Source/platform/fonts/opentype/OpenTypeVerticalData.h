@@ -29,8 +29,8 @@
 #include "platform/fonts/Glyph.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -41,7 +41,7 @@ class SimpleFontData;
 class PLATFORM_EXPORT OpenTypeVerticalData
     : public RefCounted<OpenTypeVerticalData> {
  public:
-  static PassRefPtr<OpenTypeVerticalData> Create(
+  static RefPtr<OpenTypeVerticalData> Create(
       const FontPlatformData& platform_data) {
     return AdoptRef(new OpenTypeVerticalData(platform_data));
   }

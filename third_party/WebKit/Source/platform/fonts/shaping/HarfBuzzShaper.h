@@ -54,15 +54,15 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // occur, such as at the beginning or end of lines or at element boundaries.
   // If given arbitrary positions the results are not guaranteed to be correct.
   // May be called multiple times; font and direction may vary between calls.
-  PassRefPtr<ShapeResult> Shape(const Font*,
-                                TextDirection,
-                                unsigned start,
-                                unsigned end) const;
+  RefPtr<ShapeResult> Shape(const Font*,
+                            TextDirection,
+                            unsigned start,
+                            unsigned end) const;
 
   // Shape the entire string with a single font and direction.
   // Equivalent to calling the range version with a start offset of zero and an
   // end offset equal to the length.
-  PassRefPtr<ShapeResult> Shape(const Font*, TextDirection) const;
+  RefPtr<ShapeResult> Shape(const Font*, TextDirection) const;
 
   const UChar* GetText() const { return text_; }
   unsigned TextLength() const { return text_length_; }

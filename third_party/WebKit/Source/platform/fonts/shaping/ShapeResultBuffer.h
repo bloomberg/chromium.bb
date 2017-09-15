@@ -26,7 +26,7 @@ class PLATFORM_EXPORT ShapeResultBuffer {
  public:
   ShapeResultBuffer() : has_vertical_offsets_(false) {}
 
-  void AppendResult(PassRefPtr<const ShapeResult> result) {
+  void AppendResult(RefPtr<const ShapeResult> result) {
     has_vertical_offsets_ |= result->HasVerticalOffsets();
     results_.push_back(std::move(result));
   }

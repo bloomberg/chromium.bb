@@ -199,7 +199,7 @@ class PLATFORM_EXPORT Font {
 
  public:
   FontSelector* GetFontSelector() const;
-  PassRefPtr<FontFallbackIterator> CreateFontFallbackIterator(
+  RefPtr<FontFallbackIterator> CreateFontFallbackIterator(
       FontFallbackPriority) const;
 
   void WillUseFontData(const String& text) const;

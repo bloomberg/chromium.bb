@@ -36,15 +36,15 @@ namespace blink {
 
 class PLATFORM_EXPORT SegmentedFontData : public FontData {
  public:
-  static PassRefPtr<SegmentedFontData> Create() {
+  static RefPtr<SegmentedFontData> Create() {
     return AdoptRef(new SegmentedFontData);
   }
 
-  void AppendFace(PassRefPtr<FontDataForRangeSet> font_data_for_range_set) {
+  void AppendFace(RefPtr<FontDataForRangeSet> font_data_for_range_set) {
     faces_.push_back(std::move(font_data_for_range_set));
   }
   unsigned NumFaces() const { return faces_.size(); }
-  PassRefPtr<FontDataForRangeSet> FaceAt(unsigned i) const { return faces_[i]; }
+  RefPtr<FontDataForRangeSet> FaceAt(unsigned i) const { return faces_[i]; }
   bool ContainsCharacter(UChar32) const;
 
  private:

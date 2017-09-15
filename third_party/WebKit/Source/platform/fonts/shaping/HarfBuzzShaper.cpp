@@ -181,7 +181,7 @@ inline bool ShapeRange(hb_buffer_t* buffer,
                        hb_feature_t* font_features,
                        unsigned font_features_size,
                        const SimpleFontData* current_font,
-                       PassRefPtr<UnicodeRangeSet> current_font_range_set,
+                       RefPtr<UnicodeRangeSet> current_font_range_set,
                        UScriptCode current_run_script,
                        hb_direction_t direction,
                        hb_language_t language) {
@@ -790,10 +790,10 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
   }
 }
 
-PassRefPtr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
-                                              TextDirection direction,
-                                              unsigned start,
-                                              unsigned end) const {
+RefPtr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
+                                          TextDirection direction,
+                                          unsigned start,
+                                          unsigned end) const {
   DCHECK(end >= start);
   DCHECK(end <= text_length_);
 
@@ -829,8 +829,8 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
   return result;
 }
 
-PassRefPtr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
-                                              TextDirection direction) const {
+RefPtr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
+                                          TextDirection direction) const {
   return Shape(font, direction, 0, text_length_);
 }
 
