@@ -701,5 +701,35 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedBreakInsideAvoidTall) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, BorderAndPadding) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent" style="border:3px solid; padding:2px;">
+        <div style="width:30px; height:150px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x110
+    offset:0,0 size:330x110
+      offset:5,5 size:100x100
+        offset:0,0 size:30x100
+      offset:115,5 size:100x50
+        offset:0,0 size:30x50
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 }  // anonymous namespace
 }  // namespace blink

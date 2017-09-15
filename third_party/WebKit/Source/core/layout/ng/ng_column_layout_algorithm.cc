@@ -41,7 +41,8 @@ RefPtr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   NGWritingMode writing_mode = ConstraintSpace().WritingMode();
   RefPtr<NGBlockBreakToken> break_token = BreakToken();
   NGLogicalSize overflow;
-  LayoutUnit column_inline_offset;
+  LayoutUnit column_inline_offset(border_scrollbar_padding.inline_start);
+  LayoutUnit column_block_offset(border_scrollbar_padding.block_start);
   LayoutUnit column_inline_progression =
       child_space->AvailableSize().inline_size + ResolveUsedColumnGap(Style());
 
@@ -53,7 +54,7 @@ RefPtr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     RefPtr<NGPhysicalBoxFragment> column(
         ToNGPhysicalBoxFragment(result->PhysicalFragment().Get()));
 
-    NGLogicalOffset logical_offset(column_inline_offset, LayoutUnit());
+    NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
     container_builder_.AddChild(column, logical_offset);
 
     NGLogicalSize size = NGBoxFragment(writing_mode, *column).Size();
