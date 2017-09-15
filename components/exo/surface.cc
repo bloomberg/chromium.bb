@@ -435,6 +435,10 @@ void Surface::CommitSurfaceHierarchy(
         pending_state_.blend_mode != state_.blend_mode ||
         pending_state_.alpha != state_.alpha;
 
+    bool needs_update_buffer_transform =
+        pending_state_.buffer_scale != state_.buffer_scale ||
+        pending_state_.buffer_transform != state_.buffer_transform;
+
     state_ = pending_state_;
     pending_state_.only_visible_on_secure_output = false;
 
@@ -449,6 +453,9 @@ void Surface::CommitSurfaceHierarchy(
       current_buffer_ = std::move(pending_buffer_);
       needs_update_resource_ = true;
     }
+
+    if (needs_update_buffer_transform)
+      UpdateBufferTransform();
 
     // Move pending frame callbacks to the end of frame_callbacks.
     frame_callbacks->splice(frame_callbacks->end(), pending_frame_callbacks_);
@@ -702,13 +709,33 @@ void Surface::UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder) {
   }
 }
 
+void Surface::UpdateBufferTransform() {
+  SkMatrix buffer_matrix;
+  switch (state_.buffer_transform) {
+    case Transform::NORMAL:
+      buffer_matrix.setIdentity();
+      break;
+    case Transform::ROTATE_90:
+      buffer_matrix.setSinCos(-1, 0, 0.5f, 0.5f);
+      break;
+    case Transform::ROTATE_180:
+      buffer_matrix.setSinCos(0, -1, 0.5f, 0.5f);
+      break;
+    case Transform::ROTATE_270:
+      buffer_matrix.setSinCos(1, 0, 0.5f, 0.5f);
+      break;
+  }
+  buffer_matrix.postIDiv(state_.buffer_scale, state_.buffer_scale);
+  buffer_transform_ = gfx::Transform(buffer_matrix);
+}
+
 void Surface::AppendContentsToFrame(const gfx::Point& origin,
                                     float device_scale_factor,
                                     cc::CompositorFrame* frame) {
   const std::unique_ptr<viz::RenderPass>& render_pass =
       frame->render_pass_list.back();
   gfx::Rect output_rect(origin, content_size_);
-  gfx::Rect quad_rect(current_resource_.size);
+  gfx::Rect quad_rect(0, 0, 1, 1);
 
   // Surface uses DIP, but the |render_pass->damage_rect| uses pixels, so we
   // need scale it beased on the |device_scale_factor|.
@@ -717,36 +744,20 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
   render_pass->damage_rect.Union(
       gfx::ConvertRectToPixel(device_scale_factor, damage_rect));
 
-  // Create a transformation matrix that maps buffer coordinates to target by
-  // inverting the transform and scale of buffer.
-  SkMatrix buffer_to_target_matrix;
-  switch (state_.buffer_transform) {
-    case Transform::NORMAL:
-      buffer_to_target_matrix.setIdentity();
-      break;
-    case Transform::ROTATE_90:
-      buffer_to_target_matrix.setSinCos(-1, 0);
-      buffer_to_target_matrix.postTranslate(0, output_rect.height());
-      break;
-    case Transform::ROTATE_180:
-      buffer_to_target_matrix.setSinCos(0, -1);
-      buffer_to_target_matrix.postTranslate(output_rect.width(),
-                                            output_rect.height());
-      break;
-    case Transform::ROTATE_270:
-      buffer_to_target_matrix.setSinCos(1, 0);
-      buffer_to_target_matrix.postTranslate(output_rect.width(), 0);
-      break;
-  }
-  gfx::SizeF transformed_buffer_size(
-      ToTransformedSize(current_resource_.size, state_.buffer_transform));
-  if (!transformed_buffer_size.IsEmpty()) {
-    buffer_to_target_matrix.preScale(
-        output_rect.width() / transformed_buffer_size.width(),
-        output_rect.height() / transformed_buffer_size.height());
-  }
-  buffer_to_target_matrix.postTranslate(origin.x(), origin.y());
-  buffer_to_target_matrix.postScale(device_scale_factor, device_scale_factor);
+  // Compute the total transformation from post-transform buffer coordinates to
+  // target coordinates.
+  SkMatrix viewport_to_target_matrix;
+  // Scale and offset the normalized space to fit the content size rectangle.
+  viewport_to_target_matrix.setScale(
+      content_size_.width() * state_.buffer_scale,
+      content_size_.height() * state_.buffer_scale);
+  viewport_to_target_matrix.postTranslate(origin.x(), origin.y());
+  // Convert from DPs to pixels.
+  viewport_to_target_matrix.postScale(device_scale_factor, device_scale_factor);
+
+  gfx::Transform quad_to_target_transform(buffer_transform_);
+  quad_to_target_transform.ConcatTransform(
+      gfx::Transform(viewport_to_target_matrix));
 
   bool are_contents_opaque =
       !current_resource_has_alpha_ || state_.blend_mode == SkBlendMode::kSrc ||
@@ -755,25 +766,27 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(
-      gfx::Transform(buffer_to_target_matrix),
-      gfx::Rect(content_size_) /* quad_layer_rect */,
+      quad_to_target_transform, gfx::Rect(content_size_) /* quad_layer_rect */,
       output_rect /* visible_quad_layer_rect */, gfx::Rect() /* clip_rect */,
       false /* is_clipped */, are_contents_opaque, state_.alpha /* opacity */,
       SkBlendMode::kSrcOver /* blend_mode */, 0 /* sorting_context_id */);
 
   if (current_resource_.id) {
-    gfx::PointF uv_top_left(0.f, 0.f);
-    gfx::PointF uv_bottom_right(1.f, 1.f);
+    gfx::RectF uv_crop(gfx::SizeF(1, 1));
     if (!state_.crop.IsEmpty()) {
-      gfx::SizeF scaled_buffer_size(
-          gfx::ScaleSize(transformed_buffer_size, 1.0f / state_.buffer_scale));
-      uv_top_left = state_.crop.origin();
-      uv_top_left.Scale(1.f / scaled_buffer_size.width(),
-                        1.f / scaled_buffer_size.height());
-      uv_bottom_right = state_.crop.bottom_right();
-      uv_bottom_right.Scale(1.f / scaled_buffer_size.width(),
-                            1.f / scaled_buffer_size.height());
+      // The crop rectangle is a post-transformation rectangle. To get the UV
+      // coordinates, we need to convert it to normalized buffer coordinates and
+      // pass them through the inverse of the buffer transformation.
+      uv_crop = gfx::RectF(state_.crop);
+      gfx::Size transformed_buffer_size(
+          ToTransformedSize(current_resource_.size, state_.buffer_transform));
+      if (!transformed_buffer_size.IsEmpty())
+        uv_crop.Scale(1.f / transformed_buffer_size.width(),
+                      1.f / transformed_buffer_size.height());
+
+      buffer_transform_.TransformRectReverse(&uv_crop);
     }
+
     // Texture quad is only needed if buffer is not fully transparent.
     if (state_.alpha) {
       viz::TextureDrawQuad* texture_quad =
@@ -782,9 +795,10 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
 
       texture_quad->SetNew(
           quad_state, quad_rect, quad_rect, !are_contents_opaque,
-          current_resource_.id, true /* premultiplied_alpha */, uv_top_left,
-          uv_bottom_right, SK_ColorTRANSPARENT /* background_color */,
-          vertex_opacity, false /* y_flipped */, false /* nearest_neighbor */,
+          current_resource_.id, true /* premultiplied_alpha */,
+          uv_crop.origin(), uv_crop.bottom_right(),
+          SK_ColorTRANSPARENT /* background_color */, vertex_opacity,
+          false /* y_flipped */, false /* nearest_neighbor */,
           state_.only_visible_on_secure_output);
       if (current_resource_.is_overlay_candidate)
         texture_quad->set_resource_size_in_pixels(current_resource_.size);

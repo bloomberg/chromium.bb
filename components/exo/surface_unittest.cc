@@ -423,6 +423,189 @@ TEST_P(SurfaceTest, SetCrop) {
             frame.render_pass_list.back()->damage_rect);
 }
 
+TEST_P(SurfaceTest, SetCropAndBufferTransform) {
+  gfx::Size buffer_size(128, 64);
+  auto buffer = base::MakeUnique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = base::MakeUnique<Surface>();
+  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+
+  const gfx::RectF crop_0(
+      gfx::SkRectToRectF(SkRect::MakeLTRB(0.03125f, 0.1875f, 0.4375f, 0.25f)));
+  const gfx::RectF crop_90(
+      gfx::SkRectToRectF(SkRect::MakeLTRB(0.875f, 0.0625f, 0.90625f, 0.875f)));
+  const gfx::RectF crop_180(
+      gfx::SkRectToRectF(SkRect::MakeLTRB(0.5625f, 0.75f, 0.96875f, 0.8125f)));
+  const gfx::RectF crop_270(
+      gfx::SkRectToRectF(SkRect::MakeLTRB(0.09375f, 0.125f, 0.125f, 0.9375f)));
+  const gfx::Rect target_with_no_viewport(ToPixel(gfx::Rect(gfx::Size(52, 4))));
+  const gfx::Rect target_with_viewport(ToPixel(gfx::Rect(gfx::Size(128, 64))));
+
+  surface->Attach(buffer.get());
+  gfx::Size crop_size(52, 4);
+  surface->SetCrop(gfx::RectF(gfx::PointF(4, 12), gfx::SizeF(crop_size)));
+  surface->SetBufferTransform(Transform::NORMAL);
+  surface->Commit();
+
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    ASSERT_EQ(1u, quad_list.size());
+    const viz::TextureDrawQuad* quad =
+        viz::TextureDrawQuad::MaterialCast(quad_list.front());
+    EXPECT_EQ(crop_0.origin(), quad->uv_top_left);
+    EXPECT_EQ(crop_0.bottom_right(), quad->uv_bottom_right);
+    EXPECT_EQ(
+        ToPixel(gfx::Rect(0, 0, 52, 4)),
+        cc::MathUtil::MapEnclosingClippedRect(
+            quad->shared_quad_state->quad_to_target_transform, quad->rect));
+  }
+
+  surface->SetBufferTransform(Transform::ROTATE_90);
+  surface->Commit();
+
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    ASSERT_EQ(1u, quad_list.size());
+    const viz::TextureDrawQuad* quad =
+        viz::TextureDrawQuad::MaterialCast(quad_list.front());
+    EXPECT_EQ(crop_90.origin(), quad->uv_top_left);
+    EXPECT_EQ(crop_90.bottom_right(), quad->uv_bottom_right);
+    EXPECT_EQ(
+        ToPixel(gfx::Rect(0, 0, 52, 4)),
+        cc::MathUtil::MapEnclosingClippedRect(
+            quad->shared_quad_state->quad_to_target_transform, quad->rect));
+  }
+
+  surface->SetBufferTransform(Transform::ROTATE_180);
+  surface->Commit();
+
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    ASSERT_EQ(1u, quad_list.size());
+    const viz::TextureDrawQuad* quad =
+        viz::TextureDrawQuad::MaterialCast(quad_list.front());
+    EXPECT_EQ(crop_180.origin(), quad->uv_top_left);
+    EXPECT_EQ(crop_180.bottom_right(), quad->uv_bottom_right);
+    EXPECT_EQ(
+        ToPixel(gfx::Rect(0, 0, 52, 4)),
+        cc::MathUtil::MapEnclosingClippedRect(
+            quad->shared_quad_state->quad_to_target_transform, quad->rect));
+  }
+
+  surface->SetBufferTransform(Transform::ROTATE_270);
+  surface->Commit();
+
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    ASSERT_EQ(1u, quad_list.size());
+    const viz::TextureDrawQuad* quad =
+        viz::TextureDrawQuad::MaterialCast(quad_list.front());
+    EXPECT_EQ(crop_270.origin(), quad->uv_top_left);
+    EXPECT_EQ(crop_270.bottom_right(), quad->uv_bottom_right);
+    EXPECT_EQ(
+        target_with_no_viewport,
+        cc::MathUtil::MapEnclosingClippedRect(
+            quad->shared_quad_state->quad_to_target_transform, quad->rect));
+  }
+
+  surface->SetViewport(gfx::Size(128, 64));
+  surface->SetBufferTransform(Transform::NORMAL);
+  surface->Commit();
+
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    ASSERT_EQ(1u, quad_list.size());
+    const viz::TextureDrawQuad* quad =
+        viz::TextureDrawQuad::MaterialCast(quad_list.front());
+    EXPECT_EQ(crop_0.origin(), quad->uv_top_left);
+    EXPECT_EQ(crop_0.bottom_right(), quad->uv_bottom_right);
+    EXPECT_EQ(
+        target_with_viewport,
+        cc::MathUtil::MapEnclosingClippedRect(
+            quad->shared_quad_state->quad_to_target_transform, quad->rect));
+  }
+
+  surface->SetBufferTransform(Transform::ROTATE_90);
+  surface->Commit();
+
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    ASSERT_EQ(1u, quad_list.size());
+    const viz::TextureDrawQuad* quad =
+        viz::TextureDrawQuad::MaterialCast(quad_list.front());
+    EXPECT_EQ(crop_90.origin(), quad->uv_top_left);
+    EXPECT_EQ(crop_90.bottom_right(), quad->uv_bottom_right);
+    EXPECT_EQ(
+        target_with_viewport,
+        cc::MathUtil::MapEnclosingClippedRect(
+            quad->shared_quad_state->quad_to_target_transform, quad->rect));
+  }
+
+  surface->SetBufferTransform(Transform::ROTATE_180);
+  surface->Commit();
+
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    ASSERT_EQ(1u, quad_list.size());
+    const viz::TextureDrawQuad* quad =
+        viz::TextureDrawQuad::MaterialCast(quad_list.front());
+    EXPECT_EQ(crop_180.origin(), quad->uv_top_left);
+    EXPECT_EQ(crop_180.bottom_right(), quad->uv_bottom_right);
+    EXPECT_EQ(
+        target_with_viewport,
+        cc::MathUtil::MapEnclosingClippedRect(
+            quad->shared_quad_state->quad_to_target_transform, quad->rect));
+  }
+
+  surface->SetBufferTransform(Transform::ROTATE_270);
+  surface->Commit();
+
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    const viz::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    ASSERT_EQ(1u, quad_list.size());
+    const viz::TextureDrawQuad* quad =
+        viz::TextureDrawQuad::MaterialCast(quad_list.front());
+    EXPECT_EQ(crop_270.origin(), quad->uv_top_left);
+    EXPECT_EQ(crop_270.bottom_right(), quad->uv_bottom_right);
+    EXPECT_EQ(
+        target_with_viewport,
+        cc::MathUtil::MapEnclosingClippedRect(
+            quad->shared_quad_state->quad_to_target_transform, quad->rect));
+  }
+}
+
 TEST_P(SurfaceTest, SetBlendMode) {
   gfx::Size buffer_size(1, 1);
   auto buffer = base::MakeUnique<Buffer>(
