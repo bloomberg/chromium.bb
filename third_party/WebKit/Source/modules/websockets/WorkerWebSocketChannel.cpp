@@ -119,7 +119,7 @@ void WorkerWebSocketChannel::Send(const DOMArrayBuffer& binary_data,
   bridge_->Send(binary_data, byte_offset, byte_length);
 }
 
-void WorkerWebSocketChannel::Send(PassRefPtr<BlobDataHandle> blob_data) {
+void WorkerWebSocketChannel::Send(RefPtr<BlobDataHandle> blob_data) {
   DCHECK(bridge_);
   bridge_->Send(std::move(blob_data));
 }
@@ -211,7 +211,7 @@ void MainChannelClient::SendBinaryAsCharVector(
     main_channel_->SendBinaryAsCharVector(std::move(data));
 }
 
-void MainChannelClient::SendBlob(PassRefPtr<BlobDataHandle> blob_data) {
+void MainChannelClient::SendBlob(RefPtr<BlobDataHandle> blob_data) {
   DCHECK(IsMainThread());
   if (main_channel_)
     main_channel_->Send(std::move(blob_data));
@@ -469,7 +469,7 @@ void Bridge::Send(const DOMArrayBuffer& binary_data,
                           main_channel_client_, WTF::Passed(std::move(data))));
 }
 
-void Bridge::Send(PassRefPtr<BlobDataHandle> data) {
+void Bridge::Send(RefPtr<BlobDataHandle> data) {
   DCHECK(main_channel_client_);
   parent_frame_task_runners_->Get(TaskType::kNetworking)
       ->PostTask(BLINK_FROM_HERE,
