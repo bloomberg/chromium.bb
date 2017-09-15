@@ -8226,6 +8226,79 @@
             "chrome_internal"
         ]
     },
+    "eve-userdebug-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "eve-userdebug"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "eve-userdebug-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "eve-userdebug"
+        ]
+    },
+    "eve-userdebug-full": {
+        "_template": "full",
+        "boards": [
+            "eve-userdebug"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "eve-userdebug-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "eve-userdebug"
+        ]
+    },
+    "eve-userdebug-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "eve-userdebug"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "eve-userdebug-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "eve-userdebug"
+        ]
+    },
+    "eve-userdebug-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "eve-userdebug"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
+    },
+    "eve-userdebug-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "eve-userdebug"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "eve-userdebug-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "eve-userdebug"
+        ]
+    },
     "expresso-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
@@ -15580,6 +15653,7 @@
             "elm-release",
             "enguarde-release",
             "eve-release",
+            "eve-userdebug-release",
             "expresso-release",
             "falco-release",
             "falco_li-release",
