@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -34,7 +35,7 @@ class WaitableEvent;
 }
 
 namespace IPC {
-class SyncMessageFilter;
+struct PendingSyncMsg;
 }
 
 namespace gpu {
@@ -171,8 +172,13 @@ class GPU_EXPORT GpuChannelHost
 
     // IPC::MessageFilter implementation
     // (called on the IO thread):
+    void OnFilterAdded(IPC::Channel* channel) override;
     bool OnMessageReceived(const IPC::Message& msg) override;
     void OnChannelError() override;
+    void OnChannelClosing() override;
+
+    void SendMessage(std::unique_ptr<IPC::Message> msg,
+                     IPC::PendingSyncMsg* pending_sync);
 
     // The following methods can be called on any thread.
 
@@ -191,15 +197,18 @@ class GPU_EXPORT GpuChannelHost
 
     ~MessageFilter() override;
 
-    // Threading notes: |listeners_| is only accessed on the IO thread. Every
-    // other field is protected by |lock_|.
+    // Threading notes: most fields are only accessed on the IO thread, except
+    // for lost_ which is protected by |lock_|.
     base::hash_map<int32_t, ListenerInfo> listeners_;
+    IPC::Channel* channel_ = nullptr;
+    std::vector<std::unique_ptr<IPC::Message>> pending_messages_;
+    base::flat_map<int, IPC::PendingSyncMsg*> pending_syncs_;
 
     // Protects all fields below this one.
     mutable base::Lock lock_;
 
     // Whether the channel has been lost.
-    bool lost_;
+    bool lost_ = false;
   };
 
   GpuChannelHost(GpuChannelHostFactory* factory,
@@ -225,9 +234,6 @@ class GPU_EXPORT GpuChannelHost
   scoped_refptr<MessageFilter> channel_filter_;
 
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
-
-  // A filter for sending messages from thread other than the main thread.
-  scoped_refptr<IPC::SyncMessageFilter> sync_filter_;
 
   // Image IDs are allocated in sequence.
   base::AtomicSequenceNumber next_image_id_;
