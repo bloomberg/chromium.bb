@@ -318,8 +318,6 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
 
     @Override
     public void onPickerUserAction(Action action, String[] photos) {
-        UiUtils.dismissPhotoPicker();
-
         switch (action) {
             case CANCEL:
                 onFileNotSelected();
