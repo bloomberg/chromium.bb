@@ -214,6 +214,11 @@ RefPtr<T> AdoptRef(T* p) {
   return RefPtr<T>(p, RefPtr<T>::kAdoptRef);
 }
 
+template <typename T>
+RefPtr<T> WrapRefPtr(T* ptr) {
+  return RefPtr<T>(ptr);
+}
+
 }  // namespace WTF
 
 using WTF::RefPtr;
