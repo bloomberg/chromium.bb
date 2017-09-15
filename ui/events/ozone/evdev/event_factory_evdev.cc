@@ -334,9 +334,8 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
   PointerDetails details = GetTransformedEventPointerDetails(params);
 
   // params.slot is guaranteed to be < kNumTouchEvdevSlots.
-  int touch_id = touch_id_generator_.GetGeneratedID(
-      params.device_id * kNumTouchEvdevSlots + params.slot);
-  details.id = touch_id;
+  int input_id = params.device_id * kNumTouchEvdevSlots + params.slot;
+  details.id = touch_id_generator_.GetGeneratedID(input_id);
   TouchEvent touch_event(params.type, gfx::Point(), params.timestamp, details,
                          modifiers_.GetModifierFlags() | params.flags,
                          /* angle */ 0.f);
@@ -346,7 +345,7 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
   DispatchUiEvent(&touch_event);
 
   if (params.type == ET_TOUCH_RELEASED || params.type == ET_TOUCH_CANCELLED) {
-    touch_id_generator_.ReleaseGeneratedID(touch_event.pointer_details().id);
+    touch_id_generator_.ReleaseNumber(input_id);
   }
 }
 

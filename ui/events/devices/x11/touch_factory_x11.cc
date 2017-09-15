@@ -272,7 +272,7 @@ int TouchFactory::GetSlotForTrackingID(uint32_t tracking_id) {
 }
 
 void TouchFactory::ReleaseSlotForTrackingID(uint32_t tracking_id) {
-  id_generator_.MaybeReleaseNumber(tracking_id);
+  id_generator_.ReleaseNumber(tracking_id);
 }
 
 bool TouchFactory::IsTouchDevicePresent() {

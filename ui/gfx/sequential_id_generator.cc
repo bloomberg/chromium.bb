@@ -48,20 +48,11 @@ bool SequentialIDGenerator::HasGeneratedIDFor(uint32_t number) const {
   return number_to_id_.find(number) != number_to_id_.end();
 }
 
-void SequentialIDGenerator::MaybeReleaseNumber(uint32_t number) {
-  if (HasGeneratedIDFor(number))
-    ReleaseNumber(number);
-}
-
-void SequentialIDGenerator::ReleaseGeneratedID(uint32_t id) {
-  UpdateNextAvailableIDAfterRelease(id);
-  Remove(id, &id_to_number_, &number_to_id_);
-}
-
 void SequentialIDGenerator::ReleaseNumber(uint32_t number) {
-  DCHECK_GT(number_to_id_.count(number), 0U);
-  UpdateNextAvailableIDAfterRelease(number_to_id_[number]);
-  Remove(number, &number_to_id_, &id_to_number_);
+  if (number_to_id_.count(number) > 0U) {
+    UpdateNextAvailableIDAfterRelease(number_to_id_[number]);
+    Remove(number, &number_to_id_, &id_to_number_);
+  }
 }
 
 void SequentialIDGenerator::ResetForTest() {

@@ -126,7 +126,7 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateMouseEvent(
         changed_flag = ui::EF_LEFT_MOUSE_BUTTON;
       else
         changed_flag = ui::EF_RIGHT_MOUSE_BUTTON;
-      id_generator_->MaybeReleaseNumber(pointer_id);
+      id_generator_->ReleaseNumber(pointer_id);
       click_count = 1;
       if (!sent_mouse_down_)
         return nullptr;
@@ -142,7 +142,7 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateMouseEvent(
       break;
     case WM_POINTERLEAVE:
       event_type = ui::ET_MOUSE_EXITED;
-      id_generator_->MaybeReleaseNumber(pointer_id);
+      id_generator_->ReleaseNumber(pointer_id);
       break;
     default:
       NOTREACHED();
@@ -170,7 +170,7 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateTouchEvent(
       break;
     case WM_POINTERUP:
       event_type = ui::ET_TOUCH_RELEASED;
-      id_generator_->MaybeReleaseNumber(pointer_id);
+      id_generator_->ReleaseNumber(pointer_id);
       if (!sent_touch_start_)
         return nullptr;
       sent_touch_start_ = false;
