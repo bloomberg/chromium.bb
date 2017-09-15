@@ -198,6 +198,7 @@ class TestImporter(object):
             _log.info('CQ appears to have passed; trying to commit.')
             self.git_cl.run(['upload', '-f', '--send-mail'])  # Turn off WIP mode.
             self.git_cl.run(['set-commit'])
+            self.git_cl.wait_for_closed_status()
             _log.info('Update completed.')
             return True
 

@@ -49,7 +49,7 @@ class GitCLTest(unittest.TestCase):
         git_cl = GitCL(host)
         self.assertEqual(git_cl.get_issue_number(), 'None')
 
-    def test_wait_for_try_jobs_time_out(self):
+    def test_wait_for_try_jobs_timeout(self):
         host = MockHost()
         git_cl = GitCL(host)
         git_cl.fetch_raw_try_job_results = lambda: [
@@ -60,7 +60,7 @@ class GitCLTest(unittest.TestCase):
                 'url': None,
             },
         ]
-        git_cl.wait_for_try_jobs()
+        self.assertIsNone(git_cl.wait_for_try_jobs())
         self.assertEqual(
             host.stdout.getvalue(),
             'Waiting for try jobs, timeout: 7200 seconds.\n'
@@ -76,7 +76,7 @@ class GitCLTest(unittest.TestCase):
         host = MockHost()
         git_cl = GitCL(host)
         git_cl.fetch_raw_try_job_results = lambda: []
-        git_cl.wait_for_try_jobs()
+        self.assertIsNone(git_cl.wait_for_try_jobs())
         self.assertEqual(
             host.stdout.getvalue(),
             'Waiting for try jobs, timeout: 7200 seconds.\n'
@@ -99,11 +99,43 @@ class GitCLTest(unittest.TestCase):
                 'url': 'http://build.chromium.org/p/master/builders/some-builder/builds/100',
             },
         ]
-        git_cl.wait_for_try_jobs()
+        self.assertEqual(
+            git_cl.wait_for_try_jobs(),
+            {
+                Build('some-builder', 100): TryJobStatus('COMPLETED', 'FAILURE')
+            })
         self.assertEqual(
             host.stdout.getvalue(),
             'Waiting for try jobs, timeout: 7200 seconds.\n'
             'All jobs finished.\n')
+
+    def test_wait_for_closed_status_timeout(self):
+        host = MockHost()
+        host.executive = MockExecutive(output='commit')
+        git_cl = GitCL(host)
+        self.assertIsNone(git_cl.wait_for_closed_status())
+        self.assertEqual(
+            host.stdout.getvalue(),
+            'Waiting for closed status, timeout: 1800 seconds.\n'
+            'Waiting for closed status. 120 seconds passed.\n'
+            'Waiting for closed status. 360 seconds passed.\n'
+            'Waiting for closed status. 600 seconds passed.\n'
+            'Waiting for closed status. 840 seconds passed.\n'
+            'Waiting for closed status. 1080 seconds passed.\n'
+            'Waiting for closed status. 1320 seconds passed.\n'
+            'Waiting for closed status. 1560 seconds passed.\n'
+            'Waiting for closed status. 1800 seconds passed.\n'
+            'Timed out waiting for closed status.\n')
+
+    def test_wait_for_closed_status_closed(self):
+        host = MockHost()
+        host.executive = MockExecutive(output='closed')
+        git_cl = GitCL(host)
+        self.assertEqual(git_cl.wait_for_closed_status(), 'closed')
+        self.assertEqual(
+            host.stdout.getvalue(),
+            'Waiting for closed status, timeout: 1800 seconds.\n'
+            'CL is closed.\n')
 
     def test_has_failing_try_results_empty(self):
         self.assertFalse(GitCL.some_failed({}))

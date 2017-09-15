@@ -87,6 +87,21 @@ class GitCL(object):
             poll_delay_seconds, timeout_seconds,
             message=' for try jobs')
 
+    def wait_for_closed_status(self, poll_delay_seconds=2 * 60, timeout_seconds=30 * 60):
+        """Waits until git cl reports that the current CL is closed."""
+
+        def closed_status_or_none():
+            status = self.run(['status', '--field=status']).strip()
+            if status == 'closed':
+                self._host.print_('CL is closed.')
+                return status
+            return None
+
+        return self._wait_for(
+            closed_status_or_none,
+            poll_delay_seconds, timeout_seconds,
+            message=' for closed status')
+
     def _wait_for(self, poll_function, poll_delay_seconds, timeout_seconds, message=''):
         """Waits for the given poll_function to return something other than None.
 
