@@ -19,7 +19,6 @@ namespace {
 
 const char kDeflate[] = "deflate";
 const char kGZip[] = "gzip";
-const char kSdch[] = "sdch";
 const char kXGZip[] = "x-gzip";
 const char kBrotli[] = "br";
 
@@ -84,8 +83,6 @@ FilterSourceStream::SourceType FilterSourceStream::ParseEncodingType(
   } else if (base::LowerCaseEqualsASCII(encoding, kGZip) ||
              base::LowerCaseEqualsASCII(encoding, kXGZip)) {
     return TYPE_GZIP;
-  } else if (base::LowerCaseEqualsASCII(encoding, kSdch)) {
-    return TYPE_SDCH;
   } else {
     return TYPE_UNKNOWN;
   }
