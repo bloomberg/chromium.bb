@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/media_log.h"
@@ -139,14 +138,15 @@ void PipelineIntegrationTestBase::OnSeeked(base::TimeDelta seek_time,
   pipeline_status_ = status;
 }
 
-void PipelineIntegrationTestBase::OnStatusCallback(PipelineStatus status) {
+void PipelineIntegrationTestBase::OnStatusCallback(
+    const base::Closure& quit_run_loop_closure,
+    PipelineStatus status) {
   pipeline_status_ = status;
 
   if (pipeline_status_ != PIPELINE_OK && pipeline_->IsRunning())
     pipeline_->Stop();
 
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  quit_run_loop_closure.Run();
 }
 
 void PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB(
@@ -174,21 +174,30 @@ void PipelineIntegrationTestBase::OnEnded() {
   DCHECK(!ended_);
   ended_ = true;
   pipeline_status_ = PIPELINE_OK;
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  if (on_ended_closure_)
+    base::ResetAndReturn(&on_ended_closure_).Run();
 }
 
 bool PipelineIntegrationTestBase::WaitUntilOnEnded() {
-  if (!ended_)
-    base::RunLoop().Run();
+  if (!ended_) {
+    base::RunLoop run_loop;
+    on_ended_closure_ = run_loop.QuitWhenIdleClosure();
+    run_loop.Run();
+  }
   EXPECT_TRUE(ended_);
   scoped_task_environment_.RunUntilIdle();
   return ended_ && (pipeline_status_ == PIPELINE_OK);
 }
 
 PipelineStatus PipelineIntegrationTestBase::WaitUntilEndedOrError() {
-  if (!ended_ && pipeline_status_ == PIPELINE_OK)
-    base::RunLoop().Run();
+  if (!ended_ && pipeline_status_ == PIPELINE_OK) {
+    base::RunLoop run_loop;
+    on_ended_closure_ = run_loop.QuitWhenIdleClosure();
+    on_error_closure_ = run_loop.QuitWhenIdleClosure();
+    run_loop.Run();
+    on_ended_closure_ = base::Closure();
+    on_error_closure_ = base::Closure();
+  }
   scoped_task_environment_.RunUntilIdle();
   return pipeline_status_;
 }
@@ -197,8 +206,8 @@ void PipelineIntegrationTestBase::OnError(PipelineStatus status) {
   DCHECK_NE(status, PIPELINE_OK);
   pipeline_status_ = status;
   pipeline_->Stop();
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  if (on_error_closure_)
+    base::ResetAndReturn(&on_error_closure_).Run();
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartInternal(
@@ -256,13 +265,15 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
   EXPECT_CALL(*this, OnAudioConfigChange(_)).Times(0);
   EXPECT_CALL(*this, OnVideoConfigChange(_)).Times(0);
 
-  pipeline_->Start(demuxer_.get(),
-                   renderer_factory_->CreateRenderer(prepend_video_decoders_cb,
-                                                     prepend_audio_decoders_cb),
-                   this,
-                   base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
-                              base::Unretained(this)));
-  base::RunLoop().Run();
+  base::RunLoop run_loop;
+  pipeline_->Start(
+      demuxer_.get(),
+      renderer_factory_->CreateRenderer(prepend_video_decoders_cb,
+                                        prepend_audio_decoders_cb),
+      this,
+      base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
+                 base::Unretained(this), run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
   scoped_task_environment_.RunUntilIdle();
   return pipeline_status_;
 }
@@ -329,9 +340,11 @@ bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
 }
 
 bool PipelineIntegrationTestBase::Suspend() {
+  base::RunLoop run_loop;
   pipeline_->Suspend(base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
-                                base::Unretained(this)));
-  base::RunLoop().Run();
+                                base::Unretained(this),
+                                run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
   scoped_task_environment_.RunUntilIdle();
   return (pipeline_status_ == PIPELINE_OK);
 }
@@ -387,6 +400,9 @@ bool PipelineIntegrationTestBase::WaitUntilCurrentTimeIsAfter(
   DCHECK(wait_time <= pipeline_->GetMediaDuration());
 
   base::RunLoop run_loop;
+  on_ended_closure_ = run_loop.QuitWhenIdleClosure();
+  on_error_closure_ = run_loop.QuitWhenIdleClosure();
+
   scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PipelineIntegrationTestBase::QuitAfterCurrentTimeTask,
@@ -394,6 +410,8 @@ bool PipelineIntegrationTestBase::WaitUntilCurrentTimeIsAfter(
                      run_loop.QuitWhenIdleClosure()),
       base::TimeDelta::FromMilliseconds(10));
   run_loop.Run();
+  on_ended_closure_ = base::Closure();
+  on_error_closure_ = base::Closure();
   scoped_task_environment_.RunUntilIdle();
   return (pipeline_status_ == PIPELINE_OK);
 }
@@ -565,8 +583,11 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
   EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AtMost(1));
 
-  source->set_demuxer_failure_cb(base::Bind(
-      &PipelineIntegrationTestBase::OnStatusCallback, base::Unretained(this)));
+  base::RunLoop run_loop;
+
+  source->set_demuxer_failure_cb(
+      base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
+                 base::Unretained(this), run_loop.QuitWhenIdleClosure()));
   demuxer_ = source->GetDemuxer();
 
   // MediaSource demuxer may signal config changes.
@@ -593,19 +614,20 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
     EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
   }
 
-  pipeline_->Start(demuxer_.get(),
-                   renderer_factory_->CreateRenderer(CreateVideoDecodersCB(),
-                                                     CreateAudioDecodersCB()),
-                   this,
-                   base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
-                              base::Unretained(this)));
+  pipeline_->Start(
+      demuxer_.get(),
+      renderer_factory_->CreateRenderer(CreateVideoDecodersCB(),
+                                        CreateAudioDecodersCB()),
+      this,
+      base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
+                 base::Unretained(this), run_loop.QuitWhenIdleClosure()));
 
   if (encrypted_media) {
     source->set_encrypted_media_init_data_cb(
         base::Bind(&FakeEncryptedMedia::OnEncryptedMediaInitData,
                    base::Unretained(encrypted_media)));
   }
-  base::RunLoop().Run();
+  run_loop.Run();
   scoped_task_environment_.RunUntilIdle();
   return pipeline_status_;
 }
