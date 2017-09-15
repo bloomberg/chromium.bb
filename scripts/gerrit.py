@@ -26,6 +26,7 @@ from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import terminal
+from chromite.lib import uri_lib
 
 
 site_config = config_lib.GetConfig()
@@ -214,6 +215,8 @@ def FilteredQuery(opts, query, helper=None):
                   'platform', 'third_party'):
         if cl['project'].startswith('%s/' % pfx):
           cl['project'] = cl['project'][len(pfx) + 1:]
+
+      cl['url'] = uri_lib.ShortenUri(cl['url'])
 
     ret.append(cl)
 
