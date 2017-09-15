@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -297,8 +298,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
                        action:@selector(fakeOmniboxTapped:)
              forControlEvents:UIControlEventTouchUpInside];
 
-  [self.fakeOmnibox
-      setAccessibilityLabel:l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)];
   // Set isAccessibilityElement to NO so that Voice Search button is accessible.
   [self.fakeOmnibox setIsAccessibilityElement:NO];
   self.fakeOmnibox.accessibilityIdentifier =
@@ -313,6 +312,19 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
       constraintEqualToAnchor:[self.fakeOmnibox leadingAnchor]
                      constant:ntp_header::kHintLabelSidePadding];
   [_hintLabelLeadingConstraint setActive:YES];
+
+  // Set a view the same size as the fake omnibox as the accessibility element.
+  // If only the label is accessible, when the fake omnibox is taking the full
+  // width, there are few points that are not accessible and allow to select the
+  // content below it.
+  searchHintLabel.isAccessibilityElement = NO;
+  UIView* accessibilityView = [[UIView alloc] init];
+  accessibilityView.isAccessibilityElement = YES;
+  accessibilityView.accessibilityLabel =
+      l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
+  [self.fakeOmnibox addSubview:accessibilityView];
+  accessibilityView.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(self.fakeOmnibox, accessibilityView);
 
   // Add a voice search button.
   UIButton* voiceTapTarget = [[UIButton alloc] init];
