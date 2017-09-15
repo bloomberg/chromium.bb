@@ -304,18 +304,6 @@ bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() {
 #endif
 }
 
-bool OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial() {
-  if (variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kSuggestVariantRule) == "AfterTyping")
-    return true;
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  return false;
-#else
-  return true;
-#endif
-}
-
 bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -724,7 +712,6 @@ const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";
 const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
-const char OmniboxFieldTrial::kSuggestVariantRule[] = "SuggestVariant";
 const char OmniboxFieldTrial::kDisableResultsCachingRule[] =
     "DisableResultsCaching";
 const char
