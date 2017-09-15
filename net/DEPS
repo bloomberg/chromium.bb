@@ -8,7 +8,6 @@ include_rules = [
   "+third_party/nss",
   "+third_party/protobuf/src/google/protobuf",
   "+third_party/zlib",
-  "+sdch/open-vcdiff",
   "+v8",
 
   # Most of net should not depend on icu, and brotli to keep size down when
