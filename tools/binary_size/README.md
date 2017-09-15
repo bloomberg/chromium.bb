@@ -1,8 +1,8 @@
 # Tools for Analyzing Chrome's Binary Size
 
-These tools currently focus on Android compiled with GCC. They somewhat work
-for Android + Clang, and Linux builds, but not as well. As for Windows, some
-great tools already exist and are documented here:
+These tools currently focus on Android. They somewhat work with Linux builds,
+but not as well. As for Windows, some great tools already exist and are
+documented here:
 
  * https://www.chromium.org/developers/windows-binary-sizes
 
