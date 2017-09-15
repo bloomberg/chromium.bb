@@ -3685,7 +3685,7 @@ crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.
 # Sheriff failures 2017-09-11
 crbug.com/763809 [ Win7 Debug ] fast/multicol/nested-very-tall-inside-short-crash.html [ Pass Failure Timeout ]
 crbug.com/763810 [ Win7 Debug ] virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
-crbug.com/763975 [ Linux Debug ] webaudio/internals/cycle-connection-gc.html [ Pass Failure ]
+crbug.com/763975 [ Linux Mac Debug ] webaudio/internals/cycle-connection-gc.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-12
 # Temporarily disabling this for JPEG change. Restore after fixes for 763605 are rebaselined.
