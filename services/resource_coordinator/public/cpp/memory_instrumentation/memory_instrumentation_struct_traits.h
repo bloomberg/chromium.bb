@@ -191,6 +191,17 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
       const std::unique_ptr<base::trace_event::ProcessMemoryDump>& pmd) {
     return pmd->dump_args().level_of_detail;
   }
+
+  static void SetToNull(
+      std::unique_ptr<base::trace_event::ProcessMemoryDump>* out) {
+    out->reset();
+  }
+
+  static bool IsNull(
+      const std::unique_ptr<base::trace_event::ProcessMemoryDump>& pmd) {
+    return !pmd;
+  }
+
   static bool Read(
       memory_instrumentation::mojom::RawProcessMemoryDumpDataView input,
       std::unique_ptr<base::trace_event::ProcessMemoryDump>* out);

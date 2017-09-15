@@ -79,6 +79,22 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     const base::trace_event::MemoryDumpRequestArgs args;
     const RequestGlobalMemoryDumpCallback callback;
 
+    bool wants_mmaps() const {
+      return args.level_of_detail ==
+             base::trace_event::MemoryDumpLevelOfDetail::DETAILED;
+    }
+
+    // We always want to return chrome dumps, with exception of the special
+    // case below for the heap profiler, which cares only about mmaps.
+    bool wants_chrome_dumps() const {
+      return args.dump_type !=
+             base::trace_event::MemoryDumpType::VM_REGIONS_ONLY;
+    }
+
+    bool should_return_summaries() const {
+      return args.dump_type == base::trace_event::MemoryDumpType::SUMMARY_ONLY;
+    }
+
     struct PendingResponse {
       enum Type {
         kChromeDump,
@@ -98,7 +114,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
 
       base::ProcessId process_id;
       mojom::ProcessType process_type;
-      mojom::ChromeMemDumpPtr chrome_dump_ptr;
+      std::unique_ptr<base::trace_event::ProcessMemoryDump> chrome_dump;
       OSMemDumpMap os_dumps;
     };
 
@@ -128,10 +144,11 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   };
 
   // Callback of RequestChromeMemoryDump.
-  void OnChromeMemoryDumpResponse(mojom::ClientProcess*,
-                                  bool success,
-                                  uint64_t dump_guid,
-                                  mojom::ChromeMemDumpPtr chrome_memory_dump);
+  void OnChromeMemoryDumpResponse(
+      mojom::ClientProcess*,
+      bool success,
+      uint64_t dump_guid,
+      std::unique_ptr<base::trace_event::ProcessMemoryDump> chrome_memory_dump);
 
   // Callback of RequestOSMemoryDump.
   void OnOSMemoryDumpResponse(mojom::ClientProcess*,

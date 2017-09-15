@@ -179,7 +179,7 @@ interface ClientProcess {
   // buffer of the target process and an ACK. A summary of the dump is also
   // returned in case of success.
   RequestChromeMemoryDump(RequestArgs args) =>
-      (bool success, uint64 dump_id, ChromeMemDump? chrome_memory_dump);
+      (bool success, uint64 dump_id, RawProcessMemoryDump? raw_process_memory_dump);
 
   // Requests an OSMemDump for each pid in |pids|.
   // The Memory-infra service deals with two kinds of information:
