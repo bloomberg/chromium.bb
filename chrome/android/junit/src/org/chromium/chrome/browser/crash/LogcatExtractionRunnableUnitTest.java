@@ -85,6 +85,20 @@ public class LogcatExtractionRunnableUnitTest {
     }
 
     @Test
+    public void testElideUrl8() {
+        String original = "exception at org.chromium.chrome.browser.compositor.scene_layer."
+                + "TabListSceneLayer.nativeUpdateLayer(Native Method)";
+        assertEquals(original, LogcatExtractionRunnable.elideUrl(original));
+    }
+
+    @Test
+    public void testElideUrl9() {
+        String original = "I/dalvikvm( 5083): at org.chromium.chrome.browser.compositor."
+                + "scene_layer.TabListSceneLayer.nativeUpdateLayer(Native Method)";
+        assertEquals(original, LogcatExtractionRunnable.elideUrl(original));
+    }
+
+    @Test
     public void testDontElideFileSuffixes() {
         String original = "chromium_android_linker.so";
         assertEquals(original, LogcatExtractionRunnable.elideUrl(original));
