@@ -46,7 +46,8 @@ It2MeStandaloneHost::It2MeStandaloneHost()
       factory_(main_task_runner_,
                context_->video_capture_task_runner(),
                context_->input_task_runner(),
-               context_->ui_task_runner()),
+               context_->ui_task_runner(),
+               nullptr),
       connection_(base::WrapUnique(new testing::NiceMock<MockSession>())),
       session_jid_(kSessionJid),
 #if defined(OS_LINUX)

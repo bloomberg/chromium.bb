@@ -392,7 +392,8 @@ InputInjectorMac::Core::~Core() {}
 // static
 std::unique_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    ui::SystemInputInjectorFactory* chromeos_system_input_injector_factory) {
   return base::WrapUnique(new InputInjectorMac(main_task_runner));
 }
 

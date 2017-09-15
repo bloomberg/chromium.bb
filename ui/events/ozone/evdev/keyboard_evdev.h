@@ -19,7 +19,7 @@
 
 namespace ui {
 
-class EventModifiersEvdev;
+class EventModifiers;
 enum class DomCode;
 
 // Keyboard for evdev.
@@ -30,7 +30,7 @@ enum class DomCode;
 // It also currently also applies the layout.
 class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
  public:
-  KeyboardEvdev(EventModifiersEvdev* modifiers,
+  KeyboardEvdev(EventModifiers* modifiers,
                 KeyboardLayoutEngine* keyboard_layout_engine,
                 const EventDispatchCallback& callback);
   ~KeyboardEvdev();
@@ -93,7 +93,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   EventDispatchCallback callback_;
 
   // Shared modifier state.
-  EventModifiersEvdev* modifiers_;
+  EventModifiers* modifiers_;
 
   // Shared layout engine.
   KeyboardLayoutEngine* keyboard_layout_engine_;

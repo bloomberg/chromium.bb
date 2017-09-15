@@ -29,6 +29,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
 #include "remoting/host/policy_watcher.h"
+#include "ui/events/system_input_injector.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -107,7 +108,8 @@ std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::UI),
           base::CreateSingleThreadTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+              {base::MayBlock(), base::TaskPriority::BACKGROUND}),
+          ui::GetSystemInputInjectorFactory());
   std::unique_ptr<remoting::PolicyWatcher> policy_watcher =
       remoting::PolicyWatcher::CreateWithPolicyService(
           g_browser_process->policy_service());

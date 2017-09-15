@@ -16,7 +16,8 @@ namespace remoting {
 class InputInjectorChromeos : public InputInjector {
  public:
   explicit InputInjectorChromeos(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ui::SystemInputInjectorFactory* chromeos_system_input_injector_factory);
 
   ~InputInjectorChromeos() override;
 

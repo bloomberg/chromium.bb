@@ -630,7 +630,8 @@ void InputInjectorX11::Core::Stop() {
 // static
 std::unique_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    ui::SystemInputInjectorFactory* chromeos_system_input_injector_factory) {
   std::unique_ptr<InputInjectorX11> injector(
       new InputInjectorX11(main_task_runner));
   if (!injector->Init())

@@ -102,8 +102,11 @@ MusClient::MusClient(service_manager::Connector* connector,
   if (create_wm_state)
     wm_state_ = base::MakeUnique<wm::WMState>();
 
-  if (testing_state == MusClientTestingState::CREATE_TESTING_STATE)
+  if (testing_state == MusClientTestingState::CREATE_TESTING_STATE) {
     connector->BindInterface(ui::mojom::kServiceName, &server_test_ptr_);
+    connector->BindInterface(ui::mojom::kServiceName,
+                             &remote_event_dispatcher_ptr_);
+  }
 
   window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
       connector, this, nullptr /* window_manager_delegate */,
@@ -272,6 +275,11 @@ ui::mojom::WindowServerTest* MusClient::GetTestingInterface() const {
   // elsewhere.
   CHECK(server_test_ptr_);
   return server_test_ptr_.get();
+}
+
+ui::mojom::RemoteEventDispatcher* MusClient::GetTestingEventDispater() const {
+  CHECK(remote_event_dispatcher_ptr_);
+  return remote_event_dispatcher_ptr_.get();
 }
 
 std::unique_ptr<DesktopWindowTreeHost> MusClient::CreateDesktopWindowTreeHost(

@@ -247,22 +247,22 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
   if (params.allow_remap)
     button = button_map_.GetMappedButton(button);
 
-  int modifier = EVDEV_MODIFIER_NONE;
+  int modifier = MODIFIER_NONE;
   switch (button) {
     case BTN_LEFT:
-      modifier = EVDEV_MODIFIER_LEFT_MOUSE_BUTTON;
+      modifier = MODIFIER_LEFT_MOUSE_BUTTON;
       break;
     case BTN_RIGHT:
-      modifier = EVDEV_MODIFIER_RIGHT_MOUSE_BUTTON;
+      modifier = MODIFIER_RIGHT_MOUSE_BUTTON;
       break;
     case BTN_MIDDLE:
-      modifier = EVDEV_MODIFIER_MIDDLE_MOUSE_BUTTON;
+      modifier = MODIFIER_MIDDLE_MOUSE_BUTTON;
       break;
     case BTN_BACK:
-      modifier = EVDEV_MODIFIER_BACK_MOUSE_BUTTON;
+      modifier = MODIFIER_BACK_MOUSE_BUTTON;
       break;
     case BTN_FORWARD:
-      modifier = EVDEV_MODIFIER_FORWARD_MOUSE_BUTTON;
+      modifier = MODIFIER_FORWARD_MOUSE_BUTTON;
       break;
     default:
       return;
@@ -273,7 +273,7 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
   modifiers_.UpdateModifier(modifier, params.down);
   bool down = modifiers_.GetModifierFlags() & flag;
 
-  // Suppress nested clicks. EventModifiersEvdev counts presses, we only
+  // Suppress nested clicks. EventModifiers counts presses, we only
   // dispatch an event on 0-1 (first press) and 1-0 (last release) transitions.
   if (down == was_down)
     return;

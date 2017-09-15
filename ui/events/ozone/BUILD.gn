@@ -78,8 +78,6 @@ if (use_ozone) {
       "evdev/event_device_info.h",
       "evdev/event_factory_evdev.cc",
       "evdev/event_factory_evdev.h",
-      "evdev/event_modifiers_evdev.cc",
-      "evdev/event_modifiers_evdev.h",
       "evdev/event_thread_evdev.cc",
       "evdev/event_thread_evdev.h",
       "evdev/events_ozone_evdev_export.h",
