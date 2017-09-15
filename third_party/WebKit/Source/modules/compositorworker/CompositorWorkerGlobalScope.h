@@ -34,7 +34,7 @@ class MODULES_EXPORT CompositorWorkerGlobalScope final
   const AtomicString& InterfaceName() const override;
 
   void postMessage(ScriptState*,
-                   PassRefPtr<SerializedScriptValue>,
+                   RefPtr<SerializedScriptValue>,
                    const MessagePortArray&,
                    ExceptionState&);
   static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }

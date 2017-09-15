@@ -23,16 +23,16 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
       const AtomicString& type,
       const ExtendableMessageEventInit& initializer,
       WaitUntilObserver*);
-  static ExtendableMessageEvent* Create(PassRefPtr<SerializedScriptValue> data,
+  static ExtendableMessageEvent* Create(RefPtr<SerializedScriptValue> data,
                                         const String& origin,
                                         MessagePortArray* ports,
                                         WaitUntilObserver*);
-  static ExtendableMessageEvent* Create(PassRefPtr<SerializedScriptValue> data,
+  static ExtendableMessageEvent* Create(RefPtr<SerializedScriptValue> data,
                                         const String& origin,
                                         MessagePortArray* ports,
                                         ServiceWorkerClient* source,
                                         WaitUntilObserver*);
-  static ExtendableMessageEvent* Create(PassRefPtr<SerializedScriptValue> data,
+  static ExtendableMessageEvent* Create(RefPtr<SerializedScriptValue> data,
                                         const String& origin,
                                         MessagePortArray* ports,
                                         ServiceWorker* source,
@@ -41,7 +41,7 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
   SerializedScriptValue* SerializedData() const {
     return serialized_data_.Get();
   }
-  void SetSerializedData(PassRefPtr<SerializedScriptValue> serialized_data) {
+  void SetSerializedData(RefPtr<SerializedScriptValue> serialized_data) {
     serialized_data_ = std::move(serialized_data);
   }
   const String& origin() const { return origin_; }
@@ -59,7 +59,7 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
   ExtendableMessageEvent(const AtomicString& type,
                          const ExtendableMessageEventInit& initializer,
                          WaitUntilObserver*);
-  ExtendableMessageEvent(PassRefPtr<SerializedScriptValue> data,
+  ExtendableMessageEvent(RefPtr<SerializedScriptValue> data,
                          const String& origin,
                          MessagePortArray* ports,
                          WaitUntilObserver*);

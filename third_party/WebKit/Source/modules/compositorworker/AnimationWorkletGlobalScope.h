@@ -24,7 +24,7 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
  public:
   static AnimationWorkletGlobalScope* Create(const KURL&,
                                              const String& user_agent,
-                                             PassRefPtr<SecurityOrigin>,
+                                             RefPtr<SecurityOrigin>,
                                              v8::Isolate*,
                                              WorkerThread*,
                                              WorkerClients*);
@@ -46,7 +46,7 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
  private:
   AnimationWorkletGlobalScope(const KURL&,
                               const String& user_agent,
-                              PassRefPtr<SecurityOrigin>,
+                              RefPtr<SecurityOrigin>,
                               v8::Isolate*,
                               WorkerThread*,
                               WorkerClients*);

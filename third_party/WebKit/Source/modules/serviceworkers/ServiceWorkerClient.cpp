@@ -87,7 +87,7 @@ String ServiceWorkerClient::frameType(ScriptState* script_state) const {
 }
 
 void ServiceWorkerClient::postMessage(ScriptState* script_state,
-                                      PassRefPtr<SerializedScriptValue> message,
+                                      RefPtr<SerializedScriptValue> message,
                                       const MessagePortArray& ports,
                                       ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
