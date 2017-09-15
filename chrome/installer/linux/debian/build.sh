@@ -62,6 +62,7 @@ stage_install_debian() {
     local MENUNAME="${MENUNAME} (${CHANNEL})"
   fi
   prep_staging_debian
+  SHLIB_PERMS=644
   stage_install_common
   log_cmd echo "Staging Debian install files in '${STAGEDIR}'..."
   install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/cron"
