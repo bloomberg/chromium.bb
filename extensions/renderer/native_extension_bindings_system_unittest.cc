@@ -33,16 +33,6 @@ namespace extensions {
 
 namespace {
 
-class EventChangeHandler {
- public:
-  MOCK_METHOD5(OnChange,
-               void(binding::EventListenersChanged,
-                    ScriptContext*,
-                    const std::string& event_name,
-                    const base::DictionaryValue* filter,
-                    bool was_manual));
-};
-
 // Returns true if the value specified by |property| exists in the given
 // context.
 bool PropertyExists(v8::Local<v8::Context> context,
@@ -107,8 +97,6 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   ~NativeExtensionBindingsSystemUnittest() override {}
 
  protected:
-  using MockEventChangeHandler = ::testing::StrictMock<EventChangeHandler>;
-
   v8::ExtensionConfiguration* GetV8ExtensionConfiguration() override {
     return TestV8ExtensionConfiguration::GetConfiguration();
   }
@@ -124,7 +112,6 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   }
 
   void TearDown() override {
-    event_change_handler_.reset();
     // Dispose all contexts now so we call WillReleaseScriptContext() on the
     // bindings system.
     DisposeAllContexts();
@@ -192,7 +179,6 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   TestIPCMessageSender* ipc_message_sender_ = nullptr;
 
   std::unique_ptr<ExtensionHostMsg_Request_Params> last_params_;
-  std::unique_ptr<MockEventChangeHandler> event_change_handler_;
 
   StringSourceMap source_map_;
   TestExtensionsRendererClient renderer_client_;
