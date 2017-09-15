@@ -2188,14 +2188,26 @@ void SpdySession::HandleSetting(uint32_t id, uint32_t value) {
 }
 
 void SpdySession::UpdateStreamsSendWindowSize(int32_t delta_window_size) {
-  for (ActiveStreamMap::iterator it = active_streams_.begin();
-       it != active_streams_.end(); ++it) {
-    it->second->AdjustSendWindowSize(delta_window_size);
+  for (const auto& value : active_streams_) {
+    if (!value.second->AdjustSendWindowSize(delta_window_size)) {
+      DoDrainSession(
+          ERR_SPDY_FLOW_CONTROL_ERROR,
+          SpdyStringPrintf("New SETTINGS_INITIAL_WINDOW_SIZE value overflows "
+                           "flow control window of stream %d.",
+                           value.second->stream_id()));
+      return;
+    }
   }
 
-  for (CreatedStreamSet::const_iterator it = created_streams_.begin();
-       it != created_streams_.end(); it++) {
-    (*it)->AdjustSendWindowSize(delta_window_size);
+  for (auto* const stream : created_streams_) {
+    if (!stream->AdjustSendWindowSize(delta_window_size)) {
+      DoDrainSession(
+          ERR_SPDY_FLOW_CONTROL_ERROR,
+          SpdyStringPrintf("New SETTINGS_INITIAL_WINDOW_SIZE value overflows "
+                           "flow control window of stream %d.",
+                           stream->stream_id()));
+      return;
+    }
   }
 }
 

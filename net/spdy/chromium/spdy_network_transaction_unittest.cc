@@ -5842,6 +5842,38 @@ TEST_F(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
   helper.VerifyDataConsumed();
 }
 
+// Regression test for https://crbug.com/732019.
+// RFC7540 Section 6.9.2: A SETTINGS_INITIAL_WINDOW_SIZE change that causes any
+// stream flow control window to overflow MUST be treated as a connection error.
+TEST_F(SpdyNetworkTransactionTest, InitialWindowSizeOverflow) {
+  SpdySerializedFrame window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(1, 0x60000000));
+  SettingsMap settings;
+  settings[SETTINGS_INITIAL_WINDOW_SIZE] = 0x60000000;
+  SpdySerializedFrame settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
+  MockRead reads[] = {CreateMockRead(window_update, 1),
+                      CreateMockRead(settings_frame, 2)};
+
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
+      0, ERROR_CODE_FLOW_CONTROL_ERROR,
+      "New SETTINGS_INITIAL_WINDOW_SIZE value overflows flow control window of "
+      "stream 1."));
+  MockWrite writes[] = {CreateMockWrite(req, 0),
+                        CreateMockWrite(settings_ack, 3),
+                        CreateMockWrite(goaway, 4)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     NetLogWithSource(), nullptr);
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsError(ERR_SPDY_FLOW_CONTROL_ERROR));
+}
+
 // Test that after hitting a send window size of 0, the write process
 // stalls and upon receiving WINDOW_UPDATE frame write resumes.
 

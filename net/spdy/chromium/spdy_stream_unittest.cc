@@ -1321,11 +1321,11 @@ void AdjustStreamSendWindowSize(const base::WeakPtr<SpdyStream>& stream,
                                 int32_t delta_window_size) {
   // Make sure that negative adjustments are handled properly.
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
-  stream->AdjustSendWindowSize(-delta_window_size);
+  EXPECT_TRUE(stream->AdjustSendWindowSize(-delta_window_size));
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
-  stream->AdjustSendWindowSize(+delta_window_size);
+  EXPECT_TRUE(stream->AdjustSendWindowSize(+delta_window_size));
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
-  stream->AdjustSendWindowSize(+delta_window_size);
+  EXPECT_TRUE(stream->AdjustSendWindowSize(+delta_window_size));
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 }
 
