@@ -40,6 +40,8 @@ SYNC_TEST_F('CvoxTtsBackgroundTest', 'Preprocess', function() {
 
   assertEquals('new line', preprocess('\n'));
   assertEquals('return', preprocess('\r'));
+
+  assertEquals('bullet 2 bullets', preprocess('\u2022 \u2022\u2022'));
 });
 
 TEST_F('CvoxTtsBackgroundTest', 'UpdateVoice', function() {

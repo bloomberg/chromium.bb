@@ -89,7 +89,7 @@ cvox.TtsBackground = function(opt_enableMath) {
     {
       name: 'some',
       msg: 'some_punctuation',
-      regexp: /[$#"*<>\\\/\{\}+=~`%]/g,
+      regexp: /[$#"*<>\\\/\{\}+=~`%\u2022]/g,
       clear: false
     },
 
@@ -99,7 +99,7 @@ cvox.TtsBackground = function(opt_enableMath) {
     {
       name: 'all',
       msg: 'all_punctuation',
-      regexp: /[-$#"()*;:<>\n\\\/\{\}\[\]+='~`!@_.,?%]/g,
+      regexp: /[-$#"()*;:<>\n\\\/\{\}\[\]+='~`!@_.,?%\u2022]/g,
       clear: false
     }
   ];
