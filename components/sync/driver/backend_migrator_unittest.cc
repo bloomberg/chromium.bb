@@ -8,7 +8,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/tracked_objects.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/driver/data_type_manager_mock.h"
 #include "components/sync/driver/fake_sync_service.h"

@@ -14,11 +14,14 @@
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "base/tracked_objects.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/uploader.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_status.h"
+
+namespace base {
+class Location;
+}
 
 namespace domain_reliability {
 

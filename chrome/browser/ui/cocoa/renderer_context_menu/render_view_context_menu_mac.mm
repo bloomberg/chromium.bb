@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/tracked_objects.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/mac/nsprocessinfo_additions.h"
 #include "chrome/grit/generated_resources.h"
@@ -232,15 +231,10 @@ void RenderViewContextMenuMac::Show() {
     // be done manually.
     base::mac::ScopedSendingEvent sendingEventScoper;
 
-    // Use task stopwatch to exclude the loop run time from the current task, if
-    // any.
-    tracked_objects::TaskStopwatch stopwatch;
-    stopwatch.Start();
     // Show the menu.
     [NSMenu popUpContextMenu:[menu_controller_ menu]
                    withEvent:clickEvent
                      forView:parent_view_];
-    stopwatch.Stop();
   }
 }
 

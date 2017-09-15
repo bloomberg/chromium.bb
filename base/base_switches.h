@@ -22,8 +22,6 @@ extern const char kEnableLowEndDeviceMode[];
 extern const char kForceFieldTrials[];
 extern const char kFullMemoryCrashReport[];
 extern const char kNoErrorDialogs[];
-extern const char kProfilerTiming[];
-extern const char kProfilerTimingDisabledValue[];
 extern const char kProfilingFile[];
 extern const char kTestChildProcess[];
 extern const char kTestDoNotInitializeIcu[];

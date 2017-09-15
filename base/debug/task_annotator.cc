@@ -10,7 +10,6 @@
 #include "base/debug/alias.h"
 #include "base/pending_task.h"
 #include "base/trace_event/trace_event.h"
-#include "base/tracked_objects.h"
 
 namespace base {
 namespace debug {
@@ -31,9 +30,6 @@ void TaskAnnotator::DidQueueTask(const char* queue_function,
 void TaskAnnotator::RunTask(const char* queue_function,
                             PendingTask* pending_task) {
   ScopedTaskRunActivity task_activity(*pending_task);
-
-  tracked_objects::TaskStopwatch stopwatch;
-  stopwatch.Start();
 
   TRACE_EVENT_WITH_FLOW0(
       TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), queue_function,
@@ -59,8 +55,6 @@ void TaskAnnotator::RunTask(const char* queue_function,
   debug::Alias(&task_backtrace);
 
   std::move(pending_task->task).Run();
-
-  stopwatch.Stop();
 }
 
 uint64_t TaskAnnotator::GetTaskTraceID(const PendingTask& task) const {

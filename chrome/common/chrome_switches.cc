@@ -375,13 +375,6 @@ const char kEnablePowerOverlay[]            = "enable-power-overlay";
 const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";
 
-// Enables tracking of tasks in profiler for viewing via about:profiler.
-// To predominantly disable tracking (profiling), use the command line switch:
-// --enable-profiling=0
-// Some tracking will still take place at startup, but it will be turned off
-// during chrome_browser_main.
-const char kEnableProfiling[]               = "enable-profiling";
-
 // Enable background mode for the Push API.
 const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
 

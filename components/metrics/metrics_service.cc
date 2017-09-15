@@ -143,7 +143,6 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "components/metrics/daily_event.h"
 #include "components/metrics/environment_recorder.h"
