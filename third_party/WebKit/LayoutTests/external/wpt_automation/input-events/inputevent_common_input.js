@@ -15,6 +15,18 @@ function focusAndKeyDown(selector, key, modifiers) {
   return keyDown(key, modifiers);
 }
 
+function selectAndKeyDown(selector, key, modifiers) {
+  const target = document.querySelector(selector);
+  if (target.select) {
+    target.select();
+  } else {
+    const selection = window.getSelection();
+    selection.collapse(target, 0);
+    selection.extend(target, 1);
+  }
+  return keyDown(key, modifiers);
+}
+
 {
   const inputevent_automation = async_test("InputEvent Automation");
   // Defined in every test and should return a promise that gets resolved when input is finished.

@@ -1,17 +1,14 @@
 <!DOCTYPE html>
-<html>
-<head>
-<title>InputEvent: execCommand test</title>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-</head>
-<body>
+<meta charset="utf-8">
+<title>execCommand() should only trigger 'input'</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <p id="txt" contenteditable></p>
 <script>
 test(function() {
-    var lastBeforeInputType = '';
-    var lastInputType = '';
-    var txt = document.getElementById('txt');
+    let lastBeforeInputType = '';
+    let lastInputType = '';
+    const txt = document.getElementById('txt');
     txt.addEventListener('beforeinput', function(event) {
         assert_true(event instanceof InputEvent);
         assert_false(event.isComposing);
@@ -85,7 +82,5 @@ test(function() {
     // Cut/Paste should fire 'input'.
     testExecCommandInputType('cut', null, 'deleteByCut');
     testExecCommandInputType('paste', null, 'insertFromPaste');
-}, 'Testing input with execCommand');
+});
 </script>
-</body>
-</html>
