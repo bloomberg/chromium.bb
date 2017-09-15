@@ -10,7 +10,9 @@
 #import "ios/clean/chrome/browser/ui/commands/context_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/dialogs/context_menu/context_menu_dialog_mediator.h"
 #import "ios/clean/chrome/browser/ui/dialogs/dialog_coordinator+subclassing.h"
+#import "ios/clean/chrome/browser/ui/dialogs/unavailable_feature_dialogs/unavailable_feature_dialog_coordinator.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service.h"
+#import "ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -60,10 +62,20 @@
   [super stop];
 }
 
-#pragma mark - ContextMenuDismisalCommands
+#pragma mark - ContextMenuDismissalCommands
 
 - (void)dismissContextMenu {
   [self stop];
+}
+
+- (void)dismissContextMenuForUnavailableFeatureNamed:(NSString*)featureName {
+  DCHECK(featureName.length);
+  UnavailableFeatureDialogCoordinator* unavailableDialog =
+      [[UnavailableFeatureDialogCoordinator alloc]
+          initWithFeatureName:featureName];
+  OverlayServiceFactory::GetInstance()
+      ->GetForBrowserState(self.browser->browser_state())
+      ->ReplaceVisibleOverlay(unavailableDialog, self.browser);
 }
 
 @end

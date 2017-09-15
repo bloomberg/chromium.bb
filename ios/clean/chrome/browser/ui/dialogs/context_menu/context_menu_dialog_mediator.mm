@@ -64,8 +64,7 @@
 - (void)dismissDialogWithButtonID:(DialogConfigurationIdentifier*)buttonID
                   textFieldValues:(DialogTextFieldValues*)textFieldValues {
   DCHECK(buttonID);
-  // Some actions change the active WebState, which will cause the context menu
-  // to be dismissed automatically.
+  NSString* unavailableFeatureName = nil;
   BOOL changesActiveWebState = NO;
   if (buttonID == self.executeScriptButtonID) {
     [self.dispatcher executeContextMenuScript:self.request];
@@ -74,12 +73,15 @@
     changesActiveWebState = YES;
   } else if (buttonID == self.openInNewIncognitoTabButtonID) {
     // TODO(crbug.com/760644): Dispatch command once incognito is implemented.
+    unavailableFeatureName = @"Open In New Incognito Tab";
   } else if (buttonID == self.linkCopyButtonID) {
     // TODO(crbug.com/760644): Dispatch command once pasteboard support is
     // implemented.
+    unavailableFeatureName = @"Copy Link";
   } else if (buttonID == self.saveImageButtonID) {
     // TODO(crbug.com/760644): Dispatch command once image saving is
     // implemented.
+    unavailableFeatureName = @"Save Image";
   } else if (buttonID == self.openImageButtonID) {
     [self.dispatcher openContextMenuImage:self.request];
   } else if (buttonID == self.openImageInNewTabButtonID) {
@@ -88,8 +90,12 @@
   } else if (buttonID != self.cancelButtonID) {
     NOTREACHED() << "Received dialog dismissal for unknown button tag.";
   }
-  if (!changesActiveWebState)
+  if (unavailableFeatureName) {
+    [self.dispatcher
+        dismissContextMenuForUnavailableFeatureNamed:unavailableFeatureName];
+  } else if (!changesActiveWebState) {
     [self.dispatcher dismissContextMenu];
+  }
 }
 
 @end

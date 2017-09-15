@@ -18,6 +18,7 @@ source_set("commands") {
     "tab_grid_toolbar_commands.h",
     "tab_strip_commands.h",
     "tools_menu_commands.h",
+    "unavailable_feature_dialog_commands.h",
   ]
   deps = [
     "//base",
