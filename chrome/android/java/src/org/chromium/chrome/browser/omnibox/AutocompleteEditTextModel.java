@@ -258,6 +258,8 @@ public class AutocompleteEditTextModel implements AutocompleteEditTextModelBase 
         if (mBatchEditNestCount == 0) {
             notifyAutocompleteTextStateChanged(textDeleted, true);
         } else {
+            // crbug.com/764749
+            Log.w(TAG, "onTextChanged: in batch edit");
             mTextDeletedInBatchMode = textDeleted;
         }
         mLastEditWasPaste = false;
@@ -432,6 +434,7 @@ public class AutocompleteEditTextModel implements AutocompleteEditTextModelBase 
         if (DEBUG) Log.i(TAG, "onCreateInputConnection");
         mLastUpdateSelStart = mDelegate.getSelectionStart();
         mLastUpdateSelEnd = mDelegate.getSelectionEnd();
+        mBatchEditNestCount = 0;
         mInputConnection.setTarget(superInputConnection);
         return mInputConnection;
     }
@@ -441,7 +444,11 @@ public class AutocompleteEditTextModel implements AutocompleteEditTextModelBase 
             Log.i(TAG, "notifyAutocompleteTextStateChanged: DEL[%b] DIS[%b] IGN[%b]", textDeleted,
                     updateDisplay, mIgnoreTextChangeFromAutocomplete);
         }
-        if (mIgnoreTextChangeFromAutocomplete) return;
+        if (mIgnoreTextChangeFromAutocomplete) {
+            // crbug.com/764749
+            Log.w(TAG, "notification ignored");
+            return;
+        }
         mLastEditWasDelete = textDeleted;
         mDelegate.onAutocompleteTextStateChanged(updateDisplay);
         // Occasionally, was seeing the selection in the URL not being cleared during
