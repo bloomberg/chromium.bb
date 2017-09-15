@@ -85,7 +85,7 @@ class DataConsumerHandleTestUtil {
 
     class Context : public ThreadSafeRefCounted<Context> {
      public:
-      static PassRefPtr<Context> Create() { return AdoptRef(new Context); }
+      static RefPtr<Context> Create() { return AdoptRef(new Context); }
       void RecordAttach(const String& handle) {
         MutexLocker locker(logging_mutex_);
         result_.Append("A reader is attached to ");
@@ -185,7 +185,7 @@ class DataConsumerHandleTestUtil {
       USING_FAST_MALLOC(ReaderImpl);
 
      public:
-      ReaderImpl(const String& name, PassRefPtr<Context> context)
+      ReaderImpl(const String& name, RefPtr<Context> context)
           : name_(name.IsolatedCopy()), context_(std::move(context)) {
         context_->RecordAttach(name_.IsolatedCopy());
       }
@@ -210,13 +210,13 @@ class DataConsumerHandleTestUtil {
      public:
       static std::unique_ptr<WebDataConsumerHandle> Create(
           const String& name,
-          PassRefPtr<Context> context) {
+          RefPtr<Context> context) {
         return WTF::WrapUnique(
             new DataConsumerHandle(name, std::move(context)));
       }
 
      private:
-      DataConsumerHandle(const String& name, PassRefPtr<Context> context)
+      DataConsumerHandle(const String& name, RefPtr<Context> context)
           : name_(name.IsolatedCopy()), context_(std::move(context)) {}
 
       std::unique_ptr<Reader> ObtainReader(Client*) {
@@ -265,7 +265,7 @@ class DataConsumerHandleTestUtil {
                                           public WebDataConsumerHandle::Client {
    public:
     using Self = ThreadingHandleNotificationTest;
-    static PassRefPtr<Self> Create() { return AdoptRef(new Self); }
+    static RefPtr<Self> Create() { return AdoptRef(new Self); }
 
     void Run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
@@ -274,7 +274,7 @@ class DataConsumerHandleTestUtil {
 
       PostTaskToReadingThreadAndWait(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Self::ObtainReader, WrapPassRefPtr(this)));
+          CrossThreadBind(&Self::ObtainReader, WrapRefPtr(this)));
     }
 
    private:
@@ -283,10 +283,10 @@ class DataConsumerHandleTestUtil {
     void DidGetReadable() override {
       PostTaskToReadingThread(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Self::ResetReader, WrapPassRefPtr(this)));
+          CrossThreadBind(&Self::ResetReader, WrapRefPtr(this)));
       PostTaskToReadingThread(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Self::SignalDone, WrapPassRefPtr(this)));
+          CrossThreadBind(&Self::SignalDone, WrapRefPtr(this)));
     }
 
     std::unique_ptr<WebDataConsumerHandle> handle_;
@@ -297,7 +297,7 @@ class DataConsumerHandleTestUtil {
         public WebDataConsumerHandle::Client {
    public:
     using Self = ThreadingHandleNoNotificationTest;
-    static PassRefPtr<Self> Create() { return AdoptRef(new Self); }
+    static RefPtr<Self> Create() { return AdoptRef(new Self); }
 
     void Run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
@@ -306,7 +306,7 @@ class DataConsumerHandleTestUtil {
 
       PostTaskToReadingThreadAndWait(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Self::ObtainReader, WrapPassRefPtr(this)));
+          CrossThreadBind(&Self::ObtainReader, WrapRefPtr(this)));
     }
 
    private:
@@ -316,7 +316,7 @@ class DataConsumerHandleTestUtil {
       reader_ = nullptr;
       PostTaskToReadingThread(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Self::SignalDone, WrapPassRefPtr(this)));
+          CrossThreadBind(&Self::SignalDone, WrapRefPtr(this)));
     }
     void DidGetReadable() override { NOTREACHED(); }
 
@@ -366,7 +366,7 @@ class DataConsumerHandleTestUtil {
 
     class Context final : public ThreadSafeRefCounted<Context> {
      public:
-      static PassRefPtr<Context> Create() { return AdoptRef(new Context); }
+      static RefPtr<Context> Create() { return AdoptRef(new Context); }
 
       // This function cannot be called after creating a tee.
       void Add(const Command&);

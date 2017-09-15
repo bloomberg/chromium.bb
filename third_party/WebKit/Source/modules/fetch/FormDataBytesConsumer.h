@@ -9,7 +9,7 @@
 #include "modules/fetch/BytesConsumer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
@@ -24,10 +24,10 @@ class FormDataBytesConsumer final : public BytesConsumer {
   explicit MODULES_EXPORT FormDataBytesConsumer(DOMArrayBufferView*);
   MODULES_EXPORT FormDataBytesConsumer(const void* data, size_t);
   MODULES_EXPORT FormDataBytesConsumer(ExecutionContext*,
-                                       PassRefPtr<EncodedFormData>);
+                                       RefPtr<EncodedFormData>);
   MODULES_EXPORT static FormDataBytesConsumer* CreateForTesting(
       ExecutionContext* execution_context,
-      PassRefPtr<EncodedFormData> form_data,
+      RefPtr<EncodedFormData> form_data,
       BytesConsumer* consumer) {
     return new FormDataBytesConsumer(execution_context, std::move(form_data),
                                      consumer);
@@ -40,11 +40,10 @@ class FormDataBytesConsumer final : public BytesConsumer {
   Result EndRead(size_t read_size) override {
     return impl_->EndRead(read_size);
   }
-  PassRefPtr<BlobDataHandle> DrainAsBlobDataHandle(
-      BlobSizePolicy policy) override {
+  RefPtr<BlobDataHandle> DrainAsBlobDataHandle(BlobSizePolicy policy) override {
     return impl_->DrainAsBlobDataHandle(policy);
   }
-  PassRefPtr<EncodedFormData> DrainAsFormData() override {
+  RefPtr<EncodedFormData> DrainAsFormData() override {
     return impl_->DrainAsFormData();
   }
   void SetClient(BytesConsumer::Client* client) override {
@@ -65,7 +64,7 @@ class FormDataBytesConsumer final : public BytesConsumer {
 
  private:
   MODULES_EXPORT FormDataBytesConsumer(ExecutionContext*,
-                                       PassRefPtr<EncodedFormData>,
+                                       RefPtr<EncodedFormData>,
                                        BytesConsumer*);
 
   const Member<BytesConsumer> impl_;
