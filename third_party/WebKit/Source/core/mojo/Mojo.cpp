@@ -46,6 +46,12 @@ void Mojo::createMessagePipe(MojoCreateMessagePipeResult& result_dict) {
 // static
 void Mojo::createDataPipe(const MojoCreateDataPipeOptions& options_dict,
                           MojoCreateDataPipeResult& result_dict) {
+  if (!options_dict.hasElementNumBytes() ||
+      !options_dict.hasCapacityNumBytes()) {
+    result_dict.setResult(MOJO_RESULT_INVALID_ARGUMENT);
+    return;
+  }
+
   ::MojoCreateDataPipeOptions options = {0};
   options.struct_size = sizeof(options);
   options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
