@@ -24,7 +24,6 @@
 
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/allocator/PartitionAllocator.h"
 #include <algorithm>
 #include <utility>
@@ -38,6 +37,28 @@ class RefPtr;
 
 template <typename T>
 RefPtr<T> AdoptRef(T*);
+
+// requireAdoption() is not overloaded for WTF::RefCounted, which has a built-in
+// assumption that adoption is required. requireAdoption() is for bootstrapping
+// alternate reference count classes that are compatible with RefPtr
+// but cannot have adoption checks enabled by default, such as skia's
+// SkRefCnt. The purpose of requireAdoption() is to enable adoption checks only
+// once it is known that the object will be used with RefPtr.
+inline void RequireAdoption(const void*) {}
+
+template <typename T>
+ALWAYS_INLINE void RefIfNotNull(T* ptr) {
+  if (LIKELY(ptr != 0)) {
+    RequireAdoption(ptr);
+    ptr->Ref();
+  }
+}
+
+template <typename T>
+ALWAYS_INLINE void DerefIfNotNull(T* ptr) {
+  if (LIKELY(ptr != 0))
+    ptr->Deref();
+}
 
 inline void Adopted(const void*) {}
 

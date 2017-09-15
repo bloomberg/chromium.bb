@@ -25,12 +25,12 @@
 
 #include "platform/wtf/HashMap.h"
 
-#include "platform/wtf/PassRefPtr.h"
+#include <memory>
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace WTF {
 

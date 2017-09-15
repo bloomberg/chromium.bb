@@ -234,7 +234,7 @@ struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPtr<P>> {
     return *x;
   }
 
-  static void Store(PassRefPtr<P> value, RefPtr<P>& storage) {
+  static void Store(RefPtr<P> value, RefPtr<P>& storage) {
     storage = std::move(value);
   }
 
