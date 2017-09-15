@@ -40,10 +40,6 @@ a {
 
 #usageStatsLabelContainer {
   -webkit-margin-start: 16px;
-}
-
-#usageStatsLabelContainer label {
-  color: rgba(0, 0, 0, .54);
   line-height: 20px;
 }
 
