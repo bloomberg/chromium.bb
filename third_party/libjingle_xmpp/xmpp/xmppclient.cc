@@ -16,7 +16,7 @@
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
 #include "third_party/webrtc/rtc_base/sigslot.h"
 #include "third_party/webrtc/rtc_base/stringutils.h"
-#include "third_party/webrtc_overrides/webrtc/rtc_base/logging.h"
+#include "third_party/webrtc_overrides/rtc_base/logging.h"
 #include "xmpptask.h"
 
 namespace buzz {

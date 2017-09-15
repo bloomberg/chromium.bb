@@ -16,7 +16,7 @@
 #include "base/sequence_checker.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "webrtc/rtc_base/sigslot.h"
+#include "third_party/webrtc/rtc_base/sigslot.h"
 
 namespace buzz {
 class PreXmppAuth;

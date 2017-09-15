@@ -17,7 +17,7 @@
 
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/webrtc/rtc_base/checks.h"
-#include "third_party/webrtc_overrides/webrtc/rtc_base/logging.h"
+#include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 namespace buzz {
 

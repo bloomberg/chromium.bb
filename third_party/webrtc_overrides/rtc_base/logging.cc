@@ -4,8 +4,8 @@
 
 // NOTE:
 // Since this file includes Chromium headers, it must not include
-// third_party/webrtc/rtc_base/logging.h since it defines some of the same macros as
-// Chromium does and we'll run into conflicts.
+// third_party/webrtc/rtc_base/logging.h since it defines some of the same
+// macros as Chromium does and we'll run into conflicts.
 
 #if defined(WEBRTC_MAC) && !defined(WEBRTC_IOS)
 #include <CoreServices/CoreServices.h>
@@ -22,8 +22,8 @@
 #include "third_party/webrtc/rtc_base/stringutils.h"
 
 // This needs to be included after base/logging.h.
-#include "third_party/webrtc_overrides/webrtc/rtc_base/diagnostic_logging.h"
-#include "third_party/webrtc_overrides/webrtc/rtc_base/logging.h"
+#include "third_party/webrtc_overrides/rtc_base/diagnostic_logging.h"
+#include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 #if defined(WEBRTC_MAC)
 #include "base/mac/mac_logging.h"
@@ -45,7 +45,7 @@
 // DIAGNOSTIC_LOG.
 #define LOG_LAZY_STREAM_DIRECT(file_name, line_number, sev)              \
   LAZY_STREAM(logging::LogMessage(file_name, line_number, sev).stream(), \
-                  WEBRTC_ENABLE_LOGGING)
+              WEBRTC_ENABLE_LOGGING)
 
 namespace rtc {
 
@@ -64,7 +64,8 @@ base::subtle::Atomic32 g_init_logging_delegate_thread_id = 0;
 
 const char* FindLabel(int value, const ConstantLabel entries[]) {
   for (int i = 0; entries[i].label; ++i) {
-    if (value == entries[i].value) return entries[i].label;
+    if (value == entries[i].value)
+      return entries[i].label;
   }
   return 0;
 }
@@ -74,7 +75,7 @@ std::string ErrorName(int err, const ConstantLabel* err_table) {
     return "No error";
 
   if (err_table != 0) {
-    if (const char * value = FindLabel(err, err_table))
+    if (const char* value = FindLabel(err, err_table))
       return value;
   }
 
@@ -200,7 +201,8 @@ DiagnosticLogMessage::~DiagnosticLogMessage() {
     const std::string& str = print_stream_.str();
     if (log_to_chrome_) {
       LOG_LAZY_STREAM_DIRECT(file_name_, line_,
-          rtc::WebRtcSevToChromeSev(severity_)) << str;
+                             rtc::WebRtcSevToChromeSev(severity_))
+          << str;
     }
 
     if (g_logging_delegate_function && severity_ <= LS_INFO) {
@@ -215,8 +217,12 @@ void LogMessage::LogToDebug(int min_sev) {
 }
 
 // Note: this function is a copy from the overriden libjingle implementation.
-void LogMultiline(LoggingSeverity level, const char* label, bool input,
-                  const void* data, size_t len, bool hex_mode,
+void LogMultiline(LoggingSeverity level,
+                  const char* label,
+                  bool input,
+                  const void* data,
+                  size_t len,
+                  bool hex_mode,
                   LogMultilineState* state) {
   // TODO(grunell): This will not do the expected verbosity level checking. We
   // need a macro for the multiline logging.
@@ -224,7 +230,7 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
   if (!LOG_CHECK_LEVEL_V(level))
     return;
 
-  const char * direction = (input ? " << " : " >> ");
+  const char* direction = (input ? " << " : " >> ");
 
   // NULL data means to flush our count of unprintable characters.
   if (!data) {
@@ -250,13 +256,12 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
       for (size_t i = 0; i < line_len; ++i) {
         unsigned char ch = udata[i];
         asc_line[i] = isprint(ch) ? ch : '.';
-        hex_line[i*2 + i/4] = hex_encode(ch >> 4);
-        hex_line[i*2 + i/4 + 1] = hex_encode(ch & 0xf);
+        hex_line[i * 2 + i / 4] = hex_encode(ch >> 4);
+        hex_line[i * 2 + i / 4 + 1] = hex_encode(ch & 0xf);
       }
-      asc_line[sizeof(asc_line)-1] = 0;
-      hex_line[sizeof(hex_line)-1] = 0;
-      LOG_V(level) << label << direction
-                   << asc_line << " " << hex_line << " ";
+      asc_line[sizeof(asc_line) - 1] = 0;
+      hex_line[sizeof(hex_line) - 1] = 0;
+      LOG_V(level) << label << direction << asc_line << " " << hex_line << " ";
       udata += line_len;
       len -= line_len;
     }
@@ -268,9 +273,8 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
   const unsigned char* end = udata + len;
   while (udata < end) {
     const unsigned char* line = udata;
-    const unsigned char* end_of_line = strchrn<unsigned char>(udata,
-                                                              end - udata,
-                                                              '\n');
+    const unsigned char* end_of_line =
+        strchrn<unsigned char>(udata, end - udata, '\n');
     if (!end_of_line) {
       udata = end_of_line = end;
     } else {
@@ -310,11 +314,11 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
     // characters.
     if (consecutive_unprintable) {
       LOG_V(level) << label << direction << "## " << consecutive_unprintable
-                  << " consecutive unprintable ##";
+                   << " consecutive unprintable ##";
       consecutive_unprintable = 0;
     }
     // Strip off trailing whitespace.
-    while ((end_of_line > line) && isspace(*(end_of_line-1))) {
+    while ((end_of_line > line) && isspace(*(end_of_line - 1))) {
       --end_of_line;
     }
     // Filter out any private data
@@ -339,7 +343,8 @@ void InitDiagnosticLoggingDelegateFunction(
     void (*delegate)(const std::string&)) {
 #ifndef NDEBUG
   // Ensure that this function is always called from the same thread.
-  base::subtle::NoBarrier_CompareAndSwap(&g_init_logging_delegate_thread_id, 0,
+  base::subtle::NoBarrier_CompareAndSwap(
+      &g_init_logging_delegate_thread_id, 0,
       static_cast<base::subtle::Atomic32>(base::PlatformThread::CurrentId()));
   DCHECK_EQ(
       g_init_logging_delegate_thread_id,
@@ -365,8 +370,9 @@ void SetExtraLoggingInit(
   g_extra_logging_init_function = function;
 }
 
-bool CheckVlogIsOnHelper(
-    rtc::LoggingSeverity severity, const char* file, size_t N) {
+bool CheckVlogIsOnHelper(rtc::LoggingSeverity severity,
+                         const char* file,
+                         size_t N) {
   return rtc::WebRtcVerbosityLevel(severity) <=
          ::logging::GetVlogLevelHelper(file, N);
 }

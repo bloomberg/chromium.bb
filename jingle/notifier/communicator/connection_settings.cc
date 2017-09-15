@@ -12,7 +12,7 @@
 // the definition of ProtocolType.  Don't use any functions from
 // port.h, since it won't link.
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
-#include "webrtc/p2p/base/port.h"
+#include "third_party/webrtc/p2p/base/port.h"
 
 namespace notifier {
 

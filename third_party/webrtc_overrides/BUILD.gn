@@ -12,9 +12,9 @@ config("jingle_unexported_configs") {
   include_dirs = [
     "../../third_party/webrtc_overrides",
     "../../testing/gtest/include",
-    "../../third_party",
     "../../third_party/libyuv/include",
     "../../third_party/usrsctp/usrsctplib",
+    "../../third_party/webrtc",
   ]
 }
 
@@ -22,7 +22,7 @@ config("jingle_public_configs") {
   include_dirs = [
     "../../third_party/webrtc_overrides",
     "../../testing/gtest/include",
-    "../../third_party",
+    "../../third_party/webrtc",
   ]
 }
 

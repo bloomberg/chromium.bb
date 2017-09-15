@@ -18,7 +18,7 @@
 #define LOGGING_INSIDE_WEBRTC
 
 #include "build/build_config.h"
-#include "third_party/webrtc_overrides/webrtc/rtc_base/logging.h"
+#include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 #if defined(OS_WIN)
 static const wchar_t* const log_file_name = L"libjingle_logging.log";
