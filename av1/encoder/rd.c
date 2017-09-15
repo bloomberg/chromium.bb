@@ -36,6 +36,9 @@
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/encoder.h"
+#if CONFIG_LV_MAP
+#include "av1/encoder/encodetxb.h"
+#endif
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
@@ -508,9 +511,42 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
                                    NULL);
 #endif  // BR_NODE
 
-      for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
-        av1_cost_tokens_from_cdf(pcost->lps_cost[ctx],
+      for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
+        int lps_rate[2];
+        av1_cost_tokens_from_cdf(lps_rate,
                                  fc->coeff_lps_cdf[tx_size][plane][ctx], NULL);
+
+        for (int base_range = 0; base_range < COEFF_BASE_RANGE + 1;
+             ++base_range) {
+          int br_set_idx = base_range < COEFF_BASE_RANGE
+                               ? coeff_to_br_index[base_range]
+                               : BASE_RANGE_SETS;
+
+          pcost->lps_cost[ctx][base_range] = 0;
+
+          for (int idx = 0; idx < BASE_RANGE_SETS; ++idx) {
+            if (idx == br_set_idx) {
+              pcost->lps_cost[ctx][base_range] += pcost->br_cost[idx][ctx][1];
+
+              int br_base = br_index_to_coeff[br_set_idx];
+              int br_offset = base_range - br_base;
+              int extra_bits = (1 << br_extra_bits[idx]) - 1;
+              for (int tok = 0; tok < extra_bits; ++tok) {
+                if (tok == br_offset) {
+                  pcost->lps_cost[ctx][base_range] += lps_rate[1];
+                  break;
+                } else {
+                  pcost->lps_cost[ctx][base_range] += lps_rate[0];
+                }
+              }
+              break;
+            } else {
+              pcost->lps_cost[ctx][base_range] += pcost->br_cost[idx][ctx][0];
+            }
+          }
+          // load the base range cost
+        }
+      }
 #else   // LV_MAP_PROB
       for (int ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx)
         get_rate_cost(fc->txb_skip[tx_size][ctx], pcost->txb_skip_cost[ctx]);

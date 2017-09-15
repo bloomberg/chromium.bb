@@ -364,17 +364,15 @@ static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
 }
 
 static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
-                              const int coeff_lps[2]) {
+                              const int coeff_lps[COEFF_BASE_RANGE + 1]) {
   const tran_low_t min_level = 1 + NUM_BASE_LEVELS;
   const tran_low_t max_level = 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE;
   (void)ctx;
   if (abs_qc >= min_level) {
-    const int cost0 = coeff_lps[0];
-    const int cost1 = coeff_lps[1];
     if (abs_qc >= max_level)
-      return COEFF_BASE_RANGE * cost0;
+      return coeff_lps[COEFF_BASE_RANGE];  // COEFF_BASE_RANGE * cost0;
     else
-      return (abs_qc - min_level) * cost0 + cost1;
+      return coeff_lps[(abs_qc - min_level)];  //  * cost0 + cost1;
   } else {
     return 0;
   }
@@ -467,29 +465,12 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
         ctx = get_br_ctx(qcoeff, scan[c], bwl, height);
 #if BR_NODE
         int base_range = level - 1 - NUM_BASE_LEVELS;
-        int br_set_idx = base_range < COEFF_BASE_RANGE
-                             ? coeff_to_br_index[base_range]
-                             : BASE_RANGE_SETS;
-
-        for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
-          if (br_set_idx == idx) {
-            int br_base = br_index_to_coeff[br_set_idx];
-            int br_offset = base_range - br_base;
-            int extra_bits = (1 << br_extra_bits[idx]) - 1;
-            cost += coeff_costs->br_cost[idx][ctx][1];
-            for (int tok = 0; tok < extra_bits; ++tok) {
-              if (tok == br_offset) {
-                cost += coeff_costs->lps_cost[ctx][1];
-                break;
-              }
-              cost += coeff_costs->lps_cost[ctx][0];
-            }
-            //            cost += extra_bits * av1_cost_bit(128, 1);
-            break;
-          }
-          cost += coeff_costs->br_cost[idx][ctx][0];
+        if (base_range < COEFF_BASE_RANGE) {
+          cost += coeff_costs->lps_cost[ctx][base_range];
+          continue;
+        } else {
+          cost += coeff_costs->lps_cost[ctx][COEFF_BASE_RANGE];
         }
-        if (idx < BASE_RANGE_SETS) continue;
 
         idx = COEFF_BASE_RANGE;
 #else
@@ -841,18 +822,31 @@ static int try_self_level_down(tran_low_t *low_coeff, int coeff_idx,
     const int sign_cost = get_sign_bit_cost(
         qc, coeff_idx, txb_costs->dc_sign_cost, txb_info->txb_ctx->dc_sign_ctx);
     cost_diff -= sign_cost;
+  } else if (abs_qc <= NUM_BASE_LEVELS) {
+    const int *level_cost =
+        get_level_prob(abs_qc, coeff_idx, txb_cache, txb_costs);
+    const int *low_level_cost =
+        get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_costs);
+    cost_diff = -level_cost[1] + low_level_cost[1] - low_level_cost[0];
+  } else if (abs_qc == NUM_BASE_LEVELS + 1) {
+    const int *level_cost =
+        get_level_prob(abs_qc, coeff_idx, txb_cache, txb_costs);
+    const int *low_level_cost =
+        get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_costs);
+    cost_diff = -level_cost[0] + low_level_cost[1] - low_level_cost[0];
   } else if (abs_qc < 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
     const int *level_cost =
         get_level_prob(abs_qc, coeff_idx, txb_cache, txb_costs);
     const int *low_level_cost =
         get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_costs);
 
-    cost_diff = -level_cost[1] + low_level_cost[1] - low_level_cost[0];
+    cost_diff = -level_cost[abs_qc - 1 - NUM_BASE_LEVELS] +
+                low_level_cost[abs(*low_coeff) - 1 - NUM_BASE_LEVELS];
   } else if (abs_qc == 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
     const int *low_level_cost =
         get_level_prob(abs(*low_coeff), coeff_idx, txb_cache, txb_costs);
-    cost_diff =
-        -get_golomb_cost(abs_qc) + low_level_cost[1] - low_level_cost[0];
+    cost_diff = -get_golomb_cost(abs_qc) - low_level_cost[COEFF_BASE_RANGE] +
+                low_level_cost[COEFF_BASE_RANGE - 1];
   } else {
     assert(abs_qc > 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE);
     const tran_low_t abs_low_coeff = abs(*low_coeff);

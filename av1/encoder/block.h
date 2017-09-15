@@ -74,7 +74,7 @@ typedef struct {
   int eob_cost[EOB_COEF_CONTEXTS][2];
   int dc_sign_cost[DC_SIGN_CONTEXTS][2];
   int base_cost[NUM_BASE_LEVELS][COEFF_BASE_CONTEXTS][2];
-  int lps_cost[LEVEL_CONTEXTS][2];
+  int lps_cost[LEVEL_CONTEXTS][COEFF_BASE_RANGE + 1];
 #if BR_NODE
   int br_cost[BASE_RANGE_SETS][LEVEL_CONTEXTS][2];
 #endif
