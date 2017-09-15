@@ -132,7 +132,7 @@ class WebMediaStreamTrack {
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebMediaStreamTrack(MediaStreamComponent*);
   BLINK_PLATFORM_EXPORT WebMediaStreamTrack& operator=(MediaStreamComponent*);
-  BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<MediaStreamComponent>() const;
+  BLINK_PLATFORM_EXPORT operator WTF::RefPtr<MediaStreamComponent>() const;
   BLINK_PLATFORM_EXPORT operator MediaStreamComponent*() const;
 #endif
 

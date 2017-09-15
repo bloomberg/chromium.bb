@@ -42,7 +42,7 @@
 
 #if INSIDE_BLINK
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #endif
 
 namespace blink {
@@ -96,7 +96,7 @@ class WebCryptoResult {
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebCryptoResult(CryptoResult*,
-                                        PassRefPtr<CryptoResultCancel>);
+                                        RefPtr<CryptoResultCancel>);
 #endif
 
  private:

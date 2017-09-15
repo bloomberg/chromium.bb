@@ -125,7 +125,7 @@ class WebMediaStreamSource {
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebMediaStreamSource(MediaStreamSource*);
   BLINK_PLATFORM_EXPORT WebMediaStreamSource& operator=(MediaStreamSource*);
-  BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<MediaStreamSource>() const;
+  BLINK_PLATFORM_EXPORT operator WTF::RefPtr<MediaStreamSource>() const;
   BLINK_PLATFORM_EXPORT operator MediaStreamSource*() const;
 #endif
 

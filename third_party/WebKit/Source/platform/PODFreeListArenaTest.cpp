@@ -56,7 +56,7 @@ struct TestClass2 {
 
 class PODFreeListArenaTest : public ::testing::Test {
  protected:
-  int GetFreeListSize(PassRefPtr<PODFreeListArena<TestClass1>> arena) const {
+  int GetFreeListSize(RefPtr<PODFreeListArena<TestClass1>> arena) const {
     return arena->GetFreeListSizeForTesting();
   }
 };

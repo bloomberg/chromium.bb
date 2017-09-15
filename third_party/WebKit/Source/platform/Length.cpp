@@ -38,7 +38,7 @@ class CalculationValueHandleMap {
  public:
   CalculationValueHandleMap() : index_(1) {}
 
-  int insert(PassRefPtr<CalculationValue> calc_value) {
+  int insert(RefPtr<CalculationValue> calc_value) {
     DCHECK(index_);
     // FIXME calc(): https://bugs.webkit.org/show_bug.cgi?id=80489
     // This monotonically increasing handle generation scheme is potentially
@@ -84,7 +84,7 @@ static CalculationValueHandleMap& CalcHandles() {
   return handle_map;
 }
 
-Length::Length(PassRefPtr<CalculationValue> calc)
+Length::Length(RefPtr<CalculationValue> calc)
     : quirk_(false), type_(kCalculated), is_float_(false) {
   int_value_ = CalcHandles().insert(std::move(calc));
 }

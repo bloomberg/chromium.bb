@@ -146,7 +146,7 @@ const LayoutLocale& LayoutLocale::GetSystem() {
   return *locale;
 }
 
-PassRefPtr<LayoutLocale> LayoutLocale::CreateForTesting(
+RefPtr<LayoutLocale> LayoutLocale::CreateForTesting(
     const AtomicString& locale) {
   return AdoptRef(new LayoutLocale(locale));
 }
@@ -160,9 +160,8 @@ Hyphenation* LayoutLocale::GetHyphenation() const {
   return hyphenation_.Get();
 }
 
-void LayoutLocale::SetHyphenationForTesting(
-    const AtomicString& locale_string,
-    PassRefPtr<Hyphenation> hyphenation) {
+void LayoutLocale::SetHyphenationForTesting(const AtomicString& locale_string,
+                                            RefPtr<Hyphenation> hyphenation) {
   const LayoutLocale& locale = ValueOrDefault(Get(locale_string));
   locale.hyphenation_computed_ = true;
   locale.hyphenation_ = std::move(hyphenation);

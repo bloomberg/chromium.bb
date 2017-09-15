@@ -36,7 +36,7 @@
 
 #if INSIDE_BLINK
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/TypeTraits.h"
 #endif
 
@@ -95,7 +95,7 @@ class PtrStorageImpl<T,
                      strongOrWeak,
                      kRefCountedLifetime> {
  public:
-  typedef PassRefPtr<T> BlinkPtrType;
+  typedef RefPtr<T> BlinkPtrType;
 
   void Assign(BlinkPtrType&& val) {
     static_assert(
@@ -255,7 +255,7 @@ class PtrStorage : public PtrStorageImpl<T,
 //        // Methods that are used only by other Blink classes should only be
 //        // declared when INSIDE_BLINK is set.
 //    #if INSIDE_BLINK
-//        WebFoo(WTF::PassRefPtr<Foo>);
+//        WebFoo(WTF::RefPtr<Foo>);
 //    #endif
 //
 //    private:

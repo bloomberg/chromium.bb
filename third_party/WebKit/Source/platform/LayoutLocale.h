@@ -60,9 +60,9 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
 
   AtomicString LocaleWithBreakKeyword(LineBreakIteratorMode) const;
 
-  static PassRefPtr<LayoutLocale> CreateForTesting(const AtomicString&);
+  static RefPtr<LayoutLocale> CreateForTesting(const AtomicString&);
   static void SetHyphenationForTesting(const AtomicString&,
-                                       PassRefPtr<Hyphenation>);
+                                       RefPtr<Hyphenation>);
 
  private:
   explicit LayoutLocale(const AtomicString&);

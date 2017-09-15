@@ -35,13 +35,13 @@ namespace blink {
 template <class T>
 class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
  public:
-  static PassRefPtr<PODFreeListArena> Create() {
+  static RefPtr<PODFreeListArena> Create() {
     return AdoptRef(new PODFreeListArena);
   }
 
   // Creates a new PODFreeListArena configured with the given Allocator.
-  static PassRefPtr<PODFreeListArena> Create(
-      PassRefPtr<PODArena::Allocator> allocator) {
+  static RefPtr<PODFreeListArena> Create(
+      RefPtr<PODArena::Allocator> allocator) {
     return AdoptRef(new PODFreeListArena(std::move(allocator)));
   }
 
@@ -83,7 +83,7 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
  private:
   PODFreeListArena() : arena_(PODArena::Create()), free_list_(0) {}
 
-  explicit PODFreeListArena(PassRefPtr<PODArena::Allocator> allocator)
+  explicit PODFreeListArena(RefPtr<PODArena::Allocator> allocator)
       : arena_(PODArena::Create(std::move(allocator))), free_list_(0) {}
 
   ~PODFreeListArena() {}

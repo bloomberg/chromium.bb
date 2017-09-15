@@ -42,31 +42,29 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
  public:
   enum : unsigned { kSegmentSize = 0x1000 };
 
-  static PassRefPtr<SharedBuffer> Create() {
-    return AdoptRef(new SharedBuffer);
-  }
+  static RefPtr<SharedBuffer> Create() { return AdoptRef(new SharedBuffer); }
 
   HAS_STRICTLY_TYPED_ARG
-  static PassRefPtr<SharedBuffer> Create(STRICTLY_TYPED_ARG(size)) {
+  static RefPtr<SharedBuffer> Create(STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
     return AdoptRef(new SharedBuffer(size));
   }
 
   HAS_STRICTLY_TYPED_ARG
-  static PassRefPtr<SharedBuffer> Create(const char* data,
-                                         STRICTLY_TYPED_ARG(size)) {
+  static RefPtr<SharedBuffer> Create(const char* data,
+                                     STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
     return AdoptRef(new SharedBuffer(data, size));
   }
 
   HAS_STRICTLY_TYPED_ARG
-  static PassRefPtr<SharedBuffer> Create(const unsigned char* data,
-                                         STRICTLY_TYPED_ARG(size)) {
+  static RefPtr<SharedBuffer> Create(const unsigned char* data,
+                                     STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
     return AdoptRef(new SharedBuffer(data, size));
   }
 
-  static PassRefPtr<SharedBuffer> AdoptVector(Vector<char>&);
+  static RefPtr<SharedBuffer> AdoptVector(Vector<char>&);
 
   ~SharedBuffer();
 
@@ -158,7 +156,7 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
     STACK_ALLOCATED();
 
    public:
-    explicit DeprecatedFlatData(PassRefPtr<const SharedBuffer>);
+    explicit DeprecatedFlatData(RefPtr<const SharedBuffer>);
 
     const char* Data() const { return data_; }
     size_t size() const { return buffer_->size(); }

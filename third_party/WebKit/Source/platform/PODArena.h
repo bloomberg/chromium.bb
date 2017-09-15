@@ -61,7 +61,7 @@ class PODArena final : public RefCounted<PODArena> {
   // fastFree to allocate chunks of storage.
   class FastMallocAllocator : public Allocator {
    public:
-    static PassRefPtr<FastMallocAllocator> Create() {
+    static RefPtr<FastMallocAllocator> Create() {
       return AdoptRef(new FastMallocAllocator);
     }
 
@@ -76,10 +76,10 @@ class PODArena final : public RefCounted<PODArena> {
   };
 
   // Creates a new PODArena configured with a FastMallocAllocator.
-  static PassRefPtr<PODArena> Create() { return AdoptRef(new PODArena); }
+  static RefPtr<PODArena> Create() { return AdoptRef(new PODArena); }
 
   // Creates a new PODArena configured with the given Allocator.
-  static PassRefPtr<PODArena> Create(PassRefPtr<Allocator> allocator) {
+  static RefPtr<PODArena> Create(RefPtr<Allocator> allocator) {
     return AdoptRef(new PODArena(std::move(allocator)));
   }
 
@@ -107,7 +107,7 @@ class PODArena final : public RefCounted<PODArena> {
         current_(0),
         current_chunk_size_(kDefaultChunkSize) {}
 
-  explicit PODArena(PassRefPtr<Allocator> allocator)
+  explicit PODArena(RefPtr<Allocator> allocator)
       : allocator_(std::move(allocator)),
         current_(0),
         current_chunk_size_(kDefaultChunkSize) {}
