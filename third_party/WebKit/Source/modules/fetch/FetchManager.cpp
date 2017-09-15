@@ -69,11 +69,10 @@ class SRIBytesConsumer final : public BytesConsumer {
     DCHECK(underlying_);
     return underlying_->EndRead(read_size);
   }
-  PassRefPtr<BlobDataHandle> DrainAsBlobDataHandle(
-      BlobSizePolicy policy) override {
+  RefPtr<BlobDataHandle> DrainAsBlobDataHandle(BlobSizePolicy policy) override {
     return underlying_ ? underlying_->DrainAsBlobDataHandle(policy) : nullptr;
   }
-  PassRefPtr<EncodedFormData> DrainAsFormData() override {
+  RefPtr<EncodedFormData> DrainAsFormData() override {
     return underlying_ ? underlying_->DrainAsFormData() : nullptr;
   }
   void SetClient(BytesConsumer::Client* client) override {

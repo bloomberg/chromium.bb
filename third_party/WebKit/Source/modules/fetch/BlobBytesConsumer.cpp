@@ -18,10 +18,9 @@
 
 namespace blink {
 
-BlobBytesConsumer::BlobBytesConsumer(
-    ExecutionContext* execution_context,
-    PassRefPtr<BlobDataHandle> blob_data_handle,
-    ThreadableLoader* loader)
+BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* execution_context,
+                                     RefPtr<BlobDataHandle> blob_data_handle,
+                                     ThreadableLoader* loader)
     : ContextLifecycleObserver(execution_context),
       blob_data_handle_(std::move(blob_data_handle)),
       loader_(loader) {
@@ -35,9 +34,8 @@ BlobBytesConsumer::BlobBytesConsumer(
   }
 }
 
-BlobBytesConsumer::BlobBytesConsumer(
-    ExecutionContext* execution_context,
-    PassRefPtr<BlobDataHandle> blob_data_handle)
+BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* execution_context,
+                                     RefPtr<BlobDataHandle> blob_data_handle)
     : BlobBytesConsumer(execution_context,
                         std::move(blob_data_handle),
                         nullptr) {}
@@ -119,7 +117,7 @@ BytesConsumer::Result BlobBytesConsumer::EndRead(size_t read) {
   return body_->EndRead(read);
 }
 
-PassRefPtr<BlobDataHandle> BlobBytesConsumer::DrainAsBlobDataHandle(
+RefPtr<BlobDataHandle> BlobBytesConsumer::DrainAsBlobDataHandle(
     BlobSizePolicy policy) {
   if (!IsClean())
     return nullptr;
@@ -131,7 +129,7 @@ PassRefPtr<BlobDataHandle> BlobBytesConsumer::DrainAsBlobDataHandle(
   return std::move(blob_data_handle_);
 }
 
-PassRefPtr<EncodedFormData> BlobBytesConsumer::DrainAsFormData() {
+RefPtr<EncodedFormData> BlobBytesConsumer::DrainAsFormData() {
   RefPtr<BlobDataHandle> handle =
       DrainAsBlobDataHandle(BlobSizePolicy::kAllowBlobWithInvalidSize);
   if (!handle)
@@ -274,7 +272,7 @@ DEFINE_TRACE(BlobBytesConsumer) {
 
 BlobBytesConsumer* BlobBytesConsumer::CreateForTesting(
     ExecutionContext* execution_context,
-    PassRefPtr<BlobDataHandle> blob_data_handle,
+    RefPtr<BlobDataHandle> blob_data_handle,
     ThreadableLoader* loader) {
   return new BlobBytesConsumer(execution_context, std::move(blob_data_handle),
                                loader);

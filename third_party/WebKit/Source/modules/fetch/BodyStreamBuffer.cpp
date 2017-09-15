@@ -39,7 +39,7 @@ class BodyStreamBuffer::LoaderClient final
         client_(client) {}
 
   void DidFetchDataLoadedBlobHandle(
-      PassRefPtr<BlobDataHandle> blob_data_handle) override {
+      RefPtr<BlobDataHandle> blob_data_handle) override {
     buffer_->EndLoading();
     client_->DidFetchDataLoadedBlobHandle(std::move(blob_data_handle));
   }
@@ -136,7 +136,7 @@ ScriptValue BodyStreamBuffer::Stream() {
           .GetOrEmpty(body));
 }
 
-PassRefPtr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
+RefPtr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
     BytesConsumer::BlobSizePolicy policy) {
   DCHECK(!IsStreamLocked());
   DCHECK(!IsStreamDisturbed());
@@ -155,7 +155,7 @@ PassRefPtr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
   return nullptr;
 }
 
-PassRefPtr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
+RefPtr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
   DCHECK(!IsStreamLocked());
   DCHECK(!IsStreamDisturbed());
   if (IsStreamClosed() || IsStreamErrored())

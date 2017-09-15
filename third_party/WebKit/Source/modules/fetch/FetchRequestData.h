@@ -10,7 +10,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/ReferrerPolicy.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
@@ -44,10 +44,8 @@ class FetchRequestData final
   const KURL& Url() const { return url_; }
   WebURLRequest::RequestContext Context() const { return context_; }
   void SetContext(WebURLRequest::RequestContext context) { context_ = context; }
-  PassRefPtr<SecurityOrigin> Origin() { return origin_; }
-  void SetOrigin(PassRefPtr<SecurityOrigin> origin) {
-    origin_ = std::move(origin);
-  }
+  RefPtr<SecurityOrigin> Origin() { return origin_; }
+  void SetOrigin(RefPtr<SecurityOrigin> origin) { origin_ = std::move(origin); }
   bool SameOriginDataURLFlag() { return same_origin_data_url_flag_; }
   void SetSameOriginDataURLFlag(bool flag) {
     same_origin_data_url_flag_ = flag;
@@ -85,10 +83,10 @@ class FetchRequestData final
   void SetMIMEType(const String& type) { mime_type_ = type; }
   String Integrity() const { return integrity_; }
   void SetIntegrity(const String& integrity) { integrity_ = integrity; }
-  PassRefPtr<EncodedFormData> AttachedCredential() const {
+  RefPtr<EncodedFormData> AttachedCredential() const {
     return attached_credential_;
   }
-  void SetAttachedCredential(PassRefPtr<EncodedFormData> attached_credential) {
+  void SetAttachedCredential(RefPtr<EncodedFormData> attached_credential) {
     attached_credential_ = std::move(attached_credential);
   }
 

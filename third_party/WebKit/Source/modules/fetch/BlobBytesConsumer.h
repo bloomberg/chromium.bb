@@ -11,7 +11,6 @@
 #include "modules/ModulesExport.h"
 #include "modules/fetch/BytesConsumer.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
@@ -33,14 +32,14 @@ class MODULES_EXPORT BlobBytesConsumer final : public BytesConsumer,
 
  public:
   // |handle| can be null. In that case this consumer gets closed.
-  BlobBytesConsumer(ExecutionContext*, PassRefPtr<BlobDataHandle> /* handle */);
+  BlobBytesConsumer(ExecutionContext*, RefPtr<BlobDataHandle> /* handle */);
   ~BlobBytesConsumer() override;
 
   // BytesConsumer implementation
   Result BeginRead(const char** buffer, size_t* available) override;
   Result EndRead(size_t read_size) override;
-  PassRefPtr<BlobDataHandle> DrainAsBlobDataHandle(BlobSizePolicy) override;
-  PassRefPtr<EncodedFormData> DrainAsFormData() override;
+  RefPtr<BlobDataHandle> DrainAsBlobDataHandle(BlobSizePolicy) override;
+  RefPtr<EncodedFormData> DrainAsFormData() override;
   void SetClient(BytesConsumer::Client*) override;
   void ClearClient() override;
   void Cancel() override;
@@ -65,12 +64,12 @@ class MODULES_EXPORT BlobBytesConsumer final : public BytesConsumer,
   DECLARE_TRACE();
 
   static BlobBytesConsumer* CreateForTesting(ExecutionContext*,
-                                             PassRefPtr<BlobDataHandle>,
+                                             RefPtr<BlobDataHandle>,
                                              ThreadableLoader*);
 
  private:
   BlobBytesConsumer(ExecutionContext*,
-                    PassRefPtr<BlobDataHandle>,
+                    RefPtr<BlobDataHandle>,
                     ThreadableLoader*);
   ThreadableLoader* CreateLoader();
   void DidFailInternal();

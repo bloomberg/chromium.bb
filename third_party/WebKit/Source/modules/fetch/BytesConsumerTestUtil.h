@@ -29,9 +29,8 @@ class BytesConsumerTestUtil {
 
     MOCK_METHOD2(BeginRead, Result(const char**, size_t*));
     MOCK_METHOD1(EndRead, Result(size_t));
-    MOCK_METHOD1(DrainAsBlobDataHandle,
-                 PassRefPtr<BlobDataHandle>(BlobSizePolicy));
-    MOCK_METHOD0(DrainAsFormData, PassRefPtr<EncodedFormData>());
+    MOCK_METHOD1(DrainAsBlobDataHandle, RefPtr<BlobDataHandle>(BlobSizePolicy));
+    MOCK_METHOD0(DrainAsFormData, RefPtr<EncodedFormData>());
     MOCK_METHOD1(SetClient, void(Client*));
     MOCK_METHOD0(ClearClient, void());
     MOCK_METHOD0(Cancel, void());
@@ -67,9 +66,9 @@ class BytesConsumerTestUtil {
     void DidFetchDataLoadedArrayBuffer(DOMArrayBuffer* array_buffer) override {
       DidFetchDataLoadedArrayBufferMock(array_buffer);
     }
-    // In mock methods we use RefPtr<> rather than PassRefPtr<>.
+    // TODO(yhirano): Remove DidFetchDataLoadedBlobHandleMock.
     void DidFetchDataLoadedBlobHandle(
-        PassRefPtr<BlobDataHandle> blob_data_handle) override {
+        RefPtr<BlobDataHandle> blob_data_handle) override {
       DidFetchDataLoadedBlobHandleMock(std::move(blob_data_handle));
     }
     void DidFetchDataLoadedFormData(FormData* FormData) override {

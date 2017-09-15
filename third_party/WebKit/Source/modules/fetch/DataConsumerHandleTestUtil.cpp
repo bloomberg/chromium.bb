@@ -101,7 +101,7 @@ void DataConsumerHandleTestUtil::Thread::Shutdown() {
 class DataConsumerHandleTestUtil::ReplayingHandle::ReaderImpl final
     : public Reader {
  public:
-  ReaderImpl(PassRefPtr<Context> context, Client* client)
+  ReaderImpl(RefPtr<Context> context, Client* client)
       : context_(std::move(context)) {
     context_->AttachReader(client);
   }
@@ -233,7 +233,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::Notify() {
   DCHECK(reader_thread_);
   reader_thread_->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
-      CrossThreadBind(&Context::NotifyInternal, WrapPassRefPtr(this)));
+      CrossThreadBind(&Context::NotifyInternal, WrapRefPtr(this)));
 }
 
 void DataConsumerHandleTestUtil::ReplayingHandle::Context::NotifyInternal() {
