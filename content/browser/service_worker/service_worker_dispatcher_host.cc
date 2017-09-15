@@ -1104,8 +1104,7 @@ void ServiceWorkerDispatcherHost::OnTerminateWorker(int handle_id) {
                                     bad_message::SWDH_TERMINATE_BAD_HANDLE);
     return;
   }
-  handle->version()->StopWorker(
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  handle->version()->StopWorker(base::BindOnce(&base::DoNothing));
 }
 
 }  // namespace content

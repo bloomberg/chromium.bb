@@ -205,8 +205,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                    const StatusCallback& callback);
 
   // Stops an embedded worker for this version.
-  // This returns OK (success) if the worker is already stopped.
-  void StopWorker(const StatusCallback& callback);
+  void StopWorker(base::OnceClosure callback);
 
   // Skips waiting and forces this version to become activated.
   void SkipWaitingFromDevTools();
@@ -697,7 +696,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   Status status_ = NEW;
   std::unique_ptr<EmbeddedWorkerInstance> embedded_worker_;
   std::vector<StatusCallback> start_callbacks_;
-  std::vector<StatusCallback> stop_callbacks_;
+  std::vector<base::OnceClosure> stop_callbacks_;
   std::vector<base::OnceClosure> status_change_callbacks_;
 
   // Holds in-flight requests, including requests due to outstanding push,
