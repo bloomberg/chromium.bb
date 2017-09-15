@@ -85,6 +85,8 @@ const char kUnknownIdError[] = "Unknown id";
 const char kNotSupportedOnCurrentPlatformError[] =
     "Operation not supported on the current platform.";
 const char kRetainEntryError[] = "Could not retain file entry.";
+const char kRetainEntryIncognitoError[] =
+    "Could not retain file entry in incognito mode";
 
 #if defined(OS_CHROMEOS)
 const char kNotSupportedOnNonKioskSessionError[] =
@@ -784,8 +786,13 @@ ExtensionFunction::ResponseAction FileSystemRetainEntryFunction::Run() {
       ExtensionsAPIClient::Get()->GetFileSystemDelegate();
   DCHECK(delegate);
 
+  content::BrowserContext* context = browser_context();
+  // Check whether the context is incognito mode or not.
+  if (context && context->IsOffTheRecord())
+    return RespondNow(Error(kRetainEntryIncognitoError));
+
   SavedFilesServiceInterface* saved_files_service =
-      delegate->GetSavedFilesService(browser_context());
+      delegate->GetSavedFilesService(context);
   DCHECK(saved_files_service);
 
   // Add the file to the retain list if it is not already on there.
