@@ -614,6 +614,9 @@ extern const char kOverscrollStartThreshold133Percent[];
 extern const char kOverscrollStartThreshold166Percent[];
 extern const char kOverscrollStartThreshold200Percent[];
 
+extern const char kParallelDownloadingName[];
+extern const char kParallelDownloadingDescription[];
+
 extern const char kPassiveEventListenerDefaultName[];
 extern const char kPassiveEventListenerDefaultDescription[];
 extern const char kPassiveEventListenerTrue[];

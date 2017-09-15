@@ -23794,6 +23794,7 @@ from previous Chrome versions.
   <int value="91938915" label="enable-suggestions-service"/>
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
+  <int value="105046382" label="ParallelDownloading:disabled"/>
   <int value="106840653" label="mus"/>
   <int value="112420129" label="ContentSuggestionsVideoOverlay:enabled"/>
   <int value="118991027" label="enable-accelerated-fixed-root-background"/>
@@ -24092,6 +24093,7 @@ from previous Chrome versions.
   <int value="1070300488" label="disable-webgl"/>
   <int value="1070449228" label="ContextualSuggestionsCarousel:enabled"/>
   <int value="1074359194" label="UseSuggestionsEvenIfFew:enabled"/>
+  <int value="1079032226" label="ParallelDownloading:enabled"/>
   <int value="1081546525" label="ash-enable-docked-windows"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
   <int value="1090377940" label="enable-quic-https"/>
