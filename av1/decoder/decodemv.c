@@ -41,6 +41,40 @@ static PREDICTION_MODE read_intra_mode(aom_reader *r, aom_cdf_prob *cdf) {
   return (PREDICTION_MODE)aom_read_symbol(r, cdf, INTRA_MODES, ACCT_STR);
 }
 
+static void read_cdef(AV1_COMMON *cm, aom_reader *r, MB_MODE_INFO *const mbmi,
+                      int mi_col, int mi_row) {
+  if (cm->all_lossless) return;
+
+  const int m = ~((1 << (6 - MI_SIZE_LOG2)) - 1);
+  if (!(mi_col & (cm->mib_size - 1)) &&
+      !(mi_row & (cm->mib_size - 1))) {  // Top left?
+#if CONFIG_EXT_PARTITION
+    cm->cdef_preset[0] = cm->cdef_preset[1] = cm->cdef_preset[2] =
+        cm->cdef_preset[3] = -1;
+#else
+    cm->cdef_preset = -1;
+#endif
+  }
+// Read CDEF param at first a non-skip coding block
+#if CONFIG_EXT_PARTITION
+  const int mask = 1 << (6 - MI_SIZE_LOG2);
+  const int index = cm->sb_size == BLOCK_128X128
+                        ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
+                        : 0;
+  cm->mi_grid_visible[(mi_row & m) * cm->mi_stride + (mi_col & m)]
+      ->mbmi.cdef_strength = cm->cdef_preset[index] =
+      cm->cdef_preset[index] == -1 && !mbmi->skip
+          ? aom_read_literal(r, cm->cdef_bits, ACCT_STR)
+          : cm->cdef_preset[index];
+#else
+  cm->mi_grid_visible[(mi_row & m) * cm->mi_stride + (mi_col & m)]
+      ->mbmi.cdef_strength = cm->cdef_preset =
+      cm->cdef_preset == -1 && !mbmi->skip
+          ? aom_read_literal(r, cm->cdef_bits, ACCT_STR)
+          : cm->cdef_preset;
+#endif
+}
+
 static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
                              MB_MODE_INFO *const mbmi, int mi_col, int mi_row) {
   FRAME_COUNTS *counts = xd->counts;
@@ -1047,9 +1081,12 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   mbmi->segment_id = read_intra_segment_id(cm, xd, mi_offset, x_mis, y_mis, r);
   mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
+
 #if CONFIG_Q_SEGMENTATION
   mbmi->q_segment_id = read_q_segment_id(cm, xd, mi_row, mi_col, r);
 #endif
+
+  read_cdef(cm, r, mbmi, mi_col, mi_row);
 
   if (cm->delta_q_present_flag) {
     xd->current_qindex =
@@ -2248,6 +2285,8 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 #if CONFIG_Q_SEGMENTATION
   mbmi->q_segment_id = read_q_segment_id(cm, xd, mi_row, mi_col, r);
 #endif  // CONFIG_Q_SEGMENTATION
+
+  read_cdef(cm, r, mbmi, mi_col, mi_row);
 
   if (cm->delta_q_present_flag) {
     xd->current_qindex =

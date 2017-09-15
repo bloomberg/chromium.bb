@@ -903,24 +903,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   }
 #endif
 
-  if (bsize == cm->sb_size) {
-    int width_step = mi_size_wide[BLOCK_64X64];
-    int height_step = mi_size_wide[BLOCK_64X64];
-    int w, h;
-    for (h = 0; (h < mi_size_high[cm->sb_size]) && (mi_row + h < cm->mi_rows);
-         h += height_step) {
-      for (w = 0; (w < mi_size_wide[cm->sb_size]) && (mi_col + w < cm->mi_cols);
-           w += width_step) {
-        if (!cm->all_lossless && !sb_all_skip(cm, mi_row + h, mi_col + w))
-          cm->mi_grid_visible[(mi_row + h) * cm->mi_stride + (mi_col + w)]
-              ->mbmi.cdef_strength =
-              aom_read_literal(r, cm->cdef_bits, ACCT_STR);
-        else
-          cm->mi_grid_visible[(mi_row + h) * cm->mi_stride + (mi_col + w)]
-              ->mbmi.cdef_strength = -1;
-      }
-    }
-  }
 #if CONFIG_LOOP_RESTORATION
   for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;

@@ -23,7 +23,7 @@
 #define REDUCED_TOTAL_STRENGTHS (REDUCED_PRI_STRENGTHS * CDEF_SEC_STRENGTHS)
 #define TOTAL_STRENGTHS (CDEF_PRI_STRENGTHS * CDEF_SEC_STRENGTHS)
 
-static int priconv[REDUCED_PRI_STRENGTHS] = { 0, 1, 2, 3, 4, 7, 12, 25 };
+static int priconv[REDUCED_PRI_STRENGTHS] = { 0, 1, 2, 3, 5, 7, 10, 13 };
 
 /* Search for the best strength to add as an option, knowing we
    already selected nb_strengths options. */
@@ -290,7 +290,11 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int fbr, fbc;
   uint16_t *src[3];
   uint16_t *ref_coeff[3];
+#if CONFIG_EXT_PARTITION
+  static cdef_list dlist[MI_SIZE_128X128 * MI_SIZE_128X128];
+#else
   cdef_list dlist[MI_SIZE_64X64 * MI_SIZE_64X64];
+#endif
   int dir[CDEF_NBLOCKS][CDEF_NBLOCKS] = { { 0 } };
   int var[CDEF_NBLOCKS][CDEF_NBLOCKS] = { { 0 } };
   int stride[3];
@@ -325,7 +329,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   const int total_strengths = fast ? REDUCED_TOTAL_STRENGTHS : TOTAL_STRENGTHS;
   DECLARE_ALIGNED(32, uint16_t, inbuf[CDEF_INBUF_SIZE]);
   uint16_t *in;
-  DECLARE_ALIGNED(32, uint16_t, tmp_dst[CDEF_BLOCKSIZE * CDEF_BLOCKSIZE]);
+  DECLARE_ALIGNED(32, uint16_t, tmp_dst[1 << (MAX_SB_SIZE_LOG2 * 2)]);
   int chroma_cdef = xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
                     xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
   quantizer =
@@ -397,12 +401,37 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       int dirinit = 0;
       nhb = AOMMIN(MI_SIZE_64X64, cm->mi_cols - MI_SIZE_64X64 * fbc);
       nvb = AOMMIN(MI_SIZE_64X64, cm->mi_rows - MI_SIZE_64X64 * fbr);
-      cm->mi_grid_visible[MI_SIZE_64X64 * fbr * cm->mi_stride +
-                          MI_SIZE_64X64 * fbc]
-          ->mbmi.cdef_strength = -1;
+#if CONFIG_EXT_PARTITION
+      BLOCK_SIZE bs = BLOCK_64X64;
+      MB_MODE_INFO *const mbmi =
+          &cm->mi_grid_visible[MI_SIZE_64X64 * fbr * cm->mi_stride +
+                               MI_SIZE_64X64 * fbc]
+               ->mbmi;
+      if (((fbc & 1) &&
+           (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_128X64 ||
+            mbmi->sb_type == BLOCK_128X32)) ||
+          ((fbr & 1) &&
+           (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_64X128 ||
+            mbmi->sb_type == BLOCK_32X128)))
+        continue;
+      if (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_128X64 ||
+          mbmi->sb_type == BLOCK_128X32 || mbmi->sb_type == BLOCK_64X128 ||
+          mbmi->sb_type == BLOCK_32X128)
+        bs = mbmi->sb_type;
+      if (bs == BLOCK_128X128 || bs == BLOCK_128X64 || bs == BLOCK_128X32)
+        nhb = AOMMIN(MI_SIZE_128X128, cm->mi_cols - MI_SIZE_64X64 * fbc);
+      if (bs == BLOCK_128X128 || bs == BLOCK_64X128 || bs == BLOCK_32X128)
+        nvb = AOMMIN(MI_SIZE_128X128, cm->mi_rows - MI_SIZE_64X64 * fbr);
+#endif
+      // No filtering if the entire filter block is skipped
       if (sb_all_skip(cm, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64)) continue;
+#if CONFIG_EXT_PARTITION
       cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
-                                        fbc * MI_SIZE_64X64, dlist, 1);
+                                        fbc * MI_SIZE_64X64, dlist, bs);
+#else
+      cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
+                                        fbc * MI_SIZE_64X64, dlist);
+#endif
       for (pli = 0; pli < nplanes; pli++) {
         for (i = 0; i < CDEF_INBUF_SIZE; i++) inbuf[i] = CDEF_VERY_LARGE;
         for (gi = 0; gi < total_strengths; gi++) {

@@ -50,8 +50,14 @@ static int is_8x8_block_skip(MODE_INFO **grid, int mi_row, int mi_col,
   return is_skip;
 }
 
+#if CONFIG_EXT_PARTITION
 int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
-                         cdef_list *dlist, int filter_skip) {
+                         cdef_list *dlist, BLOCK_SIZE bs)
+#else
+int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
+                         cdef_list *dlist)
+#endif
+{
   int r, c;
   int maxc, maxr;
   MODE_INFO **grid;
@@ -60,8 +66,19 @@ int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   maxc = cm->mi_cols - mi_col;
   maxr = cm->mi_rows - mi_row;
 
+#if CONFIG_EXT_PARTITION
+  if (bs == BLOCK_128X128 || bs == BLOCK_128X64 || bs == BLOCK_128X32)
+    maxc = AOMMIN(maxc, MI_SIZE_128X128);
+  else
+    maxc = AOMMIN(maxc, MI_SIZE_64X64);
+  if (bs == BLOCK_128X128 || bs == BLOCK_64X128 || bs == BLOCK_32X128)
+    maxr = AOMMIN(maxr, MI_SIZE_128X128);
+  else
+    maxr = AOMMIN(maxr, MI_SIZE_64X64);
+#else
   maxr = AOMMIN(maxr, MI_SIZE_64X64);
   maxc = AOMMIN(maxc, MI_SIZE_64X64);
+#endif
 
   const int r_step = mi_size_high[BLOCK_8X8];
   const int c_step = mi_size_wide[BLOCK_8X8];
@@ -71,25 +88,13 @@ int sb_compute_cdef_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   assert(r_step == 1 || r_step == 2);
   assert(c_step == 1 || c_step == 2);
 
-  if (filter_skip) {
-    for (r = 0; r < maxr; r += r_step) {
-      for (c = 0; c < maxc; c += c_step) {
+  for (r = 0; r < maxr; r += r_step) {
+    for (c = 0; c < maxc; c += c_step) {
+      if (!is_8x8_block_skip(grid, mi_row + r, mi_col + c, cm->mi_stride)) {
         dlist[count].by = r >> r_shift;
         dlist[count].bx = c >> c_shift;
-        dlist[count].skip =
-            is_8x8_block_skip(grid, mi_row + r, mi_col + c, cm->mi_stride);
+        dlist[count].skip = 0;
         count++;
-      }
-    }
-  } else {
-    for (r = 0; r < maxr; r += r_step) {
-      for (c = 0; c < maxc; c += c_step) {
-        if (!is_8x8_block_skip(grid, mi_row + r, mi_col + c, cm->mi_stride)) {
-          dlist[count].by = r >> r_shift;
-          dlist[count].bx = c >> c_shift;
-          dlist[count].skip = 0;
-          count++;
-        }
       }
     }
   }
@@ -259,12 +264,13 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       uv_sec_strength += uv_sec_strength == 3;
       if ((level == 0 && sec_strength == 0 && uv_level == 0 &&
            uv_sec_strength == 0) ||
-          (cdef_count = sb_compute_cdef_list(
-               cm, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64, dlist,
-#if CONFIG_CDEF_SINGLEPASS
-               (level & 1) || (uv_level & 1))) == 0)
+#if CONFIG_EXT_PARTITION
+          (cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
+                                             fbc * MI_SIZE_64X64, dlist,
+                                             BLOCK_64X64)) == 0)
 #else
-                 get_filter_skip(level) || get_filter_skip(uv_level))) == 0)
+          (cdef_count = sb_compute_cdef_list(cm, fbr * MI_SIZE_64X64,
+                                             fbc * MI_SIZE_64X64, dlist)) == 0)
 #endif
       {
         cdef_left = 0;
@@ -425,14 +431,14 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 #if CONFIG_CDEF_SINGLEPASS
               NULL, xd->plane[pli].dst.stride,
 #else
-              xd->plane[pli].dst.stride, dst,
+            xd->plane[pli].dst.stride, dst,
 #endif
               &src[CDEF_VBORDER * CDEF_BSTRIDE + CDEF_HBORDER], xdec[pli],
               ydec[pli], dir, NULL, var, pli, dlist, cdef_count, level,
 #if CONFIG_CDEF_SINGLEPASS
               sec_strength, pri_damping, sec_damping, coeff_shift);
 #else
-              sec_strength, sec_damping, pri_damping, coeff_shift, 0, 0);
+            sec_strength, sec_damping, pri_damping, coeff_shift, 0, 0);
 #endif
 
 #if CONFIG_HIGHBITDEPTH

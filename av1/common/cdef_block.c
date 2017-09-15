@@ -394,12 +394,6 @@ static void copy_block_16bit_to_8bit(uint8_t *dst, int dstride,
   }
 }
 
-int get_filter_skip(int level) {
-  int filter_skip = level & 1;
-  if (level == 1) filter_skip = 0;
-  return filter_skip;
-}
-
 void cdef_filter_fb(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in,
                     int xdec, int ydec, int dir[CDEF_NBLOCKS][CDEF_NBLOCKS],
                     int *dirinit, int var[CDEF_NBLOCKS][CDEF_NBLOCKS], int pli,
@@ -421,17 +415,10 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
   int bsize, bsizex, bsizey;
 
 #if CONFIG_CDEF_SINGLEPASS
-  int pri_strength = (level >> 1) << coeff_shift;
-  int filter_skip = level & 1;
+  int pri_strength = level << coeff_shift;
   sec_strength <<= coeff_shift;
-  if (!pri_strength && !sec_strength && filter_skip) {
-    pri_strength = 19 << coeff_shift;
-    sec_strength = 7 << coeff_shift;
-  }
 #else
-  int threshold = (level >> 1) << coeff_shift;
-  int filter_skip = get_filter_skip(level);
-  if (level == 1) threshold = 31 << coeff_shift;
+  int threshold = level << coeff_shift;
 
   cdef_direction_func cdef_direction[] = { cdef_direction_4x4,
                                            cdef_direction_8x8 };
@@ -474,7 +461,7 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
     if (threshold != 0) {
       assert(bsize == BLOCK_8X8 || bsize == BLOCK_4X4);
       for (bi = 0; bi < cdef_count; bi++) {
-        int t = !filter_skip && dlist[bi].skip ? 0 : threshold;
+        int t = dlist[bi].skip ? 0 : threshold;
         by = dlist[bi].by;
         bx = dlist[bi].bx;
         (cdef_direction[bsize == BLOCK_8X8])(
@@ -495,7 +482,7 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
       int py = by << bsizey;
       int px = bx << bsizex;
 
-      if (!filter_skip && dlist[bi].skip) continue;
+      if (dlist[bi].skip) continue;
       if (!dst || hbd) {
         // 16 bit destination if high bitdepth or 8 bit destination not given
         (!threshold || (dir[by][bx] < 4 && dir[by][bx]) ? aom_clpf_block_hbd
@@ -561,8 +548,8 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
 
   assert(bsize == BLOCK_8X8 || bsize == BLOCK_4X4);
   for (bi = 0; bi < cdef_count; bi++) {
-    int t = !filter_skip && dlist[bi].skip ? 0 : pri_strength;
-    int s = !filter_skip && dlist[bi].skip ? 0 : sec_strength;
+    int t = dlist[bi].skip ? 0 : pri_strength;
+    int s = dlist[bi].skip ? 0 : sec_strength;
     by = dlist[bi].by;
     bx = dlist[bi].bx;
     if (dst8)
