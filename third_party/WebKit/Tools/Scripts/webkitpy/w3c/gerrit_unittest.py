@@ -12,7 +12,15 @@ from webkitpy.w3c.gerrit_mock import MockGerritAPI
 
 class GerritCLTest(unittest.TestCase):
 
-    def test_fetch_commit(self):
+    def test_url(self):
+        data = {
+            'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
+            '_number': '638250',
+        }
+        gerrit_cl = GerritCL(data, MockGerritAPI())
+        self.assertEqual(gerrit_cl.url, 'https://chromium-review.googlesource.com/638250')
+
+    def test_fetch_current_revision_commit(self):
         host = MockHost()
         host.executive = mock_git_commands({
             'fetch': '',
