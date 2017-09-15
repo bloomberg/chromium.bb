@@ -251,7 +251,8 @@ MON_BB_CANCEL_BATCH_BUILDS_COUNT = ('chromeos/cbuildbot/buildbucket/'
 MON_BB_CANCEL_PRE_CQ_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                                     'cancel_pre_cq_build_count')
 MON_EXPORT_TO_GCLOUD = 'chromeos/cbuildbot/export_to_gcloud'
-MON_CL_REJECT_COUNT = ('chromeos/cbuildbot/change/rejected_count')
+MON_CL_REJECT_COUNT = 'chromeos/cbuildbot/change/rejected_count'
+MON_GS_ERROR = 'chromeos/gs/error_count'
 
 
 # Re-execution API constants.
