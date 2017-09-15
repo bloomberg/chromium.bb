@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 
 using LifetimeType = offline_pages::LifetimePolicy::LifetimeType;
 
@@ -66,6 +67,7 @@ ClientPolicyController::ClientPolicyController() {
           .SetIsRemovedOnCacheReset(true)
           .SetIsDisabledWhenPrefetchDisabled(true)
           .SetExpirePeriod(base::TimeDelta::FromDays(30))
+          .SetIsSupportedByDownload(IsOfflinePagesPrefetchingUIEnabled())
           .Build()));
   policies_.insert(std::make_pair(
       kBrowserActionsNamespace,
@@ -193,6 +195,10 @@ ClientPolicyController::GetNamespacesDisabledWhenPrefetchDisabled() const {
   }
 
   return *disabled_when_prefetch_disabled_cache_;
+}
+
+bool ClientPolicyController::IsSuggested(const std::string& name_space) const {
+  return GetPolicy(name_space).feature_policy.is_suggested;
 }
 
 void ClientPolicyController::AddPolicyForTest(
