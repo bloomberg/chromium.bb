@@ -6,6 +6,7 @@ import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
 import("//components/grpc_support/include/headers.gni")
 import("//ios/build/config.gni")
+import("//ios/web_view/features.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -133,54 +134,37 @@ ios_web_view_deps = [
 ]
 
 ios_framework_bundle("web_view") {
-  output_name = "ChromeWebView"
+  output_name = ios_web_view_output_name
   info_plist = "Info.plist"
 
   public_headers = ios_web_view_public_headers
+  if (ios_web_view_include_cronet) {
+    public_headers += [ "//components/cronet/ios/Cronet.h" ]
+    public_headers += grpc_public_headers
+  }
 
   public = [
     "public/ChromeWebView.h",
   ]
 
   sources = ios_web_view_sources
+  if (ios_web_view_include_cronet) {
+    sources += [ "//components/cronet/ios/Cronet.h" ]
+  }
 
   deps = ios_web_view_deps
+  if (ios_web_view_include_cronet) {
+    deps += [ "//components/cronet/ios:cronet_sources" ]
+  }
 
   configs += [
     ":config",
     "//build/config/compiler:enable_arc",
   ]
-}
-
-# Same framework as ChromeWebView above, but also exposes Cronet.
-ios_framework_bundle("cronet_web_view_combined") {
-  output_name = "CronetChromeWebView"
-  info_plist = "Info.plist"
-
-  public_headers = ios_web_view_public_headers
-  public_headers += [ "//components/cronet/ios/Cronet.h" ]
-  public_headers += grpc_public_headers
-
-  public = [
-    "public/ChromeWebView.h",
-  ]
-
-  sources = ios_web_view_sources
-  sources += [ "//components/cronet/ios/Cronet.h" ]
-
-  deps = ios_web_view_deps
-  deps += [ "//components/cronet/ios:cronet_sources" ]
-
-  public_deps = [
-    "//components/grpc_support",
-  ]
-
-  configs -= [ "//build/config/compiler:default_symbols" ]
-  configs += [
-    ":config",
-    "//build/config/compiler:symbols",
-    "//build/config/compiler:enable_arc",
-  ]
+  if (ios_web_view_include_cronet) {
+    configs -= [ "//build/config/compiler:default_symbols" ]
+    configs += [ "//build/config/compiler:symbols" ]
+  }
 }
 
 test("ios_web_view_unittests") {
@@ -230,9 +214,9 @@ bundle_data("packed_resources") {
 }
 
 if (additional_toolchains == [] || current_toolchain == default_toolchain) {
-  _package_dir = "$root_out_dir/cronet_ios_web_view"
+  _package_dir = "$root_out_dir/ios_web_view"
 
-  action("cronet_ios_web_view_generate_license") {
+  action("ios_web_view_generate_license") {
     _license_path = "$_package_dir/LICENSE"
 
     script = "//tools/licenses.py"
@@ -252,9 +236,9 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
     ]
   }
 
-  copy("cronet_ios_web_view_package_copy") {
+  copy("ios_web_view_package_copy") {
     sources = [
-      "$root_out_dir/CronetChromeWebView.framework",
+      "$root_out_dir/$ios_web_view_output_name.framework",
       "//AUTHORS",
       "//chrome/VERSION",
     ]
@@ -263,25 +247,25 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
     ]
 
     deps = [
-      ":cronet_web_view_combined",
+      ":web_view",
     ]
   }
 
   if (enable_dsyms) {
-    action("cronet_ios_web_view_dsym_archive") {
+    action("ios_web_view_dsym_archive") {
       script = "//chrome/tools/build/mac/archive_symbols.py"
 
       # These are the dSYMs that will be archived. The sources list must be
       # the target outputs that correspond to the dSYMs (since a dSYM is a
       # directory it cannot be listed as a source file). The targets that
       # generate both the dSYM and binary image are listed in deps.
-      _dsyms = [ "$root_out_dir/CronetChromeWebView.dSYM" ]
+      _dsyms = [ "$root_out_dir/$ios_web_view_output_name.dSYM" ]
 
       sources = [
-        "$root_out_dir/CronetChromeWebView.framework",
+        "$root_out_dir/$ios_web_view_output_name.framework",
       ]
 
-      _output = "$_package_dir/CronetChromeWebView.dSYM.tar.bz2"
+      _output = "$_package_dir/$ios_web_view_output_name.dSYM.tar.bz2"
 
       outputs = [
         _output,
@@ -291,19 +275,19 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
              rebase_path(_dsyms, root_out_dir)
 
       deps = [
-        ":cronet_web_view_combined",
+        ":web_view",
       ]
     }
   } else {
-    group("cronet_ios_web_view_dsym_archive") {
+    group("ios_web_view_dsym_archive") {
     }
   }
 
-  group("cronet_ios_web_view_package") {
+  group("ios_web_view_package") {
     deps = [
-      ":cronet_ios_web_view_dsym_archive",
-      ":cronet_ios_web_view_generate_license",
-      ":cronet_ios_web_view_package_copy",
+      ":ios_web_view_dsym_archive",
+      ":ios_web_view_generate_license",
+      ":ios_web_view_package_copy",
     ]
   }
 }
