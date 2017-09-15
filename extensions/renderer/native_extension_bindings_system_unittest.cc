@@ -172,9 +172,6 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     RendererExtensionRegistry::Get()->Insert(extension);
   }
 
-  void InitEventChangeHandler() {
-  }
-
   NativeExtensionBindingsSystem* bindings_system() {
     return bindings_system_.get();
   }
@@ -566,7 +563,6 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestSendRequestHook) {
 // Note: the notification logic is tested more thoroughly in the APIEventHandler
 // unittests.
 TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
-  InitEventChangeHandler();
   scoped_refptr<Extension> extension =
       ExtensionBuilder("foo").AddPermissions({"idle", "power"}).Build();
 
@@ -618,7 +614,6 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
 
 TEST_F(NativeExtensionBindingsSystemUnittest,
        TestPrefixedApiEventsAndAppBinding) {
-  InitEventChangeHandler();
   scoped_refptr<Extension> app =
       ExtensionBuilder("foo", ExtensionBuilder::Type::PLATFORM_APP).Build();
   EXPECT_TRUE(app->is_platform_app());
@@ -1055,8 +1050,6 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
 }
 
 TEST_F(NativeExtensionBindingsSystemUnittest, UnmanagedEvents) {
-  InitEventChangeHandler();
-
   scoped_refptr<Extension> extension = ExtensionBuilder("extension").Build();
 
   RegisterExtension(extension);
