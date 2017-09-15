@@ -4,11 +4,15 @@
 
 #include "ash/login/ui/login_password_view.h"
 
+#include "ash/login/ui/non_accessible_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/size_range_layout.h"
 #include "ash/system/user/button_from_view.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -19,6 +23,11 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+
+// TODO(jdufault): On two user view the password prompt is visible to
+// accessibility using special navigation keys even though it is invisible. We
+// probably need to customize the text box quite a bit, we may want to do
+// something similar to SearchBoxView.
 
 namespace ash {
 namespace {
@@ -37,7 +46,22 @@ constexpr int kPasswordTotalWidthDp = 204;
 // Distance between the last password dot and the submit arrow/button.
 constexpr int kDistanceBetweenPasswordAndSubmitDp = 0;
 
-const char* kLoginPasswordViewName = "LoginPasswordView";
+constexpr const char kLoginPasswordViewName[] = "LoginPasswordView";
+
+class NonAccessibleSeparator : public views::Separator {
+ public:
+  NonAccessibleSeparator() = default;
+  ~NonAccessibleSeparator() override = default;
+
+  // views::Separator:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    views::Separator::GetAccessibleNodeData(node_data);
+    node_data->AddState(ui::AX_STATE_INVISIBLE);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NonAccessibleSeparator);
+};
 
 }  // namespace
 
@@ -61,7 +85,7 @@ LoginPasswordView::LoginPasswordView(const OnPasswordSubmit& on_submit)
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(root_layout);
 
-  auto* row = new views::View();
+  auto* row = new NonAccessibleView();
   AddChildView(row);
   auto* layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
@@ -71,7 +95,7 @@ LoginPasswordView::LoginPasswordView(const OnPasswordSubmit& on_submit)
 
   // Password textfield. We control the textfield size by sizing the parent
   // view, as the textfield will expand to fill it.
-  auto* textfield_sizer = new views::View();
+  auto* textfield_sizer = new NonAccessibleView();
   textfield_sizer->SetLayoutManager(new SizeRangeLayout(
       gfx::Size(kPasswordInputWidthDp, kPasswordInputHeightDp)));
   textfield_ = new views::Textfield();
@@ -93,10 +117,12 @@ LoginPasswordView::LoginPasswordView(const OnPasswordSubmit& on_submit)
       gfx::CreateVectorIcon(kLockScreenArrowIcon, SK_ColorWHITE));
   submit_button_ = new tray::ButtonFromView(
       submit_icon, this, TrayPopupInkDropStyle::HOST_CENTERED);
+  submit_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_ASH_LOGIN_POD_SUBMIT_BUTTON_ACCESSIBLE_NAME));
   row->AddChildView(submit_button_);
 
   // Separator on bottom.
-  auto* separator = new views::Separator();
+  auto* separator = new NonAccessibleSeparator();
   AddChildView(separator);
 
   // Make sure the textfield always starts with focus.
@@ -104,6 +130,12 @@ LoginPasswordView::LoginPasswordView(const OnPasswordSubmit& on_submit)
 }
 
 LoginPasswordView::~LoginPasswordView() = default;
+
+void LoginPasswordView::UpdateForUser(const mojom::UserInfoPtr& user) {
+  textfield_->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME,
+      base::UTF8ToUTF16(user->display_email)));
+}
 
 void LoginPasswordView::SetFocusEnabledForChildViews(bool enable) {
   auto behavior = enable ? FocusBehavior::ALWAYS : FocusBehavior::NEVER;

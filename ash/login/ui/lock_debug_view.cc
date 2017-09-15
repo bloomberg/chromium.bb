@@ -9,6 +9,7 @@
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
+#include "ash/login/ui/non_accessible_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -17,7 +18,7 @@
 namespace ash {
 namespace {
 
-const char* kDebugUserNames[] = {
+constexpr const char* kDebugUserNames[] = {
     "Angelina Johnson", "Marcus Cohen", "Chris Wallace",
     "Debbie Craig",     "Stella Wong",  "Stephanie Wade",
 };
@@ -34,7 +35,7 @@ struct UserMetadata {
 
 // Wraps |view| so it is sized to its preferred dimensions.
 views::View* WrapViewForPreferredSize(views::View* view) {
-  auto* proxy = new views::View();
+  auto* proxy = new NonAccessibleView();
   proxy->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
   proxy->AddChildView(view);
   return proxy;
@@ -157,7 +158,7 @@ LockDebugView::LockDebugView(LoginDataDispatcher* data_dispatcher)
   lock_ = new LockContentsView(debug_data_dispatcher_->debug_dispatcher());
   AddChildView(lock_);
 
-  debug_ = new views::View();
+  debug_ = new NonAccessibleView();
   debug_->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
   AddChildView(debug_);
 
@@ -170,7 +171,7 @@ LockDebugView::LockDebugView(LoginDataDispatcher* data_dispatcher)
   remove_user_ = CreateButton(this, "Remove");
   debug_->AddChildView(WrapViewForPreferredSize(remove_user_));
 
-  user_column_ = new views::View();
+  user_column_ = new NonAccessibleView();
   user_column_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical));
   debug_->AddChildView(user_column_);

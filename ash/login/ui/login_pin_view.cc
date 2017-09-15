@@ -6,10 +6,12 @@
 
 #include "ash/ash_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -22,7 +24,7 @@
 namespace ash {
 namespace {
 
-const char* kPinLabels[] = {
+constexpr const char* kPinLabels[] = {
     "+",      // 0
     "",       // 1
     " ABC",   // 2
@@ -35,7 +37,7 @@ const char* kPinLabels[] = {
     " WXYZ",  // 9
 };
 
-const char* kLoginPinViewClassName = "LoginPinView";
+constexpr const char kLoginPinViewClassName[] = "LoginPinView";
 
 // View ids. Useful for the test api.
 const int kBackspaceButtonId = -1;
@@ -179,6 +181,8 @@ class DigitPinButton : public BasePinButton {
     label->layer()->SetFillsBoundsOpaquely(false);
     sub_label->SetPaintToLayer();
     sub_label->layer()->SetFillsBoundsOpaquely(false);
+
+    SetAccessibleName(GetButtonLabelForNumber(value));
   }
 
   ~DigitPinButton() override = default;
@@ -204,6 +208,9 @@ class BackspacePinButton : public BasePinButton {
     image->layer()->SetFillsBoundsOpaquely(false);
 
     AddChildView(image);
+
+    SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ASH_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME));
   }
 
   ~BackspacePinButton() override = default;
@@ -291,7 +298,9 @@ void LoginPinView::TestApi::SetBackspaceTimers(
 
 LoginPinView::LoginPinView(const OnPinKey& on_key,
                            const OnPinBackspace& on_backspace)
-    : on_key_(on_key), on_backspace_(on_backspace) {
+    : NonAccessibleView(kLoginPinViewClassName),
+      on_key_(on_key),
+      on_backspace_(on_backspace) {
   DCHECK(on_key_);
   DCHECK(on_backspace_);
 
@@ -300,7 +309,7 @@ LoginPinView::LoginPinView(const OnPinKey& on_key,
 
   // Builds and returns a new view which contains a row of the PIN keyboard.
   auto build_and_add_row = [this]() {
-    auto* row = new views::View();
+    auto* row = new NonAccessibleView();
     row->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, gfx::Insets(), kButtonSeparatorSizeDp));
     AddChildView(row);
@@ -330,7 +339,7 @@ LoginPinView::LoginPinView(const OnPinKey& on_key,
 
   // 0-backspace
   row = build_and_add_row();
-  auto* spacer = new views::View();
+  auto* spacer = new NonAccessibleView();
   spacer->SetPreferredSize(gfx::Size(kButtonSizeDp, kButtonSizeDp));
   row->AddChildView(spacer);
   row->AddChildView(new DigitPinButton(0, on_key_));
@@ -340,10 +349,6 @@ LoginPinView::LoginPinView(const OnPinKey& on_key,
 }
 
 LoginPinView::~LoginPinView() = default;
-
-const char* LoginPinView::GetClassName() const {
-  return kLoginPinViewClassName;
-}
 
 bool LoginPinView::OnKeyPressed(const ui::KeyEvent& event) {
   // TODO: figure out what to do here.

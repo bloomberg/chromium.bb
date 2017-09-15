@@ -11,6 +11,7 @@
 #include "ash/login/ui/login_password_view.h"
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_user_view.h"
+#include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/pin_keyboard_animation.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,7 +28,8 @@
 namespace ash {
 namespace {
 
-const char* kLoginAuthUserViewClassName = "LoginAuthUserView";
+constexpr const char kNonPinRootViewName[] = "NonPinRootView";
+constexpr const char kLoginAuthUserViewClassName[] = "LoginAuthUserView";
 
 // Any non-zero value used for separator width. Makes debugging easier.
 constexpr int kNonEmptyWidthDp = 30;
@@ -42,7 +44,7 @@ const int kDistanceBetweenPasswordFieldAndPinKeyboard = 20;
 const int kDistanceFromPinKeyboardToBigUserViewBottom = 48;
 
 views::View* CreateViewOfHeight(int height) {
-  auto* view = new views::View();
+  auto* view = new NonAccessibleView();
   view->SetPreferredSize(gfx::Size(kNonEmptyWidthDp, height));
   return view;
 }
@@ -98,7 +100,7 @@ LoginPasswordView* LoginAuthUserView::TestApi::password_view() const {
 LoginAuthUserView::LoginAuthUserView(const mojom::UserInfoPtr& user,
                                      const OnAuthCallback& on_auth,
                                      const LoginUserView::OnTap& on_tap)
-    : on_auth_(on_auth) {
+    : NonAccessibleView(kLoginAuthUserViewClassName), on_auth_(on_auth) {
   // Build child views.
   user_view_ = new LoginUserView(LoginDisplayStyle::kLarge,
                                  true /*show_dropdown*/, on_tap);
@@ -107,6 +109,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::UserInfoPtr& user,
   // Enable layer rendering so the password opacity can be animated.
   password_view_->SetPaintToLayer();
   password_view_->layer()->SetFillsBoundsOpaquely(false);
+  password_view_->UpdateForUser(user);
   pin_view_ =
       new LoginPinView(base::BindRepeating(&LoginPasswordView::AppendNumber,
                                            base::Unretained(password_view_)),
@@ -117,7 +120,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::UserInfoPtr& user,
   // Build layout.
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
 
-  non_pin_root_ = new views::View();
+  non_pin_root_ = new NonAccessibleView(kNonPinRootViewName);
   non_pin_root_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
                            kDistanceBetweenUsernameAndPasswordDp));
@@ -141,7 +144,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::UserInfoPtr& user,
     //
     // Also, BoxLayout::kVertical will ignore preferred width, which messes up
     // separator rendering.
-    auto* row = new views::View();
+    auto* row = new NonAccessibleView();
     non_pin_root_->AddChildView(row);
 
     auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
@@ -156,7 +159,7 @@ LoginAuthUserView::LoginAuthUserView(const mojom::UserInfoPtr& user,
 
   {
     // We need to center LoginPinAuth.
-    auto* row = new views::View();
+    auto* row = new NonAccessibleView();
     AddChildView(row);
 
     auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
@@ -300,14 +303,11 @@ void LoginAuthUserView::ApplyAnimationPostLayout() {
 
 void LoginAuthUserView::UpdateForUser(const mojom::UserInfoPtr& user) {
   user_view_->UpdateForUser(user, true /*animate*/);
+  password_view_->UpdateForUser(user);
 }
 
 const mojom::UserInfoPtr& LoginAuthUserView::current_user() const {
   return user_view_->current_user();
-}
-
-const char* LoginAuthUserView::GetClassName() const {
-  return kLoginAuthUserViewClassName;
 }
 
 gfx::Size LoginAuthUserView::CalculatePreferredSize() const {

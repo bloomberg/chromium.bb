@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_data_dispatcher.h"
+#include "ash/login/ui/non_accessible_view.h"
 #include "ash/system/status_area_focus_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -32,7 +33,7 @@ class LoginUserView;
 // screen views are embedded within this one. LockContentsView is per-display,
 // but it is always shown on the primary display. There is only one instance
 // at a time.
-class ASH_EXPORT LockContentsView : public views::View,
+class ASH_EXPORT LockContentsView : public NonAccessibleView,
                                     public LoginDataDispatcher::Observer,
                                     public StatusAreaFocusObserver,
                                     public display::DisplayObserver {
