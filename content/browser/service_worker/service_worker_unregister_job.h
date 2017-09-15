@@ -44,7 +44,6 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   void Start() override;
   void Abort() override;
   bool Equals(ServiceWorkerRegisterJobBase* job) const override;
-  base::TimeTicks StartTime() const override;
   RegistrationJobType GetType() const override;
 
  private:
@@ -57,7 +56,6 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   void ResolvePromise(int64_t registration_id, ServiceWorkerStatusCode status);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  base::TimeTicks start_time_;
   const GURL pattern_;
   std::vector<UnregistrationCallback> callbacks_;
   bool is_promise_resolved_;

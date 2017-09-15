@@ -15,6 +15,14 @@
 
 namespace content {
 
+namespace {
+
+bool IsRegisterJob(const ServiceWorkerRegisterJobBase& job) {
+  return job.GetType() == ServiceWorkerRegisterJobBase::REGISTRATION_JOB;
+}
+
+}  // namespace
+
 ServiceWorkerJobCoordinator::JobQueue::JobQueue() = default;
 
 ServiceWorkerJobCoordinator::JobQueue::JobQueue(JobQueue&&) = default;
@@ -31,6 +39,7 @@ ServiceWorkerRegisterJobBase* ServiceWorkerJobCoordinator::JobQueue::Push(
     StartOneJob();
   } else if (!job->Equals(jobs_.back().get())) {
     jobs_.push_back(std::move(job));
+    DoomInstallingWorkerIfNeeded();
   }
   // Note we are releasing 'job' here in case neither of the two if() statements
   // above were true.
@@ -47,9 +56,25 @@ void ServiceWorkerJobCoordinator::JobQueue::Pop(
     StartOneJob();
 }
 
+void ServiceWorkerJobCoordinator::JobQueue::DoomInstallingWorkerIfNeeded() {
+  DCHECK(!jobs_.empty());
+  if (!IsRegisterJob(*jobs_.front().get()))
+    return;
+  ServiceWorkerRegisterJob* job =
+      static_cast<ServiceWorkerRegisterJob*>(jobs_.front().get());
+  auto it = jobs_.begin();
+  for (++it; it != jobs_.end(); ++it) {
+    if (IsRegisterJob(**it)) {
+      job->DoomInstallingWorker();
+      return;
+    }
+  }
+}
+
 void ServiceWorkerJobCoordinator::JobQueue::StartOneJob() {
   DCHECK(!jobs_.empty());
   jobs_.front()->Start();
+  DoomInstallingWorkerIfNeeded();
 }
 
 void ServiceWorkerJobCoordinator::JobQueue::AbortAll() {
@@ -82,20 +107,21 @@ void ServiceWorkerJobCoordinator::Register(
     const blink::mojom::ServiceWorkerRegistrationOptions& options,
     ServiceWorkerProviderHost* provider_host,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
-  auto job =
-      base::MakeUnique<ServiceWorkerRegisterJob>(context_, script_url, options);
+  std::unique_ptr<ServiceWorkerRegisterJobBase> job(
+      new ServiceWorkerRegisterJob(context_, script_url, options));
   ServiceWorkerRegisterJob* queued_job = static_cast<ServiceWorkerRegisterJob*>(
-      PushOntoJobQueue(options.scope, std::move(job)));
+      job_queues_[options.scope].Push(std::move(job)));
   queued_job->AddCallback(callback, provider_host);
 }
 
 void ServiceWorkerJobCoordinator::Unregister(
     const GURL& pattern,
     const ServiceWorkerUnregisterJob::UnregistrationCallback& callback) {
-  auto job = base::MakeUnique<ServiceWorkerUnregisterJob>(context_, pattern);
+  std::unique_ptr<ServiceWorkerRegisterJobBase> job(
+      new ServiceWorkerUnregisterJob(context_, pattern));
   ServiceWorkerUnregisterJob* queued_job =
       static_cast<ServiceWorkerUnregisterJob*>(
-          PushOntoJobQueue(pattern, std::move(job)));
+          job_queues_[pattern].Push(std::move(job)));
   queued_job->AddCallback(callback);
 }
 
@@ -103,10 +129,11 @@ void ServiceWorkerJobCoordinator::Update(
     ServiceWorkerRegistration* registration,
     bool force_bypass_cache) {
   DCHECK(registration);
-  auto job = base::MakeUnique<ServiceWorkerRegisterJob>(
-      context_, registration, force_bypass_cache,
-      false /* skip_script_comparison */);
-  PushOntoJobQueue(registration->pattern(), std::move(job));
+  job_queues_[registration->pattern()].Push(
+      base::WrapUnique<ServiceWorkerRegisterJobBase>(
+          new ServiceWorkerRegisterJob(context_, registration,
+                                       force_bypass_cache,
+                                       false /* skip_script_comparison */)));
 }
 
 void ServiceWorkerJobCoordinator::Update(
@@ -116,18 +143,19 @@ void ServiceWorkerJobCoordinator::Update(
     ServiceWorkerProviderHost* provider_host,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
   DCHECK(registration);
-  auto job = base::MakeUnique<ServiceWorkerRegisterJob>(
-      context_, registration, force_bypass_cache, skip_script_comparison);
   ServiceWorkerRegisterJob* queued_job = static_cast<ServiceWorkerRegisterJob*>(
-      PushOntoJobQueue(registration->pattern(), std::move(job)));
+      job_queues_[registration->pattern()].Push(
+          base::WrapUnique<ServiceWorkerRegisterJobBase>(
+              new ServiceWorkerRegisterJob(context_, registration,
+                                           force_bypass_cache,
+                                           skip_script_comparison))));
   queued_job->AddCallback(callback, provider_host);
 }
 
-ServiceWorkerRegisterJobBase* ServiceWorkerJobCoordinator::PushOntoJobQueue(
-    const GURL& pattern,
-    std::unique_ptr<ServiceWorkerRegisterJobBase> job) {
-  StartJobTimeoutTimer();
-  return job_queues_[pattern].Push(std::move(job));
+void ServiceWorkerJobCoordinator::AbortAll() {
+  for (auto& job_pair : job_queues_)
+    job_pair.second.AbortAll();
+  job_queues_.clear();
 }
 
 void ServiceWorkerJobCoordinator::FinishJob(const GURL& pattern,
@@ -137,50 +165,6 @@ void ServiceWorkerJobCoordinator::FinishJob(const GURL& pattern,
   pending_jobs->second.Pop(job);
   if (pending_jobs->second.empty())
     job_queues_.erase(pending_jobs);
-  if (job_queues_.empty())
-    job_timeout_timer_.Stop();
-}
-
-constexpr base::TimeDelta ServiceWorkerJobCoordinator::kTimeoutTimerDelay;
-constexpr base::TimeDelta ServiceWorkerJobCoordinator::kJobTimeout;
-
-void ServiceWorkerJobCoordinator::StartJobTimeoutTimer() {
-  if (job_timeout_timer_.IsRunning())
-    return;
-  job_timeout_timer_.Start(FROM_HERE, kTimeoutTimerDelay, this,
-                           &ServiceWorkerJobCoordinator::MaybeTimeoutJobs);
-}
-
-void ServiceWorkerJobCoordinator::MaybeTimeoutJobs() {
-  if (job_queues_.empty())
-    return;
-  for (auto it = job_queues_.begin(); it != job_queues_.end();) {
-    ServiceWorkerRegisterJobBase* job = it->second.front();
-    if (GetTickDuration(job->StartTime()) >= kJobTimeout) {
-      job->Abort();
-      it->second.Pop(job);
-      if (it->second.empty())
-        job_queues_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
-  if (job_queues_.empty())
-    job_timeout_timer_.Stop();
-}
-
-base::TimeDelta ServiceWorkerJobCoordinator::GetTickDuration(
-    base::TimeTicks start_time) const {
-  if (start_time.is_null())
-    return base::TimeDelta();
-  return base::TimeTicks::Now() - start_time;
-}
-
-void ServiceWorkerJobCoordinator::AbortAll() {
-  for (auto& job_pair : job_queues_)
-    job_pair.second.AbortAll();
-  job_queues_.clear();
-  job_timeout_timer_.Stop();
 }
 
 }  // namespace content
