@@ -109,6 +109,12 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // metadata and controls.
   cl->AppendSwitch(switches::kDisableMediaSessionAPI);
 
+  // Enable PlzNavigate (browser-side navigation) by default for WebView before
+  // launch.
+  // TODO(ntfschr): remove this once PlzNavigate is enabled by default on trunk
+  // (crbug/765250).
+  cl->AppendSwitch(switches::kEnableBrowserSideNavigation);
+
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
