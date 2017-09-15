@@ -325,14 +325,17 @@ class Page17(KeySilkCasesPage):
   def StressHideyBars(self, action_runner):
     with action_runner.CreateGestureInteraction(
         'ScrollAction', repeatable=True):
+      action_runner.WaitForElement(selector='#messages')
       action_runner.ScrollElement(
         selector='#messages', direction='down', speed_in_pixels_per_second=200)
     with action_runner.CreateGestureInteraction(
         'ScrollAction', repeatable=True):
+      action_runner.WaitForElement(selector='#messages')
       action_runner.ScrollElement(
           selector='#messages', direction='up', speed_in_pixels_per_second=200)
     with action_runner.CreateGestureInteraction(
         'ScrollAction', repeatable=True):
+      action_runner.WaitForElement(selector='#messages')
       action_runner.ScrollElement(
           selector='#messages', direction='down',
           speed_in_pixels_per_second=200)
