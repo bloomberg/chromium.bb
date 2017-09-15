@@ -693,10 +693,6 @@
       name: "NewRemotePlaybackPipeline",
     },
     {
-      name: "NotificationBadge",
-      status: "stable",
-    },
-    {
       name: "NotificationConstructor",
       status: "stable",
     },
