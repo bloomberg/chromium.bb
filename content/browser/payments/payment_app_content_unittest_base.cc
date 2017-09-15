@@ -43,8 +43,7 @@ void UnregisterServiceWorkerCallback(bool* called,
   *called = true;
 }
 
-void StopWorkerCallback(bool* called, ServiceWorkerStatusCode status) {
-  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+void StopWorkerCallback(bool* called) {
   *called = true;
 }
 

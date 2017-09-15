@@ -492,7 +492,7 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
                  is_browser_startup_complete, callback));
 }
 
-void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
+void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
   TRACE_EVENT_INSTANT2("ServiceWorker",
                        "ServiceWorkerVersion::StopWorker (instant)",
                        TRACE_EVENT_SCOPE_THREAD, "Script", script_url_.spec(),
@@ -503,16 +503,16 @@ void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
     case EmbeddedWorkerStatus::RUNNING:
       embedded_worker_->Stop();
       if (running_status() == EmbeddedWorkerStatus::STOPPED) {
-        RunSoon(base::BindOnce(callback, SERVICE_WORKER_OK));
+        RunSoon(std::move(callback));
         return;
       }
-      stop_callbacks_.push_back(callback);
+      stop_callbacks_.push_back(std::move(callback));
       return;
     case EmbeddedWorkerStatus::STOPPING:
-      stop_callbacks_.push_back(callback);
+      stop_callbacks_.push_back(std::move(callback));
       return;
     case EmbeddedWorkerStatus::STOPPED:
-      RunSoon(base::BindOnce(callback, SERVICE_WORKER_OK));
+      RunSoon(std::move(callback));
       return;
   }
   NOTREACHED();
@@ -1892,7 +1892,10 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   StopTimeoutTimer();
 
   // Fire all stop callbacks.
-  RunCallbacks(this, &stop_callbacks_, SERVICE_WORKER_OK);
+  std::vector<base::OnceClosure> callbacks;
+  callbacks.swap(stop_callbacks_);
+  for (auto& callback : callbacks)
+    std::move(callback).Run();
 
   if (!should_restart) {
     // Let all start callbacks fail.

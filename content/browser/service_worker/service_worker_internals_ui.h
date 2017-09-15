@@ -23,15 +23,12 @@ namespace content {
 
 class StoragePartition;
 class ServiceWorkerContextWrapper;
-class ServiceWorkerVersion;
 
 class ServiceWorkerInternalsUI
     : public WebUIController,
       public base::SupportsWeakPtr<ServiceWorkerInternalsUI> {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
-  typedef void (ServiceWorkerVersion::*ServiceWorkerVersionMethod)(
-      const StatusCallback& callback);
 
   explicit ServiceWorkerInternalsUI(WebUI* web_ui);
 
@@ -48,8 +45,7 @@ class ServiceWorkerInternalsUI
   void GetOptions(const base::ListValue* args);
   void SetOption(const base::ListValue* args);
   void GetAllRegistrations(const base::ListValue* args);
-  void CallServiceWorkerVersionMethod(ServiceWorkerVersionMethod method,
-                                      const base::ListValue* args);
+  void StopWorker(const base::ListValue* args);
   void InspectWorker(const base::ListValue* args);
   void Unregister(const base::ListValue* args);
   void StartWorker(const base::ListValue* args);
@@ -61,6 +57,9 @@ class ServiceWorkerInternalsUI
                    StoragePartition** result_partition,
                    StoragePartition* storage_partition) const;
 
+  void StopWorkerWithId(scoped_refptr<ServiceWorkerContextWrapper> context,
+                        int64_t version_id,
+                        const StatusCallback& callback);
   void UnregisterWithScope(scoped_refptr<ServiceWorkerContextWrapper> context,
                            const GURL& scope,
                            const StatusCallback& callback) const;
