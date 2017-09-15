@@ -32,6 +32,12 @@ initWithCollectionController:
 
 - (nullable instancetype)init NS_UNAVAILABLE;
 
+// When the omnibox is focused, this value represents the shift distance of the
+// collection needed to pin the omnibox to the top. It is 0 if the omnibox has
+// not been moved when focused (i.e. the collection was already scrolled to
+// top).
+@property(nonatomic, assign) CGFloat collectionShiftingOffset;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_HEADER_SYNCHRONIZER_H_
