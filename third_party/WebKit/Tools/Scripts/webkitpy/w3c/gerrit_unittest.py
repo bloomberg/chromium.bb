@@ -4,38 +4,40 @@
 
 import unittest
 
-from webkitpy.common.host import Host
-from webkitpy.common.path_finder import PathFinder
+from webkitpy.common.host_mock import MockHost
+from webkitpy.common.system.executive_mock import mock_git_commands
 from webkitpy.w3c.gerrit import GerritCL
 from webkitpy.w3c.gerrit_mock import MockGerritAPI
 
 
-class TestExporterTest(unittest.TestCase):
+class GerritCLTest(unittest.TestCase):
 
-    def test_filter_transform_patch(self):
-        host = Host()
-        finder = PathFinder(host.filesystem)
-        resources_path = finder.path_from_tools_scripts('webkitpy', 'w3c', 'resources')
-        sample_patch = host.filesystem.read_text_file(host.filesystem.join(resources_path, 'sample.patch'))
-        expected_patch = host.filesystem.read_text_file(host.filesystem.join(resources_path, 'expected.patch'))
+    def test_fetch_commit(self):
+        host = MockHost()
+        host.executive = mock_git_commands({
+            'fetch': '',
+            'rev-parse': '4de71d0ce799af441c1f106c5432c7fa7256be45',
+            'footers': 'no-commit-position-yet'
+        }, strict=True)
+        data = {
+            'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
+            'subject': 'fake subject',
+            '_number': '638250',
+            'current_revision': '1',
+            'revisions': {'1': {
+                'fetch': {'http': {
+                    'url': 'https://chromium.googlesource.com/chromium/src',
+                    'ref': 'refs/changes/50/638250/1'
+                }}
+            }},
+            'owner': {'email': 'test@chromium.org'},
+        }
+        gerrit_cl = GerritCL(data, MockGerritAPI())
+        commit = gerrit_cl.fetch_current_revision_commit(host)
 
-        cl = GerritCL({'change_id': 1}, MockGerritAPI(None, None, None))
-        actual_patch = cl.filter_transform_patch(sample_patch)
-        self.assertEqual(actual_patch, expected_patch)
-
-    def test_filter_transform_patch_removes_baselines(self):
-        host = Host()
-        finder = PathFinder(host.filesystem)
-        resources_path = finder.path_from_tools_scripts('webkitpy', 'w3c', 'resources')
-        sample_patch = host.filesystem.read_text_file(host.filesystem.join(resources_path, 'sample2.patch'))
-        expected_patch = host.filesystem.read_text_file(host.filesystem.join(resources_path, 'expected2.patch'))
-
-        cl = GerritCL({'change_id': 1}, MockGerritAPI(None, None, None))
-        actual_patch = cl.filter_transform_patch(sample_patch)
-        self.assertEqual(actual_patch, expected_patch)
-
-    def test_strip_commit_positions(self):
-        commit_with_footers = ('Test commit\nChange-Id: foobar\n'
-                               'Cr-Original-Commit-Position: refs/heads/master@{#10}\n'
-                               'Cr-Commit-Position: refs/heads/master@{#10}')
-        self.assertEqual(GerritCL.strip_commit_positions(commit_with_footers), 'Test commit\nChange-Id: foobar')
+        self.assertEqual(commit.sha, '4de71d0ce799af441c1f106c5432c7fa7256be45')
+        self.assertEqual(host.executive.calls, [
+            ['git', 'fetch', 'https://chromium.googlesource.com/chromium/src', 'refs/changes/50/638250/1'],
+            ['git', 'rev-parse', 'FETCH_HEAD'],
+            ['git', 'footers', '--position', '4de71d0ce799af441c1f106c5432c7fa7256be45']
+        ])

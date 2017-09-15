@@ -17,7 +17,18 @@ class MockGit(object):
         self.added_paths = set()
         self._filesystem = filesystem or MockFileSystem()
         self._executive = executive or MockExecutive()
+        self._executable_name = 'git'
         self._local_commits = []
+
+    def run(self, command_args, cwd=None, stdin=None, decode_output=True, return_exit_code=False):
+        full_command_args = [self._executable_name] + command_args
+        cwd = cwd or self.checkout_root
+        return self._executive.run_command(
+            full_command_args,
+            cwd=cwd,
+            input=stdin,
+            return_exit_code=return_exit_code,
+            decode_output=decode_output)
 
     def add(self, destination_path, return_exit_code=False):
         self.add_list([destination_path], return_exit_code)

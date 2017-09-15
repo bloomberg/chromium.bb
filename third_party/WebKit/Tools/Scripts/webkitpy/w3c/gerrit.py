@@ -5,8 +5,9 @@
 import base64
 import json
 import logging
-import re
 
+from webkitpy.w3c.chromium_commit import ChromiumCommit
+from webkitpy.w3c.chromium_finder import absolute_chromium_dir
 from webkitpy.w3c.common import CHROMIUM_WPT_DIR, is_file_exportable
 
 _log = logging.getLogger(__name__)
@@ -90,18 +91,6 @@ class GerritCL(object):
     def has_review_started(self):
         return self._data.get('has_review_started')
 
-    def latest_commit_message_with_footers(self):
-        return self.strip_commit_positions(self.current_revision['commit_with_footers'])
-
-    @staticmethod
-    def strip_commit_positions(commit_with_footers):
-        """Strips Cr-{Original-}Commit-Position from the footers.
-
-        Commit positions are incorrect for in-progress CLs, which causes
-        confusions. See crbug.com/737178 for more context.
-        """
-        return re.sub(r'\nCr-(Original-)?Commit-Position:.*', '', commit_with_footers)
-
     @property
     def current_revision_description(self):
         return self.current_revision['description']
@@ -113,6 +102,8 @@ class GerritCL(object):
         return self.api.post(path, {'message': message})
 
     def is_exportable(self):
+        # TODO(robertma): Consolidate with the related part in chromium_exportable_commits.py.
+
         files = self.current_revision['files'].keys()
 
         # Guard against accidental CLs that touch thousands of files.
@@ -143,47 +134,23 @@ class GerritCL(object):
 
         return True
 
-    def get_patch(self):
-        """Gets patch for latest revision of CL.
+    def fetch_current_revision_commit(self, host):
+        """Fetches the git commit for the latest revision of CL.
 
-        Filtered to only contain diffs for changes in WPT.
+        This method fetches the commit corresponding to the latest revision of
+        CL to local Chromium repository, but does not checkout the commit to the
+        working tree. All changes in the CL are squashed into this one commit,
+        regardless of how many revisions have been uploaded.
+
+        Args:
+            host: A Host object for git invocation.
+
+        Returns:
+            A ChromiumCommit object (the fetched commit).
         """
-        path = '/changes/%s/revisions/current/patch' % self.change_id
-        patch = base64.b64decode(self.api.get(path, raw=True))
-        patch = self.filter_transform_patch(patch)
-
-        return patch
-
-    def filter_transform_patch(self, patch):
-        """Filters a patch for only exportable changes.
-
-        This method expects a `git diff`-formatted patch.
-        """
-        filtered_patch = []
-        diff_re = re.compile(r'^diff --git a/(.*) b/(.*)$')
-
-        # Patch begins with message, always applicable.
-        in_exportable_diff = True
-
-        for line in patch.splitlines():
-            # If we're not changing files, continue same behavior.
-            if not line.startswith('diff --git'):
-                if in_exportable_diff:
-                    filtered_patch.append(line)
-                continue
-
-            # File is being changed, detect if it's exportable.
-            match = diff_re.match(line)
-            assert match, "%s is not an expected git diff header" % line
-            _, new_file = match.groups()
-            if CHROMIUM_WPT_DIR in new_file and is_file_exportable(new_file):
-                in_exportable_diff = True
-                filtered_patch.append(line)
-            else:
-                in_exportable_diff = False
-
-        # Join into string; the newline at the end is required.
-        if not filtered_patch[-1].strip():
-            filtered_patch = filtered_patch[:-1]
-        patch = '\n'.join(filtered_patch) + '\n'
-        return patch.replace(CHROMIUM_WPT_DIR, '')
+        git = host.git(absolute_chromium_dir(host))
+        url = self.current_revision['fetch']['http']['url']
+        ref = self.current_revision['fetch']['http']['ref']
+        git.run(['fetch', url, ref])
+        sha = git.run(['rev-parse', 'FETCH_HEAD']).strip()
+        return ChromiumCommit(host, sha=sha)
