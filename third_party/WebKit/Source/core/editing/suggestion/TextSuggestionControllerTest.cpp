@@ -4,11 +4,11 @@
 
 #include "core/editing/suggestion/TextSuggestionController.h"
 
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/SpellChecker.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 

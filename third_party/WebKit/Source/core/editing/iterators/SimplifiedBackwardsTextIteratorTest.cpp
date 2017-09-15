@@ -4,8 +4,8 @@
 
 #include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
 
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/testing/EditingTestBase.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/Editor.h"
 #include "core/editing/commands/EditorCommandNames.h"
+#include "core/editing/testing/EditingTestBase.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/wtf/StringExtras.h"
 #include "public/platform/WebEditingCommandType.h"

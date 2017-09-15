@@ -4,10 +4,10 @@
 
 #include "core/editing/commands/SplitTextNodeCommand.h"
 
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/commands/EditingState.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 

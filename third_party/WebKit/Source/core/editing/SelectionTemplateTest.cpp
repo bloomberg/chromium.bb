@@ -4,7 +4,7 @@
 
 #include "core/editing/SelectionTemplate.h"
 
-#include "core/editing/EditingTestBase.h"
+#include "core/editing/testing/EditingTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

@@ -5,7 +5,7 @@
 #include "core/dom/Text.h"
 
 #include "core/dom/Range.h"
-#include "core/editing/EditingTestBase.h"
+#include "core/editing/testing/EditingTestBase.h"
 #include "core/html/HTMLPreElement.h"
 #include "core/layout/LayoutText.h"
 

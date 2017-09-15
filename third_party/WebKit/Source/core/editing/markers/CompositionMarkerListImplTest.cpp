@@ -4,9 +4,9 @@
 
 #include "core/editing/markers/CompositionMarkerListImpl.h"
 
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/markers/CompositionMarker.h"
 #include "core/editing/markers/MarkerTestUtilities.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 

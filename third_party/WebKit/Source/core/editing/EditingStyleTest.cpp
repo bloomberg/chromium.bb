@@ -6,7 +6,7 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
-#include "core/editing/EditingTestBase.h"
+#include "core/editing/testing/EditingTestBase.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLHeadElement.h"

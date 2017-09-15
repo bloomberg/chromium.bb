@@ -4,8 +4,8 @@
 
 #include "core/editing/markers/TextMatchMarkerListImpl.h"
 
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/markers/TextMatchMarker.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 

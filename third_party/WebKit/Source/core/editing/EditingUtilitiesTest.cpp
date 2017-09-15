@@ -5,8 +5,8 @@
 #include "core/editing/EditingUtilities.h"
 
 #include "core/dom/StaticNodeList.h"
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 
