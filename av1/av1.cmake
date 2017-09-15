@@ -219,12 +219,6 @@ if (CONFIG_HIGHBITDEPTH)
       ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/x86/av1_highbd_convolve_sse4.c")
 else ()
-  set(AOM_AV1_COMMON_INTRIN_DSPR2
-      ${AOM_AV1_COMMON_INTRIN_DSPR2}
-      "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans16_dspr2.c"
-      "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans4_dspr2.c"
-      "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans8_dspr2.c")
-
   set(AOM_AV1_COMMON_INTRIN_NEON
       ${AOM_AV1_COMMON_INTRIN_NEON}
       "${AOM_ROOT}/av1/encoder/arm/neon/dct_neon.c"
@@ -633,11 +627,6 @@ function (setup_av1_targets)
                                     "aom_av1_encoder"
                                     "AOM_AV1_ENCODER_INTRIN_NEON" "aom")
     endif ()
-  endif ()
-
-  if (HAVE_DSPR2)
-    add_intrinsics_object_library("" "dspr2" "aom_av1_common"
-                                  "AOM_AV1_COMMON_INTRIN_DSPR2" "aom")
   endif ()
 
   if (HAVE_MSA)

@@ -147,12 +147,6 @@ AV1_COMMON_SRCS-yes += common/pvq_state.h
 AV1_COMMON_SRCS-yes += common/generic_code.h
 endif
 
-ifneq ($(CONFIG_HIGHBITDEPTH),yes)
-AV1_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/av1_itrans4_dspr2.c
-AV1_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/av1_itrans8_dspr2.c
-AV1_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/av1_itrans16_dspr2.c
-endif
-
 # common (msa)
 AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/av1_idct4x4_msa.c
 AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/av1_idct8x8_msa.c
