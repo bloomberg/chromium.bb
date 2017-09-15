@@ -755,11 +755,13 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, MAYBE_AppCacheRegistered) {
   GURL appcache_page_url = GetURLWithReplacement(
       kPrefetchAppcache, "REPLACE_WITH_MANIFEST", manifest_url.spec());
 
-  // Load the page into the appcache.
+  // Load the page into the appcache, and then the prefetch page so it can be
+  // cached. After each navigation, wait for the appcache to catch up. This
+  // avoids timeouts which for an unknown reason occur if the Appcache is
+  // queried only after both navitations.
   ui_test_utils::NavigateToURL(current_browser(), appcache_page_url);
-  // Load the prefetch page so it can be cached.
+  WaitForAppcache(manifest_url);
   ui_test_utils::NavigateToURL(current_browser(), prefetch_page_url);
-
   WaitForAppcache(manifest_url);
 
   // If a page is prefetch shortly after being loading, the prefetch is
