@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
@@ -74,6 +77,16 @@ PasswordReuseLookup::ReputationVerdict GetVerdictToLogFromResponse(
   return PasswordReuseLookup::VERDICT_UNSPECIFIED;
 }
 
+// Given a |web_contents|, returns the navigation id of its last committed
+// navigation.
+int64_t GetLastCommittedNavigationID(const content::WebContents* web_contents) {
+  content::NavigationEntry* navigation =
+      web_contents->GetController().GetLastCommittedEntry();
+  return navigation
+             ? GetMicrosecondsSinceWindowsEpoch(navigation->GetTimestamp())
+             : 0;
+}
+
 }  // namespace
 
 ChromePasswordProtectionService::ChromePasswordProtectionService(
@@ -88,8 +101,13 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
           HostContentSettingsMapFactory::GetForProfile(profile)),
       ui_manager_(sb_service->ui_manager()),
       profile_(profile),
-      navigation_observer_manager_(sb_service->navigation_observer_manager()) {
-  DCHECK(profile_);
+      navigation_observer_manager_(sb_service->navigation_observer_manager()),
+      pref_change_registrar_(new PrefChangeRegistrar) {
+  pref_change_registrar_->Init(profile_->GetPrefs());
+  pref_change_registrar_->Add(
+      password_manager::prefs::kSyncPasswordHash,
+      base::Bind(&ChromePasswordProtectionService::OnGaiaPasswordChanged,
+                 base::Unretained(this)));
 }
 
 ChromePasswordProtectionService::~ChromePasswordProtectionService() {
@@ -106,13 +124,29 @@ ChromePasswordProtectionService::~ChromePasswordProtectionService() {
         GetStoredVerdictCount(
             LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
   }
+
+  if (pref_change_registrar_)
+    pref_change_registrar_->RemoveAll();
+}
+
+// static
+ChromePasswordProtectionService*
+ChromePasswordProtectionService::GetPasswordProtectionService(
+    Profile* profile) {
+  if (g_browser_process && g_browser_process->safe_browsing_service()) {
+    return static_cast<safe_browsing::ChromePasswordProtectionService*>(
+        g_browser_process->safe_browsing_service()
+            ->GetPasswordProtectionService(profile));
+  }
+  return nullptr;
 }
 
 // static
 bool ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
     Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(
-      prefs::kSafeBrowsingChangePasswordInSettingsEnabled);
+  ChromePasswordProtectionService* service =
+      ChromePasswordProtectionService::GetPasswordProtectionService(profile);
+  return service && !service->unhandled_password_reuses().empty();
 }
 
 void ChromePasswordProtectionService::FillReferrerChain(
@@ -148,6 +182,12 @@ void ChromePasswordProtectionService::ShowModalWarning(
                      PasswordProtectionService::MODAL_DIALOG));
 #endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
   OnWarningShown(web_contents, PasswordProtectionService::MODAL_DIALOG);
+  if (web_contents->GetLastCommittedURL().is_valid()) {
+    unhandled_password_reuses_[Origin(web_contents->GetLastCommittedURL())] =
+        GetLastCommittedNavigationID(web_contents);
+  }
+  // TODO(jialiul): Remove entry from unhandled_password_reuses_ when user marks
+  // site as legitimate in |OnWarningShown()| function.
 }
 
 void ChromePasswordProtectionService::AddObserver(Observer* observer) {
@@ -275,16 +315,14 @@ ChromePasswordProtectionService::GetSyncAccountType() {
 std::unique_ptr<UserEventSpecifics>
 ChromePasswordProtectionService::GetUserEventSpecifics(
     content::WebContents* web_contents) {
-  content::NavigationEntry* navigation =
-      web_contents->GetController().GetLastCommittedEntry();
-  if (!navigation)
+  int64_t navigation_id = GetLastCommittedNavigationID(web_contents);
+  if (navigation_id <= 0)
     return nullptr;
 
   auto specifics = base::MakeUnique<UserEventSpecifics>();
   specifics->set_event_time_usec(
       GetMicrosecondsSinceWindowsEpoch(base::Time::Now()));
-  specifics->set_navigation_id(
-      GetMicrosecondsSinceWindowsEpoch(navigation->GetTimestamp()));
+  specifics->set_navigation_id(navigation_id);
   return specifics;
 }
 
@@ -386,16 +424,14 @@ void ChromePasswordProtectionService::UpdateSecurityState(
     SBThreatType threat_type,
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::NavigationEntry* entry =
-      web_contents->GetController().GetVisibleEntry();
-  if (!ui_manager_ || !entry)
+  const GURL url = web_contents->GetLastCommittedURL();
+  if (!url.is_valid())
     return;
 
-  const GURL url = entry->GetURL();
   const GURL url_with_empty_path = url.GetWithEmptyPath();
   if (threat_type == SB_THREAT_TYPE_SAFE) {
     ui_manager_->RemoveWhitelistUrlSet(url_with_empty_path, web_contents,
-                                       false /* from_pending_only */);
+                                       /*from_pending_only=*/false);
     // Overrides cached verdicts.
     LoginReputationClientResponse verdict;
     GetCachedVerdict(url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
@@ -411,18 +447,29 @@ void ChromePasswordProtectionService::UpdateSecurityState(
   // If user already click-through interstitial warning, or if there's already
   // a dangerous security state showing, we'll override it.
   if (ui_manager_->IsUrlWhitelistedOrPendingForWebContents(
-          url_with_empty_path, false,
-          web_contents->GetController().GetVisibleEntry(), web_contents, false,
-          &current_threat_type)) {
+          url_with_empty_path, /*is_subresource=*/false,
+          web_contents->GetController().GetLastCommittedEntry(), web_contents,
+          /*whitelist_only=*/false, &current_threat_type)) {
     DCHECK_NE(SB_THREAT_TYPE_UNUSED, current_threat_type);
     if (current_threat_type == threat_type)
       return;
     // Resets previous threat type.
     ui_manager_->RemoveWhitelistUrlSet(url_with_empty_path, web_contents,
-                                       false /* from_pending_only */);
+                                       /*from_pending_only=*/false);
   }
-  ui_manager_->AddToWhitelistUrlSet(url_with_empty_path, web_contents, true,
-                                    threat_type);
+  ui_manager_->AddToWhitelistUrlSet(url_with_empty_path, web_contents,
+                                    /*is_pending=*/true, threat_type);
+}
+
+void ChromePasswordProtectionService::OnGaiaPasswordChanged() {
+  UMA_HISTOGRAM_COUNTS_100(
+      "PasswordProtection.GaiaPasswordReusesBeforeGaiaPasswordChanged",
+      unhandled_password_reuses_.size());
+  unhandled_password_reuses_.clear();
+  profile_->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingChangePasswordInSettingsEnabled, false);
+  for (auto& observer : observer_list_)
+    observer.OnGaiaPasswordChanged();
 }
 
 ChromePasswordProtectionService::ChromePasswordProtectionService(

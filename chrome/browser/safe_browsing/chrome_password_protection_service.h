@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_PASSWORD_PROTECTION_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_PASSWORD_PROTECTION_SERVICE_H_
 
+#include <map>
+
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "ui/base/ui_features.h"
+#include "url/origin.h"
 
+class PrefChangeRegistrar;
 class PrefService;
 class Profile;
 
@@ -27,6 +31,7 @@ class ChromePasswordProtectionService;
 
 using OnWarningDone =
     base::OnceCallback<void(PasswordProtectionService::WarningAction)>;
+using url::Origin;
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 // Shows the platform-specific password reuse modal dialog.
@@ -63,6 +68,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   ~ChromePasswordProtectionService() override;
 
+  static ChromePasswordProtectionService* GetPasswordProtectionService(
+      Profile* profile);
+
   static bool ShouldShowChangePasswordSettingUI(Profile* profile);
 
   void ShowModalWarning(content::WebContents* web_contents,
@@ -73,6 +81,10 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Called during the destruction of the observer subclass.
   virtual void RemoveObserver(Observer* observer);
+
+  const std::map<Origin, int64_t>& unhandled_password_reuses() const {
+    return unhandled_password_reuses_;
+  }
 
  protected:
   // PasswordProtectionService overrides.
@@ -111,6 +123,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // when user clicks on the security chip.
   void UpdateSecurityState(SBThreatType threat_type,
                            content::WebContents* web_contents) override;
+
+  // Called when sync user's Gaia password changed.
+  void OnGaiaPasswordChanged();
 
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyUserPopulationForPasswordOnFocusPing);
@@ -163,6 +178,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   scoped_refptr<SafeBrowsingNavigationObserverManager>
       navigation_observer_manager_;
   base::ObserverList<Observer> observer_list_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  // The map of password reuse origin of top-level frame to navigation ID. These
+  // are password reuses that user hasn't chosen to change password, or
+  // mark site as legitimate yet.
+  std::map<Origin, int64_t> unhandled_password_reuses_;
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordProtectionService);
 };
 
