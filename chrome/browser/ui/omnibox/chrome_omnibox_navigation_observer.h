@@ -25,6 +25,7 @@ class TemplateURLService;
 
 namespace net {
 class URLFetcher;
+class URLRequestContextGetter;
 }
 
 // Monitors omnibox navigations in order to trigger behaviors that depend on
@@ -105,12 +106,20 @@ class ChromeOmniboxNavigationObserver : public OmniboxNavigationObserver,
   // the alternate nav infobar if necessary, and deletes |this|.
   void OnAllLoadingFinished();
 
+  // Creates a URL fetcher for |destination_url| and stores it in |fetcher_|.
+  // Does not start the fetcher.
+  void CreateFetcher(const GURL& destination_url);
+
   const base::string16 text_;
   const AutocompleteMatch match_;
   const AutocompleteMatch alternate_nav_match_;
   TemplateURLService* template_url_service_;
   scoped_refptr<ShortcutsBackend> shortcuts_backend_;  // NULL in incognito.
   std::unique_ptr<net::URLFetcher> fetcher_;
+  // The request context used by |fetcher_|.  It's necessary to keep a reference
+  // to this because sometimes we need to create a follow-up fetcher with the
+  // same context and URLFetcher does not have a way to get the context out.
+  net::URLRequestContextGetter* request_context_;
   LoadState load_state_;
   FetchState fetch_state_;
 
