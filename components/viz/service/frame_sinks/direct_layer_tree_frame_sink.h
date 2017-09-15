@@ -60,7 +60,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   // DisplayClient implementation.
   void DisplayOutputSurfaceLost() override;
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              const cc::RenderPassList& render_passes) override;
+                              const RenderPassList& render_passes) override;
   void DisplayDidDrawAndSwap() override;
 
  protected:

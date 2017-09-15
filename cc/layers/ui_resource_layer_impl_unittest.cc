@@ -50,14 +50,14 @@ void QuadSizeTest(FakeUIResourceLayerTreeHostImpl* host_impl,
   host_impl->active_tree()->SetRootLayerForTesting(std::move(layer));
   host_impl->active_tree()->BuildPropertyTreesForTesting();
 
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
 
   AppendQuadsData data;
   host_impl->active_tree()->root_layer_for_testing()->AppendQuads(
       render_pass.get(), &data);
 
   // Verify quad rects
-  const QuadList& quads = render_pass->quad_list;
+  const viz::QuadList& quads = render_pass->quad_list;
   EXPECT_EQ(expected_quad_size, quads.size());
 
   host_impl->active_tree()->DetachLayers();
@@ -100,14 +100,14 @@ void NeedsBlendingTest(FakeUIResourceLayerTreeHostImpl* host_impl,
   host_impl->active_tree()->SetRootLayerForTesting(std::move(layer));
   host_impl->active_tree()->BuildPropertyTreesForTesting();
 
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
 
   AppendQuadsData data;
   host_impl->active_tree()->root_layer_for_testing()->AppendQuads(
       render_pass.get(), &data);
 
   // Verify needs_blending is set appropriately.
-  const QuadList& quads = render_pass->quad_list;
+  const viz::QuadList& quads = render_pass->quad_list;
   EXPECT_GE(quads.size(), (size_t)0);
   EXPECT_EQ(needs_blending, quads.front()->needs_blending);
   EXPECT_EQ(quads.front()->needs_blending,

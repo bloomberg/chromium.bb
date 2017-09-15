@@ -9,11 +9,8 @@ namespace gfx {
 class Point;
 }  // namespace gfx
 
-namespace cc {
-class SurfaceDrawQuad;
-}
-
 namespace viz {
+class SurfaceDrawQuad;
 
 // Clients of SurfaceHittest can provide a SurfaceHittestDelegate implementation
 // to override the hit target based on metadata outside of the Surfaces system.
@@ -21,12 +18,12 @@ class SurfaceHittestDelegate {
  public:
   // Return true if this delegate rejects this |surface_quad| as a candidate hit
   // target.
-  virtual bool RejectHitTarget(const cc::SurfaceDrawQuad* surface_quad,
+  virtual bool RejectHitTarget(const SurfaceDrawQuad* surface_quad,
                                const gfx::Point& point_in_quad_space) = 0;
 
   // Return true if this delegate accepts this |surface_quad| as a candidate hit
   // target.
-  virtual bool AcceptHitTarget(const cc::SurfaceDrawQuad* surface_quad,
+  virtual bool AcceptHitTarget(const SurfaceDrawQuad* surface_quad,
                                const gfx::Point& point_in_quad_space) = 0;
 };
 

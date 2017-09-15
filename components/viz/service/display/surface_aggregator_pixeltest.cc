@@ -4,11 +4,11 @@
 
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/render_pass.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/surface_draw_quad.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -48,7 +48,7 @@ class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<GLRenderer> {
 };
 
 SharedQuadState* CreateAndAppendTestSharedQuadState(
-    cc::RenderPass* render_pass,
+    RenderPass* render_pass,
     const gfx::Transform& transform,
     const gfx::Size& size) {
   const gfx::Rect layer_rect = gfx::Rect(size);
@@ -68,13 +68,13 @@ SharedQuadState* CreateAndAppendTestSharedQuadState(
 TEST_F(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
   gfx::Rect rect(device_viewport_size_);
   int id = 1;
-  auto pass = cc::RenderPass::Create();
+  auto pass = RenderPass::Create();
   pass->SetNew(id, rect, rect, gfx::Transform());
 
   CreateAndAppendTestSharedQuadState(pass.get(), gfx::Transform(),
                                      device_viewport_size_);
 
-  auto* color_quad = pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+  auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   bool force_anti_aliasing_off = false;
   color_quad->SetNew(pass->shared_quad_state_list.back(), rect, rect,
                      SK_ColorGREEN, force_anti_aliasing_off);
@@ -92,7 +92,7 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
 
   bool discard_alpha = false;
   cc::ExactPixelComparator pixel_comparator(discard_alpha);
-  cc::RenderPassList* pass_list = &aggregated_frame.render_pass_list;
+  RenderPassList* pass_list = &aggregated_frame.render_pass_list;
   EXPECT_TRUE(RunPixelTest(pass_list,
                            base::FilePath(FILE_PATH_LITERAL("green.png")),
                            pixel_comparator));
@@ -115,19 +115,19 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
   {
     gfx::Rect rect(device_viewport_size_);
     int id = 1;
-    auto pass = cc::RenderPass::Create();
+    auto pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     CreateAndAppendTestSharedQuadState(pass.get(), gfx::Transform(),
                                        device_viewport_size_);
 
-    auto* surface_quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+    auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     surface_quad->SetNew(pass->shared_quad_state_list.back(),
                          gfx::Rect(child_size), gfx::Rect(child_size),
-                         child_surface_id, cc::SurfaceDrawQuadType::PRIMARY,
+                         child_surface_id, SurfaceDrawQuadType::PRIMARY,
                          nullptr);
 
-    auto* color_quad = pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+    auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
     color_quad->SetNew(pass->shared_quad_state_list.back(), rect, rect,
                        SK_ColorYELLOW, force_anti_aliasing_off);
@@ -142,13 +142,13 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
   {
     gfx::Rect rect(child_size);
     int id = 1;
-    auto pass = cc::RenderPass::Create();
+    auto pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     CreateAndAppendTestSharedQuadState(pass.get(), gfx::Transform(),
                                        child_size);
 
-    auto* color_quad = pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+    auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
     color_quad->SetNew(pass->shared_quad_state_list.back(), rect, rect,
                        SK_ColorBLUE, force_anti_aliasing_off);
@@ -166,7 +166,7 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
 
   bool discard_alpha = false;
   cc::ExactPixelComparator pixel_comparator(discard_alpha);
-  cc::RenderPassList* pass_list = &aggregated_frame.render_pass_list;
+  RenderPassList* pass_list = &aggregated_frame.render_pass_list;
   EXPECT_TRUE(RunPixelTest(pass_list,
                            base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
                            pixel_comparator));
@@ -204,29 +204,27 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   {
     gfx::Rect rect(device_viewport_size_);
     int id = 1;
-    auto pass = cc::RenderPass::Create();
+    auto pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     gfx::Transform surface_transform;
     CreateAndAppendTestSharedQuadState(pass.get(), surface_transform,
                                        device_viewport_size_);
 
-    auto* left_surface_quad =
-        pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+    auto* left_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     left_surface_quad->SetNew(pass->shared_quad_state_list.back(),
                               gfx::Rect(child_size), gfx::Rect(child_size),
-                              left_child_id, cc::SurfaceDrawQuadType::PRIMARY,
+                              left_child_id, SurfaceDrawQuadType::PRIMARY,
                               nullptr);
 
     surface_transform.Translate(100, 0);
     CreateAndAppendTestSharedQuadState(pass.get(), surface_transform,
                                        device_viewport_size_);
 
-    auto* right_surface_quad =
-        pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+    auto* right_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     right_surface_quad->SetNew(pass->shared_quad_state_list.back(),
                                gfx::Rect(child_size), gfx::Rect(child_size),
-                               right_child_id, cc::SurfaceDrawQuadType::PRIMARY,
+                               right_child_id, SurfaceDrawQuadType::PRIMARY,
                                nullptr);
 
     auto root_frame = test::MakeCompositorFrame();
@@ -239,21 +237,20 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   {
     gfx::Rect rect(child_size);
     int id = 1;
-    auto pass = cc::RenderPass::Create();
+    auto pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     CreateAndAppendTestSharedQuadState(pass.get(), gfx::Transform(),
                                        child_size);
 
-    auto* top_color_quad =
-        pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+    auto* top_color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
     top_color_quad->SetNew(pass->shared_quad_state_list.back(),
                            gfx::Rect(quad_size), gfx::Rect(quad_size),
                            SK_ColorGREEN, force_anti_aliasing_off);
 
     auto* bottom_color_quad =
-        pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bottom_color_quad->SetNew(
         pass->shared_quad_state_list.back(), gfx::Rect(0, 100, 100, 100),
         gfx::Rect(0, 100, 100, 100), SK_ColorBLUE, force_anti_aliasing_off);
@@ -268,21 +265,20 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   {
     gfx::Rect rect(child_size);
     int id = 1;
-    auto pass = cc::RenderPass::Create();
+    auto pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
     CreateAndAppendTestSharedQuadState(pass.get(), gfx::Transform(),
                                        child_size);
 
-    auto* top_color_quad =
-        pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+    auto* top_color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
     top_color_quad->SetNew(pass->shared_quad_state_list.back(),
                            gfx::Rect(quad_size), gfx::Rect(quad_size),
                            SK_ColorBLUE, force_anti_aliasing_off);
 
     auto* bottom_color_quad =
-        pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bottom_color_quad->SetNew(
         pass->shared_quad_state_list.back(), gfx::Rect(0, 100, 100, 100),
         gfx::Rect(0, 100, 100, 100), SK_ColorGREEN, force_anti_aliasing_off);
@@ -300,7 +296,7 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
 
   bool discard_alpha = false;
   cc::ExactPixelComparator pixel_comparator(discard_alpha);
-  cc::RenderPassList* pass_list = &aggregated_frame.render_pass_list;
+  RenderPassList* pass_list = &aggregated_frame.render_pass_list;
   EXPECT_TRUE(RunPixelTest(
       pass_list,
       base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),

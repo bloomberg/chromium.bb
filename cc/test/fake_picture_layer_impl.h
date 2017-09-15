@@ -83,7 +83,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void PushPropertiesTo(LayerImpl* layer_impl) override;
-  void AppendQuads(RenderPass* render_pass,
+  void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
 

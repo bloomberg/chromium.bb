@@ -21,7 +21,7 @@ class CC_EXPORT OverlayStrategyFullscreen : public OverlayProcessor::Strategy {
   ~OverlayStrategyFullscreen() override;
 
   bool Attempt(DisplayResourceProvider* resource_provider,
-               RenderPass* render_pass,
+               viz::RenderPass* render_pass,
                OverlayCandidateList* candidate_list,
                std::vector<gfx::Rect>* content_bounds) override;
 

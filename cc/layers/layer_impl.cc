@@ -24,8 +24,6 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_state.h"
 #include "cc/layers/layer.h"
-#include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/render_pass.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
@@ -38,6 +36,8 @@
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/debug_border_draw_quad.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/traced_value.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -215,7 +215,7 @@ void LayerImpl::GetDebugBorderProperties(SkColor* color, float* width) const {
 }
 
 void LayerImpl::AppendDebugBorderQuad(
-    RenderPass* render_pass,
+    viz::RenderPass* render_pass,
     const gfx::Size& bounds,
     const viz::SharedQuadState* shared_quad_state,
     AppendQuadsData* append_quads_data) const {
@@ -227,7 +227,7 @@ void LayerImpl::AppendDebugBorderQuad(
 }
 
 void LayerImpl::AppendDebugBorderQuad(
-    RenderPass* render_pass,
+    viz::RenderPass* render_pass,
     const gfx::Size& bounds,
     const viz::SharedQuadState* shared_quad_state,
     AppendQuadsData* append_quads_data,
@@ -238,8 +238,8 @@ void LayerImpl::AppendDebugBorderQuad(
 
   gfx::Rect quad_rect(bounds);
   gfx::Rect visible_quad_rect(quad_rect);
-  DebugBorderDrawQuad* debug_border_quad =
-      render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
+  auto* debug_border_quad =
+      render_pass->CreateAndAppendDrawQuad<viz::DebugBorderDrawQuad>();
   debug_border_quad->SetNew(
       shared_quad_state, quad_rect, visible_quad_rect, color, width);
   if (contents_opaque()) {
@@ -255,8 +255,8 @@ void LayerImpl::AppendDebugBorderQuad(
       return;
     gfx::Rect visible_fill_rect =
         gfx::IntersectRects(visible_quad_rect, fill_rect);
-    DebugBorderDrawQuad* fill_quad =
-        render_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
+    auto* fill_quad =
+        render_pass->CreateAndAppendDrawQuad<viz::DebugBorderDrawQuad>();
     fill_quad->SetNew(shared_quad_state, fill_rect, visible_fill_rect,
                       fill_color, fill_width);
   }

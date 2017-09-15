@@ -12,7 +12,6 @@
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/layers/append_quads_data.h"
-#include "cc/quads/render_pass.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/mock_occlusion_tracker.h"
@@ -20,6 +19,7 @@
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
@@ -54,7 +54,7 @@ static bool CanRectFBeSafelyRoundedToRect(const gfx::RectF& r) {
   return floored_rect == r;
 }
 
-void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
+void LayerTestCommon::VerifyQuadsExactlyCoverRect(const viz::QuadList& quads,
                                                   const gfx::Rect& rect) {
   Region remaining = rect;
 
@@ -84,7 +84,7 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
 }
 
 // static
-void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
+void LayerTestCommon::VerifyQuadsAreOccluded(const viz::QuadList& quads,
                                              const gfx::Rect& occluded,
                                              size_t* partially_occluded_count) {
   // No quad should exist if it's fully occluded.
@@ -147,7 +147,7 @@ LayerTestCommon::LayerImplTest::LayerImplTest(
                                       &task_graph_runner_,
                                       animation_host_.get(),
                                       settings)),
-      render_pass_(RenderPass::Create()),
+      render_pass_(viz::RenderPass::Create()),
       layer_impl_id_(2) {
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_->host_impl()->active_tree(), 1);
@@ -198,7 +198,7 @@ void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(
 
 void LayerTestCommon::LayerImplTest::AppendQuadsForPassWithOcclusion(
     LayerImpl* layer_impl,
-    RenderPass* given_render_pass,
+    viz::RenderPass* given_render_pass,
     const gfx::Rect& occluded) {
   AppendQuadsData data;
 

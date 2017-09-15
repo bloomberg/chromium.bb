@@ -5,8 +5,8 @@
 #include "cc/output/overlay_strategy_underlay_cast.h"
 
 #include "base/containers/adapters.h"
-#include "cc/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -19,10 +19,10 @@ OverlayStrategyUnderlayCast::~OverlayStrategyUnderlayCast() {}
 
 bool OverlayStrategyUnderlayCast::Attempt(
     DisplayResourceProvider* resource_provider,
-    RenderPass* render_pass,
+    viz::RenderPass* render_pass,
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
-  const QuadList& const_quad_list = render_pass->quad_list;
+  const viz::QuadList& const_quad_list = render_pass->quad_list;
   bool found_underlay = false;
   gfx::Rect content_rect;
   for (const auto* quad : base::Reversed(const_quad_list)) {
@@ -42,7 +42,8 @@ bool OverlayStrategyUnderlayCast::Attempt(
     }
 
     if (!found_underlay && quad->material == viz::DrawQuad::SOLID_COLOR) {
-      const SolidColorDrawQuad* solid = SolidColorDrawQuad::MaterialCast(quad);
+      const viz::SolidColorDrawQuad* solid =
+          viz::SolidColorDrawQuad::MaterialCast(quad);
       if (solid->color == SK_ColorBLACK)
         continue;
     }

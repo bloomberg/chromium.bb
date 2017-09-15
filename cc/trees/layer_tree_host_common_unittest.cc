@@ -1394,7 +1394,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   ASSERT_TRUE(GetRenderSurface(root));
   EXPECT_EQ(0, GetRenderSurface(root)->num_contributors());
   EXPECT_EQ(1U, render_surface_list.size());
-  EXPECT_EQ(static_cast<RenderPassId>(root->id()),
+  EXPECT_EQ(static_cast<viz::RenderPassId>(root->id()),
             render_surface_list.at(0)->id());
   EXPECT_EQ(gfx::Rect(), root->drawable_content_rect());
 }

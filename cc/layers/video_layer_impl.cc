@@ -10,14 +10,14 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
-#include "cc/quads/stream_video_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
-#include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/single_release_callback_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "cc/trees/task_runner_provider.h"
+#include "components/viz/common/quads/stream_video_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/color_space.h"
 
@@ -142,7 +142,7 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
   return true;
 }
 
-void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
+void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                                  AppendQuadsData* append_quads_data) {
   DCHECK(frame_.get());
 
@@ -209,8 +209,8 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       bool nearest_neighbor = false;
-      TextureDrawQuad* texture_quad =
-          render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      auto* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       texture_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                            needs_blending, software_resources_[0],
                            premultiplied_alpha, uv_top_left, uv_bottom_right,
@@ -220,14 +220,14 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       break;
     }
     case VideoFrameExternalResources::YUV_RESOURCE: {
-      YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601;
+      auto color_space = viz::YUVVideoDrawQuad::REC_601;
       int videoframe_color_space;
       if (frame_->metadata()->GetInteger(media::VideoFrameMetadata::COLOR_SPACE,
                                          &videoframe_color_space)) {
         if (videoframe_color_space == media::COLOR_SPACE_JPEG) {
-          color_space = YUVVideoDrawQuad::JPEG;
+          color_space = viz::YUVVideoDrawQuad::JPEG;
         } else if (videoframe_color_space == media::COLOR_SPACE_HD_REC709) {
-          color_space = YUVVideoDrawQuad::REC_709;
+          color_space = viz::YUVVideoDrawQuad::REC_709;
         }
       }
 
@@ -267,8 +267,8 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
           visible_rect.width() / uv_subsampling_factor_x,
           visible_rect.height() / uv_subsampling_factor_y);
 
-      YUVVideoDrawQuad* yuv_video_quad =
-          render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
+      auto* yuv_video_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::YUVVideoDrawQuad>();
       yuv_video_quad->SetNew(
           shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
           ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size, uv_tex_size,
@@ -297,8 +297,8 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       bool nearest_neighbor = false;
-      TextureDrawQuad* texture_quad =
-          render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      auto* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
       texture_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                            needs_blending, frame_resources_[0].id,
                            premultiplied_alpha, uv_top_left, uv_bottom_right,
@@ -314,8 +314,8 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
         break;
       gfx::Transform scale;
       scale.Scale(tex_width_scale, tex_height_scale);
-      StreamVideoDrawQuad* stream_video_quad =
-          render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
+      auto* stream_video_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::StreamVideoDrawQuad>();
       stream_video_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                                 needs_blending, frame_resources_[0].id,
                                 frame_resources_[0].size_in_pixels, scale);

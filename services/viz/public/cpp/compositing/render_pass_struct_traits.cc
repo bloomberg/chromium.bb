@@ -12,12 +12,12 @@ namespace mojo {
 
 // static
 bool StructTraits<viz::mojom::RenderPassDataView,
-                  std::unique_ptr<cc::RenderPass>>::
+                  std::unique_ptr<viz::RenderPass>>::
     Read(viz::mojom::RenderPassDataView data,
-         std::unique_ptr<cc::RenderPass>* out) {
+         std::unique_ptr<viz::RenderPass>* out) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "StructTraits::RenderPass::Read");
-  *out = cc::RenderPass::Create();
+  *out = viz::RenderPass::Create();
   if (!data.ReadOutputRect(&(*out)->output_rect) ||
       !data.ReadDamageRect(&(*out)->damage_rect) ||
       !data.ReadTransformToRootTarget(&(*out)->transform_to_root_target) ||
@@ -70,20 +70,20 @@ bool StructTraits<viz::mojom::RenderPassDataView,
     // If this quad is a fallback SurfaceDrawQuad then update the previous
     // primary SurfaceDrawQuad to point to this quad.
     if (quad->material == viz::DrawQuad::SURFACE_CONTENT) {
-      const cc::SurfaceDrawQuad* surface_draw_quad =
-          cc::SurfaceDrawQuad::MaterialCast(quad);
+      const viz::SurfaceDrawQuad* surface_draw_quad =
+          viz::SurfaceDrawQuad::MaterialCast(quad);
       if (surface_draw_quad->surface_draw_quad_type ==
-          cc::SurfaceDrawQuadType::FALLBACK) {
+          viz::SurfaceDrawQuadType::FALLBACK) {
         // A fallback quad must immediately follow a primary SurfaceDrawQuad.
         if (!last_draw_quad ||
             last_draw_quad->material != viz::DrawQuad::SURFACE_CONTENT) {
           return false;
         }
-        cc::SurfaceDrawQuad* last_surface_draw_quad =
-            static_cast<cc::SurfaceDrawQuad*>(last_draw_quad);
+        viz::SurfaceDrawQuad* last_surface_draw_quad =
+            static_cast<viz::SurfaceDrawQuad*>(last_draw_quad);
         // Only one fallback quad is currently supported.
         if (last_surface_draw_quad->surface_draw_quad_type !=
-            cc::SurfaceDrawQuadType::PRIMARY) {
+            viz::SurfaceDrawQuadType::PRIMARY) {
           return false;
         }
         last_surface_draw_quad->fallback_quad = surface_draw_quad;

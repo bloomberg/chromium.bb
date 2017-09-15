@@ -7,7 +7,8 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
-#include "cc/quads/render_pass.h"
+#include "cc/cc_export.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -60,7 +61,7 @@ class CC_EXPORT DCLayerOverlay {
   unsigned filter;
   // If |rpdq| is present, then the renderer must draw the filter effects and
   // copy the result into an IOSurface.
-  const RenderPassDrawQuad* rpdq = nullptr;
+  const viz::RenderPassDrawQuad* rpdq = nullptr;
 
   // This is the color-space the texture should be displayed as. If invalid,
   // then the default for the texture should be used. For YUV textures, that's
@@ -95,7 +96,7 @@ class DCLayerOverlayProcessor {
 
   void Process(ResourceProvider* resource_provider,
                const gfx::RectF& display_rect,
-               RenderPassList* render_passes,
+               viz::RenderPassList* render_passes,
                gfx::Rect* overlay_damage_rect,
                gfx::Rect* damage_rect,
                DCLayerOverlayList* ca_layer_overlays);
@@ -107,31 +108,32 @@ class DCLayerOverlayProcessor {
  private:
   DCLayerResult FromDrawQuad(ResourceProvider* resource_provider,
                              const gfx::RectF& display_rect,
-                             QuadList::ConstIterator quad_list_begin,
-                             QuadList::ConstIterator quad,
+                             viz::QuadList::ConstIterator quad_list_begin,
+                             viz::QuadList::ConstIterator quad,
                              DCLayerOverlay* ca_layer_overlay);
   // Returns an iterator to the element after |it|.
-  QuadList::Iterator ProcessRenderPassDrawQuad(RenderPass* render_pass,
-                                               gfx::Rect* damage_rect,
-                                               QuadList::Iterator it);
+  viz::QuadList::Iterator ProcessRenderPassDrawQuad(
+      viz::RenderPass* render_pass,
+      gfx::Rect* damage_rect,
+      viz::QuadList::Iterator it);
   void ProcessRenderPass(ResourceProvider* resource_provider,
                          const gfx::RectF& display_rect,
-                         RenderPass* render_pass,
+                         viz::RenderPass* render_pass,
                          bool is_root,
                          gfx::Rect* overlay_damage_rect,
                          gfx::Rect* damage_rect,
                          DCLayerOverlayList* ca_layer_overlays);
   bool ProcessForOverlay(const gfx::RectF& display_rect,
-                         QuadList* quad_list,
+                         viz::QuadList* quad_list,
                          const gfx::Rect& quad_rectangle,
                          const gfx::RectF& occlusion_bounding_box,
-                         QuadList::Iterator* it,
+                         viz::QuadList::Iterator* it,
                          gfx::Rect* damage_rect);
   bool ProcessForUnderlay(const gfx::RectF& display_rect,
-                          RenderPass* render_pass,
+                          viz::RenderPass* render_pass,
                           const gfx::Rect& quad_rectangle,
                           const gfx::RectF& occlusion_bounding_box,
-                          const QuadList::Iterator& it,
+                          const viz::QuadList::Iterator& it,
                           bool is_root,
                           gfx::Rect* damage_rect,
                           gfx::Rect* this_frame_underlay_rect,
@@ -151,7 +153,7 @@ class DCLayerOverlayProcessor {
     float opacity;
   };
 
-  base::flat_map<RenderPassId, std::vector<PunchThroughRect>> pass_info_;
+  base::flat_map<viz::RenderPassId, std::vector<PunchThroughRect>> pass_info_;
 };
 
 }  // namespace cc

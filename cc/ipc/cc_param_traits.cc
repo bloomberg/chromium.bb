@@ -13,14 +13,14 @@
 #include "base/unguessable_token.h"
 #include "cc/base/filter_operations.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/largest_draw_quad.h"
-#include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/surface_draw_quad.h"
-#include "cc/quads/tile_draw_quad.h"
-#include "cc/quads/yuv_video_draw_quad.h"
+#include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/largest_draw_quad.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
@@ -308,7 +308,7 @@ void ParamTraits<sk_sp<SkImageFilter>>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
+void ParamTraits<viz::RenderPass>::Write(base::Pickle* m, const param_type& p) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "ParamTraits::RenderPass::Write");
   WriteParam(m, p.id);
@@ -324,10 +324,8 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.generate_mipmap);
   WriteParam(m, base::checked_cast<uint32_t>(p.quad_list.size()));
 
-  cc::SharedQuadStateList::ConstIterator shared_quad_state_iter =
-      p.shared_quad_state_list.begin();
-  cc::SharedQuadStateList::ConstIterator last_shared_quad_state_iter =
-      p.shared_quad_state_list.end();
+  auto shared_quad_state_iter = p.shared_quad_state_list.cbegin();
+  auto last_shared_quad_state_iter = p.shared_quad_state_list.cend();
   for (auto* quad : p.quad_list) {
     DCHECK(quad->rect.Contains(quad->visible_rect))
         << quad->material << " rect: " << quad->rect.ToString()
@@ -335,31 +333,31 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
 
     switch (quad->material) {
       case viz::DrawQuad::DEBUG_BORDER:
-        WriteParam(m, *cc::DebugBorderDrawQuad::MaterialCast(quad));
+        WriteParam(m, *viz::DebugBorderDrawQuad::MaterialCast(quad));
         break;
       case viz::DrawQuad::PICTURE_CONTENT:
         NOTREACHED();
         break;
       case viz::DrawQuad::TEXTURE_CONTENT:
-        WriteParam(m, *cc::TextureDrawQuad::MaterialCast(quad));
+        WriteParam(m, *viz::TextureDrawQuad::MaterialCast(quad));
         break;
       case viz::DrawQuad::RENDER_PASS:
-        WriteParam(m, *cc::RenderPassDrawQuad::MaterialCast(quad));
+        WriteParam(m, *viz::RenderPassDrawQuad::MaterialCast(quad));
         break;
       case viz::DrawQuad::SOLID_COLOR:
-        WriteParam(m, *cc::SolidColorDrawQuad::MaterialCast(quad));
+        WriteParam(m, *viz::SolidColorDrawQuad::MaterialCast(quad));
         break;
       case viz::DrawQuad::SURFACE_CONTENT:
-        WriteParam(m, *cc::SurfaceDrawQuad::MaterialCast(quad));
+        WriteParam(m, *viz::SurfaceDrawQuad::MaterialCast(quad));
         break;
       case viz::DrawQuad::TILED_CONTENT:
-        WriteParam(m, *cc::TileDrawQuad::MaterialCast(quad));
+        WriteParam(m, *viz::TileDrawQuad::MaterialCast(quad));
         break;
       case viz::DrawQuad::STREAM_VIDEO_CONTENT:
-        WriteParam(m, *cc::StreamVideoDrawQuad::MaterialCast(quad));
+        WriteParam(m, *viz::StreamVideoDrawQuad::MaterialCast(quad));
         break;
       case viz::DrawQuad::YUV_VIDEO_CONTENT:
-        WriteParam(m, *cc::YUVVideoDrawQuad::MaterialCast(quad));
+        WriteParam(m, *viz::YUVVideoDrawQuad::MaterialCast(quad));
         break;
       case viz::DrawQuad::INVALID:
         break;
@@ -387,8 +385,8 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
   }
 }
 
-static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
-  size_t to_reserve = sizeof(cc::RenderPass);
+static size_t ReserveSizeForRenderPassWrite(const viz::RenderPass& p) {
+  size_t to_reserve = sizeof(viz::RenderPass);
 
   // Whether the quad points to a new shared quad state for each quad.
   to_reserve += p.quad_list.size() * sizeof(bool);
@@ -398,7 +396,7 @@ static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
   to_reserve += p.shared_quad_state_list.size() * sizeof(viz::SharedQuadState);
 
   // The largest quad type, verified by a unit test.
-  to_reserve += p.quad_list.size() * cc::LargestDrawQuadSize();
+  to_reserve += p.quad_list.size() * viz::LargestDrawQuadSize();
 
   to_reserve +=
       sizeof(uint32_t) + p.filters.size() * sizeof(cc::FilterOperation);
@@ -411,7 +409,7 @@ static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
 template <typename QuadType>
 static viz::DrawQuad* ReadDrawQuad(const base::Pickle* m,
                                    base::PickleIterator* iter,
-                                   cc::RenderPass* render_pass) {
+                                   viz::RenderPass* render_pass) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "ParamTraits::ReadDrawQuad");
   QuadType* quad = render_pass->CreateAndAppendDrawQuad<QuadType>();
@@ -420,9 +418,9 @@ static viz::DrawQuad* ReadDrawQuad(const base::Pickle* m,
   return quad;
 }
 
-bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
-                                       base::PickleIterator* iter,
-                                       param_type* p) {
+bool ParamTraits<viz::RenderPass>::Read(const base::Pickle* m,
+                                        base::PickleIterator* iter,
+                                        param_type* p) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "ParamTraits::RenderPass::Read");
   uint64_t id;
@@ -467,31 +465,31 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
     viz::DrawQuad* draw_quad = nullptr;
     switch (material) {
       case viz::DrawQuad::DEBUG_BORDER:
-        draw_quad = ReadDrawQuad<cc::DebugBorderDrawQuad>(m, iter, p);
+        draw_quad = ReadDrawQuad<viz::DebugBorderDrawQuad>(m, iter, p);
         break;
       case viz::DrawQuad::PICTURE_CONTENT:
         NOTREACHED();
         return false;
       case viz::DrawQuad::SURFACE_CONTENT:
-        draw_quad = ReadDrawQuad<cc::SurfaceDrawQuad>(m, iter, p);
+        draw_quad = ReadDrawQuad<viz::SurfaceDrawQuad>(m, iter, p);
         break;
       case viz::DrawQuad::TEXTURE_CONTENT:
-        draw_quad = ReadDrawQuad<cc::TextureDrawQuad>(m, iter, p);
+        draw_quad = ReadDrawQuad<viz::TextureDrawQuad>(m, iter, p);
         break;
       case viz::DrawQuad::RENDER_PASS:
-        draw_quad = ReadDrawQuad<cc::RenderPassDrawQuad>(m, iter, p);
+        draw_quad = ReadDrawQuad<viz::RenderPassDrawQuad>(m, iter, p);
         break;
       case viz::DrawQuad::SOLID_COLOR:
-        draw_quad = ReadDrawQuad<cc::SolidColorDrawQuad>(m, iter, p);
+        draw_quad = ReadDrawQuad<viz::SolidColorDrawQuad>(m, iter, p);
         break;
       case viz::DrawQuad::TILED_CONTENT:
-        draw_quad = ReadDrawQuad<cc::TileDrawQuad>(m, iter, p);
+        draw_quad = ReadDrawQuad<viz::TileDrawQuad>(m, iter, p);
         break;
       case viz::DrawQuad::STREAM_VIDEO_CONTENT:
-        draw_quad = ReadDrawQuad<cc::StreamVideoDrawQuad>(m, iter, p);
+        draw_quad = ReadDrawQuad<viz::StreamVideoDrawQuad>(m, iter, p);
         break;
       case viz::DrawQuad::YUV_VIDEO_CONTENT:
-        draw_quad = ReadDrawQuad<cc::YUVVideoDrawQuad>(m, iter, p);
+        draw_quad = ReadDrawQuad<viz::YUVVideoDrawQuad>(m, iter, p);
         break;
       case viz::DrawQuad::INVALID:
         break;
@@ -517,23 +515,24 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
     }
 
     draw_quad->shared_quad_state = p->shared_quad_state_list.back();
-    // If this quad is a fallback SurfaceDrawQuad then update the previous
-    // primary SurfaceDrawQuad to point to this quad.
+    // If this quad is a fallback viz::SurfaceDrawQuad then update the previous
+    // primary viz::SurfaceDrawQuad to point to this quad.
     if (draw_quad->material == viz::DrawQuad::SURFACE_CONTENT) {
-      const cc::SurfaceDrawQuad* surface_draw_quad =
-          cc::SurfaceDrawQuad::MaterialCast(draw_quad);
+      const viz::SurfaceDrawQuad* surface_draw_quad =
+          viz::SurfaceDrawQuad::MaterialCast(draw_quad);
       if (surface_draw_quad->surface_draw_quad_type ==
-          cc::SurfaceDrawQuadType::FALLBACK) {
-        // A fallback quad must immediately follow a primary SurfaceDrawQuad.
+          viz::SurfaceDrawQuadType::FALLBACK) {
+        // A fallback quad must immediately follow a primary
+        // viz::SurfaceDrawQuad.
         if (!last_draw_quad ||
             last_draw_quad->material != viz::DrawQuad::SURFACE_CONTENT) {
           return false;
         }
-        cc::SurfaceDrawQuad* last_surface_draw_quad =
-            static_cast<cc::SurfaceDrawQuad*>(last_draw_quad);
+        viz::SurfaceDrawQuad* last_surface_draw_quad =
+            static_cast<viz::SurfaceDrawQuad*>(last_draw_quad);
         // Only one fallback quad is currently supported.
         if (last_surface_draw_quad->surface_draw_quad_type !=
-            cc::SurfaceDrawQuadType::PRIMARY) {
+            viz::SurfaceDrawQuadType::PRIMARY) {
           return false;
         }
         last_surface_draw_quad->fallback_quad = surface_draw_quad;
@@ -545,7 +544,7 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
   return true;
 }
 
-void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
+void ParamTraits<viz::RenderPass>::Log(const param_type& p, std::string* l) {
   l->append("RenderPass((");
   LogParam(p.id, l);
   l->append("), ");
@@ -580,31 +579,31 @@ void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
       l->append(", ");
     switch (quad->material) {
       case viz::DrawQuad::DEBUG_BORDER:
-        LogParam(*cc::DebugBorderDrawQuad::MaterialCast(quad), l);
+        LogParam(*viz::DebugBorderDrawQuad::MaterialCast(quad), l);
         break;
       case viz::DrawQuad::PICTURE_CONTENT:
         NOTREACHED();
         break;
       case viz::DrawQuad::TEXTURE_CONTENT:
-        LogParam(*cc::TextureDrawQuad::MaterialCast(quad), l);
+        LogParam(*viz::TextureDrawQuad::MaterialCast(quad), l);
         break;
       case viz::DrawQuad::RENDER_PASS:
-        LogParam(*cc::RenderPassDrawQuad::MaterialCast(quad), l);
+        LogParam(*viz::RenderPassDrawQuad::MaterialCast(quad), l);
         break;
       case viz::DrawQuad::SOLID_COLOR:
-        LogParam(*cc::SolidColorDrawQuad::MaterialCast(quad), l);
+        LogParam(*viz::SolidColorDrawQuad::MaterialCast(quad), l);
         break;
       case viz::DrawQuad::SURFACE_CONTENT:
-        LogParam(*cc::SurfaceDrawQuad::MaterialCast(quad), l);
+        LogParam(*viz::SurfaceDrawQuad::MaterialCast(quad), l);
         break;
       case viz::DrawQuad::TILED_CONTENT:
-        LogParam(*cc::TileDrawQuad::MaterialCast(quad), l);
+        LogParam(*viz::TileDrawQuad::MaterialCast(quad), l);
         break;
       case viz::DrawQuad::STREAM_VIDEO_CONTENT:
-        LogParam(*cc::StreamVideoDrawQuad::MaterialCast(quad), l);
+        LogParam(*viz::StreamVideoDrawQuad::MaterialCast(quad), l);
         break;
       case viz::DrawQuad::YUV_VIDEO_CONTENT:
-        LogParam(*cc::YUVVideoDrawQuad::MaterialCast(quad), l);
+        LogParam(*viz::YUVVideoDrawQuad::MaterialCast(quad), l);
         break;
       case viz::DrawQuad::INVALID:
         break;
@@ -771,7 +770,7 @@ bool ParamTraits<cc::CompositorFrame>::Read(const base::Pickle* m,
   const size_t kMaxSharedQuadStateListSize = 100000;
   const size_t kMaxQuadListSize = 1000000;
 
-  std::set<cc::RenderPassId> pass_id_set;
+  std::set<viz::RenderPassId> pass_id_set;
 
   uint32_t num_render_passes;
   if (!ReadParam(m, iter, &p->resource_list) ||
@@ -786,18 +785,18 @@ bool ParamTraits<cc::CompositorFrame>::Read(const base::Pickle* m,
         quad_list_size > kMaxQuadListSize ||
         shared_quad_state_list_size > kMaxSharedQuadStateListSize)
       return false;
-    std::unique_ptr<cc::RenderPass> render_pass =
-        cc::RenderPass::Create(static_cast<size_t>(shared_quad_state_list_size),
-                               static_cast<size_t>(quad_list_size));
+    std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create(
+        static_cast<size_t>(shared_quad_state_list_size),
+        static_cast<size_t>(quad_list_size));
     if (!ReadParam(m, iter, render_pass.get()))
       return false;
-    // Validate that each RenderPassDrawQuad points at a valid RenderPass
+    // Validate that each viz::RenderPassDrawQuad points at a valid RenderPass
     // earlier in the frame.
     for (const auto* quad : render_pass->quad_list) {
       if (quad->material != viz::DrawQuad::RENDER_PASS)
         continue;
-      const cc::RenderPassDrawQuad* rpdq =
-          cc::RenderPassDrawQuad::MaterialCast(quad);
+      const viz::RenderPassDrawQuad* rpdq =
+          viz::RenderPassDrawQuad::MaterialCast(quad);
       if (!pass_id_set.count(rpdq->render_pass_id))
         return false;
     }
@@ -867,8 +866,8 @@ void ParamTraits<viz::DrawQuad::Resources>::Log(const param_type& p,
   l->append("])");
 }
 
-void ParamTraits<cc::YUVVideoDrawQuad>::Write(base::Pickle* m,
-                                              const param_type& p) {
+void ParamTraits<viz::YUVVideoDrawQuad>::Write(base::Pickle* m,
+                                               const param_type& p) {
   ParamTraits<viz::DrawQuad>::Write(m, p);
   WriteParam(m, p.ya_tex_coord_rect);
   WriteParam(m, p.uv_tex_coord_rect);
@@ -881,9 +880,9 @@ void ParamTraits<cc::YUVVideoDrawQuad>::Write(base::Pickle* m,
   WriteParam(m, p.bits_per_channel);
 }
 
-bool ParamTraits<cc::YUVVideoDrawQuad>::Read(const base::Pickle* m,
-                                             base::PickleIterator* iter,
-                                             param_type* p) {
+bool ParamTraits<viz::YUVVideoDrawQuad>::Read(const base::Pickle* m,
+                                              base::PickleIterator* iter,
+                                              param_type* p) {
   return ParamTraits<viz::DrawQuad>::Read(m, iter, p) &&
          ReadParam(m, iter, &p->ya_tex_coord_rect) &&
          ReadParam(m, iter, &p->uv_tex_coord_rect) &&
@@ -894,12 +893,12 @@ bool ParamTraits<cc::YUVVideoDrawQuad>::Read(const base::Pickle* m,
          ReadParam(m, iter, &p->resource_offset) &&
          ReadParam(m, iter, &p->resource_multiplier) &&
          ReadParam(m, iter, &p->bits_per_channel) &&
-         p->bits_per_channel >= cc::YUVVideoDrawQuad::kMinBitsPerChannel &&
-         p->bits_per_channel <= cc::YUVVideoDrawQuad::kMaxBitsPerChannel;
+         p->bits_per_channel >= viz::YUVVideoDrawQuad::kMinBitsPerChannel &&
+         p->bits_per_channel <= viz::YUVVideoDrawQuad::kMaxBitsPerChannel;
 }
 
-void ParamTraits<cc::YUVVideoDrawQuad>::Log(const param_type& p,
-                                            std::string* l) {
+void ParamTraits<viz::YUVVideoDrawQuad>::Log(const param_type& p,
+                                             std::string* l) {
   l->append("(");
   ParamTraits<viz::DrawQuad>::Log(p, l);
   l->append(", ");

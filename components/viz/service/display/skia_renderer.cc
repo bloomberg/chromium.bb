@@ -10,15 +10,15 @@
 #include "cc/base/render_surface_filters.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/picture_draw_quad.h"
-#include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
-#include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/debug_border_draw_quad.h"
+#include "components/viz/common/quads/picture_draw_quad.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -379,22 +379,22 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
 
   switch (quad->material) {
     case DrawQuad::DEBUG_BORDER:
-      DrawDebugBorderQuad(cc::DebugBorderDrawQuad::MaterialCast(quad));
+      DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::PICTURE_CONTENT:
-      DrawPictureQuad(cc::PictureDrawQuad::MaterialCast(quad));
+      DrawPictureQuad(PictureDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::RENDER_PASS:
-      DrawRenderPassQuad(cc::RenderPassDrawQuad::MaterialCast(quad));
+      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::SOLID_COLOR:
-      DrawSolidColorQuad(cc::SolidColorDrawQuad::MaterialCast(quad));
+      DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::TEXTURE_CONTENT:
-      DrawTextureQuad(cc::TextureDrawQuad::MaterialCast(quad));
+      DrawTextureQuad(TextureDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::TILED_CONTENT:
-      DrawTileQuad(cc::TileDrawQuad::MaterialCast(quad));
+      DrawTileQuad(TileDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::SURFACE_CONTENT:
       // Surface content should be fully resolved to other quad types before
@@ -415,7 +415,7 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   }
 }
 
-void SkiaRenderer::DrawDebugBorderQuad(const cc::DebugBorderDrawQuad* quad) {
+void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
   // We need to apply the matrix manually to have pixel-sized stroke width.
   SkPoint vertices[4];
   gfx::RectFToSkRect(QuadVertexRect()).toQuad(vertices);
@@ -433,7 +433,7 @@ void SkiaRenderer::DrawDebugBorderQuad(const cc::DebugBorderDrawQuad* quad) {
                               transformed_vertices, current_paint_);
 }
 
-void SkiaRenderer::DrawPictureQuad(const cc::PictureDrawQuad* quad) {
+void SkiaRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
   SkMatrix content_matrix;
   content_matrix.setRectToRect(gfx::RectFToSkRect(quad->tex_coord_rect),
                                gfx::RectFToSkRect(QuadVertexRect()),
@@ -481,7 +481,7 @@ void SkiaRenderer::DrawPictureQuad(const cc::PictureDrawQuad* quad) {
   raster_canvas->restore();
 }
 
-void SkiaRenderer::DrawSolidColorQuad(const cc::SolidColorDrawQuad* quad) {
+void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad) {
   gfx::RectF visible_quad_vertex_rect = cc::MathUtil::ScaleRectProportional(
       QuadVertexRect(), gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
   current_paint_.setColor(quad->color);
@@ -491,7 +491,7 @@ void SkiaRenderer::DrawSolidColorQuad(const cc::SolidColorDrawQuad* quad) {
                             current_paint_);
 }
 
-void SkiaRenderer::DrawTextureQuad(const cc::TextureDrawQuad* quad) {
+void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad) {
   if (!IsSoftwareResource(quad->resource_id())) {
     DrawUnsupportedQuad(quad);
     return;
@@ -535,7 +535,7 @@ void SkiaRenderer::DrawTextureQuad(const cc::TextureDrawQuad* quad) {
     current_canvas_->restore();
 }
 
-void SkiaRenderer::DrawTileQuad(const cc::TileDrawQuad* quad) {
+void SkiaRenderer::DrawTileQuad(const TileDrawQuad* quad) {
   // |resource_provider_| can be NULL in resourceless software draws, which
   // should never produce tile quads in the first place.
   DCHECK(resource_provider_);
@@ -558,7 +558,7 @@ void SkiaRenderer::DrawTileQuad(const cc::TileDrawQuad* quad) {
                                  &current_paint_);
 }
 
-void SkiaRenderer::DrawRenderPassQuad(const cc::RenderPassDrawQuad* quad) {
+void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   cc::ScopedResource* content_texture =
       render_pass_textures_[quad->render_pass_id].get();
   DCHECK(content_texture);
@@ -649,7 +649,7 @@ void SkiaRenderer::GenerateMipmap() {
 }
 
 bool SkiaRenderer::ShouldApplyBackgroundFilters(
-    const cc::RenderPassDrawQuad* quad,
+    const RenderPassDrawQuad* quad,
     const cc::FilterOperations* background_filters) const {
   if (!background_filters)
     return false;
@@ -664,11 +664,10 @@ bool SkiaRenderer::ShouldApplyBackgroundFilters(
 // If non-null, auto_bounds will be filled with the automatically-computed
 // destination bounds. If null, the output will be the same size as the
 // input bitmap.
-sk_sp<SkImage> SkiaRenderer::ApplyImageFilter(
-    SkImageFilter* filter,
-    const cc::RenderPassDrawQuad* quad,
-    const SkBitmap& to_filter,
-    SkIRect* auto_bounds) const {
+sk_sp<SkImage> SkiaRenderer::ApplyImageFilter(SkImageFilter* filter,
+                                              const RenderPassDrawQuad* quad,
+                                              const SkBitmap& to_filter,
+                                              SkIRect* auto_bounds) const {
   // TODO(weiliangc): Implement image filter. (crbug.com/644851)
   NOTIMPLEMENTED();
   return nullptr;
@@ -685,7 +684,7 @@ SkBitmap SkiaRenderer::GetBackdropBitmap(const gfx::Rect& bounding_rect) const {
 }
 
 gfx::Rect SkiaRenderer::GetBackdropBoundingBoxForRenderPassQuad(
-    const cc::RenderPassDrawQuad* quad,
+    const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform,
     const cc::FilterOperations* background_filters) const {
   DCHECK(ShouldApplyBackgroundFilters(quad, background_filters));
@@ -703,7 +702,7 @@ gfx::Rect SkiaRenderer::GetBackdropBoundingBoxForRenderPassQuad(
 }
 
 sk_sp<SkShader> SkiaRenderer::GetBackgroundFilterShader(
-    const cc::RenderPassDrawQuad* quad,
+    const RenderPassDrawQuad* quad,
     SkShader::TileMode content_tile_mode) const {
   // TODO(weiliangc): properly implement background filters. (crbug.com/644851)
   NOTIMPLEMENTED();

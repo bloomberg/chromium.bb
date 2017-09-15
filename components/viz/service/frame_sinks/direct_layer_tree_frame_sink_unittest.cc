@@ -104,7 +104,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
   }
 
   void SwapBuffersWithDamage(const gfx::Rect& damage_rect) {
-    auto render_pass = cc::RenderPass::Create();
+    auto render_pass = RenderPass::Create();
     render_pass->SetNew(1, display_rect_, damage_rect, gfx::Transform());
 
     cc::CompositorFrame frame = test::MakeEmptyCompositorFrame();

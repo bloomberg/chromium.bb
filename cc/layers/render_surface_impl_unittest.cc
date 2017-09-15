@@ -7,10 +7,10 @@
 #include <stddef.h>
 
 #include "cc/layers/append_quads_data.h"
-#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/test/fake_mask_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/layer_test_common.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -65,7 +65,7 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
   }
 }
 
-static std::unique_ptr<RenderPass> DoAppendQuadsWithScaledMask(
+static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
     DrawMode draw_mode) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
@@ -115,7 +115,7 @@ static std::unique_ptr<RenderPass> DoAppendQuadsWithScaledMask(
                                ->test_properties()
                                ->children[0];
   RenderSurfaceImpl* render_surface_impl = GetRenderSurface(surface_raw);
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData append_quads_data;
   render_surface_impl->AppendQuads(draw_mode, render_pass.get(),
                                    &append_quads_data);
@@ -123,21 +123,21 @@ static std::unique_ptr<RenderPass> DoAppendQuadsWithScaledMask(
 }
 
 TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
-  std::unique_ptr<RenderPass> render_pass =
+  std::unique_ptr<viz::RenderPass> render_pass =
       DoAppendQuadsWithScaledMask(DRAW_MODE_HARDWARE);
   DCHECK(render_pass->quad_list.front());
-  const RenderPassDrawQuad* quad =
-      RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
+  const viz::RenderPassDrawQuad* quad =
+      viz::RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
   EXPECT_EQ(gfx::RectF(0, 0, 1, 1), quad->mask_uv_rect);
   EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), quad->filters_scale);
 }
 
 TEST(RenderSurfaceLayerImplTest, ResourcelessAppendQuadsSkipMask) {
-  std::unique_ptr<RenderPass> render_pass =
+  std::unique_ptr<viz::RenderPass> render_pass =
       DoAppendQuadsWithScaledMask(DRAW_MODE_RESOURCELESS_SOFTWARE);
   DCHECK(render_pass->quad_list.front());
-  const RenderPassDrawQuad* quad =
-      RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
+  const viz::RenderPassDrawQuad* quad =
+      viz::RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
   EXPECT_EQ(0u, quad->mask_resource_id());
 }
 

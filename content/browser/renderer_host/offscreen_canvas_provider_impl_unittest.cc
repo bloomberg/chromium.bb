@@ -101,7 +101,7 @@ cc::CompositorFrame MakeCompositorFrame() {
       viz::BeginFrameArgs::kStartingFrameNumber;
   frame.metadata.device_scale_factor = 1.0f;
 
-  auto render_pass = cc::RenderPass::Create();
+  auto render_pass = viz::RenderPass::Create();
   render_pass->id = 1;
   render_pass->output_rect = gfx::Rect(100, 100);
   frame.render_pass_list.push_back(std::move(render_pass));

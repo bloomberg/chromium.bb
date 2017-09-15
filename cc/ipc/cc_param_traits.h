@@ -11,9 +11,9 @@
 #include "cc/ipc/cc_ipc_export.h"
 #include "cc/ipc/cc_param_traits_macros.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/stream_video_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/stream_video_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -54,8 +54,8 @@ struct ParamTraits<sk_sp<SkImageFilter>> {
 };
 
 template <>
-struct CC_IPC_EXPORT ParamTraits<cc::RenderPass> {
-  typedef cc::RenderPass param_type;
+struct CC_IPC_EXPORT ParamTraits<viz::RenderPass> {
+  typedef viz::RenderPass param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -124,8 +124,8 @@ struct CC_IPC_EXPORT ParamTraits<viz::DrawQuad::Resources> {
 };
 
 template <>
-struct CC_IPC_EXPORT ParamTraits<cc::YUVVideoDrawQuad> {
-  typedef cc::YUVVideoDrawQuad param_type;
+struct CC_IPC_EXPORT ParamTraits<viz::YUVVideoDrawQuad> {
+  typedef viz::YUVVideoDrawQuad param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

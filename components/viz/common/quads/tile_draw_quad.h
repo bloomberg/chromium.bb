@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_QUADS_TILE_DRAW_QUAD_H_
-#define CC_QUADS_TILE_DRAW_QUAD_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_TILE_DRAW_QUAD_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_TILE_DRAW_QUAD_H_
 
 #include <stddef.h>
 
-#include "cc/quads/content_draw_quad_base.h"
+#include "components/viz/common/quads/content_draw_quad_base.h"
+#include "components/viz/common/viz_common_export.h"
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
+class VIZ_COMMON_EXPORT TileDrawQuad : public ContentDrawQuadBase {
  public:
   static const size_t kResourceIdIndex = 0;
 
   TileDrawQuad();
   ~TileDrawQuad() override;
 
-  void SetNew(const viz::SharedQuadState* shared_quad_state,
+  void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
@@ -31,7 +32,7 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               bool swizzle_contents,
               bool nearest_neighbor);
 
-  void SetAll(const viz::SharedQuadState* shared_quad_state,
+  void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
@@ -44,16 +45,14 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               bool swizzle_contents,
               bool nearest_neighbor);
 
-  static const TileDrawQuad* MaterialCast(const viz::DrawQuad*);
+  static const TileDrawQuad* MaterialCast(const DrawQuad*);
 
-  viz::ResourceId resource_id() const {
-    return resources.ids[kResourceIdIndex];
-  }
+  ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
 
  private:
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_QUADS_TILE_DRAW_QUAD_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_TILE_DRAW_QUAD_H_

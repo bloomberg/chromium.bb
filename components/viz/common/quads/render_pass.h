@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_QUADS_RENDER_PASS_H_
-#define CC_QUADS_RENDER_PASS_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_RENDER_PASS_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_RENDER_PASS_H_
 
 #include <stddef.h>
 
@@ -15,9 +15,9 @@
 #include "base/macros.h"
 #include "cc/base/filter_operations.h"
 #include "cc/base/list_container.h"
-#include "cc/cc_export.h"
-#include "cc/quads/largest_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/largest_draw_quad.h"
+#include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -27,20 +27,16 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
 namespace viz {
 class CopyOutputRequest;
 class DrawQuad;
-class SharedQuadState;
-}
-
-namespace cc {
-
 class RenderPassDrawQuad;
+class SharedQuadState;
 
 // A list of DrawQuad objects, sorted internally in front-to-back order.
-class CC_EXPORT QuadList : public ListContainer<viz::DrawQuad> {
+class VIZ_COMMON_EXPORT QuadList : public cc::ListContainer<DrawQuad> {
  public:
   QuadList();
   explicit QuadList(size_t default_size_to_reserve);
@@ -58,11 +54,11 @@ class CC_EXPORT QuadList : public ListContainer<viz::DrawQuad> {
   void ReplaceExistingQuadWithOpaqueTransparentSolidColor(Iterator at);
 };
 
-using SharedQuadStateList = ListContainer<viz::SharedQuadState>;
+using SharedQuadStateList = cc::ListContainer<SharedQuadState>;
 
 using RenderPassId = uint64_t;
 
-class CC_EXPORT RenderPass {
+class VIZ_COMMON_EXPORT RenderPass {
  public:
   ~RenderPass();
 
@@ -91,8 +87,8 @@ class CC_EXPORT RenderPass {
               const gfx::Rect& output_rect,
               const gfx::Rect& damage_rect,
               const gfx::Transform& transform_to_root_target,
-              const FilterOperations& filters,
-              const FilterOperations& background_filters,
+              const cc::FilterOperations& filters,
+              const cc::FilterOperations& background_filters,
               const gfx::ColorSpace& color_space,
               bool has_transparent_background,
               bool cache_render_pass,
@@ -101,7 +97,7 @@ class CC_EXPORT RenderPass {
 
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
-  viz::SharedQuadState* CreateAndAppendSharedQuadState();
+  SharedQuadState* CreateAndAppendSharedQuadState();
 
   template <typename DrawQuadType>
   DrawQuadType* CreateAndAppendDrawQuad() {
@@ -111,7 +107,7 @@ class CC_EXPORT RenderPass {
   RenderPassDrawQuad* CopyFromAndAppendRenderPassDrawQuad(
       const RenderPassDrawQuad* quad,
       RenderPassId render_pass_id);
-  viz::DrawQuad* CopyFromAndAppendDrawQuad(const viz::DrawQuad* quad);
+  DrawQuad* CopyFromAndAppendDrawQuad(const DrawQuad* quad);
 
   // Uniquely identifies the render pass in the compositor's current frame.
   RenderPassId id = 0;
@@ -125,11 +121,11 @@ class CC_EXPORT RenderPass {
   gfx::Transform transform_to_root_target;
 
   // Post-processing filters, applied to the pixels in the render pass' texture.
-  FilterOperations filters;
+  cc::FilterOperations filters;
 
   // Post-processing filters, applied to the pixels showing through the
   // background of the render pass, from behind it.
-  FilterOperations background_filters;
+  cc::FilterOperations background_filters;
 
   // The color space into which content will be rendered for this render pass.
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
@@ -150,7 +146,7 @@ class CC_EXPORT RenderPass {
   // contents as a bitmap, and give a copy of the bitmap to each callback in
   // this list. This property should not be serialized between compositors, as
   // it only makes sense in the root compositor.
-  std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
 
   QuadList quad_list;
   SharedQuadStateList shared_quad_state_list;
@@ -162,7 +158,7 @@ class CC_EXPORT RenderPass {
 
  private:
   template <typename DrawQuadType>
-  DrawQuadType* CopyFromAndAppendTypedDrawQuad(const viz::DrawQuad* quad) {
+  DrawQuadType* CopyFromAndAppendTypedDrawQuad(const DrawQuad* quad) {
     return quad_list.AllocateAndCopyFrom(DrawQuadType::MaterialCast(quad));
   }
 
@@ -171,6 +167,6 @@ class CC_EXPORT RenderPass {
 
 using RenderPassList = std::vector<std::unique_ptr<RenderPass>>;
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_QUADS_RENDER_PASS_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_RENDER_PASS_H_

@@ -7,16 +7,17 @@
 
 #include "cc/base/filter_operation.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/render_pass.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/stream_video_draw_quad.h"
-#include "cc/quads/surface_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
-#include "cc/quads/tile_draw_quad.h"
-#include "cc/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/stream_video_draw_quad.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
@@ -41,10 +42,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(viz::ResourceFormat, viz::RESOURCE_FORMAT_MAX)
 
 // TODO(fsamuel): This trait belongs with skia code.
 IPC_ENUM_TRAITS_MAX_VALUE(SkBlendMode, SkBlendMode::kLastMode)
-IPC_ENUM_TRAITS_MAX_VALUE(cc::YUVVideoDrawQuad::ColorSpace,
-                          cc::YUVVideoDrawQuad::COLOR_SPACE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(cc::SurfaceDrawQuadType,
-                          cc::SurfaceDrawQuadType::LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(viz::YUVVideoDrawQuad::ColorSpace,
+                          viz::YUVVideoDrawQuad::COLOR_SPACE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(viz::SurfaceDrawQuadType,
+                          viz::SurfaceDrawQuadType::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(viz::SurfaceSequence)
   IPC_STRUCT_TRAITS_MEMBER(frame_sink_id)
@@ -59,13 +60,13 @@ IPC_STRUCT_TRAITS_BEGIN(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(resources)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::DebugBorderDrawQuad)
+IPC_STRUCT_TRAITS_BEGIN(viz::DebugBorderDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(color)
   IPC_STRUCT_TRAITS_MEMBER(width)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassDrawQuad)
+IPC_STRUCT_TRAITS_BEGIN(viz::RenderPassDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(render_pass_id)
   IPC_STRUCT_TRAITS_MEMBER(mask_uv_rect)
@@ -75,29 +76,29 @@ IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(tex_coord_rect)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::SolidColorDrawQuad)
+IPC_STRUCT_TRAITS_BEGIN(viz::SolidColorDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(color)
   IPC_STRUCT_TRAITS_MEMBER(force_anti_aliasing_off)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::StreamVideoDrawQuad)
+IPC_STRUCT_TRAITS_BEGIN(viz::StreamVideoDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(overlay_resources)
   IPC_STRUCT_TRAITS_MEMBER(matrix)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::StreamVideoDrawQuad::OverlayResources)
+IPC_STRUCT_TRAITS_BEGIN(viz::StreamVideoDrawQuad::OverlayResources)
   IPC_STRUCT_TRAITS_MEMBER(size_in_pixels)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::SurfaceDrawQuad)
+IPC_STRUCT_TRAITS_BEGIN(viz::SurfaceDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(surface_id)
   IPC_STRUCT_TRAITS_MEMBER(surface_draw_quad_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::TextureDrawQuad)
+IPC_STRUCT_TRAITS_BEGIN(viz::TextureDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(overlay_resources)
   IPC_STRUCT_TRAITS_MEMBER(premultiplied_alpha)
@@ -113,11 +114,11 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TextureDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(secure_output_only)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::TextureDrawQuad::OverlayResources)
+IPC_STRUCT_TRAITS_BEGIN(viz::TextureDrawQuad::OverlayResources)
   IPC_STRUCT_TRAITS_MEMBER(size_in_pixels)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::TileDrawQuad)
+IPC_STRUCT_TRAITS_BEGIN(viz::TileDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(tex_coord_rect)
   IPC_STRUCT_TRAITS_MEMBER(texture_size)

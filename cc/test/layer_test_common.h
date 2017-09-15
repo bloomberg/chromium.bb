@@ -11,12 +11,12 @@
 #include <utility>
 
 #include "cc/animation/animation_timeline.h"
-#include "cc/quads/render_pass.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "components/viz/common/quads/render_pass.h"
 
 #define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test)                 \
   do {                                                                \
@@ -34,10 +34,13 @@
 
 namespace gfx { class Rect; }
 
+namespace viz {
+class QuadList;
+}
+
 namespace cc {
 class LayerImpl;
 class LayerTreeFrameSink;
-class QuadList;
 class RenderSurfaceImpl;
 class ResourceProvider;
 
@@ -48,10 +51,10 @@ class LayerTestCommon {
  public:
   static const char* quad_string;
 
-  static void VerifyQuadsExactlyCoverRect(const QuadList& quads,
+  static void VerifyQuadsExactlyCoverRect(const viz::QuadList& quads,
                                           const gfx::Rect& rect);
 
-  static void VerifyQuadsAreOccluded(const QuadList& quads,
+  static void VerifyQuadsAreOccluded(const viz::QuadList& quads,
                                      const gfx::Rect& occluded,
                                      size_t* partially_occluded_count);
 
@@ -169,7 +172,7 @@ class LayerTestCommon {
     void AppendQuadsWithOcclusion(LayerImpl* layer_impl,
                                   const gfx::Rect& occluded);
     void AppendQuadsForPassWithOcclusion(LayerImpl* layer_impl,
-                                         RenderPass* given_render_pass,
+                                         viz::RenderPass* given_render_pass,
                                          const gfx::Rect& occluded);
     void AppendSurfaceQuadsWithOcclusion(RenderSurfaceImpl* surface_impl,
                                          const gfx::Rect& occluded);
@@ -190,7 +193,7 @@ class LayerTestCommon {
     TaskRunnerProvider* task_runner_provider() const {
       return host_->host_impl()->task_runner_provider();
     }
-    const QuadList& quad_list() const { return render_pass_->quad_list; }
+    const viz::QuadList& quad_list() const { return render_pass_->quad_list; }
     scoped_refptr<AnimationTimeline> timeline() { return timeline_; }
     scoped_refptr<AnimationTimeline> timeline_impl() { return timeline_impl_; }
 
@@ -207,7 +210,7 @@ class LayerTestCommon {
     std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink_;
     std::unique_ptr<AnimationHost> animation_host_;
     std::unique_ptr<FakeLayerTreeHost> host_;
-    std::unique_ptr<RenderPass> render_pass_;
+    std::unique_ptr<viz::RenderPass> render_pass_;
     scoped_refptr<AnimationTimeline> timeline_;
     scoped_refptr<AnimationTimeline> timeline_impl_;
     int layer_impl_id_;

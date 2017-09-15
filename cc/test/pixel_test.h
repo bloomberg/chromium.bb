@@ -5,9 +5,9 @@
 #include "base/files/file_util.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_renderer.h"
-#include "cc/quads/render_pass.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -34,22 +34,21 @@ class PixelTest : public testing::Test {
   PixelTest();
   ~PixelTest() override;
 
-  bool RunPixelTest(RenderPassList* pass_list,
+  bool RunPixelTest(viz::RenderPassList* pass_list,
                     const base::FilePath& ref_file,
                     const PixelComparator& comparator);
 
-  bool RunPixelTest(RenderPassList* pass_list,
+  bool RunPixelTest(viz::RenderPassList* pass_list,
                     std::vector<SkColor>* ref_pixels,
                     const PixelComparator& comparator);
 
-  bool RunPixelTestWithReadbackTarget(
-      RenderPassList* pass_list,
-      RenderPass* target,
-      const base::FilePath& ref_file,
-      const PixelComparator& comparator);
+  bool RunPixelTestWithReadbackTarget(viz::RenderPassList* pass_list,
+                                      viz::RenderPass* target,
+                                      const base::FilePath& ref_file,
+                                      const PixelComparator& comparator);
 
-  bool RunPixelTestWithReadbackTargetAndArea(RenderPassList* pass_list,
-                                             RenderPass* target,
+  bool RunPixelTestWithReadbackTargetAndArea(viz::RenderPassList* pass_list,
+                                             viz::RenderPass* target,
                                              const base::FilePath& ref_file,
                                              const PixelComparator& comparator,
                                              const gfx::Rect* copy_rect);

@@ -15,9 +15,9 @@
 #include "cc/cc_export.h"
 #include "cc/layers/draw_mode.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/quads/render_pass.h"
 #include "cc/trees/occlusion.h"
 #include "cc/trees/property_tree.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -168,9 +168,9 @@ class CC_EXPORT RenderSurfaceImpl {
   DamageTracker* damage_tracker() const { return damage_tracker_.get(); }
   gfx::Rect GetDamageRect() const;
 
-  std::unique_ptr<RenderPass> CreateRenderPass();
+  std::unique_ptr<viz::RenderPass> CreateRenderPass();
   void AppendQuads(DrawMode draw_mode,
-                   RenderPass* render_pass,
+                   viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data);
 
   int TransformTreeIndex() const;
@@ -186,7 +186,7 @@ class CC_EXPORT RenderSurfaceImpl {
   gfx::Rect CalculateClippedAccumulatedContentRect();
   gfx::Rect CalculateExpandedClipForFilters(
       const gfx::Transform& target_to_surface);
-  void TileMaskLayer(RenderPass* render_pass,
+  void TileMaskLayer(viz::RenderPass* render_pass,
                      viz::SharedQuadState* shared_quad_state,
                      const gfx::Rect& visible_layer_rect);
 

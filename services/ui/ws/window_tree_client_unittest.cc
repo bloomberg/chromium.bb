@@ -2283,7 +2283,7 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
                                      mojo::MakeRequest(&surface_ptr),
                                      std::move(surface_client_ptr));
     cc::CompositorFrame compositor_frame;
-    std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+    std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
     gfx::Rect frame_rect(0, 0, 100, 100);
     render_pass->SetNew(1, frame_rect, frame_rect, gfx::Transform());
     compositor_frame.render_pass_list.push_back(std::move(render_pass));
@@ -2323,7 +2323,7 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
                                      mojo::MakeRequest(&surface_ptr),
                                      std::move(surface_client_ptr));
     cc::CompositorFrame compositor_frame;
-    std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+    std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
     gfx::Rect frame_rect(0, 0, 100, 100);
     render_pass->SetNew(1, frame_rect, frame_rect, gfx::Transform());
     compositor_frame.render_pass_list.push_back(std::move(render_pass));

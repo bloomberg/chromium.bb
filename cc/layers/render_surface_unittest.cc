@@ -5,7 +5,6 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
-#include "cc/quads/tile_draw_quad.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -17,6 +16,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
@@ -57,7 +57,7 @@ class FakePictureLayerImplForRenderSurfaceTest : public FakePictureLayerImpl {
 
   bool HasValidTilePriorities() const override { return false; }
 
-  void AppendQuads(RenderPass* render_pass,
+  void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     viz::SharedQuadState* shared_quad_state =
         render_pass->CreateAndAppendSharedQuadState();
@@ -66,7 +66,7 @@ class FakePictureLayerImplForRenderSurfaceTest : public FakePictureLayerImpl {
                                   max_contents_scale, contents_opaque());
     bool needs_blending = false;
     for (const auto& rect : quad_rects_) {
-      TileDrawQuad* quad = render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
+      auto* quad = render_pass->CreateAndAppendDrawQuad<viz::TileDrawQuad>();
       quad->SetNew(shared_quad_state, rect, rect, needs_blending, 0,
                    gfx::RectF(rect), bounds(), false, false);
     }
@@ -177,7 +177,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   render_surface->SetDrawOpacity(1.f);
   render_surface->SetDrawTransform(origin);
 
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData append_quads_data;
 
   render_surface->AppendQuads(DRAW_MODE_HARDWARE, render_pass.get(),
@@ -287,7 +287,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceDropsOccludedRenderPassDrawQuads) {
       Occlusion(gfx::Transform(), SimpleEnclosedRegion(occluded),
                 SimpleEnclosedRegion(occluded)));
 
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData append_quads_data;
 
   render_surface->AppendQuads(DRAW_MODE_HARDWARE, render_pass.get(),
@@ -357,7 +357,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
       Occlusion(gfx::Transform(), SimpleEnclosedRegion(occluded),
                 SimpleEnclosedRegion(occluded));
 
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData append_quads_data;
 
   render_surface->AppendQuads(DRAW_MODE_HARDWARE, render_pass.get(),

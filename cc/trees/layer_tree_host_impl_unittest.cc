@@ -38,10 +38,6 @@
 #include "cc/layers/viewport.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/latency_info_swap_promise.h"
-#include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
-#include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/animation_test_common.h"
@@ -69,6 +65,10 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
@@ -186,7 +186,8 @@ class LayerTreeHostImplTest : public testing::Test,
     std::unique_ptr<TestFrameData> frame(new TestFrameData);
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(frame.get()));
     last_on_draw_render_passes_.clear();
-    RenderPass::CopyAll(frame->render_passes, &last_on_draw_render_passes_);
+    viz::RenderPass::CopyAll(frame->render_passes,
+                             &last_on_draw_render_passes_);
     host_impl_->DrawLayers(frame.get());
     host_impl_->DidDrawAllLayers(*frame);
     last_on_draw_frame_ = std::move(frame);
@@ -672,7 +673,7 @@ class LayerTreeHostImplTest : public testing::Test,
   base::Closure animation_task_;
   base::TimeDelta requested_animation_delay_;
   std::unique_ptr<TestFrameData> last_on_draw_frame_;
-  RenderPassList last_on_draw_render_passes_;
+  viz::RenderPassList last_on_draw_render_passes_;
   scoped_refptr<AnimationTimeline> timeline_;
   std::unique_ptr<base::Thread> image_worker_;
 };
@@ -1952,7 +1953,7 @@ class MissingTilesLayer : public LayerImpl {
     has_missing_tiles_ = has_missing_tiles;
   }
 
-  void AppendQuads(RenderPass* render_pass,
+  void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     append_quads_data->num_missing_tiles += has_missing_tiles_;
   }
@@ -4104,7 +4105,7 @@ class DidDrawCheckLayer : public LayerImpl {
     return LayerImpl::WillDraw(draw_mode, provider);
   }
 
-  void AppendQuads(RenderPass* render_pass,
+  void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     append_quads_called_ = true;
     LayerImpl::AppendQuads(render_pass, append_quads_data);
@@ -4340,7 +4341,7 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
         resource_provider, timeline));
   }
 
-  void AppendQuads(RenderPass* render_pass,
+  void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     LayerImpl::AppendQuads(render_pass, append_quads_data);
     if (had_incomplete_tile_)
@@ -7776,7 +7777,7 @@ class BlendStateCheckLayer : public LayerImpl {
         new BlendStateCheckLayer(tree_impl, id, resource_provider));
   }
 
-  void AppendQuads(RenderPass* render_pass,
+  void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     quads_appended_ = true;
 
@@ -7792,8 +7793,8 @@ class BlendStateCheckLayer : public LayerImpl {
         render_pass->CreateAndAppendSharedQuadState();
     PopulateSharedQuadState(shared_quad_state, contents_opaque());
 
-    TileDrawQuad* test_blending_draw_quad =
-        render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
+    auto* test_blending_draw_quad =
+        render_pass->CreateAndAppendDrawQuad<viz::TileDrawQuad>();
     test_blending_draw_quad->SetNew(
         shared_quad_state, quad_rect_, visible_quad_rect, needs_blending,
         resource_id_, gfx::RectF(0.f, 0.f, 1.f, 1.f), gfx::Size(1, 1), false,
@@ -8222,7 +8223,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
   }
 
-  void VerifyEmptyLayerRenderPasses(const RenderPassList& render_passes) {
+  void VerifyEmptyLayerRenderPasses(const viz::RenderPassList& render_passes) {
     ASSERT_EQ(1u, render_passes.size());
 
     EXPECT_EQ(1u, CountGutterQuads(render_passes[0]->quad_list));
@@ -8259,7 +8260,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
   }
 
-  void VerifyLayerInMiddleOfViewport(const RenderPassList& render_passes) {
+  void VerifyLayerInMiddleOfViewport(const viz::RenderPassList& render_passes) {
     ASSERT_EQ(1u, render_passes.size());
 
     EXPECT_EQ(4u, CountGutterQuads(render_passes[0]->quad_list));
@@ -8297,7 +8298,8 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
   }
 
-  void VerifyLayerIsLargerThanViewport(const RenderPassList& render_passes) {
+  void VerifyLayerIsLargerThanViewport(
+      const viz::RenderPassList& render_passes) {
     ASSERT_EQ(1u, render_passes.size());
 
     EXPECT_EQ(0u, CountGutterQuads(render_passes[0]->quad_list));
@@ -8332,7 +8334,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   }
 
  protected:
-  size_t CountGutterQuads(const QuadList& quad_list) {
+  size_t CountGutterQuads(const viz::QuadList& quad_list) {
     size_t num_gutter_quads = 0;
     for (auto* quad : quad_list) {
       num_gutter_quads += (quad->material == gutter_quad_material_) ? 1 : 0;
@@ -8340,17 +8342,18 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
     return num_gutter_quads;
   }
 
-  void VerifyQuadsExactlyCoverViewport(const QuadList& quad_list) {
+  void VerifyQuadsExactlyCoverViewport(const viz::QuadList& quad_list) {
     LayerTestCommon::VerifyQuadsExactlyCoverRect(
         quad_list, gfx::Rect(DipSizeToPixelSize(viewport_size_)));
   }
 
   // Make sure that the texture coordinates match their expectations.
-  void ValidateTextureDrawQuads(const QuadList& quad_list) {
+  void ValidateTextureDrawQuads(const viz::QuadList& quad_list) {
     for (auto* quad : quad_list) {
       if (quad->material != viz::DrawQuad::TEXTURE_CONTENT)
         continue;
-      const TextureDrawQuad* texture_quad = TextureDrawQuad::MaterialCast(quad);
+      const viz::TextureDrawQuad* texture_quad =
+          viz::TextureDrawQuad::MaterialCast(quad);
       gfx::SizeF gutter_texture_size_pixels =
           gfx::ScaleSize(gfx::SizeF(gutter_texture_size_),
                          host_impl_->active_tree()->device_scale_factor());
@@ -8581,7 +8584,7 @@ class FakeLayerWithQuads : public LayerImpl {
     return base::WrapUnique(new FakeLayerWithQuads(tree_impl, id));
   }
 
-  void AppendQuads(RenderPass* render_pass,
+  void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
     viz::SharedQuadState* shared_quad_state =
         render_pass->CreateAndAppendSharedQuadState();
@@ -8590,8 +8593,8 @@ class FakeLayerWithQuads : public LayerImpl {
     SkColor gray = SkColorSetRGB(100, 100, 100);
     gfx::Rect quad_rect(bounds());
     gfx::Rect visible_quad_rect(quad_rect);
-    SolidColorDrawQuad* my_quad =
-        render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    auto* my_quad =
+        render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
     my_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, gray,
                     false);
   }
@@ -8702,7 +8705,8 @@ class LayerTreeHostImplTestDrawAndTestDamage : public LayerTreeHostImplTest {
       ASSERT_EQ(1u, frame.render_passes.size());
 
       // Verify the damage rect for the root render pass.
-      const RenderPass* root_render_pass = frame.render_passes.back().get();
+      const viz::RenderPass* root_render_pass =
+          frame.render_passes.back().get();
       EXPECT_EQ(expected_damage, root_render_pass->damage_rect);
 
       // Verify the root and child layers' quads are generated and not being
@@ -9020,7 +9024,7 @@ void ExpectFullDamageAndDraw(LayerTreeHostImpl* host_impl) {
   TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl->PrepareToDraw(&frame));
   ASSERT_EQ(1u, frame.render_passes.size());
-  const RenderPass* root_render_pass = frame.render_passes.back().get();
+  const viz::RenderPass* root_render_pass = frame.render_passes.back().get();
   EXPECT_EQ(full_frame_damage, root_render_pass->damage_rect);
   EXPECT_TRUE(host_impl->DrawLayers(&frame));
   host_impl->DidDrawAllLayers(frame);
@@ -9202,8 +9206,9 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
   void DisplayReceivedLocalSurfaceId(
       const viz::LocalSurfaceId& local_surface_id) override {}
   void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {}
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              const RenderPassList& render_passes) override {}
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      const viz::RenderPassList& render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
 
  private:
@@ -12041,37 +12046,36 @@ TEST_F(LayerTreeHostImplCountingLostSurfaces, TwiceLostSurface) {
   EXPECT_LE(1, num_lost_surfaces_);
 }
 
-size_t CountRenderPassesWithId(const RenderPassList& list, RenderPassId id) {
+size_t CountRenderPassesWithId(const viz::RenderPassList& list,
+                               viz::RenderPassId id) {
   return std::count_if(
       list.begin(), list.end(),
-      [id](const std::unique_ptr<RenderPass>& p) { return p->id == id; });
+      [id](const std::unique_ptr<viz::RenderPass>& p) { return p->id == id; });
 }
 
 TEST_F(LayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
   TestFrameData frame;
-  frame.render_passes.push_back(RenderPass::Create());
-  RenderPass* pass3 = frame.render_passes.back().get();
-  frame.render_passes.push_back(RenderPass::Create());
-  RenderPass* pass2 = frame.render_passes.back().get();
-  frame.render_passes.push_back(RenderPass::Create());
-  RenderPass* pass1 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::RenderPass::Create());
+  viz::RenderPass* pass3 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::RenderPass::Create());
+  viz::RenderPass* pass2 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::RenderPass::Create());
+  viz::RenderPass* pass1 = frame.render_passes.back().get();
 
   pass1->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass2->SetNew(2, gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass3->SetNew(3, gfx::Rect(), gfx::Rect(), gfx::Transform());
 
   // Add a quad to each pass so they aren't empty.
-  SolidColorDrawQuad* color_quad;
-  color_quad = pass1->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  auto* color_quad = pass1->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   color_quad->material = viz::DrawQuad::SOLID_COLOR;
-  color_quad = pass2->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  color_quad = pass2->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   color_quad->material = viz::DrawQuad::SOLID_COLOR;
-  color_quad = pass3->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  color_quad = pass3->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   color_quad->material = viz::DrawQuad::SOLID_COLOR;
 
   // pass3 is referenced by pass2.
-  RenderPassDrawQuad* rpdq =
-      pass2->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+  auto* rpdq = pass2->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
   rpdq->material = viz::DrawQuad::RENDER_PASS;
   rpdq->render_pass_id = pass3->id;
 
@@ -12086,30 +12090,28 @@ TEST_F(LayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
 
 TEST_F(LayerTreeHostImplTest, RemoveEmptyRenderPass) {
   TestFrameData frame;
-  frame.render_passes.push_back(RenderPass::Create());
-  RenderPass* pass3 = frame.render_passes.back().get();
-  frame.render_passes.push_back(RenderPass::Create());
-  RenderPass* pass2 = frame.render_passes.back().get();
-  frame.render_passes.push_back(RenderPass::Create());
-  RenderPass* pass1 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::RenderPass::Create());
+  viz::RenderPass* pass3 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::RenderPass::Create());
+  viz::RenderPass* pass2 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::RenderPass::Create());
+  viz::RenderPass* pass1 = frame.render_passes.back().get();
 
   pass1->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass2->SetNew(2, gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass3->SetNew(3, gfx::Rect(), gfx::Rect(), gfx::Transform());
 
   // pass1 is not empty, but pass2 and pass3 are.
-  SolidColorDrawQuad* color_quad;
-  color_quad = pass1->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  auto* color_quad = pass1->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   color_quad->material = viz::DrawQuad::SOLID_COLOR;
 
   // pass3 is referenced by pass2.
-  RenderPassDrawQuad* rpdq =
-      pass2->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+  auto* rpdq = pass2->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
   rpdq->material = viz::DrawQuad::RENDER_PASS;
   rpdq->render_pass_id = pass3->id;
 
   // pass2 is referenced by pass1.
-  rpdq = pass1->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+  rpdq = pass1->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
   rpdq->material = viz::DrawQuad::RENDER_PASS;
   rpdq->render_pass_id = pass2->id;
 
@@ -12121,7 +12123,7 @@ TEST_F(LayerTreeHostImplTest, RemoveEmptyRenderPass) {
   EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes, 2u));
   EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes, 3u));
   EXPECT_EQ(1u, frame.render_passes[0]->id);
-  // The RenderPassDrawQuad should be removed from pass1.
+  // The viz::RenderPassDrawQuad should be removed from pass1.
   EXPECT_EQ(1u, pass1->quad_list.size());
   EXPECT_EQ(viz::DrawQuad::SOLID_COLOR,
             pass1->quad_list.ElementAt(0)->material);
@@ -12129,25 +12131,24 @@ TEST_F(LayerTreeHostImplTest, RemoveEmptyRenderPass) {
 
 TEST_F(LayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
   TestFrameData frame;
-  frame.render_passes.push_back(RenderPass::Create());
-  RenderPass* pass3 = frame.render_passes.back().get();
-  frame.render_passes.push_back(RenderPass::Create());
-  RenderPass* pass2 = frame.render_passes.back().get();
-  frame.render_passes.push_back(RenderPass::Create());
-  RenderPass* pass1 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::RenderPass::Create());
+  viz::RenderPass* pass3 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::RenderPass::Create());
+  viz::RenderPass* pass2 = frame.render_passes.back().get();
+  frame.render_passes.push_back(viz::RenderPass::Create());
+  viz::RenderPass* pass1 = frame.render_passes.back().get();
 
   pass1->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass2->SetNew(2, gfx::Rect(), gfx::Rect(), gfx::Transform());
   pass3->SetNew(3, gfx::Rect(), gfx::Rect(), gfx::Transform());
 
   // pass3 is referenced by pass2.
-  RenderPassDrawQuad* rpdq =
-      pass2->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+  auto* rpdq = pass2->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
   rpdq->material = viz::DrawQuad::RENDER_PASS;
   rpdq->render_pass_id = pass3->id;
 
   // pass2 is referenced by pass1.
-  rpdq = pass1->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+  rpdq = pass1->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
   rpdq->material = viz::DrawQuad::RENDER_PASS;
   rpdq->render_pass_id = pass2->id;
 
@@ -12160,7 +12161,7 @@ TEST_F(LayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
   EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes, 2u));
   EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes, 3u));
   EXPECT_EQ(1u, frame.render_passes[0]->id);
-  // The RenderPassDrawQuad should be removed from pass1.
+  // The viz::RenderPassDrawQuad should be removed from pass1.
   EXPECT_EQ(0u, pass1->quad_list.size());
 }
 

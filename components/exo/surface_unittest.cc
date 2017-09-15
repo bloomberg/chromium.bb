@@ -8,12 +8,12 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/quads/texture_draw_quad.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
@@ -297,7 +297,7 @@ TEST_P(SurfaceTest, SetBufferTransform) {
     EXPECT_EQ(
         ToPixel(gfx::Rect(0, 0, buffer_size.height(), buffer_size.width())),
         frame.render_pass_list.back()->damage_rect);
-    const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    const auto& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
     EXPECT_EQ(
         ToPixel(gfx::Rect(0, 0, 512, 256)),
@@ -335,7 +335,7 @@ TEST_P(SurfaceTest, SetBufferTransform) {
   {
     const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
-    const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    const auto& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(2u, quad_list.size());
     EXPECT_EQ(
         ToPixel(gfx::Rect(child_position,
@@ -461,8 +461,8 @@ TEST_P(SurfaceTest, OverlayCandidate) {
   viz::DrawQuad* draw_quad = frame.render_pass_list.back()->quad_list.back();
   ASSERT_EQ(viz::DrawQuad::TEXTURE_CONTENT, draw_quad->material);
 
-  const cc::TextureDrawQuad* texture_quad =
-      cc::TextureDrawQuad::MaterialCast(draw_quad);
+  const viz::TextureDrawQuad* texture_quad =
+      viz::TextureDrawQuad::MaterialCast(draw_quad);
   EXPECT_FALSE(texture_quad->resource_size_in_pixels().IsEmpty());
 }
 

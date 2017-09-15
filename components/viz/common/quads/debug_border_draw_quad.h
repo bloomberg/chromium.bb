@@ -2,43 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_QUADS_DEBUG_BORDER_DRAW_QUAD_H_
-#define CC_QUADS_DEBUG_BORDER_DRAW_QUAD_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_DEBUG_BORDER_DRAW_QUAD_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_DEBUG_BORDER_DRAW_QUAD_H_
 
 #include <memory>
 
-#include "cc/cc_export.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT DebugBorderDrawQuad : public viz::DrawQuad {
+class VIZ_COMMON_EXPORT DebugBorderDrawQuad : public DrawQuad {
  public:
   DebugBorderDrawQuad();
 
-  void SetNew(const viz::SharedQuadState* shared_quad_state,
+  void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               SkColor color,
               int width);
 
-  void SetAll(const viz::SharedQuadState* shared_quad_state,
+  void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
               SkColor color,
               int width);
 
-  SkColor color;
-  int width;
+  SkColor color = SK_ColorTRANSPARENT;
+  int width = 0;
 
-  static const DebugBorderDrawQuad* MaterialCast(const viz::DrawQuad*);
+  static const DebugBorderDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_QUADS_DEBUG_BORDER_DRAW_QUAD_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_DEBUG_BORDER_DRAW_QUAD_H_

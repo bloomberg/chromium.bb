@@ -17,7 +17,6 @@
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
-#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
@@ -40,6 +39,7 @@
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -547,11 +547,11 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
 
   // Thickness should be overridden to 3.
   {
-    std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+    std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
-    const QuadList& quads = render_pass->quad_list;
+    const auto& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(viz::DrawQuad::SOLID_COLOR, quads.front()->material);
     EXPECT_EQ(gfx::Rect(6, 0, 39, 3), quads.front()->rect);
@@ -562,11 +562,11 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
   scrollbar_layer_impl->SetClipLayerLength(25.f);
   scrollbar_layer_impl->SetScrollLayerLength(125.f);
   {
-    std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+    std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
-    const QuadList& quads = render_pass->quad_list;
+    const auto& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(viz::DrawQuad::SOLID_COLOR, quads.front()->material);
     EXPECT_EQ(gfx::Rect(8, 0, 19, 3), quads.front()->rect);
@@ -577,11 +577,11 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
   scrollbar_layer_impl->SetClipLayerLength(125.f);
   scrollbar_layer_impl->SetScrollLayerLength(125.f);
   {
-    std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+    std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
-    const QuadList& quads = render_pass->quad_list;
+    const auto& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(viz::DrawQuad::SOLID_COLOR, quads.front()->material);
     EXPECT_EQ(gfx::Rect(1, 0, 98, 3), quads.front()->rect);
@@ -633,12 +633,12 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   layer_tree_host_->active_tree()->UpdateScrollbarGeometries();
 
   {
-    std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+    std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
 
     AppendQuadsData data;
     scrollbar_layer_impl->AppendQuads(render_pass.get(), &data);
 
-    const QuadList& quads = render_pass->quad_list;
+    const auto& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(viz::DrawQuad::SOLID_COLOR, quads.front()->material);
     EXPECT_EQ(gfx::Rect(3, 0, 3, 3), quads.front()->rect);

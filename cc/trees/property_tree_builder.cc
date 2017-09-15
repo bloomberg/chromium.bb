@@ -798,8 +798,8 @@ bool ShouldCreateRenderSurface(LayerType* layer,
 
   // If the layer has blending.
   // TODO(rosca): this is temporary, until blending is implemented for other
-  // types of quads than RenderPassDrawQuad. Layers having descendants that draw
-  // content will still create a separate rendering surface.
+  // types of quads than viz::RenderPassDrawQuad. Layers having descendants that
+  // draw content will still create a separate rendering surface.
   if (BlendMode(layer) != SkBlendMode::kSrcOver) {
     TRACE_EVENT_INSTANT0(
         "cc", "PropertyTreeBuilder::ShouldCreateRenderSurface blending",

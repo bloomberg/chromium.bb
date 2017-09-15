@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/quads/yuv_video_draw_quad.h"
+#include "components/viz/common/quads/yuv_video_draw_quad.h"
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
 
-namespace cc {
+namespace viz {
 
-YUVVideoDrawQuad::YUVVideoDrawQuad() {
-}
+YUVVideoDrawQuad::YUVVideoDrawQuad() = default;
 
 YUVVideoDrawQuad::YUVVideoDrawQuad(const YUVVideoDrawQuad& other) = default;
 
-YUVVideoDrawQuad::~YUVVideoDrawQuad() {}
+YUVVideoDrawQuad::~YUVVideoDrawQuad() = default;
 
-void YUVVideoDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
+void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                               const gfx::Rect& rect,
                               const gfx::Rect& visible_rect,
                               bool needs_blending,
@@ -35,8 +34,8 @@ void YUVVideoDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                               float offset,
                               float multiplier,
                               uint32_t bits_per_channel) {
-  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::YUV_VIDEO_CONTENT,
-                        rect, visible_rect, needs_blending);
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
+                   visible_rect, needs_blending);
   this->ya_tex_coord_rect = ya_tex_coord_rect;
   this->uv_tex_coord_rect = uv_tex_coord_rect;
   this->ya_tex_size = ya_tex_size;
@@ -53,7 +52,7 @@ void YUVVideoDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
   this->bits_per_channel = bits_per_channel;
 }
 
-void YUVVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
+void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               const gfx::Rect& rect,
                               const gfx::Rect& visible_rect,
                               bool needs_blending,
@@ -71,8 +70,8 @@ void YUVVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                               float multiplier,
                               uint32_t bits_per_channel,
                               bool require_overlay) {
-  viz::DrawQuad::SetAll(shared_quad_state, viz::DrawQuad::YUV_VIDEO_CONTENT,
-                        rect, visible_rect, needs_blending);
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
+                   visible_rect, needs_blending);
   this->ya_tex_coord_rect = ya_tex_coord_rect;
   this->uv_tex_coord_rect = uv_tex_coord_rect;
   this->ya_tex_size = ya_tex_size;
@@ -90,18 +89,17 @@ void YUVVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
   this->require_overlay = require_overlay;
 }
 
-const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(
-    const viz::DrawQuad* quad) {
-  DCHECK(quad->material == viz::DrawQuad::YUV_VIDEO_CONTENT);
+const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(const DrawQuad* quad) {
+  DCHECK(quad->material == DrawQuad::YUV_VIDEO_CONTENT);
   return static_cast<const YUVVideoDrawQuad*>(quad);
 }
 
 void YUVVideoDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
-  MathUtil::AddToTracedValue("ya_tex_coord_rect", ya_tex_coord_rect, value);
-  MathUtil::AddToTracedValue("uv_tex_coord_rect", uv_tex_coord_rect, value);
-  MathUtil::AddToTracedValue("ya_tex_size", ya_tex_size, value);
-  MathUtil::AddToTracedValue("uv_tex_size", uv_tex_size, value);
+  cc::MathUtil::AddToTracedValue("ya_tex_coord_rect", ya_tex_coord_rect, value);
+  cc::MathUtil::AddToTracedValue("uv_tex_coord_rect", uv_tex_coord_rect, value);
+  cc::MathUtil::AddToTracedValue("ya_tex_size", ya_tex_size, value);
+  cc::MathUtil::AddToTracedValue("uv_tex_size", uv_tex_size, value);
   value->SetInteger("y_plane_resource_id",
                     resources.ids[kYPlaneResourceIdIndex]);
   value->SetInteger("u_plane_resource_id",
@@ -113,4 +111,4 @@ void YUVVideoDrawQuad::ExtendValue(
   value->SetBoolean("require_overlay", require_overlay);
 }
 
-}  // namespace cc
+}  // namespace viz

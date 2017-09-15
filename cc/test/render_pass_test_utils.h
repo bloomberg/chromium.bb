@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "cc/base/filter_operations.h"
-#include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
@@ -17,48 +17,51 @@ class Rect;
 class Transform;
 }
 
-namespace cc {
-
-class SolidColorDrawQuad;
+namespace viz {
 class RenderPass;
+class SolidColorDrawQuad;
+}  // namespace viz
+
+namespace cc {
 
 // Adds a new render pass with the provided properties to the given
 // render pass list.
-RenderPass* AddRenderPass(RenderPassList* pass_list,
-                          int render_pass_id,
-                          const gfx::Rect& output_rect,
-                          const gfx::Transform& root_transform,
-                          const FilterOperations& filters);
+viz::RenderPass* AddRenderPass(viz::RenderPassList* pass_list,
+                               int render_pass_id,
+                               const gfx::Rect& output_rect,
+                               const gfx::Transform& root_transform,
+                               const FilterOperations& filters);
 
 // Adds a solid quad to a given render pass.
-SolidColorDrawQuad* AddQuad(RenderPass* pass,
-                            const gfx::Rect& rect,
-                            SkColor color);
+viz::SolidColorDrawQuad* AddQuad(viz::RenderPass* pass,
+                                 const gfx::Rect& rect,
+                                 SkColor color);
 
 // Adds a solid quad to a given render pass and sets is_clipped=true.
-SolidColorDrawQuad* AddClippedQuad(RenderPass* pass,
-                                   const gfx::Rect& rect,
-                                   SkColor color);
+viz::SolidColorDrawQuad* AddClippedQuad(viz::RenderPass* pass,
+                                        const gfx::Rect& rect,
+                                        SkColor color);
 
 // Adds a solid quad with a transform to a given render pass.
-SolidColorDrawQuad* AddTransformedQuad(RenderPass* pass,
-                                       const gfx::Rect& rect,
-                                       SkColor color,
-                                       const gfx::Transform& transform);
+viz::SolidColorDrawQuad* AddTransformedQuad(viz::RenderPass* pass,
+                                            const gfx::Rect& rect,
+                                            SkColor color,
+                                            const gfx::Transform& transform);
 
 // Adds a render pass quad to an existing render pass.
-void AddRenderPassQuad(RenderPass* to_pass, RenderPass* contributing_pass);
+void AddRenderPassQuad(viz::RenderPass* to_pass,
+                       viz::RenderPass* contributing_pass);
 
 // Adds a render pass quad with the given mask resource, filter, and transform.
-void AddRenderPassQuad(RenderPass* to_pass,
-                       RenderPass* contributing_pass,
+void AddRenderPassQuad(viz::RenderPass* to_pass,
+                       viz::RenderPass* contributing_pass,
                        viz::ResourceId mask_resource_id,
                        gfx::Transform transform,
                        SkBlendMode blend_mode);
 
-void AddOneOfEveryQuadType(RenderPass* to_pass,
+void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
                            ResourceProvider* resource_provider,
-                           RenderPassId child_pass_id,
+                           viz::RenderPassId child_pass_id,
                            gpu::SyncToken* sync_token_for_mailbox_texture);
 
 }  // namespace cc

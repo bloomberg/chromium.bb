@@ -10,7 +10,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
-// See cc/quads/render_pass.h.
+// See components/viz/common/quads/render_pass.h.
 struct RenderPass {
   uint64 id;
   gfx.mojom.Rect output_rect;

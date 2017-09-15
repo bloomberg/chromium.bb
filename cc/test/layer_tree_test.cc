@@ -485,8 +485,9 @@ class LayerTreeTestLayerTreeFrameSinkClient
   void DisplayReceivedCompositorFrame(const CompositorFrame& frame) override {
     hooks_->DisplayReceivedCompositorFrameOnThread(frame);
   }
-  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
-                              const RenderPassList& render_passes) override {
+  void DisplayWillDrawAndSwap(
+      bool will_draw_and_swap,
+      const viz::RenderPassList& render_passes) override {
     hooks_->DisplayWillDrawAndSwapOnThread(will_draw_and_swap, render_passes);
   }
   void DisplayDidDrawAndSwap() override {

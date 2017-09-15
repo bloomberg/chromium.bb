@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
-#include "cc/quads/surface_draw_quad.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/cursor_manager.h"
@@ -108,7 +108,7 @@ RenderWidgetHostInputEventRouter::HittestDelegate::HittestDelegate(
     : hittest_data_(hittest_data) {}
 
 bool RenderWidgetHostInputEventRouter::HittestDelegate::RejectHitTarget(
-    const cc::SurfaceDrawQuad* surface_quad,
+    const viz::SurfaceDrawQuad* surface_quad,
     const gfx::Point& point_in_quad_space) {
   auto it = hittest_data_.find(surface_quad->surface_id);
   if (it != hittest_data_.end() && it->second.ignored_for_hittest)
@@ -117,7 +117,7 @@ bool RenderWidgetHostInputEventRouter::HittestDelegate::RejectHitTarget(
 }
 
 bool RenderWidgetHostInputEventRouter::HittestDelegate::AcceptHitTarget(
-    const cc::SurfaceDrawQuad* surface_quad,
+    const viz::SurfaceDrawQuad* surface_quad,
     const gfx::Point& point_in_quad_space) {
   auto it = hittest_data_.find(surface_quad->surface_id);
   if (it != hittest_data_.end() && !it->second.ignored_for_hittest)

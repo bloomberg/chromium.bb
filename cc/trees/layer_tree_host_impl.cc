@@ -48,9 +48,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/layer_tree_frame_sink.h"
-#include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
@@ -81,7 +78,10 @@
 #include "cc/trees/tree_synchronizer.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/traced_value.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -744,7 +744,7 @@ DrawMode LayerTreeHostImpl::GetDrawMode() const {
 
 static void AppendQuadsToFillScreen(
     const gfx::Rect& root_scroll_layer_rect,
-    RenderPass* target_render_pass,
+    viz::RenderPass* target_render_pass,
     const RenderSurfaceImpl* root_render_surface,
     SkColor screen_background_color,
     const Region& fill_region) {
@@ -775,18 +775,18 @@ static void AppendQuadsToFillScreen(
     gfx::Rect visible_screen_space_rect = screen_space_rect;
     // Skip the quad culler and just append the quads directly to avoid
     // occlusion checks.
-    SolidColorDrawQuad* quad =
-        target_render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    auto* quad =
+        target_render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
     quad->SetNew(shared_quad_state, screen_space_rect,
                  visible_screen_space_rect, screen_background_color, false);
   }
 }
 
-static RenderPass* FindRenderPassById(const RenderPassList& list,
-                                      RenderPassId id) {
+static viz::RenderPass* FindRenderPassById(const viz::RenderPassList& list,
+                                           viz::RenderPassId id) {
   auto it = std::find_if(
       list.begin(), list.end(),
-      [id](const std::unique_ptr<RenderPass>& p) { return p->id == id; });
+      [id](const std::unique_ptr<viz::RenderPass>& p) { return p->id == id; });
   return it == list.end() ? nullptr : it->get();
 }
 
@@ -856,7 +856,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // Damage rects for non-root passes aren't meaningful, so set them to be
   // equal to the output rect.
   for (size_t i = 0; i + 1 < frame->render_passes.size(); ++i) {
-    RenderPass* pass = frame->render_passes[i].get();
+    viz::RenderPass* pass = frame->render_passes[i].get();
     pass->damage_rect = pass->output_rect;
   }
 
@@ -867,7 +867,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // damage visualizations are done off the LayerImpls and RenderSurfaceImpls,
   // changing the RenderPass does not affect them.
   if (active_tree_->hud_layer()) {
-    RenderPass* root_pass = frame->render_passes.back().get();
+    viz::RenderPass* root_pass = frame->render_passes.back().get();
     root_pass->damage_rect = root_pass->output_rect;
   }
 
@@ -901,7 +901,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   for (EffectTreeLayerListIterator it(active_tree());
        it.state() != EffectTreeLayerListIterator::State::END; ++it) {
     auto target_render_pass_id = it.target_render_surface()->id();
-    RenderPass* target_render_pass =
+    viz::RenderPass* target_render_pass =
         FindRenderPassById(frame->render_passes, target_render_pass_id);
 
     AppendQuadsData append_quads_data;
@@ -1170,23 +1170,24 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
   DCHECK_GE(frame->render_passes.size(), 1u);
 
   // A set of RenderPasses that we have seen.
-  base::flat_set<RenderPassId> pass_exists;
-  // A set of RenderPassDrawQuads that we have seen (stored by the RenderPasses
-  // they refer to).
-  base::flat_map<RenderPassId, int> pass_references;
+  base::flat_set<viz::RenderPassId> pass_exists;
+  // A set of viz::RenderPassDrawQuads that we have seen (stored by the
+  // RenderPasses they refer to).
+  base::flat_map<viz::RenderPassId, int> pass_references;
 
   // Iterate RenderPasses in draw order, removing empty render passes (except
   // the root RenderPass).
   for (size_t i = 0; i < frame->render_passes.size(); ++i) {
-    RenderPass* pass = frame->render_passes[i].get();
+    viz::RenderPass* pass = frame->render_passes[i].get();
 
-    // Remove orphan RenderPassDrawQuads.
+    // Remove orphan viz::RenderPassDrawQuads.
     for (auto it = pass->quad_list.begin(); it != pass->quad_list.end();) {
       if (it->material != viz::DrawQuad::RENDER_PASS) {
         ++it;
         continue;
       }
-      const RenderPassDrawQuad* quad = RenderPassDrawQuad::MaterialCast(*it);
+      const viz::RenderPassDrawQuad* quad =
+          viz::RenderPassDrawQuad::MaterialCast(*it);
       // If the RenderPass doesn't exist, we can remove the quad.
       if (pass_exists.count(quad->render_pass_id)) {
         // Otherwise, save a reference to the RenderPass so we know there's a
@@ -1221,7 +1222,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
     // Iterating from the back of the list to the front, skipping over the
     // back-most (root) pass, in order to remove each qualified RenderPass, and
     // drop references to earlier RenderPasses allowing them to be removed to.
-    RenderPass* pass =
+    viz::RenderPass* pass =
         frame->render_passes[frame->render_passes.size() - 2 - i].get();
     if (!pass->copy_requests.empty())
       continue;
@@ -1231,7 +1232,8 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
     for (auto it = pass->quad_list.begin(); it != pass->quad_list.end(); ++it) {
       if (it->material != viz::DrawQuad::RENDER_PASS)
         continue;
-      const RenderPassDrawQuad* quad = RenderPassDrawQuad::MaterialCast(*it);
+      const viz::RenderPassDrawQuad* quad =
+          viz::RenderPassDrawQuad::MaterialCast(*it);
       pass_references[quad->render_pass_id]--;
     }
 

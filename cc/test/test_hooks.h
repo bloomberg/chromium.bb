@@ -81,7 +81,7 @@ class TestHooks : public AnimationDelegate {
       const CompositorFrame& frame) {}
   virtual void DisplayWillDrawAndSwapOnThread(
       bool will_draw_and_swap,
-      const RenderPassList& render_passes) {}
+      const viz::RenderPassList& render_passes) {}
   virtual void DisplayDidDrawAndSwapOnThread() {}
 
   // Main thread hooks.

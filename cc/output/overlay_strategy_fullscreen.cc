@@ -6,8 +6,8 @@
 
 #include "cc/base/math_util.h"
 #include "cc/output/overlay_candidate_validator.h"
-#include "cc/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -23,10 +23,10 @@ OverlayStrategyFullscreen::~OverlayStrategyFullscreen() {}
 
 bool OverlayStrategyFullscreen::Attempt(
     DisplayResourceProvider* resource_provider,
-    RenderPass* render_pass,
+    viz::RenderPass* render_pass,
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
-  QuadList* quad_list = &render_pass->quad_list;
+  viz::QuadList* quad_list = &render_pass->quad_list;
   // First quad of quad_list is the top most quad.
   auto front = quad_list->begin();
   while (front != quad_list->end()) {
@@ -64,7 +64,7 @@ bool OverlayStrategyFullscreen::Attempt(
 
   candidate_list->swap(new_candidate_list);
 
-  render_pass->quad_list = QuadList();  // Remove all the quads
+  render_pass->quad_list = viz::QuadList();  // Remove all the quads
   return true;
 }
 

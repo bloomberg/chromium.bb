@@ -5,7 +5,7 @@
 #ifndef VideoFrameResourceProvider_h
 #define VideoFrameResourceProvider_h
 
-namespace cc {
+namespace viz {
 class RenderPass;
 }
 
@@ -18,7 +18,7 @@ class VideoFrameResourceProvider {
  public:
   VideoFrameResourceProvider();
 
-  void AppendQuads(cc::RenderPass&);
+  void AppendQuads(viz::RenderPass&);
 };
 
 }  // namespace blink

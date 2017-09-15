@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "cc/layers/append_quads_data.h"
-#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/occlusion.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 
 namespace cc {
 
@@ -28,7 +28,7 @@ std::unique_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
 }
 
 void SolidColorLayerImpl::AppendSolidQuads(
-    RenderPass* render_pass,
+    viz::RenderPass* render_pass,
     const Occlusion& occlusion_in_layer_space,
     viz::SharedQuadState* shared_quad_state,
     const gfx::Rect& visible_layer_rect,
@@ -59,17 +59,16 @@ void SolidColorLayerImpl::AppendSolidQuads(
       append_quads_data->visible_layer_area +=
           visible_quad_rect.width() * visible_quad_rect.height();
 
-      SolidColorDrawQuad* quad =
-          render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+      auto* quad =
+          render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
       quad->SetNew(
           shared_quad_state, quad_rect, visible_quad_rect, color, false);
     }
   }
 }
 
-void SolidColorLayerImpl::AppendQuads(
-    RenderPass* render_pass,
-    AppendQuadsData* append_quads_data) {
+void SolidColorLayerImpl::AppendQuads(viz::RenderPass* render_pass,
+                                      AppendQuadsData* append_quads_data) {
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state, contents_opaque());

@@ -32,7 +32,7 @@ class CC_EXPORT PaintedOverlayScrollbarLayerImpl
 
   bool WillDraw(DrawMode draw_mode,
                 ResourceProvider* resource_provider) override;
-  void AppendQuads(RenderPass* render_pass,
+  void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
 
   void SetThumbThickness(int thumb_thickness);

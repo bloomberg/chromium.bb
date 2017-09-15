@@ -7,22 +7,22 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
-#include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/solid_color_draw_quad.h"
-#include "cc/quads/stream_video_draw_quad.h"
-#include "cc/quads/texture_draw_quad.h"
-#include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/resource_provider.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/stream_video_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
 namespace cc {
 
 namespace {
 
-// If there are too many RenderPassDrawQuads, we shouldn't use Core Animation to
-// present them as individual layers, since that potentially doubles the amount
-// of work needed to present them. cc has to blit them into an IOSurface, and
-// then Core Animation has to blit them to the final surface.
+// If there are too many viz::RenderPassDrawQuads, we shouldn't use Core
+// Animation to present them as individual layers, since that potentially
+// doubles the amount of work needed to present them. cc has to blit them into
+// an IOSurface, and then Core Animation has to blit them to the final surface.
 // https://crbug.com/636884.
 const int kTooManyRenderPassDrawQuads = 30;
 
@@ -76,9 +76,10 @@ bool FilterOperationSupported(const FilterOperation& operation) {
 
 CALayerResult FromRenderPassQuad(
     ResourceProvider* resource_provider,
-    const RenderPassDrawQuad* quad,
-    const base::flat_map<RenderPassId, FilterOperations*>& render_pass_filters,
-    const base::flat_map<RenderPassId, FilterOperations*>&
+    const viz::RenderPassDrawQuad* quad,
+    const base::flat_map<viz::RenderPassId, FilterOperations*>&
+        render_pass_filters,
+    const base::flat_map<viz::RenderPassId, FilterOperations*>&
         render_pass_background_filters,
     CALayerOverlay* ca_layer_overlay) {
   if (render_pass_background_filters.count(quad->render_pass_id)) {
@@ -104,7 +105,7 @@ CALayerResult FromRenderPassQuad(
 }
 
 CALayerResult FromStreamVideoQuad(ResourceProvider* resource_provider,
-                                  const StreamVideoDrawQuad* quad,
+                                  const viz::StreamVideoDrawQuad* quad,
                                   CALayerOverlay* ca_layer_overlay) {
   unsigned resource_id = quad->resource_id();
   if (!resource_provider->IsOverlayCandidate(resource_id))
@@ -118,7 +119,7 @@ CALayerResult FromStreamVideoQuad(ResourceProvider* resource_provider,
   return CA_LAYER_SUCCESS;
 }
 
-CALayerResult FromSolidColorDrawQuad(const SolidColorDrawQuad* quad,
+CALayerResult FromSolidColorDrawQuad(const viz::SolidColorDrawQuad* quad,
                                      CALayerOverlay* ca_layer_overlay,
                                      bool* skip) {
   // Do not generate quads that are completely transparent.
@@ -131,7 +132,7 @@ CALayerResult FromSolidColorDrawQuad(const SolidColorDrawQuad* quad,
 }
 
 CALayerResult FromTextureQuad(ResourceProvider* resource_provider,
-                              const TextureDrawQuad* quad,
+                              const viz::TextureDrawQuad* quad,
                               CALayerOverlay* ca_layer_overlay) {
   unsigned resource_id = quad->resource_id();
   if (!resource_provider->IsOverlayCandidate(resource_id))
@@ -159,7 +160,7 @@ CALayerResult FromTextureQuad(ResourceProvider* resource_provider,
 }
 
 CALayerResult FromTileQuad(ResourceProvider* resource_provider,
-                           const TileDrawQuad* quad,
+                           const viz::TileDrawQuad* quad,
                            CALayerOverlay* ca_layer_overlay) {
   unsigned resource_id = quad->resource_id();
   if (!resource_provider->IsOverlayCandidate(resource_id))
@@ -178,9 +179,9 @@ class CALayerOverlayProcessor {
       ResourceProvider* resource_provider,
       const gfx::RectF& display_rect,
       const viz::DrawQuad* quad,
-      const base::flat_map<RenderPassId, FilterOperations*>&
+      const base::flat_map<viz::RenderPassId, FilterOperations*>&
           render_pass_filters,
-      const base::flat_map<RenderPassId, FilterOperations*>&
+      const base::flat_map<viz::RenderPassId, FilterOperations*>&
           render_pass_background_filters,
       CALayerOverlay* ca_layer_overlay,
       bool* skip,
@@ -229,17 +230,19 @@ class CALayerOverlayProcessor {
     switch (quad->material) {
       case viz::DrawQuad::TEXTURE_CONTENT:
         return FromTextureQuad(resource_provider,
-                               TextureDrawQuad::MaterialCast(quad),
+                               viz::TextureDrawQuad::MaterialCast(quad),
                                ca_layer_overlay);
       case viz::DrawQuad::TILED_CONTENT:
-        return FromTileQuad(resource_provider, TileDrawQuad::MaterialCast(quad),
+        return FromTileQuad(resource_provider,
+                            viz::TileDrawQuad::MaterialCast(quad),
                             ca_layer_overlay);
       case viz::DrawQuad::SOLID_COLOR:
-        return FromSolidColorDrawQuad(SolidColorDrawQuad::MaterialCast(quad),
-                                      ca_layer_overlay, skip);
+        return FromSolidColorDrawQuad(
+            viz::SolidColorDrawQuad::MaterialCast(quad), ca_layer_overlay,
+            skip);
       case viz::DrawQuad::STREAM_VIDEO_CONTENT:
         return FromStreamVideoQuad(resource_provider,
-                                   StreamVideoDrawQuad::MaterialCast(quad),
+                                   viz::StreamVideoDrawQuad::MaterialCast(quad),
                                    ca_layer_overlay);
       case viz::DrawQuad::DEBUG_BORDER:
         return CA_LAYER_FAILED_DEBUG_BORDER;
@@ -247,7 +250,7 @@ class CALayerOverlayProcessor {
         return CA_LAYER_FAILED_PICTURE_CONTENT;
       case viz::DrawQuad::RENDER_PASS:
         return FromRenderPassQuad(
-            resource_provider, RenderPassDrawQuad::MaterialCast(quad),
+            resource_provider, viz::RenderPassDrawQuad::MaterialCast(quad),
             render_pass_filters, render_pass_background_filters,
             ca_layer_overlay);
       case viz::DrawQuad::SURFACE_CONTENT:
@@ -277,9 +280,10 @@ CALayerOverlay::~CALayerOverlay() {}
 bool ProcessForCALayerOverlays(
     ResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
-    const QuadList& quad_list,
-    const base::flat_map<RenderPassId, FilterOperations*>& render_pass_filters,
-    const base::flat_map<RenderPassId, FilterOperations*>&
+    const viz::QuadList& quad_list,
+    const base::flat_map<viz::RenderPassId, FilterOperations*>&
+        render_pass_filters,
+    const base::flat_map<viz::RenderPassId, FilterOperations*>&
         render_pass_background_filters,
     CALayerOverlayList* ca_layer_overlays) {
   CALayerResult result = CA_LAYER_SUCCESS;

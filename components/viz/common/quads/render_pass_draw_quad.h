@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_QUADS_RENDER_PASS_DRAW_QUAD_H_
-#define CC_QUADS_RENDER_PASS_DRAW_QUAD_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_RENDER_PASS_DRAW_QUAD_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_RENDER_PASS_DRAW_QUAD_H_
 
 #include <stddef.h>
 
 #include <memory>
 
 #include "cc/base/filter_operations.h"
-#include "cc/cc_export.h"
-#include "cc/quads/render_pass.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "components/viz/common/viz_common_export.h"
 
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT RenderPassDrawQuad : public viz::DrawQuad {
+class VIZ_COMMON_EXPORT RenderPassDrawQuad : public DrawQuad {
  public:
   static const size_t kMaskResourceIdIndex = 0;
 
@@ -27,23 +27,23 @@ class CC_EXPORT RenderPassDrawQuad : public viz::DrawQuad {
   RenderPassDrawQuad(const RenderPassDrawQuad& other);
   ~RenderPassDrawQuad() override;
 
-  void SetNew(const viz::SharedQuadState* shared_quad_state,
+  void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               RenderPassId render_pass_id,
-              viz::ResourceId mask_resource_id,
+              ResourceId mask_resource_id,
               const gfx::RectF& mask_uv_rect,
               const gfx::Size& mask_texture_size,
               const gfx::Vector2dF& filters_scale,
               const gfx::PointF& filters_origin,
               const gfx::RectF& tex_coord_rect);
 
-  void SetAll(const viz::SharedQuadState* shared_quad_state,
+  void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
               RenderPassId render_pass_id,
-              viz::ResourceId mask_resource_id,
+              ResourceId mask_resource_id,
               const gfx::RectF& mask_uv_rect,
               const gfx::Size& mask_texture_size,
               const gfx::Vector2dF& filters_scale,
@@ -66,16 +66,16 @@ class CC_EXPORT RenderPassDrawQuad : public viz::DrawQuad {
 
   gfx::RectF tex_coord_rect;
 
-  viz::ResourceId mask_resource_id() const {
+  ResourceId mask_resource_id() const {
     return resources.ids[kMaskResourceIdIndex];
   }
 
-  static const RenderPassDrawQuad* MaterialCast(const viz::DrawQuad*);
+  static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
   void ExtendValue(base::trace_event::TracedValue* value) const override;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_QUADS_RENDER_PASS_DRAW_QUAD_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_RENDER_PASS_DRAW_QUAD_H_

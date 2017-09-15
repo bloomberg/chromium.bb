@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "cc/quads/render_pass.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "services/viz/public/cpp/compositing/quads_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/render_pass.mojom-shared.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
@@ -18,67 +18,67 @@ namespace mojo {
 
 template <>
 struct StructTraits<viz::mojom::RenderPassDataView,
-                    std::unique_ptr<cc::RenderPass>> {
-  static cc::RenderPassId id(const std::unique_ptr<cc::RenderPass>& input) {
+                    std::unique_ptr<viz::RenderPass>> {
+  static viz::RenderPassId id(const std::unique_ptr<viz::RenderPass>& input) {
     DCHECK(input->id);
     return input->id;
   }
 
   static const gfx::Rect& output_rect(
-      const std::unique_ptr<cc::RenderPass>& input) {
+      const std::unique_ptr<viz::RenderPass>& input) {
     return input->output_rect;
   }
 
   static const gfx::Rect& damage_rect(
-      const std::unique_ptr<cc::RenderPass>& input) {
+      const std::unique_ptr<viz::RenderPass>& input) {
     return input->damage_rect;
   }
 
   static const gfx::Transform& transform_to_root_target(
-      const std::unique_ptr<cc::RenderPass>& input) {
+      const std::unique_ptr<viz::RenderPass>& input) {
     return input->transform_to_root_target;
   }
 
   static const cc::FilterOperations& filters(
-      const std::unique_ptr<cc::RenderPass>& input) {
+      const std::unique_ptr<viz::RenderPass>& input) {
     return input->filters;
   }
 
   static const cc::FilterOperations& background_filters(
-      const std::unique_ptr<cc::RenderPass>& input) {
+      const std::unique_ptr<viz::RenderPass>& input) {
     return input->background_filters;
   }
 
   static const gfx::ColorSpace& color_space(
-      const std::unique_ptr<cc::RenderPass>& input) {
+      const std::unique_ptr<viz::RenderPass>& input) {
     return input->color_space;
   }
 
   static bool has_transparent_background(
-      const std::unique_ptr<cc::RenderPass>& input) {
+      const std::unique_ptr<viz::RenderPass>& input) {
     return input->has_transparent_background;
   }
 
-  static bool cache_render_pass(const std::unique_ptr<cc::RenderPass>& input) {
+  static bool cache_render_pass(const std::unique_ptr<viz::RenderPass>& input) {
     return input->cache_render_pass;
   }
 
   static bool has_damage_from_contributing_content(
-      const std::unique_ptr<cc::RenderPass>& input) {
+      const std::unique_ptr<viz::RenderPass>& input) {
     return input->has_damage_from_contributing_content;
   }
 
-  static bool generate_mipmap(const std::unique_ptr<cc::RenderPass>& input) {
+  static bool generate_mipmap(const std::unique_ptr<viz::RenderPass>& input) {
     return input->generate_mipmap;
   }
 
-  static const cc::QuadList& quad_list(
-      const std::unique_ptr<cc::RenderPass>& input) {
+  static const viz::QuadList& quad_list(
+      const std::unique_ptr<viz::RenderPass>& input) {
     return input->quad_list;
   }
 
   static bool Read(viz::mojom::RenderPassDataView data,
-                   std::unique_ptr<cc::RenderPass>* out);
+                   std::unique_ptr<viz::RenderPass>* out);
 };
 
 }  // namespace mojo
