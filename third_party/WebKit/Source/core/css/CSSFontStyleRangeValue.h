@@ -26,8 +26,8 @@
 #ifndef CSSFontStyleRangeValue_h
 #define CSSFontStyleRangeValue_h
 
-#include "CSSIdentifierValue.h"
-#include "CSSValueList.h"
+#include "core/css/CSSIdentifierValue.h"
+#include "core/css/CSSValueList.h"
 
 namespace blink {
 
