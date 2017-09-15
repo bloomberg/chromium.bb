@@ -12,7 +12,10 @@
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
+#import "ios/clean/chrome/browser/ui/overlays/overlay_service.h"
+#import "ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
+#import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_container_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_toolbar_commands.h"
@@ -88,7 +91,8 @@
 }
 
 - (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
-  if (childCoordinator == self.toolsMenuCoordinator) {
+  if (childCoordinator == self.toolsMenuCoordinator ||
+      childCoordinator == self.settingsCoordinator) {
     [childCoordinator.viewController.presentingViewController
         dismissViewControllerAnimated:YES
                            completion:nil];
@@ -162,15 +166,28 @@
   [self.dispatcher startDispatchingToTarget:self
                                 forSelector:@selector(closeSettings)];
   SettingsCoordinator* settingsCoordinator = [[SettingsCoordinator alloc] init];
-  [self addChildCoordinator:settingsCoordinator];
+  TabGridCoordinator* activeTabGrid =
+      self.incognito ? self.incognitoTabGrid : self.normalTabGrid;
+  BrowserCoordinator* settingsParent = activeTabGrid.activeTabCoordinator
+                                           ? activeTabGrid.activeTabCoordinator
+                                           : self;
+  [settingsParent addChildCoordinator:settingsCoordinator];
   self.settingsCoordinator = settingsCoordinator;
   [settingsCoordinator start];
+  OverlayServiceFactory::GetInstance()
+      ->GetForBrowserState(self.browser->browser_state())
+      ->PauseServiceForBrowser(self.browser);
 }
 
 - (void)closeSettings {
   [self.dispatcher stopDispatchingForSelector:@selector(closeSettings)];
+  BrowserCoordinator* settingsParent =
+      self.settingsCoordinator.parentCoordinator;
   [self.settingsCoordinator stop];
-  [self removeChildCoordinator:self.settingsCoordinator];
+  [settingsParent removeChildCoordinator:self.settingsCoordinator];
+  OverlayServiceFactory::GetInstance()
+      ->GetForBrowserState(self.browser->browser_state())
+      ->ResumeServiceForBrowser(self.browser);
   // self.settingsCoordinator should be presumed to be nil after this point.
 }
 

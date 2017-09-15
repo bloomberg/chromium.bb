@@ -125,57 +125,6 @@ TEST_F(BrowserCoordinatorTest, TestChildren) {
   EXPECT_EQ(otherParent, otherChild.parentCoordinator);
 }
 
-// Test that overlays function as expected.
-TEST_F(BrowserCoordinatorTest, TestOverlay) {
-  TestCoordinator* parent = [[TestCoordinator alloc] init];
-  TestCoordinator* child = [[TestCoordinator alloc] init];
-  TestCoordinator* grandchild = [[TestCoordinator alloc] init];
-  TestCoordinator* overlay = [[TestCoordinator alloc] init];
-  TestCoordinator* secondOverlay = [[TestCoordinator alloc] init];
-
-  EXPECT_TRUE([parent canAddOverlayCoordinator:overlay]);
-  [parent addChildCoordinator:child];
-  [child addChildCoordinator:grandchild];
-  EXPECT_FALSE([parent canAddOverlayCoordinator:overlay]);
-  EXPECT_FALSE([child canAddOverlayCoordinator:overlay]);
-  EXPECT_TRUE([grandchild canAddOverlayCoordinator:overlay]);
-  EXPECT_FALSE([grandchild canAddOverlayCoordinator:child]);
-
-  EXPECT_FALSE(overlay.overlaying);
-  [parent addOverlayCoordinator:overlay];
-  EXPECT_TRUE(overlay.overlaying);
-  EXPECT_EQ(overlay, parent.overlayCoordinator);
-  EXPECT_EQ(overlay, child.overlayCoordinator);
-  EXPECT_EQ(overlay, grandchild.overlayCoordinator);
-  EXPECT_TRUE([grandchild.children containsObject:overlay]);
-  EXPECT_EQ(grandchild, overlay.parentCoordinator);
-
-  // Shouldn't be able to add a second overlaying coordinator.
-  EXPECT_FALSE([grandchild canAddOverlayCoordinator:secondOverlay]);
-  EXPECT_FALSE(secondOverlay.overlaying);
-  [parent addOverlayCoordinator:secondOverlay];
-  EXPECT_FALSE(secondOverlay.overlaying);
-
-  [child removeOverlayCoordinator];
-  EXPECT_FALSE(overlay.overlaying);
-  EXPECT_EQ(nil, parent.overlayCoordinator);
-  EXPECT_EQ(nil, child.overlayCoordinator);
-  EXPECT_EQ(nil, grandchild.overlayCoordinator);
-  EXPECT_FALSE([grandchild.children containsObject:overlay]);
-  EXPECT_EQ(nil, overlay.parentCoordinator);
-
-  // An implementation that doesn't allow any overlays shouldn't get one.
-  NonOverlayableCoordinator* noOverlays =
-      [[NonOverlayableCoordinator alloc] init];
-  TestCoordinator* thirdOverlay = [[TestCoordinator alloc] init];
-
-  EXPECT_FALSE([noOverlays canAddOverlayCoordinator:thirdOverlay]);
-  EXPECT_FALSE(thirdOverlay.overlaying);
-  [noOverlays addOverlayCoordinator:thirdOverlay];
-  EXPECT_FALSE(thirdOverlay.overlaying);
-}
-
-// Test that the wasAdded/ willBeRemoved methods are called.
 TEST_F(BrowserCoordinatorTest, AddedRemoved) {
   TestCoordinator* parent = [[TestCoordinator alloc] init];
   TestCoordinator* child = [[TestCoordinator alloc] init];

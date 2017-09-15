@@ -44,7 +44,7 @@
 }
 
 @property(nonatomic, strong) TabGridViewController* viewController;
-@property(nonatomic, weak) TabCoordinator* activeTabCoordinator;
+@property(nonatomic, weak, readwrite) TabCoordinator* activeTabCoordinator;
 @property(nonatomic, readonly) WebStateList& webStateList;
 @property(nonatomic, strong) TabGridMediator* mediator;
 @property(nonatomic, readonly) SnapshotCache* snapshotCache;
@@ -163,6 +163,10 @@
 #pragma mark - TabGridCommands
 
 - (void)showTabGridTabAtIndex:(int)index {
+  if (index == self.webStateList.active_index() &&
+      self.activeTabCoordinator.started) {
+    return;
+  }
   self.webStateList.ActivateWebStateAt(index);
   // PLACEHOLDER: The tab coordinator should be able to get the active webState
   // on its own.
@@ -208,8 +212,9 @@
 - (void)openURL:(NSURL*)URL {
   if (self.webStateList.active_index() == WebStateList::kInvalidIndex)
     return;
-  [self.overlayCoordinator stop];
-  [self removeOverlayCoordinator];
+  OverlayServiceFactory::GetInstance()
+      ->GetForBrowserState(self.browser->browser_state())
+      ->CancelOverlays();
   web::WebState* activeWebState = self.webStateList.GetActiveWebState();
   web::NavigationManager::WebLoadParams params(net::GURLWithNSURL(URL));
   params.transition_type = ui::PAGE_TRANSITION_LINK;
@@ -235,14 +240,7 @@
 
 - (void)registerForTabGridCommands {
   [self.dispatcher startDispatchingToTarget:self
-                                forSelector:@selector(showTabGrid)];
-  [self.dispatcher startDispatchingToTarget:self
-                                forSelector:@selector(showTabGridTabAtIndex:)];
-  [self.dispatcher startDispatchingToTarget:self
-                                forSelector:@selector(closeTabGridTabAtIndex:)];
-  [self.dispatcher
-      startDispatchingToTarget:self
-                   forSelector:@selector(createAndShowNewTabInTabGrid)];
+                                forProtocol:@protocol(TabGridCommands)];
 }
 
 // Creates and returns a tab coordinator based on whether the tap strip is
