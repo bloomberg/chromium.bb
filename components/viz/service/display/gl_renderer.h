@@ -31,7 +31,6 @@ class OutputSurface;
 class Resource;
 class ResourcePool;
 class ScopedResource;
-class TextureMailboxDeleter;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
 }  // namespace cc
@@ -46,6 +45,7 @@ namespace viz {
 
 class DynamicGeometryBinding;
 class StaticGeometryBinding;
+class TextureMailboxDeleter;
 struct DrawRenderPassDrawQuadParams;
 
 // Class that handles drawing of composited render layers using GL.
@@ -56,7 +56,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   GLRenderer(const RendererSettings* settings,
              cc::OutputSurface* output_surface,
              cc::DisplayResourceProvider* resource_provider,
-             cc::TextureMailboxDeleter* texture_mailbox_deleter);
+             TextureMailboxDeleter* texture_mailbox_deleter);
   ~GLRenderer() override;
 
   bool use_swap_with_bounds() const { return use_swap_with_bounds_; }
@@ -318,7 +318,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   gpu::ContextSupport* context_support_;
   std::unique_ptr<ContextCacheController::ScopedVisibility> context_visibility_;
 
-  cc::TextureMailboxDeleter* texture_mailbox_deleter_;
+  TextureMailboxDeleter* texture_mailbox_deleter_;
 
   gfx::Rect swap_buffer_rect_;
   std::vector<gfx::Rect> swap_content_bounds_;

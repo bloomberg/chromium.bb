@@ -15,7 +15,6 @@
 #include "cc/output/direct_renderer.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_renderer.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display_client.h"
@@ -23,6 +22,7 @@
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display/surface_aggregator.h"
+#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -35,14 +35,13 @@
 
 namespace viz {
 
-Display::Display(
-    SharedBitmapManager* bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    const RendererSettings& settings,
-    const FrameSinkId& frame_sink_id,
-    std::unique_ptr<cc::OutputSurface> output_surface,
-    std::unique_ptr<DisplayScheduler> scheduler,
-    std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter)
+Display::Display(SharedBitmapManager* bitmap_manager,
+                 gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                 const RendererSettings& settings,
+                 const FrameSinkId& frame_sink_id,
+                 std::unique_ptr<cc::OutputSurface> output_surface,
+                 std::unique_ptr<DisplayScheduler> scheduler,
+                 std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter)
     : bitmap_manager_(bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),

@@ -12,9 +12,9 @@
 #include "cc/output/direct_renderer.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
 #include "cc/output/output_surface.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 
 namespace viz {
@@ -98,7 +98,7 @@ bool TestLayerTreeFrameSink::BindToClient(
   display_ = base::MakeUnique<Display>(
       shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings_,
       frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
-      base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
+      base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
 
   // We want the Display's OutputSurface to hear about lost context, and when
   // this shares a context with it we should not be listening for lost context

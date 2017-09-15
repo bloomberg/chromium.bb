@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/texture_mailbox_deleter.h"
+#include "components/viz/service/display/texture_mailbox_deleter.h"
 
 #include <stddef.h>
 
@@ -15,10 +15,10 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
-namespace cc {
+namespace viz {
 
 static void DeleteTextureOnImplThread(
-    const scoped_refptr<viz::ContextProvider>& context_provider,
+    const scoped_refptr<ContextProvider>& context_provider,
     unsigned texture_id,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
@@ -31,7 +31,7 @@ static void DeleteTextureOnImplThread(
 
 static void PostTaskFromMainToImplThread(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-    viz::ReleaseCallback run_impl_callback,
+    ReleaseCallback run_impl_callback,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
   // This posts the task to RunDeleteTextureOnImplThread().
@@ -48,40 +48,40 @@ TextureMailboxDeleter::~TextureMailboxDeleter() {
     impl_callbacks_.at(i)->Run(gpu::SyncToken(), true);
 }
 
-std::unique_ptr<viz::SingleReleaseCallback>
+std::unique_ptr<SingleReleaseCallback>
 TextureMailboxDeleter::GetReleaseCallback(
-    scoped_refptr<viz::ContextProvider> context_provider,
+    scoped_refptr<ContextProvider> context_provider,
     unsigned texture_id) {
   // This callback owns the |context_provider|. It must be destroyed on the impl
   // thread. Upon destruction of this class, the callback must immediately be
   // destroyed.
-  std::unique_ptr<viz::SingleReleaseCallback> impl_callback =
-      viz::SingleReleaseCallback::Create(base::Bind(
+  std::unique_ptr<SingleReleaseCallback> impl_callback =
+      SingleReleaseCallback::Create(base::Bind(
           &DeleteTextureOnImplThread, std::move(context_provider), texture_id));
 
   impl_callbacks_.push_back(std::move(impl_callback));
 
   // The raw pointer to the impl-side callback is valid as long as this
   // class is alive. So we guard it with a WeakPtr.
-  viz::ReleaseCallback run_impl_callback(
+  ReleaseCallback run_impl_callback(
       base::Bind(&TextureMailboxDeleter::RunDeleteTextureOnImplThread,
                  weak_ptr_factory_.GetWeakPtr(), impl_callbacks_.back().get()));
 
   // Provide a callback for the main thread that posts back to the impl
   // thread.
-  std::unique_ptr<viz::SingleReleaseCallback> main_callback;
+  std::unique_ptr<SingleReleaseCallback> main_callback;
   if (impl_task_runner_) {
-    main_callback = viz::SingleReleaseCallback::Create(base::Bind(
+    main_callback = SingleReleaseCallback::Create(base::Bind(
         &PostTaskFromMainToImplThread, impl_task_runner_, run_impl_callback));
   } else {
-    main_callback = viz::SingleReleaseCallback::Create(run_impl_callback);
+    main_callback = SingleReleaseCallback::Create(run_impl_callback);
   }
 
   return main_callback;
 }
 
 void TextureMailboxDeleter::RunDeleteTextureOnImplThread(
-    viz::SingleReleaseCallback* impl_callback,
+    SingleReleaseCallback* impl_callback,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
   for (size_t i = 0; i < impl_callbacks_.size(); ++i) {
@@ -97,4 +97,4 @@ void TextureMailboxDeleter::RunDeleteTextureOnImplThread(
                << "more than once.";
 }
 
-}  // namespace cc
+}  // namespace viz

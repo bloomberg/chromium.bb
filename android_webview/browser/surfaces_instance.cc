@@ -12,7 +12,6 @@
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/parent_output_surface.h"
 #include "base/memory/ptr_util.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -20,6 +19,7 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "ui/gfx/geometry/rect.h"
@@ -65,8 +65,8 @@ SurfacesInstance::SurfacesInstance()
       needs_sync_points);
 
   begin_frame_source_.reset(new viz::StubBeginFrameSource);
-  std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter(
-      new cc::TextureMailboxDeleter(nullptr));
+  std::unique_ptr<viz::TextureMailboxDeleter> texture_mailbox_deleter(
+      new viz::TextureMailboxDeleter(nullptr));
   std::unique_ptr<ParentOutputSurface> output_surface_holder(
       new ParentOutputSurface(AwRenderThreadContextProvider::Create(
           make_scoped_refptr(new AwGLSurface),

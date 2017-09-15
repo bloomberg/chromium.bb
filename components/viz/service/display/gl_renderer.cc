@@ -33,7 +33,6 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/draw_polygon.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass.h"
@@ -48,6 +47,7 @@
 #include "components/viz/service/display/dynamic_geometry_binding.h"
 #include "components/viz/service/display/layer_quad.h"
 #include "components/viz/service/display/static_geometry_binding.h"
+#include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -398,7 +398,7 @@ class GLRenderer::SyncQuery {
 GLRenderer::GLRenderer(const RendererSettings* settings,
                        cc::OutputSurface* output_surface,
                        cc::DisplayResourceProvider* resource_provider,
-                       cc::TextureMailboxDeleter* texture_mailbox_deleter)
+                       TextureMailboxDeleter* texture_mailbox_deleter)
     : cc::DirectRenderer(settings, output_surface, resource_provider),
       shared_geometry_quad_(QuadVertexRect()),
       gl_(output_surface->context_provider()->ContextGL()),
