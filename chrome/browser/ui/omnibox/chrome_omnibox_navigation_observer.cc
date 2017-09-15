@@ -27,7 +27,8 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
-
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 // Helpers --------------------------------------------------------------------
 
@@ -52,6 +53,20 @@ bool IsValidNavigation(const GURL& original_url, const GURL& final_url) {
              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 }
 
+// Returns true if |origin| is a http URL and |destination| is a https URL and
+// the URLs are otherwise identical.
+bool OnlyChangeIsFromHTTPToHTTPS(const GURL& origin, const GURL& destination) {
+  // Exit early if possible.
+  if (!origin.SchemeIs(url::kHttpScheme) ||
+      !destination.SchemeIs(url::kHttpsScheme))
+    return false;
+
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr(url::kHttpsScheme);
+  GURL origin_with_https = origin.ReplaceComponents(replace_scheme);
+  return origin_with_https == destination;
+}
+
 }  // namespace
 
 // ChromeOmniboxNavigationObserver --------------------------------------------
@@ -66,45 +81,12 @@ ChromeOmniboxNavigationObserver::ChromeOmniboxNavigationObserver(
       alternate_nav_match_(alternate_nav_match),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       shortcuts_backend_(ShortcutsBackendFactory::GetForProfile(profile)),
+      request_context_(nullptr),
       load_state_(LOAD_NOT_SEEN),
       fetch_state_(FETCH_NOT_COMPLETE) {
-  if (alternate_nav_match_.destination_url.is_valid()) {
-    net::NetworkTrafficAnnotationTag traffic_annotation =
-        net::DefineNetworkTrafficAnnotation("omnibox_navigation_observer", R"(
-          semantics {
-            sender: "Omnibox"
-            description:
-              "Certain omnibox inputs, e.g. single words, may either be search "
-              "queries or attempts to navigate to intranet hostnames. When "
-              "such a hostname is not in the user's history, a background "
-              "request is made to see if it is navigable.  If so, the browser "
-              "will display a prompt on the search results page asking if the "
-              "user wished to navigate instead of searching."
-            trigger:
-              "User attempts to search for a string that is plausibly a "
-              "navigable hostname but is not in the local history."
-            data:
-              "None. However, the hostname itself is a string the user "
-              "searched for, and thus can expose data about the user's "
-              "searches."
-            destination: WEBSITE
-          }
-          policy {
-            cookies_allowed: YES
-            cookies_store: "user"
-            setting: "This feature cannot be disabled in settings."
-            policy_exception_justification:
-              "By disabling DefaultSearchProviderEnabled, one can disable "
-              "default search, and once users can't search, they can't hit "
-              "this. More fine-grained policies are requested to be "
-              "implemented (crbug.com/81226)."
-          })");
-    fetcher_ = net::URLFetcher::Create(alternate_nav_match_.destination_url,
-                                       net::URLFetcher::HEAD, this,
-                                       traffic_annotation);
-    fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
-    fetcher_->SetStopOnRedirect(true);
-  }
+  if (alternate_nav_match_.destination_url.is_valid())
+    CreateFetcher(alternate_nav_match_.destination_url);
+
   // We need to start by listening to AllSources, since we don't know which tab
   // the navigation might occur in.
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
@@ -184,9 +166,10 @@ void ChromeOmniboxNavigationObserver::Observe(
 
   // Start the alternate nav fetcher if need be.
   if (fetcher_) {
-    fetcher_->SetRequestContext(
-        content::BrowserContext::GetDefaultStoragePartition(
-            controller->GetBrowserContext())->GetURLRequestContext());
+    request_context_ = content::BrowserContext::GetDefaultStoragePartition(
+                           controller->GetBrowserContext())
+                           ->GetURLRequestContext();
+    fetcher_->SetRequestContext(request_context_);
     fetcher_->Start();
   }
 }
@@ -221,12 +204,33 @@ void ChromeOmniboxNavigationObserver::OnURLFetchComplete(
   DCHECK_EQ(fetcher_.get(), source);
   const net::URLRequestStatus& status = source->GetStatus();
   int response_code = source->GetResponseCode();
+  // If this is a valid redirect (not hijacked), and the redirect is from
+  // http->https (no other changes), then follow it instead of assuming the
+  // destination is valid.  This fixes several cases when the infobar appears
+  // when it shouldn't, e.g.,
+  // * Users who have the HTTPS Everywhere extension enabled with the setting
+  //   "Block all unencrypted requests".  (All requests get redirected to
+  //   https://.)
+  // * Users who enter "google" in the omnibox (or any other preloaded HSTS
+  //   domain name).
+  //   For these Chrome generates an internal redirect to the HTTPS version of
+  //   the domain, which is not always valid.  E.g., https://google/ is not
+  //   valid.
+  // * Users on networks that return 3xx redirects to the https version for all
+  //   requests for local sites.
+  if ((status.status() == net::URLRequestStatus::CANCELED) &&
+      ((response_code / 100) == 3) &&
+      IsValidNavigation(alternate_nav_match_.destination_url,
+                        source->GetURL()) &&
+      OnlyChangeIsFromHTTPToHTTPS(alternate_nav_match_.destination_url,
+                                  source->GetURL())) {
+    CreateFetcher(source->GetURL());
+    fetcher_->SetRequestContext(request_context_);
+    fetcher_->Start();
+    return;
+  }
   fetch_state_ =
-      (status.is_success() && ResponseCodeIndicatesSuccess(response_code)) ||
-              ((status.status() == net::URLRequestStatus::CANCELED) &&
-               ((response_code / 100) == 3) &&
-               IsValidNavigation(alternate_nav_match_.destination_url,
-                                 source->GetURL()))
+      (status.is_success() && ResponseCodeIndicatesSuccess(response_code))
           ? FETCH_SUCCEEDED
           : FETCH_FAILED;
   if (load_state_ == LOAD_COMMITTED)
@@ -239,4 +243,51 @@ void ChromeOmniboxNavigationObserver::OnAllLoadingFinished() {
         web_contents(), text_, alternate_nav_match_, match_.destination_url);
   }
   delete this;
+}
+
+void ChromeOmniboxNavigationObserver::CreateFetcher(
+    const GURL& destination_url) {
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("omnibox_navigation_observer", R"(
+        semantics {
+          sender: "Omnibox"
+          description:
+            "Certain omnibox inputs, e.g. single words, may either be search "
+            "queries or attempts to navigate to intranet hostnames. When "
+            "such a hostname is not in the user's history, a background "
+            "request is made to see if it is navigable.  If so, the browser "
+            "will display a prompt on the search results page asking if the "
+            "user wished to navigate instead of searching."
+          trigger:
+            "User attempts to search for a string that is plausibly a "
+            "navigable hostname but is not in the local history."
+          data:
+            "None. However, the hostname itself is a string the user "
+            "searched for, and thus can expose data about the user's "
+            "searches."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting: "This feature cannot be disabled in settings."
+          policy_exception_justification:
+            "By disabling DefaultSearchProviderEnabled, one can disable "
+            "default search, and once users can't search, they can't hit "
+            "this. More fine-grained policies are requested to be "
+            "implemented (crbug.com/81226)."
+        })");
+  fetcher_ = net::URLFetcher::Create(destination_url, net::URLFetcher::HEAD,
+                                     this, traffic_annotation);
+  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  // We stop-on-redirect for a couple of reasons:
+  // * Sites with lots of redirects, especially through slow machines, take time
+  //   to follow the redirects.  This delays the appearance of the infobar,
+  //   sometimes by several seconds, which feels really broken.
+  // * Some servers behind redirects respond to HEAD with an error and GET with
+  //   a valid response, in violation of the HTTP spec.  Stop-on-redirects
+  //   reduces the number of cases where this error makes us believe there was
+  //   no server.
+  // We do allow a certain kind of redirect; see code in OnURLFetchComplete().
+  fetcher_->SetStopOnRedirect(true);
 }
