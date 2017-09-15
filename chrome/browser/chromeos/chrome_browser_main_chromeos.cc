@@ -255,7 +255,6 @@ class ChromeLauncherControllerInitializer
     : public session_manager::SessionManagerObserver {
  public:
   ChromeLauncherControllerInitializer() {
-    DCHECK(ash_util::IsRunningInMash());
     session_manager::SessionManager::Get()->AddObserver(this);
   }
 
@@ -272,16 +271,19 @@ class ChromeLauncherControllerInitializer
     if (session_manager::SessionManager::Get()->session_state() ==
         session_manager::SessionState::ACTIVE) {
       chrome_shelf_model_ = std::make_unique<ash::ShelfModel>();
-      chrome_launcher_controller_ = std::make_unique<ChromeLauncherController>(
-          nullptr, chrome_shelf_model_.get());
+      ash::ShelfModel* model = ash_util::IsRunningInMash()
+                                   ? chrome_shelf_model_.get()
+                                   : ash::Shell::Get()->shelf_model();
+      chrome_launcher_controller_ =
+          std::make_unique<ChromeLauncherController>(nullptr, model);
       chrome_launcher_controller_->Init();
       session_manager::SessionManager::Get()->RemoveObserver(this);
     }
   }
 
  private:
-  // These are only used in Mash; corresponding instances are owned by Ash's
-  // ShelfController and ChromeShellDelegate in classic Ash.
+  // This shelf model is synced with Ash's ShelfController instance in Mash.
+  // ChromeLauncherController uses Ash's ShelfModel instance directly in Cash.
   std::unique_ptr<ash::ShelfModel> chrome_shelf_model_;
   std::unique_ptr<ChromeLauncherController> chrome_launcher_controller_;
 
@@ -701,10 +703,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   g_browser_process->platform_part()->InitializeChromeUserManager();
   g_browser_process->platform_part()->InitializeSessionManager();
 
-  if (ash_util::IsRunningInMash()) {
-    chrome_launcher_controller_initializer_ =
-        std::make_unique<internal::ChromeLauncherControllerInitializer>();
-  }
+  chrome_launcher_controller_initializer_ =
+      std::make_unique<internal::ChromeLauncherControllerInitializer>();
 
   ScreenLocker::InitClass();
 
