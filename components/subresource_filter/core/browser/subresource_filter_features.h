@@ -62,9 +62,6 @@ struct Configuration {
     // otherwise satisfied. A greater value indicates higher priority.
     int priority = 0;
 
-    // Whether to activate on SafeBrowsing lists with experimental metadata.
-    bool experimental = false;
-
     // This boolean is set to true for a navigation which has forced activation,
     // despite other conditions not matching. It should never be possible to set
     // this via variation params.
@@ -222,7 +219,6 @@ extern const char kActivationListAbusiveAds[];
 extern const char kActivationListAllAds[];
 
 extern const char kActivationPriorityParameterName[];
-extern const char kActivationExperimentalParameterName[];
 
 extern const char kPerformanceMeasurementRateParameterName[];
 
