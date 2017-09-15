@@ -262,6 +262,7 @@ void NTPTilesInternalsMessageHandler::SendTiles(
         auto icon = base::MakeUnique<base::DictionaryValue>();
         icon->SetString("url", result.icon_url.spec());
         icon->SetString("type", entry.type_name);
+        icon->SetBoolean("onDemand", !result.fetched_because_of_page_visit);
         icon->SetInteger("width", result.pixel_size.width());
         icon->SetInteger("height", result.pixel_size.height());
         icon_list->Append(std::move(icon));

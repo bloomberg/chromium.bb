@@ -1533,18 +1533,19 @@ void HistoryBackend::GetLargestFaviconForURL(
   }
 
   base::Time last_updated;
+  base::Time last_requested;
   favicon_base::FaviconRawBitmapResult bitmap_result;
   bitmap_result.icon_url = icon_url;
   bitmap_result.icon_type = icon_type;
-  if (!thumbnail_db_->GetFaviconBitmap(largest_icon.bitmap_id,
-                                       &last_updated, nullptr,
-                                       &bitmap_result.bitmap_data,
-                                       &bitmap_result.pixel_size)) {
+  if (!thumbnail_db_->GetFaviconBitmap(
+          largest_icon.bitmap_id, &last_updated, &last_requested,
+          &bitmap_result.bitmap_data, &bitmap_result.pixel_size)) {
     return;
   }
 
   bitmap_result.expired =
       (Time::Now() - last_updated) > TimeDelta::FromDays(kFaviconRefetchDays);
+  bitmap_result.fetched_because_of_page_visit = last_requested.is_null();
   if (bitmap_result.is_valid())
     *favicon_bitmap_result = bitmap_result;
 
@@ -2095,17 +2096,19 @@ bool HistoryBackend::GetFaviconBitmapResultsForBestMatch(
 
   for (size_t i = 0; i < best_bitmap_ids.size(); ++i) {
     base::Time last_updated;
+    base::Time last_requested;
     favicon_base::FaviconRawBitmapResult bitmap_result;
     bitmap_result.icon_url = icon_url;
     bitmap_result.icon_type = icon_type;
-    if (!thumbnail_db_->GetFaviconBitmap(best_bitmap_ids[i], &last_updated,
-                                         nullptr, &bitmap_result.bitmap_data,
-                                         &bitmap_result.pixel_size)) {
+    if (!thumbnail_db_->GetFaviconBitmap(
+            best_bitmap_ids[i], &last_updated, &last_requested,
+            &bitmap_result.bitmap_data, &bitmap_result.pixel_size)) {
       return false;
     }
 
     bitmap_result.expired =
         (Time::Now() - last_updated) > TimeDelta::FromDays(kFaviconRefetchDays);
+    bitmap_result.fetched_because_of_page_visit = last_requested.is_null();
     if (bitmap_result.is_valid())
       favicon_bitmap_results->push_back(bitmap_result);
   }
