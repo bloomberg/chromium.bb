@@ -81,26 +81,6 @@ verify_package() {
 do_package() {
   log_cmd echo "Packaging ${ARCHITECTURE}..."
   PROVIDES="${PACKAGE}"
-  local REPS="$REPLACES"
-  REPLACES=""
-  for rep in $REPS; do
-    if [ -z "$REPLACES" ]; then
-      REPLACES="$PACKAGE-$rep"
-    else
-      REPLACES="$REPLACES $PACKAGE-$rep"
-    fi
-  done
-
-  # The symbols in libX11.so are not versioned, so when a newer version has new
-  # symbols like _XGetRequest, RPM's find-requires tool does not detect it, and
-  # there is no way to specify a libX11.so version number to prevent
-  # installation on affected distros like OpenSUSE 12.1 and Fedora 16.
-  # Thus there has to be distro-specific conflict here.
-  # TODO(thestig) Remove these in the future when other requirements prevent
-  # installation on affected distros.
-  ADDITIONAL_CONFLICTS="xorg-x11-libX11 < 7.6_1 libX11 < 1.4.99"
-  REPLACES="$REPLACES $ADDITIONAL_CONFLICTS"
-
   RPM_COMMON_DEPS="${BUILDDIR}/rpm_common.deps"
   DEPENDS=$(cat "${RPM_COMMON_DEPS}" | tr '\n' ',')
   gen_spec
@@ -158,18 +138,12 @@ verify_channel() {
   case $CHANNEL in
     stable )
       CHANNEL=stable
-      # TODO(phajdan.jr): Remove REPLACES completely.
-      REPLACES="dummy"
       ;;
     unstable|dev|alpha )
       CHANNEL=unstable
-      # TODO(phajdan.jr): Remove REPLACES completely.
-      REPLACES="dummy"
       ;;
     testing|beta )
       CHANNEL=beta
-      # TODO(phajdan.jr): Remove REPLACES completely.
-      REPLACES="dummy"
       ;;
     * )
       echo

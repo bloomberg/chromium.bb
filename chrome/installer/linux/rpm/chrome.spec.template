@@ -20,7 +20,6 @@ Requires        : @@DEPENDS@@
 Requires(post)  : %{_sbindir}/update-alternatives
 Requires(preun) : %{_sbindir}/update-alternatives
 Autoreqprov     : No
-Conflicts       : @@REPLACES@@
 
 BuildRoot       : %{_tmppath}/%{name}-%{version}-root
 
