@@ -85,6 +85,7 @@ class CORE_EXPORT DocumentMarkerController final
       Node*,
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   void RemoveSpellingMarkersUnderWords(const Vector<String>& words);
+  void RemoveSuggestionMarkerByTag(const Node*, int32_t marker_tag);
   void RepaintMarkers(
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   // Returns true if markers within a range are found.

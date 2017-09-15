@@ -312,6 +312,23 @@ TEST_F(DocumentMarkerControllerTest, RemoveSpellingMarkersUnderWords) {
   EXPECT_EQ(DocumentMarker::kTextMatch, marker.GetType());
 }
 
+TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByTag) {
+  SetBodyContent("<div contenteditable>foo</div>");
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+
+  MarkerController().AddSuggestionMarker(
+      EphemeralRange(Position(text, 0), Position(text, 1)), Vector<String>(),
+      Color::kBlack, Color::kBlack, StyleableMarker::Thickness::kThick,
+      Color::kBlack);
+
+  ASSERT_EQ(1u, MarkerController().Markers().size());
+  const SuggestionMarker& marker =
+      *ToSuggestionMarker(MarkerController().Markers()[0]);
+  MarkerController().RemoveSuggestionMarkerByTag(text, marker.Tag());
+  EXPECT_EQ(0u, MarkerController().Markers().size());
+}
+
 TEST_F(DocumentMarkerControllerTest, FirstMarkerIntersectingOffsetRange) {
   SetBodyContent("<div contenteditable>123456789</div>");
   GetDocument().UpdateStyleAndLayout();

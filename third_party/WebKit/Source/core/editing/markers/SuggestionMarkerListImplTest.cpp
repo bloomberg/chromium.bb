@@ -17,7 +17,7 @@ class SuggestionMarkerListImplTest : public ::testing::Test {
   SuggestionMarkerListImplTest()
       : marker_list_(new SuggestionMarkerListImpl()) {}
 
-  DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
+  SuggestionMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
     return new SuggestionMarker(start_offset, end_offset, Vector<String>(),
                                 Color::kTransparent, Color::kTransparent,
                                 StyleableMarker::Thickness::kThin,
@@ -319,6 +319,29 @@ TEST_F(
 
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(5u, markers[0]->EndOffset());
+}
+
+TEST_F(SuggestionMarkerListImplTest, RemoveMarkerByTag_NotFound) {
+  SuggestionMarker* const marker = CreateMarker(0, 10);
+  marker_list_->Add(marker);
+
+  EXPECT_FALSE(marker_list_->RemoveMarkerByTag(marker->Tag() + 1));
+}
+
+TEST_F(SuggestionMarkerListImplTest, RemoveMarkerByTag_Found) {
+  SuggestionMarker* const marker1 = CreateMarker(0, 10);
+  SuggestionMarker* const marker2 = CreateMarker(10, 20);
+
+  marker_list_->Add(marker1);
+  marker_list_->Add(marker2);
+
+  EXPECT_TRUE(marker_list_->RemoveMarkerByTag(marker1->Tag()));
+
+  DocumentMarkerVector markers = marker_list_->GetMarkers();
+  EXPECT_EQ(1u, markers.size());
+
+  EXPECT_EQ(10u, markers[0]->StartOffset());
+  EXPECT_EQ(20u, markers[0]->EndOffset());
 }
 
 }  // namespace blink
