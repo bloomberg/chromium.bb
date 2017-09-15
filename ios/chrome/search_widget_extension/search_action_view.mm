@@ -33,7 +33,7 @@ const CGFloat kIconSize = 35;
 
     UIVibrancyEffect* primaryEffect;
     UIVibrancyEffect* secondaryEffect;
-    if (base::ios::IsRunningOnIOS10OrLater()) {
+    if (@available(iOS 10, *)) {
       primaryEffect = [UIVibrancyEffect widgetPrimaryVibrancyEffect];
       secondaryEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
     } else {
@@ -55,9 +55,11 @@ const CGFloat kIconSize = 35;
     }
 
     UIView* circleView = [[UIView alloc] initWithFrame:CGRectZero];
-    circleView.backgroundColor = base::ios::IsRunningOnIOS10OrLater()
-                                     ? [UIColor colorWithWhite:0 alpha:0.05]
-                                     : [UIColor whiteColor];
+    if (@available(iOS 10, *)) {
+      circleView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.05];
+    } else {
+      circleView.backgroundColor = [UIColor whiteColor];
+    }
     circleView.layer.cornerRadius = kActionButtonSize / 2;
 
     UILabel* labelView = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -80,11 +82,14 @@ const CGFloat kIconSize = 35;
     [NSLayoutConstraint activateConstraints:ui_util::CreateSameConstraints(
                                                 secondaryEffectView, stack)];
     UIImage* iconImage = [UIImage imageNamed:imageName];
-    iconImage =
-        [iconImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    if (@available(iOS 10, *)) {
+      iconImage =
+          [iconImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    }
+
     UIImageView* icon = [[UIImageView alloc] initWithImage:iconImage];
     icon.translatesAutoresizingMaskIntoConstraints = NO;
-    if (base::ios::IsRunningOnIOS10OrLater()) {
+    if (@available(iOS 10, *)) {
       [primaryEffectView.contentView addSubview:icon];
     } else {
       [self addSubview:icon];
