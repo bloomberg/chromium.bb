@@ -35,7 +35,7 @@ class DepsIterator {
   DepsIterator& operator++();
 
   // Comparison for STL-based loops.
-  bool operator!=(const DepsIterator& other) {
+  bool operator!=(const DepsIterator& other) const {
     return current_index_ != other.current_index_ ||
         vect_stack_[0] != other.vect_stack_[0] ||
         vect_stack_[1] != other.vect_stack_[1] ||
