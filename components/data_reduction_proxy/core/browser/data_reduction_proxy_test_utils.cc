@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -29,6 +30,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/base/network_delegate_impl.h"
@@ -661,6 +663,11 @@ void DataReductionProxyTestContext::
   // Set the pref to cause the secure proxy check to be issued.
   pref_service()->SetBoolean(kDataReductionProxyEnabled, true);
   RunUntilIdle();
+}
+
+void DataReductionProxyTestContext::DisableWarmupURLFetch() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableDataReductionProxyWarmupURLFetch);
 }
 
 MockDataReductionProxyConfig* DataReductionProxyTestContext::mock_config()

@@ -217,18 +217,22 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
       {"Enabled", true, true, true, std::string()},
       {"Enabled", true, false, false, std::string()},
       {"Enabled_Control", true, true, true, std::string()},
-      {"Control", false, true, true, std::string()},
+      {"Control", false, true, false, std::string()},
       {"Disabled", false, true, false, std::string()},
       {"enabled", true, true, true, std::string()},
       {"Enabled", true, true, true, "example.com/test.html"},
-      {std::string(), true, false, false, std::string()},
+      {std::string(), true, false, true, std::string()},
+      {"Enabled", true, false, false, std::string()},
   };
 
   for (const auto& test : tests) {
+    ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableDataReductionProxyWarmupURLFetch));
+
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
-    if (test.enable_warmup_url)
-      variation_params["enable_warmup"] = "true";
+    if (!test.enable_warmup_url)
+      variation_params["enable_warmup"] = "false";
 
     if (!test.warmup_url.empty())
       variation_params["warmup_url"] = test.warmup_url;
@@ -260,10 +264,8 @@ TEST_F(DataReductionProxyParamsTest, QuicEnableNonCoreProxies) {
     std::string enable_non_core_proxies;
     bool expected_enable_non_core_proxies;
   } tests[] = {
-      {"Enabled", true, "true", true},
-      {"Enabled", true, "false", false},
-      {"Enabled", true, std::string(), false},
-      {"Control", false, "true", false},
+      {"Enabled", true, "true", true},        {"Enabled", true, "false", false},
+      {"Enabled", true, std::string(), true}, {"Control", false, "true", false},
       {"Disabled", false, "true", false},
   };
 

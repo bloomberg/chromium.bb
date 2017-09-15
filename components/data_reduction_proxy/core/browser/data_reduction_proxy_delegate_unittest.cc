@@ -474,6 +474,7 @@ class DataReductionProxyDelegateTest : public testing::Test {
     context_.Init();
     proxy_delegate_->InitializeOnIOThread(test_context_->io_data());
 
+    test_context_->DisableWarmupURLFetch();
     test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
   }
 

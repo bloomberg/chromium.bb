@@ -952,8 +952,10 @@ TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
     storage()->set_proxy_service(
         net::ProxyService::CreateFixed(test.proxy_rules));
     AttachToContextAndInit();
-    if (test.enable_data_reduction_proxy)
+    if (test.enable_data_reduction_proxy) {
+      drp_test_context()->DisableWarmupURLFetch();
       drp_test_context()->EnableDataReductionProxyWithSecureProxyCheckSuccess();
+    }
     drp_test_context()->config()->test_params()->UseNonSecureProxiesForHttp();
 
     MockRead reads[] = {MockRead(test.response_headers),

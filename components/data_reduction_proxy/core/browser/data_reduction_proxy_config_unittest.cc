@@ -362,6 +362,8 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
   for (const auto& test : tests) {
     base::HistogramTester histogram_tester;
     SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
+    ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableDataReductionProxyWarmupURLFetch));
 
     ResetSettings();
 
@@ -393,6 +395,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     config.SetProxyConfig(test.data_reduction_proxy_enabled, true);
     bool warmup_url_enabled =
         test.data_reduction_proxy_enabled && test.enabled_via_field_trial;
+    ASSERT_EQ(test.enabled_via_field_trial, params::FetchWarmupURLEnabled());
 
     if (warmup_url_enabled) {
       histogram_tester.ExpectUniqueSample(
