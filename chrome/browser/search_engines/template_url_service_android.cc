@@ -217,17 +217,17 @@ void TemplateUrlServiceAndroid::LoadTemplateURLs() {
   // Sort the remaining engines to place the three most recently-visited first.
   constexpr size_t kMaxRecentUrls = 3;
   const size_t recent_url_num = template_urls_.end() - it;
-  auto end = it + std::min(recent_url_num, kMaxRecentUrls);
-  // If filtering is disabled, include all custom search engines.
-  if (filtering_disabled_)
-    end = it + recent_url_num;
+  int urls_to_show = filtering_enabled_
+                         ? std::min(recent_url_num, kMaxRecentUrls)
+                         : recent_url_num;
+  auto end = it + urls_to_show;
 
   std::partial_sort(it, end, template_urls_.end(),
                     [](const TemplateURL* lhs, const TemplateURL* rhs) {
                       return lhs->last_visited() > rhs->last_visited();
                     });
 
-  if (!filtering_disabled_) {
+  if (filtering_enabled_) {
     // Limit to those three engines which must also have been visited in the
     // last two days.
     constexpr base::TimeDelta kMaxVisitAge = base::TimeDelta::FromDays(2);
@@ -367,14 +367,14 @@ TemplateUrlServiceAndroid::GetSearchEngineUrlFromTemplateUrl(
   return base::android::ConvertUTF8ToJavaString(env, url);
 }
 
-void TemplateUrlServiceAndroid::SetFilteringDisabled(
+void TemplateUrlServiceAndroid::SetFilteringEnabled(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    jboolean filtering_disabled) {
-  if (filtering_disabled == filtering_disabled_)
+    jboolean filtering_enabled) {
+  if (filtering_enabled == filtering_enabled_)
     return;
 
-  filtering_disabled_ = filtering_disabled;
+  filtering_enabled_ = filtering_enabled;
   OnTemplateURLServiceChanged();
 }
 
