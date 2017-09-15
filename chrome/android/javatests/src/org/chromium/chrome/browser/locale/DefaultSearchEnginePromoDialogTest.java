@@ -21,12 +21,14 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -47,6 +49,14 @@ public class DefaultSearchEnginePromoDialogTest {
                 } catch (ProcessInitException e) {
                     Assert.fail("Failed to initialize Chrome process");
                 }
+
+                LocaleManager mockManager = new LocaleManager() {
+                    @Override
+                    public List<TemplateUrl> getSearchEnginesForPromoDialog(int promoType) {
+                        return TemplateUrlService.getInstance().getSearchEngines();
+                    }
+                };
+                LocaleManager.setInstanceForTest(mockManager);
             }
         });
     }

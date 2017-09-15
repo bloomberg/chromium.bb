@@ -33,11 +33,15 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelperUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+
+import java.util.List;
 
 /**
  * Integration test suite for the first run experience.
@@ -251,6 +255,11 @@ public class FirstRunIntegrationTest {
             @Override
             public int getSearchEnginePromoShowType() {
                 return searchPromoType;
+            }
+
+            @Override
+            public List<TemplateUrl> getSearchEnginesForPromoDialog(int promoType) {
+                return TemplateUrlService.getInstance().getSearchEngines();
             }
         };
         LocaleManager.setInstanceForTest(mockManager);
