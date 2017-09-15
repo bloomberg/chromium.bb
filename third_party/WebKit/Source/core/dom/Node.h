@@ -329,6 +329,10 @@ class CORE_EXPORT Node : public EventTarget {
   virtual bool IsFrameOwnerElement() const { return false; }
   virtual bool IsMediaRemotingInterstitial() const { return false; }
 
+  // Traverses the ancestors of this node and returns true if any of them are
+  // either a MediaControlElement or MediaControls.
+  bool HasMediaControlAncestor() const;
+
   bool IsStyledElement() const;
 
   bool IsDocumentNode() const;

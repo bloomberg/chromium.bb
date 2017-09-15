@@ -6,10 +6,26 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/ShadowRootInit.h"
 #include "core/editing/testing/EditingTestBase.h"
+#include "core/html/HTMLDivElement.h"
 
 namespace blink {
+
+class FakeMediaControlElement : public HTMLDivElement {
+ public:
+  FakeMediaControlElement(Document& document) : HTMLDivElement(document) {}
+
+  bool IsMediaControlElement() const override { return true; }
+};
+
+class FakeMediaControls : public HTMLDivElement {
+ public:
+  FakeMediaControls(Document& document) : HTMLDivElement(document) {}
+
+  bool IsMediaControls() const override { return true; }
+};
 
 class NodeTest : public EditingTestBase {
  protected:
@@ -28,6 +44,28 @@ class NodeTest : public EditingTestBase {
     Node::AttachContext context;
     node.ReattachLayoutTree(context);
     return context.previous_in_flow;
+  }
+
+  // Generate the following DOM structure and return the innermost <div>.
+  //  + div#root
+  //    + #shadow
+  //      + test node
+  //      |  + #shadow
+  //      |    + div class="test"
+  Node* InitializeShadowDOMTree(Element* test_node) {
+    SetBodyContent("<div id=\"root\"></div>");
+    Element* root = GetDocument().getElementById("root");
+    ShadowRoot* first_shadow = root->CreateShadowRootInternal(
+        ShadowRootType::kUserAgent, ASSERT_NO_EXCEPTION);
+
+    first_shadow->AppendChild(test_node);
+    ShadowRoot* second_shadow = test_node->CreateShadowRootInternal(
+        ShadowRootType::kUserAgent, ASSERT_NO_EXCEPTION);
+
+    HTMLDivElement* class_div = HTMLDivElement::Create(GetDocument());
+    class_div->setAttribute("class", "test");
+    second_shadow->AppendChild(class_div);
+    return class_div;
   }
 
  private:
@@ -259,6 +297,24 @@ TEST_F(NodeTest, AttachContext_PreviousInFlow_V0Content) {
 
   EXPECT_TRUE(previous_in_flow);
   EXPECT_EQ(span->GetLayoutObject(), previous_in_flow);
+}
+
+TEST_F(NodeTest, HasMediaControlAncestor_Fail) {
+  HTMLDivElement* node = HTMLDivElement::Create(GetDocument());
+  EXPECT_FALSE(node->HasMediaControlAncestor());
+  EXPECT_FALSE(InitializeShadowDOMTree(node)->HasMediaControlAncestor());
+}
+
+TEST_F(NodeTest, HasMediaControlAncestor_MediaControlElement) {
+  FakeMediaControlElement* node = new FakeMediaControlElement(GetDocument());
+  EXPECT_TRUE(node->HasMediaControlAncestor());
+  EXPECT_TRUE(InitializeShadowDOMTree(node)->HasMediaControlAncestor());
+}
+
+TEST_F(NodeTest, HasMediaControlAncestor_MediaControls) {
+  FakeMediaControls* node = new FakeMediaControls(GetDocument());
+  EXPECT_TRUE(node->HasMediaControlAncestor());
+  EXPECT_TRUE(InitializeShadowDOMTree(node)->HasMediaControlAncestor());
 }
 
 }  // namespace blink

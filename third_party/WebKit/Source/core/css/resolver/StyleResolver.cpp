@@ -198,11 +198,17 @@ static inline ScopedStyleResolver* ScopedResolverFor(const Element& element) {
   // An assumption here is that these elements belong to scopes without a
   // ScopedStyleResolver due to the fact that VTT scopes and UA shadow trees
   // don't have <style> or <link> elements. This is backed up by the DCHECKs
-  // below.
+  // below. The one exception to this assumption are the media controls which
+  // use a <style> element for CSS animations in the shadow DOM. If a <style>
+  // element is present in the shadow DOM then this will also block any
+  // author styling.
 
   TreeScope* tree_scope = &element.GetTreeScope();
   if (ScopedStyleResolver* resolver = tree_scope->GetScopedStyleResolver()) {
-    DCHECK(element.ShadowPseudoId().IsEmpty());
+#if DCHECK_IS_ON()
+    if (!element.HasMediaControlAncestor())
+      DCHECK(element.ShadowPseudoId().IsEmpty());
+#endif
     DCHECK(!element.IsVTTElement());
     return resolver;
   }
