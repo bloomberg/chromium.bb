@@ -315,6 +315,8 @@ BookmarkBubbleView::BookmarkBubbleView(
       url_(url),
       newly_bookmarked_(newly_bookmarked) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::BOOKMARK);
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::CONTROL, views::CONTROL));
 }
 
 base::string16 BookmarkBubbleView::GetBookmarkName() {
