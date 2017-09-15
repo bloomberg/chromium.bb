@@ -351,8 +351,7 @@ class Cache::BlobHandleCallbackForPut final
   }
   ~BlobHandleCallbackForPut() override {}
 
-  void DidFetchDataLoadedBlobHandle(
-      PassRefPtr<BlobDataHandle> handle) override {
+  void DidFetchDataLoadedBlobHandle(RefPtr<BlobDataHandle> handle) override {
     WebServiceWorkerCache::BatchOperation batch_operation;
     batch_operation.operation_type = WebServiceWorkerCache::kOperationTypePut;
     batch_operation.request = web_request_;

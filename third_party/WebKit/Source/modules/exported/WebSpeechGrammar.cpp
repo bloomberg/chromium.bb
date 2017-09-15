@@ -26,7 +26,7 @@
 #include "public/web/WebSpeechGrammar.h"
 
 #include "modules/speech/SpeechGrammar.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

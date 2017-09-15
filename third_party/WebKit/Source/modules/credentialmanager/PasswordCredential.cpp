@@ -146,7 +146,7 @@ const KURL& PasswordCredential::iconURL() const {
       ->IconURL();
 }
 
-PassRefPtr<EncodedFormData> PasswordCredential::EncodeFormData(
+RefPtr<EncodedFormData> PasswordCredential::EncodeFormData(
     String& content_type) const {
   if (additional_data_.isURLSearchParams()) {
     // If |additionalData| is a 'URLSearchParams' object, build a urlencoded

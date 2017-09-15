@@ -7,7 +7,7 @@
 
 #include "modules/webgl/WebGLContextObject.h"
 #include "modules/webgl/WebGLProgram.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

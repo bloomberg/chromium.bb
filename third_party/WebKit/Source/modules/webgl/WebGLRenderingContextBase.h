@@ -600,7 +600,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // For use by WebVR, commits the current canvas content similar
   // to the "commit" JS API.
-  PassRefPtr<StaticBitmapImage> GetStaticBitmapImage();
+  RefPtr<StaticBitmapImage> GetStaticBitmapImage();
 
  protected:
   friend class EXTDisjointTimerQuery;
@@ -629,7 +629,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
                             const CanvasContextCreationAttributes&,
                             unsigned);
-  PassRefPtr<DrawingBuffer> CreateDrawingBuffer(
+  RefPtr<DrawingBuffer> CreateDrawingBuffer(
       std::unique_ptr<WebGraphicsContext3DProvider>);
   void SetupFlags();
 
@@ -676,12 +676,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Restore the client unpack parameters.
   virtual void RestoreUnpackParameters();
 
-  PassRefPtr<Image> DrawImageIntoBuffer(PassRefPtr<Image>,
-                                        int width,
-                                        int height,
-                                        const char* function_name);
+  RefPtr<Image> DrawImageIntoBuffer(RefPtr<Image>,
+                                    int width,
+                                    int height,
+                                    const char* function_name);
 
-  PassRefPtr<Image> VideoFrameToImage(
+  RefPtr<Image> VideoFrameToImage(
       HTMLVideoElement*,
       int already_uploaded_id,
       WebMediaPlayer::VideoFrameUploadMetadata* out_metadata);

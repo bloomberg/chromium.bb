@@ -45,9 +45,9 @@ class CSSPaintDefinition final
   //
   // This may return a nullptr (representing an invalid image) if javascript
   // throws an error.
-  PassRefPtr<Image> Paint(const ImageResourceObserver&,
-                          const IntSize&,
-                          const CSSStyleValueVector*);
+  RefPtr<Image> Paint(const ImageResourceObserver&,
+                      const IntSize&,
+                      const CSSStyleValueVector*);
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
     return native_invalidation_properties_;
   }

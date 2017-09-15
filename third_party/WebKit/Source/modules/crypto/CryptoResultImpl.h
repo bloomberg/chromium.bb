@@ -79,9 +79,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
   class Resolver;
   class ResultCancel : public CryptoResultCancel {
    public:
-    static PassRefPtr<ResultCancel> Create() {
-      return AdoptRef(new ResultCancel);
-    }
+    static RefPtr<ResultCancel> Create() { return AdoptRef(new ResultCancel); }
 
     bool Cancelled() const override;
 
