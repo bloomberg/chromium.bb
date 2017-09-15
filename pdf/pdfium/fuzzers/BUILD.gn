@@ -28,7 +28,7 @@ fuzzer_test("pdfium_fuzzer") {
     "//v8:external_startup_data",
   ]
   dict = "dicts/pdf.dict"
-  seed_corpus = "//third_party/pdfium/test"
+  seed_corpus = "//third_party/pdfium/testing/resources"
 }
 
 fuzzer_test("pdf_cmap_fuzzer") {
@@ -216,6 +216,6 @@ if (pdf_enable_xfa) {
       "//v8:external_startup_data",
     ]
     dict = "dicts/pdf.dict"
-    seed_corpus = "//third_party/pdfium/test"
+    seed_corpus = "//third_party/pdfium/testing/resources"
   }
 }
