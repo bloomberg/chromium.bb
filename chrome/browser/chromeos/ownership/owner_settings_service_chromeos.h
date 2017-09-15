@@ -62,6 +62,8 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
 
   void OnTPMTokenReady(bool tpm_token_enabled);
 
+  void OnEasyUnlockKeyOpsFinished();
+
   bool HasPendingChanges() const;
 
   // ownership::OwnerSettingsService implementation:
@@ -162,13 +164,16 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   std::string user_id_;
 
   // Whether profile still needs to be initialized.
-  bool waiting_for_profile_creation_;
+  bool waiting_for_profile_creation_ = true;
 
   // Whether TPM token still needs to be initialized.
-  bool waiting_for_tpm_token_;
+  bool waiting_for_tpm_token_ = true;
+
+  // Whether easy unlock operation is finished.
+  bool waiting_for_easy_unlock_operation_finshed_ = true;
 
   // True if local-owner policy fixups are still pending.
-  bool has_pending_fixups_;
+  bool has_pending_fixups_ = false;
 
   // A set of pending changes to device settings.
   std::unordered_map<std::string, std::unique_ptr<base::Value>>

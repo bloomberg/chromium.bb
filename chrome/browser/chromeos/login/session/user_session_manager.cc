@@ -504,6 +504,8 @@ void UserSessionManager::StartSession(
     bool has_auth_cookies,
     bool has_active_session,
     UserSessionManagerDelegate* delegate) {
+  easy_unlock_key_ops_finished_ = false;
+
   delegate_ = delegate;
   start_session_type_ = start_session_type;
 
@@ -818,17 +820,6 @@ bool UserSessionManager::NeedsToUpdateEasyUnlockKeys() const {
   return user_context_.GetAccountId().is_valid() &&
          user_manager::User::TypeHasGaiaAccount(user_context_.GetUserType()) &&
          user_context_.GetKey() && !user_context_.GetKey()->GetSecret().empty();
-}
-
-bool UserSessionManager::CheckEasyUnlockKeyOps(const base::Closure& callback) {
-  if (!running_easy_unlock_key_ops_)
-    return false;
-
-  // Assumes only one deferred callback is needed.
-  DCHECK(easy_unlock_key_ops_finished_callback_.is_null());
-
-  easy_unlock_key_ops_finished_callback_ = callback;
-  return true;
 }
 
 void UserSessionManager::AddSessionStateObserver(
@@ -1632,24 +1623,32 @@ void UserSessionManager::NotifyPendingUserSessionsRestoreFinished() {
 }
 
 void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
+  easy_unlock_key_ops_finished_ = false;
+
   // Skip key update because FakeCryptohomeClient always return success
   // and RefreshKeys op expects a failure to stop. As a result, some tests would
   // timeout.
   // TODO(xiyuan): Revisit this when adding tests.
-  if (!base::SysInfo::IsRunningOnChromeOS())
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    NotifyEasyUnlockKeyOpsFinished();
     return;
+  }
 
   // Only update Easy unlock keys for regular user.
   // TODO(xiyuan): Fix inconsistency user type of |user_context| introduced in
   // authenticator.
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
-  if (!user || !user->HasGaiaAccount())
+  if (!user || !user->HasGaiaAccount()) {
+    NotifyEasyUnlockKeyOpsFinished();
     return;
+  }
 
   // Bail if |user_context| does not have secret.
-  if (user_context.GetKey()->GetSecret().empty())
+  if (user_context.GetKey()->GetSecret().empty()) {
+    NotifyEasyUnlockKeyOpsFinished();
     return;
+  }
 
   const base::ListValue* device_list = nullptr;
   EasyUnlockService* easy_unlock_service = EasyUnlockService::GetForUser(*user);
@@ -1689,8 +1688,9 @@ void UserSessionManager::AttemptRestart(Profile* profile) {
       FROM_HERE, base::BindOnce(RestartOnTimeout),
       base::TimeDelta::FromSeconds(kMaxRestartDelaySeconds));
 
-  if (CheckEasyUnlockKeyOps(base::Bind(&UserSessionManager::AttemptRestart,
-                                       AsWeakPtr(), profile))) {
+  if (running_easy_unlock_key_ops_) {
+    WaitForEasyUnlockKeyOpsFinished(
+        base::Bind(&UserSessionManager::AttemptRestart, AsWeakPtr(), profile));
     return;
   }
 
@@ -1718,15 +1718,13 @@ void UserSessionManager::AttemptRestart(Profile* profile) {
 void UserSessionManager::OnEasyUnlockKeyOpsFinished(
     const std::string& user_id,
     bool success) {
-  running_easy_unlock_key_ops_ = false;
-  if (!easy_unlock_key_ops_finished_callback_.is_null())
-    easy_unlock_key_ops_finished_callback_.Run();
-
   const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
       AccountId::FromUserEmail(user_id));
   EasyUnlockService* easy_unlock_service =
         EasyUnlockService::GetForUser(*user);
   easy_unlock_service->CheckCryptohomeKeysAndMaybeHardlock();
+
+  NotifyEasyUnlockKeyOpsFinished();
 }
 
 void UserSessionManager::ActiveUserChanged(
@@ -1741,6 +1739,9 @@ void UserSessionManager::ActiveUserChanged(
 
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
+  // |manager| might not be available in some unit tests.
+  if (!manager)
+    return;
   manager->SetState(
       GetDefaultIMEState(ProfileHelper::Get()->GetProfileByUser(active_user)));
   manager->MaybeNotifyImeMenuActivationChanged();
@@ -2003,6 +2004,25 @@ bool UserSessionManager::ShouldShowEolNotification(Profile* profile) {
 
   // Do not show end of life notification if this is a guest session
   return !profile->IsGuestSession();
+}
+
+void UserSessionManager::NotifyEasyUnlockKeyOpsFinished() {
+  DCHECK(!easy_unlock_key_ops_finished_);
+  running_easy_unlock_key_ops_ = false;
+  easy_unlock_key_ops_finished_ = true;
+  for (auto& callback : easy_unlock_key_ops_finished_callbacks_) {
+    std::move(callback).Run();
+  }
+  easy_unlock_key_ops_finished_callbacks_.clear();
+}
+
+void UserSessionManager::WaitForEasyUnlockKeyOpsFinished(
+    base::OnceClosure callback) {
+  if (easy_unlock_key_ops_finished_) {
+    std::move(callback).Run();
+    return;
+  }
+  easy_unlock_key_ops_finished_callbacks_.push_back(std::move(callback));
 }
 
 }  // namespace chromeos
