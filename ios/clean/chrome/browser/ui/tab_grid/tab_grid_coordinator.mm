@@ -206,7 +206,6 @@
   [self removeChildCoordinator:child];
 }
 
-
 #pragma mark - URLOpening
 
 - (void)openURL:(NSURL*)URL {

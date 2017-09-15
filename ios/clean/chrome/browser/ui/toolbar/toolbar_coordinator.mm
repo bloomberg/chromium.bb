@@ -16,6 +16,8 @@
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/history_popup/history_popup_coordinator.h"
 #import "ios/clean/chrome/browser/ui/omnibox/location_bar_coordinator.h"
+#import "ios/clean/chrome/browser/ui/overlays/overlay_service.h"
+#import "ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button_factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_configuration.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
@@ -140,7 +142,6 @@
 
 - (void)showToolsMenu {
   ToolsCoordinator* toolsCoordinator = [[ToolsCoordinator alloc] init];
-  [self addChildCoordinator:toolsCoordinator];
   ToolsMenuConfiguration* menuConfiguration =
       [[ToolsMenuConfiguration alloc] initWithDisplayView:nil];
   menuConfiguration.inTabSwitcher = NO;
@@ -149,16 +150,17 @@
       self.browser->browser_state()->IsOffTheRecord();
   menuConfiguration.inNewTabPage =
       (self.webState->GetLastCommittedURL() == GURL(kChromeUINewTabURL));
-
   toolsCoordinator.toolsMenuConfiguration = menuConfiguration;
   toolsCoordinator.webState = self.webState;
-  [toolsCoordinator start];
+  OverlayServiceFactory::GetInstance()
+      ->GetForBrowserState(self.browser->browser_state())
+      ->ShowOverlayForBrowser(toolsCoordinator, self, self.browser);
   self.toolsMenuCoordinator = toolsCoordinator;
 }
 
 - (void)closeToolsMenu {
   [self.toolsMenuCoordinator stop];
-  [self removeChildCoordinator:self.toolsMenuCoordinator];
+  // |toolsMenuCoordinator| is weak, so it is presumed nil after being stopped.
 }
 
 #pragma mark - HistoryPopupCommands Implementation

@@ -29,6 +29,7 @@ source_set("toolbar") {
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/history_popup",
     "//ios/clean/chrome/browser/ui/omnibox",
+    "//ios/clean/chrome/browser/ui/overlays",
     "//ios/clean/chrome/browser/ui/tools",
     "//ios/web",
   ]
