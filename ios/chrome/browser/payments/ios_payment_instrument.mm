@@ -35,8 +35,7 @@ IOSPaymentInstrument::IOSPaymentInstrument(
     const std::string& app_name,
     UIImage* icon_image,
     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
-    : PaymentInstrument(method_name,
-                        -1 /* resource id not used */,
+    : PaymentInstrument(-1 /* resource id not used */,
                         PaymentInstrument::Type::NATIVE_MOBILE_APP),
       method_name_(method_name),
       universal_link_(universal_link),

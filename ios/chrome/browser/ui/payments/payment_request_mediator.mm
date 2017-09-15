@@ -195,14 +195,20 @@ using ::payment_request_util::GetShippingSectionTitle;
     item.methodDetail = base::SysUTF16ToNSString(paymentMethod->GetSublabel());
 
     switch (paymentMethod->type()) {
-      case payments::PaymentInstrument::Type::AUTOFILL:
+      case payments::PaymentInstrument::Type::AUTOFILL: {
         item.methodTypeIcon = NativeImage(paymentMethod->icon_resource_id());
         break;
-      case payments::PaymentInstrument::Type::NATIVE_MOBILE_APP:
+      }
+      case payments::PaymentInstrument::Type::NATIVE_MOBILE_APP: {
         payments::IOSPaymentInstrument* mobileApp =
             static_cast<payments::IOSPaymentInstrument*>(paymentMethod);
         item.methodTypeIcon = mobileApp->icon_image();
         break;
+      }
+      case payments::PaymentInstrument::Type::SERVICE_WORKER_APP: {
+        NOTIMPLEMENTED();
+        break;
+      }
     }
 
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;

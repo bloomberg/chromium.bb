@@ -46,15 +46,16 @@ function queryShow() {  // eslint-disable-line no-unused-vars
     request.canMakePayment()
         .then(function(result) {
           print(result);
-        })
-        .catch(function(error) {
-          print(error);
-        });
-    request.show()
-        .then(function(resp) {
-          resp.complete('success')
-              .then(function() {
-                print(JSON.stringify(resp, undefined, 2));
+
+          request.show()
+              .then(function(resp) {
+                resp.complete('success')
+                    .then(function() {
+                      print(JSON.stringify(resp, undefined, 2));
+                    })
+                    .catch(function(error) {
+                      print(error);
+                    });
               })
               .catch(function(error) {
                 print(error);

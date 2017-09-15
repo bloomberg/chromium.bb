@@ -34,6 +34,7 @@ class OrderSummaryViewController : public PaymentRequestSheetController,
   void OnSpecUpdated() override;
 
   // PaymentRequestState::Observer:
+  void OnGetAllPaymentInstrumentsFinished() override {}
   void OnSelectedInformationChanged() override;
 
  private:

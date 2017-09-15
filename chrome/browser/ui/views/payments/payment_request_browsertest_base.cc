@@ -132,6 +132,11 @@ void PaymentRequestBrowserTestBase::OnCanMakePaymentCalled() {
     event_observer_->Observe(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
 }
 
+void PaymentRequestBrowserTestBase::OnCanMakePaymentReturned() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::CAN_MAKE_PAYMENT_RETURNED);
+}
+
 void PaymentRequestBrowserTestBase::OnNotSupportedError() {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::NOT_SUPPORTED_ERROR);
@@ -813,6 +818,9 @@ std::ostream& operator<<(
       break;
     case DialogEvent::CAN_MAKE_PAYMENT_CALLED:
       out << "CAN_MAKE_PAYMENT_CALLED";
+      break;
+    case DialogEvent::CAN_MAKE_PAYMENT_RETURNED:
+      out << "CAN_MAKE_PAYMENT_RETURNED";
       break;
     case DialogEvent::ERROR_MESSAGE_SHOWN:
       out << "ERROR_MESSAGE_SHOWN";

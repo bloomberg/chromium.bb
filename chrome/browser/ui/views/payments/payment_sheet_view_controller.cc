@@ -747,14 +747,15 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
     selected_instrument_sublabel->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(selected_instrument_sublabel.release());
 
-    std::unique_ptr<views::ImageView> card_icon_view =
+    std::unique_ptr<views::ImageView> icon_view =
         CreateInstrumentIconView(selected_instrument->icon_resource_id(),
+                                 selected_instrument->icon_image_skia(),
                                  selected_instrument->GetLabel());
-    card_icon_view->SetImageSize(gfx::Size(32, 20));
+    icon_view->SetImageSize(gfx::Size(32, 20));
 
     return builder.AccessibleContent(selected_instrument->GetLabel())
         .Id(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION)
-        .CreateWithChevron(std::move(content_view), std::move(card_icon_view));
+        .CreateWithChevron(std::move(content_view), std::move(icon_view));
   } else {
     builder.Id(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION_BUTTON);
     if (state()->available_instruments().empty()) {

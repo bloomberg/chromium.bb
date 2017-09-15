@@ -21,7 +21,8 @@ class PaymentRequestCanMakePaymentQueryTest
             "/payment_request_can_make_payment_query_test.html") {}
 
   void CallCanMakePayment() {
-    ResetEventObserver(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "buy();"));
     WaitForObservedEvent();
   }
@@ -104,7 +105,8 @@ class PaymentRequestCanMakePaymentQueryCCTest
             "/payment_request_can_make_payment_query_cc_test.html") {}
 
   void CallCanMakePayment(bool visa) {
-    ResetEventObserver(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
                                        visa ? "buy();" : "other_buy();"));
     WaitForObservedEvent();
@@ -151,7 +153,8 @@ class PaymentRequestCanMakePaymentQueryPMITest
             "/payment_request_payment_method_identifier_test.html") {}
 
   void CallCanMakePayment(bool visa) {
-    ResetEventObserver(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+    ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                   DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
     ASSERT_TRUE(content::ExecuteScript(
         GetActiveWebContents(),
         visa ? "checkBasicVisa();" : "checkBasicCard();"));

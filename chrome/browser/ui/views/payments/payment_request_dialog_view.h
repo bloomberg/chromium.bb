@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "components/payments/content/payment_request_dialog.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "components/payments/content/payment_request_state.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -44,7 +45,8 @@ enum class BackNavigationType {
 // the WebPayments flow and managing the transition between those states.
 class PaymentRequestDialogView : public views::DialogDelegateView,
                                  public PaymentRequestDialog,
-                                 public PaymentRequestSpec::Observer {
+                                 public PaymentRequestSpec::Observer,
+                                 public PaymentRequestState::Observer {
  public:
   class ObserverForTest {
    public:
@@ -106,6 +108,10 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // PaymentRequestSpec::Observer:
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override;
   void OnSpecUpdated() override;
+
+  // PaymentRequestState::Observer:
+  void OnGetAllPaymentInstrumentsFinished() override;
+  void OnSelectedInformationChanged() override {}
 
   void Pay();
   void GoBack();

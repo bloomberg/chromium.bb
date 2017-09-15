@@ -31,10 +31,10 @@ AutofillPaymentInstrument::AutofillPaymentInstrument(
     const std::string& app_locale,
     PaymentRequestBaseDelegate* payment_request_delegate)
     : PaymentInstrument(
-          method_name,
           autofill::data_util::GetPaymentRequestData(card.network())
               .icon_resource_id,
           PaymentInstrument::Type::AUTOFILL),
+      method_name_(method_name),
       credit_card_(card),
       matches_merchant_card_type_exactly_(matches_merchant_card_type_exactly),
       billing_profiles_(billing_profiles),
@@ -211,7 +211,7 @@ void AutofillPaymentInstrument::GenerateBasicCardResponse() {
           .ToDictionaryValue();
   std::string stringified_details;
   base::JSONWriter::Write(*response_value, &stringified_details);
-  delegate_->OnInstrumentDetailsReady(method_name(), stringified_details);
+  delegate_->OnInstrumentDetailsReady(method_name_, stringified_details);
 
   delegate_ = nullptr;
   cvc_ = base::UTF8ToUTF16("");
