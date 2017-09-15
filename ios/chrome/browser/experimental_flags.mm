@@ -37,6 +37,7 @@ NSString* const kFirstRunForceEnabled = @"FirstRunForceEnabled";
 NSString* const kGaiaEnvironment = @"GAIAEnvironment";
 NSString* const kOriginServerHost = @"AlternateOriginServerHost";
 NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
+NSString* const kClearApplicationGroup = @"ClearApplicationGroup";
 const base::Feature kEnableSlimNavigationManager{
     "EnableSlimNavigationManager", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableThirdPartyKeyboardWorkaround{
@@ -129,6 +130,14 @@ bool IsPhysicalWebEnabled() {
 
 bool IsStartupCrashEnabled() {
   return [[NSUserDefaults standardUserDefaults] boolForKey:kEnableStartupCrash];
+}
+
+bool MustClearApplicationGroupSandbox() {
+  bool value =
+      [[NSUserDefaults standardUserDefaults] boolForKey:kClearApplicationGroup];
+  [[NSUserDefaults standardUserDefaults] setBool:NO
+                                          forKey:kClearApplicationGroup];
+  return value;
 }
 
 // This feature is on by default. Finch and experimental settings can be used to
