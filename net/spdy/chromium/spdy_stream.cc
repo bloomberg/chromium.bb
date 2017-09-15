@@ -211,21 +211,34 @@ void SpdyStream::DetachDelegate() {
   Cancel();
 }
 
-void SpdyStream::AdjustSendWindowSize(int32_t delta_window_size) {
+bool SpdyStream::AdjustSendWindowSize(int32_t delta_window_size) {
   if (IsClosed())
-    return;
+    return true;
 
-  // Check for wraparound.
-  if (send_window_size_ > 0) {
-    DCHECK_LE(delta_window_size,
-              std::numeric_limits<int32_t>::max() - send_window_size_);
+  if (delta_window_size > 0) {
+    if (send_window_size_ >
+        std::numeric_limits<int32_t>::max() - delta_window_size) {
+      return false;
+    }
+  } else {
+    // Minimum allowed value for SETTINGS_INITIAL_WINDOW_SIZE is 0 and maximum
+    // is 2^31-1.  Data are not sent when |send_window_size_ < 0|, that is,
+    // |send_window_size_ | can only decrease by a change in
+    // SETTINGS_INITIAL_WINDOW_SIZE.  Therefore |send_window_size_| should never
+    // be able to become less than -(2^31-1).
+    DCHECK_LE(std::numeric_limits<int32_t>::min() - delta_window_size,
+              send_window_size_);
   }
-  if (send_window_size_ < 0) {
-    DCHECK_GE(delta_window_size,
-              std::numeric_limits<int32_t>::min() - send_window_size_);
-  }
+
   send_window_size_ += delta_window_size;
+
+  net_log_.AddEvent(
+      NetLogEventType::HTTP2_STREAM_UPDATE_SEND_WINDOW,
+      base::Bind(&NetLogSpdyStreamWindowUpdateCallback, stream_id_,
+                 delta_window_size, send_window_size_));
+
   PossiblyResumeIfSendStalled();
+  return true;
 }
 
 void SpdyStream::OnWriteBufferConsumed(
@@ -248,32 +261,13 @@ void SpdyStream::OnWriteBufferConsumed(
 void SpdyStream::IncreaseSendWindowSize(int32_t delta_window_size) {
   DCHECK_GE(delta_window_size, 1);
 
-  // Ignore late WINDOW_UPDATEs.
-  if (IsClosed())
-    return;
-
-  if (send_window_size_ > 0) {
-    // Check for overflow.
-    int32_t max_delta_window_size =
-        std::numeric_limits<int32_t>::max() - send_window_size_;
-    if (delta_window_size > max_delta_window_size) {
-      SpdyString desc = SpdyStringPrintf(
-          "Received WINDOW_UPDATE [delta: %d] for stream %d overflows "
-          "send_window_size_ [current: %d]",
-          delta_window_size, stream_id_, send_window_size_);
-      session_->ResetStream(stream_id_, ERROR_CODE_FLOW_CONTROL_ERROR, desc);
-      return;
-    }
+  if (!AdjustSendWindowSize(delta_window_size)) {
+    SpdyString desc = SpdyStringPrintf(
+        "Received WINDOW_UPDATE [delta: %d] for stream %d overflows "
+        "send_window_size_ [current: %d]",
+        delta_window_size, stream_id_, send_window_size_);
+    session_->ResetStream(stream_id_, ERROR_CODE_FLOW_CONTROL_ERROR, desc);
   }
-
-  send_window_size_ += delta_window_size;
-
-  net_log_.AddEvent(
-      NetLogEventType::HTTP2_STREAM_UPDATE_SEND_WINDOW,
-      base::Bind(&NetLogSpdyStreamWindowUpdateCallback, stream_id_,
-                 delta_window_size, send_window_size_));
-
-  PossiblyResumeIfSendStalled();
 }
 
 void SpdyStream::DecreaseSendWindowSize(int32_t delta_window_size) {
