@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,7 @@
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "url/gurl.h"
 
 namespace {
@@ -63,6 +65,8 @@ class ArcAuthNotificationDelegate
   // message_center::NotificationDelegate
   void Display() override { StartObserving(); }
 
+  // TODO(tetsui): Remove this method when IsNewStyleNotificationEnabled() flag
+  // is removed.
   void ButtonClick(int button_index) override {
     StopObserving();
     if (button_index == 0) {
@@ -148,22 +152,35 @@ void ArcAuthNotification::Show() {
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
-  message_center::RichNotificationData data;
-  data.buttons.push_back(message_center::ButtonInfo(
-      l10n_util::GetStringUTF16(IDS_ARC_OPEN_PLAY_STORE_NOTIFICATION_BUTTON)));
-  data.buttons.push_back(message_center::ButtonInfo(
-      l10n_util::GetStringUTF16(IDS_ARC_CANCEL_NOTIFICATION_BUTTON)));
-  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  std::unique_ptr<message_center::Notification> notification(
-      new message_center::Notification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kFirstRunNotificationId,
-          l10n_util::GetStringFUTF16(IDS_ARC_NOTIFICATION_TITLE,
-                                     ui::GetChromeOSDeviceName()),
-          l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_MESSAGE),
-          resource_bundle.GetImageNamed(IDR_ARC_PLAY_STORE_NOTIFICATION),
-          l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE),
-          GURL(), notifier_id, data,
-          new ArcAuthNotificationDelegate(profile_)));
+  std::unique_ptr<message_center::Notification> notification;
+  if (message_center::IsNewStyleNotificationEnabled()) {
+    notification = message_center::Notification::CreateSystemNotification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kFirstRunNotificationId,
+        l10n_util::GetStringFUTF16(IDS_ARC_NOTIFICATION_TITLE,
+                                   ui::GetChromeOSDeviceName()),
+        l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_MESSAGE), gfx::Image(),
+        l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE), GURL(),
+        notifier_id, message_center::RichNotificationData(),
+        new ArcAuthNotificationDelegate(profile_), kNotificationPlayPrismIcon,
+        message_center::SystemNotificationWarningLevel::NORMAL);
+  } else {
+    message_center::RichNotificationData data;
+    data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
+        IDS_ARC_OPEN_PLAY_STORE_NOTIFICATION_BUTTON)));
+    data.buttons.push_back(message_center::ButtonInfo(
+        l10n_util::GetStringUTF16(IDS_ARC_CANCEL_NOTIFICATION_BUTTON)));
+
+    ui::ResourceBundle& resource_bundle =
+        ui::ResourceBundle::GetSharedInstance();
+    notification = std::make_unique<message_center::Notification>(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kFirstRunNotificationId,
+        l10n_util::GetStringFUTF16(IDS_ARC_NOTIFICATION_TITLE,
+                                   ui::GetChromeOSDeviceName()),
+        l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_MESSAGE),
+        resource_bundle.GetImageNamed(IDR_ARC_PLAY_STORE_NOTIFICATION),
+        l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE), GURL(),
+        notifier_id, data, new ArcAuthNotificationDelegate(profile_));
+  }
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
