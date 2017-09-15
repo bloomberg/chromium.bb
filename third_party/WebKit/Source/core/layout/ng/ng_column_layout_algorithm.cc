@@ -108,6 +108,7 @@ NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns() const {
     space_builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
 
   space_builder.SetFragmentationType(kFragmentColumn);
+  space_builder.SetFragmentainerBlockSize(adjusted_size.block_size);
   space_builder.SetFragmentainerSpaceAtBfcStart(adjusted_size.block_size);
   space_builder.SetIsNewFormattingContext(true);
   space_builder.SetIsAnonymous(true);

@@ -52,6 +52,11 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
   NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
                               const NGLogicalOffset&);
 
+  // Add a break token for a child that doesn't yet have any fragments, because
+  // its first fragment is to be produced in the next fragmentainer. This will
+  // add a break token for the child, but no fragment.
+  NGFragmentBuilder& AddBreakBeforeChild(NGLayoutInputNode child);
+
   // Update if we have fragmented in this flow.
   NGFragmentBuilder& PropagateBreak(RefPtr<NGLayoutResult>);
   NGFragmentBuilder& PropagateBreak(RefPtr<NGPhysicalFragment>);

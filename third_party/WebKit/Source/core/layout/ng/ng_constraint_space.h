@@ -73,6 +73,10 @@ class CORE_EXPORT NGConstraintSpace final
     return initial_containing_block_size_;
   }
 
+  LayoutUnit FragmentainerBlockSize() const {
+    return fragmentainer_block_size_;
+  }
+
   // Return the block space that was available in the current fragmentainer at
   // the start of the current block formatting context. Note that if the start
   // of the current block formatting context is in a previous fragmentainer, the
@@ -187,6 +191,7 @@ class CORE_EXPORT NGConstraintSpace final
       NGLogicalSize percentage_resolution_size,
       Optional<LayoutUnit> parent_percentage_resolution_inline_size,
       NGPhysicalSize initial_containing_block_size,
+      LayoutUnit fragmentainer_block_size,
       LayoutUnit fragmentainer_space_at_bfc_start,
       bool is_fixed_size_inline,
       bool is_fixed_size_block,
@@ -209,6 +214,7 @@ class CORE_EXPORT NGConstraintSpace final
   Optional<LayoutUnit> parent_percentage_resolution_inline_size_;
   NGPhysicalSize initial_containing_block_size_;
 
+  LayoutUnit fragmentainer_block_size_;
   LayoutUnit fragmentainer_space_at_bfc_start_;
 
   unsigned is_fixed_size_inline_ : 1;

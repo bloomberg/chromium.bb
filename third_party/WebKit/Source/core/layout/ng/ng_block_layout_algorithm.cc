@@ -11,6 +11,7 @@
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_floats_utils.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_fragmentation_utils.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
@@ -662,12 +663,32 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
 
   // We must have an actual fragment at this stage.
   DCHECK(layout_result->PhysicalFragment());
-
-  NGFragment fragment(ConstraintSpace().WritingMode(),
-                      *layout_result->PhysicalFragment());
+  const auto& physical_fragment = *layout_result->PhysicalFragment();
+  NGFragment fragment(ConstraintSpace().WritingMode(), physical_fragment);
 
   NGLogicalOffset logical_offset =
       CalculateLogicalOffset(fragment, child_data.margins, child_bfc_offset);
+
+  if (ConstraintSpace().HasBlockFragmentation() &&
+      ShouldBreakBeforeChild(child, physical_fragment,
+                             logical_offset.block_offset)) {
+    // TODO(mstensho): Make sure that we're at a valid point [1] before
+    // breaking. It's not allowed to break between the content edge of a
+    // container and its first child, if they are adjacent. If we're not allowed
+    // to break here, we need to attempt to propagate the break further up the
+    // ancestry.
+    //
+    // [1] https://drafts.csswg.org/css-break/#possible-breaks
+
+    // The remaining part of the fragmentainer (the unusable space for child
+    // content, due to the break) should still be occupied by this container.
+    content_size_ = FragmentainerSpaceAvailable();
+    // Drop the fragment on the floor and retry at the start of the next
+    // fragmentainer.
+    container_builder_.AddBreakBeforeChild(child);
+    container_builder_.SetDidBreak();
+    return true;
+  }
 
   // Only modify content_size_ if the fragment is non-empty block.
   //
@@ -967,6 +988,29 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   container_builder_.SetBlockOverflow(content_size_);
 }
 
+bool NGBlockLayoutAlgorithm::ShouldBreakBeforeChild(
+    NGLayoutInputNode child,
+    const NGPhysicalFragment& physical_fragment,
+    LayoutUnit block_offset) const {
+  const auto* token = physical_fragment.BreakToken();
+  if (!token || token->IsFinished())
+    return false;
+  // TODO(mstensho): There are other break-inside values to consider here.
+  if (child.Style().BreakInside() != EBreakInside::kAvoid)
+    return false;
+  // If we haven't used any space at all in the fragmentainer yet, we cannot
+  // break, or there'd be no progress. We'd end up creating an infinite number
+  // of fragmentainers without putting any content into them.
+  auto space_left = FragmentainerSpaceAvailable() - block_offset;
+  if (space_left >= ConstraintSpace().FragmentainerBlockSize())
+    return false;
+
+  // The child broke, and we're not at the start of a fragmentainer, and we're
+  // supposed to avoid breaking inside the child.
+  DCHECK(IsFirstFragment(ConstraintSpace(), physical_fragment));
+  return true;
+}
+
 NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
     NGLayoutInputNode child,
     const NGBreakToken* child_break_token) {
@@ -1070,8 +1114,11 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
       space_available -= child_data.bfc_offset_estimate.block_offset;
     }
   }
-  space_builder.SetFragmentainerSpaceAtBfcStart(space_available)
-      .SetFragmentationType(ConstraintSpace().BlockFragmentationType());
+  space_builder.SetFragmentainerBlockSize(
+      ConstraintSpace().FragmentainerBlockSize());
+  space_builder.SetFragmentainerSpaceAtBfcStart(space_available);
+  space_builder.SetFragmentationType(
+      ConstraintSpace().BlockFragmentationType());
 
   return space_builder.ToConstraintSpace(
       FromPlatformWritingMode(child_style.GetWritingMode()));

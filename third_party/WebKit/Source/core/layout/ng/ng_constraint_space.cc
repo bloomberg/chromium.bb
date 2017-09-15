@@ -17,6 +17,7 @@ NGConstraintSpace::NGConstraintSpace(
     NGLogicalSize percentage_resolution_size,
     Optional<LayoutUnit> parent_percentage_resolution_inline_size,
     NGPhysicalSize initial_containing_block_size,
+    LayoutUnit fragmentainer_block_size,
     LayoutUnit fragmentainer_space_at_bfc_start,
     bool is_fixed_size_inline,
     bool is_fixed_size_block,
@@ -38,6 +39,7 @@ NGConstraintSpace::NGConstraintSpace(
       parent_percentage_resolution_inline_size_(
           parent_percentage_resolution_inline_size),
       initial_containing_block_size_(initial_containing_block_size),
+      fragmentainer_block_size_(fragmentainer_block_size),
       fragmentainer_space_at_bfc_start_(fragmentainer_space_at_bfc_start),
       is_fixed_size_inline_(is_fixed_size_inline),
       is_fixed_size_block_(is_fixed_size_block),
@@ -180,6 +182,7 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
              other.parent_percentage_resolution_inline_size_ &&
          initial_containing_block_size_ ==
              other.initial_containing_block_size_ &&
+         fragmentainer_block_size_ == other.fragmentainer_block_size_ &&
          fragmentainer_space_at_bfc_start_ ==
              other.fragmentainer_space_at_bfc_start_ &&
          is_fixed_size_inline_ == other.is_fixed_size_inline_ &&
