@@ -31,7 +31,7 @@ TestInterfaces::TestInterfaces()
       main_view_(nullptr) {
   blink::SetLayoutTestMode(true);
   // NOTE: please don't put feature specific enable flags here,
-  // instead add them to RuntimeEnabledFeatures.json5
+  // instead add them to runtime_enabled_features.json5
 
   ResetAll();
 }
