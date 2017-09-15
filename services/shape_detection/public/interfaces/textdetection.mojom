@@ -10,6 +10,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 struct TextDetectionResult {
   string raw_value;
   gfx.mojom.RectF bounding_box;
+  array<gfx.mojom.PointF> corner_points;
 };
 
 interface TextDetection {

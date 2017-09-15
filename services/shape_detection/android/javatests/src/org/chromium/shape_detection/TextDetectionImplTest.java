@@ -8,6 +8,7 @@ import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.gfx.mojom.RectF;
 import org.chromium.shape_detection.mojom.TextDetection;
 import org.chromium.shape_detection.mojom.TextDetectionResult;
 
@@ -61,6 +62,15 @@ public class TextDetectionImplTest extends InstrumentationTestCase {
             assertEquals(TEXT_BOUNDING_BOX[i][1], results[i].boundingBox.y, 0.0);
             assertEquals(TEXT_BOUNDING_BOX[i][2], results[i].boundingBox.width, 0.0);
             assertEquals(TEXT_BOUNDING_BOX[i][3], results[i].boundingBox.height, 0.0);
+
+            RectF cornerRectF = new RectF();
+            cornerRectF.x = results[i].cornerPoints[0].x;
+            cornerRectF.y = results[i].cornerPoints[0].y;
+            cornerRectF.width = results[i].cornerPoints[1].x - cornerRectF.x;
+            cornerRectF.height = results[i].cornerPoints[2].y - cornerRectF.y;
+            assertEquals(results[i].boundingBox, cornerRectF);
+            assertEquals(results[i].cornerPoints[3].x, results[i].cornerPoints[1].x, 0.0);
+            assertEquals(results[i].cornerPoints[3].y, results[i].cornerPoints[2].y, 0.0);
         }
     }
 }
