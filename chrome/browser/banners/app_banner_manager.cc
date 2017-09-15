@@ -56,57 +56,6 @@ void AppBannerManager::SetTotalEngagementToTrigger(double engagement) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(engagement);
 }
 
-}  // namespace banners
-
-namespace {
-
-// Returns a string parameter for a devtools console message corresponding to
-// |code|. Returns the empty string if |code| requires no parameter.
-std::string GetStatusParam(InstallableStatusCode code) {
-  if (code == NO_ACCEPTABLE_ICON || code == MANIFEST_MISSING_SUITABLE_ICON) {
-    return base::IntToString(InstallableManager::GetMinimumIconSizeInPx());
-  }
-
-  return std::string();
-}
-
-// Logs installable status codes to the console.
-class ConsoleStatusReporter : public banners::AppBannerManager::StatusReporter {
- public:
-  bool Waiting() const override { return false; }
-
-  // Logs an error message corresponding to |code| to the devtools console
-  // attached to |web_contents|.
-  void ReportStatus(content::WebContents* web_contents,
-                    InstallableStatusCode code) override {
-    LogErrorToConsole(web_contents, code, GetStatusParam(code));
-  }
-};
-
-// Tracks installable status codes via a UMA histogram.
-class TrackingStatusReporter
-    : public banners::AppBannerManager::StatusReporter {
- public:
-  TrackingStatusReporter() : done_(false) {}
-  bool Waiting() const override { return !done_; }
-
-  // Records code via a UMA histogram.
-  void ReportStatus(content::WebContents* web_contents,
-                    InstallableStatusCode code) override {
-    // Ensure that we haven't yet logged a status code for this page.
-    DCHECK(!done_);
-    banners::TrackInstallableStatusCode(code);
-    done_ = true;
-  }
-
- private:
-  bool done_;
-};
-
-}  // anonymous namespace
-
-namespace banners {
-
 void AppBannerManager::RequestAppBanner(const GURL& validated_url,
                                         bool is_debug_mode) {
   content::WebContents* contents = web_contents();
@@ -121,12 +70,10 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   UpdateState(State::ACTIVE);
   triggered_by_devtools_ = is_debug_mode;
 
-  // We only need to use TrackingStatusReporter if we aren't in debug mode
-  // (this avoids skew from testing).
-  status_reporter_.reset(
-      IsDebugMode()
-          ? static_cast<StatusReporter*>(new ConsoleStatusReporter())
-          : static_cast<StatusReporter*>(new TrackingStatusReporter()));
+  // We only need to call ReportStatus if we aren't in debug mode (this avoids
+  // skew from testing).
+  DCHECK(!need_to_log_status_);
+  need_to_log_status_ = !IsDebugMode();
 
   // Exit if this is an incognito window, non-main frame, or insecure context.
   InstallableStatusCode code = NO_ERROR_DETECTED;
@@ -190,6 +137,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       has_sufficient_engagement_(false),
       load_finished_(false),
       triggered_by_devtools_(false),
+      need_to_log_status_(false),
       weak_factory_(this) {
   DCHECK(manager_);
 
@@ -205,6 +153,14 @@ std::string AppBannerManager::GetAppIdentifier() {
 
 std::string AppBannerManager::GetBannerType() {
   return "web";
+}
+
+std::string AppBannerManager::GetStatusParam(InstallableStatusCode code) {
+  if (code == NO_ACCEPTABLE_ICON || code == MANIFEST_MISSING_SUITABLE_ICON) {
+    return base::IntToString(InstallableManager::GetMinimumIconSizeInPx());
+  }
+
+  return std::string();
 }
 
 int AppBannerManager::GetIdealPrimaryIconSizeInPx() {
@@ -318,8 +274,14 @@ void AppBannerManager::RecordDidShowBanner(const std::string& event_name) {
 
 void AppBannerManager::ReportStatus(content::WebContents* web_contents,
                                     InstallableStatusCode code) {
-  DCHECK(status_reporter_);
-  status_reporter_->ReportStatus(web_contents, code);
+  if (IsDebugMode()) {
+    LogErrorToConsole(web_contents, code, GetStatusParam(code));
+  } else {
+    // Ensure that we haven't yet logged a status code for this page.
+    DCHECK(need_to_log_status_);
+    TrackInstallableStatusCode(code);
+    need_to_log_status_ = false;
+  }
 }
 
 void AppBannerManager::ResetCurrentPageData() {
@@ -363,18 +325,16 @@ void AppBannerManager::Stop() {
     ReportStatus(web_contents(), code);
 
   // In every non-debug run through the banner pipeline, we should have called
-  // ReportStatus(). The only case where we don't is if we're still running and
-  // aren't blocked on the network. When running and blocked on the network the
-  // state should be logged.
-  // If the pipeline has not been started, status_reporter will be null.
+  // ReportStatus() and set need_to_log_status_ to false. The only case where
+  // we don't is if we're still running and aren't blocked on the network. When
+  // running and blocked on the network the state should be logged.
   // TODO(dominickn): log when the pipeline is fetching native app banner
   // details.
-  DCHECK(!status_reporter_ || !status_reporter_->Waiting() ||
-         (IsRunning() && !IsWaitingForData()));
+  DCHECK(!need_to_log_status_ || (IsRunning() && !IsWaitingForData()));
 
   ResetBindings();
   UpdateState(State::COMPLETE);
-  status_reporter_.reset(nullptr);
+  need_to_log_status_ = false;
   has_sufficient_engagement_ = false;
 }
 
