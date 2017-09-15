@@ -514,24 +514,34 @@ config("compiler") {
 
     if (use_thin_lto) {
       cflags += [ "-flto=thin" ]
-      ldflags += [ "-flto=thin" ]
-
-      # Limit the parallelism to avoid too aggressive competition between
-      # linker jobs. This is still suboptimal to a potential dynamic
-      # resource allocation scheme, but should be good enough.
-      if (use_lld) {
+      if (is_win) {
+        # This is a straight translation of the non-Windows flags below.
         ldflags += [
-          "-Wl,--thinlto-jobs=8",
-          "-Wl,--thinlto-cache-dir=" +
+          "/opt:lldltojobs=8",
+          "/lldltocache:" +
               rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-
-          # Limit the size of the ThinLTO cache to 10% of available disk space.
-          # TODO(pcc): Change the limit from a percentage to an absolute size
-          # (10-20GB) once that feature lands in LLVM.
-          "-Wl,--thinlto-cache-policy,cache_size=10%",
+          "/lldltocachepolicy:cache_size=10%",
         ]
       } else {
-        ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
+        ldflags += [ "-flto=thin" ]
+
+        # Limit the parallelism to avoid too aggressive competition between
+        # linker jobs. This is still suboptimal to a potential dynamic
+        # resource allocation scheme, but should be good enough.
+        if (use_lld) {
+          ldflags += [
+            "-Wl,--thinlto-jobs=8",
+            "-Wl,--thinlto-cache-dir=" +
+                rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
+
+            # Limit the size of the ThinLTO cache to 10% of available disk space
+            # TODO(pcc): Change the limit from a percentage to an absolute size
+            # (10-20GB) once that feature lands in LLVM.
+            "-Wl,--thinlto-cache-policy,cache_size=10%",
+          ]
+        } else {
+          ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
+        }
       }
 
       # Disable optimization for now because they increase binary size by too
@@ -541,7 +551,9 @@ config("compiler") {
       }
     } else {
       cflags += [ "-flto" ]
-      ldflags += [ "-flto" ]
+      if (!is_win) {
+        ldflags += [ "-flto" ]
+      }
 
       # Apply a lower LTO optimization level as the default is too slow.
       if (is_linux) {
@@ -556,7 +568,9 @@ config("compiler") {
     }
 
     cflags += [ "-fwhole-program-vtables" ]
-    ldflags += [ "-fwhole-program-vtables" ]
+    if (!is_win) {
+      ldflags += [ "-fwhole-program-vtables" ]
+    }
 
     # Work-around for http://openradar.appspot.com/20356002
     if (is_mac) {
