@@ -19,6 +19,11 @@ struct ResourceRequest;
 // A URLLoaderThrottle gets notified at various points during the process of
 // loading a resource. At each stage, it has the opportunity to defer the
 // resource load.
+//
+// Note that while a single throttle deferring a load at any given step will
+// block the load from progressing further until a subsequent Delegate::Resume()
+// call is made, it does NOT prevent subsequent throttles from processing the
+// same step of the request if multiple throttles are affecting the load.
 class CONTENT_EXPORT URLLoaderThrottle {
  public:
   // An interface for the throttle implementation to resume (when deferred) or
