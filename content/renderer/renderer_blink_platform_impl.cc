@@ -1289,8 +1289,9 @@ void RendererBlinkPlatformImpl::SendFakeDeviceEventDataForTesting(
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PlatformEventObserverBase::SendFakeDataForTesting,
-                            base::Unretained(observer), data));
+      FROM_HERE,
+      base::BindOnce(&PlatformEventObserverBase::SendFakeDataForTesting,
+                     base::Unretained(observer), data));
 }
 
 void RendererBlinkPlatformImpl::StopListening(

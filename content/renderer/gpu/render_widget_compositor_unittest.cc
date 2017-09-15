@@ -188,8 +188,8 @@ class RenderWidgetLayerTreeFrameSink : public RenderWidgetCompositor {
       // reentrantly as a part of RequestNewLayerTreeFrameSink.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&RenderWidgetLayerTreeFrameSink::SynchronousComposite,
-                     base::Unretained(this)));
+          base::BindOnce(&RenderWidgetLayerTreeFrameSink::SynchronousComposite,
+                         base::Unretained(this)));
     }
   }
 
@@ -269,8 +269,8 @@ class RenderWidgetLayerTreeFrameSinkTest : public testing::Test {
     render_widget_compositor_.SetVisible(true);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&RenderWidgetLayerTreeFrameSink::SynchronousComposite,
-                   base::Unretained(&render_widget_compositor_)));
+        base::BindOnce(&RenderWidgetLayerTreeFrameSink::SynchronousComposite,
+                       base::Unretained(&render_widget_compositor_)));
     base::RunLoop().Run();
     render_widget_compositor_.AfterTest();
   }

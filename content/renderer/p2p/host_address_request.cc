@@ -38,8 +38,8 @@ void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
 
   state_ = STATE_SENT;
   ipc_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&P2PAsyncAddressResolver::DoSendRequest, this,
-                            host_name, done_callback));
+      FROM_HERE, base::BindOnce(&P2PAsyncAddressResolver::DoSendRequest, this,
+                                host_name, done_callback));
 }
 
 void P2PAsyncAddressResolver::Cancel() {
@@ -48,7 +48,8 @@ void P2PAsyncAddressResolver::Cancel() {
   if (state_ != STATE_FINISHED) {
     state_ = STATE_FINISHED;
     ipc_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&P2PAsyncAddressResolver::DoUnregister, this));
+        FROM_HERE,
+        base::BindOnce(&P2PAsyncAddressResolver::DoUnregister, this));
   }
   done_callback_.Reset();
 }
@@ -81,8 +82,8 @@ void P2PAsyncAddressResolver::OnResponse(const net::IPAddressList& addresses) {
   registered_ = false;
 
   delegate_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&P2PAsyncAddressResolver::DeliverResponse, this, addresses));
+      FROM_HERE, base::BindOnce(&P2PAsyncAddressResolver::DeliverResponse, this,
+                                addresses));
 }
 
 void P2PAsyncAddressResolver::DeliverResponse(

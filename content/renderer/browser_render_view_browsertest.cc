@@ -209,9 +209,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest, ConfirmCacheInformationPlumbed) {
           GetURLRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&InterceptNetworkTransactions,
-                 base::RetainedRef(url_request_context_getter),
-                 net::ERR_FAILED));
+      base::BindOnce(&InterceptNetworkTransactions,
+                     base::RetainedRef(url_request_context_getter),
+                     net::ERR_FAILED));
 
   // An error results in one completed navigation.
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
@@ -226,8 +226,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest, ConfirmCacheInformationPlumbed) {
   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ClearCache, base::RetainedRef(url_request_context_getter),
-                 runner->QuitClosure()));
+      base::BindOnce(&ClearCache, base::RetainedRef(url_request_context_getter),
+                     runner->QuitClosure()));
   runner->Run();
 
   content::NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);

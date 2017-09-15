@@ -50,8 +50,9 @@ VEAEncoder::VEAEncoder(
   DCHECK_GE(size.height(), kVEAEncoderMinResolutionHeight);
 
   encoding_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner,
-                            this, size));
+      FROM_HERE,
+      base::BindOnce(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner, this,
+                     size));
 }
 
 VEAEncoder::~VEAEncoder() {
@@ -66,8 +67,8 @@ VEAEncoder::~VEAEncoder() {
   // It is currently unsafe because |video_encoder_| might be in use on another
   // function on |encoding_task_runner_|, see http://crbug.com/701030.
   encoding_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VEAEncoder::DestroyOnEncodingTaskRunner,
-                            base::Unretained(this), &release_waiter));
+      FROM_HERE, base::BindOnce(&VEAEncoder::DestroyOnEncodingTaskRunner,
+                                base::Unretained(this), &release_waiter));
   release_waiter.Wait();
 }
 
@@ -108,9 +109,10 @@ void VEAEncoder::BitstreamBufferReady(int32_t bitstream_buffer_id,
   const auto front_frame = frames_in_encode_.front();
   frames_in_encode_.pop();
   origin_task_runner_->PostTask(
-      FROM_HERE, base::Bind(OnFrameEncodeCompleted, on_encoded_video_callback_,
-                            front_frame.first, base::Passed(&data), nullptr,
-                            front_frame.second, keyframe));
+      FROM_HERE,
+      base::BindOnce(OnFrameEncodeCompleted, on_encoded_video_callback_,
+                     front_frame.first, base::Passed(&data), nullptr,
+                     front_frame.second, keyframe));
   UseOutputBitstreamBufferId(bitstream_buffer_id);
 }
 

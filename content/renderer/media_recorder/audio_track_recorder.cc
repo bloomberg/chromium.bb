@@ -312,7 +312,7 @@ void AudioTrackRecorder::OnSetFormat(const media::AudioParameters& params) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
 
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AudioEncoder::OnSetFormat, encoder_, params));
+      FROM_HERE, base::BindOnce(&AudioEncoder::OnSetFormat, encoder_, params));
 }
 
 void AudioTrackRecorder::OnData(const media::AudioBus& audio_bus,
@@ -325,22 +325,22 @@ void AudioTrackRecorder::OnData(const media::AudioBus& audio_bus,
   audio_bus.CopyTo(audio_data.get());
 
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AudioEncoder::EncodeAudio, encoder_,
-                            base::Passed(&audio_data), capture_time));
+      FROM_HERE, base::BindOnce(&AudioEncoder::EncodeAudio, encoder_,
+                                base::Passed(&audio_data), capture_time));
 }
 
 void AudioTrackRecorder::Pause() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(encoder_);
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AudioEncoder::set_paused, encoder_, true));
+      FROM_HERE, base::BindOnce(&AudioEncoder::set_paused, encoder_, true));
 }
 
 void AudioTrackRecorder::Resume() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(encoder_);
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AudioEncoder::set_paused, encoder_, false));
+      FROM_HERE, base::BindOnce(&AudioEncoder::set_paused, encoder_, false));
 }
 
 }  // namespace content

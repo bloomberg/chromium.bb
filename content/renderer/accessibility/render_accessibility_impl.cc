@@ -305,8 +305,8 @@ void RenderAccessibilityImpl::HandleAXEvent(
     // up additional events.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&RenderAccessibilityImpl::SendPendingAccessibilityEvents,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&RenderAccessibilityImpl::SendPendingAccessibilityEvents,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 

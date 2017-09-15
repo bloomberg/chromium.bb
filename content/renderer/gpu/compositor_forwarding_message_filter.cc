@@ -56,10 +56,9 @@ bool CompositorForwardingMessageFilter::OnMessageReceived(
 
   compositor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &CompositorForwardingMessageFilter::ProcessMessageOnCompositorThread,
-          this,
-          message));
+          this, message));
   return true;
 }
 

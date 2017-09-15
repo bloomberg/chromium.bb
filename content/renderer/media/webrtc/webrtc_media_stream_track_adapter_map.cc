@@ -171,7 +171,7 @@ WebRtcMediaStreamTrackAdapterMap::GetOrCreateRemoteTrackAdapter(
   // key is set.
   main_thread_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &WebRtcMediaStreamTrackAdapterMap::OnRemoteTrackAdapterInitialized,
           this,
           base::Passed(base::WrapUnique(

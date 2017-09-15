@@ -63,8 +63,8 @@ class RenderWidgetWindowTreeClientFactoryImpl
       uint32_t routing_id,
       ui::mojom::WindowTreeClientRequest request) override {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&BindMusConnectionOnMainThread, routing_id,
-                              base::Passed(&request)));
+        FROM_HERE, base::BindOnce(&BindMusConnectionOnMainThread, routing_id,
+                                  base::Passed(&request)));
   }
 
   scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;

@@ -389,8 +389,8 @@ bool BrowserPlugin::Initialize(WebPluginContainer* container) {
   // Defer attach call so that if there's any pending browser plugin
   // destruction, then it can progress first.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BrowserPlugin::UpdateInternalInstanceId,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&BrowserPlugin::UpdateInternalInstanceId,
+                                weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 

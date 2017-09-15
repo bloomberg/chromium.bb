@@ -73,8 +73,8 @@ void ScreenOrientationDispatcher::LockOrientation(
   EnsureScreenOrientationService();
   screen_orientation_->LockOrientation(
       orientation,
-      base::Bind(&ScreenOrientationDispatcher::OnLockOrientationResult,
-                 base::Unretained(this), request_id));
+      base::BindOnce(&ScreenOrientationDispatcher::OnLockOrientationResult,
+                     base::Unretained(this), request_id));
 }
 
 void ScreenOrientationDispatcher::UnlockOrientation() {

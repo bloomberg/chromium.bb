@@ -168,8 +168,9 @@ void FilteringNetworkManager::FireEventIfStarted() {
 
   // Post a task to avoid reentrancy.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FilteringNetworkManager::SendNetworksChangedSignal,
-                            GetWeakPtr()));
+      FROM_HERE,
+      base::BindOnce(&FilteringNetworkManager::SendNetworksChangedSignal,
+                     GetWeakPtr()));
 
   sent_first_update_ = true;
 }

@@ -42,9 +42,9 @@ class CONTENT_EXPORT DeviceSensorMojoClientMixin : public Base {
   }
 
   void SendStartMessage() override {
-    mojo_interface_->StartPolling(
-        base::Bind(&DeviceSensorMojoClientMixin<Base, MojoInterface>::DidStart,
-                   base::Unretained(this)));
+    mojo_interface_->StartPolling(base::BindOnce(
+        &DeviceSensorMojoClientMixin<Base, MojoInterface>::DidStart,
+        base::Unretained(this)));
   }
   void SendStopMessage() override { mojo_interface_->StopPolling(); }
 

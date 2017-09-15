@@ -183,8 +183,9 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   orientation_pump()->Start(listener());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DeviceOrientationEventPumpForTesting::FireEvent,
-                            base::Unretained(orientation_pump())));
+      FROM_HERE,
+      base::BindOnce(&DeviceOrientationEventPumpForTesting::FireEvent,
+                     base::Unretained(orientation_pump())));
   base::RunLoop().Run();
 
   EXPECT_FALSE(listener()->did_change_device_orientation());
@@ -204,8 +205,9 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
   orientation_pump()->Start(listener());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DeviceOrientationEventPumpForTesting::FireEvent,
-                            base::Unretained(orientation_pump())));
+      FROM_HERE,
+      base::BindOnce(&DeviceOrientationEventPumpForTesting::FireEvent,
+                     base::Unretained(orientation_pump())));
   base::RunLoop().Run();
 
   EXPECT_TRUE(listener()->did_change_device_orientation());

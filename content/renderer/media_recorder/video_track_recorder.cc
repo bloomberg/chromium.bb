@@ -216,8 +216,8 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
 
   if (video_frame->HasTextures()) {
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Encoder::RetrieveFrameOnMainThread, this,
-                              video_frame, capture_timestamp));
+        FROM_HERE, base::BindOnce(&Encoder::RetrieveFrameOnMainThread, this,
+                                  video_frame, capture_timestamp));
     return;
   }
 
@@ -236,8 +236,8 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   ++num_frames_in_encode_;
 
   encoding_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Encoder::EncodeOnEncodingTaskRunner, this,
-                            wrapped_frame, capture_timestamp));
+      FROM_HERE, base::BindOnce(&Encoder::EncodeOnEncodingTaskRunner, this,
+                                wrapped_frame, capture_timestamp));
 }
 
 void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
@@ -322,8 +322,8 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
   }
 
   encoding_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Encoder::EncodeOnEncodingTaskRunner, this, frame,
-                            capture_timestamp));
+      FROM_HERE, base::BindOnce(&Encoder::EncodeOnEncodingTaskRunner, this,
+                                frame, capture_timestamp));
 }
 
 // static
@@ -343,7 +343,7 @@ void VideoTrackRecorder::Encoder::OnFrameEncodeCompleted(
 void VideoTrackRecorder::Encoder::SetPaused(bool paused) {
   if (!encoding_task_runner_->BelongsToCurrentThread()) {
     encoding_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Encoder::SetPaused, this, paused));
+        FROM_HERE, base::BindOnce(&Encoder::SetPaused, this, paused));
     return;
   }
   paused_ = paused;

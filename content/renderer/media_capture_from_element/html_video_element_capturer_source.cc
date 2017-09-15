@@ -101,8 +101,8 @@ void HtmlVideoElementCapturerSource::StartCapture(
 
   running_callback_.Run(true);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&HtmlVideoElementCapturerSource::sendNewFrame,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&HtmlVideoElementCapturerSource::sendNewFrame,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void HtmlVideoElementCapturerSource::StopCapture() {
@@ -165,7 +165,7 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
           source_pixel_format) == 0) {
     // Success!
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(new_frame_callback_, frame, current_time));
+        FROM_HERE, base::BindOnce(new_frame_callback_, frame, current_time));
   }
 
   // Calculate the time in the future where the next frame should be created.
@@ -182,8 +182,9 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   }
   // Schedule next capture.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&HtmlVideoElementCapturerSource::sendNewFrame,
-                            weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&HtmlVideoElementCapturerSource::sendNewFrame,
+                     weak_factory_.GetWeakPtr()),
       next_capture_time_ - current_time);
 }
 

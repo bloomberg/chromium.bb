@@ -77,10 +77,10 @@ class WebRtcMediaStreamAdapterMapTest : public ::testing::Test {
     std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref;
     dependency_factory_->GetWebRtcSignalingThread()->PostTask(
         FROM_HERE,
-        base::Bind(&WebRtcMediaStreamAdapterMapTest::
-                       GetOrCreateRemoteStreamAdapterOnSignalingThread,
-                   base::Unretained(this), base::Unretained(webrtc_stream),
-                   base::Unretained(&adapter_ref)));
+        base::BindOnce(&WebRtcMediaStreamAdapterMapTest::
+                           GetOrCreateRemoteStreamAdapterOnSignalingThread,
+                       base::Unretained(this), base::Unretained(webrtc_stream),
+                       base::Unretained(&adapter_ref)));
     RunMessageLoopsUntilIdle();
     DCHECK(adapter_ref);
     return adapter_ref;
@@ -101,8 +101,8 @@ class WebRtcMediaStreamAdapterMapTest : public ::testing::Test {
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     dependency_factory_->GetWebRtcSignalingThread()->PostTask(
-        FROM_HERE, base::Bind(&WebRtcMediaStreamAdapterMapTest::SignalEvent,
-                              base::Unretained(this), &waitable_event));
+        FROM_HERE, base::BindOnce(&WebRtcMediaStreamAdapterMapTest::SignalEvent,
+                                  base::Unretained(this), &waitable_event));
     waitable_event.Wait();
     base::RunLoop().RunUntilIdle();
   }
