@@ -131,9 +131,11 @@ ActivationState GetNextActivationState(ActivationState current_state) {
   id<UIViewControllerTransitionCoordinator> transitionCoordinator =
       self.viewController.transitionCoordinator;
   if (transitionCoordinator) {
+    __weak BrowserCoordinator* weakSelf = self;
     [transitionCoordinator animateAlongsideTransition:nil
                                            completion:^(id context) {
-                                             self.activationState = nextState;
+                                             weakSelf.activationState =
+                                                 nextState;
                                            }];
   } else {
     self.activationState = nextState;

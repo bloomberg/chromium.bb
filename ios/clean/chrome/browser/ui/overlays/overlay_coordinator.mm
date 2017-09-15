@@ -43,10 +43,18 @@
   DCHECK(self.queue);
   [super stop];
   [self.parentCoordinator removeChildCoordinator:self];
+}
+
+@end
+
+@implementation OverlayCoordinator (Internal)
+
+- (void)viewControllerWasDeactivated {
   self.queue->OverlayWasStopped(self);
-  // Started OverlayCoordinators are owned by their OverlayQueue, and will be
-  // dealocated as a result of OverlayWasStopped().  Do not add any more code
-  // after this call.
+  // Notify the queue that the overlay's UI has been stopped, allowing the
+  // next scheduled overlay to be displayed.  OverlayCoordinators are owned by
+  // their queues and will be deallocated after OverlayWasStopped(), so do not
+  // add any more code after this call.
 }
 
 @end
