@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(kojii): This file is compiled with $host_toolchain, which cannot find
-// include files in platform/fonts. The build scripts should include this
-// directory, and fix these #include's to "platform/fonts/...".
-#include "CharacterPropertyDataGenerator.h"
+#include "platform/text/CharacterPropertyDataGenerator.h"
 
-#include "CharacterProperty.h"
+#include <stdio.h>
 #include <cassert>
 #include <cstring>
 #include <memory>
-#include <stdio.h>
+#include "platform/text/CharacterProperty.h"
 #if !defined(USING_SYSTEM_ICU)
 #define MUTEX_H  // Prevent compile failure of utrie2.h on Windows
 #include <utrie2.h>
