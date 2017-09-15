@@ -3,7 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Script to generate code coverage reports for iOS.
+"""Script to generate code coverage report for iOS.
+
+  The generated code coverage report excludes test files, and test files are
+  identified by postfixes: ['unittest.cc', 'unittest.mm', 'egtest.mm'].
+  TODO(crbug.com/763957): Make test file identifiers configurable.
 
   NOTE: This script must be called from the root of checkout. It may take up to
         a few minutes to generate a report for targets that depend on Chrome,
@@ -49,6 +53,10 @@ VALID_TEST_TARGET_POSTFIXES = ['unittests', 'inttests', 'egtests']
 # Used to determine if a test target is an earl grey test.
 EARL_GREY_TEST_TARGET_POSTFIX = 'egtests'
 
+# Used to determine if a file is a test file. The coverage of test files should
+# be excluded from code coverage report.
+TEST_FILES_POSTFIXES = ['unittest.mm', 'unittest.cc', 'egtest.mm']
+
 
 def _CreateCoverageProfileDataForTarget(target, jobs_count=None):
   """Builds and runs target to generate the coverage profile data.
@@ -86,10 +94,11 @@ def _DisplayLineCoverageReport(target, profdata_path, paths):
     profdata_path: A string representing the path to the profdata file.
     paths: A list of directories to generate code coverage for.
   """
-  print 'Generating line code coverge report'
+  print 'Generating code coverge report'
   raw_line_coverage_report = _GenerateLineCoverageReport(target, profdata_path)
-  line_coverage_report = _FilterLineCoverageReport(raw_line_coverage_report,
-                                                   paths)
+  line_coverage_report_with_test = _FilterLineCoverageReport(
+      raw_line_coverage_report, paths)
+  line_coverage_report = _ExcludeTestFiles(line_coverage_report_with_test)
 
   coverage_by_path = collections.defaultdict(
       lambda: collections.defaultdict(lambda: 0))
@@ -177,8 +186,16 @@ def _GenerateLineCoverageReport(target, profdata_path):
   for coverage_content in coverage_content_by_files:
     coverage_data = coverage_content.split()
     file_name = coverage_data[0]
-    total_lines = int(coverage_data[total_lines_index])
-    missed_lines = int(coverage_data[missed_lines_index])
+
+    # TODO(crbug.com/765818): llvm-cov has a bug that proceduces invalid data in
+    # the report, and the following hack works it around. Remove the hack once
+    # the bug is fixed.
+    try:
+      total_lines = int(coverage_data[total_lines_index])
+      missed_lines = int(coverage_data[missed_lines_index])
+    except ValueError as e:
+      continue
+
     executed_lines = total_lines - missed_lines
 
     line_coverage_report[file_name]['total_lines'] = total_lines
@@ -212,6 +229,37 @@ def _FilterLineCoverageReport(raw_report, paths):
       filtered_report[file_name] = raw_report[file_name]
 
   return filtered_report
+
+
+def _ExcludeTestFiles(line_coverage_report_with_test):
+  """Exclude test files from code coverage report.
+
+  Test files are identified by |TEST_FILES_POSTFIXES|.
+
+  Args:
+    line_coverage_report_with_test: A json object with the following format:
+      Root: dict => A dictionary of objects describing line covearge for files
+      -- file_name: dict => Line coverage summary.
+      ---- total_lines: int => Number of total lines.
+      ---- executed_lines: int => Number of executed lines.
+
+  Returns:
+    A coverage report with test files excluded, as a json object in the format
+    below:
+
+    Root: dict => A dictionary of objects describing line covearge for files
+    -- file_name: dict => Line coverage summary.
+    ---- total_lines: int => Number of total lines.
+    ---- executed_lines: int => Number of executed lines.
+  """
+  line_coverage_report = {}
+  for file_name in line_coverage_report_with_test:
+    if any(file_name.endswith(postfix) for postfix in TEST_FILES_POSTFIXES):
+      continue
+
+    line_coverage_report[file_name] = line_coverage_report_with_test[file_name]
+
+  return line_coverage_report
 
 
 def _PrintLineCoverageStats(total_lines, executed_lines):
