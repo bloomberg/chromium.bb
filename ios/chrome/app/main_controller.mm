@@ -130,6 +130,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
+#include "ios/chrome/common/app_group/app_group_utils.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/crn_http_protocol_handler.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -630,6 +631,13 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // Crash the app during startup if requested but only after we have enabled
   // uploading crash reports.
   [self crashIfRequested];
+
+  if (experimental_flags::MustClearApplicationGroupSandbox()) {
+    // Clear the Application group sandbox if requested. This operation take
+    // some time and will access the file system synchronously as the rest of
+    // the startup sequence requires it to be completed before continuing.
+    app_group::ClearAppGroupSandbox();
+  }
 
   RegisterComponentsForUpdate();
 

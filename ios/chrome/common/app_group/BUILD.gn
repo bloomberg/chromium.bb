@@ -11,6 +11,8 @@ source_set("app_group") {
     "app_group_constants.mm",
     "app_group_metrics.h",
     "app_group_metrics.mm",
+    "app_group_utils.h",
+    "app_group_utils.mm",
   ]
 
   deps = [

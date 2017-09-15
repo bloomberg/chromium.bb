@@ -75,6 +75,11 @@ bool IsSlimNavigationManagerEnabled();
 // Whether the 3rd party keyboard omnibox workaround is enabled.
 bool IsThirdPartyKeyboardWorkaroundEnabled();
 
+// Whether the application group sandbox must be cleared before starting.
+// Calling this method will reset the flag to false, so the sandbox is cleared
+// only once.
+bool MustClearApplicationGroupSandbox();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
