@@ -7,8 +7,8 @@
 #include <ostream>  // NOLINT
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Text.h"
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/testing/EditingTestBase.h"
 #include "core/html/TextControlElement.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/line/InlineTextBox.h"

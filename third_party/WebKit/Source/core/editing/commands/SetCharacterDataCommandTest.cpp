@@ -4,8 +4,8 @@
 
 #include "core/editing/commands/SetCharacterDataCommand.h"
 
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/commands/EditingState.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 

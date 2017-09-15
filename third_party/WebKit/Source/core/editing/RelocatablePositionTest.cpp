@@ -4,8 +4,8 @@
 
 #include "core/editing/RelocatablePosition.h"
 
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 

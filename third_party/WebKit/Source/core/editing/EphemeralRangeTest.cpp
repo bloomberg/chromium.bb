@@ -4,9 +4,9 @@
 
 #include "core/editing/EphemeralRange.h"
 
-#include "core/dom/Range.h"
-#include "core/editing/EditingTestBase.h"
 #include <sstream>
+#include "core/dom/Range.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 

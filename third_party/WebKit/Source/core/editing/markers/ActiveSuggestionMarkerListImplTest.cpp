@@ -4,8 +4,8 @@
 
 #include "core/editing/markers/ActiveSuggestionMarkerListImpl.h"
 
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/markers/ActiveSuggestionMarker.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 

@@ -6,13 +6,13 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
-#include "core/editing/EditingTestBase.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/Position.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/commands/FormatBlockCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"
+#include "core/editing/testing/EditingTestBase.h"
 #include "core/html/HTMLHeadElement.h"
 
 #include <memory>

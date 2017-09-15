@@ -5,7 +5,7 @@
 #include "core/editing/serializers/StyledMarkupSerializer.h"
 
 #include "core/dom/Text.h"
-#include "core/editing/EditingTestBase.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 

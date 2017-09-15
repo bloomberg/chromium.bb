@@ -4,7 +4,7 @@
 
 #include "core/editing/iterators/BackwardsTextBuffer.h"
 
-#include "core/editing/EditingTestBase.h"
+#include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {
 
