@@ -12,10 +12,6 @@
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_TabConnectionInfo;
 
-namespace base {
-class UnguessableToken;
-}
-
 namespace content {
 class RenderFrame;
 }
@@ -83,10 +79,6 @@ class RendererMessagingService {
   void DispatchOnDisconnectToScriptContext(const PortId& port_id,
                                            const std::string& error_message,
                                            ScriptContext* script_context);
-
-  // Returns the unique ID of the given |context|.
-  virtual const base::UnguessableToken& GetContextId(
-      ScriptContext* context) = 0;
 
   // Returns true if the given |script_context| has a port with the given
   // |port_id|.

@@ -29,11 +29,6 @@ JSRendererMessagingService::JSRendererMessagingService(
     : RendererMessagingService(bindings_system) {}
 JSRendererMessagingService::~JSRendererMessagingService() {}
 
-const base::UnguessableToken& JSRendererMessagingService::GetContextId(
-    ScriptContext* context) {
-  return MessagingBindings::ForContext(context)->context_id();
-}
-
 bool JSRendererMessagingService::ContextHasMessagePort(
     ScriptContext* script_context,
     const PortId& port_id) {

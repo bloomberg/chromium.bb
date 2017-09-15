@@ -128,11 +128,10 @@ void RendererMessagingService::DispatchOnConnectToScriptContext(
     const std::string& tls_channel_id,
     bool* port_created,
     ScriptContext* script_context) {
-  const base::UnguessableToken& context_id = GetContextId(script_context);
   // If the channel was opened by this same context, ignore it. This should only
   // happen when messages are sent to an entire process (rather than a single
   // frame) as an optimization; otherwise the browser process filters this out.
-  if (context_id == target_port_id.context_id)
+  if (script_context->context_id() == target_port_id.context_id)
     return;
 
   // First, determine the event we'll use to connect.
