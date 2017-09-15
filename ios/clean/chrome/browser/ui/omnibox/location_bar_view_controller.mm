@@ -17,6 +17,7 @@
 @implementation LocationBarViewController
 
 @synthesize omnibox = _omnibox;
+@synthesize omniboxFrame = _omniboxFrame;
 
 - (instancetype)init {
   if ((self = [super init])) {
@@ -36,6 +37,11 @@
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   self.omnibox.frame = self.view.bounds;
   [self.view addSubview:self.omnibox];
+}
+
+// After layout, update the omnibox's frame so that it can be broadcast.
+- (void)viewDidLayoutSubviews {
+  self.omniboxFrame = [self.view convertRect:self.omnibox.frame toView:nil];
 }
 
 @end

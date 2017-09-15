@@ -15,6 +15,11 @@
 
 @property(nonatomic, readonly, strong) OmniboxTextFieldIOS* omnibox;
 
+// The frame of the omnibox, in its window's coordinate system.  Declared as a
+// property to make it KVO compliant and therefore usable by
+// the Broadcaster.
+@property(nonatomic, readwrite, assign) CGRect omniboxFrame;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_VIEW_CONTROLLER_H_

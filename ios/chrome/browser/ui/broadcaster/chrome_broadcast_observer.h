@@ -30,6 +30,10 @@
 // NTP.
 - (void)broadcastSelectedNTPPanel:(ntp_home::PanelIdentifier)panelIdentifier;
 
+// Observer method for objects that care about the current omnibox frame.  The
+// given frame is in the window's coordinate system.
+- (void)broadcastOmniboxFrame:(CGRect)frame;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BROADCASTER_CHROME_BROADCAST_OBSERVER_H_
