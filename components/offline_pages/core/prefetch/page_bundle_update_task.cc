@@ -187,6 +187,11 @@ PageBundleUpdateTask::PageBundleUpdateTask(
 PageBundleUpdateTask::~PageBundleUpdateTask() = default;
 
 void PageBundleUpdateTask::Run() {
+  if (pages_.empty()) {
+    FinishedWork(false);
+    return;
+  }
+
   store_->Execute(
       base::BindOnce(&UpdateWithOperationResultsSync, operation_name_, pages_),
       base::BindOnce(&PageBundleUpdateTask::FinishedWork,

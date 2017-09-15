@@ -166,16 +166,18 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
   std::unique_ptr<Task> get_operation_task = base::MakeUnique<GetOperationTask>(
       service_->GetPrefetchStore(),
       service_->GetPrefetchNetworkRequestFactory(),
-      base::Bind(&PrefetchDispatcherImpl::DidGetOperationRequest,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(
+          &PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest,
+          weak_factory_.GetWeakPtr(), "GetOperationRequest"));
   task_queue_.AddTask(std::move(get_operation_task));
 
   std::unique_ptr<Task> generate_page_bundle_task =
       base::MakeUnique<GeneratePageBundleTask>(
           service_->GetPrefetchStore(), service_->GetPrefetchGCMHandler(),
           service_->GetPrefetchNetworkRequestFactory(),
-          base::Bind(&PrefetchDispatcherImpl::DidGenerateBundleRequest,
-                     weak_factory_.GetWeakPtr()));
+          base::Bind(
+              &PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest,
+              weak_factory_.GetWeakPtr(), "GeneratePageBundleRequest"));
   task_queue_.AddTask(std::move(generate_page_bundle_task));
 
   std::unique_ptr<Task> import_archives_task =
@@ -235,24 +237,26 @@ void PrefetchDispatcherImpl::GCMOperationCompletedMessageReceived(
       this, prefetch_store, operation_name));
 }
 
-void PrefetchDispatcherImpl::DidGenerateBundleRequest(
+void PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest(
+    const std::string& request_name_for_logging,
     PrefetchRequestStatus status,
     const std::string& operation_name,
     const std::vector<RenderPageInfo>& pages) {
-  PrefetchStore* prefetch_store = service_->GetPrefetchStore();
-  task_queue_.AddTask(base::MakeUnique<PageBundleUpdateTask>(
-      prefetch_store, this, operation_name, pages));
-  LogRequestResult("GeneratePageBundleRequest", status, operation_name, pages);
-}
+  LogRequestResult(request_name_for_logging, status, operation_name, pages);
 
-void PrefetchDispatcherImpl::DidGetOperationRequest(
-    PrefetchRequestStatus status,
-    const std::string& operation_name,
-    const std::vector<RenderPageInfo>& pages) {
+  // Note that we still want to trigger PageBundleUpdateTask even if the request
+  // fails and no page is returned. This is because currently we only check for
+  // the empty task queue and no outstanding request in order to decide whether
+  // to dispose th background task upon the completion of a task.
   PrefetchStore* prefetch_store = service_->GetPrefetchStore();
   task_queue_.AddTask(base::MakeUnique<PageBundleUpdateTask>(
       prefetch_store, this, operation_name, pages));
-  LogRequestResult("GetOperationRequest", status, operation_name, pages);
+
+  if (background_task_ && status != PrefetchRequestStatus::SUCCESS) {
+    bool need_backoff =
+        status == PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF;
+    background_task_->SetNeedsReschedule(true /* reschedule */, need_backoff);
+  }
 }
 
 void PrefetchDispatcherImpl::CleanupDownloads(
