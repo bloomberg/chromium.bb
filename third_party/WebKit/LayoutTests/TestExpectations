@@ -2754,8 +2754,9 @@ crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/request/request-
 # This test has device ID strings in failure messages which change on every test run.
 crbug.com/679742 external/wpt/mediacapture-streams/MediaStreamTrack-getSettings.https.html [ Failure ]
 
-# XMLHttpRequest tests with non-deterministic results.
-crbug.com/711493 external/wpt/XMLHttpRequest/responsexml-document-properties.htm [ Failure ]
+crbug.com/765116 external/wpt/XMLHttpRequest/responsexml-document-properties.htm [ Failure ]
+
+# This is a manual test.
 crbug.com/711493 external/wpt/XMLHttpRequest/send-authentication-prompt-2-manual.htm [ Failure ]
 
 # Sheriff failures 2017-02-03
