@@ -75,7 +75,7 @@ OscillatorHandler::OscillatorHandler(AudioNode& node,
   Initialize();
 }
 
-PassRefPtr<OscillatorHandler> OscillatorHandler::Create(
+RefPtr<OscillatorHandler> OscillatorHandler::Create(
     AudioNode& node,
     float sample_rate,
     const String& oscillator_type,

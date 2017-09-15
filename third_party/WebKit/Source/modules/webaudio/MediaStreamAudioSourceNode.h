@@ -31,7 +31,7 @@
 #include "modules/webaudio/AudioNode.h"
 #include "platform/audio/AudioSourceProvider.h"
 #include "platform/audio/AudioSourceProviderClient.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Threading.h"
 
 namespace blink {
@@ -41,7 +41,7 @@ class MediaStreamAudioSourceOptions;
 
 class MediaStreamAudioSourceHandler final : public AudioHandler {
  public:
-  static PassRefPtr<MediaStreamAudioSourceHandler> Create(
+  static RefPtr<MediaStreamAudioSourceHandler> Create(
       AudioNode&,
       std::unique_ptr<AudioSourceProvider>);
   ~MediaStreamAudioSourceHandler() override;

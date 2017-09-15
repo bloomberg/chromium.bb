@@ -58,7 +58,7 @@ DynamicsCompressorHandler::DynamicsCompressorHandler(
   Initialize();
 }
 
-PassRefPtr<DynamicsCompressorHandler> DynamicsCompressorHandler::Create(
+RefPtr<DynamicsCompressorHandler> DynamicsCompressorHandler::Create(
     AudioNode& node,
     float sample_rate,
     AudioParamHandler& threshold,

@@ -30,7 +30,7 @@
 #define ChannelMergerNode_h
 
 #include "modules/webaudio/AudioNode.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
@@ -39,9 +39,9 @@ class ChannelMergerOptions;
 
 class ChannelMergerHandler final : public AudioHandler {
  public:
-  static PassRefPtr<ChannelMergerHandler> Create(AudioNode&,
-                                                 float sample_rate,
-                                                 unsigned number_of_inputs);
+  static RefPtr<ChannelMergerHandler> Create(AudioNode&,
+                                             float sample_rate,
+                                             unsigned number_of_inputs);
 
   void Process(size_t frames_to_process) override;
   void SetChannelCount(unsigned long, ExceptionState&) final;

@@ -30,7 +30,6 @@
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioDestinationNode.h"
 #include "modules/webaudio/OfflineAudioContext.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebThread.h"
 
@@ -42,7 +41,7 @@ class OfflineAudioContext;
 
 class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
  public:
-  static PassRefPtr<OfflineAudioDestinationHandler> Create(
+  static RefPtr<OfflineAudioDestinationHandler> Create(
       AudioNode&,
       unsigned number_of_channels,
       size_t frames_to_process,

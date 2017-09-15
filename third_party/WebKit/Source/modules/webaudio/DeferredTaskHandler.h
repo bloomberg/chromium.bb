@@ -29,7 +29,6 @@
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/Threading.h"
@@ -60,7 +59,7 @@ class AudioSummingJunction;
 class MODULES_EXPORT DeferredTaskHandler final
     : public ThreadSafeRefCounted<DeferredTaskHandler> {
  public:
-  static PassRefPtr<DeferredTaskHandler> Create();
+  static RefPtr<DeferredTaskHandler> Create();
   ~DeferredTaskHandler();
 
   void HandleDeferredTasks();
@@ -100,7 +99,7 @@ class MODULES_EXPORT DeferredTaskHandler final
   void AddDeferredBreakConnection(AudioHandler&);
   void BreakConnections();
 
-  void AddRenderingOrphanHandler(PassRefPtr<AudioHandler>);
+  void AddRenderingOrphanHandler(RefPtr<AudioHandler>);
   void RequestToDeleteHandlersOnMainThread();
   void ClearHandlersToBeDeleted();
 

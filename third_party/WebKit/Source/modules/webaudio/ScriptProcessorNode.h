@@ -31,7 +31,6 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
@@ -51,7 +50,7 @@ class WaitableEvent;
 
 class ScriptProcessorHandler final : public AudioHandler {
  public:
-  static PassRefPtr<ScriptProcessorHandler> Create(
+  static RefPtr<ScriptProcessorHandler> Create(
       AudioNode&,
       float sample_rate,
       size_t buffer_size,

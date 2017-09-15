@@ -213,7 +213,7 @@ void DeferredTaskHandler::UpdateChangedChannelInterpretation() {
 DeferredTaskHandler::DeferredTaskHandler()
     : automatic_pull_nodes_need_updating_(false), audio_thread_(0) {}
 
-PassRefPtr<DeferredTaskHandler> DeferredTaskHandler::Create() {
+RefPtr<DeferredTaskHandler> DeferredTaskHandler::Create() {
   return AdoptRef(new DeferredTaskHandler());
 }
 
@@ -253,7 +253,7 @@ DeferredTaskHandler::OfflineGraphAutoLocker::OfflineGraphAutoLocker(
 }
 
 void DeferredTaskHandler::AddRenderingOrphanHandler(
-    PassRefPtr<AudioHandler> handler) {
+    RefPtr<AudioHandler> handler) {
   DCHECK(handler);
   DCHECK(!rendering_orphan_handlers_.Contains(handler));
   rendering_orphan_handlers_.push_back(std::move(handler));
@@ -269,7 +269,7 @@ void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
   Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
       CrossThreadBind(&DeferredTaskHandler::DeleteHandlersOnMainThread,
-                      PassRefPtr<DeferredTaskHandler>(this)));
+                      RefPtr<DeferredTaskHandler>(this)));
 }
 
 void DeferredTaskHandler::DeleteHandlersOnMainThread() {

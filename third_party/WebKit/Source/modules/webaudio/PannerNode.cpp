@@ -82,15 +82,14 @@ PannerHandler::PannerHandler(AudioNode& node,
   Initialize();
 }
 
-PassRefPtr<PannerHandler> PannerHandler::Create(
-    AudioNode& node,
-    float sample_rate,
-    AudioParamHandler& position_x,
-    AudioParamHandler& position_y,
-    AudioParamHandler& position_z,
-    AudioParamHandler& orientation_x,
-    AudioParamHandler& orientation_y,
-    AudioParamHandler& orientation_z) {
+RefPtr<PannerHandler> PannerHandler::Create(AudioNode& node,
+                                            float sample_rate,
+                                            AudioParamHandler& position_x,
+                                            AudioParamHandler& position_y,
+                                            AudioParamHandler& position_z,
+                                            AudioParamHandler& orientation_x,
+                                            AudioParamHandler& orientation_y,
+                                            AudioParamHandler& orientation_z) {
   return AdoptRef(new PannerHandler(node, sample_rate, position_x, position_y,
                                     position_z, orientation_x, orientation_y,
                                     orientation_z));

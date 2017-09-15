@@ -60,11 +60,11 @@ OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(
   SetInternalChannelInterpretation(AudioBus::kSpeakers);
 }
 
-PassRefPtr<OfflineAudioDestinationHandler>
-OfflineAudioDestinationHandler::Create(AudioNode& node,
-                                       unsigned number_of_channels,
-                                       size_t frames_to_process,
-                                       float sample_rate) {
+RefPtr<OfflineAudioDestinationHandler> OfflineAudioDestinationHandler::Create(
+    AudioNode& node,
+    unsigned number_of_channels,
+    size_t frames_to_process,
+    float sample_rate) {
   return AdoptRef(new OfflineAudioDestinationHandler(
       node, number_of_channels, frames_to_process, sample_rate));
 }
@@ -114,7 +114,7 @@ void OfflineAudioDestinationHandler::StartRendering() {
     GetRenderingThread()->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&OfflineAudioDestinationHandler::StartOfflineRendering,
-                        WrapPassRefPtr(this)));
+                        WrapRefPtr(this)));
     return;
   }
 
@@ -123,7 +123,7 @@ void OfflineAudioDestinationHandler::StartRendering() {
   GetRenderingThread()->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
       CrossThreadBind(&OfflineAudioDestinationHandler::DoOfflineRendering,
-                      WrapPassRefPtr(this)));
+                      WrapRefPtr(this)));
 }
 
 void OfflineAudioDestinationHandler::StopRendering() {
@@ -200,7 +200,7 @@ void OfflineAudioDestinationHandler::DoOfflineRendering() {
       GetRenderingThread()->GetWebTaskRunner()->PostTask(
           BLINK_FROM_HERE,
           Bind(&OfflineAudioDestinationHandler::DoOfflineRendering,
-               WrapPassRefPtr(this)));
+               WrapRefPtr(this)));
       return;
     }
 
@@ -248,10 +248,10 @@ void OfflineAudioDestinationHandler::SuspendOfflineRendering() {
   if (Context()->GetExecutionContext()) {
     TaskRunnerHelper::Get(TaskType::kMediaElementEvent,
                           Context()->GetExecutionContext())
-        ->PostTask(BLINK_FROM_HERE,
-                   CrossThreadBind(
-                       &OfflineAudioDestinationHandler::NotifySuspend,
-                       WrapPassRefPtr(this), Context()->CurrentSampleFrame()));
+        ->PostTask(
+            BLINK_FROM_HERE,
+            CrossThreadBind(&OfflineAudioDestinationHandler::NotifySuspend,
+                            WrapRefPtr(this), Context()->CurrentSampleFrame()));
   }
 }
 
@@ -265,7 +265,7 @@ void OfflineAudioDestinationHandler::FinishOfflineRendering() {
         ->PostTask(
             BLINK_FROM_HERE,
             CrossThreadBind(&OfflineAudioDestinationHandler::NotifyComplete,
-                            WrapPassRefPtr(this)));
+                            WrapRefPtr(this)));
   }
 }
 

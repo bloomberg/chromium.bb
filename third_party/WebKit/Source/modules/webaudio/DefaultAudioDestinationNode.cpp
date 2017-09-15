@@ -45,8 +45,7 @@ DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(
   SetInternalChannelInterpretation(AudioBus::kSpeakers);
 }
 
-PassRefPtr<DefaultAudioDestinationHandler>
-DefaultAudioDestinationHandler::Create(
+RefPtr<DefaultAudioDestinationHandler> DefaultAudioDestinationHandler::Create(
     AudioNode& node,
     const WebAudioLatencyHint& latency_hint) {
   return AdoptRef(new DefaultAudioDestinationHandler(node, latency_hint));

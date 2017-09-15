@@ -29,7 +29,7 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
  public:
   static AudioWorkletGlobalScope* Create(const KURL&,
                                          const String& user_agent,
-                                         PassRefPtr<SecurityOrigin>,
+                                         RefPtr<SecurityOrigin>,
                                          v8::Isolate*,
                                          WorkerThread*,
                                          WorkerClients*);
@@ -63,7 +63,7 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
  private:
   AudioWorkletGlobalScope(const KURL&,
                           const String& user_agent,
-                          PassRefPtr<SecurityOrigin>,
+                          RefPtr<SecurityOrigin>,
                           v8::Isolate*,
                           WorkerThread*,
                           WorkerClients*);

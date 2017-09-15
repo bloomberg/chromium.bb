@@ -56,7 +56,7 @@ ChannelMergerHandler::ChannelMergerHandler(AudioNode& node,
   Initialize();
 }
 
-PassRefPtr<ChannelMergerHandler> ChannelMergerHandler::Create(
+RefPtr<ChannelMergerHandler> ChannelMergerHandler::Create(
     AudioNode& node,
     float sample_rate,
     unsigned number_of_inputs) {

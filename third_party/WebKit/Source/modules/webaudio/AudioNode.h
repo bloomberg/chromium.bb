@@ -352,7 +352,7 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
  protected:
   explicit AudioNode(BaseAudioContext&);
   // This should be called in a constructor.
-  void SetHandler(PassRefPtr<AudioHandler>);
+  void SetHandler(RefPtr<AudioHandler>);
 
  private:
   void Dispose();
