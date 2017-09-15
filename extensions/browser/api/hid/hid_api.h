@@ -19,14 +19,6 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/hid.h"
 
-namespace device {
-class HidConnection;
-}  // namespace device
-
-namespace net {
-class IOBuffer;
-}  // namespace net
-
 namespace extensions {
 
 class DevicePermissionsPrompt;
@@ -80,7 +72,7 @@ class HidConnectFunction : public UIThreadExtensionFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void OnConnectComplete(scoped_refptr<device::HidConnection> connection);
+  void OnConnectComplete(device::mojom::HidConnectionPtr connection);
 
   ApiResourceManager<HidConnectionResource>* connection_manager_;
 
@@ -113,7 +105,7 @@ class HidConnectionIoFunction : public UIThreadExtensionFunction {
 
   // Returns true if params were successfully read from |args_|.
   virtual bool ReadParameters() = 0;
-  virtual void StartWork(device::HidConnection* connection) = 0;
+  virtual void StartWork(device::mojom::HidConnection* connection) = 0;
 
   void set_connection_id(int connection_id) { connection_id_ = connection_id; }
 
@@ -135,11 +127,11 @@ class HidReceiveFunction : public HidConnectionIoFunction {
 
   // HidConnectionIoFunction:
   bool ReadParameters() override;
-  void StartWork(device::HidConnection* connection) override;
+  void StartWork(device::mojom::HidConnection* connection) override;
 
   void OnFinished(bool success,
-                  scoped_refptr<net::IOBuffer> buffer,
-                  size_t size);
+                  uint8_t report_id,
+                  const base::Optional<std::vector<uint8_t>>& buffer);
 
   std::unique_ptr<api::hid::Receive::Params> parameters_;
 
@@ -157,7 +149,7 @@ class HidSendFunction : public HidConnectionIoFunction {
 
   // HidConnectionIoFunction:
   bool ReadParameters() override;
-  void StartWork(device::HidConnection* connection) override;
+  void StartWork(device::mojom::HidConnection* connection) override;
 
   void OnFinished(bool success);
 
@@ -178,11 +170,10 @@ class HidReceiveFeatureReportFunction : public HidConnectionIoFunction {
 
   // HidConnectionIoFunction:
   bool ReadParameters() override;
-  void StartWork(device::HidConnection* connection) override;
+  void StartWork(device::mojom::HidConnection* connection) override;
 
   void OnFinished(bool success,
-                  scoped_refptr<net::IOBuffer> buffer,
-                  size_t size);
+                  const base::Optional<std::vector<uint8_t>>& buffer);
 
   std::unique_ptr<api::hid::ReceiveFeatureReport::Params> parameters_;
 
@@ -200,7 +191,7 @@ class HidSendFeatureReportFunction : public HidConnectionIoFunction {
 
   // HidConnectionIoFunction:
   bool ReadParameters() override;
-  void StartWork(device::HidConnection* connection) override;
+  void StartWork(device::mojom::HidConnection* connection) override;
 
   void OnFinished(bool success);
 

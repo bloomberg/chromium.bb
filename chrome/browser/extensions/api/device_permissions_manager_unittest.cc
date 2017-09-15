@@ -12,7 +12,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "device/base/mock_device_client.h"
 #include "device/hid/hid_device_info.h"
-#include "device/hid/mock_hid_service.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
@@ -40,9 +39,17 @@ const uint64_t kTestDeviceIds[] = {1, 2, 3, 4};
 const char* kTestDeviceIds[] = {"A", "B", "C", "D"};
 #endif
 
+class FakeHidDeviceManager : public HidDeviceManager {
+ public:
+  explicit FakeHidDeviceManager(content::BrowserContext* context)
+      : HidDeviceManager(context) {}
+
+  void LazyInitialize() override {}
+};
+
 std::unique_ptr<KeyedService> CreateHidDeviceManager(
     content::BrowserContext* context) {
-  return base::MakeUnique<HidDeviceManager>(context);
+  return base::MakeUnique<FakeHidDeviceManager>(context);
 }
 
 }  // namespace
@@ -74,20 +81,15 @@ class DevicePermissionsManagerTest : public testing::Test {
     device4_ = new HidDeviceInfo(
         kTestDeviceIds[0], 0, 0, "Test HID Device", "abcde",
         device::mojom::HidBusType::kHIDBusTypeUSB, std::vector<uint8_t>());
-    device_client_.hid_service()->AddDevice(device4_);
     device5_ = new HidDeviceInfo(kTestDeviceIds[1], 0, 0, "Test HID Device", "",
                                  device::mojom::HidBusType::kHIDBusTypeUSB,
                                  std::vector<uint8_t>());
-    device_client_.hid_service()->AddDevice(device5_);
     device6_ = new HidDeviceInfo(
         kTestDeviceIds[2], 0, 0, "Test HID Device", "67890",
         device::mojom::HidBusType::kHIDBusTypeUSB, std::vector<uint8_t>());
-    device_client_.hid_service()->AddDevice(device6_);
     device7_ = new HidDeviceInfo(kTestDeviceIds[3], 0, 0, "Test HID Device", "",
                                  device::mojom::HidBusType::kHIDBusTypeUSB,
                                  std::vector<uint8_t>());
-    device_client_.hid_service()->AddDevice(device7_);
-    device_client_.hid_service()->FirstEnumerationComplete();
   }
 
   void TearDown() override { env_.reset(nullptr); }
@@ -209,11 +211,8 @@ TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
   device_client_.usb_service()->RemoveDevice(device0_);
   device_client_.usb_service()->RemoveDevice(device1_);
 
-  // Wait until HidDeviceManager::GetDevicesCallback is run. HidService
-  // won't send notifications to its observers before that.
-  base::RunLoop().RunUntilIdle();
-  device_client_.hid_service()->RemoveDevice(device4_->platform_device_id());
-  device_client_.hid_service()->RemoveDevice(device5_->platform_device_id());
+  manager->RemoveEntryByHidDeviceGUID(device4_->device_guid());
+  manager->RemoveEntryByHidDeviceGUID(device5_->device_guid());
 
   // Device 0 will be accessible when it is reconnected because it can be
   // recognized by its serial number.

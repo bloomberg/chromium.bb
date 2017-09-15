@@ -21,10 +21,8 @@ class ShellDeviceClient : device::DeviceClient {
 
   // device::DeviceClient implementation
   device::UsbService* GetUsbService() override;
-  device::HidService* GetHidService() override;
 
  private:
-  std::unique_ptr<device::HidService> hid_service_;
   std::unique_ptr<device::UsbService> usb_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDeviceClient);

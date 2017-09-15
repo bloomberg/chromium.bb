@@ -366,6 +366,7 @@ source_set("browser_sources") {
     "//extensions/strings",
     "//google_apis",
     "//ppapi/features",
+    "//services/device/public/interfaces",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
     "//ui/display",
@@ -433,7 +434,7 @@ source_set("browser_tests") {
     "//content/test:test_support",
     "//device/base:mocks",
     "//device/bluetooth:mocks",
-    "//device/hid:mocks",
+    "//device/hid",
     "//device/usb:test_support",
     "//extensions:test_support",
     "//extensions/common",
@@ -441,6 +442,8 @@ source_set("browser_tests") {
     "//extensions/shell:app_shell_lib",
     "//extensions/shell:browser_tests",
     "//net:test_support",
+    "//services/device/public/interfaces",
+    "//services/service_manager/public/cpp",
   ]
 
   if (is_mac) {

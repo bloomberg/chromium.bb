@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "device/hid/hid_manager_impl.h"
 #include "device/sensors/device_sensor_host.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/fingerprint/fingerprint.h"
@@ -84,6 +85,8 @@ DeviceService::~DeviceService() {
 void DeviceService::OnStart() {
   registry_.AddInterface<mojom::Fingerprint>(base::Bind(
       &DeviceService::BindFingerprintRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::HidManager>(base::Bind(
+      &DeviceService::BindHidManagerRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::OrientationSensor>(base::Bind(
       &DeviceService::BindOrientationSensorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::OrientationAbsoluteSensor>(
@@ -147,6 +150,12 @@ void DeviceService::BindVibrationManagerRequest(
   VibrationManagerImpl::Create(std::move(request));
 }
 #endif
+
+void DeviceService::BindHidManagerRequest(mojom::HidManagerRequest request) {
+  if (!hid_manager_)
+    hid_manager_ = base::MakeUnique<HidManagerImpl>();
+  hid_manager_->AddBinding(std::move(request));
+}
 
 void DeviceService::BindFingerprintRequest(mojom::FingerprintRequest request) {
   Fingerprint::Create(std::move(request));
