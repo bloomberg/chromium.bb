@@ -19,7 +19,6 @@
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"
-#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/test/mock_render_thread.h"
