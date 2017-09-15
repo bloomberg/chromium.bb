@@ -5,6 +5,7 @@
 #include "core/editing/FrameCaret.h"
 
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/frame/LocalFrameView.h"

@@ -39,6 +39,7 @@
 #include "core/dom/Node.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"

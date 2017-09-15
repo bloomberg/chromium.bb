@@ -46,6 +46,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/commands/DragAndDropCommand.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/TextEvent.h"

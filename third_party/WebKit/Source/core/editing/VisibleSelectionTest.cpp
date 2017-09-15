@@ -6,6 +6,7 @@
 
 #include "core/dom/Range.h"
 #include "core/editing/SelectionAdjuster.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/testing/EditingTestBase.h"
 
 #define LOREM_IPSUM                                                            \

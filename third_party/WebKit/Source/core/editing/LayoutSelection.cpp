@@ -24,6 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/html/TextControlElement.h"

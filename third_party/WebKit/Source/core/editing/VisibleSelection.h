@@ -30,7 +30,6 @@
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Forward.h"
-#include "core/editing/SelectionTemplate.h"
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextGranularity.h"

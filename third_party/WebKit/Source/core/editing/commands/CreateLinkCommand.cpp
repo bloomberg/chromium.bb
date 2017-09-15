@@ -26,6 +26,7 @@
 #include "core/editing/commands/CreateLinkCommand.h"
 
 #include "core/dom/Text.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/html/HTMLAnchorElement.h"
 

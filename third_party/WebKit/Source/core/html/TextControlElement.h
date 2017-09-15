@@ -29,7 +29,7 @@
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
-#include "core/editing/SelectionTemplate.h"
+#include "core/editing/Position.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 #include "public/platform/WebFocusType.h"
 

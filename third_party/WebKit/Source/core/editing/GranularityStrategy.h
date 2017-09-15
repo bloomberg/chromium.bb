@@ -5,11 +5,15 @@
 #ifndef GranularityStrategy_h
 #define GranularityStrategy_h
 
+#include "core/editing/Forward.h"
 #include "core/editing/SelectionStrategy.h"
-#include "core/editing/SelectionTemplate.h"
+#include "platform/geometry/IntSize.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
+
+class IntPoint;
+class LocalFrame;
 
 enum class TextGranularity;
 

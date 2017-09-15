@@ -7,6 +7,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ShadowRootInit.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
