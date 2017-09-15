@@ -50862,7 +50862,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Size of the saved copy of an offline page.</summary>
 </histogram>
 
-<histogram name="OfflinePages.Prefetching.ActionRetryAttempts" units="retries">
+<histogram name="OfflinePages.Prefetching.ActionAttempts" units="attempts">
+  <owner>dewittj@chromium.org</owner>
+  <summary>
+    Number of attempts to perform a specific retriable pipeline action for each
+    finished prefetch item.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Prefetching.ActionRetryAttempts" units="attempts">
+  <obsolete>
+    Deprecated 9/2017. Replaced by OfflinePages.Prefetching.ActionAttempts
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <summary>
     Number of attempts to perform a specific retriable pipeline action for each
@@ -99252,6 +99263,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="GetOperation" label="Action: GetOperation request."/>
   <suffix name="DownloadInitiation"
       label="Action: start downloading an archive."/>
+  <affected-histogram name="OfflinePages.Prefetching.ActionAttempts"/>
   <affected-histogram name="OfflinePages.Prefetching.ActionRetryAttempts"/>
 </histogram_suffixes>
 
