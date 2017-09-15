@@ -217,6 +217,7 @@ if (CONFIG_HIGHBITDEPTH)
 
   set(AOM_DSP_COMMON_INTRIN_SSE2
       ${AOM_DSP_COMMON_INTRIN_SSE2}
+      "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_sse2.c"
       "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_sse2.c")
 
   set(AOM_DSP_COMMON_INTRIN_AVX2

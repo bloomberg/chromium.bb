@@ -76,7 +76,7 @@ void CheckMd5Signature(const char name[], const char *const signatures[],
                        int idx) {
   libaom_test::MD5 md5;
   md5.Add(reinterpret_cast<const uint8_t *>(data), data_size);
-  printf("Mode %s[%12s]: %5d ms     MD5: %s\n", name, kAv1IntraPredNames[idx],
+  printf("Mode %s[%13s]: %5d ms     MD5: %s\n", name, kAv1IntraPredNames[idx],
          elapsed_time, md5.Get());
   EXPECT_STREQ(signatures[idx], md5.Get());
 }
@@ -634,8 +634,8 @@ HIGHBD_INTRA_PRED_TEST(
 
 #if HAVE_SSE2
 HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred4, NULL, NULL, NULL, NULL, NULL,
-                       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                       NULL, NULL)
+                       aom_highbd_h_predictor_4x4_sse2, NULL, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
 
 // -----------------------------------------------------------------------------
@@ -663,8 +663,8 @@ HIGHBD_INTRA_PRED_TEST(
 
 #if HAVE_SSE2
 HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred8, NULL, NULL, NULL, NULL, NULL,
-                       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                       NULL, NULL)
+                       aom_highbd_h_predictor_8x8_sse2, NULL, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
 
 // -----------------------------------------------------------------------------
@@ -692,8 +692,8 @@ HIGHBD_INTRA_PRED_TEST(
 
 #if HAVE_SSE2
 HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred16, NULL, NULL, NULL, NULL,
-                       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                       NULL, NULL, NULL)
+                       NULL, aom_highbd_h_predictor_16x16_sse2, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
 
 // -----------------------------------------------------------------------------
@@ -721,8 +721,8 @@ HIGHBD_INTRA_PRED_TEST(
 
 #if HAVE_SSE2
 HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred32, NULL, NULL, NULL, NULL,
-                       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                       NULL, NULL, NULL)
+                       NULL, aom_highbd_h_predictor_32x32_sse2, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
 #endif  // CONFIG_HIGHBITDEPTH
 

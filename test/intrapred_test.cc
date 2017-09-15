@@ -140,6 +140,11 @@ const IntraPredFunc IntraPredTestVector8[] = {
   highbd_entry(dc, 16, 16, sse2, 8), highbd_entry(dc, 32, 32, sse2, 8),
   highbd_entry(v, 4, 4, sse2, 8),    highbd_entry(v, 8, 8, sse2, 8),
   highbd_entry(v, 16, 16, sse2, 8),  highbd_entry(v, 32, 32, sse2, 8),
+  highbd_entry(h, 4, 4, sse2, 8),    highbd_entry(h, 4, 8, sse2, 8),
+  highbd_entry(h, 8, 4, sse2, 8),    highbd_entry(h, 8, 8, sse2, 8),
+  highbd_entry(h, 8, 16, sse2, 8),   highbd_entry(h, 16, 8, sse2, 8),
+  highbd_entry(h, 16, 16, sse2, 8),  highbd_entry(h, 16, 32, sse2, 8),
+  highbd_entry(h, 32, 16, sse2, 8),  highbd_entry(h, 32, 32, sse2, 8),
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2_TO_C_8, AV1IntraPredTest,
@@ -150,6 +155,11 @@ const IntraPredFunc IntraPredTestVector10[] = {
   highbd_entry(dc, 16, 16, sse2, 10), highbd_entry(dc, 32, 32, sse2, 10),
   highbd_entry(v, 4, 4, sse2, 10),    highbd_entry(v, 8, 8, sse2, 10),
   highbd_entry(v, 16, 16, sse2, 10),  highbd_entry(v, 32, 32, sse2, 10),
+  highbd_entry(h, 4, 4, sse2, 10),    highbd_entry(h, 4, 8, sse2, 10),
+  highbd_entry(h, 8, 4, sse2, 10),    highbd_entry(h, 8, 8, sse2, 10),
+  highbd_entry(h, 8, 16, sse2, 10),   highbd_entry(h, 16, 8, sse2, 10),
+  highbd_entry(h, 16, 16, sse2, 10),  highbd_entry(h, 16, 32, sse2, 10),
+  highbd_entry(h, 32, 16, sse2, 10),  highbd_entry(h, 32, 32, sse2, 10),
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2_TO_C_10, AV1IntraPredTest,
@@ -160,6 +170,11 @@ const IntraPredFunc IntraPredTestVector12[] = {
   highbd_entry(dc, 16, 16, sse2, 12), highbd_entry(dc, 32, 32, sse2, 12),
   highbd_entry(v, 4, 4, sse2, 12),    highbd_entry(v, 8, 8, sse2, 12),
   highbd_entry(v, 16, 16, sse2, 12),  highbd_entry(v, 32, 32, sse2, 12),
+  highbd_entry(h, 4, 4, sse2, 12),    highbd_entry(h, 4, 8, sse2, 12),
+  highbd_entry(h, 8, 4, sse2, 12),    highbd_entry(h, 8, 8, sse2, 12),
+  highbd_entry(h, 8, 16, sse2, 12),   highbd_entry(h, 16, 8, sse2, 12),
+  highbd_entry(h, 16, 16, sse2, 12),  highbd_entry(h, 16, 32, sse2, 12),
+  highbd_entry(h, 32, 16, sse2, 12),  highbd_entry(h, 32, 32, sse2, 12),
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2_TO_C_12, AV1IntraPredTest,
