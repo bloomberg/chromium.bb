@@ -424,14 +424,11 @@ class TestImporter(object):
             description,
             '--tbrs',
             'qyearsley@chromium.org',
-        ] + self._cc_part(directory_owners))
-
-    @staticmethod
-    def _cc_part(directory_owners):
-        cc_part = []
-        for owner_tuple in sorted(directory_owners):
-            cc_part.extend('--cc=' + owner for owner in owner_tuple)
-        return cc_part
+            # Note: we used to CC all the directory owners, but have stopped
+            # in search of a better notification mechanism. (crbug.com/765334)
+            '--cc',
+            'robertma@chromium.org',
+        ])
 
     def get_directory_owners(self):
         """Returns a mapping of email addresses to owners of changed tests."""
