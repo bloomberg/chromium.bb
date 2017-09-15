@@ -40,6 +40,11 @@
   [super start];
 }
 
+- (void)stop {
+  [self.dispatcher stopDispatchingToTarget:self];
+  [super stop];
+}
+
 #pragma mark - SettingsMainPageViewControllerDelegate
 
 - (void)showMaterialCellCatalog {

@@ -8,16 +8,6 @@
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // Internal API for subclasses and categories of BrowserCoordinator.
-
-// This API can be used to create and manage 'overlay coordinators'.
-// Overlay coordinators are intended to be used for UI elements that
-// sit on top of the regular UI, and which may need to be dismissed
-// by coordinators that don't have direct access to them. Typical uses
-// would be alerts, login prompts, or other UI that might be dismissed
-// if (for example) an external event causes a web page to load.
-// Overlay coordinators can be added by any coordinator in the coordinator
-// hierarchy, but they will be children of (generally) the topmost
-// coordinator, regardless of which coordinator added them.
 @interface BrowserCoordinator (Internal)
 
 // Managed view controller of this object. Subclasses must define a
@@ -36,15 +26,6 @@
 // YES if the receiver has been started; NO (the default) otherwise. Stopping
 // the receiver resets this property to NO.
 @property(nonatomic, readonly, getter=isStarted) BOOL started;
-
-// YES if the receiver is acting as an overlay coordinator; NO (the default)
-// otherwise.
-@property(nonatomic, readonly) BOOL overlaying;
-
-// The coordinator (if any) in the coordinator hierarchy (starting with
-// the receiver) that is overlaying. If the receiver isn't overlaying,
-// it recursively asks its children.
-@property(nonatomic, readonly) BrowserCoordinator* overlayCoordinator;
 
 // Adds |coordinator| as a child, taking ownership of it, setting the receiver's
 // viewController (if any) as the child's baseViewController, and setting
@@ -77,26 +58,6 @@
 // Subclasses can override this method when they need to know when their
 // children start.
 - (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator;
-
-// Methods for adding overlay coordinators.
-
-// Returns YES if the receiver will take |overlayCoordinator| as a child.
-// The default is to return YES only if the receiver has no children, if
-// the receiver has a nil -overlayCoordinator, and if |overlayCoordinator|
-// is not already overlaying.
-- (BOOL)canAddOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator;
-
-// Adds |overlayCoordinator| as a child to the receiver, or if it cannot be
-// added, recursively add it to the receiver's child. If a receiver has
-// multiple children and returns YES from -canAddOverlayCoordinator:, it
-// must override this method to determines how the overlay is added.
-// If neither the receiver or any child can add |overlayCoordinator|, then
-// nothing happens.
-- (void)addOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator;
-
-// Removes the current overlay coordinator (if any) as a child from its
-// parent.
-- (void)removeOverlayCoordinator;
 
 @end
 

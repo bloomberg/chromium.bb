@@ -19,6 +19,7 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/find_in_page/find_in_page_coordinator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_coordinator.h"
+#import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 #include "ios/clean/chrome/browser/ui/tab/tab_features.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_navigation_controller.h"
@@ -145,6 +146,10 @@
     self.viewController.contentViewController = childCoordinator.viewController;
   } else if ([childCoordinator isKindOfClass:[FindInPageCoordinator class]]) {
     self.viewController.findBarViewController = childCoordinator.viewController;
+  } else if ([childCoordinator isKindOfClass:[SettingsCoordinator class]]) {
+    [self.viewController presentViewController:childCoordinator.viewController
+                                      animated:YES
+                                    completion:nil];
   }
 }
 
@@ -154,12 +159,11 @@
   } else if ([childCoordinator isKindOfClass:[WebCoordinator class]] ||
              [childCoordinator isKindOfClass:[NTPCoordinator class]]) {
     self.viewController.contentViewController = nil;
+  } else if ([childCoordinator isKindOfClass:[SettingsCoordinator class]]) {
+    [childCoordinator.viewController.presentingViewController
+        dismissViewControllerAnimated:YES
+                           completion:nil];
   }
-}
-
-- (BOOL)canAddOverlayCoordinator:(BrowserCoordinator*)overlayCoordinator {
-  // This coordinator will always accept overlay coordinators.
-  return YES;
 }
 
 #pragma mark - Private accessors
