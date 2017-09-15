@@ -65,7 +65,6 @@ class SubresourceFilterSafeBrowsingActivationThrottle
   void NotifyResult();
 
   ActivationDecision ComputeActivation(ActivationList matched_list,
-                                       bool experimental_list,
                                        Configuration* configuration);
 
   // Returns whether a main-frame navigation to the given |url| satisfies the
@@ -74,8 +73,7 @@ class SubresourceFilterSafeBrowsingActivationThrottle
       const GURL& url,
       bool scheme_is_http_or_https,
       const Configuration::ActivationConditions& conditions,
-      ActivationList matched_list,
-      bool experimental_list) const;
+      ActivationList matched_list) const;
 
   std::vector<SubresourceFilterSafeBrowsingClient::CheckResult> check_results_;
 

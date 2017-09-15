@@ -798,34 +798,6 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
                             0);
 }
 
-TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
-       ExperimentalMetadata) {
-  const GURL url("https://example.test/");
-
-  // Set the list metadata for |url| to be experimental.
-  safe_browsing::ThreatMetadata metadata;
-  metadata.experimental = true;
-  fake_safe_browsing_database()->AddBlacklistedUrl(
-      url, safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER, metadata);
-
-  // Navigate without an experimental config.
-  SimulateStartAndExpectProceed(url);
-  SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-            *observer()->GetPageActivationForLastCommittedLoad());
-
-  // Navigate with an experimental config.
-  Configuration config(ActivationLevel::ENABLED,
-                       ActivationScope::ACTIVATION_LIST,
-                       ActivationList::SUBRESOURCE_FILTER);
-  config.activation_conditions.experimental = true;
-  scoped_configuration()->ResetConfiguration(std::move(config));
-  SimulateStartAndExpectProceed(url);
-  SimulateCommitAndExpectProceed();
-  EXPECT_EQ(ActivationDecision::ACTIVATED,
-            *observer()->GetPageActivationForLastCommittedLoad());
-}
-
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
        ActivateForScopeType) {
   const ActivationScopeTestData& test_data = GetParam();

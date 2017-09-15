@@ -185,13 +185,11 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   // Compute the matched list and notify observers of the check result.
   DCHECK(!database_client_ || !check_results_.empty());
   ActivationList matched_list = ActivationList::NONE;
-  bool experimental_list = false;
   if (!check_results_.empty()) {
     const auto& check_result = check_results_.back();
     DCHECK(check_result.finished);
     matched_list = GetListForThreatTypeAndMetadata(
         check_result.threat_type, check_result.threat_metadata);
-    experimental_list = check_result.threat_metadata.experimental;
     SubresourceFilterObserverManager::FromWebContents(
         navigation_handle()->GetWebContents())
         ->NotifySafeBrowsingCheckComplete(navigation_handle(),
@@ -206,8 +204,8 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
     activation_decision = ActivationDecision::ACTIVATED;
     matched_configuration = Configuration::MakeForForcedActivation();
   } else {
-    activation_decision = ComputeActivation(matched_list, experimental_list,
-                                            &matched_configuration);
+    activation_decision =
+        ComputeActivation(matched_list, &matched_configuration);
   }
   DCHECK_NE(activation_decision, ActivationDecision::UNKNOWN);
 
@@ -249,20 +247,19 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
 ActivationDecision
 SubresourceFilterSafeBrowsingActivationThrottle::ComputeActivation(
     ActivationList matched_list,
-    bool experimental_list,
     Configuration* configuration) {
   const GURL& url(navigation_handle()->GetURL());
   const auto config_list = GetEnabledConfigurations();
   bool scheme_is_http_or_https = url.SchemeIsHTTPOrHTTPS();
-  const auto highest_priority_activated_config = std::find_if(
-      config_list->configs_by_decreasing_priority().begin(),
-      config_list->configs_by_decreasing_priority().end(),
-      [&url, scheme_is_http_or_https, matched_list, experimental_list,
-       this](const Configuration& config) {
-        return DoesMainFrameURLSatisfyActivationConditions(
-            url, scheme_is_http_or_https, config.activation_conditions,
-            matched_list, experimental_list);
-      });
+  const auto highest_priority_activated_config =
+      std::find_if(config_list->configs_by_decreasing_priority().begin(),
+                   config_list->configs_by_decreasing_priority().end(),
+                   [&url, scheme_is_http_or_https, matched_list,
+                    this](const Configuration& config) {
+                     return DoesMainFrameURLSatisfyActivationConditions(
+                         url, scheme_is_http_or_https,
+                         config.activation_conditions, matched_list);
+                   });
 
   bool has_activated_config =
       highest_priority_activated_config !=
@@ -296,8 +293,7 @@ bool SubresourceFilterSafeBrowsingActivationThrottle::
         const GURL& url,
         bool scheme_is_http_or_https,
         const Configuration::ActivationConditions& conditions,
-        ActivationList matched_list,
-        bool experimental_list) const {
+        ActivationList matched_list) const {
   // Avoid copies when tracing disabled.
   auto list_to_string = [](ActivationList activation_list) {
     std::ostringstream matched_list_stream;
@@ -318,15 +314,9 @@ bool SubresourceFilterSafeBrowsingActivationThrottle::
         return false;
       if (matched_list == ActivationList::NONE)
         return false;
+      if (conditions.activation_list == matched_list)
+        return true;
 
-      // Normal match. Make sure that if the list is experimental, we only match
-      // if our activation conditions also specify that we support experimental
-      // lists.
-      if (conditions.activation_list == matched_list) {
-        return !experimental_list || conditions.experimental;
-      }
-
-      // Phishing / SocEng lists don't have experimental metadata.
       if (conditions.activation_list == ActivationList::PHISHING_INTERSTITIAL &&
           matched_list == ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL) {
         // Handling special case, where activation on the phishing sites also
