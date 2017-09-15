@@ -169,8 +169,8 @@ void ServiceWorkerProviderContext::SetController(
     ChildThreadImpl::current()->GetConnector()->BindInterface(
         mojom::kBrowserServiceName, mojo::MakeRequest(&blob_registry_ptr));
     auto blob_registry = base::MakeRefCounted<
-        base::RefCountedData<storage::mojom::BlobRegistryPtr>>();
-    blob_registry->data = std::move(blob_registry_ptr);
+        base::RefCountedData<storage::mojom::BlobRegistryPtr>>(
+        std::move(blob_registry_ptr));
     state->controller_connector =
         base::MakeRefCounted<ControllerServiceWorkerConnector>(
             container_host_.get());
