@@ -292,6 +292,7 @@ component("skia") {
     "//third_party/skia/src/sfnt/SkOTUtils.cpp",
   ]
   if (!is_ios) {
+    sources -= [ "//third_party/skia/src/ports/SkImageGenerator_none.cpp" ]
     sources += [
       "//third_party/skia/src/codec/SkBmpBaseCodec.cpp",
       "//third_party/skia/src/codec/SkBmpCodec.cpp",
@@ -299,6 +300,7 @@ component("skia") {
       "//third_party/skia/src/codec/SkBmpRLECodec.cpp",
       "//third_party/skia/src/codec/SkBmpStandardCodec.cpp",
       "//third_party/skia/src/codec/SkCodec.cpp",
+      "//third_party/skia/src/codec/SkCodecImageGenerator.cpp",
       "//third_party/skia/src/codec/SkGifCodec.cpp",
       "//third_party/skia/src/codec/SkIcoCodec.cpp",
       "//third_party/skia/src/codec/SkJpegCodec.cpp",
@@ -312,6 +314,7 @@ component("skia") {
       "//third_party/skia/src/codec/SkSwizzler.cpp",
       "//third_party/skia/src/codec/SkWbmpCodec.cpp",
       "//third_party/skia/src/codec/SkWebpCodec.cpp",
+      "//third_party/skia/src/ports/SkImageGenerator_skia.cpp",
       "//third_party/skia/third_party/gif/SkGifImageReader.cpp",
     ]
   }
