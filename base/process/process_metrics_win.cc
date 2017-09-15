@@ -318,7 +318,7 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   last_system_time_ = system_time;
   last_cpu_time_ = time;
 
-  return static_cast<double>(system_time_delta) / time_delta;
+  return static_cast<double>(system_time_delta * 100) / time_delta;
 }
 
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
