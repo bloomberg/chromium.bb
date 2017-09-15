@@ -15,11 +15,8 @@ namespace disk_cache {
 
 const base::Feature kSimpleSizeExperiment = {"SimpleSizeExperiment",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kSimpleCacheEvictionWithSizeExperiment = {
-    "SimpleCacheEvictionWithSizeExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kSizeMultiplierParam[] = "SizeMultiplier";
-const char kSizeEvictionParam[] = "SizeEviction";
 
 namespace {
 
@@ -33,8 +30,6 @@ struct ExperimentDescription {
 const ExperimentDescription experiments[] = {
     {disk_cache::SimpleExperimentType::SIZE, &kSimpleSizeExperiment,
      kSizeMultiplierParam},
-    {disk_cache::SimpleExperimentType::EVICT_WITH_SIZE,
-     &kSimpleCacheEvictionWithSizeExperiment, kSizeEvictionParam},
 };
 
 }  // namespace
