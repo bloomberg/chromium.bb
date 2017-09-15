@@ -10,7 +10,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification_common.h"
-#include "chrome/browser/notifications/notification_delegate.h"
+#include "ui/message_center/notification_delegate.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -22,7 +22,7 @@ extern const base::Feature kAllowFullscreenWebNotificationsFeature;
 } // namespace features
 
 // Delegate class for Web Notifications.
-class WebNotificationDelegate : public NotificationDelegate {
+class WebNotificationDelegate : public message_center::NotificationDelegate {
  public:
   WebNotificationDelegate(NotificationCommon::Type notification_type,
                           Profile* profile,
@@ -30,7 +30,6 @@ class WebNotificationDelegate : public NotificationDelegate {
                           const GURL& origin);
 
   // NotificationDelegate implementation.
-  std::string id() const override;
   bool SettingsClick() override;
   bool ShouldDisplaySettingsButton() override;
   bool ShouldDisplayOverFullscreen() const override;

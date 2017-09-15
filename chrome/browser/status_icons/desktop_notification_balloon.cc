@@ -14,11 +14,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
 
@@ -39,18 +39,18 @@ const char kNotificationPrefix[] = "desktop_notification_balloon.";
 // Timeout for automatically dismissing the notification balloon.
 const size_t kTimeoutSeconds = 6;
 
-class DummyNotificationDelegate : public NotificationDelegate {
+class DummyNotificationDelegate : public message_center::NotificationDelegate {
  public:
   explicit DummyNotificationDelegate(const std::string& id, Profile* profile)
-      : id_(kNotificationPrefix + id), profile_(profile) {}
+      : id_(id), profile_(profile) {}
 
   void Display() override {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&CloseBalloon, id(),
-                              NotificationUIManager::GetProfileID(profile_)),
+        FROM_HERE,
+        base::Bind(&CloseBalloon, id_,
+                   NotificationUIManager::GetProfileID(profile_)),
         base::TimeDelta::FromSeconds(kTimeoutSeconds));
   }
-  std::string id() const override { return id_; }
 
  private:
   ~DummyNotificationDelegate() override {}
@@ -86,11 +86,13 @@ void DesktopNotificationBalloon::DisplayBalloon(
     profile = ProfileManager::GetLastUsedProfile();
   }
 
-  NotificationDelegate* delegate =
-      new DummyNotificationDelegate(base::IntToString(id_count_++), profile_);
-  Notification notification(message_center::NOTIFICATION_TYPE_SIMPLE, title,
+  const std::string notification_id =
+      kNotificationPrefix + base::IntToString(id_count_++);
+  Notification notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
       contents, gfx::Image(icon), notifier_id, base::string16(), GURL(),
-      std::string(), message_center::RichNotificationData(), delegate);
+      std::string(), message_center::RichNotificationData(),
+      new DummyNotificationDelegate(notification_id, profile_));
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);
 

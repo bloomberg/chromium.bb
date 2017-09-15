@@ -47,7 +47,7 @@ ExtensionInstalledNotification::ExtensionInstalledNotification(
 
   message_center::RichNotificationData optional_field;
   std::unique_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
+      message_center::NOTIFICATION_TYPE_SIMPLE, extension_id_,
       base::UTF8ToUTF16(extension->name()),
       l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_INSTALLED),
       gfx::Image(gfx::CreateVectorIcon(vector_icons::kCheckCircleIcon, 40,
@@ -85,8 +85,4 @@ void ExtensionInstalledNotification::Click() {
       profile_, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       extensions::SOURCE_INSTALLED_NOTIFICATION);
   OpenApplication(params);
-}
-
-std::string ExtensionInstalledNotification::id() const {
-  return extension_id_;
 }

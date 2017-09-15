@@ -123,9 +123,10 @@ class PlatformNotificationServiceImpl
       Profile* profile,
       const GURL& service_worker_scope,
       const GURL& origin,
+      const std::string& notification_id,
       const content::PlatformNotificationData& notification_data,
       const content::NotificationResources& notification_resources,
-      NotificationDelegate* delegate) const;
+      scoped_refptr<message_center::NotificationDelegate> delegate) const;
 
   // Returns a display name for an origin, to be used in the context message
   base::string16 DisplayNameForContextMessage(Profile* profile,

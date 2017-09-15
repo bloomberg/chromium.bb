@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_delegate.h"
 
 class Profile;
 
@@ -39,7 +38,6 @@ class CupsPrintJobNotification {
 
   void CloseNotificationByUser();
   void ClickOnNotificationButton(int button_index);
-  const std::string& GetNotificationId();
 
  private:
   // Update the notification based on the print job's status.
@@ -59,7 +57,6 @@ class CupsPrintJobNotification {
   std::unique_ptr<Notification> notification_;
   std::string notification_id_;
   CupsPrintJob* print_job_;
-  scoped_refptr<NotificationDelegate> delegate_;
   Profile* profile_;
 
   // If the notification has been closed in the middle of printing or not. If it

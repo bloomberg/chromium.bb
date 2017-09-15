@@ -8,14 +8,15 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/notifications/notification.h"
+#include "ui/message_center/notification_delegate.h"
 
+class Notification;
 class PrefRegistrySimple;
 class Profile;
 
 // QuitWithAppsController checks whether any apps are running and shows a
 // notification to quit all of them.
-class QuitWithAppsController : public NotificationDelegate {
+class QuitWithAppsController : public message_center::NotificationDelegate {
  public:
   static const char kQuitWithAppsNotificationID[];
 
@@ -26,7 +27,6 @@ class QuitWithAppsController : public NotificationDelegate {
   void Close(bool by_user) override;
   void Click() override;
   void ButtonClick(int button_index) override;
-  std::string id() const override;
 
   // Attempt to quit Chrome. This will display a notification and return false
   // if there are apps running.

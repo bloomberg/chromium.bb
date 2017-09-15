@@ -25,7 +25,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -58,6 +57,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
 

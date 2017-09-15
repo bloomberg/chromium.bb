@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
-#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/notifications/web_notification_delegate.h"
@@ -49,6 +48,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "url/gurl.h"
@@ -336,17 +336,15 @@ bool NotificationsApiFunction::CreateNotification(
   if (options->is_clickable.get())
     optional_fields.clickable = *options->is_clickable;
 
-  // Create the notification api delegate. Ownership passed to the notification.
-  NotificationDelegate* api_delegate = new WebNotificationDelegate(
-      NotificationCommon::EXTENSION, GetProfile(),
-      CreateScopedIdentifier(extension_->id(), id), extension_->url());
-
+  std::string notification_id = CreateScopedIdentifier(extension_->id(), id);
   Notification notification(
-      type, title, message, icon,
+      type, notification_id, title, message, icon,
       message_center::NotifierId(message_center::NotifierId::APPLICATION,
                                  extension_->id()),
-      base::UTF8ToUTF16(extension_->name()), extension_->url(),
-      api_delegate->id(), optional_fields, api_delegate);
+      base::UTF8ToUTF16(extension_->name()), extension_->url(), notification_id,
+      optional_fields,
+      new WebNotificationDelegate(NotificationCommon::EXTENSION, GetProfile(),
+                                  notification_id, extension_->url()));
 
   // Apply the "requireInteraction" flag. The value defaults to false.
   notification.set_never_timeout(options->require_interaction &&

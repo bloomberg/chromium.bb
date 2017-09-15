@@ -805,7 +805,6 @@ split_static_library("browser") {
     "notifications/notification_channels_provider_android.h",
     "notifications/notification_common.cc",
     "notifications/notification_common.h",
-    "notifications/notification_delegate.h",
     "notifications/notification_display_service.cc",
     "notifications/notification_display_service.h",
     "notifications/notification_display_service_factory.cc",

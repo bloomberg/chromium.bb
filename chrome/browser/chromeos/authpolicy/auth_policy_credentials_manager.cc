@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/chromium_strings.h"
@@ -30,6 +29,7 @@
 #include "dbus/message.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 
 namespace {

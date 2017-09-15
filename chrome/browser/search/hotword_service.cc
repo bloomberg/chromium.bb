@@ -219,11 +219,10 @@ const char kHotwordNotifierId[] = "hotword.notification";
 }  // namespace hotword_internal
 
 // Delegate for the hotword notification.
-class HotwordNotificationDelegate : public NotificationDelegate {
+class HotwordNotificationDelegate
+    : public message_center::NotificationDelegate {
  public:
-  explicit HotwordNotificationDelegate(Profile* profile)
-      : profile_(profile) {
-  }
+  explicit HotwordNotificationDelegate(Profile* profile) : profile_(profile) {}
 
   // Overridden from NotificationDelegate:
   void ButtonClick(int button_index) override {
@@ -251,12 +250,8 @@ class HotwordNotificationDelegate : public NotificationDelegate {
     // Close the notification after it's been clicked on to remove it
     // from the notification tray.
     g_browser_process->notification_ui_manager()->CancelById(
-        id(), NotificationUIManager::GetProfileID(profile_));
-  }
-
-  // Overridden from NotificationDelegate:
-  std::string id() const override {
-    return hotword_internal::kHotwordNotificationId;
+        hotword_internal::kHotwordNotificationId,
+        NotificationUIManager::GetProfileID(profile_));
   }
 
  private:
@@ -437,6 +432,7 @@ void HotwordService::ShowHotwordNotification() {
 
   Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
+      hotword_internal::kHotwordNotificationId,
       l10n_util::GetStringUTF16(IDS_HOTWORD_NOTIFICATION_TITLE),
       l10n_util::GetStringUTF16(IDS_HOTWORD_NOTIFICATION_DESCRIPTION),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(

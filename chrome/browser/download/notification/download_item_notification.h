@@ -10,12 +10,12 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "content/public/browser/download_item.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/notification_delegate.h"
 #include "ui/native_theme/native_theme.h"
 
 class SkBitmap;

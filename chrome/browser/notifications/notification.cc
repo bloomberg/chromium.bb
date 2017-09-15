@@ -6,30 +6,6 @@
 
 Notification::Notification(
     message_center::NotificationType type,
-    const base::string16& title,
-    const base::string16& body,
-    const gfx::Image& icon,
-    const message_center::NotifierId& notifier_id,
-    const base::string16& display_source,
-    const GURL& origin_url,
-    const std::string& tag,
-    const message_center::RichNotificationData& rich_notification_data,
-    scoped_refptr<NotificationDelegate> delegate)
-    : message_center::Notification(type,
-                                   delegate->id(),
-                                   title,
-                                   body,
-                                   icon,
-                                   display_source,
-                                   origin_url,
-                                   notifier_id,
-                                   rich_notification_data,
-                                   delegate),
-      tag_(tag),
-      delegate_(delegate) {}
-
-Notification::Notification(
-    message_center::NotificationType type,
     const std::string& id,
     const base::string16& title,
     const base::string16& body,
