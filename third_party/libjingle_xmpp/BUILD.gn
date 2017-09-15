@@ -141,7 +141,7 @@ rtc_test("libjingle_xmpp_unittests") {
     "//base/test:test_support",
 
     # TODO(kjellander): Refactor/remove this dependency. It is needed by
-    # third_party/webrtc_overrides/webrtc/rtc_base/win32socketinit.cc.
+    # third_party/webrtc_overrides/rtc_base/win32socketinit.cc.
     "//net",
     "//testing/gtest",
   ]

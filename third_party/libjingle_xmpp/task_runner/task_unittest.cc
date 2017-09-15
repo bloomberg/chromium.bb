@@ -27,7 +27,7 @@
 #include "third_party/webrtc/rtc_base/gunit.h"
 #include "third_party/webrtc/rtc_base/thread.h"
 #include "third_party/webrtc/rtc_base/timeutils.h"
-#include "third_party/webrtc_overrides/webrtc/rtc_base/logging.h"
+#include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 namespace rtc {
 

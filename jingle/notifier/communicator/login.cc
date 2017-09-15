@@ -17,9 +17,9 @@
 #include "third_party/libjingle_xmpp/xmpp/xmppclient.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "webrtc/rtc_base/firewallsocketserver.h"
-#include "webrtc/rtc_base/logging.h"
-#include "webrtc/rtc_base/physicalsocketserver.h"
+#include "third_party/webrtc/rtc_base/firewallsocketserver.h"
+#include "third_party/webrtc/rtc_base/physicalsocketserver.h"
+#include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 namespace notifier {
 

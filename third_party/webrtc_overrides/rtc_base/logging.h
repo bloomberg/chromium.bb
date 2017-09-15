@@ -4,8 +4,8 @@
 
 // This file overrides the logging macros in WebRTC (webrtc/rtc_base/logging.h).
 // Instead of using WebRTC's logging implementation, the WebRTC macros are
-// mapped to DIAGNOSTIC_LOGING. In it's implementation (DiagnosticLogMessage in
-// third_party/webrtc_overrides/webrtc/rtc_base/logging.h), the corresponding
+// mapped to DIAGNOSTIC_LOGING. In its implementation (DiagnosticLogMessage in
+// third_party/webrtc_overrides/rtc_base/logging.h), the corresponding
 // base/logging.h macros (e.g. Chromium's VLOG) are used.
 // If this file is included outside of WebRTC/libjingle it should be included
 // after base/logging.h (if any) or compiler error or unexpected behavior may
@@ -24,7 +24,7 @@
 #ifndef THIRD_PARTY_WEBRTC_OVERRIDES_WEBRTC_RTC_BASE_LOGGING_H_
 #define THIRD_PARTY_WEBRTC_OVERRIDES_WEBRTC_RTC_BASE_LOGGING_H_
 
-#include "third_party/webrtc_overrides/webrtc/rtc_base/diagnostic_logging.h"
+#include "third_party/webrtc_overrides/rtc_base/diagnostic_logging.h"
 
 //////////////////////////////////////////////////////////////////////
 // WebRTC macros which in DiagnosticLogMessage are mapped over to
@@ -38,8 +38,7 @@
 namespace rtc {
 
 // Note that |N| is the size *with* the null terminator.
-bool CheckVlogIsOnHelper(LoggingSeverity severity,
-                         const char* file, size_t N);
+bool CheckVlogIsOnHelper(LoggingSeverity severity, const char* file, size_t N);
 
 template <size_t N>
 bool CheckVlogIsOn(LoggingSeverity severity, const char (&file)[N]) {
@@ -48,9 +47,10 @@ bool CheckVlogIsOn(LoggingSeverity severity, const char (&file)[N]) {
 
 }  // namespace rtc
 
-#define DIAGNOSTIC_LOG(sev, ctx, err, ...) \
-  rtc::DiagnosticLogMessage( \
-      __FILE__, __LINE__, sev, rtc::ERRCTX_ ## ctx, err, ##__VA_ARGS__).stream()
+#define DIAGNOSTIC_LOG(sev, ctx, err, ...)                                   \
+  rtc::DiagnosticLogMessage(__FILE__, __LINE__, sev, rtc::ERRCTX_##ctx, err, \
+                            ##__VA_ARGS__)                                   \
+      .stream()
 
 #define LOG_CHECK_LEVEL(sev) CheckVlogIsOn(rtc::sev, __FILE__)
 #define LOG_CHECK_LEVEL_V(sev) CheckVlogIsOn(sev, __FILE__)

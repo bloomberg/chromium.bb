@@ -32,8 +32,10 @@ struct ConstantLabel {
   int value;
   const char* label;
 };
-#define KLABEL(x) { x, #x }
-#define LASTLABEL { 0, 0 }
+#define KLABEL(x) \
+  { x, #x }
+#define LASTLABEL \
+  { 0, 0 }
 
 const char* FindLabel(int value, const ConstantLabel entries[]);
 std::string ErrorName(int err, const ConstantLabel* err_table);
@@ -57,14 +59,16 @@ std::string ErrorName(int err, const ConstantLabel* err_table);
 // since the command line flag must be set using numerical values.
 // TODO(tommi): To keep things simple, we should just use the same values for
 // these constants as Chrome does.
-enum LoggingSeverity { LS_ERROR = 1,
-                       LS_WARNING = 2,
-                       LS_INFO = 3,
-                       LS_VERBOSE = 4,
-                       LS_SENSITIVE = 5,
-                       INFO = LS_INFO,
-                       WARNING = LS_WARNING,
-                       LERROR = LS_ERROR };
+enum LoggingSeverity {
+  LS_ERROR = 1,
+  LS_WARNING = 2,
+  LS_INFO = 3,
+  LS_VERBOSE = 4,
+  LS_SENSITIVE = 5,
+  INFO = LS_INFO,
+  WARNING = LS_WARNING,
+  LERROR = LS_ERROR
+};
 
 // LogErrorContext assists in interpreting the meaning of an error value.
 enum LogErrorContext {
@@ -83,10 +87,17 @@ enum LogErrorContext {
 // stream" in Chrome) and to Chrome's logging stream.
 class DiagnosticLogMessage {
  public:
-  DiagnosticLogMessage(const char* file, int line, LoggingSeverity severity,
-                       LogErrorContext err_ctx, int err);
-  DiagnosticLogMessage(const char* file, int line, LoggingSeverity severity,
-                       LogErrorContext err_ctx, int err, const char* module);
+  DiagnosticLogMessage(const char* file,
+                       int line,
+                       LoggingSeverity severity,
+                       LogErrorContext err_ctx,
+                       int err);
+  DiagnosticLogMessage(const char* file,
+                       int line,
+                       LoggingSeverity severity,
+                       LogErrorContext err_ctx,
+                       int err,
+                       const char* module);
   ~DiagnosticLogMessage();
 
   void CreateTimestamp();
@@ -110,10 +121,10 @@ class DiagnosticLogMessage {
 // is not used" and "statement has no effect".
 class LogMessageVoidify {
  public:
-  LogMessageVoidify() { }
+  LogMessageVoidify() {}
   // This has to be an operator with a precedence lower than << but
   // higher than ?:
-  void operator&(std::ostream&) { }
+  void operator&(std::ostream&) {}
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -123,9 +134,7 @@ class LogMessageVoidify {
 class LogMultilineState {
  public:
   size_t unprintable_count_[2];
-  LogMultilineState() {
-    unprintable_count_[0] = unprintable_count_[1] = 0;
-  }
+  LogMultilineState() { unprintable_count_[0] = unprintable_count_[1] = 0; }
 };
 
 class LogMessage {
@@ -135,8 +144,12 @@ class LogMessage {
 
 // When possible, pass optional state variable to track various data across
 // multiple calls to LogMultiline.  Otherwise, pass NULL.
-void LogMultiline(LoggingSeverity level, const char* label, bool input,
-                  const void* data, size_t len, bool hex_mode,
+void LogMultiline(LoggingSeverity level,
+                  const char* label,
+                  bool input,
+                  const void* data,
+                  size_t len,
+                  bool hex_mode,
                   LogMultilineState* state);
 
 // TODO(grunell): Change name to InitDiagnosticLoggingDelegate or

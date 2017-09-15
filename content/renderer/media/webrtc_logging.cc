@@ -6,7 +6,7 @@
 
 #include "base/time/time.h"
 #include "content/public/renderer/webrtc_log_message_delegate.h"
-#include "third_party/webrtc_overrides/webrtc/rtc_base/logging.h"
+#include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 namespace content {
 
