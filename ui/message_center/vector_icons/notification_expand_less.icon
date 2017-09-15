@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-CANVAS_DIMENSIONS, 24,
-MOVE_TO, 12, 8,
-R_LINE_TO, -6, 6,
-R_LINE_TO, 1.41f, 1.41f,
-LINE_TO, 12, 10.83f,
-R_LINE_TO, 4.59f, 4.58f,
-LINE_TO, 18, 14,
+CANVAS_DIMENSIONS, 16,
+MOVE_TO, 2.62f, 13,
+LINE_TO, 8, 7.75f,
+LINE_TO, 13.33f, 13,
+LINE_TO, 15, 11.31f,
+R_LINE_TO, -7, -6.89f,
+R_LINE_TO, -7, 6.89f,
 CLOSE,
 END
