@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_SAFE_BROWSING_RENDERER_RENDERER_URL_LOADER_THROTTLE_H_
 #define COMPONENTS_SAFE_BROWSING_RENDERER_RENDERER_URL_LOADER_THROTTLE_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace safe_browsing {
 
@@ -15,7 +18,8 @@ namespace safe_browsing {
 // SafeBrowsing and determine whether a URL and its redirect URLs are safe to
 // load. It defers response processing until all URL checks are completed;
 // cancels the load if any URLs turn out to be bad.
-class RendererURLLoaderThrottle : public content::URLLoaderThrottle {
+class RendererURLLoaderThrottle : public content::URLLoaderThrottle,
+                                  public mojom::UrlCheckNotifier {
  public:
   // |safe_browsing| must stay alive until WillStartRequest() (if it is called)
   // or the end of this object.
@@ -24,6 +28,7 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle {
                             int render_frame_id);
   ~RendererURLLoaderThrottle() override;
 
+ private:
   // content::URLLoaderThrottle implementation.
   void DetachFromCurrentSequence() override;
   void WillStartRequest(const content::ResourceRequest& request,
@@ -32,8 +37,12 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle {
                            bool* defer) override;
   void WillProcessResponse(bool* defer) override;
 
- private:
-  void OnCheckUrlResult(bool proceed, bool showed_interstitial);
+  // mojom::UrlCheckNotifier implementation.
+  void OnCompleteCheck(bool proceed, bool showed_interstitial) override;
+
+  void OnCheckUrlResult(mojom::UrlCheckNotifierRequest slow_check_notifier,
+                        bool proceed,
+                        bool showed_interstitial);
 
   void OnConnectionError();
 
@@ -53,6 +62,8 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle {
   // The time when we started deferring the request.
   base::TimeTicks defer_start_time_;
   bool deferred_ = false;
+
+  std::unique_ptr<mojo::BindingSet<mojom::UrlCheckNotifier>> notifier_bindings_;
 
   base::WeakPtrFactory<RendererURLLoaderThrottle> weak_factory_;
 };

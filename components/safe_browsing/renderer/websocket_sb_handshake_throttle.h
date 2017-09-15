@@ -14,13 +14,15 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/WebCallbacks.h"
 #include "third_party/WebKit/public/platform/WebSocketHandshakeThrottle.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
 
-class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle {
+class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
+                                     public mojom::UrlCheckNotifier {
  public:
   explicit WebSocketSBHandshakeThrottle(mojom::SafeBrowsing* safe_browsing);
   ~WebSocketSBHandshakeThrottle() override;
@@ -40,13 +42,20 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle {
     NOT_SUPPORTED = 4,
     RESULT_COUNT
   };
-  void OnCheckResult(bool proceed, bool showed_interstitial);
+
+  // mojom::UrlCheckNotifier implementation.
+  void OnCompleteCheck(bool proceed, bool showed_interstitial) override;
+
+  void OnCheckResult(mojom::UrlCheckNotifierRequest slow_check_notifier,
+                     bool proceed,
+                     bool showed_interstitial);
   void OnConnectionError();
 
   GURL url_;
   blink::WebCallbacks<void, const blink::WebString&>* callbacks_;
   mojom::SafeBrowsingUrlCheckerPtr url_checker_;
   mojom::SafeBrowsing* safe_browsing_;
+  std::unique_ptr<mojo::Binding<mojom::UrlCheckNotifier>> notifier_binding_;
   base::TimeTicks start_time_;
   Result result_;
 

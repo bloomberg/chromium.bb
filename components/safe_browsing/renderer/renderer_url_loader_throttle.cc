@@ -94,8 +94,8 @@ void RendererURLLoaderThrottle::WillProcessResponse(bool* defer) {
   *defer = true;
 }
 
-void RendererURLLoaderThrottle::OnCheckUrlResult(bool proceed,
-                                                 bool showed_interstitial) {
+void RendererURLLoaderThrottle::OnCompleteCheck(bool proceed,
+                                                bool showed_interstitial) {
   if (blocked_ || !url_checker_)
     return;
 
@@ -116,12 +116,30 @@ void RendererURLLoaderThrottle::OnCheckUrlResult(bool proceed,
   }
 }
 
+void RendererURLLoaderThrottle::OnCheckUrlResult(
+    mojom::UrlCheckNotifierRequest slow_check_notifier,
+    bool proceed,
+    bool showed_interstitial) {
+  if (!slow_check_notifier.is_pending()) {
+    OnCompleteCheck(proceed, showed_interstitial);
+    return;
+  }
+
+  // TODO(yzshen): Notify the network service to pause processing response body.
+  if (!notifier_bindings_) {
+    notifier_bindings_ =
+        std::make_unique<mojo::BindingSet<mojom::UrlCheckNotifier>>();
+  }
+  notifier_bindings_->AddBinding(this, std::move(slow_check_notifier));
+}
+
 void RendererURLLoaderThrottle::OnConnectionError() {
   DCHECK(!blocked_);
 
   // If a service-side disconnect happens, treat all URLs as if they are safe.
   url_checker_.reset();
   pending_checks_ = 0;
+  notifier_bindings_.reset();
 
   if (deferred_) {
     deferred_ = false;

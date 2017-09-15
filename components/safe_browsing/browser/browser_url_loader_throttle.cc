@@ -113,8 +113,8 @@ void BrowserURLLoaderThrottle::set_net_event_logger(
     url_checker_->set_net_event_logger(net_event_logger);
 }
 
-void BrowserURLLoaderThrottle::OnCheckUrlResult(bool proceed,
-                                                bool showed_interstitial) {
+void BrowserURLLoaderThrottle::OnCompleteCheck(bool proceed,
+                                               bool showed_interstitial) {
   if (blocked_)
     return;
 
@@ -138,6 +138,22 @@ void BrowserURLLoaderThrottle::OnCheckUrlResult(bool proceed,
     pending_checks_ = 0;
     delegate_->CancelWithError(net::ERR_ABORTED);
   }
+}
+
+void BrowserURLLoaderThrottle::OnCheckUrlResult(
+    NativeUrlCheckNotifier* slow_check_notifier,
+    bool proceed,
+    bool showed_interstitial) {
+  if (!slow_check_notifier) {
+    OnCompleteCheck(proceed, showed_interstitial);
+    return;
+  }
+
+  // In this case |proceed| and |showed_interstitial| should be ignored. The
+  // result will be returned by calling |*slow_check_notifier| callback.
+  // TODO(yzshen): Notify the network service to pause processing response body.
+  *slow_check_notifier = base::BindOnce(
+      &BrowserURLLoaderThrottle::OnCompleteCheck, base::Unretained(this));
 }
 
 }  // namespace safe_browsing
