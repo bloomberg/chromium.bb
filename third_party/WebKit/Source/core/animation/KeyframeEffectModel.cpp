@@ -277,6 +277,8 @@ Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(
     EffectModel::CompositeOperation composite)
     : offset_(offset), easing_(std::move(easing)), composite_(composite) {
   DCHECK(!IsNull(offset));
+  if (!easing_)
+    easing_ = LinearTimingFunction::Shared();
 }
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::AppendKeyframe(

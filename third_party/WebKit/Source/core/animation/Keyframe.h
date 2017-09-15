@@ -40,7 +40,12 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   }
   EffectModel::CompositeOperation Composite() const { return composite_; }
 
-  void SetEasing(RefPtr<TimingFunction> easing) { easing_ = std::move(easing); }
+  void SetEasing(RefPtr<TimingFunction> easing) {
+    if (easing)
+      easing_ = std::move(easing);
+    else
+      easing_ = LinearTimingFunction::Shared();
+  }
   TimingFunction& Easing() const { return *easing_; }
 
   static bool CompareOffsets(const RefPtr<Keyframe>& a,
@@ -124,7 +129,10 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   Keyframe(double offset,
            EffectModel::CompositeOperation composite,
            RefPtr<TimingFunction> easing)
-      : offset_(offset), composite_(composite), easing_(std::move(easing)) {}
+      : offset_(offset), composite_(composite), easing_(std::move(easing)) {
+    if (!easing_)
+      easing_ = LinearTimingFunction::Shared();
+  }
 
   double offset_;
   EffectModel::CompositeOperation composite_;
