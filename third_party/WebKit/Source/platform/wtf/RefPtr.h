@@ -32,8 +32,6 @@
 namespace WTF {
 
 template <typename T>
-class PassRefPtr;
-template <typename T>
 class RefPtrValuePeeker;
 template <typename T>
 class RefPtr;
@@ -62,11 +60,6 @@ class RefPtr {
   template <typename U>
   RefPtr(RefPtr<U>&& o, EnsurePtrConvertibleArgDecl(U, T))
       : ptr_(o.LeakRef()) {}
-
-  // See comments in PassRefPtr.h for an explanation of why this takes a const
-  // reference.
-  template <typename U>
-  RefPtr(PassRefPtr<U>&&, EnsurePtrConvertibleArgDecl(U, T));
 
   // Hash table deleted values, which are only constructed and never copied or
   // destroyed.
@@ -111,11 +104,6 @@ class RefPtr {
 
   T* ptr_;
 };
-
-template <typename T>
-template <typename U>
-inline RefPtr<T>::RefPtr(PassRefPtr<U>&& o, EnsurePtrConvertibleArgDefn(U, T))
-    : ptr_(o.LeakRef()) {}
 
 template <typename T>
 inline T* RefPtr<T>::LeakRef() {
@@ -213,8 +201,6 @@ class RefPtrValuePeeker {
   ALWAYS_INLINE RefPtrValuePeeker(std::nullptr_t) : ptr_(nullptr) {}
   template <typename U>
   RefPtrValuePeeker(const RefPtr<U>& p) : ptr_(p.Get()) {}
-  template <typename U>
-  RefPtrValuePeeker(const PassRefPtr<U>& p) : ptr_(p.Get()) {}
 
   ALWAYS_INLINE operator T*() const { return ptr_; }
 
