@@ -40,7 +40,7 @@ class MODULES_EXPORT ServiceWorkerClient
   String frameType(ScriptState*) const;
   String id() const { return uuid_; }
   void postMessage(ScriptState*,
-                   PassRefPtr<SerializedScriptValue> message,
+                   RefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
 

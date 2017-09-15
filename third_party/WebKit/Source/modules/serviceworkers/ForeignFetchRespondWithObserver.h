@@ -22,7 +22,7 @@ class MODULES_EXPORT ForeignFetchRespondWithObserver final
       WebURLRequest::FetchRedirectMode,
       WebURLRequest::FrameType,
       WebURLRequest::RequestContext,
-      PassRefPtr<SecurityOrigin>,
+      RefPtr<SecurityOrigin>,
       WaitUntilObserver*);
 
   void OnResponseFulfilled(const ScriptValue&) override;
@@ -35,7 +35,7 @@ class MODULES_EXPORT ForeignFetchRespondWithObserver final
                                   WebURLRequest::FetchRedirectMode,
                                   WebURLRequest::FrameType,
                                   WebURLRequest::RequestContext,
-                                  PassRefPtr<SecurityOrigin>,
+                                  RefPtr<SecurityOrigin>,
                                   WaitUntilObserver*);
 
   RefPtr<SecurityOrigin> request_origin_;
