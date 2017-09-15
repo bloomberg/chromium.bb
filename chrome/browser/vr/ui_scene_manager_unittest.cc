@@ -588,7 +588,7 @@ TEST_F(UiSceneManagerTest, PropagateContentBoundsOnFullscreen) {
   manager_->SetFullscreen(true);
   AnimateBy(MsToDelta(0));
 
-  gfx::SizeF expected_bounds(0.705449f, 0.396737f);
+  gfx::SizeF expected_bounds(0.587874f, 0.330614f);
   EXPECT_CALL(*browser_,
               OnContentScreenBoundsChanged(
                   SizeFsAreApproximatelyEqual(expected_bounds, kTolerance)));

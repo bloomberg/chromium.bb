@@ -383,6 +383,19 @@ bool AnimationPlayer::IsAnimatingProperty(int property) const {
   return false;
 }
 
+cc::TransformOperations AnimationPlayer::GetTargetTransformOperationsValue(
+    int target_property) const {
+  cc::Animation* running_animation = nullptr;
+  for (auto& animation : animations_) {
+    if (animation->target_property_id() == target_property) {
+      running_animation = animation.get();
+    }
+  }
+  DCHECK(running_animation);
+  const auto* curve = running_animation->curve()->ToTransformAnimationCurve();
+  return curve->GetValue(GetEndTime(running_animation));
+}
+
 gfx::SizeF AnimationPlayer::GetTargetSizeValue(int target_property) const {
   cc::Animation* running_animation = nullptr;
   for (auto& animation : animations_) {
