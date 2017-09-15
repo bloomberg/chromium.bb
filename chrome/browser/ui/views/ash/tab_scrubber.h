@@ -23,10 +23,7 @@ namespace gfx {
 class Point;
 }
 
-// Class to enable quick tab switching via Ctrl-left-drag.
-// Notes: this is experimental, and disables ctrl-clicks. It should not be
-// enabled other than through flags until we implement 3 finger drag as the
-// mechanism to invoke it. At that point we will add test coverage.
+// Class to enable quick tab switching via horizontal 3 finger swipes.
 class TabScrubber : public ui::EventHandler,
                     public content::NotificationObserver,
                     public TabStripObserver {
