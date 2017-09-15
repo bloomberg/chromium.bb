@@ -160,6 +160,11 @@ interface SessionController {
   // http://crbug.com/729808
   SetSessionLengthLimit(mojo.common.mojom.TimeDelta length_limit,
                         mojo.common.mojom.TimeTicks start_time);
+
+  // Returns whether it's ok to switch the active multiprofile user. May affect
+  // or be affected by system state such as window overview mode and screen
+  // casting.
+  CanSwitchActiveUser() => (bool can_switch);
 };
 
 // Interface for ash to request session service from its client (e.g. Chrome).

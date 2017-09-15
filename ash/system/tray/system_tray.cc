@@ -36,6 +36,7 @@
 #include "ash/system/rotation/tray_rotation_lock.h"
 #include "ash/system/screen_security/screen_capture_tray_item.h"
 #include "ash/system/screen_security/screen_share_tray_item.h"
+#include "ash/system/screen_security/screen_tray_item.h"
 #include "ash/system/session/tray_session_length_limit.h"
 #include "ash/system/supervised/tray_supervised_user.h"
 #include "ash/system/tiles/tray_tiles.h"
@@ -70,8 +71,11 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/message_box_view.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
@@ -81,6 +85,49 @@ using views::TrayBubbleView;
 namespace ash {
 
 namespace {
+
+// Dialog that confirms the user wants to stop screen share/cast. Calls a
+// callback with the result.
+class CancelCastingDialog : public views::DialogDelegateView {
+ public:
+  explicit CancelCastingDialog(base::OnceCallback<void(bool)> callback)
+      : callback_(std::move(callback)) {
+    AddChildView(new views::MessageBoxView(views::MessageBoxView::InitParams(
+        l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_MESSAGE))));
+    SetLayoutManager(new views::FillLayout());
+  }
+  ~CancelCastingDialog() override = default;
+
+  base::string16 GetWindowTitle() const override {
+    return l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_TITLE);
+  }
+
+  int GetDialogButtons() const override {
+    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  }
+
+  bool Cancel() override {
+    std::move(callback_).Run(false);
+    return true;
+  }
+
+  bool Accept() override {
+    // Stop screen sharing and capturing.
+    SystemTray* system_tray = Shell::Get()->GetPrimarySystemTray();
+    if (system_tray->GetScreenShareItem()->is_started())
+      system_tray->GetScreenShareItem()->Stop();
+    if (system_tray->GetScreenCaptureItem()->is_started())
+      system_tray->GetScreenCaptureItem()->Stop();
+
+    std::move(callback_).Run(true);
+    return true;
+  }
+
+ private:
+  base::OnceCallback<void(bool)> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(CancelCastingDialog);
+};
 
 // A tray item that just reserves space in the tray.
 class PaddingTrayItem : public SystemTrayItem {
@@ -397,6 +444,22 @@ views::View* SystemTray::GetHelpButtonView() const {
 
 TrayAudio* SystemTray::GetTrayAudio() const {
   return tray_audio_;
+}
+
+void SystemTray::CanSwitchAwayFromActiveUser(
+    base::OnceCallback<void(bool)> callback) {
+  // If neither screen sharing nor capturing is going on we can immediately
+  // switch users.
+  if (!GetScreenShareItem()->is_started() &&
+      !GetScreenCaptureItem()->is_started()) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  views::DialogDelegate::CreateDialogWidget(
+      new CancelCastingDialog(std::move(callback)),
+      Shell::GetPrimaryRootWindow(), nullptr)
+      ->Show();
 }
 
 // Private methods.

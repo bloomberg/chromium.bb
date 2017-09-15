@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/tray_background_view.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/view.h"
@@ -116,6 +117,11 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
 
   // Returns TrayAudio object if present or null otherwise.
   TrayAudio* GetTrayAudio() const;
+
+  // Determines if it's ok to switch away from the currently active user. Screen
+  // casting may block this (or at least throw up a confirmation dialog). Calls
+  // |callback| with the result.
+  void CanSwitchAwayFromActiveUser(base::OnceCallback<void(bool)> callback);
 
   // TrayBackgroundView:
   void UpdateAfterShelfAlignmentChange() override;

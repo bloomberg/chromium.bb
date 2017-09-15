@@ -104,6 +104,7 @@ class SessionControllerClient
   static void FlushForTesting();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, CyclingThreeUsers);
   FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, SendUserSession);
   FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, SupervisedUser);
   FRIEND_TEST_ALL_PREFIXES(SessionControllerClientTest, UserPrefsChange);

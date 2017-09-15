@@ -29,7 +29,6 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -118,8 +117,9 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   return session;
 }
 
-void DoSwitchUser(const AccountId& account_id) {
-  UserManager::Get()->SwitchActiveUser(account_id);
+void DoSwitchUser(const AccountId& account_id, bool switch_user) {
+  if (switch_user)
+    UserManager::Get()->SwitchActiveUser(account_id);
 }
 
 // Callback for the dialog that warns the user about multi-profile, which has
@@ -382,7 +382,14 @@ void SessionControllerClient::DoSwitchActiveUser(const AccountId& account_id) {
   if (account_id == UserManager::Get()->GetActiveUser()->GetAccountId())
     return;
 
-  TrySwitchingActiveUser(base::Bind(&DoSwitchUser, account_id));
+  // |client| may be null in tests.
+  SessionControllerClient* client = SessionControllerClient::Get();
+  if (client) {
+    SessionControllerClient::Get()->session_controller_->CanSwitchActiveUser(
+        base::Bind(&DoSwitchUser, account_id));
+  } else {
+    DoSwitchUser(account_id, true);
+  }
 }
 
 // static

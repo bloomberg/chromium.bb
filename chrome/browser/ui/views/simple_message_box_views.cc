@@ -32,9 +32,6 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-// The currently showing message box, if there is one. Used for tests.
-SimpleMessageBoxViews* g_current_message_box = nullptr;
-
 namespace {
 #if defined(OS_WIN)
 UINT GetMessageBoxFlagsFromType(chrome::MessageBoxType type) {
@@ -248,30 +245,17 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(
 SimpleMessageBoxViews::~SimpleMessageBoxViews() {}
 
 void SimpleMessageBoxViews::Run(MessageBoxResultCallback result_callback) {
-  g_current_message_box = this;
   result_callback_ = std::move(result_callback);
 }
 
 void SimpleMessageBoxViews::Done() {
   CHECK(!result_callback_.is_null());
   std::move(result_callback_).Run(result_);
-  g_current_message_box = nullptr;
 }
 
 namespace chrome {
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-bool CloseMessageBoxForTest(bool accept) {
-  if (!g_current_message_box)
-    return false;
-
-  if (accept)
-    g_current_message_box->Accept();
-  else
-    g_current_message_box->Cancel();
-  return true;
-}
-
 void ShowWarningMessageBox(gfx::NativeWindow parent,
                            const base::string16& title,
                            const base::string16& message) {
