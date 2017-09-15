@@ -40,6 +40,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/PlainTextRange.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebDevToolsAgentImpl.h"
 #include "core/exported/WebPagePopupImpl.h"

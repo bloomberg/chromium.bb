@@ -47,6 +47,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/HTMLInterchange.h"
 #include "core/editing/serializers/Serialization.h"

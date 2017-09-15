@@ -9,6 +9,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/Position.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/markers/SpellCheckMarker.h"
 #include "core/editing/markers/SuggestionMarker.h"

@@ -5,6 +5,7 @@
 #include "core/editing/commands/InsertTextCommand.h"
 
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/testing/EditingTestBase.h"
 
 namespace blink {

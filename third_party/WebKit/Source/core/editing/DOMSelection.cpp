@@ -39,6 +39,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionModifier.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/SetSelectionOptions.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/iterators/TextIterator.h"

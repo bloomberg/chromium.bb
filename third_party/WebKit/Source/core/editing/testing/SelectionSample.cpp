@@ -12,6 +12,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/SelectionTemplate.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {

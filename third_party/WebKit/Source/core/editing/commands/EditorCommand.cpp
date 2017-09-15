@@ -44,6 +44,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionModifier.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/SetSelectionOptions.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/commands/CreateLinkCommand.h"

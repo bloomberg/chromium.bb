@@ -6,6 +6,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"

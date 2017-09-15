@@ -12,6 +12,7 @@
 #include "core/editing/FrameCaret.h"
 #include "core/editing/SelectionController.h"
 #include "core/editing/SelectionModifier.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/frame/LocalFrameView.h"
