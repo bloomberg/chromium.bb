@@ -10573,7 +10573,33 @@
       }
     ]
   },
-  "Mac dEQP Release": {
+  "Mac dEQP Release AMD": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-gl"
+        ],
+        "name": "angle_deqp_gles2_gl_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests",
+        "use_xvfb": false
+      }
+    ],
+    "isolated_scripts": []
+  },
+  "Mac dEQP Release Intel": {
     "gtest_tests": [
       {
         "args": [
@@ -10586,13 +10612,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
-            },
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "Mac",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.12.5"
             }
           ],
           "shards": 4

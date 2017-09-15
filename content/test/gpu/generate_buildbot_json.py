@@ -568,20 +568,29 @@ FYI_WATERFALL = {
       'os_type': 'mac',
       'is_asan': True,
     },
-    'Mac dEQP Release': {
+    'Mac dEQP Release AMD': {
       # This bot spawns jobs on multiple GPU types.
       'swarming_dimensions': [
-        {
-          'gpu': '8086:0a2e',
-          # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac-10.12'
-        },
         {
           'gpu': '1002:6821',
           'hidpi': '1',
           # TODO(crbug.com/754777): change to 10.12.6.
           'os': 'Mac',
           'pool': 'Chrome-GPU',
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+      'type': Types.DEQP,
+    },
+    'Mac dEQP Release Intel': {
+      # This bot spawns jobs on multiple GPU types.
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0a2e',
+          # TODO(crbug.com/754777): change to 10.12.6.
+          'os': 'Mac-10.12.5'
         },
       ],
       'build_config': 'Release',
@@ -1097,7 +1106,7 @@ COMMON_GTESTS = {
             'gpu': '8086:0a2e',
             'os': 'Mac-10.12.5'
           },
-          # Mac NVIDIA
+          # Mac AMD
           {
             'gpu': '1002:6821',
             'hidpi': '1',
