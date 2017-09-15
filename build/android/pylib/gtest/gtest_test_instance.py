@@ -207,10 +207,11 @@ def ParseGTestOutput(output, symbolizer, device_abi):
 def ParseGTestXML(xml_content):
   """Parse gtest XML result."""
   results = []
+  if not xml_content:
+    return results
 
   html = HTMLParser.HTMLParser()
 
-  # TODO(jbudorick): Unclear how this handles crashes.
   testsuites = xml.etree.ElementTree.fromstring(xml_content)
   for testsuite in testsuites:
     suite_name = testsuite.attrib['name']

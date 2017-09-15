@@ -177,6 +177,10 @@ class GtestTestInstanceTests(unittest.TestCase):
     self.assertEquals(1, actual[0].GetDuration())
     self.assertEquals(base_test_result.ResultType.PASS, actual[0].GetType())
 
+  def testParseGTestXML_none(self):
+    actual = gtest_test_instance.ParseGTestXML(None)
+    self.assertEquals([], actual)
+
   def testConvertTestFilterFile_commentsAndBlankLines(self):
     input_lines = [
       'positive1',
