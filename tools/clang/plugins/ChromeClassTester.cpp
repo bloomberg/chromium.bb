@@ -80,21 +80,6 @@ void ChromeClassTester::CheckTag(TagDecl* tag) {
   }
 }
 
-void ChromeClassTester::emitWarning(SourceLocation loc,
-                                    const char* raw_error) {
-  FullSourceLoc full(loc, instance().getSourceManager());
-  std::string err;
-  err = "[chromium-style] ";
-  err += raw_error;
-
-  DiagnosticIDs::Level level = getErrorLevel() == DiagnosticsEngine::Error
-      ? DiagnosticIDs::Error : DiagnosticIDs::Warning;
-
-  unsigned id = diagnostic().getDiagnosticIDs()->getCustomDiagID(level, err);
-  DiagnosticBuilder builder = diagnostic().Report(full, id);
-
-}
-
 ChromeClassTester::LocationType ChromeClassTester::ClassifyLocation(
     SourceLocation loc,
     const Decl* record) {

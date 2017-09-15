@@ -30,11 +30,6 @@ class ChromeClassTester {
   clang::CompilerInstance& instance() { return instance_; }
   clang::DiagnosticsEngine& diagnostic() { return diagnostic_; }
 
-  // Emits a simple warning; this shouldn't be used if you require printf-style
-  // printing.
-  // TODO(dcheng): This will be removed. Do not add new usage.
-  void emitWarning(clang::SourceLocation loc, const char* error);
-
   // Utility method for subclasses to check if this class is in a banned
   // namespace.
   bool InBannedNamespace(const clang::Decl* record);
