@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/output/layer_tree_frame_sink_client.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "ui/views/view.h"
 
@@ -26,22 +27,32 @@ namespace views {
 class Widget;
 }
 
-namespace viz {
-struct ReturnedResource;
-}
-
 namespace ash {
-class FastInkLayerTreeFrameSinkHolder;
 struct FastInkResource;
 
 // FastInkView is a view supporting low-latency rendering.
-class FastInkView : public views::View {
+class FastInkView : public views::View, public cc::LayerTreeFrameSinkClient {
  public:
   // Creates a FastInkView filling the bounds of |root_window|.
   // If |root_window| is resized (e.g. due to a screen size change),
   // a new instance of FastInkView should be created.
   explicit FastInkView(aura::Window* root_window);
   ~FastInkView() override;
+
+  // Overridden from cc::LayerTreeFrameSinkClient:
+  void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
+  void ReclaimResources(
+      const std::vector<viz::ReturnedResource>& resources) override;
+  void SetTreeActivationCallback(const base::Closure& callback) override {}
+  void DidReceiveCompositorFrameAck() override;
+  void DidLoseLayerTreeFrameSink() override {}
+  void OnDraw(const gfx::Transform& transform,
+              const gfx::Rect& viewport,
+              bool resourceless_software_draw) override {}
+  void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override {}
+  void SetExternalTilePriorityConstraints(
+      const gfx::Rect& viewport_rect,
+      const gfx::Transform& transform) override {}
 
  protected:
   // Unions |rect| with the current damage rect.
@@ -53,14 +64,6 @@ class FastInkView : public views::View {
   virtual void OnRedraw(gfx::Canvas& canvas) = 0;
 
  private:
-  friend class FastInkLayerTreeFrameSinkHolder;
-
-  // Call this to indicate that the previous frame has been processed.
-  void DidReceiveCompositorFrameAck();
-
-  // Call this to return resources so they can be reused or freed.
-  void ReclaimResources(const std::vector<viz::ReturnedResource>& resources);
-
   void UpdateBuffer();
   void UpdateSurface();
   void OnDidDrawSurface();
@@ -73,10 +76,11 @@ class FastInkView : public views::View {
   gfx::Rect surface_damage_rect_;
   bool needs_update_surface_ = false;
   bool pending_draw_surface_ = false;
-  std::unique_ptr<FastInkLayerTreeFrameSinkHolder> frame_sink_holder_;
   int next_resource_id_ = 1;
-  base::flat_map<viz::ResourceId, std::unique_ptr<FastInkResource>> resources_;
+  base::flat_map<viz::ResourceId, std::unique_ptr<FastInkResource>>
+      exported_resources_;
   std::vector<std::unique_ptr<FastInkResource>> returned_resources_;
+  std::unique_ptr<cc::LayerTreeFrameSink> frame_sink_;
   base::WeakPtrFactory<FastInkView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FastInkView);

@@ -14,7 +14,6 @@
 #include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/layer_tree_frame_sink.h"
-#include "cc/output/layer_tree_frame_sink_client.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -30,58 +29,14 @@
 
 namespace ash {
 
-class FastInkLayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
- public:
-  FastInkLayerTreeFrameSinkHolder(
-      FastInkView* view,
-      std::unique_ptr<cc::LayerTreeFrameSink> frame_sink)
-      : view_(view), frame_sink_(std::move(frame_sink)) {
-    frame_sink_->BindToClient(this);
-  }
-  ~FastInkLayerTreeFrameSinkHolder() override {
-    frame_sink_->DetachFromClient();
-  }
-
-  cc::LayerTreeFrameSink* frame_sink() { return frame_sink_.get(); }
-
-  // Called before fast ink view is destroyed.
-  void OnFastInkViewDestroying() { view_ = nullptr; }
-
-  // Overridden from cc::LayerTreeFrameSinkClient:
-  void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
-  void ReclaimResources(
-      const std::vector<viz::ReturnedResource>& resources) override {
-    if (view_)
-      view_->ReclaimResources(resources);
-  }
-  void SetTreeActivationCallback(const base::Closure& callback) override {}
-  void DidReceiveCompositorFrameAck() override {
-    if (view_)
-      view_->DidReceiveCompositorFrameAck();
-  }
-  void DidLoseLayerTreeFrameSink() override {}
-  void OnDraw(const gfx::Transform& transform,
-              const gfx::Rect& viewport,
-              bool resourceless_software_draw) override {}
-  void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override {}
-  void SetExternalTilePriorityConstraints(
-      const gfx::Rect& viewport_rect,
-      const gfx::Transform& transform) override {}
-
- private:
-  FastInkView* view_;
-  std::unique_ptr<cc::LayerTreeFrameSink> frame_sink_;
-
-  DISALLOW_COPY_AND_ASSIGN(FastInkLayerTreeFrameSinkHolder);
-};
-
 // This struct contains the resources associated with a fast ink frame.
 struct FastInkResource {
   FastInkResource() {}
   ~FastInkResource() {
     if (context_provider) {
       gpu::gles2::GLES2Interface* gles2 = context_provider->ContextGL();
-      if (texture)
+      // Delete texture if not currently exported.
+      if (texture && !exported)
         gles2->DeleteTextures(1, &texture);
       if (image)
         gles2->DestroyImageCHROMIUM(image);
@@ -91,6 +46,7 @@ struct FastInkResource {
   uint32_t texture = 0;
   uint32_t image = 0;
   gpu::Mailbox mailbox;
+  bool exported = false;
 };
 
 // FastInkView
@@ -122,12 +78,12 @@ FastInkView::FastInkView(aura::Window* root_window) : weak_ptr_factory_(this) {
   screen_to_buffer_transform_ =
       widget_->GetNativeWindow()->GetHost()->GetRootTransform();
 
-  frame_sink_holder_ = base::MakeUnique<FastInkLayerTreeFrameSinkHolder>(
-      this, widget_->GetNativeView()->CreateLayerTreeFrameSink());
+  frame_sink_ = widget_->GetNativeView()->CreateLayerTreeFrameSink();
+  frame_sink_->BindToClient(this);
 }
 
 FastInkView::~FastInkView() {
-  frame_sink_holder_->OnFastInkViewDestroying();
+  frame_sink_->DetachFromClient();
 }
 
 void FastInkView::DidReceiveCompositorFrameAck() {
@@ -139,10 +95,13 @@ void FastInkView::DidReceiveCompositorFrameAck() {
 void FastInkView::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   for (auto& entry : resources) {
-    auto it = resources_.find(entry.id);
-    DCHECK(it != resources_.end());
+    auto it = exported_resources_.find(entry.id);
+    DCHECK(it != exported_resources_.end());
     std::unique_ptr<FastInkResource> resource = std::move(it->second);
-    resources_.erase(it);
+    exported_resources_.erase(it);
+
+    DCHECK(resource->exported);
+    resource->exported = false;
 
     gpu::gles2::GLES2Interface* gles2 = resource->context_provider->ContextGL();
     if (entry.sync_token.HasData())
@@ -399,9 +358,10 @@ void FastInkView::UpdateSurface() {
   frame.resource_list.push_back(transferable_resource);
   frame.render_pass_list.push_back(std::move(render_pass));
 
-  frame_sink_holder_->frame_sink()->SubmitCompositorFrame(std::move(frame));
+  resource->exported = true;
+  exported_resources_[transferable_resource.id] = std::move(resource);
 
-  resources_[transferable_resource.id] = std::move(resource);
+  frame_sink_->SubmitCompositorFrame(std::move(frame));
 
   DCHECK(!pending_draw_surface_);
   pending_draw_surface_ = true;
