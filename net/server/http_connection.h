@@ -103,7 +103,9 @@ class HttpConnection {
    private:
     ~QueuedWriteIOBuffer() override;
 
-    base::queue<std::string> pending_data_;
+    // This needs to indirect since we need pointer stability for the payload
+    // chunks, as they may be handed out via net::IOBuffer::data().
+    base::queue<std::unique_ptr<std::string>> pending_data_;
     int total_size_;
     int max_buffer_size_;
 

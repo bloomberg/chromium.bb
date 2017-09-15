@@ -327,5 +327,36 @@ TEST(HttpConnectionTest, QueuedWriteIOBuffer_TotalSizeLimit) {
   EXPECT_EQ(kDataLength * 4 - kConsumedLength, buffer->total_size());
 }
 
+TEST(HttpConnectionTest, QueuedWriteIOBuffer_DataPointerStability) {
+  // This is a regression test that makes sure that QueuedWriteIOBuffer deals
+  // with base::queue's semantics differences vs. std::queue right, and still
+  // makes sure our data() pointers are stable.
+  scoped_refptr<HttpConnection::QueuedWriteIOBuffer> buffer(
+      new HttpConnection::QueuedWriteIOBuffer());
+
+  // We append a short string to make it fit within any short string
+  // optimization, so that if the underlying queue moves the std::string,
+  // the data should change.
+  buffer->Append("abcdefgh");
+
+  // Read part of it, to make sure this handles the case of data() pointing
+  // to something other than start of string right.
+  buffer->DidConsume(3);
+  const char* old_data = buffer->data();
+  EXPECT_EQ("defgh", base::StringPiece(buffer->data(), 5));
+
+  // Now append a whole bunch of other things to make the underlying queue
+  // grow, and likely need to move stuff around in memory.
+  for (int i = 0; i < 256; ++i)
+    buffer->Append("some other string data");
+
+  // data() should still be right.
+  EXPECT_EQ("defgh", base::StringPiece(buffer->data(), 5));
+
+  // ... it should also be bitwise the same, since the IOBuffer can get passed
+  // to async calls and then have Append's come in.
+  EXPECT_TRUE(buffer->data() == old_data);
+}
+
 }  // namespace
 }  // namespace net

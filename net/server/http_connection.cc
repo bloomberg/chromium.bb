@@ -115,12 +115,12 @@ bool HttpConnection::QueuedWriteIOBuffer::Append(const std::string& data) {
     return false;
   }
 
-  pending_data_.push(data);
+  pending_data_.push(std::make_unique<std::string>(data));
   total_size_ += data.size();
 
   // If new data is the first pending data, updates data_.
   if (pending_data_.size() == 1)
-    data_ = const_cast<char*>(pending_data_.front().data());
+    data_ = const_cast<char*>(pending_data_.front()->data());
   return true;
 }
 
@@ -134,7 +134,7 @@ void HttpConnection::QueuedWriteIOBuffer::DidConsume(int size) {
     data_ += size;
   } else {  // size == GetSizeToWrite(). Updates data_ to next pending data.
     pending_data_.pop();
-    data_ = IsEmpty() ? NULL : const_cast<char*>(pending_data_.front().data());
+    data_ = IsEmpty() ? NULL : const_cast<char*>(pending_data_.front()->data());
   }
   total_size_ -= size;
 }
@@ -144,10 +144,10 @@ int HttpConnection::QueuedWriteIOBuffer::GetSizeToWrite() const {
     DCHECK_EQ(0, total_size_);
     return 0;
   }
-  DCHECK_GE(data_, pending_data_.front().data());
-  int consumed = static_cast<int>(data_ - pending_data_.front().data());
-  DCHECK_GT(static_cast<int>(pending_data_.front().size()), consumed);
-  return pending_data_.front().size() - consumed;
+  DCHECK_GE(data_, pending_data_.front()->data());
+  int consumed = static_cast<int>(data_ - pending_data_.front()->data());
+  DCHECK_GT(static_cast<int>(pending_data_.front()->size()), consumed);
+  return pending_data_.front()->size() - consumed;
 }
 
 HttpConnection::HttpConnection(int id, std::unique_ptr<StreamSocket> socket)
