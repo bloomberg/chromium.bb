@@ -124,9 +124,10 @@ void LayoutTableSection::StyleDidChange(StyleDifference diff,
       *this, *table, diff, *old_style);
 
   if (LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *table, diff,
-                                                     *old_style))
+                                                     *old_style)) {
     MarkAllCellsWidthsDirtyAndOrNeedsLayout(
         LayoutTable::kMarkDirtyAndNeedsLayout);
+  }
 }
 
 void LayoutTableSection::WillBeRemovedFromTree() {

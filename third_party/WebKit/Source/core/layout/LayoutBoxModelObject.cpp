@@ -1277,14 +1277,31 @@ const LayoutObject* LayoutBoxModelObject::PushMappingToContainer(
   bool is_fixed_pos = !is_inline && Style()->GetPosition() == EPosition::kFixed;
   bool contains_fixed_position = CanContainFixedPositionObjects();
 
-  LayoutSize adjustment_for_skipped_ancestor;
+  TransformationMatrix adjustment_for_skipped_ancestor;
+  bool adjustment_for_skipped_ancestor_is_translate2D = true;
   if (skip_info.AncestorSkipped()) {
-    // There can't be a transform between paintInvalidationContainer and
-    // ancestorToStopAt, because transforms create containers, so it should be
-    // safe to just subtract the delta between the ancestor and
-    // ancestorToStopAt.
-    adjustment_for_skipped_ancestor =
-        -ancestor_to_stop_at->OffsetFromAncestorContainer(container);
+    // There can't be a transform between container and ancestor_to_stop_at,
+    // because transforms create containers, so it should be safe to just
+    // subtract the delta between the container and ancestor_to_stop_at.
+    // But if ancestor_to_stop_at is a table section with a transform, we
+    // must apply the transform to the offset because the table section is
+    // not the container (it is not a LayoutBlock).
+    LayoutSize ancestor_offset =
+        ancestor_to_stop_at->OffsetFromAncestorContainer(container);
+    if (ancestor_to_stop_at->IsTableSection() &&
+        ancestor_to_stop_at->StyleRef().HasTransform() &&
+        ancestor_to_stop_at->ShouldUseTransformFromContainer(container)) {
+      TransformationMatrix t;
+      ancestor_to_stop_at->GetTransformFromContainer(container, ancestor_offset,
+                                                     t);
+      adjustment_for_skipped_ancestor = t.Inverse();
+      adjustment_for_skipped_ancestor_is_translate2D =
+          adjustment_for_skipped_ancestor.IsIdentityOr2DTranslation();
+    } else {
+      adjustment_for_skipped_ancestor.Translate(
+          -ancestor_offset.Width().ToFloat(),
+          -ancestor_offset.Height().ToFloat());
+    }
   }
 
   LayoutSize container_offset = OffsetFromContainer(container);
@@ -1310,12 +1327,22 @@ const LayoutObject* LayoutBoxModelObject::PushMappingToContainer(
   if (ShouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
     GetTransformFromContainer(container, container_offset, t);
-    t.PostTranslate(adjustment_for_skipped_ancestor.Width().ToFloat(),
-                    adjustment_for_skipped_ancestor.Height().ToFloat());
-    geometry_map.Push(this, t, flags, LayoutSize());
-  } else {
-    container_offset += adjustment_for_skipped_ancestor;
+    adjustment_for_skipped_ancestor.Multiply(t);
+    geometry_map.Push(this, adjustment_for_skipped_ancestor, flags,
+                      LayoutSize());
+  } else if (adjustment_for_skipped_ancestor_is_translate2D) {
+    container_offset.SetWidth(
+        container_offset.Width() +
+        LayoutUnit(adjustment_for_skipped_ancestor.M41()));
+    container_offset.SetHeight(
+        container_offset.Height() +
+        LayoutUnit(adjustment_for_skipped_ancestor.M42()));
     geometry_map.Push(this, container_offset, flags, LayoutSize());
+  } else {
+    adjustment_for_skipped_ancestor.Translate(container_offset.Width(),
+                                              container_offset.Height());
+    geometry_map.Push(this, adjustment_for_skipped_ancestor, flags,
+                      LayoutSize());
   }
 
   return skip_info.AncestorSkipped() ? ancestor_to_stop_at : container;
