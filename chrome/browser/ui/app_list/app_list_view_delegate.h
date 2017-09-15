@@ -100,9 +100,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Updates the speech webview and start page for the current |profile_|.
   void SetUpSearchUI();
 
-  // Updates the app list's custom launcher pages for the current |profile_|.
-  void SetUpCustomLauncherPages();
-
   // Overridden from app_list::StartPageObserver:
   void OnSpeechResult(const base::string16& result, bool is_final) override;
   void OnSpeechSoundLevelChanged(int16_t level) override;

@@ -23,7 +23,6 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
-#include "ui/app_list/views/custom_launcher_page_view.h"
 #include "ui/app_list/views/expand_arrow_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_container_view.h"
@@ -56,41 +55,7 @@ constexpr int kPreferredHeightFullscreen = 272;
 constexpr int kWebViewWidth = 700;
 constexpr int kWebViewHeight = 224;
 
-constexpr int kLauncherPageBackgroundWidth = 400;
-
 }  // namespace
-
-class CustomLauncherPageBackgroundView : public views::View {
- public:
-  explicit CustomLauncherPageBackgroundView(
-      const std::string& custom_launcher_page_name)
-      : selected_(false),
-        custom_launcher_page_name_(custom_launcher_page_name) {
-    SetBackground(views::CreateSolidBackground(kSelectedColor));
-  }
-  ~CustomLauncherPageBackgroundView() override {}
-
-  void SetSelected(bool selected) {
-    selected_ = selected;
-    SetVisible(selected);
-    if (selected)
-      NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
-  }
-
-  bool selected() { return selected_; }
-
-  // Overridden from views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ui::AX_ROLE_BUTTON;
-    node_data->SetName(custom_launcher_page_name_);
-  }
-
- private:
-  bool selected_;
-  std::string custom_launcher_page_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomLauncherPageBackgroundView);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // StartPageView implementation:
@@ -102,8 +67,6 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
       view_delegate_(view_delegate),
       search_box_spacer_view_(new View()),
       instant_container_(new views::View),
-      custom_launcher_page_background_(new CustomLauncherPageBackgroundView(
-          view_delegate_->GetModel()->custom_launcher_page_name())),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   suggestions_container_ = new SuggestionsContainerView(
       app_list_main_view->contents_view(),
@@ -128,7 +91,6 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
         app_list_main_view_->contents_view(), app_list_view);
     AddChildView(expand_arrow_view_);
   }
-  AddChildView(custom_launcher_page_background_);
 
   suggestions_container_->SetResults(view_delegate_->GetModel()->results());
 }
@@ -172,19 +134,6 @@ void StartPageView::InitInstantContainer() {
   instant_container_->AddChildView(search_box_spacer_view_);
 }
 
-void StartPageView::MaybeOpenCustomLauncherPage() {
-  // Switch to the custom page.
-  ContentsView* contents_view = app_list_main_view_->contents_view();
-  if (!app_list_main_view_->ShouldShowCustomLauncherPage())
-    return;
-
-  UMA_HISTOGRAM_ENUMERATION(kPageOpenedHistogram,
-                            AppListModel::STATE_CUSTOM_LAUNCHER_PAGE,
-                            AppListModel::STATE_LAST);
-
-  contents_view->SetActiveState(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
-}
-
 void StartPageView::Reset() {
   suggestions_container_->Update();
 }
@@ -203,17 +152,8 @@ TileItemView* StartPageView::all_apps_button() const {
 }
 
 void StartPageView::OnShown() {
-  // When the start page is shown, show or hide the custom launcher page
-  // based on whether it is enabled.
-  CustomLauncherPageView* custom_page_view =
-      app_list_main_view_->contents_view()->custom_page_view();
-  if (custom_page_view) {
-    custom_page_view->SetVisible(
-        app_list_main_view_->ShouldShowCustomLauncherPage());
-  }
   suggestions_container_->ClearSelectedIndex();
   suggestions_container_->Update();
-  custom_launcher_page_background_->SetSelected(false);
 }
 
 gfx::Rect StartPageView::GetPageBoundsForState(
@@ -270,19 +210,6 @@ void StartPageView::Layout() {
         expand_arrow_view_->GetPreferredSize().height());
     expand_arrow_view_->SetBoundsRect(expand_arrow_rect);
   }
-
-  CustomLauncherPageView* custom_launcher_page_view =
-      app_list_main_view_->contents_view()->custom_page_view();
-  if (!custom_launcher_page_view)
-    return;
-
-  bounds = app_list_main_view_->contents_view()
-               ->custom_page_view()
-               ->GetCollapsedLauncherPageBounds();
-  bounds.Intersect(GetContentsBounds());
-  bounds.ClampToCenteredSize(
-      gfx::Size(kLauncherPageBackgroundWidth, bounds.height()));
-  custom_launcher_page_background_->SetBoundsRect(bounds);
 }
 
 bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -290,19 +217,9 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
     return HandleKeyPressedFullscreen(event);
   const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
   int selected_index = suggestions_container_->selected_index();
-
-  if (custom_launcher_page_background_->selected()) {
-    selected_index = suggestions_container_->num_results();
-    switch (event.key_code()) {
-      case ui::VKEY_RETURN:
-        MaybeOpenCustomLauncherPage();
-        return true;
-      default:
-        break;
-    }
-  } else if (selected_index >= 0 &&
-             suggestions_container_->GetTileItemView(selected_index)
-                 ->OnKeyPressed(event)) {
+  if (selected_index >= 0 &&
+      suggestions_container_->GetTileItemView(selected_index)
+          ->OnKeyPressed(event)) {
     return true;
   }
 
@@ -311,24 +228,12 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_LEFT:
       dir = -forward_dir;
       break;
-    case ui::VKEY_RIGHT:
-      // Don't go to the custom launcher page from the All apps tile.
-      if (selected_index != suggestions_container_->num_results() - 1)
-        dir = forward_dir;
-      break;
+    case ui::VKEY_RIGHT:  // fall through
     case ui::VKEY_UP:
-      // Up selects the first tile if the custom launcher is selected.
-      if (custom_launcher_page_background_->selected()) {
-        selected_index = -1;
-        dir = 1;
-      }
       break;
     case ui::VKEY_DOWN:
       // Down selects the first tile if nothing is selected.
       dir = 1;
-      // If something is selected, select the custom launcher page.
-      if (suggestions_container_->IsValidSelectionIndex(selected_index))
-        selected_index = suggestions_container_->num_results() - 1;
       break;
     case ui::VKEY_TAB:
       dir = event.IsShiftDown() ? -1 : 1;
@@ -341,7 +246,6 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
     return false;
 
   if (selected_index == -1) {
-    custom_launcher_page_background_->SetSelected(false);
     suggestions_container_->SetSelectedIndex(
         dir == -1 ? suggestions_container_->num_results() - 1 : 0);
     return true;
@@ -349,15 +253,7 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
 
   int selection_index = selected_index + dir;
   if (suggestions_container_->IsValidSelectionIndex(selection_index)) {
-    custom_launcher_page_background_->SetSelected(false);
     suggestions_container_->SetSelectedIndex(selection_index);
-    return true;
-  }
-
-  if (selection_index == suggestions_container_->num_results() &&
-      app_list_main_view_->ShouldShowCustomLauncherPage()) {
-    custom_launcher_page_background_->SetSelected(true);
-    suggestions_container_->ClearSelectedIndex();
     return true;
   }
 
@@ -366,52 +262,6 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
         ->ClearSelectedIndex();  // ContentsView will handle focus.
 
   return false;
-}
-
-bool StartPageView::OnMousePressed(const ui::MouseEvent& event) {
-  ContentsView* contents_view = app_list_main_view_->contents_view();
-  if (contents_view->custom_page_view() &&
-      !contents_view->custom_page_view()
-           ->GetCollapsedLauncherPageBounds()
-           .Contains(event.location())) {
-    return false;
-  }
-
-  MaybeOpenCustomLauncherPage();
-  return IsCustomLauncherPageActive();
-}
-
-bool StartPageView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  // Negative y_offset is a downward scroll.
-  if (event.y_offset() < 0) {
-    MaybeOpenCustomLauncherPage();
-    return IsCustomLauncherPageActive();
-  }
-
-  return false;
-}
-
-void StartPageView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN &&
-      event->details().scroll_y_hint() < 0) {
-    MaybeOpenCustomLauncherPage();
-  }
-
-  ContentsView* contents_view = app_list_main_view_->contents_view();
-  if (event->type() == ui::ET_GESTURE_TAP &&
-      contents_view->custom_page_view() &&
-      contents_view->custom_page_view()
-          ->GetCollapsedLauncherPageBounds()
-          .Contains(event->location())) {
-    MaybeOpenCustomLauncherPage();
-  }
-}
-
-void StartPageView::OnScrollEvent(ui::ScrollEvent* event) {
-  // Negative y_offset is a downward scroll (or upward, if Australian Scrolling
-  // is enabled).
-  if (event->type() == ui::ET_SCROLL && event->y_offset() < 0)
-    MaybeOpenCustomLauncherPage();
 }
 
 int StartPageView::GetSelectedIndexForTest() const {

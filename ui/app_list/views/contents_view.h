@@ -171,12 +171,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Returns the size of the default content area.
   gfx::Size GetDefaultContentsSize() const;
 
-  // Notifies the view delegate that the custom launcher page's animation has
-  // changed.
-  void NotifyCustomLauncherPageAnimationChanged(double progress,
-                                                int current_page,
-                                                int target_page);
-
   // Calculates and sets the bounds for the subviews. If there is currently an
   // animation, this positions the views as appropriate for the current frame.
   void UpdatePageBounds();

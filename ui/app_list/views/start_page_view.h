@@ -18,7 +18,6 @@ namespace app_list {
 class AppListMainView;
 class AppListView;
 class AppListViewDelegate;
-class CustomLauncherPageBackgroundView;
 class ExpandArrowView;
 class SearchResultTileItemView;
 class SuggestionsContainerView;
@@ -52,11 +51,6 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnScrollEvent(ui::ScrollEvent* event) override;
-
   // Used only in the tests to get the selected index in start page view.
   // Returns |kNoSelection|, |kExpandArrowSelection| or an index >= 0 which is
   // the selected index in suggestions container view.
@@ -67,10 +61,6 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
 
  private:
   void InitInstantContainer();
-
-  void MaybeOpenCustomLauncherPage();
-
-  void SetCustomLauncherPageSelected(bool selected);
 
   // Updates opacity of |view_item| in the start page based on |centroid_y|.
   void UpdateOpacityOfItem(views::View* view_item, float centroid_y);
@@ -93,8 +83,6 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
   views::View* search_box_spacer_view_;  // Owned by views hierarchy.
 
   views::View* instant_container_;  // Owned by views hierarchy.
-  CustomLauncherPageBackgroundView*
-      custom_launcher_page_background_;     // Owned by views hierarchy.
   SuggestionsContainerView*
       suggestions_container_;  // Owned by views hierarchy.
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by views hierarchy.

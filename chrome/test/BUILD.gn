@@ -2180,7 +2180,6 @@ test("browser_tests") {
 
     if (is_chromeos) {
       sources += [
-        "../browser/apps/custom_launcher_page_browsertest_views.cc",
         "../browser/chromeos/accessibility/accessibility_manager_browsertest.cc",
         "../browser/chromeos/accessibility/magnification_manager_browsertest.cc",
         "../browser/chromeos/accessibility/speech_monitor.cc",
