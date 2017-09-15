@@ -355,8 +355,9 @@ TEST(PageAllocatorTest, AllocFailure) {
   EXPECT_FALSE(base::ReserveAddressSpace(kEasyAllocSize));
 }
 
+// TODO(crbug.com/765801): Test failed on chromium.win/Win10 Tests x64.
 // Test that reserving address space can fail.
-TEST(PageAllocatorTest, ReserveAddressSpace) {
+TEST(PageAllocatorTest, DISABLED_ReserveAddressSpace) {
   size_t size = GetHugeMemoryAmount();
   // Skip the test for sanitizers and platforms with ASLR turned off.
   if (size == 0)
