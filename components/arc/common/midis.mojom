@@ -7,17 +7,26 @@
 
 module arc.mojom;
 
-// This interface is needed to get the actual MidisManager interface handle.
+// This interface is used by the server to send device and other information
+// to the client. It should be implemented by the client, and a handle to it
+// should be passed to the server.
+// Next Method ID: 0
+interface MidisClient {
+};
+
+// This interface is used by the client to send messages / requests to the
+// daemon. This should be implemented by midis.
+// Next Method ID: 0
+interface MidisServer {
+};
+
+// This interface is needed to get the midis server interface handle.
+// It is also used to send a handle to the midis client interface (this is
+// used to send messages to the client, and the interface is implemented
+// by the client).
 // Next Method ID: 1
 interface MidisHost {
-  // This is used by a client to register with midis and is used to connect
-  // the client handle with the server and vice-versa.
-  // Once implemented, this call will have two arguments:
-  //  - a pointer to server interface handle (used to call server functions).
-  //  - a handle to the client interface (used to call client routines on
-  //    device related events like (dis)connections).
-  // It is currently a stub.
-  Connect@0();
+  Connect@0(MidisServer& server, MidisClient client);
 };
 
 // MidisInstance is implemented in the ARC MIDI JNI code that
