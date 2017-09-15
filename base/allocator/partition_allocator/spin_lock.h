@@ -18,8 +18,8 @@
 // cores. For any potentially longer wait you should use a real lock, such as
 // |base::Lock|.
 //
-// |SpinLock|s MUST be globals. Using them as (e.g.) struct/class members will
-// result in an uninitialized lock, which is dangerously incorrect.
+// In order for |lock_| to be correctly initialized to 0, instances of
+// |SpinLock| must either be global, or the Init() method must be called.
 
 namespace base {
 namespace subtle {
@@ -27,6 +27,8 @@ namespace subtle {
 class SpinLock {
  public:
   using Guard = std::lock_guard<SpinLock>;
+
+  void init() { lock_ = 0; }
 
   ALWAYS_INLINE void lock() {
     static_assert(sizeof(lock_) == sizeof(int),

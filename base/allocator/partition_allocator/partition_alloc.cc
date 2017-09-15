@@ -159,6 +159,7 @@ void PartitionAllocInit(PartitionRoot* root,
 }
 
 void PartitionAllocGenericInit(PartitionRootGeneric* root) {
+  root->lock.init();
   subtle::SpinLock::Guard guard(root->lock);
 
   PartitionAllocBaseInit(root);
