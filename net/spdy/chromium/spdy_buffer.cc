@@ -60,9 +60,7 @@ class SpdyBuffer::SharedFrameIOBuffer : public IOBuffer {
 };
 
 SpdyBuffer::SpdyBuffer(std::unique_ptr<SpdySerializedFrame> frame)
-    : shared_frame_(new SharedFrame()), offset_(0) {
-  shared_frame_->data = std::move(frame);
-}
+    : shared_frame_(new SharedFrame(std::move(frame))), offset_(0) {}
 
 // The given data may not be strictly a SPDY frame; we (ab)use
 // |frame_| just as a container.
