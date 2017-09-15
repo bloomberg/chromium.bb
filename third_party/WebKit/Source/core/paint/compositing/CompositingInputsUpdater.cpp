@@ -99,6 +99,7 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
       if (info.last_overflow_clip_layer != previous_overflow_layer) {
         // Old ancestor scroller should no longer have these constraints.
         DCHECK(!previous_overflow_layer ||
+               !previous_overflow_layer->GetScrollableArea() ||
                !previous_overflow_layer->GetScrollableArea()
                     ->GetStickyConstraintsMap()
                     .Contains(layer));
