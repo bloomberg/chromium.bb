@@ -530,6 +530,41 @@ TEST_F(GLTextureMailboxTest, FrontBufferChangeColor) {
   }
 }
 
+// Verify that front buffer textures have sampler parameters that will not cause
+// them to be incomplete when sampled
+TEST_F(GLTextureMailboxTest, FrontBufferSamplerParameters) {
+  SetUpContexts();
+  gl1_.MakeCurrent();
+  Mailbox mailbox;
+  glGenMailboxCHROMIUM(mailbox.name);
+
+  gl2_.MakeCurrent();
+  glResizeCHROMIUM(10, 10, 1, GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM, true);
+  glClearColor(0, 1, 1, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  ::gles2::GetGLContext()->SwapBuffers();
+  gl2_.decoder()->TakeFrontBuffer(mailbox);
+
+  gl1_.MakeCurrent();
+  GLuint tex1;
+  glGenTextures(1, &tex1);
+  glBindTexture(GL_TEXTURE_2D, tex1);
+  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+
+  constexpr std::pair<GLenum, GLint> expected_parameters[] = {
+      {GL_TEXTURE_MAG_FILTER, GL_LINEAR},
+      {GL_TEXTURE_MIN_FILTER, GL_LINEAR},
+      {GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE},
+      {GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE},
+  };
+  for (const auto& expected_parameter : expected_parameters) {
+    GLint value = 0;
+    glGetTexParameteriv(GL_TEXTURE_2D, expected_parameter.first, &value);
+    EXPECT_EQ(expected_parameter.second, value);
+  }
+}
+
 TEST_F(GLTextureMailboxTest, ProduceTextureDirectInvalidTarget) {
   SetUpContexts();
   gl1_.MakeCurrent();
