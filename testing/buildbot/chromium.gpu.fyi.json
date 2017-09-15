@@ -10612,7 +10612,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.5"
+              "os": "Mac-10.12"
             }
           ],
           "shards": 4

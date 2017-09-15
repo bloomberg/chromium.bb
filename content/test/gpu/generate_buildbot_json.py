@@ -590,7 +590,7 @@ FYI_WATERFALL = {
         {
           'gpu': '8086:0a2e',
           # TODO(crbug.com/754777): change to 10.12.6.
-          'os': 'Mac-10.12.5'
+          'os': 'Mac-10.12'
         },
       ],
       'build_config': 'Release',
@@ -1104,7 +1104,7 @@ COMMON_GTESTS = {
           # Mac Intel
           {
             'gpu': '8086:0a2e',
-            'os': 'Mac-10.12.5'
+            'os': 'Mac-10.12'
           },
           # Mac AMD
           {
