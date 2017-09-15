@@ -27,6 +27,7 @@ test("ios_clean_chrome_unittests") {
     "//ios/clean/chrome/browser/ui/dialogs/context_menu:unit_tests",
     "//ios/clean/chrome/browser/ui/dialogs/http_auth_dialogs:unit_tests",
     "//ios/clean/chrome/browser/ui/dialogs/java_script_dialogs:unit_tests",
+    "//ios/clean/chrome/browser/ui/dialogs/java_script_dialogs/dialog_blocking:unit_tests",
     "//ios/clean/chrome/browser/ui/dialogs/unavailable_feature_dialogs:unit_tests",
     "//ios/clean/chrome/browser/ui/find_in_page:unit_tests",
     "//ios/clean/chrome/browser/ui/history_popup:unit_tests",
