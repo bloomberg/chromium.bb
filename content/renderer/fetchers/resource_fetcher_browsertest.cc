@@ -48,8 +48,8 @@ class FetcherDelegate {
   virtual ~FetcherDelegate() {}
 
   ResourceFetcher::Callback NewCallback() {
-    return base::Bind(&FetcherDelegate::OnURLFetchComplete,
-                      base::Unretained(this));
+    return base::BindOnce(&FetcherDelegate::OnURLFetchComplete,
+                          base::Unretained(this));
   }
 
   virtual void OnURLFetchComplete(const WebURLResponse& response,

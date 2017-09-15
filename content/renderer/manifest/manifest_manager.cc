@@ -90,8 +90,8 @@ void ManifestManager::DidChangeManifest() {
   // of this notification and the favicon URL reporting.
   if (!render_frame()->GetWebFrame()->IsLoading()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ManifestManager::ReportManifestChange,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&ManifestManager::ReportManifestChange,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
   ReportManifestChange();

@@ -23,8 +23,8 @@ void RelatedAppsFetcher::GetManifestRelatedApplications(
         const blink::WebVector<blink::WebRelatedApplication>&,
         void>> callbacks) {
   manifest_manager_->GetManifest(
-      base::Bind(&RelatedAppsFetcher::OnGetManifestForRelatedApplications,
-                 base::Unretained(this), base::Passed(&callbacks)));
+      base::BindOnce(&RelatedAppsFetcher::OnGetManifestForRelatedApplications,
+                     base::Unretained(this), base::Passed(&callbacks)));
 }
 
 void RelatedAppsFetcher::OnGetManifestForRelatedApplications(

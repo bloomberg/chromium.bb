@@ -137,12 +137,12 @@ class RemoteWebRtcMediaStreamAdapterTest : public WebRtcMediaStreamAdapterTest {
     std::unique_ptr<WebRtcMediaStreamAdapter> adapter;
     dependency_factory_->GetWebRtcSignalingThread()->PostTask(
         FROM_HERE,
-        base::Bind(&RemoteWebRtcMediaStreamAdapterTest::
-                       CreateRemoteStreamAdapterOnSignalingThread,
-                   base::Unretained(this),
-                   base::Unretained(base::ThreadTaskRunnerHandle::Get().get()),
-                   base::Unretained(webrtc_stream),
-                   base::Unretained(&adapter)));
+        base::BindOnce(
+            &RemoteWebRtcMediaStreamAdapterTest::
+                CreateRemoteStreamAdapterOnSignalingThread,
+            base::Unretained(this),
+            base::Unretained(base::ThreadTaskRunnerHandle::Get().get()),
+            base::Unretained(webrtc_stream), base::Unretained(&adapter)));
     RunMessageLoopsUntilIdle();
     DCHECK(adapter);
     return adapter;
@@ -153,10 +153,10 @@ class RemoteWebRtcMediaStreamAdapterTest : public WebRtcMediaStreamAdapterTest {
                 TrackType* webrtc_track) {
     typedef bool (webrtc::MediaStreamInterface::*AddTrack)(TrackType*);
     dependency_factory_->GetWebRtcSignalingThread()->PostTask(
-        FROM_HERE, base::Bind(base::IgnoreResult<AddTrack>(
-                                  &webrtc::MediaStreamInterface::AddTrack),
-                              base::Unretained(webrtc_stream),
-                              base::Unretained(webrtc_track)));
+        FROM_HERE, base::BindOnce(base::IgnoreResult<AddTrack>(
+                                      &webrtc::MediaStreamInterface::AddTrack),
+                                  base::Unretained(webrtc_stream),
+                                  base::Unretained(webrtc_track)));
     RunMessageLoopsUntilIdle();
   }
 
@@ -165,10 +165,11 @@ class RemoteWebRtcMediaStreamAdapterTest : public WebRtcMediaStreamAdapterTest {
                    TrackType* webrtc_track) {
     typedef bool (webrtc::MediaStreamInterface::*RemoveTrack)(TrackType*);
     dependency_factory_->GetWebRtcSignalingThread()->PostTask(
-        FROM_HERE, base::Bind(base::IgnoreResult<RemoveTrack>(
-                                  &webrtc::MediaStreamInterface::RemoveTrack),
-                              base::Unretained(webrtc_stream),
-                              base::Unretained(webrtc_track)));
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult<RemoveTrack>(
+                           &webrtc::MediaStreamInterface::RemoveTrack),
+                       base::Unretained(webrtc_stream),
+                       base::Unretained(webrtc_track)));
     RunMessageLoopsUntilIdle();
   }
 
@@ -189,8 +190,9 @@ class RemoteWebRtcMediaStreamAdapterTest : public WebRtcMediaStreamAdapterTest {
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     dependency_factory_->GetWebRtcSignalingThread()->PostTask(
-        FROM_HERE, base::Bind(&RemoteWebRtcMediaStreamAdapterTest::SignalEvent,
-                              base::Unretained(this), &waitable_event));
+        FROM_HERE,
+        base::BindOnce(&RemoteWebRtcMediaStreamAdapterTest::SignalEvent,
+                       base::Unretained(this), &waitable_event));
     waitable_event.Wait();
     base::RunLoop().RunUntilIdle();
   }

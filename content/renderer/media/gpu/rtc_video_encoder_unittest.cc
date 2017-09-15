@@ -241,9 +241,10 @@ TEST_F(RTCVideoEncoderTest, SoftwareFallbackAfterError) {
       .WillOnce(Invoke([this](const scoped_refptr<media::VideoFrame>&, bool) {
         encoder_thread_.task_runner()->PostTask(
             FROM_HERE,
-            base::Bind(&media::VideoEncodeAccelerator::Client::NotifyError,
-                       base::Unretained(client_),
-                       media::VideoEncodeAccelerator::kPlatformFailureError));
+            base::BindOnce(
+                &media::VideoEncodeAccelerator::Client::NotifyError,
+                base::Unretained(client_),
+                media::VideoEncodeAccelerator::kPlatformFailureError));
       }));
 
   const rtc::scoped_refptr<webrtc::I420Buffer> buffer =

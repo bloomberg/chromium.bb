@@ -91,7 +91,7 @@ ImageDownloaderImpl::ImageDownloaderImpl(RenderFrame* render_frame,
     : ImageDownloaderBase(render_frame), binding_(this, std::move(request)) {
   DCHECK(render_frame);
   binding_.set_connection_error_handler(
-      base::Bind(&ImageDownloaderImpl::OnDestruct, base::Unretained(this)));
+      base::BindOnce(&ImageDownloaderImpl::OnDestruct, base::Unretained(this)));
 }
 
 ImageDownloaderImpl::~ImageDownloaderImpl() {}

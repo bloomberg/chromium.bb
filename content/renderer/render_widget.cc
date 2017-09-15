@@ -743,7 +743,7 @@ void RenderWidget::OnClose() {
     // now.  Post a task that only gets invoked when there are no nested message
     // loops.
     base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
-        FROM_HERE, base::Bind(&RenderWidget::Close, this));
+        FROM_HERE, base::BindOnce(&RenderWidget::Close, this));
   }
 
   // Balances the AddRef taken when we called AddRoute.
@@ -1549,7 +1549,7 @@ void RenderWidget::CloseWidgetSoon() {
   // message back to the message loop, which won't run until the JS is
   // complete, and then the Close message can be sent.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RenderWidget::DoDeferredClose, this));
+      FROM_HERE, base::BindOnce(&RenderWidget::DoDeferredClose, this));
 }
 
 void RenderWidget::Close() {

@@ -128,8 +128,8 @@ void PresentationDispatcher::StartPresentation(
   // OnConnectionCreated() is called. |callback| needs to be alive and also
   // needs to be destroyed so we transfer its ownership to the mojo callback.
   presentation_service_->StartPresentation(
-      urls, base::Bind(&PresentationDispatcher::OnConnectionCreated,
-                       base::Unretained(this), base::Passed(&callback)));
+      urls, base::BindOnce(&PresentationDispatcher::OnConnectionCreated,
+                           base::Unretained(this), base::Passed(&callback)));
 }
 
 void PresentationDispatcher::ReconnectPresentation(
@@ -148,8 +148,8 @@ void PresentationDispatcher::ReconnectPresentation(
   // needs to be destroyed so we transfer its ownership to the mojo callback.
   presentation_service_->ReconnectPresentation(
       urls, presentationId.Utf8(),
-      base::Bind(&PresentationDispatcher::OnConnectionCreated,
-                 base::Unretained(this), base::Passed(&callback)));
+      base::BindOnce(&PresentationDispatcher::OnConnectionCreated,
+                     base::Unretained(this), base::Passed(&callback)));
 }
 
 void PresentationDispatcher::TerminatePresentation(
@@ -203,7 +203,7 @@ void PresentationDispatcher::GetAvailability(
   if (screen_availability == blink::mojom::ScreenAvailability::DISABLED) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &blink::WebPresentationAvailabilityCallbacks::OnError,
             base::Passed(&callback),
             blink::WebPresentationError(
@@ -222,10 +222,10 @@ void PresentationDispatcher::GetAvailability(
   if (screen_availability != blink::mojom::ScreenAvailability::UNKNOWN) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&blink::WebPresentationAvailabilityCallbacks::OnSuccess,
-                   base::Passed(&callback),
-                   screen_availability ==
-                       blink::mojom::ScreenAvailability::AVAILABLE));
+        base::BindOnce(&blink::WebPresentationAvailabilityCallbacks::OnSuccess,
+                       base::Passed(&callback),
+                       screen_availability ==
+                           blink::mojom::ScreenAvailability::AVAILABLE));
   } else {
     listener->availability_callbacks.Add(std::move(callback));
   }

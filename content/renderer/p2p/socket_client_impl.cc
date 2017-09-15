@@ -56,8 +56,9 @@ void P2PSocketClientImpl::Init(P2PSocketType type,
   delegate_ = delegate;
 
   ipc_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&P2PSocketClientImpl::DoInit, this, type,
-                            local_address, min_port, max_port, remote_address));
+      FROM_HERE,
+      base::BindOnce(&P2PSocketClientImpl::DoInit, this, type, local_address,
+                     min_port, max_port, remote_address));
 }
 
 void P2PSocketClientImpl::DoInit(P2PSocketType type,
@@ -79,8 +80,8 @@ uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,
   uint64_t unique_id = GetUniqueId(random_socket_id_, ++next_packet_id_);
   if (!ipc_task_runner_->BelongsToCurrentThread()) {
     ipc_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&P2PSocketClientImpl::SendWithPacketId, this,
-                              address, data, options, unique_id));
+        FROM_HERE, base::BindOnce(&P2PSocketClientImpl::SendWithPacketId, this,
+                                  address, data, options, unique_id));
     return unique_id;
   }
 
@@ -107,7 +108,7 @@ void P2PSocketClientImpl::SetOption(P2PSocketOption option,
   if (!ipc_task_runner_->BelongsToCurrentThread()) {
     ipc_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&P2PSocketClientImpl::SetOption, this, option, value));
+        base::BindOnce(&P2PSocketClientImpl::SetOption, this, option, value));
     return;
   }
 
@@ -123,8 +124,8 @@ void P2PSocketClientImpl::Close() {
 
   delegate_ = NULL;
 
-  ipc_task_runner_->PostTask(FROM_HERE,
-                             base::Bind(&P2PSocketClientImpl::DoClose, this));
+  ipc_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&P2PSocketClientImpl::DoClose, this));
 }
 
 void P2PSocketClientImpl::DoClose() {
@@ -157,8 +158,8 @@ void P2PSocketClientImpl::OnSocketCreated(
   state_ = STATE_OPEN;
 
   delegate_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&P2PSocketClientImpl::DeliverOnSocketCreated, this,
-                            local_address, remote_address));
+      FROM_HERE, base::BindOnce(&P2PSocketClientImpl::DeliverOnSocketCreated,
+                                this, local_address, remote_address));
 }
 
 void P2PSocketClientImpl::DeliverOnSocketCreated(
@@ -185,8 +186,8 @@ void P2PSocketClientImpl::OnIncomingTcpConnection(
 
   delegate_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&P2PSocketClientImpl::DeliverOnIncomingTcpConnection, this,
-                 address, new_client));
+      base::BindOnce(&P2PSocketClientImpl::DeliverOnIncomingTcpConnection, this,
+                     address, new_client));
 }
 
 void P2PSocketClientImpl::DeliverOnIncomingTcpConnection(
@@ -206,8 +207,8 @@ void P2PSocketClientImpl::OnSendComplete(
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
   delegate_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&P2PSocketClientImpl::DeliverOnSendComplete, this,
-                            send_metrics));
+      FROM_HERE, base::BindOnce(&P2PSocketClientImpl::DeliverOnSendComplete,
+                                this, send_metrics));
 }
 
 void P2PSocketClientImpl::DeliverOnSendComplete(
@@ -222,7 +223,7 @@ void P2PSocketClientImpl::OnError() {
   state_ = STATE_ERROR;
 
   delegate_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&P2PSocketClientImpl::DeliverOnError, this));
+      FROM_HERE, base::BindOnce(&P2PSocketClientImpl::DeliverOnError, this));
 }
 
 void P2PSocketClientImpl::DeliverOnError() {
@@ -237,8 +238,8 @@ void P2PSocketClientImpl::OnDataReceived(const net::IPEndPoint& address,
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(STATE_OPEN, state_);
   delegate_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&P2PSocketClientImpl::DeliverOnDataReceived, this,
-                            address, data, timestamp));
+      FROM_HERE, base::BindOnce(&P2PSocketClientImpl::DeliverOnDataReceived,
+                                this, address, data, timestamp));
 }
 
 void P2PSocketClientImpl::DeliverOnDataReceived(

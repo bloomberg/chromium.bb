@@ -1018,8 +1018,9 @@ void RenderWidgetCompositor::LayoutAndPaintAsync(
 
   if (CompositeIsSynchronous()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&RenderWidgetCompositor::LayoutAndUpdateLayers,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&RenderWidgetCompositor::LayoutAndUpdateLayers,
+                       weak_factory_.GetWeakPtr()));
   } else {
     layer_tree_host_->SetNeedsCommit();
   }
@@ -1061,10 +1062,10 @@ void RenderWidgetCompositor::CompositeAndReadbackAsync(
                  std::unique_ptr<viz::CopyOutputResult> result) {
                 task_runner->PostTask(
                     FROM_HERE,
-                    base::Bind(&blink::WebCompositeAndReadbackAsyncCallback::
-                                   DidCompositeAndReadback,
-                               base::Unretained(callback),
-                               result->AsSkBitmap()));
+                    base::BindOnce(
+                        &blink::WebCompositeAndReadbackAsyncCallback::
+                            DidCompositeAndReadback,
+                        base::Unretained(callback), result->AsSkBitmap()));
               },
               callback, base::Passed(&main_thread_task_runner)));
   // Force a redraw to ensure that the copy swap promise isn't cancelled due to
@@ -1078,8 +1079,9 @@ void RenderWidgetCompositor::CompositeAndReadbackAsync(
   // widgets that delay the creation of their output surface.
   if (CompositeIsSynchronous()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&RenderWidgetCompositor::SynchronouslyComposite,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&RenderWidgetCompositor::SynchronouslyComposite,
+                       weak_factory_.GetWeakPtr()));
   } else {
     layer_tree_host_->SetNeedsCommit();
   }
@@ -1158,8 +1160,9 @@ void RenderWidgetCompositor::RequestDecode(
   // the impl side. So, force a commit to happen.
   if (CompositeIsSynchronous()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&RenderWidgetCompositor::SynchronouslyComposite,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&RenderWidgetCompositor::SynchronouslyComposite,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -1241,8 +1244,8 @@ void RenderWidgetCompositor::DidFailToInitializeLayerTreeFrameSink() {
   attempt_software_fallback_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&RenderWidgetCompositor::RequestNewLayerTreeFrameSink,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&RenderWidgetCompositor::RequestNewLayerTreeFrameSink,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void RenderWidgetCompositor::WillCommit() {

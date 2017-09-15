@@ -187,10 +187,10 @@ void CanvasCaptureHandler::RequestRefreshFrame() {
   if (last_frame_ && delegate_) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::
-                       SendNewFrameOnIOThread,
-                   delegate_->GetWeakPtrForIOThread(), last_frame_,
-                   base::TimeTicks::Now()));
+        base::BindOnce(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::
+                           SendNewFrameOnIOThread,
+                       delegate_->GetWeakPtrForIOThread(), last_frame_,
+                       base::TimeTicks::Now()));
   }
 }
 
@@ -247,9 +247,10 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
   last_frame_ = video_frame;
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::
-                     SendNewFrameOnIOThread,
-                 delegate_->GetWeakPtrForIOThread(), video_frame, timestamp));
+      base::BindOnce(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::
+                         SendNewFrameOnIOThread,
+                     delegate_->GetWeakPtrForIOThread(), video_frame,
+                     timestamp));
 }
 
 void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(

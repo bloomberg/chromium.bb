@@ -285,7 +285,8 @@ TEST_F(RenderThreadImplBrowserTest,
   ASSERT_TRUE(thread_->input_handler_manager());
 
   thread_->compositor_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&CheckRenderThreadInputHandlerManager, thread_));
+      FROM_HERE,
+      base::BindOnce(&CheckRenderThreadInputHandlerManager, thread_));
 }
 
 // Disabled under LeakSanitizer due to memory leaks.
