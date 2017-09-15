@@ -4,133 +4,157 @@
 
 package org.chromium.android_webview.test;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 
 /**
  * Tests the asynchronous find-in-page APIs in WebView.
  */
-public class WebViewAsynchronousFindApisTest extends WebViewFindApisTestBase {
+@RunWith(AwJUnit4ClassRunner.class)
+public class WebViewAsynchronousFindApisTest {
+    @Rule
+    public WebViewFindApisTestRule mActivityTestRule = new WebViewFindApisTestRule();
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindAllFinds() throws Throwable {
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindAllDouble() throws Throwable {
-        findAllAsyncOnUiThread("wood");
-        assertEquals(4, findAllAsyncOnUiThread("chuck"));
+        mActivityTestRule.findAllAsyncOnUiThread("wood");
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("chuck"));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindAllDoubleNext() throws Throwable {
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
-        assertEquals(2, findNextOnUiThread(true));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(2, mActivityTestRule.findNextOnUiThread(true));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindAllDoesNotFind() throws Throwable {
-        assertEquals(0, findAllAsyncOnUiThread("foo"));
+        Assert.assertEquals(0, mActivityTestRule.findAllAsyncOnUiThread("foo"));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindAllEmptyPage() throws Throwable {
-        assertEquals(0, findAllAsyncOnUiThread("foo"));
+        Assert.assertEquals(0, mActivityTestRule.findAllAsyncOnUiThread("foo"));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindAllEmptyString() throws Throwable {
-        assertEquals(0, findAllAsyncOnUiThread(""));
+        Assert.assertEquals(0, mActivityTestRule.findAllAsyncOnUiThread(""));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindNextForward() throws Throwable {
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
 
         for (int i = 2; i <= 4; i++) {
-            assertEquals(i - 1, findNextOnUiThread(true));
+            Assert.assertEquals(i - 1, mActivityTestRule.findNextOnUiThread(true));
         }
-        assertEquals(0, findNextOnUiThread(true));
+        Assert.assertEquals(0, mActivityTestRule.findNextOnUiThread(true));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindNextBackward() throws Throwable {
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
 
         for (int i = 4; i >= 1; i--) {
-            assertEquals(i - 1, findNextOnUiThread(false));
+            Assert.assertEquals(i - 1, mActivityTestRule.findNextOnUiThread(false));
         }
-        assertEquals(3, findNextOnUiThread(false));
+        Assert.assertEquals(3, mActivityTestRule.findNextOnUiThread(false));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindNextBig() throws Throwable {
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
 
-        assertEquals(1, findNextOnUiThread(true));
-        assertEquals(0, findNextOnUiThread(false));
-        assertEquals(3, findNextOnUiThread(false));
+        Assert.assertEquals(1, mActivityTestRule.findNextOnUiThread(true));
+        Assert.assertEquals(0, mActivityTestRule.findNextOnUiThread(false));
+        Assert.assertEquals(3, mActivityTestRule.findNextOnUiThread(false));
         for (int i = 1; i <= 4; i++) {
-            assertEquals(i - 1, findNextOnUiThread(true));
+            Assert.assertEquals(i - 1, mActivityTestRule.findNextOnUiThread(true));
         }
-        assertEquals(0, findNextOnUiThread(true));
+        Assert.assertEquals(0, mActivityTestRule.findNextOnUiThread(true));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindAllEmptyNext() throws Throwable {
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
-        assertEquals(1, findNextOnUiThread(true));
-        assertEquals(0, findAllAsyncOnUiThread(""));
-        assertEquals(0, findNextOnUiThread(true));
-        assertEquals(0, findAllAsyncOnUiThread(""));
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
-        assertEquals(1, findNextOnUiThread(true));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(1, mActivityTestRule.findNextOnUiThread(true));
+        Assert.assertEquals(0, mActivityTestRule.findAllAsyncOnUiThread(""));
+        Assert.assertEquals(0, mActivityTestRule.findNextOnUiThread(true));
+        Assert.assertEquals(0, mActivityTestRule.findAllAsyncOnUiThread(""));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(1, mActivityTestRule.findNextOnUiThread(true));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testClearMatches() throws Throwable {
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
-        clearMatchesOnUiThread();
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
+        mActivityTestRule.clearMatchesOnUiThread();
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testClearFindNext() throws Throwable {
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
-        clearMatchesOnUiThread();
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
-        assertEquals(1, findNextOnUiThread(true));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
+        mActivityTestRule.clearMatchesOnUiThread();
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(1, mActivityTestRule.findNextOnUiThread(true));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindEmptyNext() throws Throwable {
-        assertEquals(0, findAllAsyncOnUiThread(""));
-        assertEquals(0, findNextOnUiThread(true));
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(0, mActivityTestRule.findAllAsyncOnUiThread(""));
+        Assert.assertEquals(0, mActivityTestRule.findNextOnUiThread(true));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
     }
 
+    @Test
     @SmallTest
     @Feature({"AndroidWebView", "FindInPage"})
     public void testFindNextFirst() throws Throwable {
-        runTestOnUiThread(() -> contents().findNext(true));
-        assertEquals(4, findAllAsyncOnUiThread("wood"));
-        assertEquals(1, findNextOnUiThread(true));
-        assertEquals(0, findNextOnUiThread(false));
-        assertEquals(3, findNextOnUiThread(false));
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> mActivityTestRule.contents().findNext(true));
+        Assert.assertEquals(4, mActivityTestRule.findAllAsyncOnUiThread("wood"));
+        Assert.assertEquals(1, mActivityTestRule.findNextOnUiThread(true));
+        Assert.assertEquals(0, mActivityTestRule.findNextOnUiThread(false));
+        Assert.assertEquals(3, mActivityTestRule.findNextOnUiThread(false));
     }
 }

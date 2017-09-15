@@ -4,6 +4,9 @@
 
 package org.chromium.android_webview.test;
 
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
 import org.chromium.android_webview.AwContents;
 
 import java.util.concurrent.CountDownLatch;
@@ -13,8 +16,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Base class for WebView find-in-page API tests.
  */
-public class WebViewFindApisTestBase extends AwTestBase {
-
+public class WebViewFindApisTestRule extends AwActivityTestRule {
     private static final String WOODCHUCK =
             "How much WOOD would a woodchuck chuck if a woodchuck could chuck wOoD?";
 
@@ -22,41 +24,45 @@ public class WebViewFindApisTestBase extends AwTestBase {
     private AwContents mContents;
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        try {
-            mContents = loadContentsFromStringSync(WOODCHUCK);
-        } catch (Throwable t) {
-            throw new Exception(t);
-        }
+    public Statement apply(final Statement base, Description description) {
+        return super.apply(new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                try {
+                    mContents = loadContentsFromStringSync(WOODCHUCK);
+                } catch (Throwable t) {
+                    throw new Exception(t);
+                }
+                base.evaluate();
+            }
+        }, description);
     }
 
-    protected AwContents contents() {
+    public AwContents contents() {
         return mContents;
     }
 
     // Internal interface to intercept find results from AwContentsClient.
     private interface FindResultListener {
-        public void onFindResultReceived(int activeMatchOrdinal, int numberOfMatches,
-                boolean isDoneCounting);
-    };
+        public void onFindResultReceived(
+                int activeMatchOrdinal, int numberOfMatches, boolean isDoneCounting);
+    }
 
     private AwContents loadContentsFromStringSync(final String html) throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient() {
             @Override
-            public void onFindResultReceived(int activeMatchOrdinal,
-                    int numberOfMatches, boolean isDoneCounting) {
+            public void onFindResultReceived(
+                    int activeMatchOrdinal, int numberOfMatches, boolean isDoneCounting) {
                 if (mFindResultListener == null) return;
-                mFindResultListener.onFindResultReceived(activeMatchOrdinal, numberOfMatches,
-                        isDoneCounting);
+                mFindResultListener.onFindResultReceived(
+                        activeMatchOrdinal, numberOfMatches, isDoneCounting);
             }
         };
 
         final AwContents contents =
                 createAwTestContainerViewOnMainSync(contentsClient).getAwContents();
         final String data = "<html><head></head><body>" + html + "</body></html>";
-        loadDataSync(contents, contentsClient.getOnPageFinishedHelper(),
-                data, "text/html", false);
+        loadDataSync(contents, contentsClient.getOnPageFinishedHelper(), data, "text/html", false);
         return contents;
     }
 
@@ -68,8 +74,7 @@ public class WebViewFindApisTestBase extends AwTestBase {
      * @return The number of instances of the string that were found.
      * @throws Throwable
      */
-    protected int findAllAsyncOnUiThread(final String searchString)
-            throws Throwable {
+    public int findAllAsyncOnUiThread(final String searchString) throws Throwable {
         final IntegerFuture future = new IntegerFuture() {
             @Override
             public void run() {
@@ -79,7 +84,7 @@ public class WebViewFindApisTestBase extends AwTestBase {
                 mContents.findAllAsync(searchString);
             }
         };
-        runTestOnUiThread(future);
+        getInstrumentation().runOnMainSync(future);
         return future.get(10, TimeUnit.SECONDS);
     }
 
@@ -92,8 +97,7 @@ public class WebViewFindApisTestBase extends AwTestBase {
      * @return The ordinal of the highlighted match.
      * @throws Throwable
      */
-    protected int findNextOnUiThread(final boolean forwards)
-            throws Throwable {
+    public int findNextOnUiThread(final boolean forwards) throws Throwable {
         final IntegerFuture future = new IntegerFuture() {
             @Override
             public void run() {
@@ -103,7 +107,7 @@ public class WebViewFindApisTestBase extends AwTestBase {
                 mContents.findNext(forwards);
             }
         };
-        runTestOnUiThread(future);
+        getInstrumentation().runOnMainSync(future);
         return future.get(10, TimeUnit.SECONDS);
     }
 
@@ -112,8 +116,8 @@ public class WebViewFindApisTestBase extends AwTestBase {
      *
      * @throws Throwable
      */
-    protected void clearMatchesOnUiThread() throws Throwable {
-        runTestOnUiThread(() -> mContents.clearMatches());
+    public void clearMatchesOnUiThread() throws Throwable {
+        getInstrumentation().runOnMainSync(() -> mContents.clearMatches());
     }
 
     // Similar to java.util.concurrent.Future, but without the ability to cancel.
