@@ -840,10 +840,6 @@ const char kDisableLoggingRedirect[] = "disable-logging-redirect";
 const char kDisableLoginScreenApps[] = "disable-login-screen-apps";
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(USE_ASH)
-const char kOpenAsh[]                       = "open-ash";
-#endif
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 // These flags show the man page on Linux. They are equivalent to each
 // other.

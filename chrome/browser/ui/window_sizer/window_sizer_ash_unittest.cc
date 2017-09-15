@@ -9,7 +9,6 @@
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/ptr_util.h"
-#include "build/build_config.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
@@ -51,9 +50,6 @@ std::unique_ptr<Browser> CreateTestBrowser(aura::Window* window,
 // Test that the window is sized appropriately for the first run experience
 // where the default window bounds calculation is invoked.
 TEST_F(WindowSizerAshTest, DefaultSizeCase) {
-#if defined(OS_WIN)
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kOpenAsh);
-#endif
   { // 4:3 monitor case, 1024x768, no taskbar
     gfx::Rect window_bounds;
     GetWindowBounds(p1024x768, p1024x768, gfx::Rect(), gfx::Rect(),
@@ -539,22 +535,11 @@ TEST_F(WindowSizerAshTest, PlaceNewBrowserWindowOnEmptyDesktop) {
       gfx::Rect(),             // Don't request valid bounds.
       0u,                      // Display index.
       &window_bounds, &out_show_state3);
-#if defined(OS_WIN)
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, out_show_state3);
-#else
   EXPECT_EQ(ui::SHOW_STATE_DEFAULT, out_show_state3);
-#endif
 }
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_PlaceNewWindowsOnMultipleDisplays PlaceNewWindowsOnMultipleDisplays
-#else
-// No multiple displays on windows ash.
-#define MAYBE_PlaceNewWindowsOnMultipleDisplays DISABLED_PlaceNewWindowsOnMultipleDisplays
-#endif
-
 // Test the placement of newly created windows on multiple dislays.
-TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
+TEST_F(WindowSizerAshTest, PlaceNewWindowsOnMultipleDisplays) {
   UpdateDisplay("1600x1200,1600x1200");
   gfx::Rect primary_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
@@ -737,15 +722,11 @@ TEST_F(WindowSizerAshTest, TestShowStateDefaults) {
                         gfx::Rect(16, 32, 128, 256), &params_popup));
 
   // Check that a browser creation state always get used if not given as
-  // SHOW_STATE_DEFAULT. On Windows ASH it should be SHOW_STATE_MAXIMIZED.
+  // SHOW_STATE_DEFAULT.
   ui::WindowShowState window_show_state =
       GetWindowShowState(ui::SHOW_STATE_MAXIMIZED, ui::SHOW_STATE_MAXIMIZED,
                          DEFAULT, browser.get(), p1600x1200, p1600x1200);
-#if defined(OS_WIN)
-  EXPECT_EQ(window_show_state, ui::SHOW_STATE_MAXIMIZED);
-#else
   EXPECT_EQ(window_show_state, ui::SHOW_STATE_DEFAULT);
-#endif
 
   browser->set_initial_show_state(ui::SHOW_STATE_MINIMIZED);
   EXPECT_EQ(

@@ -253,10 +253,6 @@ extern const char kDisableLoggingRedirect[];
 extern const char kDisableLoginScreenApps[];
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(USE_ASH)
-extern const char kOpenAsh[];
-#endif
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 extern const char kHelp[];
 extern const char kHelpShort[];

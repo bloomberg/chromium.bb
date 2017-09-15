@@ -134,11 +134,13 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   media_client_ = base::MakeUnique<MediaClient>();
   lock_screen_client_ = base::MakeUnique<LockScreenClient>();
 
-  if (!ash::Shell::HasInstance())
+  // TODO(mash): Port TabScrubber and keyboard initialization.
+  if (ash_util::IsRunningInMash())
     return;
 
   // Initialize TabScrubber after the Ash Shell has been initialized.
   TabScrubber::GetInstance();
+
   // Activate virtual keyboard after profile is initialized. It depends on the
   // default profile.
   ash::Shell::GetPrimaryRootWindowController()->ActivateKeyboard(

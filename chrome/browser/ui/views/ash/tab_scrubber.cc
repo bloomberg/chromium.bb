@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "ash/shell.h"
-#include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -76,6 +75,9 @@ TabScrubber::TabScrubber()
       activation_delay_(kActivationDelayMS),
       use_default_activation_delay_(true),
       weak_ptr_factory_(this) {
+  // TODO(mash): Add window server API to observe swipe gestures. Observing
+  // gestures on browser windows is not sufficient, as this feature works when
+  // the cursor is over the shelf, desktop, etc.
   ash::Shell::Get()->AddPreTargetHandler(this);
   registrar_.Add(
       this,
@@ -220,13 +222,11 @@ void TabScrubber::TabStripDeleted(TabStrip* tab_strip) {
 }
 
 Browser* TabScrubber::GetActiveBrowser() {
-  aura::Window* active_window = ash::wm::GetActiveWindow();
-  if (!active_window)
-    return NULL;
-
-  Browser* browser = chrome::FindBrowserWithWindow(active_window);
-  if (!browser || browser->type() != Browser::TYPE_TABBED)
-    return NULL;
+  Browser* browser = chrome::FindLastActive();
+  if (!browser || browser->type() != Browser::TYPE_TABBED ||
+      !browser->window()->IsActive()) {
+    return nullptr;
+  }
 
   return browser;
 }
