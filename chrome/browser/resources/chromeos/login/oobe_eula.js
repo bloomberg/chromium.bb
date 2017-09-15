@@ -99,8 +99,9 @@ Polymer({
    *
    * @private
    */
-  onUsageStatsHelpLinkClicked_: function() {
+  onUsageStatsHelpLinkClicked_: function(e) {
     chrome.send('eulaOnLearnMore');
+    e.stopPropagation();
   },
 
   /**

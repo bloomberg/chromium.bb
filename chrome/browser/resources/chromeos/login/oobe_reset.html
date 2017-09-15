@@ -68,15 +68,13 @@
             i18n-values="alt:resetScreenIllustrationTitle">
         <div id="tpmFirmwareUpdate" class="layout horizontal"
             hidden="[[!tpmFirmwareUpdateAvailable_]]">
-          <paper-checkbox aria-labelledby="tpm-firmware-update-label"
-              id="tpmFirmwareUpdateCheckbox"
+          <paper-checkbox id="tpmFirmwareUpdateCheckbox"
               checked="{{tpmFirmwareUpdateChecked_}}"
               on-change="onTPMFirmwareUpdateChanged_">
+            <div id="tpmFirmwareUpdateContainer">
+              <span i18n-content="resetTPMFirmwareUpdate"></span>
+            </div>
           </paper-checkbox>
-          <div id="tpmFirmwareUpdateContainer">
-            <label id="tpm-firmare-upate-label"
-                i18n-content="resetTPMFirmwareUpdate"></label>
-          </div>
         </div>
       </div>
       <div class="bottom-buttons flex layout horizontal">
