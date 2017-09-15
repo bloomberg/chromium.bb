@@ -196,10 +196,8 @@ class CORE_EXPORT FrameSelection final
   String SelectedText() const;
   String SelectedTextForClipboard() const;
 
-  // The bounds are clipped to the viewport as this is what callers expect.
   // This returns last layouted selection bounds of LayoutSelection rather than
   // SelectionEditor keeps.
-  LayoutRect Bounds() const;
   LayoutRect UnclippedBounds() const;
 
   // TODO(tkent): This function has a bug that scrolling doesn't work well in
