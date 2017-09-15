@@ -7,6 +7,7 @@ package org.chromium.incrementalinstall;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
+import android.os.Process;
 import android.util.Log;
 
 import java.io.File;
@@ -33,7 +34,7 @@ final class ClassLoaderPatcher {
                 new File(context.getApplicationInfo().dataDir, "incremental-install-files");
         mClassLoader = context.getClassLoader();
         mLibcoreOs = Reflect.getField(Class.forName("libcore.io.Libcore"), "os");
-        mProcessUid = (Integer) Reflect.invokeMethod(mLibcoreOs, "getuid");
+        mProcessUid = Process.myUid();
         mIsPrimaryProcess = context.getApplicationInfo().uid == mProcessUid;
         Log.i(TAG, "uid=" + mProcessUid + " (isPrimary=" + mIsPrimaryProcess + ")");
     }
