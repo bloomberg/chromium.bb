@@ -29,8 +29,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -88,10 +88,10 @@ class PLATFORM_EXPORT CubicBezierTimingFunction final : public TimingFunction {
  public:
   using EaseType = cc::CubicBezierTimingFunction::EaseType;
 
-  static PassRefPtr<CubicBezierTimingFunction> Create(double x1,
-                                                      double y1,
-                                                      double x2,
-                                                      double y2) {
+  static RefPtr<CubicBezierTimingFunction> Create(double x1,
+                                                  double y1,
+                                                  double x2,
+                                                  double y2) {
     return AdoptRef(new CubicBezierTimingFunction(x1, y1, x2, y2));
   }
 
@@ -153,8 +153,8 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
  public:
   using StepPosition = cc::StepsTimingFunction::StepPosition;
 
-  static PassRefPtr<StepsTimingFunction> Create(int steps,
-                                                StepPosition step_position) {
+  static RefPtr<StepsTimingFunction> Create(int steps,
+                                            StepPosition step_position) {
     return AdoptRef(new StepsTimingFunction(steps, step_position));
   }
 
@@ -198,7 +198,7 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
 
 class PLATFORM_EXPORT FramesTimingFunction final : public TimingFunction {
  public:
-  static PassRefPtr<FramesTimingFunction> Create(int frames) {
+  static RefPtr<FramesTimingFunction> Create(int frames) {
     return AdoptRef(new FramesTimingFunction(frames));
   }
 
@@ -222,7 +222,7 @@ class PLATFORM_EXPORT FramesTimingFunction final : public TimingFunction {
   std::unique_ptr<cc::FramesTimingFunction> frames_;
 };
 
-PLATFORM_EXPORT PassRefPtr<TimingFunction> CreateCompositorTimingFunctionFromCC(
+PLATFORM_EXPORT RefPtr<TimingFunction> CreateCompositorTimingFunctionFromCC(
     const cc::TimingFunction*);
 
 PLATFORM_EXPORT bool operator==(const LinearTimingFunction&,

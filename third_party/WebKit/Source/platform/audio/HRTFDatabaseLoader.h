@@ -50,7 +50,7 @@ class PLATFORM_EXPORT HRTFDatabaseLoader final
   // time).
   // Returns the HRTFDatabaseLoader.
   // Must be called from the main thread.
-  static PassRefPtr<HRTFDatabaseLoader> CreateAndLoadAsynchronouslyIfNecessary(
+  static RefPtr<HRTFDatabaseLoader> CreateAndLoadAsynchronouslyIfNecessary(
       float sample_rate);
 
   // Both constructor and destructor must be called from the main thread.

@@ -175,16 +175,16 @@ void WebURLLoadTiming::SetPushEnd(double end) {
   private_->SetPushEnd(end);
 }
 
-WebURLLoadTiming::WebURLLoadTiming(PassRefPtr<ResourceLoadTiming> value)
+WebURLLoadTiming::WebURLLoadTiming(RefPtr<ResourceLoadTiming> value)
     : private_(std::move(value)) {}
 
 WebURLLoadTiming& WebURLLoadTiming::operator=(
-    PassRefPtr<ResourceLoadTiming> value) {
+    RefPtr<ResourceLoadTiming> value) {
   private_ = std::move(value);
   return *this;
 }
 
-WebURLLoadTiming::operator PassRefPtr<ResourceLoadTiming>() const {
+WebURLLoadTiming::operator RefPtr<ResourceLoadTiming>() const {
   return private_.Get();
 }
 

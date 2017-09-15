@@ -103,7 +103,7 @@ void BlobRegistry::RemoveBlobDataRef(const String& uuid) {
 
 void BlobRegistry::RegisterPublicBlobURL(SecurityOrigin* origin,
                                          const KURL& url,
-                                         PassRefPtr<BlobDataHandle> handle) {
+                                         RefPtr<BlobDataHandle> handle) {
   SaveToOriginMap(origin, url);
   GetBlobRegistry()->RegisterPublicBlobURL(url, handle->Uuid());
 }

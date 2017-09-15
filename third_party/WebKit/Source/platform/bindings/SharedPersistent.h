@@ -32,8 +32,8 @@
 #define SharedPersistent_h
 
 #include "platform/bindings/ScopedPersistent.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -46,8 +46,8 @@ class SharedPersistent : public RefCounted<SharedPersistent<T>> {
   WTF_MAKE_NONCOPYABLE(SharedPersistent);
 
  public:
-  static PassRefPtr<SharedPersistent<T>> Create(v8::Local<T> value,
-                                                v8::Isolate* isolate) {
+  static RefPtr<SharedPersistent<T>> Create(v8::Local<T> value,
+                                            v8::Isolate* isolate) {
     return AdoptRef(new SharedPersistent<T>(value, isolate));
   }
 

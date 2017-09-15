@@ -47,7 +47,7 @@ namespace {
 
 class URLRequestExtraDataContainer : public ResourceRequest::ExtraData {
  public:
-  static PassRefPtr<URLRequestExtraDataContainer> Create(
+  static RefPtr<URLRequestExtraDataContainer> Create(
       WebURLRequest::ExtraData* extra_data) {
     return AdoptRef(new URLRequestExtraDataContainer(extra_data));
   }

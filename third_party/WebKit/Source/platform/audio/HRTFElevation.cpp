@@ -65,7 +65,7 @@ const int kElevationIndexTable[kElevationIndexTableSize] = {
 
 // Lazily load a concatenated HRTF database for given subject and store it in a
 // local hash table to ensure quick efficient future retrievals.
-static PassRefPtr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
+static RefPtr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
     const String& subject_name) {
   typedef HashMap<String, RefPtr<AudioBus>> AudioBusMap;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(AudioBusMap, audio_bus_map, ());

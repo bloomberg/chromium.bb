@@ -49,7 +49,7 @@ namespace {
 
 class URLResponseExtraDataContainer : public ResourceResponse::ExtraData {
  public:
-  static PassRefPtr<URLResponseExtraDataContainer> Create(
+  static RefPtr<URLResponseExtraDataContainer> Create(
       WebURLResponse::ExtraData* extra_data) {
     return AdoptRef(new URLResponseExtraDataContainer(extra_data));
   }
@@ -125,8 +125,7 @@ void WebURLResponse::SetConnectionReused(bool connection_reused) {
 }
 
 void WebURLResponse::SetLoadTiming(const WebURLLoadTiming& timing) {
-  RefPtr<ResourceLoadTiming> load_timing =
-      PassRefPtr<ResourceLoadTiming>(timing);
+  RefPtr<ResourceLoadTiming> load_timing = RefPtr<ResourceLoadTiming>(timing);
   resource_response_->SetResourceLoadTiming(std::move(load_timing));
 }
 

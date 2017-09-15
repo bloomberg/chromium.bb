@@ -31,7 +31,7 @@
 #include "public/platform/WebMediaConstraints.h"
 
 #include <math.h>
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
@@ -75,8 +75,8 @@ void MaybeEmitNamedBoolean(StringBuilder& builder,
 class WebMediaConstraintsPrivate final
     : public ThreadSafeRefCounted<WebMediaConstraintsPrivate> {
  public:
-  static PassRefPtr<WebMediaConstraintsPrivate> Create();
-  static PassRefPtr<WebMediaConstraintsPrivate> Create(
+  static RefPtr<WebMediaConstraintsPrivate> Create();
+  static RefPtr<WebMediaConstraintsPrivate> Create(
       const WebMediaTrackConstraintSet& basic,
       const WebVector<WebMediaTrackConstraintSet>& advanced);
 
@@ -94,13 +94,13 @@ class WebMediaConstraintsPrivate final
   WebVector<WebMediaTrackConstraintSet> advanced_;
 };
 
-PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create() {
+RefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create() {
   WebMediaTrackConstraintSet basic;
   WebVector<WebMediaTrackConstraintSet> advanced;
   return AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));
 }
 
-PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create(
+RefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create(
     const WebMediaTrackConstraintSet& basic,
     const WebVector<WebMediaTrackConstraintSet>& advanced) {
   return AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));

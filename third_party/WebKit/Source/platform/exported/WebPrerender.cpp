@@ -32,8 +32,8 @@
 
 #include <memory>
 #include "platform/Prerender.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ namespace {
 
 class PrerenderExtraDataContainer : public Prerender::ExtraData {
  public:
-  static PassRefPtr<PrerenderExtraDataContainer> Create(
+  static RefPtr<PrerenderExtraDataContainer> Create(
       WebPrerender::ExtraData* extra_data) {
     return AdoptRef(new PrerenderExtraDataContainer(extra_data));
   }

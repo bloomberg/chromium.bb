@@ -47,9 +47,9 @@ using namespace VectorMath;
 
 const unsigned kMaxBusChannels = 32;
 
-PassRefPtr<AudioBus> AudioBus::Create(unsigned number_of_channels,
-                                      size_t length,
-                                      bool allocate) {
+RefPtr<AudioBus> AudioBus::Create(unsigned number_of_channels,
+                                  size_t length,
+                                  bool allocate) {
   DCHECK_LE(number_of_channels, kMaxBusChannels);
   if (number_of_channels > kMaxBusChannels)
     return nullptr;
@@ -185,10 +185,9 @@ bool AudioBus::TopologyMatches(const AudioBus& bus) const {
   return true;
 }
 
-PassRefPtr<AudioBus> AudioBus::CreateBufferFromRange(
-    const AudioBus* source_buffer,
-    unsigned start_frame,
-    unsigned end_frame) {
+RefPtr<AudioBus> AudioBus::CreateBufferFromRange(const AudioBus* source_buffer,
+                                                 unsigned start_frame,
+                                                 unsigned end_frame) {
   size_t number_of_source_frames = source_buffer->length();
   unsigned number_of_channels = source_buffer->NumberOfChannels();
 
@@ -625,7 +624,7 @@ void AudioBus::CopyWithSampleAccurateGainValuesFrom(
   }
 }
 
-PassRefPtr<AudioBus> AudioBus::CreateBySampleRateConverting(
+RefPtr<AudioBus> AudioBus::CreateBySampleRateConverting(
     const AudioBus* source_bus,
     bool mix_to_mono,
     double new_sample_rate) {
@@ -694,8 +693,7 @@ PassRefPtr<AudioBus> AudioBus::CreateBySampleRateConverting(
   return destination_bus;
 }
 
-PassRefPtr<AudioBus> AudioBus::CreateByMixingToMono(
-    const AudioBus* source_bus) {
+RefPtr<AudioBus> AudioBus::CreateByMixingToMono(const AudioBus* source_bus) {
   if (source_bus->IsSilent())
     return Create(1, source_bus->length());
 
@@ -739,15 +737,15 @@ void AudioBus::ClearSilentFlag() {
     channels_[i]->ClearSilentFlag();
 }
 
-PassRefPtr<AudioBus> DecodeAudioFileData(const char* data, size_t size) {
+RefPtr<AudioBus> DecodeAudioFileData(const char* data, size_t size) {
   WebAudioBus web_audio_bus;
   if (Platform::Current()->DecodeAudioFileData(&web_audio_bus, data, size))
     return web_audio_bus.Release();
   return nullptr;
 }
 
-PassRefPtr<AudioBus> AudioBus::GetDataResource(const char* name,
-                                               float sample_rate) {
+RefPtr<AudioBus> AudioBus::GetDataResource(const char* name,
+                                           float sample_rate) {
   const WebData& resource = Platform::Current()->GetDataResource(name);
   if (resource.IsEmpty())
     return nullptr;
@@ -772,10 +770,10 @@ PassRefPtr<AudioBus> AudioBus::GetDataResource(const char* name,
                                                 sample_rate);
 }
 
-PassRefPtr<AudioBus> CreateBusFromInMemoryAudioFile(const void* data,
-                                                    size_t data_size,
-                                                    bool mix_to_mono,
-                                                    float sample_rate) {
+RefPtr<AudioBus> CreateBusFromInMemoryAudioFile(const void* data,
+                                                size_t data_size,
+                                                bool mix_to_mono,
+                                                float sample_rate) {
   RefPtr<AudioBus> audio_bus =
       DecodeAudioFileData(static_cast<const char*>(data), data_size);
   if (!audio_bus.Get())
