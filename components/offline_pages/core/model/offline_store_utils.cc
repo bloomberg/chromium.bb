@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"

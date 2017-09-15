@@ -20,6 +20,8 @@ static_library("core") {
     "model/add_page_task.h",
     "model/create_archive_task.cc",
     "model/create_archive_task.h",
+    "model/get_pages_task.cc",
+    "model/get_pages_task.h",
     "model/offline_store_utils.cc",
     "model/offline_store_utils.h",
     "offline_event_logger.cc",
@@ -72,6 +74,10 @@ static_library("core") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "model/offline_page_item_generator.cc",
+    "model/offline_page_item_generator.h",
+    "offline_page_metadata_store_test_util.cc",
+    "offline_page_metadata_store_test_util.h",
     "offline_page_test_archiver.cc",
     "offline_page_test_archiver.h",
     "offline_page_test_store.cc",
@@ -80,12 +86,15 @@ static_library("test_support") {
     "stub_offline_page_model.h",
     "test_task.cc",
     "test_task.h",
+    "test_task_runner.cc",
+    "test_task_runner.h",
   ]
 
   deps = [
     ":core",
     ":switches",
     "//base",
+    "//base/test:test_support",
     "//components/keyed_service/core",
     "//testing/gtest",
     "//url",
@@ -110,6 +119,7 @@ source_set("unit_tests") {
     "archive_manager_unittest.cc",
     "client_policy_controller_unittest.cc",
     "model/create_archive_task_unittest.cc",
+    "model/get_pages_task_unittest.cc",
     "offline_event_logger_unittest.cc",
     "offline_page_metadata_store_unittest.cc",
     "offline_page_model_event_logger_unittest.cc",

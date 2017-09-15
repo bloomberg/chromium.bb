@@ -72,9 +72,17 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
   template <typename T>
   using ResultCallback = base::OnceCallback<void(T)>;
 
+  // TODO(fgorski): Move to private and expose ForTest factory.
+  // Applies in PrefetchStore as well.
+  // Creates the store in memory. Should only be used for testing.
+  explicit OfflinePageMetadataStoreSQL(
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+
+  // Creates the store with database pointing to provided directory.
   OfflinePageMetadataStoreSQL(
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const base::FilePath& database_dir);
+
   ~OfflinePageMetadataStoreSQL() override;
 
   // Implementation methods.
@@ -130,6 +138,9 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
 
   // Background thread where all SQL access should be run.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+
+  // Whether store is opened in memory (for testing) or using a file.
+  bool in_memory_;
 
   // Path to the database on disk.
   base::FilePath db_file_path_;

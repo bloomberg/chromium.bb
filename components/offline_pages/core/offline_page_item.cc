@@ -84,4 +84,8 @@ bool OfflinePageItem::operator==(const OfflinePageItem& other) const {
          upgrade_attempt == other.upgrade_attempt && digest == digest;
 }
 
+bool OfflinePageItem::operator<(const OfflinePageItem& other) const {
+  return offline_id < other.offline_id;
+}
+
 }  // namespace offline_pages

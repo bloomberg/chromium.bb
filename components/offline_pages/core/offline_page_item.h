@@ -47,6 +47,7 @@ struct OfflinePageItem {
   ~OfflinePageItem();
 
   bool operator==(const OfflinePageItem& other) const;
+  bool operator<(const OfflinePageItem& other) const;
 
   // The URL of the page. This is the last committed URL. In the case that
   // redirects occur, access |original_url| for the original URL.
