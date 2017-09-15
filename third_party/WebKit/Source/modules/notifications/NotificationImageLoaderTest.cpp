@@ -13,7 +13,6 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Functional.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,8 +44,7 @@ class NotificationImageLoaderTest : public ::testing::Test {
 
   ~NotificationImageLoaderTest() override {
     loader_->Stop();
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
+    platform_->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -79,6 +77,7 @@ class NotificationImageLoaderTest : public ::testing::Test {
 
  protected:
   HistogramTester histogram_tester_;
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 
  private:
   std::unique_ptr<DummyPageHolder> page_;
@@ -92,7 +91,7 @@ TEST_F(NotificationImageLoaderTest, SuccessTest) {
   histogram_tester_.ExpectTotalCount("Notifications.LoadFinishTime.Icon", 0);
   histogram_tester_.ExpectTotalCount("Notifications.LoadFileSize.Icon", 0);
   histogram_tester_.ExpectTotalCount("Notifications.LoadFailTime.Icon", 0);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_EQ(LoadState::kLoadSuccessful, Loaded());
   histogram_tester_.ExpectTotalCount("Notifications.LoadFinishTime.Icon", 1);
   histogram_tester_.ExpectUniqueSample("Notifications.LoadFileSize.Icon", 7439,

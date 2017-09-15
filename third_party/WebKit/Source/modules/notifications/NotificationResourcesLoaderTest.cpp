@@ -8,12 +8,12 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Heap.h"
 #include "platform/loader/fetch/MemoryCache.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
@@ -45,8 +45,7 @@ class NotificationResourcesLoaderTest : public ::testing::Test {
 
   ~NotificationResourcesLoaderTest() override {
     loader_->Stop();
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
+    platform_->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -80,6 +79,8 @@ class NotificationResourcesLoaderTest : public ::testing::Test {
     return url;
   }
 
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
+
  private:
   std::unique_ptr<DummyPageHolder> page_;
   Persistent<NotificationResourcesLoader> loader_;
@@ -101,7 +102,7 @@ TEST_F(NotificationResourcesLoaderTest, LoadMultipleResources) {
   ASSERT_FALSE(Resources());
 
   Loader()->Start(GetExecutionContext(), notification_data);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
 
@@ -133,7 +134,7 @@ TEST_F(NotificationResourcesLoaderTest, LargeIconsAreScaledDown) {
   ASSERT_FALSE(Resources());
 
   Loader()->Start(GetExecutionContext(), notification_data);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
 
@@ -160,7 +161,7 @@ TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_1AspectRatio) {
   ASSERT_FALSE(Resources());
 
   Loader()->Start(GetExecutionContext(), notification_data);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
 
@@ -176,7 +177,7 @@ TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_2AspectRatio) {
   ASSERT_FALSE(Resources());
 
   Loader()->Start(GetExecutionContext(), notification_data);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
 
@@ -192,7 +193,7 @@ TEST_F(NotificationResourcesLoaderTest, EmptyDataYieldsEmptyResources) {
   ASSERT_FALSE(Resources());
 
   Loader()->Start(GetExecutionContext(), notification_data);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
 
@@ -214,7 +215,7 @@ TEST_F(NotificationResourcesLoaderTest, EmptyResourcesIfAllImagesFailToLoad) {
   ASSERT_FALSE(Resources());
 
   Loader()->Start(GetExecutionContext(), notification_data);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
 
@@ -235,7 +236,7 @@ TEST_F(NotificationResourcesLoaderTest, OneImageFailsToLoad) {
   ASSERT_FALSE(Resources());
 
   Loader()->Start(GetExecutionContext(), notification_data);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   ASSERT_TRUE(Resources());
 
@@ -271,7 +272,7 @@ TEST_F(NotificationResourcesLoaderTest, StopYieldsNoResources) {
   // The loader would stop e.g. when the execution context is destroyed or
   // when the loader is about to be destroyed, as a pre-finalizer.
   Loader()->Stop();
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   // Loading should have been cancelled when |stop| was called so no resources
   // should have been received by the test even though
