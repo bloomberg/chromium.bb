@@ -511,4 +511,11 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     public static void setProviderForTests(BackendProvider provider) {
         sProviderForTests = provider;
     }
+
+    /**
+     * Called to scroll to the top of the downloads list.
+     */
+    public void scrollToTop() {
+        mRecyclerView.smoothScrollToPosition(0);
+    }
 }

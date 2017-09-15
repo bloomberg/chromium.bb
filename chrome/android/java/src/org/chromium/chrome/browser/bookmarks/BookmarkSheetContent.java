@@ -89,4 +89,9 @@ public class BookmarkSheetContent implements BottomSheetContent {
     public boolean applyDefaultTopPadding() {
         return false;
     }
+
+    @Override
+    public void scrollToTop() {
+        mBookmarkManager.scrollToTop();
+    }
 }

@@ -323,6 +323,11 @@ public class BottomSheet
          * @return Whether the default top padding should be applied to the content view.
          */
         boolean applyDefaultTopPadding();
+
+        /**
+         * Called to scroll to the top of {@link BottomSheetContent}.
+         */
+        void scrollToTop();
     }
 
     /**

@@ -83,4 +83,7 @@ class PlaceholderSheetContent implements BottomSheet.BottomSheetContent {
     public boolean applyDefaultTopPadding() {
         return true;
     }
+
+    @Override
+    public void scrollToTop() {}
 }
