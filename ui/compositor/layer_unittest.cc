@@ -32,6 +32,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_reference_factory.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor_observer.h"
@@ -311,6 +312,8 @@ class TestLayerDelegate : public LayerDelegate {
                                   float new_device_scale_factor) override {
     device_scale_factor_ = new_device_scale_factor;
   }
+
+  MOCK_METHOD2(OnLayerOpacityChanged, void(float, float));
 
   void reset() {
     color_index_ = 0;
@@ -2211,6 +2214,23 @@ TEST(LayerDelegateTest, DelegatedFrameDamage) {
   layer->OnDelegatedFrameDamage(damage_rect);
   EXPECT_TRUE(delegate.delegated_frame_damage_called());
   EXPECT_EQ(damage_rect, delegate.delegated_frame_damage_rect());
+}
+
+TEST(LayerDelegateTest, OnLayerOpacityChanged) {
+  auto layer = std::make_unique<Layer>(LAYER_TEXTURED);
+  testing::StrictMock<TestLayerDelegate> delegate;
+  layer->set_delegate(&delegate);
+  EXPECT_CALL(delegate, OnLayerOpacityChanged(1.0f, 0.5f));
+  layer->SetOpacity(0.5f);
+}
+
+TEST(LayerDelegateTest, OnLayerOpacityDidNotChange) {
+  auto layer = std::make_unique<Layer>(LAYER_TEXTURED);
+  testing::StrictMock<TestLayerDelegate> delegate;
+  layer->set_delegate(&delegate);
+  // Since |delegate| is a StrictMock, the test will fail if the observer is
+  // notified.
+  layer->SetOpacity(1.0f);
 }
 
 TEST_F(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
