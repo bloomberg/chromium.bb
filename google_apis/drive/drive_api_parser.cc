@@ -150,6 +150,7 @@ const char kMimeType[] = "mimeType";
 const char kCreatedDate[] = "createdDate";
 const char kModificationDate[] = "modificationDate";
 const char kModifiedDate[] = "modifiedDate";
+const char kModifiedByMeDate[] = "modifiedByMeDate";
 const char kLastViewedByMeDate[] = "lastViewedByMeDate";
 const char kSharedWithMeDate[] = "sharedWithMeDate";
 const char kMd5Checksum[] = "md5Checksum";
@@ -622,6 +623,9 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterCustomField<base::Time>(
       kModifiedDate,
       &FileResource::modified_date_,
+      &util::GetTimeFromString);
+  converter->RegisterCustomField<base::Time>(
+      kModifiedByMeDate, &FileResource::modified_by_me_date_,
       &util::GetTimeFromString);
   converter->RegisterCustomField<base::Time>(
       kLastViewedByMeDate,

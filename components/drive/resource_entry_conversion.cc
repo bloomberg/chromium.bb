@@ -83,6 +83,8 @@ bool ConvertFileResourceToResourceEntry(
   PlatformFileInfoProto* file_info = converted.mutable_file_info();
 
   file_info->set_last_modified(input.modified_date().ToInternalValue());
+  converted.set_last_modified_by_me(
+      input.modified_by_me_date().ToInternalValue());
   // If the file has never been viewed (last_viewed_by_me_date().is_null() ==
   // true), then we will set the last_accessed field in the protocol buffer to
   // 0.

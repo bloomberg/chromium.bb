@@ -298,10 +298,10 @@ TEST_F(ConflictResolverTest, ResolveConflict_Files) {
   RunRemoteToLocalSyncerUntilIdle();
 
   const std::string kTitle = "foo";
-  const std::string primary = CreateRemoteFile(app_root, kTitle, "data1");
+  CreateRemoteFile(app_root, kTitle, "data1");
   CreateRemoteFile(app_root, kTitle, "data2");
   CreateRemoteFile(app_root, kTitle, "data3");
-  CreateRemoteFile(app_root, kTitle, "data4");
+  const std::string primary = CreateRemoteFile(app_root, kTitle, "data4");
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
   RunRemoteToLocalSyncerUntilIdle();
 

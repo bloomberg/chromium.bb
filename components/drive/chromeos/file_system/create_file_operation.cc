@@ -50,9 +50,10 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
     mime_type = kMimeTypeOctetStream;
 
   // Add the entry to the local resource metadata.
-  const base::Time now = base::Time::Now();
-  entry->mutable_file_info()->set_last_modified(now.ToInternalValue());
-  entry->mutable_file_info()->set_last_accessed(now.ToInternalValue());
+  const int64_t now = base::Time::Now().ToInternalValue();
+  entry->mutable_file_info()->set_last_modified(now);
+  entry->set_last_modified_by_me(now);
+  entry->mutable_file_info()->set_last_accessed(now);
   entry->set_title(file_path.BaseName().AsUTF8Unsafe());
   entry->set_parent_local_id(parent.local_id());
   entry->set_metadata_edit_state(ResourceEntry::DIRTY);

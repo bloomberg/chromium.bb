@@ -237,7 +237,7 @@ struct FakeDriveService::UploadSession {
 
 FakeDriveService::FakeDriveService()
     : about_resource_(new AboutResource),
-      published_date_seq_(0),
+      date_seq_(0),
       next_upload_sequence_number_(0),
       default_max_results_(0),
       resource_id_count_(0),
@@ -929,8 +929,10 @@ CancelCallback FakeDriveService::CopyResource(
   parents.push_back(parent);
   *new_file->mutable_parents() = parents;
 
-  if (!last_modified.is_null())
+  if (!last_modified.is_null()) {
     new_file->set_modified_date(last_modified);
+    new_file->set_modified_by_me_date(last_modified);
+  }
 
   AddNewChangestamp(new_change);
   UpdateETag(new_file);
@@ -998,8 +1000,10 @@ CancelCallback FakeDriveService::UpdateResource(
     *file->mutable_parents() = parents;
   }
 
-  if (!last_modified.is_null())
+  if (!last_modified.is_null()) {
     file->set_modified_date(last_modified);
+    file->set_modified_by_me_date(last_modified);
+  }
 
   if (!last_viewed_by_me.is_null())
     file->set_last_viewed_by_me_date(last_viewed_by_me);
@@ -1564,6 +1568,7 @@ void FakeDriveService::SetLastModifiedTime(
   ChangeResource* change = &entry->change_resource;
   FileResource* file = change->mutable_file();
   file->set_modified_date(last_modified_time);
+  file->set_modified_by_me_date(last_modified_time);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -1716,9 +1721,12 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   AddNewChangestamp(new_change);
   UpdateETag(new_file);
 
-  base::Time published_date =
-      base::Time() + base::TimeDelta::FromMilliseconds(++published_date_seq_);
-  new_file->set_created_date(published_date);
+  new_file->set_created_date(base::Time() +
+                             base::TimeDelta::FromMilliseconds(++date_seq_));
+  new_file->set_modified_by_me_date(
+      base::Time() + base::TimeDelta::FromMilliseconds(++date_seq_));
+  new_file->set_modified_date(base::Time() +
+                              base::TimeDelta::FromMilliseconds(++date_seq_));
 
   EntryInfo* raw_new_entry = new_entry.get();
   entries_[resource_id] = std::move(new_entry);

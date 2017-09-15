@@ -35,6 +35,8 @@ TEST_F(CreateFileOperationTest, CreateFile) {
   EXPECT_EQ(ResourceEntry::DIRTY, entry.metadata_edit_state());
   EXPECT_FALSE(base::Time::FromInternalValue(
       entry.file_info().last_modified()).is_null());
+  EXPECT_FALSE(
+      base::Time::FromInternalValue(entry.last_modified_by_me()).is_null());
   EXPECT_FALSE(base::Time::FromInternalValue(
       entry.file_info().last_accessed()).is_null());
 
