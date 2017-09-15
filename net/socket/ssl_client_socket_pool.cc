@@ -18,6 +18,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
+#include "net/base/url_util.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_proxy_client_socket_pool.h"
 #include "net/log/net_log_source_type.h"
@@ -385,11 +386,7 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
       host == "google.com" ||
       (host.size() > 11 && host.rfind(".google.com") == host.size() - 11);
 
-  // These are hosts that we intend to use in the initial TLS 1.3 deployment.
-  // TLS connections to them, whether or not this browser is in the experiment
-  // group, form the basis of our comparisons.
-  bool tls13_supported = (host == "inbox.google.com" ||
-                          host == "mail.google.com" || host == "gmail.com");
+  bool tls13_supported = IsTLS13ExperimentHost(host);
 
   if (result == OK ||
       ssl_socket_->IgnoreCertError(result, params_->load_flags())) {
