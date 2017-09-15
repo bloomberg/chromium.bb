@@ -7,6 +7,7 @@
 #include "ash/ash_constants.h"
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_constants.h"
+#include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/user_switch_flip_animation.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/system/user/rounded_image_view.h"
@@ -51,9 +52,9 @@ constexpr float kOpaqueUserViewOpacity = 1.f;
 constexpr float kTransparentUserViewOpacity = 0.63f;
 constexpr float kUserFadeAnimationDurationMs = 180;
 
-constexpr const char* kUserViewClassName = "UserView";
-constexpr const char* kLoginUserImageClassName = "LoginUserImage";
-constexpr const char* kLoginUserLabelClassName = "LoginUserLabel";
+constexpr const char kUserViewClassName[] = "UserView";
+constexpr const char kLoginUserImageClassName[] = "LoginUserImage";
+constexpr const char kLoginUserLabelClassName[] = "LoginUserLabel";
 
 int GetImageSize(LoginDisplayStyle style) {
   switch (style) {
@@ -71,7 +72,7 @@ int GetImageSize(LoginDisplayStyle style) {
 }
 
 views::View* MakePreferredSizeView(gfx::Size size) {
-  auto* view = new views::View();
+  auto* view = new NonAccessibleView();
   view->SetPreferredSize(size);
   return view;
 }
@@ -79,9 +80,10 @@ views::View* MakePreferredSizeView(gfx::Size size) {
 }  // namespace
 
 // Renders a user's profile icon.
-class LoginUserView::UserImage : public views::View {
+class LoginUserView::UserImage : public NonAccessibleView {
  public:
-  UserImage(int size) : size_(size) {
+  UserImage(int size)
+      : NonAccessibleView(kLoginUserImageClassName), size_(size) {
     SetLayoutManager(new views::FillLayout());
 
     // TODO(jdufault): We need to render a black border. We will probably have
@@ -96,9 +98,6 @@ class LoginUserView::UserImage : public views::View {
     image_->SetImage(user->avatar, gfx::Size(size_, size_));
   }
 
-  // views::View:
-  const char* GetClassName() const override { return kLoginUserImageClassName; }
-
  private:
   tray::RoundedImageView* image_ = nullptr;
   int size_;
@@ -107,9 +106,10 @@ class LoginUserView::UserImage : public views::View {
 };
 
 // Shows the user's name.
-class LoginUserView::UserLabel : public views::View {
+class LoginUserView::UserLabel : public NonAccessibleView {
  public:
-  UserLabel(LoginDisplayStyle style) {
+  UserLabel(LoginDisplayStyle style)
+      : NonAccessibleView(kLoginUserLabelClassName) {
     SetLayoutManager(new views::FillLayout());
 
     user_name_ = new views::Label();
@@ -149,9 +149,6 @@ class LoginUserView::UserLabel : public views::View {
   }
 
   const base::string16& displayed_name() const { return user_name_->text(); }
-
-  // views::View:
-  const char* GetClassName() const override { return kLoginUserLabelClassName; }
 
  private:
   views::Label* user_name_ = nullptr;
@@ -380,6 +377,7 @@ void LoginUserView::ButtonPressed(Button* sender, const ui::Event& event) {
 }
 
 void LoginUserView::UpdateCurrentUserState() {
+  SetAccessibleName(base::UTF8ToUTF16(current_user_->display_email));
   user_image_->UpdateForUser(current_user_);
   user_label_->UpdateForUser(current_user_);
   Layout();
@@ -426,7 +424,7 @@ void LoginUserView::SetLargeLayout() {
 
   // Centered user image
   {
-    auto* row = new views::View();
+    auto* row = new NonAccessibleView();
     AddChildView(row);
 
     auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
@@ -439,7 +437,7 @@ void LoginUserView::SetLargeLayout() {
 
   // User name, menu dropdown
   {
-    auto* row = new views::View();
+    auto* row = new NonAccessibleView();
     AddChildView(row);
 
     auto* layout =

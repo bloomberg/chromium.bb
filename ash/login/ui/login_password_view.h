@@ -6,11 +6,13 @@
 #define ASH_LOGIN_UI_LOGIN_PASSWORD_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/user_info.mojom.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
 namespace views {
+class Button;
 class ButtonListener;
 class Textfield;
 }  // namespace views
@@ -50,6 +52,9 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   explicit LoginPasswordView(const OnPasswordSubmit& on_submit);
   ~LoginPasswordView() override;
 
+  // Updates accessibility information for |user|.
+  void UpdateForUser(const mojom::UserInfoPtr& user);
+
   // Enable or disable focus on the child elements (ie, password field and
   // submit button).
   void SetFocusEnabledForChildViews(bool enable);
@@ -84,7 +89,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
 
   OnPasswordSubmit on_submit_;
   views::Textfield* textfield_;
-  views::View* submit_button_;
+  views::Button* submit_button_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPasswordView);
 };

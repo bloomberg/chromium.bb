@@ -12,6 +12,7 @@
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
+#include "ash/login/ui/non_accessible_view.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget_delegate.h"
@@ -61,6 +62,8 @@ constexpr int kHighDensityHorizontalPaddingRightOfUserListPortraitDp = 12;
 
 // The vertical padding between each entry in the extra-small user row
 constexpr int kHighDensityVerticalDistanceBetweenUsersDp = 32;
+
+constexpr const char kLockContentsViewName[] = "LockContentsView";
 
 // A view which stores two preferred sizes. The embedder can control which one
 // is used.
@@ -148,7 +151,9 @@ LockContentsView::UserState::UserState(AccountId account_id)
     : account_id(account_id) {}
 
 LockContentsView::LockContentsView(LoginDataDispatcher* data_dispatcher)
-    : data_dispatcher_(data_dispatcher), display_observer_(this) {
+    : NonAccessibleView(kLockContentsViewName),
+      data_dispatcher_(data_dispatcher),
+      display_observer_(this) {
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
   Shell::Get()->system_tray_notifier()->AddStatusAreaFocusObserver(this);
@@ -326,7 +331,7 @@ void LockContentsView::CreateMediumDensityLayout(
       kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp));
 
   // Add additional users.
-  auto* row = new views::View();
+  auto* row = new NonAccessibleView();
   AddChildView(row);
   auto* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
@@ -344,9 +349,9 @@ void LockContentsView::CreateMediumDensityLayout(
 
   // Insert dynamic spacing on left/right of the content which changes based on
   // screen rotation and display size.
-  auto* left = new views::View();
+  auto* left = new NonAccessibleView();
   AddChildViewAt(left, 0);
-  auto* right = new views::View();
+  auto* right = new NonAccessibleView();
   AddChildView(right);
   AddRotationAction(base::BindRepeating(
       [](views::BoxLayout* layout, views::View* left, views::View* right,
@@ -367,11 +372,11 @@ void LockContentsView::CreateHighDensityLayout(
   // TODO: Finish 7+ user layout.
 
   // Insert spacing before and after the auth view.
-  auto* fill = new views::View();
+  auto* fill = new NonAccessibleView();
   AddChildViewAt(fill, 0);
   root_layout_->SetFlexForView(fill, 1);
 
-  fill = new views::View();
+  fill = new NonAccessibleView();
   AddChildView(fill);
   root_layout_->SetFlexForView(fill, 1);
 
@@ -381,7 +386,7 @@ void LockContentsView::CreateHighDensityLayout(
       kHighDensityHorizontalPaddingLeftOfUserListPortraitDp));
 
   // Add user list.
-  auto* row = new views::View();
+  auto* row = new NonAccessibleView();
   auto* row_layout =
       new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
                            kHighDensityVerticalDistanceBetweenUsersDp);

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/login/ui/non_accessible_view.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
@@ -42,7 +43,7 @@ namespace ash {
 //              |   +   |  |       |
 //               -------    -------
 //
-class ASH_EXPORT LoginPinView : public views::View {
+class ASH_EXPORT LoginPinView : public NonAccessibleView {
  public:
   // Spacing between each pin button.
   static const int kButtonSeparatorSizeDp;
@@ -77,7 +78,6 @@ class ASH_EXPORT LoginPinView : public views::View {
   ~LoginPinView() override;
 
   // views::View:
-  const char* GetClassName() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
  private:
