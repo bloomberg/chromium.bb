@@ -549,5 +549,157 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedBlockAfterBlock) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoid) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:10px; height:50px;"></div>
+        <div style="break-inside:avoid; width:20px; height:70px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:10x50
+      offset:110,0 size:100x70
+        offset:0,0 size:20x70
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideAvoidTallBlock) {
+  // The block that has break-inside:avoid is too tall to fit in one
+  // fragmentainer. So a break is unavoidable. Let's check that:
+  // 1. The block is still shifted to the start of the next fragmentainer
+  // 2. We give up shifting it any further (would cause infinite an loop)
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:10px; height:50px;"></div>
+        <div style="break-inside:avoid; width:20px; height:170px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:10x50
+      offset:110,0 size:100x100
+        offset:0,0 size:20x100
+      offset:220,0 size:100x70
+        offset:0,0 size:20x70
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, NestedBreakInsideAvoid) {
+  // If there were no break-inside:avoid on the outer DIV here, there'd be a
+  // break between the two inner ones, since they wouldn't both fit in the first
+  // column. However, since the outer DIV does have such a declaration,
+  // everything is supposed to be pushed to the second column, with no space
+  // between the children.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:10px; height:50px;"></div>
+        <div style="break-inside:avoid; width:30px;">
+          <div style="break-inside:avoid; width:21px; height:30px;"></div>
+          <div style="break-inside:avoid; width:22px; height:30px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:10x50
+      offset:110,0 size:100x60
+        offset:0,0 size:30x60
+          offset:0,0 size:21x30
+          offset:0,30 size:22x30
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, NestedBreakInsideAvoidTall) {
+  // Here the outer DIV with break-inside:avoid is too tall to fit where it
+  // occurs naturally, so it needs to be pushed to the second column. It's not
+  // going to fit fully there either, though, since its two children don't fit
+  // together. Its second child wants to avoid breaks inside, so it will be
+  // moved to the third column.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:10px; height:50px;"></div>
+        <div style="break-inside:avoid; width:30px;">
+          <div style="width:21px; height:30px;"></div>
+          <div style="break-inside:avoid; width:22px; height:80px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:10x50
+      offset:110,0 size:100x100
+        offset:0,0 size:30x100
+          offset:0,0 size:21x30
+      offset:220,0 size:100x80
+        offset:0,0 size:30x80
+          offset:0,0 size:22x80
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 }  // anonymous namespace
 }  // namespace blink

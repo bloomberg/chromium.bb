@@ -18,6 +18,7 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_fragmentation_utils.h"
 #include "core/layout/ng/ng_layout_input_node.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
@@ -83,30 +84,6 @@ void UpdateLegacyMultiColumnFlowThread(
   flow_thread->SetLogicalWidth(column_inline_size);
   flow_thread->SetLogicalHeight(flow_end);
   flow_thread->ClearNeedsLayout();
-}
-
-// Return the total amount of block space spent on a node by fragments
-// preceding this one (but not including this one).
-LayoutUnit PreviouslyUsedBlockSpace(const NGConstraintSpace& constraint_space,
-                                    const NGPhysicalBoxFragment& fragment) {
-  const auto* break_token = ToNGBlockBreakToken(fragment.BreakToken());
-  if (!break_token)
-    return LayoutUnit();
-  NGBoxFragment logical_fragment(constraint_space.WritingMode(), fragment);
-  return break_token->UsedBlockSize() - logical_fragment.BlockSize();
-}
-
-// Return true if the specified fragment is the first generated fragment of
-// some node.
-bool IsFirstFragment(const NGConstraintSpace& constraint_space,
-                     const NGPhysicalBoxFragment& fragment) {
-  return PreviouslyUsedBlockSpace(constraint_space, fragment) <= LayoutUnit();
-}
-
-// Return true if the specified fragment is the final fragment of some node.
-bool IsLastFragment(const NGPhysicalBoxFragment& fragment) {
-  const auto* break_token = fragment.BreakToken();
-  return !break_token || break_token->IsFinished();
 }
 
 }  // namespace

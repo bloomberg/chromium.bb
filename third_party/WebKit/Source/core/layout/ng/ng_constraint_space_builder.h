@@ -30,6 +30,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGConstraintSpaceBuilder& SetPercentageResolutionSize(
       NGLogicalSize percentage_resolution_size);
 
+  NGConstraintSpaceBuilder& SetFragmentainerBlockSize(LayoutUnit size) {
+    fragmentainer_block_size_ = size;
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetFragmentainerSpaceAtBfcStart(LayoutUnit space) {
     fragmentainer_space_at_bfc_start_ = space;
     return *this;
@@ -86,6 +91,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGLogicalSize percentage_resolution_size_;
   Optional<NGLogicalSize> parent_percentage_resolution_size_;
   NGPhysicalSize initial_containing_block_size_;
+  LayoutUnit fragmentainer_block_size_;
   LayoutUnit fragmentainer_space_at_bfc_start_;
 
   unsigned parent_writing_mode_ : 3;
