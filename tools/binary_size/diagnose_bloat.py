@@ -202,6 +202,7 @@ class _BuildHelper(object):
     self.target = args.target
     self.target_os = args.target_os
     self.use_goma = args.use_goma
+    self.clean = args.clean
     self._SetDefaults()
 
   @property
@@ -290,6 +291,8 @@ class _BuildHelper(object):
     """Run GN gen/ninja build and return the process returncode."""
     logging.info('Building %s within %s (this might take a while).',
                  self.target, os.path.relpath(self.output_directory))
+    if self.clean:
+      _RunCmd(['gn', 'clean', self.output_directory])
     retcode = _RunCmd(
         self._GenGnCmd(), verbose=True, exit_on_failure=False)[1]
     if retcode:
@@ -767,7 +770,7 @@ def main():
                       help='Show  commands executed, extra debugging output'
                            ', and Ninja/GN output')
 
-  build_group = parser.add_argument_group('ninja arguments')
+  build_group = parser.add_argument_group('build arguments')
   build_group.add_argument('-j',
                            dest='max_jobs',
                            help='Run N jobs in parallel.')
@@ -780,6 +783,9 @@ def main():
                            dest='use_goma',
                            default=True,
                            help='Do not use goma when building with ninja.')
+  build_group.add_argument('--clean',
+                           action='store_true',
+                           help='Do a clean build for each revision.')
   build_group.add_argument('--target-os',
                            default='android',
                            choices=['android', 'linux'],
