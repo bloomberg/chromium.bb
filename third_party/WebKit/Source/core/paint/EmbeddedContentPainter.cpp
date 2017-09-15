@@ -137,7 +137,8 @@ void EmbeddedContentPainter::PaintContents(const PaintInfo& paint_info,
       AffineTransform::Translation(view_paint_offset.Width(),
                                    view_paint_offset.Height()));
   CullRect adjusted_cull_rect(paint_info.GetCullRect(), -view_paint_offset);
-  embedded_content_view->Paint(paint_info.context, adjusted_cull_rect);
+  embedded_content_view->Paint(
+      paint_info.context, paint_info.GetGlobalPaintFlags(), adjusted_cull_rect);
 }
 
 }  // namespace blink

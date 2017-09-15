@@ -103,7 +103,9 @@ class CORE_EXPORT WebPluginContainerImpl final
   // EmbeddedContentView methods
   void SetFrameRect(const IntRect&) override;
   const IntRect& FrameRect() const override { return frame_rect_; }
-  void Paint(GraphicsContext&, const CullRect&) const override;
+  void Paint(GraphicsContext&,
+             const GlobalPaintFlags,
+             const CullRect&) const override;
   void UpdateGeometry() override;
   void Show() override;
   void Hide() override;

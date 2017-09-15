@@ -655,7 +655,9 @@ class CORE_EXPORT LocalFrameView final
                               const IntPoint&) const;
 
   // Handles painting of the contents of the view as well as the scrollbars.
-  void Paint(GraphicsContext&, const CullRect&) const override;
+  void Paint(GraphicsContext&,
+             const GlobalPaintFlags,
+             const CullRect&) const override;
   // Paints, and also updates the lifecycle to in-paint and paint clean
   // beforehand.  Call this for painting use-cases outside of the lifecycle.
   void PaintWithLifecycleUpdate(GraphicsContext&,

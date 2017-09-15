@@ -1330,7 +1330,8 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
 
   paint_controller->UpdateCurrentPaintChunkProperties(nullptr, properties);
   GraphicsContext graphics_context(*paint_controller);
-  container->Paint(graphics_context, CullRect(IntRect(10, 10, 400, 300)));
+  container->Paint(graphics_context, kGlobalPaintNormalPhase,
+                   CullRect(IntRect(10, 10, 400, 300)));
   paint_controller->CommitNewDisplayItems();
 
   const auto& display_items =
