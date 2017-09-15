@@ -63,8 +63,8 @@ static bool IsMainWorldId(int world_id) {
 }
 #endif
 
-PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::Create(v8::Isolate* isolate,
-                                                    WorldType world_type) {
+RefPtr<DOMWrapperWorld> DOMWrapperWorld::Create(v8::Isolate* isolate,
+                                                WorldType world_type) {
   DCHECK_NE(WorldType::kIsolated, world_type);
   int world_id = GenerateWorldIdForType(world_type);
   if (world_id == kInvalidWorldId)
@@ -150,7 +150,7 @@ void DOMWrapperWorld::Dispose() {
   GetWorldMap().erase(world_id_);
 }
 
-PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::EnsureIsolatedWorld(
+RefPtr<DOMWrapperWorld> DOMWrapperWorld::EnsureIsolatedWorld(
     v8::Isolate* isolate,
     int world_id) {
 #if DCHECK_IS_ON()
@@ -185,7 +185,7 @@ SecurityOrigin* DOMWrapperWorld::IsolatedWorldSecurityOrigin() {
 
 void DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(
     int world_id,
-    PassRefPtr<SecurityOrigin> security_origin) {
+    RefPtr<SecurityOrigin> security_origin) {
 #if DCHECK_IS_ON()
   DCHECK(IsIsolatedWorldId(world_id));
 #endif

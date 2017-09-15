@@ -13,7 +13,7 @@ namespace blink {
 class WebContentSettingCallbacksPrivate
     : public RefCounted<WebContentSettingCallbacksPrivate> {
  public:
-  static PassRefPtr<WebContentSettingCallbacksPrivate> Create(
+  static RefPtr<WebContentSettingCallbacksPrivate> Create(
       std::unique_ptr<ContentSettingCallbacks> callbacks) {
     return AdoptRef(
         new WebContentSettingCallbacksPrivate(std::move(callbacks)));

@@ -119,7 +119,7 @@ void WebServiceWorkerRequest::SetBlob(
       BlobDataHandle::Create(uuid, String(), size, std::move(blob_info));
 }
 
-PassRefPtr<BlobDataHandle> WebServiceWorkerRequest::GetBlobDataHandle() const {
+RefPtr<BlobDataHandle> WebServiceWorkerRequest::GetBlobDataHandle() const {
   return private_->blob_data_handle;
 }
 

@@ -11,8 +11,8 @@
 #include "platform/animation/CompositorFloatKeyframe.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace cc {
@@ -51,7 +51,7 @@ class PLATFORM_EXPORT CompositorFloatAnimationCurve
   using Keyframes = Vector<std::unique_ptr<CompositorFloatKeyframe>>;
   Keyframes KeyframesForTesting() const;
 
-  PassRefPtr<TimingFunction> GetTimingFunctionForTesting() const;
+  RefPtr<TimingFunction> GetTimingFunctionForTesting() const;
 
  private:
   CompositorFloatAnimationCurve();

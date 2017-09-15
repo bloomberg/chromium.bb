@@ -33,9 +33,9 @@
 #include <memory>
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileMetadata.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemEntry.h"
@@ -47,7 +47,7 @@ namespace blink {
 class WebFileSystemCallbacksPrivate
     : public RefCounted<WebFileSystemCallbacksPrivate> {
  public:
-  static PassRefPtr<WebFileSystemCallbacksPrivate> Create(
+  static RefPtr<WebFileSystemCallbacksPrivate> Create(
       std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
     return AdoptRef(new WebFileSystemCallbacksPrivate(std::move(callbacks)));
   }

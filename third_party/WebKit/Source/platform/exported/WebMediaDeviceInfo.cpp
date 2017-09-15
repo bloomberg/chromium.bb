@@ -25,8 +25,8 @@
 
 #include "public/platform/WebMediaDeviceInfo.h"
 
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ namespace blink {
 class WebMediaDeviceInfoPrivate final
     : public RefCounted<WebMediaDeviceInfoPrivate> {
  public:
-  static PassRefPtr<WebMediaDeviceInfoPrivate> Create(
+  static RefPtr<WebMediaDeviceInfoPrivate> Create(
       const WebString& device_id,
       WebMediaDeviceInfo::MediaDeviceKind,
       const WebString& label,
@@ -57,7 +57,7 @@ class WebMediaDeviceInfoPrivate final
   WebString group_id_;
 };
 
-PassRefPtr<WebMediaDeviceInfoPrivate> WebMediaDeviceInfoPrivate::Create(
+RefPtr<WebMediaDeviceInfoPrivate> WebMediaDeviceInfoPrivate::Create(
     const WebString& device_id,
     WebMediaDeviceInfo::MediaDeviceKind kind,
     const WebString& label,

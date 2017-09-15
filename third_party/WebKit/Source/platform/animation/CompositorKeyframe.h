@@ -6,7 +6,7 @@
 #define CompositorKeyframe_h
 
 #include "platform/PlatformExport.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace cc {
 class TimingFunction;
@@ -22,7 +22,7 @@ class PLATFORM_EXPORT CompositorKeyframe {
 
   virtual double Time() const = 0;
 
-  PassRefPtr<TimingFunction> GetTimingFunctionForTesting() const;
+  RefPtr<TimingFunction> GetTimingFunctionForTesting() const;
 
  private:
   virtual const cc::TimingFunction* CcTimingFunction() const = 0;

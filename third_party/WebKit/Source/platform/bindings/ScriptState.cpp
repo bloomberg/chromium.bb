@@ -8,8 +8,8 @@
 
 namespace blink {
 
-PassRefPtr<ScriptState> ScriptState::Create(v8::Local<v8::Context> context,
-                                            PassRefPtr<DOMWrapperWorld> world) {
+RefPtr<ScriptState> ScriptState::Create(v8::Local<v8::Context> context,
+                                        RefPtr<DOMWrapperWorld> world) {
   RefPtr<ScriptState> script_state =
       AdoptRef(new ScriptState(context, std::move(world)));
   // This ref() is for keeping this ScriptState alive as long as the v8::Context
@@ -29,7 +29,7 @@ static void ContextCollectedCallback(
 }
 
 ScriptState::ScriptState(v8::Local<v8::Context> context,
-                         PassRefPtr<DOMWrapperWorld> world)
+                         RefPtr<DOMWrapperWorld> world)
     : isolate_(context->GetIsolate()),
       context_(isolate_, context),
       world_(std::move(world)),

@@ -37,7 +37,7 @@ CompositorFloatAnimationCurve::KeyframesForTesting() const {
   return keyframes;
 }
 
-PassRefPtr<TimingFunction>
+RefPtr<TimingFunction>
 CompositorFloatAnimationCurve::GetTimingFunctionForTesting() const {
   return CreateCompositorTimingFunctionFromCC(
       curve_->timing_function_for_testing());

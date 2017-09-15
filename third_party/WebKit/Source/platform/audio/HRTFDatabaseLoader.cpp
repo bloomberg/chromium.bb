@@ -46,7 +46,7 @@ static LoaderMap& GetLoaderMap() {
   return *map;
 }
 
-PassRefPtr<HRTFDatabaseLoader>
+RefPtr<HRTFDatabaseLoader>
 HRTFDatabaseLoader::CreateAndLoadAsynchronouslyIfNecessary(float sample_rate) {
   DCHECK(IsMainThread());
 

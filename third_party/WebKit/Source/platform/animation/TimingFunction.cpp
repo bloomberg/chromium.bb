@@ -158,7 +158,7 @@ std::unique_ptr<cc::TimingFunction> FramesTimingFunction::CloneToCC() const {
   return frames_->Clone();
 }
 
-PassRefPtr<TimingFunction> CreateCompositorTimingFunctionFromCC(
+RefPtr<TimingFunction> CreateCompositorTimingFunctionFromCC(
     const cc::TimingFunction* timing_function) {
   if (!timing_function)
     return LinearTimingFunction::Shared();

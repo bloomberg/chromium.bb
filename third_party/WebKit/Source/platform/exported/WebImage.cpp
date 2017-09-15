@@ -35,7 +35,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/Image.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
@@ -126,7 +126,7 @@ WebSize WebImage::Size() const {
   return WebSize(bitmap_.width(), bitmap_.height());
 }
 
-WebImage::WebImage(PassRefPtr<Image> image) {
+WebImage::WebImage(RefPtr<Image> image) {
   if (!image)
     return;
 
