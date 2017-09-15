@@ -44,6 +44,7 @@ stage_install_rpm() {
     local MENUNAME="${MENUNAME} (${CHANNEL})"
   fi
   prep_staging_rpm
+  SHLIB_PERMS=755
   stage_install_common
   log_cmd echo "Staging RPM install files in '${STAGEDIR}'..."
   process_template "${BUILDDIR}/installer/common/rpmrepo.cron" \

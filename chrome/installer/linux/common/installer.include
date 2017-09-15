@@ -173,9 +173,9 @@ stage_install_common() {
 
   # Widevine CDM.
   if [ -f "${BUILDDIR}/libwidevinecdmadapter.so" ]; then
-    install -m 644 -s "${BUILDDIR}/libwidevinecdmadapter.so" "${STAGEDIR}/${INSTALLDIR}/"
+    install -m ${SHLIB_PERMS} -s "${BUILDDIR}/libwidevinecdmadapter.so" "${STAGEDIR}/${INSTALLDIR}/"
     # No need to strip; libwidevinecdm.so starts out stripped.
-    install -m 644 "${BUILDDIR}/libwidevinecdm.so" "${STAGEDIR}/${INSTALLDIR}/"
+    install -m ${SHLIB_PERMS} "${BUILDDIR}/libwidevinecdm.so" "${STAGEDIR}/${INSTALLDIR}/"
   fi
 
   # ANGLE
@@ -186,7 +186,7 @@ stage_install_common() {
         strippedfile="${buildfile}.stripped"
         debugfile="${buildfile}.debug"
         "${BUILDDIR}/installer/common/eu-strip" -o "${strippedfile}" -f "${debugfile}" "${buildfile}"
-        install -m 644 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/${file}"
+        install -m ${SHLIB_PERMS} "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/${file}"
       done
     fi
   fi
@@ -199,14 +199,14 @@ stage_install_common() {
       strippedfile="${buildfile}.stripped"
       debugfile="${buildfile}.debug"
       "${BUILDDIR}/installer/common/eu-strip" -o "${strippedfile}" -f "${debugfile}" "${buildfile}"
-      install -m 644 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/swiftshader/${file}"
+      install -m ${SHLIB_PERMS} "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/swiftshader/${file}"
     done
   fi
 
   # libc++
   if [ -f "${BUILDDIR}/lib/libc++.so" ]; then
     install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/lib/"
-    install -m 644 -s "${BUILDDIR}/lib/libc++.so" "${STAGEDIR}/${INSTALLDIR}/lib/"
+    install -m ${SHLIB_PERMS} -s "${BUILDDIR}/lib/libc++.so" "${STAGEDIR}/${INSTALLDIR}/lib/"
   fi
 
 
