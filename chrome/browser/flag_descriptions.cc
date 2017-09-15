@@ -985,6 +985,11 @@ const char kOverscrollStartThreshold133Percent[] = "133%";
 const char kOverscrollStartThreshold166Percent[] = "166%";
 const char kOverscrollStartThreshold200Percent[] = "200%";
 
+const char kParallelDownloadingName[] = "Parallel downloading";
+const char kParallelDownloadingDescription[] =
+    "Enable parallel downloading to"
+    "accelerate download speed.";
+
 const char kPassiveEventListenerDefaultName[] =
     "Passive Event Listener Override";
 const char kPassiveEventListenerDefaultDescription[] =
