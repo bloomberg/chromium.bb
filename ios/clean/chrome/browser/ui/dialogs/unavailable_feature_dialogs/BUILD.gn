@@ -2,14 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("context_menu") {
+source_set("unavailable_feature_dialogs") {
   sources = [
-    "context_menu_dialog_coordinator.h",
-    "context_menu_dialog_coordinator.mm",
-    "context_menu_dialog_mediator.h",
-    "context_menu_dialog_mediator.mm",
-    "context_menu_dialog_request.h",
-    "context_menu_request.mm",
+    "unavailable_feature_dialog_coordinator.h",
+    "unavailable_feature_dialog_coordinator.mm",
+    "unavailable_feature_dialog_mediator.h",
+    "unavailable_feature_dialog_mediator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -24,7 +22,6 @@ source_set("context_menu") {
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/dialogs:dialog_coordinator_support",
     "//ios/clean/chrome/browser/ui/dialogs:dialogs_ui",
-    "//ios/clean/chrome/browser/ui/dialogs/unavailable_feature_dialogs",
     "//ios/clean/chrome/browser/ui/overlays",
     "//ios/web",
     "//ui/base",
@@ -35,13 +32,13 @@ source_set("context_menu") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "context_menu_dialog_mediator_unittest.mm",
+    "unavailable_feature_dialog_mediator_unittest.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":context_menu",
+    ":unavailable_feature_dialogs",
     "//base",
     "//base/test:test_support",
     "//components/strings:components_strings_grit",

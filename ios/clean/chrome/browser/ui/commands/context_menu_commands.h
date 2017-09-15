@@ -33,6 +33,12 @@
 // and the UI can be dismissed.
 - (void)dismissContextMenu;
 
+// Called after the user has selected an unavailable feature.  |featureName|
+// should not be empty.
+// TODO(crbug.com/760644): Delete after all context menu commands are
+// implemented.
+- (void)dismissContextMenuForUnavailableFeatureNamed:(NSString*)featureName;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_CONTEXT_MENU_COMMANDS_H_
