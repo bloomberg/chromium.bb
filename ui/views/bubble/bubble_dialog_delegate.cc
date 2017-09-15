@@ -105,7 +105,10 @@ ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
 NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
     Widget* widget) {
   BubbleFrameView* frame = new BubbleFrameView(title_margins_, gfx::Insets());
-  frame->set_footnote_margins(margins());
+
+  // By default, assume the footnote only contains text.
+  frame->set_footnote_margins(
+      LayoutProvider::Get()->GetDialogInsetsForContentType(TEXT, TEXT));
   frame->SetFootnoteView(CreateFootnoteView());
 
   BubbleBorder::Arrow adjusted_arrow = arrow();
@@ -216,8 +219,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
   LayoutProvider* provider = LayoutProvider::Get();
   // An individual bubble should override these margins if its layout differs
   // from the typical title/text/buttons.
-  set_margins(
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
+  set_margins(provider->GetDialogInsetsForContentType(TEXT, TEXT));
   title_margins_ = provider->GetInsetsMetric(INSETS_DIALOG_TITLE);
   if (anchor_view)
     SetAnchorView(anchor_view);
