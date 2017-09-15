@@ -63,4 +63,8 @@ void MediaGpuChannelManager::SetOverlayFactory(
   overlay_factory_cb_ = std::move(overlay_factory_cb);
 }
 
+AndroidOverlayMojoFactoryCB MediaGpuChannelManager::GetOverlayFactory() {
+  return overlay_factory_cb_;
+}
+
 }  // namespace media

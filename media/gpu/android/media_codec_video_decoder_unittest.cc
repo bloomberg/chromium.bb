@@ -35,6 +35,12 @@ void OutputCb(const scoped_refptr<VideoFrame>& frame) {}
 void OutputWithReleaseMailboxCb(VideoFrameFactory::ReleaseMailboxCB release_cb,
                                 const scoped_refptr<VideoFrame>& frame) {}
 
+std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(
+    const base::UnguessableToken& routing_token,
+    AndroidOverlayConfig config) {
+  return nullptr;
+}
+
 gpu::GpuCommandBufferStub* GetStubCb() {
   return nullptr;
 }
@@ -100,7 +106,8 @@ class MediaCodecVideoDecoderTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get(), base::Bind(&GetStubCb),
         base::Bind(&OutputWithReleaseMailboxCb), device_info_.get(),
         codec_allocator_.get(), std::move(surface_chooser),
-        std::move(video_frame_factory), nullptr);
+        base::Bind(&CreateAndroidOverlayCb), std::move(video_frame_factory),
+        nullptr);
     mcvd_.reset(observable_mcvd);
     mcvd_raw_ = observable_mcvd;
     destruction_observer_ = observable_mcvd->CreateDestructionObserver();
@@ -263,7 +270,7 @@ TEST_F(MediaCodecVideoDecoderTest,
        SurfaceChooserInitializedWithOverlayFactory) {
   Initialize();
   OverlayInfo info;
-  info.surface_id = 123;
+  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
   mcvd_->SetOverlayInfo(info);
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
   // The surface chooser should have an overlay factory because SetOverlayInfo()
@@ -273,7 +280,7 @@ TEST_F(MediaCodecVideoDecoderTest,
 
 TEST_F(MediaCodecVideoDecoderTest, SetOverlayInfoIsValidBeforeInitialize) {
   OverlayInfo info;
-  info.surface_id = 123;
+  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
   mcvd_->SetOverlayInfo(info);
   Initialize();
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
@@ -285,9 +292,9 @@ TEST_F(MediaCodecVideoDecoderTest, SetOverlayInfoReplacesTheOverlayFactory) {
 
   EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory(_)).Times(2);
   OverlayInfo info;
-  info.surface_id = 123;
+  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
   mcvd_->SetOverlayInfo(info);
-  info.surface_id = 456;
+  info.routing_token = base::UnguessableToken::Deserialize(3, 4);
   mcvd_->SetOverlayInfo(info);
 }
 
@@ -297,7 +304,7 @@ TEST_F(MediaCodecVideoDecoderTest, DuplicateSetOverlayInfosAreIgnored) {
   // The second SetOverlayInfo() should be ignored.
   EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory(_)).Times(1);
   OverlayInfo info;
-  info.surface_id = 123;
+  info.routing_token = base::UnguessableToken::Deserialize(1, 2);
   mcvd_->SetOverlayInfo(info);
   mcvd_->SetOverlayInfo(info);
 }

@@ -49,6 +49,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
       DeviceInfo* device_info,
       AVDACodecAllocator* codec_allocator,
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
+      AndroidOverlayMojoFactoryCB overlay_factory_cb,
       std::unique_ptr<VideoFrameFactory> video_frame_factory,
       std::unique_ptr<service_manager::ServiceContextRef> connection_ref);
 
@@ -230,7 +231,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // The factory for creating VideoFrames from CodecOutputBuffers.
   std::unique_ptr<VideoFrameFactory> video_frame_factory_;
 
-  // An optional factory callback for creating mojo AndroidOverlays.
+  // An optional factory callback for creating mojo AndroidOverlays. This must
+  // only be called on the GPU thread.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
   DeviceInfo* device_info_;
