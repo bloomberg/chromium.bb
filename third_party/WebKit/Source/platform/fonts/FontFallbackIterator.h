@@ -8,7 +8,6 @@
 #include "platform/fonts/FontDataForRangeSet.h"
 #include "platform/fonts/FontFallbackPriority.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
@@ -26,32 +25,32 @@ class FontFallbackIterator : public RefCounted<FontFallbackIterator> {
   WTF_MAKE_NONCOPYABLE(FontFallbackIterator);
 
  public:
-  static PassRefPtr<FontFallbackIterator> Create(const FontDescription&,
-                                                 PassRefPtr<FontFallbackList>,
-                                                 FontFallbackPriority);
+  static RefPtr<FontFallbackIterator> Create(const FontDescription&,
+                                             RefPtr<FontFallbackList>,
+                                             FontFallbackPriority);
 
   bool HasNext() const { return fallback_stage_ != kOutOfLuck; };
 
   // Some system fallback APIs (Windows, Android) require a character, or a
   // portion of the string to be passed.  On Mac and Linux, we get a list of
   // fonts without passing in characters.
-  PassRefPtr<FontDataForRangeSet> Next(const Vector<UChar32>& hint_list);
+  RefPtr<FontDataForRangeSet> Next(const Vector<UChar32>& hint_list);
 
  private:
   FontFallbackIterator(const FontDescription&,
-                       PassRefPtr<FontFallbackList>,
+                       RefPtr<FontFallbackList>,
                        FontFallbackPriority);
   bool RangeSetContributesForHint(const Vector<UChar32> hint_list,
                                   const FontDataForRangeSet*);
   bool AlreadyLoadingRangeForHintChar(UChar32 hint_char);
   void WillUseRange(const AtomicString& family, const FontDataForRangeSet&);
 
-  PassRefPtr<FontDataForRangeSet> UniqueOrNext(
-      PassRefPtr<FontDataForRangeSet> candidate,
+  RefPtr<FontDataForRangeSet> UniqueOrNext(
+      RefPtr<FontDataForRangeSet> candidate,
       const Vector<UChar32>& hint_list);
 
-  PassRefPtr<SimpleFontData> FallbackPriorityFont(UChar32 hint);
-  PassRefPtr<SimpleFontData> UniqueSystemFontForHintList(
+  RefPtr<SimpleFontData> FallbackPriorityFont(UChar32 hint);
+  RefPtr<SimpleFontData> UniqueSystemFontForHintList(
       const Vector<UChar32>& hint_list);
 
   const FontDescription& font_description_;

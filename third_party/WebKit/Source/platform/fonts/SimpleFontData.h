@@ -69,9 +69,9 @@ enum FontDataVariant {
 class PLATFORM_EXPORT SimpleFontData : public FontData {
  public:
   // Used to create platform fonts.
-  static PassRefPtr<SimpleFontData> Create(
+  static RefPtr<SimpleFontData> Create(
       const FontPlatformData& platform_data,
-      PassRefPtr<CustomFontData> custom_data = nullptr,
+      RefPtr<CustomFontData> custom_data = nullptr,
       bool is_text_orientation_fallback = false,
       bool subpixel_ascent_descent = false) {
     return AdoptRef(new SimpleFontData(platform_data, std::move(custom_data),
@@ -84,11 +84,11 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     return vertical_data_.Get();
   }
 
-  PassRefPtr<SimpleFontData> SmallCapsFontData(const FontDescription&) const;
-  PassRefPtr<SimpleFontData> EmphasisMarkFontData(const FontDescription&) const;
+  RefPtr<SimpleFontData> SmallCapsFontData(const FontDescription&) const;
+  RefPtr<SimpleFontData> EmphasisMarkFontData(const FontDescription&) const;
 
-  PassRefPtr<SimpleFontData> VariantFontData(const FontDescription& description,
-                                             FontDataVariant variant) const {
+  RefPtr<SimpleFontData> VariantFontData(const FontDescription& description,
+                                         FontDataVariant variant) const {
     switch (variant) {
       case kSmallCapsVariant:
         return SmallCapsFontData(description);
@@ -102,8 +102,8 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     return const_cast<SimpleFontData*>(this);
   }
 
-  PassRefPtr<SimpleFontData> VerticalRightOrientationFontData() const;
-  PassRefPtr<SimpleFontData> UprightOrientationFontData() const;
+  RefPtr<SimpleFontData> VerticalRightOrientationFontData() const;
+  RefPtr<SimpleFontData> UprightOrientationFontData() const;
 
   bool HasVerticalGlyphs() const { return has_vertical_glyphs_; }
   bool IsTextOrientationFallback() const {
@@ -181,19 +181,19 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
  protected:
   SimpleFontData(const FontPlatformData&,
-                 PassRefPtr<CustomFontData> custom_data,
+                 RefPtr<CustomFontData> custom_data,
                  bool is_text_orientation_fallback = false,
                  bool subpixel_ascent_descent = false);
 
   // Only used for testing.
-  SimpleFontData(const FontPlatformData&, PassRefPtr<OpenTypeVerticalData>);
+  SimpleFontData(const FontPlatformData&, RefPtr<OpenTypeVerticalData>);
 
  private:
   void PlatformInit(bool subpixel_ascent_descent);
   void PlatformGlyphInit();
 
-  PassRefPtr<SimpleFontData> CreateScaledFontData(const FontDescription&,
-                                                  float scale_factor) const;
+  RefPtr<SimpleFontData> CreateScaledFontData(const FontDescription&,
+                                              float scale_factor) const;
 
   void ComputeEmHeightMetrics() const;
   bool NormalizeEmHeightMetrics(float, float) const;

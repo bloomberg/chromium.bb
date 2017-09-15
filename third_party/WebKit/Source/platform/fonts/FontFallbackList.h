@@ -41,7 +41,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   WTF_MAKE_NONCOPYABLE(FontFallbackList);
 
  public:
-  static PassRefPtr<FontFallbackList> Create() {
+  static RefPtr<FontFallbackList> Create() {
     return AdoptRef(new FontFallbackList());
   }
 
@@ -85,8 +85,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
  private:
   FontFallbackList();
 
-  PassRefPtr<FontData> GetFontData(const FontDescription&,
-                                   int& family_index) const;
+  RefPtr<FontData> GetFontData(const FontDescription&, int& family_index) const;
 
   const SimpleFontData* DeterminePrimarySimpleFontData(
       const FontDescription&) const;

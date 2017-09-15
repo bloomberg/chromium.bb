@@ -209,7 +209,7 @@ void FontCache::SetFontManager(sk_sp<SkFontMgr> font_manager) {
   static_font_manager_ = font_manager.release();
 }
 
-PassRefPtr<OpenTypeVerticalData> FontCache::GetVerticalData(
+RefPtr<OpenTypeVerticalData> FontCache::GetVerticalData(
     const FontFileKey& key,
     const FontPlatformData& platform_data) {
   FontVerticalDataCache& font_vertical_data_cache =
@@ -231,7 +231,7 @@ void FontCache::AcceptLanguagesChanged(const String& accept_languages) {
   GetFontCache()->InvalidateShapeCache();
 }
 
-PassRefPtr<SimpleFontData> FontCache::GetFontData(
+RefPtr<SimpleFontData> FontCache::GetFontData(
     const FontDescription& font_description,
     const AtomicString& family,
     AlternateFontName altername_font_name,
@@ -248,11 +248,10 @@ PassRefPtr<SimpleFontData> FontCache::GetFontData(
   return nullptr;
 }
 
-PassRefPtr<SimpleFontData> FontCache::FontDataFromFontPlatformData(
+RefPtr<SimpleFontData> FontCache::FontDataFromFontPlatformData(
     const FontPlatformData* platform_data,
     ShouldRetain should_retain,
     bool subpixel_ascent_descent) {
-
 #if DCHECK_IS_ON()
   if (should_retain == kDoNotRetain)
     DCHECK(purge_prevent_count_);

@@ -30,8 +30,8 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/Unicode.h"
 
 namespace blink {

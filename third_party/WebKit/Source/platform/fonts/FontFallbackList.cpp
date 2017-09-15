@@ -149,7 +149,7 @@ const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontData(
   }
 }
 
-PassRefPtr<FontData> FontFallbackList::GetFontData(
+RefPtr<FontData> FontFallbackList::GetFontData(
     const FontDescription& font_description,
     int& family_index) const {
   const FontFamily* curr_family = &font_description.Family();

@@ -45,7 +45,7 @@ void FontCache::GetFontForCharacter(
   NOTIMPLEMENTED();
 }
 
-PassRefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
+RefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
     const FontDescription&,
     UChar32,
     const SimpleFontData* font_data_to_substitute,

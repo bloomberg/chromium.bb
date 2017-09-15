@@ -364,7 +364,7 @@ void ShapeResult::ApplySpacing(ShapeResultSpacing<String>& spacing,
   ApplySpacingImpl(spacing, text_start_offset);
 }
 
-PassRefPtr<ShapeResult> ShapeResult::ApplySpacingToCopy(
+RefPtr<ShapeResult> ShapeResult::ApplySpacingToCopy(
     ShapeResultSpacing<TextRun>& spacing,
     const TextRun& run) const {
   unsigned index_of_sub_run = spacing.Text().IndexOfSubRun(run);
@@ -609,7 +609,7 @@ void ShapeResult::CopyRange(unsigned start_offset,
   target->num_characters_ = index;
 }
 
-PassRefPtr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
+RefPtr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
     const Font* font,
     const TextRun& text_run,
     float position_offset,

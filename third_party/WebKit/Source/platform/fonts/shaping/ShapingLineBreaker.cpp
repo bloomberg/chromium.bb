@@ -200,10 +200,9 @@ unsigned ShapingLineBreaker::NextBreakOpportunity(unsigned offset,
   return break_iterator_->NextBreakOpportunity(offset);
 }
 
-inline PassRefPtr<ShapeResult> ShapingLineBreaker::Shape(
-    TextDirection direction,
-    unsigned start,
-    unsigned end) {
+inline RefPtr<ShapeResult> ShapingLineBreaker::Shape(TextDirection direction,
+                                                     unsigned start,
+                                                     unsigned end) {
   if (!spacing_ || !spacing_->HasSpacing())
     return shaper_->Shape(font_, direction, start, end);
 
@@ -241,7 +240,7 @@ inline PassRefPtr<ShapeResult> ShapingLineBreaker::Shape(
 //   If we further assume that the font kerns with space then even though it's a
 //   valid break opportunity reshaping is required as the combined width of the
 //   two segments "Line " and "breaking" may be different from "Line breaking".
-PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
+RefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
     unsigned start,
     LayoutUnit available_space,
     ShapingLineBreaker::Result* result_out) {
@@ -398,10 +397,9 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
 
 // Shape from the specified offset to the end of the ShapeResult.
 // If |start| is safe-to-break, this copies the subset of the result.
-PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeToEnd(
-    unsigned start,
-    LayoutUnit start_position,
-    unsigned range_end) {
+RefPtr<ShapeResult> ShapingLineBreaker::ShapeToEnd(unsigned start,
+                                                   LayoutUnit start_position,
+                                                   unsigned range_end) {
   unsigned first_safe =
       NextSafeToBreakBefore(shaper_->GetText(), shaper_->TextLength(), start);
   DCHECK_GE(first_safe, start);

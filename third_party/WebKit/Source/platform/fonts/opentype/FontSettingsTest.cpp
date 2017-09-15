@@ -4,12 +4,12 @@
 
 #include "platform/fonts/opentype/FontSettings.h"
 
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-PassRefPtr<FontVariationSettings> MakeFontVariationSettings(
+RefPtr<FontVariationSettings> MakeFontVariationSettings(
     std::initializer_list<FontVariationAxis> variation_axes) {
   RefPtr<FontVariationSettings> variation_settings =
       FontVariationSettings::Create();

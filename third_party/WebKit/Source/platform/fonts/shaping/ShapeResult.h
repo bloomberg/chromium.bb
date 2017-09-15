@@ -53,12 +53,12 @@ class TextRun;
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:
-  static PassRefPtr<ShapeResult> Create(const Font* font,
-                                        unsigned num_characters,
-                                        TextDirection direction) {
+  static RefPtr<ShapeResult> Create(const Font* font,
+                                    unsigned num_characters,
+                                    TextDirection direction) {
     return AdoptRef(new ShapeResult(font, num_characters, direction));
   }
-  static PassRefPtr<ShapeResult> CreateForTabulationCharacters(
+  static RefPtr<ShapeResult> CreateForTabulationCharacters(
       const Font*,
       const TextRun&,
       float position_offset,
@@ -109,8 +109,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // giving it to |ShapeResultSpacing|. It can be negative if
   // |StartIndexForResult()| is larger than the text in |ShapeResultSpacing|.
   void ApplySpacing(ShapeResultSpacing<String>&, int text_start_offset = 0);
-  PassRefPtr<ShapeResult> ApplySpacingToCopy(ShapeResultSpacing<TextRun>&,
-                                             const TextRun&) const;
+  RefPtr<ShapeResult> ApplySpacingToCopy(ShapeResultSpacing<TextRun>&,
+                                         const TextRun&) const;
 
   void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
 
@@ -120,7 +120,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   ShapeResult(const Font*, unsigned num_characters, TextDirection);
   ShapeResult(const ShapeResult&);
 
-  static PassRefPtr<ShapeResult> Create(const ShapeResult& other) {
+  static RefPtr<ShapeResult> Create(const ShapeResult& other) {
     return AdoptRef(new ShapeResult(other));
   }
 

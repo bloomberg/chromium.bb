@@ -64,9 +64,9 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   // Shapes a line of text by finding a valid and appropriate break opportunity
   // based on the shaping results for the entire paragraph.
   // The output parameter breakOffset indicates the resulting break offset.
-  PassRefPtr<ShapeResult> ShapeLine(unsigned start_offset,
-                                    LayoutUnit available_space,
-                                    Result* result_out);
+  RefPtr<ShapeResult> ShapeLine(unsigned start_offset,
+                                LayoutUnit available_space,
+                                Result* result_out);
 
   // Disable breaking at soft hyphens (U+00AD).
   bool IsSoftHyphenEnabled() const { return is_soft_hyphen_enabled_; }
@@ -90,10 +90,10 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
                      unsigned word_end,
                      bool backwards) const;
 
-  PassRefPtr<ShapeResult> Shape(TextDirection, unsigned start, unsigned end);
-  PassRefPtr<ShapeResult> ShapeToEnd(unsigned start,
-                                     LayoutUnit start_position,
-                                     unsigned range_end);
+  RefPtr<ShapeResult> Shape(TextDirection, unsigned start, unsigned end);
+  RefPtr<ShapeResult> ShapeToEnd(unsigned start,
+                                 LayoutUnit start_position,
+                                 unsigned range_end);
 
   const HarfBuzzShaper* shaper_;
   const Font* font_;

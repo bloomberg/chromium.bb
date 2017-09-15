@@ -274,7 +274,7 @@ class PLATFORM_EXPORT FontDescription {
   void SetWidthVariant(FontWidthVariant width_variant) {
     fields_.width_variant_ = width_variant;
   }
-  void SetLocale(PassRefPtr<const LayoutLocale> locale) {
+  void SetLocale(RefPtr<const LayoutLocale> locale) {
     locale_ = std::move(locale);
   }
   void SetSyntheticBold(bool synthetic_bold) {
@@ -283,10 +283,10 @@ class PLATFORM_EXPORT FontDescription {
   void SetSyntheticItalic(bool synthetic_italic) {
     fields_.synthetic_italic_ = synthetic_italic;
   }
-  void SetFeatureSettings(PassRefPtr<FontFeatureSettings> settings) {
+  void SetFeatureSettings(RefPtr<FontFeatureSettings> settings) {
     feature_settings_ = std::move(settings);
   }
-  void SetVariationSettings(PassRefPtr<FontVariationSettings> settings) {
+  void SetVariationSettings(RefPtr<FontVariationSettings> settings) {
     variation_settings_ = std::move(settings);
   }
   void SetWordSpacing(float s) { word_spacing_ = s; }

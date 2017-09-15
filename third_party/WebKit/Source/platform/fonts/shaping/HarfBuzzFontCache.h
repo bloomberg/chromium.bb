@@ -64,7 +64,7 @@ struct HarfBuzzFontData {
 // FontPlatformData object independent of size, then consider using this here.
 class HbFontCacheEntry : public RefCounted<HbFontCacheEntry> {
  public:
-  static PassRefPtr<HbFontCacheEntry> Create(hb_font_t* hb_font) {
+  static RefPtr<HbFontCacheEntry> Create(hb_font_t* hb_font) {
     DCHECK(hb_font);
     return AdoptRef(new HbFontCacheEntry(hb_font));
   }

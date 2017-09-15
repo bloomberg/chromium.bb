@@ -21,7 +21,7 @@ namespace {
 // Font has no glyphs, but that's okay.
 class TestSimpleFontData : public SimpleFontData {
  public:
-  static PassRefPtr<TestSimpleFontData> Create(bool force_rotation = false) {
+  static RefPtr<TestSimpleFontData> Create(bool force_rotation = false) {
     FontPlatformData platform_data(
         SkTypeface::MakeDefault(), nullptr, 10, false, false,
         force_rotation ? FontOrientation::kVerticalUpright
@@ -34,7 +34,7 @@ class TestSimpleFontData : public SimpleFontData {
 
  private:
   TestSimpleFontData(const FontPlatformData& platform_data,
-                     PassRefPtr<OpenTypeVerticalData> vertical_data)
+                     RefPtr<OpenTypeVerticalData> vertical_data)
       : SimpleFontData(platform_data, std::move(vertical_data)) {}
 };
 
