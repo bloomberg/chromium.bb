@@ -52,7 +52,6 @@ base::LazyInstance<std::map<ScriptContext*, MessagingBindings*>>::
 
 MessagingBindings::MessagingBindings(ScriptContext* context)
     : ObjectBackedNativeHandler(context),
-      context_id_(base::UnguessableToken::Create()),
       weak_ptr_factory_(this) {
   g_messaging_map.Get()[context] = this;
   RouteFunction("CloseChannel", base::Bind(&MessagingBindings::CloseChannel,
@@ -165,7 +164,7 @@ void MessagingBindings::OpenChannelToExtension(
   CHECK(args[2]->IsBoolean());
 
   int js_id = GetNextJsId();
-  PortId port_id(context_id_, js_id, true);
+  PortId port_id(context()->context_id(), js_id, true);
   ports_[js_id] = std::make_unique<ExtensionPort>(context(), port_id, js_id);
 
   ExtensionMsg_ExternalConnectionInfo info;
@@ -209,7 +208,7 @@ void MessagingBindings::OpenChannelToNativeApp(
   std::string native_app_name = *v8::String::Utf8Value(args[0]);
 
   int js_id = GetNextJsId();
-  PortId port_id(context_id_, js_id, true);
+  PortId port_id(context()->context_id(), js_id, true);
   ports_[js_id] = std::make_unique<ExtensionPort>(context(), port_id, js_id);
 
   {
@@ -242,7 +241,7 @@ void MessagingBindings::OpenChannelToTab(
   CHECK(args[3]->IsString());
 
   int js_id = GetNextJsId();
-  PortId port_id(context_id_, js_id, true);
+  PortId port_id(context()->context_id(), js_id, true);
   ports_[js_id] = std::make_unique<ExtensionPort>(context(), port_id, js_id);
 
   ExtensionMsg_TabTargetConnectionInfo info;

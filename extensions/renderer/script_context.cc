@@ -104,6 +104,7 @@ ScriptContext::ScriptContext(const v8::Local<v8::Context>& v8_context,
       context_type_(context_type),
       effective_extension_(effective_extension),
       effective_context_type_(effective_context_type),
+      context_id_(base::UnguessableToken::Create()),
       safe_builtins_(this),
       isolate_(v8_context->GetIsolate()),
       runner_(new Runner(this)) {
