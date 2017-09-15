@@ -231,10 +231,6 @@
       status: "stable",
     },
     {
-      name: "CSSHyphens",
-      status: "stable",
-    },
-    {
       name: "CSSInBodyDoesNotBlockPaint",
       status: "experimental",
     },

@@ -1553,7 +1553,6 @@
       name: "hyphens",
       api_class: true,
       inherited: true,
-      runtime_flag: "CSSHyphens",
       field_template: "keyword",
       type_name: "Hyphens",
       keywords: ["none", "manual", "auto"],
