@@ -45,6 +45,18 @@ fuzzer_test("payment_method_manifest_fuzzer") {
   seed_corpus = "payment_method_manifest_fuzzer_corpus"
 }
 
+fuzzer_test("payment_web_app_manifest_fuzzer") {
+  sources = [
+    "payment_web_app_manifest_parser_fuzzer.cc",
+  ]
+  deps = [
+    ":utility",
+    "//base",
+  ]
+  dict = "payment_manifest_json.dict"
+  seed_corpus = "payment_web_app_manifest_fuzzer_corpus"
+}
+
 fuzzer_test("fingerprint_fuzzer") {
   sources = [
     "fingerprint_parser_fuzzer.cc",
