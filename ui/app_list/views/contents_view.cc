@@ -17,7 +17,6 @@
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
-#include "ui/app_list/views/custom_launcher_page_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_answer_card_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
@@ -68,17 +67,6 @@ void ContentsView::Init(AppListModel* model) {
   model_ = model;
 
   AppListViewDelegate* view_delegate = app_list_main_view_->view_delegate();
-
-  std::vector<views::View*> custom_page_views =
-      view_delegate->CreateCustomPageWebViews(GetLocalBounds().size());
-  // Only add the first custom page view as STATE_CUSTOM_LAUNCHER_PAGE. Ignore
-  // any subsequent custom pages.
-  if (!custom_page_views.empty()) {
-    custom_page_view_ = new CustomLauncherPageView(custom_page_views[0]);
-
-    AddLauncherPage(custom_page_view_,
-                    AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
-  }
 
   apps_container_view_ = new AppsContainerView(app_list_main_view_, model);
 
@@ -262,20 +250,6 @@ bool ContentsView::IsShowingSearchResults() const {
   return IsStateActive(AppListModel::STATE_SEARCH_RESULTS);
 }
 
-void ContentsView::NotifyCustomLauncherPageAnimationChanged(double progress,
-                                                            int current_page,
-                                                            int target_page) {
-  int custom_launcher_page_index =
-      GetPageIndexForState(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
-  if (custom_launcher_page_index == target_page) {
-    app_list_main_view_->view_delegate()->CustomLauncherPageAnimationChanged(
-        progress);
-  } else if (custom_launcher_page_index == current_page) {
-    app_list_main_view_->view_delegate()->CustomLauncherPageAnimationChanged(
-        1 - progress);
-  }
-}
-
 void ContentsView::UpdatePageBounds() {
   // The bounds calculations will potentially be mid-transition (depending on
   // the state of the PaginationModel).
@@ -290,8 +264,6 @@ void ContentsView::UpdatePageBounds() {
       progress = transition.progress;
     }
   }
-
-  NotifyCustomLauncherPageAnimationChanged(progress, current_page, target_page);
 
   AppListModel::State current_state = GetStateForPageIndex(current_page);
   AppListModel::State target_state = GetStateForPageIndex(target_page);
@@ -489,13 +461,6 @@ gfx::Size ContentsView::CalculatePreferredSize() const {
 void ContentsView::Layout() {
   // Immediately finish all current animations.
   pagination_model_.FinishAnimation();
-
-  double progress =
-      IsStateActive(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE) ? 1 : 0;
-
-  // Notify the custom launcher page that the active page has changed.
-  app_list_main_view_->view_delegate()->CustomLauncherPageAnimationChanged(
-      progress);
 
   if (GetContentsBounds().IsEmpty())
     return;

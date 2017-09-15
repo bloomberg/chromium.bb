@@ -124,8 +124,6 @@ component("app_list") {
       "views/apps_grid_view_folder_delegate.h",
       "views/contents_view.cc",
       "views/contents_view.h",
-      "views/custom_launcher_page_view.cc",
-      "views/custom_launcher_page_view.h",
       "views/expand_arrow_view.cc",
       "views/expand_arrow_view.h",
       "views/folder_background_view.cc",

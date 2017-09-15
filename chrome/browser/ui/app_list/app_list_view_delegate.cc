@@ -86,51 +86,6 @@ void RecordHistogram(bool is_tablet_mode,
                             kMaxApplistSearchResultOpenedSource);
 }
 
-// Gets a list of URLs of the custom launcher pages to show in the launcher.
-// Returns a URL for each installed launcher page. If --custom-launcher-page is
-// specified and valid, also includes that URL.
-void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
-                               std::vector<GURL>* urls) {
-  // First, check the command line.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(app_list::switches::kCustomLauncherPage)) {
-    GURL custom_launcher_page_url(command_line->GetSwitchValueASCII(
-        app_list::switches::kCustomLauncherPage));
-
-    if (custom_launcher_page_url.SchemeIs(extensions::kExtensionScheme)) {
-      urls->push_back(custom_launcher_page_url);
-    } else {
-      LOG(ERROR) << "Invalid custom launcher page URL: "
-                 << custom_launcher_page_url.possibly_invalid_spec();
-    }
-  }
-
-  // Prevent launcher pages from loading unless the pref is enabled.
-  // (Command-line specified pages are exempt from this rule).
-  PrefService* profile_prefs = user_prefs::UserPrefs::Get(browser_context);
-  if (profile_prefs &&
-      profile_prefs->HasPrefPath(prefs::kGoogleNowLauncherEnabled) &&
-      !profile_prefs->GetBoolean(prefs::kGoogleNowLauncherEnabled)) {
-    return;
-  }
-
-  // Search the list of installed extensions for ones with 'launcher_page'.
-  extensions::ExtensionRegistry* extension_registry =
-      extensions::ExtensionRegistry::Get(browser_context);
-  const extensions::ExtensionSet& enabled_extensions =
-      extension_registry->enabled_extensions();
-  for (extensions::ExtensionSet::const_iterator it = enabled_extensions.begin();
-       it != enabled_extensions.end(); ++it) {
-    const extensions::Extension* extension = it->get();
-    extensions::LauncherPageInfo* info =
-        extensions::LauncherPageHandler::GetInfo(extension);
-    if (!info)
-      continue;
-
-    urls->push_back(extension->GetResourceURL(info->page));
-  }
-}
-
 }  // namespace
 
 AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
@@ -219,7 +174,6 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_, model_));
 
   SetUpSearchUI();
-  SetUpCustomLauncherPages();
   OnTemplateURLServiceChanged();
 
   // Clear search query.
@@ -246,33 +200,6 @@ void AppListViewDelegate::SetUpSearchUI() {
       profile_, model_->search_box(), speech_ui_.get()));
 
   search_controller_ = CreateSearchController(profile_, model_, controller_);
-}
-
-void AppListViewDelegate::SetUpCustomLauncherPages() {
-  std::vector<GURL> custom_launcher_page_urls;
-  GetCustomLauncherPageUrls(profile_, &custom_launcher_page_urls);
-  if (custom_launcher_page_urls.empty())
-    return;
-
-  for (auto it = custom_launcher_page_urls.begin();
-       it != custom_launcher_page_urls.end(); ++it) {
-    std::string extension_id = it->host();
-    auto page_contents = base::MakeUnique<app_list::CustomLauncherPageContents>(
-        base::MakeUnique<ChromeAppDelegate>(false), extension_id);
-    page_contents->Initialize(profile_, *it);
-    custom_page_contents_.push_back(std::move(page_contents));
-  }
-
-  std::string first_launcher_page_app_id = custom_launcher_page_urls[0].host();
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
-          first_launcher_page_app_id,
-          extensions::ExtensionRegistry::EVERYTHING);
-  model_->set_custom_launcher_page_name(extension->name());
-  // Only the first custom launcher page gets events dispatched to it.
-  launcher_page_event_dispatcher_.reset(
-      new app_list::LauncherPageEventDispatcher(profile_,
-                                                first_launcher_page_app_id));
 }
 
 void AppListViewDelegate::OnWallpaperColorsChanged(
