@@ -901,7 +901,7 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     Category category = item.first;
     UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
     // TODO(sfiera): notify only when a category changed above.
-    NotifyNewSuggestions(category, item.second);
+    NotifyNewSuggestions(category, item.second.suggestions);
 
     // The suggestions may be reused (e.g. when prepending an article), avoid
     // trigering notifications for the second time.
@@ -1063,7 +1063,9 @@ void RemoteSuggestionsProviderImpl::PrependArticleSuggestion(
       content->suggestions[i]->set_rank(i);
     }
 
-    NotifyNewSuggestions(articles_category_, *content);
+    if (IsCategoryStatusAvailable(content->status)) {
+      NotifyNewSuggestions(articles_category_, content->suggestions);
+    }
 
     // Avoid triggering the pushed suggestion notification for the second time
     // (e.g. when another suggestions is pushed).
@@ -1196,7 +1198,7 @@ void RemoteSuggestionsProviderImpl::NukeAllSuggestions() {
     ClearCachedSuggestions(category);
     // Update listeners about the new (empty) state.
     if (IsCategoryStatusAvailable(content.status)) {
-      NotifyNewSuggestions(category, content);
+      NotifyNewSuggestions(category, content.suggestions);
     }
     // TODO(tschumann): We should not call debug code from production code.
     ClearDismissedSuggestionsForDebugging(category);
@@ -1321,7 +1323,7 @@ void RemoteSuggestionsProviderImpl::FinishInitialization() {
     // Note: We might be in a non-available status here, e.g. DISABLED due to
     // enterprise policy.
     if (IsCategoryStatusAvailable(content.status)) {
-      NotifyNewSuggestions(category, content);
+      NotifyNewSuggestions(category, content.suggestions);
     }
   }
 }
@@ -1437,11 +1439,13 @@ void RemoteSuggestionsProviderImpl::NotifyStateChanged() {
 
 void RemoteSuggestionsProviderImpl::NotifyNewSuggestions(
     Category category,
-    const CategoryContent& content) {
-  DCHECK(IsCategoryStatusAvailable(content.status));
+    const RemoteSuggestion::PtrVector& suggestions) {
+  DCHECK(category_contents_.find(category) != category_contents_.end());
+  DCHECK(IsCategoryStatusAvailable(
+      category_contents_.find(category)->second.status));
 
   std::vector<ContentSuggestion> result =
-      ConvertToContentSuggestions(category, content.suggestions);
+      ConvertToContentSuggestions(category, suggestions);
 
   DVLOG(1) << "NotifyNewSuggestions(): " << result.size()
            << " items in category " << category;
