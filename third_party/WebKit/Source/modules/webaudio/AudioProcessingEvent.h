@@ -29,7 +29,6 @@
 #include "modules/EventModules.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioProcessingEventInit.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {

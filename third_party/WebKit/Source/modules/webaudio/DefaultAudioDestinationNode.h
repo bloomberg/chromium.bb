@@ -39,7 +39,7 @@ class WebAudioLatencyHint;
 
 class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
  public:
-  static PassRefPtr<DefaultAudioDestinationHandler> Create(
+  static RefPtr<DefaultAudioDestinationHandler> Create(
       AudioNode&,
       const WebAudioLatencyHint&);
   ~DefaultAudioDestinationHandler() override;

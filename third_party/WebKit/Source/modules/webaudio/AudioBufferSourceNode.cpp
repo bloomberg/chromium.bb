@@ -81,7 +81,7 @@ AudioBufferSourceHandler::AudioBufferSourceHandler(
   Initialize();
 }
 
-PassRefPtr<AudioBufferSourceHandler> AudioBufferSourceHandler::Create(
+RefPtr<AudioBufferSourceHandler> AudioBufferSourceHandler::Create(
     AudioNode& node,
     float sample_rate,
     AudioParamHandler& playback_rate,

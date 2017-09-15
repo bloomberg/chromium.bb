@@ -69,7 +69,7 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(
   Initialize();
 }
 
-PassRefPtr<MediaStreamAudioDestinationHandler>
+RefPtr<MediaStreamAudioDestinationHandler>
 MediaStreamAudioDestinationHandler::Create(AudioNode& node,
                                            size_t number_of_channels) {
   return AdoptRef(

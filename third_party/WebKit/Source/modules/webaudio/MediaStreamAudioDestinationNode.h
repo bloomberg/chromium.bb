@@ -29,7 +29,7 @@
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AudioBasicInspectorNode.h"
 #include "platform/audio/AudioBus.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
@@ -38,7 +38,7 @@ class BaseAudioContext;
 class MediaStreamAudioDestinationHandler final
     : public AudioBasicInspectorHandler {
  public:
-  static PassRefPtr<MediaStreamAudioDestinationHandler> Create(
+  static RefPtr<MediaStreamAudioDestinationHandler> Create(
       AudioNode&,
       size_t number_of_channels);
   ~MediaStreamAudioDestinationHandler() override;
