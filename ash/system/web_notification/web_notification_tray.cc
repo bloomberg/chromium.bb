@@ -57,6 +57,8 @@ constexpr int kTrayItemAnimationDurationMS = 200;
 
 constexpr size_t kMaximumNotificationNumber = 99;
 
+constexpr size_t kPaddingFromScreenTop = 8;  // in px. See crbug.com/754307.
+
 // Flag to disable animation. Only for testing.
 bool disable_animations_for_test = false;
 
@@ -321,10 +323,12 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
 
   // In the horizontal case, message center starts from the top of the shelf.
   // In the vertical case, it starts from the bottom of WebNotificationTray.
-  const int max_height = shelf()->IsHorizontalAlignment()
-                             ? shelf()->GetIdealBounds().y()
-                             : GetBoundsInScreen().bottom();
-  message_center_bubble->SetMaxHeight(max_height);
+  const int max_height =
+      (shelf()->IsHorizontalAlignment() ? shelf()->GetIdealBounds().y()
+                                        : GetBoundsInScreen().bottom());
+  // Sets the maximum height, considering the padding from the top edge of
+  // screen. This padding should be applied in all types of shelf alignment.
+  message_center_bubble->SetMaxHeight(max_height - kPaddingFromScreenTop);
 
   if (show_settings)
     message_center_bubble->SetSettingsVisible();
