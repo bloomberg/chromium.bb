@@ -32,13 +32,14 @@
 #define InspectorMemoryAgent_h
 
 #include "core/CoreExport.h"
-#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Memory.h"
 #include "core/leak_detector/BlinkLeakDetector.h"
 #include "core/leak_detector/BlinkLeakDetectorClient.h"
 
 namespace blink {
+
+class InspectedFrames;
 
 class CORE_EXPORT InspectorMemoryAgent final
     : public InspectorBaseAgent<protocol::Memory::Metainfo>,
