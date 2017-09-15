@@ -12,7 +12,9 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_event_observer.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -389,6 +391,18 @@ void SessionController::SetSessionLengthLimit(base::TimeDelta length_limit,
   session_start_time_ = start_time;
   for (auto& observer : observers_)
     observer.OnSessionLengthLimitChanged();
+}
+
+void SessionController::CanSwitchActiveUser(
+    CanSwitchActiveUserCallback callback) {
+  // Cancel overview mode when switching user profiles.
+  WindowSelectorController* controller =
+      Shell::Get()->window_selector_controller();
+  if (controller->IsSelecting())
+    controller->ToggleOverview();
+
+  ash::Shell::Get()->GetPrimarySystemTray()->CanSwitchAwayFromActiveUser(
+      std::move(callback));
 }
 
 void SessionController::ClearUserSessionsForTest() {

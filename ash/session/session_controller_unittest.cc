@@ -15,13 +15,23 @@
 #include "ash/session/session_observer.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
+#include "ash/system/screen_security/screen_tray_item.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/window_util.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
 
 using session_manager::SessionState;
 
@@ -533,6 +543,248 @@ TEST_F(SessionControllerTest, IsUserFirstLogin) {
   session->user_info->is_new_profile = true;
   controller()->UpdateUserSession(std::move(session));
   EXPECT_TRUE(controller()->IsUserFirstLogin());
+}
+
+class CanSwitchUserTest : public AshTestBase {
+ public:
+  // The action type to perform / check for upon user switching.
+  enum ActionType {
+    NO_DIALOG,       // No dialog should be shown.
+    ACCEPT_DIALOG,   // A dialog should be shown and we should accept it.
+    DECLINE_DIALOG,  // A dialog should be shown and we do not accept it.
+  };
+  CanSwitchUserTest() {}
+  ~CanSwitchUserTest() override {}
+
+  void SetUp() override {
+    AshTestBase::SetUp();
+    TrayItemView::DisableAnimationsForTest();
+    SystemTray* system_tray = GetPrimarySystemTray();
+    share_item_ = system_tray->GetScreenShareItem();
+    capture_item_ = system_tray->GetScreenCaptureItem();
+    EXPECT_TRUE(share_item_);
+    EXPECT_TRUE(capture_item_);
+    WebNotificationTray::DisableAnimationsForTest(true);
+  }
+
+  void TearDown() override {
+    RunAllPendingInMessageLoop();
+    WebNotificationTray::DisableAnimationsForTest(false);
+    AshTestBase::TearDown();
+  }
+
+  // Accessing the capture session functionality.
+  // Simulates a screen capture session start.
+  void StartCaptureSession() {
+    capture_item_->Start(base::Bind(&CanSwitchUserTest::StopCaptureCallback,
+                                    base::Unretained(this)));
+  }
+
+  // The callback which gets called when the screen capture gets stopped.
+  void StopCaptureSession() { capture_item_->Stop(); }
+
+  // Simulates a screen capture session stop.
+  void StopCaptureCallback() { stop_capture_callback_hit_count_++; }
+
+  // Accessing the share session functionality.
+  // Simulate a Screen share session start.
+  void StartShareSession() {
+    share_item_->Start(base::Bind(&CanSwitchUserTest::StopShareCallback,
+                                  base::Unretained(this)));
+  }
+
+  // Simulates a screen share session stop.
+  void StopShareSession() { share_item_->Stop(); }
+
+  // The callback which gets called when the screen share gets stopped.
+  void StopShareCallback() { stop_share_callback_hit_count_++; }
+
+  // Issuing a switch user call which might or might not create a dialog.
+  // The passed |action| type parameter defines the outcome (which will be
+  // checked) and the action the user will choose.
+  void SwitchUser(ActionType action) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&CloseMessageBox, action));
+    Shell::Get()->session_controller()->CanSwitchActiveUser(
+        base::Bind(&CanSwitchUserTest::SwitchCallback, base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Called when the user will get actually switched.
+  void SwitchCallback(bool switch_user) {
+    if (switch_user)
+      switch_callback_hit_count_++;
+  }
+
+  // Methods needed to test with overview mode.
+  bool ToggleOverview() {
+    return Shell::Get()->window_selector_controller()->ToggleOverview();
+  }
+  bool IsSelecting() const {
+    return Shell::Get()->window_selector_controller()->IsSelecting();
+  }
+
+  // Various counter accessors.
+  int stop_capture_callback_hit_count() const {
+    return stop_capture_callback_hit_count_;
+  }
+  int stop_share_callback_hit_count() const {
+    return stop_share_callback_hit_count_;
+  }
+  int switch_callback_hit_count() const { return switch_callback_hit_count_; }
+
+ private:
+  static void CloseMessageBox(ActionType action) {
+    aura::Window* active_window = ash::wm::GetActiveWindow();
+    views::DialogDelegate* dialog =
+        active_window ? views::Widget::GetWidgetForNativeWindow(active_window)
+                            ->widget_delegate()
+                            ->AsDialogDelegate()
+                      : nullptr;
+
+    switch (action) {
+      case NO_DIALOG:
+        EXPECT_FALSE(dialog);
+        return;
+      case ACCEPT_DIALOG:
+        ASSERT_TRUE(dialog);
+        EXPECT_TRUE(dialog->Accept());
+        return;
+      case DECLINE_DIALOG:
+        ASSERT_TRUE(dialog);
+        EXPECT_TRUE(dialog->Close());
+        return;
+    }
+  }
+
+  // The two items from the SystemTray for the screen capture / share
+  // functionality.
+  ScreenTrayItem* capture_item_ = nullptr;
+  ScreenTrayItem* share_item_ = nullptr;
+
+  // Various counters to query for.
+  int stop_capture_callback_hit_count_ = 0;
+  int stop_share_callback_hit_count_ = 0;
+  int switch_callback_hit_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(CanSwitchUserTest);
+};
+
+// Test that when there is no screen operation going on the user switch will be
+// performed as planned.
+TEST_F(CanSwitchUserTest, NoLock) {
+  EXPECT_EQ(0, switch_callback_hit_count());
+  SwitchUser(CanSwitchUserTest::NO_DIALOG);
+  EXPECT_EQ(1, switch_callback_hit_count());
+}
+
+// Test that with a screen capture operation going on, the user will need to
+// confirm. Declining will neither change the running state or switch users.
+TEST_F(CanSwitchUserTest, CaptureActiveDeclined) {
+  EXPECT_EQ(0, switch_callback_hit_count());
+  StartCaptureSession();
+  SwitchUser(CanSwitchUserTest::DECLINE_DIALOG);
+  EXPECT_EQ(0, switch_callback_hit_count());
+  EXPECT_EQ(0, stop_capture_callback_hit_count());
+  EXPECT_EQ(0, stop_share_callback_hit_count());
+  StopCaptureSession();
+  EXPECT_EQ(0, switch_callback_hit_count());
+  EXPECT_EQ(1, stop_capture_callback_hit_count());
+  EXPECT_EQ(0, stop_share_callback_hit_count());
+}
+
+// Test that with a screen share operation going on, the user will need to
+// confirm. Declining will neither change the running state or switch users.
+TEST_F(CanSwitchUserTest, ShareActiveDeclined) {
+  EXPECT_EQ(0, switch_callback_hit_count());
+  StartShareSession();
+  SwitchUser(CanSwitchUserTest::DECLINE_DIALOG);
+  EXPECT_EQ(0, switch_callback_hit_count());
+  EXPECT_EQ(0, stop_capture_callback_hit_count());
+  EXPECT_EQ(0, stop_share_callback_hit_count());
+  StopShareSession();
+  EXPECT_EQ(0, switch_callback_hit_count());
+  EXPECT_EQ(0, stop_capture_callback_hit_count());
+  EXPECT_EQ(1, stop_share_callback_hit_count());
+}
+
+// Test that with both operations going on, the user will need to confirm.
+// Declining will neither change the running state or switch users.
+TEST_F(CanSwitchUserTest, BothActiveDeclined) {
+  EXPECT_EQ(0, switch_callback_hit_count());
+  StartShareSession();
+  StartCaptureSession();
+  SwitchUser(CanSwitchUserTest::DECLINE_DIALOG);
+  EXPECT_EQ(0, switch_callback_hit_count());
+  EXPECT_EQ(0, stop_capture_callback_hit_count());
+  EXPECT_EQ(0, stop_share_callback_hit_count());
+  StopShareSession();
+  StopCaptureSession();
+  EXPECT_EQ(0, switch_callback_hit_count());
+  EXPECT_EQ(1, stop_capture_callback_hit_count());
+  EXPECT_EQ(1, stop_share_callback_hit_count());
+}
+
+// Test that with a screen capture operation going on, the user will need to
+// confirm. Accepting will change to stopped state and switch users.
+TEST_F(CanSwitchUserTest, CaptureActiveAccepted) {
+  EXPECT_EQ(0, switch_callback_hit_count());
+  StartCaptureSession();
+  SwitchUser(CanSwitchUserTest::ACCEPT_DIALOG);
+  EXPECT_EQ(1, switch_callback_hit_count());
+  EXPECT_EQ(1, stop_capture_callback_hit_count());
+  EXPECT_EQ(0, stop_share_callback_hit_count());
+  // Another stop should have no effect.
+  StopCaptureSession();
+  EXPECT_EQ(1, switch_callback_hit_count());
+  EXPECT_EQ(1, stop_capture_callback_hit_count());
+  EXPECT_EQ(0, stop_share_callback_hit_count());
+}
+
+// Test that with a screen share operation going on, the user will need to
+// confirm. Accepting will change to stopped state and switch users.
+TEST_F(CanSwitchUserTest, ShareActiveAccepted) {
+  EXPECT_EQ(0, switch_callback_hit_count());
+  StartShareSession();
+  SwitchUser(CanSwitchUserTest::ACCEPT_DIALOG);
+  EXPECT_EQ(1, switch_callback_hit_count());
+  EXPECT_EQ(0, stop_capture_callback_hit_count());
+  EXPECT_EQ(1, stop_share_callback_hit_count());
+  // Another stop should have no effect.
+  StopShareSession();
+  EXPECT_EQ(1, switch_callback_hit_count());
+  EXPECT_EQ(0, stop_capture_callback_hit_count());
+  EXPECT_EQ(1, stop_share_callback_hit_count());
+}
+
+// Test that with both operations going on, the user will need to confirm.
+// Accepting will change to stopped state and switch users.
+TEST_F(CanSwitchUserTest, BothActiveAccepted) {
+  EXPECT_EQ(0, switch_callback_hit_count());
+  StartShareSession();
+  StartCaptureSession();
+  SwitchUser(CanSwitchUserTest::ACCEPT_DIALOG);
+  EXPECT_EQ(1, switch_callback_hit_count());
+  EXPECT_EQ(1, stop_capture_callback_hit_count());
+  EXPECT_EQ(1, stop_share_callback_hit_count());
+  // Another stop should have no effect.
+  StopShareSession();
+  StopCaptureSession();
+  EXPECT_EQ(1, switch_callback_hit_count());
+  EXPECT_EQ(1, stop_capture_callback_hit_count());
+  EXPECT_EQ(1, stop_share_callback_hit_count());
+}
+
+// Test that overview mode is dismissed before switching user profile.
+TEST_F(CanSwitchUserTest, OverviewModeDismissed) {
+  EXPECT_EQ(0, switch_callback_hit_count());
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> w(CreateTestWindowInShellWithBounds(bounds));
+  ASSERT_TRUE(ToggleOverview());
+  ASSERT_TRUE(IsSelecting());
+  SwitchUser(CanSwitchUserTest::NO_DIALOG);
+  ASSERT_FALSE(IsSelecting());
+  EXPECT_EQ(1, switch_callback_hit_count());
 }
 
 }  // namespace

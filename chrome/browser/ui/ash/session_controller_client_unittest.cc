@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
@@ -134,6 +135,9 @@ class TestSessionController : public ash::mojom::SessionController {
     last_session_length_limit_ = length_limit;
     last_session_start_time_ = start_time;
   }
+  void CanSwitchActiveUser(CanSwitchActiveUserCallback callback) override {
+    std::move(callback).Run(true);
+  }
 
   base::TimeDelta last_session_length_limit_;
   base::TimeTicks last_session_start_time_;
@@ -188,8 +192,12 @@ class SessionControllerClientTest : public testing::Test {
 
   // Add and log in a user to the session.
   void UserAddedToSession(std::string user) {
-    user_manager()->AddUser(AccountId::FromUserEmail(user));
-    user_manager()->LoginUser(AccountId::FromUserEmail(user));
+    const AccountId account_id(AccountId::FromUserEmail(user));
+    user_manager()->AddUser(account_id);
+    session_manager_.CreateSession(
+        account_id,
+        chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(user));
+    session_manager_.SetSessionState(SessionState::ACTIVE);
   }
 
   // Get the active user.
@@ -250,29 +258,42 @@ TEST_F(SessionControllerClientTest, CyclingOneUser) {
 
 // Cycle three users forwards and backwards to see that it works.
 TEST_F(SessionControllerClientTest, CyclingThreeUsers) {
+  // Create an object to test and connect it to our test interface.
+  SessionControllerClient client;
+  TestSessionController session_controller;
+  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
+  client.Init();
+
   UserAddedToSession("firstuser@test.com");
   UserAddedToSession("seconduser@test.com");
   UserAddedToSession("thirduser@test.com");
   user_manager()->SwitchActiveUser(
       AccountId::FromUserEmail("firstuser@test.com"));
+  SessionControllerClient::FlushForTesting();
 
   // Cycle forward.
   const ash::CycleUserDirection forward = ash::CycleUserDirection::NEXT;
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
   SessionControllerClient::DoCycleActiveUser(forward);
+  SessionControllerClient::FlushForTesting();
   EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
   SessionControllerClient::DoCycleActiveUser(forward);
+  SessionControllerClient::FlushForTesting();
   EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
   SessionControllerClient::DoCycleActiveUser(forward);
+  SessionControllerClient::FlushForTesting();
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 
   // Cycle backwards.
   const ash::CycleUserDirection backward = ash::CycleUserDirection::PREVIOUS;
   SessionControllerClient::DoCycleActiveUser(backward);
+  SessionControllerClient::FlushForTesting();
   EXPECT_EQ("thirduser@test.com", GetActiveUserEmail());
   SessionControllerClient::DoCycleActiveUser(backward);
+  SessionControllerClient::FlushForTesting();
   EXPECT_EQ("seconduser@test.com", GetActiveUserEmail());
   SessionControllerClient::DoCycleActiveUser(backward);
+  SessionControllerClient::FlushForTesting();
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
 }
 
@@ -356,11 +377,13 @@ TEST_F(SessionControllerClientTest,
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
+  AccountId account_id(AccountId::FromUserEmail(kUser));
   user_manager()->LoginUser(account_id);
   while (user_manager()->GetLoggedInUsers().size() <
          session_manager::kMaximumNumberOfUserSessions) {
-    UserAddedToSession("bb@b.b");
+    account_id = AccountId::FromUserEmail("bb@b.b");
+    user_manager()->AddUser(account_id);
+    user_manager()->LoginUser(account_id);
   }
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED,
             SessionControllerClient::GetAddUserSessionPolicy());
