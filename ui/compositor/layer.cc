@@ -1118,7 +1118,10 @@ void Layer::SetTransformFromAnimation(const gfx::Transform& transform) {
 }
 
 void Layer::SetOpacityFromAnimation(float opacity) {
+  float old_opacity = cc_layer_->opacity();
   cc_layer_->SetOpacity(opacity);
+  if (delegate_ && old_opacity != opacity)
+    delegate_->OnLayerOpacityChanged(old_opacity, opacity);
   ScheduleDraw();
 }
 
