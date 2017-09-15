@@ -754,7 +754,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
 
 // This appears to be unreliable on linux.
 // TODO(stevenjb): Investigate and enable
-#if defined(OS_LINUX) && !defined(USE_ASH)
+#if defined(OS_LINUX) && !defined(USE_ASH) || defined(OS_WIN)
 #define MAYBE_AppWindowRestoreState DISABLED_AppWindowRestoreState
 #else
 #define MAYBE_AppWindowRestoreState AppWindowRestoreState
