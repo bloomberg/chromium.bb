@@ -357,13 +357,11 @@ void ImageDocument::ImageClicked(int x, int y) {
     UpdateStyleAndLayout();
 
     double scale = this->Scale();
-    double device_scale_factor =
-        GetFrame()->View()->GetChromeClient()->WindowToViewportScalar(1.f);
 
-    float scroll_x = (image_x * device_scale_factor) / scale -
-                     static_cast<float>(GetFrame()->View()->Width()) / 2;
-    float scroll_y = (image_y * device_scale_factor) / scale -
-                     static_cast<float>(GetFrame()->View()->Height()) / 2;
+    float scroll_x =
+        image_x / scale - static_cast<float>(GetFrame()->View()->Width()) / 2;
+    float scroll_y =
+        image_y / scale - static_cast<float>(GetFrame()->View()->Height()) / 2;
 
     GetFrame()->View()->LayoutViewportScrollableArea()->SetScrollOffset(
         ScrollOffset(scroll_x, scroll_y), kProgrammaticScroll);
