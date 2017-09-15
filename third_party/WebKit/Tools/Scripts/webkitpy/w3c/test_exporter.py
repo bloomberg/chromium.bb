@@ -224,8 +224,11 @@ class TestExporter(object):
             _log.debug('END_OF_PATCH_EXCERPT')
             return
 
-        # Annotate revision footer for Exporter's later use.
-        footer = '\n{} {}'.format(WPT_REVISION_FOOTER, cl.current_revision_sha)
+        # Reviewed-on footer is not in the git commit message of in-flight CLs,
+        # but a link to code review is useful so we add it manually.
+        footer = 'Reviewed-on: {}\n'.format(cl.url)
+        # WPT_REVISION_FOOTER is used by the exporter to check the CL revision.
+        footer += '{} {}'.format(WPT_REVISION_FOOTER, cl.current_revision_sha)
 
         if pull_request:
             self.create_or_update_pr_from_commit(

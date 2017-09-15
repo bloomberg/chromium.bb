@@ -65,7 +65,7 @@ class GerritCL(object):
 
     @property
     def url(self):
-        return 'https://chromium-review.googlesource.com/c/%s' % self._data['_number']
+        return '{}/{}'.format(URL_BASE, self._data['_number'])
 
     @property
     def subject(self):
