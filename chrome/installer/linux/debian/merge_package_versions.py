@@ -15,18 +15,27 @@ if len(sys.argv) < 3:
 output_filename = sys.argv[1]
 input_filenames = sys.argv[2:]
 
-package_intervals = {}
+package_interval_sets = []
 for input_filename in input_filenames:
   for line in open(input_filename):
     # Allow comments starting with '#'
     if line.startswith('#'):
       continue
     line = line.rstrip('\n')
-    (package, interval) = package_version_interval.parse_dep(line)
-    if package in package_intervals:
-      interval = interval.intersect(package_intervals[package])
-    package_intervals[package] = interval
+    interval_set = package_version_interval.parse_interval_set(line)
+    should_append_interval_set = True
+    for i in range(len(package_interval_sets)):
+      if package_interval_sets[i].implies(interval_set):
+        should_append_interval_set = False
+        break
+      if interval_set.implies(package_interval_sets[i]):
+        should_append_interval_set = False
+        package_interval_sets[i] = interval_set
+        break
+    if should_append_interval_set:
+      package_interval_sets.append(interval_set)
 
 with open(output_filename, 'w') as output_file:
-  output_file.write(package_version_interval.format_package_intervals(
-      package_intervals))
+  lines = [interval_set.formatted() + '\n'
+           for interval_set in package_interval_sets]
+  output_file.write(''.join(sorted(lines)))
