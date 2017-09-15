@@ -53,6 +53,7 @@
 #include <getopt.h>
 static const struct option longopts[] = {
     {"index", 1, 0, 'i'},
+    {"brief", 0, 0, 'b'},
     {"format", 1, 0, 'f'},
     {"version", 0, 0, 'V'},
     {"help", 0, 0, 'h'},
@@ -70,21 +71,23 @@ usage (char *program, int error)
 {
     FILE *file = error ? stderr : stdout;
 #if HAVE_GETOPT_LONG
-    fprintf (file, "usage: %s [-Vh] [-i index] [-f FORMAT] [--index index] [--format FORMAT] [--version] [--help] font-file...\n",
+    fprintf (file, "usage: %s [-bVh] [-i index] [-f FORMAT] [--index index] [--brief] [--format FORMAT] [--version] [--help] font-file...\n",
 	     program);
 #else
-    fprintf (file, "usage: %s [-Vh] [-i index] [-f FORMAT] font-file...\n",
+    fprintf (file, "usage: %s [-bVh] [-i index] [-f FORMAT] font-file...\n",
 	     program);
 #endif
     fprintf (file, "Query font files and print resulting pattern(s)\n");
     fprintf (file, "\n");
 #if HAVE_GETOPT_LONG
     fprintf (file, "  -i, --index INDEX    display the INDEX face of each font file only\n");
+    fprintf (file, "  -b, --brief          display font pattern briefly\n");
     fprintf (file, "  -f, --format=FORMAT  use the given output format\n");
     fprintf (file, "  -V, --version        display font config version and exit\n");
     fprintf (file, "  -h, --help           display this help and exit\n");
 #else
     fprintf (file, "  -i INDEX   (index)         display the INDEX face of each font file only\n");
+    fprintf (file, "  -b         (brief)         display font pattern briefly\n");
     fprintf (file, "  -f FORMAT  (format)        use the given output format\n");
     fprintf (file, "  -V         (version)       display font config version and exit\n");
     fprintf (file, "  -h         (help)          display this help and exit\n");
@@ -96,6 +99,7 @@ int
 main (int argc, char **argv)
 {
     unsigned int id = (unsigned int) -1;
+    int         brief = 0;
     FcFontSet   *fs;
     FcChar8     *format = NULL;
     int		err = 0;
@@ -104,14 +108,17 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "i:f:Vh", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "i:bf:Vh", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "i:f:Vh")) != -1)
+    while ((c = getopt (argc, argv, "i:bf:Vh")) != -1)
 #endif
     {
 	switch (c) {
 	case 'i':
 	    id = (unsigned int) strtol (optarg, NULL, 0); /* strtol() To handle -1. */
+	    break;
+	case 'b':
+	    brief = 1;
 	    break;
 	case 'f':
 	    format = (FcChar8 *) strdup (optarg);
@@ -148,6 +155,12 @@ main (int argc, char **argv)
     for (i = 0; i < fs->nfont; i++)
     {
 	FcPattern *pat = fs->fonts[i];
+
+	if (brief)
+	{
+	    FcPatternDel (pat, FC_CHARSET);
+	    FcPatternDel (pat, FC_LANG);
+	}
 
 	if (format)
 	{
