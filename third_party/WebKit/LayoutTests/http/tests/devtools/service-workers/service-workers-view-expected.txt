@@ -14,10 +14,6 @@ Status
 #N activated and is running
 stop
 Clients
-Errors
-0
-details
-clear
 Register ServiceWorker for scope2
 127.0.0.1/devtools/service-workers/resources/scope1
 Update
@@ -31,10 +27,6 @@ Status
 #N activated and is running
 stop
 Clients
-Errors
-0
-details
-clear
 127.0.0.1/devtools/service-workers/resources/scope2
 Update
 Push
@@ -47,10 +39,6 @@ Status
 #N activated and is running
 stop
 Clients
-Errors
-0
-details
-clear
 Unegister ServiceWorker for scope1
 127.0.0.1/devtools/service-workers/resources/scope1 - deleted
 Update
@@ -58,12 +46,11 @@ Push
 Sync
 Unregister
 Source
+service-worker-empty.js
+Received
 Status
+#N is redundant
 Clients
-Errors
-0
-details
-clear
 127.0.0.1/devtools/service-workers/resources/scope2
 Update
 Push
@@ -76,9 +63,5 @@ Status
 #N activated and is running
 stop
 Clients
-Errors
-0
-details
-clear
 Unegister ServiceWorker for scope1
 
