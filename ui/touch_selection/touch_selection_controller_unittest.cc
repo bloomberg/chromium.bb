@@ -157,6 +157,8 @@ class TouchSelectionControllerTest : public testing::Test,
     controller().HandleTapEvent(kIgnoredPoint, 2);
   }
 
+  void OnTripleTapEvent() { controller().HandleTapEvent(kIgnoredPoint, 3); }
+
   void Animate() {
     base::TimeTicks now = base::TimeTicks::Now();
     while (needs_animate_) {
@@ -523,6 +525,33 @@ TEST_F(TouchSelectionControllerTest, SelectionAllowedByDoubleTapOnEditable) {
               ElementsAre(INSERTION_HANDLE_SHOWN));
 
   OnDoubleTapEvent();
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(),
+              ElementsAre(INSERTION_HANDLE_CLEARED, SELECTION_HANDLES_SHOWN));
+}
+
+TEST_F(TouchSelectionControllerTest,
+       SelectionAllowedByTripleTapOnEditableArabicVowel) {
+  gfx::RectF start_rect(5, 5, 0, 10);
+  gfx::RectF end_rect(5, 5, 0, 10);
+  bool visible = true;
+
+  // If the user triple tap selects text in an editable region, the first tap
+  // will register insertion.
+  OnTapEvent();
+  ChangeInsertion(start_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_SHOWN));
+
+  // The second tap will also not select since the charcter (Arabic/Urdu vowel)
+  // has zero width, the second tap will maintain insertion.
+  OnDoubleTapEvent();
+  ChangeInsertion(start_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre());
+
+  // The third tap selects everything in the editable text box. Since the only
+  // text in the editable box is a zero length character the selection has the
+  // same start and end rect.
+  OnTripleTapEvent();
   ChangeSelection(start_rect, visible, end_rect, visible);
   EXPECT_THAT(GetAndResetEvents(),
               ElementsAre(INSERTION_HANDLE_CLEARED, SELECTION_HANDLES_SHOWN));
