@@ -27,14 +27,26 @@
 #pragma mark - Properties
 
 - (void)setWebState:(web::WebState*)webState {
+  web::WebState* replacedWebState = _webState;
   _webState = webState;
   [self updateConsumerWithWebState:webState];
+  if (self.consumer) {
+    if (replacedWebState)
+      replacedWebState->WasHidden();
+    if (_webState)
+      _webState->WasShown();
+  }
 }
 
 - (void)setConsumer:(id<WebContentsConsumer>)consumer {
   _consumer = consumer;
   if (self.webState) {
-    [self updateConsumerWithWebState:self.webState];
+    if (_consumer) {
+      [self updateConsumerWithWebState:self.webState];
+      self.webState->WasShown();
+    } else {
+      self.webState->WasHidden();
+    }
   }
 }
 
