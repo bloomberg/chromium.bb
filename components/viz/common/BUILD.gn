@@ -166,6 +166,7 @@ viz_source_set("unit_tests") {
     "frame_sinks/begin_frame_args_unittest.cc",
     "frame_sinks/delay_based_time_source_unittest.cc",
     "gl_helper_unittest.cc",
+    "quads/draw_quad_unittest.cc",
     "resources/buffer_to_texture_target_map_unittest.cc",
     "resources/platform_color_unittest.cc",
     "surfaces/surface_sequence_generator_unittest.cc",
@@ -175,6 +176,7 @@ viz_source_set("unit_tests") {
   deps = [
     ":common",
     "//base/test:test_support",
+    "//cc:test_support",
     "//components/viz/test:test_support",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
@@ -212,5 +214,21 @@ viz_test("viz_benchmark") {
 
   data_deps = [
     "//third_party/mesa:osmesa",
+  ]
+}
+
+viz_source_set("perf_tests") {
+  testonly = true
+  sources = [
+    "quads/draw_quad_perftest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//base",
+    "//cc/base",
+    "//skia",
+    "//testing/gtest",
+    "//testing/perf",
   ]
 }
