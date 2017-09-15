@@ -31,7 +31,7 @@
 #ifndef FontCacheKey_h
 #define FontCacheKey_h
 
-#include "FontFaceCreationParams.h"
+#include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/opentype/FontSettings.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"

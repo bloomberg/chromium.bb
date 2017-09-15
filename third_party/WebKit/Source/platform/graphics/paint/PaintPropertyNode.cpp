@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "PaintPropertyNode.h"
+#include "platform/graphics/paint/PaintPropertyNode.h"
 
-#include "ClipPaintPropertyNode.h"
-#include "EffectPaintPropertyNode.h"
-#include "ScrollPaintPropertyNode.h"
-#include "TransformPaintPropertyNode.h"
+#include "platform/graphics/paint/ClipPaintPropertyNode.h"
+#include "platform/graphics/paint/EffectPaintPropertyNode.h"
+#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
+#include "platform/graphics/paint/TransformPaintPropertyNode.h"
 
 namespace blink {
 

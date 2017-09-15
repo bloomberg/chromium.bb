@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ScriptRunIterator.h"
+#include "platform/fonts/ScriptRunIterator.h"
 
 #include <algorithm>
 #include "platform/text/ICUError.h"

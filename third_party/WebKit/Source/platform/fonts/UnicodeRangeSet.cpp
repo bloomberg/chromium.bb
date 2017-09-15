@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "UnicodeRangeSet.h"
+#include "platform/fonts/UnicodeRangeSet.h"
 
 #include "platform/wtf/text/WTFString.h"
 
