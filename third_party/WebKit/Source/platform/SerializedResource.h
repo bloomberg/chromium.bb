@@ -46,7 +46,7 @@ struct SerializedResource {
 
   SerializedResource(const KURL& url,
                      const String& mime_type,
-                     PassRefPtr<const SharedBuffer> data)
+                     RefPtr<const SharedBuffer> data)
       : url(url), mime_type(mime_type), data(std::move(data)) {}
 };
 

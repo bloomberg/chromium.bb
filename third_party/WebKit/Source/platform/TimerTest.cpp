@@ -81,7 +81,7 @@ class OnHeapTimerOwner final
  public:
   class Record final : public RefCounted<Record> {
    public:
-    static PassRefPtr<Record> Create() { return AdoptRef(new Record); }
+    static RefPtr<Record> Create() { return AdoptRef(new Record); }
 
     bool TimerHasFired() const { return timer_has_fired_; }
     bool IsDisposed() const { return is_disposed_; }
@@ -98,7 +98,7 @@ class OnHeapTimerOwner final
     bool owner_is_destructed_ = false;
   };
 
-  explicit OnHeapTimerOwner(PassRefPtr<Record> record)
+  explicit OnHeapTimerOwner(RefPtr<Record> record)
       : timer_(this, &OnHeapTimerOwner::Fired), record_(std::move(record)) {}
   ~OnHeapTimerOwner() { record_->SetOwnerIsDestructed(); }
 

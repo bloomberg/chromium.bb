@@ -72,7 +72,7 @@ class PLATFORM_EXPORT AsyncFileSystemCallbacks {
 
   // Called when a snapshot file is created successfully.
   virtual void DidCreateSnapshotFile(const FileMetadata&,
-                                     PassRefPtr<BlobDataHandle> snapshot) {
+                                     RefPtr<BlobDataHandle> snapshot) {
     NOTREACHED();
   }
 

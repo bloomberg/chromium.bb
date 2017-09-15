@@ -55,7 +55,7 @@ class WebUserGestureToken {
 
 #if INSIDE_BLINK
   explicit WebUserGestureToken(RefPtr<UserGestureToken>);
-  operator PassRefPtr<UserGestureToken>() const;
+  operator RefPtr<UserGestureToken>() const;
 #endif
 
  private:

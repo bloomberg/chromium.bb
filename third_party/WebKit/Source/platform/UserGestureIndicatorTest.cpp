@@ -23,7 +23,7 @@ class TestUserGestureToken final : public UserGestureToken {
   WTF_MAKE_NONCOPYABLE(TestUserGestureToken);
 
  public:
-  static PassRefPtr<UserGestureToken> Create(
+  static RefPtr<UserGestureToken> Create(
       Status status = kPossiblyExistingGesture) {
     return AdoptRef(new TestUserGestureToken(status));
   }

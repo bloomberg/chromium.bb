@@ -37,7 +37,6 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -50,11 +49,11 @@ namespace blink {
 
 class TestImage : public Image {
  public:
-  static PassRefPtr<TestImage> Create(sk_sp<SkImage> image) {
+  static RefPtr<TestImage> Create(sk_sp<SkImage> image) {
     return AdoptRef(new TestImage(image));
   }
 
-  static PassRefPtr<TestImage> Create(const IntSize& size) {
+  static RefPtr<TestImage> Create(const IntSize& size) {
     return AdoptRef(new TestImage(size));
   }
 

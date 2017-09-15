@@ -36,7 +36,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
@@ -76,7 +75,7 @@ class PLATFORM_EXPORT Prerender final
   const String& GetReferrer() const { return referrer_.referrer; }
   ReferrerPolicy GetReferrerPolicy() const { return referrer_.referrer_policy; }
 
-  void SetExtraData(PassRefPtr<ExtraData> extra_data) {
+  void SetExtraData(RefPtr<ExtraData> extra_data) {
     extra_data_ = std::move(extra_data);
   }
   ExtraData* GetExtraData() { return extra_data_.Get(); }

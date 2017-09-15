@@ -93,8 +93,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
 #if INSIDE_BLINK
   const HTTPHeaderMap& Headers() const;
 
-  void SetBlobDataHandle(PassRefPtr<BlobDataHandle>);
-  PassRefPtr<BlobDataHandle> GetBlobDataHandle() const;
+  void SetBlobDataHandle(RefPtr<BlobDataHandle>);
+  RefPtr<BlobDataHandle> GetBlobDataHandle() const;
 #endif
 
  private:

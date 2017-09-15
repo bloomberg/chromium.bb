@@ -98,7 +98,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
 
 #if INSIDE_BLINK
   const HTTPHeaderMap& Headers() const;
-  PassRefPtr<BlobDataHandle> GetBlobDataHandle() const;
+  RefPtr<BlobDataHandle> GetBlobDataHandle() const;
   const Referrer& GetReferrer() const;
   void SetBlob(const WebString& uuid,
                long long size,

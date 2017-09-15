@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 
 #if INSIDE_BLINK
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #endif
 
 namespace blink {
@@ -108,10 +108,10 @@ class WebURLLoadTiming {
   BLINK_PLATFORM_EXPORT void SetPushEnd(double);
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebURLLoadTiming(WTF::PassRefPtr<ResourceLoadTiming>);
+  BLINK_PLATFORM_EXPORT WebURLLoadTiming(WTF::RefPtr<ResourceLoadTiming>);
   BLINK_PLATFORM_EXPORT WebURLLoadTiming& operator=(
-      WTF::PassRefPtr<ResourceLoadTiming>);
-  BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<ResourceLoadTiming>() const;
+      WTF::RefPtr<ResourceLoadTiming>);
+  BLINK_PLATFORM_EXPORT operator WTF::RefPtr<ResourceLoadTiming>() const;
 #endif
 
  private:

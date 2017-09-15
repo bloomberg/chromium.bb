@@ -38,7 +38,6 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"  // FunctionThreadAffinity
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/TypeTraits.h"
