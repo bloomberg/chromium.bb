@@ -11294,9 +11294,6 @@
         "test": "ipc_tests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.media_unittests.filter"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11486,9 +11483,6 @@
         "test": "ipc_tests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.media_unittests.filter"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
