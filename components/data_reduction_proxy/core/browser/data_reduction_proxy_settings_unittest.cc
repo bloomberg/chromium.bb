@@ -204,6 +204,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
             .SkipSettingsInitialization()
             .Build();
 
+    drp_test_context->DisableWarmupURLFetch();
+
     context.set_net_log(drp_test_context->net_log());
     net::MockClientSocketFactory mock_socket_factory;
     context.set_client_socket_factory(&mock_socket_factory);
@@ -212,6 +214,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
     // Start with the Data Reduction Proxy disabled.
     drp_test_context->SetDataReductionProxyEnabled(false);
     drp_test_context->InitSettings();
+    drp_test_context->RunUntilIdle();
 
     net::MockRead mock_reads[] = {
         net::MockRead(test_case.response_headers),

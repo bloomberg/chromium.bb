@@ -399,6 +399,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     context_->set_network_quality_estimator(&test_network_quality_estimator_);
     context_->Init();
 
+    test_context_->DisableWarmupURLFetch();
     test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
   }
 
@@ -2205,6 +2206,7 @@ TEST_F(DataReductionProxyNetworkDelegateClientLoFiTest, DataSavingsNonDRP) {
 
 TEST_F(DataReductionProxyNetworkDelegateClientLoFiTest, DataSavingsThroughDRP) {
   Reset();
+  drp_test_context()->DisableWarmupURLFetch();
   drp_test_context()->EnableDataReductionProxyWithSecureProxyCheckSuccess();
   SetUpLoFiDecider(true, false);
 

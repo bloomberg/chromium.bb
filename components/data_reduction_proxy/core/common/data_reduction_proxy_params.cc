@@ -152,16 +152,15 @@ bool IsIncludedInServerExperimentsFieldTrial() {
 bool FetchWarmupURLEnabled() {
   // Fetching of the warmup URL can be enabled only for Enabled* and Control*
   // groups.
-  if (!IsIncludedInQuicFieldTrial() &&
-      !base::StartsWith(base::FieldTrialList::FindFullName(kQuicFieldTrial),
-                        kControl, base::CompareCase::SENSITIVE)) {
+  if (!IsIncludedInQuicFieldTrial())
     return false;
-  }
 
   std::map<std::string, std::string> params;
   variations::GetVariationParams(GetQuicFieldTrialName(), &params);
-  return GetStringValueForVariationParamWithDefaultValue(
-             params, "enable_warmup", "false") == "true";
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableDataReductionProxyWarmupURLFetch) &&
+         GetStringValueForVariationParamWithDefaultValue(
+             params, "enable_warmup", "true") != "false";
 }
 
 GURL GetWarmupURL() {
@@ -241,7 +240,7 @@ bool IsQuicEnabledForNonCoreProxies() {
   std::map<std::string, std::string> params;
   variations::GetVariationParams(GetQuicFieldTrialName(), &params);
   return GetStringValueForVariationParamWithDefaultValue(
-             params, "enable_quic_non_core_proxies", "false") == "true";
+             params, "enable_quic_non_core_proxies", "true") != "false";
 }
 
 const char* GetQuicFieldTrialName() {

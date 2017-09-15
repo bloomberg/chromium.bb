@@ -31,6 +31,7 @@ extern const char kEnableDataReductionProxyBypassWarning[];
 extern const char kEnableDataReductionProxyForcePingback[];
 extern const char kEnableDataReductionProxyLitePage[];
 extern const char kEnableDataReductionProxySavingsPromo[];
+extern const char kDisableDataReductionProxyWarmupURLFetch[];
 
 }  // namespace switches
 }  // namespace data_reduction_proxy

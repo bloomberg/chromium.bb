@@ -80,5 +80,9 @@ const char kEnableDataReductionProxyForcePingback[] =
 const char kEnableDataReductionProxySavingsPromo[] =
     "enable-data-reduction-proxy-savings-promo";
 
+// Disables fetching of the warmup URL.
+const char kDisableDataReductionProxyWarmupURLFetch[] =
+    "disable-data-reduction-proxy-warmup-url-fetch";
+
 }  // namespace switches
 }  // namespace data_reduction_proxy

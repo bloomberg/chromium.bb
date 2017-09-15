@@ -305,6 +305,7 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
     proxy_delegate_ = drp_test_context_->io_data()->CreateProxyDelegate();
     context_.set_proxy_delegate(proxy_delegate_.get());
     context_.Init();
+    drp_test_context_->DisableWarmupURLFetch();
     drp_test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
 
     // Three proxies should be available for use: primary, fallback, and direct.
