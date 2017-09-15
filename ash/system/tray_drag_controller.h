@@ -30,7 +30,7 @@ class ASH_EXPORT TrayDragController {
 
  private:
   // Gesture related functions:
-  bool StartGestureDrag(const ui::GestureEvent& gesture);
+  void StartGestureDrag(const ui::GestureEvent& gesture);
   void UpdateGestureDrag(const ui::GestureEvent& gesture);
   void CompleteGestureDrag(const ui::GestureEvent& gesture);
 
