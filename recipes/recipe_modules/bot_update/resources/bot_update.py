@@ -628,10 +628,6 @@ def apply_rietveld_issue(issue, patchset, root, server, _rev_map, _revision,
     for item in blacklist:
       cmd.extend(['--blacklist', item])
 
-  # TODO(kjellander): Remove this hack when http://crbug.com/611808 is fixed.
-  if root == path.join('src', 'third_party', 'webrtc'):
-    cmd.extend(['--extra_patchlevel=1'])
-
   # Only try once, since subsequent failures hide the real failure.
   try:
     call(*cmd)
