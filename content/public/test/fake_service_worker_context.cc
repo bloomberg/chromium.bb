@@ -80,5 +80,8 @@ void FakeServiceWorkerContext::StopAllServiceWorkersForOrigin(
     const GURL& origin) {
   NOTREACHED();
 }
+void FakeServiceWorkerContext::StopAllServiceWorkers(base::OnceClosure) {
+  NOTREACHED();
+}
 
 }  // namespace content

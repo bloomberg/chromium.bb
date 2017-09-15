@@ -53,6 +53,7 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
       const GURL& document_url,
       StartServiceWorkerForNavigationHintCallback callback) override;
   void StopAllServiceWorkersForOrigin(const GURL& origin) override;
+  void StopAllServiceWorkers(base::OnceClosure callback) override;
 
   bool start_service_worker_for_navigation_hint_called() {
     return start_service_worker_for_navigation_hint_called_;
