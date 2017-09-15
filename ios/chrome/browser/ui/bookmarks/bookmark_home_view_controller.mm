@@ -1190,8 +1190,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                      completion:nil];
       break;
     case BookmarksContextBarSingleFolderSelection:
-      // Edit clicked, open the editor.
-      [self editNode:*(nodes.begin())];
+      // More clicked, show action sheet with context menu.
+      [self presentViewController:
+                [self contextMenuForSingleBookmarkFolder:*(nodes.begin())]
+                         animated:YES
+                       completion:nil];
       break;
     case BookmarksContextBarMultipleFolderSelection:
     case BookmarksContextBarMixedSelection:
@@ -1232,17 +1235,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     case BookmarksContextBarMultipleURLSelection:
     case BookmarksContextBarMultipleFolderSelection:
     case BookmarksContextBarMixedSelection:
-      // Reset to start state, and then override with customizations that apply.
-      [self setBookmarksContextBarSelectionStartState];
-      [self.contextBar setButtonEnabled:YES forButton:ContextBarCenterButton];
-      [self.contextBar setButtonEnabled:YES forButton:ContextBarLeadingButton];
-      break;
     case BookmarksContextBarSingleFolderSelection:
       // Reset to start state, and then override with customizations that apply.
       [self setBookmarksContextBarSelectionStartState];
-      [self.contextBar setButtonTitle:l10n_util::GetNSString(
-                                          IDS_IOS_BOOKMARK_CONTEXT_BAR_EDIT)
-                            forButton:ContextBarCenterButton];
       [self.contextBar setButtonEnabled:YES forButton:ContextBarCenterButton];
       [self.contextBar setButtonEnabled:YES forButton:ContextBarLeadingButton];
       break;
@@ -1402,7 +1397,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                              handler:nil];
 
   UIAlertAction* editAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)
+      actionWithTitle:l10n_util::GetNSString(
+                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)
                 style:UIAlertActionStyleDefault
               handler:^(UIAlertAction* _Nonnull action) {
                 [weakSelf editNode:node];
