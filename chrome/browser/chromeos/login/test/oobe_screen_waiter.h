@@ -21,8 +21,11 @@ class OobeScreenWaiter : public OobeUI::Observer {
   explicit OobeScreenWaiter(OobeScreen expected_screen);
   ~OobeScreenWaiter() override;
 
-  // Run message loop to wait for the expected_screen.
+  // Run message loop to wait for the expected_screen to become current screen.
   void Wait();
+
+  // Run message loop to wait for the expected_screen to be fully initialized.
+  void WaitForInitialization();
 
   // Similar to Wait() but does not assert the current screen is
   // expected_screen on exit. Use this when there are multiple screen changes
@@ -32,10 +35,12 @@ class OobeScreenWaiter : public OobeUI::Observer {
   // OobeUI::Observer implementation:
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
+  void OnScreenInitialized(OobeScreen screen) override;
 
  private:
   OobeUI* GetOobeUI();
 
+  bool waiting_for_screen_init_ = false;
   bool waiting_for_screen_ = false;
   OobeScreen expected_screen_ = OobeScreen::SCREEN_UNKNOWN;
   scoped_refptr<content::MessageLoopRunner> runner_;

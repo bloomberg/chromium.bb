@@ -14,7 +14,7 @@ OobeScreenWaiter::OobeScreenWaiter(OobeScreen expected_screen)
     : expected_screen_(expected_screen) {}
 
 OobeScreenWaiter::~OobeScreenWaiter() {
-  if (waiting_for_screen_) {
+  if (waiting_for_screen_ || waiting_for_screen_init_) {
     GetOobeUI()->RemoveObserver(this);
   }
 }
@@ -23,6 +23,19 @@ void OobeScreenWaiter::Wait() {
   WaitNoAssertCurrentScreen();
 
   ASSERT_EQ(expected_screen_, GetOobeUI()->current_screen());
+}
+
+void OobeScreenWaiter::WaitForInitialization() {
+  if (GetOobeUI()->IsScreenInitialized(expected_screen_))
+    return;
+
+  waiting_for_screen_init_ = true;
+  GetOobeUI()->AddObserver(this);
+
+  runner_ = new content::MessageLoopRunner;
+  runner_->Run();
+  ASSERT_FALSE(waiting_for_screen_init_);
+  ASSERT_TRUE(GetOobeUI()->IsScreenInitialized(expected_screen_));
 }
 
 void OobeScreenWaiter::WaitNoAssertCurrentScreen() {
@@ -42,6 +55,14 @@ void OobeScreenWaiter::OnCurrentScreenChanged(OobeScreen current_screen,
   if (waiting_for_screen_ && new_screen == expected_screen_) {
     runner_->Quit();
     waiting_for_screen_ = false;
+    GetOobeUI()->RemoveObserver(this);
+  }
+}
+
+void OobeScreenWaiter::OnScreenInitialized(OobeScreen screen) {
+  if (waiting_for_screen_init_ && screen == expected_screen_) {
+    runner_->Quit();
+    waiting_for_screen_init_ = false;
     GetOobeUI()->RemoveObserver(this);
   }
 }

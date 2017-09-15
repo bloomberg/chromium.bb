@@ -278,6 +278,7 @@ class SigninScreenHandler
   // OobeUI::Observer implementation:
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
+  void OnScreenInitialized(OobeScreen screen) override{};
 
   // ash::WallpaperControllerObserver implementation:
   void OnWallpaperColorsChanged() override;

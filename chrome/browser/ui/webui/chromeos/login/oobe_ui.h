@@ -84,6 +84,8 @@ class OobeUI : public content::WebUIController,
     virtual void OnCurrentScreenChanged(OobeScreen current_screen,
                                         OobeScreen new_screen) = 0;
 
+    virtual void OnScreenInitialized(OobeScreen screen) = 0;
+
    protected:
     virtual ~Observer() {}
     DISALLOW_COPY(Observer);
@@ -131,6 +133,11 @@ class OobeUI : public content::WebUIController,
 
   // Called when the screen has changed.
   void CurrentScreenChanged(OobeScreen screen);
+
+  // Called when the screen was initialized.
+  void ScreenInitialized(OobeScreen screen);
+
+  bool IsScreenInitialized(OobeScreen screen);
 
   // Invoked after the async assets load. The screen handler that has the same
   // async assets load id will be initialized.
@@ -212,8 +219,9 @@ class OobeUI : public content::WebUIController,
   // forwards calls from native code to JS side.
   SigninScreenHandler* signin_screen_handler_ = nullptr;
 
-  std::vector<BaseWebUIHandler*> webui_handlers_;    // Non-owning pointers.
-  std::vector<BaseScreenHandler*> screen_handlers_;  // Non-owning pointers.
+  std::vector<BaseWebUIHandler*> webui_handlers_;       // Non-owning pointers.
+  std::vector<BaseWebUIHandler*> webui_only_handlers_;  // Non-owning pointers.
+  std::vector<BaseScreenHandler*> screen_handlers_;     // Non-owning pointers.
 
   KioskAppMenuHandler* kiosk_app_menu_handler_ =
       nullptr;  // Non-owning pointers.
