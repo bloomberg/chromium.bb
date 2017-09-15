@@ -104,7 +104,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   void initMessageEvent(const AtomicString& type,
                         bool can_bubble,
                         bool cancelable,
-                        PassRefPtr<SerializedScriptValue> data,
+                        RefPtr<SerializedScriptValue> data,
                         const String& origin,
                         const String& last_event_id,
                         EventTarget* source,

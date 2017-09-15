@@ -1063,7 +1063,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void EnforceSandboxFlags(SandboxFlags mask) override;
 
-  void StatePopped(PassRefPtr<SerializedScriptValue>);
+  void StatePopped(RefPtr<SerializedScriptValue>);
 
   enum LoadEventProgress {
     kLoadEventNotRun,

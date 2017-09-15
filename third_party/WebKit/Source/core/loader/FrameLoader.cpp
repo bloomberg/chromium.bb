@@ -543,13 +543,12 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader) {
   loader = nullptr;
 }
 
-void FrameLoader::LoadInSameDocument(
-    const KURL& url,
-    PassRefPtr<SerializedScriptValue> state_object,
-    FrameLoadType frame_load_type,
-    HistoryItem* history_item,
-    ClientRedirectPolicy client_redirect,
-    Document* initiating_document) {
+void FrameLoader::LoadInSameDocument(const KURL& url,
+                                     RefPtr<SerializedScriptValue> state_object,
+                                     FrameLoadType frame_load_type,
+                                     HistoryItem* history_item,
+                                     ClientRedirectPolicy client_redirect,
+                                     Document* initiating_document) {
   // If we have a state object, we cannot also be a new navigation.
   DCHECK(!state_object || frame_load_type == kFrameLoadTypeBackForward);
 

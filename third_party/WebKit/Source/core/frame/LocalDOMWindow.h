@@ -305,7 +305,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void EnqueuePopstateEvent(RefPtr<SerializedScriptValue>);
   void DispatchWindowLoadEvent();
   void DocumentWasClosed();
-  void StatePopped(PassRefPtr<SerializedScriptValue>);
+  void StatePopped(RefPtr<SerializedScriptValue>);
 
   // FIXME: This shouldn't be public once LocalDOMWindow becomes
   // ExecutionContext.

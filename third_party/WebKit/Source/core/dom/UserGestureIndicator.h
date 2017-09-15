@@ -71,7 +71,7 @@ class CORE_EXPORT UserGestureIndicator final {
 
   static void SetTimeoutPolicy(UserGestureToken::TimeoutPolicy);
 
-  explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
+  explicit UserGestureIndicator(RefPtr<UserGestureToken>);
 
   // Constructs a UserGestureIndicator with a new UserGestureToken of the given
   // status.

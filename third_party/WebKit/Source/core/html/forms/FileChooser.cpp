@@ -45,9 +45,8 @@ inline FileChooser::FileChooser(FileChooserClient* client,
                                 const WebFileChooserParams& params)
     : client_(client), params_(params) {}
 
-PassRefPtr<FileChooser> FileChooser::Create(
-    FileChooserClient* client,
-    const WebFileChooserParams& params) {
+RefPtr<FileChooser> FileChooser::Create(FileChooserClient* client,
+                                        const WebFileChooserParams& params) {
   return AdoptRef(new FileChooser(client, params));
 }
 

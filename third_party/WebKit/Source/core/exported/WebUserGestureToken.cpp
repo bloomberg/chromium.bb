@@ -42,7 +42,7 @@ WebUserGestureToken::WebUserGestureToken(RefPtr<UserGestureToken> token) {
   token_ = std::move(token);
 }
 
-WebUserGestureToken::operator PassRefPtr<UserGestureToken>() const {
+WebUserGestureToken::operator RefPtr<UserGestureToken>() const {
   return token_.Get();
 }
 

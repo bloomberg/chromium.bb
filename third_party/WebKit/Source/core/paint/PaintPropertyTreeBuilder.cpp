@@ -110,7 +110,7 @@ static bool UpdateScrollTranslation(
     LocalFrameView& frame_view,
     RefPtr<const TransformPaintPropertyNode> parent,
     const TransformationMatrix& matrix,
-    PassRefPtr<ScrollPaintPropertyNode> scroll) {
+    RefPtr<ScrollPaintPropertyNode> scroll) {
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   // TODO(pdr): Set the correct compositing reasons here.
   if (auto* existing_scroll_translation = frame_view.ScrollTranslation()) {
