@@ -6,10 +6,16 @@
 
 namespace headless {
 
-HeadlessResourceDispatcherHostDelegate::
-    HeadlessResourceDispatcherHostDelegate() {}
+HeadlessResourceDispatcherHostDelegate::HeadlessResourceDispatcherHostDelegate(
+    bool enable_resource_scheduler)
+    : enable_resource_scheduler_(enable_resource_scheduler) {}
 
 HeadlessResourceDispatcherHostDelegate::
     ~HeadlessResourceDispatcherHostDelegate() {}
+
+bool HeadlessResourceDispatcherHostDelegate::ShouldUseResourceScheduler()
+    const {
+  return enable_resource_scheduler_;
+}
 
 }  // namespace headless

@@ -104,6 +104,10 @@ ResourceDispatcherHostDelegate::CreateClientCertStore(
   return std::unique_ptr<net::ClientCertStore>();
 }
 
+bool ResourceDispatcherHostDelegate::ShouldUseResourceScheduler() const {
+  return true;
+}
+
 ResourceDispatcherHostDelegate::~ResourceDispatcherHostDelegate() {
 }
 

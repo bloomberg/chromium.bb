@@ -780,6 +780,9 @@ class ResourceScheduler::Client {
 
   ShouldStartReqResult ShouldStartRequest(
       ScheduledResourceRequest* request) const {
+    if (!resource_scheduler_->enabled())
+      return START_REQUEST;
+
     const net::URLRequest& url_request = *request->url_request();
     // Syncronous requests could block the entire render, which could impact
     // user-observable Clients.
@@ -993,8 +996,9 @@ class ResourceScheduler::Client {
   base::WeakPtrFactory<ResourceScheduler::Client> weak_ptr_factory_;
 };
 
-ResourceScheduler::ResourceScheduler()
-    : priority_requests_delayable_(
+ResourceScheduler::ResourceScheduler(bool enabled)
+    : enabled_(enabled),
+      priority_requests_delayable_(
           base::FeatureList::IsEnabled(kPrioritySupportedRequestsDelayable)),
       head_priority_requests_delayable_(base::FeatureList::IsEnabled(
           kHeadPrioritySupportedRequestsDelayable)),
