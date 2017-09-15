@@ -6,18 +6,11 @@
 #define ASH_TEST_SHELL_DELEGATE_H_
 
 #include <memory>
-#include <string>
 
 #include "ash/shell_delegate.h"
 #include "base/macros.h"
 
-namespace keyboard {
-class KeyboardUI;
-}
-
 namespace ash {
-
-class ShelfInitializer;
 
 class TestShellDelegate : public ShellDelegate {
  public:
@@ -39,8 +32,6 @@ class TestShellDelegate : public ShellDelegate {
   void PreShutdown() override;
   void Exit() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
-  void ShelfInit() override;
-  void ShelfShutdown() override;
   void OpenUrlFromArc(const GURL& url) override;
   NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
@@ -61,7 +52,6 @@ class TestShellDelegate : public ShellDelegate {
   int num_exit_requests_ = 0;
   bool multi_profiles_enabled_ = false;
   bool force_maximize_on_first_run_ = false;
-  std::unique_ptr<ShelfInitializer> shelf_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };

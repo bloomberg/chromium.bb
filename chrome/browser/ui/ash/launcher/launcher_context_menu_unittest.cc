@@ -7,14 +7,9 @@
 #include <memory>
 
 #include "ash/public/cpp/shelf_item.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
-#include "ash/shell_test_api.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
-#include "ash/test_shell_delegate.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,31 +30,6 @@
 
 namespace {
 
-// A shell delegate that owns a ChromeLauncherController, like production.
-class ChromeLauncherTestShellDelegate : public ash::TestShellDelegate {
- public:
-  explicit ChromeLauncherTestShellDelegate(Profile* profile)
-      : profile_(profile) {}
-
-  ChromeLauncherController* controller() { return controller_.get(); }
-
-  // ash::TestShellDelegate:
-  void ShelfInit() override {
-    if (!controller_) {
-      controller_ = base::MakeUnique<ChromeLauncherController>(
-          profile_, ash::Shell::Get()->shelf_model());
-      controller_->Init();
-    }
-  }
-  void ShelfShutdown() override { controller_.reset(); }
-
- private:
-  Profile* profile_;
-  std::unique_ptr<ChromeLauncherController> controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherTestShellDelegate);
-};
-
 class LauncherContextMenuTest : public ash::AshTestBase {
  protected:
   static bool IsItemPresentInMenu(LauncherContextMenu* menu, int command_id) {
@@ -70,10 +40,11 @@ class LauncherContextMenuTest : public ash::AshTestBase {
 
   void SetUp() override {
     arc_test_.SetUp(&profile_);
-    session_manager_ = base::MakeUnique<session_manager::SessionManager>();
-    shell_delegate_ = new ChromeLauncherTestShellDelegate(&profile_);
-    ash_test_helper()->set_test_shell_delegate(shell_delegate_);
+    session_manager_ = std::make_unique<session_manager::SessionManager>();
     ash::AshTestBase::SetUp();
+    model_ = std::make_unique<ash::ShelfModel>();
+    launcher_controller_ =
+        std::make_unique<ChromeLauncherController>(&profile_, model_.get());
   }
 
   std::unique_ptr<LauncherContextMenu> CreateLauncherContextMenu(
@@ -97,19 +68,23 @@ class LauncherContextMenuTest : public ash::AshTestBase {
     return widget;
   }
 
+  void TearDown() override {
+    launcher_controller_.reset();
+    ash::AshTestBase::TearDown();
+  }
+
   ArcAppTest& arc_test() { return arc_test_; }
 
   Profile* profile() { return &profile_; }
 
-  ChromeLauncherController* controller() {
-    return shell_delegate_->controller();
-  }
+  ChromeLauncherController* controller() { return launcher_controller_.get(); }
 
  private:
   TestingProfile profile_;
-  ChromeLauncherTestShellDelegate* shell_delegate_ = nullptr;
   ArcAppTest arc_test_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
+  std::unique_ptr<ash::ShelfModel> model_;
+  std::unique_ptr<ChromeLauncherController> launcher_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenuTest);
 };
@@ -184,7 +159,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   ASSERT_TRUE(item);
   int64_t primary_id = GetPrimaryDisplay().id();
   std::unique_ptr<LauncherContextMenu> menu =
-      base::MakeUnique<ArcLauncherContextMenu>(controller(), item, primary_id);
+      std::make_unique<ArcLauncherContextMenu>(controller(), item, primary_id);
 
   // ARC app is pinned but not running.
   EXPECT_TRUE(
@@ -201,7 +176,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0],
                                              std::string());
   menu =
-      base::MakeUnique<ArcLauncherContextMenu>(controller(), item, primary_id);
+      std::make_unique<ArcLauncherContextMenu>(controller(), item, primary_id);
 
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
@@ -219,7 +194,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   const ash::ShelfItem* item2 = controller()->GetItem(ash::ShelfID(app_id2));
   ASSERT_TRUE(item2);
   menu =
-      base::MakeUnique<ArcLauncherContextMenu>(controller(), item2, primary_id);
+      std::make_unique<ArcLauncherContextMenu>(controller(), item2, primary_id);
 
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
@@ -244,7 +219,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   ASSERT_TRUE(item3);
 
   menu =
-      base::MakeUnique<ArcLauncherContextMenu>(controller(), item3, primary_id);
+      std::make_unique<ArcLauncherContextMenu>(controller(), item3, primary_id);
 
   EXPECT_FALSE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
