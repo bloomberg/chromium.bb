@@ -151,6 +151,7 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
   gaia_auth_fetcher_ = signin_client->CreateGaiaAuthFetcher(
       this, GaiaConstants::kChromeSource,
       signin_client->GetURLRequestContext());
+  VLOG(1) << "Start fetching token for account: " << email;
   gaia_auth_fetcher_->StartAuthCodeForOAuth2TokenExchange(authorization_code_);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, timeout_closure_.callback(),
@@ -272,6 +273,7 @@ void DiceResponseHandler::ProcessDiceSigninHeader(
   DCHECK(!gaia_id.empty());
   DCHECK(!email.empty());
   DCHECK(!authorization_code.empty());
+  VLOG(1) << "Start processing Dice signin response";
   RecordDiceResponseHeader(kSignin);
 
   if (!CanGetTokenForAccount(gaia_id, email)) {
@@ -296,6 +298,7 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
     const std::vector<std::string>& gaia_ids,
     const std::vector<std::string>& emails) {
   DCHECK_EQ(gaia_ids.size(), emails.size());
+  VLOG(1) << "Start processing Dice signout response";
   if (!signin::IsAccountConsistencyDiceEnabled()) {
     // Ignore signout responses when using kDiceFixAuthErrors.
     DCHECK_EQ(signin::AccountConsistencyMethod::kDiceFixAuthErrors,
