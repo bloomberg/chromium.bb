@@ -9,6 +9,7 @@
 #include "core/geometry/DOMRect.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/imagecapture/Point2D.h"
 #include "modules/shapedetection/DetectedText.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -58,10 +59,18 @@ void TextDetector::OnDetectText(
 
   HeapVector<Member<DetectedText>> detected_text;
   for (const auto& text : text_detection_results) {
+    HeapVector<Point2D> corner_points;
+    for (const auto& corner_point : text->corner_points) {
+      Point2D point;
+      point.setX(corner_point.x);
+      point.setY(corner_point.y);
+      corner_points.push_back(point);
+    }
     detected_text.push_back(DetectedText::Create(
         text->raw_value,
         DOMRect::Create(text->bounding_box.x, text->bounding_box.y,
-                        text->bounding_box.width, text->bounding_box.height)));
+                        text->bounding_box.width, text->bounding_box.height),
+        corner_points));
   }
 
   resolver->Resolve(detected_text);
