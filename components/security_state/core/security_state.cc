@@ -150,9 +150,12 @@ SecurityLevel GetSecurityLevelForRequest(
   }
 
   // data: URLs don't define a secure context, and are a vector for spoofing.
-  // Display a "Not secure" badge for all data URLs, regardless of whether
+  // Likewise, ftp: URLs are always non-secure, and are uncommon enough that
+  // we can treat them as such without significant user impact.
+  //
+  // Display a "Not secure" badge for all these URLs, regardless of whether
   // they show a password or credit card field.
-  if (url.SchemeIs(url::kDataScheme))
+  if (url.SchemeIs(url::kDataScheme) || url.SchemeIs(url::kFtpScheme))
     return SecurityLevel::HTTP_SHOW_WARNING;
 
   // Choose the appropriate security level for requests to HTTP and remaining

@@ -287,6 +287,20 @@ TEST(SecurityStateTest, AlwaysWarnOnDataUrls) {
   EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
 }
 
+// Tests that FTP URLs always cause an HTTP_SHOW_WARNING to be shown,
+// regardless of whether a password or credit card field was displayed.
+TEST(SecurityStateTest, AlwaysWarnOnFtpUrls) {
+  TestSecurityStateHelper helper;
+  helper.SetUrl(GURL("ftp://example.test/"));
+  helper.set_displayed_password_field_on_http(false);
+  helper.set_displayed_credit_card_field_on_http(false);
+  SecurityInfo security_info;
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_FALSE(security_info.displayed_password_field_on_http);
+  EXPECT_FALSE(security_info.displayed_credit_card_field_on_http);
+  EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
+}
+
 // Tests that password fields cause the security level to be downgraded
 // to HTTP_SHOW_WARNING.
 TEST(SecurityStateTest, PasswordFieldWarning) {
