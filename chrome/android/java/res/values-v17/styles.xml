@@ -622,7 +622,7 @@
         <item name="android:layout_gravity">center_vertical</item>
         <item name="android:layout_marginEnd">@dimen/list_item_start_icon_right_margin</item>
         <item name="android:scaleType">center</item>
-        <item name="android:contentDescription">null</item>
+        <item name="android:contentDescription">@null</item>
     </style>
     <style name="ListItemEndIcon">
         <item name="android:layout_width">@dimen/list_item_end_icon_width</item>
