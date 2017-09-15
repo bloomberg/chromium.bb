@@ -208,7 +208,7 @@ Bug(none) http/tests/fetch/serviceworker/body-mixin-base-https-other-https.html 
 Bug(none) http/tests/fetch/serviceworker/body-mixin.html [ Crash Failure Timeout ]
 Bug(none) http/tests/fetch/serviceworker/cache-override-base-https-other-https.html [ Crash Timeout ]
 Bug(none) http/tests/fetch/serviceworker/cache-override.html [ Crash Failure Timeout ]
-Bug(none) http/tests/fetch/serviceworker/fetch-base-https-other-https.html [ Crash Timeout ]
+Bug(none) http/tests/fetch/serviceworker/fetch-base-https-other-https.html [ Crash Timeout Failure ]
 Bug(none) http/tests/fetch/serviceworker/fetch.html [ Crash Failure Timeout ]
 Bug(none) http/tests/fetch/serviceworker/filtered-response-base-https-other-https.html [ Crash Timeout Failure ]
 Bug(none) http/tests/fetch/serviceworker/filtered-response-other-https.html [ Crash Failure Timeout ]
@@ -484,11 +484,11 @@ crbug.com/611935 external/wpt/IndexedDB/nested-cloning-large.html [ Failure ]
 
 # Failed after r499500 which turned on security checks for background fetch.
 Bug(none) external/wpt/background-fetch/content-security-policy.https.window.html [ Timeout ]
-Bug(none) external/wpt/background-fetch/credentials-in-url.https.window.html [ Timeout ]
+Bug(none) external/wpt/background-fetch/credentials-in-url.https.window.html [ Crash Timeout ]
 Bug(none) external/wpt/background-fetch/dangling-markup.https.window.html [ Timeout ]
-Bug(none) external/wpt/background-fetch/mixed-content-and-allowed-schemes.https.window.html [ Timeout ]
-Bug(none) external/wpt/background-fetch/port-blocking.https.window.html [ Timeout ]
-Bug(none) http/tests/background_fetch/block-cors-preflights.https.html [ Timeout ]
+Bug(none) external/wpt/background-fetch/mixed-content-and-allowed-schemes.https.window.html [ Crash Timeout ]
+Bug(none) external/wpt/background-fetch/port-blocking.https.window.html [ Crash Timeout ]
+Bug(none) http/tests/background_fetch/block-cors-preflights.https.html [ Crash Timeout ]
 
 # The next three sections are blocked by converting to new Mojo JS APIs.
 
