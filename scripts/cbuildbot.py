@@ -513,8 +513,7 @@ def _CreateParser():
   # Note the default here needs to be hardcoded to 3; that is the last version
   # that lacked this functionality.
   group.add_option('--remote-version', type='int', default=3,
-                   help='Used for compatibility checks w/tryjobs running in '
-                        'older chromite instances')
+                   help='Deprecated and ignored.')
   group.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT)
   group.add_option('--ts-mon-task-num', type='int', default=0,
                    api=constants.REEXEC_API_TSMON_TASK_NUM,

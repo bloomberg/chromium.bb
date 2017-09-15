@@ -11,7 +11,6 @@ import json
 import os
 import time
 
-from chromite.cbuildbot import repository
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import config_lib
@@ -56,17 +55,6 @@ def DefaultDescription(description_branch='master', patches=None):
 
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
-  EXTERNAL_URL = os.path.join(site_config.params.EXTERNAL_GOB_URL,
-                              'chromiumos/tryjobs')
-  INTERNAL_URL = os.path.join(site_config.params.INTERNAL_GOB_URL,
-                              'chromeos/tryjobs')
-
-  # In version 3, remote patches have an extra field.
-  # In version 4, cherry-picking is the norm, thus multiple patches are
-  # generated.
-  TRYJOB_FORMAT_VERSION = 4
-  TRYJOB_FORMAT_FILE = '.tryjob_minimal_format_version'
-
   # Constants for controlling the length of JSON fields sent to buildbot.
   # - The trybot description is shown when the run starts, and helps users
   #   distinguish between their various runs. If no trybot description is
@@ -116,13 +104,8 @@ class RemoteTryJob(object):
     self.build_configs = build_configs[:]
     self.description = ('name: %s' % self.name)
     self.extra_args = pass_through_args
-    self.extra_args.append('--remote-version=%s'
-                           % (self.TRYJOB_FORMAT_VERSION,))
     self.local_patches = local_patches
-    self.cache_key = ('trybot',)
     self.manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
-    if repository.IsInternalRepoCheckout(constants.SOURCE_ROOT):
-      self.cache_key = ('trybot-internal',)
 
   @property
   def values(self):
@@ -132,7 +115,6 @@ class RemoteTryJob(object):
         'extra_args' : self.extra_args,
         'name' : self.name,
         'user' : self.user,
-        'version' : self.TRYJOB_FORMAT_VERSION,
         }
 
   def _VerifyForBuildbot(self):
