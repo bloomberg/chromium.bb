@@ -7,10 +7,10 @@
 {% endfor %}
 class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
  public:
-  static PassRefPtr<{{group.type_name}}> Create() {
+  static RefPtr<{{group.type_name}}> Create() {
     return AdoptRef(new {{group.type_name}});
   }
-  PassRefPtr<{{group.type_name}}> Copy() const {
+  RefPtr<{{group.type_name}}> Copy() const {
     return AdoptRef(new {{group.type_name}}(*this));
   }
 

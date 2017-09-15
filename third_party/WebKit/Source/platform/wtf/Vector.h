@@ -1661,9 +1661,7 @@ void Vector<T, inlineCapacity, Allocator>::ShrinkCapacity(size_t new_capacity) {
 }
 
 // Templatizing these is better than just letting the conversion happen
-// implicitly, because for instance it allows a PassRefPtr to be appended to a
-// RefPtr vector without refcount thrash.
-
+// implicitly.
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
 ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::push_back(U&& val) {
