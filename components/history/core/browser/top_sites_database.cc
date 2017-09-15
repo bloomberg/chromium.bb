@@ -435,8 +435,8 @@ void TopSitesDatabase::GetPageThumbnails(MostVisitedURLList* urls,
     GURL gurl(statement.ColumnString(0));
     url.url = gurl;
     url.title = statement.ColumnString16(2);
-    url.last_forced_time =
-        base::Time::FromInternalValue(statement.ColumnInt64(10));
+    url.last_forced_time = base::Time() + base::TimeDelta::FromMicroseconds(
+                                              statement.ColumnInt64(10));
     std::string redirects = statement.ColumnString(4);
     SetRedirects(redirects, &url);
     urls->push_back(url);
@@ -450,7 +450,8 @@ void TopSitesDatabase::GetPageThumbnails(MostVisitedURLList* urls,
     thumbnail.thumbnail_score.good_clipping = statement.ColumnBool(6);
     thumbnail.thumbnail_score.at_top = statement.ColumnBool(7);
     thumbnail.thumbnail_score.time_at_snapshot =
-        base::Time::FromInternalValue(statement.ColumnInt64(8));
+        base::Time() +
+        base::TimeDelta::FromMicroseconds(statement.ColumnInt64(8));
     thumbnail.thumbnail_score.load_completed = statement.ColumnBool(9);
     (*thumbnails)[gurl] = thumbnail;
   }
@@ -636,7 +637,8 @@ bool TopSitesDatabase::GetPageThumbnail(const GURL& url, Images* thumbnail) {
   thumbnail->thumbnail_score.good_clipping = statement.ColumnBool(2);
   thumbnail->thumbnail_score.at_top = statement.ColumnBool(3);
   thumbnail->thumbnail_score.time_at_snapshot =
-      base::Time::FromInternalValue(statement.ColumnInt64(4));
+      base::Time() +
+      base::TimeDelta::FromMicroseconds(statement.ColumnInt64(4));
   return true;
 }
 
