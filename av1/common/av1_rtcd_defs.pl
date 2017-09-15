@@ -669,9 +669,13 @@ if (aom_config("CONFIG_CONVOLVE_ROUND") eq "yes") {
 if (aom_config("CONFIG_INTRA_EDGE") eq "yes") {
   add_proto qw/void av1_filter_intra_edge/, "uint8_t *p, int sz, int strength";
   specialize qw/av1_filter_intra_edge sse4_1/;
+  add_proto qw/void av1_upsample_intra_edge/, "uint8_t *p, int sz";
+  specialize qw/av1_upsample_intra_edge sse4_1/;
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void av1_filter_intra_edge_high/, "uint16_t *p, int sz, int strength";
     specialize qw/av1_filter_intra_edge_high sse4_1/;
+    add_proto qw/void av1_upsample_intra_edge_high/, "uint16_t *p, int sz, int bd";
+    specialize qw/av1_upsample_intra_edge_high sse4_1/;
   }
 }
 

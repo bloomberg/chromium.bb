@@ -2380,7 +2380,7 @@ static int use_intra_edge_upsample(int bsz, int delta) {
   return (bsz == 4 && d > 0 && d < 56);
 }
 
-static void upsample_intra_edge(uint8_t *p, int sz) {
+void av1_upsample_intra_edge_c(uint8_t *p, int sz) {
   // interpolate half-sample positions
   assert(sz <= MAX_UPSAMPLE_SZ);
 
@@ -2404,7 +2404,7 @@ static void upsample_intra_edge(uint8_t *p, int sz) {
 }
 
 #if CONFIG_HIGHBITDEPTH
-static void upsample_intra_edge_high(uint16_t *p, int sz, int bd) {
+void av1_upsample_intra_edge_high_c(uint16_t *p, int sz, int bd) {
   // interpolate half-sample positions
   assert(sz <= MAX_UPSAMPLE_SZ);
 
@@ -2645,12 +2645,12 @@ static void build_intra_predictors_high(
     const int upsample_above = use_intra_edge_upsample(txwpx, p_angle - 90);
     if (upsample_above) {
       const int n_px = txwpx + (need_right ? txhpx : 0);
-      upsample_intra_edge_high(above_row, n_px, xd->bd);
+      av1_upsample_intra_edge_high(above_row, n_px, xd->bd);
     }
     const int upsample_left = use_intra_edge_upsample(txhpx, p_angle - 180);
     if (upsample_left) {
       const int n_px = txhpx + (need_bottom ? txwpx : 0);
-      upsample_intra_edge_high(left_col, n_px, xd->bd);
+      av1_upsample_intra_edge_high(left_col, n_px, xd->bd);
     }
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
 #endif  // CONFIG_INTRA_EDGE
@@ -2887,12 +2887,12 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     const int upsample_above = use_intra_edge_upsample(txwpx, p_angle - 90);
     if (upsample_above) {
       const int n_px = txwpx + (need_right ? txhpx : 0);
-      upsample_intra_edge(above_row, n_px);
+      av1_upsample_intra_edge(above_row, n_px);
     }
     const int upsample_left = use_intra_edge_upsample(txhpx, p_angle - 180);
     if (upsample_left) {
       const int n_px = txhpx + (need_bottom ? txwpx : 0);
-      upsample_intra_edge(left_col, n_px);
+      av1_upsample_intra_edge(left_col, n_px);
     }
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
 #endif  // CONFIG_INTRA_EDGE
