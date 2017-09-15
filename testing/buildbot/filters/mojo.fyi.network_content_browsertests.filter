@@ -47,6 +47,10 @@
 -ServiceWorkerVersionBrowserTest.ServiceWorkerScriptHeader
 -ServiceWorkerVersionBrowserTest.StartNotFound
 
+# ServiceWorker restart needs to read installed scripts.
+# https://crbug.com/756312
+-ServiceWorkerVersionBrowserV8CacheTest.Restart
+
 # http://crbug.com/715630
 -DownloadContentTest.*
 -DragDownloadFileTest.DragDownloadFileTest_Complete
