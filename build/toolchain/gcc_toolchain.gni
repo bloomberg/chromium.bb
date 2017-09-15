@@ -45,6 +45,8 @@ analyzer_wrapper =
 #      "CXX" (which follows).
 #  - extra_cxxflags
 #      Extra flags to be appended when compiling C++ files (but not C files).
+#  - extra_asmflags
+#      Extra flags to be appended when compiling assembly.
 #  - extra_ldflags
 #      Extra flags to be appended when linking
 #
@@ -251,6 +253,12 @@ template("gcc_toolchain") {
       extra_cxxflags = ""
     }
 
+    if (defined(invoker.extra_asmflags) && invoker.extra_asmflags != "") {
+      extra_asmflags = " " + invoker.extra_asmflags
+    } else {
+      extra_asmflags = ""
+    }
+
     if (defined(invoker.extra_ldflags) && invoker.extra_ldflags != "") {
       extra_ldflags = " " + invoker.extra_ldflags
     } else {
@@ -306,7 +314,7 @@ template("gcc_toolchain") {
     tool("asm") {
       # For GCC we can just use the C compiler to compile assembly.
       depfile = "{{output}}.d"
-      command = "$asm -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
+      command = "$asm -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{asmflags}}${extra_asmflags} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "ASM {{output}}"
       outputs = [
