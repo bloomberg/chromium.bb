@@ -10,7 +10,6 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
@@ -59,7 +58,7 @@ class TestFontSelector : public FontSelector {
   void UnregisterForInvalidationCallbacks(FontSelectorClient*) override {}
 
  private:
-  TestFontSelector(PassRefPtr<FontCustomPlatformData> custom_platform_data)
+  TestFontSelector(RefPtr<FontCustomPlatformData> custom_platform_data)
       : custom_platform_data_(std::move(custom_platform_data)) {
     DCHECK(custom_platform_data_);
   }

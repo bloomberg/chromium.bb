@@ -27,7 +27,7 @@
 
 namespace blink {
 
-PassRefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::Create(
+RefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::Create(
     const String& voice_uri,
     const String& name,
     const String& lang,
@@ -37,8 +37,7 @@ PassRefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::Create(
                                                    local_service, is_default));
 }
 
-PassRefPtr<PlatformSpeechSynthesisVoice>
-PlatformSpeechSynthesisVoice::Create() {
+RefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::Create() {
   return AdoptRef(new PlatformSpeechSynthesisVoice);
 }
 

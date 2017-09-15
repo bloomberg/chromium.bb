@@ -7,7 +7,6 @@
 #include "platform/SharedBuffer.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -22,7 +21,7 @@ class SharedBufferSegmentReader final : public SegmentReader {
   WTF_MAKE_NONCOPYABLE(SharedBufferSegmentReader);
 
  public:
-  SharedBufferSegmentReader(PassRefPtr<SharedBuffer>);
+  SharedBufferSegmentReader(RefPtr<SharedBuffer>);
   size_t size() const override;
   size_t GetSomeData(const char*& data, size_t position) const override;
   sk_sp<SkData> GetAsSkData() const override;
@@ -32,7 +31,7 @@ class SharedBufferSegmentReader final : public SegmentReader {
 };
 
 SharedBufferSegmentReader::SharedBufferSegmentReader(
-    PassRefPtr<SharedBuffer> buffer)
+    RefPtr<SharedBuffer> buffer)
     : shared_buffer_(std::move(buffer)) {}
 
 size_t SharedBufferSegmentReader::size() const {
@@ -182,16 +181,16 @@ sk_sp<SkData> ROBufferSegmentReader::GetAsSkData() const {
 
 // SegmentReader ---------------------------------------------------------------
 
-PassRefPtr<SegmentReader> SegmentReader::CreateFromSharedBuffer(
-    PassRefPtr<SharedBuffer> buffer) {
+RefPtr<SegmentReader> SegmentReader::CreateFromSharedBuffer(
+    RefPtr<SharedBuffer> buffer) {
   return AdoptRef(new SharedBufferSegmentReader(std::move(buffer)));
 }
 
-PassRefPtr<SegmentReader> SegmentReader::CreateFromSkData(sk_sp<SkData> data) {
+RefPtr<SegmentReader> SegmentReader::CreateFromSkData(sk_sp<SkData> data) {
   return AdoptRef(new DataSegmentReader(std::move(data)));
 }
 
-PassRefPtr<SegmentReader> SegmentReader::CreateFromSkROBuffer(
+RefPtr<SegmentReader> SegmentReader::CreateFromSkROBuffer(
     sk_sp<SkROBuffer> buffer) {
   return AdoptRef(new ROBufferSegmentReader(std::move(buffer)));
 }

@@ -13,8 +13,8 @@
 namespace blink {
 namespace testing {
 
-static inline PassRefPtr<EffectPaintPropertyNode> CreateOpacityOnlyEffect(
-    PassRefPtr<const EffectPaintPropertyNode> parent,
+static inline RefPtr<EffectPaintPropertyNode> CreateOpacityOnlyEffect(
+    RefPtr<const EffectPaintPropertyNode> parent,
     float opacity) {
   RefPtr<TransformPaintPropertyNode> local_transform_space =
       const_cast<TransformPaintPropertyNode*>(parent->LocalTransformSpace());

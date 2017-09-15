@@ -29,7 +29,7 @@
 
 namespace blink {
 
-PassRefPtr<TransformOperation> Matrix3DTransformOperation::Blend(
+RefPtr<TransformOperation> Matrix3DTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
     bool blend_to_identity) {
@@ -52,7 +52,7 @@ PassRefPtr<TransformOperation> Matrix3DTransformOperation::Blend(
   return Matrix3DTransformOperation::Create(to_t);
 }
 
-PassRefPtr<TransformOperation> Matrix3DTransformOperation::Zoom(double factor) {
+RefPtr<TransformOperation> Matrix3DTransformOperation::Zoom(double factor) {
   TransformationMatrix result = matrix_;
   result.Zoom(factor);
   return Create(result);

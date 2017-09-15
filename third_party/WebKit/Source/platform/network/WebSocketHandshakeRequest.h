@@ -34,8 +34,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -45,13 +45,13 @@ class HTTPHeaderMap;
 class PLATFORM_EXPORT WebSocketHandshakeRequest final
     : public RefCounted<WebSocketHandshakeRequest> {
  public:
-  static PassRefPtr<WebSocketHandshakeRequest> Create(const KURL& url) {
+  static RefPtr<WebSocketHandshakeRequest> Create(const KURL& url) {
     return AdoptRef(new WebSocketHandshakeRequest(url));
   }
-  static PassRefPtr<WebSocketHandshakeRequest> Create() {
+  static RefPtr<WebSocketHandshakeRequest> Create() {
     return AdoptRef(new WebSocketHandshakeRequest);
   }
-  static PassRefPtr<WebSocketHandshakeRequest> Create(
+  static RefPtr<WebSocketHandshakeRequest> Create(
       const WebSocketHandshakeRequest& request) {
     return AdoptRef(new WebSocketHandshakeRequest(request));
   }

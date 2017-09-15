@@ -26,15 +26,15 @@
 #define SkewTransformOperation_h
 
 #include "platform/transforms/TransformOperation.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT SkewTransformOperation final : public TransformOperation {
  public:
-  static PassRefPtr<SkewTransformOperation> Create(double angle_x,
-                                                   double angle_y,
-                                                   OperationType type) {
+  static RefPtr<SkewTransformOperation> Create(double angle_x,
+                                               double angle_y,
+                                               OperationType type) {
     return AdoptRef(new SkewTransformOperation(angle_x, angle_y, type));
   }
 
@@ -58,10 +58,10 @@ class PLATFORM_EXPORT SkewTransformOperation final : public TransformOperation {
     transform.Skew(angle_x_, angle_y_);
   }
 
-  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
-                                       double progress,
-                                       bool blend_to_identity = false) override;
-  PassRefPtr<TransformOperation> Zoom(double factor) final { return this; }
+  RefPtr<TransformOperation> Blend(const TransformOperation* from,
+                                   double progress,
+                                   bool blend_to_identity = false) override;
+  RefPtr<TransformOperation> Zoom(double factor) final { return this; }
 
   SkewTransformOperation(double angle_x, double angle_y, OperationType type)
       : angle_x_(angle_x), angle_y_(angle_y), type_(type) {}

@@ -23,8 +23,8 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "ui/gfx/test/icc_profiles.h"
 
@@ -182,7 +182,7 @@ static double GetCurrentTime() {
 
 #endif
 
-PassRefPtr<SharedBuffer> ReadFile(const char* file_name) {
+RefPtr<SharedBuffer> ReadFile(const char* file_name) {
   FILE* fp = fopen(file_name, "rb");
   if (!fp) {
     fprintf(stderr, "Can't open file %s\n", file_name);

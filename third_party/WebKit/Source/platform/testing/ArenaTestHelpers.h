@@ -39,7 +39,7 @@ namespace ArenaTestHelpers {
 // been allocated.
 class TrackedAllocator final : public PODArena::FastMallocAllocator {
  public:
-  static PassRefPtr<TrackedAllocator> Create() {
+  static RefPtr<TrackedAllocator> Create() {
     return AdoptRef(new TrackedAllocator);
   }
 

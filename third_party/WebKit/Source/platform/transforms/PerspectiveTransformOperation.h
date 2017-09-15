@@ -33,7 +33,7 @@ namespace blink {
 class PLATFORM_EXPORT PerspectiveTransformOperation final
     : public TransformOperation {
  public:
-  static PassRefPtr<PerspectiveTransformOperation> Create(double p) {
+  static RefPtr<PerspectiveTransformOperation> Create(double p) {
     return AdoptRef(new PerspectiveTransformOperation(p));
   }
 
@@ -58,10 +58,10 @@ class PLATFORM_EXPORT PerspectiveTransformOperation final
     transform.ApplyPerspective(p_);
   }
 
-  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
-                                       double progress,
-                                       bool blend_to_identity = false) override;
-  PassRefPtr<TransformOperation> Zoom(double factor) final;
+  RefPtr<TransformOperation> Blend(const TransformOperation* from,
+                                   double progress,
+                                   bool blend_to_identity = false) override;
+  RefPtr<TransformOperation> Zoom(double factor) final;
 
   PerspectiveTransformOperation(double p) : p_(p) {}
 

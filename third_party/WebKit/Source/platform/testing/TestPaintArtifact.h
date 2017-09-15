@@ -12,7 +12,7 @@
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace cc {
@@ -47,16 +47,16 @@ class TestPaintArtifact {
   ~TestPaintArtifact();
 
   // Add to the artifact.
-  TestPaintArtifact& Chunk(PassRefPtr<const TransformPaintPropertyNode>,
-                           PassRefPtr<const ClipPaintPropertyNode>,
-                           PassRefPtr<const EffectPaintPropertyNode>);
+  TestPaintArtifact& Chunk(RefPtr<const TransformPaintPropertyNode>,
+                           RefPtr<const ClipPaintPropertyNode>,
+                           RefPtr<const EffectPaintPropertyNode>);
   TestPaintArtifact& Chunk(const PaintChunkProperties&);
   TestPaintArtifact& RectDrawing(const FloatRect& bounds, Color);
   TestPaintArtifact& ForeignLayer(const FloatPoint&,
                                   const IntSize&,
                                   scoped_refptr<cc::Layer>);
   TestPaintArtifact& ScrollHitTest(
-      PassRefPtr<const TransformPaintPropertyNode> scroll_offset);
+      RefPtr<const TransformPaintPropertyNode> scroll_offset);
   TestPaintArtifact& KnownToBeOpaque();
 
   // Can't add more things once this is called.

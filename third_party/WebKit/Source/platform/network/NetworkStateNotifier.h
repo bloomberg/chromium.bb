@@ -186,11 +186,10 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // before the observer or its execution context goes away. It's possible for
   // an observer to be called twice for the same event if it is first removed
   // and then added during notification.
-  void AddConnectionObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
-  void AddOnLineObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
-  void RemoveConnectionObserver(NetworkStateObserver*,
-                                PassRefPtr<WebTaskRunner>);
-  void RemoveOnLineObserver(NetworkStateObserver*, PassRefPtr<WebTaskRunner>);
+  void AddConnectionObserver(NetworkStateObserver*, RefPtr<WebTaskRunner>);
+  void AddOnLineObserver(NetworkStateObserver*, RefPtr<WebTaskRunner>);
+  void RemoveConnectionObserver(NetworkStateObserver*, RefPtr<WebTaskRunner>);
+  void RemoveOnLineObserver(NetworkStateObserver*, RefPtr<WebTaskRunner>);
 
   // Returns the randomization salt (weak and insecure) that should be used when
   // adding noise to the network quality metrics. This is known only to the
@@ -238,20 +237,20 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   void AddObserver(ObserverListMap&,
                    NetworkStateObserver*,
-                   PassRefPtr<WebTaskRunner>);
+                   RefPtr<WebTaskRunner>);
   void RemoveObserver(ObserverListMap&,
                       NetworkStateObserver*,
                       RefPtr<WebTaskRunner>);
 
   ObserverList* LockAndFindObserverList(ObserverListMap&,
-                                        PassRefPtr<WebTaskRunner>);
+                                        RefPtr<WebTaskRunner>);
 
   // Removed observers are nulled out in the list in case the list is being
   // iterated over. Once done iterating, call this to clean up nulled
   // observers.
   void CollectZeroedObservers(ObserverListMap&,
                               ObserverList*,
-                              PassRefPtr<WebTaskRunner>);
+                              RefPtr<WebTaskRunner>);
 
   mutable Mutex mutex_;
   NetworkState state_;

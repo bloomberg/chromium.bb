@@ -14,13 +14,13 @@
 
 namespace blink {
 
-PassRefPtr<SharedBuffer> ReadFile(const char* file_name) {
+RefPtr<SharedBuffer> ReadFile(const char* file_name) {
   String file_path = testing::BlinkRootDir();
   file_path.append(file_name);
   return testing::ReadFromFile(file_path);
 }
 
-PassRefPtr<SharedBuffer> ReadFile(const char* dir, const char* file_name) {
+RefPtr<SharedBuffer> ReadFile(const char* dir, const char* file_name) {
   StringBuilder file_path;
   file_path.Append(testing::BlinkRootDir());
   file_path.Append('/');

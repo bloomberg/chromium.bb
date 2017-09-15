@@ -91,7 +91,7 @@ class PLATFORM_EXPORT TransformOperations {
                            FloatBox* bounds) const;
   TransformOperations BlendByMatchingOperations(const TransformOperations& from,
                                                 const double& progress) const;
-  PassRefPtr<TransformOperation> BlendByUsingMatrixInterpolation(
+  RefPtr<TransformOperation> BlendByUsingMatrixInterpolation(
       const TransformOperations& from,
       double progress) const;
   TransformOperations Blend(const TransformOperations& from,

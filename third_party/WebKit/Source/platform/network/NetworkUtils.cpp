@@ -64,7 +64,7 @@ String GetDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
   return String(domain.data(), domain.length());
 }
 
-PassRefPtr<SharedBuffer> ParseDataURLAndPopulateResponse(
+RefPtr<SharedBuffer> ParseDataURLAndPopulateResponse(
     const KURL& url,
     ResourceResponse& response) {
   // The following code contains duplication of GetInfoFromDataURL() and

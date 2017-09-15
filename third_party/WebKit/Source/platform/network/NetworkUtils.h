@@ -30,7 +30,7 @@ PLATFORM_EXPORT String GetDomainAndRegistry(const String& host,
 
 // Returns the decoded data url as ResourceResponse and SharedBuffer
 // if url had a supported mimetype and parsing was successful.
-PLATFORM_EXPORT PassRefPtr<SharedBuffer> ParseDataURLAndPopulateResponse(
+PLATFORM_EXPORT RefPtr<SharedBuffer> ParseDataURLAndPopulateResponse(
     const KURL&,
     ResourceResponse&);
 

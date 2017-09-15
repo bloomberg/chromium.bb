@@ -33,16 +33,16 @@ namespace blink {
 class PLATFORM_EXPORT MatrixTransformOperation final
     : public TransformOperation {
  public:
-  static PassRefPtr<MatrixTransformOperation> Create(double a,
-                                                     double b,
-                                                     double c,
-                                                     double d,
-                                                     double e,
-                                                     double f) {
+  static RefPtr<MatrixTransformOperation> Create(double a,
+                                                 double b,
+                                                 double c,
+                                                 double d,
+                                                 double e,
+                                                 double f) {
     return AdoptRef(new MatrixTransformOperation(a, b, c, d, e, f));
   }
 
-  static PassRefPtr<MatrixTransformOperation> Create(
+  static RefPtr<MatrixTransformOperation> Create(
       const TransformationMatrix& t) {
     return AdoptRef(new MatrixTransformOperation(t));
   }
@@ -73,10 +73,10 @@ class PLATFORM_EXPORT MatrixTransformOperation final
     transform.Multiply(matrix);
   }
 
-  PassRefPtr<TransformOperation> Blend(const TransformOperation* from,
-                                       double progress,
-                                       bool blend_to_identity = false) override;
-  PassRefPtr<TransformOperation> Zoom(double factor) final;
+  RefPtr<TransformOperation> Blend(const TransformOperation* from,
+                                   double progress,
+                                   bool blend_to_identity = false) override;
+  RefPtr<TransformOperation> Zoom(double factor) final;
 
   MatrixTransformOperation(double a,
                            double b,

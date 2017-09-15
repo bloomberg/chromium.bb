@@ -40,7 +40,7 @@ namespace blink {
 class PLATFORM_EXPORT ArchiveResource final
     : public GarbageCollectedFinalized<ArchiveResource> {
  public:
-  static ArchiveResource* Create(PassRefPtr<SharedBuffer>,
+  static ArchiveResource* Create(RefPtr<SharedBuffer>,
                                  const KURL&,
                                  const String& content_id,
                                  const AtomicString& mime_type,
@@ -57,7 +57,7 @@ class PLATFORM_EXPORT ArchiveResource final
   DEFINE_INLINE_TRACE() {}
 
  private:
-  ArchiveResource(PassRefPtr<SharedBuffer>,
+  ArchiveResource(RefPtr<SharedBuffer>,
                   const KURL&,
                   const String& content_id,
                   const AtomicString& mime_type,
