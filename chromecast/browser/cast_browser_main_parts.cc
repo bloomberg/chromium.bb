@@ -255,9 +255,6 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
     // BrowserThreadsStarted).  The GPU process will be created as soon as a
     // renderer needs it, which always happens after main loop starts.
     {switches::kDisableGpuEarlyInit, ""},
-    // TODO(halliwell): Cast builds don't support ES3. Remove this switch when
-    // support is added (crbug.com/659395)
-    {switches::kDisableES3GLContext, ""},
     // Enable navigator.connection API.
     // TODO(derekjchow): Remove this switch when enabled by default.
     {switches::kEnableNetworkInformationDownlinkMax, ""},
