@@ -186,6 +186,10 @@ GLES2DecoderPassthroughImpl::EmulatedColorBuffer::EmulatedColorBuffer(
   GLuint color_buffer_texture = 0;
   glGenTextures(1, &color_buffer_texture);
   glBindTexture(GL_TEXTURE_2D, color_buffer_texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   texture = new TexturePassthrough(color_buffer_texture, GL_TEXTURE_2D);
 }
 
