@@ -121,8 +121,9 @@ public class LocationBarLayout extends FrameLayout
     private static final float VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD = 0.9f;
 
     private static final int OMNIBOX_RESULTS_BG_COLOR = 0xFFF5F5F6;
-    private static final int OMNIBOX_RESULTS_CHROME_HOME_MODERN_LAYOUT_BG_COLOR = 0xFFFFFFFF;
+    private static final int OMNIBOX_RESULTS_CHROME_HOME_MODERN_BG_COLOR = 0xFFFFFFFF;
     private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = 0xFF323232;
+    private static final int OMNIBOX_INCOGNITO_RESULTS_CHROME_HOME_MODERN_BG_COLOR = 0xFF505050;
 
     /**
      * URI schemes that ContentView can handle.
@@ -1711,11 +1712,14 @@ public class LocationBarLayout extends FrameLayout
      * @return The background for the omnibox suggestions popup.
      */
     protected Drawable getSuggestionPopupBackground() {
-        int omniboxResultsColorForNonIncognito =
-                FeatureUtilities.isChromeHomeModernEnabled() && mBottomSheet != null
-                ? OMNIBOX_RESULTS_CHROME_HOME_MODERN_LAYOUT_BG_COLOR
-                : OMNIBOX_RESULTS_BG_COLOR;
-        int color = mToolbarDataProvider.isIncognito() ? OMNIBOX_INCOGNITO_RESULTS_BG_COLOR
+        int omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_BG_COLOR;
+        int omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_BG_COLOR;
+        if (FeatureUtilities.isChromeHomeModernEnabled() && mBottomSheet != null) {
+            omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_CHROME_HOME_MODERN_BG_COLOR;
+            omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_CHROME_HOME_MODERN_BG_COLOR;
+        }
+
+        int color = mToolbarDataProvider.isIncognito() ? omniboxResultsColorForIncognito
                                                        : omniboxResultsColorForNonIncognito;
         if (!isHardwareAccelerated()) {
             // When HW acceleration is disabled, changing mSuggestionList' items somehow erases

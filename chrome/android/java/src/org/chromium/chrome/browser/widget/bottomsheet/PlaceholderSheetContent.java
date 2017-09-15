@@ -38,7 +38,7 @@ class PlaceholderSheetContent implements BottomSheet.BottomSheetContent {
     public void setIsIncognito(boolean isIncognito) {
         mIsIncongitoThemed = isIncognito;
 
-        int colorId = isIncognito ? R.color.incognito_primary_color : R.color.default_primary_color;
+        int colorId = isIncognito ? R.color.incognito_primary_color : R.color.modern_primary_color;
 
         mView.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(mView.getContext().getResources(), colorId));
