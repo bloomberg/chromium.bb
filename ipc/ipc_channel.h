@@ -254,26 +254,6 @@ class IPC_EXPORT Channel : public Sender {
 #endif
 
  protected:
-  // An OutputElement is a wrapper around a Message or raw buffer while it is
-  // waiting to be passed to the system's underlying IPC mechanism.
-  class OutputElement {
-   public:
-    // Takes ownership of message.
-    OutputElement(Message* message);
-    // Takes ownership of the buffer. |buffer| is freed via free(), so it
-    // must be malloced.
-    OutputElement(void* buffer, size_t length);
-    ~OutputElement();
-    size_t size() const { return message_ ? message_->size() : length_; }
-    const void* data() const { return message_ ? message_->data() : buffer_; }
-    Message* get_message() const { return message_.get(); }
-
-   private:
-    std::unique_ptr<Message> message_;
-    void* buffer_;
-    size_t length_;
-  };
-
   // Subclasses must call this method at the beginning of their implementation
   // of Connect().
   void WillConnect();
