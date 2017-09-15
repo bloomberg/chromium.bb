@@ -35,8 +35,8 @@
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/paint/PaintShader.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -58,13 +58,13 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
     kUnpremultiplied,
   };
 
-  static PassRefPtr<Gradient> CreateLinear(
+  static RefPtr<Gradient> CreateLinear(
       const FloatPoint& p0,
       const FloatPoint& p1,
       GradientSpreadMethod = kSpreadMethodPad,
       ColorInterpolation = ColorInterpolation::kUnpremultiplied);
 
-  static PassRefPtr<Gradient> CreateRadial(
+  static RefPtr<Gradient> CreateRadial(
       const FloatPoint& p0,
       float r0,
       const FloatPoint& p1,
@@ -73,7 +73,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
       GradientSpreadMethod = kSpreadMethodPad,
       ColorInterpolation = ColorInterpolation::kUnpremultiplied);
 
-  static PassRefPtr<Gradient> CreateConic(
+  static RefPtr<Gradient> CreateConic(
       const FloatPoint& position,
       float rotation,
       float start_angle,

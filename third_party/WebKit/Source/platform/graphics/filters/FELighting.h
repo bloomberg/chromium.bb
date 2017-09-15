@@ -52,7 +52,7 @@ class PLATFORM_EXPORT FELighting : public FilterEffect {
              float,
              float,
              float,
-             PassRefPtr<LightSource>);
+             RefPtr<LightSource>);
 
   LightingType lighting_type_;
   RefPtr<LightSource> light_source_;

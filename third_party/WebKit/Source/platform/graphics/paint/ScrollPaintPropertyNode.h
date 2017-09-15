@@ -37,8 +37,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // This node is really a sentinel, and does not represent a real scroll.
   static ScrollPaintPropertyNode* Root();
 
-  static PassRefPtr<ScrollPaintPropertyNode> Create(
-      PassRefPtr<const ScrollPaintPropertyNode> parent,
+  static RefPtr<ScrollPaintPropertyNode> Create(
+      RefPtr<const ScrollPaintPropertyNode> parent,
       const IntPoint& bounds_offset,
       const IntSize& container_bounds,
       const IntSize& bounds,
@@ -52,7 +52,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         main_thread_scrolling_reasons, compositor_element_id));
   }
 
-  bool Update(PassRefPtr<const ScrollPaintPropertyNode> parent,
+  bool Update(RefPtr<const ScrollPaintPropertyNode> parent,
               const IntPoint& bounds_offset,
               const IntSize& container_bounds,
               const IntSize& bounds,
@@ -119,7 +119,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a scroll node before it has been updated, to later detect changes.
-  PassRefPtr<ScrollPaintPropertyNode> Clone() const {
+  RefPtr<ScrollPaintPropertyNode> Clone() const {
     RefPtr<ScrollPaintPropertyNode> cloned =
         AdoptRef(new ScrollPaintPropertyNode(
             Parent(), bounds_offset_, container_bounds_, bounds_,
@@ -146,7 +146,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 
  private:
   ScrollPaintPropertyNode(
-      PassRefPtr<const ScrollPaintPropertyNode> parent,
+      RefPtr<const ScrollPaintPropertyNode> parent,
       IntPoint bounds_offset,
       IntSize container_bounds,
       IntSize bounds,

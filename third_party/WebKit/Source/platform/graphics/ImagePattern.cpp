@@ -13,12 +13,12 @@
 
 namespace blink {
 
-PassRefPtr<ImagePattern> ImagePattern::Create(PassRefPtr<Image> image,
-                                              RepeatMode repeat_mode) {
+RefPtr<ImagePattern> ImagePattern::Create(RefPtr<Image> image,
+                                          RepeatMode repeat_mode) {
   return AdoptRef(new ImagePattern(std::move(image), repeat_mode));
 }
 
-ImagePattern::ImagePattern(PassRefPtr<Image> image, RepeatMode repeat_mode)
+ImagePattern::ImagePattern(RefPtr<Image> image, RepeatMode repeat_mode)
     : Pattern(repeat_mode), tile_image_(image->PaintImageForCurrentFrame()) {
   previous_local_matrix_.setIdentity();
 }

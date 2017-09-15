@@ -52,8 +52,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   friend class GraphicsContext;
 
  public:
-  static PassRefPtr<BitmapImage> Create(ImageObserver* observer = 0,
-                                        bool is_multipart = false) {
+  static RefPtr<BitmapImage> Create(ImageObserver* observer = 0,
+                                    bool is_multipart = false) {
     return AdoptRef(new BitmapImage(observer, is_multipart));
   }
 
@@ -84,7 +84,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   ImageAnimationPolicy AnimationPolicy() override { return animation_policy_; }
   void AdvanceTime(double delta_time_in_seconds) override;
 
-  PassRefPtr<Image> ImageForDefaultFrame() override;
+  RefPtr<Image> ImageForDefaultFrame() override;
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
   bool CurrentFrameIsComplete() override;
@@ -136,7 +136,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   // some room in the image cache.
   void DestroyDecodedData() override;
 
-  PassRefPtr<SharedBuffer> Data() override;
+  RefPtr<SharedBuffer> Data() override;
 
   // Notifies observers that the memory footprint has changed.
   void NotifyMemoryChanged();

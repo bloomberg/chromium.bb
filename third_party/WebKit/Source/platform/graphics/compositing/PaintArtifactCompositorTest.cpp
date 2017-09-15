@@ -1922,7 +1922,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   EXPECT_TRUE(pending_layer.known_to_be_opaque);
 }
 
-PassRefPtr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
+RefPtr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
   CompositorElementId expected_compositor_element_id(2);
   float opacity = 2.0 / 255.0;
   return EffectPaintPropertyNode::Create(
@@ -1932,8 +1932,7 @@ PassRefPtr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
       kCompositingReasonActiveAnimation, expected_compositor_element_id);
 }
 
-PassRefPtr<TransformPaintPropertyNode>
-CreateSampleTransformNodeWithElementId() {
+RefPtr<TransformPaintPropertyNode> CreateSampleTransformNodeWithElementId() {
   CompositorElementId expected_compositor_element_id(3);
   return TransformPaintPropertyNode::Create(
       TransformPaintPropertyNode::Root(), TransformationMatrix().Rotate(90),
@@ -2444,7 +2443,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   }
 }
 
-PassRefPtr<EffectPaintPropertyNode> CreateEffectWithOpacityAndReason(
+RefPtr<EffectPaintPropertyNode> CreateEffectWithOpacityAndReason(
     float opacity,
     CompositingReasons reason,
     RefPtr<EffectPaintPropertyNode> parent = nullptr) {

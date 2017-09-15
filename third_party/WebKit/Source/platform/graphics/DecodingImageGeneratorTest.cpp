@@ -20,8 +20,8 @@ void PrepareReferenceData(char* buffer, size_t size) {
     buffer[i] = static_cast<char>(i);
 }
 
-PassRefPtr<SegmentReader> CreateSegmentReader(char* reference_data,
-                                              size_t data_length) {
+RefPtr<SegmentReader> CreateSegmentReader(char* reference_data,
+                                          size_t data_length) {
   PrepareReferenceData(reference_data, data_length);
   RefPtr<SharedBuffer> data = SharedBuffer::Create();
   data->Append(reference_data, data_length);

@@ -63,8 +63,8 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
 
   sk_sp<PaintImageGenerator> CreateGenerator(size_t index);
 
-  PassRefPtr<SharedBuffer> Data();
-  void SetData(PassRefPtr<SharedBuffer> data, bool all_data_received);
+  RefPtr<SharedBuffer> Data();
+  void SetData(RefPtr<SharedBuffer> data, bool all_data_received);
 
   bool IsSizeAvailable();
   bool HasEmbeddedColorSpace() const;

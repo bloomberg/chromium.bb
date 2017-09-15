@@ -136,7 +136,7 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
   return generator;
 }
 
-PassRefPtr<SharedBuffer> DeferredImageDecoder::Data() {
+RefPtr<SharedBuffer> DeferredImageDecoder::Data() {
   if (!rw_buffer_)
     return nullptr;
   sk_sp<SkROBuffer> ro_buffer(rw_buffer_->makeROBufferSnapshot());
@@ -148,7 +148,7 @@ PassRefPtr<SharedBuffer> DeferredImageDecoder::Data() {
   return shared_buffer;
 }
 
-void DeferredImageDecoder::SetData(PassRefPtr<SharedBuffer> data,
+void DeferredImageDecoder::SetData(RefPtr<SharedBuffer> data,
                                    bool all_data_received) {
   SetDataInternal(std::move(data), all_data_received, true);
 }

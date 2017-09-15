@@ -383,7 +383,7 @@ ImageFrame* ImageFrameGenerator::Decode(SegmentReader* data,
   // we have to do it before clearing SegmentReader.
   if (used_external_allocator)
     (*decoder)->SetMemoryAllocator(nullptr);
-  (*decoder)->SetData(PassRefPtr<SegmentReader>(nullptr),
+  (*decoder)->SetData(RefPtr<SegmentReader>(nullptr),
                       false);  // Unref SegmentReader from ImageDecoder.
   (*decoder)->ClearCacheExceptFrame(index);
 

@@ -23,13 +23,13 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
  public:
   ~AcceleratedStaticBitmapImage() override;
   // SkImage with a texture backing.
-  static PassRefPtr<AcceleratedStaticBitmapImage> CreateFromSkImage(
+  static RefPtr<AcceleratedStaticBitmapImage> CreateFromSkImage(
       sk_sp<SkImage>,
       WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
   // Can specify the GrContext that created the texture backing. Ideally all
   // callers would use this option. The |mailbox| is a name for the texture
   // backing, allowing other contexts to use the same backing.
-  static PassRefPtr<AcceleratedStaticBitmapImage> CreateFromWebGLContextImage(
+  static RefPtr<AcceleratedStaticBitmapImage> CreateFromWebGLContextImage(
       const gpu::Mailbox&,
       const gpu::SyncToken&,
       unsigned texture_id,

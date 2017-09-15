@@ -40,7 +40,7 @@ namespace {
 
 class TestImage : public Image {
  public:
-  static PassRefPtr<TestImage> Create(const IntSize& size, bool opaque) {
+  static RefPtr<TestImage> Create(const IntSize& size, bool opaque) {
     return AdoptRef(new TestImage(size, opaque));
   }
 

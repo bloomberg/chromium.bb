@@ -31,7 +31,6 @@
 #include "platform/image-decoders/SegmentReader.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
@@ -56,9 +55,9 @@ class PLATFORM_EXPORT DecodingImageGenerator final
   static std::unique_ptr<SkImageGenerator> CreateAsSkImageGenerator(
       sk_sp<SkData>);
 
-  static sk_sp<DecodingImageGenerator> Create(PassRefPtr<ImageFrameGenerator>,
+  static sk_sp<DecodingImageGenerator> Create(RefPtr<ImageFrameGenerator>,
                                               const SkImageInfo&,
-                                              PassRefPtr<SegmentReader>,
+                                              RefPtr<SegmentReader>,
                                               std::vector<FrameMetadata>,
                                               PaintImage::ContentId,
                                               bool all_data_received);
@@ -83,9 +82,9 @@ class PLATFORM_EXPORT DecodingImageGenerator final
   PaintImage::ContentId GetContentIdForFrame(size_t frame_index) const override;
 
  private:
-  DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>,
+  DecodingImageGenerator(RefPtr<ImageFrameGenerator>,
                          const SkImageInfo&,
-                         PassRefPtr<SegmentReader>,
+                         RefPtr<SegmentReader>,
                          std::vector<FrameMetadata>,
                          PaintImage::ContentId,
                          bool all_data_received);

@@ -37,7 +37,6 @@
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/WeakPtr.h"
@@ -74,7 +73,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
  public:
   virtual ~Image();
 
-  static PassRefPtr<Image> LoadPlatformResource(const char* name);
+  static RefPtr<Image> LoadPlatformResource(const char* name);
   static bool SupportsType(const String&);
 
   virtual bool IsSVGImage() const { return false; }
@@ -136,7 +135,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual void DestroyDecodedData() = 0;
 
-  virtual PassRefPtr<SharedBuffer> Data() { return encoded_image_data_; }
+  virtual RefPtr<SharedBuffer> Data() { return encoded_image_data_; }
 
   // Animation begins whenever someone draws the image, so startAnimation() is
   // not normally called. It will automatically pause once all observers no
@@ -173,7 +172,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   enum TileRule { kStretchTile, kRoundTile, kSpaceTile, kRepeatTile };
 
-  virtual PassRefPtr<Image> ImageForDefaultFrame();
+  virtual RefPtr<Image> ImageForDefaultFrame();
 
   virtual PaintImage PaintImageForCurrentFrame() = 0;
 

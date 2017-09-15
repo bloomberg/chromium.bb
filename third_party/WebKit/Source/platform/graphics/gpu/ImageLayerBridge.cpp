@@ -34,7 +34,7 @@ ImageLayerBridge::~ImageLayerBridge() {
     Dispose();
 }
 
-void ImageLayerBridge::SetImage(PassRefPtr<StaticBitmapImage> image) {
+void ImageLayerBridge::SetImage(RefPtr<StaticBitmapImage> image) {
   image_ = std::move(image);
   if (image_) {
     if (opacity_mode_ == kNonOpaque) {
