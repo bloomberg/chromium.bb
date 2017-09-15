@@ -164,7 +164,7 @@ TEST_F(SQLiteFeaturesTest, ForeignKeySupport) {
   EXPECT_EQ("", ExecuteWithResult(&db(), kSelectChildren));
 }
 
-#if defined(MOJO_APPTEST_IMPL) || defined(OS_IOS) || defined(OS_FUCHSIA)
+#if defined(OS_IOS) || defined(OS_FUCHSIA)
 // If the platform cannot support SQLite mmap'ed I/O, make sure SQLite isn't
 // offering to support it.
 TEST_F(SQLiteFeaturesTest, NoMmap) {
@@ -190,9 +190,9 @@ TEST_F(SQLiteFeaturesTest, NoMmap) {
   sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
   ASSERT_TRUE(!s.Step() || !s.ColumnInt64(0));
 }
-#endif
+#endif  // defined(OS_IOS) || defined(OS_FUCHSIA)
 
-#if !defined(MOJO_APPTEST_IMPL) && !defined(OS_FUCHSIA)
+#if !defined(OS_FUCHSIA)
 // Verify that OS file writes are reflected in the memory mapping of a
 // memory-mapped file.  Normally SQLite writes to memory-mapped files using
 // memcpy(), which should stay consistent.  Our SQLite is slightly patched to
@@ -281,7 +281,7 @@ TEST_F(SQLiteFeaturesTest, Mmap) {
     ASSERT_EQ('4', m.data()[kOffset]);
   }
 }
-#endif
+#endif  // !defined(OS_FUCHSIA)
 
 // Verify that http://crbug.com/248608 is fixed.  In this bug, the
 // compiled regular expression is effectively cached with the prepared

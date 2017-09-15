@@ -69,17 +69,6 @@ static_library("test_support") {
   ]
 }
 
-source_set("redirection_header") {
-  # This target exists because we need a way to switch between
-  # "test/sql_test_base.h" and "mojo/sql_test_base.h" at compile time, to allow
-  # us to switch out the gtest vs mojo:apptest frameworks.
-  check_includes = false
-
-  sources = [
-    "correct_sql_test_base.h",
-  ]
-}
-
 bundle_data("sql_unittests_bundle_data") {
   testonly = true
   sources = [
@@ -117,7 +106,6 @@ test("sql_unittests") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
-    ":redirection_header",
     ":sql",
     ":sql_unittests_bundle_data",
     ":test_support",

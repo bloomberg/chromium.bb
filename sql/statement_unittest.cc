@@ -8,10 +8,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "sql/connection.h"
-#include "sql/correct_sql_test_base.h"
 #include "sql/statement.h"
 #include "sql/test/error_callback_support.h"
 #include "sql/test/scoped_error_expecter.h"
+#include "sql/test/sql_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
