@@ -30,9 +30,6 @@ class ServiceWorkerRegisterJobBase {
   // URL; unregistration jobs are equal if they are for the same pattern.
   virtual bool Equals(ServiceWorkerRegisterJobBase* job) const = 0;
 
-  // Returns the time the job started.
-  virtual base::TimeTicks StartTime() const = 0;
-
   // Returns the type of this job.
   virtual RegistrationJobType GetType() const = 0;
 };

@@ -200,13 +200,6 @@ class ServiceWorkerJobTest : public testing::Test {
   ServiceWorkerJobCoordinator* job_coordinator() const {
     return context()->job_coordinator();
   }
-  std::map<GURL, ServiceWorkerJobCoordinator::JobQueue>* job_queues() const {
-    return &(job_coordinator()->job_queues_);
-  }
-  bool is_job_timer_running() {
-    return job_coordinator()->job_timeout_timer_.IsRunning();
-  }
-
   ServiceWorkerStorage* storage() const { return context()->storage(); }
 
  protected:
@@ -221,7 +214,6 @@ class ServiceWorkerJobTest : public testing::Test {
       const GURL& pattern,
       ServiceWorkerStatusCode expected_status = SERVICE_WORKER_OK);
   std::unique_ptr<ServiceWorkerProviderHost> CreateControllee();
-  void TimeOutFirstJob();
 
   TestBrowserThreadBundle browser_thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
@@ -237,11 +229,9 @@ scoped_refptr<ServiceWorkerRegistration> ServiceWorkerJobTest::RunRegisterJob(
   job_coordinator()->Register(
       script_url, blink::mojom::ServiceWorkerRegistrationOptions(pattern),
       nullptr, SaveRegistration(expected_status, &called, &registration));
-  EXPECT_TRUE(is_job_timer_running());
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-  EXPECT_FALSE(is_job_timer_running());
   return registration;
 }
 
@@ -280,14 +270,6 @@ ServiceWorkerJobTest::CreateControllee() {
       true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
       &remote_endpoints_.back());
   return host;
-}
-
-void ServiceWorkerJobTest::TimeOutFirstJob() {
-  ServiceWorkerRegisterJob* job = static_cast<ServiceWorkerRegisterJob*>(
-      job_queues()->begin()->second.front());
-  base::TimeDelta duration = base::TimeDelta::FromMinutes(30);
-  job->set_start_time_for_test(base::TimeTicks::Now() - duration);
-  job_coordinator()->MaybeTimeoutJobs();
 }
 
 TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
@@ -415,45 +397,6 @@ TEST_F(ServiceWorkerJobTest, Register) {
   EXPECT_EQ(valid_scope_2, version_->foreign_fetch_scopes_[1]);
   EXPECT_EQ(1u, version_->foreign_fetch_origins_.size());
   EXPECT_EQ(valid_origin, version_->foreign_fetch_origins_[0]);
-}
-
-// Make sure job timeout timer is working.
-TEST_F(ServiceWorkerJobTest, RegistrationTimeout) {
-  bool called1;
-  scoped_refptr<ServiceWorkerRegistration> registration1;
-  job_coordinator()->Register(
-      GURL("http://www.example.com/service_worker.js"),
-      blink::mojom::ServiceWorkerRegistrationOptions(
-          GURL("http://www.example.com/one/")),
-      nullptr,
-      SaveRegistration(SERVICE_WORKER_ERROR_ABORT, &called1, &registration1));
-
-  bool called2;
-  scoped_refptr<ServiceWorkerRegistration> registration2;
-  job_coordinator()->Register(
-      GURL("http://www.example.com/service_worker.js"),
-      blink::mojom::ServiceWorkerRegistrationOptions(
-          GURL("http://www.example.com/two/")),
-      nullptr,
-      SaveRegistration(SERVICE_WORKER_ERROR_ABORT, &called2, &registration2));
-
-  EXPECT_EQ(2u, job_queues()->size());
-  EXPECT_FALSE(called1);
-  EXPECT_FALSE(called2);
-
-  // Timeout the first job. The timer should still be running.
-  TimeOutFirstJob();
-  EXPECT_EQ(1u, job_queues()->size());
-  EXPECT_TRUE(called1);
-  EXPECT_FALSE(called2);
-  EXPECT_TRUE(is_job_timer_running());
-
-  // Timeout the second job. The queue should be empty and the timer should be
-  // stopped.
-  TimeOutFirstJob();
-  EXPECT_TRUE(called2);
-  EXPECT_TRUE(job_queues()->empty());
-  EXPECT_FALSE(is_job_timer_running());
 }
 
 // Make sure registrations are cleaned up when they are unregistered.
