@@ -22,6 +22,15 @@ test(() => {
 }, "Create data pipe");
 
 test(() => {
+  assert_equals(Mojo.createDataPipe({}).result, Mojo.RESULT_INVALID_ARGUMENT);
+  assert_equals(Mojo.createDataPipe({elementNumBytes: kElementNumBytes}).result,
+                Mojo.RESULT_INVALID_ARGUMENT);
+  assert_equals(
+      Mojo.createDataPipe({capacityNumBytes: kCapacityNumBytes}).result,
+      Mojo.RESULT_INVALID_ARGUMENT);
+})
+
+test(() => {
   let {producer, consumer} = createDataPipe();
   let data = new Uint8Array(kCapacityNumBytes);
 
