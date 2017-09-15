@@ -1081,6 +1081,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
               initWithString:bookmark_utils_ios::TitleForBookmarkNode(_rootNode)
                   attributes:titleAttributes]];
   [titleView sizeToFit];
+  // iOS11 navigation bar uses auto layout, hence explicitly set this to NO.
+  titleView.translatesAutoresizingMaskIntoConstraints = NO;
   self.navigationItem.leftItemsSupplementBackButton = YES;
   return [[UIBarButtonItem alloc] initWithCustomView:titleView];
 }
@@ -1098,6 +1100,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     NSFontAttributeName : [MDCTypography buttonFont]
   };
   [doneButton setTitleTextAttributes:attributes forState:UIControlStateNormal];
+  // iOS11 bug requires us to set the text attribute for every state used.
+  // See http://www.openradar.me/34276265.
+  [doneButton setTitleTextAttributes:attributes
+                            forState:UIControlStateSelected];
   doneButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
   return doneButton;
