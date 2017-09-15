@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "EditingStyleUtilities.h"
+#include "core/editing/EditingStyleUtilities.h"
 
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSColorValue.h"

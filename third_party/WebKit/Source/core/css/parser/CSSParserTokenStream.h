@@ -5,8 +5,8 @@
 #ifndef CSSParserTokenStream_h
 #define CSSParserTokenStream_h
 
-#include "CSSTokenizer.h"
 #include "core/css/parser/CSSParserTokenRange.h"
+#include "core/css/parser/CSSTokenizer.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {

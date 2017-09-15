@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "StorageQuotaClient.h"
+#include "modules/quota/StorageQuotaClient.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
