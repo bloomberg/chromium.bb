@@ -14,13 +14,13 @@ libFuzzer is an in-process coverage-driven evolutionary fuzzer. It helps
 engineers to uncover potential security & stability problems earlier.
 
 *** note
-**Requirements:** libFuzzer in Chrome is supported with GN on Linux only. 
+**Requirements:** libFuzzer in Chrome is supported with GN on Linux only.
 Check [Reference] for experimental platform availability.
 ***
 
 ## Integration Status
 
-Fuzzer tests are well-integrated with Chrome build system & distributed 
+Fuzzer tests are well-integrated with Chrome build system & distributed
 ClusterFuzz fuzzing system. Cover bug: [crbug.com/539572].
 
 ## Documentation
@@ -29,12 +29,14 @@ ClusterFuzz fuzzing system. Cover bug: [crbug.com/539572].
 your fuzzer and submit it to ClusterFuzz.
 * [Efficient Fuzzer Guide] explains how to measure fuzzer effectiveness and
 ways to improve it.
-* [ClusterFuzz Integration] describes integration between ClusterFuzz and 
+* [Guide to libprotobuf-mutator] walks through the steps necessary to create a
+fuzzer that libFuzzer gives mutated protobufs to as input (for developers
+already familiar with libFuzzer).
+* [ClusterFuzz Integration] describes integration between ClusterFuzz and
 libFuzzer.
 * [Reproducing] contains information on how to reproduce bugs reported by
   ClusterFuzz.
 * [Reference] contains detailed references for different integration parts.
-
 
 ## Trophies
 * [ClusterFuzz Bugs] - issues found and automatically filed by ClusterFuzz.
@@ -54,6 +56,7 @@ libFuzzer.
 [Cover Bug]: https://bugs.chromium.org/p/chromium/issues/detail?id=539572
 [Getting Started Guide]: getting_started.md
 [Efficient Fuzzer Guide]: efficient_fuzzer.md
+[Guide to libprotobuf-mutator]: libprotobuf-mutator.md
 [ClusterFuzz Integration]: clusterfuzz.md
 [Reproducing]: reproducing.md
 [Reference]: reference.md
