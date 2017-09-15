@@ -178,11 +178,14 @@ bool ContextMenuMatcher::IsCommandIdVisible(int command_id) const {
   // top-level menu item is not added to the context menu, so checking its
   // visibility is a special case handled below. This top-level menu item should
   // always be displayed.
-  if (command_id == IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST && !item)
+  if (!item && command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return true;
-  if (!item)
+  } else if (item) {
+    return item->visible();
+  } else {
     return false;
-  return item->visible();
+  }
 }
 
 bool ContextMenuMatcher::IsCommandIdEnabled(int command_id) const {
