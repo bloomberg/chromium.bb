@@ -1125,6 +1125,7 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
   EXPECT_NE(kResourceId, entry->file_id());
   EXPECT_EQ("new title", entry->title());
   EXPECT_EQ(modified_date_utc, entry->modified_date());
+  EXPECT_EQ(modified_date_utc, entry->modified_by_me_date());
   EXPECT_TRUE(HasParent(entry->file_id(), kParentResourceId));
   // Should be incremented as a new hosted document was created.
   EXPECT_EQ(old_largest_change_id + 1,
@@ -1225,6 +1226,7 @@ TEST_F(FakeDriveServiceTest, UpdateResource) {
   EXPECT_EQ(kResourceId, entry->file_id());
   EXPECT_EQ("new title", entry->title());
   EXPECT_EQ(modified_date_utc, entry->modified_date());
+  EXPECT_EQ(modified_date_utc, entry->modified_by_me_date());
   EXPECT_EQ(viewed_date_utc, entry->last_viewed_by_me_date());
   EXPECT_TRUE(HasParent(kResourceId, kParentResourceId));
   // Should be incremented as a new hosted document was created.
@@ -2180,6 +2182,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_ExistingFile) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(entry);
   EXPECT_EQ(time, entry->modified_date());
+  EXPECT_EQ(time, entry->modified_by_me_date());
 }
 
 TEST_F(FakeDriveServiceTest, SetLastModifiedTime_NonexistingFile) {

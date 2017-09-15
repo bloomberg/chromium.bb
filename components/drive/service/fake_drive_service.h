@@ -406,7 +406,7 @@ class FakeDriveService : public DriveServiceInterface {
       team_drive_value_;
 
   std::map<GURL, UploadSession> upload_sessions_;
-  int64_t published_date_seq_;
+  int64_t date_seq_;
   int64_t next_upload_sequence_number_;
   int default_max_results_;
   int resource_id_count_;

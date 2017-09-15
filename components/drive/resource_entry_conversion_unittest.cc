@@ -41,6 +41,8 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
   file_resource.set_created_date(GetTestTime());
   file_resource.set_modified_date(
       GetTestTime() + base::TimeDelta::FromSeconds(10));
+  file_resource.set_modified_by_me_date(GetTestTime() +
+                                        base::TimeDelta::FromSeconds(5));
   file_resource.set_mime_type("audio/mpeg");
   file_resource.set_alternate_link(GURL("https://file_link_alternate"));
   file_resource.set_file_size(892721);
@@ -63,6 +65,8 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
 
   EXPECT_EQ(file_resource.modified_date().ToInternalValue(),
             entry.file_info().last_modified());
+  EXPECT_EQ(file_resource.modified_by_me_date().ToInternalValue(),
+            entry.last_modified_by_me());
   // Last accessed value equal to 0 means that the file has never been viewed.
   EXPECT_EQ(0, entry.file_info().last_accessed());
   EXPECT_EQ(file_resource.created_date().ToInternalValue(),
@@ -88,6 +92,8 @@ TEST(ResourceEntryConversionTest,
   file_resource.set_created_date(GetTestTime());
   file_resource.set_modified_date(
       GetTestTime() + base::TimeDelta::FromSeconds(10));
+  file_resource.set_modified_by_me_date(GetTestTime() +
+                                        base::TimeDelta::FromSeconds(5));
   file_resource.set_last_viewed_by_me_date(
       GetTestTime() + base::TimeDelta::FromSeconds(20));
   file_resource.set_mime_type(util::kGoogleDocumentMimeType);
@@ -113,6 +119,8 @@ TEST(ResourceEntryConversionTest,
 
   EXPECT_EQ(file_resource.modified_date().ToInternalValue(),
             entry.file_info().last_modified());
+  EXPECT_EQ(file_resource.modified_by_me_date().ToInternalValue(),
+            entry.last_modified_by_me());
   EXPECT_EQ(file_resource.last_viewed_by_me_date().ToInternalValue(),
             entry.file_info().last_accessed());
   EXPECT_EQ(file_resource.created_date().ToInternalValue(),
@@ -137,6 +145,8 @@ TEST(ResourceEntryConversionTest,
   file_resource.set_created_date(GetTestTime());
   file_resource.set_modified_date(
       GetTestTime() + base::TimeDelta::FromSeconds(10));
+  file_resource.set_modified_by_me_date(GetTestTime() +
+                                        base::TimeDelta::FromSeconds(5));
   file_resource.set_last_viewed_by_me_date(
       GetTestTime() + base::TimeDelta::FromSeconds(20));
   file_resource.set_mime_type(util::kDriveFolderMimeType);
@@ -164,6 +174,8 @@ TEST(ResourceEntryConversionTest,
 
   EXPECT_EQ(file_resource.modified_date().ToInternalValue(),
             entry.file_info().last_modified());
+  EXPECT_EQ(file_resource.modified_by_me_date().ToInternalValue(),
+            entry.last_modified_by_me());
   EXPECT_EQ(file_resource.last_viewed_by_me_date().ToInternalValue(),
             entry.file_info().last_accessed());
   EXPECT_EQ(file_resource.created_date().ToInternalValue(),
@@ -180,6 +192,8 @@ TEST(ResourceEntryConversionTest,
   file_resource.set_created_date(GetTestTime());
   file_resource.set_modified_date(
       GetTestTime() + base::TimeDelta::FromSeconds(10));
+  file_resource.set_modified_by_me_date(GetTestTime() +
+                                        base::TimeDelta::FromSeconds(5));
   file_resource.set_last_viewed_by_me_date(
       GetTestTime() + base::TimeDelta::FromSeconds(20));
   file_resource.set_mime_type(util::kGoogleDocumentMimeType);
@@ -203,6 +217,8 @@ TEST(ResourceEntryConversionTest,
 
   EXPECT_EQ(file_resource.modified_date().ToInternalValue(),
             entry.file_info().last_modified());
+  EXPECT_EQ(file_resource.modified_by_me_date().ToInternalValue(),
+            entry.last_modified_by_me());
   EXPECT_EQ(file_resource.last_viewed_by_me_date().ToInternalValue(),
             entry.file_info().last_accessed());
   EXPECT_EQ(file_resource.created_date().ToInternalValue(),

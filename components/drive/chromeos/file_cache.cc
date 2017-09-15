@@ -921,8 +921,9 @@ void FileCache::CloseForWrite(const std::string& id) {
                << FileErrorToString(error);
     return;
   }
-  entry.mutable_file_info()->set_last_modified(
-      base::Time::Now().ToInternalValue());
+  int64_t now = base::Time::Now().ToInternalValue();
+  entry.mutable_file_info()->set_last_modified(now);
+  entry.set_last_modified_by_me(now);
   error = storage_->PutEntry(entry);
   if (error != FILE_ERROR_OK) {
     LOG(ERROR) << "Failed to put entry: " << id << ", "

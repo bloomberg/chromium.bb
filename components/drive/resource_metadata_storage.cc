@@ -249,7 +249,7 @@ bool ResourceMetadataStorage::UpgradeOldDB(
     const base::FilePath& directory_path) {
   base::ThreadRestrictions::AssertIOAllowed();
   static_assert(
-      kDBVersion == 14,
+      kDBVersion == 15,
       "database version and this function must be updated at the same time");
 
   const base::FilePath resource_map_path =
@@ -521,6 +521,16 @@ bool ResourceMetadataStorage::UpgradeOldDB(
       return false;
     batch.Put(GetHeaderDBKey(), serialized_header);
 
+    return resource_map->Write(leveldb::WriteOptions(), &batch).ok();
+  } else if (header.version() < 15) {
+    // Just need to clear largest_changestamp.
+    // Put header with the latest version number.
+    std::string serialized_header;
+    if (!GetDefaultHeaderEntry().SerializeToString(&serialized_header))
+      return false;
+
+    leveldb::WriteBatch batch;
+    batch.Put(GetHeaderDBKey(), serialized_header);
     return resource_map->Write(leveldb::WriteOptions(), &batch).ok();
   }
 

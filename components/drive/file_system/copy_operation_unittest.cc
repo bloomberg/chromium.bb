@@ -432,8 +432,13 @@ TEST_F(CopyOperationTest, PreserveLastModified) {
   ResourceEntry entry2;
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(src_path, &entry));
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &entry2));
+
+  EXPECT_NE(entry.file_info().last_modified(), entry.last_modified_by_me());
   EXPECT_EQ(entry.file_info().last_modified(),
             entry2.file_info().last_modified());
+  // Even with preserve_last_modified enabled, last_modified_by_me is forced to
+  // the same value as last_modified.
+  EXPECT_EQ(entry.file_info().last_modified(), entry2.last_modified_by_me());
 }
 
 TEST_F(CopyOperationTest, WaitForSyncComplete) {

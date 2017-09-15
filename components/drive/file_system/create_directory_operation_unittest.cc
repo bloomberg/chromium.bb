@@ -61,6 +61,8 @@ TEST_F(CreateDirectoryOperationTest, CreateDirectory) {
   EXPECT_TRUE(entry.file_info().is_directory());
   EXPECT_FALSE(base::Time::FromInternalValue(
       entry.file_info().last_modified()).is_null());
+  EXPECT_FALSE(
+      base::Time::FromInternalValue(entry.last_modified_by_me()).is_null());
   EXPECT_FALSE(base::Time::FromInternalValue(
       entry.file_info().last_accessed()).is_null());
   EXPECT_EQ(1U, delegate()->updated_local_ids().size());

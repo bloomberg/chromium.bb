@@ -558,6 +558,7 @@ TEST_F(FileSystemTest, TouchFile) {
   ASSERT_TRUE(server_entry);
   EXPECT_EQ(last_accessed, server_entry->last_viewed_by_me_date());
   EXPECT_EQ(last_modified, server_entry->modified_date());
+  EXPECT_EQ(last_modified, server_entry->modified_by_me_date());
 }
 
 TEST_F(FileSystemTest, TruncateFile) {

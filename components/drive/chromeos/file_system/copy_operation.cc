@@ -125,15 +125,25 @@ FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
   // Copy locally.
   ResourceEntry entry;
   const int64_t now = base::Time::Now().ToInternalValue();
+  const int64_t last_modified =
+      params->preserve_last_modified
+          ? params->src_entry.file_info().last_modified()
+          : now;
   entry.set_title(params->dest_file_path.BaseName().AsUTF8Unsafe());
   entry.set_parent_local_id(params->parent_entry.local_id());
   entry.mutable_file_specific_info()->set_content_mime_type(
       params->src_entry.file_specific_info().content_mime_type());
   entry.set_metadata_edit_state(ResourceEntry::DIRTY);
   entry.set_modification_date(base::Time::Now().ToInternalValue());
-  entry.mutable_file_info()->set_last_modified(
-      params->preserve_last_modified ?
-      params->src_entry.file_info().last_modified() : now);
+  entry.mutable_file_info()->set_last_modified(last_modified);
+  // preserve_last_modified=true preserves last_modified only.
+  // Regardless of preserve_last_modified's value, last_modified_by_me is
+  // always set to the same value as last_modified.
+  // This means that, even if preserve_last_modified=true, last_modified_by_me
+  // of the new file may differ from that of the original file.
+  // This behavior is due to the limitation in Drive API that we can not
+  // set different timestamps to last_modified and last_modified_by_me.
+  entry.set_last_modified_by_me(last_modified);
   entry.mutable_file_info()->set_last_accessed(now);
 
   std::string local_id;

@@ -149,12 +149,17 @@ std::string FormatEntry(const base::FilePath& path,
 
   const base::Time last_modified = base::Time::FromInternalValue(
       file_info.last_modified());
+  const base::Time last_modified_by_me =
+      base::Time::FromInternalValue(entry.last_modified_by_me());
   const base::Time last_accessed = base::Time::FromInternalValue(
       file_info.last_accessed());
   const base::Time creation_time = base::Time::FromInternalValue(
       file_info.creation_time());
   StringAppendF(&out, "    last_modified: %s\n",
                 google_apis::util::FormatTimeAsString(last_modified).c_str());
+  StringAppendF(
+      &out, "    last_modified_by_me: %s\n",
+      google_apis::util::FormatTimeAsString(last_modified_by_me).c_str());
   StringAppendF(&out, "    last_accessed: %s\n",
                 google_apis::util::FormatTimeAsString(last_accessed).c_str());
   StringAppendF(&out, "    creation_time: %s\n",
