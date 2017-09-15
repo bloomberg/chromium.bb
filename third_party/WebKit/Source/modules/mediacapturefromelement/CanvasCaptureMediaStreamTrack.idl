@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/mediacapture-fromelement/#the-canvascapturemediastreamtrack
-[
-    RuntimeEnabled=MediaCaptureFromCanvas
-] interface CanvasCaptureMediaStreamTrack : MediaStreamTrack {
+interface CanvasCaptureMediaStreamTrack : MediaStreamTrack {
     readonly attribute HTMLCanvasElement canvas;
     void requestFrame ();
 };
