@@ -45,7 +45,9 @@ class PackageVersionIntervalEndpoint:
 
 
 class PackageVersionInterval:
-  def __init__(self, start, end):
+  def __init__(self, string_rep, package, start, end):
+    self.string_rep = string_rep
+    self.package = package
     self.start = start
     self.end = end
 
@@ -65,30 +67,58 @@ class PackageVersionInterval:
     return True
 
   def intersect(self, other):
-    return PackageVersionInterval(self.start._intersect(other.start, True),
-                                  self.end._intersect(other.end, False))
+    return PackageVersionInterval(
+        '', '', self.start._intersect(other.start, True),
+        self.end._intersect(other.end, False))
+
+  def implies(self, other):
+    if self.package != other.package:
+      return False
+    return self.intersect(other) == self
 
   def __str__(self):
-    return 'PackageVersionInterval(%s, %s)' % (str(self.start), str(self.end))
+    return 'PackageVersionInterval(%s)' % self.string_rep
 
   def __eq__(self, other):
     return self.start == other.start and self.end == other.end
 
 
-def version_interval_from_exp(op, version):
+class PackageVersionIntervalSet:
+  def __init__(self, intervals):
+    self.intervals = intervals
+
+  def formatted(self):
+    return ' | '.join([interval.string_rep for interval in self.intervals])
+
+  def _interval_implies_other_intervals(self, interval, other_intervals):
+    for other_interval in other_intervals:
+      if interval.implies(other_interval):
+        return True
+    return False
+
+  def implies(self, other):
+    # This disjunction implies |other| if every term in this
+    # disjunction implies some term in |other|.
+    for interval in self.intervals:
+      if not self._interval_implies_other_intervals(interval, other.intervals):
+        return False
+    return True
+
+
+def version_interval_endpoints_from_exp(op, version):
   open_endpoint = PackageVersionIntervalEndpoint(True, None, None)
   inclusive_endpoint = PackageVersionIntervalEndpoint(False, True, version)
   exclusive_endpoint = PackageVersionIntervalEndpoint(False, False, version)
   if op == '>=':
-    return PackageVersionInterval(inclusive_endpoint, open_endpoint)
+    return (inclusive_endpoint, open_endpoint)
   if op == '<=':
-    return PackageVersionInterval(open_endpoint, inclusive_endpoint)
+    return (open_endpoint, inclusive_endpoint)
   if op == '>>' or op == '>':
-    return PackageVersionInterval(exclusive_endpoint, open_endpoint)
+    return (exclusive_endpoint, open_endpoint)
   if op == '<<' or op == '<':
-    return PackageVersionInterval(open_endpoing, exclusive_endpoint)
+    return (open_endpoing, exclusive_endpoint)
   assert op == '='
-  return PackageVersionInterval(inclusive_endpoint, inclusive_endpoint)
+  return (inclusive_endpoint, inclusive_endpoint)
 
 
 def parse_dep(dep):
@@ -98,55 +128,33 @@ def parse_dep(dep):
       dep: A string of the format "package (op version)"
 
   Returns:
-      A tuple of the form (package_string, PackageVersionInterval)
+      A PackageVersionInterval.
   """
   package_name_regex = '[a-z][a-z0-9\+\-\.]+'
   match = re.match('^(%s)$' % package_name_regex, dep)
   if match:
-    return (match.group(1), PackageVersionInterval(
+    return PackageVersionInterval(dep, match.group(1),
         PackageVersionIntervalEndpoint(True, None, None),
-        PackageVersionIntervalEndpoint(True, None, None)))
+        PackageVersionIntervalEndpoint(True, None, None))
   match = re.match('^(%s) \(([\>\=\<]+) ([\~0-9A-Za-z\+\-\.\:]+)\)$' %
                    package_name_regex, dep)
   if match:
-    return (match.group(1), version_interval_from_exp(
-        match.group(2), deb_version.DebVersion(match.group(3))))
-  # At the time of writing this script, Chrome does not have any
-  # complex version requirements like 'version >> 3 | version << 2'.
-  print ('Conjunctions and disjunctions in package version requirements are ' +
-         'not implemented at this time.')
+    (start, end) = version_interval_endpoints_from_exp(
+        match.group(2), deb_version.DebVersion(match.group(3)))
+    return PackageVersionInterval(dep, match.group(1), start, end)
+  print >> sys.stderr, 'Failed to parse ' + dep
   sys.exit(1)
 
 
-def format_package_intervals(m):
-  """Formats package versions suitable for use by dpkg-deb.
+def parse_interval_set(deps):
+  """Parses a disjunction of package version requirements.
 
   Args:
-      m: A map from package names to PackageVersionInterval's
+      deps: A string of the format
+          "package \(op version\) (| package \(op version\))*"
 
   Returns:
-      A formatted string of package-versions for use by dpkg-deb.  Ex:
-          package1 (< left_endpoint1)
-          package1 (>= right_endpoint1)
-          package2 (< left_endpoint2)
-          package2 (>= right_endpoint2)
+      A list of PackageVersionIntervals
   """
-  lines = []
-  for package in m:
-    interval = m[package]
-    if interval.start._is_open and interval.end._is_open:
-      lines.append(package + '\n')
-    elif (not interval.start._is_open and not interval.end._is_open and
-          interval.start._version == interval.end._version):
-      assert interval.start._is_inclusive and interval.end._is_inclusive
-      lines.append(package + ' (= ' + str(interval.start._version) + ')\n')
-    else:
-      if not interval.start._is_open:
-        op = '>=' if interval.start._is_inclusive else '>>'
-        lines.append(package + ' (' + op + ' ' +
-                     str(interval.start._version) +')\n')
-      if not interval.end._is_open:
-        op = '<=' if interval.end._is_inclusive else '<<'
-        lines.append(package + ' (' + op + ' ' +
-                     str(interval.end._version) + ')\n')
-  return ''.join(sorted(lines))
+  return PackageVersionIntervalSet(
+      [parse_dep(dep.strip()) for dep in deps.split('|')])

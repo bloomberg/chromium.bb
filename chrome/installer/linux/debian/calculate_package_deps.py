@@ -50,11 +50,10 @@ if exit_code != 0:
 
 deps_str = stdout.replace('shlibs:Depends=', '').replace('\n', '')
 deps = deps_str.split(', ')
-package_intervals = {}
+interval_sets = []
 if deps_str != '':
   for dep in deps:
-    (package, interval) = package_version_interval.parse_dep(dep)
-    package_intervals[package] = interval
+    interval_sets.append(package_version_interval.parse_interval_set(dep))
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 deps_file = os.path.join(script_dir, 'dist-package-versions.json')
@@ -62,21 +61,25 @@ distro_package_versions = json.load(open(deps_file))
 
 ret_code = 0
 for distro in distro_package_versions:
-  for package in package_intervals:
-    if package not in distro_package_versions[distro]:
+  for interval_set in interval_sets:
+    dep_satisfiable = False
+    for interval in interval_set.intervals:
+      package = interval.package
+      if package not in distro_package_versions[distro]:
+        continue
+      distro_version = deb_version.DebVersion(
+          distro_package_versions[distro][package])
+      if interval.contains(distro_version):
+        dep_satisfiable = True
+        break
+    if not dep_satisfiable:
       print >> sys.stderr, (
-          'Unexpected new dependency %s on distro %s caused by binary %s' % (
-              package, distro, os.path.basename(binary)))
-      ret_code = 1
-      continue
-    distro_version = deb_version.DebVersion(
-        distro_package_versions[distro][package])
-    if not package_intervals[package].contains(distro_version):
-      print >> sys.stderr, 'Dependency on package %s not satisfiable on %s' % (
-          package, distro)
+          'Dependency %s not satisfiable on distro %s caused by binary %s' % (
+              interval_set.formatted(), distro, os.path.basename(binary)))
       ret_code = 1
 if ret_code == 0:
   with open(dep_filename, 'w') as dep_file:
-    dep_file.write(package_version_interval.format_package_intervals(
-        package_intervals))
+    lines = [interval_set.formatted() + '\n'
+           for interval_set in interval_sets]
+    dep_file.write(''.join(sorted(lines)))
 sys.exit(ret_code)
