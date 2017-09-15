@@ -644,7 +644,7 @@ TEST(X509CertificateTest, DoesNotHaveTLSFeatureExtension) {
   EXPECT_FALSE(asn1::HasTLSFeatureExtension(derBytes));
 }
 
-// Tests X509CertificateCache via X509Certificate::CreateFromHandle.  We
+// Tests OSCertHandle deduping via X509Certificate::CreateFromHandle.  We
 // call X509Certificate::CreateFromHandle several times and observe whether
 // it returns a cached or new OSCertHandle.
 TEST(X509CertificateTest, Cache) {
