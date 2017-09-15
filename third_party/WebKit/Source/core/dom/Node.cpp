@@ -2627,6 +2627,22 @@ WebPluginContainerImpl* Node::GetWebPluginContainer() const {
   return nullptr;
 }
 
+bool Node::HasMediaControlAncestor() const {
+  const Node* current = this;
+
+  while (current) {
+    if (current->IsMediaControls() || current->IsMediaControlElement())
+      return true;
+
+    if (current->IsShadowRoot())
+      current = current->OwnerShadowHost();
+    else
+      current = current->ParentOrShadowHostElement();
+  }
+
+  return false;
+}
+
 DEFINE_TRACE(Node) {
   visitor->Trace(parent_or_shadow_host_node_);
   visitor->Trace(previous_);
