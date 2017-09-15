@@ -20,5 +20,5 @@ type_mappings = [
   "memory_instrumentation.mojom.RawAllocatorDumpEdge=base::trace_event::ProcessMemoryDump::MemoryAllocatorDumpEdge",
   "memory_instrumentation.mojom.RawAllocatorDumpEntry=base::trace_event::MemoryAllocatorDump::Entry[move_only]",
   "memory_instrumentation.mojom.RawAllocatorDump=std::unique_ptr<base::trace_event::MemoryAllocatorDump>[move_only]",
-  "memory_instrumentation.mojom.RawProcessMemoryDump=std::unique_ptr<base::trace_event::ProcessMemoryDump>[move_only]",
+  "memory_instrumentation.mojom.RawProcessMemoryDump=std::unique_ptr<base::trace_event::ProcessMemoryDump>[move_only,nullable_is_same_type]",
 ]
