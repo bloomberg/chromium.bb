@@ -1633,11 +1633,15 @@ if (enable_java_templates) {
     assert(_version_code != -1)  # Mark as used.
     assert(_version_name != "")  # Mark as used.
 
-    _base_apk_path = _base_path + ".apk_intermediates"
-
-    _resource_packaged_apk_path = _base_apk_path + ".ap_"
+    _base_resource_packaged_apk_path =
+        get_path_info("$root_gen_dir/arsc/" +
+                          rebase_path(_final_apk_path, root_build_dir),
+                      "dir") + "/" + get_path_info(_final_apk_path, "name")
+    _resource_packaged_apk_path = _base_resource_packaged_apk_path + ".ap_"
     _incremental_resource_packaged_apk_path =
-        _base_apk_path + "_incremental.ap_"
+        _base_resource_packaged_apk_path + "_incremental.ap_"
+
+    _base_apk_path = _base_path + ".apk_intermediates"
     _packaged_apk_path = _base_apk_path + ".unfinished.apk"
     _incremental_packaged_apk_path =
         _base_apk_path + "_incremental.unfinished.apk"
@@ -1678,7 +1682,9 @@ if (enable_java_templates) {
         _package_resources_target = "${_package_resources_target}__intermediate"
         _post_processed_resource_packaged_apk_path = _resource_packaged_apk_path
         _resource_packaged_apk_path =
-            "${_resource_packaged_apk_path}__intermediate.ap_"
+            get_path_info(_resource_packaged_apk_path, "dir") + "/" +
+            get_path_info(_resource_packaged_apk_path, "name") +
+            ".intermediate.ap_"
       }
 
       action(_package_resources_target) {
