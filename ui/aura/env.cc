@@ -5,9 +5,7 @@
 #include "ui/aura/env.h"
 
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/thread_local.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/env_observer.h"
@@ -31,9 +29,7 @@ namespace aura {
 
 namespace {
 
-// Env is thread local so that aura may be used on multiple threads.
-base::LazyInstance<base::ThreadLocalPointer<Env>>::Leaky lazy_tls_ptr =
-    LAZY_INSTANCE_INITIALIZER;
+Env* singleton_instance = nullptr;
 
 }  // namespace
 
@@ -41,6 +37,7 @@ base::LazyInstance<base::ThreadLocalPointer<Env>>::Leaky lazy_tls_ptr =
 // Env, public:
 
 Env::~Env() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_os_exchange_data_provider_factory_)
     ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
 
@@ -56,13 +53,13 @@ Env::~Env() {
     ui::OzonePlatform::Shutdown();
 #endif
 
-  DCHECK_EQ(this, lazy_tls_ptr.Pointer()->Get());
-  lazy_tls_ptr.Pointer()->Set(NULL);
+  DCHECK_EQ(this, singleton_instance);
+  singleton_instance = nullptr;
 }
 
 // static
 std::unique_ptr<Env> Env::CreateInstance(Mode mode) {
-  DCHECK(!lazy_tls_ptr.Pointer()->Get());
+  DCHECK(!singleton_instance);
   std::unique_ptr<Env> env(new Env(mode));
   env->Init();
   return env;
@@ -70,15 +67,18 @@ std::unique_ptr<Env> Env::CreateInstance(Mode mode) {
 
 // static
 Env* Env::GetInstance() {
-  Env* env = lazy_tls_ptr.Pointer()->Get();
+  Env* env = singleton_instance;
   DCHECK(env) << "Env::CreateInstance must be called before getting the "
                  "instance of Env.";
+  DCHECK_CALLED_ON_VALID_THREAD(env->thread_checker_);
   return env;
 }
 
 // static
 Env* Env::GetInstanceDontCreate() {
-  return lazy_tls_ptr.Pointer()->Get();
+  if (singleton_instance)
+    DCHECK_CALLED_ON_VALID_THREAD(singleton_instance->thread_checker_);
+  return singleton_instance;
 }
 
 std::unique_ptr<WindowPort> Env::CreateWindowPort(Window* window) {
@@ -156,8 +156,8 @@ Env::Env(Mode mode)
 #endif
       context_factory_(nullptr),
       context_factory_private_(nullptr) {
-  DCHECK(lazy_tls_ptr.Pointer()->Get() == NULL);
-  lazy_tls_ptr.Pointer()->Set(this);
+  DCHECK(!singleton_instance);
+  singleton_instance = this;
 }
 
 void Env::Init() {
