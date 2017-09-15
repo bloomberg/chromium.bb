@@ -124,6 +124,7 @@ aggregate_vector_icons("chrome_vector_icons") {
       "notification_captive_portal.icon",
       "notification_google.icon",
       "notification_play_prism.icon",
+      "notification_storage_full.icon",
       "notification_warning.icon",
       "warning_badge_circle.1x.icon",
       "warning_badge_circle.icon",
