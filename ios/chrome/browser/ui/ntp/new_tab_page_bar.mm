@@ -170,7 +170,7 @@ const int kNumberOfTabsIncognito = 2;
 }
 
 - (void)calculateButtonWidth {
-  if ([self useIconsInButtons]) {
+  if (IsCompact()) {
     if ([items_ count] > 0) {
       buttonWidth_ = self.bounds.size.width / [items_ count];
     } else {
