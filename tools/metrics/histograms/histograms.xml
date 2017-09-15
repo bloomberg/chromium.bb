@@ -55929,6 +55929,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordProtection.GaiaPasswordReusesBeforeGaiaPasswordChanged"
+    units="reuses">
+  <owner>jialiul@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The number of Gaia password reuse warnings shown to user before user changes
+    their password. Logged when we see that user has changed their Gaia
+    password. The number of reuses will be reset to zero if current session of
+    browser process ends. This count doesn't include the reuses that user marked
+    as legitimate.
+  </summary>
+</histogram>
+
 <histogram name="PasswordProtection.ModalWarningDialogAction"
     enum="PasswordProtectionWarningAction">
   <owner>jialiul@chromium.org</owner>
