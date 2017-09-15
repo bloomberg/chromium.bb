@@ -48,6 +48,7 @@ bool IsFloatFragment(const NGPhysicalFragment& fragment) {
 }
 
 void UpdateLegacyMultiColumnFlowThread(
+    NGBlockNode node,
     LayoutBox* layout_box,
     const NGConstraintSpace& constraint_space,
     const NGPhysicalBoxFragment& fragment) {
@@ -57,20 +58,37 @@ void UpdateLegacyMultiColumnFlowThread(
     return;
 
   NGWritingMode writing_mode = constraint_space.WritingMode();
-  LayoutUnit column_inline_size;
   LayoutUnit flow_end;
+  bool has_processed_first_child = false;
 
   // Stitch the columns together.
   for (const RefPtr<NGPhysicalFragment> child : fragment.Children()) {
     NGFragment child_fragment(writing_mode, *child);
     flow_end += child_fragment.BlockSize();
-    column_inline_size = child_fragment.InlineSize();
+    // Non-uniform fragmentainer widths not supported by legacy layout.
+    DCHECK(!has_processed_first_child ||
+           flow_thread->LogicalWidth() == child_fragment.InlineSize());
+    if (!has_processed_first_child) {
+      // The offset of the flow thread should be the same as that of the first
+      // first column.
+      flow_thread->SetX(child->Offset().left);
+      flow_thread->SetY(child->Offset().top);
+      flow_thread->SetLogicalWidth(child_fragment.InlineSize());
+      has_processed_first_child = true;
+    }
   }
 
   if (LayoutMultiColumnSet* column_set = flow_thread->FirstMultiColumnSet()) {
     NGFragment logical_fragment(writing_mode, fragment);
-    column_set->SetLogicalWidth(logical_fragment.InlineSize());
-    column_set->SetLogicalHeight(logical_fragment.BlockSize());
+    auto border_scrollbar_padding = CalculateBorderScrollbarPadding(
+        constraint_space, layout_box->StyleRef(), node);
+
+    column_set->SetLogicalLeft(border_scrollbar_padding.inline_start);
+    column_set->SetLogicalTop(border_scrollbar_padding.block_start);
+    column_set->SetLogicalWidth(logical_fragment.InlineSize() -
+                                border_scrollbar_padding.InlineSum());
+    column_set->SetLogicalHeight(logical_fragment.BlockSize() -
+                                 border_scrollbar_padding.BlockSum());
     column_set->EndFlow(flow_end);
     column_set->UpdateFromNG();
   }
@@ -81,7 +99,6 @@ void UpdateLegacyMultiColumnFlowThread(
     column_box->ClearNeedsLayout();
 
   flow_thread->ValidateColumnSets();
-  flow_thread->SetLogicalWidth(column_inline_size);
   flow_thread->SetLogicalHeight(flow_end);
   flow_thread->ClearNeedsLayout();
 }
@@ -230,10 +247,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   const NGPhysicalBoxFragment& physical_fragment =
       ToNGPhysicalBoxFragment(*layout_result.PhysicalFragment());
 
-  if (box_->Style()->SpecifiesColumns()) {
-    UpdateLegacyMultiColumnFlowThread(box_, constraint_space,
-                                      physical_fragment);
-  }
   NGBoxFragment fragment(constraint_space.WritingMode(), physical_fragment);
   // For each fragment we process, we'll accumulate the logical height and
   // logical intrinsic content box height. We reset it at the first fragment,
@@ -301,6 +314,10 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
     if (block_flow->CreatesNewFormattingContext())
       block_flow->AddOverflowFromFloats();
+  }
+  if (box_->Style()->SpecifiesColumns()) {
+    UpdateLegacyMultiColumnFlowThread(*this, box_, constraint_space,
+                                      physical_fragment);
   }
 }
 
