@@ -82,7 +82,8 @@ class RemoteTryJob(object):
   def __init__(self, build_configs, local_patches,
                pass_through_args,
                remote_description,
-               committer_email=None):
+               committer_email=None,
+               swarming=False):
     """Construct the object.
 
     Args:
@@ -91,6 +92,7 @@ class RemoteTryJob(object):
       pass_through_args: Command line arguments to pass to cbuildbot in job.
       remote_description: Requested tryjob description.
       committer_email: Email address of person requesting job, or None.
+      swarming: Boolean, do we use a swarming build?
     """
     self.user = getpass.getuser()
     cwd = os.path.dirname(os.path.realpath(__file__))
@@ -106,16 +108,7 @@ class RemoteTryJob(object):
     self.extra_args = pass_through_args
     self.local_patches = local_patches
     self.manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
-
-  @property
-  def values(self):
-    return {
-        'bot' : self.build_configs,
-        'email' : [self.user_email],
-        'extra_args' : self.extra_args,
-        'name' : self.name,
-        'user' : self.user,
-        }
+    self.swarming = swarming
 
   def _VerifyForBuildbot(self):
     """Early validation, to ensure the job can be processed by buildbot."""
@@ -182,15 +175,67 @@ class RemoteTryJob(object):
     # Default to etc builder.
     return 'etc'
 
-  def _GetProperties(self, bot):
-    """Construct and return properties for buildbucket request."""
-    properties = dict(self.values)
-    properties.update({
+  def _GetRequestProperties(self, bot):
+    """Construct and return properties for buildbucket request.
+
+    Args:
+      bot: The bot config to put.
+    """
+    return {
+        'bot' : self.build_configs,
+        'email' : [self.user_email],
+        'extra_args' : self.extra_args,
+        'name' : self.name,
+        'user' : self.user,
         'cbb_config': bot,
         'cbb_extra_args': self.extra_args,
         'owners': [self.user_email]
-    })
-    return properties
+    }
+
+  def _GetBuildbotRequestBody(self, bot):
+    """Generate the request body for a buildbot buildbucket request.
+
+    Args:
+      bot: The bot config to put.
+
+    Returns:
+      buildbucket request properties as a python dict.
+    """
+    properties = self._GetRequestProperties(bot)
+
+    return {
+        'bucket': constants.TRYSERVER_BUILDBUCKET_BUCKET,
+        'parameters_json': json.dumps({
+            'builder_name': self._GetBuilder(bot),
+            'properties': properties,
+        }),
+        'tags':[
+            'build_type:%s' % constants.TRYJOB_TYPE,
+        ]
+    }
+
+  def _GetSwarmingRequestBody(self, bot):
+    """Generate the request body for a swarming buildbucket request.
+
+    Args:
+      bot: The bot config to put.
+
+    Returns:
+      buildbucket request properties as a python dict.
+    """
+    properties = self._GetRequestProperties(bot)
+    properties['mastername'] = 'chromiumos.chromium'
+
+    return {
+        'bucket': constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET,
+        'parameters_json': json.dumps({
+            'builder_name': 'Generic',
+            'properties': properties,
+        }),
+        'tags':[
+            'build_type:%s' % constants.TRYJOB_TYPE,
+        ]
+    }
 
   def _PutConfigToBuildBucket(self, buildbucket_client, bot, dryrun):
     """Put the tryjob request to buildbucket.
@@ -200,15 +245,13 @@ class RemoteTryJob(object):
       bot: The bot config to put.
       dryrun: Whether a dryrun.
     """
-    body = json.dumps({
-        'bucket': constants.TRYSERVER_BUILDBUCKET_BUCKET,
-        'parameters_json': json.dumps({
-            'builder_name': self._GetBuilder(bot),
-            'properties': self._GetProperties(bot),
-        }),
-        'tags':['build_type:%s' % constants.TRYJOB_TYPE]
-    })
-    content = buildbucket_client.PutBuildRequest(body, dryrun)
+    if self.swarming:
+      request_body = self._GetSwarmingRequestBody(bot)
+    else:
+      request_body = self._GetBuildbotRequestBody(bot)
+
+    content = buildbucket_client.PutBuildRequest(
+        json.dumps(request_body), dryrun)
 
     if buildbucket_lib.GetNestedAttr(content, ['error']):
       raise RemoteRequestFailure(

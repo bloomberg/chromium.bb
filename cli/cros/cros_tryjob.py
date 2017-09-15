@@ -59,7 +59,6 @@ def CbuildbotArgs(options):
   if options.production:
     args.append('--buildbot')
   else:
-    # TODO: Remove from remote_try.py after cbuildbot --remote removed.
     args.append('--remote-trybot')
 
   if not options.remote:
@@ -127,7 +126,8 @@ def RunRemote(options, patch_pool):
                                    patch_pool.local_patches,
                                    args,
                                    description,
-                                   options.committer_email)
+                                   options.committer_email,
+                                   options.swarming)
   tryjob.Submit(dryrun=False)
   print('Tryjob submitted!')
   print(('Go to %s to view the status of your job.'
@@ -187,6 +187,9 @@ Production Examples (danger, can break production if misused):
     where_ex.add_argument(
         '--remote', action='store_true', default=True,
         help='Run the tryjob on a remote builder. (default)')
+    where_group.add_argument(
+        '--swarming', action='store_true', default=False,
+        help='Run the tryjob on a swarming builder (experimental)')
     where_group.add_argument(
         '-r', '--buildroot', type='path', dest='buildroot',
         default=os.path.join(os.path.dirname(constants.SOURCE_ROOT), 'tryjob'),
@@ -321,6 +324,9 @@ Production Examples (danger, can break production if misused):
     # Validate specified build_configs.
     if not self.options.build_configs:
       cros_build_lib.Die('At least one build_config is required.')
+
+    if not self.options.remote and self.options.swarming:
+      cros_build_lib.Die('--swarming cannot be used with local tryjobs.')
 
     unknown_build_configs = [b for b in self.options.build_configs
                              if b not in site_config]

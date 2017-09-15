@@ -37,6 +37,7 @@ class TryjobTestParsing(TryjobTest):
   def setUp(self):
     self.expected = {
         'remote': True,
+        'swarming': False,
         'branch': None,
         'production': False,
         'yes': False,
@@ -49,7 +50,7 @@ class TryjobTestParsing(TryjobTest):
         'build_configs': ['lumpy-paladin'],
     }
 
-  def testMinimalParsing(self):
+  def testMinimalParsingLocal(self):
     """Tests flow for an interactive session."""
     self.SetupCommandMock(['lumpy-paladin'])
     options = self.cmd_mock.inst.options
@@ -74,6 +75,44 @@ class TryjobTestParsing(TryjobTest):
 
     self.expected.update({
         'remote': False,
+        'swarming': False,
+        'branch': None,
+        'yes': True,
+        'list': True,
+        'list_all': True,
+        'gerrit_patches': ['123', '*123', '123..456'],
+        'local_patches': ['chromiumos/chromite:tryjob', 'other:other'],
+        'passthrough': [
+            '--latest-toolchain', '--nochromesdk',
+            '--hwtest', '--notests', '--novmtests', '--noimagetests',
+            '--timeout', '5', '--sanity-check-build',
+        ],
+        'passthrough_raw': ['--cbuild-arg', 'bar'],
+        'build_configs': ['lumpy-paladin', 'lumpy-release'],
+    })
+
+    self.assertDictContainsSubset(self.expected, vars(options))
+
+  def testComplexParsingRemote(self):
+    """Tests flow for an interactive session."""
+    self.SetupCommandMock([
+        '--swarming',
+        '--yes',
+        '--latest-toolchain', '--nochromesdk',
+        '--hwtest', '--notests', '--novmtests', '--noimagetests',
+        '--buildroot', '/buildroot',
+        '--timeout', '5', '--sanity-check-build',
+        '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
+        '--local-patches', 'chromiumos/chromite:tryjob', '-p', 'other:other',
+        '--pass-through=--cbuild-arg', '--pass-through', 'bar',
+        '--list', '--all',
+        'lumpy-paladin', 'lumpy-release',
+    ])
+    options = self.cmd_mock.inst.options
+
+    self.expected.update({
+        'remote': True,
+        'swarming': True,
         'branch': None,
         'yes': True,
         'list': True,
@@ -124,13 +163,30 @@ class TryjobTestVerifyOptions(TryjobTest):
         'amd64-generic-paladin',
     ])
 
-  def testComplex(self):
+  def testComplexLocal(self):
     """Test option verification with complex mix of options."""
     self.SetupCommandMock([
         '--yes',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
         '--local', '--buildroot', '/buildroot',
+        '--timeout', '5', '--sanity-check-build',
+        '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
+        '--committer-email', 'foo@bar',
+        '--version', '1.2.3', '--channel', 'chan',
+        '--pass-through=--cbuild-arg', '--pass-through=bar',
+        'lumpy-paladin', 'lumpy-release',
+    ])
+    self.cmd_mock.inst.VerifyOptions()
+
+  def testComplexRemote(self):
+    """Test option verification with complex mix of options."""
+    self.SetupCommandMock([
+        '--remote', '--swarming',
+        '--yes',
+        '--latest-toolchain', '--nochromesdk',
+        '--hwtest', '--notests', '--novmtests', '--noimagetests',
+        '--buildroot', '/buildroot',
         '--timeout', '5', '--sanity-check-build',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--committer-email', 'foo@bar',
@@ -186,6 +242,16 @@ class TryjobTestVerifyOptions(TryjobTest):
         'unknown-config'
     ])
     self.cmd_mock.inst.VerifyOptions()
+
+  def testLocalSwarmingError(self):
+    """Test option using yes to force an unknown config, no patches."""
+    self.SetupCommandMock([
+        '--yes',
+        '--local', '--swarming',
+        'amd64-generic-paladin',
+    ])
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      self.cmd_mock.inst.VerifyOptions()
 
 
 class TryjobTestCbuildbotArgs(TryjobTest):
