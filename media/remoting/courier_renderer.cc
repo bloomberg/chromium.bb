@@ -587,6 +587,13 @@ void CourierRenderer::OnBufferingStateChange(
       message->rendererclient_onbufferingstatechange_rpc().state());
   if (!state.has_value())
     return;
+  if (state == BufferingState::BUFFERING_HAVE_NOTHING) {
+    receiver_is_blocked_on_local_demuxers_ = IsWaitingForDataFromDemuxers();
+  } else if (receiver_is_blocked_on_local_demuxers_) {
+    receiver_is_blocked_on_local_demuxers_ = false;
+    ResetMeasurements();
+  }
+
   client_->OnBufferingStateChange(state.value());
 }
 
@@ -743,6 +750,8 @@ void CourierRenderer::OnMediaTimeUpdated() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (!flush_cb_.is_null())
     return;  // Don't manage and check the queue when Flush() is on-going.
+  if (receiver_is_blocked_on_local_demuxers_)
+    return;  // Don't manage and check the queue when buffering is on-going.
 
   base::TimeTicks current_time = clock_->NowTicks();
   if (current_time < ignore_updates_until_time_)
@@ -877,6 +886,16 @@ void CourierRenderer::MeasureAndRecordDataRates() {
     metrics_recorder_.OnVideoRateEstimate(
         checked_kbps.ValueOrDefault(std::numeric_limits<int>::max()));
   }
+}
+
+bool CourierRenderer::IsWaitingForDataFromDemuxers() const {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  return ((video_demuxer_stream_adapter_ &&
+           video_demuxer_stream_adapter_->is_processing_read_request() &&
+           !video_demuxer_stream_adapter_->is_data_pending()) ||
+          (audio_demuxer_stream_adapter_ &&
+           audio_demuxer_stream_adapter_->is_processing_read_request() &&
+           !audio_demuxer_stream_adapter_->is_data_pending()));
 }
 
 }  // namespace remoting
