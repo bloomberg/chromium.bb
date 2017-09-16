@@ -37,7 +37,6 @@
 namespace blink {
 
 class ExceptionState;
-class Navigator;
 
 class MODULES_EXPORT NavigatorContentUtils final
     : public GarbageCollectedFinalized<NavigatorContentUtils>,

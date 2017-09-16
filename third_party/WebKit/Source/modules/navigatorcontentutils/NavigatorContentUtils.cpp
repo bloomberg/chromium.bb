@@ -27,13 +27,9 @@
 #include "modules/navigatorcontentutils/NavigatorContentUtils.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
 #include "core/frame/UseCounter.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -189,21 +185,27 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(
     const String& scheme,
     const String& url,
     ExceptionState& exception_state) {
-  DEFINE_STATIC_LOCAL(const String, declined, ("declined"));
-
-  if (!navigator.GetFrame())
-    return declined;
+  if (!navigator.GetFrame()) {
+    return CustomHandlersStateString(
+        NavigatorContentUtilsClient::kCustomHandlersDeclined);
+  }
 
   Document* document = navigator.GetFrame()->GetDocument();
   DCHECK(document);
-  if (document->IsContextDestroyed())
-    return declined;
+  if (document->IsContextDestroyed()) {
+    return CustomHandlersStateString(
+        NavigatorContentUtilsClient::kCustomHandlersDeclined);
+  }
 
-  if (!VerifyCustomHandlerURL(*document, url, exception_state))
-    return declined;
+  if (!VerifyCustomHandlerURL(*document, url, exception_state)) {
+    return CustomHandlersStateString(
+        NavigatorContentUtilsClient::kCustomHandlersDeclined);
+  }
 
-  if (!VerifyCustomHandlerScheme(scheme, exception_state))
-    return declined;
+  if (!VerifyCustomHandlerScheme(scheme, exception_state)) {
+    return CustomHandlersStateString(
+        NavigatorContentUtilsClient::kCustomHandlersDeclined);
+  }
 
   return CustomHandlersStateString(
       NavigatorContentUtils::From(navigator)

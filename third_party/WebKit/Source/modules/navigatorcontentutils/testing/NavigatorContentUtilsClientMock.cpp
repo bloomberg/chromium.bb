@@ -5,7 +5,6 @@
 #include "modules/navigatorcontentutils/testing/NavigatorContentUtilsClientMock.h"
 
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
-#include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/StringHash.h"
 
 namespace blink {
