@@ -7,7 +7,7 @@ description('Tests that canvas does not crash on getContext. crbug.com/442633');
 function start()
 {
     if (window.internals)
-        window.internals.settings.setWebGLEnabled(false);
+        window.internals.settings.setWebGL1Enabled(false);
 
     var canvas = document.getElementById('example');
     var gl = canvas.getContext("webgl");
@@ -21,4 +21,3 @@ testPassed("Canvas did not crash on getContext.");
 <canvas id="example"></canvas>
 </body>
 </html>
-

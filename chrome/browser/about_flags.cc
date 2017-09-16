@@ -420,12 +420,6 @@ const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
      switches::kForceGpuRasterization, ""},
 };
 
-const FeatureEntry::Choice kEnableWebGL2Choices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flags_ui::kGenericExperimentChoiceEnabled, switches::kEnableES3APIs, ""},
-    {flags_ui::kGenericExperimentChoiceDisabled, switches::kDisableES3APIs, ""},
-};
-
 #if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kMemoryPressureThresholdChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -2445,9 +2439,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutomaticTabDiscardingDescription, kOsWin | kOsMac,
      FEATURE_VALUE_TYPE(features::kAutomaticTabDiscarding)},
 #endif  // OS_WIN || OS_MACOSX
-    {"enable-es3-apis", flag_descriptions::kWebgl2Name,
-     flag_descriptions::kWebgl2Description, kOsAll,
-     MULTI_VALUE_TYPE(kEnableWebGL2Choices)},
     {"enable-webfonts-intervention-v2",
      flag_descriptions::kEnableWebfontsInterventionName,
      flag_descriptions::kEnableWebfontsInterventionDescription, kOsAll,

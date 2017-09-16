@@ -30,7 +30,6 @@ struct PPAPI_SHARED_EXPORT Preferences {
   bool is_3d_supported;
   bool is_stage3d_supported;
   bool is_stage3d_baseline_supported;
-  bool is_webgl_supported;
   bool is_accelerated_video_decode_enabled;
 };
 

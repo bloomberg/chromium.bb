@@ -80,7 +80,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      " and hardware acceleration will be unavailable.",
      true},
     {kWebGLFeatureName, !manager->IsWebGLEnabled(),
-     command_line.HasSwitch(switches::kDisableExperimentalWebGL),
+     command_line.HasSwitch(switches::kDisableWebGL),
      "WebGL has been disabled via blacklist or the command line.", false},
     {"flash_3d", manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH3D),
      command_line.HasSwitch(switches::kDisableFlash3d),
@@ -142,7 +142,8 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      " or command line.",
      true},
     {kWebGL2FeatureName, !manager->IsWebGL2Enabled(),
-     command_line.HasSwitch(switches::kDisableES3APIs),
+     command_line.HasSwitch(switches::kDisableWebGL) ||
+         command_line.HasSwitch(switches::kDisableWebGL2),
      "WebGL2 has been disabled via blacklist or the command line.", false},
     {kCheckerImagingFeatureName, false, !IsCheckerImagingEnabled(),
      "Checker-imaging has been disabled via finch trial or the command line.",

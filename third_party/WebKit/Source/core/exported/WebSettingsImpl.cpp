@@ -438,8 +438,12 @@ void WebSettingsImpl::SetOfflineWebApplicationCacheEnabled(bool enabled) {
   settings_->SetOfflineWebApplicationCacheEnabled(enabled);
 }
 
-void WebSettingsImpl::SetExperimentalWebGLEnabled(bool enabled) {
-  settings_->SetWebGLEnabled(enabled);
+void WebSettingsImpl::SetWebGL1Enabled(bool enabled) {
+  settings_->SetWebGL1Enabled(enabled);
+}
+
+void WebSettingsImpl::SetWebGL2Enabled(bool enabled) {
+  settings_->SetWebGL2Enabled(enabled);
 }
 
 void WebSettingsImpl::SetRenderVSyncNotificationEnabled(bool enabled) {

@@ -49,6 +49,5 @@ struct GpuPreferences {
   bool emulate_shader_precision;
   bool enable_gpu_service_logging;
   bool enable_gpu_service_tracing;
-  bool enable_es3_apis;
   bool use_passthrough_cmd_decoder;
 };

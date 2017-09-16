@@ -265,7 +265,9 @@ class CORE_EXPORT HTMLCanvasElement final
     return DispatchEvent(event);
   }
 
-  bool IsWebGLAllowed() const override;
+  bool IsWebGL1Enabled() const override;
+  bool IsWebGL2Enabled() const override;
+  bool IsWebGLBlocked() const override;
 
  protected:
   void DidMoveToNewDocument(Document& old_document) override;

@@ -141,9 +141,6 @@ struct GPU_EXPORT GpuPreferences {
   // Turns on calling TRACE for every GL call.
   bool enable_gpu_service_tracing = false;
 
-  // Enable OpenGL ES 3 APIs.
-  bool enable_es3_apis = true;
-
   // Use the Pass-through command decoder, skipping all validation and state
   // tracking.
   bool use_passthrough_cmd_decoder = false;

@@ -22,6 +22,7 @@ enum GpuFeatureStatus {
   kGpuFeatureStatusEnabled,
   kGpuFeatureStatusBlacklisted,
   kGpuFeatureStatusDisabled,
+  kGpuFeatureStatusSoftware,
   kGpuFeatureStatusUndefined,
   kGpuFeatureStatusMax
 };

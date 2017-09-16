@@ -19,6 +19,8 @@ struct EnumTraits<gpu::mojom::GpuFeatureStatus, gpu::GpuFeatureStatus> {
         return gpu::mojom::GpuFeatureStatus::Blacklisted;
       case gpu::kGpuFeatureStatusDisabled:
         return gpu::mojom::GpuFeatureStatus::Disabled;
+      case gpu::kGpuFeatureStatusSoftware:
+        return gpu::mojom::GpuFeatureStatus::Software;
       case gpu::kGpuFeatureStatusUndefined:
         return gpu::mojom::GpuFeatureStatus::Undefined;
       case gpu::kGpuFeatureStatusMax:
@@ -39,6 +41,9 @@ struct EnumTraits<gpu::mojom::GpuFeatureStatus, gpu::GpuFeatureStatus> {
         return true;
       case gpu::mojom::GpuFeatureStatus::Disabled:
         *out = gpu::kGpuFeatureStatusDisabled;
+        return true;
+      case gpu::mojom::GpuFeatureStatus::Software:
+        *out = gpu::kGpuFeatureStatusSoftware;
         return true;
       case gpu::mojom::GpuFeatureStatus::Undefined:
         *out = gpu::kGpuFeatureStatusUndefined;
