@@ -275,8 +275,20 @@ void ConversionContext::SwitchToEffect(
     DCHECK_EQ(current_effect_, sub_effect->Parent());
 
     // Step 3a: Before each effect can be applied, we must enter its output
-    // clip first.
-    SwitchToClip(sub_effect->OutputClip());
+    // clip first, or exit all clips if it doesn't have one.
+    if (sub_effect->OutputClip()) {
+      SwitchToClip(sub_effect->OutputClip());
+    } else {
+      while (state_stack_.size() &&
+             state_stack_.back().type == StateEntry::PairedType::kClip) {
+        StateEntry& previous_state = state_stack_.back();
+        current_transform_ = previous_state.transform;
+        current_clip_ = previous_state.clip;
+        DCHECK_EQ(previous_state.effect, current_effect_);
+        state_stack_.pop_back();
+        AppendRestore(cc_list_, 1);
+      }
+    }
 
     // Step 3b: Apply non-spatial effects first, adjust CTM, then apply spatial
     // effects. Strictly speaking the CTM shall be appled first, it is done

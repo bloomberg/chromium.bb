@@ -207,6 +207,7 @@ void GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
     if (!effect->HasFilterThatMovesPixels())
       continue;
 
+    DCHECK(effect->OutputClip());
     PropertyTreeState transform_and_clip_state(effect->LocalTransformSpace(),
                                                effect->OutputClip(), nullptr);
     LocalToAncestorVisualRectInternal(last_transform_and_clip_state,

@@ -7,6 +7,11 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutInline SPAN id='target'",
+          "rect": [112, 193, 179, 19],
+          "reason": "disappeared"
+        },
+        {
           "object": "LayoutBlockFlow DIV",
           "rect": [290, 108, 101, 100],
           "reason": "geometry"
