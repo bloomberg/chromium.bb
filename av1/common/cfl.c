@@ -338,6 +338,18 @@ static void cfl_luma_subsampling_420_lbd(const uint8_t *input, int input_stride,
   }
 }
 
+static void cfl_luma_subsampling_444_lbd(const uint8_t *input, int input_stride,
+                                         int16_t *output_q3, int width,
+                                         int height) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      output_q3[i] = input[i] << 3;
+    }
+    input += input_stride;
+    output_q3 += MAX_SB_SIZE;
+  }
+}
+
 #if CONFIG_HIGHBITDEPTH
 static void cfl_luma_subsampling_420_hbd(const uint16_t *input,
                                          int input_stride, int16_t *output_q3,
@@ -350,6 +362,18 @@ static void cfl_luma_subsampling_420_hbd(const uint16_t *input,
                      << 1;
     }
     input += input_stride << 1;
+    output_q3 += MAX_SB_SIZE;
+  }
+}
+
+static void cfl_luma_subsampling_444_hbd(const uint16_t *input,
+                                         int input_stride, int16_t *output_q3,
+                                         int width, int height) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      output_q3[i] = input[i] << 3;
+    }
+    input += input_stride;
     output_q3 += MAX_SB_SIZE;
   }
 }
@@ -370,17 +394,19 @@ static void cfl_luma_subsampling_420(const uint8_t *input, int input_stride,
   cfl_luma_subsampling_420_lbd(input, input_stride, output_q3, width, height);
 }
 
-static INLINE void cfl_luma_subsampling_444(const uint8_t *input,
-                                            int input_stride,
-                                            int16_t *output_q3, int width,
-                                            int height) {
-  for (int j = 0; j < height; j++) {
-    for (int i = 0; i < width; i++) {
-      output_q3[i] = input[i] << 3;
-    }
-    input += input_stride;
-    output_q3 += MAX_SB_SIZE;
+static void cfl_luma_subsampling_444(const uint8_t *input, int input_stride,
+                                     int16_t *output_q3, int width, int height,
+                                     int use_hbd) {
+#if CONFIG_HIGHBITDEPTH
+  if (use_hbd) {
+    uint16_t *input_16 = CONVERT_TO_SHORTPTR(input);
+    cfl_luma_subsampling_444_hbd(input_16, input_stride, output_q3, width,
+                                 height);
+    return;
   }
+#endif  // CONFIG_HIGHBITDEPTH
+  (void)use_hbd;
+  cfl_luma_subsampling_444_lbd(input, input_stride, output_q3, width, height);
 }
 
 static INLINE void cfl_store(CFL_CTX *cfl, const uint8_t *input,
@@ -417,10 +443,8 @@ static INLINE void cfl_store(CFL_CTX *cfl, const uint8_t *input,
       cfl->pred_buf_q3 + (store_row * MAX_SB_SIZE + store_col);
 
   if (sub_y == 0 && sub_x == 0) {
-    // TODO(ltrudeau) add support for HBD 4:4:4
-    assert(!use_hbd);
     cfl_luma_subsampling_444(input, input_stride, pred_buf_q3, store_width,
-                             store_height);
+                             store_height, use_hbd);
   } else if (sub_y == 1 && sub_x == 1) {
     cfl_luma_subsampling_420(input, input_stride, pred_buf_q3, store_width,
                              store_height, use_hbd);
