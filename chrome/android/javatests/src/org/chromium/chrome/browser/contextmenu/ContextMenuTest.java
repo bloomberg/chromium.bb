@@ -374,7 +374,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         Integer[] expectedItems = {R.id.contextmenu_open_in_new_tab,
                 R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_save_link_as,
-                R.id.contextmenu_copy_link_address, R.id.contextmenu_share_link};
+                R.id.contextmenu_copy_link_text, R.id.contextmenu_copy_link_address,
+                R.id.contextmenu_share_link};
         assertMenuItemsAreEqual(menu, expectedItems);
     }
 
