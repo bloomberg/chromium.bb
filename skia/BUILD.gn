@@ -274,6 +274,7 @@ component("skia") {
 
   # The imported Skia gni source paths are made absolute by gn.
   sources += skia_core_sources
+  defines = skia_core_defines
   sources += skia_effects_sources
   sources += skia_utils_sources
   sources += skia_xps_sources
