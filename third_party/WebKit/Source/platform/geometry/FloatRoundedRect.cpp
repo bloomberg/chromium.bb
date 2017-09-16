@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/LayoutRect.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -374,16 +375,16 @@ void FloatRoundedRect::AdjustRadii() {
 }
 
 String FloatRoundedRect::Radii::ToString() const {
-  return String::Format("tl:%s; tr:%s; bl:%s; br:%s",
-                        TopLeft().ToString().Ascii().data(),
-                        TopRight().ToString().Ascii().data(),
-                        BottomLeft().ToString().Ascii().data(),
-                        BottomRight().ToString().Ascii().data());
+  return "tl:" + TopLeft().ToString() + "; tr:" + TopRight().ToString() +
+         "; bl:" + BottomLeft().ToString() + "; br:" + BottomRight().ToString();
 }
 
 String FloatRoundedRect::ToString() const {
-  return String::Format("%s radii:(%s)", Rect().ToString().Ascii().data(),
-                        GetRadii().ToString().Ascii().data());
+  if (Rect() == FloatRect(LayoutRect::InfiniteIntRect()))
+    return "InfiniteIntRect";
+  if (GetRadii().IsZero())
+    return Rect().ToString();
+  return Rect().ToString() + " radii:(" + GetRadii().ToString() + ")";
 }
 
 }  // namespace blink

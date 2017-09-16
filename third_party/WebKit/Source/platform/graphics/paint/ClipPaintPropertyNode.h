@@ -82,7 +82,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   String ToTreeString() const;
 #endif
 
-  String ToString() const;
+  std::unique_ptr<JSONObject> ToJSON() const;
 
   bool HasDirectCompositingReasons() const {
     return direct_compositing_reasons_ != kCompositingReasonNone;

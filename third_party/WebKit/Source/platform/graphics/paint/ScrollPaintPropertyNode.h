@@ -142,7 +142,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   String ToTreeString() const;
 #endif
 
-  String ToString() const;
+  std::unique_ptr<JSONObject> ToJSON() const;
 
  private:
   ScrollPaintPropertyNode(
