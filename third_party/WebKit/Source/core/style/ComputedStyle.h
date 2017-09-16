@@ -862,6 +862,12 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Mask properties.
   // -webkit-mask-box-image-outset
+  bool HasMaskBoxImageOutsets() const {
+    return MaskBoxImageInternal().HasImage() && MaskBoxImageOutset().NonZero();
+  }
+  LayoutRectOutsets MaskBoxImageOutsets() const {
+    return ImageOutsets(MaskBoxImageInternal());
+  }
   const BorderImageLengthBox& MaskBoxImageOutset() const {
     return MaskBoxImageInternal().Outset();
   }
@@ -2118,7 +2124,8 @@ class ComputedStyle : public ComputedStyleBase,
   // currently handled through their self-painting layers. So the layout code
   // doesn't account for them.
   bool HasVisualOverflowingEffect() const {
-    return BoxShadow() || HasBorderImageOutsets() || HasOutline();
+    return BoxShadow() || HasBorderImageOutsets() || HasOutline() ||
+           HasMaskBoxImageOutsets();
   }
 
   // Stacking contexts and positioned elements[1] are stacked (sorted in

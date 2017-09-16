@@ -518,8 +518,10 @@ static bool ComputeMaskParameters(IntRect& mask_clip,
     DCHECK(object.IsLayoutInline());
     maximum_mask_region = ToLayoutInline(object).LinesBoundingBox();
   }
+  if (style.HasMaskBoxImageOutsets())
+    maximum_mask_region.Expand(style.MaskBoxImageOutsets());
   maximum_mask_region.MoveBy(paint_offset);
-  mask_clip = EnclosingIntRect(maximum_mask_region);
+  mask_clip = PixelSnappedIntRect(maximum_mask_region);
   mask_color_filter = kColorFilterNone;
   return true;
 }

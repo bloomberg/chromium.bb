@@ -244,7 +244,8 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMask) {
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   EXPECT_TRUE(target->HasMask());
-  EXPECT_EQ(LayoutRect(0, 0, 300, 100), target->LocalVisualRect());
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100), target->LocalVisualRect());
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100), target->VisualOverflowRect());
 }
 
 TEST_F(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
@@ -261,6 +262,42 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
   EXPECT_TRUE(target->HasMask());
   EXPECT_TRUE(target->HasOverflowClip());
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), target->LocalVisualRect());
+  EXPECT_EQ(LayoutRect(0, 0, 100, 100), target->VisualOverflowRect());
+}
+
+TEST_F(LayoutBoxTest, LocalVisualRectWithMaskWithOutset) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetBodyInnerHTML(
+      "<div id='target' style='-webkit-mask-box-image-source: url(#a); "
+      "-webkit-mask-box-image-outset: 10px 20px;"
+      "     width: 100px; height: 100px; background: blue'>"
+      "  <div style='width: 300px; height: 10px; background: green'></div>"
+      "</div>");
+
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  EXPECT_TRUE(target->HasMask());
+  EXPECT_EQ(LayoutRect(-20, -10, 140, 120), target->LocalVisualRect());
+  EXPECT_EQ(LayoutRect(-20, -10, 140, 120), target->VisualOverflowRect());
+}
+
+TEST_F(LayoutBoxTest, LocalVisualRectWithMaskWithOutsetAndOverflowClip) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetBodyInnerHTML(
+      "<div id='target' style='-webkit-mask-box-image-source: url(#a); "
+      "-webkit-mask-box-image-outset: 10px 20px; overflow: hidden;"
+      "     width: 100px; height: 100px; background: blue'>"
+      "  <div style='width: 300px; height: 10px; background: green'></div>"
+      "</div>");
+
+  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  EXPECT_TRUE(target->HasMask());
+  EXPECT_TRUE(target->HasOverflowClip());
+  EXPECT_EQ(LayoutRect(-20, -10, 140, 120), target->LocalVisualRect());
+  EXPECT_EQ(LayoutRect(-20, -10, 140, 120), target->VisualOverflowRect());
 }
 
 TEST_F(LayoutBoxTest, ContentsVisualOverflowPropagation) {
