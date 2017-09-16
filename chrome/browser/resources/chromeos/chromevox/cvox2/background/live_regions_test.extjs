@@ -114,6 +114,27 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
     });
 });
 
+TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomicText', function() {
+  LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 0;
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+    function() {/*!
+      <h1 aria-atomic="true" id="live"aria-live="polite">foo</h1>
+      <button id="go">go</button>
+      <script>
+        document.getElementById('go').addEventListener('click', function(e) {
+          document.getElementById('live').innerText = 'bar';
+        });
+      </script>
+    */},
+    function(rootNode) {
+      var go = rootNode.find({ role: RoleType.BUTTON });
+      mockFeedback.call(go.doDefault.bind(go))
+          .expectCategoryFlushSpeech('bar', 'Heading 1')
+      mockFeedback.replay();
+    });
+});
+
 TEST_F('LiveRegionsTest', 'LiveRegionChangeImageAlt', function() {
   // Note that there is a live region outputted as a result of page load; the
   // test expects a live region announcement after a click on the button, but
