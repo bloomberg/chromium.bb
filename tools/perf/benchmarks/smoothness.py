@@ -59,21 +59,6 @@ class SmoothnessTop25(_Smoothness):
         self.DisableStory('https://mail.google.com/mail/',
                           [story_module.expectations.ALL_WIN],
                           'crbug.com/750147')
-        self.DisableStory('https://www.google.com/calendar/',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
-        self.DisableStory('https://www.google.com/search?q=cats&tbm=isch',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
-        self.DisableStory('Docs  (1 open document tab)',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
-        self.DisableStory('https://plus.google.com/110031535020051778989/posts',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
-        self.DisableStory('http://www.youtube.com',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
     return StoryExpectations()
 
 
@@ -318,21 +303,6 @@ class SmoothnessGpuRasterizationTop25(_Smoothness):
                           'crbug.com/667432')
         self.DisableStory('Pinterest', [story_module.expectations.ALL],
                           'crbug.com/667432')
-        self.DisableStory('https://www.google.com/calendar/',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
-        self.DisableStory('https://www.google.com/search?q=cats&tbm=isch',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
-        self.DisableStory('Docs  (1 open document tab)',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
-        self.DisableStory('https://plus.google.com/110031535020051778989/posts',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
-        self.DisableStory('http://www.youtube.com',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
     return StoryExpectations()
 
 
