@@ -20,46 +20,53 @@ namespace content {
 // Test that cropped sizes with zero-area input frames are correctly computed.
 // Aspect ratio limits should be ignored.
 TEST(VideoTrackAdapterTest, ZeroInputArea) {
-  const double kMinAspectRatio = 0.1;
-  const double kMaxAspectRatio = 2.0;
   const int kMaxWidth = 640;
   const int kMaxHeight = 480;
+  const int kSmallDimension = 300;
+  const int kLargeDimension = 1000;
+  static_assert(kSmallDimension < kMaxWidth && kSmallDimension < kMaxHeight,
+                "kSmallDimension must be less than kMaxWidth and kMaxHeight");
+  static_assert(
+      kLargeDimension > kMaxWidth && kLargeDimension > kMaxHeight,
+      "kLargeDimension must be greater than kMaxWidth and kMaxHeight");
+  const VideoTrackAdapterSettings kVideoTrackAdapterSettings(
+      kMaxWidth, kMaxHeight, 0.1 /* min_aspect_ratio */,
+      2.0 /* max_aspect_ratio */, 0.0 /* max_frame_rate */);
   const bool kIsRotatedValues[] = {true, false};
 
   for (bool is_rotated : kIsRotatedValues) {
     gfx::Size desired_size;
 
     VideoTrackAdapter::CalculateTargetSize(
-        is_rotated, gfx::Size(0, 0), gfx::Size(kMaxWidth, kMaxHeight),
-        kMinAspectRatio, kMaxAspectRatio, &desired_size);
+        is_rotated, gfx::Size(0, 0), kVideoTrackAdapterSettings, &desired_size);
     EXPECT_EQ(desired_size.width(), 0);
     EXPECT_EQ(desired_size.height(), 0);
 
     // Zero width.
     VideoTrackAdapter::CalculateTargetSize(
-        is_rotated, gfx::Size(0, 300), gfx::Size(kMaxWidth, kMaxHeight),
-        kMinAspectRatio, kMaxAspectRatio, &desired_size);
+        is_rotated, gfx::Size(0, kSmallDimension), kVideoTrackAdapterSettings,
+        &desired_size);
     EXPECT_EQ(desired_size.width(), 0);
-    EXPECT_EQ(desired_size.height(), 300);
+    EXPECT_EQ(desired_size.height(), kSmallDimension);
 
     // Zero height.
     VideoTrackAdapter::CalculateTargetSize(
-        is_rotated, gfx::Size(300, 0), gfx::Size(kMaxWidth, kMaxHeight),
-        kMinAspectRatio, kMaxAspectRatio, &desired_size);
-    EXPECT_EQ(desired_size.width(), 300);
+        is_rotated, gfx::Size(kSmallDimension, 0), kVideoTrackAdapterSettings,
+        &desired_size);
+    EXPECT_EQ(desired_size.width(), kSmallDimension);
     EXPECT_EQ(desired_size.height(), 0);
 
     // Requires "cropping" of height.
     VideoTrackAdapter::CalculateTargetSize(
-        is_rotated, gfx::Size(0, 1000), gfx::Size(kMaxWidth, kMaxHeight),
-        kMinAspectRatio, kMaxAspectRatio, &desired_size);
+        is_rotated, gfx::Size(0, kLargeDimension), kVideoTrackAdapterSettings,
+        &desired_size);
     EXPECT_EQ(desired_size.width(), 0);
     EXPECT_EQ(desired_size.height(), is_rotated ? kMaxWidth : kMaxHeight);
 
     // Requires "cropping" of width.
     VideoTrackAdapter::CalculateTargetSize(
-        is_rotated, gfx::Size(1000, 0), gfx::Size(kMaxWidth, kMaxHeight),
-        kMinAspectRatio, kMaxAspectRatio, &desired_size);
+        is_rotated, gfx::Size(kLargeDimension, 0), kVideoTrackAdapterSettings,
+        &desired_size);
     EXPECT_EQ(desired_size.width(), is_rotated ? kMaxHeight : kMaxWidth);
     EXPECT_EQ(desired_size.height(), 0);
   }
@@ -72,41 +79,64 @@ TEST(VideoTrackAdapterTest, ZeroOutputArea) {
   const double kMaxAspectRatio = 2.0;
   const int kInputWidth = 640;
   const int kInputHeight = 480;
+  const int kSmallMaxDimension = 300;
+  const int kLargeMaxDimension = 1000;
+  static_assert(
+      kSmallMaxDimension < kInputWidth && kSmallMaxDimension < kInputHeight,
+      "kSmallMaxDimension must be less than kInputWidth and kInputHeight");
+  static_assert(
+      kLargeMaxDimension > kInputWidth && kLargeMaxDimension > kInputHeight,
+      "kLargeMaxDimension must be greater than kInputWidth and kInputHeight");
 
   gfx::Size desired_size;
 
   VideoTrackAdapter::CalculateTargetSize(
       false /* is_rotated */, gfx::Size(kInputWidth, kInputHeight),
-      gfx::Size(0, 0), kMinAspectRatio, kMaxAspectRatio, &desired_size);
+      VideoTrackAdapterSettings(0 /* max_width */, 0 /* max_height */,
+                                kMinAspectRatio, kMaxAspectRatio,
+                                0.0 /* max_frame_rate */),
+      &desired_size);
   EXPECT_EQ(desired_size.width(), 0);
   EXPECT_EQ(desired_size.height(), 0);
 
   // Width is cropped to zero.
   VideoTrackAdapter::CalculateTargetSize(
       false /* is_rotated */, gfx::Size(kInputWidth, kInputHeight),
-      gfx::Size(0, 1000), kMinAspectRatio, kMaxAspectRatio, &desired_size);
+      VideoTrackAdapterSettings(
+          0 /* max_width */, kLargeMaxDimension /* max_height */,
+          kMinAspectRatio, kMaxAspectRatio, 0.0 /* max_frame_rate */),
+      &desired_size);
   EXPECT_EQ(desired_size.width(), 0);
   EXPECT_EQ(desired_size.height(), kInputHeight);
 
   // Requires "cropping" of width and height.
   VideoTrackAdapter::CalculateTargetSize(
       false /* is_rotated */, gfx::Size(kInputWidth, kInputHeight),
-      gfx::Size(0, 300), kMinAspectRatio, kMaxAspectRatio, &desired_size);
+      VideoTrackAdapterSettings(
+          0 /* max_width */, kSmallMaxDimension /* max_height */,
+          kMinAspectRatio, kMaxAspectRatio, 0.0 /* max_frame_rate */),
+      &desired_size);
   EXPECT_EQ(desired_size.width(), 0);
-  EXPECT_EQ(desired_size.height(), 300);
+  EXPECT_EQ(desired_size.height(), kSmallMaxDimension);
 
   // Height is cropped to zero.
   VideoTrackAdapter::CalculateTargetSize(
       false /* is_rotated */, gfx::Size(kInputWidth, kInputHeight),
-      gfx::Size(1000, 0), kMinAspectRatio, kMaxAspectRatio, &desired_size);
+      VideoTrackAdapterSettings(kLargeMaxDimension /* max_width */,
+                                0 /* max_height */, kMinAspectRatio,
+                                kMaxAspectRatio, 0.0 /* max_frame_rate */),
+      &desired_size);
   EXPECT_EQ(desired_size.width(), kInputWidth);
   EXPECT_EQ(desired_size.height(), 0);
 
   // Requires "cropping" of width and height.
   VideoTrackAdapter::CalculateTargetSize(
       false /* is_rotated */, gfx::Size(kInputWidth, kInputHeight),
-      gfx::Size(300, 0), kMinAspectRatio, kMaxAspectRatio, &desired_size);
-  EXPECT_EQ(desired_size.width(), 300);
+      VideoTrackAdapterSettings(kSmallMaxDimension /* max_width */,
+                                0 /* max_height */, kMinAspectRatio,
+                                kMaxAspectRatio, 0.0 /* max_frame_rate */),
+      &desired_size);
+  EXPECT_EQ(desired_size.width(), kSmallMaxDimension);
   EXPECT_EQ(desired_size.height(), 0);
 }
 
@@ -123,7 +153,8 @@ TEST(VideoTrackAdapterTest, ClampToMaxDimension) {
 
   VideoTrackAdapter::CalculateTargetSize(
       false /* is_rotated */, gfx::Size(kInputWidth, kInputHeight),
-      gfx::Size(kMaxWidth, kMaxHeight), kMinAspectRatio, kMaxAspectRatio,
+      VideoTrackAdapterSettings(kMaxWidth, kMaxHeight, kMinAspectRatio,
+                                kMaxAspectRatio, 0.0 /* max_frame_rate */),
       &desired_size);
   EXPECT_EQ(desired_size.width(), media::limits::kMaxDimension);
   EXPECT_EQ(desired_size.height(), media::limits::kMaxDimension);
