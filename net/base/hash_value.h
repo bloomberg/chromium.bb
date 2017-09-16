@@ -92,9 +92,15 @@ class SHA256HashValueLessThan {
 
 // IsSHA256HashInSortedArray returns true iff |hash| is in |array|, a sorted
 // array of SHA256 hashes.
-bool IsSHA256HashInSortedArray(const SHA256HashValue& hash,
-                               const uint8_t* array,
-                               size_t array_byte_len);
+bool IsSHA256HashInSortedArray(const HashValue& hash,
+                               const SHA256HashValue* array,
+                               size_t array_len);
+
+// IsAnySHA256HashInSortedArray returns true iff any value in |hashes| is in
+// |array|, a sorted array of SHA256 hashes.
+bool IsAnySHA256HashInSortedArray(const HashValueVector& hashes,
+                                  const SHA256HashValue* list,
+                                  size_t list_length);
 
 }  // namespace net
 

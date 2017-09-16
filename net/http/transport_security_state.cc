@@ -23,8 +23,10 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
+#include "net/base/hash_value.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/ct_policy_status.h"
+#include "net/cert/symantec_certs.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/dns_util.h"
@@ -66,21 +68,6 @@ bool IsDynamicExpectCTEnabled() {
   return base::FeatureList::IsEnabled(
       TransportSecurityState::kDynamicExpectCTFeature);
 }
-
-// LessThan comparator for use with std::binary_search() in determining
-// whether a SHA-256 HashValue appears within a sorted array of
-// SHA256HashValues.
-struct SHA256ToHashValueComparator {
-  bool operator()(const SHA256HashValue& lhs, const HashValue& rhs) const {
-    DCHECK_EQ(HASH_VALUE_SHA256, rhs.tag);
-    return memcmp(lhs.data, rhs.data(), rhs.size()) < 0;
-  }
-
-  bool operator()(const HashValue& lhs, const SHA256HashValue& rhs) const {
-    DCHECK_EQ(HASH_VALUE_SHA256, lhs.tag);
-    return memcmp(lhs.data(), rhs.data, lhs.size()) < 0;
-  }
-};
 
 void RecordUMAForHPKPReportFailure(const GURL& report_uri,
                                    int net_error,
@@ -943,7 +930,8 @@ TransportSecurityState::CheckCTRequirements(
 #endif
 
   const base::Time epoch = base::Time::UnixEpoch();
-  for (const auto& restricted_ca : kCTRequiredPolicies) {
+  const CTRequiredPolicies& ct_required_policies = GetCTRequiredPolicies();
+  for (const auto& restricted_ca : ct_required_policies) {
     if (epoch + restricted_ca.effective_date >
         validated_certificate_chain->valid_start()) {
       // The candidate cert is not subject to the CT policy, because it
@@ -951,35 +939,23 @@ TransportSecurityState::CheckCTRequirements(
       continue;
     }
 
-    for (const auto& hash : public_key_hashes) {
-      if (hash.tag != HASH_VALUE_SHA256)
-        continue;
-
-      // Determine if |hash| is in the set of roots of |restricted_ca|.
-      if (!std::binary_search(restricted_ca.roots,
-                              restricted_ca.roots + restricted_ca.roots_length,
-                              hash, SHA256ToHashValueComparator())) {
-        continue;
-      }
-
-      // Found a match, indicating this certificate is potentially
-      // restricted. Determine if any of the hashes are on the exclusion
-      // list as exempt from the CT requirement.
-      for (const auto& sub_ca_hash : public_key_hashes) {
-        if (sub_ca_hash.tag != HASH_VALUE_SHA256)
-          continue;
-        if (std::binary_search(
-                restricted_ca.exceptions,
-                restricted_ca.exceptions + restricted_ca.exceptions_length,
-                sub_ca_hash, SHA256ToHashValueComparator())) {
-          // Found an excluded sub-CA; CT is not required.
-          return default_response;
-        }
-      }
-
-      // No exception found. This certificate must conform to the CT policy.
-      return CT_REQUIREMENTS_NOT_MET;
+    if (!IsAnySHA256HashInSortedArray(public_key_hashes, restricted_ca.roots,
+                                      restricted_ca.roots_length)) {
+      // No match for this set of restricted roots.
+      continue;
     }
+
+    // Found a match, indicating this certificate is potentially
+    // restricted. Determine if any of the hashes are on the exclusion
+    // list as exempt from the CT requirement.
+    if (IsAnySHA256HashInSortedArray(public_key_hashes,
+                                     restricted_ca.exceptions,
+                                     restricted_ca.exceptions_length)) {
+      // Found an excluded sub-CA; CT is not required.
+      return default_response;
+    }
+    // No exception found. This certificate must conform to the CT policy.
+    return CT_REQUIREMENTS_NOT_MET;
   }
 
   return default_response;
