@@ -30,6 +30,7 @@
 #include <memory>
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/CaretDisplayItemClient.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 
 namespace blink {

@@ -27,14 +27,16 @@
 #ifndef CaretDisplayItemClient_h
 #define CaretDisplayItemClient_h
 
-#include "core/editing/PositionWithAffinity.h"
+#include "core/editing/Forward.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/Color.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
+class Node;
 class GraphicsContext;
 class LayoutBlock;
 struct PaintInvalidatorContext;

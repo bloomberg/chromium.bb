@@ -37,6 +37,7 @@
 #include "core/editing/InlineBoxTraversal.h"
 #include "core/editing/Position.h"
 #include "core/editing/PositionIterator.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"

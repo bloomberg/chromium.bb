@@ -23,7 +23,7 @@
 #define HitTestResult_h
 
 #include "core/CoreExport.h"
-#include "core/editing/PositionWithAffinity.h"
+#include "core/editing/Forward.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/HitTestRequest.h"
 #include "platform/geometry/FloatQuad.h"
@@ -33,6 +33,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/VectorTraits.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

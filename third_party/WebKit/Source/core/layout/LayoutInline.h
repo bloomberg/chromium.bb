@@ -25,7 +25,7 @@
 #define LayoutInline_h
 
 #include "core/CoreExport.h"
-#include "core/editing/PositionWithAffinity.h"
+#include "core/editing/Forward.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineFlowBox.h"

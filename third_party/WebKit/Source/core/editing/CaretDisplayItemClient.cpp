@@ -26,6 +26,7 @@
 #include "core/editing/CaretDisplayItemClient.h"
 
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"

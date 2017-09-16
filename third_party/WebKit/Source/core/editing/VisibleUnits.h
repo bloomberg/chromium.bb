@@ -30,7 +30,6 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Forward.h"
-#include "core/editing/PositionWithAffinity.h"
 #include "platform/text/TextDirection.h"
 
 namespace blink {

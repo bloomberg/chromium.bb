@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "core/dom/Document.h"
+#include "core/dom/FlatTreeTraversal.h"
 #include "core/events/TouchEvent.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"

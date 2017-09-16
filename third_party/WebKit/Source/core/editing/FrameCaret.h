@@ -28,7 +28,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/editing/PositionWithAffinity.h"
+#include "core/editing/Forward.h"
 #include "platform/Timer.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/PaintInvalidationReason.h"
@@ -56,7 +56,7 @@ class CORE_EXPORT FrameCaret final
   ~FrameCaret();
 
   const DisplayItemClient& GetDisplayItemClient() const;
-  bool IsActive() const { return CaretPosition().IsNotNull(); }
+  bool IsActive() const;
 
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
