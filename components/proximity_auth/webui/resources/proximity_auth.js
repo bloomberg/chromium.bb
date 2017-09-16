@@ -175,6 +175,8 @@ class DeviceListController {
   createRemoteDeviceItem_(remoteDevice) {
     var isUnlockKey = !!remoteDevice['unlockKey'];
     var hasMobileHotspot = !!remoteDevice['hasMobileHotspot'];
+    var supportsArcPlusPlus = !!remoteDevice['supportsArcPlusPlus'];
+    var isPixelPhone = !!remoteDevice['isPixelPhone'];
 
     var t = this.remoteDeviceTemplate_.content;
     t.querySelector('.device-connection-status').setAttribute(
@@ -185,6 +187,9 @@ class DeviceListController {
         remoteDevice['publicKeyTruncated'];
     t.querySelector('.is-unlock-key').textContent = isUnlockKey;
     t.querySelector('.supports-mobile-hotspot').textContent = hasMobileHotspot;
+    t.querySelector('.supports-arc-plus-plus').textContent =
+        supportsArcPlusPlus;
+    t.querySelector('.is-pixel-phone').textContent = isPixelPhone;
     if (!!remoteDevice['bluetoothAddress']) {
       t.querySelector('.bluetooth-address-row').classList.remove('hidden');
       t.querySelector('.bluetooth-address').textContent =

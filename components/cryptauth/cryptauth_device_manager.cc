@@ -159,12 +159,12 @@ std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
   }
 
   if (device.has_arc_plus_plus()) {
-    dictionary->SetInteger(kExternalDeviceKeyArcPlusPlus,
+    dictionary->SetBoolean(kExternalDeviceKeyArcPlusPlus,
                            device.arc_plus_plus());
   }
 
   if (device.has_pixel_phone()) {
-    dictionary->SetInteger(kExternalDeviceKeyPixelPhone, device.pixel_phone());
+    dictionary->SetBoolean(kExternalDeviceKeyPixelPhone, device.pixel_phone());
   }
 
   std::unique_ptr<base::ListValue> beacon_seed_list =
