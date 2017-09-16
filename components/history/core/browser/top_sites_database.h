@@ -93,14 +93,14 @@ class TopSitesDatabase {
   // Returns |url|'s current rank or kRankOfNonExistingURL if not present.
   int GetURLRank(const MostVisitedURL& url);
 
-  // Removes the record for this URL. Returns false iff there is a failure in
-  // running the statement. Should be called within an open transaction.
-  bool RemoveURLNoTransaction(const MostVisitedURL& url);
-
   // Sets the rank for a given URL. The URL must be in the database.
   // Uses SetPageThumbnail if it's not. Should be called within an open
   // transaction.
   void UpdatePageRankNoTransaction(const MostVisitedURL& url, int new_rank);
+
+  // Removes the record for this URL. Returns false iff there is a failure in
+  // running the statement. Should be called within an open transaction.
+  bool RemoveURLNoTransaction(const MostVisitedURL& url);
 
   // Helper function to implement internals of Init().  This allows
   // Init() to retry in case of failure, since some failures will
