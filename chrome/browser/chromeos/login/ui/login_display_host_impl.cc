@@ -377,6 +377,7 @@ class LoginDisplayHostImpl::LoginWidgetDelegate : public views::WidgetDelegate {
 
 LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& wallpaper_bounds)
     : wallpaper_bounds_(wallpaper_bounds),
+      startup_sound_played_(StartupUtils::IsOobeCompleted()),
       pointer_factory_(this),
       animation_weak_ptr_factory_(this) {
   if (ash_util::IsRunningInMash()) {
