@@ -70,7 +70,7 @@ def DefaultPages(base_name):
       'pixel_webgl_aa_alpha.html',
       base_name + '_WebGLGreenTriangle_AA_Alpha',
       test_rect=[0, 0, 300, 300],
-      revision=1),
+      revision=2),
 
     PixelTestPage(
       'pixel_webgl_noaa_alpha.html',
@@ -82,7 +82,7 @@ def DefaultPages(base_name):
       'pixel_webgl_aa_noalpha.html',
       base_name + '_WebGLGreenTriangle_AA_NoAlpha',
       test_rect=[0, 0, 300, 300],
-      revision=1),
+      revision=2),
 
     PixelTestPage(
       'pixel_webgl_noaa_noalpha.html',
@@ -129,7 +129,7 @@ def DefaultPages(base_name):
       'pixel_canvas2d_webgl.html',
       base_name + '_2DCanvasWebGL',
       test_rect=[0, 0, 300, 300],
-      revision=3),
+      revision=4),
 
     PixelTestPage(
       'pixel_background.html',
@@ -298,14 +298,14 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_transfer_after_style_resize.html',
       base_name + '_OffscreenCanvasTransferAfterStyleResize',
       test_rect=[0, 0, 350, 350],
-      revision=1,
+      revision=2,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_transfer_before_style_resize.html',
       base_name + '_OffscreenCanvasTransferBeforeStyleResize',
       test_rect=[0, 0, 350, 350],
-      revision=1,
+      revision=2,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -326,28 +326,28 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_webgl_commit_main.html',
       base_name + '_OffscreenCanvasWebGLDefault',
       test_rect=[0, 0, 360, 200],
-      revision=4,
+      revision=5,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_commit_worker.html',
       base_name + '_OffscreenCanvasWebGLDefaultWorker',
       test_rect=[0, 0, 360, 200],
-      revision=4,
+      revision=5,
       browser_args=browser_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_commit_main.html',
       base_name + '_OffscreenCanvasWebGLSoftwareCompositing',
       test_rect=[0, 0, 360, 200],
-      revision=5,
+      revision=6,
       browser_args=browser_args + ['--disable-gpu-compositing']),
 
     PixelTestPage(
       'pixel_offscreenCanvas_webgl_commit_worker.html',
       base_name + '_OffscreenCanvasWebGLSoftwareCompositingWorker',
       test_rect=[0, 0, 360, 200],
-      revision=5,
+      revision=6,
       browser_args=browser_args + ['--disable-gpu-compositing']),
 
     PixelTestPage(
@@ -403,7 +403,7 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_webgl_resize_on_worker.html',
       base_name + '_OffscreenCanvasWebglResizeOnWorker',
       test_rect=[0, 0, 200, 200],
-      revision=2,
+      revision=3,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -450,7 +450,7 @@ def MacSpecificPages(base_name):
       'pixel_canvas2d_webgl.html',
       base_name + '_IOSurface2DCanvasWebGL',
       test_rect=[0, 0, 300, 300],
-      revision=2,
+      revision=3,
       browser_args=iosurface_2d_canvas_args),
 
     # On macOS, test WebGL non-Chromium Image compositing path.
@@ -458,7 +458,7 @@ def MacSpecificPages(base_name):
       'pixel_webgl_aa_alpha.html',
       base_name + '_WebGLGreenTriangle_NonChromiumImage_AA_Alpha',
       test_rect=[0, 0, 300, 300],
-      revision=1,
+      revision=2,
       browser_args=non_chromium_image_args),
     PixelTestPage(
       'pixel_webgl_noaa_alpha.html',
@@ -470,7 +470,7 @@ def MacSpecificPages(base_name):
       'pixel_webgl_aa_noalpha.html',
       base_name + '_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha',
       test_rect=[0, 0, 300, 300],
-      revision=1,
+      revision=2,
       browser_args=non_chromium_image_args),
     PixelTestPage(
       'pixel_webgl_noaa_noalpha.html',
