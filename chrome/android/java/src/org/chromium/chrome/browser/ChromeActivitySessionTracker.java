@@ -206,7 +206,6 @@ public class ChromeActivitySessionTracker {
     private void updateAcceptLanguages() {
         String localeString = LocaleUtils.getDefaultLocaleListString();
         if (hasLocaleChanged(localeString)) {
-            PrefServiceBridge.getInstance().resetAcceptLanguages(localeString);
             // Clear cache so that accept-languages change can be applied immediately.
             // TODO(changwan): The underlying BrowsingDataRemover::Remove() is an asynchronous call.
             // So cache-clearing may not be effective if URL rendering can happen before
@@ -224,7 +223,8 @@ public class ChromeActivitySessionTracker {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString(PREF_LOCALE, newLocale);
             editor.apply();
-            // Consider writing the initial value to prefs as _not_ changing the locale.
+            PrefServiceBridge.getInstance().resetAcceptLanguages(newLocale);
+            // We consider writing the initial value to prefs as _not_ changing the locale.
             return previousLocale != null;
         }
         return false;
