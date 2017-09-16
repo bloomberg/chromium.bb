@@ -47,27 +47,6 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
   void RemoveObserver();
 
   // VFS message handlers (tracker sequence)
-  void OnDatabaseOpenFile(const base::string16& vfs_file_name,
-                          int desired_flags,
-                          IPC::PlatformFileForTransit* handle);
-  void OnDatabaseDeleteFile(const base::string16& vfs_file_name,
-                            const bool& sync_dir,
-                            IPC::Message* reply_msg);
-  void OnDatabaseGetFileAttributes(const base::string16& vfs_file_name,
-                                   int32_t* attributes);
-  void OnDatabaseGetFileSize(const base::string16& vfs_file_name,
-                             int64_t* size);
-  void OnDatabaseSetFileSize(const base::string16& vfs_file_name,
-                             int64_t size,
-                             bool* success);
-
-  // Quota message handler (io thread)
-  void OnDatabaseGetSpaceAvailable(const url::Origin& origin,
-                                   IPC::Message* reply_msg);
-  void OnDatabaseDidGetUsageAndQuota(IPC::Message* reply_msg,
-                                     storage::QuotaStatusCode status,
-                                     int64_t usage,
-                                     int64_t quota);
 
   // Database tracker message handlers (tracker sequence)
   void OnDatabaseOpened(const url::Origin& origin,

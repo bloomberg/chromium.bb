@@ -122,6 +122,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
+#include "content/browser/renderer_host/web_database_host_impl.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
@@ -1882,6 +1883,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(base::Bind(&RenderProcessHostImpl::CreateMusGpuRequest,
                                     base::Unretained(this)));
+
+  registry->AddInterface(
+      base::Bind(
+          &WebDatabaseHostImpl::Create,
+          make_scoped_refptr(storage_partition_impl_->GetDatabaseTracker())),
+      storage_partition_impl_->GetDatabaseTracker()->task_runner());
 
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();

@@ -37,6 +37,7 @@
           "content::mojom::StoragePartitionService",
           "content::mojom::URLLoaderFactory",
           "content::mojom::VideoCaptureHost",
+          "content::mojom::WebDatabaseHost",
           "content::mojom::WorkerURLLoaderFactoryProvider",
           "device::mojom::BatteryMonitor",
           "device::mojom::GamepadMonitor",
