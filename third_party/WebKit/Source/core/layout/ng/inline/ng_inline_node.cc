@@ -63,7 +63,8 @@ void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
                     const Vector<unsigned, 32>& text_offsets,
                     Vector<FragmentPosition, 32>* positions_for_bidi_runs_out,
                     HashMap<LineLayoutItem, FragmentPosition>* positions_out) {
-  for (const auto& child : children) {
+  for (unsigned child_index = 0; child_index < children.size(); child_index++) {
+    const auto& child = children[child_index];
     if (child->Type() == NGPhysicalFragment::kFragmentText) {
       const auto& physical_fragment = ToNGPhysicalTextFragment(*child);
       const NGInlineItem& item = items[physical_fragment.ItemIndexDeprecated()];
@@ -79,10 +80,16 @@ void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
                           item.BidiLevel(), LineLayoutItem(layout_object));
         layout_object->ClearNeedsLayout();
       } else if (item.Type() == NGInlineItem::kAtomicInline) {
+        // An atomic inline produces two fragments; one marker text fragment to
+        // store item index, and one box fragment.
         LayoutObject* layout_object = item.GetLayoutObject();
         DCHECK(layout_object->IsAtomicInlineLevel());
         run =
             new BidiRun(0, 1, item.BidiLevel(), LineLayoutItem(layout_object));
+        DCHECK(child_index + 1 < children.size() &&
+               children[child_index + 1]->IsBox() &&
+               children[child_index + 1]->GetLayoutObject() == layout_object);
+        child_index++;
       } else {
         continue;
       }

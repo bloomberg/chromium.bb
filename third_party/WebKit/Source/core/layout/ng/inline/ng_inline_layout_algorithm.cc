@@ -296,6 +296,8 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
   NGInlineBoxState* box =
       box_states_.OnOpenTag(item, *item_result, line_box, position);
 
+  DCHECK(item_result->layout_result);
+  DCHECK(item_result->layout_result->PhysicalFragment());
   NGBoxFragment fragment(
       ConstraintSpace().WritingMode(),
       ToNGPhysicalBoxFragment(*item_result->layout_result->PhysicalFragment()));
@@ -306,20 +308,22 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
        baseline_type_});
   box->metrics.Unite(metrics);
 
-  // TODO(kojii): Figure out what to do with OOF in NGLayoutResult.
-  // Floats are ok because atomic inlines are BFC?
-
-  // TODO(kojii): Try to eliminate the wrapping text fragment and use the
-  // |fragment| directly. Currently |CopyFragmentDataToLayoutBlockFlow|
-  // requires a text fragment.
-  NGTextFragmentBuilder text_builder(Node(), &style,
-                                     ConstraintSpace().WritingMode());
-  text_builder.SetSize({fragment.InlineSize(), metrics.LineHeight()});
   LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
-  RefPtr<NGPhysicalTextFragment> text_fragment = text_builder.ToTextFragment(
-      item_result->item_index, item_result->start_offset,
-      item_result->end_offset);
-  line_box->AddChild(std::move(text_fragment), {position, line_top});
+  if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
+    // |CopyFragmentDataToLayoutBox| needs to know if a box fragment is an
+    // atomic inline, and its item_index. Add a text fragment as a marker.
+    NGTextFragmentBuilder text_builder(Node(), &style,
+                                       ConstraintSpace().WritingMode());
+    text_builder.SetSize({fragment.InlineSize(), metrics.LineHeight()});
+    RefPtr<NGPhysicalTextFragment> text_fragment = text_builder.ToTextFragment(
+        item_result->item_index, item_result->start_offset,
+        item_result->end_offset);
+    line_box->AddChild(std::move(text_fragment), {position, line_top});
+    // We need the box fragment as well to compute VisualRect() correctly.
+  }
+
+  line_box->AddChild(std::move(item_result->layout_result),
+                     {position, line_top});
 
   return box_states_.OnCloseTag(item, line_box, box, baseline_type_);
 }
