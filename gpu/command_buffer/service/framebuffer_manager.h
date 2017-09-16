@@ -133,6 +133,10 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   const Attachment* GetReadBufferAttachment() const;
 
+  // Returns the max dimensions which fit inside all of the attachments.
+  // Can only be called after the framebuffer has been checked to be complete.
+  gfx::Size GetFramebufferValidSize() const;
+
   GLsizei GetSamples() const;
 
   bool IsDeleted() const {
@@ -345,7 +349,7 @@ class GPU_EXPORT FramebufferManager {
 
   void MarkAsComplete(Framebuffer* framebuffer);
 
-  bool IsComplete(Framebuffer* framebuffer);
+  bool IsComplete(const Framebuffer* framebuffer);
 
   void IncFramebufferStateChangeCount() {
     // make sure this is never 0.

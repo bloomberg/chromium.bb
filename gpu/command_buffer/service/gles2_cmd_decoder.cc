@@ -4593,12 +4593,7 @@ bool GLES2DecoderImpl::FormsTextureCopyingFeedbackLoop(
 gfx::Size GLES2DecoderImpl::GetBoundReadFramebufferSize() {
   Framebuffer* framebuffer = GetBoundReadFramebuffer();
   if (framebuffer) {
-    const Framebuffer::Attachment* attachment =
-        framebuffer->GetReadBufferAttachment();
-    if (attachment) {
-      return gfx::Size(attachment->width(), attachment->height());
-    }
-    return gfx::Size(0, 0);
+    return framebuffer->GetFramebufferValidSize();
   } else if (offscreen_target_frame_buffer_.get()) {
     return offscreen_size_;
   } else {
