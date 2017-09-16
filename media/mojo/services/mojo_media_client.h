@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/overlay_info.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 
@@ -68,7 +69,8 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
-      OutputWithReleaseMailboxCB output_cb);
+      OutputWithReleaseMailboxCB output_cb,
+      RequestOverlayInfoCB request_overlay_info_cb);
 
   // Returns the output sink used for rendering audio on |audio_device_id|.
   // May be null if the RendererFactory doesn't need an audio sink.

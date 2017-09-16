@@ -101,6 +101,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     AVDACodecAllocator* codec_allocator,
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
     AndroidOverlayMojoFactoryCB overlay_factory_cb,
+    RequestOverlayInfoCB request_overlay_info_cb,
     std::unique_ptr<VideoFrameFactory> video_frame_factory,
     std::unique_ptr<service_manager::ServiceContextRef> context_ref)
     : state_(State::kInitializing),
@@ -111,6 +112,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       gpu_task_runner_(gpu_task_runner),
       get_stub_cb_(get_stub_cb),
       codec_allocator_(codec_allocator),
+      request_overlay_info_cb_(std::move(request_overlay_info_cb)),
       surface_chooser_(std::move(surface_chooser)),
       video_frame_factory_(std::move(video_frame_factory)),
       overlay_factory_cb_(std::move(overlay_factory_cb)),
@@ -208,7 +210,8 @@ void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
   InitializeSurfaceChooser();
 }
 
-void MediaCodecVideoDecoder::SetOverlayInfo(const OverlayInfo& overlay_info) {
+void MediaCodecVideoDecoder::OnOverlayInfoChanged(
+    const OverlayInfo& overlay_info) {
   DVLOG(2) << __func__;
   bool overlay_changed = !overlay_info_.RefersToSameOverlayAs(overlay_info);
   overlay_info_ = overlay_info;

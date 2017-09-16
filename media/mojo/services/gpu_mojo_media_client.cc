@@ -114,7 +114,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaLog* media_log,
     mojom::CommandBufferIdPtr command_buffer_id,
-    OutputWithReleaseMailboxCB output_cb) {
+    OutputWithReleaseMailboxCB output_cb,
+    RequestOverlayInfoCB request_overlay_info_cb) {
 #if BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER)
   return base::MakeUnique<MediaCodecVideoDecoder>(
       gpu_task_runner_,
@@ -125,6 +126,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       base::MakeUnique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
       base::Bind(&CreateAndroidOverlay, media_gpu_channel_manager_),
+      std::move(request_overlay_info_cb),
       base::MakeUnique<VideoFrameFactoryImpl>(),
       context_ref_factory_->CreateRef());
 #else

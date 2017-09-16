@@ -15,6 +15,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/overlay_info.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
@@ -27,19 +28,23 @@ MojoVideoDecoder::MojoVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     GpuVideoAcceleratorFactories* gpu_factories,
     MediaLog* media_log,
-    mojom::VideoDecoderPtr remote_decoder)
+    mojom::VideoDecoderPtr remote_decoder,
+    const RequestOverlayInfoCB& request_overlay_info_cb)
     : task_runner_(task_runner),
       remote_decoder_info_(remote_decoder.PassInterface()),
       gpu_factories_(gpu_factories),
       client_binding_(this),
       media_log_service_(media_log),
       media_log_binding_(&media_log_service_),
+      request_overlay_info_cb_(request_overlay_info_cb),
       weak_factory_(this) {
   DVLOG(1) << __func__;
 }
 
 MojoVideoDecoder::~MojoVideoDecoder() {
   DVLOG(1) << __func__;
+  if (request_overlay_info_cb_ && overlay_info_requested_)
+    request_overlay_info_cb_.Run(false, ProvideOverlayInfoCB());
 }
 
 std::string MojoVideoDecoder::GetDisplayName() const {
@@ -224,6 +229,23 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   remote_decoder_->Construct(
       std::move(client_ptr_info), std::move(media_log_ptr_info),
       std::move(remote_consumer_handle), std::move(command_buffer_id));
+}
+
+void MojoVideoDecoder::RequestOverlayInfo(bool restart_for_transitions) {
+  DVLOG(2) << __func__;
+  DCHECK(request_overlay_info_cb_);
+  overlay_info_requested_ = true;
+  request_overlay_info_cb_.Run(
+      restart_for_transitions,
+      BindToCurrentLoop(base::Bind(&MojoVideoDecoder::OnOverlayInfoChanged,
+                                   weak_factory_.GetWeakPtr())));
+}
+
+void MojoVideoDecoder::OnOverlayInfoChanged(const OverlayInfo& overlay_info) {
+  DVLOG(2) << __func__;
+  if (has_connection_error_)
+    return;
+  remote_decoder_->OnOverlayInfoChanged(overlay_info);
 }
 
 void MojoVideoDecoder::Stop() {

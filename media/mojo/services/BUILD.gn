@@ -72,6 +72,7 @@ component("services") {
     "//base",
     "//media",
     "//media/gpu",
+    "//media/gpu/ipc/common",
     "//media/mojo:features",
     "//media/mojo/interfaces",
     "//mojo/public/cpp/bindings",

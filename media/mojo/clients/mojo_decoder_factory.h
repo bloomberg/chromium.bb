@@ -29,6 +29,7 @@ class MojoDecoderFactory : public DecoderFactory {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       GpuVideoAcceleratorFactories* gpu_factories,
       MediaLog* media_log,
+      const RequestOverlayInfoCB& request_overlay_info_cb,
       std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) final;
 
  private:

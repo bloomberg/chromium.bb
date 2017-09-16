@@ -2018,47 +2018,40 @@ void WebMediaPlayerImpl::OnOverlayInfoRequested(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(surface_manager_);
 
-  // A null callback indicates that the decoder is going away.
+  // If we get a non-null cb, a decoder is initializing and requires overlay
+  // info. If we get a null cb, a previously initialized decoder is
+  // unregistering for overlay info updates.
   if (provide_overlay_info_cb.is_null()) {
     decoder_requires_restart_for_overlay_ = false;
     provide_overlay_info_cb_.Reset();
     return;
   }
 
-  // For encrypted video on pre-M, we pretend that the decoder doesn't require a
-  // restart.  This is because it needs an overlay all the time anyway.  We'll
-  // switch into |always_enable_overlays_| mode below.
-  if (overlay_mode_ == OverlayMode::kUseAndroidOverlay && is_encrypted_)
-    decoder_requires_restart_for_overlay = false;
-
-  // If we get a surface request it means GpuVideoDecoder is initializing, so
-  // until we get a null surface request, GVD is the active decoder.
-  //
   // If |decoder_requires_restart_for_overlay| is true, we must restart the
   // pipeline for fullscreen transitions. The decoder is unable to switch
   // surfaces otherwise. If false, we simply need to tell the decoder about the
   // new surface and it will handle things seamlessly.
-  decoder_requires_restart_for_overlay_ = decoder_requires_restart_for_overlay;
+  // For encrypted video we pretend that the decoder doesn't require a restart
+  // because it needs an overlay all the time anyway. We'll switch into
+  // |always_enable_overlays_| mode below.
+  decoder_requires_restart_for_overlay_ =
+      (overlay_mode_ == OverlayMode::kUseAndroidOverlay && is_encrypted_)
+          ? false
+          : decoder_requires_restart_for_overlay;
   provide_overlay_info_cb_ = provide_overlay_info_cb;
 
-  // We always allow video overlays in AndroidOverlayMode.  AVDA figures out
-  // when to use them.  If the decoder requires restart, then we still want to
-  // restart the decoder on the fullscreen transitions anyway.
+  // If the decoder doesn't require restarts for surface transitions, and we're
+  // using AndroidOverlay mode, we can always enable the overlay and the decoder
+  // can choose whether or not to use it. Otherwise, we'll restart the decoder
+  // and enable the overlay on fullscreen transitions.
   if (overlay_mode_ == OverlayMode::kUseAndroidOverlay &&
-      !decoder_requires_restart_for_overlay) {
+      !decoder_requires_restart_for_overlay_) {
     always_enable_overlays_ = true;
     if (!overlay_enabled_)
       EnableOverlay();
   }
 
-  // If we're waiting for the surface to arrive, OnSurfaceCreated() will be
-  // called later when it arrives; so do nothing for now.  For AndroidOverlay,
-  // if we're waiting for the token then... OnOverlayRoutingToken()...
-  // We do this so that a request for a surface will block if we're in the
-  // process of getting one.  Otherwise, on pre-M, the decoder would be stuck
-  // without an overlay if the restart that happens on entering fullscreen
-  // succeeds before we have the overlay info.  Post-M, we could send what we
-  // have unconditionally.  When the info arrives, it will be sent.
+  // Send the overlay info if we already have it. If not, it will be sent later.
   MaybeSendOverlayInfoToDecoder();
 }
 
