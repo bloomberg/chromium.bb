@@ -3532,6 +3532,34 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskSimple) {
   EXPECT_EQ(output_clip, properties->Mask()->OutputClip());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, MaskWithOutset) {
+  SetBodyInnerHTML(
+      "<div id='target' style='width:300px; height:200px; "
+      "-webkit-mask-box-image-source:linear-gradient(red,red);"
+      "-webkit-mask-box-image-outset:10px 20px;'>"
+      "  Lorem ipsum"
+      "</div>");
+
+  const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
+  const ClipPaintPropertyNode* output_clip = properties->MaskClip();
+
+  const auto* target = GetLayoutObjectByElementId("target");
+  EXPECT_EQ(output_clip,
+            target->FirstFragment()->LocalBorderBoxProperties()->Clip());
+  EXPECT_EQ(FrameContentClip(), output_clip->Parent());
+  EXPECT_EQ(FloatRoundedRect(-12, -2, 340, 220), output_clip->ClipRect());
+
+  EXPECT_EQ(properties->Effect(),
+            target->FirstFragment()->LocalBorderBoxProperties()->Effect());
+  EXPECT_TRUE(properties->Effect()->Parent()->IsRoot());
+  EXPECT_EQ(SkBlendMode::kSrcOver, properties->Effect()->BlendMode());
+  EXPECT_EQ(output_clip, properties->Effect()->OutputClip());
+
+  EXPECT_EQ(properties->Effect(), properties->Mask()->Parent());
+  EXPECT_EQ(SkBlendMode::kDstIn, properties->Mask()->BlendMode());
+  EXPECT_EQ(output_clip, properties->Mask()->OutputClip());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
   // This test verifies an abs-pos element still escape the scroll of a
   // static-pos ancestor, but gets clipped due to the presence of a mask.

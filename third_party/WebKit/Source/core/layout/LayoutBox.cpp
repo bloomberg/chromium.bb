@@ -2428,10 +2428,6 @@ bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
 }
 
 LayoutRect LayoutBox::LocalVisualRectIgnoringVisibility() const {
-  if (HasMask() && !ShouldClipOverflow() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return LayoutRect(Layer()->BoxForFilterOrMask());
-
   return SelfVisualOverflowRect();
 }
 
@@ -5079,6 +5075,14 @@ LayoutRectOutsets LayoutBox::ComputeVisualEffectOverflowOutsets() {
     left = std::max(left, border_outsets.Left());
   }
 
+  if (Style()->HasMaskBoxImageOutsets()) {
+    LayoutRectOutsets outsets = Style()->MaskBoxImageOutsets();
+    top = std::max(top, outsets.Top());
+    right = std::max(right, outsets.Right());
+    bottom = std::max(bottom, outsets.Bottom());
+    left = std::max(left, outsets.Left());
+  }
+
   // Box-shadow and border-image-outsets are in physical direction. Flip into
   // block direction.
   if (UNLIKELY(HasFlippedBlocksWritingMode()))
@@ -5440,7 +5444,7 @@ LayoutRect LayoutBox::NoOverflowRect() const {
 LayoutRect LayoutBox::VisualOverflowRect() const {
   if (!overflow_)
     return BorderBoxRect();
-  if (HasOverflowClip())
+  if (HasOverflowClip() || HasMask())
     return overflow_->SelfVisualOverflowRect();
   return UnionRect(overflow_->SelfVisualOverflowRect(),
                    overflow_->ContentsVisualOverflowRect());
