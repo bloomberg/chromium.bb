@@ -382,6 +382,14 @@ void MojoAsyncResourceHandler::SetPriority(net::RequestPriority priority,
       request(), priority, intra_priority_value);
 }
 
+void MojoAsyncResourceHandler::PauseCachingResponseBody() {
+  NOTREACHED();
+}
+
+void MojoAsyncResourceHandler::ResumeCachingResponseBody() {
+  NOTREACHED();
+}
+
 void MojoAsyncResourceHandler::OnWritableForTesting() {
   OnWritable(MOJO_RESULT_OK);
 }

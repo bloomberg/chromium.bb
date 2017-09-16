@@ -176,6 +176,16 @@ void AppCacheURLLoaderJob::SetPriority(net::RequestPriority priority,
     network_loader_->SetPriority(priority, intra_priority_value);
 }
 
+void AppCacheURLLoaderJob::PauseCachingResponseBody() {
+  if (network_loader_)
+    network_loader_->PauseCachingResponseBody();
+}
+
+void AppCacheURLLoaderJob::ResumeCachingResponseBody() {
+  if (network_loader_)
+    network_loader_->ResumeCachingResponseBody();
+}
+
 void AppCacheURLLoaderJob::OnReceiveResponse(
     const ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,

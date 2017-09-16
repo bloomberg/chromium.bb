@@ -40,6 +40,15 @@ interface URLLoader {
   // |intra_priority_value| is a lesser priority which is used to prioritize
   // requests within a given priority level.
   SetPriority(RequestPriority priority, int32 intra_priority_value);
+
+  // If a URLLoader fetches the resource from network and support caching, it
+  // should handle these methods to pause/resume caching. Otherwise, these
+  // methods could be no-ops.
+  //
+  // It is allowed to call Pause/ResumeCachingResponseBody before response body
+  // is available.
+  PauseCachingResponseBody();
+  ResumeCachingResponseBody();
 };
 
 // Opaque handle passed from the browser process to a child process to manage

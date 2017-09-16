@@ -51,6 +51,8 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   void FollowRedirect() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
+  void PauseCachingResponseBody() override;
+  void ResumeCachingResponseBody() override;
 
   // net::URLRequest::Delegate methods:
   void OnReceivedRedirect(net::URLRequest* url_request,
