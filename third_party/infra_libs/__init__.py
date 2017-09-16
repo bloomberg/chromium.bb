@@ -12,10 +12,3 @@ from infra_libs.httplib2_utils import SERVICE_ACCOUNTS_CREDS_ROOT
 from infra_libs.utils import read_json_as_utf8
 from infra_libs.utils import rmtree
 from infra_libs.utils import temporary_directory
-
-import sys
-
-if sys.platform == 'linux2':  # pragma: no cover
-  from . import _command_line_linux as command_line
-else:  # pragma: no cover
-  from . import _command_line_stub as command_line

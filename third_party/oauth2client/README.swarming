@@ -10,5 +10,5 @@ The oauth2client is a client library for OAuth 2.0.
 
 Local Modifications:
 - Kept oauth2client/.
-- Removed: appengine.py devshell.py django_orm.py flask_util.py
+- Removed: devshell.py django_orm.py flask_util.py
 - Kept LICENSE and README.md.
