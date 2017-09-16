@@ -684,7 +684,7 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
       (webgl_version_ > kWebGL1 ||
        extensions_util_->SupportsExtension("GL_EXT_texture_storage")) &&
       anti_aliasing_mode_ == kScreenSpaceAntialiasing;
-  sample_count_ = std::min(4, max_sample_count);
+  sample_count_ = std::min(8, max_sample_count);
 
   state_restorer_->SetFramebufferBindingDirty();
   gl_->GenFramebuffers(1, &fbo_);
