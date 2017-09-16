@@ -298,6 +298,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // True when request to play startup sound was sent to
   // SoundsManager.
+  // After OOBE is completed, this is always initialized with true.
   bool startup_sound_played_ = false;
 
   // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
