@@ -238,6 +238,16 @@ void URLLoaderImpl::SetPriority(net::RequestPriority priority,
   NOTIMPLEMENTED();
 }
 
+void URLLoaderImpl::PauseCachingResponseBody() {
+  // TODO(yzshen): add implementation.
+  NOTIMPLEMENTED();
+}
+
+void URLLoaderImpl::ResumeCachingResponseBody() {
+  // TODO(yzshen): add implementation.
+  NOTIMPLEMENTED();
+}
+
 void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
                                        const net::RedirectInfo& redirect_info,
                                        bool* defer_redirect) {

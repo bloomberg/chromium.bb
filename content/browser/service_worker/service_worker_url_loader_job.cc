@@ -307,6 +307,10 @@ void ServiceWorkerURLLoaderJob::SetPriority(net::RequestPriority priority,
   NOTIMPLEMENTED();
 }
 
+void ServiceWorkerURLLoaderJob::PauseCachingResponseBody() {}
+
+void ServiceWorkerURLLoaderJob::ResumeCachingResponseBody() {}
+
 // Blob URLLoaderClient implementation for blob reading ------------
 
 void ServiceWorkerURLLoaderJob::OnReceiveResponse(
