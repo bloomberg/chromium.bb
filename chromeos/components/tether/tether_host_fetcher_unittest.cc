@@ -39,7 +39,7 @@ class MockCryptAuthDeviceManager : public cryptauth::CryptAuthDeviceManager {
  public:
   ~MockCryptAuthDeviceManager() override {}
 
-  MOCK_CONST_METHOD0(GetTetherHosts,
+  MOCK_CONST_METHOD0(GetPixelTetherHosts,
                      std::vector<cryptauth::ExternalDeviceInfo>());
 };
 
@@ -169,7 +169,7 @@ class TetherHostFetcherTest : public testing::Test {
 
     mock_device_manager_ =
         base::WrapUnique(new NiceMock<MockCryptAuthDeviceManager>());
-    ON_CALL(*mock_device_manager_, GetTetherHosts())
+    ON_CALL(*mock_device_manager_, GetPixelTetherHosts())
         .WillByDefault(Return(test_device_infos_));
 
     fake_cryptauth_gcm_manager_ =

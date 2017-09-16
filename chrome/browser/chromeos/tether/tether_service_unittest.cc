@@ -69,7 +69,7 @@ class MockCryptAuthDeviceManager : public cryptauth::CryptAuthDeviceManager {
  public:
   ~MockCryptAuthDeviceManager() override {}
 
-  MOCK_CONST_METHOD0(GetTetherHosts,
+  MOCK_CONST_METHOD0(GetPixelTetherHosts,
                      std::vector<cryptauth::ExternalDeviceInfo>());
 };
 
@@ -205,7 +205,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     test_device_infos.push_back(cryptauth::ExternalDeviceInfo());
     mock_cryptauth_device_manager_ =
         base::WrapUnique(new NiceMock<MockCryptAuthDeviceManager>());
-    ON_CALL(*mock_cryptauth_device_manager_, GetTetherHosts())
+    ON_CALL(*mock_cryptauth_device_manager_, GetPixelTetherHosts())
         .WillByDefault(Return(test_device_infos));
     fake_cryptauth_service_ =
         base::MakeUnique<cryptauth::FakeCryptAuthService>();
@@ -569,7 +569,7 @@ TEST_F(TetherServiceTest, TestFeatureFlagEnabled) {
 }
 
 TEST_F(TetherServiceTest, TestNoTetherHosts) {
-  ON_CALL(*mock_cryptauth_device_manager_, GetTetherHosts())
+  ON_CALL(*mock_cryptauth_device_manager_, GetPixelTetherHosts())
       .WillByDefault(Return(std::vector<cryptauth::ExternalDeviceInfo>()));
 
   CreateTetherService();
