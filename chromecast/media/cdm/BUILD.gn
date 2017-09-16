@@ -13,6 +13,7 @@ source_set("cdm") {
 
   deps = [
     "//base",
+    "//chromecast/base/metrics",
     "//media",
   ]
 
