@@ -74,20 +74,26 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
   base::NativeLibraryLoadError error;
   gles_library =
       base::LoadNativeLibrary(base::FilePath("libGLESv2.so"), &error);
-  if (!gles_library)
-    LOG(FATAL) << "Failed to load libGLESv2.so";
+  if (!gles_library) {
+    LOG(ERROR) << "Failed to load libGLESv2.so";
+    return gpu::kCollectInfoFatalFailure;
+  }
 
   egl_library = base::LoadNativeLibrary(base::FilePath("libEGL.so"), &error);
-  if (!egl_library)
-    LOG(FATAL) << "Failed to load libEGL.so";
+  if (!egl_library) {
+    LOG(ERROR) << "Failed to load libEGL.so";
+    return gpu::kCollectInfoFatalFailure;
+  }
 
   typedef void* (*eglGetProcAddressProc)(const char* name);
 
   auto eglGetProcAddressFn = reinterpret_cast<eglGetProcAddressProc>(
       base::GetFunctionPointerFromNativeLibrary(egl_library,
                                                 "eglGetProcAddress"));
-  if (!eglGetProcAddressFn)
-    LOG(FATAL) << "eglGetProcAddress not found.";
+  if (!eglGetProcAddressFn) {
+    LOG(ERROR) << "eglGetProcAddress not found.";
+    return gpu::kCollectInfoFatalFailure;
+  }
 
   auto get_func = [eglGetProcAddressFn, gles_library, egl_library](
       const char* name) {
@@ -162,7 +168,8 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
   temp_display = eglGetDisplayFn(EGL_DEFAULT_DISPLAY);
 
   if (temp_display == EGL_NO_DISPLAY) {
-    LOG(FATAL) << "failed to get display. " << errorstr();
+    LOG(ERROR) << "failed to get display. " << errorstr();
+    return gpu::kCollectInfoFatalFailure;
   }
 
   eglInitializeFn(temp_display, &major, &minor);
@@ -174,16 +181,18 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
 
   if (!eglChooseConfigFn(temp_display, kConfigAttribs, &config, 1,
                          &num_configs)) {
-    LOG(FATAL) << "failed to choose an egl config. " << errorstr();
+    LOG(ERROR) << "failed to choose an egl config. " << errorstr();
+    return gpu::kCollectInfoFatalFailure;
   }
 
   temp_context = eglCreateContextFn(
       temp_display, config, EGL_NO_CONTEXT,
       kContextAttribs + (egl_create_context_robustness_supported ? 0 : 2));
   if (temp_context == EGL_NO_CONTEXT) {
-    LOG(FATAL)
+    LOG(ERROR)
         << "failed to create a temporary context for fetching driver strings. "
         << errorstr();
+    return gpu::kCollectInfoFatalFailure;
   }
 
   temp_surface =
@@ -191,9 +200,10 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
 
   if (temp_surface == EGL_NO_SURFACE) {
     eglDestroyContextFn(temp_display, temp_context);
-    LOG(FATAL)
+    LOG(ERROR)
         << "failed to create a pbuffer surface for fetching driver strings. "
         << errorstr();
+    return gpu::kCollectInfoFatalFailure;
   }
 
   eglMakeCurrentFn(temp_display, temp_surface, temp_surface, temp_context);
