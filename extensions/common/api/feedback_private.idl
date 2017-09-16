@@ -122,10 +122,10 @@ namespace feedbackPrivate {
     updateEngineLog,
 
     // Log of the current power manager session.
-    powerManagerLatest,
+    powerdLatest,
 
     // Log of the previous power manager session.
-    powerManagerPrevious,
+    powerdPrevious,
 
     // Info about system PCI buses devices.
     lspci,

@@ -132,12 +132,12 @@ ChromeFeedbackPrivateDelegate::CreateSingleLogSource(
     case api::feedback_private::LOG_SOURCE_UPDATEENGINELOG:
       return std::make_unique<system_logs::SingleLogFileLogSource>(
           SupportedLogFileSource::kUpdateEngineLog);
-    case api::feedback_private::LOG_SOURCE_POWERMANAGERLATEST:
+    case api::feedback_private::LOG_SOURCE_POWERDLATEST:
       return std::make_unique<system_logs::SingleLogFileLogSource>(
-          SupportedLogFileSource::kPowerManagerLatest);
-    case api::feedback_private::LOG_SOURCE_POWERMANAGERPREVIOUS:
+          SupportedLogFileSource::kPowerdLatest);
+    case api::feedback_private::LOG_SOURCE_POWERDPREVIOUS:
       return std::make_unique<system_logs::SingleLogFileLogSource>(
-          SupportedLogFileSource::kPowerManagerPrevious);
+          SupportedLogFileSource::kPowerdPrevious);
 
     // These map to SupportedDebugDaemonSources.
     case api::feedback_private::LOG_SOURCE_DRMMODETEST:
