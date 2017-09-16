@@ -22,13 +22,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/child/blob_storage/webblobregistry_impl.h"
 #include "content/child/child_url_loader_factory_getter_impl.h"
-#include "content/child/database_util.h"
 #include "content/child/file_info_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/indexed_db/webidbfactory_impl.h"
@@ -113,6 +113,7 @@
 #include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
@@ -299,6 +300,9 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       new BlinkInterfaceProviderImpl(connector_.get()));
   top_level_blame_context_.Initialize();
   renderer_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
+
+  GetInterfaceProvider()->GetInterface(
+      mojo::MakeRequest(&web_database_host_info_));
 }
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
@@ -648,40 +652,46 @@ void RendererBlinkPlatformImpl::SandboxSupport::GetWebFontRenderStyleForStrike(
 Platform::FileHandle RendererBlinkPlatformImpl::DatabaseOpenFile(
     const WebString& vfs_file_name,
     int desired_flags) {
-  return DatabaseUtil::DatabaseOpenFile(
-      vfs_file_name, desired_flags, sync_message_filter_.get());
+  base::File file;
+  GetWebDatabaseHost().OpenFile(vfs_file_name.Utf16(), desired_flags, &file);
+  return file.TakePlatformFile();
 }
 
 int RendererBlinkPlatformImpl::DatabaseDeleteFile(
     const WebString& vfs_file_name,
     bool sync_dir) {
-  return DatabaseUtil::DatabaseDeleteFile(
-      vfs_file_name, sync_dir, sync_message_filter_.get());
+  int rv = SQLITE_IOERR_DELETE;
+  GetWebDatabaseHost().DeleteFile(vfs_file_name.Utf16(), sync_dir, &rv);
+  return rv;
 }
 
 long RendererBlinkPlatformImpl::DatabaseGetFileAttributes(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::DatabaseGetFileAttributes(vfs_file_name,
-                                                 sync_message_filter_.get());
+  int32_t rv = -1;
+  GetWebDatabaseHost().GetFileAttributes(vfs_file_name.Utf16(), &rv);
+  return rv;
 }
 
 long long RendererBlinkPlatformImpl::DatabaseGetFileSize(
     const WebString& vfs_file_name) {
-  return DatabaseUtil::DatabaseGetFileSize(vfs_file_name,
-                                           sync_message_filter_.get());
+  int64_t rv = 0LL;
+  GetWebDatabaseHost().GetFileSize(vfs_file_name.Utf16(), &rv);
+  return rv;
 }
 
 long long RendererBlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
     const blink::WebSecurityOrigin& origin) {
-  return DatabaseUtil::DatabaseGetSpaceAvailable(origin,
-                                                 sync_message_filter_.get());
+  int64_t rv = 0LL;
+  GetWebDatabaseHost().GetSpaceAvailable(origin, &rv);
+  return rv;
 }
 
 bool RendererBlinkPlatformImpl::DatabaseSetFileSize(
     const WebString& vfs_file_name,
     long long size) {
-  return DatabaseUtil::DatabaseSetFileSize(
-      vfs_file_name, size, sync_message_filter_.get());
+  bool rv = false;
+  GetWebDatabaseHost().SetFileSize(vfs_file_name.Utf16(), size, &rv);
+  return rv;
 }
 
 WebString RendererBlinkPlatformImpl::DatabaseCreateOriginIdentifier(
@@ -1337,6 +1347,17 @@ void RendererBlinkPlatformImpl::RequestPurgeMemory() {
   // when kMemoryCoordinatorV0 is enabled.
   // Use ChildMemoryCoordinator when memory coordinator is always enabled.
   base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
+}
+
+content::mojom::WebDatabaseHost&
+RendererBlinkPlatformImpl::GetWebDatabaseHost() {
+  if (!web_database_host_) {
+    web_database_host_ = content::mojom::ThreadSafeWebDatabaseHostPtr::Create(
+        std::move(web_database_host_info_),
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::WithBaseSyncPrimitives()}));
+  }
+  return **web_database_host_;
 }
 
 }  // namespace content

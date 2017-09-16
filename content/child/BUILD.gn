@@ -71,8 +71,6 @@ target(link_target_type, "child") {
     "child_url_loader_factory_getter_impl.h",
     "content_child_helpers.cc",
     "content_child_helpers.h",
-    "database_util.cc",
-    "database_util.h",
     "dwrite_font_proxy/dwrite_font_proxy_init_win.cc",
     "dwrite_font_proxy/dwrite_font_proxy_init_win.h",
     "dwrite_font_proxy/dwrite_font_proxy_win.cc",
