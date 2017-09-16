@@ -22,6 +22,7 @@ SSLStatus::SSLStatus(const net::SSLInfo& ssl_info)
     : initialized(true),
       certificate(ssl_info.cert),
       cert_status(ssl_info.cert_status),
+      public_key_hashes(ssl_info.public_key_hashes),
       security_bits(ssl_info.security_bits),
       key_exchange_group(ssl_info.key_exchange_group),
       connection_status(ssl_info.connection_status),
@@ -32,6 +33,7 @@ SSLStatus::SSLStatus(const SSLStatus& other)
     : initialized(other.initialized),
       certificate(other.certificate),
       cert_status(other.cert_status),
+      public_key_hashes(other.public_key_hashes),
       security_bits(other.security_bits),
       key_exchange_group(other.key_exchange_group),
       connection_status(other.connection_status),
@@ -43,6 +45,7 @@ SSLStatus& SSLStatus::operator=(SSLStatus other) {
   initialized = other.initialized;
   certificate = other.certificate;
   cert_status = other.cert_status;
+  public_key_hashes = other.public_key_hashes;
   security_bits = other.security_bits;
   key_exchange_group = other.key_exchange_group;
   connection_status = other.connection_status;

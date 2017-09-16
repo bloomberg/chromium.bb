@@ -15,8 +15,8 @@ namespace net {
 bool IsKnownRoot(PCCERT_CONTEXT cert) {
   SHA256HashValue hash = x509_util::CalculateFingerprint256(cert);
   bool is_builtin =
-      IsSHA256HashInSortedArray(hash, &kKnownRootCertSHA256Hashes[0][0],
-                                sizeof(kKnownRootCertSHA256Hashes));
+      IsSHA256HashInSortedArray(HashValue(hash), kKnownRootCertSHA256Hashes,
+                                kKnownRootCertSHA256HashesLength);
 
   // Test to see if the use of a built-in set of known roots on Windows can be
   // replaced with using AuthRoot's SHA-256 property. On any system other than
