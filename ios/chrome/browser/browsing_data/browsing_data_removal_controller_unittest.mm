@@ -23,8 +23,10 @@ typedef web::WebTest BrowsingDataRemovalControllerTest;
 // finish performing its operation even when a BrowserState is destroyed.
 TEST_F(BrowsingDataRemovalControllerTest, PerformAfterBrowserStateDestruction) {
   __block BOOL block_was_called = NO;
+  id mock_delegate = [OCMockObject
+      mockForProtocol:@protocol(BrowsingDataRemovalControllerDelegate)];
   BrowsingDataRemovalController* removal_controller =
-      [[BrowsingDataRemovalController alloc] init];
+      [[BrowsingDataRemovalController alloc] initWithDelegate:mock_delegate];
 
   TestChromeBrowserState::Builder builder;
   std::unique_ptr<TestChromeBrowserState> browser_state = builder.Build();
