@@ -103,6 +103,9 @@ interface LockScreenClient {
   // Sign out current user.
   SignOutUser();
 
+  // Close add user screen.
+  CancelAddUser();
+
   // User with |account_id| has reached maximum incorrect password attempts.
   OnMaxIncorrectPasswordAttempted(signin.mojom.AccountId account_id);
 };

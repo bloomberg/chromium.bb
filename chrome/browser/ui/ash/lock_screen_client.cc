@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -88,6 +89,10 @@ void LockScreenClient::LoadWallpaper(const AccountId& account_id) {
 
 void LockScreenClient::SignOutUser() {
   chromeos::ScreenLocker::default_screen_locker()->Signout();
+}
+
+void LockScreenClient::CancelAddUser() {
+  chromeos::UserAddingScreen::Get()->Cancel();
 }
 
 void LockScreenClient::OnMaxIncorrectPasswordAttempted(

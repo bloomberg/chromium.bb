@@ -41,6 +41,7 @@ class MockLockScreenClient : public mojom::LockScreenClient {
   MOCK_METHOD0(OnNoPodFocused, void());
   MOCK_METHOD1(LoadWallpaper, void(const AccountId& account_id));
   MOCK_METHOD0(SignOutUser, void());
+  MOCK_METHOD0(CancelAddUser, void());
   MOCK_METHOD1(OnMaxIncorrectPasswordAttempted,
                void(const AccountId& account_id));
 

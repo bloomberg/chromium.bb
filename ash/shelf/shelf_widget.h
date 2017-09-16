@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_background_animator.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -24,6 +25,7 @@ namespace ash {
 enum class AnimationChangeType;
 class AppListButton;
 class FocusCycler;
+class LoginShelfView;
 class Shelf;
 class ShelfLayoutManager;
 class ShelfView;
@@ -35,7 +37,8 @@ class StatusAreaWidget;
 class ASH_EXPORT ShelfWidget : public views::Widget,
                                public views::WidgetObserver,
                                public ShelfBackgroundAnimatorObserver,
-                               public ShelfLayoutManagerObserver {
+                               public ShelfLayoutManagerObserver,
+                               public SessionObserver {
  public:
   ShelfWidget(aura::Window* shelf_container, Shelf* shelf);
   ~ShelfWidget() override;
@@ -91,8 +94,16 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // ShelfLayoutManagerObserver overrides:
   void WillDeleteShelfLayoutManager() override;
 
+  // SessionObserver overrides:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
+
   // Internal implementation detail. Do not expose outside of tests.
   ShelfView* shelf_view_for_testing() const { return shelf_view_; }
+
+  // Internal implementation detail. Do not expose outside of tests.
+  LoginShelfView* login_shelf_view_for_testing() const {
+    return login_shelf_view_;
+  }
 
  private:
   class DelegateView;
@@ -109,9 +120,18 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.
   DelegateView* delegate_view_;
-  // View containing the shelf items. Owned by the views hierarchy.
+
+  // View containing the shelf items within an active user session. Owned by
+  // the views hierarchy.
   ShelfView* const shelf_view_;
+
+  // View containing the shelf items for Login/Lock/OOBE/Add User screens.
+  // Owned by the views hierarchy.
+  LoginShelfView* const login_shelf_view_;
+
   ShelfBackgroundAnimator background_animator_;
+
+  ScopedSessionObserver scoped_session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfWidget);
 };

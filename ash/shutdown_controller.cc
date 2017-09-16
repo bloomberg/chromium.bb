@@ -22,6 +22,14 @@ ShutdownController::ShutdownController() {}
 
 ShutdownController::~ShutdownController() {}
 
+void ShutdownController::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ShutdownController::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void ShutdownController::ShutDownOrReboot(ShutdownReason reason) {
   // For developers on Linux desktop just exit the app.
   if (!base::SysInfo::IsRunningOnChromeOS()) {
@@ -50,17 +58,26 @@ void ShutdownController::ShutDownOrReboot(ShutdownReason reason) {
   }
 }
 
+void ShutdownController::BindRequest(mojom::ShutdownControllerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void ShutdownController::SetRebootOnShutdownForTesting(
+    bool reboot_on_shutdown) {
+  SetRebootOnShutdown(reboot_on_shutdown);
+}
+
 void ShutdownController::SetRebootOnShutdown(bool reboot_on_shutdown) {
+  if (reboot_on_shutdown_ == reboot_on_shutdown)
+    return;
   reboot_on_shutdown_ = reboot_on_shutdown;
+  for (auto& observer : observers_)
+    observer.OnShutdownPolicyChanged(reboot_on_shutdown_);
 }
 
 void ShutdownController::RequestShutdownFromLoginScreen() {
   Shell::Get()->lock_state_controller()->RequestShutdown(
       ShutdownReason::LOGIN_SHUT_DOWN_BUTTON);
-}
-
-void ShutdownController::BindRequest(mojom::ShutdownControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace ash

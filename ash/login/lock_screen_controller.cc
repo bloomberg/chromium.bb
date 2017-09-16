@@ -166,6 +166,12 @@ void LockScreenController::SignOutUser() {
   lock_screen_client_->SignOutUser();
 }
 
+void LockScreenController::CancelAddUser() {
+  if (!lock_screen_client_)
+    return;
+  lock_screen_client_->CancelAddUser();
+}
+
 void LockScreenController::OnMaxIncorrectPasswordAttempted(
     const AccountId& account_id) {
   if (!lock_screen_client_)

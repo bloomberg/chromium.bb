@@ -58,6 +58,8 @@ enum ShelfAlignmentUmaEnumValue {
   SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT,
 };
 
+// ShelfView contains the shelf items visible within an active user session.
+// ShelfView and LoginShelfView should never be shown together.
 class ASH_EXPORT ShelfView : public views::View,
                              public ShelfModelObserver,
                              public InkDropButtonListener,

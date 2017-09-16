@@ -69,6 +69,7 @@ class ASH_EXPORT LockScreenController : public mojom::LockScreen {
   void OnNoPodFocused();
   void LoadWallpaper(const AccountId& account_id);
   void SignOutUser();
+  void CancelAddUser();
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id);
 
  private:

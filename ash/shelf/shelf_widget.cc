@@ -9,6 +9,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_constants.h"
@@ -120,9 +121,11 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
       status_area_widget_(nullptr),
       delegate_view_(new DelegateView(this)),
       shelf_view_(new ShelfView(Shell::Get()->shelf_model(), shelf_, this)),
+      login_shelf_view_(new LoginShelfView()),
       background_animator_(SHELF_BACKGROUND_DEFAULT,
                            shelf_,
-                           Shell::Get()->wallpaper_controller()) {
+                           Shell::Get()->wallpaper_controller()),
+      scoped_session_observer_(this) {
   DCHECK(shelf_container);
   DCHECK(shelf_);
 
@@ -144,6 +147,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
   // added to the model.
   shelf_view_->Init();
   GetContentsView()->AddChildView(shelf_view_);
+  GetContentsView()->AddChildView(login_shelf_view_);
 
   shelf_layout_manager_ = new ShelfLayoutManager(this, shelf_);
   shelf_layout_manager_->AddObserver(this);
@@ -157,6 +161,9 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
   // Calls back into |this| and depends on |shelf_view_|.
   background_animator_.AddObserver(this);
   background_animator_.AddObserver(delegate_view_);
+
+  // Sets initial session state to make sure the UI is properly shown.
+  OnSessionStateChanged(Shell::Get()->session_controller()->GetSessionState());
 }
 
 ShelfWidget::~ShelfWidget() {
@@ -319,6 +326,31 @@ void ShelfWidget::UpdateShelfItemBackground(SkColor color) {
 void ShelfWidget::WillDeleteShelfLayoutManager() {
   shelf_layout_manager_->RemoveObserver(this);
   shelf_layout_manager_ = nullptr;
+}
+
+void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
+  switch (state) {
+    case session_manager::SessionState::ACTIVE:
+      login_shelf_view_->SetVisible(false);
+      shelf_view_->SetVisible(true);
+      // TODO(wzang): Combine with the codes specific to SessionState::ACTIVE
+      // in PostCreateShelf() when view-based shelf on login screen is
+      // supported.
+      break;
+    case session_manager::SessionState::LOCKED:
+    case session_manager::SessionState::LOGIN_SECONDARY:
+      shelf_view_->SetVisible(false);
+      login_shelf_view_->SetVisible(true);
+      break;
+    case session_manager::SessionState::OOBE:
+    case session_manager::SessionState::LOGIN_PRIMARY:
+    case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
+    case session_manager::SessionState::UNKNOWN:
+      login_shelf_view_->SetVisible(false);
+      shelf_view_->SetVisible(false);
+      break;
+  }
+  login_shelf_view_->UpdateAfterSessionStateChange(state);
 }
 
 }  // namespace ash

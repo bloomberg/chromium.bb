@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_widget.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -356,6 +357,7 @@ TEST_F(ShelfWidgetAfterLoginTest, InitialValues) {
   ShelfWidget* shelf_widget = GetShelfWidget();
   ASSERT_NE(nullptr, shelf_widget);
   ASSERT_NE(nullptr, shelf_widget->shelf_view_for_testing());
+  ASSERT_NE(nullptr, shelf_widget->login_shelf_view_for_testing());
   ASSERT_NE(nullptr, shelf_widget->shelf_layout_manager());
 
   // Ensure settings are correct before login.
@@ -397,6 +399,74 @@ TEST_F(ShelfWidgetAfterLoginTest, CreateLockedShelf) {
   // The auto hide state 'HIDDEN' is returned for any non-auto-hide behavior.
   TestShelf(SHELF_ALIGNMENT_BOTTOM_LOCKED, SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
             SHELF_VISIBLE, SHELF_AUTO_HIDE_HIDDEN);
+}
+
+TEST_F(ShelfWidgetAfterLoginTest, ToggleVisibilityAfterSessionStateChange) {
+  ShelfWidget* shelf_widget = GetShelfWidget();
+  ASSERT_NE(nullptr, shelf_widget);
+  ShelfView* shelf_view = shelf_widget->shelf_view_for_testing();
+  ASSERT_NE(nullptr, shelf_view);
+  LoginShelfView* login_shelf_view =
+      shelf_widget->login_shelf_view_for_testing();
+  ASSERT_NE(nullptr, login_shelf_view);
+
+  // Both shelf views are hidden when session state hasn't been initialized.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::UNKNOWN);
+  EXPECT_FALSE(shelf_view->visible());
+  EXPECT_FALSE(login_shelf_view->visible());
+
+  // The shelf is not initialized until session state becomes active, so the
+  // following cases don't have visible effects until we support views-based
+  // shelf for all session states, but it's still good to check them here.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::OOBE);
+  EXPECT_FALSE(shelf_view->visible());
+  EXPECT_FALSE(login_shelf_view->visible());
+
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  EXPECT_FALSE(shelf_view->visible());
+  EXPECT_FALSE(login_shelf_view->visible());
+
+  SimulateUserLogin("user1@test.com");
+
+  // Both shelf views are hidden after user login and before the active session
+  // starts.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+  EXPECT_FALSE(shelf_view->visible());
+  EXPECT_FALSE(login_shelf_view->visible());
+
+  // The login shelf is hidden during an active session.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  EXPECT_TRUE(shelf_view->visible());
+  EXPECT_FALSE(login_shelf_view->visible());
+
+  // The shelf for active session is hidden when lock screen is shown.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+  EXPECT_TRUE(login_shelf_view->visible());
+  EXPECT_FALSE(shelf_view->visible());
+
+  // The login shelf is hidden when session state becomes active again.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  EXPECT_TRUE(shelf_view->visible());
+  EXPECT_FALSE(login_shelf_view->visible());
+
+  // The shelf for active session is hidden when add user screen is shown.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGIN_SECONDARY);
+  EXPECT_TRUE(login_shelf_view->visible());
+  EXPECT_FALSE(shelf_view->visible());
+
+  // The login shelf is hidden when session state becomes active again.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  EXPECT_TRUE(shelf_view->visible());
+  EXPECT_FALSE(login_shelf_view->visible());
 }
 
 }  // namespace
