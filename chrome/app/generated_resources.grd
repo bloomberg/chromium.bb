@@ -6503,11 +6503,6 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_TITLE" desc="Fallback title for print preview page.">
           Print
         </message>
-        <if expr="chromeos">
-          <message name="IDS_PRINT_PREVIEW_GOOGLE_CLOUD_PRINT_TITLE" desc="Fallback title for print preview page on Chrome OS.">
-            Google Print
-          </message>
-        </if>
         <message name="IDS_PRINT_PREVIEW_LOADING" desc="Message to display while the print preview is still loading.">
           Loading preview
         </message>
@@ -6526,11 +6521,6 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_SAVING" desc="Text shown after the user clicks on the save button and before the print preview tab is closed to let the user know that saving is in progress.">
           Saving...
         </message>
-        <if expr="is_macosx">
-          <message name="IDS_PRINT_PREVIEW_OPENING_PDF_IN_PREVIEW" desc="Text shown after the user clicks on the open pdf in preview button while the pdf file is not ready yet.">
-          Opening PDF in Preview
-          </message>
-        </if>
         <message name="IDS_PRINT_PREVIEW_OPTION_ALL_PAGES" desc="Option to print all pages.">
           All
         </message>
@@ -6602,16 +6592,6 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL" desc="Label shown in the print preview summary.">
           pages
         </message>
-        <if expr="is_macosx">
-          <message name="IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP" desc="Option allowing the user to open the pdf in native preview app">
-          Open PDF in Preview
-          </message>
-        </if>
-        <if expr="not chromeos">
-          <message name="IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the native print system dialog instead of printing through the print preview mechanism. Shortcut key is not translated">
-            Print using system dialog... <ph name="SHORTCUT_KEY">$1<ex>(Shift+Ctrl+P)</ex></ph>
-          </message>
-        </if>
         <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_SYNTAX_INSTRUCTION" desc="Instruction shown when the user enters an invalid page range.">
           Invalid page range, use <ph name="EXAMPLE_PAGE_RANGE">$1<ex>e.g. 1-5, 8, 11-13</ex></ph>
         </message>
@@ -6810,6 +6790,19 @@ I don't think this site should be blocked!
           </message>
           <message name="IDS_PRINT_CONFIGURING_FAILED_TEXT" desc="Message shown to user when their printer is failed to set up in Chrome OS.">
             Error setting up printer
+          </message>
+        </if>
+        <if expr="not chromeos">
+          <message name="IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the native print system dialog instead of printing through the print preview mechanism. Shortcut key is not translated">
+            Print using system dialog... <ph name="SHORTCUT_KEY">$1<ex>(Shift+Ctrl+P)</ex></ph>
+          </message>
+        </if>
+        <if expr="is_macosx">
+          <message name="IDS_PRINT_PREVIEW_OPENING_PDF_IN_PREVIEW_APP" desc="Text shown after the user clicks on the open pdf in preview button while the pdf file is not ready yet.">
+          Opening PDF in Preview
+          </message>
+          <message name="IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP" desc="Option allowing the user to open the pdf in native preview app">
+          Open PDF in Preview
           </message>
         </if>
       </if>
