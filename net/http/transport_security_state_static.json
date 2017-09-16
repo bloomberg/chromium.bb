@@ -244,9 +244,10 @@
     { "name": "preloaded-expect-staple-include-subdomains.badssl.com", "expect_staple": true, "expect_staple_report_uri": "https://report.badssl.com/expect-staple", "include_subdomains_for_expect_staple": true },
 
     // eTLDs
-    // At the moment, this only includes a Google-owned gTLD,
+    // At the moment, this only includes Google-owned gTLDs,
     // but other gTLDs and eTLDs are welcome to preload if they are interested.
     { "name": "google", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "dev", "include_subdomains": true, "mode": "force-https" },
 
     // Google domains using Expect-CT.
     { "name": "mail.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google", "expect_ct": true, "expect_ct_report_uri": "https://clients3.google.com/ct_upload" },
