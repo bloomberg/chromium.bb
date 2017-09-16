@@ -1430,9 +1430,6 @@ const char kWalletServiceUseSandboxName[] =
 const char kWalletServiceUseSandboxDescription[] =
     "For developers: use the sandbox service for Google Payments API calls.";
 
-const char kWebgl2Name[] = "WebGL 2.0";
-const char kWebgl2Description[] = "Allow web applications to access WebGL 2.0.";
-
 const char kWebglDraftExtensionsName[] = "WebGL Draft Extensions";
 const char kWebglDraftExtensionsDescription[] =
     "Enabling this option allows web applications to access the WebGL "

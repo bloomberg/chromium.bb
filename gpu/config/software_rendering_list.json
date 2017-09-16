@@ -129,6 +129,9 @@
         {
           "vendor_id": "0x1414",
           "device_id": ["0x02c1"]
+        },
+        {
+          "driver_vendor": "swiftshader"
         }
       ],
       "features": [
@@ -1326,6 +1329,9 @@
         },
         {
           "gl_renderer": ".*Gallium.*llvmpipe.*"
+        },
+        {
+          "gl_renderer": "Mesa OffScreen"
         }
       ],
       "features": [

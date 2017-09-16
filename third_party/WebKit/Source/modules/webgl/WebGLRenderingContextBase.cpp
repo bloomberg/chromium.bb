@@ -688,15 +688,22 @@ std::unique_ptr<WebGraphicsContext3DProvider>
 WebGLRenderingContextBase::CreateWebGraphicsContext3DProvider(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributes& attributes,
-    unsigned web_gl_version) {
-  if (!host->IsWebGLAllowed()) {
+    unsigned webgl_version) {
+  if (host->IsWebGLBlocked()) {
     host->HostDispatchEvent(WebGLContextEvent::Create(
         EventTypeNames::webglcontextcreationerror, false, true,
-        "Web page was not allowed to create a WebGL context."));
+        "Web page caused context loss and was blocked"));
+    return nullptr;
+  }
+  if ((webgl_version == 1 && !host->IsWebGL1Enabled()) ||
+      (webgl_version == 2 && !host->IsWebGL2Enabled())) {
+    host->HostDispatchEvent(WebGLContextEvent::Create(
+        EventTypeNames::webglcontextcreationerror, false, true,
+        "disabled by enterprise policy or commandline switch"));
     return nullptr;
   }
 
-  return CreateContextProviderInternal(host, attributes, web_gl_version);
+  return CreateContextProviderInternal(host, attributes, webgl_version);
 }
 
 void WebGLRenderingContextBase::ForceNextWebGLContextCreationToFail() {
@@ -7468,11 +7475,14 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
     LocalFrame* frame = canvas()->GetDocument().GetFrame();
     if (!frame)
       return;
+    if (frame->Client()->ShouldBlockWebGL())
+      return;
 
     Settings* settings = frame->GetSettings();
-
-    if (!frame->Client()->AllowWebGL(settings && settings->GetWebGLEnabled()))
+    if (settings && ((version_ == 1 && !settings->GetWebGL1Enabled()) ||
+                     (version_ == 2 && !settings->GetWebGL2Enabled()))) {
       return;
+    }
   }
 
   // If the context was lost due to RealLostContext, we need to destroy the old

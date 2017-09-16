@@ -23,7 +23,6 @@ ppapi::Preferences PpapiPreferencesBuilder::Build(
   ppapi_prefs.is_stage3d_supported = prefs.flash_stage3d_enabled;
   ppapi_prefs.is_stage3d_baseline_supported =
       prefs.flash_stage3d_baseline_enabled;
-  ppapi_prefs.is_webgl_supported = prefs.experimental_webgl_enabled;
   ppapi_prefs.is_accelerated_video_decode_enabled =
       prefs.pepper_accelerated_video_decode_enabled;
   return ppapi_prefs;

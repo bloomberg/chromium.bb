@@ -734,11 +734,11 @@ class BLINK_EXPORT WebFrameClient {
 
   // WebGL ------------------------------------------------------
 
-  // Asks the embedder whether WebGL is allowed for the WebFrame. This call is
+  // Asks the embedder whether WebGL is blocked for the WebFrame. This call is
   // placed here instead of WebContentSettingsClient because this class is
   // implemented in content/, and putting it here avoids adding more public
   // content/ APIs.
-  virtual bool AllowWebGL(bool default_value) { return default_value; }
+  virtual bool ShouldBlockWebGL() { return false; }
 
   // Screen Orientation --------------------------------------------------
 

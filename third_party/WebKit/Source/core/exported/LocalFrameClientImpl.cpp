@@ -907,11 +907,9 @@ void LocalFrameClientImpl::DispatchWillStartUsingPeerConnectionHandler(
   web_frame_->Client()->WillStartUsingPeerConnectionHandler(handler);
 }
 
-bool LocalFrameClientImpl::AllowWebGL(bool enabled_per_settings) {
-  if (web_frame_->Client())
-    return web_frame_->Client()->AllowWebGL(enabled_per_settings);
-
-  return enabled_per_settings;
+bool LocalFrameClientImpl::ShouldBlockWebGL() {
+  DCHECK(web_frame_->Client());
+  return web_frame_->Client()->ShouldBlockWebGL();
 }
 
 void LocalFrameClientImpl::DispatchWillInsertBody() {

@@ -10,6 +10,7 @@ enum GpuFeatureStatus {
   Enabled,
   Blacklisted,
   Disabled,
+  Software,
   Undefined,
   Max
 };

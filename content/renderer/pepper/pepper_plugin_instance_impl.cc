@@ -856,11 +856,6 @@ bool PepperPluginInstanceImpl::Initialize(
   UpdateTouchEventRequest();
   UpdateWheelEventRequest();
 
-  SetGPUHistogram(ppapi::Preferences(PpapiPreferencesBuilder::Build(
-                      render_frame_->render_view()->webkit_preferences())),
-                  arg_names,
-                  arg_values);
-
   argn_ = arg_names;
   argv_ = arg_values;
   std::unique_ptr<const char* []> argn_array(StringVectorToArgArray(argn_));

@@ -32,7 +32,6 @@ void ExportLayoutTestSpecificPreferences(
   to->loads_images_automatically = from.loads_images_automatically;
   to->plugins_enabled = from.plugins_enabled;
   to->tabs_to_links = from.tabs_to_links;
-  to->experimental_webgl_enabled = from.experimental_webgl_enabled;
   // experimentalCSSRegionsEnabled is deprecated and ignored.
   to->hyperlink_auditing_enabled = from.hyperlink_auditing_enabled;
   to->allow_running_insecure_content = from.allow_running_of_insecure_content;

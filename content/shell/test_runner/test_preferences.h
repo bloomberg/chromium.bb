@@ -19,7 +19,6 @@ struct TEST_RUNNER_EXPORT TestPreferences {
   bool allow_file_access_from_file_urls;
   bool allow_running_of_insecure_content;
   blink::WebString default_text_encoding_name;
-  bool experimental_webgl_enabled;
   bool experimental_css_grid_layout_enabled;
   bool java_script_can_access_clipboard;
   bool supports_multiple_windows;

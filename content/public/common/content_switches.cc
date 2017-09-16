@@ -125,8 +125,11 @@ const char kDisableDatabases[]              = "disable-databases";
 const char kDisableDomainBlockingFor3DAPIs[] =
     "disable-domain-blocking-for-3d-apis";
 
-// Disable experimental WebGL support.
-const char kDisableExperimentalWebGL[]      = "disable-webgl";
+// Disable all versions of WebGL.
+const char kDisableWebGL[] = "disable-webgl";
+
+// Disable WebGL2.
+const char kDisableWebGL2[] = "disable-webgl2";
 
 // Comma-separated list of feature names to disable. See also kEnableFeatures.
 const char kDisableFeatures[]               = "disable-features";

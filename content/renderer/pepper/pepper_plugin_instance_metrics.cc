@@ -73,30 +73,4 @@ void RecordFlashClickSizeMetric(int width, int height) {
                              height);
 }
 
-void SetGPUHistogram(const ppapi::Preferences& prefs,
-                     const std::vector<std::string>& arg_names,
-                     const std::vector<std::string>& arg_values) {
-// Calculate a histogram to let us determine how likely people are to try to
-// run Stage3D content on machines that have it blacklisted.
-#if defined(OS_WIN)
-  bool needs_gpu = false;
-
-  for (size_t i = 0; i < arg_names.size(); i++) {
-    if (arg_names[i] == "wmode") {
-      // In theory content other than Flash could have a "wmode" argument,
-      // but that's pretty unlikely.
-      if (arg_values[i] == "direct" || arg_values[i] == "gpu")
-        needs_gpu = true;
-      break;
-    }
-  }
-  // 0 : No 3D content and GPU is blacklisted
-  // 1 : No 3D content and GPU is not blacklisted
-  // 2 : 3D content but GPU is blacklisted
-  // 3 : 3D content and GPU is not blacklisted
-  UMA_HISTOGRAM_ENUMERATION("Flash.UsesGPU",
-                            needs_gpu * 2 + prefs.is_webgl_supported, 8);
-#endif
-}
-
 }  // namespace content

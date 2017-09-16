@@ -285,9 +285,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DispatchWillStartUsingPeerConnectionHandler(
       WebRTCPeerConnectionHandler*) {}
 
-  virtual bool AllowWebGL(bool enabled_per_settings) {
-    return enabled_per_settings;
-  }
+  virtual bool ShouldBlockWebGL() { return false; }
 
   // If an HTML document is being loaded, informs the embedder that the document
   // will have its <body> attached soon.

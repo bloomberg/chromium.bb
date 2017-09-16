@@ -82,12 +82,6 @@ const char kTestGLLib[]                     = "test-gl-lib";
 // Use hardware gpu, if available, for tests.
 const char kUseGpuInTests[] = "use-gpu-in-tests";
 
-// Enable OpenGL ES 3 APIs.
-const char kEnableES3APIs[] = "enable-es3-apis";
-
-// Disable OpenGL ES 3 APIs. This in turn will disable WebGL2.
-const char kDisableES3APIs[] = "disable-es3-apis";
-
 // Enable use of the SGI_video_sync extension, which can have
 // driver/sandbox/window manager compatibility issues.
 const char kEnableSgiVideoSync[] = "enable-sgi-video-sync";
