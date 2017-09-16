@@ -127,7 +127,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   String ToTreeString() const;
 #endif
 
-  String ToString() const;
+  std::unique_ptr<JSONObject> ToJSON() const;
 
   bool HasDirectCompositingReasons() const {
     return direct_compositing_reasons_ != kCompositingReasonNone;

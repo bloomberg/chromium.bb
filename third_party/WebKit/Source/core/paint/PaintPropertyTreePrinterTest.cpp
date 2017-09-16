@@ -89,10 +89,10 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath) {
   String transform_path_as_string =
       transformed_object_properties->Transform()->ToTreeString();
   EXPECT_THAT(transform_path_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .* transform.*"
-                                      "  .* transform.*"
-                                      "    .* transform.*"
-                                      "       .* transform.*"));
+              ::testing::MatchesRegex("root .*\"scroll\".*"
+                                      "  .*\"parent\".*"
+                                      "    .*\"matrix\".*"
+                                      "       .*\"matrix\".*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
@@ -106,9 +106,9 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath) {
   String clip_path_as_string =
       clipped_object_properties->CssClip()->ToTreeString();
   EXPECT_THAT(clip_path_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .* rect.*"
-                                      "  .* rect.*"
-                                      "    .* rect.*"));
+              ::testing::MatchesRegex("root .*\"rect\".*"
+                                      "  .*\"rect\".*"
+                                      "    .*\"rect\".*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
@@ -120,8 +120,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath) {
   String effect_path_as_string =
       effect_object_properties->Effect()->ToTreeString();
   EXPECT_THAT(effect_path_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .* opacity.*"
-                                      "  .* opacity.*"));
+              ::testing::MatchesRegex("root .*\"outputClip\".*"
+                                      "  .*\"parent\".*\"opacity\".*"));
 }
 
 TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
@@ -137,8 +137,8 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath) {
                                      ->ScrollNode()
                                      ->ToTreeString();
   EXPECT_THAT(scroll_path_as_string.Ascii().data(),
-              ::testing::MatchesRegex("root .* parent.*"
-                                      "  .* parent.*"));
+              ::testing::MatchesRegex("root .* \\{\\}.*"
+                                      "  .*\"parent\".*"));
 }
 
 }  // namespace blink

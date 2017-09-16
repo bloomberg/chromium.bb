@@ -16,36 +16,33 @@ ScrollPaintPropertyNode* ScrollPaintPropertyNode::Root() {
   return root;
 }
 
-String ScrollPaintPropertyNode::ToString() const {
-  StringBuilder text;
-  text.Append("parent=");
-  text.Append(String::Format("%p", Parent()));
-  text.Append(" bounds_offset=");
-  text.Append(bounds_offset_.ToString());
-  text.Append(" container_bounds=");
-  text.Append(container_bounds_.ToString());
-  text.Append(" bounds=");
-  text.Append(bounds_.ToString());
-
-  text.Append(" userScrollable=");
-  if (user_scrollable_horizontal_ && user_scrollable_vertical_)
-    text.Append("both");
-  else if (!user_scrollable_horizontal_ && !user_scrollable_vertical_)
-    text.Append("none");
-  else
-    text.Append(user_scrollable_horizontal_ ? "horizontal" : "vertical");
-
-  text.Append(" mainThreadReasons=");
-  if (main_thread_scrolling_reasons_) {
-    text.Append(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
-                    main_thread_scrolling_reasons_)
-                    .c_str());
-  } else {
-    text.Append("none");
+std::unique_ptr<JSONObject> ScrollPaintPropertyNode::ToJSON() const {
+  auto json = JSONObject::Create();
+  if (Parent())
+    json->SetString("parent", String::Format("%p", Parent()));
+  if (bounds_offset_ != IntPoint())
+    json->SetString("boundsOffset", bounds_offset_.ToString());
+  if (!container_bounds_.IsEmpty())
+    json->SetString("containerBounds", container_bounds_.ToString());
+  if (!bounds_.IsEmpty())
+    json->SetString("containerBounds", bounds_.ToString());
+  if (user_scrollable_horizontal_ || user_scrollable_vertical_) {
+    json->SetString("userScrollable",
+                    user_scrollable_horizontal_
+                        ? (user_scrollable_vertical_ ? "both" : "horizontal")
+                        : "vertical");
   }
-  text.Append(String::Format(" compositorElementId=%s",
-                             compositor_element_id_.ToString().c_str()));
-  return text.ToString();
+  if (main_thread_scrolling_reasons_) {
+    json->SetString("mainThreadReasons",
+                    MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
+                        main_thread_scrolling_reasons_)
+                        .c_str());
+  }
+  if (compositor_element_id_) {
+    json->SetString("compositorElementId",
+                    compositor_element_id_.ToString().c_str());
+  }
+  return json;
 }
 
 #if DCHECK_IS_ON()

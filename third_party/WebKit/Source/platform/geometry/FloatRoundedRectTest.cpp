@@ -29,6 +29,7 @@
 
 #include "platform/geometry/FloatRoundedRect.h"
 
+#include "platform/geometry/LayoutRect.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -187,6 +188,12 @@ TEST(FloatRoundedRectTest, ToString) {
                               corner_rect));
   EXPECT_EQ("3,5 7x11 radii:(tl:1x2; tr:1x2; bl:1x2; br:1x2)",
             rounded_rect.ToString());
+
+  FloatRoundedRect infinite((FloatRect(LayoutRect::InfiniteIntRect())));
+  EXPECT_EQ("InfiniteIntRect", infinite.ToString());
+
+  FloatRoundedRect rect_without_radii(FloatRect(1, 3, 5, 7));
+  EXPECT_EQ("1,3 5x7", rect_without_radii.ToString());
 }
 
 }  // namespace blink
