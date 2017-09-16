@@ -5,8 +5,8 @@
 package org.chromium.android_webview;
 
 import android.content.SharedPreferences;
-import android.webkit.ValueCallback;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.net.GURLUtils;
 
@@ -93,22 +93,22 @@ public final class AwGeolocationPermissions {
     /**
      * Asynchronous method to get if an origin set to be allowed.
      */
-    public void getAllowed(String origin, final ValueCallback<Boolean> callback) {
+    public void getAllowed(String origin, final Callback<Boolean> callback) {
         final boolean finalAllowed = isOriginAllowed(origin);
-        ThreadUtils.postOnUiThread(() -> callback.onReceiveValue(finalAllowed));
+        ThreadUtils.postOnUiThread(() -> callback.onResult(finalAllowed));
     }
 
     /**
      * Async method to get the domains currently allowed or denied.
      */
-    public void getOrigins(final ValueCallback<Set<String>> callback) {
+    public void getOrigins(final Callback<Set<String>> callback) {
         final Set<String> origins = new HashSet<String>();
         for (String name : mSharedPreferences.getAll().keySet()) {
             if (name.startsWith(PREF_PREFIX)) {
                 origins.add(name.substring(PREF_PREFIX.length()));
             }
         }
-        ThreadUtils.postOnUiThread(() -> callback.onReceiveValue(origins));
+        ThreadUtils.postOnUiThread(() -> callback.onResult(origins));
     }
 
     /**

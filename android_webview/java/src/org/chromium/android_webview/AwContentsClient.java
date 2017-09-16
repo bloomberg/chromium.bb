@@ -21,10 +21,10 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
-import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.permission.AwPermissionRequest;
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -121,7 +121,7 @@ public abstract class AwContentsClient {
      */
     public abstract boolean hasWebViewClient();
 
-    public abstract void getVisitedHistory(ValueCallback<String[]> callback);
+    public abstract void getVisitedHistory(Callback<String[]> callback);
 
     public abstract void doUpdateVisitedHistory(String url, boolean isReload);
 
@@ -143,7 +143,7 @@ public abstract class AwContentsClient {
     public abstract void onReceivedHttpAuthRequest(AwHttpAuthHandler handler,
             String host, String realm);
 
-    public abstract void onReceivedSslError(ValueCallback<Boolean> callback, SslError error);
+    public abstract void onReceivedSslError(Callback<Boolean> callback, SslError error);
 
     public abstract void onReceivedClientCertRequest(
             final AwContentsClientBridge.ClientCertificateRequestCallback callback,
@@ -297,8 +297,8 @@ public abstract class AwContentsClient {
         }
     }
 
-    public abstract void showFileChooser(ValueCallback<String[]> uploadFilePathsCallback,
-            FileChooserParamsImpl fileChooserParams);
+    public abstract void showFileChooser(
+            Callback<String[]> uploadFilePathsCallback, FileChooserParamsImpl fileChooserParams);
 
     public abstract void onGeolocationPermissionsShowPrompt(String origin,
             GeolocationPermissions.Callback callback);
@@ -370,7 +370,7 @@ public abstract class AwContentsClient {
             AwWebResourceRequest request, AwWebResourceError error);
 
     protected abstract void onSafeBrowsingHit(AwWebResourceRequest request, int threatType,
-            ValueCallback<AwSafeBrowsingResponse> callback);
+            Callback<AwSafeBrowsingResponse> callback);
 
     public abstract void onReceivedHttpError(AwWebResourceRequest request,
             AwWebResourceResponse response);

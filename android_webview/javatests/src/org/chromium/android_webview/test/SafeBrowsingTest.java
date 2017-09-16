@@ -15,7 +15,6 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
-import android.webkit.ValueCallback;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -41,6 +40,7 @@ import org.chromium.android_webview.ErrorCodeConversionHelper;
 import org.chromium.android_webview.SafeBrowsingAction;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedError2Helper;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -246,10 +246,10 @@ public class SafeBrowsingTest {
 
         @Override
         public void onSafeBrowsingHit(AwWebResourceRequest request, int threatType,
-                ValueCallback<AwSafeBrowsingResponse> callback) {
+                Callback<AwSafeBrowsingResponse> callback) {
             mLastRequest = request;
             mLastThreatType = threatType;
-            callback.onReceiveValue(new AwSafeBrowsingResponse(mAction, mReporting));
+            callback.onResult(new AwSafeBrowsingResponse(mAction, mReporting));
         }
 
         public AwWebResourceRequest getLastRequest() {
@@ -293,10 +293,10 @@ public class SafeBrowsingTest {
         }
     }
 
-    private static class WhitelistHelper extends CallbackHelper implements ValueCallback<Boolean> {
+    private static class WhitelistHelper extends CallbackHelper implements Callback<Boolean> {
         public boolean success;
 
-        public void onReceiveValue(Boolean success) {
+        public void onResult(Boolean success) {
             this.success = success;
             notifyCalled();
         }
@@ -338,7 +338,7 @@ public class SafeBrowsingTest {
     }
 
     private void evaluateJavaScriptOnInterstitialOnUiThread(
-            final String script, final ValueCallback<String> callback) {
+            final String script, final Callback<String> callback) {
         ThreadUtils.runOnUiThread(
                 () -> mAwContents.evaluateJavaScriptOnInterstitialForTesting(script, callback));
     }
@@ -347,7 +347,7 @@ public class SafeBrowsingTest {
         final String script = "document.readyState;";
         final JavaScriptHelper helper = new JavaScriptHelper();
 
-        final ValueCallback<String> callback = value -> {
+        final Callback<String> callback = value -> {
             helper.setValue(value);
             helper.notifyCalled();
         };

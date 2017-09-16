@@ -18,7 +18,6 @@ import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
-import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 
 import org.junit.After;
@@ -38,6 +37,7 @@ import org.chromium.android_webview.test.util.ImagePageGenerator;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
+import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -2850,8 +2850,8 @@ public class AwSettingsTest {
     public void testAllowMixedMode() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient() {
             @Override
-            public void onReceivedSslError(ValueCallback<Boolean> callback, SslError error) {
-                callback.onReceiveValue(true);
+            public void onReceivedSslError(Callback<Boolean> callback, SslError error) {
+                callback.onResult(true);
             }
         };
         final AwTestContainerView testContainerView =

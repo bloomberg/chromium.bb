@@ -1901,6 +1901,41 @@ def _CheckAndroidNewMdpiAssetLocation(input_api, output_api):
   return results
 
 
+def _CheckAndroidWebkitImports(input_api, output_api):
+  """Checks that code uses org.chromium.base.Callback instead of
+     android.widget.ValueCallback except in the WebView glue layer.
+  """
+  valuecallback_import_pattern = input_api.re.compile(
+      r'^import android\.webkit\.ValueCallback;$')
+
+  errors = []
+
+  sources = lambda affected_file: input_api.FilterSourceFile(
+      affected_file,
+      black_list=(_EXCLUDED_PATHS +
+                  _TEST_CODE_EXCLUDED_PATHS +
+                  input_api.DEFAULT_BLACK_LIST +
+                  (r'^android_webview[\\\/]glue[\\\/].*',)),
+      white_list=(r'.*\.java$',))
+
+  for f in input_api.AffectedSourceFiles(sources):
+    for line_num, line in f.ChangedContents():
+      if valuecallback_import_pattern.search(line):
+        errors.append("%s:%d" % (f.LocalPath(), line_num))
+
+  results = []
+
+  if errors:
+    results.append(output_api.PresubmitError(
+        'android.webkit.ValueCallback usage is detected outside of the glue'
+        ' layer. To stay compatible with the support library, android.webkit.*'
+        ' classes should only be used inside the glue layer and'
+        ' org.chromium.base.Callback should be used instead.',
+        errors))
+
+  return results
+
+
 class PydepsChecker(object):
   def __init__(self, input_api, pydeps_files):
     self._file_cache = {}
@@ -2351,6 +2386,7 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   results.extend(_CheckAndroidTestJUnitInheritance(input_api, output_api))
   results.extend(_CheckAndroidTestJUnitFrameworkImport(input_api, output_api))
   results.extend(_CheckAndroidTestAnnotationUsage(input_api, output_api))
+  results.extend(_CheckAndroidWebkitImports(input_api, output_api))
   return results
 
 

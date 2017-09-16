@@ -5,8 +5,8 @@
 package org.chromium.android_webview;
 
 import android.net.Uri;
-import android.webkit.ValueCallback;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -39,14 +39,14 @@ public final class AwTokenBindingManager {
         nativeEnableTokenBinding();
     }
 
-    public void getKey(Uri origin, String[] spec, ValueCallback<KeyPair> callback) {
+    public void getKey(Uri origin, String[] spec, Callback<KeyPair> callback) {
         if (callback == null) {
             throw new IllegalArgumentException("callback can't be null");
         }
         nativeGetTokenBindingKey(origin.getHost(), callback);
     }
 
-    public void deleteKey(Uri origin, ValueCallback<Boolean> callback) {
+    public void deleteKey(Uri origin, Callback<Boolean> callback) {
         if (origin == null) {
             throw new IllegalArgumentException("origin can't be null");
         }
@@ -54,16 +54,16 @@ public final class AwTokenBindingManager {
         nativeDeleteTokenBindingKey(origin.getHost(), callback);
     }
 
-    public void deleteAllKeys(ValueCallback<Boolean> callback) {
+    public void deleteAllKeys(Callback<Boolean> callback) {
         // null callback is allowed
         nativeDeleteAllTokenBindingKeys(callback);
     }
 
     @CalledByNative
     private static void onKeyReady(
-            ValueCallback<KeyPair> callback, byte[] privateKeyBytes, byte[] publicKeyBytes) {
+            Callback<KeyPair> callback, byte[] privateKeyBytes, byte[] publicKeyBytes) {
         if (privateKeyBytes == null || publicKeyBytes == null) {
-            callback.onReceiveValue(null);
+            callback.onResult(null);
             return;
         }
         KeyPair keyPair = null;
@@ -76,17 +76,17 @@ public final class AwTokenBindingManager {
         } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
             Log.e(TAG, "Failed converting key ", ex);
         }
-        callback.onReceiveValue(keyPair);
+        callback.onResult(keyPair);
     }
 
     @CalledByNative
-    private static void onDeletionComplete(ValueCallback<Boolean> callback) {
+    private static void onDeletionComplete(Callback<Boolean> callback) {
         // At present, the native deletion complete callback always succeeds.
-        callback.onReceiveValue(true);
+        callback.onResult(true);
     }
 
     private native void nativeEnableTokenBinding();
-    private native void nativeGetTokenBindingKey(String host, ValueCallback<KeyPair> callback);
-    private native void nativeDeleteTokenBindingKey(String host, ValueCallback<Boolean> callback);
-    private native void nativeDeleteAllTokenBindingKeys(ValueCallback<Boolean> callback);
+    private native void nativeGetTokenBindingKey(String host, Callback<KeyPair> callback);
+    private native void nativeDeleteTokenBindingKey(String host, Callback<Boolean> callback);
+    private native void nativeDeleteAllTokenBindingKeys(Callback<Boolean> callback);
 }

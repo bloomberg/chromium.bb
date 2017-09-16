@@ -52,6 +52,7 @@ import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.SafeBrowsingAction;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.permission.Resource;
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -216,12 +217,13 @@ class WebViewContentsClientAdapter extends AwContentsClient {
      * @see AwContentsClient#getVisitedHistory.
      */
     @Override
-    public void getVisitedHistory(ValueCallback<String[]> callback) {
+    public void getVisitedHistory(Callback<String[]> callback) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.getVisitedHistory");
             if (mWebChromeClient != null) {
                 if (TRACE) Log.d(TAG, "getVisitedHistory");
-                mWebChromeClient.getVisitedHistory(callback);
+                mWebChromeClient.getVisitedHistory(
+                        callback == null ? null : value -> callback.onResult(value));
             }
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.getVisitedHistory");
@@ -635,9 +637,9 @@ class WebViewContentsClientAdapter extends AwContentsClient {
 
     @Override
     public void onSafeBrowsingHit(AwWebResourceRequest request, int threatType,
-            ValueCallback<AwSafeBrowsingResponse> callback) {
+            Callback<AwSafeBrowsingResponse> callback) {
         // TODO(ntfschr): invoke the WebViewClient method once the next SDK rolls
-        callback.onReceiveValue(new AwSafeBrowsingResponse(SafeBrowsingAction.SHOW_INTERSTITIAL,
+        callback.onResult(new AwSafeBrowsingResponse(SafeBrowsingAction.SHOW_INTERSTITIAL,
                 /* reporting */ true));
     }
 
@@ -936,17 +938,17 @@ class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     @Override
-    public void onReceivedSslError(final ValueCallback<Boolean> callback, SslError error) {
+    public void onReceivedSslError(final Callback<Boolean> callback, SslError error) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onReceivedSslError");
             SslErrorHandler handler = new SslErrorHandler() {
                 @Override
                 public void proceed() {
-                    callback.onReceiveValue(true);
+                    callback.onResult(true);
                 }
                 @Override
                 public void cancel() {
-                    callback.onReceiveValue(false);
+                    callback.onResult(false);
                 }
             };
             if (TRACE) Log.d(TAG, "onReceivedSslError");
@@ -1068,12 +1070,12 @@ class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     @Override
-    public void showFileChooser(final ValueCallback<String[]> uploadFileCallback,
+    public void showFileChooser(final Callback<String[]> uploadFileCallback,
             final AwContentsClient.FileChooserParamsImpl fileChooserParams) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.showFileChooser");
             if (mWebChromeClient == null) {
-                uploadFileCallback.onReceiveValue(null);
+                uploadFileCallback.onResult(null);
                 return;
             }
             if (TRACE) Log.d(TAG, "showFileChooser");
@@ -1093,7 +1095,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                             s[i] = uriList[i].toString();
                         }
                     }
-                    uploadFileCallback.onReceiveValue(s);
+                    uploadFileCallback.onResult(s);
                 }
             };
 
@@ -1106,7 +1108,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
             // If the app did not handle it and we are running on Lollipop or newer, then
             // abort.
             if (mContext.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.LOLLIPOP) {
-                uploadFileCallback.onReceiveValue(null);
+                uploadFileCallback.onResult(null);
                 return;
             }
 
@@ -1121,8 +1123,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                                 "showFileChooser result was already called");
                     }
                     mCompleted = true;
-                    uploadFileCallback.onReceiveValue(
-                            uri == null ? null : new String[] {uri.toString()});
+                    uploadFileCallback.onResult(uri == null ? null : new String[] {uri.toString()});
                 }
             };
             if (TRACE) Log.d(TAG, "openFileChooser");

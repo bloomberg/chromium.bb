@@ -8,7 +8,6 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.test.MoreAsserts;
 import android.util.Pair;
-import android.webkit.ValueCallback;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -21,8 +20,9 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CookieUtils;
-import org.chromium.android_webview.test.util.CookieUtils.TestValueCallback;
+import org.chromium.android_webview.test.util.CookieUtils.TestCallback;
 import org.chromium.android_webview.test.util.JSUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -200,18 +200,18 @@ public class CookieManagerTest {
         final String cookie = "name=test";
         final String brokenUrl = "foo";
 
-        final TestValueCallback<Boolean> callback = new TestValueCallback<Boolean>();
-        int callCount = callback.getOnReceiveValueHelper().getCallCount();
+        final TestCallback<Boolean> callback = new TestCallback<Boolean>();
+        int callCount = callback.getOnResultHelper().getCallCount();
 
         setCookieOnUiThread(url, cookie, callback);
-        callback.getOnReceiveValueHelper().waitForCallback(callCount);
+        callback.getOnResultHelper().waitForCallback(callCount);
         Assert.assertTrue(callback.getValue());
         Assert.assertEquals(cookie, mCookieManager.getCookie(url));
 
-        callCount = callback.getOnReceiveValueHelper().getCallCount();
+        callCount = callback.getOnResultHelper().getCallCount();
 
         setCookieOnUiThread(brokenUrl, cookie, callback);
-        callback.getOnReceiveValueHelper().waitForCallback(callCount);
+        callback.getOnResultHelper().waitForCallback(callCount);
         Assert.assertFalse(callback.getValue());
         Assert.assertEquals(null, mCookieManager.getCookie(brokenUrl));
     }
@@ -235,22 +235,22 @@ public class CookieManagerTest {
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
     public void testRemoveAllCookiesCallback() throws Throwable {
-        TestValueCallback<Boolean> callback = new TestValueCallback<Boolean>();
-        int callCount = callback.getOnReceiveValueHelper().getCallCount();
+        TestCallback<Boolean> callback = new TestCallback<Boolean>();
+        int callCount = callback.getOnResultHelper().getCallCount();
 
         mCookieManager.setCookie("http://www.example.com", "name=test");
 
         // When we remove all cookies the first time some cookies are removed.
         removeAllCookiesOnUiThread(callback);
-        callback.getOnReceiveValueHelper().waitForCallback(callCount);
+        callback.getOnResultHelper().waitForCallback(callCount);
         Assert.assertTrue(callback.getValue());
         Assert.assertFalse(mCookieManager.hasCookies());
 
-        callCount = callback.getOnReceiveValueHelper().getCallCount();
+        callCount = callback.getOnResultHelper().getCallCount();
 
         // The second time none are removed.
         removeAllCookiesOnUiThread(callback);
-        callback.getOnReceiveValueHelper().waitForCallback(callCount);
+        callback.getOnResultHelper().waitForCallback(callCount);
         Assert.assertFalse(callback.getValue());
     }
 
@@ -274,25 +274,25 @@ public class CookieManagerTest {
         final String sessionCookie = "cookie1=peter";
         final String normalCookie = "cookie2=sue";
 
-        TestValueCallback<Boolean> callback = new TestValueCallback<Boolean>();
-        int callCount = callback.getOnReceiveValueHelper().getCallCount();
+        TestCallback<Boolean> callback = new TestCallback<Boolean>();
+        int callCount = callback.getOnResultHelper().getCallCount();
 
         mCookieManager.setCookie(url, sessionCookie);
         mCookieManager.setCookie(url, makeExpiringCookie(normalCookie, 600));
 
         // When there is a session cookie then it is removed.
         removeSessionCookiesOnUiThread(callback);
-        callback.getOnReceiveValueHelper().waitForCallback(callCount);
+        callback.getOnResultHelper().waitForCallback(callCount);
         Assert.assertTrue(callback.getValue());
         String allCookies = mCookieManager.getCookie(url);
         Assert.assertTrue(!allCookies.contains(sessionCookie));
         Assert.assertTrue(allCookies.contains(normalCookie));
 
-        callCount = callback.getOnReceiveValueHelper().getCallCount();
+        callCount = callback.getOnResultHelper().getCallCount();
 
         // If there are no session cookies then none are removed.
         removeSessionCookiesOnUiThread(callback);
-        callback.getOnReceiveValueHelper().waitForCallback(callCount);
+        callback.getOnResultHelper().waitForCallback(callCount);
         Assert.assertFalse(callback.getValue());
     }
 
@@ -735,19 +735,17 @@ public class CookieManagerTest {
     }
 
     private void setCookieOnUiThread(final String url, final String cookie,
-            final ValueCallback<Boolean> callback) throws Throwable {
+            final Callback<Boolean> callback) throws Throwable {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> mCookieManager.setCookie(url, cookie, callback));
     }
 
-    private void removeSessionCookiesOnUiThread(final ValueCallback<Boolean> callback)
-            throws Throwable {
+    private void removeSessionCookiesOnUiThread(final Callback<Boolean> callback) throws Throwable {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> mCookieManager.removeSessionCookies(callback));
     }
 
-    private void removeAllCookiesOnUiThread(final ValueCallback<Boolean> callback)
-            throws Throwable {
+    private void removeAllCookiesOnUiThread(final Callback<Boolean> callback) throws Throwable {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> mCookieManager.removeAllCookies(callback));
     }

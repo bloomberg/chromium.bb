@@ -19,10 +19,10 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.URLUtil;
-import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
@@ -224,10 +224,10 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         AwContentsClient.FileChooserParamsImpl params = new AwContentsClient.FileChooserParamsImpl(
                 modeFlags, acceptTypes, title, defaultFilename, capture);
 
-        mContentsClient.showFileChooser(new ValueCallback<String[]>() {
+        mContentsClient.showFileChooser(new Callback<String[]>() {
             boolean mCompleted;
             @Override
-            public void onReceiveValue(String[] results) {
+            public void onResult(String[] results) {
                 if (mCompleted) {
                     throw new IllegalStateException("Duplicate showFileChooser result");
                 }
