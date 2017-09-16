@@ -76,6 +76,7 @@
 #include "components/certificate_transparency/ct_policy_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
+#include "components/feature_engagement/features.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/language/core/browser/url_language_histogram.h"
@@ -163,6 +164,10 @@
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#include "chrome/browser/feature_engagement/session_duration_updater.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -265,9 +270,6 @@
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-#include "chrome/browser/feature_engagement/session_duration_updater.h"
-#endif
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #endif
@@ -521,6 +523,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::RuntimeAPI::RegisterPrefs(registry);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  feature_engagement::SessionDurationUpdater::RegisterProfilePrefs(registry);
+#endif
+
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   printing::StickySettings::RegisterProfilePrefs(registry);
 #endif
@@ -584,10 +590,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   default_apps::RegisterProfilePrefs(registry);
-#endif
-
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
-  feature_engagement::SessionDurationUpdater::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_CHROMEOS)

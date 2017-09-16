@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
+import("//components/feature_engagement/features.gni")
 import("//components/offline_pages/features/features.gni")
 import("//components/os_crypt/features.gni")
 import("//components/signin/features.gni")
@@ -3676,7 +3677,7 @@ split_static_library("browser") {
     ]
   }
 
-  if ((is_linux && !is_chromeos) || is_win) {
+  if (enable_desktop_in_product_help) {
     sources += [
       "feature_engagement/bookmark/bookmark_tracker.cc",
       "feature_engagement/bookmark/bookmark_tracker.h",

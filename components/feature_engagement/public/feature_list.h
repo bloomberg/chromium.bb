@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "components/feature_engagement/features.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/flags_ui/feature_entry.h"
 
@@ -54,11 +55,11 @@ DEFINE_VARIATION_PARAM(kIPHDownloadPageScreenshotFeature,
 DEFINE_VARIATION_PARAM(kIPHChromeHomeExpandFeature, "IPH_ChromeHomeExpand");
 DEFINE_VARIATION_PARAM(kIPHMediaDownloadFeature, "IPH_MediaDownload");
 #endif  // defined(OS_ANDROID)
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 DEFINE_VARIATION_PARAM(kIPHBookmarkFeature, "IPH_Bookmark");
 DEFINE_VARIATION_PARAM(kIPHIncognitoWindowFeature, "IPH_IncognitoWindow");
 DEFINE_VARIATION_PARAM(kIPHNewTabFeature, "IPH_NewTab");
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #if defined(OS_IOS)
 DEFINE_VARIATION_PARAM(kIPHNewTabTipFeature, "IPH_NewTabTip");
 DEFINE_VARIATION_PARAM(kIPHNewIncognitoTabTipFeature, "IPH_NewIncognitoTabTip");

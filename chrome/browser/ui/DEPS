@@ -9,6 +9,7 @@ include_rules = [
   "+components/url_formatter",
   "+components/version_ui",
   "+components/webapks_ui",
+  "+components/feature_engagement/features.h",
   "-chrome/browser/ui/views",
   "+mash/public/interfaces",
   "+services/device/public/interfaces",

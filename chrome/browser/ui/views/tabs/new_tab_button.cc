@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "components/feature_engagement/features.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
@@ -26,7 +27,7 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
@@ -194,7 +195,7 @@ bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
 }
 
 void NewTabButton::OnWidgetDestroying(views::Widget* widget) {
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::NewTabTrackerFactory::GetInstance()
       ->GetForProfile(tab_strip_->controller()->GetProfile())
       ->OnPromoClosed();

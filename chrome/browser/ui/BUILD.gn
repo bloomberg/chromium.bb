@@ -518,6 +518,7 @@ split_static_library("ui") {
     "//components/download/content/public",
     "//components/favicon/content",
     "//components/favicon/core",
+    "//components/feature_engagement:features",
     "//components/feedback",
     "//components/flags_ui",
     "//components/gcm_driver",

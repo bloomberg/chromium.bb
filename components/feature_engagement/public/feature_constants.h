@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "components/feature_engagement/features.h"
 
 namespace feature_engagement {
 
@@ -29,11 +30,11 @@ extern const base::Feature kIPHChromeHomeExpandFeature;
 extern const base::Feature kIPHMediaDownloadFeature;
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 extern const base::Feature kIPHBookmarkFeature;
 extern const base::Feature kIPHIncognitoWindowFeature;
 extern const base::Feature kIPHNewTabFeature;
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IPH)
 
 #if defined(OS_IOS)
 extern const base::Feature kIPHNewTabTipFeature;

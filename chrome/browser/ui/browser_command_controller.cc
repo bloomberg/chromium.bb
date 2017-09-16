@@ -42,6 +42,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
+#include "components/feature_engagement/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -82,7 +83,7 @@
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/bookmark/bookmark_tracker.h"
 #include "chrome/browser/feature_engagement/bookmark/bookmark_tracker_factory.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
