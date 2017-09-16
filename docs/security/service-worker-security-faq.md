@@ -148,11 +148,6 @@ If the person is currently browsing attacker.com, then the attacker doesn't gain
 any additional attack benefit from a Service Worker. They can just `<script
 src="maybe-v8-payload.js">` as usual, from the in-page JavaScript.
 
-**However**, if/when [Foreign
-Fetch](https://github.com/w3c/ServiceWorker/blob/master/foreign_fetch_explainer.md)
-ships, the situation will change if people browse sites that fetch resources
-from the attacker's server.
-
 ## If a site has an XSS vulnerability, can the attacker permanently compromise that origin for me?
 
 An XSS attacker can indeed register an evil SW. As before SWs, XSS is a very
