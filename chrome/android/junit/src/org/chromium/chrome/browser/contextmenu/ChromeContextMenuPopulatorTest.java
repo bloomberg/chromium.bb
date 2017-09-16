@@ -79,15 +79,21 @@ public class ChromeContextMenuPopulatorTest {
         final ContextMenuParams contextMenuParams = createLinkContextParams();
 
         List<ContextMenuItem> enabledItems = getEnabledItems(contextMenuParams);
-        Assert.assertThat(enabledItems, Matchers.contains(ChromeContextMenuItem.COPY_LINK_ADDRESS));
+        Assert.assertThat(enabledItems,
+                Matchers.contains(ChromeContextMenuItem.COPY_LINK_ADDRESS,
+                        ChromeContextMenuItem.COPY_LINK_TEXT));
 
         initializePopulator(ChromeContextMenuPopulator.CUSTOM_TAB_MODE);
         enabledItems = getEnabledItems(contextMenuParams);
-        Assert.assertThat(enabledItems, Matchers.contains(ChromeContextMenuItem.COPY_LINK_ADDRESS));
+        Assert.assertThat(enabledItems,
+                Matchers.contains(ChromeContextMenuItem.COPY_LINK_ADDRESS,
+                        ChromeContextMenuItem.COPY_LINK_TEXT));
 
         initializePopulator(ChromeContextMenuPopulator.WEB_APP_MODE);
         enabledItems = getEnabledItems(contextMenuParams);
-        Assert.assertThat(enabledItems, Matchers.contains(ChromeContextMenuItem.COPY_LINK_ADDRESS));
+        Assert.assertThat(enabledItems,
+                Matchers.contains(ChromeContextMenuItem.COPY_LINK_ADDRESS,
+                        ChromeContextMenuItem.COPY_LINK_TEXT));
     }
 
     @Test
