@@ -403,8 +403,6 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   bool RectContainsTransformedRect(const FloatRect&, const SkIRect&) const;
 
   ImageDataColorSettings GetColorSettingsAsImageDataColorSettings() const;
-
-  bool color_management_enabled_;
 };
 
 template <typename DrawFunc, typename ContainsFunc>

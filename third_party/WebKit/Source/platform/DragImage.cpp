@@ -115,11 +115,9 @@ PaintImage DragImage::ResizeAndOrientImage(
 
   SkCanvas* canvas = surface->getCanvas();
   std::unique_ptr<SkCanvas> color_transform_canvas;
-  if (RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
-    color_transform_canvas =
-        SkCreateColorSpaceXformCanvas(canvas, SkColorSpace::MakeSRGB());
-    canvas = color_transform_canvas.get();
-  }
+  color_transform_canvas =
+      SkCreateColorSpaceXformCanvas(canvas, SkColorSpace::MakeSRGB());
+  canvas = color_transform_canvas.get();
   canvas->concat(AffineTransformToSkMatrix(transform));
   canvas->drawImage(image.GetSkImage(), 0, 0, &paint);
 

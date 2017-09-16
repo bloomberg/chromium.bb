@@ -45,8 +45,6 @@ class PLATFORM_EXPORT CanvasColorParams {
   // not linear space colors).
   bool UsesOutputSpaceBlending() const;
 
-  // Returns true if color correct rendering flag is set.
-  static bool ColorCorrectRenderingEnabled();
   // Returns true if color correct rendering flag is set but canvas color
   // extensions flag is not.
   static bool ColorCorrectRenderingInSRGBOnly();

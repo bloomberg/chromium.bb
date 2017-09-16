@@ -53,23 +53,16 @@ bool CanvasColorParams::UsesOutputSpaceBlending() const {
   return color_space_ == kLegacyCanvasColorSpace;
 }
 
-bool CanvasColorParams::ColorCorrectRenderingEnabled() {
-  return RuntimeEnabledFeatures::ColorCorrectRenderingEnabled();
-}
-
 bool CanvasColorParams::ColorCorrectRenderingInSRGBOnly() {
-  return RuntimeEnabledFeatures::ColorCorrectRenderingEnabled() &&
-         !RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
+  return !RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
 }
 
 bool CanvasColorParams::ColorCorrectRenderingInAnyColorSpace() {
-  return RuntimeEnabledFeatures::ColorCorrectRenderingEnabled() &&
-         RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
+  return RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled();
 }
 
 bool CanvasColorParams::ColorCorrectNoColorSpaceToSRGB() const {
-  return color_space_ == kLegacyCanvasColorSpace &&
-         RuntimeEnabledFeatures::ColorCorrectRenderingEnabled();
+  return color_space_ == kLegacyCanvasColorSpace;
 }
 
 sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpaceForSkSurfaces() const {
