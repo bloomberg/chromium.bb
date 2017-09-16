@@ -23,6 +23,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/views/widget/widget.h"
@@ -312,14 +313,14 @@ void FastInkView::UpdateSurface() {
   bool rv = target_to_buffer_transform.GetInverse(&buffer_to_target_transform);
   DCHECK(rv);
 
-  gfx::Rect output_rect(gfx::ScaleToEnclosingRect(
-      gfx::Rect(widget_->GetNativeView()->GetBoundsInScreen().size()),
-      device_scale_factor));
+  gfx::Rect output_rect(gfx::ConvertSizeToPixel(
+      device_scale_factor,
+      widget_->GetNativeView()->GetBoundsInScreen().size()));
   gfx::Rect quad_rect(buffer_size);
   bool needs_blending = true;
 
-  gfx::Rect damage_rect(
-      gfx::ScaleToEnclosingRect(surface_damage_rect_, device_scale_factor));
+  gfx::Rect damage_rect =
+      gfx::ConvertRectToPixel(device_scale_factor, surface_damage_rect_);
   surface_damage_rect_ = gfx::Rect();
   // Constrain damage rectangle to output rectangle.
   damage_rect.Intersect(output_rect);
