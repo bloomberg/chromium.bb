@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/cdm/cast_cdm.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_config.h"
@@ -55,6 +56,12 @@ void CastCdmFactory::Create(
     bound_cdm_created_cb.Run(nullptr, "No matching key system found.");
     return;
   }
+
+  const int packed_cdm_config = (cdm_config.allow_distinctive_identifier << 2) |
+                                (cdm_config.allow_persistent_state << 1) |
+                                cdm_config.use_hw_secure_codecs;
+  metrics::CastMetricsHelper::GetInstance()->RecordEventWithValue(
+      "Cast.Platform.CreateCdm." + key_system, packed_cdm_config);
 
   task_runner_->PostTask(
       FROM_HERE,
