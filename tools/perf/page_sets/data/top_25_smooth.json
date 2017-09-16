@@ -1,5 +1,8 @@
 {
     "archives": {
+        "Docs  (1 open document tab)": {
+            "DEFAULT": "top_25_009.wprgo"
+        },
         "Facebook": {
             "DEFAULT": "top_25_003.wprgo"
         },
@@ -58,7 +61,7 @@
             "DEFAULT": "top_25_000.wprgo"
         },
         "http://www.youtube.com": {
-            "DEFAULT": "top_25_000.wprgo"
+            "DEFAULT": "top_25_011.wprgo"
         },
         "https://docs.google.com/document/d/1X-IKNjtEnx-WW5JIKRLsyhz5sbsat3mfTpAPUSX3_s4/view": {
             "DEFAULT": "top_25_000.wprgo"
@@ -70,7 +73,7 @@
             "DEFAULT": "top_25_006.wprgo"
         },
         "https://plus.google.com/110031535020051778989/posts": {
-            "DEFAULT": "top_25_001.wprgo"
+            "DEFAULT": "top_25_010.wprgo"
         },
         "https://twitter.com/katyperry": {
             "DEFAULT": "top_25_000.wprgo"
@@ -79,10 +82,10 @@
             "DEFAULT": "top_25_000.wprgo"
         },
         "https://www.google.com/calendar/": {
-            "DEFAULT": "top_25_000.wprgo"
+            "DEFAULT": "top_25_008.wprgo"
         },
         "https://www.google.com/search?q=cats&tbm=isch": {
-            "DEFAULT": "top_25_002.wprgo"
+            "DEFAULT": "top_25_007.wprgo"
         }
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",

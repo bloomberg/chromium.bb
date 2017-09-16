@@ -23,6 +23,8 @@ _SIGNIN_SELECTOR = ','.join([
 # the Google Login page are visible respectively.
 _EMAIL_INPUT_VISIBLE_CONDITION = (
     'document.querySelector("%s") !== null' % (_EMAIL_SELECTOR))
+_EMAIL_NEXT_VISIBLE_CONDITION = (
+    'document.querySelector("%s") !== null' % (_EMAIL_NEXT_SELECTOR))
 _PASSWORD_INPUT_VISIBLE_CONDITION = (
     'document.querySelector("%s") !== null' % (_PASSWORD_SELECTOR))
 
@@ -66,7 +68,8 @@ def LoginGoogleAccount(action_runner,
   # password is required.
   if action_runner.EvaluateJavaScript(_EMAIL_INPUT_VISIBLE_CONDITION):
     login_utils.InputWithSelector(action_runner, account_name, _EMAIL_SELECTOR)
-    action_runner.ClickElement(selector=_EMAIL_NEXT_SELECTOR)
+    if action_runner.EvaluateJavaScript(_EMAIL_NEXT_VISIBLE_CONDITION):
+      action_runner.ClickElement(selector=_EMAIL_NEXT_SELECTOR)
 
   login_utils.InputWithSelector(action_runner, password, _PASSWORD_SELECTOR)
   action_runner.ClickElement(selector=_SIGNIN_SELECTOR)
