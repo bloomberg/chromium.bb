@@ -131,6 +131,7 @@ cr.define('print_preview', function() {
         var iconEl = this.getElement().getElementsByClassName(
             print_preview.DestinationSettingsClasses_.ICON)[0];
         iconEl.src = destination.iconUrl;
+        iconEl.srcset = destination.srcSet;
 
         var hint = destination.hint;
         var locationEl = this.getElement().getElementsByClassName(

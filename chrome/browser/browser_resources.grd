@@ -436,10 +436,14 @@
         <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_JS" file="resources\print_preview\print_preview.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_PDF_PREVIEW_HTML" file="resources\print_preview\pdf_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_PRINTER"
-                 file="resources\print_preview\images\printer.png" type="BINDATA" />
-        <include name="IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED"
-                 file="resources\print_preview\images\printer_shared.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_1X_PRINTER"
+                 file="resources\print_preview\images\1x\printer.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_2X_PRINTER"
+                 file="resources\print_preview\images\2x\printer.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_1X_PRINTER_SHARED"
+                 file="resources\print_preview\images\1x\printer_shared.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_2X_PRINTER_SHARED"
+                 file="resources\print_preview\images\2x\printer_shared.png" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_ENTERPRISE_PRINTER"
                  file="../../ui/webui/resources/images/business.svg" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC"

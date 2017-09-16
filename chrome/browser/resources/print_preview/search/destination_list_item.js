@@ -140,6 +140,7 @@ cr.define('print_preview', function() {
     updateUi_: function() {
       var iconImg = this.getChildElement('.destination-list-item-icon');
       iconImg.src = this.destination_.iconUrl;
+      iconImg.srcset = this.destination_.srcSet;
 
       var nameEl = this.getChildElement('.destination-list-item-name');
       var textContent = this.destination_.displayName;
