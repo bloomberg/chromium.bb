@@ -154,8 +154,12 @@ FcCompareBool (const FcValue *v1, const FcValue *v2, FcValue *bestValue)
     if (v2->type != FcTypeBool || v1->type != FcTypeBool)
 	return -1.0;
 
-    *bestValue = FcValueCanonicalize (v2);
-    return (double) v2->u.b != v1->u.b;
+    if (v2->u.b != FcDontCare)
+	*bestValue = FcValueCanonicalize (v2);
+    else
+	*bestValue = FcValueCanonicalize (v1);
+
+    return (double) ((v2->u.b ^ v1->u.b) == 1);
 }
 
 static double

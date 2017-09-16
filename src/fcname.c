@@ -258,6 +258,11 @@ FcNameBool (const FcChar8 *v, FcBool *result)
 	*result = FcFalse;
 	return FcTrue;
     }
+    if (c0 == 'd' || c0 == 'x' || c0 == '2')
+    {
+	*result = FcDontCare;
+	return FcTrue;
+    }
     if (c0 == 'o')
     {
 	c1 = v[1];
@@ -270,6 +275,11 @@ FcNameBool (const FcChar8 *v, FcBool *result)
 	if (c1 == 'f')
 	{
 	    *result = FcFalse;
+	    return FcTrue;
+	}
+	if (c1 == 'r')
+	{
+	    *result = FcDontCare;
 	    return FcTrue;
 	}
     }
@@ -514,7 +524,10 @@ FcNameUnparseValue (FcStrBuf	*buf,
     case FcTypeString:
 	return FcNameUnparseString (buf, v.u.s, escape);
     case FcTypeBool:
-	return FcNameUnparseString (buf, v.u.b ? (FcChar8 *) "True" : (FcChar8 *) "False", 0);
+	return FcNameUnparseString (buf,
+				    v.u.b == FcTrue  ? (FcChar8 *) "True" :
+				    v.u.b == FcFalse ? (FcChar8 *) "False" :
+				                       (FcChar8 *) "DontCare", 0);
     case FcTypeMatrix:
 	sprintf ((char *) temp, "%g %g %g %g",
 		 v.u.m->xx, v.u.m->xy, v.u.m->yx, v.u.m->yy);

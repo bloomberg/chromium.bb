@@ -72,8 +72,9 @@ typedef int		FcBool;
 #define _FC_STRINGIFY(s)    	_FC_STRINGIFY_(s)
 #define FC_CACHE_VERSION    	_FC_STRINGIFY(FC_CACHE_VERSION_NUMBER)
 
-#define FcTrue		1
 #define FcFalse		0
+#define FcTrue		1
+#define FcDontCare	2
 
 #define FC_FAMILY	    "family"		/* String */
 #define FC_STYLE	    "style"		/* String */
