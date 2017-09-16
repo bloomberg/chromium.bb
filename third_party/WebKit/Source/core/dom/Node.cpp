@@ -444,6 +444,10 @@ Node* Node::insertBefore(Node* new_child,
   return nullptr;
 }
 
+Node* Node::insertBefore(Node* new_child, Node* ref_child) {
+  return insertBefore(new_child, ref_child, ASSERT_NO_EXCEPTION);
+}
+
 Node* Node::replaceChild(Node* new_child,
                          Node* old_child,
                          ExceptionState& exception_state) {
@@ -456,6 +460,10 @@ Node* Node::replaceChild(Node* new_child,
   return nullptr;
 }
 
+Node* Node::replaceChild(Node* new_child, Node* old_child) {
+  return replaceChild(new_child, old_child, ASSERT_NO_EXCEPTION);
+}
+
 Node* Node::removeChild(Node* old_child, ExceptionState& exception_state) {
   if (IsContainerNode())
     return ToContainerNode(this)->RemoveChild(old_child, exception_state);
@@ -465,6 +473,10 @@ Node* Node::removeChild(Node* old_child, ExceptionState& exception_state) {
   return nullptr;
 }
 
+Node* Node::removeChild(Node* old_child) {
+  return removeChild(old_child, ASSERT_NO_EXCEPTION);
+}
+
 Node* Node::appendChild(Node* new_child, ExceptionState& exception_state) {
   if (IsContainerNode())
     return ToContainerNode(this)->AppendChild(new_child, exception_state);
@@ -472,6 +484,10 @@ Node* Node::appendChild(Node* new_child, ExceptionState& exception_state) {
   exception_state.ThrowDOMException(
       kHierarchyRequestError, "This node type does not support this method.");
   return nullptr;
+}
+
+Node* Node::appendChild(Node* new_child) {
+  return appendChild(new_child, ASSERT_NO_EXCEPTION);
 }
 
 static bool IsNodeInNodes(const Node* const node,
@@ -581,6 +597,14 @@ void Node::ReplaceWith(const HeapVector<NodeOrString>& nodes,
 void Node::remove(ExceptionState& exception_state) {
   if (ContainerNode* parent = parentNode())
     parent->RemoveChild(this, exception_state);
+}
+
+void Node::remove() {
+  remove(ASSERT_NO_EXCEPTION);
+}
+
+Node* Node::cloneNode(bool deep) {
+  return cloneNode(deep, ASSERT_NO_EXCEPTION);
 }
 
 void Node::normalize() {

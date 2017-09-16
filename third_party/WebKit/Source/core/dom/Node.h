@@ -26,13 +26,11 @@
 #ifndef Node_h
 #define Node_h
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/dom/events/SimulatedClickOptions.h"
-#include "core/editing/EditingBoundary.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/geometry/LayoutRect.h"
@@ -238,7 +236,8 @@ class CORE_EXPORT Node : public EventTarget {
   void Before(const HeapVector<NodeOrString>&, ExceptionState&);
   void After(const HeapVector<NodeOrString>&, ExceptionState&);
   void ReplaceWith(const HeapVector<NodeOrString>&, ExceptionState&);
-  void remove(ExceptionState& = ASSERT_NO_EXCEPTION);
+  void remove(ExceptionState&);
+  void remove();
 
   Node* PseudoAwareNextSibling() const;
   Node* PseudoAwarePreviousSibling() const;
@@ -247,17 +246,18 @@ class CORE_EXPORT Node : public EventTarget {
 
   const KURL& baseURI() const;
 
-  Node* insertBefore(Node* new_child,
-                     Node* ref_child,
-                     ExceptionState& = ASSERT_NO_EXCEPTION);
-  Node* replaceChild(Node* new_child,
-                     Node* old_child,
-                     ExceptionState& = ASSERT_NO_EXCEPTION);
-  Node* removeChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION);
-  Node* appendChild(Node* new_child, ExceptionState& = ASSERT_NO_EXCEPTION);
+  Node* insertBefore(Node* new_child, Node* ref_child, ExceptionState&);
+  Node* insertBefore(Node* new_child, Node* ref_child);
+  Node* replaceChild(Node* new_child, Node* old_child, ExceptionState&);
+  Node* replaceChild(Node* new_child, Node* old_child);
+  Node* removeChild(Node* child, ExceptionState&);
+  Node* removeChild(Node* child);
+  Node* appendChild(Node* new_child, ExceptionState&);
+  Node* appendChild(Node* new_child);
 
   bool hasChildren() const { return firstChild(); }
-  virtual Node* cloneNode(bool deep, ExceptionState& = ASSERT_NO_EXCEPTION) = 0;
+  virtual Node* cloneNode(bool deep, ExceptionState&) = 0;
+  Node* cloneNode(bool deep);
   void normalize();
 
   bool isEqualNode(Node*) const;

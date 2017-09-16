@@ -16,6 +16,7 @@
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebString.h"
 

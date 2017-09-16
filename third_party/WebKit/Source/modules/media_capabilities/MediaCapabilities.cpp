@@ -13,6 +13,7 @@
 #include "modules/media_capabilities/MediaDecodingConfiguration.h"
 #include "modules/media_capabilities/MediaEncodingConfiguration.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "platform/network/ParsedContentType.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaRecorderHandler.h"
