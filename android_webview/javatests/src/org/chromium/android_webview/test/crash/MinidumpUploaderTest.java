@@ -6,7 +6,6 @@ package org.chromium.android_webview.test.crash;
 
 import android.os.ParcelFileDescriptor;
 import android.support.test.filters.MediumTest;
-import android.webkit.ValueCallback;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -16,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.PlatformServiceBridge;
 import org.chromium.android_webview.crash.AwMinidumpUploaderDelegate;
 import org.chromium.android_webview.crash.CrashReceiverService;
+import org.chromium.base.Callback;
 import org.chromium.base.FileUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -63,9 +63,9 @@ public class MinidumpUploaderTest {
         }
 
         @Override
-        public void queryMetricsSetting(ValueCallback<Boolean> callback) {
+        public void queryMetricsSetting(Callback<Boolean> callback) {
             ThreadUtils.assertOnUiThread();
-            callback.onReceiveValue(mEnabled);
+            callback.onResult(mEnabled);
         }
     }
 

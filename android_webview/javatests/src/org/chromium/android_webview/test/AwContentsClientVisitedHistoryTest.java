@@ -5,7 +5,6 @@
 package org.chromium.android_webview.test;
 
 import android.support.test.filters.SmallTest;
-import android.webkit.ValueCallback;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -14,6 +13,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.TestAwContentsClient.DoUpdateVisitedHistoryHelper;
+import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -28,10 +28,10 @@ public class AwContentsClientVisitedHistoryTest {
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
     private static class GetVisitedHistoryHelper extends CallbackHelper {
-        private ValueCallback<String[]> mCallback;
+        private Callback<String[]> mCallback;
         private boolean mSaveCallback;
 
-        public ValueCallback<String[]> getCallback() {
+        public Callback<String[]> getCallback() {
             assert getCallCount() > 0;
             return mCallback;
         }
@@ -40,7 +40,7 @@ public class AwContentsClientVisitedHistoryTest {
             mSaveCallback = value;
         }
 
-        public void notifyCalled(ValueCallback<String[]> callback) {
+        public void notifyCalled(Callback<String[]> callback) {
             if (mSaveCallback) {
                 mCallback = callback;
             }
@@ -61,7 +61,7 @@ public class AwContentsClientVisitedHistoryTest {
         }
 
         @Override
-        public void getVisitedHistory(ValueCallback<String[]> callback) {
+        public void getVisitedHistory(Callback<String[]> callback) {
             getGetVisitedHistoryHelper().notifyCalled(callback);
         }
 
@@ -133,8 +133,8 @@ public class AwContentsClientVisitedHistoryTest {
             visitedHistoryHelper.waitForCallback(callCount);
             Assert.assertNotNull(visitedHistoryHelper.getCallback());
 
-            visitedHistoryHelper.getCallback().onReceiveValue(visitedLinks);
-            visitedHistoryHelper.getCallback().onReceiveValue(null);
+            visitedHistoryHelper.getCallback().onResult(visitedLinks);
+            visitedHistoryHelper.getCallback().onResult(null);
 
             mActivityTestRule.loadUrlSync(
                     awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
@@ -159,7 +159,7 @@ public class AwContentsClientVisitedHistoryTest {
         Assert.assertNotNull(visitedHistoryHelper.getCallback());
 
         mActivityTestRule.destroyAwContentsOnMainSync(awContents);
-        visitedHistoryHelper.getCallback().onReceiveValue(new String[] {"abc.def"});
-        visitedHistoryHelper.getCallback().onReceiveValue(null);
+        visitedHistoryHelper.getCallback().onResult(new String[] {"abc.def"});
+        visitedHistoryHelper.getCallback().onResult(null);
     }
 }

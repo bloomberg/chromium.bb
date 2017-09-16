@@ -8,10 +8,10 @@ import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.net.http.SslError;
 import android.webkit.ConsoleMessage;
-import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.AwWebResourceResponse;
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
@@ -225,8 +225,8 @@ public class TestAwContentsClient extends NullContentsClient {
     }
 
     @Override
-    public void onReceivedSslError(ValueCallback<Boolean> callback, SslError error) {
-        callback.onReceiveValue(mAllowSslError);
+    public void onReceivedSslError(Callback<Boolean> callback, SslError error) {
+        callback.onResult(mAllowSslError);
         mOnReceivedSslErrorHelper.notifyCalled();
     }
 

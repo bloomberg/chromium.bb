@@ -7,8 +7,8 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.webkit.ValueCallback;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
@@ -39,10 +39,13 @@ public class AwSafeBrowsingConfigHelper {
             Class awSafeBrowsingApiHelperClass =
                     Class.forName("com.android.webview.chromium.AwSafeBrowsingApiHandler");
             Method getUserOptInPreference = awSafeBrowsingApiHelperClass.getDeclaredMethod(
-                    getUserOptInPreferenceMethodName, Context.class, ValueCallback.class);
+                    getUserOptInPreferenceMethodName, Context.class, Callback.class);
+            // TODO(ntfschr): remove clang-format directives once crbug/764581 is resolved
+            // clang-format off
             getUserOptInPreference.invoke(null, appContext,
-                    (ValueCallback<Boolean>) optin -> setSafeBrowsingUserOptIn(
+                    (Callback<Boolean>) optin -> setSafeBrowsingUserOptIn(
                             optin == null ? false : optin));
+            // clang-format on
         } catch (ClassNotFoundException e) {
             // This is not an error; it just means this device doesn't have specialized services.
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException e) {

@@ -46,11 +46,11 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.textclassifier.TextClassifier;
 import android.webkit.JavascriptInterface;
-import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
+import org.chromium.base.Callback;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -1458,7 +1458,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     private void requestVisitedHistoryFromClient() {
-        ValueCallback<String[]> callback = value -> {
+        Callback<String[]> callback = value -> {
             if (value != null) {
                 // Replace null values with empty strings, because they can't be represented as
                 // native strings.
@@ -2021,7 +2021,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     public void saveWebArchive(
-            final String basename, boolean autoname, final ValueCallback<String> callback) {
+            final String basename, boolean autoname, final Callback<String> callback) {
         if (TRACE) Log.i(TAG, "%s saveWebArchive=%s", this, basename);
         if (!autoname) {
             saveWebArchiveInternal(basename, callback);
@@ -2260,7 +2260,7 @@ public class AwContents implements SmartClipProvider {
     /**
      * @see ContentViewCore.evaluateJavaScript(String, JavaScriptCallback)
      */
-    public void evaluateJavaScript(String script, final ValueCallback<String> callback) {
+    public void evaluateJavaScript(String script, final Callback<String> callback) {
         if (TRACE) Log.i(TAG, "%s evaluateJavascript=%s", this, script);
         if (isDestroyedOrNoOperation(WARN)) return;
         JavaScriptCallback jsCallback = null;
@@ -2270,19 +2270,19 @@ public class AwContents implements SmartClipProvider {
                 // application callback is executed without any native code on the stack. This
                 // so that any exception thrown by the application callback won't have to be
                 // propagated through a native call stack.
-                mHandler.post(() -> callback.onReceiveValue(jsonResult));
+                mHandler.post(() -> callback.onResult(jsonResult));
             };
         }
 
         mWebContents.evaluateJavaScript(script, jsCallback);
     }
 
-    public void evaluateJavaScriptForTests(String script, final ValueCallback<String> callback) {
+    public void evaluateJavaScriptForTests(String script, final Callback<String> callback) {
         if (TRACE) Log.i(TAG, "%s evaluateJavascriptForTests=%s", this, script);
         if (isDestroyedOrNoOperation(NO_WARN)) return;
         JavaScriptCallback jsCallback = null;
         if (callback != null) {
-            jsCallback = jsonResult -> callback.onReceiveValue(jsonResult);
+            jsCallback = jsonResult -> callback.onResult(jsonResult);
         }
 
         mWebContents.evaluateJavaScriptForTests(script, jsCallback);
@@ -2771,10 +2771,9 @@ public class AwContents implements SmartClipProvider {
 
     /** Callback for generateMHTML. */
     @CalledByNative
-    private static void generateMHTMLCallback(
-            String path, long size, ValueCallback<String> callback) {
+    private static void generateMHTMLCallback(String path, long size, Callback<String> callback) {
         if (callback == null) return;
-        callback.onReceiveValue(size < 0 ? null : path);
+        callback.onResult(size < 0 ? null : path);
     }
 
     @CalledByNative
@@ -3005,12 +3004,12 @@ public class AwContents implements SmartClipProvider {
 
     @VisibleForTesting
     public void evaluateJavaScriptOnInterstitialForTesting(
-            String script, final ValueCallback<String> callback) {
+            String script, final Callback<String> callback) {
         if (TRACE) Log.i(TAG, "%s evaluateJavaScriptOnInterstitialForTesting=%s", this, script);
         if (isDestroyedOrNoOperation(WARN)) return;
         JavaScriptCallback jsCallback = null;
         if (callback != null) {
-            jsCallback = jsonResult -> callback.onReceiveValue(jsonResult);
+            jsCallback = jsonResult -> callback.onResult(jsonResult);
         }
 
         nativeEvaluateJavaScriptOnInterstitialForTesting(mNativeAwContents, script, jsCallback);
@@ -3044,11 +3043,11 @@ public class AwContents implements SmartClipProvider {
         }
     }
 
-    private void saveWebArchiveInternal(String path, final ValueCallback<String> callback) {
+    private void saveWebArchiveInternal(String path, final Callback<String> callback) {
         if (path == null || isDestroyedOrNoOperation(WARN)) {
             if (callback == null) return;
 
-            ThreadUtils.runOnUiThread(() -> callback.onReceiveValue(null));
+            ThreadUtils.runOnUiThread(() -> callback.onResult(null));
         } else {
             nativeGenerateMHTML(mNativeAwContents, path, callback);
         }
@@ -3494,7 +3493,7 @@ public class AwContents implements SmartClipProvider {
 
     private native void nativeDocumentHasImages(long nativeAwContents, Message message);
     private native void nativeGenerateMHTML(
-            long nativeAwContents, String path, ValueCallback<String> callback);
+            long nativeAwContents, String path, Callback<String> callback);
 
     private native void nativeAddVisitedLinks(long nativeAwContents, String[] visitedLinks);
     private native void nativeZoomBy(long nativeAwContents, float delta);

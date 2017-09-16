@@ -9,8 +9,8 @@ import android.net.http.SslCertificate;
 import android.net.http.SslError;
 import android.os.Handler;
 import android.util.Log;
-import android.webkit.ValueCallback;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
@@ -157,8 +157,8 @@ public class AwContentsClientBridge {
             return false;
         }
         final SslError sslError = SslUtil.sslErrorFromNetErrorCode(certError, cert, url);
-        final ValueCallback<Boolean> callback = value -> ThreadUtils.runOnUiThread(
-                () -> proceedSslError(value.booleanValue(), id));
+        final Callback<Boolean> callback =
+                value -> ThreadUtils.runOnUiThread(() -> proceedSslError(value.booleanValue(), id));
         // Post the application callback back to the current thread to ensure the application
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
@@ -334,10 +334,13 @@ public class AwContentsClientBridge {
             request.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
         }
 
-        ValueCallback<AwSafeBrowsingResponse> callback =
+        // TODO(ntfschr): remove clang-format directives once crbug/764582 is resolved
+        // clang-format off
+        Callback<AwSafeBrowsingResponse> callback =
                 response -> ThreadUtils.runOnUiThread(
                         () -> nativeTakeSafeBrowsingAction(mNativeContentsClientBridge,
                                 response.action(), response.reporting(), requestId));
+        // clang-format on
 
         mClient.getCallbackHelper().postOnSafeBrowsingHit(
                 request, AwSafeBrowsingConversionHelper.convertThreatType(threatType), callback);
