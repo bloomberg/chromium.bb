@@ -16,6 +16,9 @@ struct CommandBufferId {
   int32 route_id;
 };
 
+[Native]
+struct OverlayInfo;
+
 interface VideoDecoder {
   // Initialize the decoder. This must be called before any other method.
   //
@@ -74,6 +77,9 @@ interface VideoDecoder {
   // frame's backing textures will be safe to overwrite.
   OnReleaseMailbox(mojo.common.mojom.UnguessableToken release_token,
                    gpu.mojom.SyncToken release_sync_token);
+
+  // Inform the decoder that new OverlayInfo is available.
+  OnOverlayInfoChanged(OverlayInfo overlay_info);
 };
 
 interface VideoDecoderClient {
@@ -89,4 +95,10 @@ interface VideoDecoderClient {
   OnVideoFrameDecoded(VideoFrame frame,
                       bool can_read_without_stalling,
                       mojo.common.mojom.UnguessableToken? release_token);
+
+  // Request to be notified when the current OverlayInfo changes. This results
+  // in at least one call to OnOverlayInfoChanged() for the initial OverlayInfo.
+  // |restart_for_transitions| sets whether the decoder should be restarted on
+  // overlay transitions instead of receiving a call to OnOverlayInfoChanged().
+  RequestOverlayInfo(bool restart_for_transitions);
 };

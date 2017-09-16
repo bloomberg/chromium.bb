@@ -55,7 +55,9 @@ void MojoVideoDecoderService::Construct(
   decoder_ = mojo_media_client_->CreateVideoDecoder(
       base::ThreadTaskRunnerHandle::Get(), media_log_.get(),
       std::move(command_buffer_id),
-      base::Bind(&MojoVideoDecoderService::OnDecoderOutput, weak_this_));
+      base::Bind(&MojoVideoDecoderService::OnDecoderOutput, weak_this_),
+      base::Bind(&MojoVideoDecoderService::OnDecoderRequestedOverlayInfo,
+                 weak_this_));
 }
 
 void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
@@ -165,6 +167,27 @@ void MojoVideoDecoderService::OnReleaseMailbox(
   MojoMediaClient::ReleaseMailboxCB cb = std::move(it->second);
   release_mailbox_cbs_.erase(it);
   std::move(cb).Run(release_sync_token);
+}
+
+void MojoVideoDecoderService::OnOverlayInfoChanged(
+    const OverlayInfo& overlay_info) {
+  DVLOG(2) << __func__;
+  DCHECK(client_);
+  DCHECK(decoder_);
+  DCHECK(provide_overlay_info_cb_);
+  provide_overlay_info_cb_.Run(overlay_info);
+}
+
+void MojoVideoDecoderService::OnDecoderRequestedOverlayInfo(
+    bool restart_for_transitions,
+    const ProvideOverlayInfoCB& provide_overlay_info_cb) {
+  DVLOG(2) << __func__;
+  DCHECK(client_);
+  DCHECK(decoder_);
+  DCHECK(!provide_overlay_info_cb_);
+
+  provide_overlay_info_cb_ = std::move(provide_overlay_info_cb);
+  client_->RequestOverlayInfo(restart_for_transitions);
 }
 
 }  // namespace media

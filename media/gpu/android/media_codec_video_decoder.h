@@ -50,6 +50,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
       AVDACodecAllocator* codec_allocator,
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
       AndroidOverlayMojoFactoryCB overlay_factory_cb,
+      RequestOverlayInfoCB request_overlay_info_cb,
       std::unique_ptr<VideoFrameFactory> video_frame_factory,
       std::unique_ptr<service_manager::ServiceContextRef> connection_ref);
 
@@ -67,9 +68,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
 
-  // Sets the overlay info to use. This can be called before Initialize() to
-  // set the first overlay.
-  void SetOverlayInfo(const OverlayInfo& overlay_info);
+  // Updates the current overlay info.
+  void OnOverlayInfoChanged(const OverlayInfo& overlay_info);
 
  protected:
   // Protected for testing.
@@ -92,13 +92,10 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
     // The output surface was destroyed, but SetOutputSurface() is not supported
     // by the device. In this case the consumer is responsible for destroying us
     // soon, so this is terminal state but not a decode error.
-    kSurfaceDestroyed,
+    kSurfaceDestroyed
   };
 
-  enum class DrainType {
-    kForReset,
-    kForDestroy,
-  };
+  enum class DrainType { kForReset, kForDestroy };
 
   // Starts teardown.
   void Destroy() override;
@@ -217,6 +214,9 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // A SurfaceTexture bundle that is kept for the lifetime of MCVD so that if we
   // have to synchronously switch surfaces we always have one available.
   scoped_refptr<AVDASurfaceBundle> surface_texture_bundle_;
+
+  // A callback for requesting overlay info updates.
+  RequestOverlayInfoCB request_overlay_info_cb_;
 
   // The current overlay info, which possibly specifies an overlay to render to.
   OverlayInfo overlay_info_;

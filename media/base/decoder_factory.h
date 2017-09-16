@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
+#include "media/base/overlay_info.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -41,6 +42,7 @@ class MEDIA_EXPORT DecoderFactory {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       GpuVideoAcceleratorFactories* gpu_factories,
       MediaLog* media_log,
+      const RequestOverlayInfoCB& request_overlay_info_cb,
       std::vector<std::unique_ptr<VideoDecoder>>* video_decoders);
 
  private:

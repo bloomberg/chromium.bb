@@ -8,7 +8,6 @@
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/ipc/media_param_traits.h"
-#include "media/base/overlay_info.h"
 #include "media/gpu/ipc/common/create_video_encoder_params.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
@@ -41,13 +40,6 @@ IPC_STRUCT_TRAITS_BEGIN(media::CreateVideoEncoderParams)
   IPC_STRUCT_TRAITS_MEMBER(output_profile)
   IPC_STRUCT_TRAITS_MEMBER(initial_bitrate)
   IPC_STRUCT_TRAITS_MEMBER(encoder_route_id)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::OverlayInfo)
-  IPC_STRUCT_TRAITS_MEMBER(surface_id)
-  IPC_STRUCT_TRAITS_MEMBER(routing_token)
-  IPC_STRUCT_TRAITS_MEMBER(is_fullscreen)
-  IPC_STRUCT_TRAITS_MEMBER(is_frame_hidden)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // MEDIA_GPU_IPC_COMMON_MEDIA_PARAM_TRAITS_MACROS_H_

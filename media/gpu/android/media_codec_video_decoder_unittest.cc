@@ -30,14 +30,16 @@ using testing::_;
 namespace media {
 namespace {
 
-void OutputCb(const scoped_refptr<VideoFrame>& frame) {}
+void OutputCb(const scoped_refptr<VideoFrame>&) {}
 
-void OutputWithReleaseMailboxCb(VideoFrameFactory::ReleaseMailboxCB release_cb,
-                                const scoped_refptr<VideoFrame>& frame) {}
+void OutputWithReleaseMailboxCb(VideoFrameFactory::ReleaseMailboxCB,
+                                const scoped_refptr<VideoFrame>&) {}
+
+void RequestOverlayInfoCb(bool, const ProvideOverlayInfoCB&) {}
 
 std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(
-    const base::UnguessableToken& routing_token,
-    AndroidOverlayConfig config) {
+    const base::UnguessableToken&,
+    AndroidOverlayConfig) {
   return nullptr;
 }
 
@@ -106,8 +108,8 @@ class MediaCodecVideoDecoderTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get(), base::Bind(&GetStubCb),
         base::Bind(&OutputWithReleaseMailboxCb), device_info_.get(),
         codec_allocator_.get(), std::move(surface_chooser),
-        base::Bind(&CreateAndroidOverlayCb), std::move(video_frame_factory),
-        nullptr);
+        base::Bind(&CreateAndroidOverlayCb), base::Bind(&RequestOverlayInfoCb),
+        std::move(video_frame_factory), nullptr);
     mcvd_.reset(observable_mcvd);
     mcvd_raw_ = observable_mcvd;
     destruction_observer_ = observable_mcvd->CreateDestructionObserver();
@@ -262,7 +264,7 @@ TEST_F(MediaCodecVideoDecoderTest,
        SurfaceChooserNotInitializedWithOverlayFactory) {
   InitializeWithSurfaceTexture_OneDecodePending();
   // The surface chooser should not have an overlay factory because
-  // SetOverlayInfo() was not called before it was initialized.
+  // OnOverlayInfoChanged() was not called before it was initialized.
   ASSERT_FALSE(surface_chooser_->factory_);
 }
 
@@ -271,42 +273,44 @@ TEST_F(MediaCodecVideoDecoderTest,
   Initialize();
   OverlayInfo info;
   info.routing_token = base::UnguessableToken::Deserialize(1, 2);
-  mcvd_->SetOverlayInfo(info);
+  mcvd_->OnOverlayInfoChanged(info);
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
-  // The surface chooser should have an overlay factory because SetOverlayInfo()
-  // was called before it was initialized.
+  // The surface chooser should have an overlay factory because
+  // OnOverlayInfoChanged() was called before it was initialized.
   ASSERT_TRUE(surface_chooser_->factory_);
 }
 
-TEST_F(MediaCodecVideoDecoderTest, SetOverlayInfoIsValidBeforeInitialize) {
+TEST_F(MediaCodecVideoDecoderTest,
+       OnOverlayInfoChangedIsValidBeforeInitialize) {
   OverlayInfo info;
   info.routing_token = base::UnguessableToken::Deserialize(1, 2);
-  mcvd_->SetOverlayInfo(info);
+  mcvd_->OnOverlayInfoChanged(info);
   Initialize();
   mcvd_->Decode(fake_decoder_buffer_, decode_cb_.Get());
   ASSERT_TRUE(surface_chooser_->factory_);
 }
 
-TEST_F(MediaCodecVideoDecoderTest, SetOverlayInfoReplacesTheOverlayFactory) {
+TEST_F(MediaCodecVideoDecoderTest,
+       OnOverlayInfoChangedReplacesTheOverlayFactory) {
   InitializeWithOverlay_OneDecodePending();
 
   EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory(_)).Times(2);
   OverlayInfo info;
   info.routing_token = base::UnguessableToken::Deserialize(1, 2);
-  mcvd_->SetOverlayInfo(info);
+  mcvd_->OnOverlayInfoChanged(info);
   info.routing_token = base::UnguessableToken::Deserialize(3, 4);
-  mcvd_->SetOverlayInfo(info);
+  mcvd_->OnOverlayInfoChanged(info);
 }
 
-TEST_F(MediaCodecVideoDecoderTest, DuplicateSetOverlayInfosAreIgnored) {
+TEST_F(MediaCodecVideoDecoderTest, DuplicateOnOverlayInfoChangedAreIgnored) {
   InitializeWithOverlay_OneDecodePending();
 
-  // The second SetOverlayInfo() should be ignored.
+  // The second OnOverlayInfoChanged() should be ignored.
   EXPECT_CALL(*surface_chooser_, MockReplaceOverlayFactory(_)).Times(1);
   OverlayInfo info;
   info.routing_token = base::UnguessableToken::Deserialize(1, 2);
-  mcvd_->SetOverlayInfo(info);
-  mcvd_->SetOverlayInfo(info);
+  mcvd_->OnOverlayInfoChanged(info);
+  mcvd_->OnOverlayInfoChanged(info);
 }
 
 TEST_F(MediaCodecVideoDecoderTest, CodecIsCreatedWithChosenOverlay) {

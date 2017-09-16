@@ -21,6 +21,7 @@
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_log_event.h"
 #include "media/base/output_device_info.h"
+#include "media/base/overlay_info.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
@@ -153,6 +154,13 @@ IPC_STRUCT_TRAITS_BEGIN(media::VideoColorSpace)
   IPC_STRUCT_TRAITS_MEMBER(transfer)
   IPC_STRUCT_TRAITS_MEMBER(matrix)
   IPC_STRUCT_TRAITS_MEMBER(range)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::OverlayInfo)
+  IPC_STRUCT_TRAITS_MEMBER(surface_id)
+  IPC_STRUCT_TRAITS_MEMBER(routing_token)
+  IPC_STRUCT_TRAITS_MEMBER(is_fullscreen)
+  IPC_STRUCT_TRAITS_MEMBER(is_frame_hidden)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_MACROS_H_
