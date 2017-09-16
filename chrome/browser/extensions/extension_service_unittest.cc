@@ -118,6 +118,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
@@ -278,6 +279,35 @@ std::unique_ptr<ExternalInstallInfoFile> CreateExternalExtension(
   return base::MakeUnique<ExternalInstallInfoFile>(
       extension_id, base::MakeUnique<base::Version>(version_str), path,
       location, flags, false, false);
+}
+
+// Helper function to persist the passed directories and file paths in
+// |extension_dir|. Also, writes a generic manifest file.
+void PersistExtensionWithPaths(
+    const base::FilePath& extension_dir,
+    const std::vector<base::FilePath>& directory_paths,
+    const std::vector<base::FilePath>& file_paths) {
+  for (const auto& directory : directory_paths)
+    EXPECT_TRUE(base::CreateDirectory(directory));
+
+  std::string data = "file_data";
+  for (const auto& file : file_paths) {
+    EXPECT_EQ(static_cast<int>(data.size()),
+              base::WriteFile(file, data.c_str(), data.size()));
+  }
+
+  std::unique_ptr<base::DictionaryValue> manifest =
+      extensions::DictionaryBuilder()
+          .Set(keys::kName, "Test extension")
+          .Set(keys::kVersion, "1.0")
+          .Set(keys::kManifestVersion, 2)
+          .Build();
+
+  // Persist manifest file.
+  base::FilePath manifest_path =
+      extension_dir.Append(extensions::kManifestFilename);
+  JSONFileValueSerializer(manifest_path).Serialize(*manifest);
+  EXPECT_TRUE(base::PathExists(manifest_path));
 }
 
 }  // namespace
@@ -2145,58 +2175,148 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
 }
 #endif
 
-TEST_F(ExtensionServiceTest, UnpackedExtensionMayHaveMetadataFolder) {
+// Tests than an unpacked extension with an empty kMetadataFolder loads
+// successfully.
+TEST_F(ExtensionServiceTest, UnpackedExtensionWithEmptyMetadataFolder) {
   InitializeEmptyExtensionService();
-  base::FilePath extension_path = data_dir().AppendASCII("metadata_folder");
-  extensions::UnpackedInstaller::Create(service())->Load(extension_path);
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath extension_dir = base::MakeAbsoluteFilePath(temp_dir.GetPath());
+  base::FilePath metadata_dir =
+      extension_dir.Append(extensions::kMetadataFolder);
+  PersistExtensionWithPaths(extension_dir, {metadata_dir}, {});
+  EXPECT_TRUE(base::DirectoryExists(metadata_dir));
+
+  extensions::UnpackedInstaller::Create(service())->Load(extension_dir);
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(0u, GetErrors().size());
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
+
+  // The kMetadataFolder should have been deleted since it did not contain
+  // any non-reserved filenames.
+  EXPECT_FALSE(base::DirectoryExists(metadata_dir));
 }
 
-TEST_F(ExtensionServiceTest,
-       UnpackedExtensionWithMetadataAndUnderscoreFolders) {
+// Tests that an unpacked extension with only reserved filenames in the
+// kMetadataFolder loads successfully.
+TEST_F(ExtensionServiceTest, UnpackedExtensionWithReservedMetadataFiles) {
   InitializeEmptyExtensionService();
-  base::FilePath extension_path =
-      data_dir().AppendASCII("underscore_metadata_folders");
-  extensions::UnpackedInstaller::Create(service())->Load(extension_path);
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath extension_dir = base::MakeAbsoluteFilePath(temp_dir.GetPath());
+  base::FilePath metadata_dir =
+      extension_dir.Append(extensions::kMetadataFolder);
+  PersistExtensionWithPaths(
+      extension_dir, {metadata_dir},
+      extensions::file_util::GetReservedMetadataFilePaths(extension_dir));
+  EXPECT_TRUE(base::DirectoryExists(metadata_dir));
+
+  extensions::UnpackedInstaller::Create(service())->Load(extension_dir);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+
+  // The kMetadataFolder should have been deleted since it did not contain
+  // any non-reserved filenames.
+  EXPECT_FALSE(base::DirectoryExists(metadata_dir));
+}
+
+// Tests that an unpacked extension with non-reserved files in the
+// kMetadataFolder fails to load.
+TEST_F(ExtensionServiceTest, UnpackedExtensionWithUserMetadataFiles) {
+  InitializeEmptyExtensionService();
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath extension_dir = base::MakeAbsoluteFilePath(temp_dir.GetPath());
+  base::FilePath metadata_dir =
+      extension_dir.Append(extensions::kMetadataFolder);
+  base::FilePath non_reserved_file =
+      metadata_dir.Append(FILE_PATH_LITERAL("a.txt"));
+  PersistExtensionWithPaths(
+      extension_dir, {metadata_dir},
+      {extensions::file_util::GetVerifiedContentsPath(extension_dir),
+       non_reserved_file});
+  EXPECT_TRUE(base::PathExists(non_reserved_file));
+
+  extensions::UnpackedInstaller::Create(service())->Load(extension_dir);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  ASSERT_EQ(1u, GetErrors().size());
+
+  // Format expected error string.
+  std::string expected("Failed to load extension from: ");
+  expected.append(extension_dir.MaybeAsASCII())
+      .append(
+          ". Cannot load extension with file or directory name _metadata. "
+          "Filenames starting with \"_\" are reserved for use by the system.");
+
+  EXPECT_EQ(base::UTF8ToUTF16(expected), GetErrors()[0]);
+  EXPECT_EQ(0u, registry()->enabled_extensions().size());
+
+  // Non-reserved filepaths inside the kMetadataFolder should not have been
+  // deleted.
+  EXPECT_TRUE(base::PathExists(non_reserved_file));
+}
+
+// Tests than an unpacked extension with an empty kMetadataFolder and a folder
+// beginning with "_" fails to load.
+TEST_F(ExtensionServiceTest,
+       UnpackedExtensionWithEmptyMetadataAndUnderscoreFolders) {
+  InitializeEmptyExtensionService();
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath extension_dir = base::MakeAbsoluteFilePath(temp_dir.GetPath());
+  base::FilePath metadata_dir =
+      extension_dir.Append(extensions::kMetadataFolder);
+  PersistExtensionWithPaths(
+      extension_dir,
+      {metadata_dir, extension_dir.Append(FILE_PATH_LITERAL("_badfolder"))},
+      {});
+
+  extensions::UnpackedInstaller::Create(service())->Load(extension_dir);
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(1u, GetErrors().size());
 
   // Format expected error string.
   std::string expected("Failed to load extension from: ");
-  expected.append(extension_path.MaybeAsASCII())
+  expected.append(extension_dir.MaybeAsASCII())
       .append(
-          ". Cannot load "
-          "extension with file or directory name _badfolder. Filenames "
-          "starting "
-          "with \"_\" are reserved for use by the system.");
+          ". Cannot load extension with file or directory name _badfolder. "
+          "Filenames starting with \"_\" are reserved for use by the system.");
 
-  EXPECT_EQ(
-      base::UTF8ToUTF16(base::StringPiece(expected.c_str(), expected.size())),
-      GetErrors()[0]);
+  EXPECT_EQ(base::UTF8ToUTF16(expected), GetErrors()[0]);
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
+
+  // The kMetadataFolder should have been deleted since it did not contain any
+  // non-reserved filenames.
+  EXPECT_FALSE(base::DirectoryExists(metadata_dir));
 }
 
+// Tests that an unpacked extension with an arbitrary folder beginning with an
+// underscore can't load.
 TEST_F(ExtensionServiceTest, UnpackedExtensionMayNotHaveUnderscore) {
   InitializeEmptyExtensionService();
-  base::FilePath extension_path = data_dir().AppendASCII("underscore_name");
-  extensions::UnpackedInstaller::Create(service())->Load(extension_path);
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath extension_dir = base::MakeAbsoluteFilePath(temp_dir.GetPath());
+  base::FilePath underscore_folder =
+      extension_dir.Append(FILE_PATH_LITERAL("_badfolder"));
+  PersistExtensionWithPaths(
+      extension_dir, {underscore_folder},
+      {underscore_folder.Append(FILE_PATH_LITERAL("a.js"))});
+  EXPECT_TRUE(base::DirectoryExists(underscore_folder));
+
+  extensions::UnpackedInstaller::Create(service())->Load(extension_dir);
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(1u, GetErrors().size());
 
   // Format expected error string.
   std::string expected("Failed to load extension from: ");
-  expected.append(extension_path.MaybeAsASCII())
+  expected.append(extension_dir.MaybeAsASCII())
       .append(
-          ". Cannot load "
-          "extension with file or directory name _badfolder. Filenames "
-          "starting "
-          "with \"_\" are reserved for use by the system.");
+          ". Cannot load extension with file or directory name _badfolder. "
+          "Filenames starting with \"_\" are reserved for use by the system.");
 
-  EXPECT_EQ(
-      base::UTF8ToUTF16(base::StringPiece(expected.c_str(), expected.size())),
-      GetErrors()[0]);
+  EXPECT_EQ(base::UTF8ToUTF16(expected), GetErrors()[0]);
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
 }
 
