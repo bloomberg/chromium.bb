@@ -212,6 +212,9 @@ size_t RegisterChromeCrashKeys() {
     // Temporary for https://crbug.com/752914.
     {"blink_scheduler_task_function_name", kMediumSize},
     {"blink_scheduler_task_file_name", kMediumSize},
+
+    // Temporary for https://crbug.com/760427.
+    {"script_streaming_failure_url", kLargeSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

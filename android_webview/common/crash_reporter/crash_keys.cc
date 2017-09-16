@@ -112,6 +112,9 @@ size_t RegisterWebViewCrashKeys() {
 
       // Temporary for https://crbug.com/685996.
       {"user-cloud-policy-manager-connect-trace", kMediumSize},
+
+      // Temporary for https://crbug.com/760427.
+      {"script_streaming_failure_url", kLargeSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
