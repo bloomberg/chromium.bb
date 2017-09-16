@@ -18,6 +18,16 @@
         },
         {
           "object": "LayoutBlockFlow DIV class='outer'",
+          "rect": [61, 498, 62, 22],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='outer'",
+          "rect": [61, 492, 62, 22],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='outer'",
           "rect": [61, 459, 62, 22],
           "reason": "geometry"
         },
@@ -134,6 +144,26 @@
         {
           "object": "LayoutTable TABLE class='outer'",
           "rect": [61, 282, 58, 28],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [67, 504, 50, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [67, 498, 50, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [67, 465, 50, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [67, 459, 50, 10],
           "reason": "geometry"
         },
         {
@@ -308,6 +338,36 @@
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [59, 504, 40, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [59, 498, 40, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [59, 465, 40, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [59, 459, 40, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [59, 426, 40, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [59, 420, 40, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
           "rect": [59, 255, 40, 10],
           "reason": "geometry"
         },
@@ -384,6 +444,36 @@
         {
           "object": "InlineTextBox 'x'",
           "rect": [59, 539, 16, 17],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'x'",
+          "rect": [59, 506, 16, 17],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'x'",
+          "rect": [59, 500, 16, 17],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'x'",
+          "rect": [59, 467, 16, 17],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'x'",
+          "rect": [59, 461, 16, 17],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'x'",
+          "rect": [59, 428, 16, 17],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'x'",
+          "rect": [59, 422, 16, 17],
           "reason": "geometry"
         },
         {
@@ -465,19 +555,6 @@
           "object": "InlineTextBox 'x'",
           "rect": [57, 56, 16, 17],
           "reason": "geometry"
-        }
-      ]
-    },
-    {
-      "name": "LayoutBlockFlow (floating) DIV",
-      "position": [59, 426],
-      "bounds": [64, 97],
-      "backgroundColor": "#ADD8E6",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [0, 0, 64, 97],
-          "reason": "full layer"
         }
       ]
     }

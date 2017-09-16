@@ -623,6 +623,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
   const ObjectPaintProperties* node_with_opacity_properties =
       node_with_opacity->FirstFragment()->PaintProperties();
   EXPECT_EQ(0.6f, node_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, node_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, node_with_opacity_properties->Effect()->Parent());
   EXPECT_EQ(nullptr, node_with_opacity_properties->Transform());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 100, 200), node_with_opacity,
@@ -643,6 +644,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
   const ObjectPaintProperties* grand_child_with_opacity_properties =
       grand_child_with_opacity->FirstFragment()->PaintProperties();
   EXPECT_EQ(0.4f, grand_child_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr,
+            grand_child_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(node_with_opacity_properties->Effect(),
             grand_child_with_opacity_properties->Effect()->Parent());
   EXPECT_EQ(nullptr, grand_child_with_opacity_properties->Transform());
@@ -666,6 +669,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
   const ObjectPaintProperties* node_with_opacity_properties =
       node_with_opacity->FirstFragment()->PaintProperties();
   EXPECT_EQ(0.6f, node_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, node_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, node_with_opacity_properties->Effect()->Parent());
   EXPECT_EQ(nullptr, node_with_opacity_properties->Transform());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 100, 200), node_with_opacity,
@@ -686,6 +690,8 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
   const ObjectPaintProperties* grand_child_with_opacity_properties =
       grand_child_with_opacity->FirstFragment()->PaintProperties();
   EXPECT_EQ(0.4f, grand_child_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr,
+            grand_child_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(node_with_opacity_properties->Effect(),
             grand_child_with_opacity_properties->Effect()->Parent());
   EXPECT_EQ(nullptr, grand_child_with_opacity_properties->Transform());
@@ -709,6 +715,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
   const ObjectPaintProperties* group_with_opacity_properties =
       group_with_opacity->FirstFragment()->PaintProperties();
   EXPECT_EQ(0.6f, group_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, group_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, group_with_opacity_properties->Effect()->Parent());
 
   LayoutObject& rect_without_opacity =
@@ -722,6 +729,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
   const ObjectPaintProperties* rect_with_opacity_properties =
       rect_with_opacity.FirstFragment()->PaintProperties();
   EXPECT_EQ(0.4f, rect_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, rect_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(group_with_opacity_properties->Effect(),
             rect_with_opacity_properties->Effect()->Parent());
 
@@ -732,6 +740,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
   const ObjectPaintProperties* text_with_opacity_properties =
       text_with_opacity.FirstFragment()->PaintProperties();
   EXPECT_EQ(0.2f, text_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, text_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(group_with_opacity_properties->Effect(),
             text_with_opacity_properties->Effect()->Parent());
 
@@ -742,6 +751,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
   const ObjectPaintProperties* tspan_with_opacity_properties =
       tspan_with_opacity.FirstFragment()->PaintProperties();
   EXPECT_EQ(0.1f, tspan_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, tspan_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(text_with_opacity_properties->Effect(),
             tspan_with_opacity_properties->Effect()->Parent());
 }
@@ -759,6 +769,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
   const ObjectPaintProperties* div_with_opacity_properties =
       div_with_opacity.FirstFragment()->PaintProperties();
   EXPECT_EQ(0.2f, div_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, div_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, div_with_opacity_properties->Effect()->Parent());
 
   LayoutObject& svg_root_with_opacity =
@@ -766,6 +777,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
   const ObjectPaintProperties* svg_root_with_opacity_properties =
       svg_root_with_opacity.FirstFragment()->PaintProperties();
   EXPECT_EQ(0.3f, svg_root_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, svg_root_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(div_with_opacity_properties->Effect(),
             svg_root_with_opacity_properties->Effect()->Parent());
 
@@ -774,6 +786,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
   const ObjectPaintProperties* rect_with_opacity_properties =
       rect_with_opacity.FirstFragment()->PaintProperties();
   EXPECT_EQ(0.4f, rect_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, rect_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(svg_root_with_opacity_properties->Effect(),
             rect_with_opacity_properties->Effect()->Parent());
 }
@@ -793,6 +806,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
   const ObjectPaintProperties* svg_root_with_opacity_properties =
       svg_root_with_opacity.FirstFragment()->PaintProperties();
   EXPECT_EQ(0.3f, svg_root_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, svg_root_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, svg_root_with_opacity_properties->Effect()->Parent());
 
   LayoutObject& foreign_object_with_opacity =
@@ -802,6 +816,8 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
   const ObjectPaintProperties* foreign_object_with_opacity_properties =
       foreign_object_with_opacity.FirstFragment()->PaintProperties();
   EXPECT_EQ(0.4f, foreign_object_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr,
+            foreign_object_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(svg_root_with_opacity_properties->Effect(),
             foreign_object_with_opacity_properties->Effect()->Parent());
 
@@ -810,6 +826,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
   const ObjectPaintProperties* span_with_opacity_properties =
       span_with_opacity.FirstFragment()->PaintProperties();
   EXPECT_EQ(0.5f, span_with_opacity_properties->Effect()->Opacity());
+  EXPECT_EQ(nullptr, span_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(foreign_object_with_opacity_properties->Effect(),
             span_with_opacity_properties->Effect()->Parent());
 }

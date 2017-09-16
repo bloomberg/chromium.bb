@@ -3137,4 +3137,61 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   EXPECT_FALSE(ContentLayerAt(0)->contents_opaque());
 }
 
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       DecompositeEffectWithNoOutputClip) {
+  // This test verifies effect nodes with no output clip correctly decomposites
+  // if there is no compositing reasons.
+  RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
+      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
+      FloatRoundedRect(75, 75, 100, 100));
+
+  RefPtr<EffectPaintPropertyNode> effect1 = EffectPaintPropertyNode::Create(
+      EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
+      nullptr, kColorFilterNone, CompositorFilterOperations(), 0.5,
+      SkBlendMode::kSrcOver);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(DefaultPaintChunkProperties())
+      .RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
+  artifact.Chunk(TransformPaintPropertyNode::Root(), clip1.Get(), effect1.Get())
+      .RectDrawing(FloatRect(100, 100, 100, 100), Color::kGray);
+  Update(artifact.Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+
+  const cc::Layer* layer = ContentLayerAt(0);
+  EXPECT_EQ(gfx::Vector2dF(50.f, 50.f), layer->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(125, 125), layer->bounds());
+  EXPECT_EQ(1, layer->effect_tree_index());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       CompositedEffectWithNoOutputClip) {
+  // This test verifies effect nodes with no output clip but has compositing
+  // reason correctly squash children chunks and assign clip node.
+  RefPtr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
+      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
+      FloatRoundedRect(75, 75, 100, 100));
+
+  RefPtr<EffectPaintPropertyNode> effect1 = EffectPaintPropertyNode::Create(
+      EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
+      nullptr, kColorFilterNone, CompositorFilterOperations(), 0.5,
+      SkBlendMode::kSrcOver, kCompositingReasonAll);
+
+  TestPaintArtifact artifact;
+  artifact
+      .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
+             effect1.Get())
+      .RectDrawing(FloatRect(50, 50, 100, 100), Color::kGray);
+  artifact.Chunk(TransformPaintPropertyNode::Root(), clip1.Get(), effect1.Get())
+      .RectDrawing(FloatRect(100, 100, 100, 100), Color::kGray);
+  Update(artifact.Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+
+  const cc::Layer* layer = ContentLayerAt(0);
+  EXPECT_EQ(gfx::Vector2dF(50.f, 50.f), layer->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(125, 125), layer->bounds());
+  EXPECT_EQ(1, layer->clip_tree_index());
+  EXPECT_EQ(2, layer->effect_tree_index());
+}
+
 }  // namespace blink

@@ -399,7 +399,10 @@ bool PaintArtifactCompositor::CanDecompositeEffect(
     return false;
   if (!CanUpcastTo(layer.property_tree_state,
                    PropertyTreeState(effect->LocalTransformSpace(),
-                                     effect->OutputClip(), effect)))
+                                     effect->OutputClip()
+                                         ? effect->OutputClip()
+                                         : layer.property_tree_state.Clip(),
+                                     effect)))
     return false;
   return true;
 }
@@ -508,9 +511,11 @@ void PaintArtifactCompositor::LayerizeGroup(
       PendingLayer& subgroup_layer = pending_layers[first_layer_in_subgroup];
       if (!CanDecompositeEffect(subgroup, subgroup_layer))
         continue;
-      subgroup_layer.Upcast(PropertyTreeState(subgroup->LocalTransformSpace(),
-                                              subgroup->OutputClip(),
-                                              &current_group));
+      subgroup_layer.Upcast(PropertyTreeState(
+          subgroup->LocalTransformSpace(),
+          subgroup->OutputClip() ? subgroup->OutputClip()
+                                 : subgroup_layer.property_tree_state.Clip(),
+          &current_group));
     }
     // At this point pendingLayers.back() is the either a layer from a
     // "decomposited" subgroup or a layer created from a chunk we just

@@ -532,10 +532,25 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   effect_nodes_converted_.insert(next_effect);
 #endif
 
-  SkBlendMode used_blend_mode = SynthesizeCcEffectsForClipsIfNeeded(
-      next_effect->OutputClip(), next_effect->BlendMode(), newly_built);
+  SkBlendMode used_blend_mode;
+  int output_clip_id;
+  if (next_effect->OutputClip()) {
+    used_blend_mode = SynthesizeCcEffectsForClipsIfNeeded(
+        next_effect->OutputClip(), next_effect->BlendMode(), newly_built);
+    output_clip_id = EnsureCompositorClipNode(next_effect->OutputClip());
+  } else {
+    while (IsCurrentCcEffectSynthetic())
+      CloseCcEffect();
+    // An effect node can't omit render surface if it has child with exotic
+    // blending mode, nor being opacity-only node with more than one child.
+    // TODO(crbug.com/504464): Remove premature optimization here.
+    if (next_effect->BlendMode() != SkBlendMode::kSrcOver ||
+        (!newly_built && current_effect_->Opacity() != 1.f))
+      GetEffectTree().Node(current_effect_id_)->has_render_surface = true;
 
-  int output_clip_id = EnsureCompositorClipNode(next_effect->OutputClip());
+    used_blend_mode = next_effect->BlendMode();
+    output_clip_id = GetEffectTree().Node(current_effect_id_)->clip_id;
+  }
 
   cc::EffectNode& effect_node = *GetEffectTree().Node(
       GetEffectTree().Insert(cc::EffectNode(), current_effect_id_));
@@ -583,7 +598,8 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   current_effect_id_ = effect_node.id;
   current_effect_type_ = CcEffectType::kEffect;
   current_effect_ = next_effect;
-  current_clip_ = next_effect->OutputClip();
+  if (next_effect->OutputClip())
+    current_clip_ = next_effect->OutputClip();
 
   return true;
 }

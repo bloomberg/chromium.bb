@@ -377,5 +377,124 @@ TEST_F(PaintChunksToCcLayerTest, NonRootLayerTransformEscape) {
                    cc::PaintOpType::Restore})));                    // </t1^-1>
 }
 
+TEST_F(PaintChunksToCcLayerTest, EffectWithNoOutputClip) {
+  // This test verifies effect with no output clip can be correctly processed.
+  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+      c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+  RefPtr<ClipPaintPropertyNode> c2 = ClipPaintPropertyNode::Create(
+      c1.Get(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+  RefPtr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+      e0(), t0(), nullptr, kColorFilterNone, CompositorFilterOperations(), 0.5,
+      SkBlendMode::kSrcOver);
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c2.Get(), e1.Get());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.GetChunkList(), PropertyTreeState(t0(), c1.Get(), e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      output,
+      Pointee(PaintRecordMatcher::Make(
+          {cc::PaintOpType::SaveLayer, cc::PaintOpType::SaveLayer,  // <e1>
+           cc::PaintOpType::Save, cc::PaintOpType::ClipRect,        // <c2>
+           cc::PaintOpType::DrawRecord,                             // <p0/>
+           cc::PaintOpType::Restore,                                // </c2>
+           cc::PaintOpType::Restore, cc::PaintOpType::Restore})));  // </e1>
+}
+
+TEST_F(PaintChunksToCcLayerTest,
+       EffectWithNoOutputClipNestedInDecompositedEffect) {
+  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+      c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+  RefPtr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+      e0(), t0(), c0(), kColorFilterNone, CompositorFilterOperations(), 0.5,
+      SkBlendMode::kSrcOver);
+  RefPtr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
+      e1.Get(), t0(), nullptr, kColorFilterNone, CompositorFilterOperations(),
+      0.5, SkBlendMode::kSrcOver);
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c1.Get(), e2.Get());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.GetChunkList(), PropertyTreeState(t0(), c0(), e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      output,
+      Pointee(PaintRecordMatcher::Make(
+          {cc::PaintOpType::SaveLayer, cc::PaintOpType::SaveLayer,  // <e1>
+           cc::PaintOpType::SaveLayer, cc::PaintOpType::SaveLayer,  // <e2>
+           cc::PaintOpType::Save, cc::PaintOpType::ClipRect,        // <c1>
+           cc::PaintOpType::DrawRecord,                             // <p0/>
+           cc::PaintOpType::Restore,                                // </c1>
+           cc::PaintOpType::Restore, cc::PaintOpType::Restore,      // </e2>
+           cc::PaintOpType::Restore, cc::PaintOpType::Restore})));  // </e1>
+}
+
+TEST_F(PaintChunksToCcLayerTest,
+       EffectWithNoOutputClipNestedInCompositedEffect) {
+  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+      c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+  RefPtr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+      e0(), t0(), c0(), kColorFilterNone, CompositorFilterOperations(), 0.5,
+      SkBlendMode::kSrcOver);
+  RefPtr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
+      e1.Get(), t0(), nullptr, kColorFilterNone, CompositorFilterOperations(),
+      0.5, SkBlendMode::kSrcOver);
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c1.Get(), e2.Get());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.GetChunkList(), PropertyTreeState(t0(), c0(), e1.Get()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      output,
+      Pointee(PaintRecordMatcher::Make(
+          {cc::PaintOpType::SaveLayer, cc::PaintOpType::SaveLayer,  // <e2>
+           cc::PaintOpType::Save, cc::PaintOpType::ClipRect,        // <c1>
+           cc::PaintOpType::DrawRecord,                             // <p0/>
+           cc::PaintOpType::Restore,                                // </c1>
+           cc::PaintOpType::Restore, cc::PaintOpType::Restore})));  // </e2>
+}
+
+TEST_F(PaintChunksToCcLayerTest,
+       EffectWithNoOutputClipNestedInCompositedEffectAndClip) {
+  RefPtr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
+      c0(), t0(), FloatRoundedRect(0.f, 0.f, 1.f, 1.f));
+  RefPtr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
+      e0(), t0(), c0(), kColorFilterNone, CompositorFilterOperations(), 0.5,
+      SkBlendMode::kSrcOver);
+  RefPtr<EffectPaintPropertyNode> e2 = EffectPaintPropertyNode::Create(
+      e1.Get(), t0(), nullptr, kColorFilterNone, CompositorFilterOperations(),
+      0.5, SkBlendMode::kSrcOver);
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c1.Get(), e2.Get());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.GetChunkList(), PropertyTreeState(t0(), c1.Get(), e1.Get()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      output,
+      Pointee(PaintRecordMatcher::Make(
+          {cc::PaintOpType::SaveLayer, cc::PaintOpType::SaveLayer,  // <e2>
+           cc::PaintOpType::DrawRecord,                             // <p0/>
+           cc::PaintOpType::Restore, cc::PaintOpType::Restore})));  // </e2>
+}
+
 }  // namespace
 }  // namespace blink
