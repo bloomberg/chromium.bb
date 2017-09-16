@@ -807,10 +807,6 @@
       status: "stable",
     },
     {
-      name: "PresentationReceiver",
-      status: "stable",
-    },
-    {
       name: "PrintBrowser",
     },
     {
