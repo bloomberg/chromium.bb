@@ -1256,7 +1256,8 @@ bool ComputedStyle::ShouldUseTextIndent(bool is_first_line,
   bool should_use =
       is_first_line || (is_after_forced_break &&
                         GetTextIndentLine() != TextIndentLine::kFirstLine);
-  return TextIndentType() == TextIndentType::kNormal ? should_use : !should_use;
+  return GetTextIndentType() == TextIndentType::kNormal ? should_use
+                                                        : !should_use;
 }
 
 const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
