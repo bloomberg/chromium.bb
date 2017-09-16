@@ -4,6 +4,8 @@
 
 #include "components/feature_engagement/public/feature_constants.h"
 
+#include "components/feature_engagement/features.h"
+
 namespace feature_engagement {
 
 const base::Feature kIPHDemoMode{"IPH_DemoMode",
@@ -29,14 +31,14 @@ const base::Feature kIPHMediaDownloadFeature{"IPH_MediaDownload",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 const base::Feature kIPHBookmarkFeature{"IPH_Bookmark",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHIncognitoWindowFeature{
     "IPH_IncognitoWindow", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHNewTabFeature{"IPH_NewTab",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IPH)
 
 #if defined(OS_IOS)
 const base::Feature kIPHNewTabTipFeature{"IPH_NewTabTip",

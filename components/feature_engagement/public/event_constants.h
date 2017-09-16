@@ -6,12 +6,13 @@
 #define COMPONENTS_FEATURE_ENGAGEMENT_PUBLIC_EVENT_CONSTANTS_H_
 
 #include "build/build_config.h"
+#include "components/feature_engagement/features.h"
 
 namespace feature_engagement {
 
 namespace events {
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 // All the events declared below are the string names of deferred onboarding
 // events for the Bookmark feature.
 
@@ -37,8 +38,7 @@ extern const char kNewTabSessionTimeMet[];
 extern const char kHistoryDeleted[];
 // The user has opened an incognito window.
 extern const char kIncognitoWindowOpened[];
-
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)
 // This event is included in the deferred onboarding events for the New Tab
@@ -48,11 +48,9 @@ extern const char kIncognitoWindowOpened[];
 // The user has explicitly opened a new tab via an entry point from inside of
 // Chrome.
 extern const char kNewTabOpened[];
-
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)
 
 #if defined(OS_IOS)
-
 // The user has opened Chrome (cold start or from background).
 extern const char kChromeOpened[];
 
@@ -64,7 +62,6 @@ extern const char kClearedBrowsingData[];
 
 // The user has viewed their reading list.
 extern const char kViewedReadingList[];
-
 #endif  // defined(OS_IOS)
 
 }  // namespace events

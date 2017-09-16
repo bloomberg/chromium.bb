@@ -9,6 +9,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//chrome/chrome_repack_locales.gni")
+import("//components/feature_engagement/features.gni")
 import("//components/offline_pages/features/features.gni")
 import("//components/os_crypt/features.gni")
 import("//components/signin/features.gni")
@@ -3896,7 +3897,7 @@ test("unit_tests") {
     sources += [ "../browser/notifications/notification_platform_bridge_linux_unittest.cc" ]
   }
 
-  if ((is_linux && !is_chromeos) || is_win) {
+  if (enable_desktop_in_product_help) {
     sources += [
       "../browser/feature_engagement/bookmark/bookmark_tracker_unittest.cc",
       "../browser/feature_engagement/feature_tracker_unittest.cc",
