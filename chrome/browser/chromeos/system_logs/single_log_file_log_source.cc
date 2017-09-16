@@ -50,10 +50,10 @@ base::FilePath GetLogFileSourceRelativeFilePath(
       return base::FilePath("eventlog.txt");
     case SupportedSource::kUpdateEngineLog:
       return base::FilePath("update_engine.log");
-    case SupportedSource::kPowerManagerLatest:
-      return base::FilePath("power_manager/power_manager.LATEST");
-    case SupportedSource::kPowerManagerPrevious:
-      return base::FilePath("power_manager/power_manager.PREVIOUS");
+    case SupportedSource::kPowerdLatest:
+      return base::FilePath("power_manager/powerd.LATEST");
+    case SupportedSource::kPowerdPrevious:
+      return base::FilePath("power_manager/powerd.PREVIOUS");
   }
   NOTREACHED();
   return base::FilePath();
@@ -102,8 +102,8 @@ bool ShouldReadFromTimestampBasedOffset(SupportedSource source_type) {
     // not in the right format.
     case SupportedSource::kEventLog:
     case SupportedSource::kUpdateEngineLog:
-    case SupportedSource::kPowerManagerLatest:
-    case SupportedSource::kPowerManagerPrevious:
+    case SupportedSource::kPowerdLatest:
+    case SupportedSource::kPowerdPrevious:
       return false;
   }
   NOTREACHED();

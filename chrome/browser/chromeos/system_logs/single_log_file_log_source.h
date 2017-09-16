@@ -42,11 +42,11 @@ class SingleLogFileLogSource : public SystemLogsSource {
     // For /var/log/update_engine.log.
     kUpdateEngineLog,
 
-    // For /var/log/power_manager/power_manager.LATEST.
-    kPowerManagerLatest,
+    // For /var/log/power_manager/powerd.LATEST.
+    kPowerdLatest,
 
-    // For /var/log/power_manager/power_manager.PREVIOUS.
-    kPowerManagerPrevious,
+    // For /var/log/power_manager/powerd.PREVIOUS.
+    kPowerdPrevious,
   };
 
   explicit SingleLogFileLogSource(SupportedSource source);
