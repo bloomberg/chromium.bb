@@ -5095,7 +5095,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5112,7 +5112,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5128,7 +5128,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5144,7 +5144,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5160,7 +5160,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5176,7 +5176,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5189,7 +5189,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5206,7 +5206,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5219,7 +5219,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5247,7 +5247,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5271,7 +5271,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5295,7 +5295,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5319,7 +5319,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5347,7 +5347,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5377,7 +5377,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5415,7 +5415,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5439,7 +5439,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5463,7 +5463,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5487,7 +5487,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5506,7 +5506,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5523,7 +5523,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5539,7 +5539,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5569,7 +5569,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5585,7 +5585,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5601,7 +5601,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5614,7 +5614,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5631,7 +5631,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5659,7 +5659,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5683,7 +5683,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5707,7 +5707,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5731,7 +5731,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5759,7 +5759,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5789,7 +5789,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5827,7 +5827,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5851,7 +5851,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5875,7 +5875,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5901,7 +5901,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ],
           "shards": 15
@@ -5926,7 +5926,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -5946,7 +5946,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5964,7 +5964,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -5981,7 +5981,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6012,7 +6012,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6029,7 +6029,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6046,7 +6046,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6060,7 +6060,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6078,7 +6078,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6107,7 +6107,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6132,7 +6132,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6157,7 +6157,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6182,7 +6182,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6211,7 +6211,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6242,7 +6242,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6281,7 +6281,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6306,7 +6306,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6331,7 +6331,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6358,7 +6358,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ],
           "shards": 15
@@ -6384,7 +6384,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6404,7 +6404,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6422,7 +6422,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6439,7 +6439,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6470,7 +6470,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6487,7 +6487,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6504,7 +6504,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6518,7 +6518,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6536,7 +6536,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -6565,7 +6565,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6590,7 +6590,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6615,7 +6615,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6640,7 +6640,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6669,7 +6669,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6700,7 +6700,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6739,7 +6739,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6764,7 +6764,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6789,7 +6789,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6816,7 +6816,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ],
           "shards": 15
@@ -6842,7 +6842,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -6861,12 +6861,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -6884,12 +6884,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -6906,12 +6906,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -6932,12 +6932,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -6954,12 +6954,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -6976,12 +6976,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -6998,12 +6998,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7017,12 +7017,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7040,12 +7040,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7059,12 +7059,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7093,12 +7093,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7123,12 +7123,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7153,12 +7153,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7183,12 +7183,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7219,12 +7219,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7263,12 +7263,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7293,12 +7293,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7323,12 +7323,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -7356,12 +7356,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -7388,12 +7388,12 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             },
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8229,7 +8229,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -8246,7 +8246,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -8262,7 +8262,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -8282,7 +8282,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -8298,7 +8298,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -8314,7 +8314,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -8330,7 +8330,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -8343,7 +8343,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -8360,7 +8360,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -8373,7 +8373,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -8401,7 +8401,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -8425,7 +8425,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -8449,7 +8449,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -8473,7 +8473,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -8501,7 +8501,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -8531,7 +8531,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -8569,7 +8569,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -8593,7 +8593,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -8617,7 +8617,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -8643,7 +8643,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ],
           "shards": 15
@@ -8668,7 +8668,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -8688,7 +8688,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8707,7 +8707,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8725,7 +8725,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8743,7 +8743,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8761,7 +8761,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8779,7 +8779,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8794,7 +8794,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8813,7 +8813,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8828,7 +8828,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8858,7 +8858,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8884,7 +8884,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8910,7 +8910,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8936,7 +8936,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8966,7 +8966,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -8998,7 +8998,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9038,7 +9038,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9064,7 +9064,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9090,7 +9090,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9116,7 +9116,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9137,7 +9137,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9156,7 +9156,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9174,7 +9174,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9192,7 +9192,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9210,7 +9210,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9228,7 +9228,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9243,7 +9243,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9262,7 +9262,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9277,7 +9277,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9307,7 +9307,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9333,7 +9333,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9359,7 +9359,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9385,7 +9385,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9415,7 +9415,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9447,7 +9447,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9487,7 +9487,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9513,7 +9513,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9539,7 +9539,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9565,7 +9565,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9586,7 +9586,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9605,7 +9605,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9623,7 +9623,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9645,7 +9645,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9663,7 +9663,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9681,7 +9681,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9699,7 +9699,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9714,7 +9714,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9733,7 +9733,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9748,7 +9748,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9778,7 +9778,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9804,7 +9804,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9830,7 +9830,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9856,7 +9856,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9886,7 +9886,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9918,7 +9918,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9958,7 +9958,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -9984,7 +9984,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10010,7 +10010,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10038,7 +10038,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -10065,7 +10065,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10086,7 +10086,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10105,7 +10105,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10123,7 +10123,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10145,7 +10145,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10163,7 +10163,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10181,7 +10181,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10199,7 +10199,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10214,7 +10214,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10233,7 +10233,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10248,7 +10248,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10278,7 +10278,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10304,7 +10304,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10330,7 +10330,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10356,7 +10356,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10386,7 +10386,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10418,7 +10418,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10458,7 +10458,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10484,7 +10484,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10510,7 +10510,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10538,7 +10538,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -10565,7 +10565,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10587,7 +10587,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -10612,7 +10612,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ],
           "shards": 4
@@ -10806,7 +10806,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -10822,7 +10822,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -10838,7 +10838,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -10851,7 +10851,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -10868,7 +10868,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -10881,7 +10881,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         },
@@ -10913,7 +10913,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ]
         }
@@ -10939,7 +10939,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12"
+              "os": "Mac-10.12.6"
             }
           ],
           "shards": 15
@@ -10960,7 +10960,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10978,7 +10978,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -10996,7 +10996,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11011,7 +11011,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11030,7 +11030,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11045,7 +11045,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11079,7 +11079,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11107,7 +11107,7 @@
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11129,7 +11129,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11147,7 +11147,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11165,7 +11165,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11180,7 +11180,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11199,7 +11199,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11214,7 +11214,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
@@ -11248,7 +11248,7 @@
             {
               "gpu": "10de:0fe9",
               "hidpi": "1",
-              "os": "Mac",
+              "os": "Mac-10.12.6",
               "pool": "Chrome-GPU"
             }
           ]
