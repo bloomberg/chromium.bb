@@ -4,8 +4,6 @@ Select ServiceWorkers tree element.
 Register ServiceWorker for scope1
 127.0.0.1/devtools/service-workers/resources/scope1
 Update
-Push
-Sync
 Unregister
 Source
 service-worker-empty.js
@@ -14,11 +12,24 @@ Status
 #N activated and is running
 stop
 Clients
+Push
+ 
+Test
+ 
+push
+ 
+message
+ 
+from
+ 
+DevTools
+.
+Push
+Sync
+Sync
 Register ServiceWorker for scope2
 127.0.0.1/devtools/service-workers/resources/scope1
 Update
-Push
-Sync
 Unregister
 Source
 service-worker-empty.js
@@ -27,10 +38,23 @@ Status
 #N activated and is running
 stop
 Clients
+Push
+ 
+Test
+ 
+push
+ 
+message
+ 
+from
+ 
+DevTools
+.
+Push
+Sync
+Sync
 127.0.0.1/devtools/service-workers/resources/scope2
 Update
-Push
-Sync
 Unregister
 Source
 service-worker-empty.js
@@ -39,11 +63,25 @@ Status
 #N activated and is running
 stop
 Clients
+Push
+xxxxxxxxxx
+ 
+Test
+ 
+push
+ 
+message
+ 
+from
+ 
+DevTools
+.
+Push
+Sync
+Sync
 Unegister ServiceWorker for scope1
 127.0.0.1/devtools/service-workers/resources/scope1 - deleted
 Update
-Push
-Sync
 Unregister
 Source
 service-worker-empty.js
@@ -51,10 +89,24 @@ Received
 Status
 #N is redundant
 Clients
-127.0.0.1/devtools/service-workers/resources/scope2
-Update
+Push
+xxxxxxxxxx
+ 
+Test
+ 
+push
+ 
+message
+ 
+from
+ 
+DevTools
+.
 Push
 Sync
+Sync
+127.0.0.1/devtools/service-workers/resources/scope2
+Update
 Unregister
 Source
 service-worker-empty.js
@@ -63,5 +115,21 @@ Status
 #N activated and is running
 stop
 Clients
+Push
+xxxxxxxxxx
+ 
+Test
+ 
+push
+ 
+message
+ 
+from
+ 
+DevTools
+.
+Push
+Sync
+Sync
 Unegister ServiceWorker for scope1
 
