@@ -118,7 +118,13 @@ class MoveBlinkSource(object):
                                          [self._update_basename])
         self._update_single_file_content('third_party/WebKit/Source/core/css/ComputedStyleExtraFields.json5',
                                          [self._update_basename])
+        self._update_single_file_content('third_party/WebKit/Source/core/html/parser/create-html-entity-table',
+                                         [self._update_basename])
         self._update_single_file_content('third_party/WebKit/Source/core/inspector/inspector_protocol_config.json',
+                                         [self._update_basename])
+        self._update_single_file_content('third_party/WebKit/Source/core/probe/CoreProbes.json5',
+                                         [self._update_basename])
+        self._update_single_file_content('third_party/WebKit/Source/platform/probe/PlatformProbes.json5',
                                          [self._update_basename])
         self._update_single_file_content('third_party/WebKit/public/BUILD.gn',
                                          [('$root_gen_dir/third_party/WebKit',
@@ -152,12 +158,17 @@ class MoveBlinkSource(object):
 
     def _create_basename_maps(self, file_pairs):
         basename_map = {}
-        pattern = r'\b('
+        # Generated inspector/protocol/* contains a lot of names duplicated with
+        # checked-in core files. We don't want to rename them, and don't want to
+        # replace them in BUILD.gn and #include accidentally.
+        pattern = r'(?<!inspector/protocol/)\b('
         idl_headers = set()
-        header_pattern = r'\b('
+        header_pattern = r'(?<!inspector/protocol/)\b('
         for source, dest in file_pairs:
             _, source_base = self._fs.split(source)
             _, dest_base = self._fs.split(dest)
+            if source_base.endswith('.h'):
+                header_pattern += re.escape(source_base) + '|'
             if source_base == dest_base:
                 continue
             # ConditionalFeaturesForCore.* in bindings/tests/results/modules/
@@ -173,8 +184,6 @@ class MoveBlinkSource(object):
                 basename_map[source_header] = dest_base.replace('.idl', '.h')
                 pattern += re.escape(source_header) + '|'
                 idl_headers.add(source_header)
-            elif source_base.endswith('.h'):
-                header_pattern += re.escape(source_base) + '|'
         _log.info('Rename %d files for snake_case', len(basename_map))
         self._basename_map = basename_map
         self._basename_re = re.compile(pattern[0:len(pattern) - 1] + ')(?=["\']|$)')
@@ -310,7 +319,8 @@ class MoveBlinkSource(object):
                 _log.info('Updated %s', self._shorten_path(file_path))
 
     def _replace_include_path(self, match):
-        path = match.group(1)
+        include_or_import = match.group(1)
+        path = match.group(2)
 
         # If |path| starts with 'third_party/WebKit', we should adjust the
         # directory name for third_party/blink, and replace its basename by
@@ -328,22 +338,25 @@ class MoveBlinkSource(object):
             path = path.replace('third_party/WebKit/common', 'third_party/blink/common')
             path = path.replace('third_party/WebKit/public', 'third_party/blink/renderer/public')
             path = self._update_basename(path)
-            return '#include "%s"' % path
+            return '#%s "%s"' % (include_or_import, path)
 
         match = self._checked_in_header_re.search(path)
         if match:
-            path = 'third_party/blink/renderer/' + path[:match.start(1)] + self._basename_map[match.group(1)]
-        else:
+            if match.group(1) in self._basename_map:
+                path = 'third_party/blink/renderer/' + path[:match.start(1)] + self._basename_map[match.group(1)]
+            else:
+                path = 'third_party/blink/renderer/' + path
+        elif 'core/inspector/protocol/' not in path:
             basename_start = path.rfind('/') + 1
             basename = path[basename_start:]
             if basename in self._idl_generated_impl_headers:
                 path = path[:basename_start] + self._basename_map[basename]
             elif basename.startswith('V8'):
                 path = path[:basename_start] + NameStyleConverter(basename[:len(basename) - 2]).to_snake_case() + '.h'
-        return '#include "%s"' % path
+        return '#%s "%s"' % (include_or_import, path)
 
     def _update_cpp_includes(self, content):
-        pattern = re.compile(r'#include\s+"((bindings|core|modules|platform|public|' +
+        pattern = re.compile(r'#(include|import)\s+"((bindings|core|modules|platform|public|' +
                              r'third_party/WebKit/(Source|common|public))/[-_\w/.]+)"')
         return pattern.sub(self._replace_include_path, content)
 
