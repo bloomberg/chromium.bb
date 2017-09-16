@@ -17,6 +17,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "gpu/config/gpu_switches.h"
 
 namespace content {
 namespace internal {
@@ -46,7 +47,10 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   options->fds_to_remap = files_to_register.GetMappingWithIDAdjustment(
       base::GlobalDescriptors::kBaseDescriptor);
 
-  if (GetProcessType() == switches::kRendererProcess) {
+  if (GetProcessType() == switches::kRendererProcess ||
+      (GetProcessType() == switches::kGpuProcess &&
+       base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kEnableOOPRasterization))) {
     const int sandbox_fd = SandboxHostLinux::GetInstance()->GetChildSocket();
     options->fds_to_remap.push_back(std::make_pair(sandbox_fd, GetSandboxFD()));
   }
