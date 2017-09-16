@@ -202,14 +202,10 @@ Image::SizeAvailability BitmapImage::SetData(RefPtr<SharedBuffer> data,
     return DataChanged(all_data_received);
   }
 
-  ColorBehavior color_behavior =
-      RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()
-          ? ColorBehavior::Tag()
-          : ColorBehavior::TransformToGlobalTarget();
   bool has_enough_data = ImageDecoder::HasSufficientDataToSniffImageType(*data);
   decoder_ = DeferredImageDecoder::Create(std::move(data), all_data_received,
                                           ImageDecoder::kAlphaPremultiplied,
-                                          color_behavior);
+                                          ColorBehavior::Tag());
   // If we had enough data but couldn't create a decoder, it implies a decode
   // failure.
   if (has_enough_data && !decoder_)

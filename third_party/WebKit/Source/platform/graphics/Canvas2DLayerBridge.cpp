@@ -346,11 +346,9 @@ bool Canvas2DLayerBridge::PrepareGpuMemoryBufferMailboxFromImage(
   *out_mailbox =
       viz::TextureMailbox(mailbox, sync_token, texture_target, gfx::Size(size_),
                           is_overlay_candidate, secure_output_only);
-  if (CanvasColorParams::ColorCorrectRenderingEnabled()) {
-    gfx::ColorSpace color_space = color_params_.GetGfxColorSpace();
-    out_mailbox->set_color_space(color_space);
-    image_info->gpu_memory_buffer_->SetColorSpaceForScanout(color_space);
-  }
+  gfx::ColorSpace color_space = color_params_.GetGfxColorSpace();
+  out_mailbox->set_color_space(color_space);
+  image_info->gpu_memory_buffer_->SetColorSpaceForScanout(color_space);
 
   gl->BindTexture(GC3D_TEXTURE_RECTANGLE_ARB, 0);
 

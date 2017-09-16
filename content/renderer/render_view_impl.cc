@@ -872,9 +872,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetEnableTouchAdjustment(prefs.touch_adjustment_enabled);
   settings->SetBarrelButtonForDragEnabled(prefs.barrel_button_for_drag_enabled);
 
-  WebRuntimeFeatures::EnableColorCorrectRendering(
-      prefs.color_correct_rendering_enabled);
-
   settings->SetShouldRespectImageOrientation(
       prefs.should_respect_image_orientation);
 

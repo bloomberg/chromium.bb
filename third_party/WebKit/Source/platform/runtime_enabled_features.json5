@@ -153,10 +153,6 @@
       name: "ColorCanvasExtensions",
     },
     {
-      name: "ColorCorrectRendering",
-      status: "experimental",
-    },
-    {
       name: "CompositedSelectionUpdate",
     },
     {

@@ -1063,12 +1063,11 @@ TEST_F(CanvasRenderingContext2DTest, DisableAcceleration) {
 
 enum class ColorSpaceConversion : uint8_t {
   NONE = 0,
-  DEFAULT_NOT_COLOR_CORRECTED = 1,
-  DEFAULT_COLOR_CORRECTED = 2,
-  SRGB = 3,
-  LINEAR_RGB = 4,
-  P3 = 5,
-  REC2020 = 6,
+  DEFAULT_COLOR_CORRECTED = 1,
+  SRGB = 2,
+  LINEAR_RGB = 3,
+  P3 = 4,
+  REC2020 = 5,
 
   LAST = REC2020
 };
@@ -1083,10 +1082,7 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
       kConversions[static_cast<uint8_t>(color_space_conversion)]);
 
   // Set the runtime flags
-  bool flag = (color_space_conversion !=
-               ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
   RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(true);
-  RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(flag);
   RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
 
   return options;
@@ -1128,8 +1124,8 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
   SkColorSpaceXform::ColorFormat color_format = color_format32;
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
 
-  for (uint8_t i = static_cast<uint8_t>(
-           ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
+  for (uint8_t i =
+           static_cast<uint8_t>(ColorSpaceConversion::DEFAULT_COLOR_CORRECTED);
        i <= static_cast<uint8_t>(ColorSpaceConversion::LAST); i++) {
     ColorSpaceConversion color_space_conversion =
         static_cast<ColorSpaceConversion>(i);
@@ -1142,15 +1138,6 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
     switch (color_space_conversion) {
       case ColorSpaceConversion::NONE:
         NOTREACHED();
-        break;
-      case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
-        color_space = ColorBehavior::GlobalTargetColorSpace().ToSkColorSpace();
-        if (color_space->gammaIsLinear()) {
-          color_type = SkColorType::kRGBA_F16_SkColorType;
-          color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
-        } else {
-          color_format = color_format32;
-        }
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:

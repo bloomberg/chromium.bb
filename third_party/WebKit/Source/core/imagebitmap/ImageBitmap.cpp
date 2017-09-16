@@ -302,9 +302,6 @@ RefPtr<StaticBitmapImage> ScaleImage(RefPtr<StaticBitmapImage>&& image,
 RefPtr<StaticBitmapImage> ApplyColorSpaceConversion(
     RefPtr<StaticBitmapImage>&& image,
     ImageBitmap::ParsedOptions& options) {
-  if (!CanvasColorParams::ColorCorrectRenderingEnabled())
-    return image;
-
   // TODO(zakerinasab): crbug.com/754713
   // If image does not have any color space info and we must color convert to
   // SRGB, we should tag the image as SRGB. Since we cannot use SkImage::

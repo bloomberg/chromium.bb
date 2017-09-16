@@ -84,10 +84,6 @@ void WebRuntimeFeatures::EnableCanvas2dImageChromium(bool enable) {
   RuntimeEnabledFeatures::SetCanvas2dImageChromiumEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableColorCorrectRendering(bool enable) {
-  RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableCompositedSelectionUpdate(bool enable) {
   RuntimeEnabledFeatures::SetCompositedSelectionUpdateEnabled(enable);
 }

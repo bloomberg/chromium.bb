@@ -130,11 +130,7 @@ bool FontSizeMatchesToControlSize(const ComputedStyle& style) {
 }
 
 NSColor* ColorInColorSpace(NSColor* color) {
-  if (RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
-    return [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
-  } else {
-    return [color colorUsingColorSpaceName:NSDeviceRGBColorSpace];
-  }
+  return [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
 }
 
 }  // namespace

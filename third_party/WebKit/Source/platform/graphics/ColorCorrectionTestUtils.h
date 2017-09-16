@@ -14,26 +14,20 @@ class ScopedEnableColorCanvasExtensions {
   ScopedEnableColorCanvasExtensions()
       : experimental_canvas_features_(
             RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled()),
-        color_correct_rendering_(
-            RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()),
         color_canvas_extensions_(
             RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled()) {
     RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(true);
-    RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(true);
     RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
   }
   ~ScopedEnableColorCanvasExtensions() {
     RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(
         experimental_canvas_features_);
-    RuntimeEnabledFeatures::SetColorCorrectRenderingEnabled(
-        color_correct_rendering_);
     RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(
         color_canvas_extensions_);
   }
 
  private:
   bool experimental_canvas_features_;
-  bool color_correct_rendering_;
   bool color_canvas_extensions_;
 };
 
