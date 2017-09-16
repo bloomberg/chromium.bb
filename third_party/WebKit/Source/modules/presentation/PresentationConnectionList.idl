@@ -4,9 +4,7 @@
 
 // https://w3c.github.io/presentation-api/#interface-presentationconnectionlist
 
-[
-    RuntimeEnabled=PresentationReceiver
-] interface PresentationConnectionList : EventTarget {
+interface PresentationConnectionList : EventTarget {
     readonly attribute FrozenArray<PresentationConnection> connections;
     attribute EventHandler onconnectionavailable;
 };
