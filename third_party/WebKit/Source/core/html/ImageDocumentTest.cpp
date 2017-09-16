@@ -205,4 +205,35 @@ TEST_F(ImageDocumentTest, ImageCenteredWithoutForceZeroLayoutHeight) {
   EXPECT_EQ(50, ImageHeight());
 }
 
+TEST_F(ImageDocumentTest, ImageCenteredAtDeviceScaleFactor) {
+  CreateDocumentWithoutLoadingImage(30, 30);
+  SetWindowToViewportScalingFactor(1.5f);
+  LoadImage();
+
+  // In case of android, this is a no-op.
+  if (!GetDocument().GetFrame()->GetSettings()->GetViewportEnabled())
+    return;
+
+  EXPECT_TRUE(GetDocument().ShouldShrinkToFit());
+  GetDocument().ImageClicked(15, 27);
+  ScrollOffset offset = GetDocument()
+                            .GetFrame()
+                            ->View()
+                            ->LayoutViewportScrollableArea()
+                            ->GetScrollOffset();
+  EXPECT_EQ(22, offset.Width());
+  EXPECT_EQ(42, offset.Height());
+
+  GetDocument().ImageClicked(20, 20);
+
+  GetDocument().ImageClicked(12, 15);
+  offset = GetDocument()
+               .GetFrame()
+               ->View()
+               ->LayoutViewportScrollableArea()
+               ->GetScrollOffset();
+  EXPECT_EQ(11, offset.Width());
+  EXPECT_EQ(22, offset.Height());
+}
+
 }  // namespace blink
