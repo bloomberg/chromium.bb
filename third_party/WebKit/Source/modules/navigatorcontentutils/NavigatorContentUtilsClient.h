@@ -7,12 +7,11 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
+class KURL;
 class WebLocalFrameImpl;
 
 class MODULES_EXPORT NavigatorContentUtilsClient
