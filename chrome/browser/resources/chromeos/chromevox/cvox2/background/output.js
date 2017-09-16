@@ -1043,7 +1043,8 @@ Output.prototype = {
           this.append_(buff, node.name || '', options);
         } else if (token == 'nameOrDescendants') {
           options.annotation.push(token);
-          if (node.name)
+          if (node.name &&
+              node.nameFrom != chrome.automation.NameFromType.CONTENTS)
             this.append_(buff, node.name || '', options);
           else
             this.format_(node, '$descendants', buff);
