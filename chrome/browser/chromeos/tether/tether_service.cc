@@ -300,7 +300,7 @@ void TetherService::OnPrefsChanged() {
 
 bool TetherService::HasSyncedTetherHosts() const {
   return !cryptauth_service_->GetCryptAuthDeviceManager()
-              ->GetTetherHosts()
+              ->GetPixelTetherHosts()
               .empty();
 }
 

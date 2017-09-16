@@ -58,7 +58,7 @@ void TetherHostFetcher::StartLoadingDevicesIfNeeded() {
   }
 
   remote_device_loader_ = cryptauth::RemoteDeviceLoader::Factory::NewInstance(
-      cryptauth_service_->GetCryptAuthDeviceManager()->GetTetherHosts(),
+      cryptauth_service_->GetCryptAuthDeviceManager()->GetPixelTetherHosts(),
       cryptauth_service_->GetAccountId(),
       cryptauth_service_->GetCryptAuthEnrollmentManager()->GetUserPrivateKey(),
       cryptauth_service_->CreateSecureMessageDelegate());
