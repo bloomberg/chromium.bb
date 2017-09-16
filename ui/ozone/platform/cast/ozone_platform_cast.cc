@@ -13,7 +13,6 @@
 #include "chromecast/chromecast_features.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/cast_egl_platform_shlib.h"
-#include "ui/display/manager/fake_display_delegate.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
@@ -99,7 +98,8 @@ class OzonePlatformCast : public OzonePlatform {
   }
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::MakeUnique<display::FakeDisplayDelegate>();
+    // On Cast platform the display is initialized by low-level non-Ozone code.
+    return nullptr;
   }
 
   void InitializeUI(const InitParams& params) override {
