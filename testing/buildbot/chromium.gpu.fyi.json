@@ -5055,7 +5055,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 4
+          "shards": 6
         },
         "test": "angle_deqp_gles31_tests",
         "use_xvfb": false
@@ -17461,7 +17461,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_deqp_egl_tests",
         "use_xvfb": false
@@ -17501,7 +17502,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 4
+          "shards": 6
         },
         "test": "angle_deqp_gles31_tests",
         "use_xvfb": false
@@ -17521,7 +17522,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 4
+          "shards": 6
         },
         "test": "angle_deqp_gles31_tests",
         "use_xvfb": false
@@ -18856,7 +18857,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "angle_deqp_egl_tests",
         "use_xvfb": false
@@ -18896,7 +18898,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 4
+          "shards": 6
         },
         "test": "angle_deqp_gles31_tests",
         "use_xvfb": false
@@ -18916,7 +18918,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 4
+          "shards": 6
         },
         "test": "angle_deqp_gles31_tests",
         "use_xvfb": false
