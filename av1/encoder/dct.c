@@ -43,18 +43,6 @@ static INLINE void range_check(const tran_low_t *input, const int size,
 #endif
 }
 
-#if CONFIG_DAALA_DCT4
-static void fdct4(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  od_coeff x[4];
-  od_coeff y[4];
-  for (i = 0; i < 4; i++) x[i] = (od_coeff)input[i];
-  od_bin_fdct4(y, x, 1);
-  for (i = 0; i < 4; i++) output[i] = (tran_low_t)y[i];
-}
-
-#else
-
 static void fdct4(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
   tran_low_t step[4];
@@ -90,7 +78,6 @@ static void fdct4(const tran_low_t *input, tran_low_t *output) {
 
   range_check(output, 4, 16);
 }
-#endif
 
 #if CONFIG_DAALA_DCT8
 static void fdct8(const tran_low_t *input, tran_low_t *output) {
@@ -1377,6 +1364,26 @@ void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
 #endif
   {
     static const transform_2d FHT[] = {
+#if CONFIG_DAALA_DCT4
+      { daala_fdct4, daala_fdct4 },  // DCT_DCT
+      { fadst4, daala_fdct4 },       // ADST_DCT
+      { daala_fdct4, fadst4 },       // DCT_ADST
+      { fadst4, fadst4 },            // ADST_ADST
+#if CONFIG_EXT_TX
+      { fadst4, daala_fdct4 },  // FLIPADST_DCT
+      { daala_fdct4, fadst4 },  // DCT_FLIPADST
+      { fadst4, fadst4 },       // FLIPADST_FLIPADST
+      { fadst4, fadst4 },       // ADST_FLIPADST
+      { fadst4, fadst4 },       // FLIPADST_ADST
+      { fidtx4, fidtx4 },       // IDTX
+      { daala_fdct4, fidtx4 },  // V_DCT
+      { fidtx4, daala_fdct4 },  // H_DCT
+      { fadst4, fidtx4 },       // V_ADST
+      { fidtx4, fadst4 },       // H_ADST
+      { fadst4, fidtx4 },       // V_FLIPADST
+      { fidtx4, fadst4 },       // H_FLIPADST
+#endif
+#else
       { fdct4, fdct4 },    // DCT_DCT
       { fadst4, fdct4 },   // ADST_DCT
       { fdct4, fadst4 },   // DCT_ADST
@@ -1394,6 +1401,7 @@ void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
       { fidtx4, fadst4 },  // H_ADST
       { fadst4, fidtx4 },  // V_FLIPADST
       { fidtx4, fadst4 },  // H_FLIPADST
+#endif
 #endif
     };
     const transform_2d ht = FHT[tx_type];

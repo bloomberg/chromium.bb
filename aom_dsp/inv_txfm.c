@@ -97,18 +97,6 @@ void aom_iwht4x4_1_add_c(const tran_low_t *in, uint8_t *dest, int dest_stride) {
   }
 }
 
-#if CONFIG_DAALA_DCT4
-void aom_idct4_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  od_coeff x[4];
-  od_coeff y[4];
-  for (i = 0; i < 4; i++) y[i] = input[i];
-  od_bin_idct4(x, 1, y);
-  for (i = 0; i < 4; i++) output[i] = (tran_low_t)x[i];
-}
-
-#else
-
 void aom_idct4_c(const tran_low_t *input, tran_low_t *output) {
   tran_low_t step[4];
   tran_high_t temp1, temp2;
@@ -128,7 +116,6 @@ void aom_idct4_c(const tran_low_t *input, tran_low_t *output) {
   output[2] = WRAPLOW(step[1] - step[2]);
   output[3] = WRAPLOW(step[0] - step[3]);
 }
-#endif
 
 void aom_idct4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride) {
   tran_low_t out[4 * 4];

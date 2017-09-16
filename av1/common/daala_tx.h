@@ -1,7 +1,11 @@
 #ifndef AOM_DSP_DAALA_TX_H_
 #define AOM_DSP_DAALA_TX_H_
 
+#include "aom_dsp/aom_dsp_common.h"
 #include "av1/common/odintrin.h"
+
+void daala_fdct4(const tran_low_t *input, tran_low_t *output);
+void daala_idct4(const tran_low_t *input, tran_low_t *output);
 
 void od_bin_fdct4(od_coeff y[4], const od_coeff *x, int xstride);
 void od_bin_idct4(od_coeff *x, int xstride, const od_coeff y[4]);

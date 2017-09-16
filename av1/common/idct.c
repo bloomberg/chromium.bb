@@ -19,6 +19,10 @@
 #include "av1/common/blockd.h"
 #include "av1/common/enums.h"
 #include "av1/common/idct.h"
+#if CONFIG_DAALA_DCT4 || CONFIG_DAALA_DCT8 || CONFIG_DAALA_DCT16 || \
+    CONFIG_DAALA_DCT32 || CONFIG_DAALA_DCT64
+#include "av1/common/daala_tx.h"
+#endif
 
 int av1_get_tx_scale(const TX_SIZE tx_size) {
   const int pels = tx_size_2d[tx_size];
@@ -326,6 +330,26 @@ void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 #endif
   static const transform_2d IHT_4[] = {
+#if CONFIG_DAALA_DCT4
+    { daala_idct4, daala_idct4 },    // DCT_DCT  = 0
+    { aom_iadst4_c, daala_idct4 },   // ADST_DCT = 1
+    { daala_idct4, aom_iadst4_c },   // DCT_ADST = 2
+    { aom_iadst4_c, aom_iadst4_c },  // ADST_ADST = 3
+#if CONFIG_EXT_TX
+    { aom_iadst4_c, daala_idct4 },   // FLIPADST_DCT
+    { daala_idct4, aom_iadst4_c },   // DCT_FLIPADST
+    { aom_iadst4_c, aom_iadst4_c },  // FLIPADST_FLIPADST
+    { aom_iadst4_c, aom_iadst4_c },  // ADST_FLIPADST
+    { aom_iadst4_c, aom_iadst4_c },  // FLIPADST_ADST
+    { iidtx4_c, iidtx4_c },          // IDTX
+    { daala_idct4, iidtx4_c },       // V_DCT
+    { iidtx4_c, daala_idct4 },       // H_DCT
+    { aom_iadst4_c, iidtx4_c },      // V_ADST
+    { iidtx4_c, aom_iadst4_c },      // H_ADST
+    { aom_iadst4_c, iidtx4_c },      // V_FLIPADST
+    { iidtx4_c, aom_iadst4_c },      // H_FLIPADST
+#endif
+#else
     { aom_idct4_c, aom_idct4_c },    // DCT_DCT  = 0
     { aom_iadst4_c, aom_idct4_c },   // ADST_DCT = 1
     { aom_idct4_c, aom_iadst4_c },   // DCT_ADST = 2
@@ -343,6 +367,7 @@ void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { iidtx4_c, aom_iadst4_c },      // H_ADST
     { aom_iadst4_c, iidtx4_c },      // V_FLIPADST
     { iidtx4_c, aom_iadst4_c },      // H_FLIPADST
+#endif
 #endif
   };
 
