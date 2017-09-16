@@ -5,6 +5,7 @@
 #ifndef LineLayoutItem_h
 #define LineLayoutItem_h
 
+#include "core/editing/PositionWithAffinity.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutText.h"

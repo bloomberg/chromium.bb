@@ -31,7 +31,6 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Forward.h"
 #include "core/editing/Position.h"
-#include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextGranularity.h"
 #include "core/events/InputEvent.h"
 #include "platform/text/TextDirection.h"

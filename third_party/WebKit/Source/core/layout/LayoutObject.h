@@ -31,7 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "core/editing/EphemeralRange.h"
-#include "core/editing/PositionWithAffinity.h"
+#include "core/editing/Forward.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObjectChildList.h"
 #include "core/layout/MapCoordinatesFlags.h"

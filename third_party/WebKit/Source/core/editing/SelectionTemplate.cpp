@@ -5,6 +5,7 @@
 #include "core/editing/SelectionTemplate.h"
 
 #include <ostream>  // NOLINT
+#include "core/editing/PositionWithAffinity.h"
 #include "platform/wtf/Assertions.h"
 
 namespace blink {

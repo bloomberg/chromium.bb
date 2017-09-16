@@ -29,6 +29,7 @@
 #include "core/editing/CaretDisplayItemClient.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "core/editing/SelectionEditor.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/frame/LocalFrame.h"
@@ -74,6 +75,10 @@ const PositionWithAffinity FrameCaret::CaretPosition() const {
   if (!selection.IsCaret())
     return PositionWithAffinity();
   return PositionWithAffinity(selection.Start(), selection.Affinity());
+}
+
+bool FrameCaret::IsActive() const {
+  return CaretPosition().IsNotNull();
 }
 
 void FrameCaret::UpdateAppearance() {

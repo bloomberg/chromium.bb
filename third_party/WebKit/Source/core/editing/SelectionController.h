@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextGranularity.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/heap/Handle.h"
