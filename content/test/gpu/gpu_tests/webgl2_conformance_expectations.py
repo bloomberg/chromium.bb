@@ -300,11 +300,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['passthrough', 'opengl', 'intel'], bug=602688)
 
-    # Mac only.
-    self.Fail('conformance2/renderbuffers/' +
-        'multisampled-depth-renderbuffer-initialization.html',
-        ['mac'], bug=696126)
-
     # Regressions in 10.12.4.
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['sierra'], bug=705865)
@@ -643,6 +638,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'integer-cubemap-texture-sampling.html',
         ['mac', 'intel'], bug=658930)
 
+    self.Fail('conformance2/renderbuffers/' +
+        'multisampled-depth-renderbuffer-initialization.html',
+        ['mac', 'intel'], bug=731877)
+
     # Linux only.
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgba-rgba-unsigned_byte.html',
@@ -670,9 +669,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
-    self.Fail('conformance2/renderbuffers/' +
-        'multisampled-depth-renderbuffer-initialization.html',
-        ['linux', 'amd', 'intel'], bug=738244) # WebGL 2.0.1
     self.Fail('conformance2/rendering/clipping-wide-points.html',
         ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
 
