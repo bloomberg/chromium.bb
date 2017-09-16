@@ -137,12 +137,6 @@ h1 {
   margin: 8px 20px;
 }
 
-#print-preview .navbar-link.disabled {
-  color: rgba(0, 0, 0, .5);
-  cursor: default;
-  pointer-events: none;
-}
-
 button.loading {
   cursor: progress;
 }

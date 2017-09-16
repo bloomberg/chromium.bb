@@ -1425,9 +1425,9 @@ cr.define('print_preview_test', function() {
       });
     });
 
-    // Test that Mac "Open PDF in Preview" link is treated correctly as a
-    // local printer. See crbug.com/741341 and crbug.com/741528
     if (cr.isMac) {
+      // Test that Mac "Open PDF in Preview" link is treated correctly as a
+      // local printer. See crbug.com/741341 and crbug.com/741528
       test('MacOpenPDFInPreview', function() {
         var device = getPdfPrinter();
         initialSettings.systemDefaultDestinationId_ = device.printerId;
@@ -1459,7 +1459,42 @@ cr.define('print_preview_test', function() {
                   return nativeLayer.whenCalled('hidePreview');
                 });
       });
-    }
+
+      // Test that the OpenPDFInPreview link is correctly disabled when the
+      // print ticket is invalid.
+      test('MacOpenPDFInPreviewBadPrintTicket', function() {
+        var device = getPdfPrinter();
+        initialSettings.systemDefaultDestinationId_ = device.printerId;
+        return Promise.all([
+          setupSettingsAndDestinationsWithCapabilities(device),
+          nativeLayer.whenCalled('getPreview')
+        ]).then(function() {
+          var openPdfPreviewLink = $('open-pdf-in-preview-link');
+          checkElementDisplayed(openPdfPreviewLink, true);
+          expectFalse(openPdfPreviewLink.disabled);
+          var pageSettings = $('page-settings');
+          checkSectionVisible(pageSettings, true);
+          nativeLayer.resetResolver('getPreview');
+
+          // Set page settings to a bad value
+          pageSettings.querySelector('.page-settings-custom-input').value =
+              'abc';
+          pageSettings.querySelector('.page-settings-custom-radio').click();
+
+          // No new preview
+          nativeLayer.whenCalled('getPreview').then(function() {
+            assertTrue(false);
+          });
+
+          // Expect disabled print button and Pdf in preview link
+          var printButton = $('print-header').querySelector('button.print');
+          checkElementDisplayed(printButton, true);
+          expectTrue(printButton.disabled);
+          checkElementDisplayed(openPdfPreviewLink, true);
+          expectTrue(openPdfPreviewLink.disabled);
+        });
+      });
+    }  // cr.isMac
 
     // Test that the system dialog link works correctly on Windows
     if (cr.isWindows) {
@@ -1492,6 +1527,40 @@ cr.define('print_preview_test', function() {
                   return nativeLayer.whenCalled('hidePreview');
                 });
       });
-    }
+
+      // Test that the System Dialog link is correctly disabled when the
+      // print ticket is invalid.
+      test('WinSystemDialogLinkBadPrintTicket', function() {
+        return Promise.all([
+          setupSettingsAndDestinationsWithCapabilities(),
+          nativeLayer.whenCalled('getPreview')
+        ]).then(function() {
+          var systemDialogLink = $('system-dialog-link');
+          checkElementDisplayed(systemDialogLink, true);
+          expectFalse(systemDialogLink.disabled);
+
+          var pageSettings = $('page-settings');
+          checkSectionVisible(pageSettings, true);
+          nativeLayer.resetResolver('getPreview');
+
+          // Set page settings to a bad value
+          pageSettings.querySelector('.page-settings-custom-input').value =
+              'abc';
+          pageSettings.querySelector('.page-settings-custom-radio').click();
+
+          // No new preview
+          nativeLayer.whenCalled('getPreview').then(function() {
+            assertTrue(false);
+          });
+
+          // Expect disabled print button and Pdf in preview link
+          var printButton = $('print-header').querySelector('button.print');
+          checkElementDisplayed(printButton, true);
+          expectTrue(printButton.disabled);
+          checkElementDisplayed(systemDialogLink, true);
+          expectTrue(systemDialogLink.disabled);
+        });
+      });
+    }  // cr.isWindows
   });
 });
