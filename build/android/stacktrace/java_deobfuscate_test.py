@@ -32,6 +32,7 @@ Here is a "FOO" baz
 Here is a "FOO.bar" baz
 Here it is: FOO
 Here it is: FOO.bar
+SomeError: SomeFrameworkClass in isTestClass for FOO
 Here is a FOO.bar
 Here is a FOO.bar baz
 END FOO#bar
@@ -47,6 +48,7 @@ Here is a "this.was.Deobfuscated" baz
 Here is a "this.was.Deobfuscated.someMethod" baz
 Here it is: this.was.Deobfuscated
 Here it is: this.was.Deobfuscated.someMethod
+SomeError: SomeFrameworkClass in isTestClass for this.was.Deobfuscated
 Here is a this.was.Deobfuscated.someMethod
 Here is a FOO.bar baz
 END this.was.Deobfuscated#someMethod

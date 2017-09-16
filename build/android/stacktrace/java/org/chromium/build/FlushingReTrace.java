@@ -47,6 +47,9 @@ public class FlushingReTrace {
             // E.g.: The class "Foobar"
             + "(?:.*?\"%c\\.%m\".*)|"
             + "(?:.*?\"%c\".*)|"
+            // Special-case for a common junit logcat message:
+            // E.g.: java.lang.NoClassDefFoundError: SomeFrameworkClass in isTestClass for Foo
+            + "(?:.* isTestClass for %c)|"
             // E.g.: java.lang.RuntimeException: Intentional Java Crash
             + "(?:%c:.*)|"
             // All lines that end with a class / class+method:

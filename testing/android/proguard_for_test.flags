@@ -7,21 +7,17 @@
 # correctness of the .apk we are testing, since it will apply to that .apk as
 # well.
 
-# Keep all junit3 tests
--keep class * extends junit.framework.TestCase {
-  *;
-}
+# Keep all junit3 classes and tests
+-keep class junit.** { *; }
+-keep class * extends junit.** { *; }
 
-# Keep all junit4 tests
--keep @**.RunWith class * {
-    *;
-}
+# Keep all junit4 classes and tests
+-keep class org.junit.** { *; }
+-keep class * extends org.junit.** { *; }
+-keep @**.RunWith class * { *; }
 
-# Keep any class inherited from junit Runner since their constructor is called
-# reflectively
--keep class * extends org.junit.runner.Runner {
-    *;
-}
+# Keep all classes that are in test packages.
+-keep class **.test.** { *; }
 
 # Keep any enum's value and valueOf method since they are reflectively called
 # from JUnit4 runner
@@ -30,13 +26,8 @@
     public static ** valueOf(java.lang.String);
 }
 
-# Keey any annotation used by tests for instrumentation runner to list out 
+# Keep any annotation used by tests for instrumentation runner to list out
 # test annotation information
--keep @interface android.support.test.**
--keep @interface org.chromium.base.test.**
--keep @interface org.junit.**
--keep @interface android.test.**
-
 -keepattributes *Annotation*
 
 # We have some "library class WebView depends on program class SslCertificate"
