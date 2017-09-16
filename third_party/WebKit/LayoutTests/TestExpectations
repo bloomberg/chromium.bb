@@ -707,7 +707,7 @@ crbug.com/567837 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-wit
 # TODO(ojan): These tests aren't flaky. See crbug.com/517144.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
-crbug.com/389648 crbug.com/517123 crbug.com/410145 crbug.com/765784 fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout Failure ]
+crbug.com/389648 crbug.com/517123 crbug.com/410145 fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
 
 crbug.com/636207 [ Win Debug ] fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Failure Pass ]
 
@@ -3694,7 +3694,6 @@ crbug.com/764180 [ Android ] virtual/display_list_2d_canvas/fast/canvas/script-i
 
 # Sheriff failure 2017-09-15
 crbug.com/765685 [ Android ] external/wpt/mediacapture-streams/MediaStream-idl.https.html [ Pass Failure ]
-crbug.com/765784 [ Mac10.9 ] virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Pass Failure ]
 
 # JPEG decoding change in Skia
 crbug.com/763605 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ NeedsManualRebaseline ]
