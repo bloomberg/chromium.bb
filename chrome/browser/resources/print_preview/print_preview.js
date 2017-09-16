@@ -435,6 +435,15 @@ cr.define('print_preview', function() {
           this.advancedOptionsSettings_,
           print_preview.AdvancedOptionsSettings.EventType.BUTTON_ACTIVATED,
           this.onAdvancedOptionsButtonActivated_.bind(this));
+
+      /* Ticket items that may be invalid. */
+      [this.printTicketStore_.copies, this.printTicketStore_.pageRange,
+       this.printTicketStore_.scaling,
+      ].forEach((item) => {
+        this.tracker.add(
+            item, print_preview.ticket_items.TicketItem.EventType.CHANGE,
+            this.onTicketChange_.bind(this));
+      });
     },
 
     /** @override */
@@ -465,9 +474,9 @@ cr.define('print_preview', function() {
      */
     setIsEnabled_: function(isEnabled) {
       if ($('system-dialog-link'))
-        $('system-dialog-link').classList.toggle('disabled', !isEnabled);
+        $('system-dialog-link').disabled = !isEnabled;
       if ($('open-pdf-in-preview-link'))
-        $('open-pdf-in-preview-link').classList.toggle('disabled', !isEnabled);
+        $('open-pdf-in-preview-link').disabled = !isEnabled;
       this.printHeader_.isEnabled = isEnabled;
       this.destinationSettings_.isEnabled = isEnabled;
       this.pageSettings_.isEnabled = isEnabled;
@@ -920,6 +929,21 @@ cr.define('print_preview', function() {
       this.uiState_ = PrintPreviewUiState_.ERROR;
       this.isPreviewGenerationInProgress_ = false;
       this.printHeader_.isPrintButtonEnabled = false;
+    },
+
+    /**
+     * Called when a ticket item that can be invalid is updated. Updates the
+     * enabled state of the system dialog link on Windows and the open pdf in
+     * preview link on Mac.
+     * @private
+     */
+    onTicketChange_: function() {
+      this.printHeader_.onTicketChange();
+      var disable = !this.printHeader_.isPrintButtonEnabled;
+      if (cr.isWindows && $('system-dialog-link'))
+        $('system-dialog-link').disabled = disable;
+      if ($('open-pdf-in-preview-link'))
+        $('open-pdf-in-preview-link').disabled = disable;
     },
 
     /**

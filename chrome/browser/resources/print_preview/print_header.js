@@ -108,35 +108,19 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.printTicketStore_,
           print_preview.PrintTicketStore.EventType.INITIALIZE,
-          this.onTicketChange_.bind(this));
+          this.onTicketChange.bind(this));
       this.tracker.add(
           this.printTicketStore_,
           print_preview.PrintTicketStore.EventType.DOCUMENT_CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.TICKET_CHANGE,
-          this.onTicketChange_.bind(this));
+          this.onTicketChange.bind(this));
       this.tracker.add(
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
           this.onDestinationSelect_.bind(this));
       this.tracker.add(
-          this.printTicketStore_.copies,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
           this.printTicketStore_.duplex,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_.pageRange,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_.scaling,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.updatePrintButtonEnabledState_.bind(this));
+          this.onTicketChange.bind(this));
     },
 
     /**
@@ -266,9 +250,8 @@ cr.define('print_preview', function() {
     /**
      * Called when the print ticket has changed. Disables the print button if
      * any of the settings are invalid.
-     * @private
      */
-    onTicketChange_: function() {
+    onTicketChange: function() {
       this.updatePrintButtonEnabledState_();
       this.updateSummary_();
       if (document.activeElement == null ||

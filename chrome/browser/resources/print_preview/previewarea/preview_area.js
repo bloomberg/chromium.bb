@@ -318,8 +318,8 @@ cr.define('print_preview', function() {
           this.onOpenSystemDialogButtonClick_.bind(this));
 
       var TicketStoreEvent = print_preview.PrintTicketStore.EventType;
-      [TicketStoreEvent.INITIALIZE, TicketStoreEvent.TICKET_CHANGE,
-       TicketStoreEvent.CAPABILITIES_CHANGE, TicketStoreEvent.DOCUMENT_CHANGE]
+      [TicketStoreEvent.INITIALIZE, TicketStoreEvent.CAPABILITIES_CHANGE,
+       TicketStoreEvent.DOCUMENT_CHANGE]
           .forEach(eventType => {
             this.tracker.add(
                 this.printTicketStore_, eventType,

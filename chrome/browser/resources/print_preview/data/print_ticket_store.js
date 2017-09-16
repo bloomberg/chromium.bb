@@ -225,7 +225,6 @@ cr.define('print_preview', function() {
     CAPABILITIES_CHANGE: 'print_preview.PrintTicketStore.CAPABILITIES_CHANGE',
     DOCUMENT_CHANGE: 'print_preview.PrintTicketStore.DOCUMENT_CHANGE',
     INITIALIZE: 'print_preview.PrintTicketStore.INITIALIZE',
-    TICKET_CHANGE: 'print_preview.PrintTicketStore.TICKET_CHANGE'
   };
 
   PrintTicketStore.prototype = {
