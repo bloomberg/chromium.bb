@@ -780,18 +780,6 @@ static void fdct64(const tran_low_t *input, tran_low_t *output) {
 }
 #endif
 
-#if CONFIG_DAALA_DCT4
-static void fadst4(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  od_coeff x[4];
-  od_coeff y[4];
-  for (i = 0; i < 4; i++) x[i] = (od_coeff)input[i];
-  od_bin_fdst4(y, x, 1);
-  for (i = 0; i < 4; i++) output[i] = (tran_low_t)y[i];
-}
-
-#else
-
 static void fadst4(const tran_low_t *input, tran_low_t *output) {
   tran_high_t x0, x1, x2, x3;
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
@@ -831,7 +819,6 @@ static void fadst4(const tran_low_t *input, tran_low_t *output) {
   output[2] = (tran_low_t)fdct_round_shift(s2);
   output[3] = (tran_low_t)fdct_round_shift(s3);
 }
-#endif
 
 #if CONFIG_DAALA_DCT8
 static void fadst8(const tran_low_t *input, tran_low_t *output) {
@@ -1366,22 +1353,22 @@ void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
     static const transform_2d FHT[] = {
 #if CONFIG_DAALA_DCT4
       { daala_fdct4, daala_fdct4 },  // DCT_DCT
-      { fadst4, daala_fdct4 },       // ADST_DCT
-      { daala_fdct4, fadst4 },       // DCT_ADST
-      { fadst4, fadst4 },            // ADST_ADST
+      { daala_fdst4, daala_fdct4 },  // ADST_DCT
+      { daala_fdct4, daala_fdst4 },  // DCT_ADST
+      { daala_fdst4, daala_fdst4 },  // ADST_ADST
 #if CONFIG_EXT_TX
-      { fadst4, daala_fdct4 },  // FLIPADST_DCT
-      { daala_fdct4, fadst4 },  // DCT_FLIPADST
-      { fadst4, fadst4 },       // FLIPADST_FLIPADST
-      { fadst4, fadst4 },       // ADST_FLIPADST
-      { fadst4, fadst4 },       // FLIPADST_ADST
-      { fidtx4, fidtx4 },       // IDTX
-      { daala_fdct4, fidtx4 },  // V_DCT
-      { fidtx4, daala_fdct4 },  // H_DCT
-      { fadst4, fidtx4 },       // V_ADST
-      { fidtx4, fadst4 },       // H_ADST
-      { fadst4, fidtx4 },       // V_FLIPADST
-      { fidtx4, fadst4 },       // H_FLIPADST
+      { daala_fdst4, daala_fdct4 },  // FLIPADST_DCT
+      { daala_fdct4, daala_fdst4 },  // DCT_FLIPADST
+      { daala_fdst4, daala_fdst4 },  // FLIPADST_FLIPADST
+      { daala_fdst4, daala_fdst4 },  // ADST_FLIPADST
+      { daala_fdst4, daala_fdst4 },  // FLIPADST_ADST
+      { fidtx4, fidtx4 },            // IDTX
+      { daala_fdct4, fidtx4 },       // V_DCT
+      { fidtx4, daala_fdct4 },       // H_DCT
+      { daala_fdst4, fidtx4 },       // V_ADST
+      { fidtx4, daala_fdst4 },       // H_ADST
+      { daala_fdst4, fidtx4 },       // V_FLIPADST
+      { fidtx4, daala_fdst4 },       // H_FLIPADST
 #endif
 #else
       { fdct4, fdct4 },    // DCT_DCT

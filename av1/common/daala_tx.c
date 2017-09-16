@@ -4124,3 +4124,21 @@ void daala_idct4(const tran_low_t *input, tran_low_t *output) {
   od_bin_idct4(x, 1, y);
   for (i = 0; i < 4; i++) output[i] = (tran_low_t)x[i];
 }
+
+void daala_fdst4(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[4];
+  od_coeff y[4];
+  for (i = 0; i < 4; i++) x[i] = (od_coeff)input[i];
+  od_bin_fdst4(y, x, 1);
+  for (i = 0; i < 4; i++) output[i] = (tran_low_t)y[i];
+}
+
+void daala_idst4(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[4];
+  od_coeff y[4];
+  for (i = 0; i < 4; i++) y[i] = input[i];
+  od_bin_idst4(x, 1, y);
+  for (i = 0; i < 4; i++) output[i] = (tran_low_t)x[i];
+}
