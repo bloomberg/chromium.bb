@@ -1,8 +1,0 @@
-{
-  "manifest_version": 2,
-
-  "name": "Underscore",
-  "description": "An extension with a (disallowed) folder prefixed by an underscore.",
-  "version": "1.0"
-
-}
