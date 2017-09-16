@@ -299,6 +299,10 @@ ShelfView* Shelf::GetShelfViewForTesting() {
   return shelf_widget_->shelf_view_for_testing();
 }
 
+LoginShelfView* Shelf::GetLoginShelfViewForTesting() {
+  return shelf_widget_->login_shelf_view_for_testing();
+}
+
 void Shelf::WillDeleteShelfLayoutManager() {
   if (Shell::GetAshConfig() == Config::MASH) {
     // TODO(sky): this should be removed once Shell is used everywhere.

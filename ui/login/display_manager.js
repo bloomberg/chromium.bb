@@ -282,6 +282,15 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
+     * The header bar should be hidden when views-based shelf is shown.
+     */
+    get showingViewsBasedShelf() {
+      return loadTimeData.getString('showMdLogin') == 'on' &&
+          (this.displayType_ == DISPLAY_TYPE.LOCK ||
+           this.displayType_ == DISPLAY_TYPE.USER_ADDING);
+    },
+
+    /**
      * Sets the current size of the client area (display size).
      * @param {number} width client area width
      * @param {number} height client area height

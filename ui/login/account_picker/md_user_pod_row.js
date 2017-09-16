@@ -4766,8 +4766,10 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = UserPodTabOrder.HEADER_BAR;
-      // Header bar should be hidden when virtual keyboard is shown.
-      Oobe.getInstance().headerHidden = this.isScreenShrinked_();
+      // Header bar should be hidden when virtual keyboard is shown, or
+      // views-based shelf is shown.
+      Oobe.getInstance().headerHidden =
+          this.isScreenShrinked_() || Oobe.getInstance().showingViewsBasedShelf;
 
       if (this.podPlacementPostponed_) {
         this.podPlacementPostponed_ = false;
