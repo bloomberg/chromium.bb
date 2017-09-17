@@ -34,9 +34,9 @@ namespace {
 
 std::unique_ptr<ImageDecoder> CreatePNGDecoder(
     ImageDecoder::AlphaOption alpha_option) {
-  return WTF::WrapUnique(new PNGImageDecoder(
-      alpha_option, ColorBehavior::TransformToTargetForTesting(),
-      ImageDecoder::kNoDecodedImageByteLimit));
+  return WTF::WrapUnique(
+      new PNGImageDecoder(alpha_option, ColorBehavior::TransformToSRGB(),
+                          ImageDecoder::kNoDecodedImageByteLimit));
 }
 
 std::unique_ptr<ImageDecoder> CreatePNGDecoder() {

@@ -46,7 +46,7 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
   // don't really matter.
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
       segment_reader, true, ImageDecoder::kAlphaPremultiplied,
-      ColorBehavior::TransformToGlobalTarget());
+      ColorBehavior::TransformToSRGB());
   if (!decoder || !decoder->IsSizeAvailable())
     return nullptr;
 

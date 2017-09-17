@@ -55,9 +55,9 @@ struct AnimParam {
 
 std::unique_ptr<ImageDecoder> CreateWEBPDecoder(
     ImageDecoder::AlphaOption alpha_option) {
-  return WTF::WrapUnique(new WEBPImageDecoder(
-      alpha_option, ColorBehavior::TransformToTargetForTesting(),
-      ImageDecoder::kNoDecodedImageByteLimit));
+  return WTF::WrapUnique(
+      new WEBPImageDecoder(alpha_option, ColorBehavior::TransformToSRGB(),
+                           ImageDecoder::kNoDecodedImageByteLimit));
 }
 
 std::unique_ptr<ImageDecoder> CreateWEBPDecoder() {

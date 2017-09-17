@@ -515,13 +515,12 @@ SkColorSpaceXform* ImageDecoder::ColorTransform() {
 
   sk_sp<SkColorSpace> src_color_space = nullptr;
   sk_sp<SkColorSpace> dst_color_space = nullptr;
-  if (color_behavior_.IsTransformToTargetColorSpace()) {
+  if (color_behavior_.IsTransformToSRGB()) {
     if (!embedded_color_space_) {
       return nullptr;
     }
-
     src_color_space = embedded_color_space_;
-    dst_color_space = color_behavior_.TargetColorSpace().ToSkColorSpace();
+    dst_color_space = SkColorSpace::MakeSRGB();
   } else {
     DCHECK(color_behavior_.IsTag());
     src_color_space = embedded_color_space_;

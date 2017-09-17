@@ -326,23 +326,6 @@ bool RenderViewHostImpl::CreateRenderView(
   params->max_size = GetWidget()->max_size_for_auto_resize();
   params->page_zoom_level = delegate_->GetPendingPageZoomLevel();
 
-  bool force_srgb_image_decode_color_space = false;
-  // When color correct rendering is enabled, the image_decode_color_space
-  // parameter should not be used (and all users of it should be using sRGB).
-  if (base::FeatureList::IsEnabled(features::kColorCorrectRendering))
-    force_srgb_image_decode_color_space = true;
-  if (force_srgb_image_decode_color_space) {
-    gfx::ColorSpace::CreateSRGB().GetICCProfile(
-        &params->image_decode_color_space);
-  } else {
-    if (display::Display::HasForceColorProfile()) {
-      display::Display::GetForcedColorProfile().GetICCProfile(
-          &params->image_decode_color_space);
-    } else {
-      params->image_decode_color_space = gfx::ICCProfile::FromBestMonitor();
-    }
-  }
-
   GetWidget()->GetResizeParams(&params->initial_size);
   GetWidget()->SetInitialRenderSizeParams(params->initial_size);
 

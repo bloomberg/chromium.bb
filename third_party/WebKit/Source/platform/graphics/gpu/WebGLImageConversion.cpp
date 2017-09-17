@@ -2812,7 +2812,7 @@ void WebGLImageConversion::ImageExtractor::ExtractImage(
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
         image_->Data(), true, ImageDecoder::kAlphaNotPremultiplied,
         ignore_color_space ? ColorBehavior::Ignore()
-                           : ColorBehavior::TransformToGlobalTarget()));
+                           : ColorBehavior::TransformToSRGB()));
     if (!decoder || !decoder->FrameCount())
       return;
     ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);

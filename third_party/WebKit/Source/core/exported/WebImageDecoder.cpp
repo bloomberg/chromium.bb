@@ -50,14 +50,14 @@ void WebImageDecoder::Init(Type type) {
 
   switch (type) {
     case kTypeBMP:
-      private_ = new BMPImageDecoder(
-          ImageDecoder::kAlphaPremultiplied,
-          ColorBehavior::TransformToTargetForTesting(), max_decoded_bytes);
+      private_ = new BMPImageDecoder(ImageDecoder::kAlphaPremultiplied,
+                                     ColorBehavior::TransformToSRGB(),
+                                     max_decoded_bytes);
       break;
     case kTypeICO:
-      private_ = new ICOImageDecoder(
-          ImageDecoder::kAlphaPremultiplied,
-          ColorBehavior::TransformToTargetForTesting(), max_decoded_bytes);
+      private_ = new ICOImageDecoder(ImageDecoder::kAlphaPremultiplied,
+                                     ColorBehavior::TransformToSRGB(),
+                                     max_decoded_bytes);
       break;
   }
 }

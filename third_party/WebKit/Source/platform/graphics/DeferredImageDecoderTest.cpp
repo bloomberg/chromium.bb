@@ -332,9 +332,9 @@ TEST_F(DeferredImageDecoderTest, frameOpacity) {
       data_ = SharedBuffer::Create(kWhiteGIF, sizeof(kWhiteGIF));
 
     std::unique_ptr<DeferredImageDecoder> decoder =
-        DeferredImageDecoder::Create(
-            data_, true, ImageDecoder::kAlphaPremultiplied,
-            ColorBehavior::TransformToTargetForTesting());
+        DeferredImageDecoder::Create(data_, true,
+                                     ImageDecoder::kAlphaPremultiplied,
+                                     ColorBehavior::TransformToSRGB());
 
     SkImageInfo pix_info = SkImageInfo::MakeN32Premul(1, 1);
 

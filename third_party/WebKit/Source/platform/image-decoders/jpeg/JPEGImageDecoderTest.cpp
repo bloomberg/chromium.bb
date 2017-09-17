@@ -48,8 +48,8 @@ namespace {
 
 std::unique_ptr<ImageDecoder> CreateJPEGDecoder(size_t max_decoded_bytes) {
   return WTF::WrapUnique(new JPEGImageDecoder(
-      ImageDecoder::kAlphaNotPremultiplied,
-      ColorBehavior::TransformToTargetForTesting(), max_decoded_bytes));
+      ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
+      max_decoded_bytes));
 }
 
 std::unique_ptr<ImageDecoder> CreateJPEGDecoder() {

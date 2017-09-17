@@ -70,9 +70,6 @@ struct CreateViewParams {
 
   // The page zoom level.
   double page_zoom_level;
-
-  // The ICC profile of the output color space to use for image decode.
-  gfx.mojom.ICCProfile image_decode_color_space;
 };
 
 struct CreateFrameWidgetParams {
