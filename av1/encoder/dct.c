@@ -157,18 +157,6 @@ static void fdct8(const tran_low_t *input, tran_low_t *output) {
   range_check(output, 8, 16);
 }
 
-#if CONFIG_DAALA_DCT16
-static void fdct16(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  od_coeff x[16];
-  od_coeff y[16];
-  for (i = 0; i < 16; i++) x[i] = (od_coeff)input[i];
-  od_bin_fdct16(y, x, 1);
-  for (i = 0; i < 16; i++) output[i] = (tran_low_t)y[i];
-}
-
-#else
-
 static void fdct16(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
   tran_low_t step[16];
@@ -342,7 +330,6 @@ static void fdct16(const tran_low_t *input, tran_low_t *output) {
 
   range_check(output, 16, 16);
 }
-#endif
 
 #if CONFIG_DAALA_DCT32
 static void fdct32(const tran_low_t *input, tran_low_t *output) {
@@ -2385,6 +2372,26 @@ void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d FHT[] = {
+#if CONFIG_DAALA_DCT16
+    { daala_fdct16, daala_fdct16 },  // DCT_DCT
+    { fadst16, daala_fdct16 },       // ADST_DCT
+    { daala_fdct16, fadst16 },       // DCT_ADST
+    { fadst16, fadst16 },            // ADST_ADST
+#if CONFIG_EXT_TX
+    { fadst16, daala_fdct16 },  // FLIPADST_DCT
+    { daala_fdct16, fadst16 },  // DCT_FLIPADST
+    { fadst16, fadst16 },       // FLIPADST_FLIPADST
+    { fadst16, fadst16 },       // ADST_FLIPADST
+    { fadst16, fadst16 },       // FLIPADST_ADST
+    { fidtx16, fidtx16 },       // IDTX
+    { daala_fdct16, fidtx16 },  // V_DCT
+    { fidtx16, daala_fdct16 },  // H_DCT
+    { fadst16, fidtx16 },       // V_ADST
+    { fidtx16, fadst16 },       // H_ADST
+    { fadst16, fidtx16 },       // V_FLIPADST
+    { fidtx16, fadst16 },       // H_FLIPADST
+#endif
+#else
     { fdct16, fdct16 },    // DCT_DCT
     { fadst16, fdct16 },   // ADST_DCT
     { fdct16, fadst16 },   // DCT_ADST
@@ -2402,6 +2409,7 @@ void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
     { fidtx16, fadst16 },  // H_ADST
     { fadst16, fidtx16 },  // V_FLIPADST
     { fidtx16, fadst16 },  // H_FLIPADST
+#endif
 #endif
   };
   const transform_2d ht = FHT[tx_type];
