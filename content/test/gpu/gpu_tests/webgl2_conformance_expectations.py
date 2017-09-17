@@ -51,6 +51,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # All platforms.
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
+    self.Fail('conformance2/glsl3/array-length-side-effects.html',
+        bug=2142) # angle bug ID
 
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
