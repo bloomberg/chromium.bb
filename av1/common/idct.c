@@ -103,7 +103,7 @@ static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
   for (i = 0; i < 16; ++i) {
     output[i] = input[16 + i];
   }
-  aom_idct16_c(inputhalf, output + 16);
+  daala_idct16(inputhalf, output + 16);
 }
 #else
 static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
@@ -1391,7 +1391,27 @@ void av1_iht32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d IHT_32[] = {
-    { aom_idct32_c, aom_idct32_c },  // DCT_DCT
+#if CONFIG_DAALA_DCT32
+    { daala_idct32, daala_idct32 },  // DCT_DCT
+#if CONFIG_EXT_TX
+    { ihalfright32_c, daala_idct32 },    // ADST_DCT
+    { daala_idct32, ihalfright32_c },    // DCT_ADST
+    { ihalfright32_c, ihalfright32_c },  // ADST_ADST
+    { ihalfright32_c, daala_idct32 },    // FLIPADST_DCT
+    { daala_idct32, ihalfright32_c },    // DCT_FLIPADST
+    { ihalfright32_c, ihalfright32_c },  // FLIPADST_FLIPADST
+    { ihalfright32_c, ihalfright32_c },  // ADST_FLIPADST
+    { ihalfright32_c, ihalfright32_c },  // FLIPADST_ADST
+    { iidtx32_c, iidtx32_c },            // IDTX
+    { daala_idct32, iidtx32_c },         // V_DCT
+    { iidtx32_c, daala_idct32 },         // H_DCT
+    { ihalfright32_c, iidtx32_c },       // V_ADST
+    { iidtx32_c, ihalfright32_c },       // H_ADST
+    { ihalfright32_c, iidtx32_c },       // V_FLIPADST
+    { iidtx32_c, ihalfright32_c },       // H_FLIPADST
+#endif
+#else
+    { aom_idct32_c, aom_idct32_c },      // DCT_DCT
 #if CONFIG_EXT_TX
     { ihalfright32_c, aom_idct32_c },    // ADST_DCT
     { aom_idct32_c, ihalfright32_c },    // DCT_ADST
@@ -1408,6 +1428,7 @@ void av1_iht32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { iidtx32_c, ihalfright32_c },       // H_ADST
     { ihalfright32_c, iidtx32_c },       // V_FLIPADST
     { iidtx32_c, ihalfright32_c },       // H_FLIPADST
+#endif
 #endif
   };
 

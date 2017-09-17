@@ -331,18 +331,6 @@ static void fdct16(const tran_low_t *input, tran_low_t *output) {
   range_check(output, 16, 16);
 }
 
-#if CONFIG_DAALA_DCT32
-static void fdct32(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  od_coeff x[32];
-  od_coeff y[32];
-  for (i = 0; i < 32; i++) x[i] = (od_coeff)input[i];
-  od_bin_fdct32(y, x, 1);
-  for (i = 0; i < 32; i++) output[i] = (tran_low_t)y[i];
-}
-
-#else
-
 static void fdct32(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
   tran_low_t step[32];
@@ -740,7 +728,6 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
 
   range_check(output, 32, 18);
 }
-#endif
 
 #ifndef AV1_DCT_GTEST
 #if CONFIG_TX64X64 && CONFIG_DAALA_DCT64
@@ -1045,7 +1032,7 @@ static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
   for (i = 0; i < 16; ++i) {
     inputhalf[i] = input[i + 16];
   }
-  fdct16(inputhalf, output);
+  daala_fdct16(inputhalf, output);
 }
 #else
 static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
@@ -2454,7 +2441,27 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d FHT[] = {
-    { fdct32, fdct32 },  // DCT_DCT
+#if CONFIG_DAALA_DCT32
+    { daala_fdct32, daala_fdct32 },  // DCT_DCT
+#if CONFIG_EXT_TX
+    { fhalfright32, daala_fdct32 },  // ADST_DCT
+    { daala_fdct32, fhalfright32 },  // DCT_ADST
+    { fhalfright32, fhalfright32 },  // ADST_ADST
+    { fhalfright32, daala_fdct32 },  // FLIPADST_DCT
+    { daala_fdct32, fhalfright32 },  // DCT_FLIPADST
+    { fhalfright32, fhalfright32 },  // FLIPADST_FLIPADST
+    { fhalfright32, fhalfright32 },  // ADST_FLIPADST
+    { fhalfright32, fhalfright32 },  // FLIPADST_ADST
+    { fidtx32, fidtx32 },            // IDTX
+    { daala_fdct32, fidtx32 },       // V_DCT
+    { fidtx32, daala_fdct32 },       // H_DCT
+    { fhalfright32, fidtx32 },       // V_ADST
+    { fidtx32, fhalfright32 },       // H_ADST
+    { fhalfright32, fidtx32 },       // V_FLIPADST
+    { fidtx32, fhalfright32 },       // H_FLIPADST
+#endif
+#else
+    { fdct32, fdct32 },              // DCT_DCT
 #if CONFIG_EXT_TX
     { fhalfright32, fdct32 },        // ADST_DCT
     { fdct32, fhalfright32 },        // DCT_ADST
@@ -2471,6 +2478,7 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
     { fidtx32, fhalfright32 },       // H_ADST
     { fhalfright32, fidtx32 },       // V_FLIPADST
     { fidtx32, fhalfright32 },       // H_FLIPADST
+#endif
 #endif
 #if CONFIG_MRC_TX
     { fdct32, fdct32 },  // MRC_TX

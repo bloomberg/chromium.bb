@@ -4214,3 +4214,21 @@ void daala_idst16(const tran_low_t *input, tran_low_t *output) {
   od_bin_idst16(x, 1, y);
   for (i = 0; i < 16; i++) output[i] = (tran_low_t)x[i];
 }
+
+void daala_fdct32(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[32];
+  od_coeff y[32];
+  for (i = 0; i < 32; i++) x[i] = (od_coeff)input[i];
+  od_bin_fdct32(y, x, 1);
+  for (i = 0; i < 32; i++) output[i] = (tran_low_t)y[i];
+}
+
+void daala_idct32(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[32];
+  od_coeff y[32];
+  for (i = 0; i < 32; i++) y[i] = (od_coeff)input[i];
+  od_bin_idct32(x, 1, y);
+  for (i = 0; i < 32; i++) output[i] = (tran_low_t)x[i];
+}
