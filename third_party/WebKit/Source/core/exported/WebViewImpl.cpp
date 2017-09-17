@@ -2842,10 +2842,6 @@ void WebViewImpl::SetZoomFactorForDeviceScaleFactor(
   SetZoomLevel(zoom_level_);
 }
 
-void WebViewImpl::SetDeviceColorProfile(const gfx::ICCProfile& color_profile) {
-  ColorBehavior::SetGlobalTargetColorProfile(color_profile);
-}
-
 void WebViewImpl::EnableAutoResizeMode(const WebSize& min_size,
                                        const WebSize& max_size) {
   should_auto_resize_ = true;

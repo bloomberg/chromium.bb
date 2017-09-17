@@ -381,7 +381,7 @@ sk_sp<SkImage> ImageBitmap::GetSkImageFromDecoder(
 static RefPtr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
     RefPtr<Image>&& image,
     ImageBitmap::ParsedOptions& parsed_options,
-    ColorBehavior color_behavior = ColorBehavior::TransformToGlobalTarget()) {
+    ColorBehavior color_behavior = ColorBehavior::TransformToSRGB()) {
   DCHECK(image);
   IntRect img_rect(IntPoint(), IntSize(image->width(), image->height()));
   const IntRect src_rect = Intersection(img_rect, parsed_options.crop_rect);
@@ -451,7 +451,7 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
       std::move(input), parsed_options,
       options.colorSpaceConversion() == kImageBitmapOptionNone
           ? ColorBehavior::Ignore()
-          : ColorBehavior::TransformToGlobalTarget());
+          : ColorBehavior::TransformToSRGB());
   if (!image_)
     return;
 

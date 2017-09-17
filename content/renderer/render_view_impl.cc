@@ -590,7 +590,6 @@ void RenderViewImpl::Initialize(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
   webview()->SetShowFPSCounter(
       command_line.HasSwitch(cc::switches::kShowFPSCounter));
-  webview()->SetDeviceColorProfile(params.image_decode_color_space);
 
   ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
 

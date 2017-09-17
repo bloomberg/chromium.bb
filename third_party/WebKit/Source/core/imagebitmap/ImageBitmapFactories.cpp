@@ -325,7 +325,7 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
           array_buffer->Data(), array_buffer->ByteLength())),
       true, alpha_op,
       ignore_color_space ? ColorBehavior::Ignore()
-                         : ColorBehavior::TransformToGlobalTarget()));
+                         : ColorBehavior::TransformToSRGB()));
   sk_sp<SkImage> frame;
   if (decoder) {
     frame = ImageBitmap::GetSkImageFromDecoder(std::move(decoder));

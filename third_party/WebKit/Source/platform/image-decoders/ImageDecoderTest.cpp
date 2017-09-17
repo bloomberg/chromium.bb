@@ -42,7 +42,7 @@ class TestImageDecoder : public ImageDecoder {
  public:
   TestImageDecoder()
       : ImageDecoder(kAlphaNotPremultiplied,
-                     ColorBehavior::TransformToTargetForTesting(),
+                     ColorBehavior::TransformToSRGB(),
                      kNoDecodedImageByteLimit) {}
 
   String FilenameExtension() const override { return ""; }

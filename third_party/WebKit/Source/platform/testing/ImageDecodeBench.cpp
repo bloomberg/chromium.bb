@@ -209,10 +209,10 @@ RefPtr<SharedBuffer> ReadFile(const char* file_name) {
 bool DecodeImageData(SharedBuffer* data,
                      bool color_correction,
                      size_t packet_size) {
-  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-      data, true, ImageDecoder::kAlphaPremultiplied,
-      color_correction ? ColorBehavior::TransformToTargetForTesting()
-                       : ColorBehavior::Ignore());
+  std::unique_ptr<ImageDecoder> decoder =
+      ImageDecoder::Create(data, true, ImageDecoder::kAlphaPremultiplied,
+                           color_correction ? ColorBehavior::TransformToSRGB()
+                                            : ColorBehavior::Ignore());
   if (!packet_size) {
     bool all_data_received = true;
     decoder->SetData(data, all_data_received);
@@ -266,8 +266,6 @@ int Main(int argc, char* argv[]) {
 
   if (argc >= 2 && strcmp(argv[1], "--color-correct") == 0) {
     apply_color_correction = (--argc, ++argv, true);
-    gfx::ICCProfile profile = gfx::ICCProfileForTestingColorSpin();
-    ColorBehavior::SetGlobalTargetColorProfile(profile);
   }
 
   if (argc < 2) {

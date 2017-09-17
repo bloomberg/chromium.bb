@@ -31,9 +31,9 @@ namespace blink {
 
 std::unique_ptr<ImageDecoder> CreateDecoder(
     ImageDecoder::AlphaOption alpha_option) {
-  return WTF::WrapUnique(new PNGImageDecoder(
-      alpha_option, ColorBehavior::TransformToTargetForTesting(),
-      ImageDecoder::kNoDecodedImageByteLimit));
+  return WTF::WrapUnique(
+      new PNGImageDecoder(alpha_option, ColorBehavior::TransformToSRGB(),
+                          ImageDecoder::kNoDecodedImageByteLimit));
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

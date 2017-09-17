@@ -159,7 +159,7 @@ void NotificationImageLoader::DidFinishLoading(
 
     std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
         data_, true /* dataComplete */, ImageDecoder::kAlphaPremultiplied,
-        ColorBehavior::TransformToGlobalTarget());
+        ColorBehavior::TransformToSRGB());
     if (decoder) {
       // The |ImageFrame*| is owned by the decoder.
       ImageFrame* image_frame = decoder->DecodeFrameBufferAtIndex(0);

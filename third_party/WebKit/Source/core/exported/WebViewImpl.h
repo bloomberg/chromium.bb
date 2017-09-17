@@ -213,8 +213,6 @@ class CORE_EXPORT WebViewImpl final
   void SetDeviceScaleFactor(float) override;
   void SetZoomFactorForDeviceScaleFactor(float) override;
 
-  void SetDeviceColorProfile(const gfx::ICCProfile&) override;
-
   void EnableAutoResizeMode(const WebSize& min_size,
                             const WebSize& max_size) override;
   void DisableAutoResizeMode() override;

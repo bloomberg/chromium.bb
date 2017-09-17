@@ -40,10 +40,6 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 
-namespace gfx {
-class ICCProfile;
-}
-
 namespace blink {
 
 class WebCredentialManagerClient;
@@ -301,9 +297,6 @@ class WebView : protected WebWidget {
   // to scale the content by the device scale factor, without affecting zoom
   // level.
   virtual void SetZoomFactorForDeviceScaleFactor(float) = 0;
-
-  // Set and reset the device color profile.
-  virtual void SetDeviceColorProfile(const gfx::ICCProfile&) = 0;
 
   // Resize the view at the same time as changing the state of the top
   // controls. If |browserControlsShrinkLayout| is true, the embedder shrunk the
