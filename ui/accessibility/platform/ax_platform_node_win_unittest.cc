@@ -156,6 +156,19 @@ class AXPlatformNodeWinTest : public testing::Test {
     EXPECT_STREQ(expected_name, name);
   }
 
+  AXTreeUpdate BuildTextField() {
+    AXNodeData text_field_node;
+    text_field_node.id = 1;
+    text_field_node.role = AX_ROLE_TEXT_FIELD;
+    text_field_node.AddState(AX_STATE_EDITABLE);
+    text_field_node.SetValue("How now brown cow.");
+
+    AXTreeUpdate update;
+    update.root_id = text_field_node.id;
+    update.nodes.push_back(text_field_node);
+    return update;
+  }
+
   AXTreeUpdate BuildTextFieldWithSelectionRange(int32_t start, int32_t stop) {
     AXNodeData text_field_node;
     text_field_node.id = 1;
@@ -169,6 +182,20 @@ class AXPlatformNodeWinTest : public testing::Test {
     AXTreeUpdate update;
     update.root_id = text_field_node.id;
     update.nodes.push_back(text_field_node);
+    return update;
+  }
+
+  AXTreeUpdate BuildContentEditable() {
+    AXNodeData content_editable_node;
+    content_editable_node.id = 1;
+    content_editable_node.role = AX_ROLE_GROUP;
+    content_editable_node.AddState(AX_STATE_EDITABLE);
+    content_editable_node.AddBoolAttribute(ui::AX_ATTR_EDITABLE_ROOT, true);
+    content_editable_node.SetValue("How now brown cow.");
+
+    AXTreeUpdate update;
+    update.root_id = content_editable_node.id;
+    update.nodes.push_back(content_editable_node);
     return update;
   }
 
@@ -1118,14 +1145,9 @@ TEST_F(AXPlatformNodeWinTest, TestAccNavigate) {
   EXPECT_EQ(VT_EMPTY, end.type());
 }
 
-TEST_F(AXPlatformNodeWinTest, TestIAccessible2SetSelection) {
-  AXNodeData text_field_node;
-  text_field_node.id = 1;
-  text_field_node.role = AX_ROLE_TEXT_FIELD;
-  text_field_node.AddState(AX_STATE_EDITABLE);
-  text_field_node.SetValue("Hi");
+TEST_F(AXPlatformNodeWinTest, TestIAccessible2TextFieldSetSelection) {
+  Init(BuildTextField());
 
-  Init(text_field_node);
   ScopedComPtr<IAccessible2> ia2_text_field =
       ToIAccessible2(GetRootIAccessible());
   ScopedComPtr<IAccessibleText> text_field;
@@ -1139,7 +1161,30 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2SetSelection) {
                                                     IA2_TEXT_OFFSET_LENGTH));
 
   EXPECT_HRESULT_FAILED(text_field->setSelection(1, 0, 0));
-  EXPECT_HRESULT_FAILED(text_field->setSelection(0, 0, 5));
+  EXPECT_HRESULT_FAILED(text_field->setSelection(0, 0, 50));
+}
+
+// This test is disabled until UpdateStep2ComputeHypertext is migrated over
+// to AXPlatformNodeWin because |hypertext_| is only initialized
+// on the BrowserAccessibility side.
+TEST_F(AXPlatformNodeWinTest,
+       DISABLED_TestIAccessible2ContentEditableSetSelection) {
+  Init(BuildContentEditable());
+
+  ScopedComPtr<IAccessible2> ia2_text_field =
+      ToIAccessible2(GetRootIAccessible());
+  ScopedComPtr<IAccessibleText> content_editable;
+  ia2_text_field.CopyTo(content_editable.GetAddressOf());
+  ASSERT_NE(nullptr, content_editable.Get());
+
+  EXPECT_HRESULT_SUCCEEDED(content_editable->setSelection(0, 0, 1));
+  EXPECT_HRESULT_SUCCEEDED(content_editable->setSelection(0, 1, 0));
+  EXPECT_HRESULT_SUCCEEDED(content_editable->setSelection(0, 2, 2));
+  EXPECT_HRESULT_SUCCEEDED(content_editable->setSelection(
+      0, IA2_TEXT_OFFSET_CARET, IA2_TEXT_OFFSET_LENGTH));
+
+  EXPECT_HRESULT_FAILED(content_editable->setSelection(1, 0, 0));
+  EXPECT_HRESULT_FAILED(content_editable->setSelection(0, 0, 50));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetAccessibilityAt) {
@@ -2554,6 +2599,53 @@ TEST_F(AXPlatformNodeWinTest,
   ASSERT_NE(nullptr, text_field.Get());
 
   LONG start_offset, end_offset;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_field->get_selection(0, &start_offset, &end_offset));
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(2, end_offset);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextTextFieldAddSelection) {
+  Init(BuildTextField());
+  ScopedComPtr<IAccessible2> ia2_text_field =
+      ToIAccessible2(GetRootIAccessible());
+  ScopedComPtr<IAccessibleText> text_field;
+  ia2_text_field.CopyTo(text_field.GetAddressOf());
+  ASSERT_NE(nullptr, text_field.Get());
+
+  LONG start_offset, end_offset;
+  // There is no selection, just a caret.
+  EXPECT_EQ(E_INVALIDARG,
+            text_field->get_selection(0, &start_offset, &end_offset));
+
+  EXPECT_HRESULT_SUCCEEDED(text_field->addSelection(1, 2));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_field->get_selection(0, &start_offset, &end_offset));
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(2, end_offset);
+}
+
+// This test is disabled until UpdateStep2ComputeHypertext is migrated over
+// to AXPlatformNodeWin because |hypertext_| is only initialized
+// on the BrowserAccessibility side.
+TEST_F(AXPlatformNodeWinTest,
+       DISABLED_TestIAccessibleTextContentEditableAddSelection) {
+  Init(BuildContentEditable());
+
+  ScopedComPtr<IAccessible2> ia2_text_field =
+      ToIAccessible2(GetRootIAccessible());
+  ScopedComPtr<IAccessibleText> text_field;
+  ia2_text_field.CopyTo(text_field.GetAddressOf());
+  ASSERT_NE(nullptr, text_field.Get());
+
+  LONG start_offset, end_offset;
+  // There is no selection, just a caret.
+  EXPECT_EQ(E_INVALIDARG,
+            text_field->get_selection(0, &start_offset, &end_offset));
+
+  EXPECT_HRESULT_SUCCEEDED(text_field->addSelection(1, 2));
+
   EXPECT_HRESULT_SUCCEEDED(
       text_field->get_selection(0, &start_offset, &end_offset));
   EXPECT_EQ(1, start_offset);
