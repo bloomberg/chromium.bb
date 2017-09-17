@@ -593,14 +593,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollSubstringToPoint(
 
 STDMETHODIMP BrowserAccessibilityComWin::addSelection(LONG start_offset,
                                                       LONG end_offset) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ADD_SELECTION);
-  AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!owner())
-    return E_FAIL;
-
-  // We only support one selection.
-  SetIA2HypertextSelection(start_offset, end_offset);
-  return S_OK;
+  return AXPlatformNodeWin::addSelection(start_offset, end_offset);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::removeSelection(LONG selection_index) {

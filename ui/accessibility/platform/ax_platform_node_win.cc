@@ -2444,6 +2444,10 @@ STDMETHODIMP AXPlatformNodeWin::get_offsetAtPoint(
 
 STDMETHODIMP AXPlatformNodeWin::addSelection(LONG start_offset,
                                              LONG end_offset) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ADD_SELECTION);
+  COM_OBJECT_VALIDATE();
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
   // We only support one selection.
   return setSelection(0, start_offset, end_offset);
 }
