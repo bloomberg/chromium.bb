@@ -3063,6 +3063,9 @@ crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/contr
 
 crbug.com/626703 [ Win7 ] external/wpt/html/semantics/embedded-content/the-img-element/decode/image-decode-path-changes.html [ Crash Pass ]
 
+# For Skia roll
+crbug.com/630695 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
+
 # Sheriff failures 2017-07-20
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Crash ]
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-getSettings.html [ Pass Crash ]
