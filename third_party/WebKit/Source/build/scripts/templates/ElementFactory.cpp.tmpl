@@ -6,11 +6,11 @@
 #include "{{namespace}}ElementFactory.h"
 
 #include "{{namespace}}Names.h"
-{% for tag in tags|groupby('interface') %}
-#include "core/{{namespace|lower}}/{{tag[0]}}.h"
+{% for header in tags|groupby('interface_header') %}
+#include "core/{{namespace|lower}}/{{header[0]}}"
 {% endfor %}
 {% if fallback_interface %}
-#include "core/{{namespace|lower}}/{{fallback_interface}}.h"
+#include "core/{{namespace|lower}}/{{fallback_interface_header}}"
 {% endif %}
 {% if namespace == 'HTML' %}
 #include "core/html/custom/CustomElement.h"

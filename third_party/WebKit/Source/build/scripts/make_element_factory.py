@@ -73,6 +73,8 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
             tag['has_js_interface'] = self._has_js_interface(tag)
             tag['js_interface'] = self._js_interface(tag)
             tag['interface'] = self._interface(tag)
+            tag['interface_header'] = self.get_file_basename(
+                tag['interface']) + '.h'
             interface_counts[tag['interface']] += 1
 
         for tag in tags:
@@ -80,6 +82,8 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
 
         self._template_context.update({
             'fallback_interface': fallback_interface,
+            'fallback_interface_header': self.get_file_basename(
+                fallback_interface) + '.h',
             'fallback_js_interface': fallback_js_interface,
             'input_files': self._input_files,
         })

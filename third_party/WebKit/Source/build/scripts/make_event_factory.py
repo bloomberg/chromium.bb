@@ -131,23 +131,14 @@ class EventFactoryWriter(json5_generator.Writer):
         print 'FATAL ERROR: ' + message
         exit(1)
 
-    def _get_basename(self, name, prefix=None):
-        if json5_generator.Writer.snake_case_source_files:
-            if prefix:
-                return '%s_%s' % (prefix.lower(), name_utilities.snake_case(name))
-            return name_utilities.snake_case(name)
-        if prefix:
-            return '%s%s' % (prefix, name)
-        return name
-
     def _headers_header_include_path(self, entry):
         path = os.path.dirname(entry['name'])
         if len(path):
             path += '/'
         if entry['ImplementedAs']:
-            path += self._get_basename(entry['ImplementedAs'])
+            path += self.get_file_basename(entry['ImplementedAs'])
         else:
-            path += self._get_basename(os.path.basename(entry['name']))
+            path += self.get_file_basename(os.path.basename(entry['name']))
         return path + '.h'
 
     def _headers_header_includes(self, entries):
@@ -161,7 +152,7 @@ class EventFactoryWriter(json5_generator.Writer):
                 subdir_name = 'modules'
             else:
                 subdir_name = 'core'
-            binding_name = self._get_basename(name_utilities.script_name(entry), prefix='V8')
+            binding_name = self.get_file_basename('V8' + name_utilities.script_name(entry))
             includes[cpp_name] = '#include "%(path)s"\n#include "bindings/%(subdir_name)s/v8/%(binding_name)s.h"' % {
                 'binding_name': binding_name,
                 'path': self._headers_header_include_path(entry),
