@@ -58,6 +58,11 @@ import copy
 import os
 import os.path
 import re
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..',
+                             'third_party', 'blink', 'tools'))
+from blinkpy.common.name_style_converter import NameStyleConverter
 
 
 def _json5_load(lines):
@@ -236,6 +241,12 @@ class Writer(object):
 
     def set_gperf_path(self, gperf_path):
         self.gperf_path = gperf_path
+
+    def get_file_basename(self, name):
+        # Use NameStyleConverter instead of name_utilities for consistency.
+        if self.snake_case_source_files:
+            return NameStyleConverter(name).to_snake_case()
+        return name
 
 
 class Maker(object):
