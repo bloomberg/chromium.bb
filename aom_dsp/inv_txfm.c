@@ -580,18 +580,6 @@ void aom_idct16x16_256_add_c(const tran_low_t *input, uint8_t *dest,
   }
 }
 
-#if CONFIG_DAALA_DCT16
-void aom_iadst16_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  od_coeff x[16];
-  od_coeff y[16];
-  for (i = 0; i < 16; i++) y[i] = (od_coeff)input[i];
-  od_bin_idst16(x, 1, y);
-  for (i = 0; i < 16; i++) output[i] = (tran_low_t)x[i];
-}
-
-#else
-
 void aom_iadst16_c(const tran_low_t *input, tran_low_t *output) {
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7, s8;
   tran_high_t s9, s10, s11, s12, s13, s14, s15;
@@ -762,7 +750,6 @@ void aom_iadst16_c(const tran_low_t *input, tran_low_t *output) {
   output[14] = WRAPLOW(x9);
   output[15] = WRAPLOW(-x1);
 }
-#endif
 
 void aom_idct16x16_38_add_c(const tran_low_t *input, uint8_t *dest,
                             int stride) {
