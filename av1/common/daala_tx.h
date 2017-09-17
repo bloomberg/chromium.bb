@@ -18,6 +18,10 @@ void daala_fdst16(const tran_low_t *input, tran_low_t *output);
 void daala_idst16(const tran_low_t *input, tran_low_t *output);
 void daala_fdct32(const tran_low_t *input, tran_low_t *output);
 void daala_idct32(const tran_low_t *input, tran_low_t *output);
+#if CONFIG_TX64X64
+void daala_fdct64(const tran_low_t *input, tran_low_t *output);
+void daala_idct64(const tran_low_t *input, tran_low_t *output);
+#endif
 
 void od_bin_fdct4(od_coeff y[4], const od_coeff *x, int xstride);
 void od_bin_idct4(od_coeff *x, int xstride, const od_coeff y[4]);

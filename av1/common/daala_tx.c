@@ -4232,3 +4232,23 @@ void daala_idct32(const tran_low_t *input, tran_low_t *output) {
   od_bin_idct32(x, 1, y);
   for (i = 0; i < 32; i++) output[i] = (tran_low_t)x[i];
 }
+
+#if CONFIG_TX64X64
+void daala_fdct64(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[64];
+  od_coeff y[64];
+  for (i = 0; i < 64; i++) x[i] = (od_coeff)input[i];
+  od_bin_fdct64(y, x, 1);
+  for (i = 0; i < 64; i++) output[i] = (tran_low_t)y[i];
+}
+
+void daala_idct64(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[64];
+  od_coeff y[64];
+  for (i = 0; i < 64; i++) y[i] = (od_coeff)input[i];
+  od_bin_idct64(x, 1, y);
+  for (i = 0; i < 64; i++) output[i] = (tran_low_t)x[i];
+}
+#endif

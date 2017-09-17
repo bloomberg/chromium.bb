@@ -1390,17 +1390,6 @@ void aom_idct32x32_1_add_c(const tran_low_t *input, uint8_t *dest, int stride) {
   }
 }
 
-#if CONFIG_TX64X64 && CONFIG_DAALA_DCT64
-void aom_idct64_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  od_coeff x[64];
-  od_coeff y[64];
-  for (i = 0; i < 64; i++) y[i] = (od_coeff)input[i];
-  od_bin_idct64(x, 1, y);
-  for (i = 0; i < 64; i++) output[i] = (tran_low_t)x[i];
-}
-#endif
-
 void aom_highbd_iwht4x4_16_add_c(const tran_low_t *input, uint8_t *dest8,
                                  int stride, int bd) {
   /* 4-point reversible, orthonormal inverse Walsh-Hadamard in 3.5 adds,

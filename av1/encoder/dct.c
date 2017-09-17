@@ -730,17 +730,6 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
 }
 
 #ifndef AV1_DCT_GTEST
-#if CONFIG_TX64X64 && CONFIG_DAALA_DCT64
-static void fdct64(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  od_coeff x[64];
-  od_coeff y[64];
-  for (i = 0; i < 64; i++) x[i] = (od_coeff)input[i];
-  od_bin_fdct64(y, x, 1);
-  for (i = 0; i < 64; i++) output[i] = (tran_low_t)y[i];
-}
-#endif
-
 static void fadst4(const tran_low_t *input, tran_low_t *output) {
   tran_high_t x0, x1, x2, x3;
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
@@ -2550,18 +2539,10 @@ static void fhalfright64(const tran_low_t *input, tran_low_t *output) {
   for (i = 0; i < 32; ++i) {
     inputhalf[i] = input[i + 32];
   }
-  fdct32(inputhalf, output);
+  daala_fdct32(inputhalf, output);
   // Note overall scaling factor is 2 times unitary
 }
 #endif  // CONFIG_EXT_TX
-
-static void fdct64_col(const tran_low_t *input, tran_low_t *output) {
-  fdct64(input, output);
-}
-
-static void fdct64_row(const tran_low_t *input, tran_low_t *output) {
-  fdct64(input, output);
-}
 #else
 #if CONFIG_EXT_TX
 static void fidtx64(const tran_low_t *input, tran_low_t *output) {
@@ -2613,7 +2594,27 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d FHT[] = {
-    { fdct64_col, fdct64_row },  // DCT_DCT
+#if CONFIG_DAALA_DCT64
+    { daala_fdct64, daala_fdct64 },  // DCT_DCT
+#if CONFIG_EXT_TX
+    { fhalfright64, daala_fdct64 },  // ADST_DCT
+    { daala_fdct64, fhalfright64 },  // DCT_ADST
+    { fhalfright64, fhalfright64 },  // ADST_ADST
+    { fhalfright64, daala_fdct64 },  // FLIPADST_DCT
+    { daala_fdct64, fhalfright64 },  // DCT_FLIPADST
+    { fhalfright64, fhalfright64 },  // FLIPADST_FLIPADST
+    { fhalfright64, fhalfright64 },  // ADST_FLIPADST
+    { fhalfright64, fhalfright64 },  // FLIPADST_ADST
+    { fidtx64, fidtx64 },            // IDTX
+    { daala_fdct64, fidtx64 },       // V_DCT
+    { fidtx64, daala_fdct64 },       // H_DCT
+    { fhalfright64, fidtx64 },       // V_ADST
+    { fidtx64, fhalfright64 },       // H_ADST
+    { fhalfright64, fidtx64 },       // V_FLIPADST
+    { fidtx64, fhalfright64 },       // H_FLIPADST
+#endif
+#else
+    { fdct64_col, fdct64_row },      // DCT_DCT
 #if CONFIG_EXT_TX
     { fhalfright64, fdct64_row },    // ADST_DCT
     { fdct64_col, fhalfright64 },    // DCT_ADST
@@ -2630,6 +2631,7 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
     { fidtx64, fhalfright64 },       // H_ADST
     { fhalfright64, fidtx64 },       // V_FLIPADST
     { fidtx64, fhalfright64 },       // H_FLIPADST
+#endif
 #endif
   };
   const transform_2d ht = FHT[tx_type];

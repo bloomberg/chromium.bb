@@ -123,14 +123,6 @@ static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
 
 #if CONFIG_TX64X64
 #if CONFIG_DAALA_DCT64
-static void idct64_col_c(const tran_low_t *input, tran_low_t *output) {
-  aom_idct64_c(input, output);
-}
-
-static void idct64_row_c(const tran_low_t *input, tran_low_t *output) {
-  aom_idct64_c(input, output);
-}
-
 static void ihalfright64_c(const tran_low_t *input, tran_low_t *output) {
   int i;
   tran_low_t inputhalf[32];
@@ -141,9 +133,8 @@ static void ihalfright64_c(const tran_low_t *input, tran_low_t *output) {
   for (i = 0; i < 32; ++i) {
     output[i] = input[32 + i];
   }
-  aom_idct32_c(inputhalf, output + 32);
+  daala_idct32(inputhalf, output + 32);
 }
-
 #else
 static void idct64_col_c(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
@@ -1492,6 +1483,26 @@ void av1_iht64x64_4096_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d IHT_64[] = {
+#if CONFIG_DAALA_DCT64
+    { daala_idct64, daala_idct64 },      // DCT_DCT
+    { ihalfright64_c, daala_idct64 },    // ADST_DCT
+    { daala_idct64, ihalfright64_c },    // DCT_ADST
+    { ihalfright64_c, ihalfright64_c },  // ADST_ADST
+#if CONFIG_EXT_TX
+    { ihalfright64_c, daala_idct64 },    // FLIPADST_DCT
+    { daala_idct64, ihalfright64_c },    // DCT_FLIPADST
+    { ihalfright64_c, ihalfright64_c },  // FLIPADST_FLIPADST
+    { ihalfright64_c, ihalfright64_c },  // ADST_FLIPADST
+    { ihalfright64_c, ihalfright64_c },  // FLIPADST_ADST
+    { iidtx64_c, iidtx64_c },            // IDTX
+    { daala_idct64, iidtx64_c },         // V_DCT
+    { iidtx64_c, daala_idct64 },         // H_DCT
+    { ihalfright64_c, iidtx64_c },       // V_ADST
+    { iidtx64_c, ihalfright64_c },       // H_ADST
+    { ihalfright64_c, iidtx64_c },       // V_FLIPADST
+    { iidtx64_c, ihalfright64_c },       // H_FLIPADST
+#endif
+#else
     { idct64_col_c, idct64_row_c },      // DCT_DCT
     { ihalfright64_c, idct64_row_c },    // ADST_DCT
     { idct64_col_c, ihalfright64_c },    // DCT_ADST
@@ -1509,6 +1520,7 @@ void av1_iht64x64_4096_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { iidtx64_c, ihalfright64_c },       // H_ADST
     { ihalfright64_c, iidtx64_c },       // V_FLIPADST
     { iidtx64_c, ihalfright64_c },       // H_FLIPADST
+#endif
 #endif
   };
 
