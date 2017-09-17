@@ -121,6 +121,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=735483)
 
     # Passthrough command decoder
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+        ['passthrough'], bug=765953)
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['passthrough'], bug=1523) # angle bug ID
 
@@ -472,6 +474,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     ####################
     # Android failures #
     ####################
+
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+        ['android', 'no_passthrough'], bug=765953)
 
     self.Fail('conformance/glsl/bugs/sequence-operator-evaluation-order.html',
         ['android'], bug=478572)
