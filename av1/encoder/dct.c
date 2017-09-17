@@ -79,18 +79,6 @@ static void fdct4(const tran_low_t *input, tran_low_t *output) {
   range_check(output, 4, 16);
 }
 
-#if CONFIG_DAALA_DCT8
-static void fdct8(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  od_coeff x[8];
-  od_coeff y[8];
-  for (i = 0; i < 8; i++) x[i] = (od_coeff)input[i];
-  od_bin_fdct8(y, x, 1);
-  for (i = 0; i < 8; i++) output[i] = (tran_low_t)y[i];
-}
-
-#else
-
 static void fdct8(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
   tran_low_t step[8];
@@ -168,7 +156,6 @@ static void fdct8(const tran_low_t *input, tran_low_t *output) {
 
   range_check(output, 8, 16);
 }
-#endif
 
 #if CONFIG_DAALA_DCT16
 static void fdct16(const tran_low_t *input, tran_low_t *output) {
@@ -2252,6 +2239,26 @@ void av1_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
 #endif
   {
     static const transform_2d FHT[] = {
+#if CONFIG_DAALA_DCT8
+      { daala_fdct8, daala_fdct8 },  // DCT_DCT
+      { fadst8, daala_fdct8 },       // ADST_DCT
+      { daala_fdct8, fadst8 },       // DCT_ADST
+      { fadst8, fadst8 },            // ADST_ADST
+#if CONFIG_EXT_TX
+      { fadst8, daala_fdct8 },  // FLIPADST_DCT
+      { daala_fdct8, fadst8 },  // DCT_FLIPADST
+      { fadst8, fadst8 },       // FLIPADST_FLIPADST
+      { fadst8, fadst8 },       // ADST_FLIPADST
+      { fadst8, fadst8 },       // FLIPADST_ADST
+      { fidtx8, fidtx8 },       // IDTX
+      { daala_fdct8, fidtx8 },  // V_DCT
+      { fidtx8, daala_fdct8 },  // H_DCT
+      { fadst8, fidtx8 },       // V_ADST
+      { fidtx8, fadst8 },       // H_ADST
+      { fadst8, fidtx8 },       // V_FLIPADST
+      { fidtx8, fadst8 },       // H_FLIPADST
+#endif
+#else
       { fdct8, fdct8 },    // DCT_DCT
       { fadst8, fdct8 },   // ADST_DCT
       { fdct8, fadst8 },   // DCT_ADST
@@ -2269,6 +2276,7 @@ void av1_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
       { fidtx8, fadst8 },  // H_ADST
       { fadst8, fidtx8 },  // V_FLIPADST
       { fidtx8, fadst8 },  // H_FLIPADST
+#endif
 #endif
     };
     const transform_2d ht = FHT[tx_type];

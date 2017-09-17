@@ -1180,6 +1180,26 @@ void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d IHT_8[] = {
+#if CONFIG_DAALA_DCT8
+    { daala_idct8, daala_idct8 },    // DCT_DCT  = 0
+    { aom_iadst8_c, daala_idct8 },   // ADST_DCT = 1
+    { daala_idct8, aom_iadst8_c },   // DCT_ADST = 2
+    { aom_iadst8_c, aom_iadst8_c },  // ADST_ADST = 3
+#if CONFIG_EXT_TX
+    { aom_iadst8_c, daala_idct8 },   // FLIPADST_DCT
+    { daala_idct8, aom_iadst8_c },   // DCT_FLIPADST
+    { aom_iadst8_c, aom_iadst8_c },  // FLIPADST_FLIPADST
+    { aom_iadst8_c, aom_iadst8_c },  // ADST_FLIPADST
+    { aom_iadst8_c, aom_iadst8_c },  // FLIPADST_ADST
+    { iidtx8_c, iidtx8_c },          // IDTX
+    { daala_idct8, iidtx8_c },       // V_DCT
+    { iidtx8_c, daala_idct8 },       // H_DCT
+    { aom_iadst8_c, iidtx8_c },      // V_ADST
+    { iidtx8_c, aom_iadst8_c },      // H_ADST
+    { aom_iadst8_c, iidtx8_c },      // V_FLIPADST
+    { iidtx8_c, aom_iadst8_c },      // H_FLIPADST
+#endif
+#else
     { aom_idct8_c, aom_idct8_c },    // DCT_DCT  = 0
     { aom_iadst8_c, aom_idct8_c },   // ADST_DCT = 1
     { aom_idct8_c, aom_iadst8_c },   // DCT_ADST = 2
@@ -1197,6 +1217,7 @@ void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { iidtx8_c, aom_iadst8_c },      // H_ADST
     { aom_iadst8_c, iidtx8_c },      // V_FLIPADST
     { iidtx8_c, aom_iadst8_c },      // H_FLIPADST
+#endif
 #endif
   };
 
