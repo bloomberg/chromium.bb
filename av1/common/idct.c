@@ -43,11 +43,7 @@ static void iidtx4_c(const tran_low_t *input, tran_low_t *output) {
 static void iidtx8_c(const tran_low_t *input, tran_low_t *output) {
   int i;
   for (i = 0; i < 8; ++i) {
-#if CONFIG_DAALA_DCT8
-    output[i] = input[i];
-#else
     output[i] = input[i] * 2;
-#endif
   }
 }
 
@@ -1178,13 +1174,13 @@ void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { daala_idst8, daala_idst8 },  // FLIPADST_FLIPADST
     { daala_idst8, daala_idst8 },  // ADST_FLIPADST
     { daala_idst8, daala_idst8 },  // FLIPADST_ADST
-    { iidtx8_c, iidtx8_c },        // IDTX
-    { daala_idct8, iidtx8_c },     // V_DCT
-    { iidtx8_c, daala_idct8 },     // H_DCT
-    { daala_idst8, iidtx8_c },     // V_ADST
-    { iidtx8_c, daala_idst8 },     // H_ADST
-    { daala_idst8, iidtx8_c },     // V_FLIPADST
-    { iidtx8_c, daala_idst8 },     // H_FLIPADST
+    { daala_idtx8, daala_idtx8 },  // IDTX
+    { daala_idct8, daala_idtx8 },  // V_DCT
+    { daala_idtx8, daala_idct8 },  // H_DCT
+    { daala_idst8, daala_idtx8 },  // V_ADST
+    { daala_idtx8, daala_idst8 },  // H_ADST
+    { daala_idst8, daala_idtx8 },  // V_FLIPADST
+    { daala_idtx8, daala_idst8 },  // H_FLIPADST
 #endif
 #else
     { aom_idct8_c, aom_idct8_c },    // DCT_DCT  = 0

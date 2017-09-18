@@ -4184,6 +4184,11 @@ void daala_idst8(const tran_low_t *input, tran_low_t *output) {
   for (i = 0; i < 8; i++) output[i] = (tran_low_t)x[i];
 }
 
+void daala_idtx8(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  for (i = 0; i < 8; i++) output[i] = input[i];
+}
+
 void daala_fdct16(const tran_low_t *input, tran_low_t *output) {
   int i;
   od_coeff x[16];
