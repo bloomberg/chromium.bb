@@ -7,11 +7,11 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/sessions/session_restore_observer.h"
 #include "components/arc/common/boot_phase_monitor.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,10 +33,16 @@ class ArcBootPhaseMonitorBridge
     : public KeyedService,
       public InstanceHolder<mojom::BootPhaseMonitorInstance>::Observer,
       public mojom::BootPhaseMonitorHost,
-      public ArcSessionManager::Observer {
+      public ArcSessionManager::Observer,
+      public SessionRestoreObserver {
  public:
-  using FirstAppLaunchDelayRecorder =
-      base::RepeatingCallback<void(base::TimeDelta)>;
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    virtual void DisableCpuRestriction() = 0;
+    virtual void RecordFirstAppLaunchDelayUMA(base::TimeDelta delta) = 0;
+  };
 
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -69,15 +75,15 @@ class ArcBootPhaseMonitorBridge
   void OnArcSessionStopped(ArcStopReason stop_reason) override;
   void OnArcSessionRestarting() override;
 
+  // SessionRestoreObserver
+  void OnSessionRestoreFinishedLoadingTabs() override;
+
+  void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
   void RecordFirstAppLaunchDelayUMAForTesting() {
     RecordFirstAppLaunchDelayUMAInternal();
   }
 
   ArcInstanceThrottle* throttle_for_testing() const { return throttle_.get(); }
-  void set_first_app_launch_delay_recorder_for_testing(
-      const FirstAppLaunchDelayRecorder& first_app_launch_delay_recorder) {
-    first_app_launch_delay_recorder_ = first_app_launch_delay_recorder;
-  }
 
  private:
   void RecordFirstAppLaunchDelayUMAInternal();
@@ -88,7 +94,7 @@ class ArcBootPhaseMonitorBridge
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   const AccountId account_id_;
   mojo::Binding<mojom::BootPhaseMonitorHost> binding_;
-  FirstAppLaunchDelayRecorder first_app_launch_delay_recorder_;
+  std::unique_ptr<Delegate> delegate_;
 
   // The following variables must be reset every time when the instance stops or
   // restarts.

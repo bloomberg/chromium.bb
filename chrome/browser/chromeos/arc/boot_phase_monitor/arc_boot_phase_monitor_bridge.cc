@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -20,6 +21,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
 
+namespace arc {
 namespace {
 
 void OnEmitArcBooted(bool success) {
@@ -27,18 +29,26 @@ void OnEmitArcBooted(bool success) {
     VLOG(1) << "Failed to emit arc booted signal.";
 }
 
-void RecordAppLaunchDelay(base::TimeDelta delta) {
-  VLOG(2) << "Launching the first app took " << delta.InMillisecondsRoundedUp()
-          << " ms.";
-  UMA_HISTOGRAM_CUSTOM_TIMES("Arc.FirstAppLaunchDelay.TimeDelta", delta,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(2), 50);
-}
+class DefaultDelegateImpl : public ArcBootPhaseMonitorBridge::Delegate {
+ public:
+  DefaultDelegateImpl() = default;
+  ~DefaultDelegateImpl() override = default;
 
-}  // namespace
+  void DisableCpuRestriction() override {
+    SetArcCpuRestriction(false /* do_restrict */);
+  }
 
-namespace arc {
-namespace {
+  void RecordFirstAppLaunchDelayUMA(base::TimeDelta delta) override {
+    VLOG(2) << "Launching the first app took "
+            << delta.InMillisecondsRoundedUp() << " ms.";
+    UMA_HISTOGRAM_CUSTOM_TIMES("Arc.FirstAppLaunchDelay.TimeDelta", delta,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMinutes(2), 50);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultDelegateImpl);
+};
 
 // Singleton factory for ArcBootPhaseMonitorBridge.
 class ArcBootPhaseMonitorBridgeFactory
@@ -82,12 +92,13 @@ ArcBootPhaseMonitorBridge::ArcBootPhaseMonitorBridge(
       account_id_(multi_user_util::GetAccountIdFromProfile(
           Profile::FromBrowserContext(context))),
       binding_(this),
-      first_app_launch_delay_recorder_(
-          base::BindRepeating(&RecordAppLaunchDelay)) {
+      // Set the default delegate. Unit tests may use a different one.
+      delegate_(std::make_unique<DefaultDelegateImpl>()) {
   arc_bridge_service_->boot_phase_monitor()->AddObserver(this);
   auto* arc_session_manager = ArcSessionManager::Get();
   DCHECK(arc_session_manager);
   arc_session_manager->AddObserver(this);
+  SessionRestore::AddObserver(this);
 }
 
 ArcBootPhaseMonitorBridge::~ArcBootPhaseMonitorBridge() {
@@ -96,6 +107,7 @@ ArcBootPhaseMonitorBridge::~ArcBootPhaseMonitorBridge() {
   auto* arc_session_manager = ArcSessionManager::Get();
   DCHECK(arc_session_manager);
   arc_session_manager->RemoveObserver(this);
+  SessionRestore::RemoveObserver(this);
 }
 
 void ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMAInternal() {
@@ -106,7 +118,8 @@ void ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMAInternal() {
 
   if (boot_completed_) {
     VLOG(2) << "ARC has already fully started. Recording the UMA now.";
-    first_app_launch_delay_recorder_.Run(base::TimeDelta());
+    if (delegate_)
+      delegate_->RecordFirstAppLaunchDelayUMA(base::TimeDelta());
     return;
   }
   app_launch_time_ = base::TimeTicks::Now();
@@ -141,9 +154,9 @@ void ArcBootPhaseMonitorBridge::OnBootCompleted() {
     VLOG(2) << "ArcInstanceThrottle created in OnBootCompleted()";
   }
 
-  if (!app_launch_time_.is_null()) {
-    first_app_launch_delay_recorder_.Run(base::TimeTicks::Now() -
-                                         app_launch_time_);
+  if (!app_launch_time_.is_null() && delegate_) {
+    delegate_->RecordFirstAppLaunchDelayUMA(base::TimeTicks::Now() -
+                                            app_launch_time_);
   }
 }
 
@@ -172,7 +185,21 @@ void ArcBootPhaseMonitorBridge::OnArcSessionRestarting() {
   // We assume that a crash tends to happen while the user is actively using
   // the instance. For that reason, we try to restart the instance without the
   // restricted cgroups.
-  SetArcCpuRestriction(false /* do_restrict */);
+  if (delegate_)
+    delegate_->DisableCpuRestriction();
+}
+
+void ArcBootPhaseMonitorBridge::OnSessionRestoreFinishedLoadingTabs() {
+  VLOG(2) << "All tabs have been restored";
+  if (throttle_)
+    return;
+  // |throttle_| is not available. This means either of the following:
+  // 1) This is an opt-in boot, and OnArcInitialStart() hasn't been called.
+  // 2) This is not an opt-in boot, and OnBootCompleted() hasn't been called.
+  // In both cases, relax the restriction to let the instance fully start.
+  VLOG(2) << "Allowing the instance to use more CPU resources";
+  if (delegate_)
+    delegate_->DisableCpuRestriction();
 }
 
 void ArcBootPhaseMonitorBridge::Reset() {
@@ -180,6 +207,11 @@ void ArcBootPhaseMonitorBridge::Reset() {
   app_launch_time_ = base::TimeTicks();
   first_app_launch_delay_recorded_ = false;
   boot_completed_ = false;
+}
+
+void ArcBootPhaseMonitorBridge::SetDelegateForTesting(
+    std::unique_ptr<Delegate> delegate) {
+  delegate_ = std::move(delegate);
 }
 
 }  // namespace arc
