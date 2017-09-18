@@ -278,7 +278,7 @@ TEST_F(KeyboardTest, KeyboardObserver) {
   focus_client->FocusWindow(nullptr);
 
   MockKeyboardDelegate delegate;
-  auto keyboard = base::MakeUnique<Keyboard>(&delegate);
+  auto keyboard = std::make_unique<Keyboard>(&delegate);
   MockKeyboardObserver observer;
   keyboard->AddObserver(&observer);
 
@@ -300,7 +300,7 @@ TEST_F(KeyboardTest, NeedKeyboardKeyAcks) {
   focus_client->FocusWindow(nullptr);
 
   MockKeyboardDelegate delegate;
-  auto keyboard = base::MakeUnique<Keyboard>(&delegate);
+  auto keyboard = std::make_unique<Keyboard>(&delegate);
 
   EXPECT_FALSE(keyboard->AreKeyboardKeyAcksNeeded());
   keyboard->SetNeedKeyboardKeyAcks(true);
@@ -313,7 +313,7 @@ TEST_F(KeyboardTest, NeedKeyboardKeyAcks) {
 
 TEST_F(KeyboardTest, AckKeyboardKey) {
   std::unique_ptr<Surface> surface(new Surface);
-  auto shell_surface = base::MakeUnique<TestShellSurface>(surface.get());
+  auto shell_surface = std::make_unique<TestShellSurface>(surface.get());
   gfx::Size buffer_size(10, 10);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -391,7 +391,7 @@ TEST_F(KeyboardTest, AckKeyboardKey) {
 
 TEST_F(KeyboardTest, AckKeyboardKeyMoveFocus) {
   std::unique_ptr<Surface> surface(new Surface);
-  auto shell_surface = base::MakeUnique<TestShellSurface>(surface.get());
+  auto shell_surface = std::make_unique<TestShellSurface>(surface.get());
   gfx::Size buffer_size(10, 10);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -433,7 +433,7 @@ TEST_F(KeyboardTest, AckKeyboardKeyMoveFocus) {
 
 TEST_F(KeyboardTest, AckKeyboardKeyExpired) {
   std::unique_ptr<Surface> surface(new Surface);
-  auto shell_surface = base::MakeUnique<TestShellSurface>(surface.get());
+  auto shell_surface = std::make_unique<TestShellSurface>(surface.get());
   gfx::Size buffer_size(10, 10);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -504,7 +504,7 @@ class TestShellSurfaceWithMovingFocusAccelerator : public ShellSurface {
 TEST_F(KeyboardTest, AckKeyboardKeyExpiredWithMovingFocusAccelerator) {
   std::unique_ptr<Surface> surface(new Surface);
   auto shell_surface =
-      base::MakeUnique<TestShellSurfaceWithMovingFocusAccelerator>(
+      std::make_unique<TestShellSurfaceWithMovingFocusAccelerator>(
           surface.get());
   gfx::Size buffer_size(10, 10);
   std::unique_ptr<Buffer> buffer(

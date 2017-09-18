@@ -30,10 +30,10 @@ void Release(int* release_call_count) {
 
 TEST_F(BufferTest, ReleaseCallback) {
   gfx::Size buffer_size(256, 256);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
   auto surface_tree_host =
-      base::MakeUnique<SurfaceTreeHost>("BufferTest", nullptr);
+      std::make_unique<SurfaceTreeHost>("BufferTest", nullptr);
   LayerTreeFrameSinkHolder* frame_sink_holder =
       surface_tree_host->layer_tree_frame_sink_holder();
 
@@ -68,10 +68,10 @@ TEST_F(BufferTest, ReleaseCallback) {
 
 TEST_F(BufferTest, IsLost) {
   gfx::Size buffer_size(256, 256);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
   auto surface_tree_host =
-      base::MakeUnique<SurfaceTreeHost>("BufferTest", nullptr);
+      std::make_unique<SurfaceTreeHost>("BufferTest", nullptr);
   LayerTreeFrameSinkHolder* frame_sink_holder =
       surface_tree_host->layer_tree_frame_sink_holder();
 
@@ -124,10 +124,10 @@ TEST_F(BufferTest, IsLost) {
 TEST_F(BufferTest, OnLostResources) {
   // Create a Buffer and use it to produce a Texture.
   constexpr gfx::Size buffer_size(256, 256);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
   auto surface_tree_host =
-      base::MakeUnique<SurfaceTreeHost>("BufferTest", nullptr);
+      std::make_unique<SurfaceTreeHost>("BufferTest", nullptr);
   LayerTreeFrameSinkHolder* frame_sink_holder =
       surface_tree_host->layer_tree_frame_sink_holder();
 

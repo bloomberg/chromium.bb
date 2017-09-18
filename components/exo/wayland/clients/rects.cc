@@ -292,7 +292,7 @@ int RectsClient::Run(const ClientBase::InitParams& params,
       }
       auto* buffer = buffer_it->get();
 
-      auto frame = base::MakeUnique<Frame>();
+      auto frame = std::make_unique<Frame>();
       frame->buffer = buffer;
 
       base::TimeTicks wall_time_start;

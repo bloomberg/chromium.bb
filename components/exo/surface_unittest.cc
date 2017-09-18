@@ -116,7 +116,7 @@ TEST_P(SurfaceTest, Damage) {
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   // Attach the buffer to the surface. This will update the pending bounds of
   // the surface to the buffer size.
@@ -171,10 +171,10 @@ TEST_P(SurfaceTest, RequestFrameCallback) {
 
 TEST_P(SurfaceTest, SetOpaqueRegion) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   // Attaching a buffer with alpha channel.
   surface->Attach(buffer.get());
@@ -246,10 +246,10 @@ TEST_P(SurfaceTest, SetInputRegion) {
 
 TEST_P(SurfaceTest, SetBufferScale) {
   gfx::Size buffer_size(512, 512);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   // This will update the bounds of the surface and take the buffer scale into
   // account.
@@ -274,10 +274,10 @@ TEST_P(SurfaceTest, SetBufferScale) {
 
 TEST_P(SurfaceTest, SetBufferTransform) {
   gfx::Size buffer_size(256, 512);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   // This will update the bounds of the surface and take the buffer transform
   // into account.
@@ -307,11 +307,11 @@ TEST_P(SurfaceTest, SetBufferTransform) {
   }
 
   gfx::Size child_buffer_size(64, 128);
-  auto child_buffer = base::MakeUnique<Buffer>(
+  auto child_buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
-  auto child_surface = base::MakeUnique<Surface>();
+  auto child_surface = std::make_unique<Surface>();
   auto sub_surface =
-      base::MakeUnique<SubSurface>(child_surface.get(), surface.get());
+      std::make_unique<SubSurface>(child_surface.get(), surface.get());
 
   // Set position to 20, 10.
   gfx::Point child_position(20, 10);
@@ -349,10 +349,10 @@ TEST_P(SurfaceTest, SetBufferTransform) {
 
 TEST_P(SurfaceTest, MirrorLayers) {
   gfx::Size buffer_size(512, 512);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   surface->Attach(buffer.get());
   surface->Commit();
@@ -370,10 +370,10 @@ TEST_P(SurfaceTest, MirrorLayers) {
 
 TEST_P(SurfaceTest, SetViewport) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   // This will update the bounds of the surface and take the viewport into
   // account.
@@ -402,10 +402,10 @@ TEST_P(SurfaceTest, SetViewport) {
 
 TEST_P(SurfaceTest, SetCrop) {
   gfx::Size buffer_size(16, 16);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   surface->Attach(buffer.get());
   gfx::Size crop_size(12, 12);
@@ -425,10 +425,10 @@ TEST_P(SurfaceTest, SetCrop) {
 
 TEST_P(SurfaceTest, SetCropAndBufferTransform) {
   gfx::Size buffer_size(128, 64);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   const gfx::RectF crop_0(
       gfx::SkRectToRectF(SkRect::MakeLTRB(0.03125f, 0.1875f, 0.4375f, 0.25f)));
@@ -608,10 +608,10 @@ TEST_P(SurfaceTest, SetCropAndBufferTransform) {
 
 TEST_P(SurfaceTest, SetBlendMode) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   surface->Attach(buffer.get());
   surface->SetBlendMode(SkBlendMode::kSrc);
@@ -628,11 +628,11 @@ TEST_P(SurfaceTest, SetBlendMode) {
 
 TEST_P(SurfaceTest, OverlayCandidate) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
       true, true);
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   surface->Attach(buffer.get());
   surface->Commit();
@@ -651,11 +651,11 @@ TEST_P(SurfaceTest, OverlayCandidate) {
 
 TEST_P(SurfaceTest, SetAlpha) {
   gfx::Size buffer_size(1, 1);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
       true, true);
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
 
   surface->Attach(buffer.get());
   surface->SetAlpha(0.5f);
@@ -678,11 +678,11 @@ TEST_P(SurfaceTest, Commit) {
 TEST_P(SurfaceTest, SendsBeginFrameAcks) {
   viz::FakeExternalBeginFrameSource source(0.f, false);
   gfx::Size buffer_size(1, 1);
-  auto buffer = base::MakeUnique<Buffer>(
+  auto buffer = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
       true, true);
-  auto surface = base::MakeUnique<Surface>();
-  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
   shell_surface->SetBeginFrameSource(&source);
   surface->Attach(buffer.get());
 

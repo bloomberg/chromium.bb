@@ -25,7 +25,7 @@ void ExoTestBase::SetUp() {
   // Disable window animation when running tests.
   command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
   AshTestBase::SetUp();
-  wm_helper_ = base::MakeUnique<WMHelperAsh>();
+  wm_helper_ = std::make_unique<WMHelperAsh>();
   WMHelper::SetInstance(wm_helper_.get());
 }
 

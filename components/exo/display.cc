@@ -92,7 +92,7 @@ std::unique_ptr<SharedMemory> Display::CreateSharedMemory(
   if (!base::SharedMemory::IsHandleValid(handle))
     return nullptr;
 
-  return base::MakeUnique<SharedMemory>(handle);
+  return std::make_unique<SharedMemory>(handle);
 }
 
 #if defined(USE_OZONE)
@@ -128,7 +128,7 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
       std::find(overlay_formats_.begin(), overlay_formats_.end(), format) !=
       overlay_formats_.end();
 
-  return base::MakeUnique<Buffer>(
+  return std::make_unique<Buffer>(
       std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES,
       // COMMANDS_COMPLETED queries are required by native pixmaps.
       GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy, is_overlay_candidate);
@@ -144,7 +144,7 @@ std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
     return nullptr;
   }
 
-  return base::MakeUnique<ShellSurface>(
+  return std::make_unique<ShellSurface>(
       surface, nullptr, ShellSurface::BoundsMode::SHELL, gfx::Point(),
       true /* activatable */, false /* can_minimize */,
       ash::kShellWindowId_DefaultContainer);
@@ -175,7 +175,7 @@ std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
           ->window(),
       &origin);
 
-  return base::MakeUnique<ShellSurface>(
+  return std::make_unique<ShellSurface>(
       surface, parent, ShellSurface::BoundsMode::FIXED, origin,
       false /* activatable */, false /* can_minimize */,
       ash::kShellWindowId_DefaultContainer);
@@ -196,7 +196,7 @@ std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
   // Remote shell surfaces in system modal container cannot be minimized.
   bool can_minimize = container != ash::kShellWindowId_SystemModalContainer;
 
-  std::unique_ptr<ShellSurface> shell_surface(base::MakeUnique<ShellSurface>(
+  std::unique_ptr<ShellSurface> shell_surface(std::make_unique<ShellSurface>(
       surface, nullptr, ShellSurface::BoundsMode::CLIENT, gfx::Point(),
       true /* activatable */, can_minimize, container));
   if (scale_by_defult_device_scale_factor) {
@@ -221,7 +221,7 @@ std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
     return nullptr;
   }
 
-  return base::MakeUnique<SubSurface>(surface, parent);
+  return std::make_unique<SubSurface>(surface, parent);
 }
 
 std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(
@@ -236,13 +236,13 @@ std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(
     return nullptr;
   }
 
-  return base::MakeUnique<NotificationSurface>(notification_surface_manager_,
+  return std::make_unique<NotificationSurface>(notification_surface_manager_,
                                                surface, notification_key);
 }
 
 std::unique_ptr<DataDevice> Display::CreateDataDevice(
     DataDeviceDelegate* delegate) {
-  return base::MakeUnique<DataDevice>(delegate, file_helper_.get());
+  return std::make_unique<DataDevice>(delegate, file_helper_.get());
 }
 
 }  // namespace exo

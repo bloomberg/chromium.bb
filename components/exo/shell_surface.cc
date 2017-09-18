@@ -1490,7 +1490,7 @@ void ShellSurface::Configure() {
   // Apply origin offset and resize component at the first Commit() after this
   // configure request has been acknowledged.
   pending_configs_.push_back(
-      base::MakeUnique<Config>(serial, origin_offset, resize_component,
+      std::make_unique<Config>(serial, origin_offset, resize_component,
                                std::move(configure_compositor_lock_)));
   LOG_IF(WARNING, pending_configs_.size() > 100)
       << "Number of pending configure acks for shell surface has reached: "
@@ -1818,7 +1818,7 @@ void ShellSurface::UpdateShadow() {
     bool needs_shadow_underlay = shadow_background_opacity_ > 0.f;
     if (needs_shadow_underlay) {
       if (!shadow_underlay_) {
-        shadow_underlay_ = base::MakeUnique<aura::Window>(nullptr);
+        shadow_underlay_ = std::make_unique<aura::Window>(nullptr);
         shadow_underlay_->set_owned_by_parent(false);
         DCHECK(!shadow_underlay_->owned_by_parent());
         // Ensure the background area inside the shadow is solid black.
@@ -1857,7 +1857,7 @@ void ShellSurface::UpdateShadow() {
       return;
 
     if (!shadow_overlay_) {
-      shadow_overlay_ = base::MakeUnique<aura::Window>(nullptr);
+      shadow_overlay_ = std::make_unique<aura::Window>(nullptr);
       shadow_overlay_->set_owned_by_parent(false);
       DCHECK(!shadow_overlay_->owned_by_parent());
       shadow_overlay_->SetEventTargetingPolicy(

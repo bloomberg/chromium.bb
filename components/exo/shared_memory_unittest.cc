@@ -24,7 +24,7 @@ std::unique_ptr<SharedMemory> CreateSharedMemory(size_t size) {
   base::SharedMemoryHandle handle =
       base::SharedMemory::DuplicateHandle(shared_memory->handle());
   DCHECK(base::SharedMemory::IsHandleValid(handle));
-  return base::MakeUnique<SharedMemory>(handle);
+  return std::make_unique<SharedMemory>(handle);
 }
 
 TEST_F(SharedMemoryTest, CreateBuffer) {
