@@ -88,13 +88,6 @@ const base::DictionaryValue* GetByGUID(const GuidToPolicyMap& policies,
   return it->second.get();
 }
 
-bool IsTetherShillDictionary(const base::DictionaryValue& dict) {
-  std::string network_type;
-  return dict.GetStringWithoutPathExpansion(shill::kTypeProperty,
-                                            &network_type) &&
-         network_type == kTypeTether;
-}
-
 }  // namespace
 
 struct ManagedNetworkConfigurationHandlerImpl::Policies {
@@ -149,14 +142,12 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
   std::string profile_path;
   shill_properties->GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                   &profile_path);
+  const NetworkState* network_state =
+      network_state_handler_->GetNetworkState(service_path);
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForPath(profile_path);
-  if (!profile && !IsTetherShillDictionary(*shill_properties)) {
-    // Tether networks are not expected to have an associated profile; only
-    // log an error if the provided properties do not correspond to a
-    // Tether network.
+  if (!profile && !(network_state && network_state->IsNonProfileType()))
     NET_LOG_ERROR("No profile for service: " + profile_path, service_path);
-  }
 
   std::unique_ptr<NetworkUIData> ui_data =
       shill_property_util::GetUIDataFromProperties(*shill_properties);
@@ -177,8 +168,6 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
 
   ::onc::ONCSource onc_source;
   FindPolicyByGUID(userhash, guid, &onc_source);
-  const NetworkState* network_state =
-      network_state_handler_->GetNetworkState(service_path);
   std::unique_ptr<base::DictionaryValue> active_settings(
       onc::TranslateShillServiceToONCPart(*shill_properties, onc_source,
                                           &onc::kNetworkWithStateSignature,

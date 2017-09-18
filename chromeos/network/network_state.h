@@ -142,6 +142,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns true if this is a network stored in a profile.
   bool IsInProfile() const;
 
+  // Returns true if the network is never stored in a profile (e.g. Tether and
+  // default Cellular).
+  bool IsNonProfileType() const;
+
   // Returns true if the network properties are stored in a user profile.
   bool IsPrivate() const;
 

@@ -220,7 +220,11 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           guid);
-  if (!network || network->IsConnectedState() || network->IsConnectingState()) {
+  // TODO(stevenjb): Test network->connectable() here instead of
+  // IsDefaultCellular once network configuration is integrated into Settings.
+  // crbug.com/380937.
+  if (!network || network->IsConnectingOrConnected() ||
+      network->IsDefaultCellular()) {
     Shell::Get()->metrics()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS

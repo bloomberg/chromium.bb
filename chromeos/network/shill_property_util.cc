@@ -365,14 +365,15 @@ bool GetHomeProviderFromProperty(const base::Value& value,
   if (!home_provider_name.empty() && !home_provider_country.empty()) {
     *home_provider_id = base::StringPrintf(
         "%s (%s)", home_provider_name.c_str(), home_provider_country.c_str());
+  } else if (!home_provider_name.empty()) {
+    *home_provider_id = home_provider_name.c_str();
   } else {
     if (!dict->GetStringWithoutPathExpansion(shill::kOperatorCodeKey,
                                              home_provider_id)) {
       return false;
     }
-    LOG(WARNING)
-        << "Provider name and country not defined, using code instead: "
-        << *home_provider_id;
+    LOG(WARNING) << "Provider name not defined, using code instead: "
+                 << *home_provider_id;
   }
   return true;
 }
