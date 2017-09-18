@@ -31,11 +31,12 @@
 #include "platform/speech/PlatformSpeechSynthesizer.h"
 
 namespace blink {
+class ExecutionContext;
 
 class PlatformSpeechSynthesizerMock final : public PlatformSpeechSynthesizer {
  public:
-  static PlatformSpeechSynthesizerMock* Create(
-      PlatformSpeechSynthesizerClient*);
+  static PlatformSpeechSynthesizerMock* Create(PlatformSpeechSynthesizerClient*,
+                                               ExecutionContext*);
 
   ~PlatformSpeechSynthesizerMock() override;
   void Speak(PlatformSpeechSynthesisUtterance*) override;
@@ -46,7 +47,8 @@ class PlatformSpeechSynthesizerMock final : public PlatformSpeechSynthesizer {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit PlatformSpeechSynthesizerMock(PlatformSpeechSynthesizerClient*);
+  explicit PlatformSpeechSynthesizerMock(PlatformSpeechSynthesizerClient*,
+                                         ExecutionContext*);
 
   void InitializeVoiceList() override;
 
@@ -56,8 +58,8 @@ class PlatformSpeechSynthesizerMock final : public PlatformSpeechSynthesizer {
   void SpeakingErrorOccurred(TimerBase*);
   void SpeakingFinished(TimerBase*);
 
-  Timer<PlatformSpeechSynthesizerMock> speaking_error_occurred_timer_;
-  Timer<PlatformSpeechSynthesizerMock> speaking_finished_timer_;
+  TaskRunnerTimer<PlatformSpeechSynthesizerMock> speaking_error_occurred_timer_;
+  TaskRunnerTimer<PlatformSpeechSynthesizerMock> speaking_finished_timer_;
 
   Member<PlatformSpeechSynthesisUtterance> current_utterance_;
   HeapDeque<Member<PlatformSpeechSynthesisUtterance>> queued_utterances_;

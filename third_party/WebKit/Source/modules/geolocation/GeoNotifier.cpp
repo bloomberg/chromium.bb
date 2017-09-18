@@ -4,6 +4,7 @@
 
 #include "modules/geolocation/GeoNotifier.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/geolocation/Geolocation.h"
 #include "modules/geolocation/PositionError.h"
 #include "modules/geolocation/PositionOptions.h"
@@ -20,7 +21,10 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
       success_callback_(success_callback),
       error_callback_(error_callback),
       options_(options),
-      timer_(this, &GeoNotifier::TimerFired),
+      timer_(TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
+                                   geolocation->GetDocument()),
+             this,
+             &GeoNotifier::TimerFired),
       use_cached_position_(false) {
   DCHECK(geolocation_);
   DCHECK(success_callback_);

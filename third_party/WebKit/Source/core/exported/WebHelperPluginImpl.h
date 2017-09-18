@@ -31,7 +31,6 @@
 #ifndef WebHelperPluginImpl_h
 #define WebHelperPluginImpl_h
 
-#include "platform/Timer.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
@@ -59,12 +58,11 @@ class WebHelperPluginImpl final : public WebHelperPlugin {
  private:
   friend class WebHelperPlugin;
 
-  WebHelperPluginImpl();
+  WebHelperPluginImpl() {}
 
   bool Initialize(const String& plugin_type, WebLocalFrameImpl*);
-  void ReallyDestroy(TimerBase*);
+  void ReallyDestroy();
 
-  Timer<WebHelperPluginImpl> destruction_timer_;
   Persistent<HTMLObjectElement> object_element_;
   Persistent<WebPluginContainerImpl> plugin_container_;
 };
