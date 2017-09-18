@@ -32,9 +32,12 @@
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/core/common/profile_management_switches.h"
+#include "components/signin/core/common/signin_features.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
@@ -314,6 +317,103 @@ TEST_F(AccountReconcilorTest, ProfileAlreadyConnected) {
   ASSERT_TRUE(reconcilor);
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 }
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+// Tests that the AccountReconcilor is enabled when Dice is enabled.
+TEST_F(AccountReconcilorTest, EnabledWithDice) {
+  signin::ScopedAccountConsistencyDice scoped_dice;
+  ASSERT_TRUE(signin::IsAccountConsistencyDiceEnabled());
+  AccountReconcilor* reconcilor =
+      AccountReconcilorFactory::GetForProfile(profile());
+  ASSERT_TRUE(reconcilor);
+  ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
+}
+
+// Tests that reconcile starts even when Sync is not enabled.
+TEST_F(AccountReconcilorTest, DiceReconcileWhithoutSignin) {
+  // Enable Dice.
+  signin::ScopedAccountConsistencyDice scoped_dice;
+
+  // Add a token in Chrome but do not sign in.
+  const std::string account_id =
+      PickAccountIdForAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+  cookie_manager_service()->SetListAccountsResponseNoAccounts();
+
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
+
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  reconcilor->StartReconcile();
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id,
+                                      GoogleServiceAuthError::AuthErrorNone());
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+}
+
+// Checks that nothing happens when there is no Chrome account and no Gaia
+// cookie.
+TEST_F(AccountReconcilorTest, DiceReconcileNoop) {
+  // Enable Dice.
+  signin::ScopedAccountConsistencyDice scoped_dice;
+
+  // No Chrome account and no cookie.
+  cookie_manager_service()->SetListAccountsResponseNoAccounts();
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(testing::_)).Times(0);
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction()).Times(0);
+
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  reconcilor->StartReconcile();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+}
+
+// Tests that the first Gaia account is re-used when possible.
+TEST_F(AccountReconcilorTest, DiceReconcileReuseGaiaFirstAccount) {
+  // Enable Dice.
+  signin::ScopedAccountConsistencyDice scoped_dice;
+
+  // Add accounts 1 and 2 to the token service.
+  const std::string account_id_1 =
+      PickAccountIdForAccount("12345", "user@gmail.com");
+  const std::string account_id_2 =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  token_service()->UpdateCredentials(account_id_1, "refresh_token");
+  token_service()->UpdateCredentials(account_id_2, "refresh_token");
+
+  ASSERT_EQ(2u, token_service()->GetAccounts().size());
+  ASSERT_EQ(account_id_1, token_service()->GetAccounts()[0]);
+  ASSERT_EQ(account_id_2, token_service()->GetAccounts()[1]);
+
+  // Add accounts 2 and 3 to the Gaia cookie.
+  const std::string account_id_3 =
+      PickAccountIdForAccount("9999", "foo@gmail.com");
+  cookie_manager_service()->SetListAccountsResponseTwoAccounts(
+      "other@gmail.com", "67890", "foo@gmail.com", "9999");
+
+  testing::InSequence mock_sequence;
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
+  // Account 2 is added first.
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id_2));
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id_1));
+
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  reconcilor->StartReconcile();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  base::RunLoop().RunUntilIdle();
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id_1,
+                                      GoogleServiceAuthError::AuthErrorNone());
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id_2,
+                                      GoogleServiceAuthError::AuthErrorNone());
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+}
+
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
   const std::string account_id =
@@ -955,7 +1055,6 @@ TEST_F(AccountReconcilorTest, WontMergeAccountsWithError) {
   // Since the cookie jar starts empty, the reconcilor should attempt to merge
   // accounts into it.  However, it should only try accounts not in auth
   // error state.
-  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
   EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id1));
 
   AccountReconcilor* reconcilor =

@@ -230,7 +230,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
         token_revoked_notification_count_(0),
         token_revoked_count_(0),
         reconcilor_blocked_count_(0),
-        reconcilor_unblocked_count_(0) {
+        reconcilor_unblocked_count_(0),
+        reconcilor_started_count_(0) {
     https_server_.RegisterDefaultHandler(
         base::Bind(&FakeGaia::HandleSigninURL,
                    base::Bind(&DiceBrowserTestBase::OnSigninRequest,
@@ -308,10 +309,10 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     NavigateToURL(base::StringPrintf("%s?%i", kSignoutURL, signout_type));
     if (signin::IsAccountConsistencyDiceEnabled()) {
       EXPECT_EQ(1, reconcilor_blocked_count_);
-      WaitForReconcilorBlockedCount(1);
+      WaitForReconcilorUnblockedCount(1);
     } else {
       EXPECT_EQ(0, reconcilor_blocked_count_);
-      WaitForReconcilorBlockedCount(0);
+      WaitForReconcilorUnblockedCount(0);
     }
     base::RunLoop().RunUntilIdle();
   }
@@ -336,8 +337,14 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
             account_consistency_method_);
     https_server_.StartAcceptingConnections();
     GetTokenService()->AddObserver(this);
-    AccountReconcilorFactory::GetForProfile(browser()->profile())
-        ->AddObserver(this);
+    AccountReconcilor* reconcilor =
+        AccountReconcilorFactory::GetForProfile(browser()->profile());
+    reconcilor->AddObserver(this);
+    // Explicitly register, because the AccountReconcilor is created before Dice
+    // is enabled.
+    reconcilor->RegisterWithCookieManagerService();
+    reconcilor->RegisterWithContentSettings();
+    reconcilor->RegisterWithTokenService();
   }
 
   void TearDownOnMainThread() override {
@@ -399,6 +406,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     ++reconcilor_unblocked_count_;
     RunClosureIfValid(&unblock_count_quit_closure_);
   }
+  void OnStartReconcile() override { ++reconcilor_started_count_; }
 
   // Returns true if the account reconcilor is currently blocked.
   bool IsReconcilorBlocked() {
@@ -408,7 +416,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   }
 
   // Waits until |reconcilor_unblocked_count_| reaches |count|.
-  void WaitForReconcilorBlockedCount(int count) {
+  void WaitForReconcilorUnblockedCount(int count) {
     if (reconcilor_unblocked_count_ == count)
       return;
 
@@ -440,6 +448,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   int token_revoked_count_;
   int reconcilor_blocked_count_;
   int reconcilor_unblocked_count_;
+  int reconcilor_started_count_;
   std::string dice_request_header_;
 
   // Used for waiting asynchronous events.
@@ -462,6 +471,8 @@ class DiceFixAuthErrorsBrowserTest : public DiceBrowserTestBase {
 
 // Checks that signin on Gaia triggers the fetch for a refresh token.
 IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Signin) {
+  EXPECT_EQ(0, reconcilor_started_count_);
+
   // Navigate to Gaia and sign in.
   NavigateToURL(kSigninURL);
 
@@ -478,7 +489,8 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Signin) {
   EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
 
   EXPECT_EQ(1, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(1);
+  WaitForReconcilorUnblockedCount(1);
+  EXPECT_EQ(1, reconcilor_started_count_);
 }
 
 // This test is flaky on Mac, see https://crbug.com/765093
@@ -489,8 +501,11 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Signin) {
 #endif
 // Checks that re-auth on Gaia triggers the fetch for a refresh token.
 IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_Reauth) {
+  EXPECT_EQ(0, reconcilor_started_count_);
+
   // Start from a signed-in state.
   SetupSignedInAccounts();
+  EXPECT_EQ(2, reconcilor_started_count_);
 
   // Navigate to Gaia and sign in again with the main account.
   NavigateToURL(kSigninURL);
@@ -510,7 +525,8 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_Reauth) {
   EXPECT_EQ(1, token_revoked_count_);
 
   EXPECT_EQ(1, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(1);
+  WaitForReconcilorUnblockedCount(1);
+  EXPECT_EQ(3, reconcilor_started_count_);
 }
 
 // Checks that the Dice signout flow works and deletes all tokens.
@@ -529,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutMainAccount) {
   EXPECT_EQ(2, token_revoked_notification_count_);
   EXPECT_EQ(2, token_revoked_count_);
   EXPECT_EQ(1, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(1);
+  WaitForReconcilorUnblockedCount(1);
 }
 
 // Checks that signing out from a secondary account does not delete the main
@@ -551,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutSecondaryAccount) {
   EXPECT_EQ(1, token_revoked_notification_count_);
   EXPECT_EQ(1, token_revoked_count_);
   EXPECT_EQ(1, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(1);
+  WaitForReconcilorUnblockedCount(1);
 }
 
 // Checks that the Dice signout flow works and deletes all tokens.
@@ -570,7 +586,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutAllAccounts) {
   EXPECT_EQ(2, token_revoked_notification_count_);
   EXPECT_EQ(2, token_revoked_count_);
   EXPECT_EQ(1, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(1);
+  WaitForReconcilorUnblockedCount(1);
 }
 
 // Checks that Dice request header is not set from request from WebUI.
@@ -585,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, NoDiceFromWebUI) {
     WaitForClosure(&service_login_quit_closure_);
   EXPECT_EQ(kNoDiceRequestHeader, dice_request_header_);
   EXPECT_EQ(0, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(0);
+  WaitForReconcilorUnblockedCount(0);
 }
 
 // Checks that signin on Gaia does not trigger the fetch of refresh token when
@@ -600,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, SigninNoAuthError) {
   // Check that the Dice request header was not sent.
   EXPECT_EQ(kNoDiceRequestHeader, dice_request_header_);
   EXPECT_EQ(0, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(0);
+  WaitForReconcilorUnblockedCount(0);
 }
 
 // Checks that signin on Gaia does not triggers the fetch for a refresh token
@@ -615,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, NotSignedInChrome) {
   // Check that the Dice request header was not sent.
   EXPECT_EQ(kNoDiceRequestHeader, dice_request_header_);
   EXPECT_EQ(0, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(0);
+  WaitForReconcilorUnblockedCount(0);
 }
 
 // Checks that a refresh token is not requested when accounts don't match.
@@ -648,7 +664,7 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, SigninAccountMismatch) {
   EXPECT_EQ(GetSecondaryAccountID(),
             GetSigninManager()->GetAuthenticatedAccountId());
   EXPECT_EQ(0, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(0);
+  WaitForReconcilorUnblockedCount(0);
 }
 
 // Checks that signin on Gaia triggers the fetch for a refresh token when there
@@ -676,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, ReauthFixAuthError) {
   EXPECT_EQ(0, token_revoked_notification_count_);
   EXPECT_EQ(1, token_revoked_count_);
   EXPECT_EQ(0, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(0);
+  WaitForReconcilorUnblockedCount(0);
 }
 
 // Checks that the Dice signout flow is disabled.
@@ -696,5 +712,5 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, Signout) {
   EXPECT_EQ(0, token_revoked_notification_count_);
   EXPECT_EQ(0, token_revoked_count_);
   EXPECT_EQ(0, reconcilor_blocked_count_);
-  WaitForReconcilorBlockedCount(0);
+  WaitForReconcilorUnblockedCount(0);
 }
