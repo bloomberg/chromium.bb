@@ -6,25 +6,9 @@
 
 #include <limits>
 
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/rand_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 
 namespace offline_pages {
-
-// static
-std::string OfflineStoreUtils::GetUTF8StringFromPath(
-    const base::FilePath& path) {
-#if defined(OS_POSIX)
-  return path.value();
-#elif defined(OS_WIN)
-  return base::WideToUTF8(path.value());
-#else
-#error Unknown OS
-#endif
-}
 
 // static
 AddPageResult OfflineStoreUtils::ItemActionStatusToAddPageResult(

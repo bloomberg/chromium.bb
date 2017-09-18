@@ -39,8 +39,7 @@ ItemActionStatus AddOfflinePageSync(const OfflinePageItem& item,
   statement.BindString(1, item.url.spec());
   statement.BindString(2, item.client_id.name_space);
   statement.BindString(3, item.client_id.id);
-  statement.BindString(
-      4, OfflineStoreUtils::GetUTF8StringFromPath(item.file_path));
+  statement.BindString(4, item.file_path.AsUTF8Unsafe());
   statement.BindInt64(5, item.file_size);
   statement.BindInt64(6, ToDatabaseTime(item.creation_time));
   statement.BindInt64(7, ToDatabaseTime(item.last_access_time));
