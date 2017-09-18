@@ -15,6 +15,11 @@ namespace ui {
 
 class PlatformWindowDelegate;
 class WaylandConnection;
+class XDGSurfaceWrapper;
+
+namespace {
+class XDGShellObjectFactory;
+}  // namespace
 
 class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
  public:
@@ -62,25 +67,28 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
-  // xdg_surface_listener
-  static void Configure(void* data,
-                        xdg_surface* obj,
-                        int32_t width,
-                        int32_t height,
-                        wl_array* states,
-                        uint32_t serial);
-  static void Close(void* data, xdg_surface* obj);
+  void HandleSurfaceConfigure(int32_t widht, int32_t height);
+
+  void OnCloseRequest();
 
  private:
+  // Creates a surface window, which is visible as a main window.
+  void CreateXdgSurface();
+
   PlatformWindowDelegate* delegate_;
   WaylandConnection* connection_;
 
+  // Creates xdg objects based on xdg shell version.
+  std::unique_ptr<XDGShellObjectFactory> xdg_shell_objects_factory_;
+
   wl::Object<wl_surface> surface_;
-  wl::Object<xdg_surface> xdg_surface_;
+
+  // Wrapper around xdg v5 and xdg v6 objects. WaylandWindow doesn't
+  // know anything about the version.
+  std::unique_ptr<XDGSurfaceWrapper> xdg_surface_;
 
   gfx::Rect bounds_;
   gfx::Rect pending_bounds_;
-  uint32_t pending_configure_serial_;
   bool has_pointer_focus_ = false;
   bool has_keyboard_focus_ = false;
 

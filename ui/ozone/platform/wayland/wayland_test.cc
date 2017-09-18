@@ -17,7 +17,7 @@ WaylandTest::WaylandTest()
 WaylandTest::~WaylandTest() {}
 
 void WaylandTest::SetUp() {
-  ASSERT_TRUE(server.Start());
+  ASSERT_TRUE(server.Start(GetParam()));
   ASSERT_TRUE(connection.Initialize());
   EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_, _))
       .WillOnce(SaveArg<0>(&widget));

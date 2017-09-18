@@ -32,6 +32,11 @@ source_set("wayland") {
     "wayland_surface_factory.h",
     "wayland_window.cc",
     "wayland_window.h",
+    "xdg_surface_wrapper.h",
+    "xdg_surface_wrapper_v5.cc",
+    "xdg_surface_wrapper_v5.h",
+    "xdg_surface_wrapper_v6.cc",
+    "xdg_surface_wrapper_v6.h",
   ]
 
   import("//ui/base/ui_features.gni")

@@ -21,6 +21,9 @@ struct wl_shm_pool;
 struct wl_surface;
 struct xdg_shell;
 struct xdg_surface;
+struct zxdg_shell_v6;
+struct zxdg_surface_v6;
+struct zxdg_toplevel_v6;
 
 namespace wl {
 
@@ -103,6 +106,24 @@ template <>
 struct ObjectTraits<xdg_surface> {
   static const wl_interface* interface;
   static void (*deleter)(xdg_surface*);
+};
+
+template <>
+struct ObjectTraits<zxdg_shell_v6> {
+  static const wl_interface* interface;
+  static void (*deleter)(zxdg_shell_v6*);
+};
+
+template <>
+struct ObjectTraits<zxdg_surface_v6> {
+  static const wl_interface* interface;
+  static void (*deleter)(zxdg_surface_v6*);
+};
+
+template <>
+struct ObjectTraits<zxdg_toplevel_v6> {
+  static const wl_interface* interface;
+  static void (*deleter)(zxdg_toplevel_v6*);
 };
 
 struct Deleter {

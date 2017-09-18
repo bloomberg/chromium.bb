@@ -41,7 +41,7 @@ class WaylandPointerTest : public WaylandTest {
   DISALLOW_COPY_AND_ASSIGN(WaylandPointerTest);
 };
 
-TEST_F(WaylandPointerTest, Leave) {
+TEST_P(WaylandPointerTest, Leave) {
   MockPlatformWindowDelegate other_delegate;
   WaylandWindow other_window(&other_delegate, &connection,
                              gfx::Rect(0, 0, 10, 10));
@@ -74,7 +74,7 @@ ACTION_P(CloneEvent, ptr) {
   *ptr = Event::Clone(*arg0);
 }
 
-TEST_F(WaylandPointerTest, Motion) {
+TEST_P(WaylandPointerTest, Motion) {
   wl_pointer_send_enter(pointer->resource(), 1, surface->resource(), 0, 0);
   wl_pointer_send_motion(pointer->resource(), 1002, wl_fixed_from_double(10.75),
                          wl_fixed_from_double(20.375));
@@ -94,7 +94,7 @@ TEST_F(WaylandPointerTest, Motion) {
   EXPECT_EQ(gfx::PointF(10.75, 20.375), mouse_event->root_location_f());
 }
 
-TEST_F(WaylandPointerTest, MotionDragged) {
+TEST_P(WaylandPointerTest, MotionDragged) {
   wl_pointer_send_enter(pointer->resource(), 1, surface->resource(), 0, 0);
   wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_MIDDLE,
                          WL_POINTER_BUTTON_STATE_PRESSED);
@@ -118,7 +118,7 @@ TEST_F(WaylandPointerTest, MotionDragged) {
   EXPECT_EQ(gfx::PointF(400, 500), mouse_event->root_location_f());
 }
 
-TEST_F(WaylandPointerTest, ButtonPress) {
+TEST_P(WaylandPointerTest, ButtonPress) {
   wl_pointer_send_enter(pointer->resource(), 1, surface->resource(),
                         wl_fixed_from_int(200), wl_fixed_from_int(150));
   wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_RIGHT,
@@ -144,7 +144,7 @@ TEST_F(WaylandPointerTest, ButtonPress) {
   EXPECT_EQ(gfx::PointF(200, 150), mouse_event->root_location_f());
 }
 
-TEST_F(WaylandPointerTest, ButtonRelease) {
+TEST_P(WaylandPointerTest, ButtonRelease) {
   wl_pointer_send_enter(pointer->resource(), 1, surface->resource(),
                         wl_fixed_from_int(50), wl_fixed_from_int(50));
   wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_BACK,
@@ -172,7 +172,7 @@ TEST_F(WaylandPointerTest, ButtonRelease) {
   EXPECT_EQ(gfx::PointF(50, 50), mouse_event->root_location_f());
 }
 
-TEST_F(WaylandPointerTest, AxisVertical) {
+TEST_P(WaylandPointerTest, AxisVertical) {
   wl_pointer_send_enter(pointer->resource(), 1, surface->resource(),
                         wl_fixed_from_int(0), wl_fixed_from_int(0));
   wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_RIGHT,
@@ -199,7 +199,7 @@ TEST_F(WaylandPointerTest, AxisVertical) {
   EXPECT_EQ(gfx::PointF(), mouse_wheel_event->root_location_f());
 }
 
-TEST_F(WaylandPointerTest, AxisHorizontal) {
+TEST_P(WaylandPointerTest, AxisHorizontal) {
   wl_pointer_send_enter(pointer->resource(), 1, surface->resource(),
                         wl_fixed_from_int(50), wl_fixed_from_int(75));
   wl_pointer_send_button(pointer->resource(), 2, 1002, BTN_LEFT,
@@ -226,5 +226,12 @@ TEST_F(WaylandPointerTest, AxisHorizontal) {
   EXPECT_EQ(gfx::PointF(50, 75), mouse_wheel_event->location_f());
   EXPECT_EQ(gfx::PointF(50, 75), mouse_wheel_event->root_location_f());
 }
+
+INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
+                        WaylandPointerTest,
+                        ::testing::Values(kXdgShellV5));
+INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
+                        WaylandPointerTest,
+                        ::testing::Values(kXdgShellV6));
 
 }  // namespace ui

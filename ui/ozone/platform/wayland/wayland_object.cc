@@ -6,6 +6,7 @@
 
 #include <wayland-client.h>
 #include <xdg-shell-unstable-v5-client-protocol.h>
+#include <xdg-shell-unstable-v6-client-protocol.h>
 
 namespace wl {
 namespace {
@@ -77,5 +78,20 @@ void (*ObjectTraits<xdg_shell>::deleter)(xdg_shell*) = &xdg_shell_destroy;
 const wl_interface* ObjectTraits<xdg_surface>::interface =
     &xdg_surface_interface;
 void (*ObjectTraits<xdg_surface>::deleter)(xdg_surface*) = &xdg_surface_destroy;
+
+const wl_interface* ObjectTraits<zxdg_shell_v6>::interface =
+    &zxdg_shell_v6_interface;
+void (*ObjectTraits<zxdg_shell_v6>::deleter)(zxdg_shell_v6*) =
+    &zxdg_shell_v6_destroy;
+
+const wl_interface* ObjectTraits<zxdg_surface_v6>::interface =
+    &zxdg_surface_v6_interface;
+void (*ObjectTraits<zxdg_surface_v6>::deleter)(zxdg_surface_v6*) =
+    &zxdg_surface_v6_destroy;
+
+const wl_interface* ObjectTraits<zxdg_toplevel_v6>::interface =
+    &zxdg_toplevel_v6_interface;
+void (*ObjectTraits<zxdg_toplevel_v6>::deleter)(zxdg_toplevel_v6*) =
+    &zxdg_toplevel_v6_destroy;
 
 }  // namespace wl

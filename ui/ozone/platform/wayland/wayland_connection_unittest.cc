@@ -14,6 +14,10 @@
 
 namespace ui {
 
+namespace {
+const uint32_t kXdgVersion5 = 5;
+}
+
 class OutputObserver : public WaylandOutput::Observer {
  public:
   explicit OutputObserver(const base::Closure& closure) : closure_(closure) {}
@@ -32,7 +36,7 @@ TEST(WaylandConnectionTest, UseUnstableVersion) {
   wl::FakeServer server;
   EXPECT_CALL(*server.xdg_shell(),
               UseUnstableVersion(XDG_SHELL_VERSION_CURRENT));
-  ASSERT_TRUE(server.Start());
+  ASSERT_TRUE(server.Start(kXdgVersion5));
   WaylandConnection connection;
   ASSERT_TRUE(connection.Initialize());
   connection.StartProcessingEvents();
@@ -44,7 +48,7 @@ TEST(WaylandConnectionTest, UseUnstableVersion) {
 TEST(WaylandConnectionTest, Ping) {
   base::MessageLoopForUI message_loop;
   wl::FakeServer server;
-  ASSERT_TRUE(server.Start());
+  ASSERT_TRUE(server.Start(kXdgVersion5));
   WaylandConnection connection;
   ASSERT_TRUE(connection.Initialize());
   connection.StartProcessingEvents();
@@ -63,7 +67,7 @@ TEST(WaylandConnectionTest, Ping) {
 TEST(WaylandConnectionTest, Output) {
   base::MessageLoopForUI message_loop;
   wl::FakeServer server;
-  ASSERT_TRUE(server.Start());
+  ASSERT_TRUE(server.Start(kXdgVersion5));
   server.output()->SetRect(gfx::Rect(0, 0, 800, 600));
   WaylandConnection connection;
   ASSERT_TRUE(connection.Initialize());

@@ -45,7 +45,7 @@ ACTION_P(CloneEvent, ptr) {
   *ptr = Event::Clone(*arg0);
 }
 
-TEST_F(WaylandKeyboardTest, Keypress) {
+TEST_P(WaylandKeyboardTest, Keypress) {
   struct wl_array empty;
   wl_array_init(&empty);
   wl_keyboard_send_enter(keyboard->resource(), 1, surface->resource(), &empty);
@@ -73,5 +73,12 @@ TEST_F(WaylandKeyboardTest, Keypress) {
                        WL_KEYBOARD_KEY_STATE_PRESSED);
   EXPECT_CALL(delegate, DispatchEvent(_)).Times(0);
 }
+
+INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
+                        WaylandKeyboardTest,
+                        ::testing::Values(kXdgShellV5));
+INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
+                        WaylandKeyboardTest,
+                        ::testing::Values(kXdgShellV6));
 
 }  // namespace ui

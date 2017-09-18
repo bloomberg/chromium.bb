@@ -4,21 +4,50 @@
 
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
-#include <xdg-shell-unstable-v5-client-protocol.h>
+#include <wayland-client.h>
 
 #include "base/bind.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/memory/ptr_util.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/xdg_surface_wrapper_v5.h"
+#include "ui/ozone/platform/wayland/xdg_surface_wrapper_v6.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
+namespace {
+
+// Factory, which decides which version type of xdg object to build.
+class XDGShellObjectFactory {
+ public:
+  XDGShellObjectFactory() = default;
+  ~XDGShellObjectFactory() = default;
+
+  std::unique_ptr<XDGSurfaceWrapper> CreateXDGSurface(
+      WaylandConnection* connection,
+      WaylandWindow* wayland_window) {
+    if (connection->shell_v6())
+      return base::MakeUnique<XDGSurfaceWrapperV6>(wayland_window);
+
+    DCHECK(connection->shell());
+    return base::MakeUnique<XDGSurfaceWrapperV5>(wayland_window);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(XDGShellObjectFactory);
+};
+
+}  // namespace
+
 WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
                              WaylandConnection* connection,
                              const gfx::Rect& bounds)
-    : delegate_(delegate), connection_(connection), bounds_(bounds) {}
+    : delegate_(delegate),
+      connection_(connection),
+      xdg_shell_objects_factory_(new XDGShellObjectFactory()),
+      bounds_(bounds) {}
 
 WaylandWindow::~WaylandWindow() {
   if (xdg_surface_) {
@@ -34,9 +63,7 @@ WaylandWindow* WaylandWindow::FromSurface(wl_surface* surface) {
 }
 
 bool WaylandWindow::Initialize() {
-  static const xdg_surface_listener xdg_surface_listener = {
-      &WaylandWindow::Configure, &WaylandWindow::Close,
-  };
+  DCHECK(xdg_shell_objects_factory_);
 
   surface_.reset(wl_compositor_create_surface(connection_->compositor()));
   if (!surface_) {
@@ -44,13 +71,9 @@ bool WaylandWindow::Initialize() {
     return false;
   }
   wl_surface_set_user_data(surface_.get(), this);
-  xdg_surface_.reset(
-      xdg_shell_get_xdg_surface(connection_->shell(), surface_.get()));
-  if (!xdg_surface_) {
-    LOG(ERROR) << "Failed to create xdg_surface";
-    return false;
-  }
-  xdg_surface_add_listener(xdg_surface_.get(), &xdg_surface_listener, this);
+
+  CreateXdgSurface();
+
   connection_->ScheduleFlush();
 
   connection_->AddWindow(surface_.id(), this);
@@ -60,13 +83,22 @@ bool WaylandWindow::Initialize() {
   return true;
 }
 
+void WaylandWindow::CreateXdgSurface() {
+  xdg_surface_ =
+      xdg_shell_objects_factory_->CreateXDGSurface(connection_, this);
+  if (!xdg_surface_ || !xdg_surface_->Initialize(connection_, surface_.get())) {
+    CHECK(false) << "Failed to create xdg_surface";
+  }
+}
+
 void WaylandWindow::ApplyPendingBounds() {
   if (pending_bounds_.IsEmpty())
     return;
 
   SetBounds(pending_bounds_);
   DCHECK(xdg_surface_);
-  xdg_surface_ack_configure(xdg_surface_.get(), pending_configure_serial_);
+  xdg_surface_->SetWindowGeometry(bounds_);
+  xdg_surface_->AckConfigure();
   pending_bounds_ = gfx::Rect();
   connection_->ScheduleFlush();
 }
@@ -96,7 +128,7 @@ gfx::Rect WaylandWindow::GetBounds() {
 
 void WaylandWindow::SetTitle(const base::string16& title) {
   DCHECK(xdg_surface_);
-  xdg_surface_set_title(xdg_surface_.get(), base::UTF16ToUTF8(title).c_str());
+  xdg_surface_->SetTitle(title);
   connection_->ScheduleFlush();
 }
 
@@ -114,19 +146,19 @@ void WaylandWindow::ToggleFullscreen() {
 
 void WaylandWindow::Maximize() {
   DCHECK(xdg_surface_);
-  xdg_surface_set_maximized(xdg_surface_.get());
+  xdg_surface_->SetMaximized();
   connection_->ScheduleFlush();
 }
 
 void WaylandWindow::Minimize() {
   DCHECK(xdg_surface_);
-  xdg_surface_set_minimized(xdg_surface_.get());
+  xdg_surface_->SetMinimized();
   connection_->ScheduleFlush();
 }
 
 void WaylandWindow::Restore() {
   DCHECK(xdg_surface_);
-  xdg_surface_unset_maximized(xdg_surface_.get());
+  xdg_surface_->UnSetMaximized();
   connection_->ScheduleFlush();
 }
 
@@ -163,25 +195,22 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 
-// static
-void WaylandWindow::Configure(void* data,
-                              xdg_surface* obj,
-                              int32_t width,
-                              int32_t height,
-                              wl_array* states,
-                              uint32_t serial) {
-  WaylandWindow* window = static_cast<WaylandWindow*>(data);
+void WaylandWindow::HandleSurfaceConfigure(int32_t width, int32_t height) {
+  // Width or height set 0 means that we should decide on width and height by
+  // ourselves, but we don't want to set to anything else. Use previous size.
+  if (width == 0 || height == 0) {
+    width = GetBounds().width();
+    height = GetBounds().height();
+  }
 
   // Rather than call SetBounds here for every configure event, just save the
   // most recent bounds, and have WaylandConnection call ApplyPendingBounds
   // when it has finished processing events. We may get many configure events
   // in a row during an interactive resize, and only the last one matters.
-  window->pending_bounds_ = gfx::Rect(0, 0, width, height);
-  window->pending_configure_serial_ = serial;
+  pending_bounds_ = gfx::Rect(0, 0, width, height);
 }
 
-// static
-void WaylandWindow::Close(void* data, xdg_surface* obj) {
+void WaylandWindow::OnCloseRequest() {
   NOTIMPLEMENTED();
 }
 
