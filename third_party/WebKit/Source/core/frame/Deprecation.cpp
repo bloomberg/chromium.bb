@@ -87,6 +87,15 @@ String DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
       function, milestoneString(milestone), allow_string);
 }
 
+String DeprecatedWebAudioDezippering(const char* audio_param_name) {
+  return String::Format(
+      "%s.value setter smoothing is deprecated and will be removed in %s. "
+      "Please use setTargetAtTime() instead if smoothing is needed. "
+      "See https://www.chromestatus.com/features/5287995770929152 for more "
+      "details.",
+      audio_param_name, milestoneString(M64));
+}
+
 }  // anonymous namespace
 
 namespace blink {
@@ -563,6 +572,25 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
       return replacedWillBeRemoved(
           "PaymentRequest's supportedMethods taking an array",
           "a single string", M64, "5177301645918208");
+
+    case WebFeature::kWebAudioDezipperGainNodeGain:
+      return DeprecatedWebAudioDezippering("GainNode.gain");
+    case WebFeature::kWebAudioDezipperStereoPannerNodePan:
+      return DeprecatedWebAudioDezippering("StereoPannerNode.pan");
+    case WebFeature::kWebAudioDezipperDelayNodeDelayTime:
+      return DeprecatedWebAudioDezippering("DelayNode.delayTime");
+    case WebFeature::kWebAudioDezipperOscillatorNodeFrequency:
+      return DeprecatedWebAudioDezippering("OscillatorNode.frequency");
+    case WebFeature::kWebAudioDezipperOscillatorNodeDetune:
+      return DeprecatedWebAudioDezippering("OscillatorNode.detune");
+    case WebFeature::kWebAudioDezipperBiquadFilterNodeFrequency:
+      return DeprecatedWebAudioDezippering("BiquadFilterNode.frequency");
+    case WebFeature::kWebAudioDezipperBiquadFilterNodeDetune:
+      return DeprecatedWebAudioDezippering("BiquadFilterNode.detune");
+    case WebFeature::kWebAudioDezipperBiquadFilterNodeQ:
+      return DeprecatedWebAudioDezippering("BiquadFilterNode.Q");
+    case WebFeature::kWebAudioDezipperBiquadFilterNodeGain:
+      return DeprecatedWebAudioDezippering("BiquadFilterNode.gain");
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

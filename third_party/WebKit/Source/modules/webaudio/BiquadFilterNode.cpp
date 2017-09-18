@@ -79,10 +79,10 @@ BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext* context,
   node->HandleChannelOptions(options, exception_state);
 
   node->setType(options.type());
-  node->q()->setValue(options.Q());
-  node->detune()->setValue(options.detune());
-  node->frequency()->setValue(options.frequency());
-  node->gain()->setValue(options.gain());
+  node->q()->setInitialValue(options.Q());
+  node->detune()->setInitialValue(options.detune());
+  node->frequency()->setInitialValue(options.frequency());
+  node->gain()->setInitialValue(options.gain());
 
   return node;
 }
@@ -134,11 +134,11 @@ void BiquadFilterNode::setType(const String& type) {
   if (type == "lowpass") {
     setType(BiquadProcessor::kLowPass);
     q_->SetParamType(kParamTypeBiquadFilterQLowpass);
-    q_->setValue(q_->value());
+    q_->setInitialValue(q_->value());
   } else if (type == "highpass") {
     setType(BiquadProcessor::kHighPass);
     q_->SetParamType(kParamTypeBiquadFilterQHighpass);
-    q_->setValue(q_->value());
+    q_->setInitialValue(q_->value());
   } else if (type == "bandpass") {
     setType(BiquadProcessor::kBandPass);
   } else if (type == "lowshelf") {

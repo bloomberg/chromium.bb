@@ -433,8 +433,8 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->detune()->setValue(options.detune());
-  node->frequency()->setValue(options.frequency());
+  node->detune()->setInitialValue(options.detune());
+  node->frequency()->setInitialValue(options.frequency());
 
   return node;
 }

@@ -1,5 +1,7 @@
+CONSOLE WARNING: line 371: DelayNode.delayTime.value setter smoothing is deprecated and will be removed in M64, around January 2018. Please use setTargetAtTime() instead if smoothing is needed. See https://www.chromestatus.com/features/5287995770929152 for more details.
 CONSOLE WARNING: line 371: Delay.delayTime.value -1 outside nominal range [0, 1.5]; value will be clamped.
 CONSOLE WARNING: line 383: Delay.delayTime.value 4 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: line 371: StereoPannerNode.pan.value setter smoothing is deprecated and will be removed in M64, around January 2018. Please use setTargetAtTime() instead if smoothing is needed. See https://www.chromestatus.com/features/5287995770929152 for more details.
 CONSOLE WARNING: line 371: StereoPanner.pan.value -3 outside nominal range [-1, 1]; value will be clamped.
 CONSOLE WARNING: line 383: StereoPanner.pan.value 3 outside nominal range [-1, 1]; value will be clamped.
 CONSOLE WARNING: line 371: DynamicsCompressor.threshold.value -201 outside nominal range [-100, 0]; value will be clamped.
@@ -11,8 +13,10 @@ CONSOLE WARNING: line 371: DynamicsCompressor.attack.value -1 outside nominal ra
 CONSOLE WARNING: line 383: DynamicsCompressor.attack.value 3 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: line 371: DynamicsCompressor.release.value -1 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: line 383: DynamicsCompressor.release.value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 371: BiquadFilterNode.frequency.value setter smoothing is deprecated and will be removed in M64, around January 2018. Please use setTargetAtTime() instead if smoothing is needed. See https://www.chromestatus.com/features/5287995770929152 for more details.
 CONSOLE WARNING: line 371: BiquadFilter.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
 CONSOLE WARNING: line 383: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 371: OscillatorNode.frequency.value setter smoothing is deprecated and will be removed in M64, around January 2018. Please use setTargetAtTime() instead if smoothing is needed. See https://www.chromestatus.com/features/5287995770929152 for more details.
 CONSOLE WARNING: line 371: Oscillator.frequency.value -48001 outside nominal range [-24000, 24000]; value will be clamped.
 CONSOLE WARNING: line 383: Oscillator.frequency.value 48001 outside nominal range [-24000, 24000]; value will be clamped.
 CONSOLE WARNING: line 302: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.

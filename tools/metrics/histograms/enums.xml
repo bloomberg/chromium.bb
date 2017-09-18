@@ -16331,6 +16331,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2145" label="FeaturePolicyAllowAttributeDeprecatedSyntax"/>
   <int value="2146" label="SuppressHistoryEntryWithoutUserGesture"/>
   <int value="2147" label="ImageInputTypeFormDataWithNonEmptyValue"/>
+  <int value="2148" label="WebAudioDezipperGainNodeGain"/>
+  <int value="2149" label="WebAudioDezipperStereoPannerNodePan"/>
+  <int value="2150" label="WebAudioDezipperDelayNodeDelayTime"/>
+  <int value="2151" label="WebAudioDezipperOscillatorNodeFrequency"/>
+  <int value="2152" label="WebAudioDezipperOscillatorNodeDetune"/>
+  <int value="2153" label="WebAudioDezipperBiquadFilterNodeFrequency"/>
+  <int value="2154" label="WebAudioDezipperBiquadFilterNodeDetune"/>
+  <int value="2155" label="WebAudioDezipperBiquadFilterNodeQ"/>
+  <int value="2156" label="WebAudioDezipperBiquadFilterNodeGain"/>
 </enum>
 
 <enum name="FeedbackSource">
