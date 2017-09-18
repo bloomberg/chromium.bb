@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
@@ -56,6 +56,30 @@ struct LogoMetadata {
   base::Time expiration_time;
 };
 
+enum class LogoCallbackReason {
+  // The default search engine does not support logos.
+  // |logo| is nullopt. No logo should be displayed.
+  DISABLED,
+
+  // The logo was successfully determined.
+  // If |logo| is non-nullopt, it should be displayed. If nullopt, then any
+  // visible logo should be cleared.
+  DETERMINED,
+
+  // The fresh logo is the same as the cached logo. Only used for fresh logos.
+  // |logo| is non-nullopt, and the cached logo should be kept.
+  REVALIDATED,
+
+  // The default search engine could not be contacted, or provided invalid logo
+  // data. Only used for fresh logos.
+  // |logo| is non-nullopt, and the cached logo should be kept.
+  FAILED,
+
+  // The default search engine was changed while fetching the logo.
+  // |logo| is nullopt. No logo should be displayed.
+  CANCELED,
+};
+
 struct EncodedLogo {
   EncodedLogo();
   EncodedLogo(const EncodedLogo& other);
@@ -67,7 +91,8 @@ struct EncodedLogo {
   LogoMetadata metadata;
 };
 using EncodedLogoCallback =
-    base::OnceCallback<void(const base::Optional<EncodedLogo> logo)>;
+    base::OnceCallback<void(LogoCallbackReason type,
+                            const base::Optional<EncodedLogo>& logo)>;
 
 struct Logo {
   Logo();
@@ -78,7 +103,19 @@ struct Logo {
   // Metadata about the logo.
   LogoMetadata metadata;
 };
-using LogoCallback = base::OnceCallback<void(const base::Optional<Logo> logo)>;
+using LogoCallback = base::OnceCallback<void(LogoCallbackReason type,
+                                             const base::Optional<Logo>& logo)>;
+
+struct LogoCallbacks {
+  EncodedLogoCallback on_cached_encoded_logo_available;
+  LogoCallback on_cached_decoded_logo_available;
+  EncodedLogoCallback on_fresh_encoded_logo_available;
+  LogoCallback on_fresh_decoded_logo_available;
+
+  LogoCallbacks();
+  LogoCallbacks(LogoCallbacks&&);
+  ~LogoCallbacks();
+};
 
 // Parses the response from the server and returns it as an EncodedLogo. Returns
 // null if the response is invalid.
