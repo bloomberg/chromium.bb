@@ -82,6 +82,10 @@ android {
 {{ expand_sourceset(test, 'test') }}
 {{ expand_sourceset(android_test, 'androidTest') }}
     }
+
+    defaultConfig {
+        vectorDrawables.useSupportLibrary = true
+    }
 }
 
 {% include 'dependencies.jinja' %}
