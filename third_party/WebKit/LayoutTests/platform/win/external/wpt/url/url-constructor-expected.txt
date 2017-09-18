@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 389 PASS, 117 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 510 tests; 389 PASS, 121 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URL.searchParams getter
 PASS URL.searchParams updating, clearing
 PASS URL.searchParams setter, invalid values
@@ -482,6 +482,10 @@ PASS Parsing: <C|
 PASS Parsing: <C|\> against <file://host/dir/file>
 PASS Parsing: <C> against <file://host/dir/file>
 FAIL Parsing: <C|a> against <file://host/dir/file> assert_equals: href expected "file://host/dir/C|a" but got "file:///C:/a"
+FAIL Parsing: </c:/foo/bar> against <file:///c:/baz/qux> assert_equals: href expected "file:///c:/foo/bar" but got "file:///C:/foo/bar"
+FAIL Parsing: </c|/foo/bar> against <file:///c:/baz/qux> assert_equals: href expected "file:///c:/foo/bar" but got "file:///C:/foo/bar"
+FAIL Parsing: <file:\c:\foo\bar> against <file:///c:/baz/qux> assert_equals: href expected "file:///c:/foo/bar" but got "file:///C:/foo/bar"
+FAIL Parsing: </c:/foo/bar> against <file://host/path> assert_equals: href expected "file:///c:/foo/bar" but got "file:///C:/foo/bar"
 PASS Parsing: <file://example.net/C:/> against <about:blank>
 PASS Parsing: <file://1.2.3.4/C:/> against <about:blank>
 PASS Parsing: <file://[1::8]/C:/> against <about:blank>

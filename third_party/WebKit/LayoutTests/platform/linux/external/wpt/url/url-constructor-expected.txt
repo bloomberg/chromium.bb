@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 393 PASS, 113 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 510 tests; 395 PASS, 115 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URL.searchParams getter
 PASS URL.searchParams updating, clearing
 PASS URL.searchParams setter, invalid values
@@ -482,6 +482,10 @@ FAIL Parsing: <C|
 FAIL Parsing: <C|\> against <file://host/dir/file> assert_equals: href expected "file:///C:/" but got "file://host/dir/C%7C/"
 PASS Parsing: <C> against <file://host/dir/file>
 FAIL Parsing: <C|a> against <file://host/dir/file> assert_equals: href expected "file://host/dir/C|a" but got "file://host/dir/C%7Ca"
+PASS Parsing: </c:/foo/bar> against <file:///c:/baz/qux>
+FAIL Parsing: </c|/foo/bar> against <file:///c:/baz/qux> assert_equals: href expected "file:///c:/foo/bar" but got "file:///c%7C/foo/bar"
+PASS Parsing: <file:\c:\foo\bar> against <file:///c:/baz/qux>
+FAIL Parsing: </c:/foo/bar> against <file://host/path> assert_equals: href expected "file:///c:/foo/bar" but got "file://host/c:/foo/bar"
 FAIL Parsing: <file://example.net/C:/> against <about:blank> assert_equals: href expected "file:///C:/" but got "file://example.net/C:/"
 FAIL Parsing: <file://1.2.3.4/C:/> against <about:blank> assert_equals: href expected "file:///C:/" but got "file://1.2.3.4/C:/"
 FAIL Parsing: <file://[1::8]/C:/> against <about:blank> assert_equals: href expected "file:///C:/" but got "file://[1::8]/C:/"
