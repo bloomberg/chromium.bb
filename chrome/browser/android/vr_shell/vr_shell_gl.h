@@ -106,12 +106,10 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   void SetControllerModel(std::unique_ptr<vr::VrControllerModel> model);
 
-  void CreateVRDisplayInfo(
-      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
-      uint32_t device_id);
   void ConnectPresentingService(
       device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,
-      device::mojom::VRPresentationProviderRequest request);
+      device::mojom::VRPresentationProviderRequest request,
+      device::mojom::VRDisplayInfoPtr display_info);
 
   void set_is_exiting(bool exiting) { is_exiting_ = exiting; }
 

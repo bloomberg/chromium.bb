@@ -112,30 +112,29 @@ class OpenVRRenderLoop : public base::SimpleThread,
 }  // namespace
 
 OpenVRDevice::OpenVRDevice(vr::IVRSystem* vr)
-    : vr_system_(vr), weak_ptr_factory_(this), is_polling_events_(false) {}
+    : vr_system_(vr), weak_ptr_factory_(this), is_polling_events_(false) {
+  CreateVRDisplayInfo();
+}
 OpenVRDevice::~OpenVRDevice() {}
 
-void OpenVRDevice::CreateVRDisplayInfo(
-    const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) {
-  if (!vr_system_) {
-    on_created.Run(nullptr);
+void OpenVRDevice::CreateVRDisplayInfo() {
+  if (!vr_system_)
     return;
-  }
 
-  mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
-  device->index = id();
-  device->displayName =
+  display_info_ = mojom::VRDisplayInfo::New();
+  display_info_->index = id();
+  display_info_->displayName =
       GetOpenVRString(vr_system_, vr::Prop_ManufacturerName_String) + " " +
       GetOpenVRString(vr_system_, vr::Prop_ModelNumber_String);
-  device->capabilities = mojom::VRDisplayCapabilities::New();
-  device->capabilities->hasPosition = true;
-  device->capabilities->hasExternalDisplay = true;
-  device->capabilities->canPresent = false;
+  display_info_->capabilities = mojom::VRDisplayCapabilities::New();
+  display_info_->capabilities->hasPosition = true;
+  display_info_->capabilities->hasExternalDisplay = true;
+  display_info_->capabilities->canPresent = false;
 
-  device->leftEye = mojom::VREyeParameters::New();
-  device->rightEye = mojom::VREyeParameters::New();
-  mojom::VREyeParametersPtr& left_eye = device->leftEye;
-  mojom::VREyeParametersPtr& right_eye = device->rightEye;
+  display_info_->leftEye = mojom::VREyeParameters::New();
+  display_info_->rightEye = mojom::VREyeParameters::New();
+  mojom::VREyeParametersPtr& left_eye = display_info_->leftEye;
+  mojom::VREyeParametersPtr& right_eye = display_info_->rightEye;
 
   left_eye->fieldOfView = OpenVRFovToWebVRFov(vr_system_, vr::Eye_Left);
   right_eye->fieldOfView = OpenVRFovToWebVRFov(vr_system_, vr::Eye_Left);
@@ -163,19 +162,19 @@ void OpenVRDevice::CreateVRDisplayInfo(
   right_eye->renderWidth = left_eye->renderWidth;
   right_eye->renderHeight = left_eye->renderHeight;
 
-  device->stageParameters = mojom::VRStageParameters::New();
+  display_info_->stageParameters = mojom::VRStageParameters::New();
   vr::HmdMatrix34_t mat =
       vr_system_->GetSeatedZeroPoseToStandingAbsoluteTrackingPose();
-  device->stageParameters->standingTransform =
+  display_info_->stageParameters->standingTransform =
       HmdMatrix34ToWebVRTransformMatrix(mat);
 
   vr::IVRChaperone* chaperone = vr::VRChaperone();
   if (chaperone) {
-    chaperone->GetPlayAreaSize(&device->stageParameters->sizeX,
-                               &device->stageParameters->sizeZ);
+    chaperone->GetPlayAreaSize(&display_info_->stageParameters->sizeX,
+                               &display_info_->stageParameters->sizeZ);
   } else {
-    device->stageParameters->sizeX = 0.0f;
-    device->stageParameters->sizeZ = 0.0f;
+    display_info_->stageParameters->sizeX = 0.0f;
+    display_info_->stageParameters->sizeZ = 0.0f;
   }
 
   // If it is the first initialization, OpenVRRenderLoop instance needs to be
@@ -186,8 +185,10 @@ void OpenVRDevice::CreateVRDisplayInfo(
     render_loop_->RegisterPollingEventCallback(base::Bind(
         &OpenVRDevice::OnPollingEvents, weak_ptr_factory_.GetWeakPtr()));
   }
+}
 
-  on_created.Run(std::move(device));
+mojom::VRDisplayInfoPtr OpenVRDevice::GetVRDisplayInfo() {
+  return display_info_.Clone();
 }
 
 void OpenVRDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
@@ -297,6 +298,7 @@ void OpenVRDevice::OnPollingEvents() {
   is_polling_events_ = false;
 
   if (is_changed) {
+    CreateVRDisplayInfo();
     OnChanged();
   }
 }

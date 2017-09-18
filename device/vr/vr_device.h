@@ -25,12 +25,7 @@ class DEVICE_VR_EXPORT VRDevice {
 
   unsigned int id() const { return id_; }
 
-  // Queries VR device for display info and calls onCreated once the display
-  // info object is created. If the query fails onCreated will be called with a
-  // nullptr as argument. onCreated can be called before this function returns.
-  virtual void CreateVRDisplayInfo(
-      const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) = 0;
-
+  virtual mojom::VRDisplayInfoPtr GetVRDisplayInfo() = 0;
   virtual void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                               mojom::VRPresentationProviderRequest request,
                               const base::Callback<void(bool)>& callback) = 0;
@@ -64,8 +59,6 @@ class DEVICE_VR_EXPORT VRDevice {
   void SetPresentingDisplay(VRDisplayImpl* display);
 
  private:
-  void OnVRDisplayInfoCreated(mojom::VRDisplayInfoPtr vr_device_info);
-
   std::set<VRDisplayImpl*> displays_;
 
   VRDisplayImpl* presenting_display_;

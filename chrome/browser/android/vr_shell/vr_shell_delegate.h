@@ -71,14 +71,11 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void SetDeviceId(unsigned int device_id) override;
   void RequestWebVRPresent(device::mojom::VRSubmitFrameClientPtr submit_client,
                            device::mojom::VRPresentationProviderRequest request,
+                           device::mojom::VRDisplayInfoPtr display_info,
                            const base::Callback<void(bool)>& callback) override;
   void OnDisplayAdded(device::VRDisplayImpl* display) override;
   void OnDisplayRemoved(device::VRDisplayImpl* display) override;
   void OnListeningForActivateChanged(device::VRDisplayImpl* display) override;
-  void CreateVRDisplayInfo(
-      gvr::GvrApi* gvr_api,
-      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
-      uint32_t device_id) override;
   void GetNextMagicWindowPose(
       gvr::GvrApi* gvr_api,
       device::VRDisplayImpl* display,
@@ -99,6 +96,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   base::Callback<void(bool)> present_callback_;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
   device::mojom::VRPresentationProviderRequest presentation_provider_request_;
+  device::mojom::VRDisplayInfoPtr display_info_;
   bool pending_successful_present_request_ = false;
 
   std::map<content::RenderWidgetHost*, device::VRDisplayImpl*> displays_;

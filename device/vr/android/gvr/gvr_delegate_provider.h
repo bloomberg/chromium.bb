@@ -25,16 +25,13 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   virtual void RequestWebVRPresent(
       mojom::VRSubmitFrameClientPtr submit_client,
       mojom::VRPresentationProviderRequest request,
+      mojom::VRDisplayInfoPtr display_info,
       const base::Callback<void(bool)>& callback) = 0;
   virtual void ExitWebVRPresent() = 0;
   virtual void OnDisplayAdded(VRDisplayImpl* display) = 0;
   virtual void OnDisplayRemoved(VRDisplayImpl* display) = 0;
   virtual void OnListeningForActivateChanged(VRDisplayImpl* display) = 0;
   // TODO(mthiesse): Remove the GvrApi from these calls.
-  virtual void CreateVRDisplayInfo(
-      gvr::GvrApi* gvr_api,
-      const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback,
-      uint32_t device_id) = 0;
   virtual void GetNextMagicWindowPose(
       gvr::GvrApi* gvr_api,
       VRDisplayImpl* display,

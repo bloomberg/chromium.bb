@@ -41,16 +41,11 @@ bool VRDevice::CheckPresentingDisplay(VRDisplayImpl* display) {
 }
 
 void VRDevice::OnChanged() {
-  base::Callback<void(mojom::VRDisplayInfoPtr)> callback = base::Bind(
-      &VRDevice::OnVRDisplayInfoCreated, weak_ptr_factory_.GetWeakPtr());
-  CreateVRDisplayInfo(callback);
-}
-
-void VRDevice::OnVRDisplayInfoCreated(mojom::VRDisplayInfoPtr vr_device_info) {
-  if (vr_device_info.is_null())
+  mojom::VRDisplayInfoPtr display_info = GetVRDisplayInfo();
+  if (!display_info)
     return;
   for (VRDisplayImpl* display : displays_)
-    display->OnChanged(vr_device_info.Clone());
+    display->OnChanged(display_info.Clone());
 }
 
 void VRDevice::OnExitPresent() {

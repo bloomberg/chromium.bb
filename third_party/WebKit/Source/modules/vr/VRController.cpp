@@ -67,11 +67,6 @@ void VRController::OnDisplayConnected(
   vr_display->OnConnected();
   vr_display->FocusChanged();
   displays_.push_back(vr_display);
-
-  if (displays_.size() == number_of_synced_displays_) {
-    display_synced_ = true;
-    OnGetDisplays();
-  }
 }
 
 void VRController::FocusChanged() {
@@ -81,12 +76,9 @@ void VRController::FocusChanged() {
 
 // Called when the VRService has called OnDisplayConnected for all active
 // VRDisplays.
-void VRController::OnDisplaysSynced(unsigned number_of_displays) {
-  number_of_synced_displays_ = number_of_displays;
-  if (number_of_synced_displays_ == displays_.size()) {
-    display_synced_ = true;
-    OnGetDisplays();
-  }
+void VRController::OnDisplaysSynced() {
+  display_synced_ = true;
+  OnGetDisplays();
 }
 
 void VRController::OnGetDisplays() {

@@ -53,10 +53,8 @@ void FakeVRDevice::SetVRDevice(const mojom::VRDisplayInfoPtr& display_info) {
   display_info_ = display_info.Clone();
 }
 
-void FakeVRDevice::CreateVRDisplayInfo(
-    const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) {
-  mojom::VRDisplayInfoPtr display = display_info_.Clone();
-  on_created.Run(std::move(display));
+mojom::VRDisplayInfoPtr FakeVRDevice::GetVRDisplayInfo() {
+  return display_info_.Clone();
 }
 
 void FakeVRDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,

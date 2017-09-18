@@ -113,13 +113,6 @@ void VrGLThread::ExitFullscreen() {
       FROM_HERE, base::Bind(&VrShell::ExitFullscreen, weak_vr_shell_));
 }
 
-void VrGLThread::RunVRDisplayInfoCallback(
-    const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
-    device::mojom::VRDisplayInfoPtr* info) {
-  main_thread_task_runner_->PostTask(FROM_HERE,
-                                     base::Bind(callback, base::Passed(info)));
-}
-
 void VrGLThread::OnContentPaused(bool enabled) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,

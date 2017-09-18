@@ -456,22 +456,16 @@ void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
   ui_->SetWebVrSecureOrigin(secure_origin);
 }
 
-void VrShell::CreateVRDisplayInfo(
-    const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
-    uint32_t device_id) {
-  PostToGlThread(FROM_HERE,
-                 base::Bind(&VrShellGl::CreateVRDisplayInfo,
-                            gl_thread_->GetVrShellGl(), callback, device_id));
-}
-
 void VrShell::ConnectPresentingService(
     device::mojom::VRSubmitFrameClientPtr submit_client,
-    device::mojom::VRPresentationProviderRequest request) {
-  PostToGlThread(FROM_HERE,
-                 base::Bind(&VrShellGl::ConnectPresentingService,
-                            gl_thread_->GetVrShellGl(),
-                            base::Passed(submit_client.PassInterface()),
-                            base::Passed(&request)));
+    device::mojom::VRPresentationProviderRequest request,
+    device::mojom::VRDisplayInfoPtr display_info) {
+  PostToGlThread(
+      FROM_HERE,
+      base::Bind(&VrShellGl::ConnectPresentingService,
+                 gl_thread_->GetVrShellGl(),
+                 base::Passed(submit_client.PassInterface()),
+                 base::Passed(&request), base::Passed(&display_info)));
 }
 
 base::android::ScopedJavaGlobalRef<jobject> VrShell::TakeContentSurface(

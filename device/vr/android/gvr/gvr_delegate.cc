@@ -13,13 +13,6 @@
 namespace device {
 
 namespace {
-// Default downscale factor for computing the recommended WebVR
-// renderWidth/Height from the 1:1 pixel mapped size. Using a rather
-// aggressive downscale due to the high overhead of copying pixels
-// twice before handing off to GVR. For comparison, the polyfill
-// uses approximately 0.55 on a Pixel XL.
-static constexpr float kWebVrRecommendedResolutionScale = 0.5;
-
 // TODO(mthiesse): If gvr::PlatformInfo().GetPosePredictionTime() is ever
 // exposed, use that instead (it defaults to 50ms on most platforms).
 static constexpr int64_t kPredictionTimeWithoutVsyncNanos = 50000000;
@@ -181,94 +174,6 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
     gfx::Transform* head_mat_out) {
   return GetVRPosePtrWithNeckModel(gvr_api, head_mat_out,
                                    kPredictionTimeWithoutVsyncNanos);
-}
-
-/* static */
-gfx::Size GvrDelegate::GetRecommendedWebVrSize(gvr::GvrApi* gvr_api) {
-  // Pick a reasonable default size for the WebVR transfer surface
-  // based on a downscaled 1:1 render resolution. This size will also
-  // be reported to the client via CreateVRDisplayInfo as the
-  // client-recommended renderWidth/renderHeight and for the GVR
-  // framebuffer. If the client chooses a different size or resizes it
-  // while presenting, we'll resize the transfer surface and GVR
-  // framebuffer to match.
-  gvr::Sizei render_target_size =
-      gvr_api->GetMaximumEffectiveRenderTargetSize();
-
-  gfx::Size webvr_size(
-      render_target_size.width * kWebVrRecommendedResolutionScale,
-      render_target_size.height * kWebVrRecommendedResolutionScale);
-
-  // Ensure that the width is an even number so that the eyes each
-  // get the same size, the recommended renderWidth is per eye
-  // and the client will use the sum of the left and right width.
-  //
-  // TODO(klausw,crbug.com/699350): should we round the recommended
-  // size to a multiple of 2^N pixels to be friendlier to the GPU? The
-  // exact size doesn't matter, and it might be more efficient.
-  webvr_size.set_width(webvr_size.width() & ~1);
-  return webvr_size;
-}
-
-/* static */
-mojom::VRDisplayInfoPtr GvrDelegate::CreateDefaultVRDisplayInfo(
-    gvr::GvrApi* gvr_api,
-    uint32_t device_id) {
-  if (!gvr_api)
-    return nullptr;
-  return CreateVRDisplayInfo(gvr_api, GetRecommendedWebVrSize(gvr_api),
-                             device_id);
-}
-
-/* static */
-mojom::VRDisplayInfoPtr GvrDelegate::CreateVRDisplayInfo(
-    gvr::GvrApi* gvr_api,
-    gfx::Size recommended_size,
-    uint32_t device_id) {
-  TRACE_EVENT0("input", "GvrDelegate::CreateVRDisplayInfo");
-
-  mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
-
-  device->index = device_id;
-
-  device->capabilities = mojom::VRDisplayCapabilities::New();
-  device->capabilities->hasPosition = false;
-  device->capabilities->hasExternalDisplay = false;
-  device->capabilities->canPresent = true;
-
-  std::string vendor = gvr_api->GetViewerVendor();
-  std::string model = gvr_api->GetViewerModel();
-  device->displayName = vendor + " " + model;
-
-  gvr::BufferViewportList gvr_buffer_viewports =
-      gvr_api->CreateEmptyBufferViewportList();
-  gvr_buffer_viewports.SetToRecommendedBufferViewports();
-
-  device->leftEye = mojom::VREyeParameters::New();
-  device->rightEye = mojom::VREyeParameters::New();
-  for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
-    mojom::VREyeParametersPtr& eye_params =
-        (eye == GVR_LEFT_EYE) ? device->leftEye : device->rightEye;
-    eye_params->fieldOfView = mojom::VRFieldOfView::New();
-    eye_params->offset.resize(3);
-    eye_params->renderWidth = recommended_size.width() / 2;
-    eye_params->renderHeight = recommended_size.height();
-
-    gvr::BufferViewport eye_viewport = gvr_api->CreateBufferViewport();
-    gvr_buffer_viewports.GetBufferViewport(eye, &eye_viewport);
-    gvr::Rectf eye_fov = eye_viewport.GetSourceFov();
-    eye_params->fieldOfView->upDegrees = eye_fov.top;
-    eye_params->fieldOfView->downDegrees = eye_fov.bottom;
-    eye_params->fieldOfView->leftDegrees = eye_fov.left;
-    eye_params->fieldOfView->rightDegrees = eye_fov.right;
-
-    gvr::Mat4f eye_mat = gvr_api->GetEyeFromHeadMatrix(eye);
-    eye_params->offset[0] = -eye_mat.m[0][3];
-    eye_params->offset[1] = -eye_mat.m[1][3];
-    eye_params->offset[2] = -eye_mat.m[2][3];
-  }
-
-  return device;
 }
 
 }  // namespace device
