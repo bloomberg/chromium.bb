@@ -16,3 +16,10 @@ include_rules = [
   "+services/ui/public",
   "+ui/gl/gl_bindings.h",
 ]
+
+specific_include_rules = {
+  # Tests can depend upon wm.
+  "focus_synchronizer_unittest.cc": [
+    "+ui/wm",
+  ],
+}

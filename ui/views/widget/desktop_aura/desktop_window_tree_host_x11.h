@@ -92,7 +92,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
             const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
   void OnWidgetInitDone() override;
-  void OnNativeWidgetActivationChanged(bool active) override;
+  void OnActiveWindowChanged(bool active) override;
   std::unique_ptr<corewm::Tooltip> CreateTooltip() override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) override;

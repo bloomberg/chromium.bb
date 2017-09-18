@@ -335,8 +335,9 @@ ServerWindow* Display::GetActiveRootWindow() {
 void Display::OnActivationChanged(ServerWindow* old_active_window,
                                   ServerWindow* new_active_window) {
   // Don't do anything here. We assume the window manager handles restacking. If
-  // we did attempt to restack than we would have to ensure clients see the
-  // restack.
+  // we did attempt to restack then we would be reordering windows owned by
+  // the window-manager, which breaks the assumption that only the owner of a
+  // window reorders the children.
 }
 
 void Display::OnFocusChanged(FocusControllerChangeSource change_source,
