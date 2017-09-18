@@ -35,8 +35,6 @@ source_set("tab_switcher") {
     "tab_switcher_session_cell_data.mm",
     "tab_switcher_session_changes.h",
     "tab_switcher_session_changes.mm",
-    "tab_switcher_tab_strip_placeholder_view.h",
-    "tab_switcher_tab_strip_placeholder_view.mm",
     "tab_switcher_transition_context.h",
     "tab_switcher_transition_context.mm",
     "tab_switcher_view.h",
@@ -85,7 +83,7 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/ntp/recent_tabs/views",
     "//ios/chrome/browser/ui/settings/sync_utils",
-    "//ios/chrome/browser/ui/tabs",
+    "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common:ios_app_bundle_id_prefix_header",
@@ -101,7 +99,6 @@ source_set("tab_switcher") {
   public_deps = [
     "//ios/chrome/browser/ui/ntp/recent_tabs",
   ]
-  allow_circular_includes_from = [ "//ios/chrome/browser/ui/tabs" ]
   libs = [
     "QuartzCore.framework",
     "UIKit.framework",

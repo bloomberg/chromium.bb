@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_controller_private.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/testing/wait_util.h"
 
@@ -167,14 +166,6 @@ void CloseAllIncognitoTabs() {
       return !IsIncognitoMode();
     });
   }
-}
-
-TabView* GetTabViewForTab(Tab* tab) {
-  MainController* main_controller = GetMainController();
-  BrowserViewController* current_bvc =
-      [[main_controller browserViewInformation] currentBVC];
-  TabStripController* tabStrip = [current_bvc tabStripController];
-  return [tabStrip existingTabViewForTab:tab];
 }
 
 NSUInteger GetEvictedMainTabCount() {

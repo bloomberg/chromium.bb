@@ -23,6 +23,7 @@
 class GURL;
 @class Tab;
 @class TabModel;
+@protocol TabStripFoldAnimation;
 
 namespace ios {
 class ChromeBrowserState;
@@ -147,6 +148,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // when files have been removed.
 - (void)removeExternalFilesImmediately:(BOOL)immediately
                      completionHandler:(ProceduralBlock)completionHandler;
+
+// Returns a tab strip placeholder view created from the current state of the
+// tab strip. It is used to animate the transition from the browser view
+// controller to the tab switcher.
+- (UIView<TabStripFoldAnimation>*)tabStripPlaceholderView;
 
 // Called before the instance is deallocated.
 - (void)shutdown;

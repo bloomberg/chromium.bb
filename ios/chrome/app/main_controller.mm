@@ -125,7 +125,6 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/stack_view/stack_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_controller.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_controller+tab_switcher_animation.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"

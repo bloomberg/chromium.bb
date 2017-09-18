@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_navigation_view.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
+#import "ios/chrome/browser/ui/tabs/requirements/tab_strip_highlighting.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -117,6 +118,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 @synthesize inSwipe = inSwipe_;
 @synthesize swipeDelegate = swipeDelegate_;
 @synthesize snapshotDelegate = snapshotDelegate_;
+@synthesize tabStripDelegate = tabStripDelegate_;
 
 - (id)initWithTabModel:(TabModel*)model
           browserState:(ios::ChromeBrowserState*)browserState {
@@ -309,7 +311,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kSideSwipeWillStartNotification
                       object:nil];
-    [[swipeDelegate_ tabStripController] setHighlightsSelectedTab:YES];
+    [self.tabStripDelegate setHighlightsSelectedTab:YES];
     startingTabIndex_ = [model_ indexOfTab:[model_ currentTab]];
     [self createGreyCache:gesture.direction];
   } else if (gesture.state == UIGestureRecognizerStateChanged) {
@@ -360,7 +362,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
     // Redisplay the view if it was in overlay preview mode.
     [swipeDelegate_ displayTab:[model_ currentTab] isNewSelection:YES];
-    [[swipeDelegate_ tabStripController] setHighlightsSelectedTab:NO];
+    [self.tabStripDelegate setHighlightsSelectedTab:NO];
     [self deleteGreyCache];
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kSideSwipeDidStopNotification
