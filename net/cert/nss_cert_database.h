@@ -26,7 +26,6 @@
 namespace base {
 template <class ObserverType>
 class ObserverListThreadSafe;
-class TaskRunner;
 }
 
 namespace net {
@@ -233,21 +232,12 @@ class NET_EXPORT NSSCertDatabase {
   // Check whether cert is stored in a hardware slot.
   bool IsHardwareBacked(const CERTCertificate* cert) const;
 
-  // Overrides task runner that's used for running slow tasks.
-  void SetSlowTaskRunnerForTest(
-      const scoped_refptr<base::TaskRunner>& task_runner);
-
  protected:
   // Certificate listing implementation used by |ListCerts*| and
   // |ListCertsSync|. Static so it may safely be used on the worker thread.
   // If |slot| is NULL, obtains the certs of all slots, otherwise only of
   // |slot|.
   static ScopedCERTCertificateList ListCertsImpl(crypto::ScopedPK11Slot slot);
-
-  // Gets task runner that should be used for slow tasks like certificate
-  // listing. Defaults to a base::WorkerPool runner, but may be overriden
-  // in tests (see SetSlowTaskRunnerForTest).
-  scoped_refptr<base::TaskRunner> GetSlowTaskRunner() const;
 
  protected:
   // Broadcasts notifications to all registered observers.
@@ -284,9 +274,6 @@ class NET_EXPORT NSSCertDatabase {
 
   // A helper observer that forwards events from this database to CertDatabase.
   std::unique_ptr<Observer> cert_notification_forwarder_;
-
-  // Task runner that should be used in tests if set.
-  scoped_refptr<base::TaskRunner> slow_task_runner_for_test_;
 
   const scoped_refptr<base::ObserverListThreadSafe<Observer>> observer_list_;
 
