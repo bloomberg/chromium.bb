@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/tab_switcher/tab_switcher_tab_strip_placeholder_view.h"
+#include "ios/chrome/browser/ui/tabs/tab_strip_placeholder_view.h"
 
 #include <algorithm>
 
@@ -33,7 +33,7 @@ float animationDragCoefficient() {
 }
 #endif
 
-@interface TabSwitcherTabStripPlaceholderView () {
+@interface TabStripPlaceholderView () {
   // YES when the fold animation is currently playing.
   BOOL _animatingFold;
 }
@@ -61,7 +61,7 @@ const CGFloat kFoldAnimationDuration = 0.25;
 const CGFloat kTabFoldAnimationDuration = 0.15;
 }
 
-@implementation TabSwitcherTabStripPlaceholderView
+@implementation TabStripPlaceholderView
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -108,9 +108,9 @@ const CGFloat kTabFoldAnimationDuration = 0.15;
   _animatingFold = YES;
   [self setUserInteractionEnabled:NO];
   [CATransaction begin];
-  __weak TabSwitcherTabStripPlaceholderView* weakSelf = self;
+  __weak TabStripPlaceholderView* weakSelf = self;
   [CATransaction setCompletionBlock:^{
-    TabSwitcherTabStripPlaceholderView* strongSelf = weakSelf;
+    TabStripPlaceholderView* strongSelf = weakSelf;
     if (!strongSelf) {
       if (completion)
         completion();

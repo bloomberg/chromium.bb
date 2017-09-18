@@ -55,18 +55,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       l10n_util::GetStringUTF16(IDS_IOS_GENERIC_PASSKIT_ERROR), true);
 }
 
-- (TabStripController*)
-newTabStripControllerWithTabModel:(TabModel*)model
-                       dispatcher:(id<ApplicationCommands, BrowserCommands>)
-                                      dispatcher {
-  TabStrip::Style style = TabStrip::kStyleDark;
-  if (browserState_ && browserState_->IsOffTheRecord())
-    style = TabStrip::kStyleIncognito;
-  return [[TabStripController alloc] initWithTabModel:model
-                                                style:style
-                                           dispatcher:dispatcher];
-}
-
 - (ToolbarModelIOS*)newToolbarModelIOSWithDelegate:
     (ToolbarModelDelegateIOS*)delegate {
   return new ToolbarModelImplIOS(delegate);

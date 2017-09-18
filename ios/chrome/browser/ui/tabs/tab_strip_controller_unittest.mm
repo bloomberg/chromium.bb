@@ -146,7 +146,7 @@ class TabStripControllerTest : public PlatformTest {
     tab2_ = tab2;
     controller_ =
         [[TabStripController alloc] initWithTabModel:(TabModel*)tabModel_
-                                               style:TabStrip::kStyleDark
+                                               style:NORMAL
                                           dispatcher:nil];
 
     // Force the view to load.

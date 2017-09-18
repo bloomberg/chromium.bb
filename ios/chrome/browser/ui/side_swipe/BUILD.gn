@@ -29,7 +29,7 @@ source_set("side_swipe") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/ntp",
-    "//ios/chrome/browser/ui/tabs",
+    "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/web",
     "//ios/chrome/common",
     "//ios/web",

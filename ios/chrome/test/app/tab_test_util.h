@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 @class Tab;
-@class TabView;
 
 namespace chrome_test_util {
 
@@ -67,9 +66,6 @@ void EvictOtherTabModelTabs();
 
 // Closes all incognito tabs.
 void CloseAllIncognitoTabs();
-
-// Gets the tabview for tab.
-TabView* GetTabViewForTab(Tab* tab);
 
 // Returns the number of main tabs currently evicted.
 NSUInteger GetEvictedMainTabCount();

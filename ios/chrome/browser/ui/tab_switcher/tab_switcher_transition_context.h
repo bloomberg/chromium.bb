@@ -7,10 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_tab_strip_placeholder_view.h"
-
-@class TabModel;
 @class BrowserViewController;
+@class TabModel;
+@protocol TabStripFoldAnimation;
 
 // Holds the informations about a browser view controller that will be used
 // to create the transition from the browser view controller to the tab switcher
@@ -21,8 +20,8 @@
 + (instancetype)tabSwitcherTransitionContextContentFromBVC:
     (BrowserViewController*)bvc;
 
-// Returns an autoreleased placeholder representing the BVC's toolbar.
-- (TabSwitcherTabStripPlaceholderView*)generateTabStripPlaceholderView;
+// Returns a placeholder representing the BVC's tab strip.
+- (UIView<TabStripFoldAnimation>*)generateTabStripPlaceholderView;
 
 // Holds a snapshot view of the browser view controller's toolbar.
 @property(nonatomic, retain) UIView* toolbarSnapshotView;

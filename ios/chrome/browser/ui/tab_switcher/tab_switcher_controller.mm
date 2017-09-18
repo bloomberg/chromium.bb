@@ -42,6 +42,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_session_cell_data.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_transition_context.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_view.h"
+#import "ios/chrome/browser/ui/tabs/requirements/tab_strip_fold_animation.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -615,7 +616,7 @@ enum class SnapshotViewOption {
                       finalTabScreenshotFrame);
   finalTabScreenshotFrame.origin.y += cellTopBarHeight;
 
-  TabSwitcherTabStripPlaceholderView* tabStripPlaceholderView =
+  UIView<TabStripFoldAnimation>* tabStripPlaceholderView =
       [transitionContextContent generateTabStripPlaceholderView];
   tabStripPlaceholderView.clipsToBounds = YES;
   tabStripPlaceholderView.backgroundColor = [UIColor clearColor];

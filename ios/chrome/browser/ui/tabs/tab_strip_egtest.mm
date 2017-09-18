@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,9 +35,10 @@
   // TODO(crbug.com/238112):  Make this test also handle the 'collapsed' tab
   // case.
   const int kNumberOfTabs = 3;
-  for (int i = 0; i < kNumberOfTabs - 1; i++) {
-    [ChromeEarlGreyUI openNewTab];
-  }
+  [ChromeEarlGreyUI openNewTab];
+  [ChromeEarlGrey loadURL:GURL("chrome://about")];
+  [ChromeEarlGreyUI openNewTab];
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
   // Note that the tab ordering wraps.  E.g. if A, B, and C are open,
   // and C is the current tab, the 'next' tab is 'A'.
@@ -45,12 +47,8 @@
                    chrome_test_util::GetMainTabCount() ? @"Only one tab open."
                                                        : @"No more tabs.");
     Tab* nextTab = chrome_test_util::GetNextTab();
-    TabView* tabView = chrome_test_util::GetTabViewForTab(nextTab);
 
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(
-                                     grey_ancestor(grey_equalTo(tabView)),
-                                     grey_accessibilityID(@"Favicon"), nil)]
+    [[EarlGrey selectElementWithMatcher:grey_text(nextTab.title)]
         performAction:grey_tap()];
 
     Tab* newCurrentTab = chrome_test_util::GetCurrentTab();

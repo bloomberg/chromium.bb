@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
-
 @class AlertCoordinator;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
@@ -50,11 +48,6 @@ extern NSString* const kBrowserViewControllerSnackbarCategory;
 // Displays a PassKit error infobar on the current tab.
 - (void)showPassKitErrorInfoBarForManager:
     (infobars::InfoBarManager*)infoBarManager;
-
-- (TabStripController*)
-newTabStripControllerWithTabModel:(TabModel*)model
-                       dispatcher:
-                           (id<ApplicationCommands, BrowserCommands>)dispatcher;
 
 - (ToolbarModelIOS*)newToolbarModelIOSWithDelegate:
     (ToolbarModelDelegateIOS*)delegate;

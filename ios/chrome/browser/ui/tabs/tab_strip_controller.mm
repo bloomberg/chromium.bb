@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_controller_private.h"
 
 #include <cmath>
 #include <vector>
@@ -30,10 +29,11 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
-#import "ios/chrome/browser/ui/fullscreen_controller.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#include "ios/chrome/browser/ui/tab_switcher/tab_switcher_tab_strip_placeholder_view.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_controller+tab_switcher_animation.h"
+#import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
+#import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
+#import "ios/chrome/browser/ui/tabs/tab_strip_controller+placeholder_view.h"
+#include "ios/chrome/browser/ui/tabs/tab_strip_placeholder_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 #include "ios/chrome/browser/ui/tabs/target_frame_cache.h"
@@ -50,18 +50,6 @@
 #endif
 
 using base::UserMetricsAction;
-
-NSString* const kWillStartTabStripTabAnimation =
-    @"kWillStartTabStripTabAnimation";
-NSString* const kTabStripDragStarted = @"kTabStripDragStarted";
-NSString* const kTabStripDragEnded = @"kTabStripDragEnded";
-
-namespace TabStrip {
-UIColor* BackgroundColor() {
-  DCHECK(IsIPadIdiom());
-  return [UIColor colorWithRed:0.149 green:0.149 blue:0.164 alpha:1];
-}
-}
 
 namespace {
 
@@ -122,7 +110,13 @@ const CGFloat kNewTabButtonBottomImageInset = 7.0;
 // Offsets needed to keep the UI properly centered on high-res screens, in
 // points.
 const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
+
+// Returns the background color.
+UIColor* BackgroundColor() {
+  return [UIColor colorWithRed:0.149 green:0.149 blue:0.164 alpha:1];
 }
+
+}  // namespace
 
 @interface TabStripController ()<DropAndNavigateDelegate,
                                  TabModelObserver,
@@ -140,8 +134,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   // layout.
   UIImageView* _tabSwitcherButtonBackgroundView;
 
-  TabStrip::Style _style;
-  __weak id<FullScreenControllerDelegate> _fullscreenDelegate;
+  TabStripStyle _style;
 
   // Array of TabViews.  There is a one-to-one correspondence between this array
   // and the set of Tabs in the TabModel.
@@ -340,9 +333,11 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 @synthesize tabStripView = _tabStripView;
 @synthesize view = _view;
 @synthesize dispatcher = _dispatcher;
+@synthesize presentationProvider = _presentationProvider;
+@synthesize animationWaitDuration = _animationWaitDuration;
 
 - (instancetype)initWithTabModel:(TabModel*)tabModel
-                           style:(TabStrip::Style)style
+                           style:(TabStripStyle)style
                       dispatcher:
                           (id<ApplicationCommands, BrowserCommands>)dispatcher {
   if ((self = [super init])) {
@@ -360,7 +355,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
     _view = [[UIView alloc] initWithFrame:tabStripFrame];
     _view.autoresizingMask = (UIViewAutoresizingFlexibleWidth |
                               UIViewAutoresizingFlexibleBottomMargin);
-    _view.backgroundColor = TabStrip::BackgroundColor();
+    _view.backgroundColor = BackgroundColor();
     if (UseRTLLayout())
       _view.transform = CGAffineTransformMakeScale(-1, 1);
 
@@ -370,9 +365,8 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
         (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
     _tabStripView.backgroundColor = _view.backgroundColor;
     _tabStripView.layoutDelegate = self;
-    _tabStripView.accessibilityIdentifier = style == TabStrip::kStyleIncognito
-                                                ? @"Incognito Tab Strip"
-                                                : @"Tab Strip";
+    _tabStripView.accessibilityIdentifier =
+        style == INCOGNITO ? @"Incognito Tab Strip" : @"Tab Strip";
     [_view addSubview:_tabStripView];
 
     // |self.buttonNewTab| setup.
@@ -387,7 +381,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
     _buttonNewTab.imageView.contentMode = UIViewContentModeCenter;
     UIImage* buttonNewTabImage = nil;
     UIImage* buttonNewTabPressedImage = nil;
-    if (_style == TabStrip::kStyleIncognito) {
+    if (_style == INCOGNITO) {
       buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab_incognito"];
       buttonNewTabPressedImage =
           [UIImage imageNamed:@"tabstrip_new_tab_incognito_pressed"];
@@ -460,15 +454,6 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   [_tabModel removeObserver:self];
 }
 
-- (id<FullScreenControllerDelegate>)fullscreenDelegate {
-  return _fullscreenDelegate;
-}
-
-- (void)setFullscreenDelegate:
-    (id<FullScreenControllerDelegate>)fullscreenDelegate {
-  _fullscreenDelegate = fullscreenDelegate;
-}
-
 - (void)initializeTabArrayFromTabModel {
   DCHECK(_tabModel);
   for (Tab* tab in _tabModel) {
@@ -490,7 +475,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 - (TabView*)emptyTabView {
   TabView* view = [[TabView alloc] initWithEmptyView:YES selected:YES];
-  [view setIncognitoStyle:(_style == TabStrip::kStyleIncognito)];
+  [view setIncognitoStyle:(_style == INCOGNITO)];
   [view setContentMode:UIViewContentModeRedraw];
 
   // Setting the tab to be hidden marks it as a new tab.  The layout code will
@@ -504,7 +489,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   TabView* view = [[TabView alloc] initWithEmptyView:NO selected:isSelected];
   if (UseRTLLayout())
     [view setTransform:CGAffineTransformMakeScale(-1, 1)];
-  [view setIncognitoStyle:(_style == TabStrip::kStyleIncognito)];
+  [view setIncognitoStyle:(_style == INCOGNITO)];
   [view setContentMode:UIViewContentModeRedraw];
   [[view titleLabel] setText:[tab title]];
   [view setFavicon:nil];
@@ -565,8 +550,8 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
   // Enable user interaction in order to eat touches from views behind it.
   [_dimmingView setUserInteractionEnabled:YES];
-  [_dimmingView setBackgroundColor:[TabStrip::BackgroundColor()
-                                       colorWithAlphaComponent:0]];
+  [_dimmingView
+      setBackgroundColor:[BackgroundColor() colorWithAlphaComponent:0]];
   [_dimmingView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                      UIViewAutoresizingFlexibleHeight)];
   [_tabStripView addSubview:_dimmingView];
@@ -575,7 +560,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   [UIView animateWithDuration:duration
                    animations:^{
                      [_dimmingView
-                         setBackgroundColor:[TabStrip::BackgroundColor()
+                         setBackgroundColor:[BackgroundColor()
                                                 colorWithAlphaComponent:0.6]];
                    }];
 }
@@ -585,8 +570,8 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
     CGFloat duration = animate ? kTabStripFadeAnimationDuration : 0;
     [UIView animateWithDuration:duration
         animations:^{
-          [_dimmingView setBackgroundColor:[TabStrip::BackgroundColor()
-                                               colorWithAlphaComponent:0]];
+          [_dimmingView
+              setBackgroundColor:[BackgroundColor() colorWithAlphaComponent:0]];
         }
         completion:^(BOOL finished) {
           // Do not remove the dimming view if the animation was aborted.
@@ -1520,10 +1505,10 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
   if (animate) {
     float delay = 0.0;
-    if ([self.fullscreenDelegate currentHeaderOffset] != 0) {
+    if (![self.presentationProvider isTabStripFullyVisible]) {
       // Move the toolbar to visible and wait for the end of that animation to
       // animate the appearance of the new tab.
-      delay = kFullScreenControllerToolbarAnimationDuration;
+      delay = self.animationWaitDuration;
       // Signal the FullscreenController that the toolbar needs to stay on
       // screen for a bit, so the animation is visible.
       [[NSNotificationCenter defaultCenter]
@@ -1620,14 +1605,13 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 @end
 
-#pragma mark - TabSwitcherAnimation
+#pragma mark - PlaceholderView
 
-@implementation TabStripController (TabSwitcherAnimation)
+@implementation TabStripController (PlaceholderView)
 
-- (TabSwitcherTabStripPlaceholderView*)placeholderView {
-  TabSwitcherTabStripPlaceholderView* placeholderView =
-      [[TabSwitcherTabStripPlaceholderView alloc]
-          initWithFrame:self.view.bounds];
+- (UIView<TabStripFoldAnimation>*)placeholderView {
+  TabStripPlaceholderView* placeholderView =
+      [[TabStripPlaceholderView alloc] initWithFrame:self.view.bounds];
   CGFloat xOffset = [_tabStripView contentOffset].x;
   UIView* previousView = nil;
   const NSUInteger selectedModelIndex =
@@ -1657,16 +1641,6 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
   buttonSnapshot.frame = CGRectOffset(_buttonNewTab.frame, -xOffset, 0);
   [placeholderView addSubview:buttonSnapshot];
   return placeholderView;
-}
-
-@end
-
-@implementation TabStripController (Testing)
-
-- (TabView*)existingTabViewForTab:(Tab*)tab {
-  NSUInteger tabIndex = [_tabModel indexOfTab:tab];
-  NSUInteger tabViewIndex = [self indexForModelIndex:tabIndex];
-  return [_tabArray objectAtIndex:tabViewIndex];
 }
 
 @end

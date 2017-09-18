@@ -158,7 +158,9 @@
 #import "ios/chrome/browser/ui/stack_view/page_animation_util.h"
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_controller.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
+#import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
+#import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
+#import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
@@ -262,6 +264,14 @@ void Record(ContextMenuHistogram action, bool is_image, bool is_link) {
                               NUM_ACTIONS);
   }
 }
+
+// Returns the status bar background color.
+UIColor* StatusBarBackgroundColor() {
+  return [UIColor colorWithRed:0.149 green:0.149 blue:0.164 alpha:1];
+}
+
+// Duration of the toolbar animation.
+const NSTimeInterval kFullScreenControllerToolbarAnimationDuration = 0.3;
 
 const CGFloat kVoiceSearchBarHeight = 59.0;
 
@@ -378,6 +388,7 @@ bool IsURLAllowedInIncognito(const GURL& url) {
                                     TabHistoryPresentation,
                                     TabModelObserver,
                                     TabSnapshottingDelegate,
+                                    TabStripPresentation,
                                     UIGestureRecognizerDelegate,
                                     UpgradeCenterClientProtocol,
                                     VoiceSearchBarDelegate,
@@ -429,9 +440,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
   // deallocated mid-animation due to memory pressure or a tab being closed
   // before the animation is finished.
   __weak id _relinquishedToolbarOwner;
-
-  // Always present on tablet; always nil on phone.
-  TabStripController* _tabStripController;
 
   // Used to inject Javascript implementing the PaymentRequest API and to
   // display the UI.
@@ -591,6 +599,10 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 // Coordinator for Recent Tabs.
 @property(nonatomic, strong)
     RecentTabsHandsetCoordinator* recentTabsCoordinator;
+// Coordinator for tablet tab strip.
+@property(nonatomic, strong) TabStripLegacyCoordinator* tabStripCoordinator;
+// A weak reference to the view of the tab strip on tablet.
+@property(nonatomic, weak) UIView* tabStripView;
 
 // The user agent type used to load the currently visible page. User agent type
 // is NONE if there is no visible page or visible page is a native page.
@@ -657,8 +669,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 - (void)addUIFunctionalityForModelAndBrowserState;
 // Sets the correct frame and hierarchy for subviews and helper views.
 - (void)setUpViewLayout;
-// Sets the correct frame for the tab strip based on the given maximum width.
-- (void)layoutTabStripForWidth:(CGFloat)maxWidth;
 // Makes |tab| the currently visible tab, displaying its view.  Calls
 // -selectedTabChanged on the toolbar only if |newSelection| is YES.
 - (void)displayTab:(Tab*)tab isNewSelection:(BOOL)newSelection;
@@ -963,6 +973,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 @synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
 @synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
 @synthesize recentTabsCoordinator = _recentTabsCoordinator;
+@synthesize tabStripCoordinator = _tabStripCoordinator;
+@synthesize tabStripView = _tabStripView;
 
 #pragma mark - Object lifecycle
 
@@ -1122,6 +1134,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                          browserState:_browserState];
     [_sideSwipeController setSnapshotDelegate:self];
     [_sideSwipeController setSwipeDelegate:self];
+    [_sideSwipeController setTabStripDelegate:self.tabStripCoordinator];
   }
   return _sideSwipeController;
 }
@@ -1368,7 +1381,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _toolbarController = nil;
     _toolbarModelDelegate = nil;
     _toolbarModelIOS = nil;
-    _tabStripController = nil;
+    [self.tabStripCoordinator stop];
+    self.tabStripCoordinator = nil;
+    self.tabStripView = nil;
     _sideSwipeController = nil;
   }
 }
@@ -1769,6 +1784,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_qrScannerCoordinator disconnect];
   [_tabHistoryCoordinator disconnect];
   [_pageInfoCoordinator disconnect];
+  [self.tabStripCoordinator stop];
+  self.tabStripCoordinator = nil;
+  self.tabStripView = nil;
 
   // The file remover needs the browser state, so needs to be destroyed now.
   _externalFileRemover = nil;
@@ -1783,7 +1801,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     CGRect statusBarFrame =
         CGRectMake(0, 0, [[self view] frame].size.width, statusBarHeight);
     UIView* statusBarView = [[UIView alloc] initWithFrame:statusBarFrame];
-    [statusBarView setBackgroundColor:TabStrip::BackgroundColor()];
+    [statusBarView setBackgroundColor:StatusBarBackgroundColor()];
     [statusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
     [statusBarView layer].zPosition = 99;
     [[self view] addSubview:statusBarView];
@@ -1831,12 +1849,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (_voiceSearchController)
     _voiceSearchController->SetDelegate(_toolbarController);
 
-  // If needed, create the tabstrip.
   if (IsIPadIdiom()) {
-    _tabStripController =
-        [_dependencyFactory newTabStripControllerWithTabModel:_model
-                                                   dispatcher:self.dispatcher];
-    _tabStripController.fullscreenDelegate = self;
+    self.tabStripCoordinator =
+        [[TabStripLegacyCoordinator alloc] initWithBaseViewController:self];
+    self.tabStripCoordinator.browserState = _browserState;
+    self.tabStripCoordinator.dispatcher = _dispatcher;
+    self.tabStripCoordinator.tabModel = _model;
+    self.tabStripCoordinator.presentationProvider = self;
+    self.tabStripCoordinator.animationWaitDuration =
+        kFullScreenControllerToolbarAnimationDuration;
+    [self.tabStripCoordinator start];
   }
 
   // Create infobar container.
@@ -1913,16 +1935,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 // Set the frame for the various views. View must be loaded.
 - (void)setUpViewLayout {
   DCHECK([self isViewLoaded]);
-
   CGFloat widthOfView = CGRectGetWidth([self view].bounds);
-
   CGFloat minY = [self headerOffset];
 
-  // If needed, position the tabstrip.
-  if (IsIPadIdiom()) {
-    [self layoutTabStripForWidth:widthOfView];
-    [[self view] addSubview:[_tabStripController view]];
-    minY += CGRectGetHeight([[_tabStripController view] frame]);
+  if (self.tabStripView) {
+    minY += CGRectGetHeight([self.tabStripView frame]);
   }
 
   // Position the toolbar next, either at the top of the browser view or
@@ -1967,18 +1984,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_typingShield setHidden:YES];
   _typingShield.accessibilityIdentifier = @"Typing Shield";
   _typingShield.accessibilityLabel = l10n_util::GetNSString(IDS_CANCEL);
-}
-
-- (void)layoutTabStripForWidth:(CGFloat)maxWidth {
-  UIView* tabStripView = [_tabStripController view];
-  CGRect tabStripFrame = [tabStripView frame];
-  tabStripFrame.origin = CGPointZero;
-  // TODO(crbug.com/256655): Move the origin.y below to -setUpViewLayout.
-  // because the CGPointZero above will break reset the offset, but it's not
-  // clear what removing that will do.
-  tabStripFrame.origin.y = [self headerOffset];
-  tabStripFrame.size.width = maxWidth;
-  [tabStripView setFrame:tabStripFrame];
 }
 
 - (void)displayTab:(Tab*)tab isNewSelection:(BOOL)newSelection {
@@ -2130,9 +2135,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
       l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT);
   CGPoint tabSwitcherAnchor;
   if (IsIPadIdiom()) {
-    DCHECK([self.tabStripController
+    DCHECK([self.tabStripCoordinator
         respondsToSelector:@selector(anchorPointForTabSwitcherButton:)]);
-    tabSwitcherAnchor = [self.tabStripController
+    tabSwitcherAnchor = [self.tabStripCoordinator
         anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
   } else {
     DCHECK([self.toolbarController
@@ -2448,11 +2453,16 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                              }));
 }
 
+- (UIView<TabStripFoldAnimation>*)tabStripPlaceholderView {
+  return [self.tabStripCoordinator placeholderView];
+}
+
 - (void)shutdown {
   DCHECK(!_isShutdown);
   _isShutdown = YES;
-
-  _tabStripController = nil;
+  [self.tabStripCoordinator stop];
+  self.tabStripCoordinator = nil;
+  self.tabStripView = nil;
   _infoBarContainer = nil;
   _readingListMenuNotifier = nil;
   if (_bookmarkModel)
@@ -2958,12 +2968,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                           inset:0.0]];
     }
   } else {
-    if ([_tabStripController view]) {
-      [results addObject:[HeaderDefinition
-                             definitionWithView:[_tabStripController view]
-                                headerBehaviour:Hideable
-                               heightAdjustment:0.0
-                                          inset:0.0]];
+    if (self.tabStripView) {
+      [results addObject:[HeaderDefinition definitionWithView:self.tabStripView
+                                              headerBehaviour:Hideable
+                                             heightAdjustment:0.0
+                                                        inset:0.0]];
     }
     if ([_toolbarController view]) {
       [results addObject:[HeaderDefinition
@@ -4840,10 +4849,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return _contentArea;
 }
 
-- (TabStripController*)tabStripController {
-  return _tabStripController;
-}
-
 - (WebToolbarController*)toolbarController {
   return _toolbarController;
 }
@@ -5131,6 +5136,27 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)repostFormTabHelperDismissRepostFormDialog:
     (RepostFormTabHelper*)helper {
   _repostFormCoordinator = nil;
+}
+
+#pragma mark - TabStripPresentation
+
+- (BOOL)isTabStripFullyVisible {
+  return ([self currentHeaderOffset] == 0.0f);
+}
+
+- (void)showTabStripView:(UIView*)tabStripView {
+  DCHECK([self isViewLoaded]);
+  DCHECK(tabStripView);
+  self.tabStripView = tabStripView;
+  CGRect tabStripFrame = [self.tabStripView frame];
+  tabStripFrame.origin = CGPointZero;
+  // TODO(crbug.com/256655): Move the origin.y below to -setUpViewLayout.
+  // because the CGPointZero above will break reset the offset, but it's not
+  // clear what removing that will do.
+  tabStripFrame.origin.y = [self headerOffset];
+  tabStripFrame.size.width = CGRectGetWidth([self view].bounds);
+  [self.tabStripView setFrame:tabStripFrame];
+  [[self view] addSubview:tabStripView];
 }
 
 @end
