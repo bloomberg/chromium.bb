@@ -40,6 +40,13 @@
 
 # Flaky: https://crbug.com/760687.
 -CacheStorageManagerTest.GetAllOriginsUsageWithOldIndex
+-CacheStorageManagerTest.GetOriginSizeWithOldIndex
 
 # Flaky: https://crbug.com/759653.
 -RenderWidgetHostViewAuraTest.Resize
+
+# Flaky: https://crbug.com/766221.
+-CacheStorageManagerTests/CacheStorageManagerTestP.DeletedKeysGone/1
+
+# Flaky: https://crbug.com/766223.
+-AppCacheUpdateJobTest.AlreadyChecking/1
