@@ -51,6 +51,7 @@ template("repack") {
     inputs = invoker.sources
     outputs = [
       invoker.output,
+      "${invoker.output}.info",
     ]
 
     args = [ "repack" ]

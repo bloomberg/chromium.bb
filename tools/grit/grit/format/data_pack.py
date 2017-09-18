@@ -40,6 +40,7 @@ DataPackContents = collections.namedtuple(
 def Format(root, lang='en', output_dir='.'):
   """Writes out the data pack file format (platform agnostic resource file)."""
   data = {}
+  root.info = []
   for node in root.ActiveDescendants():
     with node:
       if isinstance(node, (include.IncludeNode, message.MessageNode,
@@ -47,6 +48,8 @@ def Format(root, lang='en', output_dir='.'):
         id, value = node.GetDataPackPair(lang, UTF8)
         if value is not None:
           data[id] = value
+          root.info.append(
+              '{},{},{}'.format(node.attrs.get('name'), id, node.source))
   return WriteDataPackToString(data, UTF8)
 
 
@@ -173,6 +176,7 @@ def RePack(output_file, input_files, whitelist_file=None,
       inconsistent.
   """
   input_data_packs = [ReadDataPack(filename) for filename in input_files]
+  input_info_files = [filename + '.info' for filename in input_files]
   whitelist = None
   if whitelist_file:
     whitelist = util.ReadFile(whitelist_file, util.RAW_TEXT).strip().split('\n')
@@ -180,6 +184,10 @@ def RePack(output_file, input_files, whitelist_file=None,
   resources, encoding = RePackFromDataPackStrings(
       input_data_packs, whitelist, suppress_removed_key_output)
   WriteDataPack(resources, output_file, encoding)
+  with open(output_file + '.info', 'w') as output_info_file:
+    for filename in input_info_files:
+      with open(filename, 'r') as info_file:
+        output_info_file.writelines(info_file.readlines())
 
 
 def RePackFromDataPackStrings(inputs, whitelist,

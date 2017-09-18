@@ -43,6 +43,7 @@ class Node(object):
     self.attrs = {}           # The set of attributes (keys to values)
     self.parent = None        # Our parent unless we are the root element.
     self.uberclique = None    # Allows overriding uberclique for parts of tree
+    self.source = None        # File that this node was parsed from
 
   # This context handler allows you to write "with node:" and get a
   # line identifying the offending node if an exception escapes from the body

@@ -331,6 +331,16 @@ template("grit") {
   grit_outputs =
       get_path_info(rebase_path(invoker.outputs, ".", output_dir), "abspath")
 
+  # Add .info output for all pak files
+  set_sources_assignment_filter([ "*.pak" ])
+  sources = grit_outputs
+  pak_grit_outputs = grit_outputs - sources
+  sources = []
+  pak_info_outputs = []
+  foreach(output, pak_grit_outputs) {
+    pak_info_outputs += [ "${output}.info" ]
+  }
+
   # The config and the action below get this visibility son only the generated
   # source set can depend on them. The variable "target_name" will get
   # overwritten inside the inner classes so we need to compute it here.
@@ -362,7 +372,7 @@ template("grit") {
     }
 
     depfile = "$depfile_dir/${grit_output_name}_stamp.d"
-    outputs = [ "${depfile}.stamp" ] + grit_outputs
+    outputs = [ "${depfile}.stamp" ] + grit_outputs + pak_info_outputs
 
     args = [
              "-i",

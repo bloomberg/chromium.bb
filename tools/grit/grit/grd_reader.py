@@ -26,7 +26,7 @@ class StopParsingException(Exception):
 
 class GrdContentHandler(xml.sax.handler.ContentHandler):
   def __init__(self, stop_after, debug, dir, defines, tags_to_ignore,
-               target_platform):
+               target_platform, source):
     # Invariant of data:
     # 'root' is the root of the parse tree being created, or None if we haven't
     # parsed out any elements.
@@ -42,6 +42,7 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
     self.tags_to_ignore = tags_to_ignore or set()
     self.ignore_depth = 0
     self.target_platform = target_platform
+    self.source = source
 
   def startElement(self, name, attrs):
     if self.ignore_depth or name in self.tags_to_ignore:
@@ -57,6 +58,7 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
 
     typeattr = attrs.get('type')
     node = mapping.ElementToClass(name, typeattr)()
+    node.source = self.source
 
     if self.stack:
       self.stack[-1].AddChild(node)
@@ -89,7 +91,12 @@ class GrdContentHandler(xml.sax.handler.ContentHandler):
       if not os.path.exists(partname):
         raise exception.FileNotFound()
       # Exceptions propagate to the handler in grd_reader.Parse().
-      xml.sax.parse(partname, GrdPartContentHandler(self))
+      oldsource = self.source
+      try:
+        self.source = partname
+        xml.sax.parse(partname, GrdPartContentHandler(self))
+      finally:
+        self.source = oldsource
 
     if self.debug:
       print "End parsing of element %s" % name
@@ -178,13 +185,17 @@ def Parse(filename_or_stream, dir=None, stop_after=None, first_ids_file=None,
     grit.exception.Parsing
   '''
 
-  if dir is None and isinstance(filename_or_stream, types.StringType):
-    dir = util.dirname(filename_or_stream)
+  if isinstance(filename_or_stream, types.StringType):
+    source = filename_or_stream
+    if dir is None:
+      dir = util.dirname(filename_or_stream)
+  else:
+    source = None
 
   rc_header.SetPredeterminedIdsFile(predetermined_ids_file)
   handler = GrdContentHandler(stop_after=stop_after, debug=debug, dir=dir,
                               defines=defines, tags_to_ignore=tags_to_ignore,
-                              target_platform=target_platform)
+                              target_platform=target_platform, source=source)
   try:
     xml.sax.parse(filename_or_stream, handler)
   except StopParsingException:
