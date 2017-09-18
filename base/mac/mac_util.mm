@@ -100,7 +100,11 @@ LSSharedFileListItemRef GetLoginItemForApp() {
         [login_items_array objectAtIndex:i]);
     CFURLRef item_url_ref = NULL;
 
-    if (LSSharedFileListItemResolve(item, 0, &item_url_ref, NULL) == noErr) {
+    // It seems that LSSharedFileListItemResolve() can return NULL in
+    // item_url_ref even if the function itself returns noErr. See
+    // https://crbug.com/760989
+    if (LSSharedFileListItemResolve(item, 0, &item_url_ref, NULL) == noErr &&
+        item_url_ref) {
       ScopedCFTypeRef<CFURLRef> item_url(item_url_ref);
       if (CFEqual(item_url, url)) {
         CFRetain(item);
