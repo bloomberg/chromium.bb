@@ -2472,6 +2472,9 @@ crbug.com/673539 [ Linux Win ] css3/filters/effect-contrast-hw.html [ Pass Failu
 # Added 2016-12-15
 crbug.com/674466 [ Win10 ] fast/forms/select/menulist-appearance-rtl.html [ Pass Failure ]
 
+
+crbug.com/765738 [ Linux Win Mac ] virtual/enable_wasm/http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Timeout ]
+
 # ====== Random order flaky tests from here ======
 # These tests are flaky when run in random order, which is the default on Linux & Mac since since 2016-12-16.
 
