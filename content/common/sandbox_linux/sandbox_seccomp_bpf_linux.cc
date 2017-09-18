@@ -49,9 +49,9 @@ using sandbox::bpf_dsl::ResultExpr;
 
 // Make sure that seccomp-bpf does not get disabled by mistake. Also make sure
 // that we think twice about this when adding a new architecture.
-#if !defined(ARCH_CPU_ARM64)
+#if !defined(ARCH_CPU_ARM64) && !defined(ARCH_CPU_MIPS64EL)
 #error "Seccomp-bpf disabled on supported architecture!"
-#endif  // !defined(ARCH_CPU_ARM64)
+#endif  // !defined(ARCH_CPU_ARM64) && !defined(ARCH_CPU_MIPS64EL)
 
 #endif  // BUILDFLAG(USE_SECCOMP_BPF)
 

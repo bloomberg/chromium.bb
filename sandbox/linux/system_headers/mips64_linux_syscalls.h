@@ -6,7 +6,7 @@
 #ifndef SANDBOX_LINUX_SYSTEM_HEADERS_MIPS64_LINUX_SYSCALLS_H_
 #define SANDBOX_LINUX_SYSTEM_HEADERS_MIPS64_LINUX_SYSCALLS_H_
 
-#if !defined(__mips__) || (_MIPS_SIM != _ABI64)
+#if !defined(__mips__)
 #error "Including header on wrong architecture"
 #endif
 

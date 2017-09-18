@@ -21,11 +21,11 @@
 #include "sandbox/linux/system_headers/arm_linux_syscalls.h"
 #endif
 
-#if defined(__mips__) && (_MIPS_SIM == _ABIO32)
+#if defined(__mips32__)
 #include "sandbox/linux/system_headers/mips_linux_syscalls.h"
 #endif
 
-#if defined(__mips__) && (_MIPS_SIM == _ABI64)
+#if defined(__mips64__)
 #include "sandbox/linux/system_headers/mips64_linux_syscalls.h"
 #endif
 

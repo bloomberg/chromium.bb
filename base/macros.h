@@ -12,6 +12,16 @@
 
 #include <stddef.h>  // For size_t.
 
+// Distinguish mips32.
+#if defined(__mips__) && (_MIPS_SIM == _ABIO32)
+#define __mips32__
+#endif
+
+// Distinguish mips64.
+#if defined(__mips__) && (_MIPS_SIM == _ABI64)
+#define __mips64__
+#endif
+
 // Put this in the declarations for a class to be uncopyable.
 #define DISALLOW_COPY(TypeName) \
   TypeName(const TypeName&) = delete

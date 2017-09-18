@@ -14,9 +14,12 @@ namespace sandbox {
 
 namespace {
 
-#if defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32)
+#if defined(__mips32__)
 // This is true for Mips O32 ABI.
 static_assert(MIN_SYSCALL == __NR_Linux, "min syscall number should be 4000");
+#elif defined(__mips64__)
+// This is true for MIPS N64 ABI.
+static_assert(MIN_SYSCALL == __NR_Linux, "min syscall number should be 5000");
 #else
 // This true for supported architectures (Intel and ARM EABI).
 static_assert(MIN_SYSCALL == 0u,

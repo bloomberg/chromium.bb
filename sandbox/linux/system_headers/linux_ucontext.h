@@ -13,8 +13,10 @@
 #include "sandbox/linux/system_headers/i386_linux_ucontext.h"
 #elif defined(__x86_64__)
 #include "sandbox/linux/system_headers/x86_64_linux_ucontext.h"
-#elif defined(__mips__)
+#elif defined(__mips32__)
 #include "sandbox/linux/system_headers/mips_linux_ucontext.h"
+#elif defined(__mips64__)
+#include "sandbox/linux/system_headers/mips64_linux_ucontext.h"
 #elif defined(__aarch64__)
 #include "sandbox/linux/system_headers/arm64_linux_ucontext.h"
 #else
