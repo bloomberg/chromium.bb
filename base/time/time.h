@@ -64,7 +64,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_FUCHSIA)
-#include <magenta/types.h>
+#include <zircon/types.h>
 #endif
 
 #if defined(OS_MACOSX)
@@ -748,7 +748,7 @@ class BASE_EXPORT TimeTicks : public time_internal::TimeBase<TimeTicks> {
  public:
   // The underlying clock used to generate new TimeTicks.
   enum class Clock {
-    FUCHSIA_MX_CLOCK_MONOTONIC,
+    FUCHSIA_ZX_CLOCK_MONOTONIC,
     LINUX_CLOCK_MONOTONIC,
     IOS_CF_ABSOLUTE_TIME_MINUS_KERN_BOOTTIME,
     MAC_MACH_ABSOLUTE_TIME,
@@ -778,9 +778,9 @@ class BASE_EXPORT TimeTicks : public time_internal::TimeBase<TimeTicks> {
   static bool IsConsistentAcrossProcesses() WARN_UNUSED_RESULT;
 
 #if defined(OS_FUCHSIA)
-  // Converts between TimeTicks and an MX_CLOCK_MONOTONIC mx_time_t value.
-  static TimeTicks FromMXTime(mx_time_t nanos_since_boot);
-  mx_time_t ToMXTime() const;
+  // Converts between TimeTicks and an ZX_CLOCK_MONOTONIC zx_time_t value.
+  static TimeTicks FromZxTime(zx_time_t nanos_since_boot);
+  zx_time_t ToZxTime() const;
 #endif
 
 #if defined(OS_WIN)

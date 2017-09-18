@@ -30,7 +30,7 @@ extern "C" {
 //   |MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT| - A Mach port. Only valid on OS X.
 //   |MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE| - A Windows HANDLE value. Only
 //       valid on Windows.
-//   |MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE| - A Fuchsia mx_handle_t value.
+//   |MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE| - A Fuchsia zx_handle_t value.
 //       Only valid on Fuchsia.
 
 typedef uint32_t MojoPlatformHandleType;

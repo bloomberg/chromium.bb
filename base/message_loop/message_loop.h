@@ -557,8 +557,8 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
             WATCH_WRITE = MessagePumpFuchsia::WATCH_WRITE,
             WATCH_READ_WRITE = MessagePumpFuchsia::WATCH_READ_WRITE};
 
-  typedef MessagePumpFuchsia::MxHandleWatchController MxHandleWatchController;
-  typedef MessagePumpFuchsia::MxHandleWatcher MxHandleWatcher;
+  typedef MessagePumpFuchsia::ZxHandleWatchController ZxHandleWatchController;
+  typedef MessagePumpFuchsia::ZxHandleWatcher ZxHandleWatcher;
 #elif defined(OS_IOS)
   typedef MessagePumpIOSForIO::Watcher Watcher;
   typedef MessagePumpIOSForIO::FileDescriptorWatcher
@@ -597,11 +597,11 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
 
 #if defined(OS_FUCHSIA)
   // Additional watch API for native platform resources.
-  bool WatchMxHandle(mx_handle_t handle,
+  bool WatchZxHandle(zx_handle_t handle,
                      bool persistent,
-                     mx_signals_t signals,
-                     MxHandleWatchController* controller,
-                     MxHandleWatcher* delegate);
+                     zx_signals_t signals,
+                     ZxHandleWatchController* controller,
+                     ZxHandleWatcher* delegate);
 #endif
 };
 

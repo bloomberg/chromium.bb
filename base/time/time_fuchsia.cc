@@ -4,7 +4,7 @@
 
 #include "base/time/time.h"
 
-#include <magenta/syscalls.h>
+#include <zircon/syscalls.h>
 
 #include "base/compiler_specific.h"
 #include "base/numerics/checked_math.h"
@@ -15,9 +15,9 @@ namespace {
 
 // Helper function to map an unsigned integer with nanosecond timebase to a
 // signed integer with microsecond timebase.
-ALWAYS_INLINE int64_t MxTimeToMicroseconds(mx_time_t nanos) {
-  const mx_time_t micros =
-      nanos / static_cast<mx_time_t>(base::Time::kNanosecondsPerMicrosecond);
+ALWAYS_INLINE int64_t ZxTimeToMicroseconds(zx_time_t nanos) {
+  const zx_time_t micros =
+      nanos / static_cast<zx_time_t>(base::Time::kNanosecondsPerMicrosecond);
   return static_cast<int64_t>(micros);
 }
 
@@ -27,10 +27,10 @@ ALWAYS_INLINE int64_t MxTimeToMicroseconds(mx_time_t nanos) {
 
 // static
 Time Time::Now() {
-  const mx_time_t nanos_since_unix_epoch = mx_time_get(MX_CLOCK_UTC);
+  const zx_time_t nanos_since_unix_epoch = zx_time_get(ZX_CLOCK_UTC);
   CHECK(nanos_since_unix_epoch != 0);
   // The following expression will overflow in the year 289938 A.D.:
-  return Time(MxTimeToMicroseconds(nanos_since_unix_epoch) +
+  return Time(ZxTimeToMicroseconds(nanos_since_unix_epoch) +
               kTimeTToMicrosecondsOffset);
 }
 
@@ -43,14 +43,14 @@ Time Time::NowFromSystemTime() {
 
 // static
 TimeTicks TimeTicks::Now() {
-  const mx_time_t nanos_since_boot = mx_time_get(MX_CLOCK_MONOTONIC);
+  const zx_time_t nanos_since_boot = zx_time_get(ZX_CLOCK_MONOTONIC);
   CHECK(nanos_since_boot != 0);
-  return TimeTicks(MxTimeToMicroseconds(nanos_since_boot));
+  return TimeTicks(ZxTimeToMicroseconds(nanos_since_boot));
 }
 
 // static
 TimeTicks::Clock TimeTicks::GetClock() {
-  return Clock::FUCHSIA_MX_CLOCK_MONOTONIC;
+  return Clock::FUCHSIA_ZX_CLOCK_MONOTONIC;
 }
 
 // static
@@ -64,21 +64,21 @@ bool TimeTicks::IsConsistentAcrossProcesses() {
 }
 
 // static
-TimeTicks TimeTicks::FromMXTime(mx_time_t nanos_since_boot) {
-  return TimeTicks(MxTimeToMicroseconds(nanos_since_boot));
+TimeTicks TimeTicks::FromZxTime(zx_time_t nanos_since_boot) {
+  return TimeTicks(ZxTimeToMicroseconds(nanos_since_boot));
 }
 
-mx_time_t TimeTicks::ToMXTime() const {
-  CheckedNumeric<mx_time_t> result(base::Time::kNanosecondsPerMicrosecond);
+zx_time_t TimeTicks::ToZxTime() const {
+  CheckedNumeric<zx_time_t> result(base::Time::kNanosecondsPerMicrosecond);
   result *= us_;
   return result.ValueOrDie();
 }
 
 // static
 ThreadTicks ThreadTicks::Now() {
-  const mx_time_t nanos_since_thread_started = mx_time_get(MX_CLOCK_THREAD);
+  const zx_time_t nanos_since_thread_started = zx_time_get(ZX_CLOCK_THREAD);
   CHECK(nanos_since_thread_started != 0);
-  return ThreadTicks(MxTimeToMicroseconds(nanos_since_thread_started));
+  return ThreadTicks(ZxTimeToMicroseconds(nanos_since_thread_started));
 }
 
 }  // namespace base

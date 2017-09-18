@@ -1181,7 +1181,7 @@ SharedMemoryHandle FieldTrialList::DeserializeSharedMemoryHandleMetadata(
 #if defined(OS_WIN)
   return DeserializeImpl<HANDLE>(switch_value);
 #else
-  return DeserializeImpl<mx_handle_t>(switch_value);
+  return DeserializeImpl<zx_handle_t>(switch_value);
 #endif
 }
 

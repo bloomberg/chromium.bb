@@ -4,9 +4,9 @@
 
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
-#include <magenta/process.h>
-#include <magenta/processargs.h>
-#include <magenta/syscalls.h>
+#include <zircon/process.h>
+#include <zircon/processargs.h>
+#include <zircon/syscalls.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -33,9 +33,9 @@ std::string PrepareToPassHandleToChildProcessAsString(
 }  // namespace
 
 PlatformChannelPair::PlatformChannelPair(bool client_is_blocking) {
-  mx_handle_t handles[2] = {};
-  mx_status_t result = mx_channel_create(0, &handles[0], &handles[1]);
-  CHECK_EQ(MX_OK, result);
+  zx_handle_t handles[2] = {};
+  zx_status_t result = zx_channel_create(0, &handles[0], &handles[1]);
+  CHECK_EQ(ZX_OK, result);
 
   server_handle_.reset(PlatformHandle::ForHandle(handles[0]));
   DCHECK(server_handle_.is_valid());
@@ -60,7 +60,7 @@ PlatformChannelPair::PassClientHandleFromParentProcessFromString(
     return ScopedPlatformHandle();
   }
   return ScopedPlatformHandle(PlatformHandle::ForHandle(
-      mx_get_startup_handle(base::checked_cast<uint32_t>(id))));
+      zx_get_startup_handle(base::checked_cast<uint32_t>(id))));
 }
 
 void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(

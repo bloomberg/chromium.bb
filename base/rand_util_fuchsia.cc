@@ -4,7 +4,7 @@
 
 #include "base/rand_util.h"
 
-#include <magenta/syscalls.h>
+#include <zircon/syscalls.h>
 
 #include <algorithm>
 
@@ -24,11 +24,11 @@ void RandBytes(void* output, size_t output_length) {
   while (remaining > 0) {
     // The syscall has a maximum number of bytes that can be read at once.
     size_t read_len =
-        std::min(remaining, static_cast<size_t>(MX_CPRNG_DRAW_MAX_LEN));
+        std::min(remaining, static_cast<size_t>(ZX_CPRNG_DRAW_MAX_LEN));
 
     size_t actual;
-    mx_status_t status = mx_cprng_draw(cur, read_len, &actual);
-    CHECK(status == MX_OK && read_len == actual);
+    zx_status_t status = zx_cprng_draw(cur, read_len, &actual);
+    CHECK(status == ZX_OK && read_len == actual);
 
     CHECK(remaining >= actual);
     remaining -= actual;

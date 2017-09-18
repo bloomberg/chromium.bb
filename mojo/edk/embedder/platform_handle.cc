@@ -6,8 +6,8 @@
 
 #include "build/build_config.h"
 #if defined(OS_FUCHSIA)
-#include <magenta/status.h>
-#include <magenta/syscalls.h>
+#include <zircon/status.h>
+#include <zircon/syscalls.h>
 #endif
 #if defined(OS_POSIX)
 #include <unistd.h>
@@ -27,11 +27,11 @@ void PlatformHandle::CloseIfNecessary() {
     return;
 
 #if defined(OS_FUCHSIA)
-  if (handle != MX_HANDLE_INVALID) {
-    mx_status_t result = mx_handle_close(handle);
-    DCHECK_EQ(MX_OK, result) << "CloseIfNecessary(mx_handle_close): "
-                             << mx_status_get_string(result);
-    handle = MX_HANDLE_INVALID;
+  if (handle != ZX_HANDLE_INVALID) {
+    zx_status_t result = zx_handle_close(handle);
+    DCHECK_EQ(ZX_OK, result) << "CloseIfNecessary(zx_handle_close): "
+                             << zx_status_get_string(result);
+    handle = ZX_HANDLE_INVALID;
   }
   if (fd >= 0) {
     bool success = (close(fd) == 0);

@@ -4,8 +4,8 @@
 
 #include "base/process/process.h"
 
-#include <magenta/process.h>
-#include <magenta/syscalls.h>
+#include <zircon/process.h>
+#include <zircon/syscalls.h>
 
 #include "base/debug/activity_tracker.h"
 #include "base/fuchsia/default_job.h"
@@ -15,7 +15,7 @@ namespace base {
 
 Process::Process(ProcessHandle handle)
     : process_(handle), is_current_process_(false) {
-  CHECK_NE(handle, mx_process_self());
+  CHECK_NE(handle, zx_process_self());
 }
 
 Process::~Process() {
@@ -48,12 +48,12 @@ Process Process::Open(ProcessId pid) {
     return Current();
 
   // While a process with object id |pid| might exist, the job returned by
-  // mx_job_default() might not contain it, so this call can fail.
-  ScopedMxHandle handle;
-  mx_status_t status = mx_object_get_child(
-      GetDefaultJob(), pid, MX_RIGHT_SAME_RIGHTS, handle.receive());
-  if (status != MX_OK) {
-    DLOG(ERROR) << "mx_object_get_child failed: " << status;
+  // zx_job_default() might not contain it, so this call can fail.
+  ScopedZxHandle handle;
+  zx_status_t status = zx_object_get_child(
+      GetDefaultJob(), pid, ZX_RIGHT_SAME_RIGHTS, handle.receive());
+  if (status != ZX_OK) {
+    DLOG(ERROR) << "zx_object_get_child failed: " << status;
     return Process();
   }
   return Process(handle.release());
@@ -68,10 +68,10 @@ Process Process::OpenWithExtraPrivileges(ProcessId pid) {
 // static
 Process Process::DeprecatedGetProcessFromHandle(ProcessHandle handle) {
   DCHECK_NE(handle, GetCurrentProcessHandle());
-  ScopedMxHandle out;
-  if (mx_handle_duplicate(handle, MX_RIGHT_SAME_RIGHTS, out.receive()) !=
-      MX_OK) {
-    DLOG(ERROR) << "mx_handle_duplicate failed: " << handle;
+  ScopedZxHandle out;
+  if (zx_handle_duplicate(handle, ZX_RIGHT_SAME_RIGHTS, out.receive()) !=
+      ZX_OK) {
+    DLOG(ERROR) << "zx_handle_duplicate failed: " << handle;
     return Process();
   }
 
@@ -93,7 +93,7 @@ bool Process::IsValid() const {
 }
 
 ProcessHandle Process::Handle() const {
-  return is_current_process_ ? mx_process_self() : process_.get();
+  return is_current_process_ ? zx_process_self() : process_.get();
 }
 
 Process Process::Duplicate() const {
@@ -103,10 +103,10 @@ Process Process::Duplicate() const {
   if (!IsValid())
     return Process();
 
-  ScopedMxHandle out;
-  if (mx_handle_duplicate(process_.get(), MX_RIGHT_SAME_RIGHTS,
-                          out.receive()) != MX_OK) {
-    DLOG(ERROR) << "mx_handle_duplicate failed: " << process_.get();
+  ScopedZxHandle out;
+  if (zx_handle_duplicate(process_.get(), ZX_RIGHT_SAME_RIGHTS,
+                          out.receive()) != ZX_OK) {
+    DLOG(ERROR) << "zx_handle_duplicate failed: " << process_.get();
     return Process();
   }
 
@@ -129,19 +129,19 @@ void Process::Close() {
 
 bool Process::Terminate(int exit_code, bool wait) const {
   // exit_code isn't supportable. https://crbug.com/753490.
-  mx_status_t status = mx_task_kill(Handle());
+  zx_status_t status = zx_task_kill(Handle());
   // TODO(scottmg): Put these LOG/CHECK back to DLOG/DCHECK after
   // https://crbug.com/750756 is diagnosed.
-  if (status == MX_OK && wait) {
-    mx_signals_t signals;
-    status = mx_object_wait_one(Handle(), MX_TASK_TERMINATED,
-                                mx_deadline_after(MX_SEC(60)), &signals);
-    if (status != MX_OK) {
+  if (status == ZX_OK && wait) {
+    zx_signals_t signals;
+    status = zx_object_wait_one(Handle(), ZX_TASK_TERMINATED,
+                                zx_deadline_after(ZX_SEC(60)), &signals);
+    if (status != ZX_OK) {
       LOG(ERROR) << "Error waiting for process exit: " << status;
     } else {
-      CHECK(signals & MX_TASK_TERMINATED);
+      CHECK(signals & ZX_TASK_TERMINATED);
     }
-  } else if (status != MX_OK) {
+  } else if (status != ZX_OK) {
     LOG(ERROR) << "Unable to terminate process: " << status;
   }
 
@@ -158,40 +158,40 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedProcessWaitActivity process_activity(this);
 
-  mx_time_t deadline = timeout == TimeDelta::Max()
-                           ? MX_TIME_INFINITE
-                           : (TimeTicks::Now() + timeout).ToMXTime();
+  zx_time_t deadline = timeout == TimeDelta::Max()
+                           ? ZX_TIME_INFINITE
+                           : (TimeTicks::Now() + timeout).ToZxTime();
   // TODO(scottmg): https://crbug.com/755282
   const bool kOnBot = getenv("CHROME_HEADLESS") != nullptr;
   if (kOnBot) {
     LOG(ERROR) << base::StringPrintf(
         "going to wait for process %x (deadline=%zu, now=%zu)", process_.get(),
-        deadline, TimeTicks::Now().ToMXTime());
+        deadline, TimeTicks::Now().ToZxTime());
   }
-  mx_signals_t signals_observed = 0;
-  mx_status_t status = mx_object_wait_one(process_.get(), MX_TASK_TERMINATED,
+  zx_signals_t signals_observed = 0;
+  zx_status_t status = zx_object_wait_one(process_.get(), ZX_TASK_TERMINATED,
                                           deadline, &signals_observed);
 
   // TODO(scottmg): Make these LOGs into DLOGs after https://crbug.com/750756 is
   // fixed.
   *exit_code = -1;
-  if (status != MX_OK && status != MX_ERR_TIMED_OUT) {
-    LOG(ERROR) << "mx_object_wait_one failed, status=" << status;
+  if (status != ZX_OK && status != ZX_ERR_TIMED_OUT) {
+    LOG(ERROR) << "zx_object_wait_one failed, status=" << status;
     return false;
   }
-  if (status == MX_ERR_TIMED_OUT) {
-    mx_time_t now = TimeTicks::Now().ToMXTime();
-    LOG(ERROR) << "mx_object_wait_one timed out, signals=" << signals_observed
+  if (status == ZX_ERR_TIMED_OUT) {
+    zx_time_t now = TimeTicks::Now().ToZxTime();
+    LOG(ERROR) << "zx_object_wait_one timed out, signals=" << signals_observed
                << ", deadline=" << deadline << ", now=" << now
                << ", delta=" << (now - deadline);
     return false;
   }
 
-  mx_info_process_t proc_info;
-  status = mx_object_get_info(process_.get(), MX_INFO_PROCESS, &proc_info,
+  zx_info_process_t proc_info;
+  status = zx_object_get_info(process_.get(), ZX_INFO_PROCESS, &proc_info,
                               sizeof(proc_info), nullptr, nullptr);
-  if (status != MX_OK) {
-    LOG(ERROR) << "mx_object_get_info failed, status=" << status;
+  if (status != ZX_OK) {
+    LOG(ERROR) << "zx_object_get_info failed, status=" << status;
     return false;
   }
 

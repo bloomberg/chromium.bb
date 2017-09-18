@@ -14,6 +14,11 @@ config("compiler") {
   defines = [
     # To force full builds after SDK updates in case of ABI changes.
     "FUCHSIA_SDK_VERSION=$sdk_version",
+
+    # TODO(scottmg): Temporary during 3-sided rolls. https://crbug.com/765754.
+    # When this is set, defines/typedefs are in effect to convert "mx_"s to
+    # "zx_"s.
+    "CHROMIUM_ROLLING_MAGENTA_TO_ZIRCON=1",
   ]
   cflags = []
   ldflags = []
@@ -21,7 +26,17 @@ config("compiler") {
     cflags += [ "--target=aarch64-fuchsia" ]
     ldflags += [ "--target=aarch64-fuchsia" ]
   } else if (current_cpu == "x64") {
-    cflags += [ "--target=x86_64-fuchsia" ]
+    cflags += [
+      "--target=x86_64-fuchsia",
+
+      # TODO(scottmg): I screwed up in
+      # https://chromium.googlesource.com/v8/v8.git/+/aabb893a3259c72a78920771280d0832411c92c1
+      # (and put #undef mx_ zx_ rather than just #undef mx_). It took 4 days to
+      # get that landed upstream, so instead of fixing and waiting again (since
+      # that code will be deleted right after this lands), simply turn off
+      # this warning temporarily. https://crbug.com/765754.
+      "-Wno-extra-tokens",
+    ]
     ldflags += [ "--target=x86_64-fuchsia" ]
   } else {
     assert(false, "Unsupported architecture")
@@ -40,20 +55,20 @@ config("compiler") {
     rebase_path(fuchsia_sdk, root_build_dir) + "/toolchain_libs/clang/6.0.0",
 
     # The stack defaults to 256k on Fuchsia (see
-    # https://fuchsia.googlesource.com/magenta/+/master/system/private/magenta/stack.h#9),
+    # https://fuchsia.googlesource.com/zircon/+/master/system/private/zircon/stack.h#9),
     # but on other platforms it's much higher, so a variety of code assumes more
     # will be available. Raise to 8M which matches e.g. macOS.
     "-Wl,-z,stack-size=0x800000",
 
-    # We always want mxio or else e.g. stdio wouldn't be initialized if mxio
+    # We always want fdio or else e.g. stdio wouldn't be initialized if fdio
     # happens to not be directly referenced. The common POSIX-y compiler setup
-    # uses -Wl,--as-needed which drops it if it's simply "-lmxio" from a libs
-    # setting. Disable --as-needed, add mxio, and then set back to --as-needed.
+    # uses -Wl,--as-needed which drops it if it's simply "-lfdio" from a libs
+    # setting. Disable --as-needed, add fdio, and then set back to --as-needed.
     # https://crbug.com/731217.
     "-Wl,--no-as-needed",
-    "-lmxio",
+    "-lfdio",
     "-Wl,--as-needed",
   ]
 
-  libs = [ "magenta" ]
+  libs = [ "zircon" ]
 }

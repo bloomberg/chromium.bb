@@ -112,9 +112,9 @@ Error MapSystemError(logging::SystemErrorCode os_error) {
       return ERR_INSUFFICIENT_RESOURCES;
 #if defined(OS_FUCHSIA)
     case EIO:
-      // MXIO maps all unrecognized errors to EIO. If you see this message then
-      // consider adding custom error in MXIO for the corresponding error.
-      DLOG(FATAL) << "EIO was returned by MXIO.";
+      // FDIO maps all unrecognized errors to EIO. If you see this message then
+      // consider adding custom error in FDIO for the corresponding error.
+      DLOG(FATAL) << "EIO was returned by FDIO.";
       return ERR_FAILED;
 #endif  // OS_FUCHSIA
 

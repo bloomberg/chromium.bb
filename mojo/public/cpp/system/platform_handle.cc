@@ -128,7 +128,7 @@ MojoResult UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
 #elif defined(OS_FUCHSIA)
   DCHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE);
   *memory_handle = base::SharedMemoryHandle(
-      static_cast<mx_handle_t>(platform_handle.value), num_bytes, guid);
+      static_cast<zx_handle_t>(platform_handle.value), num_bytes, guid);
 #elif defined(OS_POSIX)
   DCHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR);
   *memory_handle = base::SharedMemoryHandle(

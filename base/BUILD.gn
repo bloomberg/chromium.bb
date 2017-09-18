@@ -1238,7 +1238,7 @@ component("base") {
       "files/file_path_watcher_fuchsia.cc",
       "fuchsia/default_job.cc",
       "fuchsia/default_job.h",
-      "fuchsia/scoped_mx_handle.h",
+      "fuchsia/scoped_zx_handle.h",
       "memory/shared_memory_fuchsia.cc",
       "memory/shared_memory_handle_fuchsia.cc",
       "message_loop/message_pump_fuchsia.cc",

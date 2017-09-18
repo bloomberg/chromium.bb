@@ -11,11 +11,11 @@ namespace edk {
 
 ScopedPlatformHandle DuplicatePlatformHandle(PlatformHandle platform_handle) {
   DCHECK(platform_handle.is_valid());
-  mx_handle_t duped;
-  // mx_handle_duplicate won't touch |duped| in case of failure.
-  mx_status_t result = mx_handle_duplicate(platform_handle.as_handle(),
-                                           MX_RIGHT_SAME_RIGHTS, &duped);
-  DLOG_IF(ERROR, result != MX_OK) << "mx_duplicate_handle failed: " << result;
+  zx_handle_t duped;
+  // zx_handle_duplicate won't touch |duped| in case of failure.
+  zx_status_t result = zx_handle_duplicate(platform_handle.as_handle(),
+                                           ZX_RIGHT_SAME_RIGHTS, &duped);
+  DLOG_IF(ERROR, result != ZX_OK) << "zx_duplicate_handle failed: " << result;
   return ScopedPlatformHandle(PlatformHandle::ForHandle(duped));
 }
 

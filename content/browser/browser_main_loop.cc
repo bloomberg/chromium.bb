@@ -189,8 +189,8 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include <magenta/process.h>
-#include <magenta/syscalls.h>
+#include <zircon/process.h>
+#include <zircon/syscalls.h>
 
 #include "base/fuchsia/default_job.h"
 #endif  // defined(OS_FUCHSIA)
@@ -469,10 +469,10 @@ constexpr base::TimeDelta kSwapMetricsInterval =
 // Create and register the job which will contain all child processes
 // of the browser process as well as their descendents.
 void InitDefaultJob() {
-  base::ScopedMxHandle handle;
-  mx_status_t result = mx_job_create(mx_job_default(), 0, handle.receive());
-  CHECK_EQ(MX_OK, result) << "mx_job_create(job): "
-                          << mx_status_get_string(result);
+  base::ScopedZxHandle handle;
+  zx_status_t result = zx_job_create(zx_job_default(), 0, handle.receive());
+  CHECK_EQ(ZX_OK, result) << "zx_job_create(job): "
+                          << zx_status_get_string(result);
   base::SetDefaultJob(std::move(handle));
 }
 #endif  // defined(OS_FUCHSIA)

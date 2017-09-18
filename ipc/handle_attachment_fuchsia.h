@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/fuchsia/scoped_mx_handle.h"
+#include "base/fuchsia/scoped_zx_handle.h"
 #include "ipc/handle_fuchsia.h"
 #include "ipc/ipc_message_attachment.h"
 #include "ipc/ipc_message_support_export.h"
@@ -15,26 +15,26 @@
 namespace IPC {
 namespace internal {
 
-// This class represents a Fuchsia mx_handle_t attached to a Chrome IPC message.
+// This class represents a Fuchsia zx_handle_t attached to a Chrome IPC message.
 class IPC_MESSAGE_SUPPORT_EXPORT HandleAttachmentFuchsia
     : public MessageAttachment {
  public:
   // This constructor makes a copy of |handle| and takes ownership of the
   // result. Should only be called by the sender of a Chrome IPC message.
-  explicit HandleAttachmentFuchsia(const mx_handle_t& handle);
+  explicit HandleAttachmentFuchsia(const zx_handle_t& handle);
 
   // This constructor takes ownership of |handle|. Should only be called by the
   // receiver of a Chrome IPC message.
-  explicit HandleAttachmentFuchsia(base::ScopedMxHandle handle);
+  explicit HandleAttachmentFuchsia(base::ScopedZxHandle handle);
 
   Type GetType() const override;
 
-  mx_handle_t Take() { return handle_.release(); }
+  zx_handle_t Take() { return handle_.release(); }
 
  private:
   ~HandleAttachmentFuchsia() override;
 
-  base::ScopedMxHandle handle_;
+  base::ScopedZxHandle handle_;
 };
 
 }  // namespace internal

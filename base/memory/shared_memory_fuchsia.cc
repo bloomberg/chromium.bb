@@ -6,12 +6,12 @@
 
 #include <limits>
 
-#include <magenta/process.h>
-#include <magenta/rights.h>
-#include <magenta/syscalls.h>
+#include <zircon/process.h>
+#include <zircon/rights.h>
+#include <zircon/syscalls.h>
 
 #include "base/bits.h"
-#include "base/fuchsia/scoped_mx_handle.h"
+#include "base/fuchsia/scoped_zx_handle.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/process/process_metrics.h"
@@ -42,7 +42,7 @@ void SharedMemory::CloseHandle(const SharedMemoryHandle& handle) {
 // static
 size_t SharedMemory::GetHandleLimit() {
   // Duplicated from the internal Magenta kernel constant kMaxHandleCount
-  // (kernel/lib/magenta/magenta.cpp).
+  // (kernel/lib/zircon/zircon.cpp).
   return 256 * 1024u;
 }
 
@@ -53,21 +53,21 @@ bool SharedMemory::CreateAndMapAnonymous(size_t size) {
 bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   requested_size_ = options.size;
   mapped_size_ = bits::Align(requested_size_, GetPageSize());
-  ScopedMxHandle vmo;
-  mx_status_t status = mx_vmo_create(mapped_size_, 0, vmo.receive());
-  if (status != MX_OK) {
-    DLOG(ERROR) << "mx_vmo_create failed, status=" << status;
+  ScopedZxHandle vmo;
+  zx_status_t status = zx_vmo_create(mapped_size_, 0, vmo.receive());
+  if (status != ZX_OK) {
+    DLOG(ERROR) << "zx_vmo_create failed, status=" << status;
     return false;
   }
 
   if (!options.executable) {
     // If options.executable isn't set, drop that permission by replacement.
-    const int kNoExecFlags = MX_DEFAULT_VMO_RIGHTS & ~MX_RIGHT_EXECUTE;
-    ScopedMxHandle old_vmo(std::move(vmo));
-    status = mx_handle_replace(old_vmo.get(), kNoExecFlags, vmo.receive());
-    if (status != MX_OK) {
-      DLOG(ERROR) << "mx_handle_replace() failed: "
-                  << mx_status_get_string(status);
+    const int kNoExecFlags = ZX_DEFAULT_VMO_RIGHTS & ~ZX_RIGHT_EXECUTE;
+    ScopedZxHandle old_vmo(std::move(vmo));
+    status = zx_handle_replace(old_vmo.get(), kNoExecFlags, vmo.receive());
+    if (status != ZX_OK) {
+      DLOG(ERROR) << "zx_handle_replace() failed: "
+                  << zx_status_get_string(status);
       return false;
     }
     ignore_result(old_vmo.release());
@@ -88,14 +88,14 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (memory_)
     return false;
 
-  int flags = MX_VM_FLAG_PERM_READ;
+  int flags = ZX_VM_FLAG_PERM_READ;
   if (!read_only_)
-    flags |= MX_VM_FLAG_PERM_WRITE;
+    flags |= ZX_VM_FLAG_PERM_WRITE;
   uintptr_t addr;
-  mx_status_t status = mx_vmar_map(mx_vmar_root_self(), 0, shm_.GetHandle(),
+  zx_status_t status = zx_vmar_map(zx_vmar_root_self(), 0, shm_.GetHandle(),
                                    offset, bytes, flags, &addr);
-  if (status != MX_OK) {
-    DLOG(ERROR) << "mx_vmar_map failed, status=" << status;
+  if (status != ZX_OK) {
+    DLOG(ERROR) << "zx_vmar_map failed, status=" << status;
     return false;
   }
   memory_ = reinterpret_cast<void*>(addr);
@@ -113,9 +113,9 @@ bool SharedMemory::Unmap() {
   SharedMemoryTracker::GetInstance()->DecrementMemoryUsage(*this);
 
   uintptr_t addr = reinterpret_cast<uintptr_t>(memory_);
-  mx_status_t status = mx_vmar_unmap(mx_vmar_root_self(), addr, mapped_size_);
-  if (status != MX_OK) {
-    DLOG(ERROR) << "mx_vmar_unmap failed, status=" << status;
+  zx_status_t status = zx_vmar_unmap(zx_vmar_root_self(), addr, mapped_size_);
+  if (status != ZX_OK) {
+    DLOG(ERROR) << "zx_vmar_unmap failed, status=" << status;
     return false;
   }
 
@@ -150,13 +150,13 @@ SharedMemoryHandle SharedMemory::DuplicateHandle(
 }
 
 SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
-  mx_handle_t duped_handle;
+  zx_handle_t duped_handle;
   const int kNoWriteOrExec =
-      MX_DEFAULT_VMO_RIGHTS &
-      ~(MX_RIGHT_WRITE | MX_RIGHT_EXECUTE | MX_RIGHT_SET_PROPERTY);
-  mx_status_t status =
-      mx_handle_duplicate(shm_.GetHandle(), kNoWriteOrExec, &duped_handle);
-  if (status != MX_OK)
+      ZX_DEFAULT_VMO_RIGHTS &
+      ~(ZX_RIGHT_WRITE | ZX_RIGHT_EXECUTE | ZX_RIGHT_SET_PROPERTY);
+  zx_status_t status =
+      zx_handle_duplicate(shm_.GetHandle(), kNoWriteOrExec, &duped_handle);
+  if (status != ZX_OK)
     return SharedMemoryHandle();
 
   SharedMemoryHandle handle(duped_handle, shm_.GetSize(), shm_.GetGUID());

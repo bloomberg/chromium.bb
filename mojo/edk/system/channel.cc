@@ -57,7 +57,7 @@ const size_t kMaxUnusedReadBufferCapacity = 4096;
 
 // TODO(rockot): Increase this if/when Channel implementations support more.
 // Linux: The platform imposes a limit of 253 handles per sendmsg().
-// Fuchsia: The mx_channel_write() API supports up to 64 handles.
+// Fuchsia: The zx_channel_write() API supports up to 64 handles.
 const size_t kMaxAttachedHandles = 64;
 
 Channel::Message::Message(size_t payload_size, size_t max_handles)

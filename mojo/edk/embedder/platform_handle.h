@@ -15,8 +15,8 @@
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include <mach/mach.h>
 #elif defined(OS_FUCHSIA)
-#include <magenta/syscalls.h>
-#include <mxio/limits.h>
+#include <fdio/limits.h>
+#include <zircon/syscalls.h>
 #endif
 
 #include "base/logging.h"
@@ -26,31 +26,31 @@ namespace edk {
 
 #if defined(OS_FUCHSIA)
 // TODO(fuchsia): Find a clean way to share this with the POSIX version.
-// |mx_handle_t| is a typedef of |int|, so we only allow PlatformHandle to be
+// |zx_handle_t| is a typedef of |int|, so we only allow PlatformHandle to be
 // created via explicit For<type>() creator functions.
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
  public:
-  static PlatformHandle ForHandle(mx_handle_t handle) {
+  static PlatformHandle ForHandle(zx_handle_t handle) {
     PlatformHandle platform_handle;
     platform_handle.handle = handle;
     return platform_handle;
   }
   static PlatformHandle ForFd(int fd) {
     PlatformHandle platform_handle;
-    DCHECK_LT(fd, MAX_MXIO_FD);
+    DCHECK_LT(fd, MAX_FDIO_FD);
     platform_handle.fd = fd;
     return platform_handle;
   }
 
   void CloseIfNecessary();
   bool is_valid() const { return is_valid_fd() || is_valid_handle(); }
-  bool is_valid_handle() const { return handle != MX_HANDLE_INVALID && fd < 0; }
-  mx_handle_t as_handle() const { return handle; }
-  bool is_valid_fd() const { return fd >= 0 && handle == MX_HANDLE_INVALID; }
+  bool is_valid_handle() const { return handle != ZX_HANDLE_INVALID && fd < 0; }
+  zx_handle_t as_handle() const { return handle; }
+  bool is_valid_fd() const { return fd >= 0 && handle == ZX_HANDLE_INVALID; }
   int as_fd() const { return fd; }
 
  private:
-  mx_handle_t handle = MX_HANDLE_INVALID;
+  zx_handle_t handle = ZX_HANDLE_INVALID;
   int fd = -1;
 };
 #elif defined(OS_POSIX)

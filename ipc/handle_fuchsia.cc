@@ -15,9 +15,9 @@
 
 namespace IPC {
 
-HandleFuchsia::HandleFuchsia() : handle_(MX_HANDLE_INVALID) {}
+HandleFuchsia::HandleFuchsia() : handle_(ZX_HANDLE_INVALID) {}
 
-HandleFuchsia::HandleFuchsia(const mx_handle_t& handle) : handle_(handle) {}
+HandleFuchsia::HandleFuchsia(const zx_handle_t& handle) : handle_(handle) {}
 
 // static
 void ParamTraits<HandleFuchsia>::Write(base::Pickle* m, const param_type& p) {
