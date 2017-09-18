@@ -43,7 +43,7 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  void OnDisplaysSynced(unsigned);
+  void OnDisplaysSynced();
   void OnGetDisplays();
 
   // ContextLifecycleObserver.
@@ -54,7 +54,6 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   VRDisplayVector displays_;
 
   bool display_synced_;
-  unsigned number_of_synced_displays_;
 
   Deque<std::unique_ptr<VRGetDevicesCallback>> pending_get_devices_callbacks_;
   device::mojom::blink::VRServicePtr service_;

@@ -24,7 +24,7 @@ namespace device {
 
 class VRDeviceManagerTest : public testing::Test {
  public:
-  void onDisplaySynced(unsigned int number_of_devices) {}
+  void onDisplaySynced() {}
 
  protected:
   VRDeviceManagerTest();

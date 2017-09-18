@@ -22,7 +22,7 @@ class VRDisplayImplTest : public testing::Test {
  public:
   VRDisplayImplTest() {}
   ~VRDisplayImplTest() override {}
-  void onDisplaySynced(unsigned int number_of_devices) {}
+  void onDisplaySynced() {}
   void onPresentComplete(bool success) {
     is_request_presenting_success_ = success;
   }

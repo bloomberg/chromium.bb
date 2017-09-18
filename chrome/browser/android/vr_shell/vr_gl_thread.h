@@ -53,9 +53,6 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void ProcessContentGesture(
       std::unique_ptr<blink::WebInputEvent> event) override;
   void ForceExitVr() override;
-  void RunVRDisplayInfoCallback(
-      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
-      device::mojom::VRDisplayInfoPtr* info) override;
   void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;
   void OnGlInitialized(unsigned int content_texture_id) override;

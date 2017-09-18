@@ -23,9 +23,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
   ~GvrDevice() override;
 
   // VRDevice
-  void CreateVRDisplayInfo(
-      const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) override;
-
+  mojom::VRDisplayInfoPtr GetVRDisplayInfo() override;
   void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                       mojom::VRPresentationProviderRequest request,
                       const base::Callback<void(bool)>& callback) override;
@@ -45,6 +43,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
 
   base::android::ScopedJavaGlobalRef<jobject> non_presenting_context_;
   std::unique_ptr<gvr::GvrApi> gvr_api_;
+  mojom::VRDisplayInfoPtr display_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDevice);
 };

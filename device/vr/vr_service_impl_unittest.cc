@@ -21,7 +21,7 @@ class VRServiceImplTest : public testing::Test {
  public:
   VRServiceImplTest() {}
   ~VRServiceImplTest() override {}
-  void onDisplaySynced(unsigned int number_of_devices) {}
+  void onDisplaySynced() {}
 
  protected:
   void SetUp() override {

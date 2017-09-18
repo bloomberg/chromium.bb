@@ -117,10 +117,6 @@ VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(
 void VrShellDelegate::SetDelegate(VrShell* vr_shell,
                                   gvr::ViewerType viewer_type) {
   vr_shell_ = vr_shell;
-  device::VRDevice* device = GetDevice();
-  if (device)
-    device->OnChanged();
-
   if (pending_successful_present_request_) {
     SetPresentResult(true);
   }
@@ -132,10 +128,8 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
 void VrShellDelegate::RemoveDelegate() {
   vr_shell_ = nullptr;
   device::VRDevice* device = GetDevice();
-  if (device) {
+  if (device)
     device->OnExitPresent();
-    device->OnChanged();
-  }
 }
 
 void VrShellDelegate::SetPresentResult(JNIEnv* env,
@@ -148,6 +142,9 @@ void VrShellDelegate::SetPresentResult(bool success) {
   CHECK(!present_callback_.is_null());
   if (!success) {
     pending_successful_present_request_ = false;
+    submit_client_ = nullptr;
+    presentation_provider_request_ = nullptr;
+    display_info_ = nullptr;
     base::ResetAndReturn(&present_callback_).Run(false);
     return;
   }
@@ -159,8 +156,9 @@ void VrShellDelegate::SetPresentResult(bool success) {
     return;
   }
 
-  vr_shell_->ConnectPresentingService(
-      std::move(submit_client_), std::move(presentation_provider_request_));
+  vr_shell_->ConnectPresentingService(std::move(submit_client_),
+                                      std::move(presentation_provider_request_),
+                                      std::move(display_info_));
 
   base::ResetAndReturn(&present_callback_).Run(true);
   pending_successful_present_request_ = false;
@@ -225,6 +223,7 @@ void VrShellDelegate::SetDeviceId(unsigned int device_id) {
 void VrShellDelegate::RequestWebVRPresent(
     device::mojom::VRSubmitFrameClientPtr submit_client,
     device::mojom::VRPresentationProviderRequest request,
+    device::mojom::VRDisplayInfoPtr display_info,
     const base::Callback<void(bool)>& callback) {
   if (!present_callback_.is_null()) {
     // Can only handle one request at a time. This is also extremely unlikely to
@@ -236,6 +235,7 @@ void VrShellDelegate::RequestWebVRPresent(
   present_callback_ = std::move(callback);
   submit_client_ = std::move(submit_client);
   presentation_provider_request_ = std::move(request);
+  display_info_ = std::move(display_info);
 
   // If/When VRShell is ready for use it will call SetPresentResult.
   JNIEnv* env = AttachCurrentThread();
@@ -367,19 +367,6 @@ void VrShellDelegate::GetNextMagicWindowPose(
   }
   std::move(callback).Run(
       device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api, nullptr));
-}
-
-void VrShellDelegate::CreateVRDisplayInfo(
-    gvr::GvrApi* gvr_api,
-    const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
-    uint32_t device_id) {
-  if (vr_shell_) {
-    vr_shell_->CreateVRDisplayInfo(callback, device_id);
-    return;
-  }
-  // This is for magic window mode, which doesn't care what the render size is.
-  callback.Run(
-      device::GvrDelegate::CreateDefaultVRDisplayInfo(gvr_api, device_id));
 }
 
 device::VRDevice* VrShellDelegate::GetDevice() {

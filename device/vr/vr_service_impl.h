@@ -45,16 +45,11 @@ class VRServiceImpl : public mojom::VRService {
   friend class VRDisplayImplTest;
 
   void SetListeningForActivate(bool listening) override;
-  void OnVRDisplayInfoCreated(VRDevice* device,
-                              mojom::VRDisplayInfoPtr display_info);
 
   std::map<VRDevice*, std::unique_ptr<VRDisplayImpl>> displays_;
 
   mojom::VRServiceClientPtr client_;
 
-  bool in_set_client_ = false;
-  unsigned connected_devices_ = 0;
-  unsigned handled_devices_ = 0;
   const int render_frame_process_id_;
   const int render_frame_routing_id_;
 

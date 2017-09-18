@@ -37,13 +37,6 @@ class DEVICE_VR_EXPORT GvrDelegate {
   static mojom::VRPosePtr GetVRPosePtrWithNeckModel(
       gvr::GvrApi* gvr_api,
       gfx::Transform* head_mat_out);
-  static gfx::Size GetRecommendedWebVrSize(gvr::GvrApi* gvr_api);
-  static mojom::VRDisplayInfoPtr CreateDefaultVRDisplayInfo(
-      gvr::GvrApi* gvr_api,
-      uint32_t device_id);
-  static mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
-                                                     gfx::Size recommended_size,
-                                                     uint32_t device_id);
 };
 
 }  // namespace device

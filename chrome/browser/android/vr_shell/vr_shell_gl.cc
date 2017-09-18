@@ -260,13 +260,6 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 
-  gfx::Size webvr_size =
-      device::GvrDelegate::GetRecommendedWebVrSize(gvr_api_.get());
-  DVLOG(1) << __FUNCTION__ << ": resize initial to " << webvr_size.width()
-           << "x" << webvr_size.height();
-
-  CreateOrResizeWebVRSurface(webvr_size);
-
   if (daydream_support_) {
     base::PostTaskWithTraits(
         FROM_HERE, {base::TaskPriority::BACKGROUND},
@@ -363,10 +356,18 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
 
 void VrShellGl::ConnectPresentingService(
     device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,
-    device::mojom::VRPresentationProviderRequest request) {
+    device::mojom::VRPresentationProviderRequest request,
+    device::mojom::VRDisplayInfoPtr display_info) {
   closePresentationBindings();
   submit_client_.Bind(std::move(submit_client_info));
   binding_.Bind(std::move(request));
+  gfx::Size webvr_size(
+      display_info->leftEye->renderWidth + display_info->rightEye->renderWidth,
+      display_info->leftEye->renderHeight);
+  DVLOG(1) << __FUNCTION__ << ": resize initial to " << webvr_size.width()
+           << "x" << webvr_size.height();
+
+  CreateOrResizeWebVRSurface(webvr_size);
   ScheduleWebVrFrameTimeout();
 }
 
@@ -1237,18 +1238,6 @@ void VrShellGl::SendVSync(base::TimeTicks time, GetVSyncCallback callback) {
   std::move(callback).Run(
       std::move(pose), time - base::TimeTicks(), frame_index,
       device::mojom::VRPresentationProvider::VSyncStatus::SUCCESS);
-}
-
-void VrShellGl::CreateVRDisplayInfo(
-    const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
-    uint32_t device_id) {
-  // This assumes that the initial webvr_surface_size_ was set to the
-  // appropriate recommended render resolution as the default size during
-  // InitializeGl. Revisit if the initialization order changes.
-  device::mojom::VRDisplayInfoPtr info =
-      device::GvrDelegate::CreateVRDisplayInfo(gvr_api_.get(),
-                                               webvr_surface_size_, device_id);
-  browser_->RunVRDisplayInfoCallback(callback, &info);
 }
 
 void VrShellGl::closePresentationBindings() {

@@ -20,7 +20,10 @@ VRServiceImpl::VRServiceImpl(int render_frame_process_id,
                              int render_frame_routing_id)
     : render_frame_process_id_(render_frame_process_id),
       render_frame_routing_id_(render_frame_routing_id),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  // TODO(crbug/701027): make sure that client_ is never null by initializing it
+  // in the constructor.
+}
 
 VRServiceImpl::~VRServiceImpl() {
   // Destroy VRDisplay before calling RemoveService below. RemoveService might
@@ -41,70 +44,38 @@ void VRServiceImpl::Create(int render_frame_process_id,
 void VRServiceImpl::SetClient(mojom::VRServiceClientPtr service_client,
                               SetClientCallback callback) {
   DCHECK(!client_.get());
-
-  // Set a scoped variable to true so we can verify we are in the same stack.
-  base::AutoReset<bool> set_client(&in_set_client_, true);
-
   client_ = std::move(service_client);
+
   // Once a client has been connected AddService will force any VRDisplays to
   // send ConnectDevice to it so that it's populated with the currently active
   // displays. Thereafter it will stay up to date by virtue of listening for new
   // connected events.
+  VRDeviceManager::GetInstance()->AddService(this);
 
-  VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
-  device_manager->AddService(this);
-  unsigned expected_devices = device_manager->GetNumberOfConnectedDevices();
-  // TODO(amp): Remove this count based synchronization.
-  // If libraries are not loaded, new devices will immediatly be handled but not
-  // connect, return only those devices which have already connected.
-  // If libraries were loaded then all devices may not be handled yet so return
-  // the number we expect to eventually connect.
-  if (expected_devices == handled_devices_) {
-    expected_devices = connected_devices_;
-  }
-  std::move(callback).Run(expected_devices);
+  // After displays are added, run the callback to let the VRController know
+  // initialization is complete.
+  std::move(callback).Run();
 }
 
+// Creates a VRDisplayImpl unique to this service so that the associated page
+// can communicate with the VRDevice.
 void VRServiceImpl::ConnectDevice(VRDevice* device) {
+  // Client should always be set as this is called through SetClient.
+  DCHECK(client_);
   DCHECK(displays_.count(device) == 0);
-  base::Callback<void(mojom::VRDisplayInfoPtr)> on_created =
-      base::Bind(&VRServiceImpl::OnVRDisplayInfoCreated,
-                 weak_ptr_factory_.GetWeakPtr(), device);
-  device->CreateVRDisplayInfo(on_created);
+  mojom::VRDisplayInfoPtr display_info = device->GetVRDisplayInfo();
+  DCHECK(display_info);
+  if (!display_info)
+    return;
+  displays_[device] = std::make_unique<VRDisplayImpl>(
+      device, render_frame_process_id_, render_frame_routing_id_, client_.get(),
+      std::move(display_info));
 }
 
 void VRServiceImpl::SetListeningForActivate(bool listening) {
   for (const auto& display : displays_) {
     display.second->SetListeningForActivate(listening);
   }
-}
-
-// Creates a VRDisplayPtr unique to this service so that the associated page can
-// communicate with the VRDevice.
-void VRServiceImpl::OnVRDisplayInfoCreated(
-    VRDevice* device,
-    mojom::VRDisplayInfoPtr display_info) {
-  // TODO(crbug/701027): make sure that client_ is never null by initializing it
-  // in the constructor.
-  if (!client_) {
-    DLOG(ERROR) << "Cannot create VR display because connection to render "
-                   "process is not established";
-    return;
-  }
-
-  if (!display_info) {
-    // If we get passed a null display info it means the device does not exist.
-    // This can happen for example if VR services are not installed. We will not
-    // instantiate a display in this case and don't count it as connected, but
-    // we do mark that we have handled it and verify we haven't changed stacks.
-    DCHECK(in_set_client_);
-  } else {
-    displays_[device] = std::make_unique<VRDisplayImpl>(
-        device, render_frame_process_id_, render_frame_routing_id_,
-        client_.get(), std::move(display_info));
-    connected_devices_++;
-  }
-  handled_devices_++;
 }
 
 VRDisplayImpl* VRServiceImpl::GetVRDisplayImplForTesting(VRDevice* device) {
