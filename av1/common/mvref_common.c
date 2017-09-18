@@ -345,9 +345,6 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
                           MV_REFERENCE_FRAME ref_frame, int blk_row,
                           int blk_col, uint8_t *refmv_count,
                           CANDIDATE_MV *ref_mv_stack, int16_t *mode_context) {
-  const TPL_MV_REF *prev_frame_mvs = cm->cur_frame->tpl_mvs +
-                                     (mi_row + blk_row) * cm->mi_stride +
-                                     (mi_col + blk_col);
   (void)prev_frame_mvs_base;
   POSITION mi_pos;
   int idx;
@@ -364,6 +361,10 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
 
   if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, cm, &mi_pos))
     return coll_blk_count;
+
+  const TPL_MV_REF *prev_frame_mvs = cm->cur_frame->tpl_mvs +
+                                     (mi_row + mi_pos.row) * cm->mi_stride +
+                                     (mi_col + mi_pos.col);
 
   MV_REFERENCE_FRAME rf[2];
   av1_set_ref_frame(rf, ref_frame);
