@@ -207,8 +207,8 @@ void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db) {
     config->max_redirect_consecutive_misses = 2;
     config->min_resource_confidence_to_trigger_prefetch = 0.5;
   }
+  config->is_host_learning_enabled = true;
   config->is_url_learning_enabled = true;
-  config->is_manifests_enabled = true;
   config->is_origin_learning_enabled = true;
   config->mode = LoadingPredictorConfig::LEARNING;
 }

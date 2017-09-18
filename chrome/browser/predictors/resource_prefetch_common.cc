@@ -25,7 +25,6 @@ const char kLearningMode[] = "learning";
 const char kExternalPrefetchingMode[] = "external-prefetching";
 const char kPrefetchingMode[] = "prefetching";
 const char kEnableUrlLearningParamName[] = "enable-url-learning";
-const char kEnableManifestsParamName[] = "enable-manifests";
 
 const base::Feature kSpeculativeResourcePrefetchingFeature{
     kSpeculativeResourcePrefetchingFeatureName,
@@ -43,11 +42,6 @@ bool MaybeEnableResourcePrefetching(LoadingPredictorConfig* config) {
     if (enable_url_learning_value == "true")
       config->is_url_learning_enabled = true;
 
-    std::string enable_manifests_value = base::GetFieldTrialParamValueByFeature(
-        kSpeculativeResourcePrefetchingFeature, kEnableManifestsParamName);
-    if (enable_manifests_value == "true")
-      config->is_manifests_enabled = true;
-
     // Ensure that a resource that was only seen once is never prefetched. This
     // prevents the easy mistake of trying to prefetch an ephemeral url.
     DCHECK_GT(config->min_resource_hits_to_trigger_prefetch, 1U);
@@ -58,13 +52,16 @@ bool MaybeEnableResourcePrefetching(LoadingPredictorConfig* config) {
   std::string mode_value = base::GetFieldTrialParamValueByFeature(
       kSpeculativeResourcePrefetchingFeature, kModeParamName);
   if (mode_value == kLearningMode) {
-    if (config)
+    if (config) {
       config->mode |= LoadingPredictorConfig::LEARNING;
+      config->is_host_learning_enabled = true;
+    }
     return true;
   } else if (mode_value == kExternalPrefetchingMode) {
     if (config) {
       config->mode |= LoadingPredictorConfig::LEARNING |
                       LoadingPredictorConfig::PREFETCHING_FOR_EXTERNAL;
+      config->is_host_learning_enabled = true;
     }
     return true;
   } else if (mode_value == kPrefetchingMode) {
@@ -72,6 +69,7 @@ bool MaybeEnableResourcePrefetching(LoadingPredictorConfig* config) {
       config->mode |= LoadingPredictorConfig::LEARNING |
                       LoadingPredictorConfig::PREFETCHING_FOR_EXTERNAL |
                       LoadingPredictorConfig::PREFETCHING_FOR_NAVIGATION;
+      config->is_host_learning_enabled = true;
     }
     return true;
   }
