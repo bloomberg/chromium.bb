@@ -137,6 +137,7 @@ typedef struct {
   int lst2_frame_offset;
   int lst3_frame_offset;
   int bwd_frame_offset;
+  int alt2_frame_offset;
 #endif
   TPL_MV_REF *tpl_mvs;
 #endif
