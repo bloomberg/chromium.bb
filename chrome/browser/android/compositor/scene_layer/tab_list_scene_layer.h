@@ -10,9 +10,6 @@
 #include <set>
 #include <unordered_set>
 
-#include "base/android/jni_android.h"
-#include "base/android/jni_weak_ref.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/compositor/layer/layer.h"
@@ -107,8 +104,6 @@ class TabListSceneLayer : public SceneLayer {
       jfloat side_border_scale,
       jboolean inset_border);
 
-  base::android::ScopedJavaLocalRef<jobject> GetJavaObject(JNIEnv* env);
-
   void OnDetach() override;
   bool ShouldShowBackground() override;
   SkColor GetBackgroundColor() override;
@@ -121,7 +116,6 @@ class TabListSceneLayer : public SceneLayer {
   TabMap tab_map_;
   std::set<int> visible_tabs_this_frame_;
 
-  base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   bool content_obscures_self_;
   ui::ResourceManager* resource_manager_;
   LayerTitleCache* layer_title_cache_;
