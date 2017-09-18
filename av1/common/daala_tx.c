@@ -4271,4 +4271,9 @@ void daala_idct64(const tran_low_t *input, tran_low_t *output) {
   od_bin_idct64(x, 1, y);
   for (i = 0; i < 64; i++) output[i] = (tran_low_t)x[i];
 }
+
+void daala_idtx64(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  for (i = 0; i < 64; i++) output[i] = input[i];
+}
 #endif

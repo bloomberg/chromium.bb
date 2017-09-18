@@ -2507,11 +2507,6 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
 #if CONFIG_TX64X64
 #if CONFIG_DAALA_DCT64
 #if CONFIG_EXT_TX
-static void fidtx64(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  for (i = 0; i < 64; ++i) output[i] = input[i];
-}
-
 // For use in lieu of ADST
 static void fhalfright64(const tran_low_t *input, tran_low_t *output) {
   int i;
@@ -2589,13 +2584,13 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
     { fhalfright64, fhalfright64 },  // FLIPADST_FLIPADST
     { fhalfright64, fhalfright64 },  // ADST_FLIPADST
     { fhalfright64, fhalfright64 },  // FLIPADST_ADST
-    { fidtx64, fidtx64 },            // IDTX
-    { daala_fdct64, fidtx64 },       // V_DCT
-    { fidtx64, daala_fdct64 },       // H_DCT
-    { fhalfright64, fidtx64 },       // V_ADST
-    { fidtx64, fhalfright64 },       // H_ADST
-    { fhalfright64, fidtx64 },       // V_FLIPADST
-    { fidtx64, fhalfright64 },       // H_FLIPADST
+    { daala_idtx64, daala_idtx64 },  // IDTX
+    { daala_fdct64, daala_idtx64 },  // V_DCT
+    { daala_idtx64, daala_fdct64 },  // H_DCT
+    { fhalfright64, daala_idtx64 },  // V_ADST
+    { daala_idtx64, fhalfright64 },  // H_ADST
+    { fhalfright64, daala_idtx64 },  // V_FLIPADST
+    { daala_idtx64, fhalfright64 },  // H_FLIPADST
 #endif
 #else
     { fdct64_col, fdct64_row },      // DCT_DCT

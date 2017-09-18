@@ -61,15 +61,11 @@ static void iidtx32_c(const tran_low_t *input, tran_low_t *output) {
   }
 }
 
-#if CONFIG_TX64X64
+#if CONFIG_TX64X64 && !CONFIG_DAALA_DCT64
 static void iidtx64_c(const tran_low_t *input, tran_low_t *output) {
   int i;
   for (i = 0; i < 64; ++i) {
-#if CONFIG_DAALA_DCT64
-    output[i] = input[i];
-#else
     output[i] = (tran_low_t)dct_const_round_shift(input[i] * 4 * Sqrt2);
-#endif
   }
 }
 #endif  // CONFIG_TX64X64
@@ -1478,13 +1474,13 @@ void av1_iht64x64_4096_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { ihalfright64_c, ihalfright64_c },  // FLIPADST_FLIPADST
     { ihalfright64_c, ihalfright64_c },  // ADST_FLIPADST
     { ihalfright64_c, ihalfright64_c },  // FLIPADST_ADST
-    { iidtx64_c, iidtx64_c },            // IDTX
-    { daala_idct64, iidtx64_c },         // V_DCT
-    { iidtx64_c, daala_idct64 },         // H_DCT
-    { ihalfright64_c, iidtx64_c },       // V_ADST
-    { iidtx64_c, ihalfright64_c },       // H_ADST
-    { ihalfright64_c, iidtx64_c },       // V_FLIPADST
-    { iidtx64_c, ihalfright64_c },       // H_FLIPADST
+    { daala_idtx64, daala_idtx64 },      // IDTX
+    { daala_idct64, daala_idtx64 },      // V_DCT
+    { daala_idtx64, daala_idct64 },      // H_DCT
+    { ihalfright64_c, daala_idtx64 },    // V_ADST
+    { daala_idtx64, ihalfright64_c },    // H_ADST
+    { ihalfright64_c, daala_idtx64 },    // V_FLIPADST
+    { daala_idtx64, ihalfright64_c },    // H_FLIPADST
 #endif
 #else
     { idct64_col_c, idct64_row_c },      // DCT_DCT
