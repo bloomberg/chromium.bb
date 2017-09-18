@@ -224,7 +224,11 @@ bool FeatureList::IsEnabled(const Feature& feature) {
 
 // static
 FieldTrial* FeatureList::GetFieldTrial(const Feature& feature) {
-  return GetInstance()->GetAssociatedFieldTrial(feature);
+  if (!g_instance) {
+    g_initialized_from_accessor = true;
+    return nullptr;
+  }
+  return g_instance->GetAssociatedFieldTrial(feature);
 }
 
 // static
