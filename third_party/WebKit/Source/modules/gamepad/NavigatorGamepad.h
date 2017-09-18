@@ -68,6 +68,8 @@ class MODULES_EXPORT NavigatorGamepad final
   void DispatchOneEvent();
   void DidRemoveGamepadEventListeners();
   bool StartUpdatingIfAttached();
+  void SampleAndCheckConnectedGamepads();
+  bool CheckConnectedGamepads(GamepadList*, GamepadList*);
 
   // ContextLifecycleObserver and PageVisibilityObserver
   void ContextDestroyed(ExecutionContext*) override;
@@ -85,6 +87,7 @@ class MODULES_EXPORT NavigatorGamepad final
   void DidRemoveAllEventListeners(LocalDOMWindow*) override;
 
   Member<GamepadList> gamepads_;
+  Member<GamepadList> gamepads_back_;
   HeapDeque<Member<Gamepad>> pending_events_;
   Member<AsyncMethodRunner<NavigatorGamepad>> dispatch_one_event_runner_;
 };

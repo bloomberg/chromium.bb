@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <set>
+#include <unordered_map>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -125,6 +127,11 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   typedef std::set<ConsumerInfo> ConsumerSet;
   ConsumerSet consumers_;
 
+  typedef std::unordered_map<device::GamepadConsumer*, std::vector<bool>>
+      ConsumerConnectedStateMap;
+
+  ConsumerConnectedStateMap inactive_consumer_state_;
+
   int num_active_consumers_;
 
   bool gesture_callback_pending_;
@@ -132,6 +139,6 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   DISALLOW_COPY_AND_ASSIGN(GamepadService);
 };
 
-}  // namespace content
+}  // namespace device
 
 #endif  // DEVICE_GAMEPAD_GAMEPAD_SERVICE_H_
