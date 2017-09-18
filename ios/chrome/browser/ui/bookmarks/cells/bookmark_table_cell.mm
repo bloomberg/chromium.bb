@@ -50,6 +50,8 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 
     _placeholderLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _placeholderLabel.textAlignment = NSTextAlignmentCenter;
+    _placeholderLabel.font = [MDCTypography captionFont];
+
     [_placeholderLabel setHidden:YES];
     [self.contentView addSubview:_placeholderLabel];
   }
