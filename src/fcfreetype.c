@@ -1255,7 +1255,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	      double max_value = master->axis[i].maximum / (double) (1 << 16);
 	      const char *elt = NULL;
 
-	      if (min_value > def_value || def_value > max_value)
+	      if (min_value > def_value || def_value > max_value || min_value == max_value)
 		  continue;
 
 	      switch (master->axis[i].tag)
@@ -1264,42 +1264,33 @@ FcFreeTypeQueryFace (const FT_Face  face,
 		  elt = FC_WEIGHT;
 		  min_value = FcWeightFromOpenType (min_value);
 		  max_value = FcWeightFromOpenType (max_value);
-		  variable_weight = FcTrue;
+		  variable = variable_weight = FcTrue;
 		  weight = 0; /* To stop looking for weight. */
 		  break;
 
 		case FT_MAKE_TAG ('w','d','t','h'):
 		  elt = FC_WIDTH;
 		  /* Values in 'wdth' match Fontconfig FC_WIDTH_* scheme directly. */
-		  variable_width = FcTrue;
+		  variable = variable_width = FcTrue;
 		  width = 0; /* To stop looking for width. */
 		  break;
 
 		case FT_MAKE_TAG ('o','p','s','z'):
 		  elt = FC_SIZE;
 		  /* Values in 'opsz' match Fontconfig FC_SIZE, both are in points. */
-		  variable_size = FcTrue;
+		  variable = variable_size = FcTrue;
 		  break;
 	      }
 
 	      if (elt)
 	      {
-		  if (min_value == max_value)
+		  FcRange *r = FcRangeCreateDouble (min_value, max_value);
+		  if (!FcPatternAddRange (pat, elt, r))
 		  {
-		      if (!FcPatternAddDouble (pat, elt, min_value))
-			  goto bail1;
-		  }
-		  else
-		  {
-		      FcRange *r = FcRangeCreateDouble (min_value, max_value);
-		      if (!FcPatternAddRange (pat, elt, r))
-		      {
-			  FcRangeDestroy (r);
-			  goto bail1;
-		      }
 		      FcRangeDestroy (r);
-		      variable = FcTrue;
+		      goto bail1;
 		  }
+		  FcRangeDestroy (r);
 	      }
 	  }
 
