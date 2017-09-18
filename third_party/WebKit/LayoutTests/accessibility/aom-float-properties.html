@@ -40,6 +40,24 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("slider2");
     assert_equals(axNode.intValue, 0);
     assert_equals(axNode.minValue, 0);
+    assert_equals(axNode.maxValue, 100);
+    node.accessibleNode.valueNow = 33;
+    node.accessibleNode.valueMin = -100;
+    node.accessibleNode.valueMax = 100;;
+    assert_equals(axNode.intValue, 33);
+    assert_equals(axNode.minValue, -100);
+    assert_equals(axNode.maxValue, 100);
+}, "Range values in accessible node of slider.");
+</script>
+
+<div role="spinbutton" id="spinbutton"></div>
+
+<script>
+test(function(t) {
+    var node = document.getElementById("spinbutton");
+    var axNode = accessibilityController.accessibleElementById("spinbutton");
+    assert_equals(axNode.intValue, 0);
+    assert_equals(axNode.minValue, 0);
     assert_equals(axNode.maxValue, 0);
     node.accessibleNode.valueNow = 33;
     node.accessibleNode.valueMin = -100;
@@ -47,5 +65,5 @@ test(function(t) {
     assert_equals(axNode.intValue, 33);
     assert_equals(axNode.minValue, -100);
     assert_equals(axNode.maxValue, 100);
-}, "Range values in accessible node.");
+}, "Range values in accessible node of spinbutton.");
 </script>
