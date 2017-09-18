@@ -6,7 +6,7 @@
 
 [
     RuntimeEnabled=PaymentApp,
-    Exposed=ServiceWorker
+    Exposed=(Window,Worker)
 ] interface PaymentInstruments {
     [CallWith=ScriptState, ImplementedAs=deleteInstrument] Promise<boolean> delete(DOMString instrumentKey);
     [CallWith=ScriptState] Promise<PaymentInstrument> get(DOMString instrumentKey);
