@@ -187,6 +187,7 @@ class AboutSigninInternals
 
   // OAuth2TokenServiceDelegate::Observer implementations.
   void OnRefreshTokensLoaded() override;
+  void OnEndBatchChanges() override;
 
   // SigninManagerBase::Observer implementations.
   void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
