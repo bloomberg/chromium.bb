@@ -27,6 +27,7 @@
 
 #include "platform/PODIntervalTree.h"
 
+#include "platform/geometry/FloatPolygon.h"
 #include "platform/testing/TreeTestHelpers.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
@@ -38,11 +39,6 @@ using TreeTestHelpers::InitRandom;
 using TreeTestHelpers::NextRandom;
 
 #ifndef NDEBUG
-template <>
-struct ValueToString<float> {
-  static String ToString(const float& value) { return String::Number(value); }
-};
-
 template <>
 struct ValueToString<void*> {
   static String ToString(void* const& value) {
