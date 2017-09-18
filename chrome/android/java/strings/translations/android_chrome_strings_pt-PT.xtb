@@ -3,6 +3,7 @@
 <translationbundle lang="pt-PT">
 <translation id="1006017844123154345">Abrir online</translation>
 <translation id="1036727731225946849">A adicionar <ph name="WEBAPK_NAME" />...</translation>
+<translation id="1041308826830691739">De Websites</translation>
 <translation id="1049743911850919806">Navegação anónima</translation>
 <translation id="10614374240317010">Nunca guardadas</translation>
 <translation id="1068672505746868501">Nunca traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
@@ -19,6 +20,8 @@
 <translation id="1197267115302279827">Mover marcadores</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1201402288615127009">Seguinte</translation>
+<translation id="1204037785786432551">Transferir link</translation>
+<translation id="1206892813135768548">Copiar texto do link</translation>
 <translation id="1209206284964581585">Ocultar para já</translation>
 <translation id="1211530540767271776">Nenhum dispositivo USB aqui</translation>
 <translation id="123724288017357924">Atualizar página atual e ignorar conteúdo em cache</translation>
@@ -114,6 +117,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2079545284768500474">Anular</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Para obter conteúdo personalizado sugerido pelo Google, inicie sessão no Chrome.</translation>
+<translation id="2091887806945687916">Som</translation>
 <translation id="2095887075102408547">Quando esta funcionalidade está ativada, o Chrome utiliza os servidores da Google para comprimir as páginas visitadas antes de as transferir. As páginas acedidas através de ligações privadas (HTTPS) ou em separadores de navegação anónima não são otimizadas ou vistas pela Google.</translation>
 <translation id="2096396629993765042">A sessão na sua Conta Google não é terminada. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Início de sessão automático</translation>
@@ -265,6 +269,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 
 Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refinar a sua pesquisa, deslize lentamente o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="3616113530831147358">Áudio</translation>
+<translation id="3620176948598597475">A reposição apaga o histórico da Poupança de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3632295766818638029">Desmascarar palavra-passe</translation>
 <translation id="363596933471559332">Inicie automaticamente sessão em Sites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe sempre pedida validação antes de iniciar sessão num Website.</translation>
 <translation id="3649663272864015643">Separador Página inicial selecionado</translation>
@@ -273,6 +278,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3662546969139119822">Sem histórico</translation>
 <translation id="3672452749423051839">Sugestões de erros de navegação</translation>
 <translation id="3706423975342040244">Entretenimento</translation>
+<translation id="3712575778697986964">Pretende repor a Poupança de dados?</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
 <translation id="3734660163659757482">Puxe para cima para ver marcadores e muito mais.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
@@ -296,6 +302,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="393697183122708255">Nenhuma pesq. por voz ativada disponível</translation>
 <translation id="3946611741043634542">Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="3950820424414687140">Iniciar sessão</translation>
+<translation id="395206256282351086">Sugestões de pesquisa e de sites desativadas</translation>
 <translation id="395922942268463099">Páginas atualizadas regularmente</translation>
 <translation id="3967822245660637423">Transferência concluída</translation>
 <translation id="397583555483684758">A sincronização deixou de funcionar</translation>
@@ -333,6 +340,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="4259722352634471385">A navegação está bloqueada: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Ocorreu um erro de sincronização. Toque para obter mais detalhes.</translation>
+<translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="4275663329226226506">Multimédia</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
 <translation id="42981349822642051">Expandir</translation>
@@ -546,6 +554,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6232535412751077445">A ativação da funcionalidade "Não Monitorizar" significa que é incluído um pedido no seu tráfego de navegação. Qualquer efeito depende de um Website responder ou não ao pedido e do modo como o pedido é interpretado.
 
 Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios que não são baseados noutros Sites que tenha visitado. Ainda assim, muitos Sites continuam a recolher e a utilizar os seus dados de navegação para, por exemplo, melhorar a segurança, fornecer conteúdo, anúncios e recomendações, e gerar estatísticas de relatórios.</translation>
+<translation id="6255999984061454636">Sugestões de conteúdo</translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="6320088164292336938">Vibrar</translation>
@@ -602,7 +611,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6701279291835318271">Relatórios de segurança</translation>
 <translation id="6709133671862442373">Notícias</translation>
 <translation id="6710213216561001401">Anterior</translation>
-<translation id="6727612981472093924">Painel de navegação aberto</translation>
 <translation id="6738867403308150051">A transferir...</translation>
 <translation id="6762156594045689028">Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Não é possível abrir o ficheiro</translation>
@@ -673,6 +681,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7437998757836447326">Terminar sessão no Chrome</translation>
 <translation id="7445411102860286510">Permitir que os sites reproduzam automaticamente vídeos com o som desativado (recomendado)</translation>
+<translation id="7453467225369441013">A sua sessão é terminada na maioria dos sites. A sessão na sua Conta Google não é terminada.</translation>
 <translation id="7455923816558154057">Tocar para ver</translation>
 <translation id="7464701184726199289">Esta ação limpa os dados sincronizados de todos os dispositivos. As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
@@ -739,6 +748,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8035133914807600019">Nova pasta…</translation>
 <translation id="8037750541064988519">Faltam <ph name="DAYS" /> dias</translation>
+<translation id="805047784848435650">Com base no seu histórico de navegação</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponíveis</translation>
 <translation id="8058746566562539958">Abrir num novo sep. do Chrome</translation>
 <translation id="8063895661287329888">Falha ao adicionar marcador.</translation>

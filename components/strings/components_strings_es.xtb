@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">El almacén secundario está en mal estado.</translation>
 <translation id="5023310440958281426">Consulta las políticas del administrador</translation>
 <translation id="5029568752722684782">Borrar copia</translation>
+<translation id="503069730517007720">Se necesita un certificado raíz para "<ph name="SOFTWARE_NAME" />", pero no está instalado. El administrador de TI debe comprobar las instrucciones de configuración de "<ph name="SOFTWARE_NAME" />" para solucionar este problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Informacion del Traductor de Google</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidad</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">Preguntar (predeterminado)</translation>
 <translation id="8041089156583427627">Enviar</translation>
 <translation id="8041940743680923270">Utilizar valor predeterminado global (Preguntar)</translation>
+<translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" no se ha configurado correctamente. Normalmente, el problema se soluciona al desinstalar "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Se ha producido un error al ver el artículo.</translation>
 <translation id="8091372947890762290">La activación está pendiente en el servidor.</translation>
 <translation id="8094917007353911263">La red que estás utilizando puede requerir que accedas a la página <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Método de pago</translation>
 <translation id="8118489163946903409">Método de pago</translation>
+<translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" no se ha instalado correctamente en tu ordenador o red. Ponte en contacto con el administrador de TI para resolver el problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8134994873729925007">No se ha podido encontrar la <ph name="BEGIN_ABBR" />dirección DNS<ph name="END_ABBR" /> del servidor de <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">El ordenador se ha suspendido.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">Build para desarrolladores</translation>
 <translation id="989988560359834682">Editar dirección</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" no se ha instalado correctamente en tu ordenador o red:
+    &lt;ul&gt;
+    &lt;li&gt;Prueba a desinstalar o inhabilitar "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
+    &lt;li&gt;Prueba a conectarte a otra red&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

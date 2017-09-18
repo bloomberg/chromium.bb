@@ -66,9 +66,11 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="209018056901015185">Vyžiadať stránky pre počítač</translation>
 <translation id="2103075008456228677">Otvoriť history.google.com</translation>
 <translation id="2116625576999540962">Počet presunutých položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="213900355088104901">Ak chcete prehliadať v súkromí, otvorte kartu inkognito</translation>
 <translation id="2149973817440762519">Upraviť záložku</translation>
 <translation id="2154710561487035718">Kopírovať webovú adresu</translation>
 <translation id="2230173723195178503">Načítala sa webová stránka</translation>
+<translation id="2256128224215992540">Návrhy vyhľadávania a webov</translation>
 <translation id="2267753748892043616">Pridať účet</translation>
 <translation id="2273327106802955778">Ponuka Viac</translation>
 <translation id="2320166752086256636">Skryť klávesnicu</translation>
@@ -178,9 +180,11 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="430793432425771671">Synchronizovať všetko</translation>
 <translation id="4342284590510997375">Nové</translation>
 <translation id="4359125752503270327">Táto stránka sa otvorí v ďalšej aplikácii.</translation>
+<translation id="4370827530403103842">Synchronizácia nefunguje. Opravte ju klepnutím.</translation>
 <translation id="4375040482473363939">Vyhľadávanie QR kódov</translation>
 <translation id="4378154925671717803">Telefón</translation>
 <translation id="441868831736628555">Oznámenie o ochrane súkromia</translation>
+<translation id="4460091562821778167">Vždy sa spýtať, ktorú aplikáciu použiť</translation>
 <translation id="4508750114462689118">Zavrieť propagáciu prihlásenia</translation>
 <translation id="4526249700380860531">Zobrazte si a spravujte uložené heslá na stránke <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Skúste sa znova prihlásiť.</translation>
@@ -246,7 +250,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="5869029295770560994">OK, dobre</translation>
 <translation id="5871497086027727873">1 položka bola presunutá</translation>
 <translation id="5911030830365207728">Prekladač Google</translation>
-<translation id="5916664084637901428">Zapnúť</translation>
+<translation id="5916664084637901428">Zapnuté</translation>
 <translation id="5948291296578561264">Umožňuje ukladať fotky do knižnice fotiek.</translation>
 <translation id="5953603475187800576">Zobrazovať adresy a kreditné karty zo služby Google Payments</translation>
 <translation id="5955891643922670672">Zobrazuje sa offline verzia</translation>
@@ -413,6 +417,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9148126808321036104">Znova sa prihlásiť</translation>
 <translation id="914898748153555155">Túto predvoľbu môžete kedykoľvek zmeniť v nastaveniach Chromu</translation>
+<translation id="91549621916703028">Vytvorte viacero kariet pre všetky úlohy</translation>
 <translation id="9157836665414082580">Obmedziť dialógové okná</translation>
 <translation id="9188680907066685419">Odhlásenie zo spravovaného účtu</translation>
 <translation id="9203116392574189331">Handoff</translation>

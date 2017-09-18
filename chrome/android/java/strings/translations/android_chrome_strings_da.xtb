@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Flyt bogmærker</translation>
 <translation id="119944043368869598">Ryd alle</translation>
 <translation id="1201402288615127009">Næste</translation>
+<translation id="1204037785786432551">Download link</translation>
+<translation id="1206892813135768548">Kopiér linktekst</translation>
 <translation id="1209206284964581585">Skjul indtil videre</translation>
 <translation id="1211530540767271776">Der er ingen USB-enheder her</translation>
 <translation id="123724288017357924">Genindlæs aktuel side, og ignorer indhold gemt i cache</translation>
@@ -114,6 +116,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Log ind på Chrome for at hente brugertilpasset indhold, som er foreslået af Chrome.</translation>
+<translation id="2091887806945687916">Lyd</translation>
 <translation id="2095887075102408547">Når denne funktion er aktiveret, anvender Chrome Googles servere til at komprimere de sider, du besøger, før de downloades. Google optimerer og ser ikke sider, der besøges via private forbindelser (HTTPS) eller inkognitofaner.</translation>
 <translation id="2096396629993765042">Du logges ikke ud af din Google-konto. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Automatisk login</translation>
@@ -333,6 +336,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4256782883801055595">Open source-licenser</translation>
 <translation id="4259722352634471385">Navigationen er blokeret: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Der opstod en synkroniseringsfejl. Tryk for at få nærmere oplysninger.</translation>
+<translation id="4269820728363426813">Kopiér linkadresse</translation>
 <translation id="4275663329226226506">Medier</translation>
 <translation id="4278390842282768270">Tilladt</translation>
 <translation id="42981349822642051">Udvid</translation>
@@ -602,7 +606,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6701279291835318271">Sikkerhedsrapporter</translation>
 <translation id="6709133671862442373">Nyheder</translation>
 <translation id="6710213216561001401">Forrige</translation>
-<translation id="6727612981472093924">Navigationspanelet er åbnet</translation>
 <translation id="6738867403308150051">Downloader…</translation>
 <translation id="6762156594045689028">Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Filen kan ikke åbnes</translation>
@@ -661,6 +664,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7253272406652746122">Tilføj en Google-konto fra siden Konti i appen Indstillinger på din enhed.</translation>
 <translation id="7274013316676448362">Blokeret website</translation>
 <translation id="7307288900373049735">Kontakter Google... dette kan tage et øjeblik</translation>
+<translation id="7318797029885648322">Tryk på Mere for at få artikler</translation>
 <translation id="7333031090786104871">Det forrige website er stadig ved at blive tilføjet</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Del 1 valgt element}one{Del # valgt element}other{Del # valgte elementer}}</translation>
@@ -799,6 +803,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8636825310635137004">Aktivér synkronisering for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="8641930654639604085">Prøv at blokere websites med indhold for voksne</translation>
 <translation id="8662811608048051533">Logger dig ud af de fleste websites.</translation>
+<translation id="867485229011312729">Hvor er der bogmærker, downloads og historik?</translation>
 <translation id="8676374126336081632">Ryd indtastning</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkeniveau: # søjle}one{Signalstyrkeniveau: # søjle}other{Signalstyrkeniveau: # søjler}}</translation>
 <translation id="869891660844655955">Udløbsdato</translation>

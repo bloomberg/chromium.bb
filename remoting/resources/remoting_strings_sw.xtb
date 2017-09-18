@@ -108,12 +108,6 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="3385242214819933234">Mmiliki wa seva pangishi si sahihi.</translation>
 <translation id="3403830762023901068">Mipangilio ya sera hairuhusu kushiriki kompyuta hii kama mpangishaji wa Chromoting. Wasiliana na msimamizi wa mfumo wako kwa usaidizi.</translation>
 <translation id="3423542133075182604">Mchakato wa Mbali wa Ufunguo wa Usalama</translation>
-<translation id="3426467947138417795">Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali
-Kompyuta ya Mbali
-Kufikia Kompyuta ya Mbali
-Ufikiaji wa Mbali
-Ufikiaji Kutoka Mbali
-Usaidizi wa Kompyuta kutoka Mbali</translation>
 <translation id="3581045510967524389">Haikuweza kuunganisha kwenye mtandao. Tafadhali angalia kuwa kifaa chako kipo mtandaoni.</translation>
 <translation id="3596628256176442606">Huduma hii inawasha miunganisho inayoingia kutoka kwenye viteja vya Chromoting.</translation>
 <translation id="3606997049964069799">Hujaingia kwenye Chromium. Tafadhali ingia na ujaribu tena.</translation>
@@ -122,13 +116,6 @@ Usaidizi wa Kompyuta kutoka Mbali</translation>
 <translation id="3695446226812920698">Pata maelezo</translation>
 <translation id="3718805989288361841">Kuna hitilafu ya mipangilio ya sera ya Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali.  Wasiliana na msimamizi wako ili upate usaidizi.</translation>
 <translation id="3776024066357219166">Kipindi chako cha Eneo-kazi la Mbali la Chrome kimekamilika.</translation>
-<translation id="3788372335219293587">Fikia kompyuta yako kwa usalama ukitumia kifaa chako cha iOS. Ni huduma isiyolipishwa ambayo inafanya kazi haraka na kwa urahisi.
-
-• Kwenye kompyuta ambayo ungependa kufikia kwa mbali, tafuta Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali katika Duka la Chrome kwenye Wavuti https://chrome.google.com/remotedesktop
-• Sakinisha Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali na ufuate maagizo ili ukamilishe shughuli ya kusakinisha.
-• Kwenye kifaa chako cha iOS, fungua programu na ugonge kompyuta yako yoyote iliyo mtandaoni ili uunganishe.
-
-Kwa maelezo zaidi kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Tafadhali thibitisha akaunti yako na PIN hapa chini ili kuruhusu ufikiaji kwa Kompyuta ya Mbali ya Chrome</translation>
 <translation id="3897092660631435901">Menyu</translation>
@@ -267,9 +254,6 @@ Kwa maelezo zaidi kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (h
 <translation id="7144878232160441200">Jaribu tena</translation>
 <translation id="7149517134817561223">Programu ya kupeleka amri kwa mpangishi wa kompyuta ya mbali kwenye Chrome.</translation>
 <translation id="7215059001581613786">Tafadhali ingiza PIN iliyo na tarakimu sita au zaidi.</translation>
-<translation id="7237767047212540055">Kwenye kompyuta ambayo ungependa kufikia kwa mbali, fungua Chrome na uende kwenye <ph name="INSTALLATION_LINK" />
-Sakinisha Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali na ufuate maagizo ili ukamilishe shughuli ya kusakinisha.
-Baada ya kusakinisha, utaweza kufikia kompyuta kwenye ukurasa huu kwa kuweka PIN au msimbo wa ufikiaji</translation>
 <translation id="7312846573060934304">Seva pangishi iko nje ya mtandao.</translation>
 <translation id="7319983568955948908">Acha Kushiriki</translation>
 <translation id="7401733114166276557">Eneo-kazi la Mbali la Chrome</translation>

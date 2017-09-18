@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Szélességhez igazítás</translation>
 <translation id="1088860948719068836">Adja meg a kártyán szereplő nevet</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> - mindig legyen lefordítva</translation>
+<translation id="1103778128462718200">Az összes mentett jelszó megjelenítése…</translation>
 <translation id="1107591249535594099">Ha be van jelölve, a Chrome ezen az eszközön tárolja a kártya egy példányát az űrlapok gyorsabb kitöltéséhez.</translation>
 <translation id="1111153019813902504">Legutóbbi könyvjelzők</translation>
 <translation id="1113869188872983271">&amp;Átrendezés visszavonása</translation>
@@ -523,6 +524,7 @@
 <translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>
 <translation id="5023310440958281426">Ellenőrizze rendszergazdai házirendjeit</translation>
 <translation id="5029568752722684782">Példány törlése</translation>
+<translation id="503069730517007720">A(z) „<ph name="SOFTWARE_NAME" />” szoftverhez főtanúsítványra van szükség, amely azonban nincs telepítve. A rendszergazda a(z) „<ph name="SOFTWARE_NAME" />” beállítási útmutatójában találhat segítséget a probléma megoldásához. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">A Google Fordító leírása</translation>
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="5040262127954254034">Adatvédelem</translation>
@@ -594,6 +596,7 @@
 <translation id="5540224163453853">A kért cikk nem található.</translation>
 <translation id="5541546772353173584">E-mail-cím hozzáadása</translation>
 <translation id="5544037170328430102">A(z) <ph name="SITE" /> egy beágyazott oldalának közlendője:</translation>
+<translation id="5545756402275714221">Cikkek Önnek</translation>
 <translation id="5556459405103347317">Újratöltés</translation>
 <translation id="5560088892362098740">Lejárati dátum</translation>
 <translation id="5565735124758917034">Aktív</translation>
@@ -615,6 +618,7 @@
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Személyre szabott tartalmak fogadása</translation>
 <translation id="5675650730144413517">Az oldal nem működik</translation>
+<translation id="5689199277474810259">Exportálás JSON-formátumba</translation>
 <translation id="5710435578057952990">A webhely valódiságát nem ellenőriztük.</translation>
 <translation id="5719499550583120431">Elfogadott feltöltőkártyák.</translation>
 <translation id="5720705177508910913">Jelenlegi felhasználó</translation>
@@ -887,11 +891,13 @@
 <translation id="8037357227543935929">Kérdezzen rá (alapértelmezés szerint)</translation>
 <translation id="8041089156583427627">Visszajelzés küldése</translation>
 <translation id="8041940743680923270">Globális alapértelmezés használata (Megkérdezés)</translation>
+<translation id="8057711352706143257">A(z) „<ph name="SOFTWARE_NAME" />” nincs megfelelően beállítva. A(z) „<ph name="SOFTWARE_NAME" />” eltávolítása általában megoldja a problémát. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Nem sikerült megtekinteni a cikket.</translation>
 <translation id="8091372947890762290">Az aktiválás függőben van a szerveren</translation>
 <translation id="8094917007353911263">Az Ön által használt hálózat megkövetelheti a(z) <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> felkeresését.</translation>
 <translation id="8103161714697287722">Fizetési mód</translation>
 <translation id="8118489163946903409">Fizetési mód</translation>
+<translation id="8127301229239896662">A(z) „<ph name="SOFTWARE_NAME" />” nem megfelelően lett telepítve a számítógépre vagy a hálózatra. A probléma elhárítása érdekében forduljon rendszergazdájához.</translation>
 <translation id="8131740175452115882">Megerősítés</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> szerverének <ph name="BEGIN_ABBR" />DNS-címe<ph name="END_ABBR" /> nem található.</translation>
 <translation id="8149426793427495338">Számítógépe alvó üzemmódba váltott.</translation>
@@ -1023,4 +1029,9 @@
 <translation id="988159990683914416">Fejlesztői változat</translation>
 <translation id="989988560359834682">Cím szerkesztése</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">A(z) „<ph name="SOFTWARE_NAME" />” nem megfelelően lett telepítve a számítógépre vagy a hálózatra:
+    &lt;ul&gt;
+    &lt;li&gt;Próbálkozzon a(z) „<ph name="SOFTWARE_NAME" />” eltávolításával vagy letiltásával.&lt;/li&gt;
+    &lt;li&gt;Próbáljon másik hálózathoz csatlakozni.&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

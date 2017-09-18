@@ -108,10 +108,6 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="3385242214819933234">Ogiltig ägare till värden.</translation>
 <translation id="3403830762023901068">Enligt policyinställningarna får du inte dela den här datorn som en Chromoting-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
 <translation id="3423542133075182604">Fjärrkommunikationsprocess för säkerhetsnyckel</translation>
-<translation id="3426467947138417795">Chrome Remote Desktop
-Fjärrdator
-Fjärråtkomst
-Fjärrhjälp</translation>
 <translation id="3581045510967524389">Det gick inte att ansluta till nätverket. Kontrollera att enheten är online.</translation>
 <translation id="3596628256176442606">Med den här tjänsten aktiveras inkommande anslutningar från Chromoting-klienter.</translation>
 <translation id="3606997049964069799">Du är inte inloggad i Chromium. Logga in och försök igen.</translation>
@@ -120,13 +116,6 @@ Fjärrhjälp</translation>
 <translation id="3695446226812920698">Läs mer</translation>
 <translation id="3718805989288361841">Det finns ett fel i principinställningarna för Chrome Remote Desktop. Kontakta systemadministratören om du behöver hjälp.</translation>
 <translation id="3776024066357219166">Chrome Remote Desktop-sessionen har avslutats.</translation>
-<translation id="3788372335219293587">Få säker åtkomst till datorn från din iOS-enhet. Det är snabbt, enkelt och gratis.
-
-• Besök Chrome Web Store på datorn som du vill fjärransluta till och leta reda på appen Chrome Remote Desktop: https://chrome.google.com/remotedesktop
-• Installera Chrome Remote Desktop och slutför konfigureringen enligt anvisningarna.
-• Öppna appen på iOS-enheten och tryck på en av datorerna som är online om du vill ansluta till den.
-
-Du hittar information om sekretess i Googles sekretesspolicy (http://goo.gl/SyrVzj)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bekräfta ditt konto och pinkoden nedan för att tillåta åtkomst via Chrome Remote Desktop.</translation>
 <translation id="3897092660631435901">Meny</translation>
@@ -265,9 +254,6 @@ Du hittar information om sekretess i Googles sekretesspolicy (http://goo.gl/SyrV
 <translation id="7144878232160441200">Försök igen</translation>
 <translation id="7149517134817561223">Program som används för att skicka kommandon till värddatorn för Chrome Remote Desktop.</translation>
 <translation id="7215059001581613786">Ange en PIN-kod som består av minst sex siffror.</translation>
-<translation id="7237767047212540055">Öppna Chrome på datorn som du vill fjärransluta till och besök <ph name="INSTALLATION_LINK" />
-Installera Chrome Remote Desktop och slutför konfigureringen enligt anvisningarna
-När konfigureringen är klar kan du ansluta till datorn via den här sidan genom att ange pinkoden eller åtkomstkoden</translation>
 <translation id="7312846573060934304">Värden är offline.</translation>
 <translation id="7319983568955948908">Sluta dela</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>

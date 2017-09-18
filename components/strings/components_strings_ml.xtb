@@ -524,6 +524,7 @@
 <translation id="5019198164206649151">ബാക്കിംഗ് സംഭരണം മോശം അവസ്ഥയിലാണ്</translation>
 <translation id="5023310440958281426">നിങ്ങളുടെ അഡ്‌മിനിസ്ട്രേറ്ററുടെ നയങ്ങൾ പരിശോധിക്കുക</translation>
 <translation id="5029568752722684782">പകർപ്പ് മായ്‌ക്കുക</translation>
+<translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" സോഫ്റ്റ്‌വെയറിന് ഒരു റൂട്ട് സർട്ടിഫിക്കറ്റ് ആവശ്യമാണ്, എന്നാൽ അത് ഇൻസ്‌റ്റാൾ ചെയ്‌‌തിട്ടില്ല. ഈ പ്രശ്‌നം പരിഹരിക്കാൻ, "<ph name="SOFTWARE_NAME" />" സോഫ്റ്റ്‌വെയറിനുള്ള കോൺഫിഗറേഷൻ നിർദ്ദേശങ്ങൾ ഐടി അഡ്‌മിനിസ്‌ട്രേറ്റർ പരിശോധിക്കേണ്ടതുണ്ട്. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google വിവര്‍ത്തനം എന്നതിനെക്കുറിച്ച് </translation>
 <translation id="5039804452771397117">അനുവദിക്കൂ</translation>
 <translation id="5040262127954254034">സ്വകാര്യത</translation>
@@ -888,11 +889,13 @@
 <translation id="8037357227543935929">ചോദിക്കുക (ഡിഫോൾട്ട്)</translation>
 <translation id="8041089156583427627">ഫീഡ്ബാക്ക് അയയ്ക്കുക</translation>
 <translation id="8041940743680923270">ഗ്ലോബൽ ഡിഫോൾട്ട് ഉപയോഗിക്കുക (ചോദിക്കുക)</translation>
+<translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" ശരിയായി കോൺഫിഗർ ചെയ്‌‌തിട്ടില്ല. സാധാരണഗതിയിൽ "<ph name="SOFTWARE_NAME" />" അൺഇൻസ്‌റ്റാൾ ചെയ്യുന്നതിലൂടെ ഈ പ്രശ്‌നം പരിഹരിക്കാം. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">ലേഖനം കാണുന്നത് പരാജയപ്പെട്ടു.</translation>
 <translation id="8091372947890762290">സെർവറിൽ സജീവമാക്കൽ തീർപ്പാക്കിയിട്ടില്ല</translation>
 <translation id="8094917007353911263">നിങ്ങൾക്ക് ഉപയോഗിക്കുന്ന നെറ്റ്‌വർക്ക് <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> സന്ദർശിക്കാൻ നിങ്ങളോട് ആവശ്യപ്പെടാം.</translation>
 <translation id="8103161714697287722">പേയ്‌മെന്റ് രീതി</translation>
 <translation id="8118489163946903409">പേയ്‌മെന്റ് രീതി</translation>
+<translation id="8127301229239896662">നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ അല്ലെങ്കിൽ നെറ്റ്‍വര്‍ക്കിൽ "<ph name="SOFTWARE_NAME" />" ശരിയായി ഇൻസ്‌റ്റാൾ ചെയ്‌തിട്ടില്ല. ഈ പ്രശ്‌നം പരിഹരിക്കാൻ നിങ്ങളുടെ ഐടി അഡ്‌മിനിസ്‌ട്രേറ്ററോട് ആവശ്യപ്പെടുക.</translation>
 <translation id="8131740175452115882">സ്ഥിരീകരിക്കുക</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> എന്നതിന്റെ സെർവർ <ph name="BEGIN_ABBR" />DNS വിലാസം<ph name="END_ABBR" /> കണ്ടെത്താനായില്ല.</translation>
 <translation id="8149426793427495338">നിങ്ങളുടെ കമ്പ്യൂട്ടർ സുഷുപ്‌തിയിലായി.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">വികാസക പതിപ്പ്</translation>
 <translation id="989988560359834682">വിലാസം എഡിറ്റുചെയ്യുക</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ അല്ലെങ്കിൽ നെറ്റ്‍വര്‍ക്കിൽ "<ph name="SOFTWARE_NAME" />" ശരിയായി ഇൻസ്‌റ്റാൾ ചെയ്‌തിട്ടില്ല:
+    &lt;ul&gt;
+    &lt;li&gt;"<ph name="SOFTWARE_NAME" />" അൺഇൻസ്‌റ്റാൾ ചെയ്യുന്നതോ പ്രവർത്തനരഹിതമാക്കുന്നതോ പരീക്ഷിക്കുക&lt;/li&gt;
+    &lt;li&gt;മറ്റൊരു നെറ്റ്‍വര്‍ക്കിലേക്ക് കണക്റ്റുചെയ്യുന്നത് പരീക്ഷിക്കുക&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

@@ -53,6 +53,7 @@
 
       Kung hindi itatakda ang patakarang ito, ang default na dalas ay 3 oras. Ang minimum
       na pinapayagang dalas ay 60 segundo.</translation>
+<translation id="1204263402976895730">Mga naka-enable na printer ng enterprise</translation>
 <translation id="1221359380862872747">Mag-load ng mga tinukoy na url sa pag-login sa demo</translation>
 <translation id="123081309365616809">I-enable ang pag-cast ng content sa device</translation>
 <translation id="1265053460044691532">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML</translation>
@@ -253,6 +254,7 @@
 <translation id="2024476116966025075">I-configure ang kinakailangang domain name para sa mga client ng malayuang pag-access</translation>
 <translation id="2030905906517501646">Default na keyword ng provider ng paghahanap</translation>
 <translation id="203096360153626918">Ang patakarang ito ay walang epekto sa mga Android app. Makakapunta ang mga ito sa fullscreen mode kahit na nakatakda ang patakaran sa <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Mga naka-disable na printer ng enterprise</translation>
 <translation id="206623763829450685">Tinutukoy kung aling mga scheme ng pagpapatotoo ng HTTP ang sinusuportahan ng <ph name="PRODUCT_NAME" />.
 
           Ang mga posibleng value ay 'basic,' 'digest,' 'ntlm' at 'negotiate.' Paghiwa-hiwalayin ang maraming value gamit ang mga kuwit.
@@ -329,6 +331,15 @@
           Kung naka-configure ang setting na ito, hihilingin sa mga user na gumagamit ng mabilisang pag-unlock na ilagay ang password nila sa lock screen depende sa setting na ito.
 
           Kung hindi naka-configure ang setting na ito, hihilingin sa mga user na gumagamit ng mabilisang pag-unlock na ilagay ang password nila sa lock screen araw-araw.</translation>
+<translation id="2194470398825717446">Hindi na ginagamit ang patakarang ito sa M61, pakigamit na lang ang EcryptfsMigrationStrategy.
+
+      Tinutukoy kung paano dapat kumilos ang isang device na naipadala nang may ecryptfs at kinakailangang lumipat sa ext4 na pag-encrpyt.
+
+      Kung itatakda mo ang patakarang ito sa 'DisallowArc', idi-disable ang mga Android app para sa lahat ng user sa device (kasama ang mga mayroon nang ext4 na pag-encrypt) at walang iaalok na paglilipat mula sa ecryptfs papuntang ext4 na pag-encrypt sa sinumang user.
+
+      Kung itatakda mo ang patakarang ito sa 'AllowMigration', aalukin ang mga user na may mga ecryptfs na directory sa tahanan na ilipat ang mga ito sa ext4 na pag-encrypt kung kinakailangan (sa kasalukuyan, kapag naging available ang Android N sa device).
+
+      Hindi nalalapat ang patakarang ito sa mga kiosk app - awtomatikong inililipat ang mga ito. Kung iniwang hindi nakatakda ang patakarang ito, kikilos ang device na parang 'DisallowArc' ang napili.</translation>
 <translation id="2201555246697292490">I-configure ang whitelist ng native na pagmemensahe</translation>
 <translation id="2204753382813641270">Kontrolin ang awtomatikong pagtatago ng shelf</translation>
 <translation id="2208976000652006649">Mga parameter para sa URL ng paghahanap na ginagamit ang POST</translation>
@@ -540,6 +551,14 @@
       Kung ginagamit ang patakarang ito, tanging ang mga printer na may mga id na tumutugma sa mga value
       sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa
       mga entry sa file na tinukoy sa DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Tinutukoy ang mga printer na hindi maaaring gamitin ng user.
+
+      Ginagamit lang ang patakarang ito kung pinili ang BlacklistRestriction para sa
+      NativePrintersBulkAccessMode.
+
+      Kung ginagamit ang patakarang ito, magagamit ng user ang lahat ng printer maliban sa
+      mga id na nakalista sa patakarang ito.
+      </translation>
 <translation id="2801230735743888564">Nagbibigay-daan sa mga user na makapaglaro ng dinosaur easter egg game kapag offline ang device.
 
       Kung itatakda sa False ang patakarang ito, kapag naka-offline ang device, hindi makakapaglaro ng dinosaur easter egg game ang mga user. Kung itatakda naman sa True ang setting na ito, makakapaglaro ng dinosaur game ang mga user. Kung hindi itatakda ang patakarang ito, hindi makakapaglaro ng dinosaur easter egg game ang mga user na naka-enroll sa Chrome OS, ngunit sa ibang mga pagkakataon, maaari itong malaro ng mga user.</translation>
@@ -661,6 +680,7 @@
 <translation id="3219421230122020860">Available ang mode na incognito</translation>
 <translation id="3220624000494482595">Kung ang kiosk app ay isang Android app, wala itong kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" />, kahit na nakatakda ang patakarang ito sa <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Mga pattern ng URL na bibigyang-daan ang mga manggagaling na pag-install ng extension, app, at script ng user</translation>
+<translation id="3240609035816615922">Patakaran sa pag-access ng configuration ng printer</translation>
 <translation id="3243309373265599239">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay idi-dim ang screen kapag tumatakbo habang nakasaksak sa kuryente.
 
           Kapag nakatakda ang patakarang ito sa halagang mas malaki kaysa sa zero, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago i-dim ng <ph name="PRODUCT_OS_NAME" /> ang screen.
@@ -728,7 +748,7 @@
 
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="350797926066071931">Paganahin ang I-translate</translation>
-<translation id="3512226956150568738">Kung sinusuportahan na ng modelo ng device ng kliyente ang ARC bago kailanganin ang pag-migrate sa ext4 upang mapatakbo ang ARC at kung nakatakda sa true ang patakarang ArcEnabled, gagana ang opsyong ito bilang AskUser (value 3). Sa lahat ng iba pang kaso (kung hindi sinusuportahan ng modelo ng device ang ARC dati, o kung nakatakda sa false ang patakarang ArcEnabled), ang value na ito ay katumbas ng DisallowArc (value 0).</translation>
+<translation id="3512226956150568738">Kung sinusuportahan na ng modelo ng device ng kliyente ang ARC bago kailanganin ang paglipat sa ext4 upang mapatakbo ang ARC at kung nakatakda sa true ang patakarang ArcEnabled, gagana ang opsyong ito bilang AskUser (value 3). Sa lahat ng iba pang sitwasyon (kung hindi sinusuportahan ng modelo ng device ang ARC dati, o kung nakatakda sa false ang patakarang ArcEnabled), ang value na ito ay katumbas ng DisallowArc (value 0).</translation>
 <translation id="3528000905991875314">Paganahin ang mga kahaliling pahina ng error</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="3591584750136265240">I-configure ang gawi sa pagpapatotoo sa pag-log in</translation>
@@ -918,6 +938,7 @@
       Tandaan: Sa kasalukuyan, naka-enable lang ang mga awtomatikong reboot habang ipinapakita ang screen sa pag-login o habang isinasagawa ang isang kiosk app session. Mababago ito sa hinaharap at palaging malalapat ang patakaran, may isinasagawa mang session na may anumang partikular na uri o wala.
 
       Dapat tukuyin sa segundo ang value ng patakaran. Ginugrupo ang mga value nang hindi bababa sa 3600 (isang oras).</translation>
+<translation id="4203879074082863035">Mga printer lang sa whitelist ang ipinapakita sa mga user</translation>
 <translation id="420512303455129789">Isang diksyunaryong nagmamapa ng mga URL sa isang boolean flag na tinutukoy kung dapat payagan (true) o i-block (false) ang access sa host.
 
           Ang patakarang ito ay para sa internal na paggamit ng <ph name="PRODUCT_NAME" /> mismo.</translation>
@@ -1026,6 +1047,7 @@
 <translation id="4541530620466526913">Mga account na lokal sa device</translation>
 <translation id="4555850956567117258">I-enable ang malayuang pagpapatotoo para sa user</translation>
 <translation id="4557134566541205630">URL ng pahina ng bagong tab ng default na search provider</translation>
+<translation id="4558592878156368639">Mga off hour na pagitan kapag na-release ang mga OffHours |ignored_policies| ng device</translation>
 <translation id="4600786265870346112">I-enable ang malaking cursor</translation>
 <translation id="4604931264910482931">I-configure ang blacklist ng native na pagmemensahe</translation>
 <translation id="4617338332148204752">Lalaktawan ang pagsuri sa meta tag sa <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1460,6 +1482,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6211428344788340116">Iulat ang mga oras ng aktibidad ng device.
 
       Kung hindi nakatakda ang setting na ito o nakatakda ito sa True, iuulat ng mga naka-enroll na device ang mga yugto ng panahon kung kailan aktibo sa device ang user. Kung nakatakda ito sa False, hindi itatala o iuulat ang mga oras ng aktibidad ng device.</translation>
+<translation id="6212868225782276239">Ipinapakita ang lahat ng printer maliban sa mga nasa blacklist.</translation>
 <translation id="6219965209794245435">Ipinapatupad ng patakaran na ito ang data ng form ng autofill na ma-import mula sa naunang default na browser kung naka-enable ito. Kung naka-enable, maaapektuhan din ng patakaran na ito ang dialog ng pag-import.
 
       Kung naka-disable, hindi ii-import ang data ng form ng autofill.
@@ -1703,6 +1726,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7132877481099023201">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng video nang walang prompt.</translation>
 <translation id="7167436895080860385">Pinapayagan ang mga user na ipakita ang mga password sa Password Manager (hindi na ginagamit)</translation>
 <translation id="7173856672248996428">Ephemeral na profile</translation>
+<translation id="717630378807352957">Payagan ang lahat ng printer mula sa file ng configuration.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Mga uri ng koneksyon na pinapayagan para sa mga update</translation>
 <translation id="7194407337890404814">Pangalan ng default na provider ng paghahanap</translation>
@@ -2001,6 +2025,18 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung nakatakda ang patakaran sa naka-disable o hinayaang hindi nakatakda, hahantong ang mga pag-sign in sa mga regular na profile.</translation>
 <translation id="8158758865057576716">I-enable ang paggawa ng mga roaming na kopya para sa data ng profile sa <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8169931650834542988">Nagkokontrol kung aling mga printer mula sa 
+      NativePrintersBulkConfiguration ang available sa mga user.
+
+      Nagtatalaga kung aling patakaran sa pag-access ang gagamitin para sa maramihang configuration ng printer.
+      Kung pinili ang AllowAll, ipapakita ang lahat ng printer. Kung BlacklistRestrction
+      ang pinili, gagamitin ang NativePrintersBulkBlacklist upang paghigpitan ang access sa
+      mga tinukoy na printer.  Kung pinili ang WhitelistPrintersOnly,
+      italalaga lang ng NativePrintersWhitelist ang mga printer na
+      napipili.
+
+      Kung hindi nakatakda ang patakarang ito, ipagpapalagay na pinili ang BlacklistRestriction.
+      </translation>
 <translation id="8170878842291747619">Pinapagana ang integrated na serbisyo ng Google Translate sa <ph name="PRODUCT_NAME" />.
 
       Kung pinagana mo ang setting na ito, ipapakita ng <ph name="PRODUCT_NAME" /> ang isang integrated na toolbar na nag-aalok na i-translate ang pahina para sa user, kapag naaangkop.
@@ -2091,6 +2127,14 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
 <translation id="847472800012384958">Huwag payagang magpakita ng mga popup ang anumang site</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Tinutukoy ang mga printer na maaaring gamitin ng user.
+
+      Ginagamit lang ang patakarang ito kung pinili ang WhitelistPrintersOnly para sa
+      NativePrintersBulkAccessMode.
+
+      Kung ginagamit ang patakarang ito, tanging ang mga printer na may mga id na tumutugma sa mga value
+      sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa
+      mga entry sa file na tinukoy sa NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">I-customize ang listahan ng mga pattern ng URL na dapat na palaging i-render ng browser ng host.
 
           Kung hindi nakatakda ang patakarang ito, gagamitin ang default na tagapag-render para sa lahat ng site tulad ng tinukoy sa patakarang 'ChromeFrameRendererSettings.'
@@ -2101,6 +2145,30 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8519264904050090490">Mga pinapamahalaang URL ng manu-manong exception ng user</translation>
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
+<translation id="8555589883248082762">Nagbibigay ng mga configuration para sa mga printer ng enterprise.
+
+      Nagbibigay-daan sa iyo ang patakarang itong magbigay ng mga configuration ng printer sa mga
+      <ph name="PRODUCT_OS_NAME" /> device.
+      Hindi dapat lumampas sa 5MB ang laki ng file at naka-encode dapat ito sa JSON
+      Pareho ang format sa diksyunaryo ng NativePrinters.  Tinatayang
+      ang file na naglalaman ng humigit-kumulang 21,000 printer ay ie-encode bilang 5MB
+      na file.  Ginagamit ang cryptographic hash upang i-verify ang integridad ng
+      download.
+
+      Dina-download at kina-cache ang file. Muli itong ida-download sa tuwing
+      magbabago ang URL o ang hash.
+
+      Kung nakatakda ang patakarang ito,
+      ida-download ng <ph name="PRODUCT_OS_NAME" />
+      ang file para sa mga configuration ng printer at gagawing available ang mga printer
+      alinsunod sa NativePrintersBulkAccessMode, NativePrintersBulkWhitelist,
+      at NativePrintersBulkBlacklist.
+
+      Kung itatakda mo ang patakarang ito, hindi ito maaaring baguhin o i-override ng mga user.
+
+      Walang epekto ang patakarang ito sa kung mako-configure o hindi ng mga user ang mga printer sa
+      mga indibidwal na device.  Nilalayon nitong maging karagdagan sa 
+      configuration ng mga printer ng mga indibidwal na user.</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
 <translation id="8587229956764455752">Payagan ang paglikha ng mga bagong user account</translation>
 <translation id="8614804915612153606">Hindi Pinapagana ang Awtomatikong Pag-update</translation>
@@ -2218,6 +2286,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="9096086085182305205">Whitelist ng server sa pagpapatotoo</translation>
 <translation id="9098553063150791878">Mga patakaran para sa pagpapatotoo ng HTTP</translation>
 <translation id="9105265795073104888">Mayroon lang subset ng opsyon sa configuration ng proxy sa mga Android app. Maaaring boluntaryong piliin ng mga Android app na gamitin ang proxy. Hindi mo maaaring puwersahin ang mga ito na gumamit ng proxy.</translation>
+<translation id="9112727953998243860">File ng configuration ng printer ng enterprise</translation>
 <translation id="9112897538922695510">Nagbibigay-daan sa iyong magrehistro ng isang listahan ng mga tagapangasiwa ng protocol. Dapat ay isa itong inirerekomendang patakaran. Dapat itakda ang property na |protocol| sa scheme gaya ng 'mailto' at dapat itakda ang property na |url| sa pattern ng URL ng application na nangangasiwa sa scheme. Maaaring maglaman ng '%s' ang pattern, at kung mayroon nito, papalitan ito ng pinapangasiwaang URL.
 
           Ang mga tagapangasiwa ng protocol na irerehistro ng patakaran ay isasama sa mga inirehistro ng user, at available gamitin ang dalawang ito. Maaaring i-override ng user ang mga tagapangasiwa ng protocol na na-install ng patakaran sa pamamagitan ng pag-i-install ng bagong default na tagapangasiwa, ngunit hindi nila maaalis ang isang tagapangasiwa ng protocol na inirehistro ng patakaran.</translation>

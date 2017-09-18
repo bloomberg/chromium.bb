@@ -66,6 +66,7 @@ Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados nou
 <translation id="209018056901015185">Pedir site para computador</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
+<translation id="213900355088104901">Para navegar em privado, abra um separador de navegação anónima.</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2230173723195178503">Página Web carregada</translation>
@@ -179,10 +180,11 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="430793432425771671">Sincronizar Tudo</translation>
 <translation id="4342284590510997375">Novo</translation>
 <translation id="4359125752503270327">Esta página abre noutra aplicação.</translation>
+<translation id="4370827530403103842">A sincronização não está a funcionar. Toque para corrigir.</translation>
 <translation id="4375040482473363939">Pesquisa de códigos QR</translation>
 <translation id="4378154925671717803">Telefone</translation>
 <translation id="441868831736628555">Aviso de Privacidade</translation>
-<translation id="4460091562821778167">Perguntar-me sempre qual a aplicação que pretendo utilizar</translation>
+<translation id="4460091562821778167">Perguntar-me sempre qual a aplicação a utilizar</translation>
 <translation id="4508750114462689118">Fechar a promoção de início de sessão</translation>
 <translation id="4526249700380860531">Ver e gerir as palavras-passe guardadas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Experimente iniciar sessão novamente.</translation>
@@ -415,6 +417,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="9100610230175265781">Frase de acesso obrigatória</translation>
 <translation id="9148126808321036104">Iniciar sessão novamente</translation>
 <translation id="914898748153555155">Pode alterar esta preferência a qualquer momento nas definições do Chrome.</translation>
+<translation id="91549621916703028">Crie vários separadores para todas as suas tarefas.</translation>
 <translation id="9157836665414082580">Supr. caixas diálogo</translation>
 <translation id="9188680907066685419">Terminar sessão na conta gerida</translation>
 <translation id="9203116392574189331">Entrega</translation>

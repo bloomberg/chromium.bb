@@ -108,12 +108,6 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="3385242214819933234">Proprietar nevalid al gazdei.</translation>
 <translation id="3403830762023901068">Setările politicii nu acceptă permiterea accesului la acest computer în calitate de gazdă pentru Chromoting. Contactați administratorul de sistem pentru asistență.</translation>
 <translation id="3423542133075182604">Proces de control la distanță al cheii de securitate</translation>
-<translation id="3426467947138417795">Desktop la distanță Chrome
-Desktop la distanță
-PC la distanță
-Computer la distanță
-Acces la distanță
-Asistență la distanță</translation>
 <translation id="3581045510967524389">Nu s-a putut efectua conectarea la rețea. Verificați dacă dispozitivul este online.</translation>
 <translation id="3596628256176442606">Acest serviciu permite conexiuni primite de la clienți Chromoting.</translation>
 <translation id="3606997049964069799">Nu te-ai conectat la Chromium. Conectează-te și încearcă din nou.</translation>
@@ -122,14 +116,6 @@ Asistență la distanță</translation>
 <translation id="3695446226812920698">Află cum</translation>
 <translation id="3718805989288361841">A apărut o eroare la setările politicii pentru Desktop la distanță Chrome. Contactează administratorul de sistem pentru asistență.</translation>
 <translation id="3776024066357219166">Sesiunea Desktop la distanță Chrome s-a încheiat.</translation>
-<translation id="3788372335219293587">Accesează-ți în siguranță computerul de pe dispozitivul iOS. Este rapid, simplu și gratuit.
-
-• Pe computerul pe care dorești să îl accesezi de la distanță, găsește aplicația Desktop la distanță Chrome în Magazinul web Chrome.
-https://chrome.google.com/remotedesktop
-• Instalează software-ul Desktop la distanță Chrome și urmează instrucțiunile pentru a finaliza configurarea.
-• Pe dispozitivul iOS, deschide aplicația și atinge oricare dintre computerele tale online pentru a te conecta.
-
-Pentru informații privind confidențialitatea, accesează Politica de confidențialitate Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirmați mai jos contul și codul PIN pentru a permite accesarea prin intermediul aplicației Desktop la distanță Chrome.</translation>
 <translation id="3897092660631435901">Meniu</translation>
@@ -268,9 +254,6 @@ Pentru informații privind confidențialitatea, accesează Politica de confiden�
 <translation id="7144878232160441200">Reîncearcă</translation>
 <translation id="7149517134817561223">Aplicație pentru emiterea de comenzi către gazda Desktop la distanță Chrome.</translation>
 <translation id="7215059001581613786">Introduceți un cod PIN format din cel puțin șase cifre.</translation>
-<translation id="7237767047212540055">Pe computerul pe care dorești să îl accesezi de la distanță, deschide Chrome și accesează <ph name="INSTALLATION_LINK" />
-Instalează software-ul Desktop la distanță Chrome și urmează instrucțiunile pentru a finaliza configurarea
-După ce ai terminat configurarea, vei putea accesa computerul din această pagină introducând codul PIN sau codul de acces</translation>
 <translation id="7312846573060934304">Gazda este offline.</translation>
 <translation id="7319983568955948908">Opriți permiterea accesului</translation>
 <translation id="7401733114166276557">Desktop la distanță Chrome</translation>

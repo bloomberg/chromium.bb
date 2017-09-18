@@ -69,6 +69,7 @@
 <translation id="2149973817440762519">ブックマークを編集</translation>
 <translation id="2154710561487035718">URL をコピー</translation>
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
+<translation id="2256128224215992540">検索とサイトの候補を表示</translation>
 <translation id="2267753748892043616">アカウントを追加</translation>
 <translation id="2273327106802955778">その他のメニュー</translation>
 <translation id="2320166752086256636">キーボードを非表示</translation>
@@ -178,9 +179,11 @@
 <translation id="430793432425771671">すべて同期</translation>
 <translation id="4342284590510997375">新規</translation>
 <translation id="4359125752503270327">このページは別のアプリケーションで開かれます。</translation>
+<translation id="4370827530403103842">同期が機能していません。修正するにはタップしてください。</translation>
 <translation id="4375040482473363939">QR コード検索</translation>
 <translation id="4378154925671717803">電話番号</translation>
 <translation id="441868831736628555">プライバシーに関するお知らせ</translation>
+<translation id="4460091562821778167">使用するアプリを毎回確認する</translation>
 <translation id="4508750114462689118">ログイン プロモーションを閉じる</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="4536418791685807335">もう一度ログインしてみてください。</translation>

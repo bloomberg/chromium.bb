@@ -108,12 +108,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="3385242214819933234">Le propriétaire de l'hôte est incorrect.</translation>
 <translation id="3403830762023901068">Les paramètres des règles n'autorisent pas le partage de cet ordinateur en tant qu'hôte de Google Chromoting. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
 <translation id="3423542133075182604">Processus de communication à distance de la clé de sécurité</translation>
-<translation id="3426467947138417795">Bureau à distance Chrome
-Bureau à distance
-PC à distance
-Ordinateur à distance
-Accès à distance
-Assistance à distance</translation>
 <translation id="3581045510967524389">Impossible de se connecter au réseau. Veuillez vérifier que votre appareil est en ligne.</translation>
 <translation id="3596628256176442606">Ce service permet la réception de connexions provenant des clients de Chromoting.</translation>
 <translation id="3606997049964069799">Vous n'êtes pas connecté à Chromium. Veuillez vous connecter et réessayer.</translation>
@@ -122,13 +116,6 @@ Assistance à distance</translation>
 <translation id="3695446226812920698">Comment procéder</translation>
 <translation id="3718805989288361841">Erreur dans les paramètres des règles pour le bureau à distance Chrome. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
 <translation id="3776024066357219166">La session du bureau à distance Google Chrome est terminée.</translation>
-<translation id="3788372335219293587">Accédez à votre ordinateur en toute sécurité depuis votre appareil iOS. C'est rapide, simple et gratuit.
-
-• Sur l'ordinateur auquel vous souhaitez accéder à distance, recherchez l'application Bureau à distance Chrome, qui est disponible sur le Chrome Web Store : https://chrome.google.com/remotedesktop.
-• Installez le logiciel Bureau à distance Chrome, puis suivez les instructions pour effectuer la configuration.
-• Sur votre appareil iOS, ouvrez l'application, puis appuyez sur l'un de vos ordinateurs en ligne afin de vous y connecter.
-
-Pour en savoir plus sur la confidentialité, veuillez consulter les règles de confidentialité de Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Veuillez confirmer le compte et le code d'accès ci-dessous pour autoriser l'accès du Bureau à distance Google Chrome à votre compte.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="7144878232160441200">Réessayer</translation>
 <translation id="7149517134817561223">Demande pour émettre des commandes à l'hôte du Bureau à distance Chrome</translation>
 <translation id="7215059001581613786">Veuillez saisir un code d'accès composé d'au moins six chiffres.</translation>
-<translation id="7237767047212540055">Sur l'ordinateur auquel vous souhaitez accéder à distance, ouvrez <ph name="INSTALLATION_LINK" /> dans Chrome.
-Installez le logiciel Bureau à distance Chrome, puis suivez les instructions pour effectuer la configuration.
-Une fois cette étape terminée, vous pouvez accéder à l'ordinateur depuis cette page après avoir saisi votre code d'identification ou le code d'accès requis.</translation>
 <translation id="7312846573060934304">L'hôte est hors ligne</translation>
 <translation id="7319983568955948908">Arrêter le partage</translation>
 <translation id="7401733114166276557">Bureau à distance Google Chrome</translation>

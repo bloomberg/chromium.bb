@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Muat ikut lebar</translation>
 <translation id="1088860948719068836">Tambahkan Nama pada Kad</translation>
 <translation id="1103523840287552314">Sentiasa terjemahkan <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Tunjukkan semua kata laluan yang disimpan...</translation>
 <translation id="1107591249535594099">Jika ditandai, Chrome akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
 <translation id="1111153019813902504">Penanda halaman terbaharu dilawati</translation>
 <translation id="1113869188872983271">&amp;Buat asal susun semula</translation>
@@ -526,6 +527,7 @@
 <translation id="5019198164206649151">Simpanan penyandaran dalam keadaan buruk</translation>
 <translation id="5023310440958281426">Semak dasar pentadbir anda</translation>
 <translation id="5029568752722684782">Hapuskan salinan</translation>
+<translation id="503069730517007720">Sijil akar bagi "<ph name="SOFTWARE_NAME" />" diperlukan tetapi tidak dipasang. Pentadbir IT anda harus melihat arahan konfigurasi "<ph name="SOFTWARE_NAME" />" untuk menyelesaikan masalah ini. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Perihal Google Terjemah</translation>
 <translation id="5039804452771397117">Benarkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">Tidak menemui artikel yang diminta.</translation>
 <translation id="5541546772353173584">Tambahkan E-mel</translation>
 <translation id="5544037170328430102">Halaman terbenam di <ph name="SITE" /> menyatakan:</translation>
+<translation id="5545756402275714221">Artikel untuk Anda</translation>
 <translation id="5556459405103347317">Muat Semula</translation>
 <translation id="5560088892362098740">Tarikh Tamat Tempoh</translation>
 <translation id="5565735124758917034">Aktif</translation>
@@ -618,6 +621,7 @@
 <translation id="5659593005791499971">E-mel</translation>
 <translation id="5669703222995421982">Dapatkan kandungan yang diperibadikan</translation>
 <translation id="5675650730144413517">Halaman ini tidak berfungsi</translation>
+<translation id="5689199277474810259">Eksport ke JSON</translation>
 <translation id="5710435578057952990">Identiti tapak web ini belum disahkan.</translation>
 <translation id="5719499550583120431">Kad prabayar diterima.</translation>
 <translation id="5720705177508910913">Pengguna semasa</translation>
@@ -890,11 +894,13 @@
 <translation id="8037357227543935929">Tanya (lalai)</translation>
 <translation id="8041089156583427627">Hantar Maklum Balas</translation>
 <translation id="8041940743680923270">Gunakan lalai global (Tanya)</translation>
+<translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" tidak dikonfigurasi dengan betul. Tindakan menyahpasang "<ph name="SOFTWARE_NAME" />" biasanya dapat menyelesaikan masalah ini. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Gagal melihat artikel.</translation>
 <translation id="8091372947890762290">Pengaktifan belum selesai pada pelayan</translation>
 <translation id="8094917007353911263">Rangkaian yang anda gunakan mungkin memerlukan anda melawat <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Kaedah Pembayaran</translation>
 <translation id="8118489163946903409">Kaedah pembayaran</translation>
+<translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" tidak dipasang dengan betul pada komputer atau rangkaian anda. Minta pentadbir IT anda menyelesaikan isu ini.</translation>
 <translation id="8131740175452115882">Sahkan</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Alamat DNS<ph name="END_ABBR" /> pelayan <ph name="HOST_NAME" /> tidak ditemui.</translation>
 <translation id="8149426793427495338">Komputer anda dalam mod tidur.</translation>
@@ -1026,4 +1032,9 @@
 <translation id="988159990683914416">Binaan Pemaju</translation>
 <translation id="989988560359834682">Edit Alamat</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" tidak dipasang dengan betul pada komputer atau rangkaian anda:
+    &lt;ul&gt;
+    &lt;li&gt;Cuba nyahpasang atau lumpuhkan  "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
+    &lt;li&gt;Cuba sambung ke rangkaian lain&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

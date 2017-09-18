@@ -192,7 +192,6 @@
 <translation id="1297175357211070620">ಗಮ್ಯಸ್ಥಾನ</translation>
 <translation id="1297922636971898492">Google ಡ್ರೈವ್‌ ಇದೀಗ ಲಭ್ಯವಿಲ್ಲ. Google ಡ್ರೈವ್‌ ಒಮ್ಮೆ ಹಿಂತಿರುಗಿದರೆ ಅಪ್‌ಲೋಡ್‌ ಆಗುವುದು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ.</translation>
 <translation id="1303101771013849280">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ HTML ಫೈಲ್‌</translation>
-<translation id="1303319084542230573">ಮುದ್ರಕವನ್ನು ಸೇರಿಸು</translation>
 <translation id="1303671224831497365">ಯಾವುದೇ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳು ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="1306606229401759371">ಸೆಟ್ಟಿಂಗ್‌‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="1307398858972670978"><ph name="SAVED_PASSWORDS_LINK" /> ನಲ್ಲಿ ಯಾವುದೇ ಸಾಧನದಿಂದ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳಿಗೆ ಪ್ರವೇಶ ಪಡೆಯಿರಿ</translation>
@@ -400,6 +399,7 @@
 <translation id="1608626060424371292">ಈ ಬಳಕೆದಾರರನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1609170755653088773">ಈ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ನಿಮ್ಮ iPhone ಗೆ ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="1609862759711084604">ಹಿಂದಿನ ಬಳಕೆದಾರ</translation>
+<translation id="1611584202130317952">ಸರಬರಾಜು ಹರಿವಿನಲ್ಲಿ ಅಡಚಣೆ ಉಂಟಾಗಿದೆ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ನಿಮ್ಮ ಸಾಧನದ ಮಾಲೀಕರು ಅಥವಾ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಕಿಸಿ.</translation>
 <translation id="1611649489706141841">ಮುಂದೆ</translation>
 <translation id="1611704746353331382">HTML ಫೈಲ್‌ಗೆ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ರಪ್ತು ಮಾಡಿ...</translation>
 <translation id="1612129875274679969">ಈ ಸಾಧನವನ್ನು ಕಿಯೋಸ್ಕ್-ಮೋಡ್‌ನಲ್ಲಿ ಶಾಶ್ವತವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಿ.</translation>
@@ -473,6 +473,7 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (ಸ್ಥಳೀಯ)</translation>
 <translation id="1711973684025117106">ಜಿಪ್ ಮಾಡುವಿಕೆಯು ವಿಫಲವಾಗಿದೆ, ಅನಿರೀಕ್ಷಿತ ದೋಷ: $1</translation>
 <translation id="1712349894969001173">ನಿಮ್ಮ iPhone ನಲ್ಲಿ ಈ ಪಾಸ್‌ವರ್ಡ್ ಪಡೆದುಕೊಳ್ಳಿ</translation>
+<translation id="1718835860248848330">ಕೊನೆಯ ಗಂಟೆ</translation>
 <translation id="1719312230114180055">ಗಮನಿಸಿ: ಬಲವಾದ ಪ್ಯಾಟರ್ನ್ ಅಥವಾ ಪಿನ್‌ಗಿಂತ ನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಕಡಿಮೆ ಸುರಕ್ಷಿತವಾಗಿರಬಹುದು.</translation>
 <translation id="1720318856472900922">TLS WWW ಸರ್ವರ್ ಪ್ರಮಾಣೀಕರಣ</translation>
 <translation id="1721937473331968728">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ಗೆ ಸಂಪರ್ಕಗೊಂಡಿರುವ ಕ್ಲಾಸಿಕ್ ಮುದ್ರಕಗಳನ್ನು ನೀವು <ph name="CLOUD_PRINT_NAME" /> ಗೆ ಸೇರಿಸಬಹುದು.</translation>
@@ -566,6 +567,7 @@
 <translation id="1850508293116537636">&amp;ಪ್ರದಕ್ಷಿಣೆಯಂತೆ ತಿರುಗಿಸಿ</translation>
 <translation id="1852799913675865625">ಫೈಲ್ ಅನ್ನು ಓದಲು ಪ್ರಯತ್ನಿಸುವಾಗ ದೋಷ ಕಂಡುಬಂದಿದೆ: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">ಸ್ಥಳ ಸೇರಿಸಿ...</translation>
+<translation id="1856813161013948396">ಕೇವಲ ಬೆರಳಚ್ಚು ಸೆನ್ಸರ್‌ ಟ್ಯಾಪ್ ಮಾಡುವ ಮೂಲಕ ಲಾಕ್ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಸ್ಕಿಪ್ ಮಾಡಿ. ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="1858585891038687145">ಸಾಫ್ಟ್‌ವೇರ್ ತಯಾರಕರನ್ನು ಗುರುತಿಸುವುದಕ್ಕಾಗಿ ಈ ಪ್ರಮಾಣಪತ್ರದ ಮೇಲೆ ವಿಶ್ವಾಸವಿಡಿ</translation>
 <translation id="1859234291848436338">ಬರವಣಿಗೆ ನಿರ್ದೇಶನ</translation>
 <translation id="1864111464094315414">ಲಾಗಿನ್</translation>
@@ -645,6 +647,7 @@
 <translation id="2007404777272201486">ಸಮಸ್ಯೆ ವರದಿಮಾಡಿ...</translation>
 <translation id="2016430552235416146">ಸಾಂಪ್ರದಾಯಿಕ</translation>
 <translation id="2017334798163366053">ಕಾರ್ಯಕ್ಷಮತೆ ಡೇಟಾ ಸಂಗ್ರಹಣೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="2017836877785168846">ಇತಿಹಾಸವನ್ನು ತೆರವುಗೊಳಿಸಿ ಮತ್ತು ವಿಳಾಸಪಟ್ಟಿಯಲ್ಲಿರುವುದನ್ನು ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸಿ.</translation>
 <translation id="2018352199541442911">ಕ್ಷಮಿಸಿ, ಈ ಸಮಯದಲ್ಲಿ ನಿಮ್ಮ ಬಾಹ್ಯ ಸಂಗ್ರಹಣೆಯ ಸಾಧನಕ್ಕೆ ಬೆಂಬಲ ದೊರೆಯುತ್ತಿಲ್ಲ.</translation>
 <translation id="2019718679933488176">&amp;ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಆಡಿಯೋ ತೆರೆಯಿರಿ</translation>
 <translation id="2020183425253392403">ನೆಟ್‌ವರ್ಕ್ ವಿಳಾಸ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
@@ -970,7 +973,6 @@
 <translation id="2497229222757901769">ಮೌಸ್ ವೇಗ</translation>
 <translation id="2497852260688568942">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಸಿಂಕ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ</translation>
 <translation id="249819058197909513">ಈ ಅಪ್ಲಿಕೇಶನ್‌ಗಾಗಿ ಮತ್ತೆ ಎಚ್ಚರಿಕೆ ನೀಡದಿರು</translation>
-<translation id="2498436043474441766">ಮುದ್ರಕಗಳನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="2498539833203011245">ಕುಗ್ಗಿಸು</translation>
 <translation id="2498765460639677199">ಅಗಾಧ</translation>
 <translation id="2500471369733289700">ನಿಮ್ಮ ಗೌಪ್ಯತೆಯನ್ನು ರಕ್ಷಿಸಲು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
@@ -1227,6 +1229,7 @@
 <translation id="2850541429955027218">ಥೀಮ್ ಸೇರಿಸು</translation>
 <translation id="2853916256216444076">$1 ವೀಡಿಯೊ</translation>
 <translation id="2856903399071202337">ಕ್ಯಾಮರಾ ವಿನಾಯಿತಿಗಳು</translation>
+<translation id="2857608528410806398">QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಮುಖ್ಯಭಾಗ ಇಲ್ಲಿದೆ. QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಮುಖ್ಯಭಾಗ ಇಲ್ಲಿದೆ. QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಮುಖ್ಯಭಾಗ ಇಲ್ಲಿದೆ. QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಮುಖ್ಯಭಾಗ ಇಲ್ಲಿದೆ. QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಮುಖ್ಯಭಾಗ ಇಲ್ಲಿದೆ.</translation>
 <translation id="2859369953631715804">ಮೊಬೈಲ್ ನೆಟ್‌‌ವರ್ಕ್‌ವೊಂದನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="2860150991415616761">ಬಹಳ ದೀರ್ಘ (4s)</translation>
 <translation id="2861301611394761800">ಸಿಸ್ಟಂ ಅಪ್‌ಡೇಟ್‌‌ ಪೂರ್ಣಗೊಂಡಿದೆ. ದಯವಿಟ್ಟು ಸಿಸ್ಟಂ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
@@ -1502,6 +1505,7 @@
 <translation id="3269101346657272573">ದಯವಿಟ್ಟು PIN ನಮೂದಿಸಿ.</translation>
 <translation id="326999365752735949">ವ್ಯತ್ಯಾಸವನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3270965368676314374">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಫೋಟೋಗಳು, ಸಂಗೀತ, ಮತ್ತು ಇತರ ಮಾಧ್ಯಮವನ್ನು ಓದಿ, ಬದಲಾಯಿಸಿ ಮತ್ತು ಅಳಿಸಿ</translation>
+<translation id="327147043223061465">ಎಲ್ಲ ಕುಕೀಗಳು ಮತ್ತು ಸೈಟ್ ಡೇಟಾವನ್ನು ನೋಡಿ</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> ಸಂಪರ್ಕಿಸಲು ಬಯಸುತ್ತದೆ</translation>
 <translation id="3273410961255278341">ಇದಕ್ಕಾಗಿ ಕಳುಹಿಸಿ:</translation>
 <translation id="327444463633065042">ಅಮಾನ್ಯ ಯಂತ್ರದ ಹೆಸರು</translation>
@@ -1726,6 +1730,7 @@
 <translation id="3593965109698325041">ಪ್ರಮಾಣಪತ್ರ ಹೆಸರು ನಿರ್ಬಂಧಗಳು</translation>
 <translation id="3595596368722241419">ಬ್ಯಾಟರಿ ಭರ್ತಿಯಾಗಿದೆ</translation>
 <translation id="3596235046596950091">ಮೇಘ ಸೇವೆಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="3599863153486145794">ಸೈನ್-ಇನ್ ಮಾಡಿರುವ ಎಲ್ಲ ಸಾಧನಗಳಿಂದ ಇತಿಹಾಸವನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ. ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಇತರ ವಿಧಗಳ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೊಂದಿರಬಹುದು.</translation>
 <translation id="3600456501114769456">ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಸ್ಥಳೀಯ ಫೈಲ್‌ಗಳ ಪ್ರವೇಶವನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3603533104205588786">ಪುಟವನ್ನು ಬುಕ್‌ಮಾರ್ಕ್‌ ಮಾಡಲು ನೀವು ನಕ್ಷತ್ರವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಬಹುದು</translation>
 <translation id="3603622770190368340">ನೆಟ್‌ವರ್ಕ್ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಪಡೆದುಕೊಳ್ಳಿ</translation>
@@ -1745,6 +1750,7 @@
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” ನೋಡಿ</translation>
 <translation id="3620292326130836921">ಎಲ್ಲವನ್ನೂ ಬ್ಯಾಕಪ್ ಮಾಡಲಾಗಿದೆ!</translation>
 <translation id="3623574769078102674">ಈ ಮೇಲ್ವಿಚಾರಣೆ ಬಳಕೆದಾರರನ್ನು <ph name="MANAGER_EMAIL" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗುತ್ತದೆ.</translation>
+<translation id="3625258641415618104">ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="3625870480639975468">ಝೂಮ್ ಅನ್ನು ಮರುಹೊಂದಿಸು</translation>
 <translation id="3626281679859535460">ಪ್ರಕಾಶಮಾನ</translation>
 <translation id="3627052133907344175">ವಿಸ್ತರಣೆಗೆ "<ph name="IMPORT_VERSION" />" ಕನಿಷ್ಠ ಆವೃತ್ತಿಯೊಂದಿಗೆ "<ph name="IMPORT_NAME" />" ಅಗತ್ಯವಿದೆ, ಆದರೆ "<ph name="INSTALLED_VERSION" />" ಆವೃತ್ತಿಯನ್ನು ಮಾತ್ರ ಸ್ಥಾಪಿಸಲಾಗಿದೆ.</translation>
@@ -1822,6 +1828,7 @@
 <translation id="3739254215541673094"><ph name="APPLICATION" /> ತೆರೆಯುವುದೇ?</translation>
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> ಈಗ ನಿರ್ವಹಣೆ ಕನ್ಸೋಲ್‌ನಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ</translation>
 <translation id="3741243925913727067">ನಿಮ್ಮ ಮಾಧ್ಯಮ ಸಾಧನದ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳನ್ನು Google ಡ್ರೈವ್‌ಗೆ ಬ್ಯಾಕಪ್ ಮಾಡಿ.</translation>
+<translation id="3742055079367172538">ಸ್ಕ್ರಿನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಲಾಗಿದೆ</translation>
 <translation id="3744111561329211289">ಹಿನ್ನೆಲೆ ಸಿಂಕ್</translation>
 <translation id="3745016858329272300">ಸಾಮಾನ್ಯ ಮಾಹಿತಿ</translation>
 <translation id="3748026146096797577">ಸಂಪರ್ಕಗೊಳಿಸಿಲ್ಲ</translation>
@@ -1979,11 +1986,13 @@
 <translation id="3950820424414687140">ಸೈನ್ ಇನ್</translation>
 <translation id="3954354850384043518">ಪ್ರಗತಿಯಲ್ಲಿದೆ</translation>
 <translation id="3955193568934677022">ಸಂರಕ್ಷಿಸಲಾದ ವಿಷಯವನ್ನು ಪ್ಲೇ ಮಾಡಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
+<translation id="3956702100721821638">Google Play ಅನ್ನು ತಲುಪಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="3958088479270651626">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಆಮದು ಮಾಡಿ</translation>
 <translation id="3960566196862329469">ONC</translation>
 <translation id="3966072572894326936">ಮತ್ತೊಂದು ಫೋಲ್ಡರ್ ಆಯ್ಕೆ ಮಾಡಿ...</translation>
 <translation id="3966388904776714213">ಆಡಿಯೊ ಪ್ಲೇಯರ್</translation>
 <translation id="3967885517199024316">ನಿಮ್ಮ ಎಲ್ಲ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪಡೆಯಲು ಸೈನ್ ಇನ್ ಆಗಿ.</translation>
+<translation id="3967919079500697218">ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳುವ ಸಾಮರ್ಥ್ಯವನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3968261067169026421">ನೆಟ್‌ವರ್ಕ್ ಹೊಂದಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="3970114302595058915">ಐಡಿ</translation>
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -2095,6 +2104,7 @@
 <translation id="4158739975813877944">ಪ್ಲೇಪಟ್ಟಿ ತೆರೆಯಿರಿ</translation>
 <translation id="4159681666905192102"><ph name="CUSTODIAN_EMAIL" /> ಮತ್ತು <ph name="SECOND_CUSTODIAN_EMAIL" /> ಅವರು ಮಕ್ಕಳಿಗೆ ನಿರ್ವಹಿಸುವಂತಹ ಖಾತೆಯಾಗಿರುತ್ತದೆ.</translation>
 <translation id="4163560723127662357">ಅಪರಿಚಿತ ಕೀಬೋರ್ಡ್</translation>
+<translation id="4165986682804962316">ಸೈಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="4166210099837486476">ನೀವು Chrome ನಲ್ಲಿ ಕ್ರಮಗಳನ್ನು ತೆಗೆದುಕೊಂಡಾಗ ಮಾನಿಟರ್‌ ಮಾಡಿ</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> ಸೇರಿದಂತಹ ಕೆಲವು ಸೆಟ್ಟಿಂಗ್‍ಗಳನ್ನು ನಿಮ್ಮೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ. ಬಹು ಸೈನ್‍-ಇನ್ ಬಳಸುವಾಗ ಮಾತ್ರ ಈ ಸೆಟ್ಟಿಂಗ್‍ಗಳು ನಿಮ್ಮ ಖಾತೆಯ ಮೇಲೆ ಪರಿಣಾಮ ಬೀರುತ್ತವೆ.</translation>
 <translation id="4172051516777682613">ಯಾವಾಗಲೂ ತೋರಿಸು</translation>
@@ -2245,7 +2255,6 @@
 <translation id="4430369329743628066">ಬುಕ್‌ಮಾರ್ಕ್ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="4433914671537236274">ಪುನರ್‌ಪ್ರಾಪ್ತಿ ಮಾಧ್ಯಮವನ್ನು ರಚಿಸಿ</translation>
 <translation id="443464694732789311">ಮುಂದುವರಿಸು</translation>
-<translation id="4436456292809448986">ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಸೇರಿಸು...</translation>
 <translation id="4439318412377770121">ನೀವು <ph name="DEVICE_NAME" /> ಅನ್ನು Google ಮೇಘ ಸಾಧನದಲ್ಲಿ ನೋಂದಾಯಿಸಲು ಇಚ್ಛಿಸುವಿರಾ?</translation>
 <translation id="4441124369922430666">ಯಂತ್ರವು ಆನ್ ಆದ ಸಂದರ್ಭದಲ್ಲಿ ಈ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ನೀವು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಆರಂಭಿಸಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="444134486829715816">ವಿಸ್ತರಿಸಿ...</translation>
@@ -2256,6 +2265,7 @@
 <translation id="4443536555189480885">&amp;ಸಹಾಯ</translation>
 <translation id="4444304522807523469">USB ಅಥವಾ ಸ್ಥಳೀಯ ನೆಟ್‌ವರ್ಕ್ ಮೂಲಕ ಲಗತ್ತಿಸಲಾದ ಡಾಕ್ಯುಮೆಂಟ್ ಸ್ಕ್ಯಾನರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="4444512841222467874">ಸ್ಥಳಾವಕಾಶವನ್ನು ಲಭ್ಯವಾಗಿಸದೇ ಇದ್ದರೆ, ಬಳಕೆದಾರರು ಮತ್ತು ಡೇಟಾವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ತೆಗೆದುಹಾಕಬಹುದು.</translation>
+<translation id="4448844063988177157">ವೈ-ಫೈ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4449935293120761385">ಸ್ವಯಂತುಂಬುವಿಕೆ ಬಗ್ಗೆ</translation>
 <translation id="4449996769074858870">ಈ ಟ್ಯಾಬ್ ಆಡಿಯೋ ಪ್ಲೇ ಮಾಡುತ್ತಿದೆ.</translation>
 <translation id="4450974146388585462">ಪತ್ತೆಹಚ್ಚುವಿಕೆ</translation>
@@ -2420,11 +2430,6 @@
 <translation id="4728558894243024398">ಪ್ಲಾಟ್‌ಫಾರ್ಮ್</translation>
 <translation id="4731351517694976331">ನಿಮ್ಮ ಸ್ಥಾನವನ್ನು ಪ್ರವೇಶಿಸಲು Google ಸೇವೆಗಳಿಗೆ ಅನುಮತಿಸಿ</translation>
 <translation id="4731422630970790516">ಶೆಲ್ಫ್ ಐಟಂ 3</translation>
-<translation id="473221644739519769">Google ಮೇಘ ಮುದ್ರಣಕ್ಕೆ ನಿಮ್ಮ ಮುದ್ರಕಗಳನ್ನು ಸೇರಿಸುವುದರಿಂದ  
-          ಎಲ್ಲಿಂದ, ಎಲ್ಲಿಗೆ ಬೇಕಾದರೂ ಮುದ್ರಿಸಲು ನಿಮಗೆ                                                             ಸಾಧ್ಯವಾಗುತ್ತದೆ.
-       ನೀವು ಆಯ್ಕೆ ಮಾಡಿದ ಯಾರ ಜೊತೆಗಾದರೂ ನಿಮ್ಮ ಮುದ್ರಕಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ 
-       ಮತ್ತು Chrome, ನಿಮ್ಮ ಫೋನ್, tablet, PC, ಅಥವಾ ಇತರ ಯಾವುದೇ 
-       ವೆಬ್-ಸಂಪರ್ಕಿತ ಸಾಧನದಿಂದ ಅವುಗಳನ್ನು ಮುದ್ರಿಸಿ.</translation>
 <translation id="4732760563705710320">ಕ್ಷಮಿಸಿ, ಈ ವೀಡಿಯೊ ನಿಮ್ಮ ಬಿತ್ತರಿಸುವ ಸಾಧನದಿಂದ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ</translation>
 <translation id="4734518477988699048">ಇನ್‌ಪುಟ್ ಮೌಲ್ಯವು ಅಮಾನ್ಯವಾಗಿದೆ.</translation>
 <translation id="473546211690256853">ಈ ಖಾತೆಯನ್ನು <ph name="DOMAIN" /> ರಿಂದ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
@@ -2652,6 +2657,7 @@
 <translation id="5087249366037322692">ಥರ್ಡ್ ಪಾರ್ಟಿ ಮೂಲಕ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="5087580092889165836">ಕಾರ್ಡ್ ಸೇರಿಸಿ</translation>
 <translation id="5087864757604726239">ಹಿಂದೆ</translation>
+<translation id="5087926280563932024">ನಿಮ್ಮ ಖಾತೆಯನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ನಿಮ್ಮ Chromebook ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="508794495705880051">ಹೊಸ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಸೇರಿಸಿ...</translation>
 <translation id="5088534251099454936">RSA ಎನ್‌ಕ್ರಿಪ್ಶನ್‌ನೊಂದಿಗೆ PKCS #1 SHA-512</translation>
 <translation id="509429900233858213">ದೋಷವೊಂದು ಕಾಣಿಸಿಕೊಂಡಿದೆ.</translation>
@@ -2691,14 +2697,9 @@
 <translation id="5150254825601720210">Netscape ಪ್ರಮಾಣಪತ್ರ SSL ಸರ್ವರ್ ಹೆಸರು</translation>
 <translation id="5151354047782775295">ಡಿಸ್ಕ್ ಸ್ಥಳಾವಕಾಶವನ್ನು ಮುಕ್ತಗೊಳಿಸಿ ಅಥವಾ ಆಯ್ಕೆಮಾಡಲಾದ ಡೇಟಾವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಅಳಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="5152451685298621771">(ಮಕ್ಕಳಿಗೆ ಖಾತೆ)</translation>
+<translation id="5153297660536091054">ಪಿನ್ ಅನ್‌ಲಾಕ್ ವೈಶಿಷ್ಟ್ಯ</translation>
 <translation id="5154108062446123722"><ph name="PRINTING_DESTINATION" /> ಗಾಗಿ ಸುಧಾರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="5154176924561037127">F8</translation>
-<translation id="5154383699530644092">ನೀವು ಕೆಳಗಿನ "ಮುದ್ರಕ ಸೇರಿಸು" ಅನ್ನು ಕ್ಲಿಕ್ ಮಾಡುವುದರ 
-           ಮೂಲಕ ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ಗೆ ಮುದ್ರಕಗಳನ್ನು  
-           ಸೇರಿಸಬಹುದು. ನೀವು ಸೇರಿಸಲು ಯಾವುದೇ ಮುದ್ರಕಗಳನ್ನು 
-           ಹೊಂದಿಲ್ಲದಿದ್ದಲ್ಲಿ, ಆಗಲೂ ಸಹ ನೀವು ಒಂದು PDF ಅನ್ನು 
-           ಉಳಿಸಲು ಅಥವಾ Google ಡ್ರೈವ್‌ನಲ್ಲಿ ಉಳಿಸಲು 
-           ಸಾಧ್ಯವಾಗುತ್ತದೆ.</translation>
 <translation id="5154702632169343078">ವಿಷಯ</translation>
 <translation id="5154917547274118687">ಸ್ಮರಣೆ</translation>
 <translation id="5157635116769074044">ಆರಂಭಿಕ ಪರದೆಗೆ ಈ ಪುಟವನ್ನು ಪಿನ್ ಮಾಡಿ...</translation>
@@ -3040,6 +3041,7 @@
 <translation id="5642508497713047">CRL ಸೈನರ್</translation>
 <translation id="5646376287012673985">ಸ್ಥಳ</translation>
 <translation id="5646558797914161501">ವ್ಯಾಪಾರಿ</translation>
+<translation id="5648166631817621825">ಕಳೆದ 7 ದಿನಗಳು</translation>
 <translation id="5649053991847567735">ಸ್ವಯಂಚಾಲಿತ ಡೌನ್‌ಲೋಡ್‌ಗಳು</translation>
 <translation id="5649768706273821470">ಆಲಿಸು</translation>
 <translation id="5653140146600257126">"$1" ಹೆಸರಿನ ಡೈರೆಕ್ಟರಿ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ. ದಯವಿಟ್ಟು ಬೇರೊಂದು ಹೆಸರನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
@@ -3277,7 +3279,6 @@
 <translation id="604001903249547235">ಮೇಘ ಬ್ಯಾಕಪ್</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="6040852767465482106">ಅನಾಮಧೇಯ ಗುರುತಿಸುವಿಕೆ</translation>
-<translation id="6041155700700864984">ಪೂರ್ಣಪರದೆಯಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="604124094241169006">ಸ್ವಯಂಚಾಲಿತ</translation>
 <translation id="6042169520002885235">ಪ್ರಿಂಟರ್ ತಯಾರಕರನ್ನು ಮತ್ತು ಮಾದರಿಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="6042308850641462728">ಇನ್ನಷ್ಟು</translation>
@@ -3340,6 +3341,7 @@
 <translation id="6136285399872347291">ಬ್ಯಾಕ್‌ಸ್ಪೇಸ್</translation>
 <translation id="6138680304137685902">SHA-384 ಜೊತೆಗೆ X9.62 ECDSA ಸಹಿ</translation>
 <translation id="6143186082490678276">ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
+<translation id="6144938890088808325">Chromebooks ಸುಧಾರಿಸಲು ನಮಗೆ ಸಹಾಯಮಾಡಿ</translation>
 <translation id="6146563240635539929">ವೀಡಿಯೊಗಳು</translation>
 <translation id="6147020289383635445">ಮುದ್ರಣ ಪೂರ್ವವೀಕ್ಷಣೆ ವಿಫಲಗೊಂಡಿದೆ.</translation>
 <translation id="6150853954427645995">ಆಫ್‌ಲೈನ್ ಬಳಕೆಗೆ ಈ ಫೈಲ್ ಉಳಿಸಲು, ಆನ್‌ಲೈನ್‌ಗೆ ಹಿಂತಿರುಗಿ, ಫೈಲ್ ಅನ್ನು ರೈಟ್-ಕ್ಲಿಕ್ ಮಾಡಿ ಹಾಗೂ <ph name="OFFLINE_CHECKBOX_NAME" /> ಆಯ್ಕೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
@@ -3463,6 +3465,7 @@
 <translation id="6333064448949140209">ಡೀಬಗ್ ಮಾಡಲು Google ಗೆ ಫೈಲ್ ಕಳುಹಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="6333834492048057036">ಹುಡುಕುವುದಕ್ಕೆ ವಿಳಾಸ ಪಟ್ಟಿಯನ್ನು ಗಮನಿಸಿ</translation>
 <translation id="6339668969738228384"><ph name="USER_EMAIL_ADDRESS" /> ಗೆ ಹೊಸ ಪ್ರೊಫೈಲ್ ಅನ್ನು ರಚಿಸಿ</translation>
+<translation id="6340017061976355871">ಸರ್ವರ್‌ ಮೂಲಕ ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್‌ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಸಮಸ್ಯೆ ಮುಂದುವರಿದರೆ, ನಿಮ್ಮ Chromebook ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="6340071272923955280">ಇಂಟರ್ನೆಟ್ ಮುದ್ರಿಸುವಿಕೆಯ ಪ್ರೊಟೊಕಾಲ್ (IPPS)</translation>
 <translation id="6341850831632289108">ನಿಮ್ಮ ದೈಹಿಕ ಸ್ಥಾನವನ್ನು ಪತ್ತೆಹಚ್ಚಿ</translation>
 <translation id="634208815998129842">ಕಾರ್ಯ ನಿರ್ವಾಹಕ</translation>
@@ -3520,7 +3523,6 @@
     <ph name="LINE_BREAK" />
     ನಿಮ್ಮ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡುವುದನ್ನು ಮುಂದುವರಿಸುವುದಕ್ಕೆ "ಮುಂದೆ" ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="6419546358665792306">ಲೋಡ್ ಅನ್‌ಪ್ಯಾಕ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="6420676428473580225">ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಸೇರಿಸಿ</translation>
 <translation id="6422329785618833949">ಫೋಟೋ ತಿರುಗಿಸು</translation>
 <translation id="642282551015776456">ಈ ಹೆಸರನ್ನು ಫೋಲ್ಡರ್‌ನ ಫೈಲ್‌ನಂತೆ ಬಳಸಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="6423239382391657905">VPN ತೆರೆಯಿರಿ</translation>
@@ -3644,6 +3646,7 @@
 <translation id="6586451623538375658">ಪ್ರಾಥಮಿಕ ಮೌಸ್ ಬಟನ್ ಅನ್ನು ಸ್ವ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="6589411753837135276">ಫ್ಲ್ಯಾಶ್ ರನ್ ಮಾಡಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="6589706261477377614">ಕೀಲಿ ಪ್ರಖರತೆ ಹೆಚ್ಚಿಸಿ</translation>
+<translation id="6590458744723262880">ಫೋಲ್ಡರ್ ಅನ್ನು ಮರುಹೆಸರಿಸಿ</translation>
 <translation id="6592267180249644460">WebRTC ಲಾಗ್ ಸೆರೆಹಿಡಿಯಲಾಗಿದೆ <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6596092346130528198">ನೀವು ನಿರೀಕ್ಷಿಸುತ್ತಿರುವುದು ಈ ಹೊಸ ಟ್ಯಾಬ್ ಪುಟವೇ?</translation>
 <translation id="6596325263575161958">ಎನ್‌ಕ್ರಿಫ್ಶನ್ ಆಯ್ಕೆಗಳು</translation>
@@ -3790,6 +3793,7 @@
 <translation id="682123305478866682">ಡೆಸ್ಕ್‌ಟಾಪ್ ಬಿತ್ತರಿಸಿ</translation>
 <translation id="6823506025919456619">ನಿಮ್ಮ ಸಾಧನಗಳನ್ನು ನೋಡಲು ನೀವು Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ</translation>
 <translation id="6824564591481349393">ಇಮೇಲ್ &amp;ವಿಳಾಸವನ್ನು ನಕಲು ಮಾಡಿ</translation>
+<translation id="6825184156888454064">ಹೆಸರಿನ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
 <translation id="6827236167376090743">ಈ ವೀಡಿಯೊ ಸತತವಾಗಿ ಪ್ಲೇ ಆಗುತ್ತಲೇ ಇರುತ್ತದೆ.</translation>
 <translation id="6828153365543658583">ಕೆಳಗಿನ ಬಳಕೆದಾರರಿಗೆ ಸೈನ್-ಇನ್ ಮಾಡುವುದನ್ನು ನಿರ್ಬಂಧಿಸು:</translation>
 <translation id="6828434191343384461">ಆಯ್ಕೆಮಾಡಲಾದ ಡೇಟಾವನ್ನು Chrome ಮತ್ತು ಸಿಂಕ್ ಮಾಡಲ್ಪಟ್ಟ ಸಾಧನಗಳಿಂದ ತೆಗೆದುಹಾಕಲಾಗಿದೆ. ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />ನಲ್ಲಿನ ಇತರ Google ಸೇವೆಗಳಲ್ಲಿ ಹುಡುಕಾಟಗಳು ಮತ್ತು ಚಟುವಟಿಕೆಯಂತಹ ಬ್ರೌಸಿಂಗ್ ಹುಡುಕಾಟಗಳ ಇತರ ಪ್ರಕಾರಗಳನ್ನು ಹೊಂದಿರಬಹುದು.</translation>
@@ -3841,6 +3845,7 @@
 <translation id="6909461304779452601">ಈ ವೆಬ್‌ಸೈಟ್‌ನಿಂದ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು, ವಿಸ್ತರಣೆಗಳು ಮತ್ತು ಬಳಕೆದಾರ ಸ್ಕ್ರಿಪ್ಟ್‌ಗಳನ್ನು ಸೇರಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="6910211073230771657">ಅಳಿಸಲಾಗಿದೆ</translation>
 <translation id="691024665142758461">ಅನೇಕ ಫೈಲ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಿ</translation>
+<translation id="6911324888870229398">ನೆಟ್‌ವರ್ಕ್‌ ಸಂಪರ್ಕವು ಕಡಿತಗೊಂಡಿದೆ. ನಿಮ್ಮ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಮತ್ತೊಂದು ವೈ-ಫೈ ಸಂಪರ್ಕದ ಮೂಲಕ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6915804003454593391">ಬಳಕೆದಾರ:</translation>
 <translation id="6916590542764765824">ವಿಸ್ತರಣೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="6920989436227028121">ದಿನನಿತ್ಯದ ಟ್ಯಾಬ್ ಅಂತೆ ತೆರೆಯಿರಿ</translation>
@@ -3876,6 +3881,7 @@
 <translation id="6978121630131642226">ಹುಡುಕಾಟ ಇಂಜಿನ್‌ಗಳು</translation>
 <translation id="6978611942794658017">ಈ ಫೈಲನ್ನು Windows ಸಾಫ್ಟ್‌ವೇರ್ ಬಳಸಿಕೊಂಡು ಪಿಸಿಗೆ ವಿನ್ಯಾಸಗೊಳಿಸಲಾಗಿದೆ. Chrome OS ನಲ್ಲಿ ರನ್ ಆಗುವ ನಿಮ್ಮ ಸಾಧನದ ಜೊತೆಗೆ ಇದು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಸೂಕ್ತವಾದ ಬದಲಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಾಗಿ Chrome ವೆಬ್ ಅಂಗಡಿಯನ್ನು ಹುಡುಕಿ.</translation>
 <translation id="6979158407327259162">Google ಡ್ರೈವ್‌‌</translation>
+<translation id="6979737339423435258">ಎಲ್ಲ ಸಮಯ</translation>
 <translation id="6980462514016882061">ಹುಡುಕಾಟ, ಜಾಹೀರಾತುಗಳು ಮತ್ತು ಇತರ Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು Google ಬಳಸಬಹುದು</translation>
 <translation id="6980956047710795611">ಹೊಸ ಪಾಸ್‌‌ವರ್ಡ್‌ಗೆ ಎಲ್ಲ Chrome OS ಡೇಟಾವನ್ನು ಸ್ಥಾನಾಂತರಿಸಿ (ಹಿಂದಿನ ಪಾಸ್‌ವರ್ಡ್ ಅಗತ್ಯವಿದೆ)</translation>
 <translation id="6981982820502123353">ಪ್ರವೇಶ</translation>
@@ -3977,6 +3983,7 @@
 <translation id="711902386174337313">ನಿಮ್ಮ ಸೈನ್‌ ಇನ್‌ ಮಾಡಿದ ಸಾಧನಗಳ ಪಟ್ಟಿಯನ್ನು ಓದಿರಿ</translation>
 <translation id="7119389851461848805">ಪವರ್‌</translation>
 <translation id="7120865473764644444">ಸಿಂಕ್ ಸರ್ವರ್‌ಗೆ ಸಂಪರ್ಕಿಸಲಾಗಲಿಲ್ಲ. ಮರುಪ್ರಯತ್ನಿಸಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="7121362699166175603">ವಿಳಾಸ ಪಟ್ಟಿಯ ಇತಿಹಾಸ ಮತ್ತು ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸುವಿಕೆಯನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ. ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಇತರ ವಿಧಗಳ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೊಂದಿರಬಹುದು.</translation>
 <translation id="71243390042171582"><ph name="MINUTES" />ನಿಮಿಷಗಳ ಹಿಂದೆ ಅಪ್‌ಡೇಟ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7124929488592184705"><ph name="DOCUMENT_NAME" /> ಅನ್ನು ಮುದ್ರಿಸುವಲ್ಲಿ ದೋಷ</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ಡ್ರೈವ್ ಹುಡುಕಿ&lt;/em&gt;</translation>
@@ -3993,6 +4000,7 @@
 <translation id="7141105143012495934">ನಿಮ್ಮ ಖಾತೆ ವಿವರಗಳನ್ನು ಹಿಂಪಡೆಯಲು ಸಾಧ್ಯವಾಗದಿರುವುದರಿಂದ ಸೈನ್ ಇನ್ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ ಅಥವಾ ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="7143207342074048698">ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7144878232160441200">ಮರುಪ್ರಯತ್ನಿಸಿ</translation>
+<translation id="7149893636342594995">ಕಳೆದ 24 ಗಂಟೆಗಳು</translation>
 <translation id="715118844758971915">ಕ್ಲಾಸಿಕ್ ಮುದ್ರಕಗಳು</translation>
 <translation id="7154130902455071009">ನಿಮ್ಮ ಪ್ರಾರಂಭ ಪುಟವನ್ನು ಇದಕ್ಕೆ ಬದಲಾಯಿಸಿ: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">ಕ್ಯಾಮರಾ ಅಥವಾ ಫೈಲ್‌ನಿಂದ ಪ್ರಸ್ತುತ ಫೋಟೋ</translation>
@@ -4012,6 +4020,7 @@
 <translation id="7191454237977785534">ಇದರಂತೆ ಫೈಲ್ ಉಳಿಸಿ</translation>
 <translation id="7196835305346730603">ಹತ್ತಿರದ Chromeboxes ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7199158086730159431">ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
+<translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' ಅನ್ನು ಅಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7201354769043018523">ಬಲ ಆವರಣ</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME" /> ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
@@ -4042,6 +4051,7 @@
 <translation id="7243055093079293866">ಹೊಸ ಟ್ಯಾಬ್ ಮತ್ತು google.com ನಲ್ಲಿ  "Ok Google" ಎಂದು ಹೇಳಿ</translation>
 <translation id="7243632151880336635">ತೆರವುಗೊಳಿಸು ಮತ್ತು ಸೈನ್ ಔಟ್ ಮಾಡು</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (ಅತ್ಯುತ್ತಮ)</translation>
+<translation id="7246339268451149667">ಬೆರಳಚ್ಚು ಅನ್‌ಲಾಕ್ ಸಕ್ರಿಯಗೊಳಿಸುವುದೇ?</translation>
 <translation id="7246947237293279874">FTP ಪ್ರಾಕ್ಸಿ</translation>
 <translation id="725109152065019550">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿರುವ ಬಾಹ್ಯ ಸಂಗ್ರಹಣೆಯನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
 <translation id="7253521419891527137">&amp;ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
@@ -4265,6 +4275,7 @@
 <translation id="7579149537961810247">ಸೈಟ್‌ಗಳನ್ನು ಮ್ಯೂಟ್‌ ಮಾಡಿ</translation>
 <translation id="7580139917303152582">ಹೊಸ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ಚಟುವಟಿಕೆಗಳನ್ನು ತ್ವರಿತವಾಗಿ ಪಡೆದುಕೊಳ್ಳಲು ಲಾಂಚರ್‌ ಅನ್ನು ಬಳಸಿ.</translation>
 <translation id="7580671184200851182">ಎಲ್ಲಾ ಸ್ಪೀಕರ್‌ಗಳ ಮೂಲಕ ಒಂದೇ ಆಡಿಯೋ ಪ್ಲೇ ಮಾಡಿ (ಮೋನೋ ಆಡಿಯೋ)</translation>
+<translation id="7581273696622423628">ಸಮೀಕ್ಷೆಯನ್ನು ಕೈಗೊಳ್ಳಿ</translation>
 <translation id="7581462281756524039">ಕ್ಲೀನಪ್ ಪರಿಕರ</translation>
 <translation id="7582582252461552277">ಈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಆದ್ಯತೆ ನೀಡಿ</translation>
 <translation id="7584802760054545466"><ph name="NETWORK_ID" /> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
@@ -4411,7 +4422,6 @@
 <translation id="782590969421016895">ಪ್ರಸ್ತುತ ಪುಟಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="7829298379596169484">ಆಡಿಯೊ ಇನ್‌ಪುಟ್ ಪ್ರವೇಶಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7831368056091621108">ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಈ ವಿಸ್ತರಣೆ, ಇತಿಹಾಸ ಹಾಗೂ ಇತರ Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಹೊಂದಲು.</translation>
-<translation id="7831493768366098287">Google ಮುದ್ರಣ</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">ಮುಕ್ತಾಯದ ಸಮಯ</translation>
 <translation id="7833720883933317473">ಉಳಿಸಲಾದ ಕಸ್ಟಮ್ ಪದಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ</translation>
@@ -4425,6 +4435,7 @@
 <translation id="7847212883280406910"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ಗೆ ಬದಲಾಯಿಸಲು Ctrl + Alt + S ಒತ್ತಿರಿ</translation>
 <translation id="7847644661628718598">ತ್ವರಿತವಾಗಿ ನೋಂದಾಯಿಸಲು ಬೂಟ್‌ಸ್ಟ್ರ್ಯಾಪಿಂಗ್ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಬಳಸಿ</translation>
 <translation id="7849264908733290972">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ &amp;ಇಮೇಜ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="784934925303690534">ಸಮಯ ವ್ಯಾಪ್ತಿ</translation>
 <translation id="7850851215703745691">ಈ ಡ್ರೈವ್ ಫೈಲ್‌ಗಳನ್ನು ಇನ್ನೂ ಹಂಚಿಕೊಂಡಿಲ್ಲ.</translation>
 <translation id="7851457902707056880">ಮಾಲೀಕನ ಖಾತೆಗೆ ಮಾತ್ರ ಸೈನ್‌-ಇನ್‌ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ರೀಬೂಟ್ ಮಾಡಿ ಮತ್ತು ಮಾಲೀಕರ ಖಾತೆಯೊಂದಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ. ಯಂತ್ರವು 30 ಸೆಕುಂಡುಗಳಲ್ಲಿ ಸ್ವಯಂ ರೀಬೂಟ್ ಆಗುತ್ತದೆ.</translation>
 <translation id="7851716364080026749">ಯಾವಾಗಲೂ ಕ್ಯಾಮರಾ ಹಾಗೂ ಮೈಕ್ರೋಫೋನ್ ಪ್ರವೇಶನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
@@ -4563,6 +4574,7 @@
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="8053278772142718589">PKCS #12 ಫೈಲ್‌ಗಳು</translation>
 <translation id="8053390638574070785">ಈ ಪುಟವನ್ನು ರೀಲೋಡ್ ಮಾಡಿ</translation>
+<translation id="8054029954190364711">ಬೆರಳಚ್ಚು ಅನ್‌ಲಾಕ್ ವೈಶಿಷ್ಟ್ಯ</translation>
 <translation id="8054517699425078995">ಈ ಫೈಲ್ ಪ್ರಕಾರವು ನಿಮ್ಮ ಸಾಧನಕ್ಕೆ ಹಾನಿಮಾಡಬಹುದು. ಆದರೂ ನೀವು <ph name="FILE_NAME" /> ಅನ್ನು ಇರಿಸಿಕೊಳ್ಳಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="8054563304616131773">ದಯವಿಟ್ಟು ಮಾನ್ಯವಾದ ಇಮೇಲ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="8054921503121346576">USB ಕೀಬೋರ್ಡ್ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
@@ -4584,6 +4596,7 @@
 <translation id="8074127646604999664">ಡೇಟಾ ಕಳುಹಿಸುವುದನ್ನು ಮತ್ತು ಸ್ವೀಕರಿಸುವುದನ್ನು ಮುಕ್ತಾಯಗೊಳಿಸಲು ಇತ್ತೀಚಿಗೆ ಮುಚ್ಚಲಾದ ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸಿ</translation>
 <translation id="8075191520954018715">ಮೆಮೊರಿ ಸ್ಥಿತಿ</translation>
 <translation id="8077684120002777443">ಬಳಕೆದಾರಹೆಸರು (ಉ.ದಾ. user@example.com)</translation>
+<translation id="8077816382010018681">QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಶೀರ್ಷಿಕೆ ಇಲ್ಲಿದೆ</translation>
 <translation id="8079530767338315840">ಪುನರಾವರ್ತಿಸು</translation>
 <translation id="8083739373364455075">Google ಡ್ರೈವ್ ಜೊತೆಗೆ 100 GB ಉಚಿತವಾಗಿ ಪಡೆಯಿರಿ</translation>
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> ಕಾನ್ಫಿಗರ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
@@ -4882,6 +4895,7 @@
 <translation id="8569682776816196752">ಯಾವುದೇ ಗಮ್ಯಸ್ಥಾನಗಳು ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="8569764466147087991">ತೆರೆಯಲು ಫೈಲ್‌ವೊಂದನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="8571032220281885258">ನೀವು "Ok Google" ಎಂದು ಹೇಳಿದರೆ ಸಾಕು, ಮುಂದೆ ನೀವು ಹೇಳುವುದನ್ನು Chrome ತಾನಾಗಿಯೇ ಹುಡುಕಿಕೊಳ್ಳುತ್ತದೆ.</translation>
+<translation id="8571213806525832805">ಕಳೆದ 4 ವಾರಗಳು</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> ಐಟಂಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="857943718398505171">ಅನುಮತಿಸಲಾಗಿದೆ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="8581809080475256101">ಇತಿಹಾಸವನ್ನು ವೀಕ್ಷಿಸಲು ಮುಂದೆ, ಸಂದರ್ಭದ ಮೆನು ಗೆ ಹೋಗಲು ಒತ್ತಿ</translation>
@@ -4934,6 +4948,7 @@
 <translation id="8659875081143553823">ಕೇವಲ ಒಂದು ಸೆಕೆಂಡು</translation>
 <translation id="8661290697478713397">ಅಜ್ಞಾ&amp;ತ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="8662795692588422978">ಜನರು</translation>
+<translation id="8662811608048051533">ಹೆಚ್ಚಿನ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಂದ ಸೈನ್‌ ಔಟ್‌ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="8662911384982557515">ನಿಮ್ಮ ಮುಖ ಪುಟವನ್ನು ಇದಕ್ಕೆ ಬದಲಾಯಿಸಿ: <ph name="HOME_PAGE" /></translation>
 <translation id="8662978096466608964">Chrome ಗೆ ವಾಲ್‌ಪೇಪರ್ ಅನ್ನು ಹೊಂದಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="8663099077749055505"><ph name="HOST" /> ರಲ್ಲಿ ಯಾವಾಗಲೂ ಬಹು ಸ್ವಯಂಚಾಲಿತ ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸು</translation>
@@ -5307,6 +5322,7 @@
 <translation id="93766956588638423">ವಿಸ್ತರಣೆ ದುರಸ್ತಿಪಡಿಸಿ</translation>
 <translation id="938470336146445890">ದಯವಿಟ್ಟು ಬಳಕೆದಾರ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸ್ಥಾಪಿಸಿ.</translation>
 <translation id="938582441709398163">ಕೀಬೋರ್ಡ್ ಒವರ್‌ಲೇ</translation>
+<translation id="939252827960237676">ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಉಳಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="939736085109172342">ಹೊಸ ಫೋಲ್ಡರ್</translation>
@@ -5316,6 +5332,7 @@
 <translation id="945522503751344254">ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಿ</translation>
 <translation id="951981865514037445">ನಿಮ್ಮ ಸಾಧನಗಳ ಸ್ಥಾನವನ್ನು ಬಳಸಲು <ph name="URL" /> ಬಯಸುತ್ತದೆ.</translation>
 <translation id="952992212772159698">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿಲ್ಲ</translation>
+<translation id="9580706199804957">Google ಸೇವೆಗಳ ಮೂಲಕ ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="958515377357646513">ಮುಂದಕ್ಕೆ ಹೋಗಲು ಸ್ಪರ್ಶಿಸಿ.</translation>
 <translation id="960719561871045870">ಆಪರೇಟರ್ ಕೋಡ್</translation>
 <translation id="960987915827980018">ಸುಮಾರು 1 ಗಂಟೆ ಉಳಿದಿದೆ</translation>

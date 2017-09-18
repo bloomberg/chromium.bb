@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">reajustar</translation>
 <translation id="1247372569136754018">Micrófono (interno)</translation>
 <translation id="1252999807265626933">Cargando a través de <ph name="POWER_SOURCE" /></translation>
+<translation id="1267032506238418139">Cambio de la combinación de teclas</translation>
 <translation id="1270290102613614947">Teclado en pantalla inhabilitado</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistente (cargando...)</translation>
 <translation id="1850504506766569011">La conexión Wi-Fi está desactivada.</translation>
-<translation id="1856813161013948396">Sáltate la pantalla de bloqueo con solo tocar el sensor de huellas digitales. Haz clic para configurar esta función.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">La combinación de teclas para abrir el Administrador de tareas ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">La conexión Bluetooth se activará al habilitar los datos móviles.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Antes de aceptar, comprueba que la clave de contraseña <ph name="PASSKEY" /> aparezca en el dispositivo</translation>
-<translation id="2475982808118771221">Se ha producido un error.</translation>
 <translation id="2501920221385095727">Teclas persistentes</translation>
 <translation id="2509468283778169019">Bloqueo de mayúsculas activado</translation>
 <translation id="2532589005999780174">Modo de contraste alto</translation>
 <translation id="2597972630681408282">Luz nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">Enviar</translation>
 <translation id="2700058918926273959">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />. Se cerrará tu sesión.</translation>
 <translation id="2727977024730340865">Conectado a un cargador de baja potencia. Es posible que la carga de la batería no sea fiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">Tu sesión se cerrará ahora.</translation>
 <translation id="2825619548187458965">Estantería</translation>
 <translation id="2844169650293029770">Dispositivo USB tipo C (puerto frontal izquierdo)</translation>
-<translation id="2857608528410806398">Cuerpo de la notificación de la función de desbloqueo rápido. Cuerpo de la notificación de la función de desbloqueo rápido. Cuerpo de la notificación de la función de desbloqueo rápido. Cuerpo de la notificación de la función de desbloqueo rápido. Cuerpo de la notificación de la función de desbloqueo rápido.</translation>
 <translation id="2865888419503095837">Información de red</translation>
 <translation id="2872961005593481000">Apagar</translation>
 <translation id="2942516765047364088">Posición de la estantería</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">Batería al máximo</translation>
 <translation id="3606978283550408104">La pantalla braille está conectada.</translation>
 <translation id="3621202678540785336">Entrada</translation>
-<translation id="3625258641415618104">Capturas de pantalla inhabilitadas</translation>
 <translation id="3626281679859535460">Brillo</translation>
 <translation id="3712407551474845318">Capturar parte de la pantalla</translation>
 <translation id="371370241367527062">Micrófono delantero</translation>
-<translation id="3742055079367172538">Captura de pantalla hecha</translation>
+<translation id="3771549900096082774">Modo de contraste alto</translation>
 <translation id="3775358506042162758">Solo puedes utilizar un máximo de tres cuentas en el inicio de sesión múltiple.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloquear</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">Entrada de voz</translation>
 <translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="394485226368336402">Ajustes de audio</translation>
-<translation id="3967919079500697218">Tu administrador ha inhabilitado la función para realizar capturas de pantalla.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB tipo C (puerto trasero derecho)</translation>
 <translation id="4017989525502048489">Puntero láser</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4421231901400348175">Compartiendo control de la pantalla con <ph name="HELPER_NAME" /> a través de Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
-<translation id="4448844063988177157">Buscando redes Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositivos desvinculados</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: conectando...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">La combinación de teclas para bloquear la pantalla ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">ChromeVox habilitado</translation>
 <translation id="4729904664295161097">El Asistente solo está disponible en el perfil principal.</translation>
+<translation id="4776917500594043016">Contraseña de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">buscar</translation>
 <translation id="4804818685124855865">Desvincular</translation>
 <translation id="4849058404725798627">Resaltar el objeto con el foco del teclado</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4961318399572185831">Enviar pantalla</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
-<translation id="5170568018924773124">Mostrar en carpeta</translation>
 <translation id="5207949376430453814">Resaltar el símbolo de intercalación del texto</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">Tu sesión se cerrará automáticamente en <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Tu ordenador es visible para dispositivos Bluetooth cercanos y aparecerá como "<ph name="NAME" />" con la dirección <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Cargando <ph name="POWER_SOURCE" /></translation>
-<translation id="6144938890088808325">Ayúdanos a mejorar los Chromebooks</translation>
 <translation id="615957422585914272">Mostrar teclado en pantalla</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Activando...</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
 <translation id="7165278925115064263">Alt + Mayús + K</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7246339268451149667">¿Habilitar el desbloqueo con huella digital?</translation>
 <translation id="7256634071279256947">Micrófono trasero</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> no admite una resolución de <ph name="SPECIFIED_RESOLUTION" />. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta de emojis</translation>
 <translation id="7569509451529460200">Braille y ChromeVox están habilitados</translation>
-<translation id="7581273696622423628">Responder encuesta</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7692480393933218409">Cargando los dispositivos USB tipo C conectados</translation>
 <translation id="776344839111254542">Haz clic para ver los detalles de la actualización</translation>
 <translation id="7798302898096527229">Pulsa la tecla de búsqueda o Mayús para cancelarlo.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> y <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">El idioma ha cambiado de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" después de sincronizar tu configuración.</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta ha inhabilitado el inicio de sesión múltiple.</translation>
 <translation id="7977927628060636163">Buscando redes móviles…</translation>
 <translation id="7982789257301363584">Red</translation>
 <translation id="8000066093800657092">Ninguna red</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
-<translation id="8077816382010018681">Título de la notificación de la función de desbloqueo rápido</translation>
 <translation id="8098591350844501178">Dejar de enviar la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142699993796781067">Red privada</translation>
 <translation id="8180896103888046100">Dejar de enviar contenido a un receptor desconocido</translation>
-<translation id="8185286464235484130">Envíanos tu opinión sobre nuestro servicio respondiendo a unas preguntas.</translation>
 <translation id="8190698733819146287">Personalizar idiomas...</translation>
+<translation id="8261506727792406068">Eliminar</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8351131234907093545">Crear nota</translation>
 <translation id="8392234662362215700">Pulsa Control+Mayús+Espacio para cambiar de diseño de teclado.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">La batería está al <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Saliendo del modo de escritorio unificado</translation>
 <translation id="923686485342484400">Pulsa Control Mayús Q dos veces para cerrar sesión.</translation>
-<translation id="939252827960237676">Error al guardar captura de pantalla</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="98515147261107953">Horizontal</translation>
 </translationbundle>

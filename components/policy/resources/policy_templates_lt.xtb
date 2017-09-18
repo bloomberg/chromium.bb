@@ -53,6 +53,7 @@
 
       Jei ši politika nenustatyta, numatytasis dažnis yra 3 val. Minimalus
       leistinas dažnis yra 60 sekundžių.</translation>
+<translation id="1204263402976895730">Įgalinti įmonės spausdintuvai</translation>
 <translation id="1221359380862872747">Įkelti nurodytus URL prisijungiant prie demonstracinės versijos</translation>
 <translation id="123081309365616809">Įgalinamas turinio perdavimas į įrenginį</translation>
 <translation id="1265053460044691532">Apribokite laiką, per kurį per SAML autentifikuotas naudotojas gali prisijungti neprisijungęs</translation>
@@ -255,6 +256,7 @@
 <translation id="2024476116966025075">Būtino nuotolinės prieigos klientų domeno pavadinimo konfigūravimas</translation>
 <translation id="2030905906517501646">Numatytojo paieškos teikėjo raktinis žodis</translation>
 <translation id="203096360153626918">Ši politika neturi įtakos „Android“ programoms. Jas naudojant bus galima įjungti viso ekrano režimą, net jei ši politika nustatyta į „<ph name="FALSE" />“.</translation>
+<translation id="2043770014371753404">Išjungti įmonės spausdintuvai</translation>
 <translation id="206623763829450685">Nurodoma, kurios HTTP autentifikavimo schemos palaikomos „<ph name="PRODUCT_NAME" />“.
 
           Galimos vertės: „basic“, „digest“, „ntlm“ ir „negotiate“. Kelias vertes atskirkite kableliais.
@@ -331,6 +333,15 @@
       Jei šis nustatymas sukonfigūruotas, spartųjį atrakinimą naudojančių naudotojų bus prašoma įvesti slaptažodžius užrakinimo ekrane, atsižvelgiant į šį nustatymą.
 
       Jei šis nustatymas nesukonfigūruotas, spartųjį atrakinimą naudojančių naudotojų bus prašoma kasdien įvesti slaptažodį užrakinimo ekrane.</translation>
+<translation id="2194470398825717446">Ši politika nebenaudojama M61, vietoje jos naudokite „EcryptfsMigrationStrategy“.
+
+      Nurodo, kaip su „ecryptfs“ pristatytas įrenginys turi elgtis, jei reikia pereiti prie „ext4“ šifruotės.
+
+      Jei šią politiką nustatysite kaip „DisallowArc“, „Android“ programos (įskaitant jau šifruotas naudojant „ext4“) bus išjungtos ir šio įrenginio naudotojai negalės jų naudoti. Naudotojams nebus siūloma perkelti šifruotę iš „ecryptfs“ į „ext4“.
+
+      Jei šią politiką nustatysite kaip „AllowMigration“, „ecryptfs“ pagrindinius katalogus turintiems naudotojams (šiuo metu – kai įrenginyje bus prieinama „Android N“) bus siūloma perkelti katalogus į „ext4“ šifruotę (jei prireiks).
+
+      Ši politika netaikoma viešojo terminalo programoms, nes jos perkeliamos automatiškai. Jei politika liks nenustatyta, įrenginys elgsis taip, lyg būtų pasirinkta „DisallowArc“.</translation>
 <translation id="2201555246697292490">Savosios susirašinėjimo pranešimais programos baltojo sąrašo konfigūravimas</translation>
 <translation id="2204753382813641270">Valdyti automatinį lentynos paslėpimą</translation>
 <translation id="2208976000652006649">Paieškos URL parametrai, kuriuose naudojama POST</translation>
@@ -544,6 +555,14 @@
       Jei ši politika naudojama, naudotojui pasiekiami tik spausdintuvai, kurių ID
       atitinka šioje politikoje nurodytas vertes. ID turi atitikti
       įrašus faile, kuris nurodytas „DeviceNativePrinters“.</translation>
+<translation id="2794520838025002425">Nurodomi spausdintuvai, kurių naudotojas negali naudoti.
+
+      Ši politika naudojama, tik jei pasirinktas politikos „NativePrintersBulkAccessMode“
+      nustatymas „BlacklistRestriction“.
+
+      Jei ši politika naudojama, naudotojui pateikiami visi spausdintuvai,
+      išskyrus tuos, kurių ID nurodyti šioje politikoje.
+      </translation>
 <translation id="2801230735743888564">Leidžiama naudotojams žaisti dinozaurų Velykų kiaušinių žaidimą, kai įrenginys neprijungtas prie interneto.
 
       Jei ši politika nustatyta į „False“, naudotojai negali žaisti dinozaurų Velykų kiaušinių žaidimo, kai įrenginys neprijungtas prie interneto. Jei šis nustatymas nustatytas į „True“, naudotojams leidžiama žaisti dinozaurų žaidimą. Jei ši politika nenustatyta, naudotojams neleidžiama žaisti dinozaurų Velykų kiaušinių žaidimo užregistruotoje „Chrome“ OS, bet leidžiama žaisti kitomis aplinkybėmis.</translation>
@@ -666,6 +685,7 @@
 <translation id="3219421230122020860">Inkognito režimas pasiekiamas</translation>
 <translation id="3220624000494482595">Jei viešojo terminalo programa yra „Android“ programa, ji negalės valdyti „<ph name="PRODUCT_OS_NAME" />“ versijos, net jei ši politika nustatyta į „<ph name="TRUE" />“.</translation>
 <translation id="3236046242843493070">URL šablonai, kuriuos naudojant galima įdiegti plėtinį, programą ir naudotojo scenarijų iš</translation>
+<translation id="3240609035816615922">Spausdintuvų konfigūracijos pasiekiamumo politika.</translation>
 <translation id="3243309373265599239">Nurodoma laiko trukmė be naudotojo įvesties, po kurios ekranas pritemdomas, kai naudojama kintamosios srovės energija.
 
           Kai šios politikos vertė yra didesnė už nulį, ji nurodo laiko trukmę, kurią naudotojas turi neatlikti jokių veiksmų, kol „<ph name="PRODUCT_OS_NAME" />“ pritemdys ekraną.
@@ -733,7 +753,7 @@
 
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="350797926066071931">Įgalinti vertimą</translation>
-<translation id="3512226956150568738">Jei kliento įrenginio modelyje jau buvo palaikomas failų formatas ARC, kol dar perėjimas prie „ext4“ šifruotės nebuvo būtinas, kad būtų galima vykdyti ARC failus, ir jei politika „ArcEnabled“ nustatyta į „true“, ši parinktis veiks kaip „AskUser“ (3 vertė). Visais kitais atvejais (jei įrenginio modelyje nebuvo nepalaikomas failų formatas ARC arba jei politika „ArcEnabled“ nustatyta į „false“) ši vertė bus lygi „DisallowArc“ (0 vertė).</translation>
+<translation id="3512226956150568738">Jei kliento turimo modelio įrenginyje jau buvo palaikomas failų formatas ARC, kol dar perėjimas prie „ext4“ šifruotės nebuvo būtinas, kad būtų galima vykdyti ARC failus, ir jei politika „ArcEnabled“ nustatyta į „true“, ši parinktis veiks kaip „AskUser“ (3 vertė). Visais kitais atvejais (jei įrenginio modelyje nebuvo nepalaikomas failų formatas ARC arba jei politika „ArcEnabled“ nustatyta į „false“) ši vertė bus lygi „DisallowArc“ (0 vertė).</translation>
 <translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="3591584750136265240">Konfigūruoti prisijungimo autentifikavimo elgseną</translation>
@@ -929,6 +949,7 @@
       Pastaba: šiuo metu automatinis operacinės sistemos įkėlimas iš naujo įgalinamas, tik kai rodomas prisijungimo ekranas arba vyksta viešojo terminalo programos seansas. Tai bus pakeista ateityje ir politika bus taikoma neatsižvelgiant į tai, ar vyksta bet kokio tipo seansas.
 
       Politikos vertė turėtų būti nurodyta sekundėmis. Vertės sumažinamos, kad būtų bent 3 600 sek. (viena valanda).</translation>
+<translation id="4203879074082863035">Naudotojams rodomi tik į baltąjį sąrašą įtraukti spausdintuvai</translation>
 <translation id="420512303455129789">Žodynų susiejimo URL, skirti loginiam bandymui, nurodantys, ar prieiga prie prieglobos turėtų būti leidžiama („true“) arba blokuojama („false“).
 
 Ši politika skirta naudoti tik „<ph name="PRODUCT_NAME" />“ viduje.</translation>
@@ -1037,6 +1058,7 @@
 <translation id="4541530620466526913">Vietinės įrenginio paskyros</translation>
 <translation id="4555850956567117258">Įgalinti nuotolinį naudotojo patvirtinimą</translation>
 <translation id="4557134566541205630">Numatytojo paieškos teikėjo naujo skirtuko puslapio URL</translation>
+<translation id="4558592878156368639">Nenaudojimo valandų intervalai, kai išleidžiama „OffHours“ |ignored_policies|</translation>
 <translation id="4600786265870346112">Įgalinti didelį žymeklį</translation>
 <translation id="4604931264910482931">Savosios susirašinėjimo pranešimais programos juodojo sąrašo konfigūravimas</translation>
 <translation id="4617338332148204752">Praleisti metažymų tikrinimą „<ph name="PRODUCT_FRAME_NAME" />“</translation>
@@ -1473,6 +1495,7 @@
 <translation id="6211428344788340116">Pateikti įrenginio veiklos laiką.
 
       Jei šis nustatymas nenustatytas arba nustatytas kaip „True“, užregistruoti įrenginiai pateiks įrenginio naudotojo veiklos laikotarpio informaciją. Jei nustatymas nustatytas kaip „False“, įrenginio veiklos laikas nebus įrašomas ar pateikiamas.</translation>
+<translation id="6212868225782276239">Rodomi visi spausdintuvai, išskyrus įtrauktuosius į juodąjį sąrašą.</translation>
 <translation id="6219965209794245435">Naudojant šią politiką priverstinai importuojami automatinio pildymo formų duomenys iš ankstesnės numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika paveikia importavimo dialogo langą.
 
       Jei ši politika išjungta, automatinio pildymo formų duomenys neimportuojami.
@@ -1715,6 +1738,7 @@
 <translation id="7132877481099023201">URL, kuriems bus suteikta prieiga prie vaizdo įrašų užfiksavimo įrenginių be paraginimo</translation>
 <translation id="7167436895080860385">Leisti naudotojams rodyti slaptažodžius slaptažodžių tvarkytuvėje (nebenaudojama)</translation>
 <translation id="7173856672248996428">Efemeriškas profilis</translation>
+<translation id="717630378807352957">Leisti naudoti visus spausdintuvus pasitelkus konfigūracijos failą.</translation>
 <translation id="7185078796915954712">1.3 versijos TLS</translation>
 <translation id="718956142899066210">Leistini ryšio tipai naujinant</translation>
 <translation id="7194407337890404814">Numatytojo paieškos teikėjo pavadinimas</translation>
@@ -2012,6 +2036,18 @@
 
       Jei politika neįgalinta arba nenustatyta, prisijungiant jungiamasi prie įprastų profilių.</translation>
 <translation id="8158758865057576716">Įgalinti „<ph name="PRODUCT_NAME" />“ profilio duomenų tarptinklinio ryšio kopijų kūrimą.</translation>
+<translation id="8169931650834542988">Valdoma, kurie spausdintuvai iš
+      „NativePrintersBulkConfiguration“ pasiekiami naudotojams.
+
+      Nustatoma, kuri pasiekiamumo politika naudojama masinei spausdintuvų konfigūracijai.
+      Jei pasirinkta „AllowAll“, rodomi visi spausdintuvai. Jei pasirinkta „BlacklistRestrction“,
+      „NativePrintersBulkBlacklist“ naudojama prieigai prie nurodytų spausdintuvų apriboti.
+      Jei pasirinkta „WhitelistPrintersOnly“,
+      „NativePrintersWhitelist“ nustato tik tuos spausdintuvus,
+      kuriuos galima pasirinkti.
+
+      Jei ši politika nenustatyta, taikoma „BlacklistRestriction“.
+      </translation>
 <translation id="8170878842291747619">Įgalinama integruota „Google“ vertėjo paslauga „<ph name="PRODUCT_NAME" />“.
 
       Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ bus rodoma integruota įrankių juosta, kurioje siūloma naudotojui išversti puslapį, kai tai galima.
@@ -2102,6 +2138,14 @@
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>
 <translation id="847472800012384958">Neleisti jokioje svetainėje rodyti iššokančiųjų langų</translation>
 <translation id="8477885780684655676">1.0 versijos TLS</translation>
+<translation id="8480767919856518465">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
+
+      Ši politika naudojama, tik jei pasirinktas politikos „NativePrintersBulkAccessMode“
+      nustatymas „WhitelistPrintersOnly“.
+
+      Jei ši politika naudojama, naudotojui pasiekiami tik spausdintuvai,
+      kurių ID atitinka šioje politikoje nurodytas vertes. ID turi atitikti
+      įrašus faile, kuris nurodytas „NativePrintersBulkConfiguration“.</translation>
 <translation id="8484458986062090479">Tinkinkite URL šablonų, kuriuos prieglobos naršyklė visada turėtų pateikti, sąrašą.
 
           Jei ši politika nenustatyta, numatytasis pateikėjas naudojamas visose svetainėse, kaip nurodyta politikoje „ChromeFrameRendererSettings“.
@@ -2112,6 +2156,30 @@
 <translation id="8519264904050090490">Tvarkomi naudotojo neautomatinių išimčių URL</translation>
 <translation id="8544375438507658205">Numatytasis „<ph name="PRODUCT_FRAME_NAME" />“ HTML teikėjas</translation>
 <translation id="8549772397068118889">Įspėti, kai apsilankoma svetainėse, nesančiose turinio paketuose</translation>
+<translation id="8555589883248082762">Nurodoma įmonės spausdintuvų konfigūracija.
+
+      Pagal šią politiką leidžiama nurodyti
+      „<ph name="PRODUCT_OS_NAME" />“ įrenginių spausdintuvų konfigūraciją.
+      Failo dydis neturi viršyti 5 MB ir failas turi būti koduotas naudojant JSON.
+      Toks pats formatas nurodytas „NativePrinters“ žodyne. Numatyta,
+      kad failas, kuriame yra maždaug 21 tūkst. spausdintuvų, bus koduojamas kaip 5 MB
+      failas. Atsisiųsto failo vientisumas patikrinamas naudojant
+      kriptografinę maišą.
+
+      Failas atsisiunčiamas ir išsaugomas talpykloje. Jis bus iš naujo atsisiųstas,
+      kai pasikeis URL arba maiša.
+
+      Jei ši politika nustatyta,
+      „<ph name="PRODUCT_OS_NAME" />“ atsisiųs
+      spausdintuvo konfigūracijų failą ir suteiks galimybę naudoti spausdintuvus
+      pagal „NativePrintersBulkAccessMode“, „NativePrintersBulkWhitelist“
+      ir „NativePrintersBulkBlacklist“.
+
+      Jei nustatysite šią politiką, naudotojai negalės jos pakeisti arba nepaisyti.
+
+      Ši politika nepaveiks naudotojams suteiktos galimybės konfigūruoti spausdintuvus
+      atskiruose įrenginiuose. Politika papildo
+      atskirų naudotojų spausdintuvų konfigūraciją.</translation>
 <translation id="8566842294717252664">Internetinės parduotuvės slėpimas Naujo skirtuko puslapyje ir programų paleidimo priemonėje</translation>
 <translation id="8587229956764455752">Leisti kurti naujų naudotojų paskyras</translation>
 <translation id="8614804915612153606">Neleidžiamas automatinis naujinys</translation>
@@ -2231,6 +2299,7 @@
 <translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>
 <translation id="9098553063150791878">HTTP autentifikavimo politika</translation>
 <translation id="9105265795073104888">„Android“ programos gali pasiekti tik dalį tarpinio serverio konfigūravimo parinkčių. „Android“ programos gali pasirinkti naudoti tarpinį serverį. Negalite jų priversti naudoti tarpinio serverio.</translation>
+<translation id="9112727953998243860">Įmonės spausdintuvo konfigūracijos failas</translation>
 <translation id="9112897538922695510">Leidžiama registruoti protokolo doroklių sąrašą. Tai gali būti tik rekomenduojama politika. Ypatybė |protocol| turėtų būti nustatyta į schemą, pvz., „mailto“, o ypatybė |url| turėtų būti nustatyta į schemą apdorojančios programos URL šabloną. Šablone gali būti įtrauktas „%s“, kurį pakeis apdorotas URL.
 
           Pagal politiką užregistruotos protokolo doroklės sujungiamos su naudotojo užregistruotomis doroklėmis ir jas abi galima naudoti. Naudotojas gali nepaisyti pagal politiką įdiegtų protokolo doroklių įdiegdamas naują numatytąją doroklę, bet jis negali pašalinti pagal politiką užregistruotos protokolo doroklės.</translation>

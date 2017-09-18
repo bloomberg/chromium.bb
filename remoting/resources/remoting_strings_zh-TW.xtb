@@ -108,12 +108,6 @@
 <translation id="3385242214819933234">主機擁有者無效。</translation>
 <translation id="3403830762023901068">政策設定不允許以 Chromoting 主機的形式共用這台電腦。如需協助，請與你的系統管理員聯絡。</translation>
 <translation id="3423542133075182604">遠端處理安全金鑰</translation>
-<translation id="3426467947138417795">Chrome 遠端桌面
-遠端桌面
-遠端 PC
-遠端電腦
-遠端存取
-遠端支援</translation>
 <translation id="3581045510967524389">無法連上網路，請確認裝置是否處於上線狀態。</translation>
 <translation id="3596628256176442606">這項服務允許來自 Chromoting 用戶端的連線。</translation>
 <translation id="3606997049964069799">您尚未登入 Chromium，請登入並再試一次。</translation>
@@ -122,13 +116,6 @@
 <translation id="3695446226812920698">操作說明</translation>
 <translation id="3718805989288361841">Chrome 遠端桌面的政策設定有誤。如需協助，請與系統管理員聯絡。</translation>
 <translation id="3776024066357219166">你的 Chrome 遠端桌面工作階段已結束。</translation>
-<translation id="3788372335219293587">透過 iOS 裝置安全地存取你的電腦，不僅快速、簡易，而且完全免費。
-
-• 在你要從遠端存取的電腦上，前往 Chrome 線上應用程式商店 (https://chrome.google.com/remotedesktop) 尋找 Chrome 遠端桌面應用程式。
-• 安裝 Chrome 遠端桌面軟體，並按照操作說明完成設定程序。
-• 在 iOS 裝置上開啟應用程式，然後輕觸任一線上電腦進行連線。
-
-如需隱私權相關資訊，請參閱《Google 隱私權政策》(http://goo.gl/SyrVzj)。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">請在下方確認你的帳戶和 PIN，以便授予 Chrome 遠端桌面存取權限。</translation>
 <translation id="3897092660631435901">選單</translation>
@@ -267,9 +254,6 @@
 <translation id="7144878232160441200">重試</translation>
 <translation id="7149517134817561223">要對 Chrome 遠端桌面主機發出指令的應用程式。</translation>
 <translation id="7215059001581613786">請輸入一個至少 6 位數的 PIN。</translation>
-<translation id="7237767047212540055">在你要從遠端存取的電腦上，開啟 Chrome 並造訪 <ph name="INSTALLATION_LINK" />
-安裝 Chrome 遠端桌面軟體，並按照操作說明完成設定程序
-設定完成後，只要輸入 PIN 碼或存取碼，即可透過這個頁面存取該電腦</translation>
 <translation id="7312846573060934304">主機已離線。</translation>
 <translation id="7319983568955948908">停止共用</translation>
 <translation id="7401733114166276557">Chrome 遠端桌面</translation>

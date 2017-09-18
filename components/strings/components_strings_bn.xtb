@@ -410,7 +410,7 @@
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> অবরুদ্ধ হয়ে রয়েছে</translation>
 <translation id="3987940399970879459">১ MB এর কম</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{আশেপাশের ১টি ওয়েবপৃষ্ঠা}one{আশেপাশের #টি ওয়েবপৃষ্ঠা}other{আশেপাশের #টি ওয়েবপৃষ্ঠা}}</translation>
+<translation id="40103911065039147">{URL_count,plural, =1{1 web page nearby}one{# web pages nearby}other{# web pages nearby}}</translation>
 <translation id="4021036232240155012">DNS সেই নেটওয়ার্ক পরিষেবা যা কোনো ওয়েবসাইটের নামকে ইন্টারনেট ঠিকানায় রুপান্তরিত করে।</translation>
 <translation id="4030383055268325496">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="404928562651467259">সতর্কতা</translation>
@@ -810,7 +810,7 @@
 <translation id="7508255263130623398">ফিরে পাওয়া নীতির ডিভাইস আইডি খালি অথবা বর্তমান ডিভাইস আইডির সাথে মিলছে না</translation>
 <translation id="7511955381719512146">আপনি যে ওয়াই-ফাই-টি ব্যবহার করছেন সেটির জন্য অপনাকে <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />-তে যেতে হতে পারে৷</translation>
 <translation id="7514365320538308">ডাউনলোড করুন</translation>
-<translation id="7518003948725431193">এই ওয়েব ঠিকানার কোনও ওয়েবপৃষ্ঠা পাওয়া যায় নি: <ph name="URL" /></translation>
+<translation id="7518003948725431193">No webpage was found for the web address: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">এই সাইটে আপনার সংযোগ ব্যক্তিগত নয়</translation>
 <translation id="7537536606612762813">বাধ্যতামূলক</translation>

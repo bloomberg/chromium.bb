@@ -53,6 +53,7 @@
 
       如未設定這項政策，預設頻率為 3 小時一次。可用頻率下限
       是 60 秒。</translation>
+<translation id="1204263402976895730">啟用的企業印表機</translation>
 <translation id="1221359380862872747">在示範登入時載入指定的網址</translation>
 <translation id="123081309365616809">允許將內容投放至裝置</translation>
 <translation id="1265053460044691532">限制透過 SAML 驗證的使用者可離線登入的時間</translation>
@@ -79,7 +80,7 @@
       選擇 BlacklistRestriction 的情況下才能使用這項政策。
 
       一旦設定了這項政策，除了本政策中列出的 ID 外，
-      所有印表機皆可供使用者使用。
+      其他所有印表機皆可供使用者使用。
       </translation>
 <translation id="1353966721814789986">起始網頁</translation>
 <translation id="1359553908012294236">如果將這項政策設為 True 或未設定，<ph name="PRODUCT_NAME" /> 會啟用訪客登入。訪客登入是 <ph name="PRODUCT_NAME" /> 設定檔，其中的所有視窗都處於無痕模式。
@@ -247,6 +248,7 @@
 <translation id="2024476116966025075">設定遠端存取用戶端的網域名稱 (必要)</translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="203096360153626918">這項政策對 Android 應用程式沒有影響。即使將這項政策設為 <ph name="FALSE" />，Android 應用程式仍可進入全螢幕模式。</translation>
+<translation id="2043770014371753404">停用的企業印表機</translation>
 <translation id="206623763829450685">指定 <ph name="PRODUCT_NAME" /> 支援的 HTTP 驗證機制。
 
           可用的值為「basic」、「digest」、「ntlm」和「negotiate」。如果指定多個值，請以半形逗號分隔。
@@ -320,6 +322,15 @@
           如果指定這項設定，系統會根據這項設定的值要求快速解鎖功能使用者在鎖定畫面中輸入密碼。
 
           如果未指定這項設定，系統則會每天要求快速解鎖功能使用者在鎖定畫面中輸入密碼。</translation>
+<translation id="2194470398825717446">M61 已淘汰這項政策，請改用 EcryptfsMigrationStrategy。
+
+      針對採用 eCryptfs 檔案系統且需要轉換成 Ext4 加密系統的裝置指定相關行為。
+
+      如果將這項政策設為「DisallowArc」，裝置上的所有使用者 (包括已採用 Ext4 加密系統的使用者) 均無法使用 Android 應用程式，也無法從 eCryptfs 檔案系統遷移至 Ext4 加密系統。
+
+      如果將這項政策設為「AllowMigration」，擁有 eCryptfs 檔案系統主目錄的使用者可視需要將主目錄遷移至 Ext4 加密系統 (目前是當裝置可下載 Android N 時)。
+
+      這項政策不適用於資訊站應用程式 (這類應用程式會自動遷移)。如果未設定這項政策，裝置行為會與選擇「DisallowArc」時相同。</translation>
 <translation id="2201555246697292490">設定內建訊息傳遞許可清單</translation>
 <translation id="2204753382813641270">控制檔案櫃自動隱藏功能</translation>
 <translation id="2208976000652006649">使用 POST 的搜尋網址參數</translation>
@@ -514,6 +525,14 @@
 
       一旦設定了這項政策，使用者就只能使用 ID 符合本政策值的印表機，
       且 ID 必須和 DeviceNativePrinters 中指定的檔案項目相符。</translation>
+<translation id="2794520838025002425">指定不開放使用者使用的印表機。
+
+      只有在為 NativePrintersBulkAccessMode
+      選擇 BlacklistRestriction 的情況下才能使用這項政策。
+
+      一旦設定了這項政策，除了本政策中列出的 ID 外，
+       其他所有印表機皆可供使用者使用。
+      </translation>
 <translation id="2801230735743888564">允許使用者在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。
 
       如果將這項政策設為 False，使用者將無法在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。如果將這項政策設為 True，使用者就可以玩這個遊戲。如果未設定這項政策，使用者將無法在已註冊的 Chrome 作業系統中玩恐龍復活節彩蛋遊戲，但可以在其他環境下玩這個遊戲。</translation>
@@ -630,6 +649,7 @@
 <translation id="3219421230122020860">可使用無痕模式</translation>
 <translation id="3220624000494482595">如果資訊站應用程式是 Android 應用程式，即使將這項政策設為 <ph name="TRUE" />，仍無法控制 <ph name="PRODUCT_OS_NAME" />版本。</translation>
 <translation id="3236046242843493070">允許安裝擴充功能、應用程式和使用者指令碼的來源網址模式清單</translation>
+<translation id="3240609035816615922">印表機設定存取權政策。</translation>
 <translation id="3243309373265599239">指定時間長度，如果系統在 AC 供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後將螢幕調暗。
 
           如果你將這項政策設為大於 0 以上的值，表示使用者必須維持該值所指定的時間長度後，<ph name="PRODUCT_OS_NAME" /> 才會將螢幕調暗。
@@ -697,7 +717,7 @@
 
           只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="350797926066071931">啟用翻譯</translation>
-<translation id="3512226956150568738">如果用戶端裝置型號在必須遷移至 ext4 才能執行 ARC 之前已支援 ARC，且 ArcEnabled 政策設為 true，這個選項的行為會是 AskUser (值 3)。在所有其他情況下 (如果用戶端裝置型號之前不支援 ARC，或 ArcEnabled 政策設為 false)，這個值會等於 DisallowArc (值 0)。</translation>
+<translation id="3512226956150568738">如果用戶端裝置型號在必須遷移至 Ext4 才能執行 ARC 之前已支援 ARC，且 ArcEnabled 政策設為 True，這個選項的行為會與 AskUser 相同 (值 3)。在所有其他情況下 (如果用戶端裝置型號之前不支援 ARC，或 ArcEnabled 政策設為 False)，這個值會等同於 DisallowArc (值 0)。</translation>
 <translation id="3528000905991875314">啟用替代的錯誤網頁</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3591584750136265240">設定登入驗證行為</translation>
@@ -882,6 +902,7 @@
       注意：目前只有在顯示登入畫面或 Kiosk 應用程式工作階段運作時，才能啟用自動重新啟動。這種情況會在日後變更，而且無論任何特定類型的工作階段是否正在運作，政策都會一律適用。
 
       指定政策值時需以秒為單位，並且必須大於 3600 (1 小時)。</translation>
+<translation id="4203879074082863035">僅對使用者顯示許可清單中的印表機</translation>
 <translation id="420512303455129789">將網址對應至布林值標記的字典，以指定 Chrome 是否能存取主機。允許值為 True，封鎖值為 False。
 
           這項政策僅供 <ph name="PRODUCT_NAME" /> 內部使用。</translation>
@@ -980,6 +1001,7 @@
 <translation id="4541530620466526913">裝置本機帳戶</translation>
 <translation id="4555850956567117258">為使用者啟用遠端認證機制</translation>
 <translation id="4557134566541205630">預設搜尋引擎新分頁網址</translation>
+<translation id="4558592878156368639">裝置 OffHours |ignored_policies| 解除時的停機時間間隔</translation>
 <translation id="4600786265870346112">啟用大型游標</translation>
 <translation id="4604931264910482931">設定內建訊息傳遞黑名單</translation>
 <translation id="4617338332148204752">在 <ph name="PRODUCT_FRAME_NAME" /> 內略過中繼標記檢查</translation>
@@ -1383,6 +1405,7 @@
 <translation id="6211428344788340116">回報裝置活動時間。
 
       如果這項政策未設定或設為 True，註冊的裝置會回報使用者在裝置上活動的時段。如果設為 False，則不會記錄或回報裝置活動時間。</translation>
+<translation id="6212868225782276239">顯示所有印表機 (黑名單中的印表機除外)。</translation>
 <translation id="6219965209794245435">如果啟用這項政策，會強制從先前的預設瀏覽器匯入自動填入表單資料 (也會影響匯入對話方塊的選項)。
 
       如果停用這項政策，則不會匯入自動填入表單資料。
@@ -1597,6 +1620,7 @@
 <translation id="7132877481099023201">系統會直接授權存取視訊擷取裝置而不需提示的網址</translation>
 <translation id="7167436895080860385">允許使用者在密碼管理員中顯示密碼 (已不適用)</translation>
 <translation id="7173856672248996428">暫時設定檔</translation>
+<translation id="717630378807352957">允許設定檔中的所有印表機。</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">允許進行更新的連線類型</translation>
 <translation id="7194407337890404814">預設搜尋引擎名稱</translation>
@@ -1879,6 +1903,18 @@
 
       如果將這項政策設為停用或不予設定，登入時會導向一般設定檔。</translation>
 <translation id="8158758865057576716">允許建立 <ph name="PRODUCT_NAME" /> 設定檔資料的漫遊複本。</translation>
+<translation id="8169931650834542988">控制要開放 NativePrintersBulkConfiguration 中
+      哪些印表機供使用者使用。
+
+      指派用於大量印表機設定的存取權政策。
+      如果選取 AllowAll，系統會顯示所有印表機。
+      如果選取 BlacklistRestrction，系統會使用
+      NativePrintersBulkBlacklist 限制對特定印表機的存取權。
+      如果選取 WhitelistPrintersOnly，NativePrintersWhitelist
+      會指派可選取的印表機。
+
+      如果沒有設定這項政策，系統會自動採用 BlacklistRestriction。
+      </translation>
 <translation id="8170878842291747619">啟用「<ph name="PRODUCT_NAME" />」中整合的「Google 翻譯」服務。如果你啟用這項設定，「<ph name="PRODUCT_NAME" />」就會顯示整合的工具列，在適當的時機為使用者翻譯網頁。如果你停用這項設定，翻譯列就不會顯示。不論你啟用或停用這項設定，使用者都無法在「<ph name="PRODUCT_NAME" />」中變更或覆寫這項設定。如果你未調整這項設定，使用者可決定是否要使用這項功能。</translation>
 <translation id="817455428376641507">允許存取所列網址，這些網址是網址黑名單的例外情況。
 
@@ -1952,6 +1988,14 @@
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="847472800012384958">不允許任何網站顯示彈出式視窗</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">指定使用者可使用的印表機。
+
+      只有在為 NativePrintersBulkAccessMode 選擇
+      WhitelistPrintersOnly 的情況下才能使用這項政策。
+
+      一旦設定了這項政策，使用者就只能使用 ID 符合本政策值的
+      印表機，且 ID 必須和 NativePrintersBulkConfiguration 中
+      指定的檔案項目相符。</translation>
 <translation id="8484458986062090479">自訂主機瀏覽器應一律轉譯的網址模式清單。
 
           如果未設定這項政策，系統會針對所有網站使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。
@@ -1962,6 +2006,30 @@
 <translation id="8519264904050090490">管理化環境下使用者手動建立的例外網址</translation>
 <translation id="8544375438507658205">預設 <ph name="PRODUCT_FRAME_NAME" /> 的 HTML 轉譯器</translation>
 <translation id="8549772397068118889">瀏覽內容套件以外的網站時顯示警告</translation>
+<translation id="8555589883248082762">為企業印表機進行設定。
+
+      你可以透過這項政策為 <ph name="PRODUCT_OS_NAME" /> 裝置
+      進行印表機設定。
+      這個檔案的大小不得超過 5MB，且必須使用 JSON 編碼，
+      格式則須和 NativePrinters 字典相同。根據估計，
+      一個 5MB 的編碼檔案中可包含約 21,000 部印表機。 
+      系統會使用加密編譯雜湊驗證
+      下載完整性。
+
+      系統會為這個檔案執行下載和快取作業。如果網址或雜湊有所變更，
+      系統就會重新下載檔案。
+
+      設定這項政策後，
+      <ph name="PRODUCT_OS_NAME" /> 會下載這個檔案
+      以進行印表機設定，並根據 NativePrintersBulkAccessMode、
+      NativePrintersBulkWhitelist 和 NativePrintersBulkBlacklist
+      開放使用印表機。
+
+      設定這項政策後，使用者無法予以變更或覆寫。
+
+      這項政策不會影響到使用者在個別裝置上
+      設定印表機的權限，其目的是為了讓個別使用者
+      指定的印表機設定更為完善。</translation>
 <translation id="8566842294717252664">在新分頁和應用程式啟動畫面中隱藏線上應用程式商店</translation>
 <translation id="8587229956764455752">允許建立新的使用者帳戶</translation>
 <translation id="8614804915612153606">停用自動更新</translation>
@@ -2070,6 +2138,7 @@
 <translation id="9096086085182305205">驗證伺服器許可清單</translation>
 <translation id="9098553063150791878">HTTP 驗證政策</translation>
 <translation id="9105265795073104888">只有一部分 Proxy 設定可供 Android 應用程式使用，Android 應用程式可以選擇是否使用。你無法強制 Android 應用程式使用 Proxy。</translation>
+<translation id="9112727953998243860">企業印表機設定檔</translation>
 <translation id="9112897538922695510">允許你註冊通訊協定處理常式清單 (這是一律建議使用的政策)。屬性 |protocol| 應設定為配置 (例如「mailto」)，而屬性 |url| 則應設定為處理該配置的應用程式的網址模式。模式可包含「%s」(如果有的話，會由受處理的網址取代)。
 
           由政策註冊的通訊協定處理常式會與由使用者註冊的通訊協定處理常式合併，兩者皆可供使用。使用者可以安裝新的預設處理常式來覆寫由政策安裝的通訊協定處理常式，但無法移除由政策註冊的通訊協定處理常式。</translation>

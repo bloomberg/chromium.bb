@@ -108,12 +108,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="3385242214819933234">Ana makinenin sahibi geçersiz.</translation>
 <translation id="3403830762023901068">Politika ayarları bu bilgisayarın bir Chromoting ana bilgisayarı olarak paylaşılmasına izin vermiyor. Yardım için sistem yöneticinizle iletişim kurun.</translation>
 <translation id="3423542133075182604">Güvenlik Anahtarı Uzaktan Erişim İşlemi</translation>
-<translation id="3426467947138417795">Chrome Uzaktan Masaüstü
-Uzaktan Masaüstü
-Uzaktan PC
-Uzaktan Bilgisayar
-Uzaktan Erişim
-Uzaktan Destek</translation>
 <translation id="3581045510967524389">Ağa bağlanılamıyor. Lütfen cihazınızın çevrimiçi olduğunu kontrol edin.</translation>
 <translation id="3596628256176442606">Bu hizmet Chromoting istemcilerinden gelen bağlantıları etkinleştirir.</translation>
 <translation id="3606997049964069799">Chromium'da oturum açmadınız. Lütfen oturum açın ve tekrar deneyin.</translation>
@@ -122,13 +116,6 @@ Uzaktan Destek</translation>
 <translation id="3695446226812920698">Nasıl yapacağınızı öğrenin</translation>
 <translation id="3718805989288361841">Chrome Uzaktan Masaüstü politika ayarında bir hata oluştu. Yardım için sistem yöneticinizle görüşün.</translation>
 <translation id="3776024066357219166">Chrome Uzaktan Masaüstü oturumunuz sonlandı.</translation>
-<translation id="3788372335219293587">iOS cihazınızdan bilgisayarınıza güvenle erişin. Hızlı, basit ve ücretsizdir.
-
-• Uzaktan erişmek istediğiniz bilgisayarda, Chrome Uzaktan Masaüstü uygulamasını bulun. Uygulamayı Chrome Web Mağazası'nda https://chrome.google.com/remotedesktop adresinde bulabilirsiniz.
-• Chrome Uzaktan Masaüstü yazılımını yükleyin ve kurulumu tamamlamak üzere talimatları uygulayın.
-• iOS cihazınızda uygulamayı açın ve bağlanmak için çevrimiçi bilgisayarlardan herhangi birine dokunun. 
-
-Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politikası'na (http://goo.gl/SyrVzj) bakın.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome Uzaktan Masaüstü tarafından erişime izin vermek için lütfen aşağıda hesabınızı ve PIN kodunuzu onaylayın.</translation>
 <translation id="3897092660631435901">Menü</translation>
@@ -267,9 +254,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="7144878232160441200">Yeniden Dene</translation>
 <translation id="7149517134817561223">Chrome uzaktan masaüstü ana makinesine komutları verecek uygulama.</translation>
 <translation id="7215059001581613786">Lütfen altı veya daha fazla basamaklı bir PIN kodu girin.</translation>
-<translation id="7237767047212540055">Uzaktan erişmek istediğiniz bilgisayarda Chrome'u açın ve <ph name="INSTALLATION_LINK" /> bağlantısını ziyaret edin
-Chrome Uzaktan Masaüstü yazılımını yükleyin ve kurulumu tamamlamak üzere talimatları uygulayın
-Kurulum tamamlandıktan sonra PIN veya erişim kodunu girerek bilgisayara bu sayfadan erişebilirsiniz</translation>
 <translation id="7312846573060934304">Ana makine çevrimdışı.</translation>
 <translation id="7319983568955948908">Paylaşmayı Durdur</translation>
 <translation id="7401733114166276557">Chrome Uzaktan Masaüstü</translation>

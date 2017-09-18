@@ -108,12 +108,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="3385242214819933234">Érvénytelen gazdagép-tulajdonos.</translation>
 <translation id="3403830762023901068">Az irányelv-beállítások értelmében nem oszthatja meg számítógépét Chromoting gazdaszámítógépként. Segítségért lépjen kapcsolatba a rendszergazdával.</translation>
 <translation id="3423542133075182604">Biztonsági hardverkulcs távoli elérési folyamata</translation>
-<translation id="3426467947138417795">Chrome távoliasztal-szolgáltatás
-Távoli asztal
-Távoli gép
-Távoli számítógép
-Távoli hozzáférés
-Távoli támogatás</translation>
 <translation id="3581045510967524389">Nem sikerült kapcsolódni a hálózathoz. Kérjük, ellenőrizze, hogy eszköze online állapotban van-e.</translation>
 <translation id="3596628256176442606">Ez a szolgáltatás engedélyezi a bejövő kapcsolatokat a Chromoting klienseitől.</translation>
 <translation id="3606997049964069799">Nincs bejelentkezve a Chromiumba. Jelentkezzen be, és próbálkozzon újra.</translation>
@@ -122,13 +116,6 @@ Távoli támogatás</translation>
 <translation id="3695446226812920698">Tudnivalók</translation>
 <translation id="3718805989288361841">Hibát észleltünk a Chrome távoliasztal-szolgáltatás házirend-beállításaival kapcsolatban. Segítségért forduljon a rendszergazdához.</translation>
 <translation id="3776024066357219166">A Chrome távoliasztal-szolgáltatás munkamenet véget ért.</translation>
-<translation id="3788372335219293587">Biztonságosan férhet hozzá számítógépéhez iOS rendszerű eszközéről. Gyors, egyszerű és ingyenes.
-
-• Keresse meg a Chrome távoliasztal-szolgáltatás alkalmazást a Chrome Internetes áruházban (https://chrome.google.com/remotedesktop) azon a számítógépen, amelyhez távolról hozzá szeretne férni.
-• Telepítse a Chrome távoliasztal-szolgáltatás szoftvert, és kövesse az utasításokat a beállítás befejezéséhez.
-• Nyissa meg az alkalmazást iOS rendszerű eszközén, és koppintson a kívánt online állapotú számítógépre a csatlakozáshoz.
-
-Az adatvédelemmel kapcsolatos információkat a Google adatvédelmi irányelveiben találja (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Kérjük, erősítse meg a fiókot és a PIN kódot alább a Chrome távoliasztal-szolgáltatás hozzáférésének engedélyezéséhez.</translation>
 <translation id="3897092660631435901">Menü</translation>
@@ -267,9 +254,6 @@ Az adatvédelemmel kapcsolatos információkat a Google adatvédelmi irányelvei
 <translation id="7144878232160441200">Újra</translation>
 <translation id="7149517134817561223">Alkalmazás parancsok kiadására a Chrome távoliasztal-szolgáltatás gazdagépének.</translation>
 <translation id="7215059001581613786">Kérjük, legalább hat számjegyből álló PIN kódot adjon meg.</translation>
-<translation id="7237767047212540055">Nyissa meg a Chrome böngészőt azon a számítógépen, amelyhez távolról hozzá szeretne férni, és keresse fel a következő linket: <ph name="INSTALLATION_LINK" />
-Telepítse a Chrome távoliasztal-szolgáltatás szoftvert, és kövesse az utasításokat a beállítás befejezéséhez.
-Ha végzett a beállítással, a PIN-, illetve a hozzáférési kód megadásával hozzáférhet a számítógéphez erről az oldalról.</translation>
 <translation id="7312846573060934304">A gazdagép offline állapotban van.</translation>
 <translation id="7319983568955948908">Megosztás leállítása</translation>
 <translation id="7401733114166276557">Chrome távoliasztal-szolgáltatás</translation>

@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">Puudutage siin</translation>
 <translation id="5076340679995252485">&amp;Kleebi</translation>
 <translation id="5120799197269191491">Otsinguklahv + <ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">PIN-koodiga avamise funktsioon</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Avalikustamise kolmnurk</translation>
 <translation id="528468243742722775">End</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;Kopeeri</translation>
 <translation id="7850320739366109486">Mitte segada</translation>
 <translation id="7907591526440419938">Faili avamine</translation>
-<translation id="8054029954190364711">Sõrmejäljega avamise funktsioon</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 tund tagasi}other{# tundi tagasi}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s on jäänud}other{# s on jäänud}}</translation>
 <translation id="815598010540052116">Keri alla</translation>

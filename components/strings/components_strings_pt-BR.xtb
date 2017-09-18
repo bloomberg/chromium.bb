@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Ajustar à largura</translation>
 <translation id="1088860948719068836">Adicionar Nome como consta no Cartão</translation>
 <translation id="1103523840287552314">Sempre traduzir do <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Mostrar todas as senhas salvas…</translation>
 <translation id="1107591249535594099">Se esta opção for selecionada, o Chrome armazenará uma cópia do seu cartão neste dispositivo para preenchimento de formulários mais rapidamente.</translation>
 <translation id="1111153019813902504">Favoritos recentes</translation>
 <translation id="1113869188872983271">&amp;Desfazer reordenar</translation>
@@ -525,6 +526,7 @@
 <translation id="5019198164206649151">Armazenamento de backup em estado inválido</translation>
 <translation id="5023310440958281426">Verifique as políticas do administrador</translation>
 <translation id="5029568752722684782">Limpar cópia</translation>
+<translation id="503069730517007720">Um certificado raiz para "<ph name="SOFTWARE_NAME" />" é necessário, mas não está instalado. O administrador de TI deve revisar as instruções de configuração do "<ph name="SOFTWARE_NAME" />" para corrigir esse problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Sobre o Google Tradutor</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
@@ -596,6 +598,7 @@
 <translation id="5540224163453853">Não foi possível encontrar o artigo solicitado.</translation>
 <translation id="5541546772353173584">Adicione um E-mail</translation>
 <translation id="5544037170328430102">Uma página incorporada em <ph name="SITE" /> diz:</translation>
+<translation id="5545756402275714221">Artigos para você</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5560088892362098740">Data de validade</translation>
 <translation id="5565735124758917034">Ativo</translation>
@@ -617,6 +620,7 @@
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Receber conteúdo personalizado</translation>
 <translation id="5675650730144413517">Esta página não está funcionando</translation>
+<translation id="5689199277474810259">Exportar para JSON</translation>
 <translation id="5710435578057952990">A identidade deste site não foi confirmada.</translation>
 <translation id="5719499550583120431">Cartões pré-pagos são aceitos.</translation>
 <translation id="5720705177508910913">Usuário atual</translation>
@@ -889,11 +893,13 @@
 <translation id="8037357227543935929">Perguntar (padrão)</translation>
 <translation id="8041089156583427627">Enviar comentários</translation>
 <translation id="8041940743680923270">Usar padrão global (Perguntar)</translation>
+<translation id="8057711352706143257">O software "<ph name="SOFTWARE_NAME" />" não foi configurado corretamente. A desinstalação do "<ph name="SOFTWARE_NAME" />" costuma resolver o problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Falha ao exibir artigo.</translation>
 <translation id="8091372947890762290">A ativação está pendente no servidor</translation>
 <translation id="8094917007353911263">A rede que você está usando pode exigir uma visita a <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Forma de Pagamento</translation>
 <translation id="8118489163946903409">Método de pagamento</translation>
+<translation id="8127301229239896662">O software "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao administrador de TI para resolver o problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8134994873729925007">Não foi possível encontrar o <ph name="BEGIN_ABBR" />endereço DNS<ph name="END_ABBR" /> do servidor de <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Seu computador entrou em modo de suspensão.</translation>
@@ -1026,4 +1032,9 @@ incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser 
 <translation id="988159990683914416">Versão do desenvolvedor</translation>
 <translation id="989988560359834682">Editar endereço</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">O software "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede:
+    &lt;ul&gt;
+    &lt;li&gt;Tente desinstalar ou desativar o "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
+    &lt;li&gt;Tente conectar-se a outra rede&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

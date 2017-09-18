@@ -69,6 +69,7 @@
 <translation id="2149973817440762519">बुकमार्क संपादित करा</translation>
 <translation id="2154710561487035718">URL कॉपी करा</translation>
 <translation id="2230173723195178503">वेबपृष्ठ लोड केले</translation>
+<translation id="2256128224215992540">शोध आणि साइट सूचना</translation>
 <translation id="2267753748892043616">खाते जोडा</translation>
 <translation id="2273327106802955778">अधिक मेनू</translation>
 <translation id="2320166752086256636">कीबोर्ड लपवा</translation>
@@ -78,7 +79,7 @@
 <translation id="2381405137052800939">मूलतत्त्वे</translation>
 <translation id="2386793615875593361">1 निवडले</translation>
 <translation id="2435457462613246316">संकेतशब्द दर्शवा</translation>
-<translation id="2572712655377361602">डीव्हाइस धोरणाने आपल्या फोटोंंमधील प्रवेश अवरोधित केला</translation>
+<translation id="2572712655377361602">डिव्हाइस धोरणाने आपल्या फोटोंंमधील प्रवेश अवरोधित केला</translation>
 <translation id="2584132361465095047">खाते जोडा...</translation>
 <translation id="2593774076813182497">या पृष्ठाचे मुद्रण केले जाऊ शकत नाही.</translation>
 <translation id="2625189173221582860">पासवर्ड कॉपी केला</translation>
@@ -127,7 +128,7 @@
 <translation id="3324193307694657476">पत्ता 2</translation>
 <translation id="3329904751041170572">सर्व्हरशी कनेक्ट करू शकलो नाही.</translation>
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
-<translation id="3387752218061326363">आपल्या साइन-इन केलेल्या डीव्हाइस मधील इतिहास दर्शवित आहे.<ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" />.</translation>
+<translation id="3387752218061326363">आपल्या साइन-इन केलेल्या डिव्हाइस मधील इतिहास दर्शवित आहे.<ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">पॉप-अपला अनुमती</translation>
 <translation id="3414292259312108062">Chrome हे आपल्या <ph name="BEGIN_LINK" />Google ने जतन केलेले संकेतशब्द<ph name="END_LINK" /> मध्ये जतन करेल आणि आपल्यासाठी हे स्वयं-भरण करेल जेणेकरून आपल्याला हे लक्षात ठेवावे लागत नाही.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> मिनिटे</translation>
@@ -178,9 +179,11 @@
 <translation id="430793432425771671">प्रत्येकगोष्ट संंकालित करा</translation>
 <translation id="4342284590510997375">नवीन</translation>
 <translation id="4359125752503270327">हे पृष्ठ दुसऱ्या अनुप्रयोगामध्ये उघडेल.</translation>
+<translation id="4370827530403103842">संकालन कार्य करत नाही. निराकरण करण्यासाठी टॅप करा.</translation>
 <translation id="4375040482473363939">QR कोड शोध</translation>
 <translation id="4378154925671717803">फोन</translation>
 <translation id="441868831736628555">गोपनीयता सूचना</translation>
+<translation id="4460091562821778167">कोणते अ‍ॅप वापरायचे ते मला प्रत्येक वेळी विचारा</translation>
 <translation id="4508750114462689118">साइन-इन प्रोमो बंद करा</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />
 वर जतन केलेले संकेतशब्द पहा आणि व्यवस्थापित करा</translation>
@@ -317,7 +320,7 @@
 <translation id="7031882061095297553">यावर संकालित करा</translation>
 <translation id="7062545763355031412">स्वीकार करा आणि खाती स्विच करा</translation>
 <translation id="7108338896283013870">लपवा</translation>
-<translation id="7131892264600713844">या डीव्हाइस वरील इतिहास दर्शवित आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
+<translation id="7131892264600713844">या डिव्हाइस वरील इतिहास दर्शवित आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">पूर्ण नाव</translation>
 <translation id="7136892417564438900">कॅमेरा अनुपलब्ध आहे</translation>
 <translation id="7159472599653637159">मोबाइल साइटची विनंती करा</translation>

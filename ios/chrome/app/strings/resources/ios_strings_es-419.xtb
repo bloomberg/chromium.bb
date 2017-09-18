@@ -66,9 +66,11 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="209018056901015185">Versión para escritorio</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos movidos</translation>
+<translation id="213900355088104901">Para navegar de forma privada, abre una pestaña de incógnito</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2230173723195178503">Se cargó la página web</translation>
+<translation id="2256128224215992540">Sugerencias de sitios y búsqueda</translation>
 <translation id="2267753748892043616">Agregar cuenta</translation>
 <translation id="2273327106802955778">Menú Más</translation>
 <translation id="2320166752086256636">Ocultar el teclado</translation>
@@ -178,9 +180,11 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="430793432425771671">Sincronizar todo</translation>
 <translation id="4342284590510997375">Nuevo</translation>
 <translation id="4359125752503270327">Esta página se abrirá en otra aplicación.</translation>
+<translation id="4370827530403103842">La sincronización no funciona. Presiona para corregirla.</translation>
 <translation id="4375040482473363939">Búsqueda mediante código QR</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="441868831736628555">Aviso de privacidad</translation>
+<translation id="4460091562821778167">Preguntarme qué apps usar cada vez</translation>
 <translation id="4508750114462689118">Cerrar promoción de acceso</translation>
 <translation id="4526249700380860531">Consulta y administra las contraseñas que guardaste en <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />.</translation>
 <translation id="4536418791685807335">Intenta volver a acceder.</translation>
@@ -413,6 +417,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
 <translation id="9148126808321036104">Accede nuevamente</translation>
 <translation id="914898748153555155">Puedes cambiar esta preferencia en cualquier momento en la configuración de Chrome</translation>
+<translation id="91549621916703028">Crea múltiples pestañas para todas tus tareas</translation>
 <translation id="9157836665414082580">Suprimir diálogos</translation>
 <translation id="9188680907066685419">Salir de la cuenta administrada</translation>
 <translation id="9203116392574189331">Handoff</translation>

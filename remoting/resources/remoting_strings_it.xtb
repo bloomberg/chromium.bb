@@ -108,12 +108,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="3385242214819933234">Proprietario host non valido.</translation>
 <translation id="3403830762023901068">Le impostazioni criterio non consentono la condivisione di questo computer come host Chromoting. Contatta l'amministratore di sistema per ricevere assistenza.</translation>
 <translation id="3423542133075182604">Security Key Remoting Process</translation>
-<translation id="3426467947138417795">Chrome Remote Desktop
-Desktop remoto
-PC remoto
-Computer remoto
-Accesso remoto
-Assistenza remota</translation>
 <translation id="3581045510967524389">Impossibile collegarsi alla rete. Controlla che il dispositivo sia online.</translation>
 <translation id="3596628256176442606">Questo servizio consente connessioni in entrata da client Chromoting.</translation>
 <translation id="3606997049964069799">Non hai eseguito l'accesso a Chromium. Accedi e riprova.</translation>
@@ -122,13 +116,6 @@ Assistenza remota</translation>
 <translation id="3695446226812920698">Scopri come</translation>
 <translation id="3718805989288361841">Si è verificato un errore con le impostazioni delle norme per Chrome Remote Desktop. Contatta l'amministratore di sistema per ricevere assistenza.</translation>
 <translation id="3776024066357219166">La sessione Chrome Remote Desktop è terminata.</translation>
-<translation id="3788372335219293587">Accedi in sicurezza al tuo computer dal tuo dispositivo iOS. È un veloce, semplice e gratuito.
-
-• Puoi configurare l'accesso remoto sul computer utilizzando l'app Chrome Remote Desktop del Chrome Web Store https://chrome.google.com/remotedesktop
-• Installa il software Chrome Remote Desktop e segui le istruzioni per completare la configurazione.
-• Sul tuo dispositivo iOS, apri l'app e tocca uno dei tuoi computer online per collegarti.
-
-Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Conferma il tuo account e il PIN per consentire l'accesso tramite Chrome Remote Desktop.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="7144878232160441200">Riprova</translation>
 <translation id="7149517134817561223">Applicazione per fornire comandi all'host Chrome Remote Desktop.</translation>
 <translation id="7215059001581613786">Inserisci un PIN formato da almeno sei cifre.</translation>
-<translation id="7237767047212540055">Sul computer a cui vuoi accedere da remoto, apri Chrome e visita <ph name="INSTALLATION_LINK" />
-Installa il software Chrome Remote Desktop e segui le istruzioni per completare la configurazione
-Una volta completata la configurazione, potrai accedere al computer da questa pagina inserendo il PIN o il codice di accesso</translation>
 <translation id="7312846573060934304">L'host è offline.</translation>
 <translation id="7319983568955948908">Interrompi condivisione</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>

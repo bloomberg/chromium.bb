@@ -66,9 +66,11 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="209018056901015185">Ubah situs desktop</translation>
 <translation id="2103075008456228677">Buka history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipindah</translation>
+<translation id="213900355088104901">Untuk melakukan browsing secara rahasia, buka tab penyamaran</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="2230173723195178503">Halaman web dimuat</translation>
+<translation id="2256128224215992540">Saran Situs dan Penelusuran</translation>
 <translation id="2267753748892043616">Tambahkan Akun</translation>
 <translation id="2273327106802955778">Menu lainnya</translation>
 <translation id="2320166752086256636">Sembunyikan keyboard</translation>
@@ -178,9 +180,11 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="430793432425771671">Sinkronkan Semua</translation>
 <translation id="4342284590510997375">Baru</translation>
 <translation id="4359125752503270327">Laman ini akan dibuka di aplikasi lain.</translation>
+<translation id="4370827530403103842">Sinkronisasi tidak berfungsi. Ketuk untuk memperbaiki.</translation>
 <translation id="4375040482473363939">Telusuri kode QR</translation>
 <translation id="4378154925671717803">Telepon</translation>
 <translation id="441868831736628555">Notifikasi Privasi</translation>
+<translation id="4460091562821778167">Selalu tanyakan aplikasi yang akan digunakan</translation>
 <translation id="4508750114462689118">Tutup promo login</translation>
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Coba masuk lagi.</translation>
@@ -413,6 +417,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
 <translation id="9148126808321036104">Masuk sekali lagi</translation>
 <translation id="914898748153555155">Anda dapat mengubah preferensi ini kapan saja di setelan Chrome</translation>
+<translation id="91549621916703028">Buat beberapa tab untuk semua tugas Anda</translation>
 <translation id="9157836665414082580">Sembunyikan Dialog</translation>
 <translation id="9188680907066685419">Keluar dari akun yang dikelola</translation>
 <translation id="9203116392574189331">Handoff</translation>

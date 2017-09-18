@@ -108,12 +108,6 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="3385242214819933234">Propietario del host no válido.</translation>
 <translation id="3403830762023901068">La configuración de la política no permite compartir este ordenador como un host de Chromoting. Ponte en contacto con el administrador del sistema para obtener asistencia.</translation>
 <translation id="3423542133075182604">Proceso remoto de la llave de seguridad</translation>
-<translation id="3426467947138417795">Escritorio Remoto de Chrome
-Escritorio remoto
-PC remoto
-Ordenador remoto
-Acceso remoto
-Asistencia remota</translation>
 <translation id="3581045510967524389">No se ha podido establecer conexión con la red. Comprueba que el dispositivo esté conectado a Internet.</translation>
 <translation id="3596628256176442606">Este servicio permite las conexiones entrantes de los clientes de Chromoting.</translation>
 <translation id="3606997049964069799">No has iniciado sesión en Chromium. Inicia sesión y vuelve a intentarlo.</translation>
@@ -122,13 +116,6 @@ Asistencia remota</translation>
 <translation id="3695446226812920698">Descubre cómo hacerlo</translation>
 <translation id="3718805989288361841">Se ha producido un error relacionado con la configuración de políticas de Escritorio Remoto de Chrome. Ponte en contacto con el administrador de tu sistema para obtener ayuda.</translation>
 <translation id="3776024066357219166">Ha finalizado tu sesión en Escritorio Remoto de Chrome.</translation>
-<translation id="3788372335219293587">Accede a tu ordenador desde tu dispositivo iOS de forma segura, rápida, sencilla y gratuita.
-
-• Busca la aplicación Escritorio Remoto de Chrome en Chrome Web Store desde el ordenador al que quieres acceder de forma remota (https://chrome.google.com/remotedesktop).
-• Instala el software Escritorio Remoto de Chrome y sigue las instrucciones para completar la configuración.
-• En tu dispositivo iOS, abre la aplicación y toca cualquiera de tus ordenadores online para establecer la conexión.
-
-Para obtener información sobre privacidad, consulta la política de privacidad de Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirma la cuenta y el PIN a continuación para permitir el acceso de Escritorio Remoto de Chrome.</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -267,9 +254,6 @@ Para obtener información sobre privacidad, consulta la política de privacidad 
 <translation id="7144878232160441200">Volver a intentar</translation>
 <translation id="7149517134817561223">Aplicación para enviar comandos al host del Escritorio Remoto de Chrome.</translation>
 <translation id="7215059001581613786">Introduce un PIN que tenga como mínimo seis dígitos.</translation>
-<translation id="7237767047212540055">Abre Chrome en el ordenador al que quieres acceder de forma remota y accede a <ph name="INSTALLATION_LINK" />
-Instala el software Escritorio Remoto de Chrome y sigue las instrucciones para completar la configuración
-Cuando lo hayas hecho, podrás introducir el PIN o el código para acceder a este ordenador desde esta página</translation>
 <translation id="7312846573060934304">El host no tiene conexión.</translation>
 <translation id="7319983568955948908">Dejar de compartir</translation>
 <translation id="7401733114166276557">Escritorio Remoto de Chrome</translation>

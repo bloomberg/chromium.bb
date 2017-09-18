@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">در اینجا ضربه بزنید</translation>
 <translation id="5076340679995252485">&amp;جاگذاری</translation>
 <translation id="5120799197269191491">جستجو+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">قابلیت باز کردن قفل پین</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> پتابایت</translation>
 <translation id="5266161281976477809">مثلث افشا</translation>
 <translation id="528468243742722775">پایان</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;کپی</translation>
 <translation id="7850320739366109486">مزاحم نشوید</translation>
 <translation id="7907591526440419938">باز کردن فایل</translation>
-<translation id="8054029954190364711">قابلیت باز کردن قفل اثر انگشت</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{۱ ثانیه باقی مانده است}one{# ثانیه باقی مانده است}other{# ثانیه باقی مانده است}}</translation>
 <translation id="815598010540052116">پیمایش به پایین</translation>

@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">Tocca qui</translation>
 <translation id="5076340679995252485">&amp;Incolla</translation>
 <translation id="5120799197269191491">Ricerca+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">Funzione di sblocco PIN</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Triangolo di apertura</translation>
 <translation id="528468243742722775">Fine</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;Copia</translation>
 <translation id="7850320739366109486">Non disturbare</translation>
 <translation id="7907591526440419938">Apri file</translation>
-<translation id="8054029954190364711">Funzione di sblocco basato su impronta digitale</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ora fa}other{# ore fa}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sec rimanente}other{# sec rimanenti}}</translation>
 <translation id="815598010540052116">Scorri verso il basso</translation>

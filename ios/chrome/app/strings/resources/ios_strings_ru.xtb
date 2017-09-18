@@ -66,9 +66,11 @@
 <translation id="209018056901015185">Полная версия</translation>
 <translation id="2103075008456228677">Открыть history.google.com</translation>
 <translation id="2116625576999540962">Перемещено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="213900355088104901">Чтобы просматривать веб-страницы анонимно, откройте вкладки в режиме инкогнито</translation>
 <translation id="2149973817440762519">Закладка</translation>
 <translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2230173723195178503">Веб-страница загружена</translation>
+<translation id="2256128224215992540">Подсказки запросов и сайтов</translation>
 <translation id="2267753748892043616">Добавить аккаунт</translation>
 <translation id="2273327106802955778">Меню "Ещё"</translation>
 <translation id="2320166752086256636">Скрыть клавиатуру</translation>
@@ -178,9 +180,11 @@
 <translation id="430793432425771671">Синхронизировать все</translation>
 <translation id="4342284590510997375">Новое</translation>
 <translation id="4359125752503270327">Страница откроется в другом приложении.</translation>
+<translation id="4370827530403103842">Синхронизация не работает. Нажмите, чтобы исправить.</translation>
 <translation id="4375040482473363939">Поиск по QR-коду</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Примечание о конфиденциальности</translation>
+<translation id="4460091562821778167">Всегда спрашивать, какое приложение использовать</translation>
 <translation id="4508750114462689118">Закрыть сообщение о входе</translation>
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Войдите в аккаунт снова.</translation>
@@ -412,7 +416,8 @@
 <translation id="9083392325882095631">Закладок: 1</translation>
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>
 <translation id="9148126808321036104">Повторите вход</translation>
-<translation id="914898748153555155">Его можно изменить в настройках Chrome в любой момент</translation>
+<translation id="914898748153555155">Его можно изменить в настройках Chrome в любой момент.</translation>
+<translation id="91549621916703028">Вы можете открыть несколько вкладок</translation>
 <translation id="9157836665414082580">Блокировать диалоговые окна</translation>
 <translation id="9188680907066685419">Выход из управляемого аккаунта</translation>
 <translation id="9203116392574189331">Handoff</translation>

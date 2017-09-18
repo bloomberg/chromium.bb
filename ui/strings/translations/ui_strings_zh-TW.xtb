@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">輕觸這裡</translation>
 <translation id="5076340679995252485">貼上(&amp;P)</translation>
 <translation id="5120799197269191491">搜尋鍵 + <ph name="KEY_COMBO_NAME" /> 鍵</translation>
-<translation id="5153297660536091054">PIN 解鎖功能</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">顯示/隱藏三角標記</translation>
 <translation id="528468243742722775">結束</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">複製(&amp;C)</translation>
 <translation id="7850320739366109486">請勿打擾</translation>
 <translation id="7907591526440419938">開啟檔案</translation>
-<translation id="8054029954190364711">指紋解鎖功能</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 小時前}other{# 小時前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{還剩 1 秒}other{還剩 # 秒}}</translation>
 <translation id="815598010540052116">向下捲動</translation>

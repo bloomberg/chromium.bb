@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Преместване на отметки</translation>
 <translation id="119944043368869598">Изчистване на всички</translation>
 <translation id="1201402288615127009">Напред</translation>
+<translation id="1204037785786432551">Изтегляне на връзката</translation>
+<translation id="1206892813135768548">Копиране на текста на връзката</translation>
 <translation id="1209206284964581585">Скриване засега</translation>
 <translation id="1211530540767271776">Тук няма USB устройства</translation>
 <translation id="123724288017357924">Презареждане на страницата (кешът се пренебрегва)</translation>
@@ -114,6 +116,7 @@
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">За да получавате персонализирано съдържание, предлагано от Google, влезте в Chrome.</translation>
+<translation id="2091887806945687916">Звук</translation>
 <translation id="2095887075102408547">Когато тази функция е включена, Chrome ще използва сървърите на Google, за да компресира посещаваните от вас страници преди изтеглянето им. Няма да оптимизираме, нито ще виждаме страниците, отваряни през частни връзки (HTTPS) или в раздели в режим „инкогнито“.</translation>
 <translation id="2096396629993765042">Няма да излезете от профила си в Google. Възможно е в него да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Автоматичен вход</translation>
@@ -333,6 +336,7 @@
 <translation id="4256782883801055595">Лицензи за отворен код</translation>
 <translation id="4259722352634471385">Навигирането е блокирано: <ph name="URL" /></translation>
 <translation id="4262028915562328938">При синхронизирането възникна грешка. Докоснете, за да видите подробности.</translation>
+<translation id="4269820728363426813">Копиране на адреса на връзката</translation>
 <translation id="4275663329226226506">Медия</translation>
 <translation id="4278390842282768270">Разрешено</translation>
 <translation id="42981349822642051">Разгъване</translation>
@@ -602,7 +606,6 @@
 <translation id="6701279291835318271">Отчети за сигурността</translation>
 <translation id="6709133671862442373">Новини</translation>
 <translation id="6710213216561001401">Предишна</translation>
-<translation id="6727612981472093924">Отворихте панела за навигация</translation>
 <translation id="6738867403308150051">Изтегля се…</translation>
 <translation id="6762156594045689028">За да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Файлът не може да се отвори</translation>
@@ -661,6 +664,7 @@
 <translation id="7253272406652746122">Добавете профил в Google от страницата „Профили“ в приложението Настройки на устройството ви.</translation>
 <translation id="7274013316676448362">Блокиран сайт</translation>
 <translation id="7307288900373049735">Установява се връзка с Google… Това може да отнеме известно време</translation>
+<translation id="7318797029885648322">Докоснете „Още“, за да получите статии</translation>
 <translation id="7333031090786104871">Още се добавя предишният сайт</translation>
 <translation id="7352939065658542140">ВИДЕОКЛИП</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Споделяне на 1 избран елемент}other{Споделяне на # избрани елемента}}</translation>
@@ -799,6 +803,7 @@
 <translation id="8636825310635137004">Включете синхронизирането, за да получите разделите си от другите си устройства.</translation>
 <translation id="8641930654639604085">Опит за блокиране на сайтовете за пълнолетни</translation>
 <translation id="8662811608048051533">Ще излезете от повечето сайтове.</translation>
+<translation id="867485229011312729">Къде са отметките, изтеглените файлове и историята?</translation>
 <translation id="8676374126336081632">Изчистване на въведеното</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Сила на сигнала: # чертичка}other{Сила на сигнала: # чертички}}</translation>
 <translation id="869891660844655955">Дата на валидност</translation>

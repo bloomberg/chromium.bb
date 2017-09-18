@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">येथे टॅप करा</translation>
 <translation id="5076340679995252485">&amp;पेस्ट करा</translation>
 <translation id="5120799197269191491">शोध+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">पिन अनलॉक वैशिष्ट्य</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">प्रकटन त्रिकोण</translation>
 <translation id="528468243742722775">समाप्त</translation>
@@ -130,13 +129,12 @@
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 मिनिट शिल्लक}one{# मिनिट शिल्लक}other{# मिनिटे शिल्लक}}</translation>
 <translation id="7457942297256758195">सर्व साफ करा</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
-<translation id="7647488630410863958">आपल्या सूचना पाहण्यासाठी डीव्हाइस अनलॉक करा</translation>
+<translation id="7647488630410863958">आपल्या सूचना पाहण्यासाठी डिव्हाइस अनलॉक करा</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7781829728241885113">काल</translation>
 <translation id="7814458197256864873">&amp;कॉपी करा</translation>
 <translation id="7850320739366109486">व्यत्यय आणू नका</translation>
 <translation id="7907591526440419938">फाइल उघडा</translation>
-<translation id="8054029954190364711">फिंगरप्रिंट अनलॉक वैशिष्‍ट्य</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 तासापूर्वी}one{# तासापूर्वी}other{# तासांपूर्वी}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 सेकंद शिल्लक}one{# सेकंद शिल्लक}other{# सेकंद शिल्लक}}</translation>
 <translation id="815598010540052116">खाली स्क्रोल करा</translation>

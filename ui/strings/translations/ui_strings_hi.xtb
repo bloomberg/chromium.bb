@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">यहां टैप करें</translation>
 <translation id="5076340679995252485">&amp;चिपकाएं</translation>
 <translation id="5120799197269191491">Search+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">पिन अनलॉक सुविधा</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">प्रकटीकरण त्रिकोण</translation>
 <translation id="528468243742722775">समाप्त</translation>
@@ -92,7 +91,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 घंटा}one{# घंटे}other{# घंटे}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">सभी ऐप्स</translation>
-<translation id="6022924867608035986">खोज बॉक्स का लेख साफ़ करें</translation>
+<translation id="6022924867608035986">खोज बॉक्स का लेख मिटाएं</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6119846243427417423">सक्रिय करें</translation>
 <translation id="6129953537138746214">Space</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;प्रतिलिपि बनाएं</translation>
 <translation id="7850320739366109486">परेशान न करें</translation>
 <translation id="7907591526440419938">फ़ाइल खोलें</translation>
-<translation id="8054029954190364711">फ़िंगरप्रिंट अनलॉक सुविधा</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 घंटा पहले}one{# घंटे पहले}other{# घंटे पहले}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 सेकंड शेष}one{# सेकंड शेष}other{# सेकंड शेष}}</translation>
 <translation id="815598010540052116">नीचे स्क्रॉल करें</translation>

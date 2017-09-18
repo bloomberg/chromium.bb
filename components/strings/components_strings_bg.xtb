@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">Допълнителното хранилище е в лошо състояние</translation>
 <translation id="5023310440958281426">Проверете правилата на администратора</translation>
 <translation id="5029568752722684782">Изчистване на копието</translation>
+<translation id="503069730517007720">За <ph name="SOFTWARE_NAME" /> се изисква основен сертификат, но такъв не е инсталиран. Системният ви администратор трябва да прегледа инструкциите за конфигуриране на <ph name="SOFTWARE_NAME" />, за да отстрани проблема. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Всичко за Google Преводач</translation>
 <translation id="5039804452771397117">Разрешаване</translation>
 <translation id="5040262127954254034">Поверителност</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">Извеждане на запитване (по подразбиране)</translation>
 <translation id="8041089156583427627">Изпращане на отзивите</translation>
 <translation id="8041940743680923270">Използване на глобалната стандартна стойност (запитване)</translation>
+<translation id="8057711352706143257">Софтуерът <ph name="SOFTWARE_NAME" /> не е конфигуриран правилно. Обикновено проблемът се отстранява с деинсталиране на <ph name="SOFTWARE_NAME" />. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Преглеждането на статията не бе успешно.</translation>
 <translation id="8091372947890762290">В сървъра се изчаква активиране</translation>
 <translation id="8094917007353911263">Използваната от вас мрежа може да изисква да посетите <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Начин на плащане</translation>
 <translation id="8118489163946903409">Начин на плащане</translation>
+<translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> не се инсталира правилно на компютъра ви или в мрежата. Помолете системния си администратор да реши този проблем.</translation>
 <translation id="8131740175452115882">Потвърждаване</translation>
 <translation id="8134994873729925007">Не можа да бъде намерен <ph name="BEGIN_ABBR" />DNS адресът<ph name="END_ABBR" /> на сървъра на <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Компютърът ви премина в спящ режим.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">Компилирана програма за програмисти</translation>
 <translation id="989988560359834682">Редактиране на адреса</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401"><ph name="SOFTWARE_NAME" /> не се инсталира правилно на компютъра ви или в мрежата:
+    &lt;ul&gt;
+    &lt;li&gt;Опитайте да деинсталирате или деактивирате <ph name="SOFTWARE_NAME" />.&lt;/li&gt;
+    &lt;li&gt;Опитайте да се свържете с друга мрежа.&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

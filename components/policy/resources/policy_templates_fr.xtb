@@ -53,6 +53,7 @@
 
       Si cette règle n'est pas définie, le délai par défaut entre deux transmissions
       est de 3 heures. Le délai minimal autorisé est de 60 secondes.</translation>
+<translation id="1204263402976895730">Imprimantes d'entreprise activées</translation>
 <translation id="1221359380862872747">Charger les URL spécifiées lors de la connexion à la démonstration</translation>
 <translation id="123081309365616809">Activer la diffusion de contenus sur l'appareil</translation>
 <translation id="1265053460044691532">Limiter la durée pendant laquelle un utilisateur authentifié via SAML peut se connecter hors connexion</translation>
@@ -258,6 +259,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2024476116966025075">Configurer le nom de domaine requis pour les clients d'accès à distance</translation>
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
 <translation id="203096360153626918">Cette règle n'a aucun effet sur les applications Android. L'utilisation du mode plein écran est possible même si cette règle est définie sur "<ph name="FALSE" />".</translation>
+<translation id="2043770014371753404">Imprimantes d'entreprise désactivées</translation>
 <translation id="206623763829450685">Indique les modèles d'authentification HTTP compatibles avec <ph name="PRODUCT_NAME" />.
 
           Les valeurs possibles sont "basic", "digest", "ntlm" et "negotiate". Si vous spécifiez plusieurs valeurs, séparez-les par une virgule.
@@ -342,6 +344,15 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 
 
           Si ce paramètre n'est pas configuré, les utilisateurs sont invités à saisir leur mot de passe tous les jours dans l'écran de verrouillage.</translation>
+<translation id="2194470398825717446">Cette stratégie est obsolète dans M61. Veuillez appliquer "EcryptfsMigrationStrategy" à la place.
+
+      Indique le comportement à adopter par un appareil qui a été fourni avec eCryptfs et qui doit faire la transition vers un chiffrement ext4.
+
+      Si cette règle est définie sur "DisallowArc", les applications Android seront désactivées pour tous les utilisateurs de l'appareil (y compris ceux utilisant déjà le chiffrement ext4), et la migration d'eCryptfs vers ext4 ne sera proposée à aucun utilisateur.
+
+      Si cette règle est définie sur "AllowMigration", les utilisateurs disposant d'un répertoire d'accueil eCryptfs pourront le faire migrer vers un chiffrement ext4 si nécessaire (à l'heure actuelle, proposé lorsqu'Android N est disponible sur l'appareil).
+
+      Cette règle ne s'applique pas aux applications kiosque, qui sont migrées automatiquement. Si cette règle n'est pas définie, l'appareil se comportera par défaut comme si elle était définie sur "DisallowArc".</translation>
 <translation id="2201555246697292490">Configurer la liste blanche de messagerie native</translation>
 <translation id="2204753382813641270">Règle pour masquer automatiquement l'étagère</translation>
 <translation id="2208976000652006649">Paramètres pour l'URL de recherche utilisant POST</translation>
@@ -555,6 +566,15 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Si cette règle est utilisée, seules les imprimantes dont l'ID correspond
       aux valeurs de la règle sont disponibles pour l'utilisateur. Les ID doivent
       correspondre aux entrées du fichier spécifié dans DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Indique les imprimantes qu'un utilisateur ne peut pas employer.
+
+      Cette règle est utilisée uniquement si "BlacklistRestriction"
+      est sélectionné pour "NativePrintersBulkAccessMode".
+
+      Lorsqu'elle est utilisée, toutes les imprimantes sont
+      mises à la disposition de l'utilisateur excepté pour les identifiants
+      répertoriés dans cette règle.
+      </translation>
 <translation id="2801230735743888564">Autoriser les utilisateurs à jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté.
 
 Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté. Si ce paramètre est défini sur "True", les utilisateurs sont autorisés à jouer au jeu des dinosaures. Si cette règle n'est pas définie, les utilisateurs ne sont pas autorisés à jouer au jeu Easter Egg du dinosaure sur les appareils équipés de Chrome OS et enregistrés, mais ils peuvent y jouer dans d'autres circonstances.</translation>
@@ -677,6 +697,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3219421230122020860">Mode navigation privée disponible</translation>
 <translation id="3220624000494482595">Si l'application kiosque est une application Android, elle ne contrôlera pas la version <ph name="PRODUCT_OS_NAME" /> même si cette règle est définie sur "<ph name="TRUE" />".</translation>
 <translation id="3236046242843493070">Formats d'URL à partir desquelles autoriser les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
+<translation id="3240609035816615922">Règle d'accès à la configuration des imprimantes.</translation>
 <translation id="3243309373265599239">Indiquer le délai d'inactivité au terme duquel l'écran s'assombrit en cas d'utilisation de l'alimentation secteur
 
                       Lorsque cette règle est définie sur une valeur supérieure à zéro, elle indique la durée pendant laquelle l'utilisateur doit rester inactif avant que <ph name="PRODUCT_OS_NAME" /> assombrisse l'écran.
@@ -744,7 +765,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="350797926066071931">Activer Google Traduction</translation>
-<translation id="3512226956150568738">Si le modèle de l'appareil client était déjà compatible avec ARC avant que la migration vers ext4 soit nécessaire pour exécuter ARC, et si la règle ArcEnabled est définie sur "true", cette option se comportera comme AskUser (valeur 3). Dans tous les autres cas (si le modèle de l'appareil n'était pas compatible avec ARC auparavant, ou si la règle ArcEnabled est définie sur "false"), cette valeur est équivalente à DisallowArc (valeur 0).</translation>
+<translation id="3512226956150568738">Si le modèle de l'appareil client était déjà compatible avec ARC avant que la migration vers ext4 soit nécessaire pour exécuter ARC, et si la règle "ArcEnabled" est définie sur "true", cette option se comportera comme "AskUser" (valeur 3). Dans tous les autres cas (si le modèle de l'appareil n'était pas compatible avec ARC auparavant, ou si la règle "ArcEnabled" est définie sur "false"), cette valeur est équivalente à "DisallowArc" (valeur 0).</translation>
 <translation id="3528000905991875314">Activer les pages d'erreur alternatives</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
@@ -940,6 +961,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       Remarque : Pour le moment, les redémarrages automatiques ne sont activés que lorsque l'écran de connexion est affiché ou qu'une session d'application kiosque est en cours. Ce fonctionnement va changer prochainement : la règle s'appliquera toujours, qu'une session de n'importe quel type soit en cours ou non.
 
       La valeur de la règle doit être spécifiée en secondes. Les valeurs doivent être au minimum égales à 3 600 (une heure).</translation>
+<translation id="4203879074082863035">Seules les imprimantes répertoriées dans la liste blanche sont présentées aux utilisateurs</translation>
 <translation id="420512303455129789">URL de mappage de dictionnaire vers un indicateur booléen indiquant si l'accès à l'hôte doit être autorisé s'il est associé à la valeur "True" (Vrai) ou bloqué s'il est associé à la valeur "False" (Faux).
 
           Il s'agit d'une règle utilisée en interne par <ph name="PRODUCT_NAME" />.</translation>
@@ -1049,6 +1071,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <translation id="4541530620466526913">Comptes locaux de l'appareil</translation>
 <translation id="4555850956567117258">Activer l'attestation à distance pour l'utilisateur</translation>
 <translation id="4557134566541205630">URL de la page Nouvel onglet du moteur de recherche par défaut</translation>
+<translation id="4558592878156368639">Intervalles de désactivation (en heures) pendant lesquels les |ignored_policies| de désactivation de l'appareil sont disponibles</translation>
 <translation id="4600786265870346112">Activer le grand curseur</translation>
 <translation id="4604931264910482931">Configurer la liste noire de messagerie native</translation>
 <translation id="4617338332148204752">Ignorer la vérification des balises Meta dans <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1488,6 +1511,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="6211428344788340116">Indiquer les périodes d'activité de l'appareil.
 
       Si ce paramètre n'est pas défini, ou s'il est défini sur "True", les périodes durant lesquelles l'appareil inscrit est utilisé sont régulièrement communiquées par celui-ci. Si ce paramètre est défini sur "False", les périodes d'activité ne sont ni enregistrées, ni communiquées.</translation>
+<translation id="6212868225782276239">Toutes les imprimantes sont affichées à l'exception de celles qui sont répertoriées dans la liste noire.</translation>
 <translation id="6219965209794245435">Cette règle force l'importation des données de saisie automatique à partir du précédent navigateur par défaut. Si elle est activée, elle affecte également la boîte de dialogue d'importation.
 
       Si elle est désactivée, les données de saisie automatique ne sont pas importées.
@@ -1730,6 +1754,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="7132877481099023201">URL autorisées à accéder aux appareils de capture vidéo sans avis préalable</translation>
 <translation id="7167436895080860385">Permet aux utilisateurs d'afficher les mots de passe dans le gestionnaire de mots de passe (obsolète).</translation>
 <translation id="7173856672248996428">Profil éphémère</translation>
+<translation id="717630378807352957">Autorise toutes les imprimantes répertoriées dans le fichier de configuration.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Types de connexion autorisés pour les mises à jour</translation>
 <translation id="7194407337890404814">Nom du moteur de recherche par défaut</translation>
@@ -1772,7 +1797,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
       Si cette règle est définie sur "False", aucune recommandation de contenus générée automatiquement ne s'affiche sur la page "Nouvel onglet".</translation>
 <translation id="7323896582714668701">Paramètres de ligne de commande supplémentaires pour <ph name="PRODUCT_NAME" /></translation>
-<translation id="7326394567531622570">Semblable à l'option "Nettoyer" (valeur 2), celle-ci essaie de conserver les jetons de connexion pour éviter à l'utilisateur de se reconnecter.</translation>
+<translation id="7326394567531622570">Semblable à l'option "Nettoyer" (valeur 2), celle-ci essaie de conserver les jetons de connexion pour éviter à l'utilisateur de se reconnecter.</translation>
 <translation id="7329842439428490522">Indiquer le délai d'inactivité au terme duquel l'écran s'éteint en cas d'utilisation de la batterie
 
                       Lorsque cette règle est définie sur une valeur supérieure à zéro, elle indique la durée pendant laquelle l'utilisateur doit rester inactif avant que <ph name="PRODUCT_OS_NAME" /> éteigne l'écran.
@@ -2028,6 +2053,20 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 
       Si la règle est désactivée ou si elle n'est pas paramétrée, les profils standards sont activés au moment de la connexion.</translation>
 <translation id="8158758865057576716">Permet de créer des copies itinérantes pour les données de profil <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8169931650834542988">Détermine les imprimantes de 
+      "NativePrintersBulkConfiguration" qui sont à la disposition des utilisateurs.
+
+      Indique quelle règle d'accès est utilisée pour la configuration
+      groupée des imprimantes.
+      
+      Si "AllowAll" est sélectionné, toutes les imprimantes sont affichées.
+      Si "BlacklistRestriction" est sélectionné, "NativePrintersBulkBlacklist"
+      est utilisé pour limiter l'accès aux imprimantes spécifiées. Si
+      "WhitelistPrintersOnly" est sélectionné, "DeviceNativePrintersWhitelist"
+      indique uniquement les imprimantes qui peuvent être sélectionnées.
+      Si cette règle n'est pas définie, "BlacklistRestriction" est supposé
+      s'appliquer.
+      </translation>
 <translation id="8170878842291747619">Active le service Google Traduction intégré sur <ph name="PRODUCT_NAME" />. 
 
 Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> affichera, le cas échéant, une offre intégrée à la barre d'outils de traduction de la page. 
@@ -2118,6 +2157,15 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8465065632133292531">Paramètres pour l'URL instantanée utilisant POST</translation>
 <translation id="847472800012384958">Interdire à tous les sites d'afficher des fenêtres pop-up</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Indique les imprimantes qu'un utilisateur peut employer.
+
+      Cette règle est utilisée uniquement lorsque "WhitelistPrintersOnly"
+      est sélectionné pour "NativePrintersBulkAccessMode".
+
+      Si cette règle est utilisée, seules les imprimantes dont l'ID correspond
+      aux valeurs de la règle sont disponibles pour l'utilisateur. Les ID
+      doivent correspondre aux entrées du fichier spécifié dans
+      "NativePrintersBulkConfiguration".</translation>
 <translation id="8484458986062090479">Personnalise la liste des formats d'URL qui doivent toujours être affichés par le navigateur hôte.
 
           Si vous ne définissez pas cette règle, le moteur de rendu par défaut est utilisé pour tous les sites, tel que spécifié par la règle "ChromeFrameRendererSettings".
@@ -2128,6 +2176,33 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8519264904050090490">URL d'exception manuelle des utilisateurs gérés</translation>
 <translation id="8544375438507658205">Moteur de rendu HTML par défaut pour <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Prévenir en cas de consultation de sites en dehors des packs de contenu</translation>
+<translation id="8555589883248082762">Fournit les configurations des imprimantes d'entreprise.
+
+      Cette règle vous permet de communiquer les configurations
+      des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />.
+      La taille du fichier ne doit pas dépasser 5 Mo, et le fichier doit
+      être au format JSON.
+      
+      Le format est le même que le dictionnaire NativePrinters.
+      Un fichier contenant environ 21 000 imprimantes est habituellement
+      encodé dans un fichier de 5 Mo. Le hachage chiffré est utilisé pour
+      vérifier l'intégrité du téléchargement.
+
+      Le fichier est téléchargé et mis en cache. Il sera de nouveau
+      téléchargé à chaque modification de l'URL ou du hachage.
+
+      Si cette règle est définie, <ph name="PRODUCT_OS_NAME" /> téléchargera
+      le fichier des configurations d'imprimante, et mettra les imprimantes
+      à disposition conformément à "NativePrintersBulkAccessMode",
+      "NativePrintersBulkWhitelist" et "NativePrintersBulkBlacklist".
+
+      Si cette règle est configurée, l'utilisateur ne peut ni la modifier,
+      ni la contourner.
+
+      Cette règle n'a aucune incidence sur la capacité ou non des
+      utilisateurs à configurer des imprimantes sur différents appareils.
+      Elle est destinée à compléter la configuration des imprimantes
+      effectuée par les utilisateurs.</translation>
 <translation id="8566842294717252664">Masquer le Chrome Web Store sur la page Nouvel onglet et dans le lanceur d'applications</translation>
 <translation id="8587229956764455752">Autoriser la création de comptes utilisateur</translation>
 <translation id="8614804915612153606">Désactive les mises à jour automatiques</translation>
@@ -2195,7 +2270,7 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 
       Indique quelle règle d'accès est utilisée pour la configuration groupée
       des imprimantes. Si AllowAll est sélectionné, toutes les imprimantes
-      sont affichées. Si BlacklistRestrction
+      sont affichées. Si BlacklistRestriction
       est sélectionné, DeviceNativePrintersBlacklist est utilisé pour 
       limiter l'accès aux imprimantes spécifiées.
       Si WhitelistPrintersOnly est sélectionné,
@@ -2250,6 +2325,7 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="9098553063150791878">Règles pour l'authentification HTTP</translation>
 <translation id="9105265795073104888">Les applications Android n'ont accès qu'à un sous-ensemble d'options de configuration du proxy. Elles peuvent avoir été volontairement conçues pour utiliser le proxy, mais vous ne pouvez pas les forcer à effectuer cette opération.</translation>
+<translation id="9112727953998243860">Fichier de configuration des imprimantes d'entreprise</translation>
 <translation id="9112897538922695510">Permettre d'inscrire une liste de gestionnaires de protocoles. Cette règle ne peut être qu'une recommandation. La propriété |protocol| doit être définie sur un schéma tel que "mailto", et la propriété |url| doit être définie sur le format d'URL de l'application qui gère le schéma. Le modèle peut inclure une variable "%s", qui sera remplacée par l'URL traitée le cas échéant.
 
           Les gestionnaires de protocoles inscrits via la règle sont fusionnés avec ceux inscrits par l'utilisateur, et tous sont disponibles. L'utilisateur peut remplacer les gestionnaires de protocoles installés via la règle en installant un nouveau gestionnaire par défaut, mais il ne peut pas supprimer un gestionnaire de protocoles inscrit via la règle.</translation>

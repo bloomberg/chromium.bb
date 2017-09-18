@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Perkelti žymes</translation>
 <translation id="119944043368869598">Valyti viską</translation>
 <translation id="1201402288615127009">Toliau</translation>
+<translation id="1204037785786432551">Atsisiųsti nuorodą</translation>
+<translation id="1206892813135768548">Kopijuoti nuorodos tekstą</translation>
 <translation id="1209206284964581585">Slėpti dabar</translation>
 <translation id="1211530540767271776">Čia nėra USB įrenginių</translation>
 <translation id="123724288017357924">Įk. šį puslapį iš naujo, nepais. talp. es. turinio</translation>
@@ -114,6 +116,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="2082238445998314030">Rezultatų: <ph name="RESULT_NUMBER" /> iš <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Jei norite gauti „Google“ siūlomo suasmeninto turinio, prisijunkite prie „Chrome“.</translation>
+<translation id="2091887806945687916">Garsas</translation>
 <translation id="2095887075102408547">Kai ši funkcija įjungta, „Chrome“ naudoja „Google“ serverius, kad glaudintų puslapius, kuriuose lankotės, prieš juos atsisiųsdama. Puslapių, kurie buvo pasiekti naudojant privačius ryšius (HTTPS) ar inkognito skirtukų lapus, „Google“ neoptimizuos ir nematys.</translation>
 <translation id="2096396629993765042">Nebūsite atjungti nuo „Google“ paskyros. Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali būti pateikta kitų formų jūsų „Google“ paskyros istorija.</translation>
 <translation id="2100273922101894616">Automatinis prisijungimas</translation>
@@ -333,6 +336,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4256782883801055595">Atvirojo šaltinio licencijos</translation>
 <translation id="4259722352634471385">Naršymas užblokuotas: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Įvyko sinchronizavimo klaida. Palieskite, kad gautumėte išsamios informacijos.</translation>
+<translation id="4269820728363426813">Kopijuoti nuorodos adresą</translation>
 <translation id="4275663329226226506">Medija</translation>
 <translation id="4278390842282768270">Leidžiama</translation>
 <translation id="42981349822642051">Išskleisti</translation>
@@ -602,7 +606,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6701279291835318271">Saugos ataskaitos</translation>
 <translation id="6709133671862442373">Naujienos</translation>
 <translation id="6710213216561001401">Ankstesnis</translation>
-<translation id="6727612981472093924">Naršymo skydelis atidarytas</translation>
 <translation id="6738867403308150051">Atsisiunčiama...</translation>
 <translation id="6762156594045689028">Kad pakeistumėte šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatykite sinchronizavimą<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Nepavyksta atidaryti failo</translation>
@@ -661,6 +664,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7253272406652746122">Pridėkite „Google“ paskyrą iš įrenginio Nustatymų programos puslapio „Paskyros“.</translation>
 <translation id="7274013316676448362">Užblokuota svetainė</translation>
 <translation id="7307288900373049735">Susisiekiama su „Google“… Tai gali šiek tiek užtrukti</translation>
+<translation id="7318797029885648322">Norėdami gauti straipsnius, palieskite „Daugiau“</translation>
 <translation id="7333031090786104871">Vis dar pridedama ankstesnė svetainė</translation>
 <translation id="7352939065658542140">VAIZDO ĮRAŠAS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Bendrinti 1 pasirinktą elementą}one{Bendrinti # pasirinktą elementą}few{Bendrinti # pasirinktus elementus}many{Bendrinti # pasirinkto elemento}other{Bendrinti # pasirinktų elementų}}</translation>
@@ -799,6 +803,7 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 <translation id="8636825310635137004">Jei norite pasiekti skirtukus iš kitų įrenginių, įjunkite sinchronizavimą.</translation>
 <translation id="8641930654639604085">Bandyti užblokuoti suaugusiesiems skirtas svetaines</translation>
 <translation id="8662811608048051533">Būsite atjungti nuo daugelio svetainių.</translation>
+<translation id="867485229011312729">Kur rasti žymes, atsisiuntimus ir istoriją?</translation>
 <translation id="8676374126336081632">Išvalyti įvestą tekstą</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalo stiprumo lygis: # juosta}one{Signalo stiprumo lygis: # juosta}few{Signalo stiprumo lygis: # juostos}many{Signalo stiprumo lygis: # juostos}other{Signalo stiprumo lygis: # juostų}}</translation>
 <translation id="869891660844655955">Galiojimo data</translation>

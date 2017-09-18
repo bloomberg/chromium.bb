@@ -69,6 +69,7 @@
 <translation id="2149973817440762519">編輯書籤</translation>
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2230173723195178503">已載入網頁</translation>
+<translation id="2256128224215992540">搜尋與網站建議</translation>
 <translation id="2267753748892043616">新增帳戶</translation>
 <translation id="2273327106802955778">[更多] 選單</translation>
 <translation id="2320166752086256636">隱藏鍵盤</translation>
@@ -178,9 +179,11 @@
 <translation id="430793432425771671">同步處理所有資料</translation>
 <translation id="4342284590510997375">新徽章</translation>
 <translation id="4359125752503270327">這個網頁會在其他應用程式中開啟。</translation>
+<translation id="4370827530403103842">同步處理功能無法正常運作。請輕觸這裡以修正同步問題。</translation>
 <translation id="4375040482473363939">QR 圖碼搜尋</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="441868831736628555">隱私權聲明</translation>
+<translation id="4460091562821778167">每次皆詢問我要使用的應用程式</translation>
 <translation id="4508750114462689118">關閉登入提示</translation>
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4536418791685807335">請嘗試重新登入。</translation>

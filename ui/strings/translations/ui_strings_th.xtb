@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">แตะที่นี่</translation>
 <translation id="5076340679995252485">&amp;วาง</translation>
 <translation id="5120799197269191491">ค้นหา+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">ฟีเจอร์การปลดล็อกด้วย PIN</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">สามเหลี่ยมซ่อนเนื้อหา</translation>
 <translation id="528468243742722775">End</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;คัดลอก</translation>
 <translation id="7850320739366109486">ห้ามรบกวน</translation>
 <translation id="7907591526440419938">เปิดไฟล์</translation>
-<translation id="8054029954190364711">ฟีเจอร์การปลดล็อกด้วยลายนิ้วมือ</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ชั่วโมงที่ผ่านมา}other{# ชั่วโมงที่ผ่านมา}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{เหลือ 1 วินาที}other{เหลือ # วินาที}}</translation>
 <translation id="815598010540052116">เลื่อนลง</translation>

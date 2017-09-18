@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">بزرگتر از صفحه</translation>
 <translation id="1247372569136754018">میکروفون (داخلی)</translation>
 <translation id="1252999807265626933">در حال شارژ شدن از <ph name="POWER_SOURCE" /></translation>
+<translation id="1267032506238418139">تغییر میان‌بر</translation>
 <translation id="1270290102613614947">صفحه‌کلید روی صفحه غیرفعال شد</translation>
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">اترنت: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">دستیار (درحال بار کردن…)</translation>
 <translation id="1850504506766569011">‏Wi-Fi خاموش است.</translation>
-<translation id="1856813161013948396">به‌سادگی با ضربه زدن روی حسگر اثر انگشت، از صفحه در حالت قفل رد شوید. برای پیکربندی کلیک کنید.</translation>
 <translation id="1864454756846565995">‏دستگاه USB-C (درگاه عقب)</translation>
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">کلیدهای میان‌بر باز کردن مدیر فعالیت‌ها تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">فعال کردن داده تلفن همراه، بلوتوث را فعال می‌کند.</translation>
 <translation id="2391579633712104609">۱۸۰°</translation>
 <translation id="2429753432712299108">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. قبل از پذیرش، لطفاً تأیید کنید که این کلیدواژه در آن دستگاه نشان داده می‌شود: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">یک خطا روی داد</translation>
 <translation id="2501920221385095727">کلیدهای چسبان</translation>
 <translation id="2509468283778169019">‏CAPS LOCK روشن است</translation>
 <translation id="2532589005999780174">حالت کنتراست بالا</translation>
 <translation id="2597972630681408282">«نور شب»: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">ارائه</translation>
 <translation id="2700058918926273959">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد. از سیستم خارج خواهید شد.</translation>
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
 <translation id="2761704814324807722">سینی وضعیت، زمان <ph name="TIME" />، ‏<ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">هم‌اکنون از سیستم خارج خواهید شد.</translation>
 <translation id="2825619548187458965">قفسه</translation>
 <translation id="2844169650293029770">‏دستگاه USB-C (درگاه جلوی سمت چپ)</translation>
-<translation id="2857608528410806398">‏متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید.</translation>
 <translation id="2865888419503095837">اطلاعات شبکه</translation>
 <translation id="2872961005593481000">خاموش کردن</translation>
 <translation id="2942516765047364088">موقعیت قفسه</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">باتری پر است</translation>
 <translation id="3606978283550408104">صفحه‌نمایش بریل متصل شد.</translation>
 <translation id="3621202678540785336">ورودی</translation>
-<translation id="3625258641415618104">عکس از صفحه‌نمایش غیرفعال است</translation>
 <translation id="3626281679859535460">روشنایی</translation>
 <translation id="3712407551474845318">محدوده گرفتن عکس</translation>
 <translation id="371370241367527062">میکروفون جلو</translation>
-<translation id="3742055079367172538">عکس صفحه‌نمایش گرفته شد</translation>
+<translation id="3771549900096082774">حالت تضاد بالا</translation>
 <translation id="3775358506042162758">در ورود چندگانه به سیستم حداکثر می‌توانید از سه حساب استفاده کنید.</translation>
 <translation id="3783640748446814672">دگرساز</translation>
 <translation id="3784455785234192852">قفل</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">ورودی گفتاری</translation>
 <translation id="3901991538546252627">در حال اتصال به <ph name="NAME" /></translation>
 <translation id="394485226368336402">تنظیمات صوتی</translation>
-<translation id="3967919079500697218">سرپرست شما قابلیت عکس گرفتن از صفحه‌نمایش را غیرفعال کرده است.</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="3995138139523574647">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="4017989525502048489">اشاره‌گر لیزری</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">در حال اتصال...</translation>
 <translation id="4421231901400348175">به اشتراک گذاشتن کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی از راه دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
-<translation id="4448844063988177157">‏در حال جستجوی شبکه‌های Wi-Fi...</translation>
 <translation id="4479639480957787382">اترنت</translation>
 <translation id="4481530544597605423">دستگاه‌های لغو ارتباط‌شده</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: در حال اتصال...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">کلیدهای میان‌بر قفل کردن صفحه تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="4659419629803378708">‏ChromeVox فعال شد</translation>
 <translation id="4729904664295161097">«دستیار» فقط برای نمایه اصلی دردسترس است.</translation>
+<translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">جستجو</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="4849058404725798627">برجسته کردن شیء با فوکوس صفحه‌کلید</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">می‌پذیرم</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
 <translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>
-<translation id="5170568018924773124">نمایش در پوشه</translation>
 <translation id="5207949376430453814">برجسته کردن هشتک نوشتار</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="523505283826916779">تنظیمات دسترس‌پذیری</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">به صورت خودکار در عرض <ph name="LOGOUT_TIME_LEFT" /> از سیستم خارج می‌شوید.</translation>
 <translation id="607652042414456612">رایانه شما توسط دستگاه‌های بلوتوث نزدیک قابل شناسایی است و با نام «<ph name="NAME" />» و آدرس <ph name="ADDRESS" /> نشان داده می‌شود</translation>
 <translation id="6106745654298855237">در حال شارژ کردن <ph name="POWER_SOURCE" /></translation>
-<translation id="6144938890088808325">‏در بهبود بخشیدن دستگاه‌های Chromebook به ما کمک کنید</translation>
 <translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: در حال فعال‌سازی…</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">برگرداندن به وضوح قدیمی در <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7246339268451149667">باز کردن قفل با اثرانگشت فعال شود؟</translation>
 <translation id="7256634071279256947">میکروفون پشت</translation>
 <translation id="7348093485538360975">صفحه‌کلید روی صفحه</translation>
 <translation id="735745346212279324">‏VPN قطع است</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />،‏ <ph name="SPECIFIED_RESOLUTION" /> را پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION" /> تغییر کرد</translation>
 <translation id="7562368315689366235">پالت صورتک</translation>
 <translation id="7569509451529460200">‏بریل و ChromeVox فعال هستند</translation>
-<translation id="7581273696622423628">در نظرسنجی شرکت کنید</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7692480393933218409">‏در حال شارژ کردن دستگاه‌های USB-C متصل</translation>
 <translation id="776344839111254542">برای مشاهده جزئیات به‌روزرسانی کلیک کنید</translation>
 <translation id="7798302898096527229">‏برای لغو کردن، Search یا Shift را فشار دهید.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">بعد از همگام‌سازی تنظیمات شما، زبان از «<ph name="FROM_LOCALE" />» به «<ph name="TO_LOCALE" />» تغییر کرد.</translation>
 <translation id="7904094684485781019">سرپرست این حساب اجازه ورود چندگانه به سیستم را نمی‌دهد.</translation>
 <translation id="7977927628060636163">درحال جستجوی شبکه‌های تلفن همراه…</translation>
 <translation id="7982789257301363584">شبکه</translation>
 <translation id="8000066093800657092">بدون شبکه</translation>
 <translation id="8054466585765276473">درحال محاسبه زمان شارژ باتری.</translation>
-<translation id="8077816382010018681">‏عنوان اعلان QU Feature اینجا می‌آید</translation>
 <translation id="8098591350844501178">توقف ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">متصل به <ph name="NAME" /></translation>
 <translation id="813913629614996137">درحال مقداردهی اولیه…</translation>
 <translation id="8142699993796781067">شبکه‌های خصوصی</translation>
 <translation id="8180896103888046100">توقف ارسال محتوا به گیرنده ناشناس</translation>
-<translation id="8185286464235484130">با پاسخ به چند سؤال، درمورد کیفیت عملکردمان را به ما نشان دهید.</translation>
 <translation id="8190698733819146287">سفارشی کردن زبان‌ها و ورودی...</translation>
+<translation id="8261506727792406068">حذف</translation>
 <translation id="8308637677604853869">منوی قبلی</translation>
 <translation id="8351131234907093545">یادداشت ایجاد کنید</translation>
 <translation id="8392234662362215700">‏برای تغییر طرح کلی صفحه‌کلید، Control-Shift و فاصله را فشار دهید.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">باتری <ph name="PERCENTAGE" /> درصد پر است.</translation>
 <translation id="9210037371811586452">خروج از حالت میزکار یکپارچه</translation>
 <translation id="923686485342484400">‏برای خروج از سیستم Control Shift Q را دو بار فشار دهید.</translation>
-<translation id="939252827960237676">عکس صفحه‌نمایش ذخیره نشد</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>
 <translation id="98515147261107953">افقی</translation>
 </translationbundle>

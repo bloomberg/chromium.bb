@@ -108,12 +108,6 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="3385242214819933234">Chủ sở hữu máy chủ không hợp lệ.</translation>
 <translation id="3403830762023901068">Cài đặt chính sách không cho phép chia sẻ máy tính này dưới dạng máy chủ lưu trữ Kết nối từ xa trên Chrome. Liên hệ với quản trị viên hệ thống của bạn để được hỗ trợ.</translation>
 <translation id="3423542133075182604">Xử lý từ xa bằng khóa bảo mật</translation>
-<translation id="3426467947138417795">Chrome Remote Desktop
-Máy tính từ xa
-PC từ xa
-Máy tính để bàn từ xa
-Quyền truy cập từ xa
-Hỗ trợ từ xa</translation>
 <translation id="3581045510967524389">Không thể kết nối với mạng. Vui lòng kiểm tra xem thiết bị của bạn đã được kết nối với mạng hay chưa.</translation>
 <translation id="3596628256176442606">Dịch vụ này kích hoạt các kết nối đến từ ứng dụng khách kết nối từ xa trên Chrome.</translation>
 <translation id="3606997049964069799">Bạn chưa đăng nhập vào Chromium. Vui lòng đăng nhập và thử lại.</translation>
@@ -122,13 +116,6 @@ Hỗ trợ từ xa</translation>
 <translation id="3695446226812920698">Tìm hiểu cách thức</translation>
 <translation id="3718805989288361841">Đã xảy ra lỗi với cài đặt chính sách cho Chrome Remote Desktop. Hãy liên hệ với quản trị viên hệ thống của bạn để được hỗ trợ.</translation>
 <translation id="3776024066357219166">Phiên Chrome Remote Desktop của bạn đã kết thúc.</translation>
-<translation id="3788372335219293587">Truy cập vào máy tính của bạn một cách an toàn từ thiết bị iOS. Thật nhanh chóng, đơn giản và miễn phí!
-
-• Trên máy tính mà bạn muốn truy cập từ xa, hãy tìm ứng dụng Chrome Remote Desktop trên Cửa hàng Chrome trực tuyến  https://chrome.google.com/remotedesktop
-• Cài đặt phần mềm Chrome Remote Desktop và làm theo hướng dẫn để hoàn tất quá trình thiết lập.
-• Trên thiết bị iOS, hãy mở ứng dụng và nhấn vào máy tính có kết nối mạng bất kỳ để kết nối.
-
-Để biết thông tin về bảo mật, vui lòng xem Chính sách bảo mật của Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Vui lòng xác nhận tài khoản và mã PIN của bạn bên dưới để cho phép Chrome Remote Desktop truy cập.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ Hỗ trợ từ xa</translation>
 <translation id="7144878232160441200">Thử lại</translation>
 <translation id="7149517134817561223">Ứng dụng sẽ phát lệnh đến máy chủ Chrome Remote Desktop.</translation>
 <translation id="7215059001581613786">Vui lòng nhập mã PIN có từ sáu chữ số trở lên.</translation>
-<translation id="7237767047212540055">Trên máy tính mà bạn muốn truy cập từ xa, hãy mở Chrome và truy cập vào <ph name="INSTALLATION_LINK" />
-Cài đặt phần mềm Chrome Remote Desktop và làm theo hướng dẫn để hoàn tất quá trình thiết lập
-Sau khi thiết lập xong, bạn có thể truy cập vào máy tính từ trang này bằng cách nhập mã PIN hoặc mã truy cập</translation>
 <translation id="7312846573060934304">Máy chủ đang ngoại tuyến.</translation>
 <translation id="7319983568955948908">Ngừng chia sẻ</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>

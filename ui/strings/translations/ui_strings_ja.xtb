@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">ここをタップしてください</translation>
 <translation id="5076340679995252485">貼り付け(&amp;P)</translation>
 <translation id="5120799197269191491">検索+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">PIN ロック解除機能</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">三角形の展開ボタン</translation>
 <translation id="528468243742722775">End</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">コピー(&amp;C)</translation>
 <translation id="7850320739366109486">通知を一時的にミュート</translation>
 <translation id="7907591526440419938">ファイルを開く</translation>
-<translation id="8054029954190364711">指紋によるロック解除機能</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 時間前}other{# 時間前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{残り 1 秒}other{残り # 秒}}</translation>
 <translation id="815598010540052116">下にスクロール</translation>

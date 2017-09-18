@@ -67,6 +67,7 @@
 <translation id="2149973817440762519">แก้ไขบุ๊กมาร์ก</translation>
 <translation id="2154710561487035718">คัดลอก URL</translation>
 <translation id="2230173723195178503">หน้าเว็บโหลดแล้ว</translation>
+<translation id="2256128224215992540">คำแนะนำการค้นหาและเว็บไซต์</translation>
 <translation id="2267753748892043616">เพิ่มบัญชี</translation>
 <translation id="2273327106802955778">เมนูเพิ่มเติม</translation>
 <translation id="2320166752086256636">ซ่อนแป้นพิมพ์</translation>
@@ -176,9 +177,11 @@
 <translation id="430793432425771671">ซิงค์ทุกอย่าง</translation>
 <translation id="4342284590510997375">ใหม่</translation>
 <translation id="4359125752503270327">หน้านี้จะเปิดในแอปพลิเคชันอื่น</translation>
+<translation id="4370827530403103842">การซิงค์ไม่ทำงาน แตะเพื่อแก้ไข</translation>
 <translation id="4375040482473363939">ค้นหาโค้ด QR</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="441868831736628555">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว</translation>
+<translation id="4460091562821778167">ถามฉันว่าจะใช้แอปไหนทุกครั้ง</translation>
 <translation id="4508750114462689118">ปิดโปรโมชันการลงชื่อเข้าใช้</translation>
 <translation id="4526249700380860531">ดูและจัดการรหัสผ่านที่บันทึกไว้ที่ <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">ลองลงชื่อเข้าใช้อีกครั้ง</translation>

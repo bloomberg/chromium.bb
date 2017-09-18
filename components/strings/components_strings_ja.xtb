@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">代替ストアの状態が不適切です</translation>
 <translation id="5023310440958281426">管理者のポリシーを確認してください</translation>
 <translation id="5029568752722684782">コピーを消去</translation>
+<translation id="503069730517007720">「<ph name="SOFTWARE_NAME" />」のルート証明書が必要ですが、インストールされていません。IT 管理者に、「<ph name="SOFTWARE_NAME" />」の設定手順を確認したうえでこの問題を修正するよう依頼してください。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google 翻訳について</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5040262127954254034">プライバシー</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">確認（デフォルト）</translation>
 <translation id="8041089156583427627">フィードバックを送信</translation>
 <translation id="8041940743680923270">グローバルのデフォルト値（[確認]）を使用</translation>
+<translation id="8057711352706143257">「<ph name="SOFTWARE_NAME" />」が正しく設定されていません。通常、この問題は「<ph name="SOFTWARE_NAME" />」をアンインストールすることで解決します。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">記事を表示できませんでした。</translation>
 <translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
 <translation id="8094917007353911263">ご利用のネットワークでは、<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> へのアクセスが必要な可能性があります。</translation>
 <translation id="8103161714697287722">お支払い方法</translation>
 <translation id="8118489163946903409">お支払い方法</translation>
+<translation id="8127301229239896662">「<ph name="SOFTWARE_NAME" />」がパソコンまたはネットワークに正しくインストールされていません。管理者にこの問題を解決するよう依頼してください。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> のサーバーの <ph name="BEGIN_ABBR" />DNS アドレス<ph name="END_ABBR" />が見つかりませんでした。</translation>
 <translation id="8149426793427495338">パソコンがスリープ状態です。</translation>
@@ -1025,4 +1028,9 @@
 <translation id="988159990683914416">Developer Build</translation>
 <translation id="989988560359834682">住所の編集</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">「<ph name="SOFTWARE_NAME" />」がパソコンまたはネットワークに正しくインストールされていません。 
+    &lt;ul&gt;
+    &lt;li&gt;「<ph name="SOFTWARE_NAME" />」をアンインストールまたは無効化してみてください&lt;/li&gt;
+    &lt;li&gt;別のネットワークに接続してみてください&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

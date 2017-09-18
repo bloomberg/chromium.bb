@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">Tryk her</translation>
 <translation id="5076340679995252485">&amp;Indsæt</translation>
 <translation id="5120799197269191491">Søgetast+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">Funktion til oplåsning med pinkode</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trekant til at vise eller skjule indhold</translation>
 <translation id="528468243742722775">End</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;Kopier</translation>
 <translation id="7850320739366109486">Vil ikke forstyrres</translation>
 <translation id="7907591526440419938">Åbn fil</translation>
-<translation id="8054029954190364711">Funktion til oplåsning med fingeraftryk</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{for 1 time siden}one{for # timer siden}other{for # timer siden}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek. tilbage}one{# sek. tilbage}other{# sek. tilbage}}</translation>
 <translation id="815598010540052116">Scroll Down</translation>

@@ -69,6 +69,7 @@
 <translation id="2149973817440762519">修改书签</translation>
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="2230173723195178503">已加载网页</translation>
+<translation id="2256128224215992540">搜索和网站建议</translation>
 <translation id="2267753748892043616">添加帐号</translation>
 <translation id="2273327106802955778">“更多”菜单</translation>
 <translation id="2320166752086256636">隐藏键盘</translation>
@@ -178,9 +179,11 @@
 <translation id="430793432425771671">同步所有内容</translation>
 <translation id="4342284590510997375">新工具</translation>
 <translation id="4359125752503270327">此页面将在其他应用中打开。</translation>
+<translation id="4370827530403103842">同步功能无法正常运行。点按即可修复此问题。</translation>
 <translation id="4375040482473363939">QR 码搜索</translation>
 <translation id="4378154925671717803">电话</translation>
 <translation id="441868831736628555">隐私权声明</translation>
+<translation id="4460091562821778167">每次都询问我要使用哪款应用</translation>
 <translation id="4508750114462689118">关闭登录推广元素</translation>
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看和管理已保存的密码</translation>
 <translation id="4536418791685807335">请尝试重新登录。</translation>

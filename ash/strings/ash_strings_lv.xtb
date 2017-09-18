@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">attēla izvērse</translation>
 <translation id="1247372569136754018">Mikrofons (iebūvētais)</translation>
 <translation id="1252999807265626933">Uzlādes avots: <ph name="POWER_SOURCE" /></translation>
+<translation id="1267032506238418139">Īsinājumtaustiņš mainīts</translation>
 <translation id="1270290102613614947">Ekrāna tastatūra atspējota</translation>
 <translation id="1272079795634619415">Apturēt</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">Ethernet adrese: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistents (notiek ielāde...)</translation>
 <translation id="1850504506766569011">Wi-Fi tīkls ir izslēgts.</translation>
-<translation id="1856813161013948396">Izlaidiet bloķēšanas ekrānu, vienkārši pieskaroties pirksta nospieduma sensoram. Noklikšķiniet, lai konfigurētu.</translation>
 <translation id="1864454756846565995">USB-C ierīce (aizmugurējā pieslēgvieta)</translation>
 <translation id="1882897271359938046">Spoguļo šeit: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Tika mainīti īsinājumtaustiņi, ar kuriem var atvērt uzdevumu pārvaldnieku. Lūdzu, turpmāk izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">Iespējojot mobilos datus, tiks iespējots Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Pirms piekrītat, lūdzu, pārliecinieties, vai ierīcē tiek parādīta šī ieejas atslēga: <ph name="PASSKEY" />.</translation>
-<translation id="2475982808118771221">Radās kļūda</translation>
 <translation id="2501920221385095727">Taustiņu ķēde</translation>
 <translation id="2509468283778169019">Funkcija Caps Lock ir ieslēgta</translation>
 <translation id="2532589005999780174">Augsta kontrasta režīms</translation>
 <translation id="2597972630681408282">Nakts režīms: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2700058918926273959">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING" />. Jūs tiksiet izrakstīts.</translation>
 <translation id="2727977024730340865">Pievienots lādētājs ar mazu strāvas padevi. Akumulatora uzlāde var nebūt uzticama.</translation>
 <translation id="2761704814324807722">Statusa josla, laiks: <ph name="TIME" />. <ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">Jūs tagad tiksiet izrakstīts.</translation>
 <translation id="2825619548187458965">Plaukts</translation>
 <translation id="2844169650293029770">USB-C ierīce (pieslēgvieta kreisajā pusē priekšā)</translation>
-<translation id="2857608528410806398">Šeit ir jāievada ātrās atbloķēšanas funkcijas paziņojuma pamatteksts. Šeit ir jāievada ātrās atbloķēšanas funkcijas paziņojuma pamatteksts. Šeit ir jāievada ātrās atbloķēšanas funkcijas paziņojuma pamatteksts. Šeit ir jāievada ātrās atbloķēšanas funkcijas paziņojuma pamatteksts. Šeit ir jāievada ātrās atbloķēšanas funkcijas paziņojuma pamatteksts.</translation>
 <translation id="2865888419503095837">Tīkla informācija</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2942516765047364088">Plaukta pozīcija</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">Akumulators pilns</translation>
 <translation id="3606978283550408104">Savienojums ar Braila displeju ir izveidots.</translation>
 <translation id="3621202678540785336">Ievade</translation>
-<translation id="3625258641415618104">Ekrānuzņēmumi atspējoti</translation>
 <translation id="3626281679859535460">Spilgtums</translation>
 <translation id="3712407551474845318">Uzņemt ekrāna daļas attēlu</translation>
 <translation id="371370241367527062">Priekšējais mikrofons</translation>
-<translation id="3742055079367172538">Ekrānuzņēmums ir uzņemts</translation>
+<translation id="3771549900096082774">Augsta kontrasta režīms</translation>
 <translation id="3775358506042162758">Vairākkārtējas pierakstīšanās laikā var izmantot ne vairāk kā trīs kontus.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloķēt</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">Balss ievade</translation>
 <translation id="3901991538546252627">Notiek savienojuma izveide ar <ph name="NAME" /></translation>
 <translation id="394485226368336402">Audio iestatījumi</translation>
-<translation id="3967919079500697218">Jūsu administrators ir atspējojis ekrānuzņēmumu veidošanu.</translation>
 <translation id="397105322502079400">Aprēķina...</translation>
 <translation id="3995138139523574647">USB-C ierīce (pieslēgvieta labajā pusē aizmugurē)</translation>
 <translation id="4017989525502048489">Lāzera rādītājs</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">Notiek pievienošana...</translation>
 <translation id="4421231901400348175">Ekrāna pārvaldības koplietošana ar <ph name="HELPER_NAME" />, izmantojot attālo palīdzību.</translation>
 <translation id="4430019312045809116">Skaļums</translation>
-<translation id="4448844063988177157">Notiek Wi-Fi tīklu meklēšana...</translation>
 <translation id="4479639480957787382">tīkls Ethernet</translation>
 <translation id="4481530544597605423">Pārī nesavienotās ierīces</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: notiek savienojuma izveide...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">Tika mainīti īsinājumtaustiņi, ar kuriem var bloķēt ekrānu. Lūdzu, turpmāk izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">ChromeVox iespējots</translation>
 <translation id="4729904664295161097">Asistents ir pieejams tikai galvenajam profilam.</translation>
+<translation id="4776917500594043016">Parole e-pasta adresei <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">meklēt</translation>
 <translation id="4804818685124855865">Atvienot</translation>
 <translation id="4849058404725798627">Izcelt objektu ar tastatūras fokusu</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">Pieņemt</translation>
 <translation id="4961318399572185831">Ekrāna apraide</translation>
 <translation id="5168181903108465623">Pieejamas apraides ierīces</translation>
-<translation id="5170568018924773124">Rādīt mapē</translation>
 <translation id="5207949376430453814">Izcelt teksta ievietošanas punktu</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
 <translation id="523505283826916779">Pieejamības iestatījumi</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">Jūs tiksiet automātiski izrakstīts pēc šāda laika: <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Tuvumā esošas Bluetooth ierīces var uztvert jūsu datoru; tā nosaukums ir “<ph name="NAME" />”, adrese — <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237">Uzlāde: <ph name="POWER_SOURCE" /></translation>
-<translation id="6144938890088808325">Palīdziet mums uzlabot Chromebook datorus</translation>
 <translation id="615957422585914272">Rādīt ekrāna tastatūru</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: notiek aktivizēšana...</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">USB-C ierīce (pieslēgvieta aizmugurē pa kreisi)</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Iepriekšējā izšķirtspēja tiks atgriezta pēc <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7246339268451149667">Vai iespējot atbloķēšanu, izmantojot pirksta nospiedumu?</translation>
 <translation id="7256634071279256947">Aizmugurējais mikrofons</translation>
 <translation id="7348093485538360975">Ekrāntastatūra</translation>
 <translation id="735745346212279324">VPN ir atvienots</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> neatbalsta šādu izšķirtspēju: <ph name="SPECIFIED_RESOLUTION" />. Izšķirtspēja tika mainīta uz <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Emocijzīmju palete</translation>
 <translation id="7569509451529460200">Braila raksts un ChromeVox ir iespējoti</translation>
-<translation id="7581273696622423628">Piedalīties aptaujā</translation>
 <translation id="7593891976182323525">Meklēt vai Shift</translation>
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7692480393933218409">Notiek pievienoto USB-C ierīču uzlāde</translation>
 <translation id="776344839111254542">Noklikšķiniet, lai skatītu atjauninājuma datus.</translation>
 <translation id="7798302898096527229">Lai atceltu, nospiediet meklēšanas vai pārslēgšanas taustiņu.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> un <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">Pēc jūsu iestatījumu sinhronizēšanas valoda ir mainīta no <ph name="FROM_LOCALE" /> uz <ph name="TO_LOCALE" />.</translation>
 <translation id="7904094684485781019">Šī konta administrators nav atļāvis vairākkārtēju pierakstīšanos.</translation>
 <translation id="7977927628060636163">Notiek mobilo tīklu meklēšana...</translation>
 <translation id="7982789257301363584">Tīkls</translation>
 <translation id="8000066093800657092">Nav tīkla</translation>
 <translation id="8054466585765276473">Notiek akumulatora darbības ilguma aprēķināšana.</translation>
-<translation id="8077816382010018681">Vieta ātrās atbloķēšanas funkcijas paziņojuma nosaukumam</translation>
 <translation id="8098591350844501178">Apturēt ekrāna apraidi uztvērējā “<ph name="RECEIVER_NAME" />”</translation>
 <translation id="8132793192354020517">Savienots ar <ph name="NAME" /></translation>
 <translation id="813913629614996137">Notiek inicializēšana...</translation>
 <translation id="8142699993796781067">Privāts tīkls</translation>
 <translation id="8180896103888046100">Apturēt apraidi nezināmā uztvērējā</translation>
-<translation id="8185286464235484130">Lūdzu, atbildiet uz dažiem jautājumiem, lai informētu mūs par pakalpojuma darbību.</translation>
 <translation id="8190698733819146287">Pielāgot valodas un ievadi...</translation>
+<translation id="8261506727792406068">Dzēst</translation>
 <translation id="8308637677604853869">Iepriekšējā izvēlne</translation>
 <translation id="8351131234907093545">Izveidot piezīmi</translation>
 <translation id="8392234662362215700">Lai pārslēgtu tastatūras izkārtojumu, nospiediet taustiņus Control-Shift-Space.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">Akumulatora uzlādes līmenis: <ph name="PERCENTAGE" />%</translation>
 <translation id="9210037371811586452">Notiek iziešana no vienotās darbvirsmas režīma</translation>
 <translation id="923686485342484400">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
-<translation id="939252827960237676">Neizdevās saglabāt ekrānuzņēmumu.</translation>
 <translation id="945522503751344254">Sūtīt atsauksmes</translation>
 <translation id="98515147261107953">Ainava</translation>
 </translationbundle>

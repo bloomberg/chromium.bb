@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Prilagođavanje širini</translation>
 <translation id="1088860948719068836">Dodajte ime na kartici</translation>
 <translation id="1103523840287552314">Uvijek prevedi <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Prikaži sve spremljene zaporke...</translation>
 <translation id="1107591249535594099">Ako je označeno, Chrome će pohraniti kopiju vaše kartice na uređaj radi bržeg popunjavanja obrazaca.</translation>
 <translation id="1111153019813902504">Najnovije oznake</translation>
 <translation id="1113869188872983271">&amp;Poništi promjenu rasporeda</translation>
@@ -524,6 +525,7 @@
 <translation id="5019198164206649151">Sigurnosno pohranjivanje u neispravnom je stanju</translation>
 <translation id="5023310440958281426">Provjerite pravila svojeg administratora</translation>
 <translation id="5029568752722684782">Izbriši kopiju</translation>
+<translation id="503069730517007720">Potreban je korijenski certifikat za "<ph name="SOFTWARE_NAME" />", ali nije instaliran. Vaš IT administrator trebao bi pogledati upute za konfiguraciju softvera "<ph name="SOFTWARE_NAME" />" kako bi riješio taj problem. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">O Google Prevoditelju</translation>
 <translation id="5039804452771397117">Dopusti</translation>
 <translation id="5040262127954254034">Privatnost</translation>
@@ -595,6 +597,7 @@
 <translation id="5540224163453853">Traženi članak nije pronađen.</translation>
 <translation id="5541546772353173584">Dodajte e-adresu</translation>
 <translation id="5544037170328430102">Ugrađena stranica na web-lokaciji <ph name="SITE" /> navodi sljedeće:</translation>
+<translation id="5545756402275714221">Preporučeni članci</translation>
 <translation id="5556459405103347317">Ponovno učitaj</translation>
 <translation id="5560088892362098740">Datum isteka</translation>
 <translation id="5565735124758917034">Aktivno</translation>
@@ -616,6 +619,7 @@
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5669703222995421982">Predlaganje sadržaja</translation>
 <translation id="5675650730144413517">Stranica ne funkcionira</translation>
+<translation id="5689199277474810259">Izvezi u JSON</translation>
 <translation id="5710435578057952990">Identitet ove web lokacije nije ovjeren.</translation>
 <translation id="5719499550583120431">Prihvaćaju se pretplatne kartice.</translation>
 <translation id="5720705177508910913">Trenutačni korisnik:</translation>
@@ -888,11 +892,13 @@
 <translation id="8037357227543935929">Pitaj (zadano)</translation>
 <translation id="8041089156583427627">Slanje povratnih informacija</translation>
 <translation id="8041940743680923270">Upotrijebi globalnu zadanu vrijednost (pitaj)</translation>
+<translation id="8057711352706143257">Softver "<ph name="SOFTWARE_NAME" />" nije ispravno konfiguriran. Taj se problem obično rješava deinstaliranjem softvera "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Prikaz članka nije uspio.</translation>
 <translation id="8091372947890762290">Aktivacija je na čekanju na poslužitelju</translation>
 <translation id="8094917007353911263">Za mrežu koju upotrebljavate možda ćete morati posjetiti stranicu <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Način plaćanja</translation>
 <translation id="8118489163946903409">Način plaćanja</translation>
+<translation id="8127301229239896662">Softver "<ph name="SOFTWARE_NAME" />" nije ispravno instaliran na vašem računalu ili mreži. Obratite se IT administratoru za rješavanje tog problema.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />DNS adresa<ph name="END_ABBR" /> poslužitelja hosta <ph name="HOST_NAME" /> nije pronađena.</translation>
 <translation id="8149426793427495338">Računalo je u stanju mirovanja.</translation>
@@ -1025,4 +1031,9 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="988159990683914416">Sastavak razvojnog programera</translation>
 <translation id="989988560359834682">Uređivanje adrese</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">Softver "<ph name="SOFTWARE_NAME" />" nije ispravno instaliran na vašem računalu ili mreži:
+    &lt;ul&gt;
+    &lt;li&gt;Pokušajte deinstalirati ili onemogućiti softver "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
+    &lt;li&gt;Pokušajte se povezati s drugom mrežom&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

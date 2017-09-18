@@ -50,6 +50,7 @@
 <translation id="1198465924256827162">Consente di stabilire la frequenza di invio, in millisecondi, dei caricamenti dello stato del dispositivo.
 
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
+<translation id="1204263402976895730">Stampanti aziendali attive</translation>
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
 <translation id="123081309365616809">Attiva la trasmissione di contenuti al dispositivo</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
@@ -234,6 +235,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2024476116966025075">Configura il nome di dominio richiesto per i client di accesso remoto</translation>
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="203096360153626918">Questa norma non ha effetto sulle app Android, che saranno in grado di entrare in modalità a schermo intero anche se la norma viene impostata su <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Stampanti aziendali disattivate</translation>
 <translation id="206623763829450685">Consente di specificare gli schemi di autenticazione HTTP supportati da <ph name="PRODUCT_NAME" />.
 
           I valori possibili sono "basic", "digest", "ntlm" e "negotiate". Separa i valori con la virgola.
@@ -255,7 +257,7 @@ Il formato corrisponde a quello del dizionario NativePrinters. È stato stimato 
 
       Se questa norma viene impostata, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base alle norme DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist e DeviceNativePrintersBlacklist.
 
-      Questa norma non influisce sulla possibilità per gli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
+      Questa norma non influisce sulla capacità degli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
 
       Si tratta di una norma aggiuntiva alla norma NativePrintersBulkConfiguration.
 
@@ -292,6 +294,15 @@ Il formato corrisponde a quello del dizionario NativePrinters. È stato stimato 
       Se questa impostazione viene configurata, gli utenti che usano lo sblocco rapido devono inserire le proprie password nella schermata di blocco in base a questa impostazione.
 
       Se questa impostazione non viene configurata, gli utenti che usano lo sblocco rapido devono inserire ogni giorno la propria password nella schermata di blocco.</translation>
+<translation id="2194470398825717446">Questa norma è stata ritirata in M61. Usa la norma EcryptfsMigrationStrategy.
+
+      Consente di specificare come deve comportarsi un dispositivo con ecryptfs e come deve passare alla crittografia ext4.
+
+      Se questa norma viene impostata su "DisallowArc", le app Android verranno disattivate per tutti gli utenti configurati sul dispositivo (inclusi quelli che hanno già la crittografia ext4) e gli utenti non avranno la possibilità di eseguire la migrazione da ecryptfs alla crittografia ext4.
+
+      Se questa norma viene impostata su "AllowMigration", gli utenti con directory principali ecryptfs avranno la possibilità di eseguire la migrazione di queste directory alla crittografia ext4, se necessario (attualmente quando Android N diventa disponibile sul dispositivo).
+
+      Questa norma non viene applicata alle app kiosk, di cui viene eseguita la migrazione automatica. Se questa norma non viene impostata, il dispositivo si comporterà come se fosse stata scelta l'opzione "DisallowArc".</translation>
 <translation id="2201555246697292490">Configura whitelist messaggi nativi</translation>
 <translation id="2204753382813641270">Controlla la visualizzazione automatica dello shelf</translation>
 <translation id="2208976000652006649">Parametri per l'URL di ricerca che utilizza POST</translation>
@@ -483,7 +494,13 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Questa norma viene usata soltanto se viene selezionata l'opzione WhitelistPrintersOnly per la norma DeviceNativePrintersAccessMode.
 
-      Se viene usata questa norma, solo le stampanti con ID corrispondenti ai valori di questa norma saranno disponibili per gli utenti. Gli ID devono corrispondere alle voci del file specificato nella norma DeviceNativePrinters.</translation>
+      Se viene usata questa norma, solo le stampanti con ID corrispondenti ai valori della norma saranno disponibili per gli utenti. Gli ID devono corrispondere alle voci del file specificato nella norma DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Consente di specificare le stampanti non utilizzabili dagli utenti.
+
+      Questa norma viene usata soltanto se viene selezionata l'opzione BlacklistRestriction per la norma NativePrintersBulkAccessMode.
+
+      Se viene usata questa norma, gli utenti potranno usare tutte le stampanti tranne quelle i cui ID sono elencati in questa norma.
+      </translation>
 <translation id="2801230735743888564">Consente di attivare il gioco del dinosauro quando il dispositivo è offline.
 
       Se questa norma viene impostata su False, gli utenti non potranno giocare al gioco del dinosauro quando il dispositivo è offline. Se viene impostata su True, gli utenti potranno giocare. Se la norma non viene impostata, gli utenti non potranno giocare al gioco del dinosauro su sistemi Chrome OS registrati, ma potranno giocarvi in altre circostanze.</translation>
@@ -600,6 +617,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3219421230122020860">Modalità di navigazione in incognito disponibile</translation>
 <translation id="3220624000494482595">Se l'app kiosk è un'app Android, non avrà controllo sulla versione di <ph name="PRODUCT_OS_NAME" />, anche se la norma viene impostata su <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Pattern URL per consentire installazioni di estensioni, applicazioni e script utente da</translation>
+<translation id="3240609035816615922">Norma di accesso alla configurazione delle stampanti.</translation>
 <translation id="3243309373265599239">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene oscurato quando viene utilizzata la corrente alternata.
 
 Se questa norma viene impostata su un valore maggiore di zero, consente di specificare il periodo di tempo per cui l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> oscuri lo schermo.
@@ -848,6 +866,7 @@ Il riavvio automatico è programmato all'ora selezionata ma potrebbe essere rita
 Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visualizzazione della schermata di accesso o durante una sessione di un'app kiosk. Questo comportamento cambierà in futuro e la norma sarà sempre valida, a prescindere dal fatto che sia in corso o meno una sessione di tipo specifico.
 
 Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo deve essere 3600 (un'ora).</translation>
+<translation id="4203879074082863035">Agli utenti vengono mostrate soltanto le stampanti indicate nella whitelist</translation>
 <translation id="420512303455129789">Un dizionario che mappa gli URL su un flag booleano che specifica se l'accesso all'host deve essere consentito (true) o bloccato (false).
 
           Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
@@ -940,6 +959,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="4541530620466526913">Account del dispositivo</translation>
 <translation id="4555850956567117258">Attivazione dell'attestazione da remoto per l'utente</translation>
 <translation id="4557134566541205630">URL pagina Nuova scheda provider di ricerca predefinito</translation>
+<translation id="4558592878156368639">Intervalli di orari di minore attività quando vengono rilasciati gli orari OffHours |ignored_policies|</translation>
 <translation id="4600786265870346112">Attivazione del puntatore grande</translation>
 <translation id="4604931264910482931">Configura lista nera di messaggi nativi</translation>
 <translation id="4617338332148204752">Salta il controllo dei metatag in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1337,6 +1357,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Soltanto se la norma allowCorporateKeyUsage relativa a un'estensione viene impostata su true l'estensione può utilizzare qualsiasi chiave della piattaforma contrassegnata per l'utilizzo aziendale per firmare dati arbitrari. Questa autorizzazione dovrebbe essere concessa soltanto se l'estensione è ritenuta attendibile ai fini della protezione della chiave da potenziali attacchi.</translation>
 <translation id="6211428344788340116">Consente di indicare i tempi di attività del dispositivo. Se questa impostazione viene impostata su True, i dispositivi registrati indicheranno i periodi di tempo di attività di un utente sul dispositivo. Se l'impostazione viene impostata su False, i tempi di attività del dispositivo non verranno registrati o indicati.</translation>
+<translation id="6212868225782276239">Vengono mostrate tutte le stampanti, tranne quelle indicate nella lista nera.</translation>
 <translation id="6219965209794245435">Se viene attivata, questa norma consente di imporre l'importazione dei dati della Compilazione automatica dei moduli dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione.
 
       Se viene disattivata, i dati della Compilazione automatica dei moduli non vengono importati.
@@ -1551,6 +1572,7 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
 <translation id="7132877481099023201">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione video senza richieste</translation>
 <translation id="7167436895080860385">Consenti agli utenti di mostrare le password in Gestione password (ritirata)</translation>
 <translation id="7173856672248996428">Profilo temporaneo</translation>
+<translation id="717630378807352957">Consenti tutte le stampanti del file di configurazione.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipi di connessioni consentiti per gli aggiornamenti</translation>
 <translation id="7194407337890404814">Nome del provider di ricerca predefinito</translation>
@@ -1830,6 +1852,13 @@ Se la norma non viene configurata, la modalità ad alto contrasto viene inizialm
 
       Se la norma viene disattivata o non viene impostata, l'accesso rimanda a profili normali.</translation>
 <translation id="8158758865057576716">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8169931650834542988">Consente di stabilire quali stampanti della norma NativePrintersBulkConfiguration mettere a disposizione degli utenti.
+
+      Consente di stabilire quale norma di accesso usare per la configurazione collettiva delle stampanti.
+      Se viene selezionata l'opzione AllowAll, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione BlacklistRestrction, viene usata la norma NativePrintersBulkBlacklist per limitare l'accesso a stampanti specifiche. Se viene selezionata l'opzione WhitelistPrintersOnly, la norma NativePrintersWhitelist stabilisce soltanto le stampanti selezionabili.
+
+      Se questa norma non viene impostata, viene usata l'opzione BlacklistRestriction.
+      </translation>
 <translation id="8170878842291747619">Consente di attivare il servizio Google Traduttore integrato su <ph name="PRODUCT_NAME" />. Se attivi questa impostazione, in <ph name="PRODUCT_NAME" /> verrà visualizzata una barra degli strumenti integrata che si offrirà di tradurre la pagina, se opportuno. Se disattivi questa impostazione, gli utenti non troveranno mai la barra di traduzione. Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />. Se questa impostazione non viene configurata, gli utenti potranno decidere se utilizzare o meno questa funzione.</translation>
 <translation id="817455428376641507">Consente l'accesso agli URL elencati, sotto forma di eccezioni alla blacklist di URL.
 
@@ -1903,6 +1932,11 @@ Se la norma viene impostata su false o non viene configurata, l'utente può util
 <translation id="8465065632133292531">Parametri per l'URL istantaneo che utilizza POST</translation>
 <translation id="847472800012384958">Non consentire la visualizzazione di popup nei siti</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Consente di specificare le stampanti utilizzabili dagli utenti.
+
+       Questa norma viene usata soltanto se viene selezionata l'opzione WhitelistPrintersOnly per la norma NativePrintersBulkAccessMode.
+
+      Se viene usata questa norma, solo le stampanti con ID corrispondenti ai valori della norma saranno disponibili per gli utenti. Gli ID devono corrispondere alle voci del file specificato nella norma NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Consente di personalizzare l'elenco di pattern URL per i quali il rendering deve sempre essere eseguito dal browser host.
 
           Se la norma non viene impostata, viene utilizzato per tutti i siti il renderer predefinito specificato dalla norma "ChromeFrameRendererSettings".
@@ -1913,6 +1947,19 @@ Se la norma viene impostata su false o non viene configurata, l'utente può util
 <translation id="8519264904050090490">URL delle eccezioni manuali per gli utenti gestiti</translation>
 <translation id="8544375438507658205">Renderer HTML predefinito per <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avvisa quando vengono visitati siti non presenti nei pacchetti di contenuti</translation>
+<translation id="8555589883248082762">Consente di specificare le configurazioni delle stampanti aziendali.
+
+      Questa norma ti consente di specificare le configurazioni delle stampanti per i dispositivi <ph name="PRODUCT_OS_NAME" />.
+      Le dimensioni del file non devono superare 5 MB e il file deve essere codificato in JSON. Il formato corrisponde a quello del dizionario NativePrinters. È stato stimato che un file contenente circa 21.000 stampanti viene codificato come file di 5 MB. L'hash crittografico viene usato per verificare l'integrità del download.
+
+      Il file viene scaricato e memorizzato nella cache. Verrà scaricato di nuovo ogni volta che cambierà l'URL o l'hash.
+
+      Se questa norma viene impostata, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base alle norme NativePrintersBulkAccessMode, NativePrintersBulkWhitelist e NativePrintersBulkBlacklist.
+.
+
+      Se questa norma viene impostata, gli utenti non potranno modificarla o sostituirla.
+
+      Questa norma non influisce sulla capacità degli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.</translation>
 <translation id="8566842294717252664">Nascondi il Web Store nella pagina Nuova scheda e in Avvio applicazioni</translation>
 <translation id="8587229956764455752">Consenti la creazione di nuovi account utente</translation>
 <translation id="8614804915612153606">Disattiva l'aggiornamento automatico</translation>
@@ -2015,6 +2062,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="9096086085182305205">Whitelist server di autenticazione</translation>
 <translation id="9098553063150791878">Norme relative all'autenticazione HTTP</translation>
 <translation id="9105265795073104888">Solo un sottoinsieme di opzioni di configurazione del proxy viene reso disponibile alle app Android, che decidono volontariamente se rispettarlo o meno. Non puoi forzarle a utilizzare un proxy.</translation>
+<translation id="9112727953998243860">File di configurazione delle stampanti aziendali</translation>
 <translation id="9112897538922695510">Ti consente di registrare un elenco di gestori di protocolli. Questa può essere soltanto una norma consigliata. Per la proprietà |protocol| dovrebbe essere impostato lo schema, ad esempio "mailto", e per la proprietà |url| dovrebbe essere impostato il pattern URL dell'applicazione che gestisce lo schema. Il pattern può includere "%s" che, se presente, verrà sostituito dall'URL gestito.
 
           I gestori di protocolli registrati tramite la norma vengono uniti a quelli registrati dall'utente e possono essere utilizzati entrambi i tipi. L'utente può sostituire i gestori di protocolli installati tramite la norma installando un nuovo gestore predefinito, ma non può rimuovere un gestore di protocollo registrato tramite la norma.</translation>

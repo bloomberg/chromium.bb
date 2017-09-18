@@ -53,6 +53,7 @@
 
       이 정책이 설정되지 않은 경우 기본 빈도는 3시간입니다. 허용되는
       최소 빈도는 60초입니다.</translation>
+<translation id="1204263402976895730">사용 설정된 엔터프라이즈 프린터</translation>
 <translation id="1221359380862872747">데모 로그인 시 지정된 URL 로드</translation>
 <translation id="123081309365616809">기기에 콘텐츠 전송 허용</translation>
 <translation id="1265053460044691532">SAML을 통해 인증한 사용자가 오프라인에서 로그인할 수 있는 기간을 제한</translation>
@@ -255,6 +256,7 @@
 <translation id="2024476116966025075">원격 액세스 클라이언트에게 필요한 도메인 이름 설정</translation>
 <translation id="2030905906517501646">기본 검색 공급자 키워드</translation>
 <translation id="203096360153626918">이 정책은 Android 앱에 아무런 영향도 미치지 않습니다. 이 정책이 <ph name="FALSE" />로 설정되더라도 Android 앱이 전체화면 모드로 전환될 수 있습니다.</translation>
+<translation id="2043770014371753404">사용 중지된 엔터프라이즈 프린터</translation>
 <translation id="206623763829450685"><ph name="PRODUCT_NAME" />에서 지원하는 HTTP 인증 스키마를 지정합니다.
 
           사용할 수 있는 값은 'basic', 'digest', 'ntlm', 'negotiate'이며, 두 개 이상의 값은 쉼표로 분리하세요.
@@ -331,6 +333,15 @@
           이 설정을 구성하면 빠른 잠금 해제를 사용하는 사용자에게 이 설정에 따라 잠금 화면에 비밀번호를 입력하라는 메시지가 표시됩니다.
 
           이 설정을 구성하지 않으면 빠른 잠금 해제를 사용하는 사용자는 매일 잠금 화면에 비밀번호를 입력해야 합니다</translation>
+<translation id="2194470398825717446">이 정책은 M61부터 지원이 중단되었으므로 EcryptfsMigrationStrategy를 대신 사용하세요.
+
+      ecryptfs가 포함되어 배송된 기기의 작동 방식을 지정하며 ex4 암호화로 전환해야 합니다.
+
+      이 정책을 'DisallowArc'로 설정하는 경우(이미 ext4 암호화가 설정된 기기를 포함하여) 기기의 모든 사용자에게 Android 앱이 사용 중지되며, 어떠한 사용자에게도 ecryptfs에서 ext4 암호화로의 이전이 제공되지 않습니다.
+
+      이 정책을 'AllowMigration'으로 설정하면, ecryptfs 홈 디렉토리가 있는 사용자는 필요한 경우 이를 ext4 암호화로 이전할 수 있습니다.
+
+      이 정책은 키오스크 앱에는 적용되지 않습니다. 키오스크 앱은 자동으로 이전됩니다. 이 정책이 설정되지 않으면 기기는 'DisallowArc'가 선택된 것처럼 동작합니다.</translation>
 <translation id="2201555246697292490">기본 메시지 허용 목록 설정</translation>
 <translation id="2204753382813641270">임시보관함 자동 숨김 제어</translation>
 <translation id="2208976000652006649">POST를 사용하는 검색 URL용 매개변수</translation>
@@ -542,6 +553,14 @@
       이 정책이 사용되는 경우, 이 정책에 있는 값과 ID가
       일치하는 프린터만 사용자에게 제공됩니다. 이 ID는
       DeviceNativePrinters에 명시된 파일 내 항목과 일치해야 합니다.</translation>
+<translation id="2794520838025002425">사용자가 사용할 수 없는 프린터를 지정합니다.
+
+      이 정책은 NativePrintersBulkAccessMode로
+      BlacklistRestriction이 선택된 경우에만 사용됩니다.
+
+      이 정책이 사용되는 경우, 이 정책에 ID가 명시된 프린터를 제외한
+      모든 프린터가 사용자에게 제공됩니다.
+      </translation>
 <translation id="2801230735743888564">기기가 오프라인일 때 사용자가 공룡 부활절 달걀 게임을 플레이할 수 있도록 허용합니다.
 
       이 정책이 'false'로 설정되면 사용자는 기기가 오프라인일 때 공룡 부활절 달걀 게임을 플레이할 수 없습니다. 이 설정이 'true'로 설정되면 사용자는 공룡 게임을 플레이할 수 있습니다. 이 정책이 설정되지 않은 경우 사용자는 등록된 Chrome OS에서 공룡 부활절 달걀 게임을 플레이할 수 없지만, 다른 상황에서는 플레이할 수 있습니다.</translation>
@@ -664,6 +683,7 @@
 <translation id="3219421230122020860">시크릿 모드 사용 가능</translation>
 <translation id="3220624000494482595">키오스크 앱이 Android 앱인 경우 이 정책이 <ph name="TRUE" />로 설정되더라도 <ph name="PRODUCT_OS_NAME" /> 버전을 제어할 수 없습니다.</translation>
 <translation id="3236046242843493070">확장 프로그램, 앱, 사용자 스크립트 설치 등을 허용하는 URL 패턴</translation>
+<translation id="3240609035816615922">프린터 설정 액세스 정책</translation>
 <translation id="3243309373265599239">AC 전원으로 실행할 때 사용자 입력이 없어서 화면이 어둡게 되기까지 걸리는 시간을 지정합니다.
 
           이 정책이 0보다 큰 값으로 설정되어 있으면 이는 <ph name="PRODUCT_OS_NAME" />에서 화면을 어둡게 하기 전에 사용자가 유휴 상태여야 하는 시간을 의미합니다.
@@ -731,7 +751,7 @@
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정된 경우에만 적용됩니다.</translation>
 <translation id="350797926066071931">Google 번역 사용</translation>
-<translation id="3512226956150568738">클라이언트 기기 모델에서 ARC를 실행하기 위해 ext4로 업그레이드하기 전에 ARC를 이미 지원한 경우 또는 ArcEnabled 정책이 true로 설정된 경우, 이 옵션은 AskUser(값 3)로 작동합니다. 다른 모든 경우(기기 모델이 이전에 ARC를 지원하지 않았거나 ArcEnabled 정책이 false로 설정된 경우), 이 값은 DisallowArc(값 0)와 동일합니다.</translation>
+<translation id="3512226956150568738">클라이언트 기기 모델에서 ARC를 실행하기 위해 ext4로 이전해야 했던 시점 전에 ARC를 이미 지원했으며 ArcEnabled 정책이 true로 설정된 경우, 이 옵션은 AskUser(값 3)로 작동합니다. 다른 모든 경우(기기 모델이 이전에 ARC를 지원하지 않았거나 ArcEnabled 정책이 false로 설정된 경우), 이 값은 DisallowArc(값 0)와 동일합니다.</translation>
 <translation id="3528000905991875314">대체 오류 페이지 사용</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
 <translation id="3591584750136265240">로그인 인증 동작 설정</translation>
@@ -921,6 +941,7 @@
       참고: 현재 로그인 화면이 표시되고 있거나 키오스크 앱 세션이 진행 중인 경우에 한해 자동 재부팅이 사용하도록 설정됩니다. 이후에는 이 내용이 변경되어 특정 유형의 세션이 진행 중인지 여부와 관계 없이 정책이 항상 적용됩니다.
 
       정책 값은 초 단위로 지정되어야 하며 최소값은 3600(1시간)으로 고정되어 있습니다.</translation>
+<translation id="4203879074082863035">허용 목록에 있는 프린터만 사용자에게 표시됨</translation>
 <translation id="420512303455129789">호스트 이름을 호스트에 액세스를 허용(true) 또는 차단(false)할지 지정하는 부울 플래그에 매핑합니다.
 
           이 정책은 <ph name="PRODUCT_NAME" />에 한해 내부 용도로만 사용합니다.</translation>
@@ -1030,6 +1051,7 @@
 <translation id="4541530620466526913">기기 로컬 계정</translation>
 <translation id="4555850956567117258">사용자에 대한 원격 인증을 사용합니다.</translation>
 <translation id="4557134566541205630">기본 검색 공급자 새 탭 페이지 URL</translation>
+<translation id="4558592878156368639">기기 OffHours |ignored_policies|가 공개되었을 때 Off hours 간격</translation>
 <translation id="4600786265870346112">큰 커서 사용</translation>
 <translation id="4604931264910482931">기본 메시지 차단 목록 설정</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" />에서 메타 태그 검사 건너뛰기</translation>
@@ -1464,6 +1486,7 @@
 <translation id="6211428344788340116">기기 활동 시간을 보고합니다.
 
       이 정책을 설정하지 않거나 True로 설정하면 등록된 기기에서 사용자가 기기를 사용한 기간을 보고합니다. 정책을 False로 설정하면 기기 활동 시간이 기록되거나 보고되지 않습니다.</translation>
+<translation id="6212868225782276239">차단 목록에 있는 프린터를 제외한 모든 프린터가 표시됨</translation>
 <translation id="6219965209794245435">이 정책을 사용하도록 설정하면 이전 기본 브라우저에서 양식 자동완성 데이터를 강제로 가져옵니다. 또한 가져오기 대화상자에 영향을 미칩니다.
 
       사용 중지하면 양식 자동완성 데이터를 가져오지 않습니다.
@@ -1706,6 +1729,7 @@
 <translation id="7132877481099023201">별도 메시지를 표시하지 않고 동영상 캡처 기기에 대한 액세스 권한이 부여되는 URL입니다.</translation>
 <translation id="7167436895080860385">사용자가 비밀번호 관리자에 비밀번호를 표시할 수 있도록 허용(지원 중단됨)</translation>
 <translation id="7173856672248996428">임시 프로필</translation>
+<translation id="717630378807352957">설정 파일의 모든 프린터 허용</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">업데이트에 허용되어 있는 연결 유형</translation>
 <translation id="7194407337890404814">기본 검색 공급자 이름</translation>
@@ -1748,7 +1772,7 @@
 
       false로 설정되어 있다면 자동 생성 콘텐츠 추천이 새 탭 페이지에 표시되지 않습니다.</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" />의 추가 명령줄 매개변수</translation>
-<translation id="7326394567531622570">Wipe(값 2)와 유사하지만, 사용자가 다시 로그인하지 않아도 되도록 로그인 토큰을 저장합니다.</translation>
+<translation id="7326394567531622570">완전 삭제(값 2)와 유사하지만, 사용자가 다시 로그인할 필요가 없도록 로그인 토큰을 저장합니다.</translation>
 <translation id="7329842439428490522">배터리 전원으로 실행할 때 사용자 입력이 없어서 화면이 꺼질 때까지 걸리는 시간을 지정합니다.
 
           이 정책이 0보다 큰 값으로 설정되어 있으면 이는 <ph name="PRODUCT_OS_NAME" />에서 화면을 끄기 전에 사용자가 유휴 상태여야 하는 시간을 의미합니다.
@@ -2003,6 +2027,18 @@
 
       이 정책이 사용 중지로 설정되었거나 아예 설정되지 않은 경우 로그인하면 일반 프로필로 연결됩니다.</translation>
 <translation id="8158758865057576716"><ph name="PRODUCT_NAME" /> 프로필 데이터 로밍 사본 생성을 사용합니다.</translation>
+<translation id="8169931650834542988">NativePrintersBulkConfiguration에 명시된 프린터 중
+      사용자에게 제공되는 프린터를 관리합니다.
+
+      일괄 프린터 설정에 사용할 액세스 정책을 지정합니다.
+      AllowAll을 선택하면 모든 프린터가 표시됩니다. BlacklistRestrction을
+      을 선택하면 NativePrintersBulkBlacklist가 사용되어 목록에 지정된
+      프린터의 경우 액세스가 제한됩니다.  WhitelistPrintersOnly를
+      선택하면 NativePrintersWhitelist가 사용되어
+      선택 가능한 프린터만 지정됩니다.
+
+      이 정책이 설정되지 않으면 BlacklistRestriction이 기본적으로 사용됩니다.
+      </translation>
 <translation id="8170878842291747619"><ph name="PRODUCT_NAME" />에서 통합 Google 번역 서비스를 사용하도록 설정합니다.
 
       이 설정을 사용하면 <ph name="PRODUCT_NAME" />에서 통합 툴바를 표시하여 해당하는 경우 사용자에게 페이지 번역을 제공합니다.
@@ -2093,6 +2129,14 @@
 <translation id="8465065632133292531">POST를 사용하는 인스턴트 URL용 매개변수</translation>
 <translation id="847472800012384958">모든 사이트에서 팝업 표시 허용 안함</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">사용자가 사용할 수 있는 프린터를 지정합니다.
+
+      이 정책은 NativePrintersBulkAccessMode로
+      WhitelistPrintersOnly가 선택된 경우에만 사용됩니다.
+
+      이 정책이 사용되는 경우, 이 정책에 있는 값과 ID가 일치하는 프린터만
+      사용자에게 제공됩니다. 이 ID는 NativePrintersBulkConfiguration에
+      명시된 파일 내 항목과 일치해야 합니다.</translation>
 <translation id="8484458986062090479">호스트 브라우저에서 항상 렌더링해야 하는 URL 패턴 목록을 맞춤설정합니다.
 
           이 정책을 설정하지 않은 경우 'ChromeFrameRendererSettings' 정책에서 지정한 대로 모든 사이트에서 기본 렌더러가 사용됩니다.
@@ -2103,6 +2147,30 @@
 <translation id="8519264904050090490">관리 사용자 직접 예외 URL</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" />의 기본 HTML 렌더러</translation>
 <translation id="8549772397068118889">콘텐츠 팩 외부 사이트를 방문할 때 표시되는 경고입니다.</translation>
+<translation id="8555589883248082762">엔터프라이즈 프린터의 설정을 제공합니다.
+
+      이 정책을 통해 사용자는 <ph name="PRODUCT_OS_NAME" /> 기기의 프린터 설정을
+      제공합니다.
+      파일 크기는 5MB를 초과할 수 없으며 JSON으로 인코딩되어야 합니다.
+      형식은 NativePrinters 사전과 같습니다.  약 21,000개의 프린터를
+      포함하고 있는 파일이 5MB 파일로 인코딩될 것으로
+      예상됩니다.  암호화 해시는 다운로드 파일의 무결성을 확인하는 데
+      사용됩니다.
+
+      파일이 다운로드되어 캐시됩니다. URL 또는 해시가 변경되면
+      파일이 다시 다운로드됩니다.
+
+      이 정책이 설정되는 경우,
+      <ph name="PRODUCT_OS_NAME" />에서 프린트 설정을 위한 파일을 다운로드하며
+      NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
+      NativePrintersBulkBlacklist에 따라 프린터를
+      사용할 수 있도록 설정합니다.
+
+      이 정책을 설정하는 경우 사용자는 정책을 변경하거나 덮어쓸 수 없습니다.
+
+      이 정책은 사용자가 개별 기기에서 프린터를 설정할 수 있는지 여부에
+      영향을 미치지 않습니다.  이 정책은 개별 사용자의 프린터 설정을
+      보완하기 위해 고안되었습니다.</translation>
 <translation id="8566842294717252664">새 탭 페이지 및 앱 런처에서 웹 스토어 숨기기</translation>
 <translation id="8587229956764455752">새로운 사용자 계정 생성 허용</translation>
 <translation id="8614804915612153606">자동 업데이트 사용 안 함</translation>
@@ -2168,7 +2236,7 @@
       일괄 프린터 설정에 사용할 액세스 정책을 지정합니다.
       AllowAll을 선택하면 모든 프린터가 표시됩니다. BlacklistRestriction을
       선택하면 DeviceNativePrintersBlacklist가 사용되어
-      지정된 프린터에만 액세스할 수 있게 됩니다. WhitelistPrintersOnly를
+      목록에 지정된 프린터의 경우 액세스가 제한됩니다. WhitelistPrintersOnly를
       선택하면 DeviceNativePrintersWhitelist가 사용되어
       선택 가능한 프린터만 지정됩니다.
 
@@ -2220,6 +2288,7 @@
 <translation id="9096086085182305205">인증 서버 허용목록</translation>
 <translation id="9098553063150791878">HTTP 인증 정책</translation>
 <translation id="9105265795073104888">프록시 설정 옵션 중 일부만 Android 앱에서 사용할 수 있습니다. Android 앱에서는 자발적으로 프록시를 사용하도록 선택할 수 있습니다. 강제로 Android 앱에서 프록시를 사용하도록 할 수 없습니다.</translation>
+<translation id="9112727953998243860">엔터프라이즈 프린터 설정 파일</translation>
 <translation id="9112897538922695510">프로토콜 핸들러 목록을 등록할 수 있도록 허용합니다. 추천 정책만 될 수 있습니다. |protocol| 속성은 'mailto'와 같은 스키마로 설정해야 하며 |url| 속성은 스키마를 처리하는 애플리케이션의 URL 패턴으로 설정해야 합니다. 패턴에 '%s'를 포함할 수 있으며, 포함할 경우 이 기호는 처리된 URL로 교체됩니다.
 
           정책에 의해 등록된 프로토콜 핸들러는 사용자가 등록한 핸들러와 통합되며 두 가지 모두 사용 가능합니다. 사용자는 새로운 기본 핸들러를 설치함으로써 정책에 의해 설치된 프로토콜 핸들러를 덮어쓸 수 있지만 정책에 의해 등록된 프로토콜 핸들러를 삭제할 수는 없습니다.</translation>

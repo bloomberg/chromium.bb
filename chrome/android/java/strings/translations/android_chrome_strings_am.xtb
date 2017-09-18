@@ -3,6 +3,7 @@
 <translationbundle lang="am">
 <translation id="1006017844123154345">መስመር ላይ ክፈት</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" />ን በማከል ላይ...</translation>
+<translation id="1041308826830691739">ከድር ጣቢያዎች</translation>
 <translation id="1049743911850919806">ማንነት የማያሳውቅ</translation>
 <translation id="10614374240317010">በጭራሽ አልተቀመጠም</translation>
 <translation id="1068672505746868501">በ<ph name="SOURCE_LANGUAGE" /> ውስጥ ገጾችን በጭራሽ አትተርጉም</translation>
@@ -19,6 +20,8 @@
 <translation id="1197267115302279827">ዕልባቶችን ውሰድ</translation>
 <translation id="119944043368869598">ሁሉንም አጽዳ</translation>
 <translation id="1201402288615127009">ቀጣይ</translation>
+<translation id="1204037785786432551">የማውረጃ አገናኝ</translation>
+<translation id="1206892813135768548">የአገናኝ ጽሑፍ ቅዳ</translation>
 <translation id="1209206284964581585">ለአሁን ደብቅ</translation>
 <translation id="1211530540767271776">እዚህ ምንም ዩኤስቢ መሣሪያዎች የሉም</translation>
 <translation id="123724288017357924">የተሸጎጠ ይዘትን ችላ በማለት የአሁኑን ገጽ ዳግም ጫን</translation>
@@ -114,6 +117,7 @@
 <translation id="2079545284768500474">ቀልብስ</translation>
 <translation id="2082238445998314030">ውጤት <ph name="RESULT_NUMBER" /> ከ<ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">በGoogle የሚጠቆም ግላዊነት የተላበሰ ይዘትን ለማግኘት በመለያ ወደ Chrome ይግቡ።</translation>
+<translation id="2091887806945687916">ድምፅ</translation>
 <translation id="2095887075102408547">ይህ ባህሪ ሲበራ Chrome የጎበኟቸውን ገጾች ከማውረዱ በፊት ለማመቅ የGoogle አገልጋዮችን ይጠቀማል። ግላዊ ግንኙነቶችን (ኤችቲቲፒኤስ) ወይም ማንነት የማያሳውቁ ትሮችን በመጠቀም የተደረሰባቸው ገጾች አይተቡም ወይም በGoogle አይታይም።</translation>
 <translation id="2096396629993765042">ከእርስዎ የGoogle መለያ ዘግተው እንዲወጡ አይደረጉም። የእርስዎ Google መለያ በ<ph name="BEGIN_LINK" />history.google.<ph name="END_LINK" /> ውስጥ ሌሎች ዓይነቶች የአሰሳ ታሪኮች ሊኖሩት ይችላል።</translation>
 <translation id="2100273922101894616">በራስ-ግባ</translation>
@@ -265,6 +269,7 @@
 
 የፍለጋ ቃልዎን ለማስተካከል ለመምረጥ በረዥሙ ይጫኑ። ፍለጋዎን ይበልጥ ለማጥራት መቃኑን እስከ ላይ ድረስ ያንሸራትቱት እና የፍለጋ ሳጥኑን ይንኩ።</translation>
 <translation id="3616113530831147358">ድምጽ</translation>
+<translation id="3620176948598597475">ዳግም ማስጀመር የተጎበኙ ጣቢያዎች ዝርዝርን ጨምሮ የውሂብ ቆጣቢ ታሪክን ይደመስሳል።</translation>
 <translation id="3632295766818638029">የይለፍ ቃልን ግለጥ</translation>
 <translation id="363596933471559332">የተከማቹ ምስክርነቶችን በመጠቀም በራስ-ሰር ወደ የድር ጣቢያዎች መለያ ይግቡ። ባህሪው ሲጠፋ ወደ አንድ ድር ጣቢያ ከመግባትዎ በፊት ማረጋገጫ ይጠየቃሉ።</translation>
 <translation id="3649663272864015643">የመነሻ ትር ተመርጧል</translation>
@@ -273,6 +278,7 @@
 <translation id="3662546969139119822">እዚህ ምንም ታሪክ የለም</translation>
 <translation id="3672452749423051839">የአሰሳ ስህተት ጥቆማ አስተያየቶች</translation>
 <translation id="3706423975342040244">መዝናኛ</translation>
+<translation id="3712575778697986964">ውሂብ ቆጣቢ ዳግም ይጀመር?</translation>
 <translation id="3714981814255182093">የአግኝ አሞሌን ክፈት</translation>
 <translation id="3734660163659757482">ዕልባቶችን እና ተጨማሪ ነገሮችን ለመመልከት ወደ ላይ ይጎትቱ</translation>
 <translation id="3738139272394829648">ለመፈለግ ይንኩ</translation>
@@ -296,6 +302,7 @@
 <translation id="393697183122708255">ምንም የነቃ የድምጽ ፍለጋ አይገኝም</translation>
 <translation id="3946611741043634542">በመቀጠልዎ በChrome <ph name="BEGIN_LINK1" />አገልግሎት ውል<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የግላዊነት ማስታወቂያ<ph name="END_LINK2" /> ተስማምተዋል።</translation>
 <translation id="3950820424414687140">ይግቡ</translation>
+<translation id="395206256282351086">ፍለጋ እና የጣቢያ አስተያየት ጥቆማዎች ተሰናክለዋል</translation>
 <translation id="395922942268463099">ገጾች በመደበኛነት ይዘመናሉ</translation>
 <translation id="3967822245660637423">ማውረድ ተጠናቅቋል</translation>
 <translation id="397583555483684758">ስምረት መሥራት አቁሟል</translation>
@@ -333,6 +340,7 @@
 <translation id="4256782883801055595">የክፍት ምንጭ ፍቃዶች</translation>
 <translation id="4259722352634471385">ዳሰሳ ታግዷል፦ <ph name="URL" /></translation>
 <translation id="4262028915562328938">የስምረት ስህተት ተከስቷል፣ ዝርዝሮችን ለማግኘት መታ ያድርጉ።</translation>
+<translation id="4269820728363426813">የአገናኝ አድራሻ ቅዳ</translation>
 <translation id="4275663329226226506">ማህደረ መረጃ</translation>
 <translation id="4278390842282768270">ተፈቅዷል</translation>
 <translation id="42981349822642051">ዘርጋ</translation>
@@ -546,6 +554,7 @@
 <translation id="6232535412751077445">«አትከታተል»ን ማንቃት ማለት አንድ ጥያቄ በአሰሳ ትራፊክዎ ላይ ይካተታል ማለት ነው። ማንኛውም ውጤት አንድ ድር ጣቢያ ለጥያቄው ምላሽ ከሰጠና ጥያቄውን በሚተረጎምበት መንገድ ላይ የሚወሰን ነው።
 
 ለምሳሌ፣ አንዳንድ ድር ጣቢያዎች ሌሎች በጎበኟቸው ድር ጣቢያዎች ላይ ያልተመሠረቱ ማስታወቂያዎችን በማሳየት ለዚህ ጥያቄ ምላሽ ሊሰጡ ይችላሉ። ብዙ ድር ጣቢያዎች አሁንም የአሰሳ ውሂብዎን ይሰበስቡና ይጠቀሙበታል — ለምሳሌ ደህንነትን ለማሻሻል፤ ይዘት፣ ማስታወቂያዎችና ምክሮች በድር ጣቢያዎች ላይ ለማቅረብ፤ እና የሪፖርት አደራረግ ስታቲስቲክስን ለማመንጨት።</translation>
+<translation id="6255999984061454636">የይዘት አስተያየት ጥቆማዎች</translation>
 <translation id="6277522088822131679">ገጹን ማተም ላይ ችግር ነበር። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="6295158916970320988">ሁሉም ጣቢያዎች</translation>
 <translation id="6320088164292336938">ንዘር</translation>
@@ -602,7 +611,6 @@
 <translation id="6701279291835318271">የደህንነት ሪፖርቶች</translation>
 <translation id="6709133671862442373">ዜና</translation>
 <translation id="6710213216561001401">ቀዳሚ</translation>
-<translation id="6727612981472093924">የአሰሳ ፓነሉ ተከፍቷል</translation>
 <translation id="6738867403308150051">በማውረድ ላይ…</translation>
 <translation id="6762156594045689028">ይህን ቅንብር ለመለወጥ <ph name="BEGIN_LINK" />ስምረትን ዳግም ያስጀምሩ<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">ፋይሉን መክፈት አልተቻለም</translation>
@@ -661,6 +669,7 @@
 <translation id="7253272406652746122">በመሣሪያዎ ቅንብሮች መተግበሪያ ውስጥ ካለው የመለያዎች ገጽ ሆነው የGoogle መለያ ያክሉ።</translation>
 <translation id="7274013316676448362">የታገደ ጣቢያ</translation>
 <translation id="7307288900373049735">Googleን በማነጋገር ላይ…ይህ ወደ አንድ ደቂቃ ሊወስድ ይችላል</translation>
+<translation id="7318797029885648322">ጽሑፎችን ለማግኘት ተጨማሪን መታ ያድርጉ</translation>
 <translation id="7333031090786104871">አሁንም ቀዳሚ ጣቢያን በማከል ላይ</translation>
 <translation id="7352939065658542140">ቪድዮ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 የተመረጠ ንጥል አጋራ}one{# የተመረጡ ንጥሎችን አጋራ}other{# የተመረጡ ንጥሎችን አጋራ}}</translation>
@@ -672,6 +681,7 @@
 <translation id="7423098979219808738">መጀመሪያ ጠይቅ</translation>
 <translation id="7437998757836447326">ዘግተው ከChrome ይውጡ</translation>
 <translation id="7445411102860286510">ጣቢያዎች ድምፀ-ከል የተደረገባቸው ቪዲዮዎችን በራስ-ሰር እንዲያጫውቱ ይፍቀዱላቸው (የሚመከር)</translation>
+<translation id="7453467225369441013">ከአብዛኛዎቹ ጣቢያዎች ዘግተው ያስወጣዎታል። ከእርስዎ የGoogle መለያ ዘግተው እንዲወጡ አይደረጉም።</translation>
 <translation id="7455923816558154057">ለመመልከት መታ ያድርጉ</translation>
 <translation id="7464701184726199289">ይሄ የሠመረ ከሁሉም መሣሪያዎች ያጸዳል። የተቀመጡ የጣቢያ ቅንብሮች አይሰረዙም፣ እና የእርስዎን የአሰሳ ልማዶች ሊያንጸባርቁ ይችላሉ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">አይ፣ አመሰግናለሁ</translation>
@@ -738,6 +748,7 @@
 <translation id="8026334261755873520">የአሰሳ ውሂብ አጽዳ</translation>
 <translation id="8035133914807600019">አዲስ አቃፊ…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ቀኖች ይቀራሉ</translation>
+<translation id="805047784848435650">በእርስዎ የአሰሳ ታሪክ ላይ የተመሠረተ</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> ሜባ አለ</translation>
 <translation id="8058746566562539958">በአዲስ የChrome ትር ውስጥ ክፈት</translation>
 <translation id="8063895661287329888">ዕልባት ማከል አልተሳካም።</translation>
@@ -799,6 +810,7 @@
 <translation id="8636825310635137004">ትሮችዎን ከሌሎች መሣሪያዎችዎ ለማግኘት ስምረትን ያብሩ።</translation>
 <translation id="8641930654639604085">የአዋቂ ሰው ጣቢያዎችን ለማገድ ሞክር</translation>
 <translation id="8662811608048051533">ከአብዛኛዎቹ ጣቢያዎች ዘግተው እንዲወጡ ያደርገዎታል።</translation>
+<translation id="867485229011312729">ዕልባቶች፣ ውርዶች እና ታሪክ የት ነው ያሉት?</translation>
 <translation id="8676374126336081632">ግቤቱን አጽዳ</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{የሲግናል ጥንካሬ ደረጃ፦ # አሞሌ}one{የሲግናል ጥንካሬ ደረጃ፦ # አሞሌዎች}other{የሲግናል ጥንካሬ ደረጃ፦ # አሞሌዎች}}</translation>
 <translation id="869891660844655955">የሚያበቀበት ጊዜ</translation>

@@ -108,12 +108,6 @@
 <translation id="3385242214819933234">호스트 소유자가 잘못되었습니다.</translation>
 <translation id="3403830762023901068">정책 설정에서 이 컴퓨터를 Chromoting 호스트로 공유하는 것을 허용하지 않습니다. 도움이 필요하면 시스템 관리자에게 문의하세요.</translation>
 <translation id="3423542133075182604">보안 키 원격 설정 프로세스</translation>
-<translation id="3426467947138417795">Chrome 원격 데스크톱
-원격 데스크톱
-원격 PC
-원격 컴퓨터
-원격 액세스
-원격 지원</translation>
 <translation id="3581045510967524389">네트워크에 연결할 수 없습니다. 기기가 온라인 상태인지 확인하시기 바랍니다.</translation>
 <translation id="3596628256176442606">이 서비스를 이용하면 Chromoting 클라이언트로부터의 연결을 수신할 수 있습니다.</translation>
 <translation id="3606997049964069799">Chromium에 로그인하지 않았습니다. 로그인 후 다시 시도하세요.</translation>
@@ -122,13 +116,6 @@
 <translation id="3695446226812920698">자세히 알아보기</translation>
 <translation id="3718805989288361841">Chrome 원격 데스크톱 관련 정책 설정에 오류가 있습니다. 시스템 관리자에게 도움을 요청하세요.</translation>
 <translation id="3776024066357219166">Chrome 원격 데스크톱 세션이 종료되었습니다.</translation>
-<translation id="3788372335219293587">iOS 기기에서 컴퓨터에 안전하게 액세스하세요. 빠르고 간편하며 무료입니다.
-
-• 원격으로 액세스하려는 컴퓨터의 Chrome 웹 스토어에서 Chrome 원격 데스크톱 앱(https://chrome.google.com/remotedesktop)을 찾습니다.
-• Chrome 원격 데스크톱 소프트웨어를 설치하고 안내에 따라 설정을 완료합니다.
-• iOS 기기에서 앱을 열고 연결할 온라인 컴퓨터를 탭합니다.
-
-개인정보 보호에 관한 자세한 내용은 Google 개인정보처리방침(http://goo.gl/SyrVzj)을 참조하세요.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome 원격 데스크톱스으로 액세스할 수 있도록 아래 계정 및 PIN을 확인하세요.</translation>
 <translation id="3897092660631435901">메뉴</translation>
@@ -267,9 +254,6 @@
 <translation id="7144878232160441200">다시 시도</translation>
 <translation id="7149517134817561223">애플리케이션에서 Chrome 원격 데스크톱 호스트로 명령을 전송합니다.</translation>
 <translation id="7215059001581613786">6자리 이상의 숫자로 구성된 PIN을 입력하세요.</translation>
-<translation id="7237767047212540055">원격으로 액세스하려는 컴퓨터에서 Chrome을 열고 <ph name="INSTALLATION_LINK" /> 페이지를 방문합니다.
-Chrome 원격 데스크톱 소프트웨어를 설치하고 안내에 따라 설정을 완료합니다.
-설정이 완료되면 PIN 또는 액세스 코드를 입력하여 이 페이지에서 컴퓨터에 액세스할 수 있습니다.</translation>
 <translation id="7312846573060934304">호스트가 오프라인 상태입니다.</translation>
 <translation id="7319983568955948908">공유 중지</translation>
 <translation id="7401733114166276557">Chrome 원격 데스크톱</translation>

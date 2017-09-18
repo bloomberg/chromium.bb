@@ -108,12 +108,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="3385242214819933234">El propietari de l'amfitrió no és vàlid.</translation>
 <translation id="3403830762023901068">La configuració de la política no permet compartir aquest ordinador com a amfitrió de Chromoting. Contacteu amb l'administrador del sistema per obtenir assistència.</translation>
 <translation id="3423542133075182604">Procés de mode remot per a la clau de seguretat</translation>
-<translation id="3426467947138417795">Escriptori remot de Chrome
-Escriptori remot
-PC remot
-Ordinador remot
-Accés remot
-Compatibilitat amb l'ús remot</translation>
 <translation id="3581045510967524389">No s'ha pogut connectar a la xarxa. Comproveu que el dispositiu estigui connectat a Internet.</translation>
 <translation id="3596628256176442606">Aquest servei permet les connexions entrants dels clients de Chromoting.</translation>
 <translation id="3606997049964069799">No heu iniciat la sessió a Chromium. Inicieu-hi la sessió i torneu-ho a provar.</translation>
@@ -122,13 +116,6 @@ Compatibilitat amb l'ús remot</translation>
 <translation id="3695446226812920698">Més informació</translation>
 <translation id="3718805989288361841">S'ha produït un error amb la configuració de la política de l'escriptori remot de Chrome. Contacta amb l'administrador del sistema per obtenir assistència.</translation>
 <translation id="3776024066357219166">La sessió de l'escriptori remot de Chrome ha finalitzat.</translation>
-<translation id="3788372335219293587">Accedeix de manera segura al teu ordinador des d'un dispositiu iOS. És ràpid, senzill i gratuït.
-
-• Accedeix a Chrome Web Store des de l'ordinador al qual vulguis accedir de manera remota i cerca-hi l'aplicació Escriptori remot de Chrome (https://chrome.google.com/remotedesktop).
-• Instal·la el programari d'Escriptori remot de Chrome i segueix les instruccions per completar-ne la configuració.
-• Al dispositiu iOS, obre l'aplicació i toca qualsevol dels teus ordinadors en línia per establir la connexió.
-
-Per obtenir informació sobre la privadesa, consulta la Política de privadesa de Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per l'escriptori remot de Chrome.</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -267,9 +254,6 @@ Per obtenir informació sobre la privadesa, consulta la Política de privadesa d
 <translation id="7144878232160441200">Torna-ho a provar</translation>
 <translation id="7149517134817561223">Aplicació que ha d'emetre les ordres per a l'amfitrió de l'escriptori remot de Chrome.</translation>
 <translation id="7215059001581613786">Introduïu un PIN que tingui sis dígits o més.</translation>
-<translation id="7237767047212540055">Obre Chrome a l'ordinador al qual vulguis accedir de manera remota i ves a la pàgina <ph name="INSTALLATION_LINK" />
-Instal·la el programari d'Escriptori remot de Chrome i segueix les instruccions per completar-ne la configuració
-Un cop finalitzada, podràs accedir a l'ordinador des d'aquesta pàgina introduint el PIN o el codi d'accés</translation>
 <translation id="7312846573060934304">L'amfitrió no està connectat</translation>
 <translation id="7319983568955948908">Deixa de compartir</translation>
 <translation id="7401733114166276557">Escriptori remot de Chrome</translation>
@@ -295,7 +279,7 @@ Un cop finalitzada, podràs accedir a l'ordinador des d'aquesta pàgina introdui
 <translation id="7948001860594368197">Opcions de pantalla</translation>
 <translation id="7970576581263377361">L'autenticació ha fallat. Torneu a iniciar la sessió a Chromium.</translation>
 <translation id="7981525049612125370">La sessió remota ha caducat.</translation>
-<translation id="8041089156583427627">Envia comentaris</translation>
+<translation id="8041089156583427627">Envia suggeriments</translation>
 <translation id="8041721485428375115">En baixar l'instal·lador de l'amfitrió d'Escriptori remot de Chrome accepteu les <ph name="LINK_BEGIN" />Condicions del servei<ph name="LINK_END" /> de Google.</translation>
 <translation id="8060029310790625334">Centre d'ajuda</translation>
 <translation id="806699900641041263">S'està connectant amb <ph name="HOSTNAME" /></translation>

@@ -108,12 +108,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="3385242214819933234">Propietario del host no válido</translation>
 <translation id="3403830762023901068">La configuración de la política no permite compartir esta computadora como host de Chromoting. Comunícate con el administrador de tu sistema para obtener ayuda.</translation>
 <translation id="3423542133075182604">Proceso remoto de llave de seguridad</translation>
-<translation id="3426467947138417795">Escritorio remoto de Chrome
-Escritorio remoto
-PC remota
-Computadora remota
-Acceso remoto
-Asistencia remota</translation>
 <translation id="3581045510967524389">No se pudo conectar a la red. Comprueba que el dispositivo esté conectado a Internet.</translation>
 <translation id="3596628256176442606">Este servicio permite conexiones entrantes de los clientes de Chromoting.</translation>
 <translation id="3606997049964069799">No accediste a Chromium. Accede y vuelve a intentarlo.</translation>
@@ -122,13 +116,6 @@ Asistencia remota</translation>
 <translation id="3695446226812920698">Más información</translation>
 <translation id="3718805989288361841">Se produjo un error con la configuración de la política para Escritorio remoto de Chrome. Comunícate con el administrador del sistema para obtener ayuda.</translation>
 <translation id="3776024066357219166">Se cerró tu sesión en Escritorio remoto de Chrome.</translation>
-<translation id="3788372335219293587">Accede de forma segura a tu computadora desde tu dispositivo iOS. Es rápido, simple y gratuito.
-
-• En la computadora que quieras acceder de forma remota, busca la app de Escritorio remoto de Chrome en Chrome Web Store: https://chrome.google.com/remotedesktop
-• Instala Escritorio remoto de Chrome y sigue las instrucciones para completar la configuración.
-• En tu dispositivo iOS, abre la app y presiona cualquiera de tus computadoras en línea para conectarlas.
-
-Para obtener más información sobre la privacidad, consulta la política de privacidad de Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirma la cuenta y el PIN a continuación para permitir el acceso del Escritorio remoto de Chrome.</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -267,9 +254,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="7144878232160441200">Volver a intentarlo</translation>
 <translation id="7149517134817561223">Aplicación para enviar comandos al host del escritorio remoto de Chrome</translation>
 <translation id="7215059001581613786">Ingresa un PIN de al menos seis dígitos.</translation>
-<translation id="7237767047212540055">En la computadora que quieras acceder de forma remota, abre Chrome y visita <ph name="INSTALLATION_LINK" />
-Instala Escritorio remoto de Chrome y sigue las instrucciones para completar la configuración
-Al finalizar la configuración, ingresa el PIN o código de acceso para acceder a la computadora desde esta página</translation>
 <translation id="7312846573060934304">El host no tiene conexión.</translation>
 <translation id="7319983568955948908">Dejar de compartir</translation>
 <translation id="7401733114166276557">Escritorio remoto de Chrome</translation>

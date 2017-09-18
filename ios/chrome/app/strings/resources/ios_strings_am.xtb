@@ -66,9 +66,11 @@
 <translation id="209018056901015185">የዴስክቶፕ ጣቢያን ጠይቅ</translation>
 <translation id="2103075008456228677">history.google.comን ክፈት</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ንጥሎች ተንቀሳቅሰዋል</translation>
+<translation id="213900355088104901">በግል ለማሰስ ማንነት የማያሳውቅ ትር ይክፈቱ</translation>
 <translation id="2149973817440762519">እልባት አርትዕ</translation>
 <translation id="2154710561487035718">URL ቅዳ</translation>
 <translation id="2230173723195178503">ድረ-ገጽ ተጭኗል</translation>
+<translation id="2256128224215992540">የፍለጋ እና የጣቢያ አስተያየት ጥቆማዎች</translation>
 <translation id="2267753748892043616">መለያ አክል</translation>
 <translation id="2273327106802955778">ተጨማሪ ምናሌ</translation>
 <translation id="2320166752086256636">የቁልፍ ሰሌዳን ደብቅ</translation>
@@ -178,9 +180,11 @@
 <translation id="430793432425771671">ሁሉንም ያመሳስሉ</translation>
 <translation id="4342284590510997375">አዲስ</translation>
 <translation id="4359125752503270327">ይህ ገጽ በሌላ መተግበሪያ ውስጥ ይከፈታል።</translation>
+<translation id="4370827530403103842">ስምረት እየሠራ አይደለም። ለማስተካከል መታ ያድርጉ።</translation>
 <translation id="4375040482473363939">የQR ኮድ ፍለጋ</translation>
 <translation id="4378154925671717803">ስልክ</translation>
 <translation id="441868831736628555">የግላዊነት ማሳወቂያ</translation>
+<translation id="4460091562821778167">በእያንዳንዱ ጊዜ የትኛው መተግበሪያ እንደምጠቀም ጠይቀኝ</translation>
 <translation id="4508750114462689118">የመግቢያ ማስተዋወቂያን ዝጋ</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> ላይ የተቀመጡ የይለፍ ቃሎችን ይመልከቱ እና ያስተዳድሩ</translation>
 <translation id="4536418791685807335">እንደገና ወደ መለያ ለመግባት ይሞክሩ።</translation>
@@ -413,6 +417,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="9100610230175265781">የይለፍ ሐረግ ያስፈልጋል</translation>
 <translation id="9148126808321036104">እንደገና ይግቡ</translation>
 <translation id="914898748153555155">ይህ አማራጭ በማናቸውም ጊዜ በChrome ቅንብሮች ውስጥ መለወጥ ይችላሉ</translation>
+<translation id="91549621916703028">ለሁሉም ተግባሮችዎ በርካታ ትሮችን ይፍጠሩ</translation>
 <translation id="9157836665414082580">መገናኛዎችን አፍን</translation>
 <translation id="9188680907066685419">ከሚተዳደር መለያ ዘግግተህ ውጣ</translation>
 <translation id="9203116392574189331">Handoff</translation>

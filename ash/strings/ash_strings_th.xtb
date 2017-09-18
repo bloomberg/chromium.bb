@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">โอเวอร์สแกน</translation>
 <translation id="1247372569136754018">ไมโครโฟน (ภายใน)</translation>
 <translation id="1252999807265626933">กำลังชาร์จจาก<ph name="POWER_SOURCE" /></translation>
+<translation id="1267032506238418139">มีการเปลี่ยนแปลงทางลัด</translation>
 <translation id="1270290102613614947">ปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">อีเทอร์เน็ต: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (กำลังโหลด...)</translation>
 <translation id="1850504506766569011">WiFi ปิดอยู่</translation>
-<translation id="1856813161013948396">ข้ามหน้าจอล็อกโดยแตะเซ็นเซอร์ลายนิ้วมือ คลิกเพื่อกำหนดค่า</translation>
 <translation id="1864454756846565995">อุปกรณ์ USB-C (พอร์ตด้านหลัง)</translation>
 <translation id="1882897271359938046">กำลังแสดงผลไปที่ <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">มีการเปลี่ยนแปลงทางลัดที่ใช้เปิดตัวจัดการงาน โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">การเปิดใช้เน็ตมือถือจะเปิดใช้บลูทูธ</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ต้องการสิทธิ์ในการจับคู่ ก่อนที่จะยอมรับ โปรดยืนยันว่ารหัสผ่านนี้ปรากฏบนอุปกรณ์นั้น: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="2501920221385095727">คีย์ติดหนึบ</translation>
 <translation id="2509468283778169019">Caps Lock เปิดอยู่</translation>
 <translation id="2532589005999780174">โหมดคอนทราสต์สูง</translation>
 <translation id="2597972630681408282">แสงตอนกลางคืน: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">ส่ง</translation>
 <translation id="2700058918926273959">เซสชันจะสิ้นสุดใน <ph name="SESSION_TIME_REMAINING" /> ระบบจะให้คุณออกจากระบบ</translation>
 <translation id="2727977024730340865">เสียบอยู่กับที่ชาร์จพลังงานต่ำ การชาร์จแบตเตอรี่อาจไม่น่าเชื่อถือ</translation>
 <translation id="2761704814324807722">ถาดสถานะ เวลา <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">คุณจะออกจากระบบในตอนนี้</translation>
 <translation id="2825619548187458965">ชั้นวาง</translation>
 <translation id="2844169650293029770">อุปกรณ์ USB-C (พอร์ตด้านหน้าซ้าย)</translation>
-<translation id="2857608528410806398">เนื้อหาการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่</translation>
 <translation id="2865888419503095837">ข้อมูลเครือข่าย</translation>
 <translation id="2872961005593481000">ปิด</translation>
 <translation id="2942516765047364088">ตำแหน่งของชั้นวาง</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">แบตเตอรี่เต็ม</translation>
 <translation id="3606978283550408104">เชื่อมต่ออุปกรณ์แสดงผลอักษรเบรลล์แล้ว</translation>
 <translation id="3621202678540785336">อินพุต</translation>
-<translation id="3625258641415618104">ปิดใช้การจับภาพหน้าจอ</translation>
 <translation id="3626281679859535460">ความสว่าง</translation>
 <translation id="3712407551474845318">จับภาพบางส่วนของหน้าเว็บ</translation>
 <translation id="371370241367527062">ไมโครโฟนด้านหน้า</translation>
-<translation id="3742055079367172538">ภาพหน้าจอที่บันทึก</translation>
+<translation id="3771549900096082774">โหมดคอนทราสต์สูง</translation>
 <translation id="3775358506042162758">คุณสามารถมีได้มากสุดสามบัญชีเท่านั้นในการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ล็อก</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">ป้อนข้อมูลด้วยเสียง</translation>
 <translation id="3901991538546252627">กำลังเชื่อมต่อกับ <ph name="NAME" /></translation>
 <translation id="394485226368336402">การตั้งค่าเสียง</translation>
-<translation id="3967919079500697218">ความสามารถในการบันทึกภาพหน้าจอถูกปิดใช้โดยผู้ดูแลระบบ</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3995138139523574647">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="4017989525502048489">ตัวชี้เลเซอร์</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">กำลังเชื่อมต่อ...</translation>
 <translation id="4421231901400348175">กำลังแชร์การควบคุมหน้าจอกับ <ph name="HELPER_NAME" /> ผ่านความช่วยเหลือระยะไกล</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
-<translation id="4448844063988177157">กำลังค้นหาเครือข่าย Wi-Fi...</translation>
 <translation id="4479639480957787382">อีเทอร์เน็ต</translation>
 <translation id="4481530544597605423">อุปกรณ์ที่ไม่ได้จับคู่</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: กำลังเชื่อมต่อ...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">มีการเปลี่ยนแปลงทางลัดที่ใช้ล็อกหน้าจอ โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
 <translation id="4659419629803378708">เปิดใช้ ChromeVox แล้ว</translation>
 <translation id="4729904664295161097">Assistant ใช้งานได้กับโปรไฟล์หลักเท่านั้น</translation>
+<translation id="4776917500594043016">รหัสผ่านของ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">ค้นหา</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="4849058404725798627">ไฮไลต์วัตถุที่มีโฟกัสแป้นพิมพ์</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">ยอมรับ</translation>
 <translation id="4961318399572185831">แคสต์หน้าจอ</translation>
 <translation id="5168181903108465623">เครื่องส่งพร้อมใช้งาน</translation>
-<translation id="5170568018924773124">แสดงในโฟลเดอร์</translation>
 <translation id="5207949376430453814">ไฮไลต์เครื่องหมาย Caret ของข้อความ</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="523505283826916779">การตั้งค่าสำหรับการเข้าถึง</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">คุณจะออกจากระบบโดยอัตโนมัติใน <ph name="LOGOUT_TIME_LEFT" /></translation>
 <translation id="607652042414456612">ค้นพบคอมพิวเตอร์ของคุณอยู่ใกล้กับอุปกรณ์บลูทูธและจะปรากฏเป็น "<ph name="NAME" />" พร้อมด้วยที่อยู่ <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">กำลังชาร์จ<ph name="POWER_SOURCE" /></translation>
-<translation id="6144938890088808325">ช่วยเราปรับปรุง Chromebook</translation>
 <translation id="615957422585914272">แสดงแป้นพิมพ์บนหน้าจอ</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="6267036997247669271"><ph name="NAME" /> กำลังเปิดใช้งาน...</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">เปลี่ยนกลับไปเป็นความละเอียดเดิมภายใน <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7246339268451149667">หากต้องการเปิดใช้การปลดล็อกด้วยลายนิ้วมือ</translation>
 <translation id="7256634071279256947">ไมโครโฟนด้านหลัง</translation>
 <translation id="7348093485538360975">แป้นพิมพ์บนหน้าจอ</translation>
 <translation id="735745346212279324">ยกเลิกการเชื่อมต่อ VPN แล้ว</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ไม่สนับสนุน <ph name="SPECIFIED_RESOLUTION" /> ความละเอียดเปลี่ยนเป็น <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">ชุดอีโมจิ</translation>
 <translation id="7569509451529460200">เปิดใช้เบรลล์และ ChromeVox แล้ว</translation>
-<translation id="7581273696622423628">ตอบแบบสำรวจ</translation>
 <translation id="7593891976182323525">ค้นหาหรือ Shift</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="7692480393933218409">กำลังชาร์จอุปกรณ์ USB-C ที่เชื่อมต่ออยู่</translation>
 <translation id="776344839111254542">คลิกเพื่อดูรายละเอียดการอัปเดต</translation>
 <translation id="7798302898096527229">กด Search หรือ Shift เพื่อยกเลิก</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> กับ <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">เปลี่ยนภาษาจาก "<ph name="FROM_LOCALE" />" เป็น "<ph name="TO_LOCALE" />" หลังจากซิงค์การตั้งค่าของคุณ</translation>
 <translation id="7904094684485781019">ผู้ดูแลระบบของบัญชีนี้ไม่อนุญาตการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="7977927628060636163">กำลังค้นหาเครือข่ายมือถือ...</translation>
 <translation id="7982789257301363584">เครือข่าย</translation>
 <translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
 <translation id="8054466585765276473">กำลังคำนวณเวลาใช้งานแบตเตอรี่</translation>
-<translation id="8077816382010018681">ชื่อการแจ้งเตือนด้วยฟีเจอร์ QU อยู่ที่นี่</translation>
 <translation id="8098591350844501178">หยุดแคสต์หน้าจอไปยัง <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">เชื่อมต่อกับ <ph name="NAME" /></translation>
 <translation id="813913629614996137">กำลังเริ่มดำเนินการ...</translation>
 <translation id="8142699993796781067">เครือข่ายส่วนบุคคล</translation>
 <translation id="8180896103888046100">หยุดแคสต์ไปยังเครื่องรับที่ไม่รู้จัก</translation>
-<translation id="8185286464235484130">แจ้งให้เราทราบถึงประสิทธิภาพการทำงานของเราโดยการตอบคำถาม 2-3 ข้อ</translation>
 <translation id="8190698733819146287">กำหนดค่าภาษาและการป้อนข้อมูล... </translation>
+<translation id="8261506727792406068">ลบ</translation>
 <translation id="8308637677604853869">เมนูก่อนหน้า</translation>
 <translation id="8351131234907093545">สร้างโน้ต</translation>
 <translation id="8392234662362215700">กด Control-Shift-Space เพื่อสลับรูปแบบแป้นพิมพ์</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">มีแบตเตอรี่ <ph name="PERCENTAGE" />%</translation>
 <translation id="9210037371811586452">กำลังออกจากโหมดเดสก์ท็อปแบบรวมหลายหน้าจอ</translation>
 <translation id="923686485342484400">กด Control Shift Q 2 ครั้งเพื่อออกจากระบบ</translation>
-<translation id="939252827960237676">ไม่สามารถบันทึกภาพหน้าจอ</translation>
 <translation id="945522503751344254">ส่งความคิดเห็น</translation>
 <translation id="98515147261107953">แนวนอน</translation>
 </translationbundle>

@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">Toca aquí</translation>
 <translation id="5076340679995252485">&amp;Pegar</translation>
 <translation id="5120799197269191491">Buscar+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">Función de desbloqueo con PIN</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Triángulo de expansión</translation>
 <translation id="528468243742722775">Fin</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;Copiar</translation>
 <translation id="7850320739366109486">No molestar</translation>
 <translation id="7907591526440419938">Abrir archivo</translation>
-<translation id="8054029954190364711">Función de desbloqueo con huella digital</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Hace 1 hora}other{Hace # horas}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Queda 1 s}other{Quedan # s}}</translation>
 <translation id="815598010540052116">Desplazar hacia abajo</translation>

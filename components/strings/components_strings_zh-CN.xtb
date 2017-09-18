@@ -522,6 +522,7 @@
 <translation id="5019198164206649151">后备存储状态不佳</translation>
 <translation id="5023310440958281426">请查看管理员制定的政策</translation>
 <translation id="5029568752722684782">清除副本</translation>
+<translation id="503069730517007720">必须为“<ph name="SOFTWARE_NAME" />”安装根证书，但您尚未安装该证书。您的 IT 管理员应仔细查看“<ph name="SOFTWARE_NAME" />”的配置说明，以解决此问题。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">关于 Google 翻译</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
@@ -885,11 +886,13 @@
 <translation id="8037357227543935929">询问（默认）</translation>
 <translation id="8041089156583427627">发送反馈</translation>
 <translation id="8041940743680923270">使用全局默认设置（询问）</translation>
+<translation id="8057711352706143257">“<ph name="SOFTWARE_NAME" />”的配置有误。卸载“<ph name="SOFTWARE_NAME" />”通常可解决此问题。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">无法查看文章。</translation>
 <translation id="8091372947890762290">正等待在服务器上激活</translation>
 <translation id="8094917007353911263">您要使用的网络可能需要您访问 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
 <translation id="8103161714697287722">付款方式</translation>
 <translation id="8118489163946903409">付款方式</translation>
+<translation id="8127301229239896662">“<ph name="SOFTWARE_NAME" />”没有正确地安装到您的计算机或网络上。请让您的 IT 管理员解决此问题。</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8134994873729925007">找不到 <ph name="HOST_NAME" /> 的服务器 <ph name="BEGIN_ABBR" />DNS 地址<ph name="END_ABBR" />。</translation>
 <translation id="8149426793427495338">您的计算机已进入休眠模式。</translation>
@@ -1021,4 +1024,9 @@
 <translation id="988159990683914416">开发者内部版本</translation>
 <translation id="989988560359834682">修改地址</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">“<ph name="SOFTWARE_NAME" />”没有正确地安装到您的计算机或网络上：
+    &lt;ul&gt;
+    &lt;li&gt;请尝试卸载或停用“<ph name="SOFTWARE_NAME" />”&lt;/li&gt;
+    &lt;li&gt;请尝试连接到其他网络&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

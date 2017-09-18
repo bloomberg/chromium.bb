@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Pārvietot grāmatzīmes</translation>
 <translation id="119944043368869598">Notīrīt visu</translation>
 <translation id="1201402288615127009">Nākamais</translation>
+<translation id="1204037785786432551">Lejupielādēt saiti</translation>
+<translation id="1206892813135768548">Kopēt saites tekstu</translation>
 <translation id="1209206284964581585">Pagaidām slēpt</translation>
 <translation id="1211530540767271776">Nav USB ierīču</translation>
 <translation id="123724288017357924">Atkārtoti ielādēt lapu, ignorējot saturu kešatmiņā</translation>
@@ -114,6 +116,7 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="2079545284768500474">Atsaukt</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultāts no <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Lai saņemtu Google ieteikto personalizēto saturu, pierakstieties pārlūkā Chrome.</translation>
+<translation id="2091887806945687916">Signāls</translation>
 <translation id="2095887075102408547">Ja šī funkcija ir ieslēgta, Chrome izmanto Google serverus, lai saspiestu jūsu apmeklētās lapas pirms to lejupielādes. Ja lapu atvēršanai tiek izmantots privāts savienojums (HTTPS) vai inkognito režīms, tās netiek optimizētas un Google tās nevar skatīt.</translation>
 <translation id="2096396629993765042">Jūs netiksiet izrakstīts no sava Google konta. Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> var būt citu veidu pārlūkošanas vēstures dati.</translation>
 <translation id="2100273922101894616">Automātiski pierakstīties</translation>
@@ -333,6 +336,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4256782883801055595">Atklātā pirmkoda licences</translation>
 <translation id="4259722352634471385">Navigācija ir bloķēta: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Radās sinhronizācijas kļūda. Pieskarieties, lai skatītu detalizētu informāciju.</translation>
+<translation id="4269820728363426813">Kopēt saites adresi</translation>
 <translation id="4275663329226226506">Multivide</translation>
 <translation id="4278390842282768270">Atļauts</translation>
 <translation id="42981349822642051">Izvērst</translation>
@@ -602,7 +606,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6701279291835318271">Ziņojumi par drošību</translation>
 <translation id="6709133671862442373">Ziņas</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
-<translation id="6727612981472093924">Atvērts navigācijas panelis</translation>
 <translation id="6738867403308150051">Notiek lejupielāde…</translation>
 <translation id="6762156594045689028">Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" />.</translation>
 <translation id="6764789522080107716">Nevar atvērt failu</translation>
@@ -661,6 +664,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7253272406652746122">Pievienojiet Google kontu no lapas Konti savas ierīces lietotnē Iestatījumi.</translation>
 <translation id="7274013316676448362">Bloķēta vietne</translation>
 <translation id="7307288900373049735">Notiek sazināšanās ar Google... Tas var ilgt kādu minūti.</translation>
+<translation id="7318797029885648322">Lai skatītu rakstus, pieskarieties vienumam Vairāk.</translation>
 <translation id="7333031090786104871">Joprojām notiek iepriekšējās vietnes pievienošana</translation>
 <translation id="7352939065658542140">VIDEOKLIPS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Kopīgot 1 atlasīto vienumu}zero{Kopīgot # atlasītos vienumus}one{Kopīgot # atlasīto vienumu}other{Kopīgot # atlasītos vienumus}}</translation>
@@ -799,6 +803,7 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="8636825310635137004">Ieslēdziet sinhronizāciju, lai būtu pieejamas cilnes no citām jūsu ierīcēm.</translation>
 <translation id="8641930654639604085">Pēc iespējas bloķēt vietnes ar pieaugušajiem paredzētu saturu</translation>
 <translation id="8662811608048051533">Jūs tiksiet izrakstīts no lielākās daļas vietņu.</translation>
+<translation id="867485229011312729">Kur atrodas grāmatzīmes, lejupielādes un vēsture?</translation>
 <translation id="8676374126336081632">Notīrīt ievadi</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signāla stipruma līmenis: # josla}zero{Signāla stipruma līmenis: # joslu}one{Signāla stipruma līmenis: # josla}other{Signāla stipruma līmenis: # joslas}}</translation>
 <translation id="869891660844655955">Derīguma termiņš</translation>

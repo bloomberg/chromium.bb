@@ -53,6 +53,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
       Hvis denne politik ikke angives, er standardfrekvensen tre timer. Den laveste
       tilladte frekvens er 60 sekunder.</translation>
+<translation id="1204263402976895730">Aktiverede virksomhedsprintere</translation>
 <translation id="1221359380862872747">Indlæs de angivne webadresser ved demologin</translation>
 <translation id="123081309365616809">Aktivér casting af indhold til enheden</translation>
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>
@@ -247,6 +248,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2024476116966025075">Konfigurer det påkrævede domænenavn for klienter med fjernadgang</translation>
 <translation id="2030905906517501646">Søgeord til standardsøgemaskine</translation>
 <translation id="203096360153626918">Denne politik påvirker ikke Android-apps. De kan åbnes i fuldskærmstilstand, selv hvis denne politik angives som <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Deaktiverede virksomhedsprintere</translation>
 <translation id="206623763829450685">Angiver, hvilke skemaer for HTTP-godkendelse der understøttes af <ph name="PRODUCT_NAME" />.
 
           Mulige værdier er "grundlæggende", "sammenfatning", "NTLM" og "forhandling". Flere værdier adskilles med kommaer.
@@ -323,6 +325,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne indstilling er konfigureret, bliver brugere, der anvender hurtig oplåsning, anmodet om at indtaste deres adgangskode på låseskærmen afhængigt af denne indstilling.
 
       Hvis denne indstilling ikke er konfigureret, bliver brugere, der anvender hurtig oplåsning, anmodet om at indtaste deres adgangskode på låseskærmen hver dag.</translation>
+<translation id="2194470398825717446">Denne politik er udfaset i M61. Brug EcryptfsMigrationStrategy i stedet.
+
+      Angiver, hvordan en enhed skal opføre sig, hvis den blev leveret med ecryptfs-kryptering og skal skifte til ext4-kryptering.
+
+      Hvis du indstiller denne politik til "DisallowArc", deaktiveres Android-apps for alle brugere på enheden (inklusive dem, der allerede har ext4-kryptering), og der tilbydes ikke migrering fra ecryptfs- til ext4-kryptering til nogen brugere.
+
+      Hvis du indstiller denne politik til "AllowMigration", bliver brugere med ecryptfs-hovedmapper tilbudt at migrere disse til ext4-kryptering, hvor det er nødvendigt (i øjeblikket når Android N bliver tilgængeligt på enheden).
+
+      Denne politik gælder ikke for terminalapps – disse migreres automatisk. Hvis denne politik endnu ikke er angivet, opfører enheden sig, som om "DisallowArc" er valgt.</translation>
 <translation id="2201555246697292490">Konfigurer hvidlisten for indbyggede beskedhosts</translation>
 <translation id="2204753382813641270">Administrer, hvornår hylden skjules automatisk</translation>
 <translation id="2208976000652006649">Parametre for søgewebadresse, som anvender POST</translation>
@@ -518,6 +529,14 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik anvendes, er det kun printere med id'er, der matcher værdierne
       i denne politik, som kan anvendes af brugeren. Id'erne skal svare til
       posterne i den fil, der er angivet i DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Angiver, hvilke printere en bruger ikke kan anvende.
+
+      Denne politik anvendes kun, hvis BlacklistRestriction er valgt for
+      NativePrintersBulkAccessMode.
+
+      Hvis denne politik anvendes, har brugeren adgang til alle printere bortset fra
+      dem med id'er, der er angivet i denne politik.
+      </translation>
 <translation id="2801230735743888564">Giv brugerne mulighed for at spille det ekstra dinosaurspil, når enheden er offline.
 
       Hvis denne politik er angivet til Falsk, kan brugerne ikke spille det ekstra dinosaurspil, når enheden er offline. Hvis indstillingen er angivet til Sand, kan brugerne spille dinosaurspillet. Hvis politikken ikke er angivet, kan brugerne ikke spille det ekstra dinosaurspil på tilmeldte Chrome OS-systemer, men de kan spille det under andre omstændigheder.</translation>
@@ -632,6 +651,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3219421230122020860">Inkognitotilstand er tilgængelig</translation>
 <translation id="3220624000494482595">Hvis terminalappen er en Android-app, har den ingen kontrol over <ph name="PRODUCT_OS_NAME" />-versionen, selv hvis denne politik angives som <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Webadressemønstre, der tillader installation af udvidelser, apps og brugerscripts fra</translation>
+<translation id="3240609035816615922">Adgangspolitik for konfiguration af printere.</translation>
 <translation id="3243309373265599239">Angiver den tid uden brugerinput, der udløser skærmnedtoning, når strømforsyningen er tilsluttet.
 
           Hvis denne politik indstilles til end højere værdi end nul, angives den tid, som brugeren skal forblive inaktiv i, før <ph name="PRODUCT_OS_NAME" /> nedtoner skærmen.
@@ -887,6 +907,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Bemærk! Automatisk genstart er kun aktiveret mens loginskærmen vises eller en terminalapp kører. Dette vil ændre sig med tiden, og politikken vil altid være gældende, uanset om en bestemt type kører eller ej.
 
       Denne politikværdi skal angives i sekunder. Værdierne skal være minimum 3600 (en time).</translation>
+<translation id="4203879074082863035">Det er kun printerne på hvidlisten, der vises til brugere</translation>
 <translation id="420512303455129789">En ordbog, der knytter webadresser til en boolesk markering, angiver, om adgang til hosten tillades (sand) eller blokeres (falsk).
 
           <ph name="PRODUCT_NAME" /> bruger selv politikken internt.</translation>
@@ -985,6 +1006,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4541530620466526913">Enhedslokale konti</translation>
 <translation id="4555850956567117258">Aktivér fjernattestering for brugeren</translation>
 <translation id="4557134566541205630">Webadresse for siden Ny fane i standardsøgemaskinen</translation>
+<translation id="4558592878156368639">Intervaller uden for åbningstiden, hvor OffHours |ignored_policies| anvendes på enheden</translation>
 <translation id="4600786265870346112">Aktivér Stor markør</translation>
 <translation id="4604931264910482931">Konfigurer spærrelisten for indbyggede beskedhosts</translation>
 <translation id="4617338332148204752">Spring kontrol af metatag over i <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1093,7 +1115,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="5068140065960598044">Cloudpolitikken for <ph name="PRODUCT_NAME" /> tilsidesætter maskinpolitikken.</translation>
 <translation id="5085647276663819155">Deaktiver udskriftsvisning</translation>
 <translation id="5105313908130842249">Skærmlåsforsinkelse, når batteriet bruges</translation>
-<translation id="5108031557082757679">Aktiverede virksomhedsprintere for enheder</translation>
+<translation id="5108031557082757679">Deaktiverede virksomhedsprintere for enheder</translation>
 <translation id="5130288486815037971">Afgør, om RC4-krypteringsprogrammer i TLS aktiveres</translation>
 <translation id="5141670636904227950">Indstil standardtype for lup til aktiveret på loginskærmen</translation>
 <translation id="5142301680741828703">Gengiv altid følgende webadressemønstre i <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1377,6 +1399,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6211428344788340116">Rapportér tidspunkter for aktivitet på enheden.
 
       Hvis denne indstilling ikke er angivet eller er angivet til Sand, rapporterer tilmeldte enheder de tidsperioder, hvor en bruger er aktiv på enheden. Hvis den er er angivet til Falsk, registreres og rapporteres tidspunkter for aktivitet ikke på enheden.</translation>
+<translation id="6212868225782276239">Alle printere vises, bortset fra dem på sortlisten.</translation>
 <translation id="6219965209794245435">Denne politik tvinger formulardataene for AutoFyld til at blive importeret fra den foregående standardbrowser, hvis politikken er aktiveret. Hvis denne politik er aktiveret, påvirker den også importdialogboksen.
 
       Hvis den er deaktiveret, importeres formulardata for AutoFyld ikke.
@@ -1589,6 +1612,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7132877481099023201">Webadresser, der får adgang til videooptagelsesenheder, uden at du skal give tilladelse hertil.</translation>
 <translation id="7167436895080860385">Tillad, at brugerne kan se adgangskoder i adgangskodeadministratoren</translation>
 <translation id="7173856672248996428">Efemerisk profil</translation>
+<translation id="717630378807352957">Tillad alle printere fra konfigurationsfilen.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Forbindelsestyper, der tillades til opdateringer</translation>
 <translation id="7194407337890404814">Standardsøgemaskinens navn</translation>
@@ -1842,7 +1866,7 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
       Hvis denne politik ikke indstilles, bruger enheden som standard et 24-timers urformat.</translation>
 <translation id="8114382167597081590">Gennemtving ikke Begrænset tilstand på YouTube</translation>
 <translation id="8118665053362250806">Angiv størrelse på mediediskcache</translation>
-<translation id="8124468781472887384">Adgangspolitik for konfiguration af printere på enheder.</translation>
+<translation id="8124468781472887384">Adgangspolitik for konfiguration af printere til enheder.</translation>
 <translation id="8135937294926049787">Angiver den tid uden brugerinput, der udløser skærmsluk, når strømforsyningen er tilsluttet.
 
           Hvis denne politik indstilles til en højere værdi end nul, angives den tid, hvor brugeren skal være inaktiv, før <ph name="PRODUCT_OS_NAME" /> slukker skærmen.
@@ -1875,6 +1899,18 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 
       Hvis politikken er deaktiveret eller ikke er angivet, fører login til en almindelig profil.</translation>
 <translation id="8158758865057576716">Aktivér oprettelse af roamingkopier til <ph name="PRODUCT_NAME" />-profildata.</translation>
+<translation id="8169931650834542988">Bestemmer, hvilke printere fra
+      NativePrintersBulkConfiguration der kan anvendes af brugerne.
+
+      Angiver, hvilken adgangspolitik der anvendes til konfiguration af flere printere.
+      Hvis AllowAll er valgt, vises alle printere. Hvis BlacklistRestrction
+      er valgt, anvendes NativePrintersBulkBlacklist til at begrænse adgangen til
+      de angivne printere. Hvis WhitelistPrintersOnly er valgt,
+      angiver NativePrintersWhitelist kun de printere, der kan
+      vælges.
+
+      Hvis denne politik ikke er angivet, anvendes BlacklistRestriction som standard.
+      </translation>
 <translation id="8170878842291747619">Aktiverer den integrerede tjeneste Google Oversæt på <ph name="PRODUCT_NAME" />. Hvis du aktiverer denne indstilling, vil <ph name="PRODUCT_NAME" /> vise en integreret værktøjslinje, der tilbyder at oversætte siden for brugeren, når det er relevant. Hvis du deaktiverer denne indstilling, vil brugerne aldrig se oversættelsesbjælken. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen i <ph name="PRODUCT_NAME" />. Hvis denne indstilling ikke angives, kan brugeren vælge, om funktionen skal anvendes eller ej.</translation>
 <translation id="817455428376641507">Giver adgang til de angivne webadresser som undtagelser til sortlisten for webadresser.
 
@@ -1952,6 +1988,14 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
 <translation id="847472800012384958">Tillad ikke, at websites viser pop op-vinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Angiver, hvilke printere en bruger kan anvende.
+
+      Denne politik anvendes kun, hvis WhitelistPrintersOnly er valgt for
+      NativePrintersBulkAccessMode.
+
+      Hvis denne politik anvendes, er det kun printere med id'er, der matcher værdierne
+      i denne politik, som kan anvendes af brugeren. Id'erne skal svare til
+      posterne i den fil, der er angivet i NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Tilpas listen over webstedsmønstre, der altid bør gengives af hostbrowseren.
 
           Hvis denne politik ikke er angivet, anvendes standardgengivelsen på alle websites, sådan som det er angivet i politikken "ChromeFrameRendererSettings".
@@ -1962,6 +2006,30 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="8519264904050090490">Webadresser for manuel undtagelse af administreret bruger</translation>
 <translation id="8544375438507658205">Standard HTML-gengivelse for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vis en advarsel, når du er på websites uden for indholdspakkerne</translation>
+<translation id="8555589883248082762">Angiver konfigurationer af virksomhedsprintere.
+
+      Denne politik tillader, at du kan konfigurere printere for
+      <ph name="PRODUCT_OS_NAME" />-enheder.
+      Filen må ikke være større end 5 MB, og den skal indkodes i JSON.
+      Formatet er det samme som for NativePrinters-ordbogen. En fil
+      med ca. 21.000 printere forventes at indkode som en fil på
+      5 MB. Den kryptografiske nøgletransformation bruges til at bekræfte downloadens
+      integritet.
+
+      Filen downloades og gemmes i cachen. Den downloades igen, hver gang
+      webadressen eller nøgletransformationen ændres.
+
+      Hvis denne politik er angivet,
+      vil <ph name="PRODUCT_OS_NAME" /> downloade
+      filen til printerkonfigurationer og gøre printere tilgængelige
+      i overensstemmelse med NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
+      og NativePrintersBulkBlacklist.
+
+      Hvis du har angivet denne politik, kan brugerne ikke ændre eller tilsidesætte den.
+
+      Denne politik har ingen indflydelse på, om brugere kan konfigurere printere på
+      individuelle enheder. Den har til formål at supplere
+      printerkonfigurationen for individuelle brugere.</translation>
 <translation id="8566842294717252664">Skjul webshoppen fra siden Ny fane og applisten</translation>
 <translation id="8587229956764455752">Tillad oprettelse af nye brugerkonti</translation>
 <translation id="8614804915612153606">Deaktiverer Automatisk opdatering</translation>
@@ -2013,7 +2081,7 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="8864975621965365890">Undertrykker opfordringen til afvisning, som vises, når et website gengives af <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8882006618241293596">Bloker <ph name="FLASH_PLUGIN_NAME" />-pluginnet på disse websites</translation>
-<translation id="8887644176044431146">Kontrollerer, hvilke printere fra
+<translation id="8887644176044431146">Bestemmer, hvilke printere fra
       DeviceNativePrintersConfiguration der kan anvendes af brugerne.
 
       Angiver, hvilken adgangspolitik der anvendes til konfiguration af flere printere.
@@ -2071,6 +2139,7 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="9096086085182305205">Hvidliste til godkendelse af server</translation>
 <translation id="9098553063150791878">Politikker for HTTP-godkendelse</translation>
 <translation id="9105265795073104888">Det er kun bestemte muligheder for proxykonfiguration, der er tilgængelige for Android-apps. Android-apps kan vælge at anvende proxyen. Du kan ikke tvinge dem til at anvende en proxy.</translation>
+<translation id="9112727953998243860">Fil til konfiguration af virksomhedsprintere</translation>
 <translation id="9112897538922695510">Giver dig mulighed for at registrere en liste over protokolhandlere. Dette kan kun være en anbefalet politik. Egenskaben |protocol| skal indstilles til ordningen, f.eks. "mailto", og egenskaben |url| bør indstilles til webadressemønsteret for den applikation, der handler ordningen. Dette mønster kan omfatte et "%s", som, hvis det findes, erstattes med den handlede webadresse.
 
           De protokolhandlere, der er registreret via politikker, flettes med dem, der er registreret af brugeren, og begge er tilgængelige og kan anvendes. Brugeren kan tilsidesætte protokolhandlere, der er installeret via en politik, ved at installere en ny standardhandler, men kan ikke fjerne en protokolhandler, der er registreret via en politik.</translation>

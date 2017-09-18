@@ -69,6 +69,7 @@
 <translation id="2149973817440762519">बुकमार्क संपादित करें</translation>
 <translation id="2154710561487035718">URL की कॉपी बनाएं</translation>
 <translation id="2230173723195178503">वेबपेज लोड हो गया है</translation>
+<translation id="2256128224215992540">खोज और साइट सुझाव</translation>
 <translation id="2267753748892043616">खाता जोड़ें</translation>
 <translation id="2273327106802955778">अधिक मेनू</translation>
 <translation id="2320166752086256636">कीबोर्ड छिपाएं</translation>
@@ -178,9 +179,11 @@
 <translation id="430793432425771671">सब कुछ समन्‍वयित करें</translation>
 <translation id="4342284590510997375">नया</translation>
 <translation id="4359125752503270327">यह पेज किसी अन्य ऐप्लिकेशन में खुलेगा.</translation>
+<translation id="4370827530403103842">समन्वयन काम नहीं कर रहा है. ठीक करने के लिए टैप करें.</translation>
 <translation id="4375040482473363939">QR कोड खोज</translation>
 <translation id="4378154925671717803">फ़ोन</translation>
 <translation id="441868831736628555">निजता सूचना</translation>
+<translation id="4460091562821778167">मुझसे हर बार पूछें कि कौन से ऐप का उपयोग करना है</translation>
 <translation id="4508750114462689118">प्रवेश प्रोमो बंद करें</translation>
 <translation id="4526249700380860531">सहेजे गए पासवर्ड <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> पर देखें और प्रबंधित करें</translation>
 <translation id="4536418791685807335">फिर से प्रवेश करके देखें.</translation>

@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Paskan dengan lebar</translation>
 <translation id="1088860948719068836">Tambahkan Nama di Kartu</translation>
 <translation id="1103523840287552314">Selalu terjemahkan <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Tampilkan semua sandi tersimpan...</translation>
 <translation id="1107591249535594099">Apabila dicentang, Chrome akan menyimpan salinan kartu Anda pada perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
 <translation id="1111153019813902504">Bookmark yang baru dibuka</translation>
 <translation id="1113869188872983271">&amp;Urungkan pengaturan ulang</translation>
@@ -525,6 +526,7 @@
 <translation id="5019198164206649151">Penyimpanan cadangan dalam kondisi buruk</translation>
 <translation id="5023310440958281426">Periksa kebijakan administrator Anda</translation>
 <translation id="5029568752722684782">Hapus salinan</translation>
+<translation id="503069730517007720">Sertifikat root wajib untuk "<ph name="SOFTWARE_NAME" />" tidak diinstal. Administrator IT Anda harus melihat petunjuk konfigurasi untuk "<ph name="SOFTWARE_NAME" />" agar dapat menyelesaikan masalah ini. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Tentang Google Terjemahan</translation>
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
@@ -596,6 +598,7 @@
 <translation id="5540224163453853">Tidak dapat menemukan artikel yang diminta.</translation>
 <translation id="5541546772353173584">Tambahkan Email</translation>
 <translation id="5544037170328430102">Laman tersemat di <ph name="SITE" /> menyatakan:</translation>
+<translation id="5545756402275714221">Artikel untuk Anda</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
 <translation id="5560088892362098740">Tanggal Habis Masa Berlaku</translation>
 <translation id="5565735124758917034">Aktif</translation>
@@ -617,6 +620,7 @@
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Mendapatkan konten hasil personalisasi</translation>
 <translation id="5675650730144413517">Halaman ini tidak berfungsi</translation>
+<translation id="5689199277474810259">Ekspor ke JSON</translation>
 <translation id="5710435578057952990">Identitas situs Web ini belum diverifikasi.</translation>
 <translation id="5719499550583120431">Kartu prabayar diterima.</translation>
 <translation id="5720705177508910913">Pengguna saat ini</translation>
@@ -889,11 +893,13 @@
 <translation id="8037357227543935929">Tanyakan (default)</translation>
 <translation id="8041089156583427627">Kirim Masukan</translation>
 <translation id="8041940743680923270">Gunakan default global (Tanyakan)</translation>
+<translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" tidak dikonfigurasi dengan benar. Biasanya masalah akan terselesaikan dengan meng-uninstal "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Gagal melihat artikel.</translation>
 <translation id="8091372947890762290">Aktivasi ditunda di server</translation>
 <translation id="8094917007353911263">Jaringan yang Anda gunakan mungkin mewajibkan Anda mengunjungi <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Metode Pembayaran</translation>
 <translation id="8118489163946903409">Metode pembayaran</translation>
+<translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" tidak diinstal dengan benar di komputer atau jaringan Anda. Mintalah administrator IT untuk menyelesaikan masalah ini.</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Alamat DNS<ph name="END_ABBR" /> server <ph name="HOST_NAME" /> tidak dapat ditemukan.</translation>
 <translation id="8149426793427495338">Komputer Anda sedang dalam mode tidur.</translation>
@@ -1024,4 +1030,9 @@
 <translation id="988159990683914416">Buatan Pengembang</translation>
 <translation id="989988560359834682">Edit Alamat</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" tidak diinstal dengan benar di komputer atau jaringan Anda:
+    &lt;ul&gt;
+    &lt;li&gt;Coba uninstal atau nonaktifkan "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
+    &lt;li&gt;Coba hubungkan ke jaringan lain&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

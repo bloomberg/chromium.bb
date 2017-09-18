@@ -69,6 +69,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2149973817440762519">Rediger bogmærke</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2230173723195178503">Websiden er indlæst</translation>
+<translation id="2256128224215992540">Søge- og websiteforslag</translation>
 <translation id="2267753748892043616">Tilføj konto</translation>
 <translation id="2273327106802955778">Menuen Mere</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
@@ -178,9 +179,11 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="430793432425771671">Synkroniser alt</translation>
 <translation id="4342284590510997375">Nyt</translation>
 <translation id="4359125752503270327">Denne side åbner i en anden app.</translation>
+<translation id="4370827530403103842">Synkronisering fungerer ikke. Tryk for at rette problemet.</translation>
 <translation id="4375040482473363939">Søgning efter QR-kode</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Erklæring om privatliv</translation>
+<translation id="4460091562821778167">Spørg mig, hvilken app der skal bruges hver gang</translation>
 <translation id="4508750114462689118">Luk loginkampagne</translation>
 <translation id="4526249700380860531">Se og administrer gemte adgangskoder på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prøv at logge ind igen.</translation>

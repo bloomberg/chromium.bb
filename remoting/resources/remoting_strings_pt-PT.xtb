@@ -108,12 +108,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="3385242214819933234">Proprietário do anfitrião inválido.</translation>
 <translation id="3403830762023901068">As definições da política não permitem a partilha deste computador como um anfitrião do Chromoting. Contacte o administrador do sistema para obter assistência.</translation>
 <translation id="3423542133075182604">Processo de comunicação remota da chave de segurança</translation>
-<translation id="3426467947138417795">Ambiente de Trabalho Remoto do Chrome
-Ambiente de Trabalho Remoto
-PC remoto
-Computador remoto
-Acesso remoto
-Apoio técnico remoto</translation>
 <translation id="3581045510967524389">Não foi possível estabelecer ligação à rede. Verifique se o dispositivo está online.</translation>
 <translation id="3596628256176442606">Este serviço permite receber ligações de clientes do Chromoting.</translation>
 <translation id="3606997049964069799">Não tem sessão iniciada no Chromium. Inicie sessão e tente novamente.</translation>
@@ -122,13 +116,6 @@ Apoio técnico remoto</translation>
 <translation id="3695446226812920698">Saiba como</translation>
 <translation id="3718805989288361841">As definições de política do Ambiente de Trabalho Remoto do Chrome têm um erro. Contacte o seu administrador de sistema para obter assistência.</translation>
 <translation id="3776024066357219166">A sessão do Ambiente de Trabalho Remoto do Chrome terminou.</translation>
-<translation id="3788372335219293587">Aceda ao seu computador em segurança a partir do seu dispositivo iOS. É rápido, simples e gratuito.
-
-• No computador ao qual pretende aceder remotamente, localize a aplicação Ambiente de Trabalho Remoto do Chrome na Web Store do Chrome em https://chrome.google.com/remotedesktop
-• Instale o software Ambiente de Trabalho Remoto do Chrome e siga as instruções para concluir a configuração.
-• No dispositivo iOS, abra a aplicação e toque em qualquer um dos computadores online para estabelecer ligação.
-
-Para obter informações acerca da privacidade, consulte a Política de Privacidade da Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Confirme a sua conta e PIN abaixo para permitir o acesso do Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ Para obter informações acerca da privacidade, consulte a Política de Privacid
 <translation id="7144878232160441200">Repetir</translation>
 <translation id="7149517134817561223">Aplicação para emitir comandos para o anfitrião do Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="7215059001581613786">Introduza um PIN com seis ou mais dígitos.</translation>
-<translation id="7237767047212540055">No computador ao qual pretende aceder remotamente, abra o Chrome e aceda ao <ph name="INSTALLATION_LINK" />.
-Instale o software Ambiente de Trabalho Remoto do Chrome e siga as instruções para concluir a configuração.
-Quando a configuração estiver concluída, pode aceder ao computador a partir desta página ao introduzir o PIN ou o código de acesso.</translation>
 <translation id="7312846573060934304">O anfitrião está offline.</translation>
 <translation id="7319983568955948908">Terminar Partilha</translation>
 <translation id="7401733114166276557">Ambiente de Trabalho Remoto do Chrome</translation>

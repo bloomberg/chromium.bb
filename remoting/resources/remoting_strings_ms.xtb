@@ -108,12 +108,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="3385242214819933234">Pemilik hos tidak sah.</translation>
 <translation id="3403830762023901068">Tetapan dasar tidak membenarkan komputer ini dikongsi sebagai hos Chromoting. Hubungi pentadbir sistem anda untuk mendapatkan bantuan.</translation>
 <translation id="3423542133075182604">Proses Kaedah Jauh Kunci Keselamatan</translation>
-<translation id="3426467947138417795">Desktop Jauh Chrome
-Desktop Jauh
-PC Jauh
-Komputer Jauh
-Akses Jauh
-Sokongan Jauh</translation>
 <translation id="3581045510967524389">Tidak dapat menyambung ke rangkaian. Sila pastikan peranti anda berada dalam talian.</translation>
 <translation id="3596628256176442606">Perkhidmatan ini membolehkan sambungan masuk daripada klien Chromoting.</translation>
 <translation id="3606997049964069799">Anda tidak log masuk ke Chromium. Sila log masuk dan cuba lagi.</translation>
@@ -122,13 +116,6 @@ Sokongan Jauh</translation>
 <translation id="3695446226812920698">Ketahui caranya</translation>
 <translation id="3718805989288361841">Terdapat ralat dalam tetapan dasar untuk Desktop Jauh Chrome. Hubungi pentadbir sistem anda untuk mendapatkan bantuan.</translation>
 <translation id="3776024066357219166">Sesi Desktop Jauh Chrome anda telah tamat.</translation>
-<translation id="3788372335219293587">Akses komputer dengan selamat daripada peranti iOS anda. Cara ini cepat, mudah dan percuma.
-
-• Pada komputer yang ingin diakses dari jauh, cari apl Desktop Jauh Chrome dalam Gedung Web Chrome  https://chrome.google.com/remotedesktop
-• Pasang perisian Desktop Jauh Chrome dan ikut arahan untuk menyelesaikan penyediaan.
-• Pada peranti iOS anda, buka apl dan ketik mana-mana komputer yang berada dalam talian untuk menyambung.
-
-Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Sila sahkan akaun dan PIN anda di bawah untuk membenarkan akses melalui Desktop Jauh Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="7144878232160441200">Cuba semula</translation>
 <translation id="7149517134817561223">Aplikasi untuk mengeluarkan perintah kepada hos desktop jauh Chrome.</translation>
 <translation id="7215059001581613786">Sila masukkan PIN yang mengandungi enam atau lebih angka.</translation>
-<translation id="7237767047212540055">Pada komputer yang ingin diakses dari jauh, buka Chrome dan lawati <ph name="INSTALLATION_LINK" />
-Pasang perisian Desktop Jauh Chrome dan ikut arahan untuk menyelesaikan penyediaan
-Selepas penyediaan selesai, anda akan dapat mengakses komputer itu daripada halaman ini dengan memasukkan PIN atau kod akses</translation>
 <translation id="7312846573060934304">Hos di luar talian.</translation>
 <translation id="7319983568955948908">Hentikan Perkongsian</translation>
 <translation id="7401733114166276557">Desktop Jauh Chrome</translation>

@@ -66,9 +66,11 @@
 <translation id="209018056901015185">Повна версія сайту</translation>
 <translation id="2103075008456228677">Відкрити history.google.com</translation>
 <translation id="2116625576999540962">Переміщено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="213900355088104901">Щоб переглядати веб-сторінки конфіденційно, відкрийте анонімну вкладку</translation>
 <translation id="2149973817440762519">Редагувати закладку</translation>
 <translation id="2154710561487035718">Копіювати URL-адресу</translation>
 <translation id="2230173723195178503">Веб-сторінку завантажено</translation>
+<translation id="2256128224215992540">Пропозиції термінів і сайтів</translation>
 <translation id="2267753748892043616">Додати обліковий запис</translation>
 <translation id="2273327106802955778">Більше опцій</translation>
 <translation id="2320166752086256636">Сховати клавіатуру</translation>
@@ -178,9 +180,11 @@
 <translation id="430793432425771671">Синхронізувати все</translation>
 <translation id="4342284590510997375">Нове</translation>
 <translation id="4359125752503270327">Ця сторінка відкриється в іншому додатку.</translation>
+<translation id="4370827530403103842">Синхронізація не працює. Торкніться, щоб виправити.</translation>
 <translation id="4375040482473363939">Шукати за QR-кодом</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Примітка про конфіденційність</translation>
+<translation id="4460091562821778167">Щоразу запитувати, який додаток використовувати</translation>
 <translation id="4508750114462689118">Закрити заклик до входу</translation>
 <translation id="4526249700380860531">Переглядайте збережені паролі та керуйте ними на сторінці <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Спробуйте ввійти ще раз.</translation>
@@ -413,6 +417,7 @@
 <translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>
 <translation id="9148126808321036104">Увійти знову</translation>
 <translation id="914898748153555155">Цей параметр можна будь-коли змінити в налаштуваннях Chrome</translation>
+<translation id="91549621916703028">Створюйте різні вкладки для всіх своїх завдань</translation>
 <translation id="9157836665414082580">Заблокувати діалогові вікна</translation>
 <translation id="9188680907066685419">Вийти з керованого облікового запису</translation>
 <translation id="9203116392574189331">Handoff</translation>

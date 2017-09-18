@@ -53,6 +53,7 @@
 
       If this policy is unset, the default frequency is 3 hours. The minimum
       allowed frequency is 60 seconds.</translation>
+<translation id="1204263402976895730">Enabled enterprise printers</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
 <translation id="123081309365616809">Enable casting content to the device</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
@@ -255,6 +256,7 @@
 <translation id="2024476116966025075">Configure the required domain name for remote access clients</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
 <translation id="203096360153626918">This policy has no effect on the Android apps. They will be able to enter full screen mode even if this policy is set to <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Disabled enterprise printers</translation>
 <translation id="206623763829450685">Specifies which HTTP authentication schemes are supported by <ph name="PRODUCT_NAME" />.
 
           Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
@@ -331,6 +333,15 @@
           If this setting is configured, users using quick unlock will be requested to enter their passwords on the lock screen depending on this setting.
 
           If this setting is not configured, users using quick unlock will be requested to enter their password on the lock screen every day.</translation>
+<translation id="2194470398825717446">This policy is deprecated in M61, please use EcryptfsMigrationStrategy instead.
+
+      Specifies how a device should behave that shipped with ecryptfs and needs to transition to ext4 encryption.
+
+      If you set this policy to 'DisallowArc', Android apps will be disabled for all users on the device (including those that have ext4 encryption already) and no migration from ecryptfs to ext4 encryption will be offered to any users.
+
+      If you set this policy to 'AllowMigration', users with ecryptfs home directories will be offered to migrate these to ext4 encryption as necessary (currently when Android N becomes available on the device).
+
+      This policy does not apply to kiosk apps – these are migrated automatically. If this policy is left not set, the device will behave as if 'DisallowArc' was chosen.</translation>
 <translation id="2201555246697292490">Configure native messaging whitelist</translation>
 <translation id="2204753382813641270">Control shelf auto-hiding</translation>
 <translation id="2208976000652006649">Parameters for search URL which uses POST</translation>
@@ -544,6 +555,14 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is used, only the printers with ids matching the values
       in this policy are available to the user. The ids must correspond to
       the entries in the file specified in DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Specifies the printers which a user cannot use.
+
+      This policy is only used if BlacklistRestriction is chosen for
+      NativePrintersBulkAccessMode.
+
+      If this policy is used, all printers are provided to the user except
+      for the ids listed in this policy.
+      </translation>
 <translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
 
       If this policy is set to False, users will not be able to play the dinosaur Easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur Easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.</translation>
@@ -666,6 +685,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3219421230122020860">Incognito mode available.</translation>
 <translation id="3220624000494482595">If the kiosk app is an Android app, it will have no control over the <ph name="PRODUCT_OS_NAME" /> version, even if this policy is set to <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">URL patterns to allow extension, app, and user script installs from</translation>
+<translation id="3240609035816615922">Printer configuration access policy.</translation>
 <translation id="3243309373265599239">Specifies the length of time without user input after which the screen is dimmed when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> dims the screen.
@@ -696,6 +716,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3322771899429619102">Allows you to set a list of URL patterns that specify sites which are allowed to use key generation. If a URL pattern is in 'KeygenBlockedForUrls', that overrides these exceptions.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
+<translation id="332771718998993005">Determine the name advertised as a <ph name="PRODUCT_NAME" /> destination.
+
+          If this policy is set to a non-empty string, that string will be used as the name of the <ph name="PRODUCT_NAME" /> destination. Otherwise, the destination name will be the device name. If this policy is not set, the destination name will be the device name, and the owner of the device (or a user from the domain managing the device) will be allowed to change it. The name is limited to 24 characters.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
 <translation id="3417418267404583991">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
 
@@ -733,7 +756,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="350797926066071931">Enable Translate</translation>
-<translation id="3512226956150568738">If the client device model already supported ARC before migration to ext4 was necessary to run ARC, and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).</translation>
+<translation id="3512226956150568738">If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
@@ -929,6 +952,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Note: Currently, automatic reboots are only enabled while the login screen is being shown or a Kiosk app session is in progress. This will change in the future and the policy will always apply, regardless of whether a session of any particular type is in progress or not.
 
       The policy value should be specified in seconds. Values are clamped to be at least 3600 (one hour).</translation>
+<translation id="4203879074082863035">Only printers in the whitelist are shown to users</translation>
 <translation id="420512303455129789">A dictionary mapping URLs to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
 
           This policy is for internal use by <ph name="PRODUCT_NAME" /> itself.</translation>
@@ -1037,6 +1061,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4541530620466526913">Device-local accounts</translation>
 <translation id="4555850956567117258">Enable remote attestation for the user</translation>
 <translation id="4557134566541205630">Default search provider new tab page URL</translation>
+<translation id="4558592878156368639">Off hours intervals when device OffHours |ignored_policies| are released</translation>
 <translation id="4600786265870346112">Enable large cursor</translation>
 <translation id="4604931264910482931">Configure native messaging blacklist</translation>
 <translation id="4617338332148204752">Skip the meta tag check in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1214,6 +1239,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.</translation>
 <translation id="5307432759655324440">Incognito mode availability</translation>
 <translation id="5318185076587284965">Enable the use of relay servers by the remote access host</translation>
+<translation id="5323128137188992869">Allow content to be cast to the device using <ph name="PRODUCT_NAME" />.
+
+          If this policy is set to False, users will not be able to cast content to their device. If this policy is set to True, users are allowed to cast content. If this policy is not set, users are not allowed to cast content to enrolled Chrome OS devices, but can cast to non-enrolled devices.</translation>
 <translation id="5330684698007383292">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="5366977351895725771">If set to false, supervised-user creation by this user will be disabled. Any existing supervised users will still be available.
@@ -1444,6 +1472,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6111936128861357925">Allow Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">deprecated</translation>
 <translation id="6133088669883929098">Allow all sites to use key generation</translation>
+<translation id="6139485614509308022">If 'OffHours' policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when 'OffHours' period starts or ends. User will be notified and forced to sign out when 'OffHours' time end and device policy settings are changed (i.e. when user is logged in not with an allowed account).</translation>
 <translation id="6145799962557135888">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1475,6 +1504,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6211428344788340116">Report device activity times.
 
       If this setting is not set or set to True, enrolled devices will report time periods when a user is active on the device. If this setting is set to False, device activity times will not be recorded or reported.</translation>
+<translation id="6212868225782276239">All printers are shown except those in the blacklist.</translation>
 <translation id="6219965209794245435">This policy forces the autofill form data to be imported from the previous default browser if enabled. If enabled, this policy also affects the import dialogue.
 
       If disabled, the autofill form data is not imported.
@@ -1713,6 +1743,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7132877481099023201">URLs that will be granted access to video capture devices without prompt</translation>
 <translation id="7167436895080860385">Allow users to show passwords in Password Manager (deprecated)</translation>
 <translation id="7173856672248996428">Ephemeral profile</translation>
+<translation id="717630378807352957">Allow all printers from the configuration file.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Connection types allowed for updates</translation>
 <translation id="7194407337890404814">Default search provider name</translation>
@@ -2010,6 +2041,18 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If the policy is set to disabled or left not set signing in leads to regular profiles.</translation>
 <translation id="8158758865057576716">Enable the creation of roaming copies for <ph name="PRODUCT_NAME" /> profile data.</translation>
+<translation id="8169931650834542988">Controls which printers from the
+      NativePrintersBulkConfiguration are available to users.
+
+      Designates which access policy is used for bulk printer configuration.
+      If AllowAll is selected, all printers are shown. If BlacklistRestrction
+      is selected, NativePrintersBulkBlacklist is used to restrict access to
+      the specified printers. If WhitelistPrintersOnly is selected,
+      NativePrintersWhitelist designates only those printers which are
+      selectable.
+
+      If this policy is not set, BlacklistRestriction is assumed.
+      </translation>
 <translation id="8170878842291747619">Enables the integrated Google Translate service on <ph name="PRODUCT_NAME" />.
 
       If you enable this setting, <ph name="PRODUCT_NAME" /> will show an integrated toolbar offering to translate the page for the user, when appropriate.
@@ -2100,6 +2143,14 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Specifies the printers which a user can use.
+
+      This policy is only used if WhitelistPrintersOnly is chosen for
+      NativePrintersBulkAccessMode.
+
+      If this policy is used, only the printers with ids matching the values
+      in this policy are available to the user. The ids must correspond to
+      the entries in the file specified in NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Customise the list of URL patterns that should always be rendered by the host browser.
 
           If this policy is not set the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
@@ -2110,6 +2161,30 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8519264904050090490">Managed user manual exception URLs</translation>
 <translation id="8544375438507658205">Default HTML renderer for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
+<translation id="8555589883248082762">Provides configurations for enterprise printers.
+
+      This policy allows you to provide printer configurations to
+      <ph name="PRODUCT_OS_NAME" /> devices.
+      The size of the file must not exceed 5 MB and must be encoded in JSON.
+      The format is the same as the NativePrinters dictionary. It is estimated
+      that a file containing approximately 21,000 printers will encode as a 5-MB
+      file. The cryptographic hash is used to verify the integrity of the
+      download.
+
+      The file is downloaded and cached. It will be re-downloaded whenever
+      the URL or the hash changes.
+
+      If this policy is set,
+      <ph name="PRODUCT_OS_NAME" /> will download
+      the file for printer configurations and make printers available in
+      accordance with NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
+      and NativePrintersBulkBlacklist.
+
+      If you set this policy, users cannot change or override it.
+
+      This policy has no effect on whether users can configure printers on
+      individual devices. It is intended to be supplementary to the
+      configuration of printers by individual users.</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
 <translation id="8587229956764455752">Allow creation of new user accounts</translation>
 <translation id="8614804915612153606">Disables Auto Update</translation>
@@ -2229,6 +2304,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="9098553063150791878">Policies for HTTP authentication</translation>
 <translation id="9105265795073104888">Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.</translation>
+<translation id="9112727953998243860">Enterprise printer configuration file</translation>
 <translation id="9112897538922695510">Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 
           The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.</translation>

@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">Yedekleme deposu kötü durumda</translation>
 <translation id="5023310440958281426">Yöneticinizin politikalarını inceleyin.</translation>
 <translation id="5029568752722684782">Kopyayı temizle</translation>
+<translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" için bir kök sertifika gerekli, ancak yüklenmemiş. BT yöneticiniz bu sorunu çözmek için "<ph name="SOFTWARE_NAME" />" ile ilgili yapılandırma talimatlarına bakmalıdır. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google Çeviri Hakkında</translation>
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="5040262127954254034">Gizlilik</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">Sor (varsayılan)</translation>
 <translation id="8041089156583427627">Görüş bildirin</translation>
 <translation id="8041940743680923270">Genel varsayılanı kullan (Sor)</translation>
+<translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" doğru şekilde yapılandırılmamış. Genellikle "<ph name="SOFTWARE_NAME" />" kaldırıldığında sorun çözülür. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Makale görüntülenemedi.</translation>
 <translation id="8091372947890762290">Etkinleştirme sunucuda bekliyor</translation>
 <translation id="8094917007353911263">Kullandığınız ağ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> adresini ziyaret etmenizi gerektiriyor olabilir.</translation>
 <translation id="8103161714697287722">Ödeme Yöntemi</translation>
 <translation id="8118489163946903409">Ödeme yöntemi</translation>
+<translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" yazılımı bilgisayarınıza veya ağa düzgün şekilde yüklenmemiş. BT yöneticinizden sorunu çözmesini isteyin.</translation>
 <translation id="8131740175452115882">Onayla</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> ana makinesinin sunucu <ph name="BEGIN_ABBR" />DNS adresi<ph name="END_ABBR" /> bulunamadı.</translation>
 <translation id="8149426793427495338">Bilgisayarınız uyku moduna geçti.</translation>
@@ -1025,4 +1028,9 @@
 <translation id="988159990683914416">Geliştirici Derlemesi</translation>
 <translation id="989988560359834682">Adresi Düzenle</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" yazılımı bilgisayarınıza veya ağa düzgün şekilde yüklenmemiş:
+    &lt;ul&gt;
+    &lt;li&gt;"<ph name="SOFTWARE_NAME" />" yazılımının yüklemesini kaldırmayı veya devre dışı bırakmayı deneyin&lt;/li&gt;
+    &lt;li&gt;Başka bir kablosuz ağa bağlanmayı deneyin&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

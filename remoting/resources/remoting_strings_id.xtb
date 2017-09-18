@@ -108,12 +108,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="3385242214819933234">Pemilik host tidak valid.</translation>
 <translation id="3403830762023901068">Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai inang Chromoting. Hubungi administrator sistem Anda untuk mendapatkan bantuan.</translation>
 <translation id="3423542133075182604">Proses Remote Kunci Keamanan</translation>
-<translation id="3426467947138417795">Chrome Desktop Jarak Jauh
-Desktop Jarak Jauh
-PC Jarak Jauh
-Komputer Jarak Jauh
-Akses Jarak Jauh
-Bantuan Jarak Jauh</translation>
 <translation id="3581045510967524389">Tidak dapat tersambung ke jaringan. Periksa bahwa perangkat Anda telah tersambung.</translation>
 <translation id="3596628256176442606">Layanan ini mengaktifkan sambungan masuk dari klien Chromoting.</translation>
 <translation id="3606997049964069799">Anda tidak masuk ke Chromium. Masuk dan coba lagi.</translation>
@@ -122,13 +116,6 @@ Bantuan Jarak Jauh</translation>
 <translation id="3695446226812920698">Pelajari caranya</translation>
 <translation id="3718805989288361841">Terjadi error pada setelan kebijakan untuk Chrome Desktop Jarak Jauh. Hubungi administrator sistem untuk mendapatkan bantuan.</translation>
 <translation id="3776024066357219166">Sesi Chrome Desktop Jarak Jauh Anda telah berakhir.</translation>
-<translation id="3788372335219293587">Akses komputer dari perangkat iOS dengan aman. Cepat, mudah, dan gratis.
-
-• Di komputer yang ingin Anda akses dari jarak jauh, cari aplikasi Chrome Desktop Jarak Jauh di Toko Web Chrome https://chrome.google.com/remotedesktop
-• Instal software Chrome Desktop Jarak Jauh dan ikuti petunjuknya untuk menyelesaikan penyiapan.
-• Pada perangkat iOS, buka aplikasi dan tap komputer online mana pun agar terhubung.
-
-Untuk informasi tentang privasi, harap lihat Kebijakan Privasi Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Konfirmasi akun dan PIN Anda di bawah guna mengizinkan akses oleh Chrome Desktop Jarak Jauh</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ Untuk informasi tentang privasi, harap lihat Kebijakan Privasi Google (http://go
 <translation id="7144878232160441200">Coba lagi</translation>
 <translation id="7149517134817561223">Aplikasi guna mengeluarkan perintah untuk host Chrome Desktop Jarak Jauh.</translation>
 <translation id="7215059001581613786">Masukkan PIN, minimal enam digit atau lebih.</translation>
-<translation id="7237767047212540055">Pada komputer yang ingin Anda akses dari jarak jauh, buka Chrome dan buka <ph name="INSTALLATION_LINK" />
-Instal software Chrome Desktop Jarak Jauh dan ikuti petunjuknya untuk menyelesaikan penyiapan
-Setelah penyiapan selesai, Anda dapat mengakses komputer dari halaman ini dengan memasukkan PIN atau kode akses</translation>
 <translation id="7312846573060934304">Hosting offline.</translation>
 <translation id="7319983568955948908">Hentikan Berbagi</translation>
 <translation id="7401733114166276557">Chrome Desktop Jarak Jauh</translation>

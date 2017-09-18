@@ -108,12 +108,6 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="3385242214819933234">Ugyldig vertseier.</translation>
 <translation id="3403830762023901068">Innstillingene tillater ikke at denne datamaskinen deles som vert for Chromoting. Kontakt systemadministratoren for å få hjelp.</translation>
 <translation id="3423542133075182604">Prosess for ekstern sikkerhetsnøkkel</translation>
-<translation id="3426467947138417795">Chrome Eksternt skrivebord
-Eksternt skrivebord
-Ekstern PC
-Ekstern datamaskin
-Ekstern tilgang
-Fjernhjelp</translation>
 <translation id="3581045510967524389">Kunne ikke koble til nettverket. Ssjekk at enheten har nettilkobling.</translation>
 <translation id="3596628256176442606">Med denne tjenesten kan du motta innkommende tilkoblinger fra Chromoting-klienter.</translation>
 <translation id="3606997049964069799">Du er ikke logget på Chromium. Logg på, og prøv på nytt.</translation>
@@ -122,13 +116,6 @@ Fjernhjelp</translation>
 <translation id="3695446226812920698">Sånn gjør du det</translation>
 <translation id="3718805989288361841">Det er noe feil med innstillingene for retningslinjene for Chrome Eksternt skrivebord. Kontakt systemadministratoren din for å få hjelp.</translation>
 <translation id="3776024066357219166">Chrome Eksternt skrivebord-økten din er avsluttet.</translation>
-<translation id="3788372335219293587">Få sikker tilgang til datamaskinen din fra iOS-enheter. Det er raskt, enkelt og gratis.
-
-• På datamaskinen du vil ha ekstern tilgang til, finner du frem Chrome Eksternt skrivebord-appen på Chrome Nettmarked (https://chrome.google.com/remotedesktop)
-• Installer Chrome Eksternt skrivebord, og følg instruksjonene for å fullføre konfigureringen.
-• Åpne appen på iOS-enheten din, og trykk på en av datamaskinene dine som er på nettet, for å koble til.
-
-Du finner mer informasjon om personvern i Googles personvernregler (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bekreft kontoen og PIN-koden din nedenfor for å tillate tilgang via Chrome Eksternt skrivebord.</translation>
 <translation id="3897092660631435901">Meny</translation>
@@ -267,9 +254,6 @@ Du finner mer informasjon om personvern i Googles personvernregler (http://goo.g
 <translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="7149517134817561223">Program som brukes til å sende kommandoer til verten for Chrome Eksternt skriverbord.</translation>
 <translation id="7215059001581613786">Skriv inn en PIN-kode på seks sifre eller fler.</translation>
-<translation id="7237767047212540055">Åpne Chrome på datamaskinen du vil ha ekstern tilgang til, og gå til <ph name="INSTALLATION_LINK" />.
-Installer Chrome Eksternt skrivebord-programvaren, og følg veiledningen for å fullføre konfigureringen.
-Etter at konfigureringen er fullført, har du tilgang til datamaskinen fra denne siden ved å skrive inn PIN-koden eller tilgangskoden.</translation>
 <translation id="7312846573060934304">Verten er uten nett.</translation>
 <translation id="7319983568955948908">Stopp deling</translation>
 <translation id="7401733114166276557">Chrome Eksternt skrivebord</translation>

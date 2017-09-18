@@ -53,6 +53,7 @@
 
       Jika dasar ini tidak ditetapkan, kekerapan lalai ialah 3 jam. Kekerapan
       minimum yang dibenarkan ialah 60 saat.</translation>
+<translation id="1204263402976895730">Pencetak perusahaan didayakan</translation>
 <translation id="1221359380862872747">Memuatkan url tertentu pada log masuk tunjuk cara</translation>
 <translation id="123081309365616809">Dayakan penghantaran kandungan ke peranti</translation>
 <translation id="1265053460044691532">Hadkan masa untuk pengguna yang membuat pengesahan melalui SAML boleh melog masuk dalam talian.</translation>
@@ -255,6 +256,7 @@
 <translation id="2024476116966025075">Konfigurasikan nama domain yang diperlukan untuk pelanggan akses jauh</translation>
 <translation id="2030905906517501646">Kata kunci pembekal carian lalai</translation>
 <translation id="203096360153626918">Dasar ini tidak berkesan terhadap apl Android. Apl ini dapat memasuki mod skrin penuh walaupun jika dasar ini ditetapkan kepada <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Pencetak perusahaan dilumpuhkan</translation>
 <translation id="206623763829450685">Menetapkan skim pengesahan HTTP yang disokong oleh <ph name="PRODUCT_NAME" />.
 
           Nilai yang mungkin terdiri daripada 'basic', 'digest', 'ntlm' dan 'negotiate'. Pisahkan berbilang nilai dengan koma.
@@ -331,6 +333,15 @@
       Jika tetapan ini dikonfigurasikan, pengguna yang menggunakan buka kunci pantas akan diminta memasukkan kata laluan mereka pada kunci skrin bergantung pada tetapan ini.
 
       Jika tetapan ini tidak dikonfigurasikan, pengguna yang menggunakan buka kunci pantas akan diminta memasukkan kata laluan mereka pada kunci skrin setiap hari.</translation>
+<translation id="2194470398825717446">Dasar ini ditamatkan dalam M61, sila gunakan EcryptfsMigrationStrategy.
+
+      Menentukan gelagat peranti yang dihantar dengan ecryptfs dan memerlukan peralihan kepada penyulitan ext4.
+
+      Jika anda menetapkan dasar ini kepada 'DisallowArc', apl Android akan dilumpuhkan untuk semua pengguna pada peranti tersebut (termasuk yang sudah mempunyai penyulitan ext4) dan penghijarahan daripada ecryptfs kepada penyulitan ext4 tidak akan ditawarkan kepada mana-mana pengguna.
+
+      Jika anda menetapkan dasar ini kepada 'AllowMigration', pengguna dengan direktori laman utama ecryptfs akan diberi tawaran untuk menghijrahkan direktori ini ke penyulitan ext4 mengikut keperluan (pada masa ini apabila Android N tersedia pada peranti tersebut).
+
+      Dasar ini tidak dilaksanakan pada apl kios - apl ini dihijrahkan secara automatik. Jika dasar ini dibiarkan tanpa ditetapkan, peranti akan berkelakuan seolah-olah 'DisallowArc' telah dipilih.</translation>
 <translation id="2201555246697292490">Konfigurasi senarai putih pemesejan natif</translation>
 <translation id="2204753382813641270">Kawal penyembunyian automatik rak</translation>
 <translation id="2208976000652006649">Parameter untuk URL carian yang menggunakan POST</translation>
@@ -542,6 +553,14 @@
       Jika dasar ini digunakan, hanya pencetak dengan ID yang sepadan dengan
       nilai dalam dasar ini akan tersedia kepada pengguna. ID mesti sepadan
       dengan masukan dalam fail yang dinyatakan dalam DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Menentukan pencetak yang tidak boleh digunakan oleh pengguna.
+
+      Dasar ini hanya digunakan jika BlacklistRestriction dipiliih untuk
+      NativePrintersBulkAccessMode.
+
+      Jika dasar ini digunakan, semua pencetak akan disediakan kepada
+      pengguna kecuali ID yang disenaraikan dalam dasar ini.
+      </translation>
 <translation id="2801230735743888564">Membolehkan pengguna bermain permainan telur easter dinosaur apabila peranti di luar talian.
 
       Jika dasar ini ditetapkan kepada Palsu, pengguna tidak akan dapat bermain permainan telur easter dinosaur apabila peranti di luar talian. Jika tetapan ini ditetapkan kepada Benar, pengguna dibenarkan bermain permainan dinosaur. Jika dasar ini tidak ditetapkan, pengguna tidak dibenarkan bermain permainan telur easter dinosaur pada OS Chrome berdaftar, tetapi dibenarkan bermain menurut keadaan lain.</translation>
@@ -664,6 +683,7 @@
 <translation id="3219421230122020860">Mod Inkognito tersedia</translation>
 <translation id="3220624000494482595">Jika apl kios adalah apl Android, dasar ini tiada kawalan ke atas versi <ph name="PRODUCT_OS_NAME" />, walaupun jika dasar ini ditetapkan kepada <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Pola URL untuk membenarkan pemasangan sambungan, aplikasi dan skrip pengguna</translation>
+<translation id="3240609035816615922">Dasar akses konfigurasi pencetak.</translation>
 <translation id="3243309373265599239">Menyatakan panjang masa tanpa input pengguna dan skrin akan dimalapkan selepas tamat masa ini apabila dijalankan dengan kuasa AC.
 
           Apabila dasar ini ditetapkan kepada nilai yang lebih besar daripada sifar, ia menyatakan panjang masa pengguna mesti terus melahu sebelum <ph name="PRODUCT_OS_NAME" /> memalapkan skrin.
@@ -694,6 +714,9 @@
 <translation id="3322771899429619102">Membenarkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk menggunakan penghasilan kunci. Pengecualian akan dibatalkan jika pola url berada dalam 'KeygenBlockedForUrls'.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak, sama ada daripada dasar 'DefaultKeygenSetting' jika ditetapkan atau konfigurasi peribadi pengguna jika tidak ditetapkan.</translation>
+<translation id="332771718998993005">Tentukan nama yang diiklankan sebagai destinasi <ph name="PRODUCT_NAME" />.
+
+          Jika dasar ini ditetapkan kepada rentetan tidak kosong, rentetan itu akan digunakan sebagai nama bagi destinasi <ph name="PRODUCT_NAME" />. Jika tidak, nama peranti akan dijadikan nama destinasi. Jika dasar ini tidak ditetapkan, nama peranti akan dijadikan nama destinasi dan pemilik peranti (atau pengguna daripada domain yang mengurus peranti tersebut) akan dibenarkan untuk menukar nama itu. Nama dihadkan kepada 24 aksara.</translation>
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3417418267404583991">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu adalah sesi pengguna tanpa nama dan tidak memerlukan kata laluan.
 
@@ -731,7 +754,7 @@
 
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="350797926066071931">Dayakan Terjemahan</translation>
-<translation id="3512226956150568738">Jika model peranti pelanggan sudah menyokong ARC sebelum penghijrahan kepada ext4 yang diperlukan untuk menjalankan ARC dan jika dasar ArcEnabled ditetapkan kepada benar, pilihan ini akan berkelakuan seperti AskUser (nilai 3). Dalam semua hal lain, (jika model peranti tidak menyokong ARC sebelum ini atau jika dasar ArcEnabled ditetapkan kepada palsu), nilai ini bersamaan dengan DisallowArc (nilai 0).</translation>
+<translation id="3512226956150568738">Jika model peranti pelanggan sudah menyokong ARC sebelum penghijrahan kepada ext4 yang diperlukan untuk menjalankan ARC dan jika dasar ArcEnabled ditetapkan kepada benar, pilihan ini akan berkelakuan seperti AskUser (nilai 3). Dalam semua keadaan lain, (jika model peranti tidak menyokong ARC sebelum ini atau jika dasar ArcEnabled ditetapkan kepada palsu), nilai ini bersamaan dengan DisallowArc (nilai 0).</translation>
 <translation id="3528000905991875314">Dayakan halaman ralat ganti</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="3591584750136265240">Konfigurasikan gelagat pengesahan log masuk</translation>
@@ -926,6 +949,7 @@
       Perhatian: Pada masa ini, but semula automatik hanya didayakan apabila skrin log masuk dipaparkan atau sesi apl kios sedang dijalankan. Hal ini akan berubah pada masa hadapan dan dasar ini akan sentiasa dilaksanakan, tidak kira sama ada apa jua jenis sesi sedang dijalankan atau tidak.
 
       Nilai dasar ini harus ditetapkan dalam saat. Nilai diapit supaya menjadi sekurang-kurangnya 3600 (satu jam).</translation>
+<translation id="4203879074082863035">Hanya pencetak dalam senarai putih ditunjukkan kepada pengguna</translation>
 <translation id="420512303455129789">Kamus yang memetakan URL kepada bendera boolean yang menentukan sama ada akses kepada hos harus dibenarkan (benar) atau disekat (palsu).
 
           Dasar ini adalah untuk kegunaan dalaman oleh <ph name="PRODUCT_NAME" /> sendiri.</translation>
@@ -1034,6 +1058,7 @@
 <translation id="4541530620466526913">Akaun setempat peranti</translation>
 <translation id="4555850956567117258">Dayakan pembuktian jauh untuk pengguna</translation>
 <translation id="4557134566541205630">URL halaman tab baharu penyedia carian lalai</translation>
+<translation id="4558592878156368639">Selang luar waktu apabila OffHours peranti |ignored_policies| dikeluarkan</translation>
 <translation id="4600786265870346112">Dayakan kursor besar</translation>
 <translation id="4604931264910482931">Konfigurasi senarai hitam pemesejan natif</translation>
 <translation id="4617338332148204752">Langkau semakan teg meta dalam <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1206,6 +1231,9 @@
           Nilai dasar harus dinyatakan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan melahu.</translation>
 <translation id="5307432759655324440">Ketersediaan mod Inkognito</translation>
 <translation id="5318185076587284965">Dayakan penggunaan pelayan ganti oleh hos akses jauh.</translation>
+<translation id="5323128137188992869">Benarkan kandungan dihantar ke peranti menggunakan <ph name="PRODUCT_NAME" />.
+
+          Jika dasar ini ditetapkan kepada Palsu, pengguna tidak dapat menghantar kandungan ke peranti mereka. Jika dasar ini ditetapkan kepada Benar, pengguna dibenarkan menghantar kandungan. Jika dasar ini tidak ditetapkan, pengguna tidak dibenarkan menghantar kandungan ke peranti OS Chrome berdaftar, tetapi boleh menghantar ke peranti yang tidak berdaftar.</translation>
 <translation id="5330684698007383292">Benarkan <ph name="PRODUCT_FRAME_NAME" /> mengendalikan jenis kandungan berikut</translation>
 <translation id="5365946944967967336">Paparkan butang Halaman Utama pada bar alat</translation>
 <translation id="5366977351895725771">Jika ditetapkan kepada palsu, penghasilan pengguna diselia oleh pengguna ini akan dilumpuhkan. Mana-mana pengguna diselia yang sedia ada masih akan tersedia.
@@ -1437,6 +1465,7 @@
 <translation id="6111936128861357925">Benarkan Permainan Telur Easter Dinosaur</translation>
 <translation id="6114416803310251055">dikecam</translation>
 <translation id="6133088669883929098">Benarkan semua tapak untuk menggunakan penghasilan kunci</translation>
+<translation id="6139485614509308022">Jika dasar "OffHours" ditetapkan, maka dasar peranti yang ditetapkan akan diabaikan (gunakan tetapan lalai dasar ini) semasa selang masa yang dinyatakan. Dasar peranti akan dilaksanakan semula oleh Chrome pada setiap acara apabila tempoh "OffHours" bermula atau berakhir. Pengguna akan diberitahu dan dipaksa log keluar apabila masa "OffHours" berakhir dan tetapan dasar peranti diubah (iaitu apabila pengguna log masuk menggunakan akaun yang tidak dibenarkan).</translation>
 <translation id="6145799962557135888">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk menjalankan JavaScript.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultJavaScriptSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -1468,6 +1497,7 @@
 <translation id="6211428344788340116">Laporkan masa aktiviti peranti.
 
       Jika tetapn ini tidak ditetapkan atau ditetapkan ke Benar, peranti yang tersenarai akan melaporkan tempoh masa pengguna aktif pada peranti. Jika tetapan ini ditetapkan ke Tidak Benar, masa aktiviti peranti tidak akan direkod atau dilaporkan.</translation>
+<translation id="6212868225782276239">Semua pencetak ditunjukkan kecuali pencetak dalam senarai hitam.</translation>
 <translation id="6219965209794245435">Dasar ini memaksa data borang autolengkap diimport daripada penyemak imbas lalai sebelumnya jika didayakan. Jika didayakan, dasar ini turut memberi kesan terhadap dialog import.
 
      Jika dilumpuhkan, data borang autolengkap tidak diimport.
@@ -1709,6 +1739,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7132877481099023201">URL yang akan diberikan akses kepada peranti tangkapan video tanpa gesaan</translation>
 <translation id="7167436895080860385">Benarkan pengguna menunjukkan kata laluan dalam Pengurus Kata Laluan (ditamatkan)</translation>
 <translation id="7173856672248996428">Profil tidak kekal</translation>
+<translation id="717630378807352957">Benarkan semua pencetak daripada fail konfigurasi.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Jenis sambungan yang dibenarkan untuk kemas kini</translation>
 <translation id="7194407337890404814">Nama pembekal carian lalai</translation>
@@ -1751,7 +1782,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini ditetapkan kepada palsu, cadangan kandungan yang dihasilkan secara automatik tidak ditunjukkan pada halaman Tab Baharu.</translation>
 <translation id="7323896582714668701">Parameter baris perintah tambahan untuk <ph name="PRODUCT_NAME" /></translation>
-<translation id="7326394567531622570">Sama dengan Wipe (nilai 2), tetapi cuba mengekalkan token log masuk supaya pengguna tidak perlu mengelog masuk semula.</translation>
+<translation id="7326394567531622570">Serupa dengan Wipe (nilai 2), tetapi cuba mengekalkan token log masuk supaya pengguna tidak perlu log masuk semula.</translation>
 <translation id="7329842439428490522">Menyatakan panjang masa tanpa input pengguna dan skrin akan dimatikan selepas masa ini tamat apabila dijalankan dengan kuasa bateri.
 
           Apabila dasar ini ditetapkan kepada nilai yang lebih besar daripada sifar, ia menyatakan panjang masa pengguna mesti kekal melahu sebelum <ph name="PRODUCT_OS_NAME" /> mematikan skrin.
@@ -2006,6 +2037,18 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini ditetapkan kepada dilumpuhkan atau dibiarkan tanpa ditetapkan, tindakan log masuk akan menghala ke profil biasa.</translation>
 <translation id="8158758865057576716">Dayakan pembuatan salinan perayauan bagi data profil <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8169931650834542988">Mengawal peranti daripada
+      NativePrintersBulkConfiguration yang tersedia kepada pengguna.
+
+      Menetapkan dasar akses yang digunakan untuk konfigurasi pencetak
+      pukal. Jika AllowAll dipilih, semua pencetak akan dipaparkan. Jika 
+      BlacklistRestrction dipilih, NativePrintersBulkBlacklist digunakan untuk
+      mengehadkan akses kepada pencetak yang ditetapkan.  Jika 
+      WhitelistPrintersOnly dipilih, NativePrintersWhitelist menetapkan pencetak 
+      yang boleh dipilih sahaja.
+
+      Jika dasar ini tidak ditetapkan, BlacklistRestriction akan digunakan.
+      </translation>
 <translation id="8170878842291747619">Mendayakan perkhidmatan Google Terjemah bersepadu pada <ph name="PRODUCT_NAME" />.
 
       Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> akan memaparkan bar alat bersepadu yang menawarkan terjemahan halaman ini kepada pengguna, apabila bersesuaian.
@@ -2096,6 +2139,15 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
 <translation id="847472800012384958">Jangan benarkan mana-mana tapak untuk menunjukkan pop muncul</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Menentukan pencetak yang boleh digunakan oleh pengguna.
+
+      Dasar ini hanya digunakan jika WhitelistPrintersOnly dipilih untuk
+      NativePrintersBulkAccessMode.
+
+      Jika dasar ini digunakan, hanya pencetak dengan ID yang sepadan
+      dengan nilai dalam dasar ini akan tersedia kepada pengguna. ID mesti
+      sepadan dengan masukan dalam fail yang dinyatakan dalam
+      NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Sesuaikan senarai pola URL yang sentiasa harus dipaparkan oleh penyemak imbas hos.
 
           Jika dasar ini tidak ditetapkan, pemapar lalai akan digunakan untuk semua tapak seperti yang dinyatakan oleh dasar 'ChromeFrameRendererSettings'.
@@ -2106,6 +2158,31 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8519264904050090490">URL pengecualian manual pengguna terurus</translation>
 <translation id="8544375438507658205">Pemapar HTML lalai untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Beri amaran apabila melawat tapak web di luar pek kandungan</translation>
+<translation id="8555589883248082762">Menyediakan konfigurasi untuk pencetak perusahaan.
+
+      Dasar ini membenarkan anda menyediakan konfigurasi pencetak kepada
+      peranti <ph name="PRODUCT_OS_NAME" />.
+      Saiz fail tidak boleh melebihi 5MB dan mesti dikodkan dalam JSON.
+      Format adalah sama dengan kamus NativePrinters.  Fail yang
+      mengandungi kira-kira 21,000 pencetak dianggar akan mengekod
+      sebagai fail 5MB.  Cincangan kriptografi digunakan untuk mengesahkan
+      integriti muat turun.
+
+      Fail dimuat turun dan dicache. Fail tersebut akan dimuat turun semula
+      apabila URL atau cincangan berubah.
+
+      Jika dasar ini ditetapkan,
+      <ph name="PRODUCT_OS_NAME" /> akan memuat turun
+      fail untuk konfigurasi pencetak dan menjadikan pencetak tersedia menurut
+      NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
+      dan NativePrintersBulkBlacklist.
+
+      Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau
+      membatalkannya.
+
+      Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi
+      pencetak pada peranti individu.  Tujuan dasar ini adalah sebagai tambahan
+      kepada konfigurasi pencetak oleh pengguna individu.</translation>
 <translation id="8566842294717252664">Sembunyikan gedung web daripada Halaman Tab Baharu dan pelancar apl</translation>
 <translation id="8587229956764455752">Benarkan ciptaan akaun pengguna baharu</translation>
 <translation id="8614804915612153606">Lumpuhkan Kemas Kini Auto</translation>
@@ -2226,6 +2303,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="9096086085182305205">Senarai putih pelayan pengesahan</translation>
 <translation id="9098553063150791878">Dasar untuk pengesahan HTTP</translation>
 <translation id="9105265795073104888">Hanya subset pilihan konfigurasi proksi disediakan kepada apl Android. Apl Android boleh memilih untuk menggunakan proksi secara sukarela. Anda tidak boleh memaksanya untuk menggunakan proksi.</translation>
+<translation id="9112727953998243860">Fail konfigurasi pencetak perusahaan</translation>
 <translation id="9112897538922695510">Membolehkan anda mendaftar senarai pengendali protokol. Langkah ini hanya boleh menjadi dasar yang disyorkan. Sifat |protocol| hendaklah ditetapkan kepada skema seperti 'mailto' dan sifat |url| hendaklah ditetapkan kepada corak URL aplikasi yang mengendalikan skema. Corak boleh mengandungi '%s', di mana apabila disertakan akan digantikan oleh URL yang dikendalikan.
 
           Pengendali protokol yang didaftarkan oleh dasar digabungkan dengan protokol yang didaftarkan oleh pengguna dan kedua-duanya tersedia untuk digunakan. Pengguna boleh mengatasi pengendali protokol yang dipasang oleh dasar dengan memasang pengendali lalai baharu tetapi tidak boleh mengalih keluar pengendali protokol yang didaftarkan oleh dasar.</translation>

@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">ओवरस्कैन</translation>
 <translation id="1247372569136754018">माइक्रोफ़ोन (आंतरिक)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> से चार्ज हो रहा है</translation>
+<translation id="1267032506238418139">शॉर्टकट में बदलाव</translation>
 <translation id="1270290102613614947">ऑन-स्‍क्रीन कीबोर्ड अक्षम है</translation>
 <translation id="1272079795634619415">रोकें</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">ईथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (सेवा लोड हो रही है...)</translation>
 <translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
-<translation id="1856813161013948396">बस फ़िंगरप्रिंट सेंसर पर टैप करके लॉक स्क्रीन छोड़ें. कॉन्फ़िगर करने के लिए क्लिक करें.</translation>
 <translation id="1864454756846565995">USB-C डिवाइस (पिछला पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर मिरर कर रहा है</translation>
 <translation id="1919743966458266018">काम के प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">मोबाइल डेटा सक्षम करने से ब्लूटूथ सक्षम हो जाएगा.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया दुबारा पूछें कि यह पासकुंजी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">कोई गड़बड़ी आई</translation>
 <translation id="2501920221385095727">रोचक कुंजियां</translation>
 <translation id="2509468283778169019">CAPS LOCK चालू है</translation>
 <translation id="2532589005999780174">उच्च कंट्रास्ट मोड</translation>
 <translation id="2597972630681408282">नाइट लाइट: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2700058918926273959">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है. आप प्रस्थान कर जाएंगे.</translation>
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
 <translation id="2761704814324807722">स्थिति ट्रे, समय <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">अब आप प्रस्थान कर जाएंगे.</translation>
 <translation id="2825619548187458965">अलमारी</translation>
 <translation id="2844169650293029770">USB-C डिवाइस (बायां सामने वाला पोर्ट)</translation>
-<translation id="2857608528410806398">QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा.</translation>
 <translation id="2865888419503095837">नेटवर्क जानकारी</translation>
 <translation id="2872961005593481000">शट डाउन करें</translation>
 <translation id="2942516765047364088">अलमारी की स्थिति</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">बैटरी पूर्ण</translation>
 <translation id="3606978283550408104">ब्रेल डिस्प्ले कनेक्ट हो गया.</translation>
 <translation id="3621202678540785336">इनपुट</translation>
-<translation id="3625258641415618104">स्क्रीनशॉट अक्षम हैं</translation>
 <translation id="3626281679859535460">स्क्रीन की रोशनी</translation>
 <translation id="3712407551474845318">क्षेत्र कैप्‍चर करें</translation>
 <translation id="371370241367527062">सामने वाला माइक्रोफ़ोन</translation>
-<translation id="3742055079367172538">स्क्रीनशॉट लिया गया</translation>
+<translation id="3771549900096082774">उच्च कंट्रास्ट मोड</translation>
 <translation id="3775358506042162758">एकाधिक साइन-इन में आप तीन तक खाते रख सकते हैं.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">लॉक करें</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">ध्‍वनि इनपुट</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> से कनेक्‍ट हो रहा है</translation>
 <translation id="394485226368336402">ऑडियो सेटिंग</translation>
-<translation id="3967919079500697218">स्क्रीनशॉट लेने की क्षमता को आपके व्यवस्थापक द्वारा अक्षम कर दिया गया है.</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3995138139523574647">USB-C डिवाइस (दायां पिछला पोर्ट)</translation>
 <translation id="4017989525502048489">लेज़र पॉइंटर</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">कनेक्ट हो रहा है...</translation>
 <translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से साझा किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
-<translation id="4448844063988177157">वाई-फ़ाई  नेटवर्क खोज रहा है...</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4481530544597605423">अयुग्मित किए गए डिवाइस</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: कनेक्ट हो रहा है...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">स्‍क्रीन को लॉक करने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="4659419629803378708">ChromeVox सक्षम है</translation>
 <translation id="4729904664295161097">Assistant केवल प्राथमिक प्रोफ़ाइल के लिए उपलब्ध है.</translation>
+<translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> के लिए पासवर्ड</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="4849058404725798627">कीबोर्ड फ़ोकस वाला ऑब्जेक्ट हाइलाइट करें</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">स्वीकार करें</translation>
 <translation id="4961318399572185831">स्‍क्रीन कास्‍ट करें</translation>
 <translation id="5168181903108465623">कास्ट डिवाइस उपलब्ध हैं</translation>
-<translation id="5170568018924773124">फ़ोल्डर में दिखाएं</translation>
 <translation id="5207949376430453814">लेख कैरेट हाइलाइट करें</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>
 <translation id="523505283826916779">पहुंच-योग्यता विकल्प</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">आप <ph name="LOGOUT_TIME_LEFT" /> में अपने आप प्रस्थान कर जाएंगे.</translation>
 <translation id="607652042414456612">आपका कंप्यूर आस-पास के ब्लूटूथ डिवाइस के लिए खोजे जाने योग्य है और वह "<ph name="NAME" />" के रूप में <ph name="ADDRESS" /> पते के साथ दिखाई देगा</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> चार्ज हो रहा है</translation>
-<translation id="6144938890088808325">Chromebook को बेहतर बनाने में हमारी सहायता करें</translation>
 <translation id="615957422585914272">ऑन-स्क्रीन कीबोर्ड दिखाएं</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: सक्रिय हो रहा है...</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> में पुराने रिज़ॉल्यूशन में वापस लौट रहा है</translation>
-<translation id="7246339268451149667">फ़िंगरप्रिंट अनलॉक सक्षम करें?</translation>
 <translation id="7256634071279256947">पीछे वाला माइक्रोफ़ोन</translation>
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
 <translation id="735745346212279324">VPN डिसकनेक्ट है</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> का समर्थन नहीं करता. रिज़ॉल्यूशन को <ph name="FALLBACK_RESOLUTION" /> में बदल दिया गया था</translation>
 <translation id="7562368315689366235">इमोजी पैलेट</translation>
 <translation id="7569509451529460200">ब्रेल और ChromeVox सक्षम हैं</translation>
-<translation id="7581273696622423628">सर्वेक्षण में भाग लें</translation>
 <translation id="7593891976182323525">Search या Shift</translation>
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7692480393933218409">कनेक्ट किए गए USB-C डिवाइस चार्ज कर रहा है</translation>
 <translation id="776344839111254542">अपडेट के विवरण देखने के लिए क्लिक करें</translation>
 <translation id="7798302898096527229">रद्द करने के लिए Search या Shift दबाएं.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> और <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">आपकी सेटिंग समन्वयित करने के बाद भाषा को "<ph name="FROM_LOCALE" />" से "<ph name="TO_LOCALE" />" में बदल दिया गया है.</translation>
 <translation id="7904094684485781019">इस खाते के व्यवस्थापक ने एकाधिक प्रवेश को अस्वीकार कर दिया है.</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क खोजे जा रहे हैं...</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="8000066093800657092">नेटवर्क नहीं है</translation>
 <translation id="8054466585765276473">बैटरी समय की गणना की जा रही है.</translation>
-<translation id="8077816382010018681">QU सुविधा नोटिफ़िकेशन का शीर्षक यहां आएगा</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> को स्‍क्रीन कास्‍ट करना बंद करें</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> से कनेक्ट है</translation>
 <translation id="813913629614996137">शुरू हो रहा है...</translation>
 <translation id="8142699993796781067">निजी नेटवर्क</translation>
 <translation id="8180896103888046100">अज्ञात प्राप्तकर्ता को कास्‍ट करना बंद करें</translation>
-<translation id="8185286464235484130">कुछ प्रश्नों के उत्तर देकर हमें बताएं कि हमारा प्रदर्शन कैसा है.</translation>
 <translation id="8190698733819146287">भाषाएं और इनपुट कस्टमाइज़ करें...</translation>
+<translation id="8261506727792406068">हटाएं</translation>
 <translation id="8308637677604853869">पिछला मेनू</translation>
 <translation id="8351131234907093545">नोट बनाएं</translation>
 <translation id="8392234662362215700">कीबोर्ड लेआउट बदलने के लिए Control-Shift-Space दबाएं.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">बैटरी <ph name="PERCENTAGE" />% भरी हुई है.</translation>
 <translation id="9210037371811586452">संयुक्त डेस्कटॉप मोड से बाहर निकाला जा रहा है</translation>
 <translation id="923686485342484400">प्रस्थान करने के लिए दो बार Control Shift Q दबाएं.</translation>
-<translation id="939252827960237676">स्क्रीनशॉट सहेजने में विफल</translation>
 <translation id="945522503751344254">सुझाव भेजें</translation>
 <translation id="98515147261107953">भू-दृश्य</translation>
 </translationbundle>

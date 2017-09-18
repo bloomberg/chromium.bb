@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Prispôsobiť šírke</translation>
 <translation id="1088860948719068836">Pridanie mena na karte</translation>
 <translation id="1103523840287552314">Vždy preložiť nasledujúci jazyk: <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Zobraziť všetky uložené heslá…</translation>
 <translation id="1107591249535594099">Ak je toto nastavenie začiarknuté, Chrome uloží kópiu karty na toto zariadenie, aby ste mohli vypĺňať formuláre rýchlejšie.</translation>
 <translation id="1111153019813902504">Najnovšie záložky</translation>
 <translation id="1113869188872983271">&amp;Vrátiť späť zmenu poradia</translation>
@@ -298,7 +299,7 @@
 <translation id="3227137524299004712">Mikrofón</translation>
 <translation id="3228969707346345236">Prekladanie zlyhalo, pretože stránka už je v jazyku: <ph name="LANGUAGE" /></translation>
 <translation id="323107829343500871">Zadajte kód CVC karty <ph name="CREDIT_CARD" /></translation>
-<translation id="3234666976984236645">Vždy na týchto stránkach zisťovať dôležitý obsah</translation>
+<translation id="3234666976984236645">Vždy na tomto webe zisťovať dôležitý obsah</translation>
 <translation id="3254409185687681395">Vytvoriť záložku pre túto stránku</translation>
 <translation id="3270847123878663523">&amp;Vrátiť späť zmenu poradia</translation>
 <translation id="3282497668470633863">Pridanie mena na karte</translation>
@@ -418,7 +419,7 @@
 <translation id="4103249731201008433">Sériové číslo zariadenia je neplatné</translation>
 <translation id="410351446219883937">Automatické prehrávanie</translation>
 <translation id="4103763322291513355">Na stránke &lt;strong&gt;chrome://policy&lt;/strong&gt; nájdete zoznam zakázaných webových adries a ďalšie pravidlá vynútené vaším správcom systému.</translation>
-<translation id="4116663294526079822">Vždy povoliť na týchto stránkach</translation>
+<translation id="4116663294526079822">Vždy povoliť na tomto webe</translation>
 <translation id="4117700440116928470">Rozsah pravidla nie je podporovaný.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 ďalšia}few{# ďalšie}many{# ďalšej}other{# ďalších}}</translation>
 <translation id="4130226655945681476">Skontrolovať sieťové káble, modem a smerovač</translation>
@@ -521,6 +522,7 @@
 <translation id="5019198164206649151">Zlý stav záložného ukladacieho priestoru</translation>
 <translation id="5023310440958281426">Skontrolujte pravidlá správcu</translation>
 <translation id="5029568752722684782">Vymazať kópiu</translation>
+<translation id="503069730517007720">Vyžaduje sa koreňový certifikát softvéru <ph name="SOFTWARE_NAME" />, ale nie je nainštalovaný. Váš správca IT by si mal prezrieť pokyny na konfiguráciu softvéru <ph name="SOFTWARE_NAME" /> a tento problém vyriešiť. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">O službe Prekladač Google</translation>
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="5040262127954254034">Ochrana súkromia</translation>
@@ -592,6 +594,7 @@
 <translation id="5540224163453853">Požadovaný článok sa nepodarilo nájsť.</translation>
 <translation id="5541546772353173584">Pridanie e-mailu</translation>
 <translation id="5544037170328430102">Vložená stránka na webe <ph name="SITE" /> hovorí:</translation>
+<translation id="5545756402275714221">Články pre vás</translation>
 <translation id="5556459405103347317">Obnoviť</translation>
 <translation id="5560088892362098740">Dátum vypršania platnosti</translation>
 <translation id="5565735124758917034">Aktívne</translation>
@@ -613,6 +616,7 @@
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Ako získať prispôsobený obsah</translation>
 <translation id="5675650730144413517">Táto stránka nefunguje</translation>
+<translation id="5689199277474810259">Exportovať vo formáte JSON</translation>
 <translation id="5710435578057952990">Identita tejto webovej stránky nebola overená.</translation>
 <translation id="5719499550583120431">Predplatené karty sú akceptované.</translation>
 <translation id="5720705177508910913">Aktuálny používateľ</translation>
@@ -884,11 +888,13 @@
 <translation id="8037357227543935929">Opýtať sa (predvolené)</translation>
 <translation id="8041089156583427627">Odoslať spätnú väzbu</translation>
 <translation id="8041940743680923270">Použiť predvolené všeobecné nastavenie (Opýtať sa)</translation>
+<translation id="8057711352706143257">Softvér <ph name="SOFTWARE_NAME" /> nie je správne nakonfigurovaný. Tento problém sa zvyčajne odstráni odinštalovaním softvéru <ph name="SOFTWARE_NAME" />. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Článok sa nepodarilo zobraziť.</translation>
 <translation id="8091372947890762290">Aktivácia čaká na server</translation>
 <translation id="8094917007353911263">Sieť, ktorú používate, môže vyžadovať, aby ste navštívili stránku <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /></translation>
 <translation id="8103161714697287722">Spôsob platby</translation>
 <translation id="8118489163946903409">Spôsob platby</translation>
+<translation id="8127301229239896662">Softvér <ph name="SOFTWARE_NAME" /> nebol v počítači alebo sieti riadne nainštalovaný. Požiadajte správcu IT, aby tento problém vyriešil.</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Adresu DNS<ph name="END_ABBR" /> servera <ph name="HOST_NAME" /> sa nepodarilo nájsť.</translation>
 <translation id="8149426793427495338">Váš počítač prešiel do režimu spánku.</translation>
@@ -1002,7 +1008,7 @@
 <translation id="9148507642005240123">&amp;Vrátiť späť úpravu</translation>
 <translation id="9154194610265714752">Aktualizované</translation>
 <translation id="9157595877708044936">Prebieha nastavenie...</translation>
-<translation id="9169664750068251925">Vždy blokovať na týchto stránkach</translation>
+<translation id="9169664750068251925">Vždy blokovať na tomto webe</translation>
 <translation id="9170848237812810038">&amp;Naspäť</translation>
 <translation id="917450738466192189">Certifikát servera je neplatný.</translation>
 <translation id="9183425211371246419">Web <ph name="HOST_NAME" /> využíva nepodporovaný protokol.</translation>
@@ -1020,4 +1026,9 @@
 <translation id="988159990683914416">Zostavenie pre vývojárov</translation>
 <translation id="989988560359834682">Úprava adresy</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">Softvér <ph name="SOFTWARE_NAME" /> nebol v počítači alebo sieti riadne nainštalovaný:
+    &lt;ul&gt;
+    &lt;li&gt;skúste softvér <ph name="SOFTWARE_NAME" /> odinštalovať alebo vypnúť,&lt;/li&gt;
+    &lt;li&gt;skúste sa pripojiť k inej sieti Wi-Fi.&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

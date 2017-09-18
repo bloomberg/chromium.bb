@@ -108,12 +108,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="3385242214819933234">Sobimatu hosti omanik.</translation>
 <translation id="3403830762023901068">Reegli seaded ei luba jagada seda arvutit Chrome Remote Desktopi hostina. Abi saamiseks võtke ühendust süsteemiülemaga.</translation>
 <translation id="3423542133075182604">Turvavõtme kaugseansi protsess</translation>
-<translation id="3426467947138417795">Chrome Remote Desktop
-Remote Desktop
-Kaug-PC
-Kaugarvuti
-Kaugjuurdepääs
-Kaugtugi</translation>
 <translation id="3581045510967524389">Ei saanud võrguga ühendada. Veenduge, et teie seade on võrguga ühendatud.</translation>
 <translation id="3596628256176442606">See teenus lubab sissetulevad ühendused Chromootimise klientidelt.</translation>
 <translation id="3606997049964069799">Te ei ole Chromiumi sisse logitud. Logige sisse ja proovige uuesti.</translation>
@@ -122,13 +116,6 @@ Kaugtugi</translation>
 <translation id="3695446226812920698">Lisateave</translation>
 <translation id="3718805989288361841">Chrome Remote Desktopi reegli seadetes on viga. Abi saamiseks võtke ühendust süsteemiadministraatoriga.</translation>
 <translation id="3776024066357219166">Teie Chrome Remote Desktopi seanss on lõppenud.</translation>
-<translation id="3788372335219293587">Hankige oma iOS-i seadmest turvaliselt juurdepääs oma arvutile. See on kiire, lihtne ja tasuta.
-
-• Leidke arvutis, millele soovite kaugjuurdepääsu, Chrome'i veebipoest rakendus Chrome Remote Desktop: https://chrome.google.com/remotedesktop
-• Installige Chrome Remote Desktopi tarkvara ja järgige juhiseid seadistuse lõpuleviimiseks.
-• Avage oma iOS-seadmes rakendus ja puudutage ühendamiseks mõne võrgus oleva arvuti nime.
-
-Privaatsuse kohta leiate lisateavet Google'i privaatsuseeskirjadest (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Chrome Remote Desktopi abil juurdepääsu lubamiseks kinnitage allpool oma konto ja PIN-kood.</translation>
 <translation id="3897092660631435901">Menüü</translation>
@@ -267,9 +254,6 @@ Privaatsuse kohta leiate lisateavet Google'i privaatsuseeskirjadest (http://goo.
 <translation id="7144878232160441200">Proovi uuesti</translation>
 <translation id="7149517134817561223">Rakendus, millega saate Chrome Remote Desktopi hostile käske saata.</translation>
 <translation id="7215059001581613786">Sisestage vähemalt kuuest numbrist koosnev PIN-kood.</translation>
-<translation id="7237767047212540055">Avage Chrome arvutis, millele soovite kaugjuurdepääsu, ja külastage saiti <ph name="INSTALLATION_LINK" />
-Installige Chrome Remote Desktopi tarkvara ja järgige juhiseid seadistuse lõpuleviimiseks
-Kui seadistus on lõpule viidud, pääsete arvutile juurde sellelt lehelt, kui sisestate PIN- või pääsukoodi</translation>
 <translation id="7312846573060934304">Host pole võrgus.</translation>
 <translation id="7319983568955948908">Lõpeta jagamine</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>

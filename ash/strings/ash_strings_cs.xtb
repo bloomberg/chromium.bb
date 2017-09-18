@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">přesah obrazu</translation>
 <translation id="1247372569136754018">Mikrofon (interní)</translation>
 <translation id="1252999807265626933">Zdroj nabíjení: <ph name="POWER_SOURCE" /></translation>
+<translation id="1267032506238418139">Změna klávesové zkratky</translation>
 <translation id="1270290102613614947">Softwarová klávesnice je deaktivována</translation>
 <translation id="1272079795634619415">Zastavit</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (načítání...)</translation>
 <translation id="1850504506766569011">Připojení Wi-Fi je vypnuto.</translation>
-<translation id="1856813161013948396">Přeskočit obrazovku uzamčení klepnutím na snímač otisků prstů. Kliknutím tuto funkci nakonfigurujete.</translation>
 <translation id="1864454756846565995">Zařízení USB Type-C (zadní port)</translation>
 <translation id="1882897271359938046">Zrcadlení na displej <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Zkratka k otevření správce úloh se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">Zapnutím mobilních dat aktivujete Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. Než toto povolení schválíte, zkontrolujte si, zda je na zařízení zobrazen následující přístupový klíč: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">Došlo k chybě</translation>
 <translation id="2501920221385095727">Jedním prstem</translation>
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
 <translation id="2532589005999780174">Režim vysokého kontrastu</translation>
 <translation id="2597972630681408282">Noční režim: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">Odeslat</translation>
 <translation id="2700058918926273959">Relace skončí za <ph name="SESSION_TIME_REMAINING" />. Poté budete odhlášeni.</translation>
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
 <translation id="2761704814324807722">Systémový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">Nyní budete odhlášeni.</translation>
 <translation id="2825619548187458965">Polička</translation>
 <translation id="2844169650293029770">Zařízení USB Type-C (levý přední port)</translation>
-<translation id="2857608528410806398">Sem patří text oznámení funkce rychlého odemknutí. Sem patří text oznámení funkce rychlého odemknutí. Sem patří text oznámení funkce rychlého odemknutí. Sem patří text oznámení funkce rychlého odemknutí.</translation>
 <translation id="2865888419503095837">Informace o síti</translation>
 <translation id="2872961005593481000">Vypnout</translation>
 <translation id="2942516765047364088">Pozice poličky</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">Baterie je nabitá</translation>
 <translation id="3606978283550408104">Je připojen hmatový displej.</translation>
 <translation id="3621202678540785336">Vstup</translation>
-<translation id="3625258641415618104">Snímky obrazovky zakázány</translation>
 <translation id="3626281679859535460">Jas</translation>
 <translation id="3712407551474845318">Pořídit snímek oblasti</translation>
 <translation id="371370241367527062">Přední mikrofon</translation>
-<translation id="3742055079367172538">Byl vytvořen snímek obrazovky</translation>
+<translation id="3771549900096082774">Režim vysokého kontrastu</translation>
 <translation id="3775358506042162758">V rámci vícenásobného přihlášení lze používat maximálně tři účty.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Uzamknout</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">Hlasový vstup</translation>
 <translation id="3901991538546252627">Připojování k síti <ph name="NAME" /></translation>
 <translation id="394485226368336402">Nastavení zvuku</translation>
-<translation id="3967919079500697218">Možnost pořizovat snímky obrazovky byla zakázána správcem.</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="3995138139523574647">Zařízení USB Type-C (pravý zadní port)</translation>
 <translation id="4017989525502048489">Laserové ukazovátko</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">Připojování...</translation>
 <translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
-<translation id="4448844063988177157">Vyhledávání sítí Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Nespárovaná zařízení</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Připojování...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">Zkratka k odemknutí obrazovky se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">Funkce ChromeVox je zapnutá</translation>
 <translation id="4729904664295161097">Asistent je k dispozici pouze pro primární profil.</translation>
+<translation id="4776917500594043016">Heslo pro účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Odpojit</translation>
 <translation id="4849058404725798627">Zvýraznit objekt se zaměřením pro zadávání</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">Přijmout</translation>
 <translation id="4961318399572185831">Odesílání obrazovky</translation>
 <translation id="5168181903108465623">Dostupná zařízení Cast</translation>
-<translation id="5170568018924773124">Zobrazit ve složce</translation>
 <translation id="5207949376430453814">Zvýraznit textový kurzor</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="523505283826916779">Nastavení usnadnění přístupu</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">Za <ph name="LOGOUT_TIME_LEFT" /> budete automaticky odhlášeni.</translation>
 <translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME" />“ a adresou <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> – nabíjení</translation>
-<translation id="6144938890088808325">Pomozte nám Chromebooky zlepšit</translation>
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Probíhá aktivace...</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">Zařízení USB Type-C (levý zadní port)</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Původní rozlišení bude obnoveno za <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7246339268451149667">Povolit odemknutí otiskem prstu?</translation>
 <translation id="7256634071279256947">Zadní mikrofon</translation>
 <translation id="7348093485538360975">Softwarová klávesnice</translation>
 <translation id="735745346212279324">Síť VPN je odpojena</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> rozlišení <ph name="SPECIFIED_RESOLUTION" /> nepodporuje. Rozlišení bylo změněno zpět na <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Paleta emodži</translation>
 <translation id="7569509451529460200">Jsou zapnuty funkce Braille a ChromeVox</translation>
-<translation id="7581273696622423628">Zúčastnit se průzkumu</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7692480393933218409">Nabíjení připojených zařízení USB Type-C</translation>
 <translation id="776344839111254542">Kliknutím zobrazíte podrobnosti o aktualizaci</translation>
 <translation id="7798302898096527229">Vypnete jej stisknutím klávesy Hledat nebo Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
 <translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
 <translation id="7977927628060636163">Vyhledávání mobilních sítí...</translation>
 <translation id="7982789257301363584">Síť</translation>
 <translation id="8000066093800657092">Žádná síť</translation>
 <translation id="8054466585765276473">Výpočet doby výdrže baterie.</translation>
-<translation id="8077816382010018681">Sem patří nadpis oznámení funkce rychlého odemknutí</translation>
 <translation id="8098591350844501178">Ukončit odesílání obrazovky do přijímače <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Připojeno k síti <ph name="NAME" /></translation>
 <translation id="813913629614996137">Probíhá inicializace...</translation>
 <translation id="8142699993796781067">Soukromá síť</translation>
 <translation id="8180896103888046100">Ukončit odesílání do neznámého přijímače</translation>
-<translation id="8185286464235484130">Odpovězte prosím na pár dotazů, abychom věděli, jak si vedeme.</translation>
 <translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
+<translation id="8261506727792406068">Smazat</translation>
 <translation id="8308637677604853869">Předchozí nabídka</translation>
 <translation id="8351131234907093545">Vytvořit poznámku</translation>
 <translation id="8392234662362215700">Rozložení klávesnice přepnete stisknutím kláves Ctrl + Shift + mezerník.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">Baterie je nabita na <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Ukončování režimu jednotné plochy</translation>
 <translation id="923686485342484400">Odhlásíte se dvojitým stisknutím kombinace kláves Control Shift Q.</translation>
-<translation id="939252827960237676">Uložení snímku obrazovky se nezdařilo</translation>
 <translation id="945522503751344254">Odeslat zpětnou vazbu</translation>
 <translation id="98515147261107953">Na šířku</translation>
 </translationbundle>

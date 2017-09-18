@@ -53,6 +53,7 @@
 
       Si aquesta política no s'estableix, s'envien cada 3 hores de manera
       predeterminada. La freqüència mínima permesa és de 60 segons.</translation>
+<translation id="1204263402976895730">Impressores d'empresa activades</translation>
 <translation id="1221359380862872747">Carrega URL especificats a l'inici de sessió de demostració</translation>
 <translation id="123081309365616809">Activa l'emissió de contingut al dispositiu</translation>
 <translation id="1265053460044691532">Limiteu el temps durant el qual un usuari autenticat mitjançant SAML pot iniciar la sessió fora de línia.</translation>
@@ -84,7 +85,7 @@
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà que s'iniciïn els perfils de convidat.</translation>
 <translation id="1363275621236827384">Activa l'opció d'enviar consultes a Quirks Server per als perfils de maquinari</translation>
-<translation id="1393485621820363363">Impressores d'empresa activades per a dispositius</translation>
+<translation id="1393485621820363363">Impressores activades per a dispositius d'empresa</translation>
 <translation id="1397855852561539316">URL de suggeriments del proveïdor de cerca predeterminat</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Adreça o URL del servidor intermediari</translation>
@@ -241,6 +242,7 @@
 <translation id="2024476116966025075">Configura el nom de domini requerit per a clients d'accés remot</translation>
 <translation id="2030905906517501646">Paraula clau del proveïdor de cerca predeterminat</translation>
 <translation id="203096360153626918">Aquesta política no té cap efecte a les aplicacions per a Android. Podran activar el mode de pantalla completa encara que aquesta política s'estableixi en "<ph name="FALSE" />".</translation>
+<translation id="2043770014371753404">Impressores d'empresa desactivades</translation>
 <translation id="206623763829450685">Especifica quins esquemes d'autenticació HTTP són compatibles amb <ph name="PRODUCT_NAME" />.
 
           Els valors possibles són "basic", "digest", "ntlm" i "negotiate". Separeu els diversos valors amb comes.
@@ -306,6 +308,15 @@
       Si aquesta opció es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig en funció d'aquesta opció.
 
       Si aquesta opció no es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig cada dia.</translation>
+<translation id="2194470398825717446">Aquesta política es considera obsoleta a M61; utilitza EcryptfsMigrationStrategy en lloc seu.
+
+      Especifica com s'ha de comportar un dispositiu que conté eCryptfs i que ha de fer una transició a encriptació ext4.
+
+      Si defineixes aquesta política en "DisallowArc", les aplicacions d'Android es desactivaran per a tots els usuaris del dispositiu (fins i tot per a aquells que ja tinguin encriptació ext4) i no se'ls oferirà cap tipus de migració d'eCryptfs a encriptació ext4.
+
+      Si defineixes aquesta política en "AllowMigration", s'oferirà als usuaris amb directoris d'inici eCryptfs la possibilitat de migrar-los a encriptació ext4 si és necessari (en concret, quan Android N estigui disponible al dispositiu).
+
+      Aquesta política no s'aplica a les aplicacions de quiosc, ja que aquestes es migren automàticament. Si aquesta política no es defineix, el dispositiu es comportarà com si la política s'hagués establert en "DisallowArc".</translation>
 <translation id="2201555246697292490">Configura la llista blanca de missatgeria nativa</translation>
 <translation id="2204753382813641270">Controla l'opció d'amagar el prestatge automàticament</translation>
 <translation id="2208976000652006649">Paràmetres per a l'URL de cerca que utilitza POST</translation>
@@ -498,6 +509,12 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Aquesta política només s'utilitza si se selecciona WhitelistPrintersOnly per a DeviceNativePrintersAccessMode.
 
       Si s'utilitza aquesta política, l'usuari només tindrà a la seva disposició les impressores amb identificadors que coincideixin amb els valors d'aquesta política. Els identificadors han de correspondre amb les entrades del fitxer especificat a DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Especifica les impressores que un usuari no pot fer servir.
+
+      Aquesta política només s'utilitza si se selecciona BlacklistRestriction per a NativePrintersBulkAccessMode.
+
+      Si s'utilitza aquesta política, l'usuari té accés a totes les impressores excepte als identificadors que s'inclouen a la política.
+      </translation>
 <translation id="2801230735743888564">Permet que els usuaris juguin al joc del dinosaure que apareix per sorpresa quan el dispositiu està sense connexió.
 
        Si aquesta política s'estableix en "false", els usuaris no podran jugar-hi quan el dispositiu estigui sense connexió. En canvi, si s'estableix en "true", els usuaris podran jugar-hi. Si es deixa sense establir, els usuaris no podran jugar a aquest joc en un dispositiu Chrome OS inscrit, però sí que ho podran fer en altres circumstàncies.</translation>
@@ -614,6 +631,7 @@ Si aquesta política no es defineix, els usuaris podran canviar l'ús del client
 <translation id="3219421230122020860">Mode d'incògnit disponible</translation>
 <translation id="3220624000494482595">Si l'aplicació de quiosc és per a Android, no controlarà la versió <ph name="PRODUCT_OS_NAME" />, tot i que aquesta política s'estableixi en "<ph name="TRUE" />".</translation>
 <translation id="3236046242843493070">Patrons d'URL per permetre la instal·lació d'extensions, d'aplicacions i de scripts d'usuari des de</translation>
+<translation id="3240609035816615922">Política d'accés a la configuració de la impressora</translation>
 <translation id="3243309373265599239">Indica el temps sense activitat per part de l'usuari després del qual la pantalla s'atenua quan el dispositiu funciona amb alimentació.
 
           Quan aquesta política es defineix en un valor superior a zero, indica el temps que l'usuari ha de romandre inactiu abans <ph name="PRODUCT_OS_NAME" /> no atenuï la pantalla.
@@ -863,6 +881,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Nota: actualment, els reinicis automàtics només s'activen quan es mostra la pantalla d'inici de sessió o si una sessió d'aplicació de quiosc està en curs. Això canviarà en el futur i la política s'aplicarà sempre, independentment de si la sessió del tipus que sigui està en curs o no.
 
       El valor de la política s'ha d'especificar en segons. Els valors són com a mínim de 3600 (una hora).</translation>
+<translation id="4203879074082863035">Només es mostren als usuaris les impressores que s'inclouen a la llista blanca</translation>
 <translation id="420512303455129789">Diccionari que assigna diversos URL a un indicador booleà que especifica si s'ha de permetre l'accés a l'amfitrió ("true") o si s'ha de bloquejar ("false").
 
           Aquesta política és per a ús intern a <ph name="PRODUCT_NAME" />.</translation>
@@ -962,6 +981,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4541530620466526913">Comptes locals del dispositiu</translation>
 <translation id="4555850956567117258">Activa el testimoni remot per a l'usuari.</translation>
 <translation id="4557134566541205630">URL de la pestanya nova del proveïdor de cerca predeterminat</translation>
+<translation id="4558592878156368639">Intervals de poca activitat quan s'apliquen les |ignored_policies| OffHours del dispositiu</translation>
 <translation id="4600786265870346112">Activa el cursor gran</translation>
 <translation id="4604931264910482931">Configura la llista negra de missatgeria nativa</translation>
 <translation id="4617338332148204752">Omet la comprovació de metaetiquetes a <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1069,7 +1089,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="5068140065960598044">La política per al núvol que aplica <ph name="PRODUCT_NAME" /> substitueix la política de l'equip.</translation>
 <translation id="5085647276663819155">Desactiva la previsualització d'impressió</translation>
 <translation id="5105313908130842249">Retard del bloqueig de pantalla quan s'utilitza bateria</translation>
-<translation id="5108031557082757679">Impressores d'empresa desactivades per a dispositius</translation>
+<translation id="5108031557082757679">Impressores desactivades per a dispositius d'empresa</translation>
 <translation id="5130288486815037971">Si els sistemes de xifratge RC4 de TLS estan activats</translation>
 <translation id="5141670636904227950">Estableix el tipus de lupa predeterminat activat a la pantalla d'inici de sessió</translation>
 <translation id="5142301680741828703">Renderitza sempre els patrons URL següents a <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1361,6 +1381,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6211428344788340116">Informa dels períodes de temps d'activitat del dispositiu.
 
       Si aquesta opció de configuració no es defineix o es defineix com a certa, els dispositius inscrits informaran dels períodes de temps quan hi hagi un usuari actiu al dispositiu. Si es defineix com a falsa, els períodes de temps d'activitat del dispositiu no s'enregistraran ni se n'informarà.</translation>
+<translation id="6212868225782276239">Es mostren totes les impressores tret de les que s'inclouen a la llista negra.</translation>
 <translation id="6219965209794245435">Si està activada, aquesta política fa que les dades d'emplenament automàtic de formularis s'importin des del navegador predeterminat anterior. Si està activada, també afecta el quadre de diàleg d'importació.
 
       Si està desactivada, les dades d'emplenament automàtic de formularis no s'importen.
@@ -1577,6 +1598,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7132877481099023201">URL als quals els dispositius de captura de vídeo podran accedir sense confirmació.</translation>
 <translation id="7167436895080860385">Permet que els usuaris mostrin les contrasenyes al gestor de contrasenyes (política obsoleta)</translation>
 <translation id="7173856672248996428">Perfil efímer</translation>
+<translation id="717630378807352957">Permet totes les impressores del fitxer de configuració.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipus de connexions permesos per a actualitzacions</translation>
 <translation id="7194407337890404814">Nom del proveïdor de cerca predeterminat</translation>
@@ -1644,7 +1666,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política no es defineix, la neteja automàtica utilitza l'estratègia integrada predeterminada. Actualment, és l'estratègia RemoveLRUIfDormant.</translation>
 <translation id="7336878834592315572">Conserva les galetes mentre duri la sessió</translation>
 <translation id="7340034977315324840">Informa del temps d'activitat dels dispositius</translation>
-<translation id="7343497214039883642">Fitxer de configuració de la impressora per a dispositius</translation>
+<translation id="7343497214039883642">Fitxer de configuració de la impressora d'empresa per a dispositius</translation>
 <translation id="7384999953864505698">Permet el protocol QUIC</translation>
 <translation id="7417972229667085380">Percentatge que permet ajustar el retard d'inactivitat en mode de presentació (desactivat)</translation>
 <translation id="7421483919690710988">Defineix la mida de la memòria cau del disc multimèdia en bytes</translation>
@@ -1858,6 +1880,12 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si la política s'estableix com a desactivada o no s'estableix, l'inici de sessió donarà accés a perfils normals.</translation>
 <translation id="8158758865057576716">Permet crear còpies itinerants de les dades de perfil que tingui <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8169931650834542988">Controla quines impressores de NativePrintersBulkConfiguration tenen disponibles els usuaris.
+
+      Descriu quina política d'accés s'utilitza per a la configuració massiva d'impressores. Si se selecciona AllowAll, es mostren totes les impressores. Si se selecciona BlacklistRestrction, s'utilitza NativePrintersBulkBlacklist per restringir l'accés a les impressores especificades. Si se selecciona WhitelistPrintersOnly, NativePrintersWhitelist només es mostren les impressores que es poden seleccionar.
+
+      Si aquesta política no es defineix, es pressuposa que s'aplica BlacklistRestriction.
+      </translation>
 <translation id="8170878842291747619">Activa el servei de Google Translate integrat a <ph name="PRODUCT_NAME" />. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> mostrarà una barra d'eines integrada que permet traduir la pàgina per a l'usuari, si és apropiat. Si el desactiveu, els usuaris no veuran mai la barra de traducció. Si l'activeu o el desactiveu, els usuaris no podran canviar ni substituir aquesta configuració a <ph name="PRODUCT_NAME" />. Si no es defineix aquest paràmetre, l'usuari podrà decidir si vol utilitzar aquesta funció o no.</translation>
 <translation id="817455428376641507">Permet l'accés als URL de la llista, com a excepció de la llista negra d'URL.
 
@@ -1940,6 +1968,11 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8465065632133292531">Paràmetres per a l'URL instantani que utilitza POST</translation>
 <translation id="847472800012384958">No permetis que cap lloc mostri elements emergents</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Especifica les impressores que un usuari pot fer servir.
+
+      Aquesta política només s'utilitza si se selecciona WhitelistPrintersOnly per a NativePrintersBulkAccessMode.
+
+      Si s'utilitza aquesta política, l'usuari només tindrà a la seva disposició les impressores amb identificadors que coincideixin amb els valors d'aquesta política. Els identificadors han de correspondre amb les entrades del fitxer especificat a NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Personalitza la llista de patrons d'URL que ha de renderitzar sempre el navegador amfitrió.
 
 
@@ -1952,6 +1985,19 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8519264904050090490">URL d'excepcions manuals d'usuari gestionat</translation>
 <translation id="8544375438507658205">Renderitzador HTML predeterminat per a <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
+<translation id="8555589883248082762">Proporciona configuracions per a les impressores d'empresa.
+
+      Aquesta política et permet proporcionar configuracions d'impressió als dispositius <ph name="PRODUCT_OS_NAME" />.
+      La mida del fitxer no pot superar els 5 MB i ha d'estar codificat en JSON.
+      El format és el mateix que el del diccionari NativePrinters. Es calcula que un fitxer que contingui unes 21.000 impressores es codificarà com un fitxer de 5 MB. El resum criptogràfic serveix per verificar la integritat de la baixada.
+
+      El fitxer es baixa i es desa a la memòria cau. Es tornarà a baixar si es modifica l'URL o el resum.
+
+      Si aquesta política es defineix, <ph name="PRODUCT_OS_NAME" /> baixarà el fitxer per a les configuracions d'impressora i les impressores estaran disponibles de conformitat amb NativePrintersBulkAccessMode, NativePrintersBulkWhitelist i NativePrintersBulkBlacklist.
+
+      Si es defineix aquesta política, els usuaris no podran canviar-la ni sobreescriure-la.
+
+      Aquesta política no té cap efecte en si els usuaris poden configurar impressores en dispositius concrets. S'ha creat per complementar la configuració d'impressores per part dels usuaris.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
 <translation id="8587229956764455752">Permet la creació de comptes d'usuari</translation>
 <translation id="8614804915612153606">Desactiva l'actualització automàtica</translation>
@@ -2056,6 +2102,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="9096086085182305205">Llista blanca del servidor d'autenticació</translation>
 <translation id="9098553063150791878">Polítiques per a l'autenticació HTTP</translation>
 <translation id="9105265795073104888">Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari. No pots forçar-les a utilitzar un servidor intermediari, sinó que és decisió d'elles.</translation>
+<translation id="9112727953998243860">Fitxer de configuració de la impressora d'empresa</translation>
 <translation id="9112897538922695510">Us permet registrar una llista de gestors de protocol. Això només pot ser una política recomanada. El |protocol| de la propietat s'ha de definir a l'esquema, com ara "mailto" i l'|url| de la propietat s'ha de definir al patró d'URL de l'aplicació que gestiona l'esquema. El patró pot incloure "%s" i, en cas que s'hi inclogui, se substituirà per l'URL gestionat.
 
           Els gestors de protocol registrats amb la política es combinen amb els que ha registrat l'usuari i tots dos es poden fer servir. L'usuari pot substituir els gestors de protocol que s'han instal·lat amb la política si instal·la un nou gestor de protocol predeterminat, però no pot suprimir un gestor de protocol que s'hagi registrat amb la política.</translation>

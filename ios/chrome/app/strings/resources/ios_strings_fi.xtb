@@ -69,6 +69,7 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2149973817440762519">Muokkaa kirjanmerkkiä</translation>
 <translation id="2154710561487035718">Kopioi URL-osoite</translation>
 <translation id="2230173723195178503">Verkkosivu ladattiin.</translation>
+<translation id="2256128224215992540">Haku- ja sivustoehdotukset</translation>
 <translation id="2267753748892043616">Lisää tili</translation>
 <translation id="2273327106802955778">Lisäasetusvalikko</translation>
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
@@ -178,9 +179,11 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="430793432425771671">Synkronoi kaikki</translation>
 <translation id="4342284590510997375">Uusi</translation>
 <translation id="4359125752503270327">Tämä sivu avataan toisessa sovelluksessa.</translation>
+<translation id="4370827530403103842">Synkronointi ei toimi. Korjaa napauttamalla.</translation>
 <translation id="4375040482473363939">QR-koodihaku</translation>
 <translation id="4378154925671717803">Puhelin</translation>
 <translation id="441868831736628555">Tietosuojailmoitus</translation>
+<translation id="4460091562821778167">Kysy joka kerta, mitä sovellusta haluat käyttää</translation>
 <translation id="4508750114462689118">Sulje kirjautumismainos</translation>
 <translation id="4526249700380860531">Tarkastele ja hallinnoi tallennettuja salasanoja osoitteessa <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Yritä kirjautua sisään uudelleen.</translation>

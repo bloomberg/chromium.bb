@@ -192,7 +192,6 @@
 <translation id="1297175357211070620">Destination</translation>
 <translation id="1297922636971898492">Google Drive är inte tillgängligt för närvarande. Överföringen fortsätter automatiskt när Google Drive är tillgängligt igen.</translation>
 <translation id="1303101771013849280">HTML-fil med bokmärken</translation>
-<translation id="1303319084542230573">Lägg till en skrivare</translation>
 <translation id="1303671224831497365">Inga Bluetooth-enheter hittades</translation>
 <translation id="1306606229401759371">Ändra inställningar</translation>
 <translation id="1307398858972670978">Få tillgång till dina lösenord från alla enheter på <ph name="SAVED_PASSWORDS_LINK" /></translation>
@@ -399,6 +398,7 @@
 <translation id="1608626060424371292">Ta bort den här användaren</translation>
 <translation id="1609170755653088773">Synkronisera det här lösenordet med iPhone</translation>
 <translation id="1609862759711084604">Föregående användare</translation>
+<translation id="1611584202130317952">Administrationsflödet avbröts. Försök igen eller kontakta enhetens ägare eller administratör.</translation>
 <translation id="1611649489706141841">framåt</translation>
 <translation id="1611704746353331382">Exportera bokmärken till HTML-fil ...</translation>
 <translation id="1612129875274679969">Behåll enheten permanent i kioskläge.</translation>
@@ -471,6 +471,7 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (standard)</translation>
 <translation id="1711973684025117106">Komprimeringen misslyckades. Oväntat fel: $1</translation>
 <translation id="1712349894969001173">Få det här lösenordet till din iPhone</translation>
+<translation id="1718835860248848330">Senaste timmen</translation>
 <translation id="1719312230114180055">Obs! Fingeravtryck kan vara mindre säkra än starka lösenord och pinkoder.</translation>
 <translation id="1720318856472900922">TLS WWW-serverautentisering</translation>
 <translation id="1721937473331968728">Du kan lägga till vanliga skrivare som är anslutna till datorn i <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -564,6 +565,7 @@
 <translation id="1850508293116537636">Rotera &amp;medurs</translation>
 <translation id="1852799913675865625">Ett fel uppstod när följande fil skulle läsas: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1856715684130786728">Lägg till plats ...</translation>
+<translation id="1856813161013948396">Hoppa över låsskärmen genom att trycka på fingeravtryckssensorn. Klicka för att konfigurera.</translation>
 <translation id="1858585891038687145">Lita på det här certifikatet för identifiering av programskapare</translation>
 <translation id="1859234291848436338">Skrivriktning</translation>
 <translation id="1864111464094315414">Inloggning</translation>
@@ -643,6 +645,7 @@
 <translation id="2007404777272201486">Rapportera ett problem...</translation>
 <translation id="2016430552235416146">Traditionell</translation>
 <translation id="2017334798163366053">Inaktivera insamling av resultatdata</translation>
+<translation id="2017836877785168846">Rensar historik och autoslutföranden i adressfältet.</translation>
 <translation id="2018352199541442911">Den externa lagringsenheten stöds tyvärr inte just nu.</translation>
 <translation id="2019718679933488176">&amp;Öppna ljud på ny flik</translation>
 <translation id="2020183425253392403">Visa inställningar för nätverksadress</translation>
@@ -969,7 +972,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2497229222757901769">Mushastighet</translation>
 <translation id="2497852260688568942">Synkronisering har inaktiverats av administratören</translation>
 <translation id="249819058197909513">Varna inte för den här appen fler gånger</translation>
-<translation id="2498436043474441766">Lägg till skrivare</translation>
 <translation id="2498539833203011245">Minimera</translation>
 <translation id="2498765460639677199">Enorm</translation>
 <translation id="2500471369733289700">Blockerades av säkerhetsskäl</translation>
@@ -1226,6 +1228,7 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2850541429955027218">Lägg till tema</translation>
 <translation id="2853916256216444076">$1-videoklipp</translation>
 <translation id="2856903399071202337">Kameraundantag</translation>
+<translation id="2857608528410806398">Plats för aviseringstext för QU-funktionen. Plats för aviseringstext för QU-funktionen. Plats för aviseringstext för QU-funktionen. Plats för aviseringstext för QU-funktionen. Plats för aviseringstext för QU-funktionen.</translation>
 <translation id="2859369953631715804">Välj ett mobilt nätverk</translation>
 <translation id="2860150991415616761">mycket lång (4 s)</translation>
 <translation id="2861301611394761800">Systemuppdateringen har slutförts. Starta om systemet.</translation>
@@ -1501,6 +1504,7 @@ Läs din e-post på <ph name="ACCOUNT_EMAIL" />. Där finns dessa och andra anvi
 <translation id="3269101346657272573">Ange PIN-kod.</translation>
 <translation id="326999365752735949">Laddar ned skillnaden</translation>
 <translation id="3270965368676314374">Läsa, ändra och ta bort foton, musik och andra media från datorn</translation>
+<translation id="327147043223061465">Visa alla cookies och webbplatsuppgifter</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> vill ansluta</translation>
 <translation id="3273410961255278341">Skicka för:</translation>
 <translation id="327444463633065042">Ogiltigt datornamn</translation>
@@ -1726,6 +1730,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3593965109698325041">Certifikatnamnsbegränsningar</translation>
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
 <translation id="3596235046596950091">Aktivera molntjänster</translation>
+<translation id="3599863153486145794">Historik rensas från alla inloggade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600456501114769456">Administratören har inaktiverat åtkomsten till lokala filer på enheten.</translation>
 <translation id="3603533104205588786">Du kan lägga till ett bokmärke för sidan genom att klicka på stjärnan</translation>
 <translation id="3603622770190368340">Skaffa nätverkscertifikat</translation>
@@ -1745,6 +1750,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3618849550573277856">Sök efter ”<ph name="LOOKUP_STRING" />”</translation>
 <translation id="3620292326130836921">Allt har säkerhetskopierats!</translation>
 <translation id="3623574769078102674">Denna övervakade användare kommer att hanteras av <ph name="MANAGER_EMAIL" />.</translation>
+<translation id="3625258641415618104">Skärmdumpar har inaktiverats</translation>
 <translation id="3625870480639975468">Återställ zoom</translation>
 <translation id="3626281679859535460">Ljusstyrka</translation>
 <translation id="3627052133907344175">Tillägget kräver <ph name="IMPORT_NAME" /> med minst version <ph name="IMPORT_VERSION" />, men endast version <ph name="INSTALLED_VERSION" /> är installerad.</translation>
@@ -1823,6 +1829,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3739254215541673094">Vill du öppna <ph name="APPLICATION" />?</translation>
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> visas nu i administratörskonsolen</translation>
 <translation id="3741243925913727067">Säkerhetskopiera foton och videor från mediaenheten till Google Drive.</translation>
+<translation id="3742055079367172538">Skärmbilden har tagits</translation>
 <translation id="3744111561329211289">Synkronisera i bakgrunden</translation>
 <translation id="3745016858329272300">Allmän information</translation>
 <translation id="3748026146096797577">Ej ansluten</translation>
@@ -1980,11 +1987,13 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3950820424414687140">Logga in</translation>
 <translation id="3954354850384043518">Pågår</translation>
 <translation id="3955193568934677022">Tillåt att skyddat innehåll spelas upp på webbplatser (rekommenderas)</translation>
+<translation id="3956702100721821638">Det gick inte att nå Google Play</translation>
 <translation id="3958088479270651626">Importera bokmärken och inställningar</translation>
 <translation id="3960566196862329469">ONC</translation>
 <translation id="3966072572894326936">Välj en annan mapp...</translation>
 <translation id="3966388904776714213">Ljudspelare</translation>
 <translation id="3967885517199024316">Logga in om du vill få dina bokmärken, historik och inställningar på alla dina enheter.</translation>
+<translation id="3967919079500697218">Möjligheten att ta skärmdumpar har inaktiverats av administratören.</translation>
 <translation id="3968261067169026421">Det gick inte att konfigurera nätverket</translation>
 <translation id="3970114302595058915">Id</translation>
 <translation id="397105322502079400">Beräknar ...</translation>
@@ -2096,6 +2105,7 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="4158739975813877944">Öppna spellistan</translation>
 <translation id="4159681666905192102">Det här är ett konto för barn som hanteras av <ph name="CUSTODIAN_EMAIL" /> och <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
 <translation id="4163560723127662357">Okänt tangentbord</translation>
+<translation id="4165986682804962316">Platsinställningar</translation>
 <translation id="4166210099837486476">Övervaka när du vidtar åtgärder i Chrome</translation>
 <translation id="4168015872538332605">Vissa inställningar som tillhör <ph name="PRIMARY_EMAIL" /> delas med dig. Dessa inställningar påverkar bara ditt konto när du använder multiinloggning.</translation>
 <translation id="4172051516777682613">Visa alltid</translation>
@@ -2246,7 +2256,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4430369329743628066">Ett bokmärke har lagts till</translation>
 <translation id="4433914671537236274">Skapa återställningsmedia</translation>
 <translation id="443464694732789311">Fortsätt</translation>
-<translation id="4436456292809448986">Lägg till på skrivbordet …</translation>
 <translation id="4439318412377770121">Vill du registrera <ph name="DEVICE_NAME" /> i Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Vill du starta denna app automatiskt när maskinen slås på?</translation>
 <translation id="444134486829715816">Expandera..</translation>
@@ -2257,6 +2266,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4443536555189480885">&amp;Hjälp</translation>
 <translation id="4444304522807523469">Åtkomst till dokumentskannrar som är anslutna via USB eller i det lokala nätverket</translation>
 <translation id="4444512841222467874">Om du inte frigör utrymme kan användare och data tas bort automatiskt.</translation>
+<translation id="4448844063988177157">Söker efter Wi-Fi-nätverk...</translation>
 <translation id="4449935293120761385">Om Autofyll</translation>
 <translation id="4449996769074858870">Ljud spelas upp på den här fliken.</translation>
 <translation id="4450974146388585462">Diagnostisera</translation>
@@ -2421,10 +2431,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4731351517694976331">Tillåt Googles tjänster att ta reda på var du är</translation>
 <translation id="4731422630970790516">Hyllobjekt 3</translation>
-<translation id="473221644739519769">Om du lägger till dina skrivare i Google Cloud Print kan du skriva ut
-        var du än är och var skrivaren än är. Dela skrivare med vem du vill och
-        skriv ut till dem från Chrome, mobilen, surfplattan, datorn eller
-        vilken internetansluten enhet som helst.</translation>
 <translation id="4732760563705710320">Den här videon stöds tyvärr inte av överföringsenheten.</translation>
 <translation id="4734518477988699048">Värdet för indata är ogiltigt.</translation>
 <translation id="473546211690256853">Detta konto hanteras av <ph name="DOMAIN" /></translation>
@@ -2652,6 +2658,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5087249366037322692">Har lagts till av tredje part</translation>
 <translation id="5087580092889165836">Lägg till kort</translation>
 <translation id="5087864757604726239">tillbaka</translation>
+<translation id="5087926280563932024">Det gick inte att verifiera kontot. Försök igen eller starta om Chromebook.</translation>
 <translation id="508794495705880051">Lägg till ett nytt kreditkort...</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 med RSA-kryptering</translation>
 <translation id="509429900233858213">Det har uppstått ett fel.</translation>
@@ -2691,11 +2698,9 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5150254825601720210">SSL-servernamn för Netscape-certifikat</translation>
 <translation id="5151354047782775295">Frigör diskutrymme, annars tas en del data bort automatiskt.</translation>
 <translation id="5152451685298621771">(Konto för barn)</translation>
+<translation id="5153297660536091054">Upplåsning med pinkod</translation>
 <translation id="5154108062446123722">Avancerade inställningar för <ph name="PRINTING_DESTINATION" /></translation>
 <translation id="5154176924561037127">F8</translation>
-<translation id="5154383699530644092">Du kan lägga till skrivare i datorn genom att klicka på knappen Lägg till en skrivare
-        nedan. Om du inte har några skrivare som du kan lägga till kan du ändå spara
-        en PDF eller spara i Google Drive.</translation>
 <translation id="5154702632169343078">Ämne</translation>
 <translation id="5154917547274118687">Minne</translation>
 <translation id="5157635116769074044">Fäst den här sidan på startskärmen ...</translation>
@@ -3034,6 +3039,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5642508497713047">CRL-signerare</translation>
 <translation id="5646376287012673985">Plats</translation>
 <translation id="5646558797914161501">Affärsman</translation>
+<translation id="5648166631817621825">Senaste sju dagarna</translation>
 <translation id="5649053991847567735">Automatiska nedladdningar</translation>
 <translation id="5649768706273821470">Lyssna</translation>
 <translation id="5653140146600257126">Det finns redan en katalog som heter $1. Välj ett annat namn.</translation>
@@ -3272,7 +3278,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="604001903249547235">Säkerhetskopiering i molnet</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6040852767465482106">Anonym identitet</translation>
-<translation id="6041155700700864984">Avsluta helskärmsläget</translation>
 <translation id="604124094241169006">Automatisk</translation>
 <translation id="6042169520002885235">Välj skrivartillverkare och skrivarmodell</translation>
 <translation id="6042308850641462728">Mer</translation>
@@ -3335,6 +3340,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6136285399872347291">backsteg</translation>
 <translation id="6138680304137685902">X9.62 ECDSA-signatur med SHA-384</translation>
 <translation id="6143186082490678276">Få hjälp</translation>
+<translation id="6144938890088808325">Hjälp oss att göra Chromebook bättre</translation>
 <translation id="6146563240635539929">Videor</translation>
 <translation id="6147020289383635445">Förhandsgranskning misslyckades.</translation>
 <translation id="6150853954427645995">Om du vill spara filen för användning offline ansluter du till internet igen, högerklickar på filen och väljer sedan alternativet <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
@@ -3458,6 +3464,7 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6333064448949140209">Filen skickas till Google för felsökning</translation>
 <translation id="6333834492048057036">Fokusera på adressfältet för sökning</translation>
 <translation id="6339668969738228384">Skapa en ny profil för <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="6340017061976355871">Det gick inte att ansluta till servern. Kontrollera nätverksanslutningen och försök igen. Starta om Chromebook om problemet kvarstår.</translation>
 <translation id="6340071272923955280">Protokoll för internetutskrift (IPPS)</translation>
 <translation id="6341850831632289108">Identifiera din fysiska plats</translation>
 <translation id="634208815998129842">Aktivitetshanteraren</translation>
@@ -3515,7 +3522,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
     <ph name="LINE_BREAK" />
     Fortsätt med inloggningen på kontot på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> genom att klicka på Nästa.</translation>
 <translation id="6419546358665792306">Läser in okomprimerat tillägg</translation>
-<translation id="6420676428473580225">Lägg till på skrivbordet</translation>
 <translation id="6422329785618833949">Fotot har vänts</translation>
 <translation id="642282551015776456">Det här namnet får inte användas som namn på en fil eller mapp</translation>
 <translation id="6423239382391657905">Öppen VPN</translation>
@@ -3641,6 +3647,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="6586451623538375658">Byt primär musknapp</translation>
 <translation id="6589411753837135276">Fråga först innan webbplatser tillåts köra Flash (rekommenderas)</translation>
 <translation id="6589706261477377614">Öka tangenternas ljusstyrka</translation>
+<translation id="6590458744723262880">Byt namn på mapp</translation>
 <translation id="6592267180249644460">WebRTC-logg registrerades <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6596092346130528198">Var det den här nya fliksidan du väntade dig?</translation>
 <translation id="6596325263575161958">Krypteringsalternativ</translation>
@@ -3786,6 +3793,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="682123305478866682">Casta skrivbordet</translation>
 <translation id="6823506025919456619">Du måste logga in i Chrome för att kunna visa dina enheter</translation>
 <translation id="6824564591481349393">Kopiera &amp;e-postadress</translation>
+<translation id="6825184156888454064">Sortera efter namn</translation>
 <translation id="6827236167376090743">Denna video spelas upp för evigt.</translation>
 <translation id="6828153365543658583">Begränsa inloggning till följande användare:</translation>
 <translation id="6828434191343384461">Den data som markerades har tagits bort från Chrome och från synkroniserade enheter. Det kan finnas webbhistorik av annat slag i Google-kontot på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>
@@ -3837,6 +3845,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="6909461304779452601">Appar, tillägg och användarskript kan inte läggas till från den här webbplatsen.</translation>
 <translation id="6910211073230771657">Borttagen</translation>
 <translation id="691024665142758461">Hämta flera filer</translation>
+<translation id="6911324888870229398">Nätverksanslutningen avbröts. Kontrollera anslutningen eller testa ett annat Wi-Fi-nätverk.</translation>
 <translation id="6915804003454593391">Användare:</translation>
 <translation id="6916590542764765824">Hantera tillägg</translation>
 <translation id="6920989436227028121">Öppna som en vanlig flik</translation>
@@ -3872,6 +3881,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="6978121630131642226">Sökmotorer</translation>
 <translation id="6978611942794658017">Den här filen är avsedd för en dator med Windows-programvara. Den är inte kompatibel med din enhet, som har Chrome OS. Sök efter en lämplig ersättningsapp i Chrome Web Store.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6979737339423435258">Genom tiderna</translation>
 <translation id="6980462514016882061">Google kan anpassa Sök, annonser och andra Google-tjänster utifrån webbhistoriken.</translation>
 <translation id="6980956047710795611">Migrera alla Chrome OS-uppgifter till det nya lösenordet (tidigare lösenord krävs)</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
@@ -3972,6 +3982,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="711902386174337313">Läsa listan med dina inloggade enheter</translation>
 <translation id="7119389851461848805">strömbrytare</translation>
 <translation id="7120865473764644444">Det gick inte att ansluta till synkroniseringsservern. Försöker igen …</translation>
+<translation id="7121362699166175603">Historik och autoslutföranden i adressfältet rensas. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="71243390042171582">Uppdaterad för <ph name="MINUTES" /> minuter sedan</translation>
 <translation id="7124929488592184705">Ett fel uppstod när <ph name="DOCUMENT_NAME" /> skulle skrivas ut</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; – &lt;em&gt;sök i Drive&lt;/em&gt;</translation>
@@ -3988,6 +3999,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7141105143012495934">Inloggningen misslyckades eftersom det inte gick att hämta dina kontouppgifter. Kontakta administratören eller försök igen.</translation>
 <translation id="7143207342074048698">Ansluter</translation>
 <translation id="7144878232160441200">Försök igen</translation>
+<translation id="7149893636342594995">Senaste 24 timmarna</translation>
 <translation id="715118844758971915">Vanliga skrivare</translation>
 <translation id="7154130902455071009">Ändra startsida till: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Befintligt foto från kamera eller fil</translation>
@@ -4007,6 +4019,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7191454237977785534">Spara filen som</translation>
 <translation id="7196835305346730603">Söker efter Chromeboxes i närheten ...</translation>
 <translation id="7199158086730159431">Få h&amp;jälp</translation>
+<translation id="7201118060536064622"><ph name="DELETED_ITEM_NAME" /> har raderats</translation>
 <translation id="7201354769043018523">Högerparen</translation>
 <translation id="7205869271332034173">SSID:</translation>
 <translation id="7206693748120342859">Laddar ned <ph name="PLUGIN_NAME" /> ...</translation>
@@ -4037,6 +4050,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7243055093079293866">Säg ”Ok Google” på en ny flik och google.com</translation>
 <translation id="7243632151880336635">Rensa och logga ut</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (bäst)</translation>
+<translation id="7246339268451149667">Vill du aktivera upplåsning med fingeravtryck?</translation>
 <translation id="7246947237293279874">FTP-proxy</translation>
 <translation id="725109152065019550">Administratören har inaktiverat extern lagring för ditt konto.</translation>
 <translation id="7253521419891527137">&amp;Läs mer</translation>
@@ -4259,6 +4273,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7579149537961810247">Dölj webbplatser</translation>
 <translation id="7580139917303152582">Öppna nya appar och aktiviteter snabbt med startprogrammet.</translation>
 <translation id="7580671184200851182">Spela samma ljud i alla högtalare (monoljud)</translation>
+<translation id="7581273696622423628">Svara på enkäten</translation>
 <translation id="7581462281756524039">Ett rensningsverktyg</translation>
 <translation id="7582582252461552277">Föredra det här nätverket</translation>
 <translation id="7584802760054545466">Ansluter till <ph name="NETWORK_ID" /></translation>
@@ -4406,7 +4421,6 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="782590969421016895">Använd aktuella sidor</translation>
 <translation id="7829298379596169484">Får åtkomst till ljudindata</translation>
 <translation id="7831368056091621108">om du vill ha det här tillägget, din historik och andra Chrome-inställningar på alla dina enheter.</translation>
-<translation id="7831493768366098287">Google – skriv ut</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">Sluttid</translation>
 <translation id="7833720883933317473">Sparade anpassade ord visas här</translation>
@@ -4420,6 +4434,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7847212883280406910">Tryck på Ctrl+Alt+ S om du vill byta till <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="7847644661628718598">Registrera enheten snabbt med startappen</translation>
 <translation id="7849264908733290972">Öppna &amp;bild i ny flik</translation>
+<translation id="784934925303690534">Tidsintervall</translation>
 <translation id="7850851215703745691">Dessa filer i Drive delas inte ännu</translation>
 <translation id="7851457902707056880">Inloggning kan bara göras med ägarkontot. Starta om och logga in med ägarkontot. Datorn kommer att startas om automatiskt om 30 sekunder.</translation>
 <translation id="7851716364080026749">Blockera alltid åtkomst till kamera och mikrofon</translation>
@@ -4561,6 +4576,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8050038245906040378">Microsofts kommersiella kodsignering</translation>
 <translation id="8053278772142718589">PKCS #12-filer</translation>
 <translation id="8053390638574070785">Hämta sidan igen</translation>
+<translation id="8054029954190364711">Upplåsning med fingeravtryck</translation>
 <translation id="8054517699425078995">Den här typen av fil kan skada enheten. Vill du behålla <ph name="FILE_NAME" /> ändå?</translation>
 <translation id="8054563304616131773">Ange en giltig e-postadress</translation>
 <translation id="8054921503121346576">USB-tangentbord har anslutits</translation>
@@ -4582,6 +4598,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8074127646604999664">Tillåt webbplatser som nyligen har stängts att slutföra överföringen av data</translation>
 <translation id="8075191520954018715">Minnesstatus</translation>
 <translation id="8077684120002777443">Användarnamn (t.ex. användare@example.com)</translation>
+<translation id="8077816382010018681">Plats för aviseringstitel för QU-funktionen</translation>
 <translation id="8079530767338315840">Upprepa</translation>
 <translation id="8083739373364455075">Få 100 GB gratis med Google Drive</translation>
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> konfigureras …</translation>
@@ -4875,6 +4892,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8569682776816196752">Det gick inte att hitta några platser</translation>
 <translation id="8569764466147087991">Välj fil att öppna</translation>
 <translation id="8571032220281885258">När du säger Ok Google söker Chrome efter det du säger därefter.</translation>
+<translation id="8571213806525832805">Senaste fyra veckorna</translation>
 <translation id="8579285237314169903">Synkroniserar <ph name="NUMBER_OF_FILES" /> objekt ...</translation>
 <translation id="857943718398505171">Tillåten (rekommenderas)</translation>
 <translation id="8581809080475256101">Tryck här om du vill fortsätta till nästa, visa historiken med snabbmenyn</translation>
@@ -4927,6 +4945,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8659875081143553823">Ett ögonblick</translation>
 <translation id="8661290697478713397">Öppna länk i inko&amp;gnitofönster</translation>
 <translation id="8662795692588422978">Personer</translation>
+<translation id="8662811608048051533">Du loggas ut från de flesta webbplatser.</translation>
 <translation id="8662911384982557515">Ändra startsida till: <ph name="HOME_PAGE" /></translation>
 <translation id="8662978096466608964">Bakgrundsbilden kan inte anges i Chrome.</translation>
 <translation id="8663099077749055505">Blockera alltid flera automatiska nedladdningar på <ph name="HOST" /></translation>
@@ -5299,6 +5318,7 @@ Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivb
 <translation id="93766956588638423">Reparera tillägg</translation>
 <translation id="938470336146445890">Installera ett användarcertifikat.</translation>
 <translation id="938582441709398163">Tangentbordsöverlägg</translation>
+<translation id="939252827960237676">Det gick inte att spara skärmdumpen</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Ange lösenfras</translation>
 <translation id="939736085109172342">Ny mapp</translation>
@@ -5308,6 +5328,7 @@ Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivb
 <translation id="945522503751344254">Skicka synpunkter</translation>
 <translation id="951981865514037445"><ph name="URL" /> vill använda enhetens platsinfo.</translation>
 <translation id="952992212772159698">Inte aktiverat</translation>
+<translation id="9580706199804957">Det gick inte att ansluta till Googles tjänster</translation>
 <translation id="958515377357646513">Fortsätt till nästa genom att trycka här.</translation>
 <translation id="960719561871045870">Operatörskod</translation>
 <translation id="960987915827980018">Ca 1 timme kvar</translation>

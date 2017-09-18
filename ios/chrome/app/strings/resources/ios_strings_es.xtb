@@ -69,6 +69,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2230173723195178503">Página web cargada</translation>
+<translation id="2256128224215992540">Sugerencias de búsqueda y sitios</translation>
 <translation id="2267753748892043616">Añadir cuenta</translation>
 <translation id="2273327106802955778">Menú más</translation>
 <translation id="2320166752086256636">Ocultar teclado</translation>
@@ -178,9 +179,11 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="430793432425771671">Sincronizar todo</translation>
 <translation id="4342284590510997375">Nuevo</translation>
 <translation id="4359125752503270327">Esta página se abrirá en otra aplicación.</translation>
+<translation id="4370827530403103842">La sincronización no funciona. Toca para solucionarlo.</translation>
 <translation id="4375040482473363939">Búsqueda mediante códigos QR</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="441868831736628555">Aviso de privacidad</translation>
+<translation id="4460091562821778167">Preguntarme qué aplicación se usa cada vez</translation>
 <translation id="4508750114462689118">Cierra el inicio de sesión en la promoción</translation>
 <translation id="4526249700380860531">Consulta y administra contraseñas guardadas en la página <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prueba a iniciar sesión de nuevo.</translation>

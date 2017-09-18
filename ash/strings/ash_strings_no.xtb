@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
 <translation id="1252999807265626933">Lader fra <ph name="POWER_SOURCE" /></translation>
+<translation id="1267032506238418139">Endring av hurtigtast</translation>
 <translation id="1270290102613614947">Skjermtastaturet er deaktivert</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (laster inn …)</translation>
 <translation id="1850504506766569011">Wi-Fi er slått av.</translation>
-<translation id="1856813161013948396">Hopp over låseskjermen – bare trykk på fingeravtrykkssensoren i stedet. Klikk for å konfigurere.</translation>
 <translation id="1864454756846565995">USB-C-enhet (porten på baksiden)</translation>
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Snarveien for å åpne oppgavebehandlingen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">Hvis du slår på mobildata, blir Bluetooth også slått på.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Før du godtar dette, må du bekrefte at denne tilgangskoden vises på den aktuelle enheten: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">Det oppstod en feil</translation>
 <translation id="2501920221385095727">Trege taster</translation>
 <translation id="2509468283778169019">Caps Lock er på</translation>
 <translation id="2532589005999780174">Høykontrastmodus</translation>
 <translation id="2597972630681408282">Nattlys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">Send</translation>
 <translation id="2700058918926273959">Økten slutter om <ph name="SESSION_TIME_REMAINING" />. Du blir logget av automatisk.</translation>
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
 <translation id="2761704814324807722">Statusfelt, klokken <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">Du blir nå logget av.</translation>
 <translation id="2825619548187458965">Hylle</translation>
 <translation id="2844169650293029770">USB-C-enhet (porten foran på venstre side)</translation>
-<translation id="2857608528410806398">Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her.</translation>
 <translation id="2865888419503095837">Nettverksinformasjon</translation>
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2942516765047364088">Hylleposisjon</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">Batteriet er fullt</translation>
 <translation id="3606978283550408104">En leselist er tilkoblet.</translation>
 <translation id="3621202678540785336">Inndata</translation>
-<translation id="3625258641415618104">Skjermdumper er deaktivert</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
 <translation id="3712407551474845318">Ta skjermdump av et område</translation>
 <translation id="371370241367527062">Mikrofon foran</translation>
-<translation id="3742055079367172538">Skjermdump tatt</translation>
+<translation id="3771549900096082774">Høykontrastmodus</translation>
 <translation id="3775358506042162758">Du kan bare ha opptil tre kontoer i flerpålogging.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lås</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">Taleinndata</translation>
 <translation id="3901991538546252627">Kobler til <ph name="NAME" /></translation>
 <translation id="394485226368336402">Lydinnstillinger</translation>
-<translation id="3967919079500697218">Muligheten til å ta skjermdumper er deaktivert av administratoren.</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="4017989525502048489">Laserpeker</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">Kobler til …</translation>
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4430019312045809116">Volum</translation>
-<translation id="4448844063988177157">Søker etter Wi-Fi-nettverk ...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Frakoblede enheter</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: kobler til ...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">Snarveien for å låse skjermen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">ChromeVox er slått på</translation>
 <translation id="4729904664295161097">Assistenten er bare tilgjengelig for hovedprofilen.</translation>
+<translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">søk</translation>
 <translation id="4804818685124855865">Koble fra</translation>
 <translation id="4849058404725798627">Fremhev objektet med tastaturfokus</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">Godta</translation>
 <translation id="4961318399572185831">Cast skjermen</translation>
 <translation id="5168181903108465623">Cast-enheter er tilgjengelige</translation>
-<translation id="5170568018924773124">Vis i mappen</translation>
 <translation id="5207949376430453814">Fremhev tekstinnsettingspunktet</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">Du logges automatisk av om <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Datamaskinen din kan registreres av Bluetooth-enheter i nærheten, og vises med navnet «<ph name="NAME" />» og adressen <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Lader <ph name="POWER_SOURCE" /></translation>
-<translation id="6144938890088808325">Hjelp oss med å forbedre Chromebook</translation>
 <translation id="615957422585914272">Vis skjermtastaturet</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktiveres …</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7246339268451149667">Vil du slå på opplåsing med fingeravtrykk?</translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
 <translation id="7348093485538360975">Skjermtastatur</translation>
 <translation id="735745346212279324">VPN frakoblet</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> støtter ikke <ph name="SPECIFIED_RESOLUTION" />. Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er slått på</translation>
-<translation id="7581273696622423628">Besvar undersøkelsen</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="7692480393933218409">Lader de tilkoblede USB-C-enhetene</translation>
 <translation id="776344839111254542">Klikk for å se oppdateringsdetaljene</translation>
 <translation id="7798302898096527229">Trykk på Søk eller Shift for å avbryte</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">Språket er endret fra <ph name="FROM_LOCALE" /> til <ph name="TO_LOCALE" /> etter synkronisering av innstillingene dine.</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="7977927628060636163">Søker etter mobilnettverk …</translation>
 <translation id="7982789257301363584">Nettverk</translation>
 <translation id="8000066093800657092">Ingen nettverk</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
-<translation id="8077816382010018681">Tittelen for varselet for hurtigopplåsing-funksjonen skal være her.</translation>
 <translation id="8098591350844501178">Slutt å caste skjermen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Tilkoblet <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer …</translation>
 <translation id="8142699993796781067">Privat nettverk</translation>
 <translation id="8180896103888046100">Slutt å caste til en ukjent mottaker</translation>
-<translation id="8185286464235484130">Svar på noen spørsmål for å fortelle oss hva du synes om oss.</translation>
 <translation id="8190698733819146287">Tilpass språk og inndata</translation>
+<translation id="8261506727792406068">Slett</translation>
 <translation id="8308637677604853869">Forrige meny</translation>
 <translation id="8351131234907093545">Opprett et notat</translation>
 <translation id="8392234662362215700">Trykk på Ctrl + Shift + mellomrom for å bytte tastaturoppsett.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE" /> % fullt</translation>
 <translation id="9210037371811586452">Avslutter enhetlig skrivebordsmodus</translation>
 <translation id="923686485342484400">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
-<translation id="939252827960237676">Lagringen av skjermdumpen mislyktes</translation>
 <translation id="945522503751344254">Gi tilbakemelding</translation>
 <translation id="98515147261107953">Liggende</translation>
 </translationbundle>

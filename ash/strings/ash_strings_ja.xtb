@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">オーバースキャン</translation>
 <translation id="1247372569136754018">マイク（内蔵）</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> から充電しています</translation>
+<translation id="1267032506238418139">ショートカットの変更</translation>
 <translation id="1270290102613614947">画面キーボードは無効です</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" />（<ph name="ANNOTATION" />）</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">イーサネット: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">アシスタント（読み込み中...）</translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
-<translation id="1856813161013948396">指紋認証センサーをタップして画面のロックを解除できます。設定するにはクリックしてください。</translation>
 <translation id="1864454756846565995">USB-C デバイス（背面のポート）</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
 <translation id="1919743966458266018">タスク マネージャを起動するショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">モバイルデータ通信を有効にすると、Bluetooth も有効になります。</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">エラーが発生しました</translation>
 <translation id="2501920221385095727">固定キー</translation>
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
 <translation id="2597972630681408282">読書灯: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">送信</translation>
 <translation id="2700058918926273959">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。終了するとログアウトします。</translation>
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="2761704814324807722">ステータス トレイ、時刻 <ph name="TIME" />、<ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">ログアウトします。</translation>
 <translation id="2825619548187458965">シェルフ</translation>
 <translation id="2844169650293029770">USB-C デバイス（左手前のポート）</translation>
-<translation id="2857608528410806398">ロックのクイック解除機能の通知本文がここに表示されます。ロックのクイック解除機能の通知本文がここに表示されます。ロックのクイック解除機能の通知本文がここに表示されます。ロックのクイック解除機能の通知本文がここに表示されます。ロックのクイック解除機能の通知本文がここに表示されます。</translation>
 <translation id="2865888419503095837">ネットワーク情報</translation>
 <translation id="2872961005593481000">終了</translation>
 <translation id="2942516765047364088">シェルフの位置</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">バッテリー残量: 満</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
 <translation id="3621202678540785336">入力</translation>
-<translation id="3625258641415618104">スクリーンショットが無効</translation>
 <translation id="3626281679859535460">輝度</translation>
 <translation id="3712407551474845318">一部分をキャプチャ</translation>
 <translation id="371370241367527062">前方のマイク</translation>
-<translation id="3742055079367172538">スクリーンショット撮影完了</translation>
+<translation id="3771549900096082774">ハイ コントラスト モード</translation>
 <translation id="3775358506042162758">マルチ ログインできるアカウントは 3 つまでです。</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ロック</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">音声入力</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> に接続しています</translation>
 <translation id="394485226368336402">音声設定</translation>
-<translation id="3967919079500697218">スクリーンショットを撮る機能は、管理者によって無効にされています。</translation>
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
 <translation id="4017989525502048489">レーザー ポインタ</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
-<translation id="4448844063988177157">Wi-Fi ネットワークを検出しています...</translation>
 <translation id="4479639480957787382">イーサネット</translation>
 <translation id="4481530544597605423">ペア設定されていないデバイス</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: 接続しています...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">画面をロックするショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="4659419629803378708">ChromeVox を有効にしました</translation>
 <translation id="4729904664295161097">アシスタントはメインのプロフィールでのみご利用いただけます。</translation>
+<translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> のパスワード</translation>
 <translation id="479989351350248267">検索</translation>
 <translation id="4804818685124855865">切断</translation>
 <translation id="4849058404725798627">キーボードのフォーカスがある項目をハイライト表示する</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">承諾</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
-<translation id="5170568018924773124">フォルダを開く</translation>
 <translation id="5207949376430453814">テキスト カーソルをハイライト表示する</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="523505283826916779">ユーザー補助の設定</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">あと <ph name="LOGOUT_TIME_LEFT" />で自動的にログアウトします。</translation>
 <translation id="607652042414456612">お使いのパソコンは近くの Bluetooth デバイスで検出可能です。名前「<ph name="NAME" />」、アドレス「<ph name="ADDRESS" />」のデバイスとして表示されます</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> を充電しています</translation>
-<translation id="6144938890088808325">Chromebooks の改善にご協力ください</translation>
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: 有効にしています...</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
-<translation id="7246339268451149667">指紋によるロック解除を有効にしますか？</translation>
 <translation id="7256634071279256947">後方のマイク</translation>
 <translation id="7348093485538360975">画面キーボード</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
@@ -239,27 +233,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
 <translation id="7562368315689366235">絵文字パレット</translation>
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
-<translation id="7581273696622423628">アンケートに答える</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7692480393933218409">接続された USB-C デバイスを充電しています</translation>
 <translation id="776344839111254542">クリックしてアップデートの詳細を表示する</translation>
 <translation id="7798302898096527229">キャンセルするには検索キーまたは Shift キーを押します。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
 <translation id="7977927628060636163">モバイル ネットワークを検索しています...</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
 <translation id="8054466585765276473">バッテリーの残り時間を計算しています。</translation>
-<translation id="8077816382010018681">ロックのクイック解除機能の通知タイトルがここに表示されます</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> への画面のキャストを停止する</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> に接続しました</translation>
 <translation id="813913629614996137">初期化しています...</translation>
 <translation id="8142699993796781067">プライベート ネットワーク</translation>
 <translation id="8180896103888046100">不明な受信デバイスへのキャストを停止する</translation>
-<translation id="8185286464235484130">満足度に関するアンケートにご協力ください。</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
+<translation id="8261506727792406068">削除</translation>
 <translation id="8308637677604853869">前のメニュー</translation>
 <translation id="8351131234907093545">メモを作成</translation>
 <translation id="8392234662362215700">キーボードのレイアウトを切り替えるには Ctrl+Shift+Space を押してください。</translation>
@@ -292,7 +283,6 @@
 <translation id="9201131092683066720">バッテリー残量: <ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>
 <translation id="923686485342484400">ログアウトするには、Ctrl Shift Q を 2 回押します。</translation>
-<translation id="939252827960237676">スクリーンショットを保存できませんでした</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 <translation id="98515147261107953">横</translation>
 </translationbundle>

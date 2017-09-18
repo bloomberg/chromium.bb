@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">এখানে আলতো চাপুন</translation>
 <translation id="5076340679995252485">&amp;প্রতিলেপন</translation>
 <translation id="5120799197269191491">অনুসন্ধান+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">পিন দিয়ে আনলক করার বৈশিষ্ট্য</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">সম্পূর্ণ দেখার ত্রিভুজ</translation>
 <translation id="528468243742722775">End</translation>
@@ -92,6 +91,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{১ ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">সমস্ত অ্যাপ্লিকেশান</translation>
+<translation id="6022924867608035986">সার্চ বক্সের টেক্সট সাফ করুন</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6119846243427417423">সক্রিয় করুন</translation>
 <translation id="6129953537138746214">ব্যবধান</translation>
@@ -113,7 +113,7 @@
 <translation id="6845383723252244143">ফোল্ডার বেছে নিন</translation>
 <translation id="6845533974506654842">টিপুন</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{১ ঘণ্টা বাকি}one{# ঘণ্টা বাকি}other{# ঘণ্টা বাকি}}</translation>
-<translation id="688711909580084195">শিরোনামহীন ওয়েবপৃষ্ঠা</translation>
+<translation id="688711909580084195">Untitled Webpage</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{১ বছর বাকি}one{# বছর বাকি}other{# বছর বাকি}}</translation>
 <translation id="6918245111648057970">প্রত্যেক ব্যবহারকারীর জন্য নিম্নলিখিত থেকে বিজ্ঞপ্তি মঞ্জুর করুন:</translation>
@@ -135,7 +135,6 @@
 <translation id="7814458197256864873">&amp;অনুলিপি</translation>
 <translation id="7850320739366109486">বিরক্ত করবেন না</translation>
 <translation id="7907591526440419938">খোলা ফাইল</translation>
-<translation id="8054029954190364711">আঙুলের ছাপ দিয়ে আনলক করার বৈশিষ্ট্য</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{১ ঘণ্টা পূর্বে}one{# ঘণ্টা পূর্বে}other{# ঘণ্টা পূর্বে}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>
 <translation id="815598010540052116">নিচে স্ক্রোল করুন</translation>

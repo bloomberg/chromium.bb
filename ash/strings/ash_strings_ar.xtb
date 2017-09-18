@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">الخروج عن إطار الشاشة</translation>
 <translation id="1247372569136754018">ميكروفون (داخلي)</translation>
 <translation id="1252999807265626933">جارٍ الشحن من <ph name="POWER_SOURCE" /></translation>
+<translation id="1267032506238418139">تغيير الاختصار</translation>
 <translation id="1270290102613614947">تم تعطيل لوحة المفاتيح على الشاشة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">الإيثرنت: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">المساعد (جارٍ التحميل...)</translation>
 <translation id="1850504506766569011">‏تم إيقاف تشغيل Wi-Fi.</translation>
-<translation id="1856813161013948396">يمكنك تخطي شاشة التأمين بمجرد النقر على مستشعر بصمات الإصبع. انقر للتهيئة.</translation>
 <translation id="1864454756846565995">‏جهاز USB-C (المنفذ الخلفي)</translation>
 <translation id="1882897271359938046">نسخ إلى <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">لقد تغيّر اختصار فتح إدارة المهام. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">سيؤدي تمكين ميزة بيانات الجوّال إلى تمكين البلوتوث.</translation>
 <translation id="2391579633712104609">180 درجة</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. قبل القبول، يُرجى التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">حدث خطأ</translation>
 <translation id="2501920221385095727">مفاتيح الثبات</translation>
 <translation id="2509468283778169019">‏مفتاح CAPS LOCK قيد التشغيل</translation>
 <translation id="2532589005999780174">وضع التباين العالي</translation>
 <translation id="2597972630681408282">إضاءة ليلية: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">إرسال</translation>
 <translation id="2700058918926273959">تنتهي الجلسة في <ph name="SESSION_TIME_REMAINING" />. وسيتم إخراجك.</translation>
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2761704814324807722">علبة الحالة، والوقت <ph name="TIME" />، و<ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">سيتم تسجيل خروجك الآن.</translation>
 <translation id="2825619548187458965">الرف</translation>
 <translation id="2844169650293029770">‏جهاز USB-C (المنفذ الأمامي الأيسر)</translation>
-<translation id="2857608528410806398">يظهر نص إشعار ميزة إلغاء القفل السريع هنا. يظهر نص إشعار ميزة إلغاء القفل السريع هنا. يظهر نص إشعار ميزة إلغاء القفل السريع هنا. يظهر نص إشعار ميزة إلغاء القفل السريع هنا. يظهر نص إشعار ميزة إلغاء القفل السريع هنا.</translation>
 <translation id="2865888419503095837">معلومات الشبكة</translation>
 <translation id="2872961005593481000">إيقاف التشغيل</translation>
 <translation id="2942516765047364088">وضع الرف</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
 <translation id="3606978283550408104">تم توصيل شاشة برايل.</translation>
 <translation id="3621202678540785336">الإدخال</translation>
-<translation id="3625258641415618104">تم تعطيل لقطات الشاشة</translation>
 <translation id="3626281679859535460">السطوع</translation>
 <translation id="3712407551474845318">التقاط منطقة</translation>
 <translation id="371370241367527062">الميكروفون الأمامي</translation>
-<translation id="3742055079367172538">تم التقاط لقطة الشاشة</translation>
+<translation id="3771549900096082774">وضع التباين العالي</translation>
 <translation id="3775358506042162758">يُمكنك تسجيل الدخول المتعدد باستخدام ثلاثة حسابات كحد أقصى.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">قفل</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">الإدخال الصوتي</translation>
 <translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME" /></translation>
 <translation id="394485226368336402">إعدادات الصوت</translation>
-<translation id="3967919079500697218">تم تعطيل إمكانية التقاط لقطات شاشة من قِبل المشرف..</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="3995138139523574647">‏جهاز USB-C (المنفذ الخلفي الأيمن)</translation>
 <translation id="4017989525502048489">مؤشر الليزر</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">جارٍ الاتصال...</translation>
 <translation id="4421231901400348175">مشاركة التحكم في شاشتك مع <ph name="HELPER_NAME" /> عن طريق المساعدة عن بُعد.</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>
-<translation id="4448844063988177157">‏جارِ البحث عن شبكات Wi-Fi...</translation>
 <translation id="4479639480957787382">إيثرنت</translation>
 <translation id="4481530544597605423">الأجهزة التي تم إلغاء إقرانها</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: جارٍ الاتصال...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">لقد تغير اختصار قفل الشاشة. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">‏تم تمكين ChromeVox</translation>
 <translation id="4729904664295161097">لا يتوفر المساعد إلا للملفات الشخصية الأساسية.</translation>
+<translation id="4776917500594043016">كلمة مرور <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">بحث</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="4849058404725798627">تمييز الكائن باستخدام تركيز لوحة المفاتيح</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">قبول</translation>
 <translation id="4961318399572185831">إرسال الشاشة</translation>
 <translation id="5168181903108465623">أجهزة البث متاحة</translation>
-<translation id="5170568018924773124">العرض في المجلد</translation>
 <translation id="5207949376430453814">تمييز علامة إقحام النص</translation>
 <translation id="5222676887888702881">الخروج</translation>
 <translation id="523505283826916779">إعدادات إمكانية الدخول</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">سيتم تسجيل خروجك تلقائيًا في غضون <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">يمكن لأجهزة بلوتوث القريبة اكتشاف جهاز الكمبيوتر وسيظهر كـ "<ph name="NAME" />" بالعنوان <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">جارٍ شحن <ph name="POWER_SOURCE" /></translation>
-<translation id="6144938890088808325">‏ساعدنا في تحسين أجهزة Chromebook</translation>
 <translation id="615957422585914272">إظهار لوحة مفاتيح على الشاشة</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: جارٍ التنشيط...</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">‏جهاز USB-C (المنفذ الأيسر في الخلف)</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7246339268451149667">هل ترغب في تمكين إلغاء القفل باستخدام بصمة الإصبع؟</translation>
 <translation id="7256634071279256947">الميكروفون الخلفي</translation>
 <translation id="7348093485538360975">لوحة المفاتيح على الشاشة</translation>
 <translation id="735745346212279324">تم قطع اتصال الشبكة الافتراضية الخاصة</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" />. تم تغيير الدقة إلى <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">لوحة ألوان الرموز التعبيرية</translation>
 <translation id="7569509451529460200">‏تم تمكين Braille وChromeVox</translation>
-<translation id="7581273696622423628">المشاركة في استطلاع الرأي</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7692480393933218409">‏جارٍ شحن أجهزة USB-C المتصلة</translation>
 <translation id="776344839111254542">النقر لعرض تفاصيل التحديث</translation>
 <translation id="7798302898096527229">‏اضغط على مفتاح البحث أو المفتاح Shift للإلغاء.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و<ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">تم تغيير اللغة من "<ph name="FROM_LOCALE" />" إلى "<ph name="TO_LOCALE" />" بعد مزامنة إعداداتك.</translation>
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="7977927628060636163">جارٍ البحث عن شبكات الجوّال...</translation>
 <translation id="7982789257301363584">الشبكة</translation>
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="8054466585765276473">يجري حساب وقت البطارية.</translation>
-<translation id="8077816382010018681">عنوان إشعار ميزة إلغاء القفل السريع هنا</translation>
 <translation id="8098591350844501178">إيقاف إرسال الشاشة إلى <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">تم الاتصال بالموقع <ph name="NAME" /></translation>
 <translation id="813913629614996137">جارٍ التهيئة...</translation>
 <translation id="8142699993796781067">الشبكة الخاصة</translation>
 <translation id="8180896103888046100">إيقاف الإرسال إلى مستلم غير معروف</translation>
-<translation id="8185286464235484130">يُرجى تقييم أدائنا من خلال الإجابة عن بعض الأسئلة.</translation>
 <translation id="8190698733819146287">تخصيص اللغات والإدخال...</translation>
+<translation id="8261506727792406068">حذف</translation>
 <translation id="8308637677604853869">القائمة السابقة</translation>
 <translation id="8351131234907093545">إنشاء ملاحظة</translation>
 <translation id="8392234662362215700">‏انقر على Control-Shift-Space لتبديل تخطيط لوحة المفاتيح.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية.</translation>
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>
 <translation id="923686485342484400">‏للخروج اضغط على Ctrl Shift Q مرتين.</translation>
-<translation id="939252827960237676">تعذّر حفظ لقطة الشاشة</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="98515147261107953">أفقي</translation>
 </translationbundle>

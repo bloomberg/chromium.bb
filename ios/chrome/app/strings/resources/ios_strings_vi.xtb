@@ -69,6 +69,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2149973817440762519">Chỉnh sửa dấu trang</translation>
 <translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="2230173723195178503">Đã tải trang web</translation>
+<translation id="2256128224215992540">Đề xuất tìm kiếm và trang web</translation>
 <translation id="2267753748892043616">Thêm tài khoản</translation>
 <translation id="2273327106802955778">Menu khác</translation>
 <translation id="2320166752086256636">Ẩn bàn phím</translation>
@@ -178,9 +179,11 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="430793432425771671">Đồng bộ hóa tất cả</translation>
 <translation id="4342284590510997375">Mới</translation>
 <translation id="4359125752503270327">Trang này sẽ mở trong ứng dụng khác.</translation>
+<translation id="4370827530403103842">Đồng bộ hóa không hoạt động. Nhấn để khắc phục sự cố.</translation>
 <translation id="4375040482473363939">Tìm kiếm mã QR</translation>
 <translation id="4378154925671717803">Điện thoại</translation>
 <translation id="441868831736628555">Thông báo bảo mật</translation>
+<translation id="4460091562821778167">Luôn hỏi xem tôi muốn sử dụng ứng dụng nào</translation>
 <translation id="4508750114462689118">Đóng quảng cáo đăng nhập</translation>
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Thử đăng nhập lại.</translation>
@@ -348,6 +351,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7671141431838911305">CÀI ĐẶT</translation>
+<translation id="7677825787905683892">Chọn ứng dụng email mặc định</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7769602470925380267">Chấp nhận và đăng xuất</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
@@ -411,6 +415,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="9083392325882095631">1 mục</translation>
 <translation id="9100610230175265781">Yêu cầu cụm mật khẩu</translation>
 <translation id="9148126808321036104">Đăng nhập lại</translation>
+<translation id="914898748153555155">Bạn có thể thay đổi tùy chọn này bất kỳ lúc nào trong cài đặt Chrome</translation>
 <translation id="9157836665414082580">Hộp thoại loại bỏ</translation>
 <translation id="9188680907066685419">Đăng xuất khỏi tài khoản được quản lý</translation>
 <translation id="9203116392574189331">Tiếp nối</translation>

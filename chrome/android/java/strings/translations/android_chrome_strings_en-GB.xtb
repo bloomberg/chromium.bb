@@ -3,6 +3,7 @@
 <translationbundle lang="en-GB">
 <translation id="1006017844123154345">Open Online</translation>
 <translation id="1036727731225946849">Adding <ph name="WEBAPK_NAME" />...</translation>
+<translation id="1041308826830691739">From websites</translation>
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="10614374240317010">Never saved</translation>
 <translation id="1068672505746868501">Never translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
@@ -19,6 +20,8 @@
 <translation id="1197267115302279827">Move bookmarks</translation>
 <translation id="119944043368869598">Clear all</translation>
 <translation id="1201402288615127009">Next</translation>
+<translation id="1204037785786432551">Download link</translation>
+<translation id="1206892813135768548">Copy link text</translation>
 <translation id="1209206284964581585">Hide for now</translation>
 <translation id="1211530540767271776">No USB devices here</translation>
 <translation id="123724288017357924">Reload the current page, ignoring cached content</translation>
@@ -114,6 +117,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">To get personalised content suggested by Google, sign in to Chrome.</translation>
+<translation id="2091887806945687916">Sound</translation>
 <translation id="2095887075102408547">When this feature is turned on, Chrome will use Google servers to compress pages that you visit before downloading them. Pages accessed using private connections (HTTPS) or in Incognito tabs will not be optimised or seen by Google.</translation>
 <translation id="2096396629993765042">You won’t be signed out of your Google account. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Auto Sign-in</translation>
@@ -265,6 +269,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 
 To adjust your search term, long press to select. To refine your search, slide the panel all the way up and touch the search box.</translation>
 <translation id="3616113530831147358">Audio</translation>
+<translation id="3620176948598597475">Resetting erases Data Saver history, including the list of visited sites.</translation>
 <translation id="3632295766818638029">Unmask password</translation>
 <translation id="363596933471559332">Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.</translation>
 <translation id="3649663272864015643">Home tab selected</translation>
@@ -273,6 +278,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3662546969139119822">No history here</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
 <translation id="3706423975342040244">Entertainment</translation>
+<translation id="3712575778697986964">Reset Data Saver?</translation>
 <translation id="3714981814255182093">Open the Find Bar</translation>
 <translation id="3734660163659757482">Pull up to see bookmarks and more</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
@@ -296,6 +302,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="393697183122708255">No enabled voice search available</translation>
 <translation id="3946611741043634542">By continuing, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Sign in</translation>
+<translation id="395206256282351086">Search and site suggestions disabled</translation>
 <translation id="395922942268463099">Pages updated regularly</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="397583555483684758">Sync has stopped working</translation>
@@ -333,6 +340,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4256782883801055595">Open-source licences</translation>
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Sync error occurred, tap to get details.</translation>
+<translation id="4269820728363426813">Copy link address</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Allowed</translation>
 <translation id="42981349822642051">Expand</translation>
@@ -546,6 +554,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="6232535412751077445">Enabling “Do Not Track” means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request and how the request is interpreted.
 
 For example, some websites may respond to this request by showing you ads that aren’t based on other websites that you’ve visited. Many websites will still collect and use your browsing data – for example to improve security, to provide content, ads and recommendations and to generate reporting statistics.</translation>
+<translation id="6255999984061454636">Content suggestions</translation>
 <translation id="6277522088822131679">There was a problem printing the page. Please try again.</translation>
 <translation id="6295158916970320988">All sites</translation>
 <translation id="6320088164292336938">Vibrate</translation>
@@ -602,7 +611,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6701279291835318271">Security Reports</translation>
 <translation id="6709133671862442373">News</translation>
 <translation id="6710213216561001401">Previous</translation>
-<translation id="6727612981472093924">Navigation panel opened</translation>
 <translation id="6738867403308150051">Downloading…</translation>
 <translation id="6762156594045689028">To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Can't open file</translation>
@@ -661,6 +669,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7253272406652746122">Add a Google account from the Accounts page in your device’s Settings app.</translation>
 <translation id="7274013316676448362">Blocked site</translation>
 <translation id="7307288900373049735">Contacting Google…this may take a minute</translation>
+<translation id="7318797029885648322">Tap More to get articles</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Share 1 selected item}other{Share # selected items}}</translation>
@@ -672,6 +681,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7423098979219808738">Ask first</translation>
 <translation id="7437998757836447326">Sign out of Chrome</translation>
 <translation id="7445411102860286510">Allow sites to automatically play muted videos (recommended)</translation>
+<translation id="7453467225369441013">Signs you out of most sites. You won't be signed out of your Google Account.</translation>
 <translation id="7455923816558154057">Tap to view</translation>
 <translation id="7464701184726199289">This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">No Thanks</translation>
@@ -738,6 +748,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8026334261755873520">Clear browsing data</translation>
 <translation id="8035133914807600019">New folder…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> days left</translation>
+<translation id="805047784848435650">Based on your browsing history</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB available</translation>
 <translation id="8058746566562539958">Open in new Chrome tab</translation>
 <translation id="8063895661287329888">Failed to add bookmark.</translation>
@@ -797,6 +808,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
 <translation id="8641930654639604085">Try to block mature sites</translation>
 <translation id="8662811608048051533">Signs you out of most sites.</translation>
+<translation id="867485229011312729">Where are bookmarks, downloads and history?</translation>
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signal Strength Level: # bar}other{Signal Strength Level: # bars}}</translation>
 <translation id="869891660844655955">Expiry date</translation>

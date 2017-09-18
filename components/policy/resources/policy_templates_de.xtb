@@ -53,6 +53,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
       Wenn die Richtlinie nicht konfiguriert ist, beträgt der Standardwert 3 Stunden.
       Die geringste zulässige Häufigkeit beträgt 60 Sekunden.</translation>
+<translation id="1204263402976895730">Aktivierte Unternehmensdrucker</translation>
 <translation id="1221359380862872747">Bei Demo-Anmeldung angegebene URLs laden</translation>
 <translation id="123081309365616809">Streamen von Inhalten an das Gerät aktivieren</translation>
 <translation id="1265053460044691532">Zeit beschränken, für die sich ein über SAML authentifizierter Nutzer offline anmelden kann</translation>
@@ -78,8 +79,8 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Diese Richtlinie wird nur verwendet, wenn "BlacklistRestriction" für
       "DeviceNativePrintersAccessMode" ausgewählt wurde.
 
-      Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker zur
-      Verfügung gestellt, mit Ausnahme der in dieser Richtlinie aufgeführten IDs.
+      Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit
+      Ausnahme der in dieser Richtlinie aufgeführten IDs zur Verfügung gestellt.
       </translation>
 <translation id="1353966721814789986">"Beim Start"-Seiten</translation>
 <translation id="1359553908012294236">Wenn für diese Richtlinie "true" festgelegt oder wenn sie nicht konfiguriert ist, sind Gastanmeldungen in <ph name="PRODUCT_NAME" /> möglich. Anmeldungen als Gast entsprechen <ph name="PRODUCT_NAME" />-Profilen, in denen sich alle Fenster im Inkognitomodus befinden.
@@ -241,6 +242,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="2024476116966025075">Erforderlichen Domainnamen für Remote-Zugriff-Clients konfigurieren</translation>
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="203096360153626918">Diese Richtlinie hat keine Auswirkungen auf die Android-Apps. Der Vollbildmodus kann aktiviert werden, auch wenn diese Richtlinie auf <ph name="FALSE" /> gesetzt ist.</translation>
+<translation id="2043770014371753404">Deaktivierte Unternehmensdrucker</translation>
 <translation id="206623763829450685">Gibt an, welche HTTP-Authentifizierungsschemas von <ph name="PRODUCT_NAME" /> unterstützt werden.
 
           Mögliche Werte sind "basic", "digest", "ntlm" und "negotiate". Trennen Sie mehrere Werte durch Kommas.
@@ -256,14 +258,13 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
       Mit dieser Richtlinie können Druckerkonfigurationen für
       <ph name="PRODUCT_OS_NAME" />-Geräte zur Verfügung gestellt werden.
-      Die Größe der Datei darf 5 MB nicht überschreiben und sie muss in JSON codiert sein.
-      Das Format stimmt mit dem des "NativePrinters"-Wörterbuchs überein. Eine Datei
-      mit ungefähr 21.000 Druckern ergibt nach dem Codieren eine Datei mit schätzungsweise
-      5 MB. Der kryptografische Hash wird dazu verwendet, die Integrität des Downloads
-      zu prüfen.
+      Die Größe der Datei darf 5 MB nicht überschreiten und sie muss in JSON codiert sein. Das Format 
+      stimmt mit dem des "NativePrinters"-Wörterbuchs überein. Eine Datei mit ungefähr 21.000 Druckern 
+      ergibt nach dem Codieren eine Datei mit schätzungsweise 5 MB. Der kryptografische Hash wird dazu
+      verwendet, die Integrität des Downloads zu prüfen.
 
       Die Datei wird heruntergeladen und im Cache gespeichert. Sie wird immer dann neu heruntergeladen,
-      wenn sich URL oder Hash verändern.
+       wenn sich URL oder Hash verändern.
 
       Wenn diese Richtlinie festgelegt wird,
       lädt <ph name="PRODUCT_OS_NAME" /> die Datei für
@@ -271,14 +272,13 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       "DeviceNativePrintersAccessMode", "DeviceNativePrintersWhitelist" und
       "DeviceNativePrintersBlacklist" verfügbar.
 
-      Diese Richtlinie hat keinen Einfluss darauf, ob Drucker von Nutzern auf einzelnen
-      Geräten konfiguriert werden können. Sie ist als Ergänzung zur Konfiguration
-      von Druckern durch einzelne Nutzer vorgesehen.
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten Drucker konfigurieren können.
+      Sie ist als Ergänzung zur Konfiguration von Druckern durch einzelne Nutzer vorgesehen.
 
       Diese Richtlinie ist ein Zusatz zu "NativePrintersBulkConfiguration".
 
-      Wenn diese Richtlinie nicht festgelegt wird, gibt es keine an Geräte gebundene
-      Drucker und "NativeDevicePrinter"-Richtlinien* werden ignoriert.</translation>
+      Wenn diese Richtlinie nicht festgelegt wird, gibt es keine an Geräte gebundene Drucker und
+      "NativeDevicePrinter"-Richtlinien* werden ignoriert.</translation>
 <translation id="2127599828444728326">Benachrichtigungen auf diesen Websites zulassen</translation>
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>
 <translation id="2134437727173969994">Sperren des Bildschirms erlauben</translation>
@@ -318,6 +318,15 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
           Ist diese Einstellung konfiguriert, werden Nutzer, die das schnelle Entsperren verwenden, dazu aufgefordert, ihr Passwort je nach Einstellung auf dem Sperrbildschirm einzugeben.
 
           Ist diese Einstellung nicht konfiguriert, werden Nutzer, die das schnelle Entsperren verwenden, dazu aufgefordert, ihr Passwort jeden Tag auf dem Sperrbildschirm einzugeben.</translation>
+<translation id="2194470398825717446">Diese Richtlinie ist in M61 eingestellt, bitte verwenden Sie stattdessen EcryptfsMigrationStrategy.
+
+      Hiermit wird angegeben, wie sich ein Gerät verhalten soll, das mit eCryptfs geliefert wurde und nun eine ext4-Verschlüsselung benötigt.
+
+      Wenn diese Richtlinie auf "DisallowArc" gesetzt ist, werden Android-Apps für alle Nutzer des Geräts deaktiviert – einschließlich derer, die die ext4-Verschlüsselung schon haben. Außerdem wird die Migration von eCryptfs zur ext4-Verschlüsselung keinem Nutzer angeboten.
+
+      Wenn die Richtlinie auf "AllowMigration" gesetzt ist, wird Nutzern mit eCryptfs-Hauptverzeichnissen angeboten, diese je nach Bedarf in die ext4-Verschlüsselung zu migrieren (aktuell, wenn Android N für das Gerät zur Verfügung steht).
+
+      Diese Richtlinie gilt nicht für Kiosk-Apps – diese werden automatisch migriert. Wenn diese Richtlinie nicht konfiguriert ist, verhält sich das Gerät so, als wäre die Richtlinie auf "DisallowArc" gesetzt.</translation>
 <translation id="2201555246697292490">Weiße Liste für natives Messaging konfigurieren</translation>
 <translation id="2204753382813641270">Automatisches Ausblenden der Ablage verwalten</translation>
 <translation id="2208976000652006649">Parameter für URL der Suche, die POST verwendet</translation>
@@ -513,6 +522,14 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker zur Verfügung, deren IDs
       mit den Werten in dieser Richtlinie übereinstimmen. Die IDs müssen den
       Einträgen in der Datei entsprechen, die in "DeviceNativePrinters" angegebenen ist.</translation>
+<translation id="2794520838025002425">Gibt die Drucker an, die vom Nutzer nicht verwendet werden können.
+
+      Diese Richtlinie wird nur verwendet, wenn "BlacklistRestriction" für
+      "NativePrintersBulkAccessMode" ausgewählt wurde.
+
+      Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit
+      Ausnahme der in dieser Richtlinie aufgeführten IDs zur Verfügung gestellt.
+      </translation>
 <translation id="2801230735743888564">Nutzern erlauben, das Easter Egg-Dinosaurierspiel zu spielen, wenn das Gerät offline ist.
 
       Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht spielen, wenn das Gerät offline ist. Ist es auf "true" eingestellt, können Nutzer das Dinosaurierspiel spielen. Falls die Richtlinie nicht konfiguriert ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht unter einer registrierten Version von Chrome OS spielen, unter anderen Umständen jedoch schon.</translation>
@@ -629,6 +646,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="3219421230122020860">Inkognitomodus verfügbar</translation>
 <translation id="3220624000494482595">Wenn die Kiosk-App eine Android-App ist, hat sie keine Kontrolle über die <ph name="PRODUCT_OS_NAME" />-Version, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
 <translation id="3236046242843493070">URL-Muster für die Installation von Erweiterungen, Apps und Nutzerskripten von</translation>
+<translation id="3240609035816615922">Richtlinie für den Zugriff auf die Konfiguration von Druckern.</translation>
 <translation id="3243309373265599239">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Netzbetrieb abgedunkelt wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm abdunkelt.
@@ -878,6 +896,7 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
       Hinweis: Automatische Neustarts sind derzeit nur aktiviert, wenn die Anmeldeseite angezeigt wird oder eine Kiosk-App-Sitzung läuft. Dies wird zukünftig geändert, sodass die Richtlinie immer gilt, unabhängig davon, ob und welche Sitzung aktiv ist.
 
       Der Wert für die Richtlinie muss in Sekunden angegeben werden. Der Mindestwert beträgt 3.600 Sekunden (1 Stunde).</translation>
+<translation id="4203879074082863035">Nur Drucker in der weißen Liste werden Nutzern angezeigt</translation>
 <translation id="420512303455129789">Eine Art Wörterbuch, das URLs einem booleschen Parameter zuordnet und dadurch angibt, ob der Zugriff auf den Host erlaubt ("true") oder blockiert ("false") werden soll
 
           Diese Richtlinie dient ausschließlich zur internen Verwendung in <ph name="PRODUCT_NAME" />.</translation>
@@ -976,6 +995,7 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="4541530620466526913">Lokale Gerätekonten</translation>
 <translation id="4555850956567117258">Remote-Bescheinigung (Remote Attestation) für den Nutzer aktivieren</translation>
 <translation id="4557134566541205630">Standardsuchanbieter-URL für die "Neuer Tab"-Seite</translation>
+<translation id="4558592878156368639">Intervalle für Abwesenheitszeiten bei Abwesenheitszeit des Geräts |ignored_policies| werden veröffentlicht</translation>
 <translation id="4600786265870346112">Großen Cursor aktivieren</translation>
 <translation id="4604931264910482931">Schwarze Liste für natives Messaging konfigurieren</translation>
 <translation id="4617338332148204752">Metatag-Überprüfung in <ph name="PRODUCT_FRAME_NAME" /> überspringen</translation>
@@ -1380,6 +1400,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6211428344788340116">Meldet die Aktivitätszeiten des Geräts
 
       Wird diese Einstellung nicht konfiguriert oder auf "True" gesetzt, melden registrierte Geräte die Zeiträume, in denen ein Nutzer auf dem Gerät aktiv ist. Wird für diese Einstellung "False" festgelegt, werden die Geräteaktivitätszeiten weder aufgezeichnet noch gemeldet.</translation>
+<translation id="6212868225782276239">Alle Drucker außer denen in der schwarzen Liste werden angezeigt.</translation>
 <translation id="6219965209794245435">Bei einer Aktivierung erzwingt diese Richtlinie den Import von AutoFill-Formulardaten aus dem vorherigen Standardbrowser. Darüber hinaus wirkt sich die Richtlinie auch auf den Importdialog aus.
 
       Wenn die Richtlinie deaktiviert ist, erfolgt kein Import der AutoFill-Formulardaten.
@@ -1595,6 +1616,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7132877481099023201">URLs, denen ohne Nachfrage Zugriff auf Videoaufnahmegeräte gestattet wird</translation>
 <translation id="7167436895080860385">Anzeige von Passwörtern im Passwortmanager durch Nutzer zulassen (veraltet)</translation>
 <translation id="7173856672248996428">Sitzungsspezifisches Profil</translation>
+<translation id="717630378807352957">Alle Drucker der Konfigurationsdatei zulassen.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Für Updates zugelassene Verbindungstypen</translation>
 <translation id="7194407337890404814">Name der Standardsuchmaschine</translation>
@@ -1877,6 +1899,20 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
       Falls die Richtlinie deaktiviert oder nicht eingestellt wird, werden bei einer Anmeldung reguläre Profile erstellt.</translation>
 <translation id="8158758865057576716">Erstellung von Roaming-Kopien für <ph name="PRODUCT_NAME" />-Profildaten aktivieren.</translation>
+<translation id="8169931650834542988">Bestimmt, welche Drucker aus
+      "NativePrintersBulkConfiguration" Nutzern zur Verfügung stehen.
+
+      Gibt an, welche Zugriffsrichtlinie für die Massenkonfiguration von Druckern
+      verwendet wird.
+      Wenn "AllowAll" ausgewählt wird, werden alle Drucker angezeigt. Wenn
+      "BlacklistRestriction" ausgewählt wird, kommt "NativePrintersBulkBlacklist"
+      zum Einsatz, um den Zugriff auf die angegebenen Drucker einzuschränken.
+      Wenn "WhitelistPrintersOnly" ausgewählt wird, gibt "NativePrintersWhitelist"
+      nur die Drucker an, die ausgewählt werden können.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, wird angenommen,
+      BlacklistRestriction" wäre ausgewählt.
+      </translation>
 <translation id="8170878842291747619">Aktiviert den integrierten Google Übersetzer-Dienst in <ph name="PRODUCT_NAME" />. Wenn Sie diese Einstellung aktivieren, so wird in <ph name="PRODUCT_NAME" /> eine integrierte Symbolleiste angezeigt, über die Nutzer die Seite bei Bedarf übersetzen lassen können. Sollten Sie diese Einstellung deaktivieren, erscheint die Übersetzungsleiste grundsätzlich nicht. Das Aktivieren und Deaktivieren dieser Einstellung führt dazu, dass Nutzer diese Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen können. Wenn die Einstellung nicht konfiguriert ist, so kann der Nutzer entscheiden, ob er die Funktion in Anspruch nehmen möchte.</translation>
 <translation id="817455428376641507">Erlaubt den Zugriff auf die aufgeführten URLs als Ausnahmen von der schwarzen URL-Liste.
 
@@ -1950,6 +1986,15 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8465065632133292531">Parameter für URL der Suche im Voraus, die POST verwendet</translation>
 <translation id="847472800012384958">Anzeige von Pop-ups für keine Website zulassen</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Gibt die Drucker an, die ein Nutzer verwenden kann.
+
+      Diese Richtlinie wird nur verwendet, wenn "WhitelistPrintersOnly" für
+      "NativePrintersBulkAccessMode" ausgewählt wurde.
+
+      Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker
+      zur Verfügung, deren IDs mit den Werten in dieser Richtlinie übereinstimmen.
+      Die IDs müssen den Einträgen in der Datei entsprechen, die in
+      "NativePrintersBulkConfiguration" angegeben ist.</translation>
 <translation id="8484458986062090479">Passt die Liste mit URL-Mustern an, die immer vom Host-Browser gerendert werden müssen.
 
           Wenn diese Richtlinie nicht konfiguriert ist, kommt der über die Richtlinie "ChromeFrameRendererSettings" festgelegte Standard-Renderer für alle Websites zum Einsatz.
@@ -1960,6 +2005,33 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8519264904050090490">Manuell festgelegte Ausnahme-URLs für verwalteten Nutzer</translation>
 <translation id="8544375438507658205">Standardanwendung für HTML-Darstellung in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
+<translation id="8555589883248082762">Stellt Konfigurationen für an Geräte gebundene Unternehmensdrucker zur Verfügung.
+
+      Mit dieser Richtlinie können Druckerkonfigurationen für
+      <ph name="PRODUCT_OS_NAME" />-Geräte zur Verfügung gestellt werden.
+      Die Größe der Datei darf 5 MB nicht überschreiten und sie muss in JSON
+      codiert sein.
+      Das Format stimmt mit dem des "NativePrinters"-Wörterbuchs überein. Eine
+      Datei mit ungefähr 21.000 Druckern ergibt nach dem Codieren eine Datei
+      mit schätzungsweise 5 MB.
+      Der kryptografische Hash wird dazu verwendet, die Integrität des Downloads
+      zu prüfen.
+
+      Die Datei wird heruntergeladen und im Cache gespeichert. Sie wird immer
+      dann neu heruntergeladen, wenn sich URL oder Hash verändern.
+
+      Wenn diese Richtlinie konfiguriert ist,
+      lädt <ph name="PRODUCT_OS_NAME" />
+      die Datei für Druckerkonfigurationen herunter und macht die Drucker
+      gemäß "NativePrintersBulkAccessMode", "NativePrintersBulkWhitelist"
+      und "NativePrintersBulkBlacklist" verfügbar.
+
+      Wenn diese Richtlinie konfiguriert ist, können Nutzer Sie weder ändern noch
+      überschreiben.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten
+      Drucker konfigurieren können. Sie ist als Ergänzung zur
+      Konfiguration von Druckern durch einzelne Nutzer vorgesehen.</translation>
 <translation id="8566842294717252664">Web Store auf der "Neuer Tab"-Seite und im App Launcher ausblenden</translation>
 <translation id="8587229956764455752">Erstellung neuer Nutzerkonten erlauben</translation>
 <translation id="8614804915612153606">Automatische Updates deaktivieren</translation>
@@ -2069,6 +2141,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="9096086085182305205">Weiße Liste für Authentifizierungsserver</translation>
 <translation id="9098553063150791878">Richtlinien für die HTTP-Authentifizierung</translation>
 <translation id="9105265795073104888">Android-Apps wird nur ein Teil der Proxykonfigurationsoptionen zur Verfügung gestellt. Der Proxy kann in Android-Apps auf freiwilliger Basis verwendet werden. Es ist nicht möglich, die Verwendung eines Proxys zu erzwingen.</translation>
+<translation id="9112727953998243860">Unternehmensdrucker-Konfigurationsdatei</translation>
 <translation id="9112897538922695510">Damit können Sie eine Liste mit Protokoll-Handlern registrieren, wobei dies lediglich eine empfohlene Richtlinie sein kann. Für die Eigenschaft |protocol| sollte ein Schema wie "mailto" und für die Eigenschaft |url| das URL-Muster der Anwendung festgelegt werden, die das Schema verwaltet. Das Muster kann "%s" enthalten, was später durch die jeweilige URL ersetzt wird.
 
           Die von der Richtlinie registrierten Protokoll-Handler werden mit den Protokoll-Handlern zusammengeführt, die vom Nutzer registriert wurden, und können gemeinsam verwendet werden. Der Nutzer kann die durch die Richtlinie installierten Protokoll-Handler durch Installieren eines neuen standardmäßigen Handlers überschreiben. Ein von der Richtlinie registrierter Protokoll-Handler kann jedoch nicht entfernt werden.</translation>

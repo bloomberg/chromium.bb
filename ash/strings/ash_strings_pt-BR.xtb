@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="1247372569136754018">Microfone (interno)</translation>
 <translation id="1252999807265626933">Carregando a partir de <ph name="POWER_SOURCE" /></translation>
+<translation id="1267032506238418139">Mudança de atalho</translation>
 <translation id="1270290102613614947">Teclado na tela desativado</translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (carregando…)</translation>
 <translation id="1850504506766569011">O Wi-Fi está desligado.</translation>
-<translation id="1856813161013948396">Toque no sensor de impressão digital para pular a tela de bloqueio. Clique para configurar.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
 <translation id="1882897271359938046">Espelhamento de <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">O atalho para abrir o gerenciador de tarefas foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">A ativação dos dados móveis também ativará o Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Antes de aceitar, verifique se esta senha aparece no dispositivo: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">Ocorreu um erro</translation>
 <translation id="2501920221385095727">Teclas aderentes</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
 <translation id="2597972630681408282">Modo noturno: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">Enviar</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. Você será desconectado.</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">Você sairá agora.</translation>
 <translation id="2825619548187458965">Estante</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal da esquerda)</translation>
-<translation id="2857608528410806398">O corpo da notificação do recurso QU fica aqui. O corpo da notificação do recurso QU fica aqui. O corpo da notificação do recurso QU fica aqui. O corpo da notificação do recurso QU fica aqui.</translation>
 <translation id="2865888419503095837">Informações de rede</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2942516765047364088">Posição da estante</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">Bateria carregada</translation>
 <translation id="3606978283550408104">Display em braille conectado.</translation>
 <translation id="3621202678540785336">Entrada</translation>
-<translation id="3625258641415618104">Capturas de tela desativadas</translation>
 <translation id="3626281679859535460">Brilho</translation>
 <translation id="3712407551474845318">Capturar região</translation>
 <translation id="371370241367527062">Microfone frontal</translation>
-<translation id="3742055079367172538">Captura de tela realizada</translation>
+<translation id="3771549900096082774">Modo de alto contraste</translation>
 <translation id="3775358506042162758">É possível ter até três contas em login múltiplo.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloquear</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">Entrada de texto por voz</translation>
 <translation id="3901991538546252627">Conectando-se a <ph name="NAME" /></translation>
 <translation id="394485226368336402">Configurações de áudio</translation>
-<translation id="3967919079500697218">A capacidade de fazer capturas de tela foi desativada pelo seu administrador.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="4017989525502048489">Apontador laser</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME" /> via Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
-<translation id="4448844063988177157">Procurando redes Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositvos não pareados</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: conectando...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">O atalho para bloquear a tela foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">ChromeVox ativado</translation>
 <translation id="4729904664295161097">O Assistente só está disponível para o perfil principal.</translation>
+<translation id="4776917500594043016">Senha para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">pesquisar</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="4849058404725798627">Destacar objeto com o foco de teclado</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4961318399572185831">Transmitir tela</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
-<translation id="5170568018924773124">Mostrar na pasta</translation>
 <translation id="5207949376430453814">Destacar cursor de texto</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="523505283826916779">Configurações de acessibilidade</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">Você sairá automaticamente em <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Seu computador pode ser detectado por dispositivos Bluetooth próximos e aparecerá como "<ph name="NAME" />", com o endereço <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Carregando <ph name="POWER_SOURCE" /></translation>
-<translation id="6144938890088808325">Ajudar a melhorar os Chromebooks</translation>
 <translation id="615957422585914272">Mostrar teclado na tela</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ativando...</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Revertendo para resolução anterior em <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7246339268451149667">Ativar desbloqueio com impressão digital?</translation>
 <translation id="7256634071279256947">Microfone traseiro</translation>
 <translation id="7348093485538360975">Teclado virtual</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta de emoticons</translation>
 <translation id="7569509451529460200">Braille e ChromeVox estão ativados</translation>
-<translation id="7581273696622423628">Responder à pesquisa</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7692480393933218409">Carregando dispositivos USB-C conectados</translation>
 <translation id="776344839111254542">Clique para ver detalhes da atualização</translation>
 <translation id="7798302898096527229">Pressione Pesquisar ou Shift para cancelar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">O idioma foi alterado de "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização de suas configurações.</translation>
 <translation id="7904094684485781019">O administrador desta conta bloqueou o login múltiplo.</translation>
 <translation id="7977927628060636163">Pesquisando redes móveis…</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="8000066093800657092">Sem rede</translation>
 <translation id="8054466585765276473">Calculando duração da bateria.</translation>
-<translation id="8077816382010018681">Título da notificação do recurso QU aqui</translation>
 <translation id="8098591350844501178">Parar de transmitir tela para <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Conectado à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142699993796781067">Rede privada</translation>
 <translation id="8180896103888046100">Parar de transmitir para um destinatário desconhecido</translation>
-<translation id="8185286464235484130">Responda a algumas perguntas para que possamos saber como estamos nos saindo.</translation>
 <translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
+<translation id="8261506727792406068">Excluir</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8351131234907093545">Criar nota</translation>
 <translation id="8392234662362215700">Pressione Control-Shift-Barra de espaço para trocar o layout do teclado.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">A bateria está <ph name="PERCENTAGE" />% carregada.</translation>
 <translation id="9210037371811586452">Saindo do modo de área de trabalho unificada</translation>
 <translation id="923686485342484400">Pressione Control+Shift+Q duas vezes para sair.</translation>
-<translation id="939252827960237676">Falha ao salvar a captura de tela</translation>
 <translation id="945522503751344254">Enviar comentários</translation>
 <translation id="98515147261107953">Paisagem</translation>
 </translationbundle>

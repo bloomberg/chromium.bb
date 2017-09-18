@@ -106,12 +106,6 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="3385242214819933234">Neveljavni lastnik gostitelja.</translation>
 <translation id="3403830762023901068">Nastavitve pravilnika ne dovoljujejo skupne rabe tega računalnika kot gostitelja Oddaljenega povezovanja s Chromom. Če želite pomoč, se obrnite na sistemskega skrbnika.</translation>
 <translation id="3423542133075182604">Postopek oddaljenega delovanja varnostnega ključa</translation>
-<translation id="3426467947138417795">Oddaljeno namizje za Chrome
-Oddaljeno namizje
-Oddaljeni osebni računalnik
-Oddaljeni računalnik
-Oddaljeni dostop
-Oddaljena podpora</translation>
 <translation id="3581045510967524389">Povezana z omrežjem ni uspela. Preverite, ali je naprava povezana v omrežje.</translation>
 <translation id="3596628256176442606">Ta storitev omogoča dohodne povezave iz odjemalcev za Oddaljeno povezovanje s Chromom.</translation>
 <translation id="3606997049964069799">Niste prijavljeni v Chromium. Prijavite se in poskusite znova.</translation>
@@ -120,13 +114,6 @@ Oddaljena podpora</translation>
 <translation id="3695446226812920698">Oglejte si navodila</translation>
 <translation id="3718805989288361841">Napaka z nastavitvami pravilnika za Oddaljeno namizje Chrome. Če želite pomoč, se obrnite na sistemskega skrbnika.</translation>
 <translation id="3776024066357219166">Seja Oddaljenega namizja za Chrome je končana.</translation>
-<translation id="3788372335219293587">Varen dostop do računalnikov iz naprave iOS. Je hitro, preprosto in brezplačno.
-
-• V računalniku, do katerega želite dostopati na daljavo, poiščite aplikacijo Oddaljeno namizje za Chrome v Spletni trgovini Chrome https://chrome.google.com/remotedesktop
-• Namestite programsko opremo Oddaljeno namizje za Chrome in upoštevajte navodila za dokončanje nastavitve.
-• Če se želite povezati z računalnikom, v napravi iOS odprite aplikacijo in se dotaknite enega od računalnikov, povezanih s spletom.
-
-Če želite več informacij o zasebnosti, si oglejte Googlov pravilnik o zasebnosti (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Če želite dovoliti dostop prek Oddaljenega namizja za Chrome, spodaj potrdite račun in PIN.</translation>
 <translation id="3897092660631435901">Meni</translation>
@@ -255,9 +242,6 @@ Oddaljena podpora</translation>
 <translation id="7144878232160441200">Poskusi znova</translation>
 <translation id="7149517134817561223">Aplikacija naj pošilja ukaze gostitelju Oddaljenega namizja za Chrome.</translation>
 <translation id="7215059001581613786">Vnesite kodo PIN, ki mora biti vsaj šestmestna.</translation>
-<translation id="7237767047212540055">V računalniku, do katerega želite dostopati na daljavo, odprite Chrome in obiščite <ph name="INSTALLATION_LINK" />
-Namestite programsko opremo Oddaljeno namizje za Chrome in upoštevajte navodila za dokončanje nastavitve
-Po končani nastavitvi boste lahko dostopali do računalnika na tej strani tako, da boste vnesli PIN ali kodo za dostop</translation>
 <translation id="7312846573060934304">Gostitelj ni dosegljiv.</translation>
 <translation id="7319983568955948908">Prekliči skupno rabo</translation>
 <translation id="7401733114166276557">Oddaljeno namizje za Chrome</translation>
