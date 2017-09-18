@@ -969,14 +969,11 @@ TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
 
   dummy_page_holder = nullptr;
 
-  EXPECT_FALSE(request.IsExternalRequest());
-
   fetch_context->AddAdditionalRequestHeaders(request, kFetchSubresource);
 
   EXPECT_EQ(origin, request.HttpHeaderField(HTTPNames::Origin));
   EXPECT_EQ(String(origin + "/"), request.HttpHeaderField(HTTPNames::Referer));
   EXPECT_EQ(String(), request.HttpHeaderField("Save-Data"));
-  EXPECT_TRUE(request.IsExternalRequest());
 }
 
 TEST_F(FrameFetchContextTest, ResourceRequestCachePolicyWhenDetached) {

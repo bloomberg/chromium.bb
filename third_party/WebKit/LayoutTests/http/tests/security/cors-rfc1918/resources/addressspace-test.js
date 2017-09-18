@@ -21,7 +21,7 @@ function createIFrame(origin, type) {
     return i;
 }
 
-function addressSpaceTest(origin, type, expected, callback) {
+function addressSpaceTest(origin, type, expected, callback, nameExtra) {
     async_test(function (t) {
         var i = createIFrame(origin, type);
         window.addEventListener("message", t.step_func(function (e) {
@@ -35,5 +35,5 @@ function addressSpaceTest(origin, type, expected, callback) {
         }));
 
         document.body.appendChild(i);
-    }, origin + " = '" + expected + "'");
+    }, origin + " = '" + expected + "'" + (nameExtra ? nameExtra : ""));
 }

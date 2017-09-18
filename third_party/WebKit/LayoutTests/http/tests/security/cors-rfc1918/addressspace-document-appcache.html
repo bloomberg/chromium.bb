@@ -8,20 +8,20 @@
             // If we request the same resources again, we should load them from the
             // memory cache with the same properties.
             function () {
-                addressSpaceTest("http://localhost:8000", "document+appcache", "local");
+                addressSpaceTest("http://localhost:8000", "document+appcache", "local", null, " repeat");
             });
         addressSpaceTest("http://127.0.0.1:8000", "document", "local",
             // If we request the same resources again, we should load them from the
             // memory cache with the same properties.
             function () {
-                addressSpaceTest("http://127.0.0.1:8000", "document+appcache", "local");
+                addressSpaceTest("http://127.0.0.1:8000", "document+appcache", "local", null, " repeat");
             });
 
         addressSpaceTest("http://example.test:8000", "document+appcache", "private",
             // If we request the same resources again, we should load them from the
             // memory cache with the same properties.
             function () {
-                addressSpaceTest("http://example.test:8000", "document+appcache", "private");
+                addressSpaceTest("http://example.test:8000", "document+appcache", "private", null, " repeat");
             });
     };
 </script>
