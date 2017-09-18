@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <wayland-server.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
+#include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include "base/bind.h"
 #include "base/files/scoped_file.h"
@@ -92,36 +93,39 @@ void UseUnstableVersion(wl_client* client,
       ->UseUnstableVersion(version);
 }
 
-void GetXdgSurface(wl_client* client,
-                   wl_resource* resource,
-                   uint32_t id,
-                   wl_resource* surface_resource) {
-  auto* surface =
-      static_cast<MockSurface*>(wl_resource_get_user_data(surface_resource));
-  if (surface->xdg_surface) {
-    wl_resource_post_error(resource, XDG_SHELL_ERROR_ROLE,
-                           "surface already has a role");
-    return;
-  }
-  wl_resource* xdg_surface_resource = wl_resource_create(
-      client, &xdg_surface_interface, wl_resource_get_version(resource), id);
-  if (!xdg_surface_resource) {
-    wl_client_post_no_memory(client);
-    return;
-  }
-  surface->xdg_surface.reset(new MockXdgSurface(xdg_surface_resource));
-}
+// xdg_shell and zxdg_shell_v6
 
 void Pong(wl_client* client, wl_resource* resource, uint32_t serial) {
   static_cast<MockXdgShell*>(wl_resource_get_user_data(resource))->Pong(serial);
 }
 
+// xdg_shell
+
+void GetXdgSurfaceV5(wl_client* client,
+                     wl_resource* resource,
+                     uint32_t id,
+                     wl_resource* surface_resource);
+
 const struct xdg_shell_interface xdg_shell_impl = {
     &DestroyResource,     // destroy
     &UseUnstableVersion,  // use_unstable_version
-    &GetXdgSurface,       // get_xdg_surface
+    &GetXdgSurfaceV5,     // get_xdg_surface
     nullptr,              // get_xdg_popup
     &Pong,                // pong
+};
+
+// zxdg_shell_v6
+
+void GetXdgSurfaceV6(wl_client* client,
+                     wl_resource* resource,
+                     uint32_t id,
+                     wl_resource* surface_resource);
+
+const struct zxdg_shell_v6_interface zxdg_shell_v6_impl = {
+    &DestroyResource,  // destroy
+    nullptr,           // create_positioner
+    &GetXdgSurfaceV6,  // get_xdg_surface
+    &Pong,             // pong
 };
 
 // wl_seat
@@ -168,7 +172,7 @@ const struct wl_pointer_interface pointer_impl = {
     &DestroyResource,  // release
 };
 
-// xdg_surface
+// xdg_surface, zxdg_surface_v6 and zxdg_toplevel shared methods.
 
 void SetTitle(wl_client* client, wl_resource* resource, const char* title) {
   static_cast<MockXdgSurface*>(wl_resource_get_user_data(resource))
@@ -183,6 +187,16 @@ void SetAppId(wl_client* client, wl_resource* resource, const char* app_id) {
 void AckConfigure(wl_client* client, wl_resource* resource, uint32_t serial) {
   static_cast<MockXdgSurface*>(wl_resource_get_user_data(resource))
       ->AckConfigure(serial);
+}
+
+void SetWindowGeometry(wl_client* client,
+                       wl_resource* resource,
+                       int32_t x,
+                       int32_t y,
+                       int32_t width,
+                       int32_t height) {
+  static_cast<MockXdgSurface*>(wl_resource_get_user_data(resource))
+      ->SetWindowGeometry(x, y, width, height);
 }
 
 void SetMaximized(wl_client* client, wl_resource* resource) {
@@ -201,6 +215,50 @@ void SetMinimized(wl_client* client, wl_resource* resource) {
 }
 
 const struct xdg_surface_interface xdg_surface_impl = {
+    &DestroyResource,    // destroy
+    nullptr,             // set_parent
+    &SetTitle,           // set_title
+    &SetAppId,           // set_app_id
+    nullptr,             // show_window_menu
+    nullptr,             // move
+    nullptr,             // resize
+    &AckConfigure,       // ack_configure
+    &SetWindowGeometry,  // set_window_geometry
+    &SetMaximized,       // set_maximized
+    &UnsetMaximized,     // set_unmaximized
+    nullptr,             // set_fullscreen
+    nullptr,             // unset_fullscreen
+    &SetMinimized,       // set_minimized
+};
+
+// zxdg_surface specific interface
+
+void GetTopLevel(wl_client* client, wl_resource* resource, uint32_t id) {
+  auto* surface =
+      static_cast<MockXdgSurface*>(wl_resource_get_user_data(resource));
+  if (surface->xdg_toplevel) {
+    wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_ALREADY_CONSTRUCTED,
+                           "surface has already been constructed");
+    return;
+  }
+  wl_resource* xdg_toplevel_resource =
+      wl_resource_create(client, &zxdg_toplevel_v6_interface, 1, id);
+  if (!xdg_toplevel_resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+  surface->xdg_toplevel.reset(new MockXdgTopLevel(xdg_toplevel_resource));
+}
+
+const struct zxdg_surface_v6_interface zxdg_surface_v6_impl = {
+    &DestroyResource,    // destroy
+    &GetTopLevel,        // get_toplevel
+    nullptr,             // get_popup
+    &SetWindowGeometry,  // set_window_geometry
+    &AckConfigure,       // ack_configure
+};
+
+const struct zxdg_toplevel_v6_interface zxdg_toplevel_v6_impl = {
     &DestroyResource,  // destroy
     nullptr,           // set_parent
     &SetTitle,         // set_title
@@ -208,14 +266,60 @@ const struct xdg_surface_interface xdg_surface_impl = {
     nullptr,           // show_window_menu
     nullptr,           // move
     nullptr,           // resize
-    &AckConfigure,     // ack_configure
-    nullptr,           // set_window_geometry
+    nullptr,           // set_max_size
+    nullptr,           // set_min_size
     &SetMaximized,     // set_maximized
     &UnsetMaximized,   // set_unmaximized
     nullptr,           // set_fullscreen
     nullptr,           // unset_fullscreen
     &SetMinimized,     // set_minimized
 };
+
+void GetXdgSurfaceImpl(wl_client* client,
+                       wl_resource* resource,
+                       uint32_t id,
+                       wl_resource* surface_resource,
+                       const struct wl_interface* interface,
+                       const void* implementation) {
+  auto* surface =
+      static_cast<MockSurface*>(wl_resource_get_user_data(surface_resource));
+  if (surface->xdg_surface) {
+    uint32_t xdg_error = implementation == &xdg_surface_impl
+                             ? XDG_SHELL_ERROR_ROLE
+                             : ZXDG_SHELL_V6_ERROR_ROLE;
+    wl_resource_post_error(resource, xdg_error, "surface already has a role");
+    return;
+  }
+  wl_resource* xdg_surface_resource = wl_resource_create(
+      client, interface, wl_resource_get_version(resource), id);
+
+  if (!xdg_surface_resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+  surface->xdg_surface.reset(
+      new MockXdgSurface(xdg_surface_resource, implementation));
+}
+
+// xdg_shell
+
+void GetXdgSurfaceV5(wl_client* client,
+                     wl_resource* resource,
+                     uint32_t id,
+                     wl_resource* surface_resource) {
+  GetXdgSurfaceImpl(client, resource, id, surface_resource,
+                    &xdg_surface_interface, &xdg_surface_impl);
+}
+
+// zxdg_shell_v6
+
+void GetXdgSurfaceV6(wl_client* client,
+                     wl_resource* resource,
+                     uint32_t id,
+                     wl_resource* surface_resource) {
+  GetXdgSurfaceImpl(client, resource, id, surface_resource,
+                    &zxdg_surface_v6_interface, &zxdg_surface_v6_impl);
+}
 
 }  // namespace
 
@@ -232,12 +336,22 @@ void ServerObject::OnResourceDestroyed(wl_resource* resource) {
   obj->resource_ = nullptr;
 }
 
-MockXdgSurface::MockXdgSurface(wl_resource* resource) : ServerObject(resource) {
-  wl_resource_set_implementation(resource, &xdg_surface_impl, this,
+MockXdgSurface::MockXdgSurface(wl_resource* resource,
+                               const void* implementation)
+    : ServerObject(resource) {
+  wl_resource_set_implementation(resource, implementation, this,
                                  &ServerObject::OnResourceDestroyed);
 }
 
 MockXdgSurface::~MockXdgSurface() {}
+
+MockXdgTopLevel::MockXdgTopLevel(wl_resource* resource)
+    : MockXdgSurface(resource, &zxdg_surface_v6_impl) {
+  wl_resource_set_implementation(resource, &zxdg_toplevel_v6_impl, this,
+                                 &ServerObject::OnResourceDestroyed);
+}
+
+MockXdgTopLevel::~MockXdgTopLevel() {}
 
 MockSurface::MockSurface(wl_resource* resource) : ServerObject(resource) {
   wl_resource_set_implementation(resource, &surface_impl, this,
@@ -346,6 +460,11 @@ MockXdgShell::MockXdgShell()
 
 MockXdgShell::~MockXdgShell() {}
 
+MockXdgShellV6::MockXdgShellV6()
+    : Global(&zxdg_shell_v6_interface, &zxdg_shell_v6_impl, kXdgShellVersion) {}
+
+MockXdgShellV6::~MockXdgShellV6() {}
+
 void DisplayDeleter::operator()(wl_display* display) {
   wl_display_destroy(display);
 }
@@ -363,7 +482,7 @@ FakeServer::~FakeServer() {
   Stop();
 }
 
-bool FakeServer::Start() {
+bool FakeServer::Start(uint32_t shell_version) {
   display_.reset(wl_display_create());
   if (!display_)
     return false;
@@ -383,8 +502,13 @@ bool FakeServer::Start() {
     return false;
   if (!seat_.Initialize(display_.get()))
     return false;
-  if (!xdg_shell_.Initialize(display_.get()))
-    return false;
+  if (shell_version == 5) {
+    if (!xdg_shell_.Initialize(display_.get()))
+      return false;
+  } else {
+    if (!zxdg_shell_v6_.Initialize(display_.get()))
+      return false;
+  }
 
   client_ = wl_client_create(display_.get(), server_fd.get());
   if (!client_)

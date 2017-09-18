@@ -14,9 +14,12 @@
 
 namespace ui {
 
+const uint32_t kXdgShellV5 = 5;
+const uint32_t kXdgShellV6 = 6;
+
 // WaylandTest is a base class that sets up a display, window, and fake server,
 // and allows easy synchronization between them.
-class WaylandTest : public testing::Test {
+class WaylandTest : public ::testing::TestWithParam<uint32_t> {
  public:
   WaylandTest();
   ~WaylandTest() override;

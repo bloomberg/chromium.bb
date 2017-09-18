@@ -38,22 +38,46 @@ class ServerObject {
   DISALLOW_COPY_AND_ASSIGN(ServerObject);
 };
 
-// Manage xdg_surface for providing desktop UI.
+class MockXdgTopLevel;
+
+// Manage xdg_surface, zxdg_surface_v6 and zxdg_toplevel for providing desktop
+// UI.
 class MockXdgSurface : public ServerObject {
  public:
-  MockXdgSurface(wl_resource* resource);
+  MockXdgSurface(wl_resource* resource, const void* implementation);
   ~MockXdgSurface() override;
 
+  // These mock methods are shared between xdg_surface and zxdg_toplevel
+  // surface.
   MOCK_METHOD1(SetParent, void(wl_resource* parent));
   MOCK_METHOD1(SetTitle, void(const char* title));
   MOCK_METHOD1(SetAppId, void(const char* app_id));
   MOCK_METHOD1(AckConfigure, void(uint32_t serial));
+  MOCK_METHOD4(SetWindowGeometry,
+               void(int32_t x, int32_t y, int32_t widht, int32_t height));
   MOCK_METHOD0(SetMaximized, void());
   MOCK_METHOD0(UnsetMaximized, void());
   MOCK_METHOD0(SetMinimized, void());
 
+  // Used when xdg v6 is used.
+  std::unique_ptr<MockXdgTopLevel> xdg_toplevel;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockXdgSurface);
+};
+
+// Manage zxdg_toplevel for providing desktop UI.
+class MockXdgTopLevel : public MockXdgSurface {
+ public:
+  MockXdgTopLevel(wl_resource* resource);
+  ~MockXdgTopLevel() override;
+
+  // TODO(msisov): mock other zxdg_toplevel specific methods once implementation
+  // is done. example: MOCK_METHOD2(SetMaxSize, void(int32_t width, int32_t
+  // height());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockXdgTopLevel);
 };
 
 // Manage client surface
@@ -188,6 +212,18 @@ class MockXdgShell : public Global {
   DISALLOW_COPY_AND_ASSIGN(MockXdgShell);
 };
 
+// Manage zxdg_shell_v6 object.
+class MockXdgShellV6 : public Global {
+ public:
+  MockXdgShellV6();
+  ~MockXdgShellV6() override;
+
+  MOCK_METHOD1(Pong, void(uint32_t serial));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockXdgShellV6);
+};
+
 struct DisplayDeleter {
   void operator()(wl_display* display);
 };
@@ -201,8 +237,9 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
   // environment variable will be set to the string representation of a file
   // descriptor that a client can connect to. The caller is responsible for
   // ensuring that this file descriptor gets closed (for example, by calling
-  // wl_display_connect).
-  bool Start();
+  // wl_display_connect). Start instantiates an xdg_shell version 5 or 6
+  // according to |shell_version| passed.
+  bool Start(uint32_t shell_version);
 
   // Pause the server when it becomes idle.
   void Pause();
@@ -241,6 +278,7 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
   MockOutput output_;
   MockSeat seat_;
   MockXdgShell xdg_shell_;
+  MockXdgShellV6 zxdg_shell_v6_;
 
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
