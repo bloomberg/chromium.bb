@@ -35,7 +35,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface ComposeEmailHandlerCollectionViewController () {
   MailtoURLRewriter* _rewriter;
-  BOOL _selectionDisabled;
+  // When this switch is ON, the user wants to be prompted for which Mail
+  // client app to use, so the list of available Mail client apps should be
+  // disabled (grayed out).
   CollectionViewSwitchItem* _alwaysAskItem;
 }
 
@@ -47,8 +49,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // ItemTypeAlwaysAskSwitch item is changed by the user.
 - (void)didToggleAlwaysAskSwitch:(id)sender;
 
-// Clears all selected state checkmarks from the list of mail handlers.
-- (void)clearAllSelections;
+// Sets the text display state for |item| representing the mail client
+// |handler|. Sets the checkmark if |isSelected| is true.
+- (void)setTextItemState:(CollectionViewTextItem*)item
+                 handler:(MailtoHandler*)handler
+                selected:(BOOL)isSelected;
 @end
 
 @implementation ComposeEmailHandlerCollectionViewController
@@ -75,44 +80,39 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)loadModel {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
+
+  // Populates the first section with all the available Mail client apps.
   [model addSectionWithIdentifier:SectionIdentifierMailtoHandlers];
 
-  // Since this is a one-of-several selection UI, there must be more than one
-  // choice available to the user. If this UI is being presented when there is
-  // only one choice, it is considered a software error.
+  // Finds the default Mail client app.
   NSArray<MailtoHandler*>* handlers = [_rewriter defaultHandlers];
   NSString* currentHandlerID = [_rewriter defaultHandlerID];
-  for (MailtoHandler* handler in handlers) {
-    CollectionViewTextItem* item =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeMailtoHandlers];
-    [item setText:[handler appName]];
-    // Sets the text color based on whether the mail app is available only.
-    // TODO(crbug.com/764622): The state of _selectionDisabled should be taken
-    // into account and show all selection as light gray if selection is
-    // disabled.
-    if ([handler isAvailable]) {
-      [item setTextColor:[[MDCPalette greyPalette] tint900]];
-      [item setAccessibilityTraits:UIAccessibilityTraitButton];
-    } else {
-      [item setTextColor:[[MDCPalette greyPalette] tint500]];
-      [item setAccessibilityTraits:UIAccessibilityTraitNotEnabled];
-    }
-    if ([currentHandlerID isEqualToString:[handler appStoreID]])
-      [item setAccessoryType:MDCCollectionViewCellAccessoryCheckmark];
-    [model addItem:item
-        toSectionWithIdentifier:SectionIdentifierMailtoHandlers];
-  }
 
+  // Populates the toggle "Always Ask" toggle switch row first because the
+  // state of of the Mail client apps selection list is dependent of the value
+  // of the toggle switch.
   if (base::FeatureList::IsEnabled(kMailtoPromptInMdcStyle)) {
+    // The second section, if it exists, is the toggle switch to always prompt
+    // for selection of Mail client app.
     [model addSectionWithIdentifier:SectionIdentifierAlwaysAsk];
     _alwaysAskItem =
         [[CollectionViewSwitchItem alloc] initWithType:ItemTypeAlwaysAskSwitch];
     _alwaysAskItem.text =
         l10n_util::GetNSString(IDS_IOS_CHOOSE_EMAIL_ASK_TOGGLE);
     _alwaysAskItem.on = currentHandlerID == nil;
-    _selectionDisabled = currentHandlerID == nil;
     [model addItem:_alwaysAskItem
         toSectionWithIdentifier:SectionIdentifierAlwaysAsk];
+  }
+
+  // Lists all the Mail client apps known.
+  for (MailtoHandler* handler in handlers) {
+    CollectionViewTextItem* item =
+        [[CollectionViewTextItem alloc] initWithType:ItemTypeMailtoHandlers];
+    [item setText:[handler appName]];
+    BOOL isSelected = [currentHandlerID isEqualToString:[handler appStoreID]];
+    [self setTextItemState:item handler:handler selected:isSelected];
+    [model addItem:item
+        toSectionWithIdentifier:SectionIdentifierMailtoHandlers];
   }
 }
 
@@ -120,11 +120,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     shouldSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  // Disallow selection if the handler for the tapped row is not available.
-  return !_selectionDisabled &&
-         [[self handlerAtIndexPath:indexPath] isAvailable] &&
-         [super collectionView:collectionView
-             shouldSelectItemAtIndexPath:indexPath];
+  // Superclass implementation must be called. See NS_REQUIRES_SUPER annotation
+  // in MDCCollectionViewController.h.
+  BOOL result = [super collectionView:collectionView
+          shouldSelectItemAtIndexPath:indexPath];
+  // Disallows selection if the handler for the tapped row is not available.
+  return !_alwaysAskItem.isOn &&
+         [[self handlerAtIndexPath:indexPath] isAvailable] && result;
 }
 
 - (void)collectionView:(UICollectionView*)collectionView
@@ -194,7 +196,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
   // Disallow highlight (ripple effect) if the handler for the tapped row is not
   // an available mailto:// handler.
-  return _selectionDisabled ||
+  return _alwaysAskItem.isOn ||
          ![[self handlerAtIndexPath:indexPath] isAvailable];
 }
 
@@ -203,26 +205,38 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)didToggleAlwaysAskSwitch:(id)sender {
   BOOL isOn = [sender isOn];
   [_alwaysAskItem setOn:isOn];
-  if (!isOn)
-    [_rewriter setDefaultHandlerID:nil];
-  _selectionDisabled = isOn;
-  [self clearAllSelections];
-}
+  [_rewriter setDefaultHandlerID:nil];
 
-- (void)clearAllSelections {
-  // Iterates through the rows and remove the checkmark from any that has it.
+  // Clear all sections by iterating through the rows. Text color of each
+  // row is changed to reflect whether selection is enabled.
   NSMutableArray* modifiedItems = [NSMutableArray array];
   NSArray<CollectionViewItem*>* itemsInSection = [self.collectionViewModel
       itemsInSectionWithIdentifier:SectionIdentifierMailtoHandlers];
-  for (CollectionViewTextItem* textItem in itemsInSection) {
-    DCHECK_EQ(ItemTypeMailtoHandlers, textItem.type);
-    if (textItem.accessoryType == MDCCollectionViewCellAccessoryCheckmark) {
-      // Unchecks any currently checked selection.
-      textItem.accessoryType = MDCCollectionViewCellAccessoryNone;
-      [modifiedItems addObject:textItem];
-    }
+  NSArray<MailtoHandler*>* handlers = [_rewriter defaultHandlers];
+  for (NSUInteger index = 0; index < [itemsInSection count]; ++index) {
+    CollectionViewTextItem* textItem =
+        base::mac::ObjCCastStrict<CollectionViewTextItem>(
+            itemsInSection[index]);
+    // Nothing is selected after this clear all operation.
+    [self setTextItemState:textItem handler:handlers[index] selected:NO];
+    [modifiedItems addObject:textItem];
   }
   [self reconfigureCellsForItems:modifiedItems];
+}
+
+- (void)setTextItemState:(CollectionViewTextItem*)item
+                 handler:(MailtoHandler*)handler
+                selected:(BOOL)isSelected {
+  DCHECK_EQ(ItemTypeMailtoHandlers, item.type);
+  if (_alwaysAskItem.isOn || ![handler isAvailable]) {
+    [item setTextColor:[[MDCPalette greyPalette] tint500]];
+    [item setAccessibilityTraits:UIAccessibilityTraitNotEnabled];
+  } else {
+    [item setTextColor:[[MDCPalette greyPalette] tint900]];
+    [item setAccessibilityTraits:UIAccessibilityTraitButton];
+  }
+  item.accessoryType = isSelected ? MDCCollectionViewCellAccessoryCheckmark
+                                  : MDCCollectionViewCellAccessoryNone;
 }
 
 - (MailtoHandler*)handlerAtIndexPath:(NSIndexPath*)indexPath {
