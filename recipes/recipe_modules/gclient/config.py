@@ -175,6 +175,14 @@ def skia(c):  # pragma: no cover
   m['skia'] = 'got_revision'
 
 @config_ctx()
+def skia_buildbot(c):  # pragma: no cover
+  s = c.solutions.add()
+  s.name = 'skia_buildbot'
+  s.url = 'https://skia.googlesource.com/buildbot.git'
+  m = c.got_revision_mapping
+  m['skia_buildbot'] = 'got_revision'
+
+@config_ctx()
 def chrome_golo(c):  # pragma: no cover
   s = c.solutions.add()
   s.name = 'chrome_golo'
