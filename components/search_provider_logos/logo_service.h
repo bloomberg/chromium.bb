@@ -51,47 +51,25 @@ class LogoService : public KeyedService {
   ~LogoService() override;
 
   // Gets the logo for the default search provider and calls the provided
-  // callbacks with the encoded or decoded logos (for GetEncodedLogo() or
-  // GetLogo(), respectively) The service will:
+  // callbacks with the encoded and decoded logos. The service will:
   //
-  // 1.  Load a cached logo,
-  //     *   and call on_cached_logo_available with a cached logo, if
-  //         available and still up-to-date.
-  //     *   and call on_cached_logo_available with a null logo, if there is no
-  //         cached logo or it is out-of-date.
-  //     *   and do nothing, if the current default search engine does not
-  //         support logos.
+  // 1.  Load a cached logo, and call callbacks.on_cached_{en,de}coded_logo.
+  // 2.  Fetch a fresh logo, and call callbacks.on_fresh_{en,de}coded_logo.
   //
-  // 2.  Fetch a fresh logo for the default search engine,
-  //     *   and call on_fresh_logo_available with a fresh logo, if the service
-  //         fetched a new logo (and didn't just revalidate the cached logo)
-  //     *   and call on_fresh_logo_available with a null logo, if both:
-  //         *   the server responded, but its response was invalid or did not
-  //             contain a fresh logo, and
-  //         *   the service previously called on_cached_logo_available with a
-  //             non-null logo, so it is necessary to invalidate it.
-  //     *   and do nothing, if either:
-  //         *   the default search engine does not have a logo, or
-  //         *   the the server did not respond, or
-  //         *   the server reported that the cached logo was up-to-date, or
-  //         *   the logo data could be parsed, but not the logo image itself.
-  //
-  // TODO(sfiera): simplify the interface to the point that it does not require
-  // three nested lists to explain.
-  void GetLogo(LogoCallback on_cached_logo_available,
-               LogoCallback on_fresh_logo_available);
-  void GetEncodedLogo(EncodedLogoCallback on_cached_logo_available,
-                      EncodedLogoCallback on_fresh_logo_available);
+  // At least one member of |callbacks| must be non-null.
+  void GetLogo(LogoCallbacks callbacks);
 
   // Gets the logo for the default search provider and notifies |observer|
   // 0-2 times with the results. The service will:
   //
   // 1.  Call observer->OnLogoAvailable() with |from_cache=true| when
-  //     |on_cached_logo_available| would be called in the callback interface.
+  //     |on_cached_decoded_logo_available| would be called in the callback
+  //     interface with type DETERMINED.
   // 2.  Call observer->OnLogoAvailable() with |from_cache=false| when
-  //     |on_fresh_logo_available| would be called in the callback interface.
+  //     |on_fresh_decoded_logo_available| would be called in the callback
+  //     interface with type DETERMINED.
   // 3.  Call observer->OnObserverRemoved().
-  void GetLogo(search_provider_logos::LogoObserver* observer);
+  void GetLogo(LogoObserver* observer);
 
   // Overrides the cache used to store logos.
   void SetLogoCacheForTests(std::unique_ptr<LogoCache> cache);

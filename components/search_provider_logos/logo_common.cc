@@ -12,13 +12,17 @@ const int64_t kMaxTimeToLiveMS = INT64_C(30 * 24 * 60 * 60 * 1000);  // 30 days
 
 LogoMetadata::LogoMetadata() : can_show_after_expiration(false) {}
 LogoMetadata::LogoMetadata(const LogoMetadata& other) = default;
-LogoMetadata::~LogoMetadata() {}
+LogoMetadata::~LogoMetadata() = default;
 
-EncodedLogo::EncodedLogo() {}
+EncodedLogo::EncodedLogo() = default;
 EncodedLogo::EncodedLogo(const EncodedLogo& other) = default;
-EncodedLogo::~EncodedLogo() {}
+EncodedLogo::~EncodedLogo() = default;
 
-Logo::Logo() {}
-Logo::~Logo() {}
+Logo::Logo() = default;
+Logo::~Logo() = default;
+
+LogoCallbacks::LogoCallbacks() = default;
+LogoCallbacks::LogoCallbacks(LogoCallbacks&&) = default;
+LogoCallbacks::~LogoCallbacks() = default;
 
 }  // namespace search_provider_logos
