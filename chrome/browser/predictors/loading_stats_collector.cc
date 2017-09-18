@@ -208,6 +208,18 @@ void ReportPreconnectAccuracy(
                            preconnect_hits_count + preconnect_hits_count);
 }
 
+void ReportPageLoadStats(const PageRequestSummary& summary) {
+  for (const auto& subresource : summary.subresource_requests) {
+    if (!subresource.network_accessed ||
+        !subresource.before_first_contentful_paint) {
+      continue;
+    }
+
+    UMA_HISTOGRAM_TIMES(internal::kLoadingPredictorSubresourceConnectDuration,
+                        subresource.connect_duration);
+  }
+}
+
 }  // namespace
 
 LoadingStatsCollector::LoadingStatsCollector(
@@ -247,6 +259,8 @@ void LoadingStatsCollector::RecordPreconnectStats(
 
 void LoadingStatsCollector::RecordPageRequestSummary(
     const PageRequestSummary& summary) {
+  ReportPageLoadStats(summary);
+
   const GURL& initial_url = summary.initial_url;
 
   ResourcePrefetchPredictor::Prediction prediction;

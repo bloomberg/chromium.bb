@@ -59,6 +59,8 @@ constexpr char kLoadingPredictorPreresolveCount[] =
     "LoadingPredictor.PreresolveCount";
 constexpr char kLoadingPredictorPreconnectCount[] =
     "LoadingPredictor.PreconnectCount";
+constexpr char kLoadingPredictorSubresourceConnectDuration[] =
+    "LoadingPredictor.SubresourceConnectDuration";
 }  // namespace internal
 
 // Accumulates data from different speculative actions and collates this data

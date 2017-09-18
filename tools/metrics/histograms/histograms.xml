@@ -29514,6 +29514,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LoadingPredictor.SubresourceConnectDuration" units="ms">
+  <owner>alexilin@chromium.org</owner>
+  <summary>
+    Records the time measured before starting DNS lookup until after the
+    connection is complete for main frame subresources observed by the
+    LoadingPredictor. Only resources that required network connection and
+    happened before the first contentful paint are recorded.
+  </summary>
+</histogram>
+
 <histogram name="LocalDiscovery.ClientRestartAttempts">
   <owner>noamsml@chromium.org</owner>
   <owner>vitalybuka@chromium.org</owner>

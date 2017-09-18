@@ -117,6 +117,14 @@ bool URLRequestSummary::SummarizeResponse(const net::URLRequest& request,
     summary->is_no_store = IsNoStore(request);
   }
   summary->network_accessed = request.response_info().network_accessed;
+
+  net::LoadTimingInfo timing_info;
+  request.GetLoadTimingInfo(&timing_info);
+  const auto& connect_timing = timing_info.connect_timing;
+  summary->connect_duration =
+      (connect_timing.dns_end - connect_timing.dns_start) +
+      (connect_timing.connect_end - connect_timing.connect_start);
+
   return true;
 }
 

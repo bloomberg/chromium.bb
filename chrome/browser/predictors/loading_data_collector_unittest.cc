@@ -124,6 +124,35 @@ TEST_F(LoadingDataCollectorTest, SummarizeResponseCachePolicy) {
   EXPECT_TRUE(summary.always_revalidate);
 }
 
+TEST_F(LoadingDataCollectorTest, SummarizeResponseConnectDuration) {
+  net::HttpResponseInfo response_info;
+  response_info.headers =
+      MakeResponseHeaders("HTTP/1.1 200 OK\n\nSome: Headers\n");
+  url_request_job_factory_.set_response_info(response_info);
+
+  net::LoadTimingInfo load_timing_info;
+  // These times must be after request start in CreateURLRequest().
+  auto block_on_connect =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1);
+  load_timing_info.connect_timing.dns_start = block_on_connect;
+  load_timing_info.connect_timing.dns_end =
+      block_on_connect + base::TimeDelta::FromMilliseconds(100);
+  load_timing_info.connect_timing.connect_start =
+      block_on_connect + base::TimeDelta::FromMilliseconds(500);
+  load_timing_info.connect_timing.connect_end =
+      block_on_connect + base::TimeDelta::FromMilliseconds(700);
+  url_request_job_factory_.set_load_timing_info(load_timing_info);
+
+  GURL url("http://www.google.com/cat.png");
+  std::unique_ptr<net::URLRequest> request =
+      CreateURLRequest(url_request_context_, url, net::MEDIUM,
+                       content::RESOURCE_TYPE_IMAGE, true);
+
+  URLRequestSummary summary;
+  EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request, &summary));
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(300), summary.connect_duration);
+}
+
 TEST_F(LoadingDataCollectorTest, HandledResourceTypes) {
   EXPECT_TRUE(LoadingDataCollector::IsHandledResourceType(
       content::RESOURCE_TYPE_STYLESHEET, "bogus/mime-type"));
