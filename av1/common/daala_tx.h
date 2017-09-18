@@ -8,6 +8,7 @@ void daala_fdct4(const tran_low_t *input, tran_low_t *output);
 void daala_idct4(const tran_low_t *input, tran_low_t *output);
 void daala_fdst4(const tran_low_t *input, tran_low_t *output);
 void daala_idst4(const tran_low_t *input, tran_low_t *output);
+void daala_idtx4(const tran_low_t *input, tran_low_t *output);
 void daala_fdct8(const tran_low_t *input, tran_low_t *output);
 void daala_idct8(const tran_low_t *input, tran_low_t *output);
 void daala_fdst8(const tran_low_t *input, tran_low_t *output);

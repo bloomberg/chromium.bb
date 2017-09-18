@@ -36,11 +36,7 @@ int av1_get_tx_scale(const TX_SIZE tx_size) {
 static void iidtx4_c(const tran_low_t *input, tran_low_t *output) {
   int i;
   for (i = 0; i < 4; ++i) {
-#if CONFIG_DAALA_DCT4
-    output[i] = input[i];
-#else
     output[i] = (tran_low_t)dct_const_round_shift(input[i] * Sqrt2);
-#endif
   }
 }
 
@@ -332,13 +328,13 @@ void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { daala_idst4, daala_idst4 },  // FLIPADST_FLIPADST
     { daala_idst4, daala_idst4 },  // ADST_FLIPADST
     { daala_idst4, daala_idst4 },  // FLIPADST_ADST
-    { iidtx4_c, iidtx4_c },        // IDTX
-    { daala_idct4, iidtx4_c },     // V_DCT
-    { iidtx4_c, daala_idct4 },     // H_DCT
-    { daala_idst4, iidtx4_c },     // V_ADST
-    { iidtx4_c, daala_idst4 },     // H_ADST
-    { daala_idst4, iidtx4_c },     // V_FLIPADST
-    { iidtx4_c, daala_idst4 },     // H_FLIPADST
+    { daala_idtx4, daala_idtx4 },  // IDTX
+    { daala_idct4, daala_idtx4 },  // V_DCT
+    { daala_idtx4, daala_idct4 },  // H_DCT
+    { daala_idst4, daala_idtx4 },  // V_ADST
+    { daala_idtx4, daala_idst4 },  // H_ADST
+    { daala_idst4, daala_idtx4 },  // V_FLIPADST
+    { daala_idtx4, daala_idst4 },  // H_FLIPADST
 #endif
 #else
     { aom_idct4_c, aom_idct4_c },    // DCT_DCT  = 0
