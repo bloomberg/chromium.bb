@@ -6,18 +6,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/action_home"
          android:title="@string/accessibility_toolbar_btn_home"
-         android:icon="@drawable/ic_home_grey600_24dp"
-         android:contentDescription="@string/accessibility_toolbar_btn_home" />
+         android:icon="@drawable/ic_home_grey600_24dp" />
     <item android:id="@+id/action_downloads"
          android:title="@string/menu_downloads"
-         android:icon="@drawable/ic_file_download_white_24dp"
-         android:contentDescription="@string/menu_downloads" />
+         android:icon="@drawable/ic_file_download_white_24dp" />
     <item android:id="@+id/action_bookmarks"
          android:title="@string/menu_bookmarks"
-         android:icon="@drawable/btn_star_filled"
-         android:contentDescription="@string/menu_bookmarks" />
+         android:icon="@drawable/btn_star_filled" />
     <item android:id="@+id/action_history"
          android:title="@string/menu_history"
-         android:icon="@drawable/ic_watch_later_24dp"
-         android:contentDescription="@string/menu_history" />
+         android:icon="@drawable/ic_watch_later_24dp" />
 </menu>
