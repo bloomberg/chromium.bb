@@ -1141,9 +1141,12 @@ split_static_library("ui") {
     if (enable_extensions) {
       deps += [
         "//apps",
-        "//apps/ui/views",
         "//extensions/common:mojo",
       ]
+
+      if (!is_mac) {
+        deps += [ "//apps/ui/views" ]
+      }
     }
   }
 
