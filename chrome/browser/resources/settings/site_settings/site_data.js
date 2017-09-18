@@ -22,6 +22,7 @@ Polymer({
 
   behaviors: [
     CookieTreeBehavior,
+    I18nBehavior,
   ],
 
   properties: {
@@ -49,6 +50,17 @@ Polymer({
   ready: function() {
     this.loadCookies();
   },
+
+  /**
+   * Returns the icon to use for a given site.
+   * @param {string} url The url of the site to fetch the icon for.
+   * @return {string} Value for background-image style.
+   * @private
+   */
+  favicon_: function(url) {
+    return cr.icon.getFavicon(url);
+  },
+
 
   /**
    * @param {!Map<string, string>} newConfig
