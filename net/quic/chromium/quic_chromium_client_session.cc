@@ -899,13 +899,11 @@ bool QuicChromiumClientSession::WasConnectionEverUsed() {
 }
 
 QuicChromiumClientStream*
-QuicChromiumClientSession::CreateOutgoingDynamicStream(SpdyPriority priority) {
+QuicChromiumClientSession::CreateOutgoingDynamicStream() {
   if (!ShouldCreateOutgoingDynamicStream()) {
     return nullptr;
   }
   QuicChromiumClientStream* stream = CreateOutgoingReliableStreamImpl();
-  if (stream != nullptr)
-    stream->SetPriority(priority);
   return stream;
 }
 

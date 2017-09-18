@@ -300,7 +300,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Create a new stream to handle a locally-initiated stream.
   // Caller does not own the returned stream.
   // Returns nullptr if max streams have already been opened.
-  virtual QuicStream* CreateOutgoingDynamicStream(SpdyPriority priority) = 0;
+  virtual QuicStream* CreateOutgoingDynamicStream() = 0;
 
   // Return the reserved crypto stream.
   virtual QuicCryptoStream* GetMutableCryptoStream() = 0;

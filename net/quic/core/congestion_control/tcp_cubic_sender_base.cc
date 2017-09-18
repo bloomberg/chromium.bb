@@ -151,7 +151,7 @@ void TcpCubicSenderBase::OnPacketAcked(QuicPacketNumber acked_packet_number,
   }
 }
 
-bool TcpCubicSenderBase::OnPacketSent(
+void TcpCubicSenderBase::OnPacketSent(
     QuicTime /*sent_time*/,
     QuicByteCount /*bytes_in_flight*/,
     QuicPacketNumber packet_number,
@@ -161,9 +161,8 @@ bool TcpCubicSenderBase::OnPacketSent(
     ++(stats_->slowstart_packets_sent);
   }
 
-  // Only update bytes_in_flight_ for data packets.
   if (is_retransmittable != HAS_RETRANSMITTABLE_DATA) {
-    return false;
+    return;
   }
   if (InRecovery()) {
     // PRR is used when in recovery.
@@ -172,7 +171,6 @@ bool TcpCubicSenderBase::OnPacketSent(
   DCHECK_LT(largest_sent_packet_number_, packet_number);
   largest_sent_packet_number_ = packet_number;
   hybrid_slow_start_.OnPacketSent(packet_number);
-  return true;
 }
 
 QuicTime::Delta TcpCubicSenderBase::TimeUntilSend(

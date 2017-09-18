@@ -58,8 +58,7 @@ class MockQuicClientSessionBase : public QuicSpdyClientSessionBase {
                     const std::string& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD1(CreateOutgoingDynamicStream,
-               QuicChromiumClientStream*(SpdyPriority priority));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicChromiumClientStream*());
   MOCK_METHOD6(
       WritevData,
       QuicConsumedData(QuicStream* stream,

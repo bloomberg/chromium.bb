@@ -140,8 +140,6 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
         stream_id == batch_write_stream_id_[last_priority_popped_] &&
         bytes_left_for_batch_write_[last_priority_popped_] > 0;
     priority_write_scheduler_.MarkStreamReady(stream_id, push_front);
-
-    return;
   }
 
   bool crypto_stream_blocked() const { return crypto_stream_blocked_; }

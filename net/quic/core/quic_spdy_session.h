@@ -156,9 +156,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // with QuicSpdyStream return type to make sure that all data streams are
   // QuicSpdyStreams.
   QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override = 0;
-  QuicSpdyStream* CreateOutgoingDynamicStream(SpdyPriority priority) override =
-      0;
-
+  QuicSpdyStream* CreateOutgoingDynamicStream() override = 0;
   QuicSpdyStream* GetSpdyDataStream(const QuicStreamId stream_id);
 
   // If an incoming stream can be created, return true.

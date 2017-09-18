@@ -162,10 +162,9 @@ QuicCryptoStream* QuartcSession::GetMutableCryptoStream() {
   return crypto_stream_.get();
 }
 
-QuartcStream* QuartcSession::CreateOutgoingDynamicStream(
-    SpdyPriority priority) {
+QuartcStream* QuartcSession::CreateOutgoingDynamicStream() {
   return ActivateDataStream(
-      CreateDataStream(GetNextOutgoingStreamId(), priority));
+      CreateDataStream(GetNextOutgoingStreamId(), kDefaultPriority));
 }
 
 void QuartcSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
@@ -260,7 +259,7 @@ bool QuartcSession::ExportKeyingMaterial(const string& label,
 QuartcStreamInterface* QuartcSession::CreateOutgoingStream(
     const OutgoingStreamParameters& param) {
   // The |param| is for forward-compatibility. Not used for now.
-  return CreateOutgoingDynamicStream(kDefaultPriority);
+  return CreateOutgoingDynamicStream();
 }
 
 void QuartcSession::SetDelegate(
