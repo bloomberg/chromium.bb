@@ -32,7 +32,7 @@ typedef void (*AvxPredFunc)(uint8_t *dst, ptrdiff_t y_stride,
                             const uint8_t *above, const uint8_t *left);
 
 const int kBPS = 32;
-const int kTotalPixels = 32 * kBPS;
+const int kTotalPixels = kBPS * kBPS;
 const int kNumAv1IntraFuncs = INTRA_MODES + 3;  // 4 DC predictor variants.
 const char *kAv1IntraPredNames[kNumAv1IntraFuncs] = {
   "DC_PRED",       "DC_LEFT_PRED",  "DC_TOP_PRED", "DC_128_PRED", "V_PRED",
@@ -45,7 +45,7 @@ const char *kAv1IntraPredNames[kNumAv1IntraFuncs] = {
 
 template <typename Pixel>
 struct IntraPredTestMem {
-  void Init(int block_size, int bd) {
+  void Init(int block_width, int bd) {
     libaom_test::ACMRandom rnd(libaom_test::ACMRandom::DeterministicSeed());
     Pixel *const above = above_mem + 16;
     const int mask = (1 << bd) - 1;
@@ -53,7 +53,7 @@ struct IntraPredTestMem {
     for (int i = 0; i < kBPS; ++i) left[i] = rnd.Rand16() & mask;
     for (int i = -1; i < kBPS; ++i) above[i] = rnd.Rand16() & mask;
 
-    ASSERT_LE(block_size, kBPS);
+    ASSERT_LE(block_width, kBPS);
     for (int i = kBPS; i < 2 * kBPS; ++i) {
       left[i] = rnd.Rand16() & mask;
       above[i] = rnd.Rand16() & mask;
@@ -71,24 +71,36 @@ struct IntraPredTestMem {
 
 typedef IntraPredTestMem<uint8_t> Av1IntraPredTestMem;
 
+// Note:
+// APPLY_UNIT_TESTS
+// 1: Do unit tests
+// 0: Generate MD5 array as required
+#define APPLY_UNIT_TESTS 1
+
 void CheckMd5Signature(const char name[], const char *const signatures[],
                        const void *data, size_t data_size, int elapsed_time,
                        int idx) {
   libaom_test::MD5 md5;
   md5.Add(reinterpret_cast<const uint8_t *>(data), data_size);
+#if APPLY_UNIT_TESTS
   printf("Mode %s[%13s]: %5d ms     MD5: %s\n", name, kAv1IntraPredNames[idx],
          elapsed_time, md5.Get());
   EXPECT_STREQ(signatures[idx], md5.Get());
+#else
+  printf("\"%s\",\n", md5.Get());
+#endif
 }
 
 void TestIntraPred(const char name[], AvxPredFunc const *pred_funcs,
-                   const char *const signatures[], int block_size,
-                   int num_pixels_per_test) {
+                   const char *const signatures[], int block_width,
+                   int block_height) {
+  const int num_pixels_per_test =
+      block_width * block_height * kNumAv1IntraFuncs;
   const int kNumTests = static_cast<int>(2.e10 / num_pixels_per_test);
   Av1IntraPredTestMem intra_pred_test_mem;
   const uint8_t *const above = intra_pred_test_mem.above_mem + 16;
 
-  intra_pred_test_mem.Init(block_size, 8);
+  intra_pred_test_mem.Init(block_width, 8);
 
   for (int k = 0; k < kNumAv1IntraFuncs; ++k) {
     if (pred_funcs[k] == NULL) continue;
@@ -109,7 +121,7 @@ void TestIntraPred(const char name[], AvxPredFunc const *pred_funcs,
   }
 }
 
-void TestIntraPred4(AvxPredFunc const *pred_funcs) {
+void TestIntraPred4(const char *block_name, AvxPredFunc const *pred_funcs) {
   static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "e7ed7353c3383fff942e500e9bfe82fe",
     "2a4a26fcc6ce005eadc08354d196c8a9",
@@ -130,11 +142,10 @@ void TestIntraPred4(AvxPredFunc const *pred_funcs) {
     "723cf948137f7d8c7860d814e55ae67d",
 #endif  // CONFIG_SMOOTH_HV
   };
-  TestIntraPred("Intra4", pred_funcs, kSignatures, 4,
-                4 * 4 * kNumAv1IntraFuncs);
+  TestIntraPred(block_name, pred_funcs, kSignatures, 4, 4);
 }
 
-void TestIntraPred8(AvxPredFunc const *pred_funcs) {
+void TestIntraPred8(const char *block_name, AvxPredFunc const *pred_funcs) {
   static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "d8bbae5d6547cfc17e4f5f44c8730e88",
     "373bab6d931868d41a601d9d88ce9ac3",
@@ -155,11 +166,10 @@ void TestIntraPred8(AvxPredFunc const *pred_funcs) {
     "d19a8a73cc46b807f2c5e817576cc1e1",
 #endif  // CONFIG_SMOOTH_HV
   };
-  TestIntraPred("Intra8", pred_funcs, kSignatures, 8,
-                8 * 8 * kNumAv1IntraFuncs);
+  TestIntraPred(block_name, pred_funcs, kSignatures, 8, 8);
 }
 
-void TestIntraPred16(AvxPredFunc const *pred_funcs) {
+void TestIntraPred16(const char *block_name, AvxPredFunc const *pred_funcs) {
   static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "50971c07ce26977d30298538fffec619",
     "527a6b9e0dc5b21b98cf276305432bef",
@@ -180,11 +190,10 @@ void TestIntraPred16(AvxPredFunc const *pred_funcs) {
     "0c5162bc28489756ddb847b5678e6f07",
 #endif  // CONFIG_SMOOTH_HV
   };
-  TestIntraPred("Intra16", pred_funcs, kSignatures, 16,
-                16 * 16 * kNumAv1IntraFuncs);
+  TestIntraPred(block_name, pred_funcs, kSignatures, 16, 16);
 }
 
-void TestIntraPred32(AvxPredFunc const *pred_funcs) {
+void TestIntraPred32(const char *block_name, AvxPredFunc const *pred_funcs) {
   static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "a0a618c900e65ae521ccc8af789729f2",
     "985aaa7c72b4a6c2fb431d32100cf13a",
@@ -205,23 +214,22 @@ void TestIntraPred32(AvxPredFunc const *pred_funcs) {
     "cea23799fc3526e1b6a6ff02b42b82af",
 #endif  // CONFIG_SMOOTH_HV
   };
-  TestIntraPred("Intra32", pred_funcs, kSignatures, 32,
-                32 * 32 * kNumAv1IntraFuncs);
+  TestIntraPred(block_name, pred_funcs, kSignatures, 32, 32);
 }
 
 }  // namespace
 
 // Defines a test case for |arch| (e.g., C, SSE2, ...) passing the predictors
 // to |test_func|. The test name is 'arch.test_func', e.g., C.TestIntraPred4.
-#define INTRA_PRED_TEST(arch, test_func, dc, dc_left, dc_top, dc_128, v, h, \
-                        d45e, d135, d117, d153, d207e, d63e, tm, smooth,    \
-                        smooth_v, smooth_h)                                 \
-  TEST(arch, test_func) {                                                   \
-    static const AvxPredFunc aom_intra_pred[] = {                           \
-      dc,   dc_left, dc_top, dc_128, v,  h,      d45e,     d135,            \
-      d117, d153,    d207e,  d63e,   tm, smooth, smooth_v, smooth_h         \
-    };                                                                      \
-    test_func(aom_intra_pred);                                              \
+#define INTRA_PRED_TEST(arch, test_func, blk, dc, dc_left, dc_top, dc_128, v, \
+                        h, d45e, d135, d117, d153, d207e, d63e, tm, smooth,   \
+                        smooth_v, smooth_h)                                   \
+  TEST(arch, test_func) {                                                     \
+    static const AvxPredFunc aom_intra_pred[] = {                             \
+      dc,   dc_left, dc_top, dc_128, v,  h,      d45e,     d135,              \
+      d117, d153,    d207e,  d63e,   tm, smooth, smooth_v, smooth_h           \
+    };                                                                        \
+    test_func(blk, aom_intra_pred);                                           \
   }
 
 // -----------------------------------------------------------------------------
@@ -235,7 +243,7 @@ void TestIntraPred32(AvxPredFunc const *pred_funcs) {
 #define smooth_h_pred_func NULL
 #endif  // CONFIG_SMOOTH_HV
 
-INTRA_PRED_TEST(C, TestIntraPred4, aom_dc_predictor_4x4_c,
+INTRA_PRED_TEST(C, TestIntraPred4, "intra4x4", aom_dc_predictor_4x4_c,
                 aom_dc_left_predictor_4x4_c, aom_dc_top_predictor_4x4_c,
                 aom_dc_128_predictor_4x4_c, aom_v_predictor_4x4_c,
                 aom_h_predictor_4x4_c, aom_d45e_predictor_4x4_c,
@@ -249,7 +257,7 @@ INTRA_PRED_TEST(C, TestIntraPred4, aom_dc_predictor_4x4_c,
 #undef smooth_h_pred_func
 
 #if HAVE_SSE2
-INTRA_PRED_TEST(SSE2, TestIntraPred4, aom_dc_predictor_4x4_sse2,
+INTRA_PRED_TEST(SSE2, TestIntraPred4, "intra4x4", aom_dc_predictor_4x4_sse2,
                 aom_dc_left_predictor_4x4_sse2, aom_dc_top_predictor_4x4_sse2,
                 aom_dc_128_predictor_4x4_sse2, aom_v_predictor_4x4_sse2,
                 aom_h_predictor_4x4_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -257,19 +265,19 @@ INTRA_PRED_TEST(SSE2, TestIntraPred4, aom_dc_predictor_4x4_sse2,
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3
-INTRA_PRED_TEST(SSSE3, TestIntraPred4, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, aom_d153_predictor_4x4_ssse3, NULL,
+INTRA_PRED_TEST(SSSE3, TestIntraPred4, "intra4x4", NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL, aom_d153_predictor_4x4_ssse3, NULL,
                 aom_d63e_predictor_4x4_ssse3, NULL, NULL, NULL, NULL)
 #endif  // HAVE_SSSE3
 
 #if HAVE_DSPR2
-INTRA_PRED_TEST(DSPR2, TestIntraPred4, aom_dc_predictor_4x4_dspr2, NULL, NULL,
-                NULL, NULL, aom_h_predictor_4x4_dspr2, NULL, NULL, NULL, NULL,
-                NULL, NULL, NULL, NULL, NULL, NULL)
+INTRA_PRED_TEST(DSPR2, TestIntraPred4, "intra4x4", aom_dc_predictor_4x4_dspr2,
+                NULL, NULL, NULL, NULL, aom_h_predictor_4x4_dspr2, NULL, NULL,
+                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 #endif  // HAVE_DSPR2
 
 #if HAVE_NEON
-INTRA_PRED_TEST(NEON, TestIntraPred4, aom_dc_predictor_4x4_neon,
+INTRA_PRED_TEST(NEON, TestIntraPred4, "intra4x4", aom_dc_predictor_4x4_neon,
                 aom_dc_left_predictor_4x4_neon, aom_dc_top_predictor_4x4_neon,
                 aom_dc_128_predictor_4x4_neon, aom_v_predictor_4x4_neon,
                 aom_h_predictor_4x4_neon, NULL, aom_d135_predictor_4x4_neon,
@@ -277,7 +285,7 @@ INTRA_PRED_TEST(NEON, TestIntraPred4, aom_dc_predictor_4x4_neon,
 #endif  // HAVE_NEON
 
 #if HAVE_MSA
-INTRA_PRED_TEST(MSA, TestIntraPred4, aom_dc_predictor_4x4_msa,
+INTRA_PRED_TEST(MSA, TestIntraPred4, "intra4x4", aom_dc_predictor_4x4_msa,
                 aom_dc_left_predictor_4x4_msa, aom_dc_top_predictor_4x4_msa,
                 aom_dc_128_predictor_4x4_msa, aom_v_predictor_4x4_msa,
                 aom_h_predictor_4x4_msa, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -294,7 +302,7 @@ INTRA_PRED_TEST(MSA, TestIntraPred4, aom_dc_predictor_4x4_msa,
 #define smooth_v_pred_func NULL
 #define smooth_h_pred_func NULL
 #endif  // CONFIG_SMOOTH_HV
-INTRA_PRED_TEST(C, TestIntraPred8, aom_dc_predictor_8x8_c,
+INTRA_PRED_TEST(C, TestIntraPred8, "intra8x8", aom_dc_predictor_8x8_c,
                 aom_dc_left_predictor_8x8_c, aom_dc_top_predictor_8x8_c,
                 aom_dc_128_predictor_8x8_c, aom_v_predictor_8x8_c,
                 aom_h_predictor_8x8_c, aom_d45e_predictor_8x8_c,
@@ -307,7 +315,7 @@ INTRA_PRED_TEST(C, TestIntraPred8, aom_dc_predictor_8x8_c,
 #undef smooth_h_pred_func
 
 #if HAVE_SSE2
-INTRA_PRED_TEST(SSE2, TestIntraPred8, aom_dc_predictor_8x8_sse2,
+INTRA_PRED_TEST(SSE2, TestIntraPred8, "intra8x8", aom_dc_predictor_8x8_sse2,
                 aom_dc_left_predictor_8x8_sse2, aom_dc_top_predictor_8x8_sse2,
                 aom_dc_128_predictor_8x8_sse2, aom_v_predictor_8x8_sse2,
                 aom_h_predictor_8x8_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -315,19 +323,19 @@ INTRA_PRED_TEST(SSE2, TestIntraPred8, aom_dc_predictor_8x8_sse2,
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3
-INTRA_PRED_TEST(SSSE3, TestIntraPred8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, aom_d153_predictor_8x8_ssse3, NULL, NULL, NULL,
-                NULL, NULL, NULL)
+INTRA_PRED_TEST(SSSE3, TestIntraPred8, "intra8x8", NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL, aom_d153_predictor_8x8_ssse3, NULL,
+                NULL, NULL, NULL, NULL, NULL)
 #endif  // HAVE_SSSE3
 
 #if HAVE_DSPR2
-INTRA_PRED_TEST(DSPR2, TestIntraPred8, aom_dc_predictor_8x8_dspr2, NULL, NULL,
-                NULL, NULL, aom_h_predictor_8x8_dspr2, NULL, NULL, NULL, NULL,
-                NULL, NULL, NULL, NULL, NULL, NULL)
+INTRA_PRED_TEST(DSPR2, TestIntraPred8, "intra8x8", aom_dc_predictor_8x8_dspr2,
+                NULL, NULL, NULL, NULL, aom_h_predictor_8x8_dspr2, NULL, NULL,
+                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 #endif  // HAVE_DSPR2
 
 #if HAVE_NEON
-INTRA_PRED_TEST(NEON, TestIntraPred8, aom_dc_predictor_8x8_neon,
+INTRA_PRED_TEST(NEON, TestIntraPred8, "intra8x8", aom_dc_predictor_8x8_neon,
                 aom_dc_left_predictor_8x8_neon, aom_dc_top_predictor_8x8_neon,
                 aom_dc_128_predictor_8x8_neon, aom_v_predictor_8x8_neon,
                 aom_h_predictor_8x8_neon, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -335,7 +343,7 @@ INTRA_PRED_TEST(NEON, TestIntraPred8, aom_dc_predictor_8x8_neon,
 #endif  // HAVE_NEON
 
 #if HAVE_MSA
-INTRA_PRED_TEST(MSA, TestIntraPred8, aom_dc_predictor_8x8_msa,
+INTRA_PRED_TEST(MSA, TestIntraPred8, "intra8x8", aom_dc_predictor_8x8_msa,
                 aom_dc_left_predictor_8x8_msa, aom_dc_top_predictor_8x8_msa,
                 aom_dc_128_predictor_8x8_msa, aom_v_predictor_8x8_msa,
                 aom_h_predictor_8x8_msa, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -352,7 +360,7 @@ INTRA_PRED_TEST(MSA, TestIntraPred8, aom_dc_predictor_8x8_msa,
 #define smooth_v_pred_func NULL
 #define smooth_h_pred_func NULL
 #endif  // CONFIG_SMOOTH_HV
-INTRA_PRED_TEST(C, TestIntraPred16, aom_dc_predictor_16x16_c,
+INTRA_PRED_TEST(C, TestIntraPred16, "intra16x16", aom_dc_predictor_16x16_c,
                 aom_dc_left_predictor_16x16_c, aom_dc_top_predictor_16x16_c,
                 aom_dc_128_predictor_16x16_c, aom_v_predictor_16x16_c,
                 aom_h_predictor_16x16_c, aom_d45e_predictor_16x16_c,
@@ -365,8 +373,8 @@ INTRA_PRED_TEST(C, TestIntraPred16, aom_dc_predictor_16x16_c,
 #undef smooth_h_pred_func
 
 #if HAVE_SSE2
-INTRA_PRED_TEST(SSE2, TestIntraPred16, aom_dc_predictor_16x16_sse2,
-                aom_dc_left_predictor_16x16_sse2,
+INTRA_PRED_TEST(SSE2, TestIntraPred16, "intra16x16",
+                aom_dc_predictor_16x16_sse2, aom_dc_left_predictor_16x16_sse2,
                 aom_dc_top_predictor_16x16_sse2,
                 aom_dc_128_predictor_16x16_sse2, aom_v_predictor_16x16_sse2,
                 aom_h_predictor_16x16_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -374,20 +382,21 @@ INTRA_PRED_TEST(SSE2, TestIntraPred16, aom_dc_predictor_16x16_sse2,
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3
-INTRA_PRED_TEST(SSSE3, TestIntraPred16, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, NULL, aom_d153_predictor_16x16_ssse3, NULL, NULL,
-                NULL, NULL, NULL, NULL)
+INTRA_PRED_TEST(SSSE3, TestIntraPred16, "intra16x16", NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL, NULL, aom_d153_predictor_16x16_ssse3,
+                NULL, NULL, NULL, NULL, NULL, NULL)
 #endif  // HAVE_SSSE3
 
 #if HAVE_DSPR2
-INTRA_PRED_TEST(DSPR2, TestIntraPred16, aom_dc_predictor_16x16_dspr2, NULL,
-                NULL, NULL, NULL, aom_h_predictor_16x16_dspr2, NULL, NULL, NULL,
-                NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INTRA_PRED_TEST(DSPR2, TestIntraPred16, "intra16x16",
+                aom_dc_predictor_16x16_dspr2, NULL, NULL, NULL, NULL,
+                aom_h_predictor_16x16_dspr2, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL)
 #endif  // HAVE_DSPR2
 
 #if HAVE_NEON
-INTRA_PRED_TEST(NEON, TestIntraPred16, aom_dc_predictor_16x16_neon,
-                aom_dc_left_predictor_16x16_neon,
+INTRA_PRED_TEST(NEON, TestIntraPred16, "intra16x16",
+                aom_dc_predictor_16x16_neon, aom_dc_left_predictor_16x16_neon,
                 aom_dc_top_predictor_16x16_neon,
                 aom_dc_128_predictor_16x16_neon, aom_v_predictor_16x16_neon,
                 aom_h_predictor_16x16_neon, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -395,7 +404,7 @@ INTRA_PRED_TEST(NEON, TestIntraPred16, aom_dc_predictor_16x16_neon,
 #endif  // HAVE_NEON
 
 #if HAVE_MSA
-INTRA_PRED_TEST(MSA, TestIntraPred16, aom_dc_predictor_16x16_msa,
+INTRA_PRED_TEST(MSA, TestIntraPred16, "intra16x16", aom_dc_predictor_16x16_msa,
                 aom_dc_left_predictor_16x16_msa, aom_dc_top_predictor_16x16_msa,
                 aom_dc_128_predictor_16x16_msa, aom_v_predictor_16x16_msa,
                 aom_h_predictor_16x16_msa, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -412,7 +421,7 @@ INTRA_PRED_TEST(MSA, TestIntraPred16, aom_dc_predictor_16x16_msa,
 #define smooth_v_pred_func NULL
 #define smooth_h_pred_func NULL
 #endif  // CONFIG_SMOOTH_HV
-INTRA_PRED_TEST(C, TestIntraPred32, aom_dc_predictor_32x32_c,
+INTRA_PRED_TEST(C, TestIntraPred32, "intra32x32", aom_dc_predictor_32x32_c,
                 aom_dc_left_predictor_32x32_c, aom_dc_top_predictor_32x32_c,
                 aom_dc_128_predictor_32x32_c, aom_v_predictor_32x32_c,
                 aom_h_predictor_32x32_c, aom_d45e_predictor_32x32_c,
@@ -425,8 +434,8 @@ INTRA_PRED_TEST(C, TestIntraPred32, aom_dc_predictor_32x32_c,
 #undef smooth_h_pred_func
 
 #if HAVE_SSE2
-INTRA_PRED_TEST(SSE2, TestIntraPred32, aom_dc_predictor_32x32_sse2,
-                aom_dc_left_predictor_32x32_sse2,
+INTRA_PRED_TEST(SSE2, TestIntraPred32, "intra32x32",
+                aom_dc_predictor_32x32_sse2, aom_dc_left_predictor_32x32_sse2,
                 aom_dc_top_predictor_32x32_sse2,
                 aom_dc_128_predictor_32x32_sse2, aom_v_predictor_32x32_sse2,
                 aom_h_predictor_32x32_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -434,14 +443,14 @@ INTRA_PRED_TEST(SSE2, TestIntraPred32, aom_dc_predictor_32x32_sse2,
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3
-INTRA_PRED_TEST(SSSE3, TestIntraPred32, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, NULL, aom_d153_predictor_32x32_ssse3, NULL, NULL,
-                NULL, NULL, NULL, NULL)
+INTRA_PRED_TEST(SSSE3, TestIntraPred32, "intra32x32", NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL, NULL, aom_d153_predictor_32x32_ssse3,
+                NULL, NULL, NULL, NULL, NULL, NULL)
 #endif  // HAVE_SSSE3
 
 #if HAVE_NEON
-INTRA_PRED_TEST(NEON, TestIntraPred32, aom_dc_predictor_32x32_neon,
-                aom_dc_left_predictor_32x32_neon,
+INTRA_PRED_TEST(NEON, TestIntraPred32, "intra32x32",
+                aom_dc_predictor_32x32_neon, aom_dc_left_predictor_32x32_neon,
                 aom_dc_top_predictor_32x32_neon,
                 aom_dc_128_predictor_32x32_neon, aom_v_predictor_32x32_neon,
                 aom_h_predictor_32x32_neon, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -449,7 +458,7 @@ INTRA_PRED_TEST(NEON, TestIntraPred32, aom_dc_predictor_32x32_neon,
 #endif  // HAVE_NEON
 
 #if HAVE_MSA
-INTRA_PRED_TEST(MSA, TestIntraPred32, aom_dc_predictor_32x32_msa,
+INTRA_PRED_TEST(MSA, TestIntraPred32, "intra32x32", aom_dc_predictor_32x32_msa,
                 aom_dc_left_predictor_32x32_msa, aom_dc_top_predictor_32x32_msa,
                 aom_dc_128_predictor_32x32_msa, aom_v_predictor_32x32_msa,
                 aom_h_predictor_32x32_msa, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -468,14 +477,16 @@ typedef void (*AvxHighbdPredFunc)(uint16_t *dst, ptrdiff_t y_stride,
 typedef IntraPredTestMem<uint16_t> Av1HighbdIntraPredTestMem;
 
 void TestHighbdIntraPred(const char name[], AvxHighbdPredFunc const *pred_funcs,
-                         const char *const signatures[], int block_size,
-                         int num_pixels_per_test) {
+                         const char *const signatures[], int block_width,
+                         int block_height) {
+  const int num_pixels_per_test =
+      block_width * block_height * kNumAv1IntraFuncs;
   const int kNumTests = static_cast<int>(2.e10 / num_pixels_per_test);
   Av1HighbdIntraPredTestMem intra_pred_test_mem;
   const uint16_t *const above = intra_pred_test_mem.above_mem + 16;
   const int bd = 12;
 
-  intra_pred_test_mem.Init(block_size, bd);
+  intra_pred_test_mem.Init(block_width, bd);
 
   for (int k = 0; k < kNumAv1IntraFuncs; ++k) {
     if (pred_funcs[k] == NULL) continue;
@@ -496,8 +507,9 @@ void TestHighbdIntraPred(const char name[], AvxHighbdPredFunc const *pred_funcs,
   }
 }
 
-void TestHighbdIntraPred4(AvxHighbdPredFunc const *pred_funcs) {
-  static const char *const kSignatures[kNumAv1IntraFuncs] = {
+void TestHighbdIntraPred4(const char *block_name,
+                          AvxHighbdPredFunc const *pred_funcs) {
+  static const char *const kSignatures4x4[kNumAv1IntraFuncs] = {
     "11f74af6c5737df472f3275cbde062fa",
     "51bea056b6447c93f6eb8f6b7e8f6f71",
     "27e97f946766331795886f4de04c5594",
@@ -517,12 +529,38 @@ void TestHighbdIntraPred4(AvxHighbdPredFunc const *pred_funcs) {
     "a623d45b37dafec1f8a75c4c5218913d",
 #endif  // CONFIG_SMOOTH_HV
   };
-  TestHighbdIntraPred("Hbd Intra4", pred_funcs, kSignatures, 4,
-                      4 * 4 * kNumAv1IntraFuncs);
+  static const char *const kSignatures4x8[kNumAv1IntraFuncs] = {
+    "22d519b796d59644043466320e4ccd14",
+    "09513a738c49b3f9542d27f34abbe1d5",
+    "807ae5e8813443ff01e71be6efacfb69",
+    "cbfa18d0293430b6e9708b0be1fd2394",
+    "346c354c34ec7fa780b576db355dab88",
+    "f97dae85c35359632380b09ca98d611e",
+    "aed1beef71de33856c814ff7d63dd9db",
+    "49c47c04dd3d23d6fc5cc32bf9d40ae4",
+    "a24aade6e22b323ee28c8bf08aa2d234",
+    "aefef502f9e144e71cd27dc7383b3c28",
+    "b284ae5277b85ebdd16b5952149f7458",
+    "8dc5791167271f6f347582e07379f580",
+    "698ae351d8896d89ed9e4e67b6e53eda",
+    "dcc197034a9c45a3d8238bf085835f4e",
+#if CONFIG_SMOOTH_HV
+    "7a35e2c42ffdc2efc2d6d1d75a100fc7",
+    "41ab6cebd4516c87a91b2a593e2c2506",
+#endif
+  };
+
+  if (!strcmp(block_name, "Hbd Intra4x4")) {
+    TestHighbdIntraPred(block_name, pred_funcs, kSignatures4x4, 4, 4);
+  }
+  if (!strcmp(block_name, "Hbd Intra4x8")) {
+    TestHighbdIntraPred(block_name, pred_funcs, kSignatures4x8, 4, 8);
+  }
 }
 
-void TestHighbdIntraPred8(AvxHighbdPredFunc const *pred_funcs) {
-  static const char *const kSignatures[kNumAv1IntraFuncs] = {
+void TestHighbdIntraPred8(const char *block_name,
+                          AvxHighbdPredFunc const *pred_funcs) {
+  static const char *const kSignatures8x8[kNumAv1IntraFuncs] = {
     "03da8829fe94663047fd108c5fcaa71d",
     "ecdb37b8120a2d3a4c706b016bd1bfd7",
     "1d4543ed8d2b9368cb96898095fe8a75",
@@ -542,12 +580,60 @@ void TestHighbdIntraPred8(AvxHighbdPredFunc const *pred_funcs) {
     "2bc8ec19e9f4b77a64b8a0a1f6aec7e7",
 #endif  // CONFIG_SMOOTH_HV
   };
-  TestHighbdIntraPred("Hbd Intra8", pred_funcs, kSignatures, 8,
-                      8 * 8 * kNumAv1IntraFuncs);
+  static const char *const kSignatures8x4[kNumAv1IntraFuncs] = {
+    "d58cd4c4bf3b7bbaa5db5e1a5622ec78",
+    "6e572c35aa782d00cafcb99e9ea047ea",
+    "e8c22a3702b416dc9ab974505afbed09",
+    "aaa4e4762a795aad7ad74de0c662c4e4",
+    "a19f9101967383c3dcbd516dc317a291",
+    "9ab8cb91f1a595b9ebe3fe8de58031aa",
+    "c6c7d65264397d4d31e378e1f1cfd921",
+    "5804158e463ff794b6b8a623f5d2c10d",
+    "c342cdeb39aae4c4f7be10e057029298",
+    "c1bbbcfe4b25f6b8eca6ad2f7ee793d3",
+    "98d1dab8b949859b9c65298ee9f105f8",
+    "396e803aaf6d7a03a231edc48b396051",
+    "2cf9021d5f1169268699807ee118b65f",
+    "ee9605fcbd6fb871f1c5cd81a6989327",
+#if CONFIG_SMOOTH_HV
+    "0edc415b5dd7299f7a34fb9f71d31d78",
+    "2bc8ec19e9f4b77a64b8a0a1f6aec7e7",
+#endif
+  };
+  static const char *const kSignatures8x16[kNumAv1IntraFuncs] = {
+    "4562de1d0336610880fdd5685498a9ec",
+    "16310fa7076394f16fc85c4b149d89c9",
+    "0e94af88e1dc573b6f0f499cddd1f530",
+    "dfd245ee20d091c67809160340365aa9",
+    "d3562504327f70c096c5be23fd8a3747",
+    "601b853558502acbb5135eadd2da117a",
+    "e83f9a8bc16b507d2ed0b6b31a25d6f5",
+    "fc8427d942246e8cba81247bb294afb5",
+    "89cde712e4c1ef675ea156ad679c62c7",
+    "0a68c2b28c3b171ad797cf76a7058f10",
+    "e70724010e12d8f374cedd3910ceb0d5",
+    "ad7987e91267503ba6fd3e8be42eb48c",
+    "3c624345a723a1b2b1bea05a6a08bc99",
+    "2a9c781de609e0184cc7ab442050f4e5",
+#if CONFIG_SMOOTH_HV
+    "0ddc5035c22252747126b61fc238c74d",
+    "e43f5d83bab759af69c7b6773fc8f9b2",
+#endif
+  };
+  if (!strcmp(block_name, "Hbd Intra8x8")) {
+    TestHighbdIntraPred(block_name, pred_funcs, kSignatures8x8, 8, 8);
+  }
+  if (!strcmp(block_name, "Hbd Intra8x4")) {
+    TestHighbdIntraPred(block_name, pred_funcs, kSignatures8x4, 8, 4);
+  }
+  if (!strcmp(block_name, "Hbd Intra8x16")) {
+    TestHighbdIntraPred(block_name, pred_funcs, kSignatures8x16, 8, 16);
+  }
 }
 
-void TestHighbdIntraPred16(AvxHighbdPredFunc const *pred_funcs) {
-  static const char *const kSignatures[kNumAv1IntraFuncs] = {
+void TestHighbdIntraPred16(const char *block_name,
+                           AvxHighbdPredFunc const *pred_funcs) {
+  static const char *const kSignatures16x16[kNumAv1IntraFuncs] = {
     "e33cb3f56a878e2fddb1b2fc51cdd275",
     "c7bff6f04b6052c8ab335d726dbbd52d",
     "d0b0b47b654a9bcc5c6008110a44589b",
@@ -567,12 +653,60 @@ void TestHighbdIntraPred16(AvxHighbdPredFunc const *pred_funcs) {
     "e8014d3f41256976c02e0f1e622ba2b9",
 #endif  // CONFIG_SMOOTH_HV
   };
-  TestHighbdIntraPred("Hbd Intra16", pred_funcs, kSignatures, 16,
-                      16 * 16 * kNumAv1IntraFuncs);
+  static const char *const kSignatures16x8[kNumAv1IntraFuncs] = {
+    "a57d6b5a9bfd30c29591d8717ace9c51",
+    "f5907ba97ee6c53e339e953fc8d845ee",
+    "ea3aa727913ce45af06f89dd1808db5f",
+    "408af4f23e48d14b48ee35ae094fcd18",
+    "85c41cbcb5d744f7961e8950026fbffe",
+    "8a4e588a837638887ba671f8d4910485",
+    "caae3cc3d419bbd28aa389dbe4febee1",
+    "ea67fb80d71b6471467c79662af1186c",
+    "c83f7252412dd1ad2fc6af848e7f6be8",
+    "f45af3d697f42f1b9b8def4e46bac78c",
+    "dca4a2aaf5f63db387e264ba5963943a",
+    "d01b1bcc50b4b66c1231142eae628cd3",
+    "b792d8826b67a21757ea7097cff9e05b",
+    "f94ce7101bb87fd3bb9312112527dbf4",
+#if CONFIG_SMOOTH_HV
+    "688c6660a6dc6fa61fa1aa38e708c209",
+    "0cdf641b4f81d69509c92ae0b93ef5ff",
+#endif
+  };
+  static const char *const kSignatures16x32[kNumAv1IntraFuncs] = {
+    "aee4b3b0e3cc02d48e2c40d77f807927",
+    "8baef2b2e789f79c8df9d90ad10f34a4",
+    "038c38ee3c4f090bb8d736eab136aafc",
+    "1a3de2aaeaffd68a9fd6c7f6557b83f3",
+    "385c6e0ea29421dd81011a2934641e26",
+    "6cf96c285d1a2d4787f955dad715b08c",
+    "21f82421fda1c3afca8baca0dc048a52",
+    "eac3734852c99a051f6d15a921d9e7b9",
+    "c81f7ffec79508bf78d0f2c67d8abe96",
+    "14b8c62304f65a06653b9b35dfe12d97",
+    "e0893310042511275ae04e5186ee5326",
+    "b4f05903a6191093be719794417ac6fd",
+    "2d7f75dcd73b9528c8396279ff09ff3a",
+    "5a63cd1841e4ed470e4ca5ef845f2281",
+#if CONFIG_SMOOTH_HV
+    "610d899ca945fbead33287d4335a8b32",
+    "6bafaad81fce37be46730187e78d8b11",
+#endif
+  };
+  if (!strcmp(block_name, "Hbd Intra16x16")) {
+    TestHighbdIntraPred(block_name, pred_funcs, kSignatures16x16, 16, 16);
+  }
+  if (!strcmp(block_name, "Hbd Intra16x8")) {
+    TestHighbdIntraPred(block_name, pred_funcs, kSignatures16x8, 16, 8);
+  }
+  if (!strcmp(block_name, "Hbd Intra16x32")) {
+    TestHighbdIntraPred(block_name, pred_funcs, kSignatures16x32, 16, 32);
+  }
 }
 
-void TestHighbdIntraPred32(AvxHighbdPredFunc const *pred_funcs) {
-  static const char *const kSignatures[kNumAv1IntraFuncs] = {
+void TestHighbdIntraPred32(const char *block_name,
+                           AvxHighbdPredFunc const *pred_funcs) {
+  static const char *const kSignatures32x32[kNumAv1IntraFuncs] = {
     "a3e8056ba7e36628cce4917cd956fedd",
     "cc7d3024fe8748b512407edee045377e",
     "2aab0a0f330a1d3e19b8ecb8f06387a3",
@@ -592,21 +726,45 @@ void TestHighbdIntraPred32(AvxHighbdPredFunc const *pred_funcs) {
     "c51607aebad5dcb3c1e3b58ef9e5b84e",
 #endif  // CONFIG_SMOOTH_HV
   };
-  TestHighbdIntraPred("Hbd Intra32", pred_funcs, kSignatures, 32,
-                      32 * 32 * kNumAv1IntraFuncs);
+  static const char *const kSignatures32x16[kNumAv1IntraFuncs] = {
+    "290b23c9f5a1de7905bfa71a942da29b",
+    "701e7b82593c66da5052fc4b6afd79ce",
+    "4da828c5455cd246735a663fbb204989",
+    "e3fbeaf234efece8dbd752b77226200c",
+    "4d1d8c969f05155a7e7e84cf7aad021b",
+    "c22e4877c2c946d5bdc0d542e29e70cf",
+    "ffd86b234d65c2e1386a5b5b5c188a69",
+    "50aaaa7d90e300b635ab18cdd73e189b",
+    "a945dc7429df168e2169d81b58a15859",
+    "66725070d7fad02dee78730ba0843e19",
+    "33d873cb05d45df2af4ff59033833db7",
+    "0dd783695b69271f65d56f5516fa6dc0",
+    "8ac1ce815e7780500f842b0beb0bb980",
+    "9fee2e2502b507f25bfad30a55b0b610",
+#if CONFIG_SMOOTH_HV
+    "4ced9c212ec6f9956e27f68a91b59fef",
+    "4a7a0b93f138bb0863e4e465b01ec0b1",
+#endif
+  };
+  if (!strcmp(block_name, "Hbd Intra32x32")) {
+    TestHighbdIntraPred(block_name, pred_funcs, kSignatures32x32, 32, 32);
+  }
+  if (!strcmp(block_name, "Hbd Intra32x16")) {
+    TestHighbdIntraPred(block_name, pred_funcs, kSignatures32x16, 32, 16);
+  }
 }
 
 }  // namespace
 
-#define HIGHBD_INTRA_PRED_TEST(arch, test_func, dc, dc_left, dc_top, dc_128,  \
-                               v, h, d45e, d135, d117, d153, d207e, d63e, tm, \
-                               smooth, smooth_v, smooth_h)                    \
-  TEST(arch, test_func) {                                                     \
-    static const AvxHighbdPredFunc aom_intra_pred[] = {                       \
-      dc,   dc_left, dc_top, dc_128, v,  h,      d45e,     d135,              \
-      d117, d153,    d207e,  d63e,   tm, smooth, smooth_v, smooth_h           \
-    };                                                                        \
-    test_func(aom_intra_pred);                                                \
+#define HIGHBD_INTRA_PRED_TEST(arch, test_func, block_size, dc, dc_left,     \
+                               dc_top, dc_128, v, h, d45e, d135, d117, d153, \
+                               d207e, d63e, tm, smooth, smooth_v, smooth_h)  \
+  TEST(arch, test_func) {                                                    \
+    static const AvxHighbdPredFunc aom_intra_pred[] = {                      \
+      dc,   dc_left, dc_top, dc_128, v,  h,      d45e,     d135,             \
+      d117, d153,    d207e,  d63e,   tm, smooth, smooth_v, smooth_h          \
+    };                                                                       \
+    test_func(block_size, aom_intra_pred);                                   \
   }
 
 // -----------------------------------------------------------------------------
@@ -621,7 +779,7 @@ void TestHighbdIntraPred32(AvxHighbdPredFunc const *pred_funcs) {
 #endif  // CONFIG_SMOOTH_HV
 
 HIGHBD_INTRA_PRED_TEST(
-    C, TestHighbdIntraPred4, aom_highbd_dc_predictor_4x4_c,
+    C_1, TestHighbdIntraPred4, "Hbd Intra4x4", aom_highbd_dc_predictor_4x4_c,
     aom_highbd_dc_left_predictor_4x4_c, aom_highbd_dc_top_predictor_4x4_c,
     aom_highbd_dc_128_predictor_4x4_c, aom_highbd_v_predictor_4x4_c,
     aom_highbd_h_predictor_4x4_c, aom_highbd_d45e_predictor_4x4_c,
@@ -633,10 +791,39 @@ HIGHBD_INTRA_PRED_TEST(
 #undef smooth_h_pred_func
 
 #if HAVE_SSE2
-HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred4, NULL, NULL, NULL, NULL, NULL,
+HIGHBD_INTRA_PRED_TEST(SSE2_1, TestHighbdIntraPred4, "Hbd Intra4x4", NULL,
+                       aom_highbd_dc_left_predictor_4x4_sse2,
+                       aom_highbd_dc_top_predictor_4x4_sse2,
+                       aom_highbd_dc_128_predictor_4x4_sse2, NULL,
                        aom_highbd_h_predictor_4x4_sse2, NULL, NULL, NULL, NULL,
                        NULL, NULL, NULL, NULL, NULL, NULL)
+HIGHBD_INTRA_PRED_TEST(SSE2_2, TestHighbdIntraPred4, "Hbd Intra4x8", NULL,
+                       aom_highbd_dc_left_predictor_4x8_sse2,
+                       aom_highbd_dc_top_predictor_4x8_sse2,
+                       aom_highbd_dc_128_predictor_4x8_sse2, NULL,
+                       aom_highbd_h_predictor_4x8_sse2, NULL, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
+
+#if CONFIG_SMOOTH_HV
+#define smooth_v_pred_func aom_highbd_smooth_v_predictor_4x8_c
+#define smooth_h_pred_func aom_highbd_smooth_h_predictor_4x8_c
+#else
+#define smooth_v_pred_func NULL
+#define smooth_h_pred_func NULL
+#endif  // CONFIG_SMOOTH_HV
+
+HIGHBD_INTRA_PRED_TEST(
+    C_2, TestHighbdIntraPred4, "Hbd Intra4x8", aom_highbd_dc_predictor_4x8_c,
+    aom_highbd_dc_left_predictor_4x8_c, aom_highbd_dc_top_predictor_4x8_c,
+    aom_highbd_dc_128_predictor_4x8_c, aom_highbd_v_predictor_4x8_c,
+    aom_highbd_h_predictor_4x8_c, aom_highbd_d45e_predictor_4x8_c,
+    aom_highbd_d135_predictor_4x8_c, aom_highbd_d117_predictor_4x8_c,
+    aom_highbd_d153_predictor_4x8_c, aom_highbd_d207e_predictor_4x8_c,
+    aom_highbd_d63e_predictor_4x8_c, aom_highbd_paeth_predictor_4x8_c,
+    aom_highbd_smooth_predictor_4x8_c, smooth_v_pred_func, smooth_h_pred_func)
+#undef smooth_v_pred_func
+#undef smooth_h_pred_func
 
 // -----------------------------------------------------------------------------
 // 8x8
@@ -650,7 +837,7 @@ HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred4, NULL, NULL, NULL, NULL, NULL,
 #endif  // CONFIG_SMOOTH_HV
 
 HIGHBD_INTRA_PRED_TEST(
-    C, TestHighbdIntraPred8, aom_highbd_dc_predictor_8x8_c,
+    C_1, TestHighbdIntraPred8, "Hbd Intra8x8", aom_highbd_dc_predictor_8x8_c,
     aom_highbd_dc_left_predictor_8x8_c, aom_highbd_dc_top_predictor_8x8_c,
     aom_highbd_dc_128_predictor_8x8_c, aom_highbd_v_predictor_8x8_c,
     aom_highbd_h_predictor_8x8_c, aom_highbd_d45e_predictor_8x8_c,
@@ -662,10 +849,65 @@ HIGHBD_INTRA_PRED_TEST(
 #undef smooth_h_pred_func
 
 #if HAVE_SSE2
-HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred8, NULL, NULL, NULL, NULL, NULL,
+HIGHBD_INTRA_PRED_TEST(SSE2_1, TestHighbdIntraPred8, "Hbd Intra8x8", NULL,
+                       aom_highbd_dc_left_predictor_8x8_sse2,
+                       aom_highbd_dc_top_predictor_8x8_sse2,
+                       aom_highbd_dc_128_predictor_8x8_sse2, NULL,
                        aom_highbd_h_predictor_8x8_sse2, NULL, NULL, NULL, NULL,
                        NULL, NULL, NULL, NULL, NULL, NULL)
+HIGHBD_INTRA_PRED_TEST(SSE2_2, TestHighbdIntraPred8, "Hbd Intra8x4", NULL,
+                       aom_highbd_dc_left_predictor_8x4_sse2,
+                       aom_highbd_dc_top_predictor_8x4_sse2,
+                       aom_highbd_dc_128_predictor_8x4_sse2, NULL,
+                       aom_highbd_h_predictor_8x4_sse2, NULL, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
+HIGHBD_INTRA_PRED_TEST(SSE2_3, TestHighbdIntraPred8, "Hbd Intra8x16", NULL,
+                       aom_highbd_dc_left_predictor_8x16_sse2,
+                       aom_highbd_dc_top_predictor_8x16_sse2,
+                       aom_highbd_dc_128_predictor_8x16_sse2, NULL,
+                       aom_highbd_h_predictor_8x16_sse2, NULL, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
+
+#if CONFIG_SMOOTH_HV
+#define smooth_v_pred_func aom_highbd_smooth_v_predictor_8x8_c
+#define smooth_h_pred_func aom_highbd_smooth_h_predictor_8x8_c
+#else
+#define smooth_v_pred_func NULL
+#define smooth_h_pred_func NULL
+#endif  // CONFIG_SMOOTH_HV
+
+HIGHBD_INTRA_PRED_TEST(
+    C_2, TestHighbdIntraPred8, "Hbd Intra8x4", aom_highbd_dc_predictor_8x4_c,
+    aom_highbd_dc_left_predictor_8x4_c, aom_highbd_dc_top_predictor_8x4_c,
+    aom_highbd_dc_128_predictor_8x4_c, aom_highbd_v_predictor_8x4_c,
+    aom_highbd_h_predictor_8x4_c, aom_highbd_d45e_predictor_8x4_c,
+    aom_highbd_d135_predictor_8x4_c, aom_highbd_d117_predictor_8x4_c,
+    aom_highbd_d153_predictor_8x4_c, aom_highbd_d207e_predictor_8x4_c,
+    aom_highbd_d63e_predictor_8x4_c, aom_highbd_paeth_predictor_8x4_c,
+    aom_highbd_smooth_predictor_8x4_c, smooth_v_pred_func, smooth_h_pred_func)
+#undef smooth_v_pred_func
+#undef smooth_h_pred_func
+
+#if CONFIG_SMOOTH_HV
+#define smooth_v_pred_func aom_highbd_smooth_v_predictor_8x16_c
+#define smooth_h_pred_func aom_highbd_smooth_h_predictor_8x16_c
+#else
+#define smooth_v_pred_func NULL
+#define smooth_h_pred_func NULL
+#endif  // CONFIG_SMOOTH_HV
+
+HIGHBD_INTRA_PRED_TEST(
+    C_3, TestHighbdIntraPred8, "Hbd Intra8x16", aom_highbd_dc_predictor_8x16_c,
+    aom_highbd_dc_left_predictor_8x16_c, aom_highbd_dc_top_predictor_8x16_c,
+    aom_highbd_dc_128_predictor_8x16_c, aom_highbd_v_predictor_8x16_c,
+    aom_highbd_h_predictor_8x16_c, aom_highbd_d45e_predictor_8x16_c,
+    aom_highbd_d135_predictor_8x16_c, aom_highbd_d117_predictor_8x16_c,
+    aom_highbd_d153_predictor_8x16_c, aom_highbd_d207e_predictor_8x16_c,
+    aom_highbd_d63e_predictor_8x16_c, aom_highbd_paeth_predictor_8x16_c,
+    aom_highbd_smooth_predictor_8x16_c, smooth_v_pred_func, smooth_h_pred_func)
+#undef smooth_v_pred_func
+#undef smooth_h_pred_func
 
 // -----------------------------------------------------------------------------
 // 16x16
@@ -679,22 +921,79 @@ HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred8, NULL, NULL, NULL, NULL, NULL,
 #endif  // CONFIG_SMOOTH_HV
 
 HIGHBD_INTRA_PRED_TEST(
-    C, TestHighbdIntraPred16, aom_highbd_dc_predictor_16x16_c,
-    aom_highbd_dc_left_predictor_16x16_c, aom_highbd_dc_top_predictor_16x16_c,
-    aom_highbd_dc_128_predictor_16x16_c, aom_highbd_v_predictor_16x16_c,
-    aom_highbd_h_predictor_16x16_c, aom_highbd_d45e_predictor_16x16_c,
-    aom_highbd_d135_predictor_16x16_c, aom_highbd_d117_predictor_16x16_c,
-    aom_highbd_d153_predictor_16x16_c, aom_highbd_d207e_predictor_16x16_c,
-    aom_highbd_d63e_predictor_16x16_c, aom_highbd_paeth_predictor_16x16_c,
-    aom_highbd_smooth_predictor_16x16_c, smooth_v_pred_func, smooth_h_pred_func)
+    C_1, TestHighbdIntraPred16, "Hbd Intra16x16",
+    aom_highbd_dc_predictor_16x16_c, aom_highbd_dc_left_predictor_16x16_c,
+    aom_highbd_dc_top_predictor_16x16_c, aom_highbd_dc_128_predictor_16x16_c,
+    aom_highbd_v_predictor_16x16_c, aom_highbd_h_predictor_16x16_c,
+    aom_highbd_d45e_predictor_16x16_c, aom_highbd_d135_predictor_16x16_c,
+    aom_highbd_d117_predictor_16x16_c, aom_highbd_d153_predictor_16x16_c,
+    aom_highbd_d207e_predictor_16x16_c, aom_highbd_d63e_predictor_16x16_c,
+    aom_highbd_paeth_predictor_16x16_c, aom_highbd_smooth_predictor_16x16_c,
+    smooth_v_pred_func, smooth_h_pred_func)
 #undef smooth_v_pred_func
 #undef smooth_h_pred_func
 
 #if HAVE_SSE2
-HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred16, NULL, NULL, NULL, NULL,
-                       NULL, aom_highbd_h_predictor_16x16_sse2, NULL, NULL,
-                       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+HIGHBD_INTRA_PRED_TEST(SSE2_1, TestHighbdIntraPred16, "Hbd Intra16x16", NULL,
+                       aom_highbd_dc_left_predictor_16x16_sse2,
+                       aom_highbd_dc_top_predictor_16x16_sse2,
+                       aom_highbd_dc_128_predictor_16x16_sse2, NULL,
+                       aom_highbd_h_predictor_16x16_sse2, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+HIGHBD_INTRA_PRED_TEST(SSE2_2, TestHighbdIntraPred16, "Hbd Intra16x8", NULL,
+                       aom_highbd_dc_left_predictor_16x8_sse2,
+                       aom_highbd_dc_top_predictor_16x8_sse2,
+                       aom_highbd_dc_128_predictor_16x8_sse2, NULL,
+                       aom_highbd_h_predictor_16x8_sse2, NULL, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL)
+HIGHBD_INTRA_PRED_TEST(SSE2_3, TestHighbdIntraPred16, "Hbd Intra16x32", NULL,
+                       aom_highbd_dc_left_predictor_16x32_sse2,
+                       aom_highbd_dc_top_predictor_16x32_sse2,
+                       aom_highbd_dc_128_predictor_16x32_sse2, NULL,
+                       aom_highbd_h_predictor_16x32_sse2, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
+
+#if CONFIG_SMOOTH_HV
+#define smooth_v_pred_func aom_highbd_smooth_v_predictor_16x8_c
+#define smooth_h_pred_func aom_highbd_smooth_h_predictor_16x8_c
+#else
+#define smooth_v_pred_func NULL
+#define smooth_h_pred_func NULL
+#endif  // CONFIG_SMOOTH_HV
+
+HIGHBD_INTRA_PRED_TEST(
+    C_2, TestHighbdIntraPred16, "Hbd Intra16x8", aom_highbd_dc_predictor_16x8_c,
+    aom_highbd_dc_left_predictor_16x8_c, aom_highbd_dc_top_predictor_16x8_c,
+    aom_highbd_dc_128_predictor_16x8_c, aom_highbd_v_predictor_16x8_c,
+    aom_highbd_h_predictor_16x8_c, aom_highbd_d45e_predictor_16x8_c,
+    aom_highbd_d135_predictor_16x8_c, aom_highbd_d117_predictor_16x8_c,
+    aom_highbd_d153_predictor_16x8_c, aom_highbd_d207e_predictor_16x8_c,
+    aom_highbd_d63e_predictor_16x8_c, aom_highbd_paeth_predictor_16x8_c,
+    aom_highbd_smooth_predictor_16x8_c, smooth_v_pred_func, smooth_h_pred_func)
+#undef smooth_v_pred_func
+#undef smooth_h_pred_func
+
+#if CONFIG_SMOOTH_HV
+#define smooth_v_pred_func aom_highbd_smooth_v_predictor_16x32_c
+#define smooth_h_pred_func aom_highbd_smooth_h_predictor_16x32_c
+#else
+#define smooth_v_pred_func NULL
+#define smooth_h_pred_func NULL
+#endif  // CONFIG_SMOOTH_HV
+
+HIGHBD_INTRA_PRED_TEST(
+    C_3, TestHighbdIntraPred16, "Hbd Intra16x32",
+    aom_highbd_dc_predictor_16x32_c, aom_highbd_dc_left_predictor_16x32_c,
+    aom_highbd_dc_top_predictor_16x32_c, aom_highbd_dc_128_predictor_16x32_c,
+    aom_highbd_v_predictor_16x32_c, aom_highbd_h_predictor_16x32_c,
+    aom_highbd_d45e_predictor_16x32_c, aom_highbd_d135_predictor_16x32_c,
+    aom_highbd_d117_predictor_16x32_c, aom_highbd_d153_predictor_16x32_c,
+    aom_highbd_d207e_predictor_16x32_c, aom_highbd_d63e_predictor_16x32_c,
+    aom_highbd_paeth_predictor_16x32_c, aom_highbd_smooth_predictor_16x32_c,
+    smooth_v_pred_func, smooth_h_pred_func)
+#undef smooth_v_pred_func
+#undef smooth_h_pred_func
 
 // -----------------------------------------------------------------------------
 // 32x32
@@ -708,22 +1007,53 @@ HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred16, NULL, NULL, NULL, NULL,
 #endif  // CONFIG_SMOOTH_HV
 
 HIGHBD_INTRA_PRED_TEST(
-    C, TestHighbdIntraPred32, aom_highbd_dc_predictor_32x32_c,
-    aom_highbd_dc_left_predictor_32x32_c, aom_highbd_dc_top_predictor_32x32_c,
-    aom_highbd_dc_128_predictor_32x32_c, aom_highbd_v_predictor_32x32_c,
-    aom_highbd_h_predictor_32x32_c, aom_highbd_d45e_predictor_32x32_c,
-    aom_highbd_d135_predictor_32x32_c, aom_highbd_d117_predictor_32x32_c,
-    aom_highbd_d153_predictor_32x32_c, aom_highbd_d207e_predictor_32x32_c,
-    aom_highbd_d63e_predictor_32x32_c, aom_highbd_paeth_predictor_32x32_c,
-    aom_highbd_smooth_predictor_32x32_c, smooth_v_pred_func, smooth_h_pred_func)
+    C_1, TestHighbdIntraPred32, "Hbd Intra32x32",
+    aom_highbd_dc_predictor_32x32_c, aom_highbd_dc_left_predictor_32x32_c,
+    aom_highbd_dc_top_predictor_32x32_c, aom_highbd_dc_128_predictor_32x32_c,
+    aom_highbd_v_predictor_32x32_c, aom_highbd_h_predictor_32x32_c,
+    aom_highbd_d45e_predictor_32x32_c, aom_highbd_d135_predictor_32x32_c,
+    aom_highbd_d117_predictor_32x32_c, aom_highbd_d153_predictor_32x32_c,
+    aom_highbd_d207e_predictor_32x32_c, aom_highbd_d63e_predictor_32x32_c,
+    aom_highbd_paeth_predictor_32x32_c, aom_highbd_smooth_predictor_32x32_c,
+    smooth_v_pred_func, smooth_h_pred_func)
 #undef smooth_v_pred_func
 #undef smooth_h_pred_func
 
 #if HAVE_SSE2
-HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred32, NULL, NULL, NULL, NULL,
-                       NULL, aom_highbd_h_predictor_32x32_sse2, NULL, NULL,
-                       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+HIGHBD_INTRA_PRED_TEST(SSE2_1, TestHighbdIntraPred32, "Hbd Intra32x32", NULL,
+                       aom_highbd_dc_left_predictor_32x32_sse2,
+                       aom_highbd_dc_top_predictor_32x32_sse2,
+                       aom_highbd_dc_128_predictor_32x32_sse2, NULL,
+                       aom_highbd_h_predictor_32x32_sse2, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+HIGHBD_INTRA_PRED_TEST(SSE2_2, TestHighbdIntraPred32, "Hbd Intra32x16", NULL,
+                       aom_highbd_dc_left_predictor_32x16_sse2,
+                       aom_highbd_dc_top_predictor_32x16_sse2,
+                       aom_highbd_dc_128_predictor_32x16_sse2, NULL,
+                       aom_highbd_h_predictor_32x16_sse2, NULL, NULL, NULL,
+                       NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 #endif
+
+#if CONFIG_SMOOTH_HV
+#define smooth_v_pred_func aom_highbd_smooth_v_predictor_32x16_c
+#define smooth_h_pred_func aom_highbd_smooth_h_predictor_32x16_c
+#else
+#define smooth_v_pred_func NULL
+#define smooth_h_pred_func NULL
+#endif  // CONFIG_SMOOTH_HV
+
+HIGHBD_INTRA_PRED_TEST(
+    C_2, TestHighbdIntraPred32, "Hbd Intra32x16",
+    aom_highbd_dc_predictor_32x16_c, aom_highbd_dc_left_predictor_32x16_c,
+    aom_highbd_dc_top_predictor_32x16_c, aom_highbd_dc_128_predictor_32x16_c,
+    aom_highbd_v_predictor_32x16_c, aom_highbd_h_predictor_32x16_c,
+    aom_highbd_d45e_predictor_32x16_c, aom_highbd_d135_predictor_32x16_c,
+    aom_highbd_d117_predictor_32x16_c, aom_highbd_d153_predictor_32x16_c,
+    aom_highbd_d207e_predictor_32x16_c, aom_highbd_d63e_predictor_32x16_c,
+    aom_highbd_paeth_predictor_32x16_c, aom_highbd_smooth_predictor_32x16_c,
+    smooth_v_pred_func, smooth_h_pred_func)
+#undef smooth_v_pred_func
+#undef smooth_h_pred_func
 #endif  // CONFIG_HIGHBITDEPTH
 
 #include "test/test_libaom.cc"

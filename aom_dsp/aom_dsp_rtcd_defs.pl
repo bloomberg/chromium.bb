@@ -133,6 +133,36 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   specialize qw/aom_highbd_h_predictor_16x32 sse2/;
   specialize qw/aom_highbd_h_predictor_32x16 sse2/;
   specialize qw/aom_highbd_h_predictor_32x32 sse2/;
+  specialize qw/aom_highbd_dc_left_predictor_4x4 sse2/;
+  specialize qw/aom_highbd_dc_top_predictor_4x4 sse2/;
+  specialize qw/aom_highbd_dc_128_predictor_4x4 sse2/;
+  specialize qw/aom_highbd_dc_left_predictor_4x8 sse2/;
+  specialize qw/aom_highbd_dc_top_predictor_4x8 sse2/;
+  specialize qw/aom_highbd_dc_128_predictor_4x8 sse2/;
+  specialize qw/aom_highbd_dc_left_predictor_8x4 sse2/;
+  specialize qw/aom_highbd_dc_top_predictor_8x4 sse2/;
+  specialize qw/aom_highbd_dc_128_predictor_8x4 sse2/;
+  specialize qw/aom_highbd_dc_left_predictor_8x8 sse2/;
+  specialize qw/aom_highbd_dc_top_predictor_8x8 sse2/;
+  specialize qw/aom_highbd_dc_128_predictor_8x8 sse2/;
+  specialize qw/aom_highbd_dc_left_predictor_8x16 sse2/;
+  specialize qw/aom_highbd_dc_top_predictor_8x16 sse2/;
+  specialize qw/aom_highbd_dc_128_predictor_8x16 sse2/;
+  specialize qw/aom_highbd_dc_left_predictor_16x8 sse2/;
+  specialize qw/aom_highbd_dc_top_predictor_16x8 sse2/;
+  specialize qw/aom_highbd_dc_128_predictor_16x8 sse2/;
+  specialize qw/aom_highbd_dc_left_predictor_16x16 sse2/;
+  specialize qw/aom_highbd_dc_top_predictor_16x16 sse2/;
+  specialize qw/aom_highbd_dc_128_predictor_16x16 sse2/;
+  specialize qw/aom_highbd_dc_left_predictor_16x32 sse2/;
+  specialize qw/aom_highbd_dc_top_predictor_16x32 sse2/;
+  specialize qw/aom_highbd_dc_128_predictor_16x32 sse2/;
+  specialize qw/aom_highbd_dc_left_predictor_32x16 sse2/;
+  specialize qw/aom_highbd_dc_top_predictor_32x16 sse2/;
+  specialize qw/aom_highbd_dc_128_predictor_32x16 sse2/;
+  specialize qw/aom_highbd_dc_left_predictor_32x32 sse2/;
+  specialize qw/aom_highbd_dc_top_predictor_32x32 sse2/;
+  specialize qw/aom_highbd_dc_128_predictor_32x32 sse2/;
 }  # CONFIG_HIGHBITDEPTH
 
 #
