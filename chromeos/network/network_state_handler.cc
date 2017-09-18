@@ -1305,14 +1305,14 @@ void NetworkStateHandler::SortNetworkList() {
   for (ManagedStateList::iterator iter = network_list_.begin();
        iter != network_list_.end(); ++iter) {
     NetworkState* network = (*iter)->AsNetworkState();
-    if (NetworkTypePattern::Cellular().MatchesType(network->type())) {
-      cellular.push_back(std::move(*iter));
-      continue;
-    }
     // NetworkState entries are created when they appear in the list, but the
     // details are not populated until an update is received.
     if (!network->update_received()) {
       new_networks.push_back(std::move(*iter));
+      continue;
+    }
+    if (NetworkTypePattern::Cellular().MatchesType(network->type())) {
+      cellular.push_back(std::move(*iter));
       continue;
     }
     // Ethernet networks are always considered active.
@@ -1468,10 +1468,18 @@ void NetworkStateHandler::EnsureCellularNetwork(
     return;
   }
   if (cellular_networks->empty()) {
+    // If no SIM is present there will not be useful user facing Device
+    // information, so do not create a default Cellular network.
+    if (device->IsSimAbsent())
+      return;
     // Create a default Cellular network. Properties from the associated Device
     // will be provided to the UI.
     std::unique_ptr<NetworkState> network =
         NetworkState::CreateDefaultCellular(device->path());
+    std::string name = device->home_provider_id();
+    if (name.empty())
+      name = shill::kTypeCellular;
+    network->set_name(name);
     UpdateGuid(network.get());
     cellular_networks->push_back(std::move(network));
     return;

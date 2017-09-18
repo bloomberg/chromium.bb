@@ -403,6 +403,10 @@ bool NetworkState::IsInProfile() const {
   return !profile_path_.empty() || type() == shill::kTypeEthernetEap;
 }
 
+bool NetworkState::IsNonProfileType() const {
+  return type() == kTypeTether || IsDefaultCellular();
+}
+
 bool NetworkState::IsPrivate() const {
   return !profile_path_.empty() &&
          profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
