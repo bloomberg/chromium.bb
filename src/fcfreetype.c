@@ -1396,8 +1396,9 @@ FcFreeTypeQueryFace (const FT_Face  face,
 
 		if (instance)
 		{
-		    /* For named-instances, we regular style nameIDs,
-		     * and map the instance's strid to FONT_SUBFAMILY. */
+		    /* For named-instances, we skip regular style nameIDs,
+		     * and treat the instance's nameid as FONT_SUBFAMILY.
+		     * Postscript name is automatically handled by FreeType. */
 		    if (sname.name_id == TT_NAME_ID_WWS_SUBFAMILY ||
 			sname.name_id == TT_NAME_ID_PREFERRED_SUBFAMILY ||
 			sname.name_id == TT_NAME_ID_FONT_SUBFAMILY)
@@ -1555,6 +1556,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
     {
 	if (FcDebug () & FC_DBG_SCANV)
 	    printf ("using FreeType style \"%s\"\n", face->style_name);
+
 	if (!FcPatternAddString (pat, FC_STYLE, (FcChar8 *) face->style_name))
 	    goto bail1;
 	if (!FcPatternAddString (pat, FC_STYLELANG, (FcChar8 *) "en"))
