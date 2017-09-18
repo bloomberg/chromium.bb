@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/layout/LayoutTable.h"
+#include "core/layout/LayoutTableSection.h"
 
 #include "core/layout/LayoutTestHelper.h"
 
@@ -234,15 +235,55 @@ TEST_F(LayoutTableTest, PaddingWithCollapsedBorder) {
 }
 
 TEST_F(LayoutTableTest, OutOfOrderHeadAndBody) {
-  // This should not crash.
   SetBodyInnerHTML(
-      "<table style='border-collapse: collapse'>"
-      "  <tbody><tr><td>Body</td></tr></tbody>"
-      "  <thead></thead>"
+      "<table id='table' style='border-collapse: collapse'>"
+      "  <tbody id='body'><tr><td>Body</td></tr></tbody>"
+      "  <thead id='head'></thead>"
       "<table>");
-  // TODO(crbug.com/764525): Add tests for TopSection(), BottomSection(),
-  // TopNonEmptySection(), BottomNonEmptySection(), SectionAbove(),
-  // SectionBelow() for similar cases.
+  auto* table = GetTableByElementId("table");
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("head")),
+            table->TopSection());
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+            table->TopNonEmptySection());
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+            table->BottomSection());
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+            table->BottomNonEmptySection());
+}
+
+TEST_F(LayoutTableTest, OutOfOrderFootAndBody) {
+  SetBodyInnerHTML(
+      "<table id='table'>"
+      "  <tfoot id='foot'></tfoot>"
+      "  <tbody id='body'><tr><td>Body</td></tr></tbody>"
+      "<table>");
+  auto* table = GetTableByElementId("table");
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+            table->TopSection());
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+            table->TopNonEmptySection());
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("foot")),
+            table->BottomSection());
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
+            table->BottomNonEmptySection());
+}
+
+TEST_F(LayoutTableTest, OutOfOrderHeadFootAndBody) {
+  SetBodyInnerHTML(
+      "<table id='table' style='border-collapse: collapse'>"
+      "  <tfoot id='foot'><tr><td>foot</td></tr></tfoot>"
+      "  <thead id='head'><tr><td>head</td></tr></thead>"
+      "  <tbody id='body'><tr><td>Body</td></tr></tbody>"
+      "<table>");
+  auto* table = GetTableByElementId("table");
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("head")),
+            table->TopSection());
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("head")),
+            table->TopNonEmptySection());
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("foot")),
+            table->BottomSection());
+  EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("foot")),
+            table->BottomNonEmptySection());
 }
 
 }  // anonymous namespace
