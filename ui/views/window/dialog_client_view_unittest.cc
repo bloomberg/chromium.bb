@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/test_layout_provider.h"
@@ -428,6 +429,17 @@ TEST_F(DialogClientViewTest, LinkedWidths) {
 
   // Remove |extra_button| from the View hierarchy so that it can be replaced.
   delete extra_button;
+
+  // ImageButton extends Button, but it should not participate in linking. Even
+  // without an image, the minimum size (16x14) of the button should be smaller
+  // than the dialog buttons.
+  ImageButton* image_button = new ImageButton(nullptr);
+  SetExtraView(image_button);
+  CheckContentsIsSetToPreferredSize();
+  EXPECT_NE(cancel_button_width, image_button->width());
+
+  // Remove |image_button| from the View hierarchy so that it can be replaced.
+  delete image_button;
 
   // Non-buttons should always be sized to their preferred size.
   View* boring_view = new StaticSizedView(gfx::Size(20, 20));
