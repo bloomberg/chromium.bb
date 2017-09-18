@@ -14,18 +14,18 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
- * Determines whether metrics should be enabled.
+ * Determines user consent and app opt-out for metrics.
  *
  * This requires the following steps:
  * 1) Check the platform's metrics consent setting.
  * 2) Check if the app has opted out.
  * 3) Wait for the native AwMetricsServiceClient to call nativeInitialized.
- * 4) If enabled, inform the native AwMetricsServiceClient via nativeSetMetricsEnabled.
+ * 4) If enabled, inform the native AwMetricsServiceClient via nativeSetHaveMetricsConsent.
  *
  * Step 1 is done asynchronously and the result is passed to setConsentSetting, which does step 2.
  * This happens in parallel with native AwMetricsServiceClient initialization; either
  * nativeInitialized or setConsentSetting might fire first. Whichever fires second should call
- * nativeSetMetricsEnabled.
+ * nativeSetHaveMetricsConsent.
  */
 @JNINamespace("android_webview")
 public class AwMetricsServiceClient {
@@ -60,13 +60,13 @@ public class AwMetricsServiceClient {
         ThreadUtils.assertOnUiThread();
 
         if (!userConsent || isAppOptedOut(appContext)) {
-            // Metrics defaults to off, so no need to call nativeSetMetricsEnabled(false).
+            // Metrics defaults to off, so no need to call nativeSetHaveMetricsConsent(false).
             return;
         }
 
         sShouldEnable = true;
         if (sIsClientReady) {
-            nativeSetMetricsEnabled(true);
+            nativeSetHaveMetricsConsent(true);
         }
     }
 
@@ -75,7 +75,7 @@ public class AwMetricsServiceClient {
         ThreadUtils.assertOnUiThread();
         sIsClientReady = true;
         if (sShouldEnable) {
-            nativeSetMetricsEnabled(true);
+            nativeSetHaveMetricsConsent(true);
         }
     }
 
@@ -84,5 +84,5 @@ public class AwMetricsServiceClient {
         return AwBrowserProcess.getWebViewPackageName();
     }
 
-    public static native void nativeSetMetricsEnabled(boolean enabled);
+    public static native void nativeSetHaveMetricsConsent(boolean enabled);
 }
