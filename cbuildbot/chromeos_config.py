@@ -2429,6 +2429,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.internal_paladin,
           boards=['wolf'],
           do_not_apply_cq_patches=True,
+          # Temporarily (?) marked as experimental due to crbug.com/765565
+          important=False,
           prebuilts=False,
           hw_tests=hw_test_list.SharedPoolCQ(),
           active_waterfall=waterfall.WATERFALL_INTERNAL,
