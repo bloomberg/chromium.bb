@@ -492,4 +492,22 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserDisableWebSecurityTest,
   EXPECT_TRUE(result.empty());
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest, BackFollowedByReload) {
+  // First, make two history entries.
+  GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("/title2.html"));
+  NavigateToURL(shell(), url1);
+  NavigateToURL(shell(), url2);
+
+  // Then execute a back navigation in Javascript followed by a reload.
+  TestNavigationObserver navigation_observer(shell()->web_contents());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "history.back(); location.reload();"));
+  navigation_observer.Wait();
+
+  // The reload should have cancelled the back navigation, and the last
+  // committed URL should still be the second URL.
+  EXPECT_EQ(url2, shell()->web_contents()->GetLastCommittedURL());
+}
+
 }  // namespace content
