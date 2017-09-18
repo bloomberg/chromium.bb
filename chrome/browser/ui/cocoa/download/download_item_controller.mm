@@ -262,7 +262,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     [self updateTheme:[[[self view] window] themeProvider]];
 
   NSView* view = [self view];
-  [view setHidden:!NSContainsRect([[view superview] bounds], [view frame])];
+  [view setHidden:NSMaxX(view.frame) > NSMaxX(view.superview.bounds)];
 }
 
 - (void)downloadWasOpened {
