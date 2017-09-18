@@ -392,20 +392,33 @@ bool AuthenticateUserNew(gfx::NativeWindow window) {
     if (err != ERROR_SUCCESS)
       break;
 
+    // Get the length of the required output buffers.  Note that the length
+    // returned includes the null terminator.
+    DWORD cred_username_length = 0;
+    DWORD cred_domain_length = 0;
+    DWORD cred_password_length = 0;
+    BOOL ret = CredUnPackAuthenticationBuffer(
+        0, cred_buffer, cred_buffer_size, nullptr, &cred_username_length,
+        nullptr, &cred_domain_length, nullptr, &cred_password_length);
+    DCHECK(!ret);
+    err = GetLastError();
+    if (ERROR_INSUFFICIENT_BUFFER != err) {
+      SecureZeroMemory(cred_buffer, cred_buffer_size);
+      CoTaskMemFree(cred_buffer);
+      continue;
+    }
+
     // Try to unpack the authentication buffer.  If this fails, try again.
     // By not using the flag CRED_PACK_PROTECTED_CREDENTIALS, the password
     // in |cred_password| remains encrypted.  That's OK though, the call to
     // LogonUser() below handles that correctly.
-    WCHAR cred_username[CREDUI_MAX_USERNAME_LENGTH + 1] = {};
-    DWORD cred_username_length = arraysize(cred_username);
-    WCHAR cred_domain[CREDUI_MAX_USERNAME_LENGTH + 1] = {};
-    DWORD cred_domain_length = arraysize(cred_domain);
-    DWORD cred_password_length = CREDUI_MAX_USERNAME_LENGTH + 1;
+    std::unique_ptr<WCHAR[]> cred_username(new WCHAR[cred_username_length]);
+    std::unique_ptr<WCHAR[]> cred_domain(new WCHAR[cred_domain_length]);
     SecureStringBuffer cred_password(cred_password_length);
-    BOOL ret = CredUnPackAuthenticationBuffer(
-        0, cred_buffer, cred_buffer_size, cred_username, &cred_username_length,
-        cred_domain, &cred_domain_length, cred_password.get(),
-        &cred_password_length);
+    ret = CredUnPackAuthenticationBuffer(
+        0, cred_buffer, cred_buffer_size, cred_username.get(),
+        &cred_username_length, cred_domain.get(), &cred_domain_length,
+        cred_password.get(), &cred_password_length);
     SecureZeroMemory(cred_buffer, cred_buffer_size);
     CoTaskMemFree(cred_buffer);
     if (!ret) {
@@ -427,25 +440,22 @@ bool AuthenticateUserNew(gfx::NativeWindow window) {
     // workstations and domain joined machines.  This seems to be different
     // behaviour than CredUIPromptForCredentials().  This makes |cred_username|
     // comparable to |cur_username| above.
-    if (wcsicmp(cred_username, cur_username) != 0) {
+    if (wcsicmp(cred_username.get(), cur_username) != 0) {
       err = ERROR_LOGON_FAILURE;
       continue;
     }
 
-    // As explained above, extract the domain from |cred_username|.  The code
-    // does not use |cred_domain_length| to determine the length of the domain
-    // string because CredUnPackAuthenticationBuffer() will not update it, and
-    // will leave |cred_domain| untouched, when the domain is returned as part
-    // of the username.
+    // As explained above, extract the domain from |cred_username|.
     // TODO(rogerta): Figure out when |cred_domain| buffer is actually used,
     // I could not find a case where it was.
-    WCHAR username[CREDUI_MAX_USERNAME_LENGTH + 1] = {};
-    WCHAR domain[CREDUI_MAX_USERNAME_LENGTH + 1] = {};
-    LPWSTR backslash = wcschr(cred_username, L'\\');
-    if (wcslen(cred_domain) == 0 && backslash != nullptr) {
+    LPWSTR username = nullptr;
+    LPWSTR domain = nullptr;
+    LPWSTR backslash = wcschr(cred_username.get(), L'\\');
+    if ((cred_domain_length == 0 || wcslen(cred_domain.get()) == 0) &&
+        backslash != nullptr) {
       *backslash = 0;
-      wcscpy_s(domain, CREDUI_MAX_USERNAME_LENGTH, cred_username);
-      wcscpy_s(username, CREDUI_MAX_USERNAME_LENGTH, backslash + 1);
+      domain = cred_username.get();
+      username = backslash + 1;
     } else {
       DLOG(ERROR) << "Unexpected domain and/or username";
       break;
