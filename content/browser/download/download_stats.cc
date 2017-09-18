@@ -4,6 +4,8 @@
 
 #include "content/browser/download/download_stats.h"
 
+#include <map>
+
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -368,7 +370,7 @@ void RecordBandwidthMetric(const std::string& metric, int bandwidth) {
   base::UmaHistogramCustomCounts(metric, bandwidth, 1, 50 * 1000 * 1000, 50);
 }
 
-} // namespace
+}  // namespace
 
 void RecordDownloadCount(DownloadCountTypes type) {
   UMA_HISTOGRAM_ENUMERATION(
@@ -1078,16 +1080,26 @@ void RecordOriginStateOnResumption(bool is_partial,
 namespace {
 
 // Enumeration for histogramming purposes.
-// DO NOT CHANGE THE ORDERING OF THESE VALUES.
+// These values are written to logs.  New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
 enum DownloadConnectionSecurity {
-  DOWNLOAD_SECURE,  // Final download url and its redirects all use https
-  DOWNLOAD_TARGET_INSECURE,  // Final download url uses http, redirects are all
-                             // https
-  DOWNLOAD_REDIRECT_INSECURE,  // Final download url uses https, but at least
-                               // one redirect uses http
-  DOWNLOAD_REDIRECT_TARGET_INSECURE,  // Final download url uses http, and at
-                                      // least one redirect uses http
-  DOWNLOAD_NONE_HTTPX,  // Final download url uses scheme other than http/https
+  DOWNLOAD_SECURE = 0,  // Final download url and its redirects all use https
+  DOWNLOAD_TARGET_INSECURE =
+      1,  // Final download url uses http, redirects are all
+          // https
+  DOWNLOAD_REDIRECT_INSECURE =
+      2,  // Final download url uses https, but at least
+          // one redirect uses http
+  DOWNLOAD_REDIRECT_TARGET_INSECURE =
+      3,                      // Final download url uses http, and at
+                              // least one redirect uses http
+  DOWNLOAD_TARGET_OTHER = 4,  // Final download url uses a scheme not present in
+                              // this enumeration
+  DOWNLOAD_TARGET_BLOB = 5,   // Final download url uses blob scheme
+  DOWNLOAD_TARGET_DATA = 6,   //  Final download url uses data scheme
+  DOWNLOAD_TARGET_FILE = 7,   //  Final download url uses file scheme
+  DOWNLOAD_TARGET_FILESYSTEM = 8,  //  Final download url uses filesystem scheme
+  DOWNLOAD_TARGET_FTP = 9,         // Final download url uses ftp scheme
   DOWNLOAD_CONNECTION_SECURITY_MAX
 };
 
@@ -1095,12 +1107,11 @@ enum DownloadConnectionSecurity {
 
 void RecordDownloadConnectionSecurity(const GURL& download_url,
                                       const std::vector<GURL>& url_chain) {
-  DownloadConnectionSecurity state =
-      DownloadConnectionSecurity::DOWNLOAD_NONE_HTTPX;
+  DownloadConnectionSecurity state = DOWNLOAD_TARGET_OTHER;
   if (download_url.SchemeIsHTTPOrHTTPS()) {
     bool is_final_download_secure = download_url.SchemeIsCryptographic();
     bool is_redirect_chain_secure = true;
-    if (url_chain.size()>std::size_t(1)) {
+    if (url_chain.size() > std::size_t(1)) {
       for (std::size_t i = std::size_t(0); i < url_chain.size() - 1; i++) {
         if (!url_chain[i].SchemeIsCryptographic()) {
           is_redirect_chain_secure = false;
@@ -1113,6 +1124,16 @@ void RecordDownloadConnectionSecurity(const GURL& download_url,
                                            : DOWNLOAD_REDIRECT_INSECURE
                 : is_redirect_chain_secure ? DOWNLOAD_TARGET_INSECURE
                                            : DOWNLOAD_REDIRECT_TARGET_INSECURE;
+  } else if (download_url.SchemeIsBlob()) {
+    state = DOWNLOAD_TARGET_BLOB;
+  } else if (download_url.SchemeIs(url::kDataScheme)) {
+    state = DOWNLOAD_TARGET_DATA;
+  } else if (download_url.SchemeIsFile()) {
+    state = DOWNLOAD_TARGET_FILE;
+  } else if (download_url.SchemeIsFileSystem()) {
+    state = DOWNLOAD_TARGET_FILESYSTEM;
+  } else if (download_url.SchemeIs(url::kFtpScheme)) {
+    state = DOWNLOAD_TARGET_FTP;
   }
 
   UMA_HISTOGRAM_ENUMERATION("Download.TargetConnectionSecurity", state,
