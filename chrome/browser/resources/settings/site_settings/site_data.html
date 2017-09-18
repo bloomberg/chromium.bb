@@ -39,7 +39,8 @@
         notify-dom-change>
       <div class="settings-box two-line" first$="[[!index]]" id="siteItem"
           on-tap="onSiteTap_" actionable>
-        <div class="favicon-image" style$="[[computeSiteIcon(item.site)]]">
+        <div class="favicon-image"
+            style$="background-image: [[favicon_(item.site)]]">
         </div>
         <div class="middle">
           [[item.site]]
