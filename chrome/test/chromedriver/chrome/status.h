@@ -23,6 +23,7 @@ enum StatusCode {
   kUnsupportedOperation = 16,
   kJavaScriptError = 17,
   kXPathLookupError = 19,
+  kUnableToSetCookie = 20,
   kTimeout = 21,
   kNoSuchWindow = 23,
   kInvalidCookieDomain = 24,
