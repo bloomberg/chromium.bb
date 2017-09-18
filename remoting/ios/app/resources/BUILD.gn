@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
-import("//build/config/ios/imageset.gni")
+import("//build/config/ios/asset_catalog.gni")
 import("//build/config/ios/rules.gni")
 import("//remoting/build/config/remoting_build.gni")
 import("//remoting/remoting_locales.gni")
