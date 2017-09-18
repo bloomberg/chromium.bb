@@ -685,10 +685,11 @@ speech.onKeyDown = function(event) {
 
 
 /**
- * Stops the recognition interface and closes the UI if no interactions occur
- * after some time and the interface is still active. This is a safety net in
- * case the recognition.onend event doesn't fire, as is sometime the case. If
- * a high confidence transcription was received then show the search results.
+ * Displays the no match error if no interactions occur after some time while
+ * the interface is active. This is a safety net in case the onend event
+ * doesn't fire, or the user has persistent noise in the background, and does
+ * not speak. If a high confidence transcription was received, then this submits
+ * the search query instead of displaying an error.
  * @private
  */
 speech.onIdleTimeout_ = function() {
@@ -703,7 +704,7 @@ speech.onIdleTimeout_ = function() {
     case speech.State_.SPEECH_RECEIVED:
     case speech.State_.RESULT_RECEIVED:
     case speech.State_.ERROR_RECEIVED:
-      speech.stop();
+      speech.onErrorReceived_(RecognitionError.NO_MATCH);
       break;
   }
 };
