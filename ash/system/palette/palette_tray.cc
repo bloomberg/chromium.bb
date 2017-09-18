@@ -308,9 +308,12 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
 
 void PaletteTray::BubbleViewDestroyed() {
   palette_tool_manager_->NotifyViewsDestroyed();
-  // The tray button remains active if the current active tool is a mode.
-  SetIsActive(palette_tool_manager_->GetActiveTool(PaletteGroup::MODE) !=
-              PaletteToolId::NONE);
+  // Opening the palette via an accelerator will close any open widget and then
+  // open a new one. This method is called when the widget is closed, but due to
+  // async close the new bubble may have already been created. If this happens,
+  // |bubble_| will not be null.
+  SetIsActive(bubble_ || palette_tool_manager_->GetActiveTool(
+                             PaletteGroup::MODE) != PaletteToolId::NONE);
 }
 
 void PaletteTray::OnMouseEnteredView() {}
@@ -418,15 +421,9 @@ bool PaletteTray::PerformAction(const ui::Event& event) {
     return true;
   }
 
-  // Deactivate the active tool if there is one.
-  PaletteToolId active_tool_id =
-      palette_tool_manager_->GetActiveTool(PaletteGroup::MODE);
-  if (active_tool_id != PaletteToolId::NONE) {
-    palette_tool_manager_->DeactivateTool(active_tool_id);
-    // TODO(sammiequon): Investigate whether we should removed |is_switched|
-    // from PaletteToolIdToPaletteModeCancelType.
-    RecordPaletteModeCancellation(PaletteToolIdToPaletteModeCancelType(
-        active_tool_id, false /*is_switched*/));
+  // Do not show the bubble if there was an action on the palette tray while
+  // there was an active tool.
+  if (DeactivateActiveTool()) {
     SetIsActive(false);
     return true;
   }
@@ -444,6 +441,10 @@ void PaletteTray::ShowBubble() {
     return;
 
   DCHECK(tray_container());
+
+  // There may still be an active tool if show bubble was called from an
+  // accelerator.
+  DeactivateActiveTool();
 
   views::TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
@@ -485,7 +486,7 @@ void PaletteTray::ShowBubble() {
     bubble_view->AddChildView(view.view);
 
   // Show the bubble.
-  bubble_ = base::MakeUnique<ash::TrayBubbleWrapper>(this, bubble_view);
+  bubble_ = base::MakeUnique<TrayBubbleWrapper>(this, bubble_view);
   SetIsActive(true);
 }
 
@@ -528,6 +529,21 @@ void PaletteTray::OnHasSeenStylusPrefChanged() {
     watcher_ = base::MakeUnique<StylusWatcher>(local_state_pref_service_);
 
   UpdateIconVisibility();
+}
+
+bool PaletteTray::DeactivateActiveTool() {
+  PaletteToolId active_tool_id =
+      palette_tool_manager_->GetActiveTool(PaletteGroup::MODE);
+  if (active_tool_id != PaletteToolId::NONE) {
+    palette_tool_manager_->DeactivateTool(active_tool_id);
+    // TODO(sammiequon): Investigate whether we should removed |is_switched|
+    // from PaletteToolIdToPaletteModeCancelType.
+    RecordPaletteModeCancellation(PaletteToolIdToPaletteModeCancelType(
+        active_tool_id, false /*is_switched*/));
+    return true;
+  }
+
+  return false;
 }
 
 void PaletteTray::UpdateIconVisibility() {

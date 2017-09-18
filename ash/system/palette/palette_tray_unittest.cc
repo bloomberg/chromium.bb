@@ -458,4 +458,21 @@ TEST_F(PaletteTrayTestWithInternalStylus, PaletteTrayOnLockScreenBehavior) {
   EXPECT_FALSE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
 }
 
+// Verify a tool deactivates when the palette bubble is opened while the tool
+// is active.
+TEST_F(PaletteTrayTestWithInternalStylus, ToolDeactivatesWhenOpeningBubble) {
+  ASSERT_TRUE(palette_tray_->visible());
+
+  palette_tray_->ShowBubble();
+  EXPECT_TRUE(test_api_->GetTrayBubbleWrapper());
+  PaletteToolManager* manager = test_api_->GetPaletteToolManager();
+  manager->ActivateTool(PaletteToolId::LASER_POINTER);
+  EXPECT_TRUE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
+  EXPECT_FALSE(test_api_->GetTrayBubbleWrapper());
+
+  palette_tray_->ShowBubble();
+  EXPECT_TRUE(test_api_->GetTrayBubbleWrapper());
+  EXPECT_FALSE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
+}
+
 }  // namespace ash

@@ -131,6 +131,9 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // Called when the has seen stylus pref has changed.
   void OnHasSeenStylusPrefChanged();
 
+  // Deactivates the active tool. Returns false if there was no active tool.
+  bool DeactivateActiveTool();
+
   std::unique_ptr<PaletteToolManager> palette_tool_manager_;
   std::unique_ptr<TrayBubbleWrapper> bubble_;
   std::unique_ptr<StylusWatcher> watcher_;
