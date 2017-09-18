@@ -3533,6 +3533,8 @@ crbug.com/626703 [ Win Debug ] external/wpt/encoding/legacy-mb-korean/euc-kr/euc
 crbug.com/626703 [ Win Debug ] external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-form-errors-extBa.html [ Skip ]
 crbug.com/626703 [ Win Debug ] external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-form-errors-extBb.html [ Skip ]
 
+crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
+
 # Tests need rebaselining due to slight pixel changes after Skia GPU image rendering change.
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-clipping.html [ NeedsManualRebaseline Timeout ]
 crbug.com/757195 virtual/gpu/fast/canvas/canvas-blending-color-over-color.html [ NeedsManualRebaseline Timeout ]
