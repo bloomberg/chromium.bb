@@ -219,11 +219,14 @@ scoped_refptr<net::HttpResponseHeaders> MakeResponseHeaders(
       net::HttpUtil::AssembleRawHeaders(headers, strlen(headers))));
 }
 
-MockURLRequestJob::MockURLRequestJob(net::URLRequest* request,
-                                     const net::HttpResponseInfo& response_info,
-                                     const std::string& mime_type)
+MockURLRequestJob::MockURLRequestJob(
+    net::URLRequest* request,
+    const net::HttpResponseInfo& response_info,
+    const net::LoadTimingInfo& load_timing_info,
+    const std::string& mime_type)
     : net::URLRequestJob(request, nullptr),
       response_info_(response_info),
+      load_timing_info_(load_timing_info),
       mime_type_(mime_type) {}
 
 bool MockURLRequestJob::GetMimeType(std::string* mime_type) const {
@@ -239,6 +242,10 @@ void MockURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
   *info = response_info_;
 }
 
+void MockURLRequestJob::GetLoadTimingInfo(net::LoadTimingInfo* info) const {
+  *info = load_timing_info_;
+}
+
 MockURLRequestJobFactory::MockURLRequestJobFactory() {}
 MockURLRequestJobFactory::~MockURLRequestJobFactory() {}
 
@@ -251,7 +258,8 @@ net::URLRequestJob* MockURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
     const std::string& scheme,
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
-  return new MockURLRequestJob(request, response_info_, mime_type_);
+  return new MockURLRequestJob(request, response_info_, load_timing_info_,
+                               mime_type_);
 }
 
 net::URLRequestJob* MockURLRequestJobFactory::MaybeInterceptRedirect(

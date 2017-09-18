@@ -63,6 +63,11 @@ struct URLRequestSummary {
   bool is_no_store;
   bool network_accessed;
 
+  // The time spent looking up the host's DNS address and establishing the
+  // connection. This can be zero if the request was cached or if the existing
+  // connection was reused.
+  base::TimeDelta connect_duration;
+
   // Initializes a |URLRequestSummary| from a |URLRequest| response.
   // Returns true for success. Note: NavigationID is NOT initialized
   // by this function.

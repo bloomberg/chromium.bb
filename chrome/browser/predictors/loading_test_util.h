@@ -118,6 +118,7 @@ class MockURLRequestJob : public net::URLRequestJob {
  public:
   MockURLRequestJob(net::URLRequest* request,
                     const net::HttpResponseInfo& response_info,
+                    const net::LoadTimingInfo& load_timing_info,
                     const std::string& mime_type);
 
   bool GetMimeType(std::string* mime_type) const override;
@@ -125,9 +126,11 @@ class MockURLRequestJob : public net::URLRequestJob {
  protected:
   void Start() override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
+  void GetLoadTimingInfo(net::LoadTimingInfo* info) const override;
 
  private:
   net::HttpResponseInfo response_info_;
+  net::LoadTimingInfo load_timing_info_;
   std::string mime_type_;
 };
 
@@ -160,10 +163,15 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
     response_info_ = response_info;
   }
 
+  void set_load_timing_info(const net::LoadTimingInfo& load_timing_info) {
+    load_timing_info_ = load_timing_info;
+  }
+
   void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
 
  private:
   net::HttpResponseInfo response_info_;
+  net::LoadTimingInfo load_timing_info_;
   std::string mime_type_;
 };
 

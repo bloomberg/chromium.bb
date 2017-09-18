@@ -303,4 +303,44 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
       internal::kLoadingPredictorPreconnectCount, 2, 1);
 }
 
+TEST_F(LoadingStatsCollectorTest, TestSubresourceConnectDurationHistogram) {
+  const std::string main_frame_url("http://google.com/?query=cats");
+  auto gen = [](int index) {
+    return base::StringPrintf("http://cdn%d.google.com/script.js", index);
+  };
+  EXPECT_CALL(*mock_predictor_, GetPrefetchData(GURL(main_frame_url), _))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*mock_predictor_,
+              PredictPreconnectOrigins(GURL(main_frame_url), _))
+      .WillOnce(Return(false));
+
+  const int resources_count = 5;
+  std::vector<URLRequestSummary> requests;
+  for (int i = 0; i < resources_count; ++i) {
+    requests.push_back(CreateURLRequestSummary(1, main_frame_url, gen(1),
+                                               content::RESOURCE_TYPE_SCRIPT));
+  }
+  // These three shouldn't be recorded.
+  requests[0].network_accessed = false;
+  requests[1].before_first_contentful_paint = false;
+  requests[2].network_accessed = false;
+  requests[2].before_first_contentful_paint = false;
+
+  requests[3].connect_duration = base::TimeDelta::FromSeconds(0);
+  requests[4].connect_duration = base::TimeDelta::FromSeconds(1);
+
+  PageRequestSummary summary =
+      CreatePageRequestSummary(main_frame_url, main_frame_url, requests);
+
+  stats_collector_->RecordPageRequestSummary(summary);
+
+  const auto& histogram_name =
+      internal::kLoadingPredictorSubresourceConnectDuration;
+  histogram_tester_->ExpectTotalCount(histogram_name, 2);
+  histogram_tester_->ExpectTimeBucketCount(histogram_name,
+                                           base::TimeDelta::FromSeconds(0), 1);
+  histogram_tester_->ExpectTimeBucketCount(histogram_name,
+                                           base::TimeDelta::FromSeconds(1), 1);
+}
+
 }  // namespace predictors
