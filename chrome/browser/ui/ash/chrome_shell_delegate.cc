@@ -455,18 +455,6 @@ void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
       displayer.browser()->window()->GetNativeWindow());
 }
 
-void ChromeShellDelegate::ShelfInit() {
-  if (!launcher_controller_) {
-    launcher_controller_ = base::MakeUnique<ChromeLauncherController>(
-        nullptr, ash::Shell::Get()->shelf_model());
-    launcher_controller_->Init();
-  }
-}
-
-void ChromeShellDelegate::ShelfShutdown() {
-  launcher_controller_.reset();
-}
-
 ash::GPUSupport* ChromeShellDelegate::CreateGPUSupport() {
   // Chrome uses real GPU support.
   return new ash::GPUSupportImpl;
@@ -543,8 +531,10 @@ void ChromeShellDelegate::Observe(int type,
       // Do not use chrome::NOTIFICATION_PROFILE_ADDED because the
       // profile is not fully initialized by user_manager.  Use
       // chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED instead.
-      if (launcher_controller_)
-        launcher_controller_->OnUserProfileReadyToSwitch(profile);
+      if (ChromeLauncherController::instance()) {
+        ChromeLauncherController::instance()->OnUserProfileReadyToSwitch(
+            profile);
+      }
       break;
     }
     case chrome::NOTIFICATION_SESSION_STARTED:

@@ -256,6 +256,9 @@ ChromeLauncherController::~ChromeLauncherController() {
   // Reset the app window controllers here since it has a weak pointer to this.
   app_window_controllers_.clear();
 
+  // Destroy local shelf item delegates; some subclasses have complex cleanup.
+  model_->DestroyItemDelegates();
+
   model_->RemoveObserver(this);
 
   // Release all profile dependent resources.

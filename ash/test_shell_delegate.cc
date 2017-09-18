@@ -4,50 +4,16 @@
 
 #include "ash/test_shell_delegate.h"
 
-#include <limits>
-
 #include "ash/gpu_support_stub.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/palette_delegate.h"
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shell.h"
-#include "ash/shell_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/test_accessibility_delegate.h"
 #include "ash/wallpaper/test_wallpaper_delegate.h"
-#include "ash/wm/window_state.h"
-#include "ash/wm/window_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "ui/aura/window.h"
 #include "ui/gfx/image/image.h"
 
 namespace ash {
-
-// A ShellObserver that sets the shelf alignment and auto hide behavior when the
-// shelf is created, to simulate ChromeLauncherController's behavior.
-class ShelfInitializer : public ShellObserver {
- public:
-  ShelfInitializer() { Shell::Get()->AddShellObserver(this); }
-  ~ShelfInitializer() override { Shell::Get()->RemoveShellObserver(this); }
-
-  // ShellObserver:
-  void OnShelfCreatedForRootWindow(aura::Window* root_window) override {
-    Shelf* shelf = RootWindowController::ForWindow(root_window)->shelf();
-    // Do not override the custom initialization performed by some unit tests.
-    if (shelf->alignment() == SHELF_ALIGNMENT_BOTTOM_LOCKED &&
-        shelf->auto_hide_behavior() == SHELF_AUTO_HIDE_ALWAYS_HIDDEN) {
-      shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
-      shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-      shelf->UpdateVisibilityState();
-    }
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfInitializer);
-};
 
 TestShellDelegate::TestShellDelegate() = default;
 
@@ -86,18 +52,10 @@ void TestShellDelegate::Exit() {
 }
 
 std::unique_ptr<keyboard::KeyboardUI> TestShellDelegate::CreateKeyboardUI() {
-  return base::MakeUnique<TestKeyboardUI>();
+  return std::make_unique<TestKeyboardUI>();
 }
 
 void TestShellDelegate::OpenUrlFromArc(const GURL& url) {}
-
-void TestShellDelegate::ShelfInit() {
-  // Create a separate shelf initializer that mimics ChromeLauncherController.
-  if (!shelf_initializer_)
-    shelf_initializer_ = base::MakeUnique<ShelfInitializer>();
-}
-
-void TestShellDelegate::ShelfShutdown() {}
 
 NetworkingConfigDelegate* TestShellDelegate::GetNetworkingConfigDelegate() {
   return nullptr;
@@ -105,7 +63,7 @@ NetworkingConfigDelegate* TestShellDelegate::GetNetworkingConfigDelegate() {
 
 std::unique_ptr<WallpaperDelegate>
 TestShellDelegate::CreateWallpaperDelegate() {
-  return base::MakeUnique<TestWallpaperDelegate>();
+  return std::make_unique<TestWallpaperDelegate>();
 }
 
 AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {

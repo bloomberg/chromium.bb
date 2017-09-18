@@ -106,6 +106,7 @@ ShelfController::~ShelfController() {
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   model_.RemoveObserver(this);
+  model_.DestroyItemDelegates();
 }
 
 // static

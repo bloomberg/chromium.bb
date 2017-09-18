@@ -22,8 +22,6 @@ namespace keyboard {
 class KeyboardUI;
 }
 
-class ChromeLauncherController;
-
 class ChromeShellDelegate : public ash::ShellDelegate,
                             public content::NotificationObserver {
  public:
@@ -42,8 +40,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   void Exit() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
-  void ShelfInit() override;
-  void ShelfShutdown() override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;
   std::unique_ptr<ash::WallpaperDelegate> CreateWallpaperDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
@@ -63,8 +59,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   void PlatformInit();
 
   content::NotificationRegistrar registrar_;
-
-  std::unique_ptr<ChromeLauncherController> launcher_controller_;
 
   std::unique_ptr<chromeos::DisplayConfigurationObserver>
       display_configuration_observer_;

@@ -75,14 +75,6 @@ void ShellDelegateMus::OpenUrlFromArc(const GURL& url) {
   NOTIMPLEMENTED();
 }
 
-void ShellDelegateMus::ShelfInit() {
-  NOTIMPLEMENTED();
-}
-
-void ShellDelegateMus::ShelfShutdown() {
-  NOTIMPLEMENTED();
-}
-
 NetworkingConfigDelegate* ShellDelegateMus::GetNetworkingConfigDelegate() {
   // TODO(mash): Provide a real implementation, perhaps by folding its behavior
   // into an ash-side network information cache. http://crbug.com/651157

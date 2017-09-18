@@ -87,11 +87,6 @@ class ASH_EXPORT ShellDelegate {
   // Opens the |url| in a new browser tab.
   virtual void OpenUrlFromArc(const GURL& url) = 0;
 
-  // Functions called when the shelf is initialized and shut down.
-  // TODO(msw): Refine ChromeLauncherController lifetime management.
-  virtual void ShelfInit() = 0;
-  virtual void ShelfShutdown() = 0;
-
   // Returns the delegate. May be null in tests.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() = 0;
 
