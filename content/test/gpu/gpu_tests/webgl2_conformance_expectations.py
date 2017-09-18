@@ -74,11 +74,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Need to implement new lifetime/deletion semantics.
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=739604)
 
-    self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
-        bug=1966) # angle bug ID
-    self.Fail('conformance2/glsl3/uninitialized-local-global-variables.html',
-        bug=1966) # angle bug ID
-
     # Windows only.
     self.Fail('conformance2/buffers/uniform-buffers.html',
         ['win'], bug=757098)

@@ -112,9 +112,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
         bug=709484)
 
-    self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
-        bug=1966) # angle bug ID
-
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
     self.Skip('conformance/rendering/texture-switch-performance.html',
