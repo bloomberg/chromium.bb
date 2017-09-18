@@ -621,6 +621,7 @@ void ValidateAndConvertPaymentDetailsModifiers(
 }
 
 void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase& input,
+                                          const PaymentOptions& options,
                                           PaymentDetailsPtr& output,
                                           String& shipping_option_output,
                                           ExecutionContext& execution_context,
@@ -633,7 +634,9 @@ void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase& input,
       return;
   }
 
-  if (input.hasShippingOptions()) {
+  // If requestShipping is specified and there are shipping options to validate,
+  // proceed with validation.
+  if (options.requestShipping() && input.hasShippingOptions()) {
     ValidateAndConvertShippingOptions(
         input.shippingOptions(), output->shipping_options,
         shipping_option_output, execution_context, exception_state);
@@ -651,6 +654,7 @@ void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase& input,
 }
 
 void ValidateAndConvertPaymentDetailsInit(const PaymentDetailsInit& input,
+                                          const PaymentOptions& options,
                                           PaymentDetailsPtr& output,
                                           String& shipping_option_output,
                                           ExecutionContext& execution_context,
@@ -661,16 +665,19 @@ void ValidateAndConvertPaymentDetailsInit(const PaymentDetailsInit& input,
   if (exception_state.HadException())
     return;
 
-  ValidateAndConvertPaymentDetailsBase(input, output, shipping_option_output,
+  ValidateAndConvertPaymentDetailsBase(input, options, output,
+                                       shipping_option_output,
                                        execution_context, exception_state);
 }
 
 void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate& input,
+                                            const PaymentOptions& options,
                                             PaymentDetailsPtr& output,
                                             String& shipping_option_output,
                                             ExecutionContext& execution_context,
                                             ExceptionState& exception_state) {
-  ValidateAndConvertPaymentDetailsBase(input, output, shipping_option_output,
+  ValidateAndConvertPaymentDetailsBase(input, options, output,
+                                       shipping_option_output,
                                        execution_context, exception_state);
   if (exception_state.HadException())
     return;
@@ -973,8 +980,8 @@ void PaymentRequest::OnUpdatePaymentDetails(
   PaymentDetailsPtr validated_details =
       payments::mojom::blink::PaymentDetails::New();
   ValidateAndConvertPaymentDetailsUpdate(
-      details, validated_details, shipping_option_, *GetExecutionContext(),
-      exception_state);
+      details, options_, validated_details, shipping_option_,
+      *GetExecutionContext(), exception_state);
   if (exception_state.HadException()) {
     show_resolver_->Reject(
         DOMException::Create(kSyntaxError, exception_state.Message()));
@@ -1052,7 +1059,7 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
   if (exception_state.HadException())
     return;
 
-  ValidateAndConvertPaymentDetailsInit(details, validated_details,
+  ValidateAndConvertPaymentDetailsInit(details, options_, validated_details,
                                        shipping_option_, *GetExecutionContext(),
                                        exception_state);
   if (exception_state.HadException())
