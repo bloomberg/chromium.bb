@@ -325,24 +325,34 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
        "William",
        "John+username1, Smith+username3"},
       // When a sole element is marked with autocomplete='username', it should
-      // be treated as the username for sure, with no other_possible_usernames.
-      {{"username", nullptr, nullptr}, "username1", "John", ""},
-      {{nullptr, "username", nullptr}, "username2", "William", ""},
-      {{nullptr, nullptr, "username"}, "username3", "Smith", ""},
+      // be treated as the username, but .other text fields should be added to
+      // |other_possible_usernames|.
+      {{"username", nullptr, nullptr},
+       "username1",
+       "John",
+       "William+username2, Smith+username3"},
+      {{nullptr, "username", nullptr},
+       "username2",
+       "William",
+       "John+username1, Smith+username3"},
+      {{nullptr, nullptr, "username"},
+       "username3",
+       "Smith",
+       "John+username1, William+username2"},
       // When >=2 elements have the attribute, the first should be selected as
-      // the username, and the rest should go to other_possible_usernames.
+      // the username, and the rest should go to |other_possible_usernames|.
       {{"username", "username", nullptr},
        "username1",
        "John",
-       "William+username2"},
+       "William+username2, Smith+username3"},
       {{nullptr, "username", "username"},
        "username2",
        "William",
-       "Smith+username3"},
+       "John+username1, Smith+username3"},
       {{"username", nullptr, "username"},
        "username1",
        "John",
-       "Smith+username3"},
+       "William+username2, Smith+username3"},
       {{"username", "username", "username"},
        "username1",
        "John",
@@ -350,17 +360,23 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
       // When there is an empty autocomplete attribute (i.e. autocomplete=""),
       // it should have the same effect as having no attribute whatsoever.
       {{"", "", ""}, "username2", "William", "John+username1, Smith+username3"},
-      {{"", "", "username"}, "username3", "Smith", ""},
-      {{"username", "", "username"}, "username1", "John", "Smith+username3"},
+      {{"", "", "username"},
+       "username3",
+       "Smith",
+       "John+username1, William+username2"},
+      {{"username", "", "username"},
+       "username1",
+       "John",
+       "William+username2, Smith+username3"},
       // It should not matter if attribute values are upper or mixed case.
       {{"USERNAME", nullptr, "uSeRNaMe"},
        "username1",
        "John",
-       "Smith+username3"},
+       "William+username2, Smith+username3"},
       {{"uSeRNaMe", nullptr, "USERNAME"},
        "username1",
        "John",
-       "Smith+username3"}};
+       "William+username2, Smith+username3"}};
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     for (size_t nonempty_username_fields = 0; nonempty_username_fields < 2;
