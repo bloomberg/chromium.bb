@@ -26,7 +26,7 @@ from third_party import upload
 upload.verbosity = 0  # Errors only.
 
 CHROMIUM_GIT_URL = 'https://chromium.googlesource.com/chromium/src.git'
-COMMIT_POSITION_RE = re.compile('^Cr-Original-Commit-Position: .*#([0-9]+).*$')
+COMMIT_POSITION_RE = re.compile('^Cr-Commit-Position: .*#([0-9]+).*$')
 CL_ISSUE_RE = re.compile('^Issue number: ([0-9]+) \((.*)\)$')
 RIETVELD_URL_RE = re.compile('^https?://(.*)/(.*)')
 ROLL_BRANCH_NAME = 'special_webrtc_roll_branch'
