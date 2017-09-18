@@ -8,6 +8,8 @@
 
 #include "mkvmuxer/mkvmuxer.h"
 
+#include <stdint.h>
+
 #include <cfloat>
 #include <climits>
 #include <cstdio>

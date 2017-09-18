@@ -41,7 +41,12 @@ std::string GetTempFileName() {
   return temp_file_name;
 #else
   char tmp_file_name[_MAX_PATH];
+#if defined _MSC_VER || defined MINGW_HAS_SECURE_API
   errno_t err = tmpnam_s(tmp_file_name);
+#else
+  char* fname_pointer = tmpnam(tmp_file_name);
+  errno_t err = (fname_pointer == &tmp_file_name[0]) ? 0 : -1;
+#endif
   if (err == 0) {
     return std::string(tmp_file_name);
   }
