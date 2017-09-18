@@ -63,9 +63,9 @@ const DisplayItem::Type kBackgroundDrawingType =
     DisplayItem::kDrawingPaintPhaseFirst;
 const DisplayItem::Type kClipType = DisplayItem::kClipFirst;
 
-class TestDisplayItem final : public DisplayItem {
+class TestControllerDisplayItem final : public DisplayItem {
  public:
-  TestDisplayItem(const FakeDisplayItemClient& client, Type type)
+  TestControllerDisplayItem(const FakeDisplayItemClient& client, Type type)
       : DisplayItem(client, type, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const final { NOTREACHED(); }
@@ -90,7 +90,7 @@ class TestDisplayItem final : public DisplayItem {
     EXPECT_EQ((size_t)expectedSize, actual.size());                        \
     if (expectedSize != actual.size())                                     \
       break;                                                               \
-    const TestDisplayItem expected[] = {__VA_ARGS__};                      \
+    const TestControllerDisplayItem expected[] = {__VA_ARGS__};            \
     for (size_t index = 0;                                                 \
          index < std::min<size_t>(actual.size(), expectedSize); index++) { \
       TRACE_DISPLAY_ITEMS(index, expected[index], actual[index]);          \
@@ -164,8 +164,9 @@ TEST_P(PaintControllerTest, NestedRecorders) {
   GetPaintController().CommitNewDisplayItems();
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 1,
-                        TestDisplayItem(client, kBackgroundDrawingType));
+    EXPECT_DISPLAY_LIST(
+        GetPaintController().GetDisplayItemList(), 1,
+        TestControllerDisplayItem(client, kBackgroundDrawingType));
 
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
     // Raster invalidation for the whole chunk will be issued during
@@ -176,9 +177,10 @@ TEST_P(PaintControllerTest, NestedRecorders) {
   } else {
     EXPECT_DISPLAY_LIST(
         GetPaintController().GetDisplayItemList(), 3,
-        TestDisplayItem(client, kClipType),
-        TestDisplayItem(client, kBackgroundDrawingType),
-        TestDisplayItem(client, DisplayItem::ClipTypeToEndClipType(kClipType)));
+        TestControllerDisplayItem(client, kClipType),
+        TestControllerDisplayItem(client, kBackgroundDrawingType),
+        TestControllerDisplayItem(
+            client, DisplayItem::ClipTypeToEndClipType(kClipType)));
   }
 }
 
@@ -203,9 +205,9 @@ TEST_P(PaintControllerTest, UpdateBasic) {
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType));
+                      TestControllerDisplayItem(first, kBackgroundDrawingType),
+                      TestControllerDisplayItem(second, kBackgroundDrawingType),
+                      TestControllerDisplayItem(first, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -234,8 +236,8 @@ TEST_P(PaintControllerTest, UpdateBasic) {
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType));
+                      TestControllerDisplayItem(first, kBackgroundDrawingType),
+                      TestControllerDisplayItem(first, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -269,13 +271,14 @@ TEST_P(PaintControllerTest, UpdateSwapOrder) {
            FloatRect(300, 300, 10, 10));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(second, kForegroundDrawingType),
-                      TestDisplayItem(unaffected, kBackgroundDrawingType),
-                      TestDisplayItem(unaffected, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 6,
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(first, kForegroundDrawingType),
+      TestControllerDisplayItem(second, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kForegroundDrawingType),
+      TestControllerDisplayItem(unaffected, kBackgroundDrawingType),
+      TestControllerDisplayItem(unaffected, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -303,13 +306,14 @@ TEST_P(PaintControllerTest, UpdateSwapOrder) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(second, kForegroundDrawingType),
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType),
-                      TestDisplayItem(unaffected, kBackgroundDrawingType),
-                      TestDisplayItem(unaffected, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 6,
+      TestControllerDisplayItem(second, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kForegroundDrawingType),
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(first, kForegroundDrawingType),
+      TestControllerDisplayItem(unaffected, kBackgroundDrawingType),
+      TestControllerDisplayItem(unaffected, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -343,13 +347,14 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
            FloatRect(300, 300, 10, 10));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(second, kForegroundDrawingType),
-                      TestDisplayItem(unaffected, kBackgroundDrawingType),
-                      TestDisplayItem(unaffected, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 6,
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(first, kForegroundDrawingType),
+      TestControllerDisplayItem(second, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kForegroundDrawingType),
+      TestControllerDisplayItem(unaffected, kBackgroundDrawingType),
+      TestControllerDisplayItem(unaffected, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -379,13 +384,14 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(second, kForegroundDrawingType),
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType),
-                      TestDisplayItem(unaffected, kBackgroundDrawingType),
-                      TestDisplayItem(unaffected, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 6,
+      TestControllerDisplayItem(second, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kForegroundDrawingType),
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(first, kForegroundDrawingType),
+      TestControllerDisplayItem(unaffected, kBackgroundDrawingType),
+      TestControllerDisplayItem(unaffected, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -413,9 +419,10 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
            FloatRect(100, 100, 50, 200));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 2,
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kBackgroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -438,10 +445,11 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(third, kBackgroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 3,
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(third, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kBackgroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -474,12 +482,12 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(third, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType),
-                      TestDisplayItem(second, kForegroundDrawingType),
-                      TestDisplayItem(third, kForegroundDrawingType));
+                      TestControllerDisplayItem(first, kBackgroundDrawingType),
+                      TestControllerDisplayItem(second, kBackgroundDrawingType),
+                      TestControllerDisplayItem(third, kBackgroundDrawingType),
+                      TestControllerDisplayItem(first, kForegroundDrawingType),
+                      TestControllerDisplayItem(second, kForegroundDrawingType),
+                      TestControllerDisplayItem(third, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -508,12 +516,12 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(third, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType),
-                      TestDisplayItem(second, kForegroundDrawingType),
-                      TestDisplayItem(third, kForegroundDrawingType));
+                      TestControllerDisplayItem(first, kBackgroundDrawingType),
+                      TestControllerDisplayItem(second, kBackgroundDrawingType),
+                      TestControllerDisplayItem(third, kBackgroundDrawingType),
+                      TestControllerDisplayItem(first, kForegroundDrawingType),
+                      TestControllerDisplayItem(second, kForegroundDrawingType),
+                      TestControllerDisplayItem(third, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -586,9 +594,10 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
            FloatRect(200, 200, 50, 50));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(second, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 2,
+      TestControllerDisplayItem(second, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -609,11 +618,12 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
   EXPECT_EQ(0, NumCachedNewItems());
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(second, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 4,
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(first, kForegroundDrawingType),
+      TestControllerDisplayItem(second, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -643,9 +653,10 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(second, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 2,
+      TestControllerDisplayItem(second, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -671,8 +682,8 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType));
+                      TestControllerDisplayItem(first, kBackgroundDrawingType),
+                      TestControllerDisplayItem(first, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -693,11 +704,12 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
   EXPECT_EQ(0, NumCachedNewItems());
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(second, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 4,
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(first, kForegroundDrawingType),
+      TestControllerDisplayItem(second, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -723,8 +735,8 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(first, kForegroundDrawingType));
+                      TestControllerDisplayItem(first, kBackgroundDrawingType),
+                      TestControllerDisplayItem(first, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -761,19 +773,21 @@ TEST_P(PaintControllerTest, UpdateClip) {
   GetPaintController().CommitNewDisplayItems();
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                        TestDisplayItem(first, kBackgroundDrawingType),
-                        TestDisplayItem(second, kBackgroundDrawingType));
+    EXPECT_DISPLAY_LIST(
+        GetPaintController().GetDisplayItemList(), 2,
+        TestControllerDisplayItem(first, kBackgroundDrawingType),
+        TestControllerDisplayItem(second, kBackgroundDrawingType));
 
     GetPaintController().UpdateCurrentPaintChunkProperties(
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   } else {
     EXPECT_DISPLAY_LIST(
         GetPaintController().GetDisplayItemList(), 4,
-        TestDisplayItem(first, kClipType),
-        TestDisplayItem(first, kBackgroundDrawingType),
-        TestDisplayItem(second, kBackgroundDrawingType),
-        TestDisplayItem(first, DisplayItem::ClipTypeToEndClipType(kClipType)));
+        TestControllerDisplayItem(first, kClipType),
+        TestControllerDisplayItem(first, kBackgroundDrawingType),
+        TestControllerDisplayItem(second, kBackgroundDrawingType),
+        TestControllerDisplayItem(
+            first, DisplayItem::ClipTypeToEndClipType(kClipType)));
   }
 
   first.SetDisplayItemsUncached();
@@ -791,9 +805,10 @@ TEST_P(PaintControllerTest, UpdateClip) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 2,
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kBackgroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -829,9 +844,10 @@ TEST_P(PaintControllerTest, UpdateClip) {
   GetPaintController().CommitNewDisplayItems();
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                        TestDisplayItem(first, kBackgroundDrawingType),
-                        TestDisplayItem(second, kBackgroundDrawingType));
+    EXPECT_DISPLAY_LIST(
+        GetPaintController().GetDisplayItemList(), 2,
+        TestControllerDisplayItem(first, kBackgroundDrawingType),
+        TestControllerDisplayItem(second, kBackgroundDrawingType));
 
     EXPECT_EQ(2u, GetPaintController().PaintChunks().size());
     EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
@@ -845,10 +861,11 @@ TEST_P(PaintControllerTest, UpdateClip) {
   } else {
     EXPECT_DISPLAY_LIST(
         GetPaintController().GetDisplayItemList(), 4,
-        TestDisplayItem(first, kBackgroundDrawingType),
-        TestDisplayItem(second, kClipType),
-        TestDisplayItem(second, kBackgroundDrawingType),
-        TestDisplayItem(second, DisplayItem::ClipTypeToEndClipType(kClipType)));
+        TestControllerDisplayItem(first, kBackgroundDrawingType),
+        TestControllerDisplayItem(second, kClipType),
+        TestControllerDisplayItem(second, kBackgroundDrawingType),
+        TestControllerDisplayItem(
+            second, DisplayItem::ClipTypeToEndClipType(kClipType)));
   }
 }
 
@@ -867,9 +884,10 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
            FloatRect(100, 100, 150, 150));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 2,
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kBackgroundDrawingType));
   EXPECT_TRUE(GetPaintController().ClientCacheIsValid(first));
   EXPECT_TRUE(GetPaintController().ClientCacheIsValid(second));
   sk_sp<const PaintRecord> first_paint_record =
@@ -895,9 +913,10 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
            FloatRect(100, 100, 150, 150));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(second, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 2,
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, kBackgroundDrawingType));
   // The first display item should be updated.
   EXPECT_NE(first_paint_record,
             static_cast<const DrawingDisplayItem&>(
@@ -949,15 +968,16 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
            FloatRect(100, 200, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
-                      TestDisplayItem(container1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kForegroundDrawingType),
-                      TestDisplayItem(container1, kForegroundDrawingType),
-                      TestDisplayItem(container2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kForegroundDrawingType),
-                      TestDisplayItem(container2, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 8,
+      TestControllerDisplayItem(container1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -984,15 +1004,16 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
            FloatRect(100, 100, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
-                      TestDisplayItem(container2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kForegroundDrawingType),
-                      TestDisplayItem(container2, kForegroundDrawingType),
-                      TestDisplayItem(container1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kForegroundDrawingType),
-                      TestDisplayItem(container1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 8,
+      TestControllerDisplayItem(container2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -1037,15 +1058,16 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
            FloatRect(100, 200, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
-                      TestDisplayItem(container1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kForegroundDrawingType),
-                      TestDisplayItem(container1, kForegroundDrawingType),
-                      TestDisplayItem(container2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kForegroundDrawingType),
-                      TestDisplayItem(container2, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 8,
+      TestControllerDisplayItem(container1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -1073,15 +1095,16 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
            FloatRect(100, 100, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
-                      TestDisplayItem(container2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kForegroundDrawingType),
-                      TestDisplayItem(container2, kForegroundDrawingType),
-                      TestDisplayItem(container1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kForegroundDrawingType),
-                      TestDisplayItem(container1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 8,
+      TestControllerDisplayItem(container2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kForegroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -1206,16 +1229,17 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   }
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
-                      TestDisplayItem(container1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kForegroundDrawingType),
-                      TestDisplayItem(container1, kForegroundDrawingType),
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 8,
+      TestControllerDisplayItem(container1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kForegroundDrawingType),
 
-                      TestDisplayItem(container2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kForegroundDrawingType),
-                      TestDisplayItem(container2, kForegroundDrawingType));
+      TestControllerDisplayItem(container2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kForegroundDrawingType));
 
   auto* markers = GetSubsequenceMarkers(container1);
   CHECK(markers);
@@ -1301,15 +1325,16 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
-                      TestDisplayItem(container2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kForegroundDrawingType),
-                      TestDisplayItem(container2, kForegroundDrawingType),
-                      TestDisplayItem(container1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kForegroundDrawingType),
-                      TestDisplayItem(container1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 8,
+      TestControllerDisplayItem(container2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kForegroundDrawingType));
 
   markers = GetSubsequenceMarkers(container2);
   CHECK(markers);
@@ -1365,13 +1390,14 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
            FloatRect(100, 100, 50, 200));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(container2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kForegroundDrawingType),
-                      TestDisplayItem(container2, kForegroundDrawingType),
-                      TestDisplayItem(content1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 6,
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(container2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kForegroundDrawingType),
+      TestControllerDisplayItem(content1, kForegroundDrawingType));
 
   auto* markers = GetSubsequenceMarkers(container2);
   CHECK(markers);
@@ -1423,13 +1449,14 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(container2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kForegroundDrawingType),
-                      TestDisplayItem(container2, kForegroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 6,
+      TestControllerDisplayItem(container2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kForegroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kForegroundDrawingType));
 
   markers = GetSubsequenceMarkers(container2);
   CHECK(markers);
@@ -1477,11 +1504,12 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
   }
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
-                      TestDisplayItem(container1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(container2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 4,
+      TestControllerDisplayItem(container1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(container2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(2u, GetPaintController().PaintChunks().size());
@@ -1528,11 +1556,12 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
-                      TestDisplayItem(container1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType),
-                      TestDisplayItem(container2, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 4,
+      TestControllerDisplayItem(container1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType),
+      TestControllerDisplayItem(container2, kBackgroundDrawingType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(2u, GetPaintController().PaintChunks().size());
@@ -1664,13 +1693,14 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   }
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(container1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kForegroundDrawingType),
-                      TestDisplayItem(container1, kForegroundDrawingType),
-                      TestDisplayItem(container2, kBackgroundDrawingType),
-                      TestDisplayItem(content2, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 6,
+      TestControllerDisplayItem(container1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kForegroundDrawingType),
+      TestControllerDisplayItem(container2, kBackgroundDrawingType),
+      TestControllerDisplayItem(content2, kBackgroundDrawingType));
 
   auto* markers = GetSubsequenceMarkers(container1);
   CHECK(markers);
@@ -1790,11 +1820,12 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
-                      TestDisplayItem(content2, kForegroundDrawingType),
-                      TestDisplayItem(content1, kBackgroundDrawingType),
-                      TestDisplayItem(content1, kForegroundDrawingType),
-                      TestDisplayItem(container1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 4,
+      TestControllerDisplayItem(content2, kForegroundDrawingType),
+      TestControllerDisplayItem(content1, kBackgroundDrawingType),
+      TestControllerDisplayItem(content1, kForegroundDrawingType),
+      TestControllerDisplayItem(container1, kForegroundDrawingType));
 
   markers = GetSubsequenceMarkers(content2);
   CHECK(markers);
@@ -1857,10 +1888,11 @@ TEST_P(PaintControllerTest, SkipCache) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
-                      TestDisplayItem(multicol, kBackgroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 3,
+      TestControllerDisplayItem(multicol, kBackgroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType));
   sk_sp<const PaintRecord> record1 =
       static_cast<const DrawingDisplayItem&>(
           GetPaintController().GetDisplayItemList()[1])
@@ -1902,10 +1934,11 @@ TEST_P(PaintControllerTest, SkipCache) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
-                      TestDisplayItem(multicol, kBackgroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 3,
+      TestControllerDisplayItem(multicol, kBackgroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType));
   EXPECT_NE(record1, static_cast<const DrawingDisplayItem&>(
                          GetPaintController().GetDisplayItemList()[1])
                          .GetPaintRecord());
@@ -1935,11 +1968,12 @@ TEST_P(PaintControllerTest, SkipCache) {
   GetPaintController().EndSkippingCache();
 
   // We should repaint everything on invalidation of the scope container.
-  EXPECT_DISPLAY_LIST(GetPaintController().NewDisplayItemList(), 4,
-                      TestDisplayItem(multicol, kBackgroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().NewDisplayItemList(), 4,
+      TestControllerDisplayItem(multicol, kBackgroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType));
   EXPECT_NE(record1, static_cast<const DrawingDisplayItem&>(
                          GetPaintController().NewDisplayItemList()[1])
                          .GetPaintRecord());
@@ -1980,10 +2014,11 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
-                      TestDisplayItem(content, kBackgroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 3,
+      TestControllerDisplayItem(content, kBackgroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType));
   sk_sp<const PaintRecord> record0 =
       static_cast<const DrawingDisplayItem&>(
           GetPaintController().GetDisplayItemList()[0])
@@ -2023,10 +2058,11 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
-                      TestDisplayItem(content, kBackgroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType),
-                      TestDisplayItem(content, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 3,
+      TestControllerDisplayItem(content, kBackgroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType),
+      TestControllerDisplayItem(content, kForegroundDrawingType));
   EXPECT_NE(record0, static_cast<const DrawingDisplayItem&>(
                          GetPaintController().GetDisplayItemList()[0])
                          .GetPaintRecord());
@@ -2053,12 +2089,13 @@ TEST_F(PaintControllerTestBase, OptimizeNoopPairs) {
   DrawRect(context, third, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
 
   GetPaintController().CommitNewDisplayItems();
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 5,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(second, DisplayItem::kBeginClipPath),
-                      TestDisplayItem(second, kBackgroundDrawingType),
-                      TestDisplayItem(second, DisplayItem::kEndClipPath),
-                      TestDisplayItem(third, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(
+      GetPaintController().GetDisplayItemList(), 5,
+      TestControllerDisplayItem(first, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, DisplayItem::kBeginClipPath),
+      TestControllerDisplayItem(second, kBackgroundDrawingType),
+      TestControllerDisplayItem(second, DisplayItem::kEndClipPath),
+      TestControllerDisplayItem(third, kBackgroundDrawingType));
 
   DrawRect(context, first, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
   {
@@ -2070,8 +2107,8 @@ TEST_F(PaintControllerTestBase, OptimizeNoopPairs) {
 
   // Empty clips should have been optimized out.
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(third, kBackgroundDrawingType));
+                      TestControllerDisplayItem(first, kBackgroundDrawingType),
+                      TestControllerDisplayItem(third, kBackgroundDrawingType));
 
   second.SetDisplayItemsUncached();
   DrawRect(context, first, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
@@ -2087,8 +2124,8 @@ TEST_F(PaintControllerTestBase, OptimizeNoopPairs) {
 
   // Empty clips should have been optimized out.
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundDrawingType),
-                      TestDisplayItem(third, kBackgroundDrawingType));
+                      TestControllerDisplayItem(first, kBackgroundDrawingType),
+                      TestControllerDisplayItem(third, kBackgroundDrawingType));
 }
 
 TEST_F(PaintControllerTestBase, SmallPaintControllerHasOnePaintChunk) {
