@@ -429,10 +429,7 @@ int drv_bo_unmap(struct bo *bo, struct map_info *data)
 	pthread_mutex_lock(&bo->drv->driver_lock);
 
 	if (!--data->refcount) {
-		if (bo->drv->backend->bo_unmap)
-			ret = bo->drv->backend->bo_unmap(bo, data);
-		else
-			ret = munmap(data->addr, data->length);
+		ret = bo->drv->backend->bo_unmap(bo, data);
 		drmHashDelete(bo->drv->map_table, data->handle);
 		free(data);
 	}

@@ -313,6 +313,11 @@ void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane, int pr
 	return mmap(0, data->length, prot, MAP_SHARED, bo->drv->fd, map_dumb.offset);
 }
 
+int drv_bo_munmap(struct bo *bo, struct map_info *data)
+{
+	return munmap(data->addr, data->length);
+}
+
 uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo, size_t plane)
 {
 	void *count;

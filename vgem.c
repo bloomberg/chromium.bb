@@ -67,5 +67,6 @@ struct backend backend_vgem = {
 	.bo_destroy = drv_dumb_bo_destroy,
 	.bo_import = drv_prime_bo_import,
 	.bo_map = drv_dumb_bo_map,
+	.bo_unmap = drv_bo_munmap,
 	.resolve_format = vgem_resolve_format,
 };
