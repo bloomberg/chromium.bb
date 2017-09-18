@@ -315,30 +315,19 @@ RefPtr<StaticBitmapImage> ApplyColorSpaceConversion(
   if (!CanvasColorParams::ColorCorrectRenderingInAnyColorSpace())
     return image;
 
-  // If the image is still in legacy color mode (no color space info) use a
-  // slow code path to tag the image as SRGB. This is inefficient and
-  // problematic. We eventually need to replace this with a check for the
-  // color space information of the image (crbug.com/754713).
+  // If the image is still in legacy color mode (no color space info), redraw
+  // the image on SRGB surface to get the image in SRGB. We eventually should
+  // replace this with a check for the color space information of the image.
+  // (crbug.com/754713)
   sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
   if (!sk_image->colorSpace()) {
-    SkImageInfo srgb_info =
-        SkImageInfo::Make(sk_image->width(), sk_image->height(),
-                          kN32_SkColorType, sk_image->alphaType(), nullptr);
-    size_t size =
-        sk_image->width() * sk_image->height() * srgb_info.bytesPerPixel();
-    sk_sp<SkData> srgb_data = SkData::MakeUninitialized(size);
-    if (srgb_data && srgb_data->size() == size) {
-      sk_sp<SkImage> srgb_image;
-      if (sk_image->readPixels(srgb_info, srgb_data->writable_data(),
-                               sk_image->width() * srgb_info.bytesPerPixel(), 0,
-                               0)) {
-        srgb_info = srgb_info.makeColorSpace(SkColorSpace::MakeSRGB());
-        srgb_image = SkImage::MakeRasterData(
-            srgb_info, srgb_data,
-            sk_image->width() * srgb_info.bytesPerPixel());
-      }
-      if (srgb_image)
-        image = StaticBitmapImage::Create(srgb_image);
+    SkImageInfo srgb_info = SkImageInfo::Make(
+        sk_image->width(), sk_image->height(), kN32_SkColorType,
+        sk_image->alphaType(), SkColorSpace::MakeSRGB());
+    sk_sp<SkSurface> surface = SkSurface::MakeRaster(srgb_info);
+    if (surface) {
+      surface->getCanvas()->drawImage(sk_image, 0, 0);
+      image = StaticBitmapImage::Create(surface->makeImageSnapshot());
     }
   }
 
