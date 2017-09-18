@@ -1074,11 +1074,6 @@ public class VrShellDelegate
 
         if (mNativeVrShellDelegate != 0) nativeOnPause(mNativeVrShellDelegate);
 
-        // TODO(crbug.com/755733): Pausing the render loop here is bad because the activity is still
-        // visible. We do this to prevent a renderer crash caused by attempting to draw when the
-        // activity is no longer visible.
-        if (mAutopresentWebVr) mVrShell.pause();
-
         mIsDaydreamCurrentViewer = null;
     }
 
