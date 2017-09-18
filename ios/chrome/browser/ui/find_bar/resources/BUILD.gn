@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/ios/imageset.gni")
+import("//build/config/ios/asset_catalog.gni")
 
 imageset("find_prev_disabled_incognito") {
   sources = [
