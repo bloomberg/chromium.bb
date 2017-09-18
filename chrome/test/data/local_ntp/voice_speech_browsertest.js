@@ -814,6 +814,13 @@ test.speech.testIdleTimeoutWithNonConfidentSpeechResults = function() {
 
   test.speech.clock.advanceTime(1);
   test.speech.clock.pendingTimeouts.shift().callback();
+  assertEquals(speech.State_.ERROR_RECEIVED, speech.currentState_);
+  assertEquals(1, test.speech.recognitionActiveCount);
+  assertEquals(1, test.speech.viewActiveCount);
+
+  // Wait for the error message timeout.
+  test.speech.clock.advanceTime(3000);
+  test.speech.clock.pendingTimeouts.shift().callback();
   test.speech.validateInactive();
   assert(
       !test.speech.locationUrl ||
