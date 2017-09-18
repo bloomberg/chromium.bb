@@ -945,6 +945,27 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
   if (!navigation_request)
     return;
 
+  // If the user chose not to proceed, cancel the ongoing navigation.
+  // Note: it might be a new navigation, and not the one that triggered the
+  // sending of the BeforeUnload IPC in the first place. However, the
+  // BeforeUnload where the user asked not to proceed will have taken place
+  // after the navigation started. The last user input shoud be respected, and
+  // the navigation cancelled anyway.
+  if (!proceed) {
+    CancelNavigation(frame_tree_node, true);
+    return;
+  }
+
+  // The browser-initiated NavigationRequest that triggered the sending of the
+  // BeforeUnload IPC might have been replaced by a renderer-initiated one while
+  // the BeforeUnload event executed in the renderer. In that case, the request
+  // will already have begun, so there is no need to start it again.
+  if (navigation_request->state() >
+      NavigationRequest::WAITING_FOR_RENDERER_RESPONSE) {
+    DCHECK(navigation_request->from_begin_navigation());
+    return;
+  }
+
   // Update the navigation start: it should be when it was determined that the
   // navigation will proceed.
   navigation_request->set_navigation_start_time(proceed_time);
@@ -952,11 +973,8 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
   DCHECK_EQ(NavigationRequest::WAITING_FOR_RENDERER_RESPONSE,
             navigation_request->state());
 
-  // If the navigation is allowed to proceed, send the request to the IO thread.
-  if (proceed)
-    navigation_request->BeginNavigation();
-  else
-    CancelNavigation(frame_tree_node, true);
+  // Send the request to the IO thread.
+  navigation_request->BeginNavigation();
 }
 
 // PlzNavigate
