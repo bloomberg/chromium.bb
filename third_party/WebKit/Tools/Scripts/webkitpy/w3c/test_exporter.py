@@ -243,7 +243,7 @@ class TestExporter(object):
                 pr_url='%spull/%d' % (WPT_GH_URL, pull_request.number),
             ))
         else:
-            branch_name = 'chromium-export-cl-' + cl.change_id
+            branch_name = 'chromium-export-cl-' + cl.number
             pr_number = self.create_or_update_pr_from_commit(
                 commit, provisional=True, pr_footer=footer, pr_branch_name=branch_name)
 
