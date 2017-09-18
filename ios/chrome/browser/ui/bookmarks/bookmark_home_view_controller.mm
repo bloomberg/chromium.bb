@@ -183,19 +183,23 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  if (self.isReconstructingFromCache) {
-    [self setupUIStackCacheIfApplicable];
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
+    if (self.isReconstructingFromCache) {
+      [self setupUIStackCacheIfApplicable];
+    }
   }
 }
 
 - (void)viewDidLayoutSubviews {
-  // Set the content position after views are laid out,
-  // to ensure the right window of rows is shown. Once
-  // used, reset self.cachedContentPosition.
-  if (self.cachedContentPosition) {
-    [self.bookmarksTableView
-        setContentPosition:self.cachedContentPosition.floatValue];
-    self.cachedContentPosition = nil;
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
+    // Set the content position after views are laid out,
+    // to ensure the right window of rows is shown. Once
+    // used, reset self.cachedContentPosition.
+    if (self.cachedContentPosition) {
+      [self.bookmarksTableView
+          setContentPosition:self.cachedContentPosition.floatValue];
+      self.cachedContentPosition = nil;
+    }
   }
 }
 
