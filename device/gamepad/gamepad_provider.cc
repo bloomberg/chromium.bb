@@ -278,12 +278,20 @@ void GamepadProvider::DoPoll() {
             buffer->items[i].connected) {
           OnGamepadConnectionChange(true, i, buffer->items[i]);
         }
-        state.active_state = GAMEPAD_INACTIVE;
       }
     }
   }
 
   CheckForUserGesture();
+
+  // Avoid double-notifying for connected gamepads when the initial user gesture
+  // is received. The call to CheckForUserGesture should notify any consumers
+  // that were waiting for a user gesture. If we don't clear active_state here,
+  // we'll notify again on the next poll.
+  if (ever_had_user_gesture_) {
+    for (unsigned i = 0; i < Gamepads::kItemsLengthCap; ++i)
+      pad_states_.get()[i].active_state = GAMEPAD_INACTIVE;
+  }
 
   // Schedule our next interval of polling.
   ScheduleDoPoll();
