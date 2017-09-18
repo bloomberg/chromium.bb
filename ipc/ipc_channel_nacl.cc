@@ -67,6 +67,9 @@ bool ReadDataOnReaderThread(int pipe, MessageContents* contents) {
 
 }  // namespace
 
+// static
+constexpr size_t Channel::kMaximumMessageSize;
+
 class ChannelNacl::ReaderThreadRunner
     : public base::DelegateSimpleThread::Delegate {
  public:
