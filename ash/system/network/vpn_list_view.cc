@@ -349,7 +349,7 @@ void VPNListView::AddProvidersAndNetworks(
   // provider view.
   for (const chromeos::NetworkState* const& network : networks) {
     if (network->vpn_provider_type() == shill::kProviderArcVpn &&
-        (network->IsConnectedState() || network->IsConnectedState())) {
+        network->IsConnectingOrConnected()) {
       AddNetwork(network);
       list_empty_ = false;
     }
