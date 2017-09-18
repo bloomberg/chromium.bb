@@ -40,7 +40,6 @@ class PLATFORM_EXPORT PathTraversalState final {
   enum PathTraversalAction {
     kTraversalTotalLength,
     kTraversalPointAtLength,
-    kTraversalSegmentAtLength,
     kTraversalNormalAngleAtLength
   };
 

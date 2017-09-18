@@ -202,9 +202,6 @@ float PathTraversalState::CubicBezierTo(const FloatPoint& new_control1,
 }
 
 void PathTraversalState::ProcessSegment() {
-  if (action_ == kTraversalSegmentAtLength && total_length_ >= desired_length_)
-    success_ = true;
-
   if ((action_ == kTraversalPointAtLength ||
        action_ == kTraversalNormalAngleAtLength) &&
       total_length_ >= desired_length_) {
