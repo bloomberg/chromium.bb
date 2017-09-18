@@ -4860,9 +4860,6 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	weston_compositor_add_touch_binding(ec, 0,
 					    touch_to_activate_binding,
 					    shell);
-	weston_compositor_add_axis_binding(ec, WL_POINTER_AXIS_VERTICAL_SCROLL,
-				           MODIFIER_SUPER | MODIFIER_ALT,
-				           surface_opacity_binding, NULL);
 	weston_compositor_add_key_binding(ec, KEY_BRIGHTNESSDOWN, 0,
 				          backlight_binding, ec);
 	weston_compositor_add_key_binding(ec, KEY_BRIGHTNESSUP, 0,
@@ -4876,6 +4873,12 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	mod = shell->binding_modifier;
 	if (!mod)
 		return;
+
+	/* This binding is not configurable, but is only enabled if there is a
+	 * valid binding modifier. */
+	weston_compositor_add_axis_binding(ec, WL_POINTER_AXIS_VERTICAL_SCROLL,
+				           MODIFIER_SUPER | MODIFIER_ALT,
+				           surface_opacity_binding, NULL);
 
 	weston_compositor_add_axis_binding(ec, WL_POINTER_AXIS_VERTICAL_SCROLL,
 					   mod, zoom_axis_binding,
