@@ -142,7 +142,7 @@
         <include name="IDR_MD_DOWNLOADS_2X_INCOGNITO_MARKER_PNG" file="resources\md_downloads\2x\incognito_marker.png" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_1X_NO_DOWNLOADS_PNG" file="resources\md_downloads\1x\no_downloads.png" type="BINDATA" />
         <include name="IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG" file="resources\md_downloads\2x\no_downloads.png" type="BINDATA" />
-        <if expr="use_vulcanize">
+        <if expr="optimize_webui">
           <then>
             <include name="IDR_MD_DOWNLOADS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_downloads\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_MD_DOWNLOADS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_downloads\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
@@ -249,7 +249,7 @@
         <!-- MD Bookmarks. -->
         <include name="IDR_MD_BOOKMARKS_IMAGES_FOLDER_OPEN_SVG" file="resources\md_bookmarks\images\folder_open.svg" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_IMAGES_FOLDER_SVG" file="resources\md_bookmarks\images\folder.svg" type="BINDATA" />
-        <if expr="use_vulcanize">
+        <if expr="optimize_webui">
           <then>
             <include name="IDR_MD_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_MD_BOOKMARKS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_bookmarks\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
@@ -310,7 +310,7 @@
         <include name="IDR_MD_HISTORY_HISTORY_JS" file="resources\md_history\history.js" type="BINDATA" />
         <include name="IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_JPG" file="resources\md_history\images\100\sign_in_promo.jpg" type="BINDATA" />
         <include name="IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_JPG" file="resources\md_history\images\200\sign_in_promo.jpg" type="BINDATA" />
-        <if expr="use_vulcanize">
+        <if expr="optimize_webui">
           <then>
             <include name="IDR_MD_HISTORY_APP_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\md_history\app.vulcanized.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" use_base_dir="false" />
             <include name="IDR_MD_HISTORY_APP_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\md_history\app.crisper.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" use_base_dir="false" />

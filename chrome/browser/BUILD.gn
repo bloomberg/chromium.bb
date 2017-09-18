@@ -4304,7 +4304,7 @@ grit("resources") {
     "//url/mojo:url_mojom_origin_js",
   ]
 
-  if (use_vulcanize) {
+  if (optimize_webui) {
     deps += [
       "//chrome/browser/resources/md_bookmarks:build",
       "//chrome/browser/resources/md_downloads:build",

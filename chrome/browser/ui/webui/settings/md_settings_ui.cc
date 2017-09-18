@@ -114,7 +114,7 @@ void MdSettingsUI::RegisterProfilePrefs(
 MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui),
       WebContentsObserver(web_ui->GetWebContents()) {
-#if BUILDFLAG(USE_VULCANIZE)
+#if BUILDFLAG(OPTIMIZE_WEBUI)
   std::vector<std::string> exclude_from_gzip;
 #endif
 
@@ -207,7 +207,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
     html_source->AddResourcePath("partner-logo.svg",
                                  IDR_CHROME_CLEANUP_PARTNER);
-#if BUILDFLAG(USE_VULCANIZE)
+#if BUILDFLAG(OPTIMIZE_WEBUI)
     exclude_from_gzip.push_back("partner-logo.svg");
 #endif
 #endif  // defined(GOOGLE_CHROME_BUILD)
@@ -273,7 +273,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(base::MakeUnique<MetricsHandler>());
 
-#if BUILDFLAG(USE_VULCANIZE)
+#if BUILDFLAG(OPTIMIZE_WEBUI)
   html_source->AddResourcePath("crisper.js", IDR_MD_SETTINGS_CRISPER_JS);
   html_source->AddResourcePath("lazy_load.crisper.js",
                                IDR_MD_SETTINGS_LAZY_LOAD_CRISPER_JS);

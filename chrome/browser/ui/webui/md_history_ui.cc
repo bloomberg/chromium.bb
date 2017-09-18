@@ -137,7 +137,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
      IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_JPG},
     {"images/200/sign_in_promo.jpg",
      IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_JPG},
-#if !BUILDFLAG(USE_VULCANIZE)
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
     {"app.html", IDR_MD_HISTORY_APP_HTML},
     {"app.js", IDR_MD_HISTORY_APP_JS},
     {"browser_service.html", IDR_MD_HISTORY_BROWSER_SERVICE_HTML},
@@ -174,7 +174,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
   }
   source->UseGzip(exclude_from_gzip);
 
-#if BUILDFLAG(USE_VULCANIZE)
+#if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("app.html",
                           IDR_MD_HISTORY_APP_VULCANIZED_HTML);
   source->AddResourcePath("app.crisper.js",

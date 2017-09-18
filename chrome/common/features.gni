@@ -74,9 +74,8 @@ declare_args() {
 
   # Optimize parts of Chrome's UI written with web technologies (HTML/CSS/JS)
   # for runtime performance purposes. This does more work at compile time for
-  # speed benefits at runtime (so we skip in debug builds). TODO(dbeam): rename
-  # this flag "optimize_web_uis" because we run more than vulcanize these days.
-  use_vulcanize = !is_debug
+  # speed benefits at runtime (so we skip in debug builds).
+  optimize_webui = !is_debug
 }
 
 # Use brlapi from brltty for braille display support.
@@ -101,5 +100,5 @@ chrome_grit_defines = [
   "enable_vr=$enable_vr",
   "mac_views_browser=$mac_views_browser",
   "safe_browsing_mode=$safe_browsing_mode",
-  "use_vulcanize=$use_vulcanize",
+  "optimize_webui=$optimize_webui",
 ]

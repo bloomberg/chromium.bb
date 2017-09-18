@@ -6,7 +6,7 @@ In order to build with a fast configuration, try setting these options in your
 GN args:
 
 ```
-use_vulcanize = true
+optimize_webui = true
 is_debug = false
 ```
 
