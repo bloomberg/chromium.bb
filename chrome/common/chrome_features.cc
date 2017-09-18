@@ -122,7 +122,7 @@ const base::Feature kTabsInCbd {
 // one that qualifies for inclusion in TopSites.
 const base::Feature kCaptureThumbnailDependingOnTransitionType{
     "CaptureThumbnailDependingOnTransitionType",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether to capture page thumbnails when the page load finishes (in addition
 // to any other times this might happen).
@@ -132,7 +132,7 @@ const base::Feature kCaptureThumbnailOnLoadFinished{
 // Whether to capture page thumbnails when navigating away from the current page
 // (in addition to any other times this might happen).
 const base::Feature kCaptureThumbnailOnNavigatingAway{
-    "CaptureThumbnailOnNavigatingAway", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CaptureThumbnailOnNavigatingAway", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether to trigger app banner installability checks on page load.
 const base::Feature kCheckInstallabilityForBannerOnLoad{
