@@ -1,0 +1,52 @@
+// Copyright 2017 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package login_manager;
+
+// Descriptor for policy blobs to give SessionManager's StorePolicy*Ex and
+// RetrievePolicyEx enough context to decide how to store policy.
+message PolicyDescriptor {
+  // Specifies the type of policy to store or retrieve.
+  enum PolicyType {
+    // Chrome user policy. |account_id| must be set to the user's account ID.
+    // |component_id| must be empty.
+    USER_POLICY = 0;
+
+    // Chrome user policy for users without a session. |account_id| must be set
+    // to the user's account ID. |component_id| must be empty. Only policy
+    // retrieval allowed, no storage.
+    SESSIONLESS_USER_POLICY = 1;
+
+    // Chrome user policy for device local accounts. |account_id| must be set to
+    // the user's account ID. |component_id| must be empty.
+    DEVICE_LOCAL_ACCOUNT_POLICY = 2;
+
+    // Chrome device policy. |account_id| and |component_id| must be empty.
+    DEVICE_POLICY = 3;
+
+    // Chrome extension policy. If |account_id| is set, the policy is stored on
+    // the user's cryptohome, otherwise in an area accessible to all users.
+    // |component_id| must be the 32-byte extension ID.
+    EXTENSION_POLICY = 4;
+
+    // Next ID to use: 5
+  }
+
+  // Determines the type of policy to store or retrieve.
+  optional PolicyType type = 1;
+
+  // Account id for policy stored on the user's cryptohome (e.g. user policy),
+  // empty for policy stored in an area accessible to all users (e.g. device
+  // policy).
+  optional string account_id = 2;
+
+  // Meaning of the component ID depends on |type|, see PolicyType.
+  optional string component_id = 3;
+
+  // Next ID to use: 4
+}

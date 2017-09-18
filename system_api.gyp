@@ -144,6 +144,7 @@
       },
       'sources': [
         '<(proto_in_dir)/arc.proto',
+        '<(proto_in_dir)/policy_descriptor.proto',
       ],
       'includes': ['../../platform2/common-mk/protoc.gypi'],
     },
@@ -156,6 +157,7 @@
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/login_manager/proto_bindings/arc.pb.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/include/login_manager/proto_bindings/policy_descriptor.pb.cc',
       ]
     },
     {
