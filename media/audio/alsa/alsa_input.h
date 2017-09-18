@@ -65,9 +65,6 @@ class MEDIA_EXPORT AlsaPcmInputStream
   // Recovers from any device errors if possible.
   bool Recover(int error);
 
-  // Utility function for talking with the ALSA API.
-  snd_pcm_sframes_t GetCurrentDelay();
-
   // Non-refcounted pointer back to the audio manager.
   // The AudioManager indirectly holds on to stream objects, so we don't
   // want circular references.  Additionally, stream objects live on the audio
