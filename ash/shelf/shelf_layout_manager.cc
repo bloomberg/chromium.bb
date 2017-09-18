@@ -720,11 +720,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   available_bounds.Inset(0, chromevox_panel_height_, 0, 0);
   int shelf_width = PrimaryAxisValue(available_bounds.width(), shelf_size);
   int shelf_height = PrimaryAxisValue(shelf_size, available_bounds.height());
-  int bottom_shelf_vertical_offset = available_bounds.bottom();
-  if (keyboard_bounds_.IsEmpty())
-    bottom_shelf_vertical_offset -= shelf_height;
-  else
-    bottom_shelf_vertical_offset -= keyboard_bounds_.height();
+  int bottom_shelf_vertical_offset = available_bounds.bottom() - shelf_height;
 
   gfx::Point shelf_origin = SelectValueForShelfAlignment(
       gfx::Point(available_bounds.x(), bottom_shelf_vertical_offset),

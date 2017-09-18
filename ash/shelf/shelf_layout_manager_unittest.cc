@@ -2149,6 +2149,22 @@ class ShelfLayoutManagerKeyboardTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerKeyboardTest);
 };
 
+TEST_F(ShelfLayoutManagerKeyboardTest, ShelfNotMoveOnKeyboardOpen) {
+  gfx::Rect orig_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  InitKeyboardBounds();
+  keyboard::KeyboardController* kb_controller =
+      keyboard::KeyboardController::GetInstance();
+  // Open keyboard in non-sticky mode.
+  kb_controller->ShowKeyboard(false);
+  layout_manager->OnKeyboardBoundsChanging(keyboard_bounds());
+  layout_manager->LayoutShelf();
+
+  // Shelf posiion should not be changed.
+  EXPECT_EQ(orig_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
+}
+
 TEST_F(ShelfLayoutManagerKeyboardTest, ShelfChangeWorkAreaInNonStickyMode) {
   // Append the flag to cause work area change in non-sticky mode.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
