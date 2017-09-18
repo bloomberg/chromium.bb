@@ -1478,11 +1478,6 @@
         },
         {
           "board_name": "coral",
-          "name": "mako",
-          "cq_test_enabled": false
-        },
-        {
-          "board_name": "coral",
           "name": "nasher",
           "cq_test_enabled": false
         },
@@ -1509,11 +1504,6 @@
         {
           "board_name": "coral",
           "name": "santa",
-          "cq_test_enabled": false
-        },
-        {
-          "board_name": "coral",
-          "name": "thresher",
           "cq_test_enabled": false
         },
         {
