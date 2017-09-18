@@ -597,8 +597,10 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
   if (is_autofill_possible && driver()->RendererIsAvailable() &&
       got_autofillable_form) {
     // On desktop, don't return non credit card related suggestions for forms or
-    // fields that have the "autocomplete" attribute set to off.
-    if (IsDesktopPlatform() && !is_filling_credit_card &&
+    // fields that have the "autocomplete" attribute set to off, only if the
+    // feature to always fill addresses is off.
+    if (!base::FeatureList::IsEnabled(kAutofillAlwaysFillAddresses) &&
+        IsDesktopPlatform() && !is_filling_credit_card &&
         !field.should_autocomplete) {
       return;
     }

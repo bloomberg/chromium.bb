@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
@@ -16,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -668,7 +670,8 @@ bool AutofillField::FillFormField(const AutofillField& field,
 
   // Don't fill if autocomplete=off is set on |field| on desktop for non credit
   // card related fields.
-  if (!field.should_autocomplete && IsDesktopPlatform() &&
+  if (!base::FeatureList::IsEnabled(kAutofillAlwaysFillAddresses) &&
+      !field.should_autocomplete && IsDesktopPlatform() &&
       (type.group() != CREDIT_CARD)) {
     return false;
   }
