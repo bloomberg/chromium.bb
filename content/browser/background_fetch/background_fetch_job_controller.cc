@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -25,10 +24,12 @@ BackgroundFetchJobController::BackgroundFetchJobController(
       completed_callback_(std::move(completed_callback)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  data_manager_->SetListener(registration_id, this);
 }
 
 BackgroundFetchJobController::~BackgroundFetchJobController() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  data_manager_->SetListener(registration_id_, nullptr);
 }
 
 void BackgroundFetchJobController::Start() {

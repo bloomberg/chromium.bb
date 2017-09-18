@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
@@ -21,13 +22,12 @@
 
 namespace content {
 
-class BackgroundFetchDataManager;
-
 // The JobController will be responsible for coordinating communication with the
 // DownloadManager. It will get requests from the DataManager and dispatch them
 // to the DownloadManager. It lives entirely on the IO thread.
 class CONTENT_EXPORT BackgroundFetchJobController final
-    : public BackgroundFetchDelegateProxy::Controller {
+    : public BackgroundFetchDelegateProxy::Controller,
+      public BackgroundFetchDataManager::RegistrationListener {
  public:
   enum class State { INITIALIZED, FETCHING, ABORTED, COMPLETED };
 
@@ -46,9 +46,8 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // fetch new content until all requests have been handled.
   void Start();
 
-  // Updates the representation of this Background Fetch in the user interface
-  // to match the given |title|.
-  void UpdateUI(const std::string& title);
+  // BackgroundFetchDataManager::RegistrationListener implementation:
+  void UpdateUI(const std::string& title) override;
 
   // Immediately aborts this Background Fetch by request of the developer.
   void Abort();
