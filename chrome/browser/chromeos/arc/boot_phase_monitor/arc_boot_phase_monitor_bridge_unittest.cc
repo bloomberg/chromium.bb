@@ -27,6 +27,7 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
         base::MakeUnique<chromeos::FakeSessionManagerClient>());
     chromeos::DBusThreadManager::Initialize();
 
+    disable_cpu_restriction_counter_ = 0;
     record_uma_counter_ = 0;
     testing_profile_ = base::MakeUnique<TestingProfile>();
     arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
@@ -35,9 +36,8 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
 
     boot_phase_monitor_bridge_ = base::MakeUnique<ArcBootPhaseMonitorBridge>(
         testing_profile_.get(), bridge_service_.get());
-    boot_phase_monitor_bridge_->set_first_app_launch_delay_recorder_for_testing(
-        base::BindRepeating(&ArcBootPhaseMonitorBridgeTest::RecordUMA,
-                            base::Unretained(this)));
+    boot_phase_monitor_bridge_->SetDelegateForTesting(
+        std::make_unique<TestDelegateImpl>(this));
   }
 
   void TearDown() override {
@@ -56,14 +56,33 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
   ArcBootPhaseMonitorBridge* boot_phase_monitor_bridge() const {
     return boot_phase_monitor_bridge_.get();
   }
+  size_t disable_cpu_restriction_counter() const {
+    return disable_cpu_restriction_counter_;
+  }
   size_t record_uma_counter() const { return record_uma_counter_; }
   base::TimeDelta last_time_delta() const { return last_time_delta_; }
 
  private:
-  void RecordUMA(base::TimeDelta delta) {
-    last_time_delta_ = delta;
-    ++record_uma_counter_;
-  }
+  class TestDelegateImpl : public ArcBootPhaseMonitorBridge::Delegate {
+   public:
+    explicit TestDelegateImpl(ArcBootPhaseMonitorBridgeTest* test)
+        : test_(test) {}
+    ~TestDelegateImpl() override = default;
+
+    // ArcBootPhaseMonitorBridge::Delegate overrides:
+    void DisableCpuRestriction() override {
+      ++(test_->disable_cpu_restriction_counter_);
+    }
+    void RecordFirstAppLaunchDelayUMA(base::TimeDelta delta) override {
+      test_->last_time_delta_ = delta;
+      ++(test_->record_uma_counter_);
+    }
+
+   private:
+    ArcBootPhaseMonitorBridgeTest* const test_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestDelegateImpl);
+  };
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> testing_profile_;
@@ -71,6 +90,7 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
   std::unique_ptr<ArcBridgeService> bridge_service_;
   std::unique_ptr<ArcBootPhaseMonitorBridge> boot_phase_monitor_bridge_;
 
+  size_t disable_cpu_restriction_counter_;
   size_t record_uma_counter_;
   base::TimeDelta last_time_delta_;
 
@@ -105,8 +125,10 @@ TEST_F(ArcBootPhaseMonitorBridgeTest, TestThrottleCreation_Restart) {
   EXPECT_NE(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
   // Call OnArcSessionRestarting() instead, and confirm that |throttle_| is
   // gone.
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
   boot_phase_monitor_bridge()->OnArcSessionRestarting();
   EXPECT_EQ(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
+  EXPECT_EQ(1U, disable_cpu_restriction_counter());
   // Also make sure that |throttle| is created again once restarting id done.
   boot_phase_monitor_bridge()->OnBootCompleted();
   EXPECT_NE(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
@@ -196,6 +218,26 @@ TEST_F(ArcBootPhaseMonitorBridgeTest, TestRecordUMA_AppLaunchesAfterBoot) {
   // Call the record function again and check that the counter is not changed.
   boot_phase_monitor_bridge()->RecordFirstAppLaunchDelayUMAForTesting();
   EXPECT_EQ(1U, record_uma_counter());
+}
+
+TEST_F(ArcBootPhaseMonitorBridgeTest, TestOnSessionRestoreFinishedLoadingTabs) {
+  // Check that CPU restriction is disabled when tab restoration is done.
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
+  boot_phase_monitor_bridge()->OnSessionRestoreFinishedLoadingTabs();
+  EXPECT_EQ(1U, disable_cpu_restriction_counter());
+}
+
+TEST_F(ArcBootPhaseMonitorBridgeTest,
+       TestOnSessionRestoreFinishedLoadingTabs_BootFirst) {
+  // Tell |arc_session_manager_| that this is not opt-in boot.
+  arc_session_manager()->set_directly_started_for_testing(true);
+
+  // However, OnSessionRestoreFinishedLoadingTabs() should be no-op when the
+  // instance has already fully started.
+  boot_phase_monitor_bridge()->OnBootCompleted();
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
+  boot_phase_monitor_bridge()->OnSessionRestoreFinishedLoadingTabs();
+  EXPECT_EQ(0U, disable_cpu_restriction_counter());
 }
 
 }  // namespace
