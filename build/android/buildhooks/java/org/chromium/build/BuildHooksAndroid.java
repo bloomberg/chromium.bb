@@ -57,9 +57,9 @@ public abstract class BuildHooksAndroid {
 
     protected abstract boolean isEnabledImpl();
 
-    public static void init() {
-        sInstance.initImpl();
+    public static void initCustomResources(Context context) {
+        sInstance.initCustomResourcesImpl(context);
     }
 
-    protected abstract void initImpl();
+    protected abstract void initCustomResourcesImpl(Context context);
 }
