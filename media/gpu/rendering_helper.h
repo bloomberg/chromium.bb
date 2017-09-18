@@ -29,10 +29,6 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace display {
-class DisplayConfigurator;
-}
-
 namespace media {
 
 class VideoFrameTexture : public base::RefCounted<VideoFrameTexture> {
@@ -62,13 +58,9 @@ struct RenderingHelperParams {
   // The rendering FPS.
   int rendering_fps;
 
-  // The number of empty frames rendered when the rendering helper is
-  // initialized.
-  int warm_up_iterations;
-
-  // The desired size of each window. We play each stream in its own window
+  // The number of windows. We play each stream in its own window
   // on the screen.
-  std::vector<gfx::Size> window_sizes;
+  int num_windows;
 
   // The members below are only used for the thumbnail mode where all frames
   // are rendered in sequence onto one FBO for comparison/verification purposes.
@@ -90,17 +82,8 @@ class RenderingHelper {
   RenderingHelper();
   ~RenderingHelper();
 
-  // Initialize GL. This method must be called on the rendering
-  // thread.
+  // Initialize GL. This method must be called on the rendering thread.
   static void InitializeOneOff(base::WaitableEvent* done);
-
-  // Setup the platform window to display test results. This method
-  // must be called on the main thread.
-  void Setup();
-
-  // Tear down the platform window. This method must be called on the
-  // main thread.
-  void TearDown();
 
   // Create the render context and windows by the specified
   // dimensions. This method must be called on the rendering thread.
@@ -145,8 +128,6 @@ class RenderingHelper {
 
  private:
   struct RenderedVideo {
-    // The rect on the screen where the video will be rendered.
-    gfx::Rect render_area;
 
     // True if there won't be any new video frames comming.
     bool is_flushing;
@@ -167,17 +148,7 @@ class RenderingHelper {
   };
 
   void Clear();
-
   void RenderContent();
-
-  void WarmUpRendering(int warm_up_iterations);
-
-  void LayoutRenderingAreas(const std::vector<gfx::Size>& window_sizes);
-
-  void UpdateVSyncParameters(base::WaitableEvent* done,
-                             const base::TimeTicks timebase,
-                             const base::TimeDelta interval);
-
   void DropOneFrameForAllVideos();
   void ScheduleNextRenderContent();
 
@@ -189,18 +160,6 @@ class RenderingHelper {
 
   scoped_refptr<gl::GLContext> gl_context_;
   scoped_refptr<gl::GLSurface> gl_surface_;
-
-#if defined(OS_CHROMEOS)
-  class StubOzoneDelegate;
-  std::unique_ptr<StubOzoneDelegate> platform_window_delegate_;
-  std::unique_ptr<display::DisplayConfigurator> display_configurator_;
-#endif
-
-  bool ignore_vsync_;
-
-  gfx::AcceleratedWidget window_;
-
-  gfx::Size screen_size_;
 
   std::vector<RenderedVideo> videos_;
 
@@ -216,7 +175,6 @@ class RenderingHelper {
   base::TimeTicks scheduled_render_time_;
   base::CancelableClosure render_task_;
   base::TimeTicks vsync_timebase_;
-  base::TimeDelta vsync_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderingHelper);
 };

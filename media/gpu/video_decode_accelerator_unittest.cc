@@ -118,9 +118,6 @@ const base::FilePath::CharType* g_output_log = NULL;
 // The value is set by the switch "--rendering_fps".
 double g_rendering_fps = 60;
 
-// The value is set by the switch "--rendering_warm_up".
-int g_rendering_warm_up = 0;
-
 // The value is set by the switch "--num_play_throughs". The video will play
 // the specified number of times. In different test cases, we have different
 // values for |num_play_throughs|. This setting will override the value. A
@@ -277,14 +274,6 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
     // This also needs to be done in the test environment since this shouldn't
     // be initialized multiple times for the same Ozone platform.
     gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get());
-    // Flush the message loop for the current thread (UI) as the rendering
-    // thread will make calls to it during initialization.
-    {
-        base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-            base::MessageLoop::current());
-        base::RunLoop flush_ui_loop;
-        flush_ui_loop.RunUntilIdle();
-    }
 #endif
   }
 
@@ -1213,8 +1202,6 @@ void VideoDecodeAcceleratorTest::TearDown() {
       FROM_HERE, base::Bind(&RenderingHelper::UnInitialize,
                             base::Unretained(&rendering_helper_), &done));
   done.Wait();
-
-  rendering_helper_.TearDown();
 }
 
 void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
@@ -1286,8 +1273,6 @@ void VideoDecodeAcceleratorTest::UpdateTestVideoFileParams(
 
 void VideoDecodeAcceleratorTest::InitializeRenderingHelper(
     const RenderingHelperParams& helper_params) {
-  rendering_helper_.Setup();
-
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_env->GetRenderingTaskRunner()->PostTask(
@@ -1400,7 +1385,6 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
 
   RenderingHelperParams helper_params;
   helper_params.rendering_fps = g_rendering_fps;
-  helper_params.warm_up_iterations = g_rendering_warm_up;
   helper_params.render_as_thumbnails = render_as_thumbnails;
   if (render_as_thumbnails) {
     // Only one decoder is supported with thumbnail rendering
@@ -1409,6 +1393,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     helper_params.thumbnail_size = kThumbnailSize;
   }
 
+  helper_params.num_windows = num_concurrent_decoders;
   // First kick off all the decoders.
   for (size_t index = 0; index < num_concurrent_decoders; ++index) {
     TestVideoFile* video_file =
@@ -1433,10 +1418,6 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
             render_as_thumbnails);
 
     clients_[index] = std::move(client);
-    helper_params.window_sizes.push_back(
-        render_as_thumbnails
-            ? kThumbnailsPageSize
-            : gfx::Size(video_file->width, video_file->height));
   }
 
   InitializeRenderingHelper(helper_params);
@@ -1780,8 +1761,7 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
       test_video_files_[0]->profile, g_fake_decoder, true,
       std::numeric_limits<int>::max(), kWebRtcDecodeCallsPerSecond, false));
   RenderingHelperParams helper_params;
-  helper_params.window_sizes.push_back(
-      gfx::Size(test_video_files_[0]->width, test_video_files_[0]->height));
+  helper_params.num_windows = 1;
   InitializeRenderingHelper(helper_params);
   CreateAndStartDecoder(clients_[0].get(), notes_[0].get());
   ClientState last_state = WaitUntilDecodeFinish(notes_[0].get());
@@ -1809,8 +1789,7 @@ TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
       test_video_files_[0]->profile, g_fake_decoder, true,
       std::numeric_limits<int>::max(), 0, false));
   RenderingHelperParams helper_params;
-  helper_params.window_sizes.push_back(
-      gfx::Size(test_video_files_[0]->width, test_video_files_[0]->height));
+  helper_params.num_windows = 1;
   InitializeRenderingHelper(helper_params);
   CreateAndStartDecoder(clients_[0].get(), notes_[0].get());
   WaitUntilDecodeFinish(notes_[0].get());
@@ -1890,8 +1869,7 @@ int main(int argc, char** argv) {
       continue;
     }
     if (it->first == "rendering_warm_up") {
-      std::string input(it->second.begin(), it->second.end());
-      LOG_ASSERT(base::StringToInt(input, &media::g_rendering_warm_up));
+      // TODO(owenlin): Remove this after autotest stop using it.
       continue;
     }
     // TODO(owenlin): Remove this flag once it is not used in autotest.
