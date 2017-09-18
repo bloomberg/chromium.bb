@@ -187,7 +187,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer,
 #elif defined(OS_FUCHSIA)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE, os_buffer.type);
   base::SharedMemoryHandle memory_handle(
-      static_cast<mx_handle_t>(os_buffer.value), size, guid);
+      static_cast<zx_handle_t>(os_buffer.value), size, guid);
 #elif defined(OS_POSIX)
   ASSERT_EQ(MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR, os_buffer.type);
   base::SharedMemoryHandle memory_handle(

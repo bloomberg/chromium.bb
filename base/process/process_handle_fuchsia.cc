@@ -4,9 +4,9 @@
 
 #include "base/process/process_handle.h"
 
-#include <magenta/process.h>
-#include <magenta/status.h>
-#include <magenta/syscalls.h>
+#include <zircon/process.h>
+#include <zircon/status.h>
+#include <zircon/syscalls.h>
 
 #include "base/logging.h"
 
@@ -17,19 +17,19 @@ ProcessId GetCurrentProcId() {
 }
 
 ProcessHandle GetCurrentProcessHandle() {
-  // Note that mx_process_self() returns a real handle, and ownership is not
+  // Note that zx_process_self() returns a real handle, and ownership is not
   // transferred to the caller (i.e. this should never be closed).
-  return mx_process_self();
+  return zx_process_self();
 }
 
 ProcessId GetProcId(ProcessHandle process) {
-  mx_info_handle_basic_t basic;
-  mx_status_t status = mx_object_get_info(process, MX_INFO_HANDLE_BASIC, &basic,
+  zx_info_handle_basic_t basic;
+  zx_status_t status = zx_object_get_info(process, ZX_INFO_HANDLE_BASIC, &basic,
                                           sizeof(basic), nullptr, nullptr);
-  if (status != MX_OK) {
-    DLOG(ERROR) << "mx_object_get_info failed: "
-                << mx_status_get_string(status);
-    return MX_KOID_INVALID;
+  if (status != ZX_OK) {
+    DLOG(ERROR) << "zx_object_get_info failed: "
+                << zx_status_get_string(status);
+    return ZX_KOID_INVALID;
   }
   return basic.koid;
 }

@@ -64,9 +64,9 @@
 #include "third_party/lss/linux_syscall_support.h"
 #endif
 #if defined(OS_FUCHSIA)
-#include <magenta/process.h>
-#include <magenta/processargs.h>
-#include <magenta/syscalls.h>
+#include <zircon/process.h>
+#include <zircon/processargs.h>
+#include <zircon/syscalls.h>
 #endif
 
 using base::FilePath;
@@ -742,27 +742,27 @@ TEST_F(ProcessUtilTest, FDRemappingIncludesStdio) {
 #if defined(OS_FUCHSIA)
 const uint16_t kStartupHandleId = 43;
 MULTIPROCESS_TEST_MAIN(ProcessUtilsVerifyHandle) {
-  mx_handle_t handle =
-      mx_get_startup_handle(PA_HND(PA_USER0, kStartupHandleId));
-  CHECK_NE(MX_HANDLE_INVALID, handle);
+  zx_handle_t handle =
+      zx_get_startup_handle(PA_HND(PA_USER0, kStartupHandleId));
+  CHECK_NE(ZX_HANDLE_INVALID, handle);
 
   // Write to the pipe so the parent process can observe output.
   size_t bytes_written = 0;
-  mx_status_t result = mx_socket_write(handle, 0, &kPipeValue,
+  zx_status_t result = zx_socket_write(handle, 0, &kPipeValue,
                                        sizeof(kPipeValue), &bytes_written);
-  CHECK_EQ(MX_OK, result);
+  CHECK_EQ(ZX_OK, result);
   CHECK_EQ(1u, bytes_written);
 
-  CHECK_EQ(MX_OK, mx_handle_close(handle));
+  CHECK_EQ(ZX_OK, zx_handle_close(handle));
   return 0;
 }
 
 TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
   // Create a pipe to pass to the child process.
-  mx_handle_t handles[2];
-  mx_status_t result =
-      mx_socket_create(MX_SOCKET_STREAM, &handles[0], &handles[1]);
-  ASSERT_EQ(MX_OK, result);
+  zx_handle_t handles[2];
+  zx_status_t result =
+      zx_socket_create(ZX_SOCKET_STREAM, &handles[0], &handles[1]);
+  ASSERT_EQ(ZX_OK, result);
 
   // Launch the test process, and pass it one end of the pipe.
   base::LaunchOptions options;
@@ -773,20 +773,20 @@ TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
   ASSERT_TRUE(process.IsValid());
 
   // Read from the pipe to verify that the child received it.
-  mx_signals_t signals = 0;
-  result = mx_object_wait_one(handles[1], MX_SOCKET_READABLE,
-                              mx_deadline_after(MX_SEC(5)), &signals);
-  EXPECT_EQ(MX_OK, result);
-  EXPECT_TRUE(signals & MX_SOCKET_READABLE);
+  zx_signals_t signals = 0;
+  result = zx_object_wait_one(handles[1], ZX_SOCKET_READABLE,
+                              zx_deadline_after(ZX_SEC(5)), &signals);
+  EXPECT_EQ(ZX_OK, result);
+  EXPECT_TRUE(signals & ZX_SOCKET_READABLE);
 
   size_t bytes_read = 0;
   char buf[16] = {0};
-  result = mx_socket_read(handles[1], 0, buf, sizeof(buf), &bytes_read);
-  EXPECT_EQ(MX_OK, result);
+  result = zx_socket_read(handles[1], 0, buf, sizeof(buf), &bytes_read);
+  EXPECT_EQ(ZX_OK, result);
   EXPECT_EQ(1u, bytes_read);
   EXPECT_EQ(kPipeValue, buf[0]);
 
-  CHECK_EQ(MX_OK, mx_handle_close(handles[1]));
+  CHECK_EQ(ZX_OK, zx_handle_close(handles[1]));
 
   int exit_code;
   ASSERT_TRUE(process.WaitForExitWithTimeout(base::TimeDelta::FromSeconds(5),
@@ -982,12 +982,12 @@ TEST_F(ProcessUtilTest, GetParentProcessId) {
 // TODO(port): port those unit tests.
 bool IsProcessDead(base::ProcessHandle child) {
 #if defined(OS_FUCHSIA)
-  // ProcessHandle is an mx_handle_t, not a pid on Fuchsia, so waitpid() doesn't
+  // ProcessHandle is an zx_handle_t, not a pid on Fuchsia, so waitpid() doesn't
   // make sense.
-  mx_signals_t signals;
+  zx_signals_t signals;
   // Timeout of 0 to check for termination, but non-blocking.
-  if (mx_object_wait_one(child, MX_TASK_TERMINATED, 0, &signals) == MX_OK) {
-    DCHECK(signals & MX_TASK_TERMINATED);
+  if (zx_object_wait_one(child, ZX_TASK_TERMINATED, 0, &signals) == ZX_OK) {
+    DCHECK(signals & ZX_TASK_TERMINATED);
     return true;
   }
   return false;

@@ -17,8 +17,8 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include <magenta/process.h>
-#include <magenta/syscalls.h>
+#include <zircon/process.h>
+#include <zircon/syscalls.h>
 #endif  // OS_FUCHSIA
 
 namespace base {
@@ -41,20 +41,20 @@ void* AllocateGuardedVirtualMemory(size_t size) {
   // Fuchsia does not currently support PROT_NONE, see MG-546 upstream. Instead,
   // create a virtual mapping with the size of the guard page unmapped after the
   // block.
-  mx_handle_t vmo;
-  CHECK(mx_vmo_create(size, 0, &vmo) == MX_OK);
-  mx_handle_t vmar;
+  zx_handle_t vmo;
+  CHECK(zx_vmo_create(size, 0, &vmo) == ZX_OK);
+  zx_handle_t vmar;
   uintptr_t addr_uint;
-  CHECK(mx_vmar_allocate(mx_vmar_root_self(), 0, map_size,
-                         MX_VM_FLAG_CAN_MAP_READ | MX_VM_FLAG_CAN_MAP_WRITE |
-                             MX_VM_FLAG_CAN_MAP_SPECIFIC,
-                         &vmar, &addr_uint) == MX_OK);
-  CHECK(mx_vmar_map(
+  CHECK(zx_vmar_allocate(zx_vmar_root_self(), 0, map_size,
+                         ZX_VM_FLAG_CAN_MAP_READ | ZX_VM_FLAG_CAN_MAP_WRITE |
+                             ZX_VM_FLAG_CAN_MAP_SPECIFIC,
+                         &vmar, &addr_uint) == ZX_OK);
+  CHECK(zx_vmar_map(
             vmar, 0, vmo, 0, size,
-            MX_VM_FLAG_PERM_READ | MX_VM_FLAG_PERM_WRITE | MX_VM_FLAG_SPECIFIC,
-            &addr_uint) == MX_OK);
-  CHECK(mx_handle_close(vmar) == MX_OK);
-  CHECK(mx_handle_close(vmo) == MX_OK);
+            ZX_VM_FLAG_PERM_READ | ZX_VM_FLAG_PERM_WRITE | ZX_VM_FLAG_SPECIFIC,
+            &addr_uint) == ZX_OK);
+  CHECK(zx_handle_close(vmar) == ZX_OK);
+  CHECK(zx_handle_close(vmo) == ZX_OK);
   void* addr = reinterpret_cast<void*>(addr_uint);
 #else
   void* addr = mmap(nullptr, map_size, PROT_READ | PROT_WRITE,
@@ -76,10 +76,10 @@ void* AllocateGuardedVirtualMemory(size_t size) {
 void FreeGuardedVirtualMemory(void* address, size_t allocated_size) {
   size_t size = bits::Align(allocated_size, GetPageSize()) + GetGuardSize();
 #if defined(OS_FUCHSIA)
-  mx_status_t status = mx_vmar_unmap(
-      mx_vmar_root_self(), reinterpret_cast<uintptr_t>(address), size);
-  if (status != MX_OK) {
-    DLOG(ERROR) << "mx_vmar_unmap failed, status=" << status;
+  zx_status_t status = zx_vmar_unmap(
+      zx_vmar_root_self(), reinterpret_cast<uintptr_t>(address), size);
+  if (status != ZX_OK) {
+    DLOG(ERROR) << "zx_vmar_unmap failed, status=" << status;
   }
 #else
   munmap(address, size);

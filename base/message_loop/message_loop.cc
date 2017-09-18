@@ -683,13 +683,13 @@ bool MessageLoopForIO::WatchFileDescriptor(int fd,
 
 #if defined(OS_FUCHSIA)
 // Additional watch API for native platform resources.
-bool MessageLoopForIO::WatchMxHandle(mx_handle_t handle,
+bool MessageLoopForIO::WatchZxHandle(zx_handle_t handle,
                                      bool persistent,
-                                     mx_signals_t signals,
-                                     MxHandleWatchController* controller,
-                                     MxHandleWatcher* delegate) {
+                                     zx_signals_t signals,
+                                     ZxHandleWatchController* controller,
+                                     ZxHandleWatcher* delegate) {
   return ToPumpIO(pump_.get())
-      ->WatchMxHandle(handle, persistent, signals, controller, delegate);
+      ->WatchZxHandle(handle, persistent, signals, controller, delegate);
 }
 #endif
 

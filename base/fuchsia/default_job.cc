@@ -4,24 +4,24 @@
 
 #include "base/fuchsia/default_job.h"
 
-#include <magenta/process.h>
+#include <zircon/process.h>
 
 #include "base/logging.h"
 
 namespace base {
 
 namespace {
-mx_handle_t g_job = MX_HANDLE_INVALID;
+zx_handle_t g_job = ZX_HANDLE_INVALID;
 }  // namespace
 
-mx_handle_t GetDefaultJob() {
-  if (g_job == MX_HANDLE_INVALID)
-    return mx_job_default();
+zx_handle_t GetDefaultJob() {
+  if (g_job == ZX_HANDLE_INVALID)
+    return zx_job_default();
   return g_job;
 }
 
-void SetDefaultJob(ScopedMxHandle job) {
-  DCHECK_EQ(MX_HANDLE_INVALID, g_job);
+void SetDefaultJob(ScopedZxHandle job) {
+  DCHECK_EQ(ZX_HANDLE_INVALID, g_job);
   g_job = job.release();
 }
 

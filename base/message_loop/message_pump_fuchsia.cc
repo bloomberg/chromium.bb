@@ -4,24 +4,24 @@
 
 #include "base/message_loop/message_pump_fuchsia.h"
 
-#include <magenta/status.h>
-#include <magenta/syscalls.h>
+#include <zircon/status.h>
+#include <zircon/syscalls.h>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
 
 namespace base {
 
-MessagePumpFuchsia::MxHandleWatchController::MxHandleWatchController(
+MessagePumpFuchsia::ZxHandleWatchController::ZxHandleWatchController(
     const Location& from_here)
     : created_from_location_(from_here) {}
 
-MessagePumpFuchsia::MxHandleWatchController::~MxHandleWatchController() {
-  if (!StopWatchingMxHandle())
+MessagePumpFuchsia::ZxHandleWatchController::~ZxHandleWatchController() {
+  if (!StopWatchingZxHandle())
     NOTREACHED();
 }
 
-bool MessagePumpFuchsia::MxHandleWatchController::StopWatchingMxHandle() {
+bool MessagePumpFuchsia::ZxHandleWatchController::StopWatchingZxHandle() {
   if (was_stopped_) {
     DCHECK(!*was_stopped_);
     *was_stopped_ = true;
@@ -42,28 +42,28 @@ bool MessagePumpFuchsia::MxHandleWatchController::StopWatchingMxHandle() {
   if (!weak_pump_)
     return true;
 
-  int result = mx_port_cancel(weak_pump_->port_.get(), handle_, wait_key());
-  DLOG_IF(ERROR, result != MX_OK)
-      << "mx_port_cancel(handle=" << handle_
-      << ") failed: " << mx_status_get_string(result);
+  int result = zx_port_cancel(weak_pump_->port_.get(), handle_, wait_key());
+  DLOG_IF(ERROR, result != ZX_OK)
+      << "zx_port_cancel(handle=" << handle_
+      << ") failed: " << zx_status_get_string(result);
 
-  return result == MX_OK;
+  return result == ZX_OK;
 }
 
-void MessagePumpFuchsia::FdWatchController::OnMxHandleSignalled(
-    mx_handle_t handle,
-    mx_signals_t signals) {
+void MessagePumpFuchsia::FdWatchController::OnZxHandleSignalled(
+    zx_handle_t handle,
+    zx_signals_t signals) {
   uint32_t events;
-  __mxio_wait_end(io_, signals, &events);
+  __fdio_wait_end(io_, signals, &events);
 
   // Each |watcher_| callback we invoke may stop or delete |this|. The pump has
   // set |was_stopped_| to point to a safe location on the calling stack, so we
   // can use that to detect being stopped mid-callback and avoid doing further
   // work that would touch |this|.
   bool* was_stopped = was_stopped_;
-  if (events & MXIO_EVT_WRITABLE)
+  if (events & FDIO_EVT_WRITABLE)
     watcher_->OnFileCanWriteWithoutBlocking(fd_);
-  if (!*was_stopped && (events & MXIO_EVT_READABLE))
+  if (!*was_stopped && (events & FDIO_EVT_READABLE))
     watcher_->OnFileCanReadWithoutBlocking(fd_);
 
   // Don't add additional work here without checking |*was_stopped_| again.
@@ -71,7 +71,7 @@ void MessagePumpFuchsia::FdWatchController::OnMxHandleSignalled(
 
 MessagePumpFuchsia::FdWatchController::FdWatchController(
     const Location& from_here)
-    : MxHandleWatchController(from_here) {}
+    : ZxHandleWatchController(from_here) {}
 
 MessagePumpFuchsia::FdWatchController::~FdWatchController() {
   if (!StopWatchingFileDescriptor())
@@ -79,16 +79,16 @@ MessagePumpFuchsia::FdWatchController::~FdWatchController() {
 }
 
 bool MessagePumpFuchsia::FdWatchController::StopWatchingFileDescriptor() {
-  bool success = StopWatchingMxHandle();
+  bool success = StopWatchingZxHandle();
   if (io_) {
-    __mxio_release(io_);
+    __fdio_release(io_);
     io_ = nullptr;
   }
   return success;
 }
 
 MessagePumpFuchsia::MessagePumpFuchsia() : weak_factory_(this) {
-  CHECK_EQ(MX_OK, mx_port_create(0, port_.receive()));
+  CHECK_EQ(ZX_OK, zx_port_create(0, port_.receive()));
 }
 
 bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
@@ -107,7 +107,7 @@ bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
   controller->watcher_ = delegate;
 
   DCHECK(!controller->io_);
-  controller->io_ = __mxio_fd_to_io(fd);
+  controller->io_ = __fdio_fd_to_io(fd);
   if (!controller->io_) {
     DLOG(ERROR) << "Failed to get IO for FD";
     return false;
@@ -115,23 +115,23 @@ bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
 
   switch (mode) {
     case WATCH_READ:
-      controller->desired_events_ = MXIO_EVT_READABLE;
+      controller->desired_events_ = FDIO_EVT_READABLE;
       break;
     case WATCH_WRITE:
-      controller->desired_events_ = MXIO_EVT_WRITABLE;
+      controller->desired_events_ = FDIO_EVT_WRITABLE;
       break;
     case WATCH_READ_WRITE:
-      controller->desired_events_ = MXIO_EVT_READABLE | MXIO_EVT_WRITABLE;
+      controller->desired_events_ = FDIO_EVT_READABLE | FDIO_EVT_WRITABLE;
       break;
     default:
       NOTREACHED() << "unexpected mode: " << mode;
       return false;
   }
 
-  // Pass dummy |handle| and |signals| values to WatchMxHandle(). The real
+  // Pass dummy |handle| and |signals| values to WatchZxHandle(). The real
   // values will be populated by FdWatchController::WaitBegin(), before actually
   // starting the wait operation.
-  return WatchMxHandle(MX_HANDLE_INVALID, persistent, 1, controller,
+  return WatchZxHandle(ZX_HANDLE_INVALID, persistent, 1, controller,
                        controller);
 }
 
@@ -139,28 +139,28 @@ bool MessagePumpFuchsia::FdWatchController::WaitBegin() {
   // Refresh the |handle_| and |desired_signals_| from the mxio for the fd.
   // Some types of mxio map read/write events to different signals depending on
   // their current state, so we must do this every time we begin to wait.
-  __mxio_wait_begin(io_, desired_events_, &handle_, &desired_signals_);
-  if (handle_ == MX_HANDLE_INVALID) {
-    DLOG(ERROR) << "mxio_wait_begin failed";
+  __fdio_wait_begin(io_, desired_events_, &handle_, &desired_signals_);
+  if (handle_ == ZX_HANDLE_INVALID) {
+    DLOG(ERROR) << "fdio_wait_begin failed";
     return false;
   }
 
-  return MessagePumpFuchsia::MxHandleWatchController::WaitBegin();
+  return MessagePumpFuchsia::ZxHandleWatchController::WaitBegin();
 }
 
-bool MessagePumpFuchsia::WatchMxHandle(mx_handle_t handle,
+bool MessagePumpFuchsia::WatchZxHandle(zx_handle_t handle,
                                        bool persistent,
-                                       mx_signals_t signals,
-                                       MxHandleWatchController* controller,
-                                       MxHandleWatcher* delegate) {
+                                       zx_signals_t signals,
+                                       ZxHandleWatchController* controller,
+                                       ZxHandleWatcher* delegate) {
   DCHECK_NE(0u, signals);
   DCHECK(controller);
   DCHECK(delegate);
-  DCHECK(handle == MX_HANDLE_INVALID ||
-         controller->handle_ == MX_HANDLE_INVALID ||
+  DCHECK(handle == ZX_HANDLE_INVALID ||
+         controller->handle_ == ZX_HANDLE_INVALID ||
          handle == controller->handle_);
 
-  if (!controller->StopWatchingMxHandle())
+  if (!controller->StopWatchingZxHandle())
     NOTREACHED();
 
   controller->handle_ = handle;
@@ -173,15 +173,15 @@ bool MessagePumpFuchsia::WatchMxHandle(mx_handle_t handle,
   return controller->WaitBegin();
 }
 
-bool MessagePumpFuchsia::MxHandleWatchController::WaitBegin() {
+bool MessagePumpFuchsia::ZxHandleWatchController::WaitBegin() {
   DCHECK(!has_begun_);
 
-  mx_status_t status =
-      mx_object_wait_async(handle_, weak_pump_->port_.get(), wait_key(),
-                           desired_signals_, MX_WAIT_ASYNC_ONCE);
-  if (status != MX_OK) {
-    DLOG(ERROR) << "mx_object_wait_async failed: "
-                << mx_status_get_string(status)
+  zx_status_t status =
+      zx_object_wait_async(handle_, weak_pump_->port_.get(), wait_key(),
+                           desired_signals_, ZX_WAIT_ASYNC_ONCE);
+  if (status != ZX_OK) {
+    DLOG(ERROR) << "zx_object_wait_async failed: "
+                << zx_status_get_string(status)
                 << " (port=" << weak_pump_->port_.get() << ")";
     return false;
   }
@@ -191,8 +191,8 @@ bool MessagePumpFuchsia::MxHandleWatchController::WaitBegin() {
   return true;
 }
 
-uint32_t MessagePumpFuchsia::MxHandleWatchController::WaitEnd(
-    mx_signals_t signals) {
+uint32_t MessagePumpFuchsia::ZxHandleWatchController::WaitEnd(
+    zx_signals_t signals) {
   DCHECK(has_begun_);
 
   has_begun_ = false;
@@ -206,30 +206,30 @@ uint32_t MessagePumpFuchsia::MxHandleWatchController::WaitEnd(
   return signals;
 }
 
-bool MessagePumpFuchsia::HandleEvents(mx_time_t deadline) {
-  mx_port_packet_t packet;
-  const mx_status_t wait_status =
-      mx_port_wait(port_.get(), deadline, &packet, 0);
+bool MessagePumpFuchsia::HandleEvents(zx_time_t deadline) {
+  zx_port_packet_t packet;
+  const zx_status_t wait_status =
+      zx_port_wait(port_.get(), deadline, &packet, 0);
 
-  if (wait_status == MX_ERR_TIMED_OUT)
+  if (wait_status == ZX_ERR_TIMED_OUT)
     return false;
 
-  if (wait_status != MX_OK) {
+  if (wait_status != ZX_OK) {
     NOTREACHED() << "unexpected wait status: "
-                 << mx_status_get_string(wait_status);
+                 << zx_status_get_string(wait_status);
     return false;
   }
 
-  if (packet.type == MX_PKT_TYPE_SIGNAL_ONE) {
-    // A watched fd caused the wakeup via mx_object_wait_async().
-    DCHECK_EQ(MX_OK, packet.status);
-    MxHandleWatchController* controller =
-        reinterpret_cast<MxHandleWatchController*>(
+  if (packet.type == ZX_PKT_TYPE_SIGNAL_ONE) {
+    // A watched fd caused the wakeup via zx_object_wait_async().
+    DCHECK_EQ(ZX_OK, packet.status);
+    ZxHandleWatchController* controller =
+        reinterpret_cast<ZxHandleWatchController*>(
             static_cast<uintptr_t>(packet.key));
 
     DCHECK_NE(0u, packet.signal.trigger & packet.signal.observed);
 
-    mx_signals_t signals = controller->WaitEnd(packet.signal.observed);
+    zx_signals_t signals = controller->WaitEnd(packet.signal.observed);
 
     // In the case of a persistent Watch, the Watch may be stopped and
     // potentially deleted by the caller within the callback, in which case
@@ -239,7 +239,7 @@ bool MessagePumpFuchsia::HandleEvents(mx_time_t deadline) {
     bool controller_was_stopped = false;
     controller->was_stopped_ = &controller_was_stopped;
 
-    controller->watcher_->OnMxHandleSignalled(controller->handle_, signals);
+    controller->watcher_->OnZxHandleSignalled(controller->handle_, signals);
 
     if (!controller_was_stopped) {
       controller->was_stopped_ = nullptr;
@@ -248,7 +248,7 @@ bool MessagePumpFuchsia::HandleEvents(mx_time_t deadline) {
     }
   } else {
     // Wakeup caused by ScheduleWork().
-    DCHECK_EQ(MX_PKT_TYPE_USER, packet.type);
+    DCHECK_EQ(ZX_PKT_TYPE_USER, packet.type);
   }
 
   return true;
@@ -280,9 +280,9 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
     if (did_work)
       continue;
 
-    mx_time_t deadline = delayed_work_time_.is_null()
-                             ? MX_TIME_INFINITE
-                             : delayed_work_time_.ToMXTime();
+    zx_time_t deadline = delayed_work_time_.is_null()
+                             ? ZX_TIME_INFINITE
+                             : delayed_work_time_.ToZxTime();
     HandleEvents(deadline);
   }
 }
@@ -294,11 +294,11 @@ void MessagePumpFuchsia::Quit() {
 void MessagePumpFuchsia::ScheduleWork() {
   // Since this can be called on any thread, we need to ensure that our Run loop
   // wakes up.
-  mx_port_packet_t packet = {};
-  packet.type = MX_PKT_TYPE_USER;
-  mx_status_t status = mx_port_queue(port_.get(), &packet, 0);
-  DLOG_IF(ERROR, status != MX_OK)
-      << "mx_port_queue failed: " << status << " (port=" << port_.get() << ")";
+  zx_port_packet_t packet = {};
+  packet.type = ZX_PKT_TYPE_USER;
+  zx_status_t status = zx_port_queue(port_.get(), &packet, 0);
+  DLOG_IF(ERROR, status != ZX_OK)
+      << "zx_port_queue failed: " << status << " (port=" << port_.get() << ")";
 }
 
 void MessagePumpFuchsia::ScheduleDelayedWork(

@@ -28,7 +28,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include <magenta/types.h>
+#include <zircon/types.h>
 #endif
 
 namespace base {
@@ -42,7 +42,7 @@ typedef std::vector<HANDLE> HandlesToInheritVector;
 #if defined(OS_FUCHSIA)
 struct HandleToTransfer {
   uint32_t id;
-  mx_handle_t handle;
+  zx_handle_t handle;
 };
 typedef std::vector<HandleToTransfer> HandlesToTransferVector;
 #endif
@@ -191,12 +191,12 @@ struct BASE_EXPORT LaunchOptions {
 
 #if defined(OS_FUCHSIA)
   // If valid, launches the application in that job object.
-  mx_handle_t job_handle = MX_HANDLE_INVALID;
+  zx_handle_t job_handle = ZX_HANDLE_INVALID;
 
   // Specifies additional handles to transfer (not duplicate) to the child
   // process. The handles remain valid in this process if launch fails.
   // Each entry is an <id,handle> pair, with an |id| created using the PA_HND()
-  // macro. The child retrieves the handle |mx_get_startup_handle(id)|.
+  // macro. The child retrieves the handle |zx_get_startup_handle(id)|.
   HandlesToTransferVector handles_to_transfer;
 #endif  // defined(OS_FUCHSIA)
 

@@ -361,7 +361,7 @@ def _GetResultsFromImg(dry_run, test_launcher_summary_output):
 
 
 def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
-  kernel_path = os.path.join(SDK_ROOT, 'kernel', 'magenta.bin')
+  kernel_path = os.path.join(SDK_ROOT, 'kernel', 'zircon.bin')
 
   if use_device:
     # TODO(fuchsia): This doesn't capture stdout as there's no way to do so

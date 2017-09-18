@@ -29,7 +29,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include <magenta/process.h>
+#include <zircon/process.h>
 #endif
 
 namespace base {
@@ -142,7 +142,7 @@ PlatformThreadId PlatformThread::CurrentId() {
 #elif defined(OS_ANDROID)
   return gettid();
 #elif defined(OS_FUCHSIA)
-  return mx_thread_self();
+  return zx_thread_self();
 #elif defined(OS_SOLARIS) || defined(OS_QNX)
   return pthread_self();
 #elif defined(OS_NACL) && defined(__GLIBC__)

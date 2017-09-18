@@ -5,16 +5,16 @@
 #include "base/debug/stack_trace.h"
 
 #include <link.h>
-#include <magenta/crashlogger.h>
-#include <magenta/process.h>
-#include <magenta/syscalls.h>
-#include <magenta/syscalls/definitions.h>
-#include <magenta/syscalls/port.h>
-#include <magenta/types.h>
 #include <stddef.h>
 #include <string.h>
 #include <threads.h>
 #include <unwind.h>
+#include <zircon/crashlogger.h>
+#include <zircon/process.h>
+#include <zircon/syscalls.h>
+#include <zircon/syscalls/definitions.h>
+#include <zircon/syscalls/port.h>
+#include <zircon/types.h>
 
 #include <algorithm>
 #include <iomanip>
@@ -52,7 +52,7 @@ class SymbolMap {
  public:
   struct Entry {
     void* addr;
-    char name[MX_MAX_NAME_LEN + kProcessNamePrefixLen];
+    char name[ZX_MAX_NAME_LEN + kProcessNamePrefixLen];
   };
 
   SymbolMap();
@@ -96,19 +96,19 @@ SymbolMap::Entry* SymbolMap::GetForAddress(void* address) {
 }
 
 void SymbolMap::Populate() {
-  mx_handle_t process = mx_process_self();
+  zx_handle_t process = zx_process_self();
 
   // Try to fetch the name of the process' main executable, which was set as the
   // name of the |process| kernel object.
-  // TODO(wez): Object names can only have up to MX_MAX_NAME_LEN characters, so
+  // TODO(wez): Object names can only have up to ZX_MAX_NAME_LEN characters, so
   // if we keep hitting problems with truncation, find a way to plumb argv[0]
   // through to here instead, e.g. using CommandLine::GetProgramName().
   char app_name[arraysize(SymbolMap::Entry::name)];
   strcpy(app_name, kProcessNamePrefix);
-  mx_status_t status = mx_object_get_property(
-      process, MX_PROP_NAME, app_name + kProcessNamePrefixLen,
+  zx_status_t status = zx_object_get_property(
+      process, ZX_PROP_NAME, app_name + kProcessNamePrefixLen,
       sizeof(app_name) - kProcessNamePrefixLen);
-  if (status != MX_OK) {
+  if (status != ZX_OK) {
     DPLOG(WARNING)
         << "Couldn't get name, falling back to 'app' for program name: "
         << status;
@@ -118,9 +118,9 @@ void SymbolMap::Populate() {
   // Retrieve the debug info struct.
   constexpr size_t map_capacity = sizeof(entries_);
   uintptr_t debug_addr;
-  status = mx_object_get_property(process, MX_PROP_PROCESS_DEBUG_ADDR,
+  status = zx_object_get_property(process, ZX_PROP_PROCESS_DEBUG_ADDR,
                                   &debug_addr, sizeof(debug_addr));
-  if (status != MX_OK) {
+  if (status != ZX_OK) {
     DPLOG(ERROR) << "Couldn't get symbol map for process: " << status;
     return;
   }

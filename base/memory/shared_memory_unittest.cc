@@ -38,9 +38,9 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include <magenta/process.h>
-#include <magenta/syscalls.h>
-#include "base/fuchsia/scoped_mx_handle.h"
+#include <zircon/process.h>
+#include <zircon/syscalls.h>
+#include "base/fuchsia/scoped_zx_handle.h"
 #endif
 
 namespace base {
@@ -374,16 +374,16 @@ TEST(SharedMemoryTest, GetReadOnlyHandle) {
   (void)handle;
 #elif defined(OS_FUCHSIA)
   uintptr_t addr;
-  EXPECT_NE(MX_OK, mx_vmar_map(mx_vmar_root_self(), 0, handle.GetHandle(), 0,
-                               contents.size(), MX_VM_FLAG_PERM_WRITE, &addr))
+  EXPECT_NE(ZX_OK, zx_vmar_map(zx_vmar_root_self(), 0, handle.GetHandle(), 0,
+                               contents.size(), ZX_VM_FLAG_PERM_WRITE, &addr))
       << "Shouldn't be able to map as writable.";
 
-  ScopedMxHandle duped_handle;
-  EXPECT_NE(MX_OK, mx_handle_duplicate(handle.GetHandle(), MX_RIGHT_WRITE,
+  ScopedZxHandle duped_handle;
+  EXPECT_NE(ZX_OK, zx_handle_duplicate(handle.GetHandle(), ZX_RIGHT_WRITE,
                                        duped_handle.receive()))
       << "Shouldn't be able to duplicate the handle into a writable one.";
 
-  EXPECT_EQ(MX_OK, mx_handle_duplicate(handle.GetHandle(), MX_RIGHT_READ,
+  EXPECT_EQ(ZX_OK, zx_handle_duplicate(handle.GetHandle(), ZX_RIGHT_READ,
                                        duped_handle.receive()))
       << "Should be able to duplicate the handle into a readable one.";
 #elif defined(OS_POSIX)

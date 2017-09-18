@@ -66,8 +66,8 @@
 
 #if defined(OS_FUCHSIA)
 // TODO(scottmg): For temporary code in OnOutputTimeout().
-#include <magenta/syscalls.h>
-#include <magenta/syscalls/object.h>
+#include <zircon/syscalls.h>
+#include <zircon/syscalls/object.h>
 #endif
 
 namespace base {
@@ -1229,12 +1229,12 @@ void TestLauncher::OnOutputTimeout() {
     // appear to not be terminated after a timeout correctly.
     // https://crbug.com/750370 and https://crbug.com/738275.
 
-    mx_info_process_t proc_info = {};
-    mx_status_t status =
-        mx_object_get_info(pair.first, MX_INFO_PROCESS, &proc_info,
+    zx_info_process_t proc_info = {};
+    zx_status_t status =
+        zx_object_get_info(pair.first, ZX_INFO_PROCESS, &proc_info,
                            sizeof(proc_info), nullptr, nullptr);
-    if (status != MX_OK) {
-      fprintf(stdout, "mx_object_get_info failed for '%s', status=%d\n",
+    if (status != ZX_OK) {
+      fprintf(stdout, "zx_object_get_info failed for '%s', status=%d\n",
               pair.second.GetCommandLineString().c_str(), status);
     } else {
       fprintf(stdout, "  return_code=%d\n", proc_info.return_code);

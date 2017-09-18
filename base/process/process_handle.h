@@ -17,7 +17,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include <magenta/types.h>
+#include <zircon/types.h>
 #endif
 
 namespace base {
@@ -32,10 +32,10 @@ typedef HANDLE UserTokenHandle;
 const ProcessHandle kNullProcessHandle = NULL;
 const ProcessId kNullProcessId = 0;
 #elif defined(OS_FUCHSIA)
-typedef mx_handle_t ProcessHandle;
-typedef mx_koid_t ProcessId;
-const ProcessHandle kNullProcessHandle = MX_HANDLE_INVALID;
-const ProcessId kNullProcessId = MX_KOID_INVALID;
+typedef zx_handle_t ProcessHandle;
+typedef zx_koid_t ProcessId;
+const ProcessHandle kNullProcessHandle = ZX_HANDLE_INVALID;
+const ProcessId kNullProcessId = ZX_KOID_INVALID;
 #elif defined(OS_POSIX)
 // On POSIX, our ProcessHandle will just be the PID.
 typedef pid_t ProcessHandle;
