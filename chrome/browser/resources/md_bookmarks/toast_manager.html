@@ -1,12 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
 
 <dom-module id="bookmarks-toast-manager">
   <template>
     <style include="shared-style">
       #content {
+        color: #fff;
         display: flex;
         flex: 1;
         overflow: hidden;
@@ -32,39 +34,13 @@
       span {
         white-space: pre;
       }
-
-      #toast {
-        align-items: center;
-        background-color: #323232;
-        border-radius: 4px;
-        bottom: 0;
-        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.28);
-        box-sizing: border-box;
-        color: #fff;
-        display: flex;
-        margin: 24px;
-        max-width: 568px;
-        min-height: 52px;
-        min-width: 288px;
-        opacity: 0;
-        padding: 0 24px;
-        position: fixed;
-        transform: translateY(100px);
-        transition: transform 300ms, opacity 300ms;
-        white-space: nowrap;
-      }
-
-      #toast[aria-hidden=false] {
-        opacity: 1;
-        transform: translateY(0);
-      }
     </style>
-    <div id="toast">
+    <cr-toast id="toast" duration="[[duration]]">
       <div id="content"></div>
       <paper-button id="button" hidden$="[[!showUndo_]]" on-tap="onUndoTap_">
         $i18n{undo}
       </paper-button>
-    </div>
+    </cr-toast>
   </template>
   <script src="chrome://bookmarks/toast_manager.js"></script>
 </dom-module>

@@ -15,6 +15,7 @@
         'cr_expand_button/compiled_resources2.gyp:*',
         'cr_link_row/compiled_resources2.gyp:*',
         'cr_profile_avatar_selector/compiled_resources2.gyp:*',
+        'cr_toast/compiled_resources2.gyp:*',
         'policy/compiled_resources2.gyp:*',
       ],
     },
