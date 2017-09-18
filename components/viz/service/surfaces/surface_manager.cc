@@ -192,6 +192,14 @@ void SurfaceManager::SetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id,
 #endif
 }
 
+std::string SurfaceManager::GetFrameSinkDebugLabel(
+    const FrameSinkId& frame_sink_id) const {
+  auto it = valid_frame_sink_labels_.find(frame_sink_id);
+  if (it != valid_frame_sink_labels_.end())
+    return it->second;
+  return std::string();
+}
+
 const SurfaceId& SurfaceManager::GetRootSurfaceId() const {
   return root_surface_id_;
 }
@@ -564,11 +572,9 @@ void SurfaceManager::DestroySurfaceInternal(const SurfaceId& surface_id) {
 #if DCHECK_IS_ON()
 void SurfaceManager::AppendDebugFrameSinkLabel(const FrameSinkId& frame_sink_id,
                                                std::stringstream* str) const {
-  auto it = valid_frame_sink_labels_.find(frame_sink_id);
-  if (it == valid_frame_sink_labels_.end())
-    return;
-  if (!it->second.empty())
-    *str << " " << it->second;
+  std::string frame_sink_label = GetFrameSinkDebugLabel(frame_sink_id);
+  if (!frame_sink_label.empty())
+    *str << " " << frame_sink_label;
 }
 
 void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,

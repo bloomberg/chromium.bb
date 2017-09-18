@@ -138,6 +138,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   void SetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id,
                               const std::string& debug_label);
 
+  // Returns the debug label associated with |frame_sink_id| if any.
+  std::string GetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id) const;
+
   // Register a relationship between two namespaces.  This relationship means
   // that surfaces from the child namespace will be displayed in the parent.
   // Children are allowed to use any begin frame source that their parent can
