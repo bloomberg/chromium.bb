@@ -30,18 +30,8 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #if defined(OS_CHROMEOS)
-#include "ui/display/manager/chromeos/display_configurator.h"
-#include "ui/display/types/display_mode.h"
-#include "ui/display/types/display_snapshot.h"
-#include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/public/ozone_platform.h"
-#include "ui/platform_window/platform_window.h"
-#include "ui/platform_window/platform_window_delegate.h"
 #endif  // defined(OS_CHROMEOS)
 
 // Helper for Shader creation.
@@ -65,91 +55,9 @@ static void CreateShader(GLuint program,
 }
 
 namespace media {
-namespace {
-
-void WaitForSwapAck(const base::Closure& callback, gfx::SwapResult result) {
-  callback.Run();
-}
-
-}  // namespace
-
-#if defined(OS_CHROMEOS)
-
-class DisplayConfiguratorObserver
-    : public display::DisplayConfigurator::Observer {
- public:
-  explicit DisplayConfiguratorObserver(base::RunLoop* loop) : loop_(loop) {}
-  ~DisplayConfiguratorObserver() override {}
-
- private:
-  // display::DisplayConfigurator::Observer overrides:
-  void OnDisplayModeChanged(
-      const display::DisplayConfigurator::DisplayStateList& outputs) override {
-    if (!loop_)
-      return;
-    loop_->Quit();
-    loop_ = nullptr;
-  }
-  void OnDisplayModeChangeFailed(
-      const display::DisplayConfigurator::DisplayStateList& outputs,
-      display::MultipleDisplayState failed_new_state) override {
-    LOG(FATAL) << "Could not configure display";
-  }
-
-  base::RunLoop* loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayConfiguratorObserver);
-};
-
-class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
- public:
-  StubOzoneDelegate() : accelerated_widget_(gfx::kNullAcceleratedWidget) {
-    platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-        this, gfx::Rect());
-  }
-  ~StubOzoneDelegate() override {}
-
-  void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
-
-  void OnDamageRect(const gfx::Rect& damaged_region) override {}
-
-  void DispatchEvent(ui::Event* event) override {}
-
-  void OnCloseRequest() override {}
-  void OnClosed() override {}
-
-  void OnWindowStateChanged(ui::PlatformWindowState new_state) override {}
-
-  void OnLostCapture() override {}
-
-  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
-                                    float device_pixel_ratio) override {
-    accelerated_widget_ = widget;
-  }
-
-  void OnAcceleratedWidgetDestroyed() override { NOTREACHED(); }
-
-  void OnActivationChanged(bool active) override {}
-
-  gfx::AcceleratedWidget accelerated_widget() const {
-    return accelerated_widget_;
-  }
-
-  gfx::Size GetSize() { return platform_window_->GetBounds().size(); }
-
-  ui::PlatformWindow* platform_window() const { return platform_window_.get(); }
-
- private:
-  std::unique_ptr<ui::PlatformWindow> platform_window_;
-  gfx::AcceleratedWidget accelerated_widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(StubOzoneDelegate);
-};
-
-#endif  // defined(OS_CHROMEOS)
 
 RenderingHelperParams::RenderingHelperParams()
-    : rendering_fps(0), warm_up_iterations(0), render_as_thumbnails(false) {}
+    : rendering_fps(0), render_as_thumbnails(false) {}
 
 RenderingHelperParams::RenderingHelperParams(
     const RenderingHelperParams& other) = default;
@@ -193,8 +101,7 @@ void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
   done->Signal();
 }
 
-RenderingHelper::RenderingHelper() : ignore_vsync_(false) {
-  window_ = gfx::kNullAcceleratedWidget;
+RenderingHelper::RenderingHelper() {
   Clear();
 }
 
@@ -203,78 +110,8 @@ RenderingHelper::~RenderingHelper() {
   Clear();
 }
 
-void RenderingHelper::Setup() {
-#if defined(OS_CHROMEOS)
-  base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-      base::MessageLoop::current());
-  base::RunLoop wait_window_resize;
-
-  platform_window_delegate_.reset(new RenderingHelper::StubOzoneDelegate());
-  window_ = platform_window_delegate_->accelerated_widget();
-  gfx::Size window_size(800, 600);
-  // Ignore the vsync provider by default. On ChromeOS this will be set
-  // accordingly based on the display configuration.
-  ignore_vsync_ = true;
-
-  // We hold onto the main loop here to wait for the DisplayController
-  // to give us the size of the display so we can create a window of
-  // the same size.
-  base::RunLoop wait_display_setup;
-  DisplayConfiguratorObserver display_setup_observer(&wait_display_setup);
-  display_configurator_ = std::make_unique<display::DisplayConfigurator>();
-  display_configurator_->SetDelegateForTesting(0);
-  display_configurator_->AddObserver(&display_setup_observer);
-  display_configurator_->Init(
-      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), true);
-  display_configurator_->ForceInitialConfigure();
-  // Make sure all the display configuration is applied.
-  wait_display_setup.Run();
-  display_configurator_->RemoveObserver(&display_setup_observer);
-
-  auto& cached_displays = display_configurator_->cached_displays();
-  if (!cached_displays.empty()) {
-    DCHECK(cached_displays[0]->current_mode());
-    window_size = cached_displays[0]->current_mode()->size();
-    ignore_vsync_ = false;
-  }
-
-  if (ignore_vsync_)
-    DVLOG(1) << "Ignoring vsync provider";
-
-  platform_window_delegate_->platform_window()->SetBounds(
-      gfx::Rect(window_size));
-
-  // On Ozone/DRI, platform windows are associated with the physical
-  // outputs. Association is achieved by matching the bounds of the
-  // window with the origin & modeset of the display output. Until a
-  // window is associated with a display output, we cannot get vsync
-  // events, because there is no hardware to get events from. Here we
-  // wait for the window to resized and therefore associated with
-  // display output to be sure that we will get such events.
-  wait_window_resize.RunUntilIdle();
-#elif !defined(OS_WIN)
-#error unknown platform
-#endif
-}
-
-void RenderingHelper::TearDown() {
-#if defined(OS_CHROMEOS)
-  platform_window_delegate_.reset();
-  display_configurator_->PrepareForExit();
-  display_configurator_.reset();
-#endif
-  window_ = gfx::kNullAcceleratedWidget;
-}
-
 void RenderingHelper::Initialize(const RenderingHelperParams& params,
                                  base::WaitableEvent* done) {
-#if defined(OS_WIN)
-  window_ = CreateWindowEx(
-      0, L"Static", L"VideoDecodeAcceleratorTest",
-      WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, GetSystemMetrics(SM_CXSCREEN),
-      GetSystemMetrics(SM_CYSCREEN), NULL, NULL, NULL, NULL);
-#endif
-  CHECK(window_ != gfx::kNullAcceleratedWidget);
   // Use videos_.size() != 0 as a proxy for the class having already been
   // Initialize()'d, and UnInitialize() before continuing.
   if (videos_.size()) {
@@ -294,20 +131,12 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   render_as_thumbnails_ = params.render_as_thumbnails;
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-  gl_surface_ = gl::init::CreateViewGLSurface(window_);
-#if defined(OS_CHROMEOS)
-  gl_surface_->Resize(platform_window_delegate_->GetSize(), 1.f,
-                      gl::GLSurface::ColorSpace::UNSPECIFIED, true);
-#endif  // defined(OS_CHROMEOS)
-  screen_size_ = gl_surface_->GetSize();
-
+  gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   gl_context_ = gl::init::CreateGLContext(nullptr, gl_surface_.get(),
                                           gl::GLContextAttribs());
   CHECK(gl_context_->MakeCurrent(gl_surface_.get()));
 
-  CHECK_GT(params.window_sizes.size(), 0U);
-  videos_.resize(params.window_sizes.size());
-  LayoutRenderingAreas(params.window_sizes);
+  videos_.resize(params.num_windows);
 
   if (render_as_thumbnails_) {
     CHECK_EQ(videos_.size(), 1U);
@@ -441,72 +270,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 
   // Unbind the vertex buffer
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  if (!frame_duration_.is_zero()) {
-    int warm_up_iterations = params.warm_up_iterations;
-#if defined(OS_CHROMEOS)
-    // On Ozone the VSyncProvider can't provide a vsync interval until
-    // we render at least a frame, so we warm up with at least one
-    // frame.
-    // On top of this, we want to make sure all the buffers backing
-    // the GL surface are cleared, otherwise we can see the previous
-    // test's last frames, so we set warm up iterations to 2, to clear
-    // the front and back buffers.
-    warm_up_iterations = std::max(2, warm_up_iterations);
-#endif
-    WarmUpRendering(warm_up_iterations);
-  }
-
-  // It's safe to use Unretained here since |rendering_thread_| will be stopped
-  // in VideoDecodeAcceleratorTest.TearDown(), while the |rendering_helper_| is
-  // a member of that class. (See video_decode_accelerator_unittest.cc.)
-  gfx::VSyncProvider* vsync_provider = gl_surface_->GetVSyncProvider();
-
-  // VSync providers rely on the underlying CRTC to get the timing. In headless
-  // mode the surface isn't associated with a CRTC so the vsync provider can not
-  // get the timing, meaning it will not call UpdateVsyncParameters() ever.
-  if (!ignore_vsync_ && vsync_provider && !frame_duration_.is_zero()) {
-    vsync_provider->GetVSyncParameters(base::Bind(
-        &RenderingHelper::UpdateVSyncParameters, base::Unretained(this), done));
-  } else {
-    done->Signal();
-  }
-}
-
-// The rendering for the first few frames is slow (e.g., 100ms on Peach Pit).
-// This affects the numbers measured in the performance test. We try to render
-// several frames here to warm up the rendering.
-void RenderingHelper::WarmUpRendering(int warm_up_iterations) {
-  unsigned int texture_id;
-  std::unique_ptr<GLubyte[]> emptyData(
-      new GLubyte[screen_size_.GetArea() * 2]());
-  glGenTextures(1, &texture_id);
-  glBindTexture(GL_TEXTURE_2D, texture_id);
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               GL_RGB,
-               screen_size_.width(), screen_size_.height(),
-               0,
-               GL_RGB,
-               GL_UNSIGNED_SHORT_5_6_5,
-               emptyData.get());
-  for (int i = 0; i < warm_up_iterations; ++i) {
-    RenderTexture(GL_TEXTURE_2D, texture_id);
-
-    // Need to allow nestable tasks since WarmUpRendering() is called from
-    // within another task on the renderer thread.
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
-    base::RunLoop wait_for_swap_ack;
-    if (gl_surface_->SupportsAsyncSwap()) {
-      gl_surface_->SwapBuffersAsync(
-          base::Bind(&WaitForSwapAck, wait_for_swap_ack.QuitClosure()));
-      wait_for_swap_ack.Run();
-    } else {
-      gl_surface_->SwapBuffers();
-    }
-  }
-  glDeleteTextures(1, &texture_id);
+  done->Signal();
 }
 
 void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
@@ -526,13 +290,6 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   gl_surface_ = NULL;
 
   Clear();
-
-#if defined(OS_WIN)
-  if (window_)
-    DestroyWindow(window_);
-  window_ = gfx::kNullAcceleratedWidget;
-#endif
-
   done->Signal();
 }
 
@@ -632,6 +389,7 @@ void RenderingHelper::RenderTexture(uint32_t texture_target,
   glBindTexture(texture_target, texture_id);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindTexture(texture_target, 0);
+
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
@@ -686,132 +444,26 @@ void RenderingHelper::Flush(size_t window_id) {
 void RenderingHelper::RenderContent() {
   CHECK(task_runner_->BelongsToCurrentThread());
 
-  // Update the VSync params.
-  //
-  // It's safe to use Unretained here since |rendering_thread_| will be stopped
-  // in VideoDecodeAcceleratorTest.TearDown(), while the |rendering_helper_| is
-  // a member of that class. (See video_decode_accelerator_unittest.cc.)
-  gfx::VSyncProvider* vsync_provider = gl_surface_->GetVSyncProvider();
-  if (vsync_provider && !ignore_vsync_) {
-    vsync_provider->GetVSyncParameters(base::Bind(
-        &RenderingHelper::UpdateVSyncParameters, base::Unretained(this),
-        static_cast<base::WaitableEvent*>(NULL)));
-  }
-
-  int tex_flip = !gl_surface_->FlipsVertically();
-#if defined(OS_CHROMEOS)
-  // Ozone surfaceless renders flipped from normal GL, so there's no need to
-  // do an extra flip.
-  tex_flip = 0;
-#endif  // defined(OS_CHROMEOS)
-  glUniform1i(glGetUniformLocation(program_, "tex_flip"), tex_flip);
-
   // Frames that will be returned to the client (via the no_longer_needed_cb)
   // after this vector falls out of scope at the end of this method. We need
   // to keep references to them until after SwapBuffers() call below.
   std::vector<scoped_refptr<VideoFrameTexture>> frames_to_be_returned;
-  bool need_swap_buffer = false;
-  if (render_as_thumbnails_) {
-    // In render_as_thumbnails_ mode, we render the FBO content on the
-    // screen instead of the decoded textures.
-    GLSetViewPort(videos_[0].render_area);
-    RenderTexture(GL_TEXTURE_2D, thumbnails_texture_id_);
-    need_swap_buffer = true;
-  } else {
-    for (RenderedVideo& video : videos_) {
-      if (video.pending_frames.empty())
-        continue;
-      need_swap_buffer = true;
-      scoped_refptr<VideoFrameTexture> frame = video.pending_frames.front();
-      GLSetViewPort(video.render_area);
-      RenderTexture(frame->texture_target(), frame->texture_id());
+  for (RenderedVideo& video : videos_) {
+    if (video.pending_frames.empty())
+      continue;
+    scoped_refptr<VideoFrameTexture> frame = video.pending_frames.front();
+    // TODO(owenlin): Render to FBO.
+    // RenderTexture(frame->texture_target(), frame->texture_id());
 
-      if (video.pending_frames.size() > 1 || video.is_flushing) {
-        frames_to_be_returned.push_back(video.pending_frames.front());
-        video.pending_frames.pop();
-      } else {
-        ++video.frames_to_drop;
-      }
+    if (video.pending_frames.size() > 1 || video.is_flushing) {
+      frames_to_be_returned.push_back(video.pending_frames.front());
+      video.pending_frames.pop();
+    } else {
+      ++video.frames_to_drop;
     }
   }
 
-  base::Closure schedule_frame = base::Bind(
-      &RenderingHelper::ScheduleNextRenderContent, base::Unretained(this));
-  if (!need_swap_buffer) {
-    schedule_frame.Run();
-    return;
-  }
-
-  if (gl_surface_->SupportsAsyncSwap()) {
-    gl_surface_->SwapBuffersAsync(base::Bind(&WaitForSwapAck, schedule_frame));
-  } else {
-    gl_surface_->SwapBuffers();
-    ScheduleNextRenderContent();
-  }
-}
-
-// Helper function for the LayoutRenderingAreas(). The |lengths| are the
-// heights(widths) of the rows(columns). It scales the elements in
-// |lengths| proportionally so that the sum of them equal to |total_length|.
-// It also outputs the coordinates of the rows(columns) to |offsets|.
-static void ScaleAndCalculateOffsets(std::vector<int>* lengths,
-                                     std::vector<int>* offsets,
-                                     int total_length) {
-  int sum = std::accumulate(lengths->begin(), lengths->end(), 0);
-  for (size_t i = 0; i < lengths->size(); ++i) {
-    lengths->at(i) = lengths->at(i) * total_length / sum;
-    offsets->at(i) = (i == 0) ? 0 : offsets->at(i - 1) + lengths->at(i - 1);
-  }
-}
-
-void RenderingHelper::LayoutRenderingAreas(
-    const std::vector<gfx::Size>& window_sizes) {
-  // Find the number of colums and rows.
-  // The smallest n * n or n * (n + 1) > number of windows.
-  size_t cols = sqrt(videos_.size() - 1) + 1;
-  size_t rows = (videos_.size() + cols - 1) / cols;
-
-  // Find the widths and heights of the grid.
-  std::vector<int> widths(cols);
-  std::vector<int> heights(rows);
-  std::vector<int> offset_x(cols);
-  std::vector<int> offset_y(rows);
-
-  for (size_t i = 0; i < window_sizes.size(); ++i) {
-    const gfx::Size& size = window_sizes[i];
-    widths[i % cols] = std::max(widths[i % cols], size.width());
-    heights[i / cols] = std::max(heights[i / cols], size.height());
-  }
-
-  ScaleAndCalculateOffsets(&widths, &offset_x, screen_size_.width());
-  ScaleAndCalculateOffsets(&heights, &offset_y, screen_size_.height());
-
-  // Put each render_area_ in the center of each cell.
-  for (size_t i = 0; i < window_sizes.size(); ++i) {
-    const gfx::Size& size = window_sizes[i];
-    float scale =
-        std::min(static_cast<float>(widths[i % cols]) / size.width(),
-                 static_cast<float>(heights[i / cols]) / size.height());
-
-    // Don't scale up the texture.
-    scale = std::min(1.0f, scale);
-
-    size_t w = scale * size.width();
-    size_t h = scale * size.height();
-    size_t x = offset_x[i % cols] + (widths[i % cols] - w) / 2;
-    size_t y = offset_y[i / cols] + (heights[i / cols] - h) / 2;
-    videos_[i].render_area = gfx::Rect(x, y, w, h);
-  }
-}
-
-void RenderingHelper::UpdateVSyncParameters(base::WaitableEvent* done,
-                                            const base::TimeTicks timebase,
-                                            const base::TimeDelta interval) {
-  vsync_timebase_ = timebase;
-  vsync_interval_ = interval;
-
-  if (done)
-    done->Signal();
+  ScheduleNextRenderContent();
 }
 
 void RenderingHelper::DropOneFrameForAllVideos() {
@@ -828,19 +480,25 @@ void RenderingHelper::DropOneFrameForAllVideos() {
 }
 
 void RenderingHelper::ScheduleNextRenderContent() {
+  const auto vsync_interval = base::TimeDelta::FromSeconds(1) / 60;
+
   scheduled_render_time_ += frame_duration_;
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks target;
 
-  if (vsync_interval_.is_zero()) {
+  if (vsync_timebase_.is_null()) {
+    vsync_timebase_ = now;
+  }
+
+  if (vsync_interval.is_zero()) {
     target = std::max(now, scheduled_render_time_);
   } else {
     // Schedules the next RenderContent() at latest VSYNC before the
     // |scheduled_render_time_|.
-    target = std::max(now + vsync_interval_, scheduled_render_time_);
+    target = std::max(now + vsync_interval, scheduled_render_time_);
 
-    int64_t intervals = (target - vsync_timebase_) / vsync_interval_;
-    target = vsync_timebase_ + intervals * vsync_interval_;
+    int64_t intervals = (target - vsync_timebase_) / vsync_interval;
+    target = vsync_timebase_ + intervals * vsync_interval;
   }
 
   // When the rendering falls behind, drops frames.
