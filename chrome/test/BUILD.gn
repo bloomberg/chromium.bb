@@ -2407,6 +2407,7 @@ test("browser_tests") {
     if (safe_browsing_mode == 1) {
       sources += [
         "../browser/safe_browsing/certificate_reporting_service_browsertest.cc",
+        "../browser/safe_browsing/chrome_password_protection_service_browsertest.cc",
         "../browser/safe_browsing/permission_reporter_browsertest.cc",
         "../browser/safe_browsing/safe_browsing_blocking_page_test.cc",
         "../browser/safe_browsing/safe_browsing_navigation_observer_browsertest.cc",

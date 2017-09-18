@@ -271,7 +271,9 @@ TriggerManager* SafeBrowsingService::trigger_manager() const {
 
 PasswordProtectionService* SafeBrowsingService::GetPasswordProtectionService(
     Profile* profile) const {
-  return services_delegate_->GetPasswordProtectionService(profile);
+  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
+    return services_delegate_->GetPasswordProtectionService(profile);
+  return nullptr;
 }
 
 std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
