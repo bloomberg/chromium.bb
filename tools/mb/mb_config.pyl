@@ -159,6 +159,7 @@
       'ClangToTLinuxASan': 'clang_tot_asan_lsan_static_release',
       'ClangToTLinuxASanLibfuzzer': 'release_libfuzzer_asan_clang_tot',
       'ClangToTLinuxLLD': 'clang_tot_lld_release_shared',
+      'ClangToTLinuxThinLTO': 'clang_tot_release_full_symbols_thin_lto_static_use_lld',
       'ClangToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ClangToTMac': 'clang_tot_minimal_symbols_shared_release',
       'ClangToTMac (dbg)': 'clang_tot_shared_debug',
@@ -1185,6 +1186,10 @@
 
     'clang_tot_official_minimal_symbols_static_release_x86': [
       'clang_tot', 'official', 'minimal_symbols', 'static', 'release', 'x86',
+    ],
+
+    'clang_tot_release_full_symbols_thin_lto_static_use_lld': [
+      'clang_tot', 'release', 'full_symbols', 'thin_lto', 'static', 'use_lld',
     ],
 
     'clang_tot_lld_release_shared': [
