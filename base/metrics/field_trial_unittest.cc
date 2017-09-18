@@ -1142,6 +1142,9 @@ TEST(FieldTrialDeathTest, OneTimeRandomizedTrialWithoutFieldTrialList) {
 TEST(FieldTrialListTest, TestCopyFieldTrialStateToFlags) {
   base::FieldTrialList field_trial_list(
       std::make_unique<base::MockEntropyProvider>());
+  test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.Init();
+
   base::FieldTrialList::CreateFieldTrial("Trial1", "Group1");
   base::FilePath test_file_path = base::FilePath(FILE_PATH_LITERAL("Program"));
   base::CommandLine cmd_line = base::CommandLine(test_file_path);
