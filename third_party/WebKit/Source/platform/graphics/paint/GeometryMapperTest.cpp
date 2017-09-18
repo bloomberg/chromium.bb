@@ -54,7 +54,7 @@ INSTANTIATE_TEST_CASE_P(All, GeometryMapperTest, ::testing::ValuesIn(values));
 
 const static float kTestEpsilon = 1e-6;
 
-#define EXPECT_RECT_EQ(expected, actual)                                    \
+#define EXPECT_FLOAT_RECT_NEAR(expected, actual)                            \
   do {                                                                      \
     const FloatRect& actual_rect = actual;                                  \
     EXPECT_TRUE(GeometryTest::ApproximatelyEqual(                           \
@@ -73,11 +73,11 @@ const static float kTestEpsilon = 1e-6;
         << ", expected: " << expected.Height();                             \
   } while (false)
 
-#define EXPECT_CLIP_RECT_EQ(expected, actual)              \
-  do {                                                     \
-    EXPECT_EQ(expected.IsInfinite(), actual.IsInfinite()); \
-    if (!expected.IsInfinite())                            \
-      EXPECT_RECT_EQ(expected.Rect(), actual.Rect());      \
+#define EXPECT_CLIP_RECT_EQ(expected, actual)                 \
+  do {                                                        \
+    EXPECT_EQ(expected.IsInfinite(), actual.IsInfinite());    \
+    if (!expected.IsInfinite())                               \
+      EXPECT_FLOAT_RECT_NEAR(expected.Rect(), actual.Rect()); \
   } while (false)
 
 #define CHECK_MAPPINGS(inputRect, expectedVisualRect, expectedTransformedRect, \
@@ -88,7 +88,7 @@ const static float kTestEpsilon = 1e-6;
     FloatClipRect float_rect(inputRect);                                       \
     GeometryMapper::LocalToAncestorVisualRect(                                 \
         localPropertyTreeState, ancestorPropertyTreeState, float_rect);        \
-    EXPECT_RECT_EQ(expectedVisualRect, float_rect.Rect());                     \
+    EXPECT_FLOAT_RECT_NEAR(expectedVisualRect, float_rect.Rect());             \
     EXPECT_EQ(has_radius, float_rect.HasRadius());                             \
     FloatClipRect float_clip_rect;                                             \
     float_clip_rect = GeometryMapper::LocalToAncestorClipRect(                 \
@@ -98,18 +98,18 @@ const static float kTestEpsilon = 1e-6;
     float_rect.SetRect(inputRect);                                             \
     GeometryMapper::LocalToAncestorVisualRect(                                 \
         localPropertyTreeState, ancestorPropertyTreeState, float_rect);        \
-    EXPECT_RECT_EQ(expectedVisualRect, float_rect.Rect());                     \
+    EXPECT_FLOAT_RECT_NEAR(expectedVisualRect, float_rect.Rect());             \
     EXPECT_EQ(has_radius, float_rect.HasRadius());                             \
     FloatRect test_mapped_rect = inputRect;                                    \
     GeometryMapper::SourceToDestinationRect(                                   \
         localPropertyTreeState.Transform(),                                    \
         ancestorPropertyTreeState.Transform(), test_mapped_rect);              \
-    EXPECT_RECT_EQ(expectedTransformedRect, test_mapped_rect);                 \
+    EXPECT_FLOAT_RECT_NEAR(expectedTransformedRect, test_mapped_rect);         \
     test_mapped_rect = inputRect;                                              \
     GeometryMapper::SourceToDestinationRect(                                   \
         localPropertyTreeState.Transform(),                                    \
         ancestorPropertyTreeState.Transform(), test_mapped_rect);              \
-    EXPECT_RECT_EQ(expectedTransformedRect, test_mapped_rect);                 \
+    EXPECT_FLOAT_RECT_NEAR(expectedTransformedRect, test_mapped_rect);         \
     if (ancestorPropertyTreeState.Transform() !=                               \
         localPropertyTreeState.Transform()) {                                  \
       const TransformationMatrix& transform_for_testing =                      \
@@ -173,7 +173,7 @@ TEST_P(GeometryMapperTest, TranslationTransform) {
 
   GeometryMapper::SourceToDestinationRect(TransformPaintPropertyNode::Root(),
                                           local_state.Transform(), output);
-  EXPECT_RECT_EQ(input, output);
+  EXPECT_FLOAT_RECT_NEAR(input, output);
 }
 
 TEST_P(GeometryMapperTest, RotationAndScaleTransform) {
@@ -613,22 +613,22 @@ TEST_P(GeometryMapperTest, SiblingTransforms) {
   FloatClipRect result_clip(input);
   GeometryMapper::LocalToAncestorVisualRect(transform1_state, transform2_state,
                                             result_clip);
-  EXPECT_RECT_EQ(FloatRect(-100, 0, 100, 100), result_clip.Rect());
+  EXPECT_FLOAT_RECT_NEAR(FloatRect(-100, 0, 100, 100), result_clip.Rect());
 
   FloatRect result = input;
   GeometryMapper::SourceToDestinationRect(transform1.Get(), transform2.Get(),
                                           result);
-  EXPECT_RECT_EQ(FloatRect(-100, 0, 100, 100), result);
+  EXPECT_FLOAT_RECT_NEAR(FloatRect(-100, 0, 100, 100), result);
 
   result_clip = FloatClipRect(input);
   GeometryMapper::LocalToAncestorVisualRect(transform2_state, transform1_state,
                                             result_clip);
-  EXPECT_RECT_EQ(FloatRect(0, -100, 100, 100), result_clip.Rect());
+  EXPECT_FLOAT_RECT_NEAR(FloatRect(0, -100, 100, 100), result_clip.Rect());
 
   result = input;
   GeometryMapper::SourceToDestinationRect(transform2.Get(), transform1.Get(),
                                           result);
-  EXPECT_RECT_EQ(FloatRect(0, -100, 100, 100), result);
+  EXPECT_FLOAT_RECT_NEAR(FloatRect(0, -100, 100, 100), result);
 }
 
 TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
@@ -674,7 +674,7 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   FloatClipRect float_clip_rect(input);
   GeometryMapper::LocalToAncestorVisualRect(transform2_and_clip_state,
                                             transform1_state, float_clip_rect);
-  EXPECT_RECT_EQ(FloatRect(20, -40, 40, 30), float_clip_rect.Rect());
+  EXPECT_FLOAT_RECT_NEAR(FloatRect(20, -40, 40, 30), float_clip_rect.Rect());
 }
 
 TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
