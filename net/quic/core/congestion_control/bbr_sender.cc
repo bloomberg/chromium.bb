@@ -123,7 +123,7 @@ bool BbrSender::InSlowStart() const {
   return mode_ == STARTUP;
 }
 
-bool BbrSender::OnPacketSent(QuicTime sent_time,
+void BbrSender::OnPacketSent(QuicTime sent_time,
                              QuicByteCount bytes_in_flight,
                              QuicPacketNumber packet_number,
                              QuicByteCount bytes,
@@ -140,7 +140,6 @@ bool BbrSender::OnPacketSent(QuicTime sent_time,
 
   sampler_->OnPacketSent(sent_time, packet_number, bytes, bytes_in_flight,
                          is_retransmittable);
-  return is_retransmittable == HAS_RETRANSMITTABLE_DATA;
 }
 
 QuicTime::Delta BbrSender::TimeUntilSend(QuicTime /* now */,

@@ -548,18 +548,6 @@ TEST_F(TcpCubicSenderBytesTest, MultipleLossesInOneWindow) {
   EXPECT_GT(post_loss_window, sender_->GetCongestionWindow());
 }
 
-TEST_F(TcpCubicSenderBytesTest, DontTrackAckPackets) {
-  // Send a packet with no retransmittable data, and ensure it's not tracked.
-  EXPECT_FALSE(sender_->OnPacketSent(clock_.Now(), bytes_in_flight_,
-                                     packet_number_++, kDefaultTCPMSS,
-                                     NO_RETRANSMITTABLE_DATA));
-
-  // Send a data packet with retransmittable data, and ensure it is tracked.
-  EXPECT_TRUE(sender_->OnPacketSent(clock_.Now(), bytes_in_flight_,
-                                    packet_number_++, kDefaultTCPMSS,
-                                    HAS_RETRANSMITTABLE_DATA));
-}
-
 TEST_F(TcpCubicSenderBytesTest, ConfigureMaxInitialWindow) {
   QuicConfig config;
 

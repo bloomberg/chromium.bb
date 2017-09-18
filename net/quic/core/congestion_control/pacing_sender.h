@@ -46,11 +46,11 @@ class QUIC_EXPORT_PRIVATE PacingSender {
       const SendAlgorithmInterface::AckedPacketVector& acked_packets,
       const SendAlgorithmInterface::CongestionVector& lost_packets);
 
-  bool OnPacketSent(QuicTime sent_time,
+  void OnPacketSent(QuicTime sent_time,
                     QuicByteCount bytes_in_flight,
                     QuicPacketNumber packet_number,
                     QuicByteCount bytes,
-                    HasRetransmittableData is_retransmittable);
+                    HasRetransmittableData has_retransmittable_data);
 
   QuicTime::Delta TimeUntilSend(QuicTime now, QuicByteCount bytes_in_flight);
 

@@ -116,7 +116,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_handle_duplicate_trailers, true)
 
 // If true, disables support for the packets-based QUIC congestion control
 // algorithms.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_packets_based_cc, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_packets_based_cc, true)
 
 // When enabled, ack frame uses a deque internally instead of a set.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_frames_deque2, false)
@@ -171,16 +171,9 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_sanitize_framer_addrange_input,
           false)
 
-// If true, change QUIC connection to start peer migration only when peer
-// address is changed on server side. For peer address change on client side,
-// update the peer ip address only.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_disable_peer_migration_on_client,
-          true)
-
 // If true, QUIC v40 is enabled which includes changes to RST_STREAM, ACK
 // and STREAM frames match IETF format.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_40, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_40, true)
 
 // If true, QUIC can take ownership of data provided in a reference counted
 // memory to avoid data copy.

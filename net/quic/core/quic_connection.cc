@@ -644,10 +644,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   // new address.
   if (header.packet_number > received_packet_manager_.GetLargestObserved() &&
       peer_migration_type != NO_CHANGE) {
-    if (FLAGS_quic_reloadable_flag_quic_disable_peer_migration_on_client &&
-        perspective_ == Perspective::IS_CLIENT) {
-      QUIC_FLAG_COUNT_N(
-          quic_reloadable_flag_quic_disable_peer_migration_on_client, 1, 2);
+    if (perspective_ == Perspective::IS_CLIENT) {
       QUIC_DLOG(INFO) << ENDPOINT << "Peer's ip:port changed from "
                       << peer_address_.ToString() << " to "
                       << last_packet_source_address_.ToString();
@@ -1253,13 +1250,7 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
   if (active_peer_migration_type_ != NO_CHANGE &&
       sent_packet_manager_.GetLargestObserved() >
           highest_packet_sent_before_peer_migration_) {
-    if (FLAGS_quic_reloadable_flag_quic_disable_peer_migration_on_client) {
-      QUIC_FLAG_COUNT_N(
-          quic_reloadable_flag_quic_disable_peer_migration_on_client, 2, 2);
-      if (perspective_ == Perspective::IS_SERVER) {
-        OnPeerMigrationValidated();
-      }
-    } else {
+    if (perspective_ == Perspective::IS_SERVER) {
       OnPeerMigrationValidated();
     }
   }

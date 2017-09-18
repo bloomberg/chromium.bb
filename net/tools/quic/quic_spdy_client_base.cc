@@ -151,8 +151,9 @@ QuicSpdyClientStream* QuicSpdyClientBase::CreateClientStream() {
   }
 
   auto* stream = static_cast<QuicSpdyClientStream*>(
-      client_session()->CreateOutgoingDynamicStream(kDefaultPriority));
+      client_session()->CreateOutgoingDynamicStream());
   if (stream) {
+    stream->SetPriority(kDefaultPriority);
     stream->set_visitor(this);
   }
   return stream;

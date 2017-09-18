@@ -90,14 +90,13 @@ class TestServerSession : public QuicServerSessionBase {
     return stream;
   }
 
-  QuicSpdyStream* CreateOutgoingDynamicStream(SpdyPriority priority) override {
+  QuicSpdyStream* CreateOutgoingDynamicStream() override {
     if (!ShouldCreateOutgoingDynamicStream()) {
       return nullptr;
     }
 
     QuicSpdyStream* stream = new QuicSimpleServerStream(
         GetNextOutgoingStreamId(), this, response_cache_);
-    stream->SetPriority(priority);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
   }

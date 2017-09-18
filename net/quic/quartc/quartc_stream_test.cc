@@ -72,9 +72,7 @@ class MockQuicSession : public QuicSession {
     return nullptr;
   }
 
-  QuartcStream* CreateOutgoingDynamicStream(SpdyPriority priority) override {
-    return nullptr;
-  }
+  QuartcStream* CreateOutgoingDynamicStream() override { return nullptr; }
 
   const QuicCryptoStream* GetCryptoStream() const override { return nullptr; }
   QuicCryptoStream* GetMutableCryptoStream() override { return nullptr; }

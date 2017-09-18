@@ -49,18 +49,17 @@ void PacingSender::OnCongestionEvent(
                              acked_packets, lost_packets);
 }
 
-bool PacingSender::OnPacketSent(
+void PacingSender::OnPacketSent(
     QuicTime sent_time,
     QuicByteCount bytes_in_flight,
     QuicPacketNumber packet_number,
     QuicByteCount bytes,
     HasRetransmittableData has_retransmittable_data) {
   DCHECK(sender_ != nullptr);
-  const bool in_flight =
-      sender_->OnPacketSent(sent_time, bytes_in_flight, packet_number, bytes,
-                            has_retransmittable_data);
+  sender_->OnPacketSent(sent_time, bytes_in_flight, packet_number, bytes,
+                        has_retransmittable_data);
   if (has_retransmittable_data != HAS_RETRANSMITTABLE_DATA) {
-    return in_flight;
+    return;
   }
   // If in recovery, the connection is not coming out of quiescence.
   if (bytes_in_flight == 0 && !sender_->InRecovery()) {
@@ -76,7 +75,7 @@ bool PacingSender::OnPacketSent(
     was_last_send_delayed_ = false;
     last_delayed_packet_sent_time_ = QuicTime::Zero();
     ideal_next_packet_send_time_ = QuicTime::Zero();
-    return in_flight;
+    return;
   }
   // The next packet should be sent as soon as the current packet has been
   // transferred.  PacingRate is based on bytes in flight including this packet.
@@ -106,7 +105,6 @@ bool PacingSender::OnPacketSent(
     ideal_next_packet_send_time_ =
         std::max(ideal_next_packet_send_time_ + delay, sent_time + delay);
   }
-  return in_flight;
 }
 
 QuicTime::Delta PacingSender::TimeUntilSend(QuicTime now,

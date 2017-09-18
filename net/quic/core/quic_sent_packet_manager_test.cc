@@ -183,8 +183,7 @@ class QuicSentPacketManagerTest : public QuicTest {
 
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), new_packet_number,
-                             kDefaultLength, HAS_RETRANSMITTABLE_DATA))
-        .WillOnce(Return(true));
+                             kDefaultLength, HAS_RETRANSMITTABLE_DATA));
     SerializedPacket packet(CreatePacket(new_packet_number, false));
     manager_.OnPacketSent(&packet, old_packet_number, clock_.Now(),
                           transmission_type, HAS_RETRANSMITTABLE_DATA);
@@ -209,9 +208,7 @@ class QuicSentPacketManagerTest : public QuicTest {
 
   void SendDataPacket(QuicPacketNumber packet_number) {
     EXPECT_CALL(*send_algorithm_,
-                OnPacketSent(_, BytesInFlight(), packet_number, _, _))
-        .Times(1)
-        .WillOnce(Return(true));
+                OnPacketSent(_, BytesInFlight(), packet_number, _, _));
     SerializedPacket packet(CreateDataPacket(packet_number));
     manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);
@@ -220,9 +217,7 @@ class QuicSentPacketManagerTest : public QuicTest {
   void SendCryptoPacket(QuicPacketNumber packet_number) {
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), packet_number, kDefaultLength,
-                             HAS_RETRANSMITTABLE_DATA))
-        .Times(1)
-        .WillOnce(Return(true));
+                             HAS_RETRANSMITTABLE_DATA));
     SerializedPacket packet(CreateDataPacket(packet_number));
     packet.retransmittable_frames.push_back(
         QuicFrame(new QuicStreamFrame(1, false, 0, QuicStringPiece())));
@@ -235,9 +230,7 @@ class QuicSentPacketManagerTest : public QuicTest {
                      QuicPacketNumber largest_acked) {
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), packet_number, kDefaultLength,
-                             NO_RETRANSMITTABLE_DATA))
-        .Times(1)
-        .WillOnce(Return(false));
+                             NO_RETRANSMITTABLE_DATA));
     SerializedPacket packet(CreatePacket(packet_number, false));
     packet.largest_acked = largest_acked;
     manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
@@ -249,9 +242,7 @@ class QuicSentPacketManagerTest : public QuicTest {
     EXPECT_TRUE(manager_.HasPendingRetransmissions());
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, _, retransmission_packet_number, kDefaultLength,
-                             HAS_RETRANSMITTABLE_DATA))
-        .Times(1)
-        .WillOnce(Return(true));
+                             HAS_RETRANSMITTABLE_DATA));
     const QuicPendingRetransmission pending =
         manager_.NextPendingRetransmission();
     SerializedPacket packet(CreatePacket(retransmission_packet_number, false));
@@ -1671,9 +1662,7 @@ TEST_F(QuicSentPacketManagerTest, ConnectionMigrationPortChange) {
 }
 
 TEST_F(QuicSentPacketManagerTest, PathMtuIncreased) {
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), 1, _, _))
-      .Times(1)
-      .WillOnce(Return(true));
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, BytesInFlight(), 1, _, _));
   SerializedPacket packet(1, PACKET_6BYTE_PACKET_NUMBER, nullptr,
                           kDefaultLength + 100, false, false);
   manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,

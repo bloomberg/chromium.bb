@@ -518,13 +518,13 @@ bool QuicSentPacketManager::OnPacketSent(
     --pending_timer_transmission_count_;
   }
 
-  bool in_flight;
+  bool in_flight = has_retransmittable_data == HAS_RETRANSMITTABLE_DATA;
   if (using_pacing_) {
-    in_flight = pacing_sender_.OnPacketSent(
+    pacing_sender_.OnPacketSent(
         sent_time, unacked_packets_.bytes_in_flight(), packet_number,
         serialized_packet->encrypted_length, has_retransmittable_data);
   } else {
-    in_flight = send_algorithm_->OnPacketSent(
+    send_algorithm_->OnPacketSent(
         sent_time, unacked_packets_.bytes_in_flight(), packet_number,
         serialized_packet->encrypted_length, has_retransmittable_data);
   }

@@ -470,7 +470,7 @@ class MockQuicSession : public QuicSession {
                     const std::string& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicStream*(QuicStreamId id));
-  MOCK_METHOD1(CreateOutgoingDynamicStream, QuicStream*(SpdyPriority priority));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicStream*());
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream2, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream2, bool());
   MOCK_METHOD6(
@@ -547,8 +547,7 @@ class MockQuicSpdySession : public QuicSpdySession {
                     const std::string& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD1(CreateOutgoingDynamicStream,
-               QuicSpdyStream*(SpdyPriority priority));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
   MOCK_METHOD6(
@@ -629,8 +628,7 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
   ~TestQuicSpdyServerSession() override;
 
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD1(CreateOutgoingDynamicStream,
-               QuicSpdyStream*(SpdyPriority priority));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache) override;
@@ -688,8 +686,7 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSessionBase {
 
   // TestQuicSpdyClientSession
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD1(CreateOutgoingDynamicStream,
-               QuicSpdyStream*(SpdyPriority priority));
+  MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
 
@@ -741,7 +738,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                     const AckedPacketVector& acked_packets,
                     const CongestionVector& lost_packets));
   MOCK_METHOD5(OnPacketSent,
-               bool(QuicTime,
+               void(QuicTime,
                     QuicByteCount,
                     QuicPacketNumber,
                     QuicByteCount,

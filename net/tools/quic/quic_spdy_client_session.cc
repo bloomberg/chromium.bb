@@ -60,13 +60,11 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingDynamicStream() {
   return true;
 }
 
-QuicSpdyClientStream* QuicSpdyClientSession::CreateOutgoingDynamicStream(
-    SpdyPriority priority) {
+QuicSpdyClientStream* QuicSpdyClientSession::CreateOutgoingDynamicStream() {
   if (!ShouldCreateOutgoingDynamicStream()) {
     return nullptr;
   }
   std::unique_ptr<QuicSpdyClientStream> stream = CreateClientStream();
-  stream->SetPriority(priority);
   QuicSpdyClientStream* stream_ptr = stream.get();
   ActivateStream(std::move(stream));
   return stream_ptr;

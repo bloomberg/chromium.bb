@@ -111,7 +111,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
                          QuicTime event_time,
                          const AckedPacketVector& acked_packets,
                          const CongestionVector& lost_packets) override;
-  bool OnPacketSent(QuicTime sent_time,
+  void OnPacketSent(QuicTime sent_time,
                     QuicByteCount bytes_in_flight,
                     QuicPacketNumber packet_number,
                     QuicByteCount bytes,

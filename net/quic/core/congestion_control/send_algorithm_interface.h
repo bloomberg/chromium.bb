@@ -83,12 +83,10 @@ class QUIC_EXPORT_PRIVATE SendAlgorithmInterface {
                                  const CongestionVector& lost_packets) = 0;
 
   // Inform that we sent |bytes| to the wire, and if the packet is
-  // retransmittable. Returns true if the packet should be tracked by the
-  // congestion manager and included in bytes_in_flight, false otherwise.
-  // |bytes_in_flight| is the number of bytes in flight before the packet was
-  // sent.
+  // retransmittable.  |bytes_in_flight| is the number of bytes in flight before
+  // the packet was sent.
   // Note: this function must be called for every packet sent to the wire.
-  virtual bool OnPacketSent(QuicTime sent_time,
+  virtual void OnPacketSent(QuicTime sent_time,
                             QuicByteCount bytes_in_flight,
                             QuicPacketNumber packet_number,
                             QuicByteCount bytes,

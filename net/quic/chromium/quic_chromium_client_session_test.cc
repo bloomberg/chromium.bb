@@ -412,7 +412,7 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
   // can not proceed immediately.
   const size_t kMaxOpenStreams = session_->max_open_outgoing_streams();
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
-    session_->CreateOutgoingDynamicStream(kDefaultPriority);
+    session_->CreateOutgoingDynamicStream();
   }
   EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
 
@@ -451,7 +451,7 @@ TEST_P(QuicChromiumClientSessionTest, ClosedWithAsyncStreamRequest) {
   // can not proceed immediately.
   const size_t kMaxOpenStreams = session_->max_open_outgoing_streams();
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
-    session_->CreateOutgoingDynamicStream(kDefaultPriority);
+    session_->CreateOutgoingDynamicStream();
   }
   EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
 
@@ -500,7 +500,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
   // can not proceed immediately.
   const size_t kMaxOpenStreams = session_->max_open_outgoing_streams();
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
-    session_->CreateOutgoingDynamicStream(kDefaultPriority);
+    session_->CreateOutgoingDynamicStream();
   }
   EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
 
@@ -591,7 +591,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseWithPendingStreamRequest) {
   // can not proceed immediately.
   const size_t kMaxOpenStreams = session_->max_open_outgoing_streams();
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
-    session_->CreateOutgoingDynamicStream(kDefaultPriority);
+    session_->CreateOutgoingDynamicStream();
   }
   EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
 
@@ -632,12 +632,11 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
 
   std::vector<QuicChromiumClientStream*> streams;
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
-    QuicChromiumClientStream* stream =
-        session_->CreateOutgoingDynamicStream(kDefaultPriority);
+    QuicChromiumClientStream* stream = session_->CreateOutgoingDynamicStream();
     EXPECT_TRUE(stream);
     streams.push_back(stream);
   }
-  EXPECT_FALSE(session_->CreateOutgoingDynamicStream(kDefaultPriority));
+  EXPECT_FALSE(session_->CreateOutgoingDynamicStream());
 
   EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
 
@@ -645,11 +644,11 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   QuicStreamId stream_id = streams[0]->id();
   session_->CloseStream(stream_id);
 
-  EXPECT_FALSE(session_->CreateOutgoingDynamicStream(kDefaultPriority));
+  EXPECT_FALSE(session_->CreateOutgoingDynamicStream());
   QuicRstStreamFrame rst1(stream_id, QUIC_STREAM_NO_ERROR, 0);
   session_->OnRstStream(rst1);
   EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumOpenOutgoingStreams());
-  EXPECT_TRUE(session_->CreateOutgoingDynamicStream(kDefaultPriority));
+  EXPECT_TRUE(session_->CreateOutgoingDynamicStream());
 }
 
 TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutNoResponse) {
@@ -674,8 +673,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutNoResponse) {
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
 
-  QuicChromiumClientStream* stream =
-      session_->CreateOutgoingDynamicStream(kDefaultPriority);
+  QuicChromiumClientStream* stream = session_->CreateOutgoingDynamicStream();
   EXPECT_TRUE(stream);
 
   SpdyHeaderBlock promise_headers;
@@ -723,8 +721,7 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
 
-  QuicChromiumClientStream* stream =
-      session_->CreateOutgoingDynamicStream(kDefaultPriority);
+  QuicChromiumClientStream* stream = session_->CreateOutgoingDynamicStream();
   EXPECT_TRUE(stream);
 
   SpdyHeaderBlock promise_headers;
@@ -777,8 +774,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
 
-  QuicChromiumClientStream* stream =
-      session_->CreateOutgoingDynamicStream(kDefaultPriority);
+  QuicChromiumClientStream* stream = session_->CreateOutgoingDynamicStream();
   EXPECT_TRUE(stream);
 
   SpdyHeaderBlock promise_headers;
@@ -831,8 +827,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
 
-  QuicChromiumClientStream* stream =
-      session_->CreateOutgoingDynamicStream(kDefaultPriority);
+  QuicChromiumClientStream* stream = session_->CreateOutgoingDynamicStream();
   EXPECT_TRUE(stream);
 
   SpdyHeaderBlock promise_headers;
@@ -881,8 +876,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
   CompleteCryptoHandshake();
   session_->OnProofVerifyDetailsAvailable(details);
 
-  QuicChromiumClientStream* stream =
-      session_->CreateOutgoingDynamicStream(kDefaultPriority);
+  QuicChromiumClientStream* stream = session_->CreateOutgoingDynamicStream();
   EXPECT_TRUE(stream);
 
   SpdyHeaderBlock promise_headers;
@@ -916,34 +910,6 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
                     session_.get()));
 }
 
-TEST_P(QuicChromiumClientSessionTest, Priority) {
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> settings_packet(
-      client_maker_.MakeInitialSettingsPacket(1, nullptr));
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      2, true, GetNthClientInitiatedStreamId(0), QUIC_RST_ACKNOWLEDGEMENT));
-  MockWrite writes[] = {
-      MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
-      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
-  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
-                                             arraysize(writes)));
-
-  Initialize();
-  CompleteCryptoHandshake();
-
-  for (SpdyPriority priority : {kV3HighestPriority, kV3LowestPriority}) {
-    QuicChromiumClientStream* stream =
-        session_->CreateOutgoingDynamicStream(priority);
-    EXPECT_EQ(kV3HighestPriority, stream->priority());
-
-    SpdyHeaderBlock headers;
-    stream->WriteHeaders(std::move(headers), /*fin*/ true,
-                         /*ack_listener*/ nullptr);
-
-    EXPECT_EQ(priority, stream->priority());
-  }
-}
-
 TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
@@ -962,8 +928,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
 
   std::vector<QuicChromiumClientStream*> streams;
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
-    QuicChromiumClientStream* stream =
-        session_->CreateOutgoingDynamicStream(kDefaultPriority);
+    QuicChromiumClientStream* stream = session_->CreateOutgoingDynamicStream();
     EXPECT_TRUE(stream);
     streams.push_back(stream);
   }
@@ -1000,7 +965,7 @@ TEST_P(QuicChromiumClientSessionTest, GoAwayReceived) {
   // streams.
   session_->connection()->OnGoAwayFrame(
       QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
-  EXPECT_EQ(nullptr, session_->CreateOutgoingDynamicStream(kDefaultPriority));
+  EXPECT_EQ(nullptr, session_->CreateOutgoingDynamicStream());
 }
 
 TEST_P(QuicChromiumClientSessionTest, CanPool) {
@@ -1181,8 +1146,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   base::RunLoop().RunUntilIdle();
 
   // Write data to session.
-  QuicChromiumClientStream* stream =
-      session_->CreateOutgoingDynamicStream(kDefaultPriority);
+  QuicChromiumClientStream* stream = session_->CreateOutgoingDynamicStream();
   struct iovec iov[1];
   iov[0].iov_base = data;
   iov[0].iov_len = 4;
