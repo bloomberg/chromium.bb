@@ -94,7 +94,7 @@ try {
   somethingThatThrowsIOException();
   somethingThatThrowsParseException();
 } catch (IOException | ParseException e) {
-  Log.e(TAG, "Failed to do something with exception: ", e)
+  Log.e(TAG, "Failed to do something with exception: ", e);
 }
 ```
 
@@ -111,16 +111,15 @@ where C++ DCHECK()s make sense. For multi-statement asserts, use
 Example assert:
 
 ```java
-assert someCallWithSideEffects() : "assert description";
+assert someCallWithoutSideEffects() : "assert description";
 ```
 
 Example use of `DCHECK_IS_ON`:
 
 ```java
 if (org.chromium.base.BuildConfig.DCHECK_IS_ON) {
-   if (!someCallWithSideEffects()) {
-     throw new AssertionError("assert description");
-   }
+  // Any code here will be stripped in Release by ProGuard.
+  ...
 }
 ```
 
