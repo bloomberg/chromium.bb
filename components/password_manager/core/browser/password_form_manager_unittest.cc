@@ -54,6 +54,7 @@ using autofill::PossibleUsernamePair;
 using base::ASCIIToUTF16;
 using ::testing::_;
 using ::testing::ElementsAre;
+using ::testing::InSequence;
 using ::testing::IsEmpty;
 using ::testing::Mock;
 using ::testing::NiceMock;
@@ -3356,52 +3357,99 @@ TEST_F(PasswordFormManagerTest, DoesManageDifferentSignonRealmSameDrivers) {
 }
 
 TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
-  // Observed and saved forms have the same password, but different usernames.
-  PasswordForm new_login(*observed_form());
-  new_login.username_value = saved_match()->other_possible_usernames[0].first;
-  new_login.password_value = saved_match()->password_value;
+  for (bool is_form_with_2_fields : {false, true}) {
+    SCOPED_TRACE(testing::Message()
+                 << "is_form_with_2_fields=" << is_form_with_2_fields);
+    // Observed and saved forms have the same password, but different usernames.
+    PasswordForm new_login(*observed_form());
+    autofill::FormFieldData field;
+    if (!is_form_with_2_fields) {
+      field.label = ASCIIToUTF16("Full name");
+      field.name = ASCIIToUTF16("full_name");
+      field.form_control_type = "text";
+      new_login.form_data.fields.push_back(field);
+      new_login.does_look_like_signup_form = true;
+    }
+    field.label = ASCIIToUTF16("Email");
+    field.name = ASCIIToUTF16("observed-username-field");
+    field.form_control_type = "text";
+    new_login.form_data.fields.push_back(field);
 
-  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
-  form_manager()->ProvisionallySave(
-      new_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-  // No match found (because usernames are different).
-  EXPECT_TRUE(form_manager()->IsNewLogin());
+    field.label = ASCIIToUTF16("Password");
+    field.name = ASCIIToUTF16("Passwd");
+    field.form_control_type = "password";
+    new_login.form_data.fields.push_back(field);
 
-  // Checks the username correction vote is saved.
-  PasswordForm expected_username_vote(*saved_match());
-  expected_username_vote.username_element =
-      saved_match()->other_possible_usernames[0].second;
+    new_login.username_value = saved_match()->other_possible_usernames[0].first;
+    new_login.password_value = saved_match()->password_value;
 
-  // Checks the username vote type is saved.
-  autofill::AutofillUploadContents::Field::UsernameVoteType
-      expected_username_vote_type =
-          autofill::AutofillUploadContents::Field::USERNAME_OVERWRITTEN;
+    PasswordFormManager form_manager(
+        password_manager(), client(), client()->driver(), new_login,
+        base::MakeUnique<NiceMock<MockFormSaver>>(), fake_form_fetcher());
+    form_manager.Init(nullptr);
 
-  // Checks the upload.
-  autofill::ServerFieldTypeSet expected_available_field_types;
-  expected_available_field_types.insert(autofill::USERNAME);
-  expected_available_field_types.insert(autofill::ACCOUNT_CREATION_PASSWORD);
+    fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+    form_manager.ProvisionallySave(
+        new_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    // No match found (because usernames are different).
+    EXPECT_TRUE(form_manager.IsNewLogin());
 
-  FormStructure expected_upload(expected_username_vote.form_data);
+    // Checks the username correction vote is saved.
+    PasswordForm expected_username_vote(*saved_match());
+    expected_username_vote.username_element =
+        saved_match()->other_possible_usernames[0].second;
 
-  std::string expected_login_signature =
-      FormStructure(form_manager()->observed_form().form_data)
-          .FormSignatureAsStr();
+    // Checks the username vote type is saved.
+    autofill::AutofillUploadContents::Field::UsernameVoteType
+        expected_username_vote_type =
+            autofill::AutofillUploadContents::Field::USERNAME_OVERWRITTEN;
 
-  std::map<base::string16, autofill::ServerFieldType> expected_types;
-  expected_types[expected_username_vote.username_element] = autofill::USERNAME;
-  expected_types[expected_username_vote.password_element] =
-      autofill::ACCOUNT_CREATION_PASSWORD;
-  expected_types[ASCIIToUTF16("Email")] = autofill::UNKNOWN_TYPE;
+    // Checks the upload.
+    autofill::ServerFieldTypeSet expected_available_field_types;
+    expected_available_field_types.insert(autofill::USERNAME);
+    expected_available_field_types.insert(autofill::ACCOUNT_CREATION_PASSWORD);
 
-  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
-              StartUploadRequest(
-                  CheckUploadedAutofillTypesAndSignature(
-                      expected_upload.FormSignatureAsStr(), expected_types,
-                      false, expected_username_vote_type),
-                  false, expected_available_field_types,
-                  expected_login_signature, true));
-  form_manager()->Save();
+    FormStructure expected_upload(expected_username_vote.form_data);
+
+    std::string expected_login_signature =
+        FormStructure(form_manager.observed_form().form_data)
+            .FormSignatureAsStr();
+
+    std::map<base::string16, autofill::ServerFieldType> expected_types;
+    expected_types[expected_username_vote.username_element] =
+        autofill::USERNAME;
+    expected_types[expected_username_vote.password_element] =
+        autofill::ACCOUNT_CREATION_PASSWORD;
+    expected_types[ASCIIToUTF16("Email")] = autofill::UNKNOWN_TYPE;
+
+    InSequence s;
+    std::unique_ptr<FormStructure> signin_vote_form_structure;
+    if (is_form_with_2_fields) {
+      // Make signin vote upload synchronous and free |FormStructure| passed for
+      // upload.
+      auto* mock_autofill_manager =
+          client()->mock_driver()->mock_autofill_manager();
+      EXPECT_CALL(*mock_autofill_manager, StartUploadProcessPtr(_, _, true))
+          .WillOnce(WithArg<0>(SaveToUniquePtr(&signin_vote_form_structure)));
+    } else {
+      // The observed form has 2 text fields and 1 password field,
+      // PROBABLY_ACCOUNT_CREATION_PASSWORD should be uploaded.
+      autofill::ServerFieldTypeSet field_types;
+      field_types.insert(autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD);
+      EXPECT_CALL(
+          *client()->mock_driver()->mock_autofill_download_manager(),
+          StartUploadRequest(_, false, field_types, std::string(), true));
+    }
+
+    EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+                StartUploadRequest(
+                    CheckUploadedAutofillTypesAndSignature(
+                        expected_upload.FormSignatureAsStr(), expected_types,
+                        false, expected_username_vote_type),
+                    false, expected_available_field_types,
+                    expected_login_signature, true));
+    form_manager.Save();
+  }
 }
 
 // Test that ResetStoredMatches removes references to previously fetched store
