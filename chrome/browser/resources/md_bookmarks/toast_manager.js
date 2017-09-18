@@ -17,21 +17,8 @@ cr.define('bookmarks', function() {
       },
 
       /** @private */
-      open_: {
-        type: Boolean,
-        observer: 'openChanged_',
-        value: false,
-      },
-
-      /** @private */
       showUndo_: Boolean,
     },
-
-    /** @private {bookmarks.TimerProxy} */
-    timerProxy_: new bookmarks.TimerProxy(),
-
-    /** @private {number|null} */
-    hideTimeoutId_: null,
 
     /** @override */
     attached: function() {
@@ -54,6 +41,7 @@ cr.define('bookmarks', function() {
     show: function(label, showUndo) {
       this.$.content.textContent = label;
       this.showInternal_(showUndo);
+      this.$.toast.show();
     },
 
     /**
@@ -84,37 +72,19 @@ cr.define('bookmarks', function() {
      * @private
      */
     showInternal_: function(showUndo) {
-      this.open_ = true;
       this.showUndo_ = showUndo;
       this.fire('iron-announce', {text: this.$.content.textContent});
-
-      if (!this.duration)
-        return;
-
-      if (this.hideTimeoutId_ != null)
-        this.timerProxy_.clearTimeout(this.hideTimeoutId_);
-
-      this.hideTimeoutId_ = this.timerProxy_.setTimeout(() => {
-        this.hide();
-        this.hideTimeoutId_ = null;
-      }, this.duration);
+      this.$.toast.show();
     },
 
     hide: function() {
-      this.open_ = false;
-      // Hide the undo button to prevent it from being accessed with tab.
-      this.showUndo_ = false;
+      this.$.toast.hide();
     },
 
     /** @private */
     onUndoTap_: function() {
       // Will hide the toast.
       this.fire('command-undo');
-    },
-
-    /** @private */
-    openChanged_: function() {
-      this.$.toast.setAttribute('aria-hidden', String(!this.open_));
     },
   });
 

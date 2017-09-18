@@ -1,0 +1,39 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<dom-module id="cr-toast">
+  <template>
+    <style>
+      :host {
+        align-items: var(--cr-toast-align-items, center);
+        background-color: var(--cr-toast-background-color, #323232);
+        border-radius: var(--cr-toast-border-radius, 4px);
+        bottom: var(--cr-toast-bottom, 0);
+        box-shadow: var(--cr-toast-box-shadow, 0 2px 4px 0 rgba(0, 0, 0, 0.28));
+        box-sizing: var(--cr-toast-box-sizing, border-box);
+        display: var(--cr-toast-display, flex);
+        margin: var(--cr-toast-margin, 24px);
+        max-width: var(--cr-toast-max-width, 568px);
+        min-height: var(--cr-toast-min-height, 52px);
+        min-width: var(--cr-toast-min-width, 288px);
+        opacity: var(--cr-toast-opacity-closed, 0);
+        padding: var(--cr-toast-padding, 0 24px);
+        position: var(--cr-toast-position, fixed);
+        transform: var(--cr-toast-transform-closed, translateY(100px));
+        transition:
+          opacity var(--cr-toast-transition-time-opacity, 300ms),
+          transform var(--cr-toast-transition-time-transform, 300ms),
+          visibility var(--cr-toast-transition-time-visibility, 300ms);
+        visibility: var(--cr-toast-visibility-closed, hidden);
+        white-space: var(--cr-toast-white-space, nowrap);
+      }
+
+      :host([open]) {
+        opacity: var(--cr-toast-opacity-open, 1);
+        transform: var(--cr-toast-transform-open, translateY(0));
+        visibility: var(--cr-toast-visibility-open, visible);
+      }
+    </style>
+    <slot></slot>
+  </template>
+  <script src="cr_toast.js"></script>
+</dom-module>
