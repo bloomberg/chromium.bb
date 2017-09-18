@@ -90,6 +90,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
                                    NCWidgetDisplayModeCompact)];
   self.widgetView = widgetView;
   [self.view addSubview:self.widgetView];
+  [self updateWidget];
 
   if (base::ios::IsRunningOnIOS10OrLater()) {
     self.extensionContext.widgetLargestAvailableDisplayMode =
