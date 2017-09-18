@@ -55,8 +55,8 @@ void InternalsSpeechSynthesis::enableMockSpeechSynthesizer(
   if (!synthesis)
     return;
 
-  synthesis->SetPlatformSynthesizer(
-      PlatformSpeechSynthesizerMock::Create(synthesis));
+  synthesis->SetPlatformSynthesizer(PlatformSpeechSynthesizerMock::Create(
+      synthesis, ExecutionContext::From(script_state)));
 }
 
 }  // namespace blink

@@ -30,6 +30,7 @@
 
 #include "core/exported/WebHelperPluginImpl.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -48,9 +49,6 @@ WebHelperPlugin* WebHelperPlugin::Create(const WebString& plugin_type,
     return 0;
   return plugin.release();
 }
-
-WebHelperPluginImpl::WebHelperPluginImpl()
-    : destruction_timer_(this, &WebHelperPluginImpl::ReallyDestroy) {}
 
 bool WebHelperPluginImpl::Initialize(const String& plugin_type,
                                      WebLocalFrameImpl* frame) {
@@ -77,7 +75,7 @@ bool WebHelperPluginImpl::Initialize(const String& plugin_type,
   return !GetPlugin()->IsPlaceholder();
 }
 
-void WebHelperPluginImpl::ReallyDestroy(TimerBase*) {
+void WebHelperPluginImpl::ReallyDestroy() {
   if (plugin_container_)
     plugin_container_->Dispose();
   delete this;
@@ -90,7 +88,10 @@ void WebHelperPluginImpl::Destroy() {
   // Page and a WebFrame, and destroying it would cause JavaScript triggered by
   // frame detach to run, which isn't allowed inside stopSuspendableObjects().
   // Removing this causes one Chrome test to fail with a timeout.
-  destruction_timer_.StartOneShot(0, BLINK_FROM_HERE);
+  TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
+                        &object_element_->GetDocument())
+      ->PostTask(BLINK_FROM_HERE, WTF::Bind(&WebHelperPluginImpl::ReallyDestroy,
+                                            WTF::Unretained(this)));
 }
 
 WebPlugin* WebHelperPluginImpl::GetPlugin() {

@@ -25,26 +25,31 @@
 
 #include "modules/speech/testing/PlatformSpeechSynthesizerMock.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 
 namespace blink {
 
 PlatformSpeechSynthesizerMock* PlatformSpeechSynthesizerMock::Create(
-    PlatformSpeechSynthesizerClient* client) {
+    PlatformSpeechSynthesizerClient* client,
+    ExecutionContext* context) {
   PlatformSpeechSynthesizerMock* synthesizer =
-      new PlatformSpeechSynthesizerMock(client);
+      new PlatformSpeechSynthesizerMock(client, context);
   synthesizer->InitializeVoiceList();
   client->VoicesDidChange();
   return synthesizer;
 }
 
 PlatformSpeechSynthesizerMock::PlatformSpeechSynthesizerMock(
-    PlatformSpeechSynthesizerClient* client)
+    PlatformSpeechSynthesizerClient* client,
+    ExecutionContext* context)
     : PlatformSpeechSynthesizer(client),
       speaking_error_occurred_timer_(
+          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, context),
           this,
           &PlatformSpeechSynthesizerMock::SpeakingErrorOccurred),
       speaking_finished_timer_(
+          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, context),
           this,
           &PlatformSpeechSynthesizerMock::SpeakingFinished) {}
 
