@@ -21,6 +21,8 @@ void daala_idst16(const tran_low_t *input, tran_low_t *output);
 void daala_idtx16(const tran_low_t *input, tran_low_t *output);
 void daala_fdct32(const tran_low_t *input, tran_low_t *output);
 void daala_idct32(const tran_low_t *input, tran_low_t *output);
+void daala_fdst32(const tran_low_t *input, tran_low_t *output);
+void daala_idst32(const tran_low_t *input, tran_low_t *output);
 void daala_idtx32(const tran_low_t *input, tran_low_t *output);
 #if CONFIG_TX64X64
 void daala_fdct64(const tran_low_t *input, tran_low_t *output);

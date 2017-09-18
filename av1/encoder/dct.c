@@ -1010,20 +1010,6 @@ static void fadst16(const tran_low_t *input, tran_low_t *output) {
 }
 
 // For use in lieu of ADST
-#if CONFIG_DAALA_DCT32
-static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  tran_low_t inputhalf[16];
-  // No scaling within; Daala transforms are all orthonormal
-  for (i = 0; i < 16; ++i) {
-    output[16 + i] = input[i];
-  }
-  for (i = 0; i < 16; ++i) {
-    inputhalf[i] = input[i + 16];
-  }
-  daala_fdct16(inputhalf, output);
-}
-#else
 static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
   int i;
   tran_low_t inputhalf[16];
@@ -1037,7 +1023,6 @@ static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
   fdct16(inputhalf, output);
   // Note overall scaling factor is 4 times orthogonal
 }
-#endif
 
 #if CONFIG_MRC_TX
 static void get_masked_residual32(const int16_t **input, int *input_stride,
@@ -2417,21 +2402,21 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
 #if CONFIG_DAALA_DCT32
     { daala_fdct32, daala_fdct32 },  // DCT_DCT
 #if CONFIG_EXT_TX
-    { fhalfright32, daala_fdct32 },  // ADST_DCT
-    { daala_fdct32, fhalfright32 },  // DCT_ADST
-    { fhalfright32, fhalfright32 },  // ADST_ADST
-    { fhalfright32, daala_fdct32 },  // FLIPADST_DCT
-    { daala_fdct32, fhalfright32 },  // DCT_FLIPADST
-    { fhalfright32, fhalfright32 },  // FLIPADST_FLIPADST
-    { fhalfright32, fhalfright32 },  // ADST_FLIPADST
-    { fhalfright32, fhalfright32 },  // FLIPADST_ADST
+    { daala_fdst32, daala_fdct32 },  // ADST_DCT
+    { daala_fdct32, daala_fdst32 },  // DCT_ADST
+    { daala_fdst32, daala_fdst32 },  // ADST_ADST
+    { daala_fdst32, daala_fdct32 },  // FLIPADST_DCT
+    { daala_fdct32, daala_fdst32 },  // DCT_FLIPADST
+    { daala_fdst32, daala_fdst32 },  // FLIPADST_FLIPADST
+    { daala_fdst32, daala_fdst32 },  // ADST_FLIPADST
+    { daala_fdst32, daala_fdst32 },  // FLIPADST_ADST
     { daala_idtx32, daala_idtx32 },  // IDTX
     { daala_fdct32, daala_idtx32 },  // V_DCT
     { daala_idtx32, daala_fdct32 },  // H_DCT
-    { fhalfright32, daala_idtx32 },  // V_ADST
-    { daala_idtx32, fhalfright32 },  // H_ADST
-    { fhalfright32, daala_idtx32 },  // V_FLIPADST
-    { daala_idtx32, fhalfright32 },  // H_FLIPADST
+    { daala_fdst32, daala_idtx32 },  // V_ADST
+    { daala_idtx32, daala_fdst32 },  // H_ADST
+    { daala_fdst32, daala_idtx32 },  // V_FLIPADST
+    { daala_idtx32, daala_fdst32 },  // H_FLIPADST
 #endif
 #else
     { fdct32, fdct32 },              // DCT_DCT

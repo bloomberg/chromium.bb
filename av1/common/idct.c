@@ -72,20 +72,6 @@ static void iidtx64_c(const tran_low_t *input, tran_low_t *output) {
 #endif  // CONFIG_EXT_TX
 
 // For use in lieu of ADST
-#if CONFIG_DAALA_DCT32
-static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  tran_low_t inputhalf[16];
-  // No scaling within; Daala transforms are all orthonormal
-  for (i = 0; i < 16; ++i) {
-    inputhalf[i] = input[i];
-  }
-  for (i = 0; i < 16; ++i) {
-    output[i] = input[16 + i];
-  }
-  daala_idct16(inputhalf, output + 16);
-}
-#else
 static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
   int i;
   tran_low_t inputhalf[16];
@@ -99,7 +85,6 @@ static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
   aom_idct16_c(inputhalf, output + 16);
   // Note overall scaling factor is 4 times orthogonal
 }
-#endif
 
 #if CONFIG_TX64X64
 #if CONFIG_DAALA_DCT64
@@ -1365,21 +1350,21 @@ void av1_iht32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #if CONFIG_DAALA_DCT32
     { daala_idct32, daala_idct32 },  // DCT_DCT
 #if CONFIG_EXT_TX
-    { ihalfright32_c, daala_idct32 },    // ADST_DCT
-    { daala_idct32, ihalfright32_c },    // DCT_ADST
-    { ihalfright32_c, ihalfright32_c },  // ADST_ADST
-    { ihalfright32_c, daala_idct32 },    // FLIPADST_DCT
-    { daala_idct32, ihalfright32_c },    // DCT_FLIPADST
-    { ihalfright32_c, ihalfright32_c },  // FLIPADST_FLIPADST
-    { ihalfright32_c, ihalfright32_c },  // ADST_FLIPADST
-    { ihalfright32_c, ihalfright32_c },  // FLIPADST_ADST
-    { daala_idtx32, daala_idtx32 },      // IDTX
-    { daala_idct32, daala_idtx32 },      // V_DCT
-    { daala_idtx32, daala_idct32 },      // H_DCT
-    { ihalfright32_c, daala_idtx32 },    // V_ADST
-    { daala_idtx32, ihalfright32_c },    // H_ADST
-    { ihalfright32_c, daala_idtx32 },    // V_FLIPADST
-    { daala_idtx32, ihalfright32_c },    // H_FLIPADST
+    { daala_idst32, daala_idct32 },  // ADST_DCT
+    { daala_idct32, daala_idst32 },  // DCT_ADST
+    { daala_idst32, daala_idst32 },  // ADST_ADST
+    { daala_idst32, daala_idct32 },  // FLIPADST_DCT
+    { daala_idct32, daala_idst32 },  // DCT_FLIPADST
+    { daala_idst32, daala_idst32 },  // FLIPADST_FLIPADST
+    { daala_idst32, daala_idst32 },  // ADST_FLIPADST
+    { daala_idst32, daala_idst32 },  // FLIPADST_ADST
+    { daala_idtx32, daala_idtx32 },  // IDTX
+    { daala_idct32, daala_idtx32 },  // V_DCT
+    { daala_idtx32, daala_idct32 },  // H_DCT
+    { daala_idst32, daala_idtx32 },  // V_ADST
+    { daala_idtx32, daala_idst32 },  // H_ADST
+    { daala_idst32, daala_idtx32 },  // V_FLIPADST
+    { daala_idtx32, daala_idst32 },  // H_FLIPADST
 #endif
 #else
     { aom_idct32_c, aom_idct32_c },      // DCT_DCT
