@@ -34,5 +34,5 @@ public class BuildHooksAndroidImpl extends BuildHooksAndroid {
         return false;
     }
 
-    protected void initImpl() {}
+    protected void initCustomResourcesImpl(Context context) {}
 }
