@@ -99,17 +99,18 @@ void UIResourceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       render_pass->CreateAndAppendSharedQuadState();
 
   viz::ResourceId resource =
-      layer_tree_impl()->ResourceIdForUIResource(ui_resource_id_);
-  bool is_resource = ui_resource_id_ && resource;
+      ui_resource_id_
+          ? layer_tree_impl()->ResourceIdForUIResource(ui_resource_id_)
+          : 0;
   bool are_contents_opaque =
-      is_resource ? (layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_) ||
-                     contents_opaque())
-                  : false;
+      resource ? (layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_) ||
+                  contents_opaque())
+               : false;
   PopulateSharedQuadState(shared_quad_state, are_contents_opaque);
   AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
                         append_quads_data);
 
-  if (!is_resource)
+  if (!resource)
     return;
 
   static const bool flipped = false;
