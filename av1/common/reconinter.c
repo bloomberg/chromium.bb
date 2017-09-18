@@ -974,13 +974,13 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
     mi->mbmi.interinter_compound_type
   };
 
-#if CONFIG_HIGHBITDEPTH
-#if CONFIG_CONVOLVE_ROUND
   const int is_conv_no_round = conv_params->round == CONVOLVE_OPT_NO_ROUND;
   DECLARE_ALIGNED(16, CONV_BUF_TYPE, tmp_dst2[MAX_SB_SQUARE]);
   int tmp_dst2_stride = MAX_SB_SIZE;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
+#if CONFIG_HIGHBITDEPTH
+#if CONFIG_CONVOLVE_ROUND
   if (is_conv_no_round) {
     conv_params->dst = tmp_dst2;
     conv_params->dst_stride = tmp_dst2_stride;
@@ -1070,11 +1070,6 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #else  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_CONVOLVE_ROUND
-  const int is_conv_no_round = conv_params->round == CONVOLVE_OPT_NO_ROUND;
-  DECLARE_ALIGNED(16, CONV_BUF_TYPE, tmp_dst2[MAX_SB_SQUARE]);
-  int tmp_dst2_stride = MAX_SB_SIZE;
-  CONV_BUF_TYPE *org_dst = conv_params->dst;
-  int org_dst_stride = conv_params->dst_stride;
   if (is_conv_no_round) {
     memset(tmp_dst2, 0, sizeof(tmp_dst2));
     conv_params->dst = tmp_dst2;
