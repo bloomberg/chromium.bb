@@ -13,11 +13,14 @@
 #endif
 
 namespace {
+// Padding of the leading edge of the cell.
+const CGFloat kLeadingPadding = 16;
+
 // Padding of the top and bottom edges of the cell.
 const CGFloat kVerticalPadding = 12;
 
 // Spacing between the icons.
-const CGFloat kHorizontalSpacingBetweenIcons = 5;
+const CGFloat kHorizontalSpacingBetweenIcons = 4.5;
 }  // namespace
 
 @implementation AcceptedPaymentMethodsItem
@@ -83,7 +86,7 @@ const CGFloat kHorizontalSpacingBetweenIcons = 5;
   _stackView.axis = UILayoutConstraintAxisHorizontal;
   _stackView.layoutMarginsRelativeArrangement = YES;
   _stackView.layoutMargins =
-      UIEdgeInsetsMake(kVerticalPadding, 0, kVerticalPadding, 0);
+      UIEdgeInsetsMake(kVerticalPadding, kLeadingPadding, kVerticalPadding, 0);
   _stackView.spacing = kHorizontalSpacingBetweenIcons;
   _stackView.translatesAutoresizingMaskIntoConstraints = NO;
   [contentView addSubview:_stackView];
@@ -103,7 +106,8 @@ const CGFloat kHorizontalSpacingBetweenIcons = 5;
     [_messageLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
                                             constant:kVerticalPadding],
     [_messageLabel.leadingAnchor
-        constraintEqualToAnchor:self.contentView.leadingAnchor],
+        constraintEqualToAnchor:self.contentView.leadingAnchor
+                       constant:kLeadingPadding],
     [_messageLabel.trailingAnchor
         constraintEqualToAnchor:self.contentView.trailingAnchor],
     [_messageLabel.bottomAnchor constraintEqualToAnchor:_stackView.topAnchor],

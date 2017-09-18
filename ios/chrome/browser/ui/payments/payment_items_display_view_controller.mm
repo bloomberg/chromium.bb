@@ -78,6 +78,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [_payButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]];
     [_payButton setTitleColor:[UIColor whiteColor]
                      forState:UIControlStateNormal];
+    [_payButton setTitleColor:[UIColor whiteColor]
+                     forState:UIControlStateDisabled];
     [_payButton setInkColor:[UIColor colorWithWhite:1 alpha:0.2]];
     [_payButton addTarget:nil
                    action:@selector(onConfirm)

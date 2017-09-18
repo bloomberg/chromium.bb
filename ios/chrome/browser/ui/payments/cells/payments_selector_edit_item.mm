@@ -57,7 +57,7 @@
 
 - (UIColor*)valueColor {
   if (!_valueColor) {
-    _valueColor = [[MDCPalette cr_bluePalette] tint600];
+    _valueColor = [[MDCPalette greyPalette] tint500];
   }
   return _valueColor;
 }
