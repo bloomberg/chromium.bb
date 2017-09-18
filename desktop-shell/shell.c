@@ -4863,9 +4863,6 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	weston_compositor_add_axis_binding(ec, WL_POINTER_AXIS_VERTICAL_SCROLL,
 				           MODIFIER_SUPER | MODIFIER_ALT,
 				           surface_opacity_binding, NULL);
-	weston_compositor_add_axis_binding(ec, WL_POINTER_AXIS_VERTICAL_SCROLL,
-					   MODIFIER_SUPER, zoom_axis_binding,
-					   NULL);
 	weston_compositor_add_key_binding(ec, KEY_BRIGHTNESSDOWN, 0,
 				          backlight_binding, ec);
 	weston_compositor_add_key_binding(ec, KEY_BRIGHTNESSUP, 0,
@@ -4879,6 +4876,10 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	mod = shell->binding_modifier;
 	if (!mod)
 		return;
+
+	weston_compositor_add_axis_binding(ec, WL_POINTER_AXIS_VERTICAL_SCROLL,
+					   mod, zoom_axis_binding,
+					   NULL);
 
 	weston_compositor_add_key_binding(ec, KEY_PAGEUP, mod,
 					  zoom_key_binding, NULL);
