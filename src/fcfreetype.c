@@ -1310,7 +1310,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	  {
 	      double value = instance->coords[i] / (double) (1 << 16);
 	      double default_value = master->axis[i].def / (double) (1 << 16);
-	      double mult = value / default_value;
+	      double mult = default_value ? value / default_value : 1;
 	      //printf ("named-instance, axis %d tag %lx value %g\n", i, master->axis[i].tag, value);
 	      switch (master->axis[i].tag)
 	      {
