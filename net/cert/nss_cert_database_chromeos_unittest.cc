@@ -9,13 +9,14 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/test/scoped_task_environment.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/net_test_suite.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,7 +73,6 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
         crypto::GetPrivateSlotForChromeOSUser(
             user_1_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
-    db_1_->SetSlowTaskRunnerForTest(base::ThreadTaskRunnerHandle::Get());
     db_1_->SetSystemSlot(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_db_.slot())));
     db_2_.reset(new NSSCertDatabaseChromeOS(
@@ -80,7 +80,6 @@ class NSSCertDatabaseChromeOSTest : public testing::Test,
         crypto::GetPrivateSlotForChromeOSUser(
             user_2_.username_hash(),
             base::Callback<void(crypto::ScopedPK11Slot)>())));
-    db_2_->SetSlowTaskRunnerForTest(base::ThreadTaskRunnerHandle::Get());
 
     // Add observer to CertDatabase for checking that notifications from
     // NSSCertDatabaseChromeOS are proxied to the CertDatabase.
@@ -174,7 +173,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportCACerts) {
   EXPECT_FALSE(IsCertInCertificateList(certs_2[0].get(), user_1_certlist));
 
   // Run the message loop so the observer notifications get processed.
-  base::RunLoop().RunUntilIdle();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
   // Should have gotten two OnCertDBChanged notifications.
   ASSERT_EQ(2, db_changed_count_);
 
@@ -186,7 +185,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportCACerts) {
   db_2_->ListCerts(
       base::Bind(&SwapCertLists, base::Unretained(&user_2_certlist_async)));
 
-  base::RunLoop().RunUntilIdle();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
 
   EXPECT_TRUE(IsCertInCertificateList(certs_1[0].get(), user_1_certlist_async));
   EXPECT_FALSE(
@@ -234,7 +233,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportServerCert) {
   EXPECT_FALSE(IsCertInCertificateList(certs_2[0].get(), user_1_certlist));
 
   // Run the message loop so the observer notifications get processed.
-  base::RunLoop().RunUntilIdle();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
   // TODO(mattm): ImportServerCert doesn't actually cause any observers to
   // fire. Is that correct?
   EXPECT_EQ(0, db_changed_count_);
@@ -247,7 +246,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, ImportServerCert) {
   db_2_->ListCerts(
       base::Bind(&SwapCertLists, base::Unretained(&user_2_certlist_async)));
 
-  base::RunLoop().RunUntilIdle();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
 
   EXPECT_TRUE(IsCertInCertificateList(certs_1[0].get(), user_1_certlist_async));
   EXPECT_FALSE(
@@ -267,7 +266,7 @@ TEST_F(NSSCertDatabaseChromeOSTest, NoCrashIfShutdownBeforeDoneOnWorkerPool) {
 
   db_1_.reset();
 
-  base::RunLoop().RunUntilIdle();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
 
   EXPECT_LT(0U, certlist.size());
 }

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/nss_cert_database_chromeos.h"
@@ -138,7 +137,6 @@ class CertLoaderTest : public testing::Test,
     certdb->reset(new TestNSSCertDatabase(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(db->slot())),
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(db->slot()))));
-    (*certdb)->SetSlowTaskRunnerForTest(base::ThreadTaskRunnerHandle::Get());
   }
 
   void ImportCACert(const std::string& cert_file,

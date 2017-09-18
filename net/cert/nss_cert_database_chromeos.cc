@@ -15,8 +15,8 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/stl_util.h"
-#include "base/task_runner.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 
 namespace net {
 
@@ -45,8 +45,9 @@ ScopedCERTCertificateList NSSCertDatabaseChromeOS::ListCertsSync() {
 
 void NSSCertDatabaseChromeOS::ListCerts(
     const NSSCertDatabase::ListCertsCallback& callback) {
-  base::PostTaskAndReplyWithResult(
-      GetSlowTaskRunner().get(), FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&NSSCertDatabaseChromeOS::ListCertsImpl, profile_filter_),
       callback);
 }
@@ -72,6 +73,12 @@ void NSSCertDatabaseChromeOS::ListModules(
 
 ScopedCERTCertificateList NSSCertDatabaseChromeOS::ListCertsImpl(
     const NSSProfileFilterChromeOS& profile_filter) {
+  // This method may acquire the NSS lock or reenter this code via extension
+  // hooks (such as smart card UI). To ensure threads are not starved or
+  // deadlocked, the base::ScopedBlockingCall below increments the thread pool
+  // capacity if this method takes too much time to run.
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+
   ScopedCERTCertificateList certs(
       NSSCertDatabase::ListCertsImpl(crypto::ScopedPK11Slot()));
 
