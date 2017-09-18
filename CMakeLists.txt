@@ -370,7 +370,12 @@ if (ENABLE_TESTS)
   # This directory is where libwebm will build googletest dependencies.
   set(GTEST_BUILD_DIR "${CMAKE_BINARY_DIR}/googletest_build")
 
-  add_subdirectory("${GTEST_SRC_DIR}" "${GTEST_BUILD_DIR}")
+  if (LIBWEBM_DISABLE_GTEST_CMAKE)
+    add_library(gtest STATIC "${GTEST_SRC_DIR}/googletest/src/gtest-all.cc")
+    include_directories("${GTEST_SRC_DIR}/googletest")
+  else ()
+    add_subdirectory("${GTEST_SRC_DIR}" "${GTEST_BUILD_DIR}")
+  endif ()
   include_directories("${GTEST_SRC_DIR}/googletest/include")
 
   add_executable(mkvmuxer_tests ${mkvmuxer_tests_sources})
