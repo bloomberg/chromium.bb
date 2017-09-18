@@ -305,7 +305,7 @@ void surface_frame(wl_client* client,
 
   // base::Unretained is safe as the resource owns the callback.
   auto cancelable_callback =
-      base::MakeUnique<base::CancelableCallback<void(base::TimeTicks)>>(
+      std::make_unique<base::CancelableCallback<void(base::TimeTicks)>>(
           base::Bind(&HandleSurfaceFrameCallback,
                      base::Unretained(callback_resource)));
 
@@ -929,7 +929,7 @@ void linux_dmabuf_create_params(wl_client* client,
                                 wl_resource* resource,
                                 uint32_t id) {
   std::unique_ptr<LinuxBufferParams> linux_buffer_params =
-      base::MakeUnique<LinuxBufferParams>(GetUserDataAs<Display>(resource));
+      std::make_unique<LinuxBufferParams>(GetUserDataAs<Display>(resource));
 
   wl_resource* linux_buffer_params_resource =
       wl_resource_create(client, &zwp_linux_buffer_params_v1_interface, 2, id);
@@ -1348,7 +1348,7 @@ void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
       client, &wl_output_interface, std::min(version, output_version), id);
 
   SetImplementation(resource, nullptr,
-                    base::MakeUnique<WaylandPrimaryDisplayObserver>(resource));
+                    std::make_unique<WaylandPrimaryDisplayObserver>(resource));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2626,7 +2626,7 @@ void bind_remote_shell(wl_client* client,
                          std::min(version, remote_shell_version), id);
 
   SetImplementation(resource, &remote_shell_implementation,
-                    base::MakeUnique<WaylandRemoteShell>(
+                    std::make_unique<WaylandRemoteShell>(
                         static_cast<Display*>(data), resource));
 }
 
@@ -2705,7 +2705,7 @@ void aura_shell_get_aura_surface(wl_client* client,
       wl_resource_create(client, &zaura_surface_interface, 1, id);
 
   SetImplementation(aura_surface_resource, &aura_surface_implementation,
-                    base::MakeUnique<AuraSurface>(surface));
+                    std::make_unique<AuraSurface>(surface));
 }
 
 const struct zaura_shell_interface aura_shell_implementation = {
@@ -2963,7 +2963,7 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
   DataOffer* OnDataOffer() override {
     wl_resource* data_offer_resource =
         wl_resource_create(client_, &wl_data_offer_interface, 1, 0);
-    std::unique_ptr<DataOffer> data_offer = base::MakeUnique<DataOffer>(
+    std::unique_ptr<DataOffer> data_offer = std::make_unique<DataOffer>(
         new WaylandDataOfferDelegate(data_offer_resource));
     data_offer->SetProperty(kDataOfferResourceKey, data_offer_resource);
     SetImplementation(data_offer_resource, &data_offer_implementation,
@@ -3037,7 +3037,7 @@ void data_device_manager_create_data_source(wl_client* client,
   wl_resource* data_source_resource =
       wl_resource_create(client, &wl_data_device_interface, 1, id);
   SetImplementation(data_source_resource, &data_source_implementation,
-                    base::MakeUnique<DataSource>(
+                    std::make_unique<DataSource>(
                         new WaylandDataSourceDelegate(data_source_resource)));
 }
 
@@ -3501,7 +3501,7 @@ void seat_get_pointer(wl_client* client, wl_resource* resource, uint32_t id) {
 
   SetImplementation(
       pointer_resource, &pointer_implementation,
-      base::MakeUnique<Pointer>(new WaylandPointerDelegate(pointer_resource)));
+      std::make_unique<Pointer>(new WaylandPointerDelegate(pointer_resource)));
 }
 
 void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
@@ -3512,7 +3512,7 @@ void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
 
   WaylandKeyboardDelegate* delegate =
       new WaylandKeyboardDelegate(keyboard_resource);
-  std::unique_ptr<Keyboard> keyboard = base::MakeUnique<Keyboard>(delegate);
+  std::unique_ptr<Keyboard> keyboard = std::make_unique<Keyboard>(delegate);
   keyboard->AddObserver(delegate);
   SetImplementation(keyboard_resource, &keyboard_implementation,
                     std::move(keyboard));
@@ -3531,7 +3531,7 @@ void seat_get_touch(wl_client* client, wl_resource* resource, uint32_t id) {
 
   SetImplementation(
       touch_resource, &touch_implementation,
-      base::MakeUnique<Touch>(new WaylandTouchDelegate(touch_resource)));
+      std::make_unique<Touch>(new WaylandTouchDelegate(touch_resource)));
 }
 
 void seat_release(wl_client* client, wl_resource* resource) {
@@ -3676,7 +3676,7 @@ void viewporter_get_viewport(wl_client* client,
       client, &wp_viewport_interface, wl_resource_get_version(resource), id);
 
   SetImplementation(viewport_resource, &viewport_implementation,
-                    base::MakeUnique<Viewport>(surface));
+                    std::make_unique<Viewport>(surface));
 }
 
 const struct wp_viewporter_interface viewporter_implementation = {
@@ -3730,7 +3730,7 @@ void presentation_feedback(wl_client* client,
                          wl_resource_get_version(resource), id);
 
   // base::Unretained is safe as the resource owns the callback.
-  auto cancelable_callback = base::MakeUnique<
+  auto cancelable_callback = std::make_unique<
       base::CancelableCallback<void(base::TimeTicks, base::TimeDelta)>>(
       base::Bind(&HandleSurfacePresentationCallback,
                  base::Unretained(presentation_feedback_resource)));
@@ -3830,7 +3830,7 @@ void secure_output_get_security(wl_client* client,
       wl_resource_create(client, &zcr_security_v1_interface, 1, id);
 
   SetImplementation(security_resource, &security_implementation,
-                    base::MakeUnique<Security>(surface));
+                    std::make_unique<Security>(surface));
 }
 
 const struct zcr_secure_output_v1_interface secure_output_implementation = {
@@ -3946,7 +3946,7 @@ void alpha_compositing_get_blending(wl_client* client,
       wl_resource_create(client, &zcr_blending_v1_interface, 1, id);
 
   SetImplementation(blending_resource, &blending_implementation,
-                    base::MakeUnique<Blending>(surface));
+                    std::make_unique<Blending>(surface));
 }
 
 const struct zcr_alpha_compositing_v1_interface
@@ -4099,7 +4099,7 @@ void gaming_input_get_gaming_seat(wl_client* client,
                          wl_resource_get_version(resource), id);
 
   SetImplementation(gaming_seat_resource, &gaming_seat_implementation,
-                    base::MakeUnique<GamingSeat>(
+                    std::make_unique<GamingSeat>(
                         new WaylandGamingSeatDelegate(gaming_seat_resource)));
 }
 
@@ -4192,7 +4192,7 @@ void stylus_get_touch_stylus(wl_client* client,
 
   SetImplementation(
       stylus_resource, &touch_stylus_implementation,
-      base::MakeUnique<WaylandTouchStylusDelegate>(stylus_resource, touch));
+      std::make_unique<WaylandTouchStylusDelegate>(stylus_resource, touch));
 }
 
 const struct zcr_stylus_v2_interface stylus_v2_implementation = {
@@ -4320,7 +4320,7 @@ void keyboard_configuration_get_keyboard_device_configuration(
   SetImplementation(
       keyboard_device_configuration_resource,
       &keyboard_device_configuration_implementation,
-      base::MakeUnique<WaylandKeyboardDeviceConfigurationDelegate>(
+      std::make_unique<WaylandKeyboardDeviceConfigurationDelegate>(
           keyboard_device_configuration_resource, keyboard));
 }
 
@@ -4402,7 +4402,7 @@ void stylus_tools_get_stylus_tool(wl_client* client,
       wl_resource_create(client, &zcr_stylus_tool_v1_interface, 1, id);
 
   SetImplementation(stylus_tool_resource, &stylus_tool_implementation,
-                    base::MakeUnique<StylusTool>(surface));
+                    std::make_unique<StylusTool>(surface));
 }
 
 const struct zcr_stylus_tools_v1_interface stylus_tools_implementation = {
@@ -4488,7 +4488,7 @@ void keyboard_extension_get_extended_keyboard(wl_client* client,
 
   SetImplementation(extended_keyboard_resource,
                     &extended_keyboard_implementation,
-                    base::MakeUnique<WaylandExtendedKeyboardImpl>(keyboard));
+                    std::make_unique<WaylandExtendedKeyboardImpl>(keyboard));
 }
 
 const struct zcr_keyboard_extension_v1_interface

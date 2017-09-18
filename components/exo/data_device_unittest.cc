@@ -106,9 +106,9 @@ class DataDeviceTest : public test::ExoTestBase {
  public:
   void SetUp() override {
     test::ExoTestBase::SetUp();
-    device_ = base::MakeUnique<DataDevice>(&delegate_, &file_helper_);
+    device_ = std::make_unique<DataDevice>(&delegate_, &file_helper_);
     data_.SetString(base::string16(base::ASCIIToUTF16("Test data")));
-    surface_ = base::MakeUnique<Surface>();
+    surface_ = std::make_unique<Surface>();
   }
 
   void TearDown() override {

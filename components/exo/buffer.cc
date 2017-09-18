@@ -446,7 +446,7 @@ bool Buffer::ProduceTransferableResource(
   // if one doesn't already exist. The contents of this buffer are copied to
   // |texture| using a call to CopyTexImage.
   if (!contents_texture_) {
-    contents_texture_ = base::MakeUnique<Texture>(
+    contents_texture_ = std::make_unique<Texture>(
         context_factory, context_provider.get(), gpu_memory_buffer_.get(),
         texture_target_, query_type_);
   }
@@ -483,7 +483,7 @@ bool Buffer::ProduceTransferableResource(
   // Create a mailbox texture that we copy the buffer contents to.
   if (!texture_) {
     texture_ =
-        base::MakeUnique<Texture>(context_factory, context_provider.get());
+        std::make_unique<Texture>(context_factory, context_provider.get());
   }
   Texture* texture = texture_.get();
 

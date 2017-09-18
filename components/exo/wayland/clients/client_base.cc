@@ -427,7 +427,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     buffer = CreateDrmBuffer(size, drm_format, bo_usage);
     CHECK(buffer) << "Can't create drm buffer";
   } else {
-    buffer = base::MakeUnique<Buffer>();
+    buffer = std::make_unique<Buffer>();
 
     size_t stride = size.width() * kBytesPerPixel;
     buffer->shared_memory.reset(new base::SharedMemory());
@@ -463,7 +463,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
   std::unique_ptr<Buffer> buffer;
 #if defined(OZONE_PLATFORM_GBM)
   if (device_) {
-    buffer = base::MakeUnique<Buffer>();
+    buffer = std::make_unique<Buffer>();
     buffer->bo.reset(gbm_bo_create(device_.get(), size.width(), size.height(),
                                    drm_format, bo_usage));
     if (!buffer->bo) {

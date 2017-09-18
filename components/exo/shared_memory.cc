@@ -82,7 +82,7 @@ std::unique_ptr<Buffer> SharedMemory::CreateBuffer(const gfx::Size& size,
   // buffers. Making the copy explicit allows the buffer to be reused earlier.
   bool use_zero_copy = false;
 
-  return base::MakeUnique<Buffer>(
+  return std::make_unique<Buffer>(
       std::move(gpu_memory_buffer), GL_TEXTURE_2D,
       // COMMANDS_ISSUED queries are sufficient for shared memory
       // buffers as binding to texture is implemented using a call to

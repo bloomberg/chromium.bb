@@ -78,7 +78,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 
 SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name,
                                  aura::WindowDelegate* window_delegate) {
-  host_window_ = base::MakeUnique<aura::Window>(window_delegate);
+  host_window_ = std::make_unique<aura::Window>(window_delegate);
   host_window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   host_window_->SetName(window_name);
   host_window_->Init(ui::LAYER_SOLID_COLOR);
@@ -87,8 +87,8 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name,
   // events.
   host_window_->SetEventTargetingPolicy(
       ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
-  host_window_->SetEventTargeter(base::MakeUnique<CustomWindowTargeter>(this));
-  layer_tree_frame_sink_holder_ = base::MakeUnique<LayerTreeFrameSinkHolder>(
+  host_window_->SetEventTargeter(std::make_unique<CustomWindowTargeter>(this));
+  layer_tree_frame_sink_holder_ = std::make_unique<LayerTreeFrameSinkHolder>(
       this, host_window_->CreateLayerTreeFrameSink());
   aura::Env::GetInstance()->context_factory()->AddObserver(this);
 }
