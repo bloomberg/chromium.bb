@@ -5976,7 +5976,6 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth1) {
     MockRead("Content-Length: 42\r\n"),
     MockRead("Content-Type: text/html\r\n\r\n"),
     // Missing content -- won't matter, as connection will be reset.
-    MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
   MockWrite data_writes2[] = {
@@ -6003,26 +6002,24 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth1) {
   };
 
   MockRead data_reads2[] = {
-    // The origin server responds with a Type 2 message.
-    MockRead("HTTP/1.1 401 Access Denied\r\n"),
-    MockRead("WWW-Authenticate: NTLM "
-             "TlRMTVNTUAACAAAADAAMADgAAAAFgokCjGpMpPGlYKkAAAAAAAAAALo"
-             "AugBEAAAABQEoCgAAAA9HAE8ATwBHAEwARQACAAwARwBPAE8ARwBMAE"
-             "UAAQAaAEEASwBFAEUAUwBBAFIAQQAtAEMATwBSAFAABAAeAGMAbwByA"
-             "HAALgBnAG8AbwBnAGwAZQAuAGMAbwBtAAMAQABhAGsAZQBlAHMAYQBy"
-             "AGEALQBjAG8AcgBwAC4AYQBkAC4AYwBvAHIAcAAuAGcAbwBvAGcAbAB"
-             "lAC4AYwBvAG0ABQAeAGMAbwByAHAALgBnAG8AbwBnAGwAZQAuAGMAbw"
-             "BtAAAAAAA=\r\n"),
-    MockRead("Content-Length: 42\r\n"),
-    MockRead("Content-Type: text/html\r\n\r\n"),
-    MockRead("You are not authorized to view this page\r\n"),
+      // The origin server responds with a Type 2 message.
+      MockRead("HTTP/1.1 401 Access Denied\r\n"),
+      MockRead("WWW-Authenticate: NTLM "
+               "TlRMTVNTUAACAAAADAAMADgAAAAFgokCjGpMpPGlYKkAAAAAAAAAALo"
+               "AugBEAAAABQEoCgAAAA9HAE8ATwBHAEwARQACAAwARwBPAE8ARwBMAE"
+               "UAAQAaAEEASwBFAEUAUwBBAFIAQQAtAEMATwBSAFAABAAeAGMAbwByA"
+               "HAALgBnAG8AbwBnAGwAZQAuAGMAbwBtAAMAQABhAGsAZQBlAHMAYQBy"
+               "AGEALQBjAG8AcgBwAC4AYQBkAC4AYwBvAHIAcAAuAGcAbwBvAGcAbAB"
+               "lAC4AYwBvAG0ABQAeAGMAbwByAHAALgBnAG8AbwBnAGwAZQAuAGMAbw"
+               "BtAAAAAAA=\r\n"),
+      MockRead("Content-Length: 42\r\n"),
+      MockRead("Content-Type: text/html\r\n\r\n"),
+      MockRead("You are not authorized to view this page\r\n"),
 
-    // Lastly we get the desired content.
-    MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead("Content-Type: text/html; charset=utf-8\r\n"),
-    MockRead("Content-Length: 13\r\n\r\n"),
-    MockRead("Please Login\r\n"),
-    MockRead(SYNCHRONOUS, OK),
+      // Lastly we get the desired content.
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Type: text/html; charset=utf-8\r\n"),
+      MockRead("Content-Length: 14\r\n\r\n"), MockRead("Please Login\r\n"),
   };
 
   StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
@@ -6079,7 +6076,17 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth1) {
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge);
-  EXPECT_EQ(13, response->headers->GetContentLength());
+  EXPECT_EQ(14, response->headers->GetContentLength());
+
+  std::string response_data;
+  rv = ReadTransaction(&trans, &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("Please Login\r\n", response_data);
+
+  EXPECT_TRUE(data1.AllReadDataConsumed());
+  EXPECT_TRUE(data1.AllWriteDataConsumed());
+  EXPECT_TRUE(data2.AllReadDataConsumed());
+  EXPECT_TRUE(data2.AllWriteDataConsumed());
 }
 
 // Enter a wrong password, and then the correct one.
@@ -6108,7 +6115,6 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth2) {
     MockRead("Content-Length: 42\r\n"),
     MockRead("Content-Type: text/html\r\n\r\n"),
     // Missing content -- won't matter, as connection will be reset.
-    MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
   MockWrite data_writes2[] = {
@@ -6156,7 +6162,6 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth2) {
     MockRead("Content-Length: 42\r\n"),
     MockRead("Content-Type: text/html\r\n\r\n"),
     // Missing content -- won't matter, as connection will be reset.
-    MockRead(SYNCHRONOUS, ERR_UNEXPECTED),
   };
 
   MockWrite data_writes3[] = {
@@ -6183,26 +6188,24 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth2) {
   };
 
   MockRead data_reads3[] = {
-    // The origin server responds with a Type 2 message.
-    MockRead("HTTP/1.1 401 Access Denied\r\n"),
-    MockRead("WWW-Authenticate: NTLM "
-             "TlRMTVNTUAACAAAADAAMADgAAAAFgokCL24VN8dgOR8AAAAAAAAAALo"
-             "AugBEAAAABQEoCgAAAA9HAE8ATwBHAEwARQACAAwARwBPAE8ARwBMAE"
-             "UAAQAaAEEASwBFAEUAUwBBAFIAQQAtAEMATwBSAFAABAAeAGMAbwByA"
-             "HAALgBnAG8AbwBnAGwAZQAuAGMAbwBtAAMAQABhAGsAZQBlAHMAYQBy"
-             "AGEALQBjAG8AcgBwAC4AYQBkAC4AYwBvAHIAcAAuAGcAbwBvAGcAbAB"
-             "lAC4AYwBvAG0ABQAeAGMAbwByAHAALgBnAG8AbwBnAGwAZQAuAGMAbw"
-             "BtAAAAAAA=\r\n"),
-    MockRead("Content-Length: 42\r\n"),
-    MockRead("Content-Type: text/html\r\n\r\n"),
-    MockRead("You are not authorized to view this page\r\n"),
+      // The origin server responds with a Type 2 message.
+      MockRead("HTTP/1.1 401 Access Denied\r\n"),
+      MockRead("WWW-Authenticate: NTLM "
+               "TlRMTVNTUAACAAAADAAMADgAAAAFgokCL24VN8dgOR8AAAAAAAAAALo"
+               "AugBEAAAABQEoCgAAAA9HAE8ATwBHAEwARQACAAwARwBPAE8ARwBMAE"
+               "UAAQAaAEEASwBFAEUAUwBBAFIAQQAtAEMATwBSAFAABAAeAGMAbwByA"
+               "HAALgBnAG8AbwBnAGwAZQAuAGMAbwBtAAMAQABhAGsAZQBlAHMAYQBy"
+               "AGEALQBjAG8AcgBwAC4AYQBkAC4AYwBvAHIAcAAuAGcAbwBvAGcAbAB"
+               "lAC4AYwBvAG0ABQAeAGMAbwByAHAALgBnAG8AbwBnAGwAZQAuAGMAbw"
+               "BtAAAAAAA=\r\n"),
+      MockRead("Content-Length: 42\r\n"),
+      MockRead("Content-Type: text/html\r\n\r\n"),
+      MockRead("You are not authorized to view this page\r\n"),
 
-    // Lastly we get the desired content.
-    MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead("Content-Type: text/html; charset=utf-8\r\n"),
-    MockRead("Content-Length: 13\r\n\r\n"),
-    MockRead("Please Login\r\n"),
-    MockRead(SYNCHRONOUS, OK),
+      // Lastly we get the desired content.
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Type: text/html; charset=utf-8\r\n"),
+      MockRead("Content-Length: 14\r\n\r\n"), MockRead("Please Login\r\n"),
   };
 
   StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
@@ -6283,7 +6286,19 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth2) {
 
   response = trans.GetResponseInfo();
   EXPECT_FALSE(response->auth_challenge);
-  EXPECT_EQ(13, response->headers->GetContentLength());
+  EXPECT_EQ(14, response->headers->GetContentLength());
+
+  std::string response_data;
+  rv = ReadTransaction(&trans, &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("Please Login\r\n", response_data);
+
+  EXPECT_TRUE(data1.AllReadDataConsumed());
+  EXPECT_TRUE(data1.AllWriteDataConsumed());
+  EXPECT_TRUE(data2.AllReadDataConsumed());
+  EXPECT_TRUE(data2.AllWriteDataConsumed());
+  EXPECT_TRUE(data3.AllReadDataConsumed());
+  EXPECT_TRUE(data3.AllWriteDataConsumed());
 }
 
 // NTLM is not supported over HTTP/2, therefore the server requests a downgrade,
@@ -6369,8 +6384,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
       // Lastly we get the desired content.
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Content-Type: text/html; charset=utf-8\r\n"),
-      MockRead("Content-Length: 13\r\n\r\n"), MockRead("Please Login\r\n"),
-      MockRead(SYNCHRONOUS, OK),
+      MockRead("Content-Length: 14\r\n\r\n"), MockRead("Please Login\r\n"),
   };
   SequencedSocketData data0(reads0, arraysize(reads0), writes0,
                             arraysize(writes0));
@@ -6427,7 +6441,17 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
   response = trans.GetResponseInfo();
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge);
-  EXPECT_EQ(13, response->headers->GetContentLength());
+  EXPECT_EQ(14, response->headers->GetContentLength());
+
+  std::string response_data;
+  rv = ReadTransaction(&trans, &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("Please Login\r\n", response_data);
+
+  EXPECT_TRUE(data0.AllReadDataConsumed());
+  EXPECT_TRUE(data0.AllWriteDataConsumed());
+  EXPECT_TRUE(data1.AllReadDataConsumed());
+  EXPECT_TRUE(data1.AllWriteDataConsumed());
 }
 #endif  // NTLM_PORTABLE
 
