@@ -110,6 +110,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [_payButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]];
     [_payButton setTitleColor:[UIColor whiteColor]
                      forState:UIControlStateNormal];
+    [_payButton setTitleColor:[UIColor whiteColor]
+                     forState:UIControlStateDisabled];
     [_payButton setInkColor:[UIColor colorWithWhite:1 alpha:0.2]];
     [_payButton addTarget:self
                    action:@selector(onConfirm)
@@ -338,7 +340,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
             base::mac::ObjCCastStrict<CollectionViewDetailCell>(cell);
         detailCell.detailTextLabel.font = [MDCTypography body2Font];
         detailCell.detailTextLabel.textColor =
-            [[MDCPalette cr_bluePalette] tint700];
+            [[MDCPalette cr_bluePalette] tint500];
       }
       break;
     }

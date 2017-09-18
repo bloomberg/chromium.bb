@@ -532,7 +532,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       autofillEditCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
       autofillEditCell.textField.font = [MDCTypography body1Font];
       autofillEditCell.textField.textColor =
-          [[MDCPalette cr_bluePalette] tint600];
+          [[MDCPalette cr_bluePalette] tint500];
       break;
     }
     case ItemTypeSwitchField: {
