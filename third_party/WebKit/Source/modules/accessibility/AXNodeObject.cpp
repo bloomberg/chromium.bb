@@ -1843,6 +1843,19 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
     return true;
   }
 
+  // In ARIA 1.1, default value of scrollbar, separator and slider
+  // for aria-valuemax were changed to 100.
+  switch (AriaRoleAttribute()) {
+    case kScrollBarRole:
+    case kSplitterRole:
+    case kSliderRole: {
+      *out_value = 100.0f;
+      return true;
+    }
+    default:
+      break;
+  }
+
   return false;
 }
 
