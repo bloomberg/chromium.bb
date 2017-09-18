@@ -442,10 +442,6 @@
       name: "GetMatchedCSSRules",
     },
     {
-      name: "GetUserMedia",
-      status: "stable",
-    },
-    {
       name: "HeapCompaction",
       status: "stable",
     },
