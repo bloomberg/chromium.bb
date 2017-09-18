@@ -9,36 +9,27 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class Profile;
 
 namespace safe_browsing {
-class ChromePasswordProtectionService;
+class PasswordProtectionService;
 }
 
 namespace settings {
 
 // Chrome "Change Password" settings page UI handler.
-class ChangePasswordHandler
-    : public SettingsPageUIHandler,
-      public safe_browsing::ChromePasswordProtectionService::Observer {
+class ChangePasswordHandler : public SettingsPageUIHandler {
  public:
   explicit ChangePasswordHandler(Profile* profile);
   ~ChangePasswordHandler() override;
 
-  // settings::SettingsPageUIHandler:
+  // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override;
-  void OnJavascriptDisallowed() override;
-
-  // safe_browsing::ChromePasswordProtectionService::Observer:
-  void OnStartingGaiaPasswordChange() override {}
-  void OnGaiaPasswordChanged() override;
-  void OnMarkingSiteAsLegitimate(const GURL& url) override;
+  void OnJavascriptAllowed() override {}
+  void OnJavascriptDisallowed() override {}
 
  private:
   void HandleChangePasswordPageShown(const base::ListValue* args);
@@ -49,12 +40,7 @@ class ChangePasswordHandler
 
   PrefChangeRegistrar pref_registrar_;
 
-  safe_browsing::ChromePasswordProtectionService* service_;
-
-  // Listen to ChromePasswordProtectionService notification.
-  ScopedObserver<safe_browsing::ChromePasswordProtectionService,
-                 safe_browsing::ChromePasswordProtectionService::Observer>
-      password_protection_observer_;
+  safe_browsing::PasswordProtectionService* service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangePasswordHandler);
 };

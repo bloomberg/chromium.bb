@@ -92,6 +92,8 @@ class MockChromePasswordProtectionService
 class ChromePasswordProtectionServiceTest
     : public ChromeRenderViewHostTestHarness {
  public:
+  typedef std::map<std::string, std::string> Parameters;
+
   ChromePasswordProtectionServiceTest() {}
 
   void SetUp() override {
@@ -251,22 +253,22 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
   NavigateAndCommit(url);
   SBThreatType current_threat_type = SB_THREAT_TYPE_UNUSED;
   ASSERT_FALSE(service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
-      url, false, web_contents()->GetController().GetLastCommittedEntry(),
+      url, false, web_contents()->GetController().GetVisibleEntry(),
       web_contents(), false, &current_threat_type));
   EXPECT_EQ(SB_THREAT_TYPE_UNUSED, current_threat_type);
 
   service_->UpdateSecurityState(SB_THREAT_TYPE_PASSWORD_REUSE, web_contents());
   ASSERT_TRUE(service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
-      url, false, web_contents()->GetController().GetLastCommittedEntry(),
+      url, false, web_contents()->GetController().GetVisibleEntry(),
       web_contents(), false, &current_threat_type));
   EXPECT_EQ(SB_THREAT_TYPE_PASSWORD_REUSE, current_threat_type);
 
   service_->UpdateSecurityState(safe_browsing::SB_THREAT_TYPE_SAFE,
                                 web_contents());
   current_threat_type = SB_THREAT_TYPE_UNUSED;
-  service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
-      url, false, web_contents()->GetController().GetLastCommittedEntry(),
-      web_contents(), false, &current_threat_type);
+  ASSERT_FALSE(service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
+      url, false, web_contents()->GetController().GetVisibleEntry(),
+      web_contents(), false, &current_threat_type));
   EXPECT_EQ(SB_THREAT_TYPE_UNUSED, current_threat_type);
   LoginReputationClientResponse verdict;
   EXPECT_EQ(
