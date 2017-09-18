@@ -80,10 +80,14 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestConstructor) {
     // Checks that the title displayed is the name of the MailtoHandler.
     EXPECT_NSEQ([handler appName], item.text);
     EXPECT_FALSE(item.detailText);
+    // The enable/disable state of the Mail client apps depends on whether
+    // the "Always Ask" toggle is available. All rows should be disabled
+    // if user has not selected a default Mail client app.
+    BOOL is_disabled = use_mdc_style && [rewriter_ defaultHandlerID] == nil;
     // Checks that text cells are displayed differently depending on the
     // availability of the handlers.
     UIColor* darkest_tint = [[MDCPalette greyPalette] tint900];
-    if ([handler isAvailable]) {
+    if (!is_disabled && [handler isAvailable]) {
       EXPECT_EQ(darkest_tint, item.textColor);
       EXPECT_NE(UIAccessibilityTraitNotEnabled, item.accessibilityTraits);
     } else {
@@ -140,8 +144,12 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSelection) {
 }
 
 // Tests the state of the mailto:// handler apps and as the "Always ask"
-// switch is toggled.
+// switch is toggled. This test is relevant only if MDC Style is enabled
+// because the switch exists only in MDC style.
 TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSwitchChanged) {
+  if (!base::FeatureList::IsEnabled(kMailtoPromptInMdcStyle))
+    return;
+
   handlers_ = @[
     [[MailtoHandlerSystemMail alloc] init],
     [[FakeMailtoHandlerGmailInstalled alloc] init]
@@ -165,15 +173,22 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSwitchChanged) {
   EXPECT_TRUE(switch_cell.switchView.on);
 
   // Toggling the switch to OFF and verify. Then check that none of the
-  // mailto:// handler apps is checked.
+  // mailto:// handler apps is checked. The list of Mail client apps should
+  // reflect availability.
   switch_cell.switchView.on = NO;
   [switch_cell.switchView
       sendActionsForControlEvents:UIControlEventValueChanged];
   EXPECT_FALSE(switch_cell.switchView.on);
   NSArray<MailtoHandler*>* handlers = [rewriter_ defaultHandlers];
+  UIColor* darkest_tint = [[MDCPalette greyPalette] tint900];
   for (NSUInteger index = 0U; index < [handlers count]; ++index) {
     CollectionViewTextItem* item = GetCollectionViewItem(0, index);
     EXPECT_EQ(MDCCollectionViewCellAccessoryNone, item.accessoryType);
+    MailtoHandler* handler = handlers[index];
+    if ([handler isAvailable])
+      EXPECT_EQ(darkest_tint, item.textColor);
+    else
+      EXPECT_NE(darkest_tint, item.textColor);
   }
 
   // Toggling the switch back ON and verify. The list of mailto:// handler apps
