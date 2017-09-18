@@ -286,7 +286,7 @@ AXObject* AXObjectCacheImpl::Get(AccessibleNode* accessible_node) {
 }
 
 // FIXME: This probably belongs on Node.
-// FIXME: This should take a const char*, but one caller passes nullAtom.
+// FIXME: This should take a const char*, but one caller passes g_null_atom.
 static bool NodeHasRole(Node* node, const String& role) {
   if (!node || !node->IsElementNode())
     return false;

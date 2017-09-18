@@ -47,8 +47,8 @@ struct AtomicStringHash;
 // count in StringImpl, and would hit a runtime CHECK in
 // AtomicStringTable::remove().
 //
-// Exception: nullAtom and emptyAtom, are shared in multiple threads, and are
-// never stored in AtomicStringTable.
+// Exception: g_null_atom and g_empty_atom, are shared in multiple threads, and
+// are never stored in AtomicStringTable.
 class WTF_EXPORT AtomicString {
   USING_FAST_MALLOC(AtomicString);
 
