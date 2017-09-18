@@ -2007,9 +2007,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTouchTest, EnableTouch) {
   std::unique_ptr<base::DictionaryValue> params;
   bool result;
 
+  content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL test_url = embedded_test_server()->GetURL("/devtools/enable_touch.html");
-  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  GURL test_url1 =
+      embedded_test_server()->GetURL("A.com", "/devtools/enable_touch.html");
+  GURL test_url2 =
+      embedded_test_server()->GetURL("B.com", "/devtools/enable_touch.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url1, 1);
   Attach();
 
   params.reset(new base::DictionaryValue());
@@ -2029,7 +2033,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTouchTest, EnableTouch) {
   EXPECT_TRUE(result);
 
   params.reset(new base::DictionaryValue());
-  SendCommand("Page.reload", std::move(params), false);
+  params->SetString("url", test_url2.spec());
+  SendCommand("Page.navigate", std::move(params), false);
   WaitForNotification("Page.frameStoppedLoading");
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       shell()->web_contents(),

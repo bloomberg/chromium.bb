@@ -931,12 +931,6 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
       document->SetContentLanguage(AtomicString(header_content_language));
   }
 
-  if (settings->GetForceTouchEventFeatureDetectionForInspector()) {
-    OriginTrialContext::From(document)->AddFeature(
-        "ForceTouchEventFeatureDetectionForInspector");
-  }
-  OriginTrialContext::AddTokensFromHeader(
-      document, response_.HttpHeaderField(HTTPNames::Origin_Trial));
   String referrer_policy_header =
       response_.HttpHeaderField(HTTPNames::Referrer_Policy);
   if (!referrer_policy_header.IsNull()) {
@@ -1114,6 +1108,14 @@ void DocumentLoader::InstallNewDocument(
   // will use stale values from HTMLParserOption.
   if (reason == InstallNewDocumentReason::kNavigation)
     DidCommitNavigation();
+
+  if (document->GetSettings()
+          ->GetForceTouchEventFeatureDetectionForInspector()) {
+    OriginTrialContext::From(document)->AddFeature(
+        "ForceTouchEventFeatureDetectionForInspector");
+  }
+  OriginTrialContext::AddTokensFromHeader(
+      document, response_.HttpHeaderField(HTTPNames::Origin_Trial));
 
   parser_ = document->OpenForNavigation(parsing_policy, mime_type, encoding);
 
