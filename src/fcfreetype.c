@@ -1764,13 +1764,21 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	lower_size = os2->usLowerOpticalPointSize / 20.0L;
 	upper_size = os2->usUpperOpticalPointSize / 20.0L;
 
-	r = FcRangeCreateDouble (lower_size, upper_size);
-	if (!FcPatternAddRange (pat, FC_SIZE, r))
+	if (lower_size == upper_size)
 	{
-	    FcRangeDestroy (r);
-	    goto bail1;
+	    if (!FcPatternAddDouble (pat, FC_SIZE, lower_size))
+		goto bail1;
 	}
-	FcRangeDestroy (r);
+	else
+	{
+	    r = FcRangeCreateDouble (lower_size, upper_size);
+	    if (!FcPatternAddRange (pat, FC_SIZE, r))
+	    {
+		FcRangeDestroy (r);
+		goto bail1;
+	    }
+	    FcRangeDestroy (r);
+	}
     }
 #endif
 
