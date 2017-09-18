@@ -101,14 +101,6 @@ std::unique_ptr<keyboard::KeyboardUI> ShellDelegateImpl::CreateKeyboardUI() {
 
 void ShellDelegateImpl::OpenUrlFromArc(const GURL& url) {}
 
-void ShellDelegateImpl::ShelfInit() {
-  Shelf* shelf = Shell::GetPrimaryRootWindowController()->shelf();
-  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-}
-
-void ShellDelegateImpl::ShelfShutdown() {}
-
 NetworkingConfigDelegate* ShellDelegateImpl::GetNetworkingConfigDelegate() {
   return nullptr;
 }
