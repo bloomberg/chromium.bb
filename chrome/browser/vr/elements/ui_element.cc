@@ -36,6 +36,14 @@ bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
   return true;
 }
 
+template <typename T>
+void GetAllElementsInSubtree(T* e, std::vector<T*>* elements) {
+  elements->push_back(e);
+  for (auto& child : e->children()) {
+    GetAllElementsInSubtree<T>(child.get(), elements);
+  }
+}
+
 }  // namespace
 
 UiElement::UiElement() : id_(AllocateId()) {
@@ -51,7 +59,13 @@ UiElement::~UiElement() {
 }
 
 void UiElement::Render(UiElementRenderer* renderer,
-                       const gfx::Transform& view_proj_matrix) const {}
+                       const gfx::Transform& view_proj_matrix) const {
+  // Elements without an overridden implementation of Render should have their
+  // draw phase set to kPhaseNone and should, consequently, be filtered out when
+  // the UiRenderer collects elements to draw. Therefore, if we invoke this
+  // function, it is an error.
+  NOTREACHED();
+}
 
 void UiElement::Initialize() {}
 
@@ -166,6 +180,18 @@ void UiElement::SetMode(ColorScheme::Mode mode) {
     return;
   mode_ = mode;
   OnSetMode();
+}
+
+std::vector<UiElement*> UiElement::AllElementsInSubtree() {
+  std::vector<UiElement*> elements;
+  GetAllElementsInSubtree(this, &elements);
+  return elements;
+}
+
+std::vector<const UiElement*> UiElement::AllElementsInSubtree() const {
+  std::vector<const UiElement*> elements;
+  GetAllElementsInSubtree(this, &elements);
+  return elements;
 }
 
 void UiElement::OnSetMode() {}
@@ -307,7 +333,6 @@ void UiElement::UpdateInheritedProperties() {
   gfx::Transform transform;
   transform.Scale(size_.width(), size_.height());
   set_computed_opacity(opacity_);
-  set_computed_viewport_aware(viewport_aware_);
 
   // Compute an inheritable transformation that can be applied to this element,
   // and it's children, if applicable.
@@ -316,8 +341,6 @@ void UiElement::UpdateInheritedProperties() {
   if (parent_) {
     inheritable.ConcatTransform(parent_->inheritable_transform());
     set_computed_opacity(computed_opacity() * parent_->opacity());
-    if (parent_->viewport_aware())
-      set_computed_viewport_aware(true);
   }
 
   transform.ConcatTransform(inheritable);

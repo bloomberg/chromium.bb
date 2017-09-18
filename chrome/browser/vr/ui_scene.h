@@ -69,9 +69,12 @@ class UiScene {
   UiElement* GetUiElementById(int element_id) const;
   UiElement* GetUiElementByName(UiElementName name) const;
 
-  std::vector<const UiElement*> GetWorldElements() const;
-  std::vector<const UiElement*> GetOverlayElements() const;
-  std::vector<const UiElement*> GetViewportAwareElements() const;
+  typedef std::vector<const UiElement*> Elements;
+
+  Elements GetVisible2dBrowsingElements() const;
+  Elements GetVisible2dBrowsingOverlayElements() const;
+  Elements GetVisibleWebVrOverlayBackgroundElements() const;
+  Elements GetVisibleWebVrOverlayForegroundElements() const;
 
   float background_distance() const { return background_distance_; }
   void set_background_distance(float d) { background_distance_ = d; }

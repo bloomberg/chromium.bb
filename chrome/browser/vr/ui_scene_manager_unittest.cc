@@ -59,9 +59,6 @@ std::set<UiElementName> kHitTestableElements = {
     kLoadingIndicator,
     kCloseButton,
 };
-std::set<UiElementName> kSpecialOpacityElements = {
-    kScreenDimmer,
-};
 
 static constexpr float kTolerance = 1e-5;
 
@@ -268,6 +265,7 @@ TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
   // WebVR frame is not received.
   auto initial_elements = kBackgroundElements;
   initial_elements.insert(kSplashScreenText);
+  initial_elements.insert(kSplashScreenBackground);
   VerifyElementsVisible("Initial", initial_elements);
 
   manager_->OnWebVrFrameAvailable();
@@ -298,10 +296,8 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   // Initially, we should only show the splash screen.
   auto initial_elements = kBackgroundElements;
   initial_elements.insert(kSplashScreenText);
+  initial_elements.insert(kSplashScreenBackground);
   VerifyElementsVisible("Initial", initial_elements);
-  EXPECT_EQ(ColorScheme::GetColorScheme(ColorScheme::kModeNormal)
-                .splash_screen_background,
-            GetBackgroundColor());
 
   // Enter WebVR with autopresentation.
   manager_->SetWebVrMode(true, false);
@@ -503,6 +499,14 @@ TEST_F(UiSceneManagerTest, UiUpdatesForWebVR) {
   manager_->SetLocationAccessIndicator(true);
   manager_->SetBluetoothConnectedIndicator(true);
 
+  auto* web_vr_root = scene_->GetUiElementByName(kWebVrRoot);
+  for (auto* element : web_vr_root->AllElementsInSubtree()) {
+    SCOPED_TRACE(element->name());
+    EXPECT_TRUE(element->draw_phase() == kPhaseNone ||
+                element->draw_phase() == kPhaseOverlayBackground ||
+                element->draw_phase() == kPhaseOverlayForeground);
+  }
+
   // All elements should be hidden.
   VerifyElementsVisible("Elements hidden", std::set<UiElementName>{});
 }
@@ -627,8 +631,7 @@ TEST_F(UiSceneManagerTest, RendererUsesCorrectOpacity) {
   content_element->set_texture_id(1);
   TexturedElement::SetInitializedForTesting();
 
-  CheckRendererOpacityRecursive(kSpecialOpacityElements,
-                                &scene_->root_element());
+  CheckRendererOpacityRecursive(&scene_->root_element());
 }
 
 }  // namespace vr
