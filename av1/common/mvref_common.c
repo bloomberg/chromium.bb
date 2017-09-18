@@ -1639,9 +1639,8 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
         MV_REFERENCE_FRAME ref_frame[2] = { mv_ref->ref_frame[0],
                                             mv_ref->ref_frame[1] };
 
-        const int ref_frame_offset = ref_frame_offset_buffer[ref_frame[0]];
-
         if (ref_frame[0] <= GOLDEN_FRAME && ref_frame[0] > INTRA_FRAME) {
+          const int ref_frame_offset = ref_frame_offset_buffer[ref_frame[0]];
           int_mv this_mv;
           int mi_r, mi_c;
 
