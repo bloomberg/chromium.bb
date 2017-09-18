@@ -843,6 +843,15 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method moveTo
 [Worker]     method quadraticCurveTo
 [Worker]     method rect
+[Worker] interface PaymentInstruments
+[Worker]     attribute @@toStringTag
+[Worker]     method clear
+[Worker]     method constructor
+[Worker]     method delete
+[Worker]     method get
+[Worker]     method has
+[Worker]     method keys
+[Worker]     method set
 [Worker] interface PerformanceEntry
 [Worker]     attribute @@toStringTag
 [Worker]     getter duration
