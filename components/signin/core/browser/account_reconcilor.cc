@@ -13,9 +13,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -97,18 +99,14 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
   VLOG(1) << "AccountReconcilor::Initialize";
   RegisterWithSigninManager();
 
-  // If this user is not signed in, the reconcilor should do nothing but
-  // wait for signin.
-  if (IsProfileConnected()) {
+  if (IsEnabled()) {
     RegisterWithCookieManagerService();
     RegisterWithContentSettings();
     RegisterWithTokenService();
 
     // Start a reconcile if the tokens are already loaded.
-    if (start_reconcile_if_tokens_available &&
-        token_service_->GetAccounts().size() > 0) {
+    if (start_reconcile_if_tokens_available && IsTokenServiceReady())
       StartReconcile();
-    }
   }
 }
 
@@ -190,8 +188,9 @@ void AccountReconcilor::UnregisterWithCookieManagerService() {
   registered_with_cookie_manager_service_ = false;
 }
 
-bool AccountReconcilor::IsProfileConnected() {
-  return signin_manager_->IsAuthenticated();
+bool AccountReconcilor::IsEnabled() {
+  return signin_manager_->IsAuthenticated() ||
+         signin::IsAccountConsistencyDiceEnabled();
 }
 
 signin_metrics::AccountReconcilorState AccountReconcilor::GetState() {
@@ -294,8 +293,8 @@ void AccountReconcilor::StartReconcile() {
 
   reconcile_start_time_ = base::Time::Now();
 
-  if (!IsProfileConnected() || !client_->AreSigninCookiesAllowed()) {
-    VLOG(1) << "AccountReconcilor::StartReconcile: !connected or no cookies";
+  if (!IsEnabled() || !client_->AreSigninCookiesAllowed()) {
+    VLOG(1) << "AccountReconcilor::StartReconcile: !enabled or no cookies";
     return;
   }
 
@@ -311,7 +310,7 @@ void AccountReconcilor::StartReconcile() {
   add_to_cookie_.clear();
   ValidateAccountsFromTokenService();
 
-  if (primary_account_.empty()) {
+  if (primary_account_.empty() && !signin::IsAccountConsistencyDiceEnabled()) {
     VLOG(1) << "AccountReconcilor::StartReconcile: primary has error";
     return;
   }
@@ -346,7 +345,7 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
     gaia_accounts_ = accounts;
 
     // It is possible that O2RT is not available at this moment.
-    if (token_service_->GetAccounts().empty())
+    if (!IsTokenServiceReady())
       return;
 
     is_reconcile_started_ ? FinishReconcile() : StartReconcile();
@@ -359,7 +358,8 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
 
 void AccountReconcilor::ValidateAccountsFromTokenService() {
   primary_account_ = signin_manager_->GetAuthenticatedAccountId();
-  DCHECK(!primary_account_.empty());
+  DCHECK(signin::IsAccountConsistencyDiceEnabled() ||
+         !primary_account_.empty());
 
   chrome_accounts_ = token_service_->GetAccounts();
 
@@ -410,12 +410,37 @@ void AccountReconcilor::OnReceivedManageAccountsResponse(
   }
 }
 
+std::string AccountReconcilor::GetFirstGaiaAccountForReconcile() const {
+  // The first account in the cookie should be the primary account if there is
+  // one.
+  if (!primary_account_.empty())
+    return primary_account_;
+
+  if (chrome_accounts_.empty())
+    return std::string();  // No Chrome account, log out.
+
+  // Use the current first Gaia account, if we have a token for it.
+  if (!gaia_accounts_.empty() &&
+      base::ContainsValue(chrome_accounts_, gaia_accounts_[0].id)) {
+    return gaia_accounts_[0].id;
+  }
+
+  // As a last resort, use the first Chrome account.
+  DCHECK(!chrome_accounts_.empty());
+  return chrome_accounts_[0];
+}
+
 void AccountReconcilor::FinishReconcile() {
   VLOG(1) << "AccountReconcilor::FinishReconcile";
   DCHECK(add_to_cookie_.empty());
   int number_gaia_accounts = gaia_accounts_.size();
-  bool are_primaries_equal = number_gaia_accounts > 0 &&
-      primary_account_ == gaia_accounts_[0].id;
+  std::string first_account = GetFirstGaiaAccountForReconcile();
+  // |first_account| is either empty or an element of |chrome_accounts_|.
+  DCHECK(first_account.empty() ||
+         (std::find(chrome_accounts_.begin(), chrome_accounts_.end(),
+                    first_account) != chrome_accounts_.end()));
+  bool primary_account_mismatch =
+      (number_gaia_accounts > 0) && (first_account != gaia_accounts_[0].id);
 
   // If there are any accounts in the gaia cookie but not in chrome, then
   // those accounts need to be removed from the cookie.  This means we need
@@ -430,7 +455,7 @@ void AccountReconcilor::FinishReconcile() {
     }
   }
 
-  bool rebuild_cookie = !are_primaries_equal || removed_from_cookie > 0;
+  bool rebuild_cookie = primary_account_mismatch || removed_from_cookie > 0;
   std::vector<gaia::ListedAccount> original_gaia_accounts =
       gaia_accounts_;
   if (rebuild_cookie) {
@@ -443,11 +468,10 @@ void AccountReconcilor::FinishReconcile() {
   }
 
   // Create a list of accounts that need to be added to the gaia cookie.
-  // The primary account must be first to make sure it becomes the default
-  // account in the case where chrome is completely rebuilding the cookie.
-  add_to_cookie_.push_back(primary_account_);
+  if (!first_account.empty())
+    add_to_cookie_.push_back(first_account);
   for (size_t i = 0; i < chrome_accounts_.size(); ++i) {
-    if (chrome_accounts_[i] != primary_account_)
+    if (chrome_accounts_[i] != first_account)
       add_to_cookie_.push_back(chrome_accounts_[i]);
   }
 
@@ -475,12 +499,9 @@ void AccountReconcilor::FinishReconcile() {
     }
   }
 
-  signin_metrics::LogSigninAccountReconciliation(chrome_accounts_.size(),
-                                                 added_to_cookie,
-                                                 removed_from_cookie,
-                                                 are_primaries_equal,
-                                                 first_execution_,
-                                                 number_gaia_accounts);
+  signin_metrics::LogSigninAccountReconciliation(
+      chrome_accounts_.size(), added_to_cookie, removed_from_cookie,
+      !primary_account_mismatch, first_execution_, number_gaia_accounts);
   first_execution_ = false;
   CalculateIfReconcileIsDone();
   ScheduleStartReconcileIfChromeAccountsChanged();
@@ -531,6 +552,19 @@ bool AccountReconcilor::MarkAccountAsAddedToCookie(
     }
   }
   return false;
+}
+
+bool AccountReconcilor::IsTokenServiceReady() {
+#if defined(OS_CHROMEOS)
+  // TODO(droger): ChromeOS should use the same logic as other platforms. See
+  // https://crbug.com/749535
+  // On ChromeOS, there are cases where the token service is never fully
+  // initialized and AreAllCredentialsLoaded() always return false.
+  return token_service_->AreAllCredentialsLoaded() ||
+         (token_service_->GetAccounts().size() > 0);
+#else
+  return token_service_->AreAllCredentialsLoaded();
+#endif
 }
 
 void AccountReconcilor::OnAddAccountToCookieCompleted(
