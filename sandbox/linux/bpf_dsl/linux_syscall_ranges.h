@@ -33,16 +33,19 @@
 #define MIN_GHOST_SYSCALL   (MIN_PRIVATE_SYSCALL + 0xfff0u)
 #define MAX_SYSCALL         (MIN_GHOST_SYSCALL + 4u)
 
-#elif defined(__mips__) && (_MIPS_SIM == _ABIO32)
+#elif defined(__mips32__)
 
 #include <asm/unistd.h>  // for __NR_O32_Linux and __NR_Linux_syscalls
 #define MIN_SYSCALL         __NR_O32_Linux
 #define MAX_PUBLIC_SYSCALL  (MIN_SYSCALL + __NR_Linux_syscalls)
 #define MAX_SYSCALL         MAX_PUBLIC_SYSCALL
 
-#elif defined(__mips__) && (_MIPS_SIM == _ABI64)
+#elif defined(__mips64__)
 
-#error "Add support to header file"
+#include <asm/unistd.h>  // for __NR_64_Linux and __NR_64_Linux_syscalls
+#define MIN_SYSCALL         __NR_64_Linux
+#define MAX_PUBLIC_SYSCALL  (MIN_SYSCALL + __NR_64_Linux_syscalls)
+#define MAX_SYSCALL         MAX_PUBLIC_SYSCALL
 
 #elif defined(__aarch64__)
 

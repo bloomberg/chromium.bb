@@ -116,9 +116,16 @@ typedef siginfo_t LinuxSigInfo;
 #endif  // !defined(__native_client_nonsfi__)
 
 // struct sigset_t is different size in PNaCl from the Linux's.
-#if defined(__mips__)
+#if defined(__mips32__)
 #if !defined(_NSIG_WORDS)
 #define _NSIG_WORDS 4
+#endif
+struct LinuxSigSet {
+  unsigned long sig[_NSIG_WORDS];
+};
+#elif defined(__mips64__)
+#if !defined(_NSIG_WORDS)
+#define _NSIG_WORDS 2
 #endif
 struct LinuxSigSet {
   unsigned long sig[_NSIG_WORDS];
