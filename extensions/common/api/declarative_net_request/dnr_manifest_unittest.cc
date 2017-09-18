@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
@@ -10,6 +11,7 @@
 #include "components/version_info/version_info.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
+#include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -26,35 +28,14 @@ namespace errors = manifest_errors;
 namespace declarative_net_request {
 namespace {
 
+constexpr char kJSONRulesFilename[] = "rules_file.json";
+const base::FilePath::CharType kJSONRulesetFilepath[] =
+    FILE_PATH_LITERAL("rules_file.json");
+
 std::string GetRuleResourcesKey() {
   return base::JoinString(
       {keys::kDeclarativeNetRequestKey, keys::kDeclarativeRuleResourcesKey},
       ".");
-}
-
-// Returns a ListValue corresponding to a vector of strings.
-std::unique_ptr<base::ListValue> GetListValue(
-    const std::vector<std::string>& vec) {
-  ListBuilder builder;
-  for (const std::string& str : vec)
-    builder.Append(str);
-  return builder.Build();
-}
-
-// Helper to build an extension manifest which uses the
-// kDeclarativeNetRequestKey manifest key.
-std::unique_ptr<base::DictionaryValue> GetGenericManifest() {
-  return DictionaryBuilder()
-      .Set(keys::kName, "Test extension")
-      .Set(keys::kDeclarativeNetRequestKey,
-           DictionaryBuilder()
-               .Set(keys::kDeclarativeRuleResourcesKey,
-                    GetListValue({"rules_file.json"}))
-               .Build())
-      .Set(keys::kPermissions, ListBuilder().Append(kAPIPermission).Build())
-      .Set(keys::kVersion, "1.0")
-      .Set(keys::kManifestVersion, 2)
-      .Build();
 }
 
 // Fixture testing the kDeclarativeNetRequestKey manifest key.
@@ -118,9 +99,8 @@ class DNRManifestTest : public testing::Test {
         .Serialize(*manifest_);
   }
 
-  std::unique_ptr<base::Value> manifest_ = GetGenericManifest();
-  base::FilePath rules_file_path_ =
-      base::FilePath(FILE_PATH_LITERAL("rules_file.json"));
+  std::unique_ptr<base::Value> manifest_ = CreateManifest(kJSONRulesFilename);
+  base::FilePath rules_file_path_ = base::FilePath(kJSONRulesetFilepath);
   base::ScopedTempDir temp_dir_;
   ScopedCurrentChannel channel_;
 
@@ -132,7 +112,8 @@ TEST_F(DNRManifestTest, EmptyRuleset) {
 }
 
 TEST_F(DNRManifestTest, InvalidManifestKey) {
-  std::unique_ptr<base::DictionaryValue> manifest = GetGenericManifest();
+  std::unique_ptr<base::DictionaryValue> manifest =
+      CreateManifest(kJSONRulesFilename);
   manifest->SetInteger(keys::kDeclarativeNetRequestKey, 3);
   SetManifest(std::move(manifest));
   LoadAndExpectError(
@@ -141,7 +122,8 @@ TEST_F(DNRManifestTest, InvalidManifestKey) {
 }
 
 TEST_F(DNRManifestTest, InvalidRulesFileKey) {
-  std::unique_ptr<base::DictionaryValue> manifest = GetGenericManifest();
+  std::unique_ptr<base::DictionaryValue> manifest =
+      CreateManifest(kJSONRulesFilename);
   manifest->SetInteger(GetRuleResourcesKey(), 3);
   SetManifest(std::move(manifest));
   LoadAndExpectError(ErrorUtils::FormatErrorMessage(
@@ -150,9 +132,10 @@ TEST_F(DNRManifestTest, InvalidRulesFileKey) {
 }
 
 TEST_F(DNRManifestTest, MultipleRulesFile) {
-  std::unique_ptr<base::DictionaryValue> manifest = GetGenericManifest();
+  std::unique_ptr<base::DictionaryValue> manifest =
+      CreateManifest(kJSONRulesFilename);
   manifest->SetList(GetRuleResourcesKey(),
-                    GetListValue({"file1.json", "file2.json"}));
+                    ToListValue({"file1.json", "file2.json"}));
   SetManifest(std::move(manifest));
   LoadAndExpectError(ErrorUtils::FormatErrorMessage(
       errors::kInvalidDeclarativeRulesFileKey, keys::kDeclarativeNetRequestKey,
@@ -160,8 +143,9 @@ TEST_F(DNRManifestTest, MultipleRulesFile) {
 }
 
 TEST_F(DNRManifestTest, NonExistentRulesFile) {
-  std::unique_ptr<base::DictionaryValue> manifest = GetGenericManifest();
-  manifest->SetList(GetRuleResourcesKey(), GetListValue({"invalid_file.json"}));
+  std::unique_ptr<base::DictionaryValue> manifest =
+      CreateManifest(kJSONRulesFilename);
+  manifest->SetList(GetRuleResourcesKey(), ToListValue({"invalid_file.json"}));
   SetManifest(std::move(manifest));
   LoadAndExpectError(ErrorUtils::FormatErrorMessage(
       errors::kRulesFileIsInvalid, keys::kDeclarativeNetRequestKey,
@@ -169,7 +153,8 @@ TEST_F(DNRManifestTest, NonExistentRulesFile) {
 }
 
 TEST_F(DNRManifestTest, NeedsDeclarativeNetRequestPermission) {
-  std::unique_ptr<base::DictionaryValue> manifest = GetGenericManifest();
+  std::unique_ptr<base::DictionaryValue> manifest =
+      CreateManifest(kJSONRulesFilename);
   // Remove "declarativeNetRequest" permission.
   manifest->Remove(keys::kPermissions, nullptr);
   SetManifest(std::move(manifest));
@@ -180,12 +165,12 @@ TEST_F(DNRManifestTest, NeedsDeclarativeNetRequestPermission) {
 
 TEST_F(DNRManifestTest, RulesFileInNestedDirectory) {
   base::FilePath nested_path =
-      base::FilePath(FILE_PATH_LITERAL("dir"))
-          .Append(FILE_PATH_LITERAL("rules_file.json"));
+      base::FilePath(FILE_PATH_LITERAL("dir")).Append(kJSONRulesetFilepath);
   SetRulesFilePath(nested_path);
-  std::unique_ptr<base::DictionaryValue> manifest = GetGenericManifest();
+  std::unique_ptr<base::DictionaryValue> manifest =
+      CreateManifest(kJSONRulesFilename);
   manifest->SetList(GetRuleResourcesKey(),
-                    GetListValue({"dir/rules_file.json"}));
+                    ToListValue({"dir/rules_file.json"}));
   SetManifest(std::move(manifest));
   LoadAndExpectSuccess();
 }

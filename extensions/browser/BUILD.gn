@@ -474,6 +474,7 @@ source_set("test_support") {
     "//base",
     "//extensions/browser",
     "//extensions/common",
+    "//extensions/common:test_support",
     "//testing/gtest",
   ]
 }
