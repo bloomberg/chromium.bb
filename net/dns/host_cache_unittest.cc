@@ -739,7 +739,7 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   EXPECT_EQ(1, stale.network_changes);
   // Time to TimeTicks conversion is fuzzy, so just check that expected and
   // actual expiration times are close.
-  EXPECT_GT(base::TimeDelta::FromMilliseconds(1),
+  EXPECT_GT(base::TimeDelta::FromMilliseconds(100),
             (base::TimeDelta::FromSeconds(2) - stale.expired_by).magnitude());
 
   // The "foobar2.com" entry is stale only due to network changes.
@@ -751,7 +751,7 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   EXPECT_EQ(address_ipv6, result2->addresses().front().address());
   EXPECT_EQ(address_ipv4, result2->addresses().back().address());
   EXPECT_EQ(1, stale.network_changes);
-  EXPECT_GT(base::TimeDelta::FromMilliseconds(1),
+  EXPECT_GT(base::TimeDelta::FromMilliseconds(100),
             (base::TimeDelta::FromSeconds(-3) - stale.expired_by).magnitude());
 
   // The "foobar3.com" entry is the new one, not the restored one.
