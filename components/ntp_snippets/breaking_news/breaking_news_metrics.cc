@@ -42,8 +42,23 @@ void OnUnsubscriptionRequestCompleted(const Status& status) {
                             StatusCode::STATUS_CODE_COUNT);
 }
 
-void OnMessageReceived(bool contains_pushed_news) {
-  UMA_HISTOGRAM_BOOLEAN(kHistogramMessageReceived, contains_pushed_news);
+void OnMessageReceived(bool is_handler_listening, bool contains_pushed_news) {
+  ReceivedMessageStatus status;
+  if (contains_pushed_news) {
+    status =
+        is_handler_listening
+            ? ReceivedMessageStatus::WITH_PUSHED_NEWS_AND_HANDLER_WAS_LISTENING
+            : ReceivedMessageStatus::
+                  WITH_PUSHED_NEWS_AND_HANDLER_WAS_NOT_LISTENING;
+  } else {
+    status = is_handler_listening
+                 ? ReceivedMessageStatus::
+                       WITHOUT_PUSHED_NEWS_AND_HANDLER_WAS_LISTENING
+                 : ReceivedMessageStatus::
+                       WITHOUT_PUSHED_NEWS_AND_HANDLER_WAS_NOT_LISTENING;
+  }
+  UMA_HISTOGRAM_ENUMERATION(kHistogramMessageReceived, status,
+                            ReceivedMessageStatus::COUNT);
 }
 
 void OnTokenRetrieved(InstanceID::Result result) {

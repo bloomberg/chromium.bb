@@ -19,6 +19,7 @@
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_metrics.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
@@ -821,10 +822,38 @@ TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportReceivedMessageWithoutNews) {
 
   handler->OnMessage("com.google.breakingnews.gcm", gcm::IncomingMessage());
 
-  // Bucket 0 corresponds to a message without news.
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.ContentSuggestions.BreakingNews.MessageReceived"),
-              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+              ElementsAre(base::Bucket(
+                  /*min=*/metrics::ReceivedMessageStatus::
+                      WITHOUT_PUSHED_NEWS_AND_HANDLER_WAS_LISTENING,
+                  /*count=*/1)));
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       WhenNotListeningShouldIgnoreAndReportReceivedMessageWithoutNews) {
+  base::HistogramTester histogram_tester;
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/false);
+
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+
+  // We do not verify that the message is not propagated futher, because there
+  // is nowhere to propagate it. The handler just should not crash.
+  handler->OnMessage("com.google.breakingnews.gcm", gcm::IncomingMessage());
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.BreakingNews.MessageReceived"),
+              ElementsAre(base::Bucket(
+                  /*min=*/metrics::ReceivedMessageStatus::
+                      WITHOUT_PUSHED_NEWS_AND_HANDLER_WAS_NOT_LISTENING,
+                  /*count=*/1)));
 }
 
 TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportReceivedMessageWithNews) {
@@ -846,10 +875,41 @@ TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportReceivedMessageWithNews) {
 
   handler->OnMessage("com.google.breakingnews.gcm", message);
 
-  // Bucket 1 corresponds to a message with news.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.ContentSuggestions.BreakingNews.MessageReceived"),
+      ElementsAre(base::Bucket(/*min=*/metrics::ReceivedMessageStatus::
+                                   WITH_PUSHED_NEWS_AND_HANDLER_WAS_LISTENING,
+                               /*count=*/1)));
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       WhenNotListeningShouldIgnoreAndReportReceivedMessageWithNews) {
+  base::HistogramTester histogram_tester;
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/false);
+
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+
+  gcm::IncomingMessage message;
+  message.data["payload"] = "news";
+
+  // We do not verify that the message is not propagated futher, because there
+  // is nowhere to propagate it. The handler just should not crash.
+  handler->OnMessage("com.google.breakingnews.gcm", message);
+
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.ContentSuggestions.BreakingNews.MessageReceived"),
-              ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
+              ElementsAre(base::Bucket(
+                  /*min=*/metrics::ReceivedMessageStatus::
+                      WITH_PUSHED_NEWS_AND_HANDLER_WAS_NOT_LISTENING,
+                  /*count=*/1)));
 }
 
 TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportTokenRetrievalResult) {
