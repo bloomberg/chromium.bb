@@ -149,6 +149,13 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
            .Else(Error(EPERM));
   }
 
+  // https://crbug.com/766245
+  if (sysno == __NR_process_vm_readv) {
+    const Arg<pid_t> pid(0);
+    return If(pid == policy_pid(), Allow())
+           .Else(Error(EPERM));
+  }
+
   // https://crbug.com/655299
   if (sysno == __NR_clock_getres) {
     return RestrictClockID();
