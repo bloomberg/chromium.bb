@@ -147,6 +147,13 @@ void SecureChannel::OnMessageReceived(const Connection& connection,
     return;
   }
 
+  if (!secure_context_) {
+    PA_LOG(WARNING) << "Received unexpected message before authentication "
+                    << "was complete. Feature: " << wire_message.feature()
+                    << ", Payload: " << wire_message.payload();
+    return;
+  }
+
   secure_context_->Decode(wire_message.payload(),
                           base::Bind(&SecureChannel::OnMessageDecoded,
                                      weak_ptr_factory_.GetWeakPtr(),
