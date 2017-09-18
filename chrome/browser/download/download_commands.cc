@@ -121,7 +121,35 @@ class ImageClipboardCopyManager : public ImageDecoder::ImageRequest {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ImageClipboardCopyManager);
 };
 
-}  // anonymous namespace
+#if defined(OS_CHROMEOS)
+int GetDownloadNotificationMenuIcon(DownloadCommands::Command command) {
+  switch (command) {
+    case DownloadCommands::PAUSE:
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_PAUSE;
+    case DownloadCommands::RESUME:
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD;
+    case DownloadCommands::SHOW_IN_FOLDER:
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_FOLDER;
+    case DownloadCommands::KEEP:
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD;
+    case DownloadCommands::DISCARD:
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_DELETE;
+    case DownloadCommands::CANCEL:
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_CANCEL;
+    case DownloadCommands::COPY_TO_CLIPBOARD:
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_COPY_TO_CLIPBOARD;
+    case DownloadCommands::LEARN_MORE_SCANNING:
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_LEARN_MORE;
+    case DownloadCommands::ANNOTATE:
+      return IDR_DOWNLOAD_NOTIFICATION_MENU_ANNOTATE;
+    default:
+      NOTREACHED();
+      return -1;
+  }
+}
+#endif
+
+}  // namespace
 
 DownloadCommands::DownloadCommands(content::DownloadItem* download_item)
     : download_item_(download_item) {
@@ -133,23 +161,20 @@ DownloadCommands::~DownloadCommands() = default;
 int DownloadCommands::GetCommandIconId(Command command) const {
   switch (command) {
     case PAUSE:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_PAUSE;
     case RESUME:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD;
     case SHOW_IN_FOLDER:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_FOLDER;
     case KEEP:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD;
     case DISCARD:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_DELETE;
     case CANCEL:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_CANCEL;
-    case LEARN_MORE_SCANNING:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_LEARN_MORE;
     case COPY_TO_CLIPBOARD:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_COPY_TO_CLIPBOARD;
+    case LEARN_MORE_SCANNING:
     case ANNOTATE:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_ANNOTATE;
+#if defined(OS_CHROMEOS)
+      return GetDownloadNotificationMenuIcon(command);
+#else
+      NOTREACHED();
+      return -1;
+#endif
     case OPEN_WHEN_COMPLETE:
     case ALWAYS_OPEN_TYPE:
     case PLATFORM_OPEN:
