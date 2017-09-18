@@ -453,6 +453,30 @@ TEST_F(CryptAuthSecureChannelTest, AuthenticationFails_Failure) {
   });
 }
 
+// Regression test for crbug.com/765810. This test ensures that a crash does not
+// occur if an unexpected message is received before authentication is complete.
+TEST_F(CryptAuthSecureChannelTest, ReceiveMessageBeforeAuth) {
+  secure_channel_->Initialize();
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {SecureChannel::Status::DISCONNECTED,
+       SecureChannel::Status::CONNECTING}});
+
+  fake_connection_->CompleteInProgressConnection(/* success */ true);
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {SecureChannel::Status::CONNECTING, SecureChannel::Status::CONNECTED},
+      {SecureChannel::Status::CONNECTED,
+       SecureChannel::Status::AUTHENTICATING}});
+
+  // Receive an unexpected message (i.e., a non-auth message).
+  fake_connection_->ReceiveMessage("feature", "payload, but encoded");
+
+  // Still should be able to finish authentication.
+  AuthenticateSuccessfully();
+  VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
+      {SecureChannel::Status::AUTHENTICATING,
+       SecureChannel::Status::AUTHENTICATED}});
+}
+
 TEST_F(CryptAuthSecureChannelTest, SendMessage_DisconnectWhileSending) {
   ConnectAndAuthenticate();
   int sequence_number = StartSendingMessage("feature", "payload");
