@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="xdg_foreign_unstable_v1">
+<protocol name="xdg_foreign_unstable_v2">
 
   <copyright>
     Copyright © 2015-2016 Red Hat Inc.
@@ -32,12 +32,12 @@
     some of its own surface above the other clients surface.
 
     In order for a client A to get a reference of a surface of client B, client
-    B must first export its surface using xdg_exporter.export. Upon doing this,
-    client B will receive a handle (a unique string) that it may share with
-    client A in some way (for example D-Bus). After client A has received the
-    handle from client B, it may use xdg_importer.import to create a reference
-    to the surface client B just exported. See the corresponding requests for
-    details.
+    B must first export its surface using xdg_exporter.export_toplevel. Upon
+    doing this, client B will receive a handle (a unique string) that it may
+    share with client A in some way (for example D-Bus). After client A has
+    received the handle from client B, it may use xdg_importer.import_toplevel
+    to create a reference to the surface client B just exported. See the
+    corresponding requests for details.
 
     A possible use case for this is out-of-process dialogs. For example when a
     sandboxed client without file system access needs the user to select a file
@@ -56,7 +56,7 @@
     reset.
   </description>
 
-  <interface name="zxdg_exporter_v1" version="1">
+  <interface name="zxdg_exporter_v2" version="1">
     <description summary="interface for exporting surfaces">
       A global interface used for exporting surfaces that can later be imported
       using xdg_importer.
@@ -69,25 +69,25 @@
       </description>
     </request>
 
-    <request name="export">
-      <description summary="export a surface">
-	The export request exports the passed surface so that it can later be
+    <request name="export_toplevel">
+      <description summary="export a toplevel surface">
+	The export_toplevel request exports the passed surface so that it can later be
 	imported via xdg_importer. When called, a new xdg_exported object will
 	be created and xdg_exported.handle will be sent immediately. See the
 	corresponding interface and event for details.
 
 	A surface may be exported multiple times, and each exported handle may
-	be used to create a xdg_imported multiple times. Only xdg_surface
-	surfaces may be exported.
+	be used to create a xdg_imported multiple times. Only xdg_toplevel
+	equivalent surfaces may be exported.
       </description>
-      <arg name="id" type="new_id" interface="zxdg_exported_v1"
+      <arg name="id" type="new_id" interface="zxdg_exported_v2"
 	   summary="the new xdg_exported object"/>
       <arg name="surface" type="object" interface="wl_surface"
 	   summary="the surface to export"/>
     </request>
   </interface>
 
-  <interface name="zxdg_importer_v1" version="1">
+  <interface name="zxdg_importer_v2" version="1">
     <description summary="interface for importing surfaces">
       A global interface used for importing surfaces exported by xdg_exporter.
       With this interface, a client can create a reference to a surface of
@@ -101,22 +101,22 @@
       </description>
     </request>
 
-    <request name="import">
-      <description summary="import a surface">
-	The import request imports a surface from any client given a handle
-	retrieved by exporting said surface using xdg_exporter.export. When
-	called, a new xdg_imported object will be created. This new object
+    <request name="import_toplevel">
+      <description summary="import a toplevel surface">
+	The import_toplevel request imports a surface from any client given a handle
+	retrieved by exporting said surface using xdg_exporter.export_toplevel.
+	When called, a new xdg_imported object will be created. This new object
 	represents the imported surface, and the importing client can
 	manipulate its relationship using it. See xdg_imported for details.
       </description>
-      <arg name="id" type="new_id" interface="zxdg_imported_v1"
+      <arg name="id" type="new_id" interface="zxdg_imported_v2"
 	   summary="the new xdg_imported object"/>
       <arg name="handle" type="string"
 	   summary="the exported surface handle"/>
     </request>
   </interface>
 
-  <interface name="zxdg_exported_v1" version="1">
+  <interface name="zxdg_exported_v2" version="1">
     <description summary="an exported surface handle">
       A xdg_exported object represents an exported reference to a surface. The
       exported surface may be referenced as long as the xdg_exported object not
@@ -136,14 +136,14 @@
       <description summary="the exported surface handle">
 	The handle event contains the unique handle of this exported surface
 	reference. It may be shared with any client, which then can use it to
-	import the surface by calling xdg_importer.import. A handle may be
-	used to import the surface multiple times.
+	import the surface by calling xdg_importer.import_toplevel. A handle
+	may be used to import the surface multiple times.
       </description>
       <arg name="handle" type="string" summary="the exported surface handle"/>
     </event>
   </interface>
 
-  <interface name="zxdg_imported_v1" version="1">
+  <interface name="zxdg_imported_v2" version="1">
     <description summary="an imported surface handle">
       A xdg_imported object represents an imported reference to surface exported
       by some client. A client can use this interface to manipulate
@@ -161,9 +161,9 @@
     <request name="set_parent_of">
       <description summary="set as the parent of some surface">
 	Set the imported surface as the parent of some surface of the client.
-	The passed surface must be a toplevel xdg_surface. Calling this function
-	sets up a surface to surface relation with the same stacking and positioning
-	semantics as xdg_surface.set_parent.
+	The passed surface must be a xdg_toplevel equivalent. Calling this
+	function sets up a surface to surface relation with the same stacking
+	and positioning semantics as xdg_toplevel.set_parent.
       </description>
       <arg name="surface" type="object" interface="wl_surface"
 	   summary="the child surface"/>
