@@ -187,7 +187,11 @@ class CleanUpStage(generic_stages.BuilderStage):
                           self._build_root, e)
 
     # Clean mount points first to be safe about deleting.
+    cros_build_lib.CleanupChrootMount(buildroot=self._build_root)
     osutils.UmountTree(self._build_root)
+
+    # Re-mount chroot if it exists so that subsequent steps can clean up inside.
+    cros_build_lib.MountChroot(buildroot=self._build_root, create=False)
 
     if manifest is None:
       self._DeleteChroot()
