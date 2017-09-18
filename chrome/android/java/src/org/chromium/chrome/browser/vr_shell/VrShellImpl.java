@@ -531,8 +531,11 @@ public class VrShellImpl
         restoreTabFromVR();
 
         if (mTab != null) {
-            View parent = mTab.getContentViewCore().getContainerView();
-            mTab.getContentViewCore().onSizeChanged(parent.getWidth(), parent.getHeight(), 0, 0);
+            if (mTab.getContentViewCore() != null) {
+                View parent = mTab.getContentViewCore().getContainerView();
+                mTab.getContentViewCore().onSizeChanged(
+                        parent.getWidth(), parent.getHeight(), 0, 0);
+            }
             mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
         }
 
