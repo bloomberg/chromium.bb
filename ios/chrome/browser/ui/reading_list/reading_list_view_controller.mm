@@ -16,11 +16,6 @@
 #endif
 
 namespace {
-// Height of the toolbar in normal state.
-const int kToolbarNormalHeight = 48;
-// Height of the expanded toolbar (buttons on multiple lines).
-const int kToolbarExpandedHeight = 58;
-
 typedef NS_ENUM(NSInteger, LayoutPriority) {
   LayoutPriorityLow = 750,
   LayoutPriorityHigh = 751
@@ -29,11 +24,7 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 
 @interface ReadingListViewController ()<
     ReadingListToolbarActions,
-    ReadingListToolbarHeightDelegate,
-    ReadingListCollectionViewControllerAudience> {
-  // This constraint control the expanded mode of the toolbar.
-  NSLayoutConstraint* _expandedToolbarConstraint;
-}
+    ReadingListCollectionViewControllerAudience>
 
 @property(nonatomic, strong, readonly)
     ReadingListCollectionViewController* readingListCollectionViewController;
@@ -55,7 +46,6 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _toolbar = toolbar;
-    toolbar.heightDelegate = self;
     _readingListCollectionViewController = collectionViewController;
     collectionViewController.audience = self;
 
@@ -131,35 +121,11 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
     };
     NSArray* constraints = @[ @"V:[collection][toolbar]|", @"H:|[toolbar]|" ];
     ApplyVisualConstraints(constraints, views);
-    NSLayoutConstraint* height =
-        [_toolbar.heightAnchor constraintEqualToConstant:kToolbarNormalHeight];
-    height.priority = LayoutPriorityHigh;
-    height.active = YES;
-    // When the toolbar is added, the only button is the "edit" button. No need
-    // to go in expanded mode.
-    _expandedToolbarConstraint = [_toolbar.heightAnchor
-        constraintEqualToConstant:kToolbarExpandedHeight];
   } else {
     // If there is no item, remove the toolbar. The constraints will make sure
     // the collection takes the whole view.
     [_toolbar removeFromSuperview];
   }
-}
-
-#pragma mark - ReadingListToolbarHeightDelegate
-
-- (void)toolbar:(id)toolbar onHeightChanged:(ReadingListToolbarHeight)height {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    switch (height) {
-      case NormalHeight:
-        _expandedToolbarConstraint.active = NO;
-        break;
-
-      case ExpandedHeight:
-        _expandedToolbarConstraint.active = YES;
-        break;
-    }
-  });
 }
 
 #pragma mark - UIResponder

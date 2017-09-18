@@ -19,6 +19,10 @@
 #endif
 
 namespace {
+// Height of the toolbar in normal state.
+const int kToolbarNormalHeight = 48;
+// Height of the expanded toolbar (buttons on multiple lines).
+const int kToolbarExpandedHeight = 58;
 
 // Shadow opacity.
 const CGFloat kShadowOpacity = 0.2f;
@@ -50,6 +54,8 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
 @property(nonatomic, strong) UIView* markButtonContainer;
 // Stack view for arranging the buttons.
 @property(nonatomic, strong) UIStackView* stackView;
+// Height constraint for the stack view containing the buttons.
+@property(nonatomic, strong) NSLayoutConstraint* heightConstraint;
 
 // Creates a button with a |title| and a style according to |destructive|.
 - (UIButton*)buttonWithText:(NSString*)title destructive:(BOOL)isDestructive;
@@ -80,7 +86,7 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
 @synthesize markButton = _markButton;
 @synthesize markButtonContainer = _markButtonContainer;
 @synthesize state = _state;
-@synthesize heightDelegate = _heightDelegate;
+@synthesize heightConstraint = _heightConstraint;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -190,7 +196,24 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
 
     [self addSubview:_stackView];
     _stackView.translatesAutoresizingMaskIntoConstraints = NO;
-    AddSameConstraints(_stackView, self);
+    if (@available(iOS 11.0, *)) {
+      [NSLayoutConstraint activateConstraints:@[
+        [_stackView.topAnchor
+            constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor],
+        [_stackView.leadingAnchor
+            constraintEqualToAnchor:self.safeAreaLayoutGuide.leadingAnchor],
+        [_stackView.trailingAnchor
+            constraintEqualToAnchor:self.safeAreaLayoutGuide.trailingAnchor],
+        [_stackView.bottomAnchor
+            constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor],
+      ]];
+    } else {
+      AddSameConstraints(_stackView, self);
+    }
+    _heightConstraint = [_stackView.heightAnchor
+        constraintEqualToConstant:kToolbarNormalHeight];
+    _heightConstraint.active = YES;
+
     _stackView.layoutMargins =
         UIEdgeInsetsMake(0, kHorizontalMargin, 0, kHorizontalMargin);
     _stackView.layoutMarginsRelativeArrangement = YES;
@@ -317,12 +340,12 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
                   2 * kHorizontalSpacing) /
                          3 -
                      16) {
-        [self.heightDelegate toolbar:self onHeightChanged:ExpandedHeight];
+        self.heightConstraint.constant = kToolbarExpandedHeight;
         return;
       }
     }
   }
-  [self.heightDelegate toolbar:self onHeightChanged:NormalHeight];
+  self.heightConstraint.constant = kToolbarNormalHeight;
 }
 
 @end
