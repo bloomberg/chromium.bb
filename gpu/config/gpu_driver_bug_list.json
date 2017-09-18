@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.29",
+  "version": "10.30",
   "entries": [
     {
       "id": 1,
@@ -2631,7 +2631,7 @@
       "os": {
         "type": "android"
       },
-      "gl_vendor": "Intel",
+      "gl_vendor": "Intel.*",
       "features": [
         "msaa_is_slow"
       ]
