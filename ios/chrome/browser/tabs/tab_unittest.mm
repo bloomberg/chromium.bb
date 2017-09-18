@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/history/history_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_manager.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -187,6 +188,7 @@ class TabTest : public BlockCleanupTest {
     [[[static_cast<OCMockObject*>(mock_web_controller_) stub]
         andReturn:web_controller_view_] view];
     TabIdTabHelper::CreateForWebState(web_state_impl_.get());
+    HistoryTabHelper::CreateForWebState(web_state_impl_.get());
     LegacyTabHelper::CreateForWebState(web_state_impl_.get());
     tab_ = LegacyTabHelper::GetTabForWebState(web_state_impl_.get());
     web::NavigationManager::WebLoadParams load_params(
