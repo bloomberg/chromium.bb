@@ -62,9 +62,8 @@ void MaybeLogLegacySymantecWarning(
       "The certificate used to load " + details.entry->GetURL().spec() +
           " uses an SSL certificate that will be distrusted in an upcoming "
           "release of Chrome. Once distrusted, users will be prevented from "
-          "loading this resource. See "
-          "https://security.googleblog.com/2017/09/"
-          "chromes-plan-to-distrust-symantec.html for more information.");
+          "loading this resource. See https://g.co/chrome/symantecpkicerts for "
+          "more information.");
 }
 
 void OnAllowCertificateWithRecordDecision(
