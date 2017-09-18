@@ -58,11 +58,12 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
   // metrics::EnabledStateProvider implementation
   bool IsConsentGiven() override;
+  bool IsReportingEnabled() override;
 
   // The below functions must not be called until initialization has
   // asynchronously finished.
 
-  void SetMetricsEnabled(bool enabled);
+  void SetHaveMetricsConsent(bool consent);
 
   // metrics::MetricsServiceClient implementation
   metrics::MetricsService* GetMetricsService() override;
@@ -87,12 +88,13 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
   void InitializeWithClientId();
 
-  bool is_enabled_;
-  PrefService* pref_service_;
-  net::URLRequestContextGetter* request_context_;
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
   std::unique_ptr<metrics::MetricsService> metrics_service_;
+  PrefService* pref_service_;
+  net::URLRequestContextGetter* request_context_;
   version_info::Channel channel_;
+  bool consent_;    // = (user has consented) && !(app has opted out)
+  bool in_sample_;  // Is this client enabled by sampling?
 
   DISALLOW_COPY_AND_ASSIGN(AwMetricsServiceClient);
 };
