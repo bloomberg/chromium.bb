@@ -14,6 +14,7 @@
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/grid_layout.h"
@@ -398,10 +399,12 @@ void DialogClientView::SetupLayout() {
 
   // If |views[0]| is non-null, it is a visible |extra_view_| and its column
   // will be in |link[0]|. Skip that if it is not a button, or if it is a
-  // Checkbox (which extends LabelButton). Otherwise, link everything.
+  // specific subclass of Button that should never be linked. Otherwise, link
+  // everything.
   bool skip_first_link =
       views[0] && (!Button::AsButton(views[0]) ||
-                   views[0]->GetClassName() == Checkbox::kViewClassName);
+                   views[0]->GetClassName() == Checkbox::kViewClassName ||
+                   views[0]->GetClassName() == ImageButton::kViewClassName);
   if (skip_first_link)
     column_set->LinkColumnSizes(link[1], link[2], -1);
   else
