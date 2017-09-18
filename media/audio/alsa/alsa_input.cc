@@ -157,23 +157,6 @@ bool AlsaPcmInputStream::Recover(int original_error) {
   return true;
 }
 
-snd_pcm_sframes_t AlsaPcmInputStream::GetCurrentDelay() {
-  snd_pcm_sframes_t delay = -1;
-
-  // TODO(dalecurtis): This should probably use snd_pcm_htimestamp() so that we
-  // can have |capture_time| directly instead of computing it as Now() - delay.
-  int error = wrapper_->PcmDelay(device_handle_, &delay);
-  if (error < 0)
-    Recover(error);
-
-  // snd_pcm_delay() may not work in the beginning of the stream. In this case
-  // return delay of data we know currently is in the ALSA's buffer.
-  if (delay < 0)
-    delay = wrapper_->PcmAvailUpdate(device_handle_);
-
-  return delay;
-}
-
 void AlsaPcmInputStream::ReadAudio() {
   DCHECK(callback_);
 
@@ -215,8 +198,17 @@ void AlsaPcmInputStream::ReadAudio() {
       audio_bus_->FromInterleaved(audio_buffer_.get(), audio_bus_->frames(),
                                   params_.bits_per_sample() / 8);
 
+      // TODO(dalecurtis): This should probably use snd_pcm_htimestamp() so that
+      // we can have |capture_time| directly instead of computing it as
+      // Now() - available frames.
+      snd_pcm_sframes_t avail_frames = wrapper_->PcmAvailUpdate(device_handle_);
+      if (avail_frames < 0) {
+        LOG(WARNING) << "PcmAvailUpdate(): "
+                     << wrapper_->StrError(avail_frames);
+        avail_frames = 0;  // Error getting number of avail frames, set it to 0
+      }
       base::TimeDelta hardware_delay = base::TimeDelta::FromSecondsD(
-          GetCurrentDelay() / static_cast<double>(params_.sample_rate()));
+          avail_frames / static_cast<double>(params_.sample_rate()));
 
       callback_->OnData(this, audio_bus_.get(),
                         base::TimeTicks::Now() - hardware_delay,
