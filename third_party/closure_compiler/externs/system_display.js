@@ -118,6 +118,7 @@ chrome.system.display.DisplayLayout;
  *   isInternal: boolean,
  *   isEnabled: boolean,
  *   isUnified: boolean,
+ *   isTabletMode: (boolean|undefined),
  *   dpiX: number,
  *   dpiY: number,
  *   rotation: number,
@@ -125,7 +126,8 @@ chrome.system.display.DisplayLayout;
  *   overscan: !chrome.system.display.Insets,
  *   workArea: !chrome.system.display.Bounds,
  *   modes: !Array<!chrome.system.display.DisplayMode>,
- *   hasTouchSupport: boolean
+ *   hasTouchSupport: boolean,
+ *   hasAccelerometerSupport: boolean
  * }}
  * @see https://developer.chrome.com/extensions/system.display#type-DisplayUnitInfo
  */

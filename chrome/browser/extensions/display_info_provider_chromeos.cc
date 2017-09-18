@@ -645,11 +645,23 @@ DisplayInfoProviderChromeOS::GetAllDisplaysInfo(bool single_unified) {
     NOTIMPLEMENTED();
     return DisplayInfoProvider::DisplayUnitInfoList();
   }
+  DisplayUnitInfoList all_displays;
+
   display::DisplayManager* display_manager =
       ash::Shell::Get()->display_manager();
 
-  if (!display_manager->IsInUnifiedMode())
-    return DisplayInfoProvider::GetAllDisplaysInfo(single_unified);
+  if (!display_manager->IsInUnifiedMode()) {
+    all_displays = DisplayInfoProvider::GetAllDisplaysInfo(single_unified);
+    if (IsTabletModeWindowManagerEnabled()) {
+      // Set is_tablet_mode for displays with has_accelerometer_support.
+      for (auto& display : all_displays) {
+        if (display.has_accelerometer_support) {
+          display.is_tablet_mode = std::make_unique<bool>(true);
+        }
+      }
+    }
+    return all_displays;
+  }
 
   // Chrome OS specific: get displays for unified mode.
   std::vector<display::Display> displays;
@@ -665,7 +677,6 @@ DisplayInfoProviderChromeOS::GetAllDisplaysInfo(bool single_unified) {
     primary_id = displays[0].id();
   }
 
-  DisplayUnitInfoList all_displays;
   for (const display::Display& display : displays) {
     system_display::DisplayUnitInfo unit_info =
         CreateDisplayUnitInfo(display, primary_id);
