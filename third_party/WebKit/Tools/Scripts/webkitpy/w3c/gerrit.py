@@ -64,12 +64,8 @@ class GerritCL(object):
         self.api = api
 
     @property
-    def number(self):
-        return self._data['_number']
-
-    @property
     def url(self):
-        return '{}/{}'.format(URL_BASE, self.number)
+        return '{}/{}'.format(URL_BASE, self._data['_number'])
 
     @property
     def subject(self):
