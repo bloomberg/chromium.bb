@@ -77,8 +77,8 @@ interface BackgroundFetchService {
       => (BackgroundFetchError error,
           BackgroundFetchRegistration? registration);
 
-  // Gets the sequence of ids for active Background Fetch registrations given
-  // the |service_worker_registration_id|.
+  // Gets the sequence of ids for Background Fetch registrations given the
+  // |service_worker_registration_id|.
   GetIds(int64 service_worker_registration_id, url.mojom.Origin origin)
       => (BackgroundFetchError error,
           array<string> ids);

@@ -96,16 +96,9 @@ void BackgroundFetchServiceImpl::UpdateUI(
     return;
   }
 
-  BackgroundFetchJobController* controller =
-      background_fetch_context_->GetActiveFetch(BackgroundFetchRegistrationId(
-          service_worker_registration_id, origin, id));
-
-  if (controller)
-    controller->UpdateUI(title);
-
-  std::move(callback).Run(controller
-                              ? blink::mojom::BackgroundFetchError::NONE
-                              : blink::mojom::BackgroundFetchError::INVALID_ID);
+  background_fetch_context_->data_manager().UpdateRegistrationUI(
+      BackgroundFetchRegistrationId(service_worker_registration_id, origin, id),
+      title, std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
@@ -144,36 +137,17 @@ void BackgroundFetchServiceImpl::GetRegistration(
     return;
   }
 
-  BackgroundFetchJobController* controller =
-      background_fetch_context_->GetActiveFetch(BackgroundFetchRegistrationId(
-          service_worker_registration_id, origin, id));
-
-  if (!controller) {
-    std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID,
-                            base::nullopt /* registration */);
-    return;
-  }
-
-  // Compile the BackgroundFetchRegistration object that will be given to the
-  // developer, representing the data associated with the |controller|.
-  BackgroundFetchRegistration registration;
-  registration.id = controller->registration_id().id();
-  registration.icons = controller->options().icons;
-  registration.title = controller->options().title;
-  registration.total_download_size = controller->options().total_download_size;
-
-  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
-                          registration);
+  background_fetch_context_->data_manager().GetRegistration(
+      BackgroundFetchRegistrationId(service_worker_registration_id, origin, id),
+      std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::GetIds(int64_t service_worker_registration_id,
                                         const url::Origin& origin,
                                         GetIdsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::move(callback).Run(
-      blink::mojom::BackgroundFetchError::NONE,
-      background_fetch_context_->GetActiveIdsForServiceWorkerRegistration(
-          service_worker_registration_id, origin));
+  background_fetch_context_->data_manager().GetIdsForServiceWorker(
+      service_worker_registration_id, std::move(callback));
 }
 
 bool BackgroundFetchServiceImpl::ValidateId(const std::string& id) {

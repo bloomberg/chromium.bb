@@ -8,9 +8,9 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -57,10 +57,24 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
 
   class DatabaseTask;
 
+  class RegistrationListener {
+   public:
+    virtual ~RegistrationListener() {}
+
+    // Called once UpdateRegistrationUI has been persisted to the database.
+    virtual void UpdateUI(const std::string& title) = 0;
+  };
+
   BackgroundFetchDataManager(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~BackgroundFetchDataManager();
+
+  // Sets the listener that will be notified of changes to this registration.
+  // Should only be called by a JobController. Must outlive |this|, or set the
+  // listener to nullptr in the listener's destructor.
+  void SetListener(const BackgroundFetchRegistrationId& registration_id,
+                   RegistrationListener* listener);
 
   // Creates and stores a new registration with the given properties. Will
   // invoke the |callback| when the registration has been created, which may
@@ -70,6 +84,17 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       const std::vector<ServiceWorkerFetchRequest>& requests,
       const BackgroundFetchOptions& options,
       CreateRegistrationCallback callback);
+
+  // Get the BackgroundFetchOptions for a registration.
+  void GetRegistration(
+      const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchService::GetRegistrationCallback callback);
+
+  // Updates the UI values for a Background Fetch registration.
+  void UpdateRegistrationUI(
+      const BackgroundFetchRegistrationId& registration_id,
+      const std::string& title,
+      blink::mojom::BackgroundFetchService::UpdateUICallback callback);
 
   // Removes the next request, if any, from the pending requests queue, and
   // invokes the |callback| with that request, else a null request.
@@ -102,6 +127,11 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   void DeleteRegistration(const BackgroundFetchRegistrationId& registration_id,
                           DeleteRegistrationCallback callback);
 
+  // List all Background Fetch registration ids for a Service Worker.
+  void GetIdsForServiceWorker(
+      int64_t service_worker_registration_id,
+      blink::mojom::BackgroundFetchService::GetIdsCallback callback);
+
  private:
   friend class BackgroundFetchDataManagerTest;
 
@@ -117,6 +147,11 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // Map of known background fetch registration ids to their associated data.
   std::map<BackgroundFetchRegistrationId, std::unique_ptr<RegistrationData>>
       registrations_;
+
+  // Map of known background fetch registration ids to the listener that needs
+  // to be notified about changes to the registration.
+  base::flat_map<BackgroundFetchRegistrationId, RegistrationListener*>
+      listeners_;
 
   // Pending database operations, serialized to ensure consistency.
   // Invariant: the frontmost task, if any, has already been started.
