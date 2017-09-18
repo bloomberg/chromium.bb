@@ -10,6 +10,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_names.h"
@@ -251,8 +253,12 @@ TEST_F(AutofillFieldTest, IsFieldFillable) {
 }
 
 // Verify that non credit card related fields with the autocomplete attribute
-// set to off don't get filled on desktop.
-TEST_F(AutofillFieldTest, FillFormField_AutocompleteOff_AddressField) {
+// set to off don't get filled on desktop when the feature to Autofill all
+// addresses is disabled.
+TEST_F(AutofillFieldTest, FillFormField_AutocompleteOffRespected_AddressField) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kAutofillAlwaysFillAddresses);
+
   AutofillField field;
   field.should_autocomplete = false;
 
@@ -260,12 +266,28 @@ TEST_F(AutofillFieldTest, FillFormField_AutocompleteOff_AddressField) {
   AutofillField::FillFormField(field, ASCIIToUTF16("Test"), "en-US", "en-US",
                                &field);
 
-  // Verifiy that the field is filled on mobile but not on desktop.
+  // Verify that the field is filled on mobile but not on desktop.
   if (IsDesktopPlatform()) {
     EXPECT_EQ(base::string16(), field.value);
   } else {
     EXPECT_EQ(ASCIIToUTF16("Test"), field.value);
   }
+}
+
+// Verify that non credit card related fields with the autocomplete attribute
+// set to off are filled on desktop when the feature to Autofill all
+// addresses is enabled (default).
+TEST_F(AutofillFieldTest,
+       FillFormField_AutocompleteOffNotRespected_AddressField) {
+  AutofillField field;
+  field.should_autocomplete = false;
+
+  // Non credit card related field.
+  AutofillField::FillFormField(field, ASCIIToUTF16("Test"), "en-US", "en-US",
+                               &field);
+
+  // Verify that the field is filled in all circumstances.
+  EXPECT_EQ(ASCIIToUTF16("Test"), field.value);
 }
 
 // Verify that credit card related fields with the autocomplete attribute
