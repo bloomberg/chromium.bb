@@ -664,6 +664,7 @@ hooks = [
   {
     'name': 'gn_win',
     'pattern': '.',
+    'condition': 'host_os == "win"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -676,6 +677,7 @@ hooks = [
   {
     'name': 'gn_mac',
     'pattern': '.',
+    'condition': 'host_os == "mac"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -688,6 +690,7 @@ hooks = [
   {
     'name': 'gn_linux64',
     'pattern': '.',
+    'condition': 'host_os == "linux"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -701,6 +704,7 @@ hooks = [
   {
     'name': 'clang_format_win',
     'pattern': '.',
+    'condition': 'host_os == "win"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -713,6 +717,7 @@ hooks = [
   {
     'name': 'clang_format_mac',
     'pattern': '.',
+    'condition': 'host_os == "mac"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -725,6 +730,7 @@ hooks = [
   {
     'name': 'clang_format_linux',
     'pattern': '.',
+    'condition': 'host_os == "linux"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -738,6 +744,7 @@ hooks = [
   {
     'name': 'orderfiles_win',
     'pattern': '.',
+    'condition': 'host_os == "win"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -751,6 +758,7 @@ hooks = [
   {
     'name': 'luci-go_win',
     'pattern': '.',
+    'condition': 'host_os == "win"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -763,6 +771,7 @@ hooks = [
   {
     'name': 'luci-go_mac',
     'pattern': '.',
+    'condition': 'host_os == "mac"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -775,6 +784,7 @@ hooks = [
   {
     'name': 'luci-go_linux',
     'pattern': '.',
+    'condition': 'host_os == "linux"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -787,6 +797,7 @@ hooks = [
   {
     'name': 'drmemory',
     'pattern': '.',
+    'condition': 'host_os == "win"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -811,6 +822,7 @@ hooks = [
   {
     'name': 'apache_win32',
     'pattern': '\\.sha1',
+    'condition': 'host_os == "win"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -855,6 +867,7 @@ hooks = [
   {
     'name': 'node_linux64',
     'pattern': '.',
+    'condition': 'host_os == "linux"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -868,6 +881,7 @@ hooks = [
   {
     'name': 'node_mac',
     'pattern': '.',
+    'condition': 'host_os == "mac"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
@@ -881,6 +895,7 @@ hooks = [
   {
     'name': 'node_win',
     'pattern': '.',
+    'condition': 'host_os == "win"',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
                 '--no_resume',
