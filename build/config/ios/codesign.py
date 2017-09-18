@@ -272,6 +272,32 @@ def GenerateEntitlements(path, provisioning_profile, bundle_identifier):
   return entitlements
 
 
+def GenerateBundleInfoPlist(bundle_path, plist_compiler, partial_plist):
+  """Generates the bundle Info.plist for a list of partial .plist files.
+
+  Args:
+    bundle_path: path to the bundle
+    plist_compiler: string, path to the Info.plist compiler
+    partial_plist: list of path to partial .plist files to merge
+  """
+
+  # Filter empty partial .plist files (this happens if an application
+  # does not include need to compile any asset catalog, in which case
+  # the partial .plist file from the asset catalog compilation step is
+  # just a stamp file).
+  filtered_partial_plist = []
+  for plist in partial_plist:
+    plist_size = os.stat(plist).st_size
+    if plist_size:
+      filtered_partial_plist.append(plist)
+
+  # Invoke the plist_compiler script. It needs to be a python script.
+  subprocess.check_call([
+      'python', plist_compiler, 'merge', '-f', 'binary1',
+      '-o', os.path.join(bundle_path, 'Info.plist'),
+  ] + filtered_partial_plist)
+
+
 class Action(object):
   """Class implementing one action supported by the script."""
 
@@ -310,12 +336,24 @@ class CodeSignBundleAction(Action):
     parser.add_argument(
         '--platform', '-t', required=True,
         help='platform the signed bundle is targeting')
+    parser.add_argument(
+        '--partial-info-plist', '-p', action='append', default=[],
+        help='path to partial Info.plist to merge to create bundle Info.plist')
+    parser.add_argument(
+        '--plist-compiler-path', '-P', action='store',
+        help='path to the plist compiler script (for --partial-info-plist)')
     parser.set_defaults(no_signature=False)
 
   @staticmethod
   def _Execute(args):
     if not args.identity:
       args.identity = '-'
+
+    if args.partial_info_plist:
+      GenerateBundleInfoPlist(
+          args.path,
+          args.plist_compiler_path,
+          args.partial_info_plist)
 
     bundle = Bundle(args.path)
 
