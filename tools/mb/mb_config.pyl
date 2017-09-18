@@ -574,7 +574,6 @@
       'linux_chromium_chromeos_compile_rel_ng': 'chromeos_with_codecs_release_trybot',
       'linux_chromium_chromeos_dbg_ng': 'chromeos_with_codecs_debug_trybot',
       'linux_chromium_chromeos_msan_rel_ng': 'chromeos_msan_release_bot',
-      'linux_chromium_chromeos_ozone_rel_ng': 'chromeos_with_codecs_release_trybot',
       'linux_chromium_chromeos_rel_ng': 'chromeos_with_codecs_release_trybot',
       'linux_chromium_clobber_deterministic': 'release_trybot',
       'linux_chromium_clobber_rel_ng': 'release_trybot',
