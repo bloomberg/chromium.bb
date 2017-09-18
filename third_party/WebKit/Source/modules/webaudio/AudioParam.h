@@ -233,6 +233,13 @@ class AudioParam final : public GarbageCollectedFinalized<AudioParam>,
   float value() const;
   void setValue(float);
   float defaultValue() const;
+  // Use when setting the initial value of an AudioParam when creating
+  // the AudioParam.  This bypasses any deprecation messages about
+  // using the value setter that has dezippering.
+  //
+  // TODO(rtoy): Replace all calls to this with just setValue() when
+  // dezippering deprecation messages are removed.
+  void setInitialValue(float);
 
   float minValue() const;
   float maxValue() const;

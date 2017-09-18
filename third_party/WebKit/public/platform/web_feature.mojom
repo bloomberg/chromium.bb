@@ -1681,6 +1681,16 @@ enum WebFeature {
   kSuppressHistoryEntryWithoutUserGesture = 2146,
   kImageInputTypeFormDataWithNonEmptyValue = 2147,
 
+  kWebAudioDezipperGainNodeGain = 2148,
+  kWebAudioDezipperStereoPannerNodePan = 2149,
+  kWebAudioDezipperDelayNodeDelayTime = 2150,
+  kWebAudioDezipperOscillatorNodeFrequency = 2151,
+  kWebAudioDezipperOscillatorNodeDetune = 2152,
+  kWebAudioDezipperBiquadFilterNodeFrequency = 2153,
+  kWebAudioDezipperBiquadFilterNodeDetune = 2154,
+  kWebAudioDezipperBiquadFilterNodeQ = 2155,
+  kWebAudioDezipperBiquadFilterNodeGain = 2156,
+
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
   // Also, run update_use_counter_feature_enum.py in
