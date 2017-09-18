@@ -16,15 +16,13 @@
 -keep class * extends org.junit.** { *; }
 -keep @**.RunWith class * { *; }
 
-# Keep all classes that are in test packages.
+# Keep all classes that are in test packages. There is no benefit in testing
+# Proguarding of test classes, but this is as close as we can get to selecting
+# all classes from the test apk.
 -keep class **.test.** { *; }
 
-# Keep any enum's value and valueOf method since they are reflectively called
-# from JUnit4 runner
--keepclassmembers enum * {
-    public static **[] values();
-    public static ** valueOf(java.lang.String);
-}
+# Keep all enum members since they might be reflectively called by JUnit4 runner
+-keepclassmembers enum * { *; }
 
 # Keep any annotation used by tests for instrumentation runner to list out
 # test annotation information

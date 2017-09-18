@@ -1071,8 +1071,7 @@ instrumentation_test_apk("chrome_public_test_apk") {
     "//net/android:net_test_support_apk",
   ]
   proguard_enabled = !is_java_debug
-  if (proguard_enabled && !enable_proguard_obfuscation &&
-      enable_proguard_obfuscation_for_tests) {
+  if (proguard_enabled && !enable_proguard_obfuscation) {
     proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
     proguard_config_exclusions =
         [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
@@ -1096,8 +1095,7 @@ if (enable_vr) {
     ]
     additional_apks = [ "//net/android:net_test_support_apk" ]
     proguard_enabled = !is_java_debug
-    if (proguard_enabled && !enable_proguard_obfuscation &&
-        enable_proguard_obfuscation_for_tests) {
+    if (proguard_enabled && !enable_proguard_obfuscation) {
       proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
       proguard_config_exclusions =
           [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
@@ -1159,8 +1157,7 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     "//ui/android:ui_java",
   ]
   proguard_enabled = !is_java_debug
-  if (proguard_enabled && !enable_proguard_obfuscation &&
-      enable_proguard_obfuscation_for_tests) {
+  if (proguard_enabled && !enable_proguard_obfuscation) {
     proguard_configs = [ "//base/android/proguard/enable_obfuscation.flags" ]
     proguard_config_exclusions =
         [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]

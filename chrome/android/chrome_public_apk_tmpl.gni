@@ -27,9 +27,6 @@ declare_args() {
   # Enables ProGuard obfuscation of Chromium packages.
   enable_proguard_obfuscation = false
 
-  # Enables ProGuard obfuscation of chrome_public_test_apk.
-  enable_proguard_obfuscation_for_tests = false
-
   # Enable multidex in release builds.
   multidex_in_release = false
 }
