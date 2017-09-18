@@ -199,12 +199,14 @@ public class BottomNavigationItemView extends FrameLayout implements MenuView.It
     }
 
     /**
-     * Hides the label below the menu item's icon.
+     * Hides the label below the menu item's icon. Also adds a content description for accessibility
+     * purposes since there's no label to read any more.
      */
     public void hideLabel() {
         mLabelHidden = true;
         mSmallLabel.setVisibility(GONE);
         mLargeLabel.setVisibility(GONE);
+        setContentDescription(mItemData.getTitle());
     }
 
     public void setIconTintList(ColorStateList tint) {
