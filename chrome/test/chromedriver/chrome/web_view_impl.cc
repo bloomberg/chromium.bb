@@ -486,7 +486,14 @@ Status WebViewImpl::AddCookie(const std::string& name,
   params.SetBoolean("httpOnly", httpOnly);
   params.SetDouble("expirationDate", expiry);
   params.SetDouble("expires", expiry);
-  return client_->SendCommand("Network.setCookie", params);
+
+  std::unique_ptr<base::DictionaryValue> result;
+  Status status =
+      client_->SendCommandAndGetResult("Network.setCookie", params, &result);
+  bool success;
+  if (!result->GetBoolean("success", &success) || !success)
+    return Status(kUnableToSetCookie);
+  return Status(kOk);
 }
 
 Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,

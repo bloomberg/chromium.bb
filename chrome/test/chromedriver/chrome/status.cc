@@ -68,6 +68,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "tab crashed";
     case kNoSuchCookie:
       return "no such cookie";
+    case kUnableToSetCookie:
+      return "unable to set cookie";
     default:
       return "<unknown>";
   }

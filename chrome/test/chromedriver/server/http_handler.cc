@@ -728,6 +728,7 @@ HttpHandler::PrepareStandardResponse(
           new net::HttpServerResponseInfo(net::HTTP_REQUEST_TIMEOUT));
       break;
     case kUnknownError:
+    case kUnableToSetCookie:
     case kJavaScriptError:
     case kUnexpectedAlertOpen:
     case kSessionNotCreatedException:
