@@ -108,12 +108,6 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="3385242214819933234">Ugyldig hostejer.</translation>
 <translation id="3403830762023901068">Politikindstillingerne tillader ikke, at denne computer deles som en Chromoting-host. Kontakt din systemadministrator for at få hjælp.</translation>
 <translation id="3423542133075182604">Fjernproces for sikkerhedsnøglen</translation>
-<translation id="3426467947138417795">Chrome Fjernskrivebord
-Fjernskrivebord
-Fjern-pc
-Fjerncomputer
-Fjernadgang
-Fjernsupport</translation>
 <translation id="3581045510967524389">Der kunne ikke oprettes forbindelse til netværket. Kontrollér, at din enhed er på nettet.</translation>
 <translation id="3596628256176442606">Denne tjeneste muliggør indgående forbindelser fra Chromoting-klienter.</translation>
 <translation id="3606997049964069799">Du er ikke logget ind på Chromium. Log ind, og prøv igen.</translation>
@@ -122,13 +116,6 @@ Fjernsupport</translation>
 <translation id="3695446226812920698">Få flere oplysninger om, hvordan du gør</translation>
 <translation id="3718805989288361841">Der er en fejl i politikindstillingerne for Chrome Fjernskrivebord. Kontakt din systemadministrator for at få hjælp.</translation>
 <translation id="3776024066357219166">Din session med Chrome Fjernskrivebord er afsluttet.</translation>
-<translation id="3788372335219293587">Få adgang til din computer fra din iOS-enhed på sikker vis. Det er hurtigt, nemt og gratis.
-
-• Find appen Chrome Fjernskrivebord i Chrome Webshop  https://chrome.google.com/remotedesktop på den computer, du vil have fjernadgang til.
-• Installler softwaren til Chrome Fjernskrivebord, og følg vejledningen for at fuldføre konfigurationen.
-• Åbn appen på din iOS-enhed, og tryk på en af dine computere, der er online, for at oprette forbindelse.
-
-Du kan få flere oplysninger om privatliv i Googles privatlivspolitik (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bekræft din konto og pinkode nedenfor for at tillade adgang via Chrome Fjernskrivebord.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ Du kan få flere oplysninger om privatliv i Googles privatlivspolitik (http://go
 <translation id="7144878232160441200">Prøv igen</translation>
 <translation id="7149517134817561223">Applikation til oprettelse af kommandoer til hosten for Chrome Fjernskrivebord.</translation>
 <translation id="7215059001581613786">Indtast en pinkode, der består af seks eller flere cifre.</translation>
-<translation id="7237767047212540055">Åbn Chrome på den computer, du vil have fjernadgang til, og gå til <ph name="INSTALLATION_LINK" />
-Installer softwaren til Chrome Fjernskrivebord, og følg vejledningen for at fuldføre konfigurationen
-Når konfigurationen er fuldført, kan du få adgang til computeren via denne side ved at angive pin- eller adgangskoden</translation>
 <translation id="7312846573060934304">Hosten er offline.</translation>
 <translation id="7319983568955948908">Stop deling</translation>
 <translation id="7401733114166276557">Chrome Fjernskrivebord</translation>

@@ -32,7 +32,6 @@
 <translation id="1823873187264960516">ইথারনেট: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">সহায়ক (লোড হচ্ছে...)</translation>
 <translation id="1850504506766569011">ওয়াই-ফাই বন্ধ আছে৷</translation>
-<translation id="1856813161013948396">আঙ্গুলের ছাপ নেওয়ার সেন্সরে ট্যাপ করে লক স্ক্রিন এড়িয়ে যান। কনফিগার করতে ক্লিক করুন।</translation>
 <translation id="1864454756846565995">USB-C ডিভাইস (পিছনের পোর্ট)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> তে প্রতিবিম্বিত হচ্ছে</translation>
 <translation id="1919743966458266018">কার্য পরিচালক খোলার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
@@ -61,11 +60,11 @@
 <translation id="2365393535144473978">মোবাইল ডেটা সক্ষম করলে ব্লুটুথও সক্ষম হয়ে যাবে।</translation>
 <translation id="2391579633712104609">১৮০°</translation>
 <translation id="2429753432712299108">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, দয়া করে এই পাস কীটি যে ডিভাইসে প্রদর্শিত হয়েছে তা নিশ্চিত করুন: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">একটি ত্রুটি ঘটেছে</translation>
 <translation id="2501920221385095727">স্টিকি কীজ</translation>
 <translation id="2509468283778169019">CAPS LOCK চালু</translation>
 <translation id="2532589005999780174">উচ্চ কনট্রাস্ট মোড</translation>
 <translation id="2597972630681408282">নাইট লাইট: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">জমা</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷ আপনাকে প্রস্থান করুন করা হবে৷</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
 <translation id="2761704814324807722">স্থিতি ট্রে, সময় <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -74,7 +73,6 @@
 <translation id="2819276065543622893">আপনি এখনই প্রস্থান করুন হবেন৷</translation>
 <translation id="2825619548187458965">তাক</translation>
 <translation id="2844169650293029770">USB-C ডিভাইস (বাঁ দিকের সামনের পোর্ট)</translation>
-<translation id="2857608528410806398">QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে। QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে।</translation>
 <translation id="2865888419503095837">নেটওয়ার্ক তথ্য</translation>
 <translation id="2872961005593481000">বন্ধ করুন</translation>
 <translation id="2942516765047364088">তাকের অবস্থান</translation>
@@ -105,11 +103,9 @@
 <translation id="3595596368722241419">ব্যাটারি পুরো চার্জ</translation>
 <translation id="3606978283550408104">ব্রেইল প্রদর্শন সংযুক্ত হয়েছে৷</translation>
 <translation id="3621202678540785336">ইনপুট</translation>
-<translation id="3625258641415618104">স্ক্রীনশট অক্ষম হয়েছে</translation>
 <translation id="3626281679859535460">উজ্জ্বলতা</translation>
 <translation id="3712407551474845318">অঞ্চল ক্যাপচার করুন</translation>
 <translation id="371370241367527062">সামনের মাইক্রোফোন</translation>
-<translation id="3742055079367172538">স্ক্রীনশট নেওয়া হয়েছে</translation>
 <translation id="3775358506042162758">একাধিক সাইন ইনে আপনার কেবলমাত্র তিনটি অ্যাকাউন্ট থাকতে পারে৷</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">লক করুন</translation>
@@ -120,7 +116,6 @@
 <translation id="3899995891769452915">ভয়েস ইনপুট</translation>
 <translation id="3901991538546252627"><ph name="NAME" />-এ সংযোগ করা হচ্ছে</translation>
 <translation id="394485226368336402">অডিও সেটিংস</translation>
-<translation id="3967919079500697218">স্ক্রীনশট নেওয়ার ক্ষমতা আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
 <translation id="4017989525502048489">লেজার পয়েন্টার</translation>
@@ -131,7 +126,6 @@
 <translation id="4378551569595875038">সংযুক্ত হচ্ছে...</translation>
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME" />-এর সাথে আপনার স্ক্রীন নিয়ন্ত্রন ভাগ করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
-<translation id="4448844063988177157">ওয়াই-ফাই নেটওয়ার্কগুলির জন্য খুঁজুন...</translation>
 <translation id="4479639480957787382">ইথারনেট</translation>
 <translation id="4481530544597605423">বিযুক্ত করা ডিভাইসগুলি</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: সংযুক্ত হচ্ছে...</translation>
@@ -140,6 +134,7 @@
 <translation id="4544944664594876241">স্ক্রীন লক করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="4659419629803378708">ChromeVox সক্ষম করা আছে</translation>
 <translation id="4729904664295161097">সহায়ক শুধুমাত্র প্রাথমিক প্রোফাইলেই ব্যবহার করা যায়।</translation>
+<translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />-এর জন্য পাসওয়ার্ড</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
 <translation id="4849058404725798627">কিবোর্ড ফোকাসের মাধ্যমে হাইলাইট করুন</translation>
@@ -149,7 +144,6 @@
 <translation id="4918086044614829423">স্বীকার</translation>
 <translation id="4961318399572185831">স্ক্রীন কাস্ট করুন</translation>
 <translation id="5168181903108465623">কাস্ট ডিভাইসগুলি উপলব্ধ</translation>
-<translation id="5170568018924773124">ফোল্ডারে দেখান</translation>
 <translation id="5207949376430453814">পাঠ্যের কার্সার হাইলাইট করুন</translation>
 <translation id="5222676887888702881">প্রস্থান করুন</translation>
 <translation id="523505283826916779">অ্যাক্সেসযোগ্যতার সেটিংস</translation>
@@ -189,7 +183,6 @@
 <translation id="6062360702481658777">আপনি <ph name="LOGOUT_TIME_LEFT" /> এর মধ্যে স্বয়ংক্রিয়ভাবে প্রস্থান করুন হবেন৷</translation>
 <translation id="607652042414456612">আপনার কম্পিউটার কাছাকাছি ব্লুটুথ ডিভাইসে খুঁজে পাওয়া সম্ভব এবং ঠিকানা <ph name="ADDRESS" /> সমেত "<ph name="NAME" />" হিসাবে প্রদর্শিত হবে</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> চার্জ হচ্ছে</translation>
-<translation id="6144938890088808325">আমাদের Chromebooks উন্নত করতে সাহায্য করুন</translation>
 <translation id="615957422585914272">অন-স্ক্রীন কীবোর্ড প্রদর্শন করুন</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: সক্রিয় করা হচ্ছে...</translation>
@@ -225,7 +218,6 @@
 <translation id="7098389117866926363">USB-C ডিভাইস (পিছনের বাঁ পোর্ট)</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> এ পুরানো রেসুলিউশানে ফেরানো হচ্ছে</translation>
-<translation id="7246339268451149667">আঙ্গুলের ছাপ দিয়ে আনলক সক্ষম করবেন?</translation>
 <translation id="7256634071279256947">পেছনের মাইক্রোফোন</translation>
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>
 <translation id="735745346212279324">VPN সংযোগ বিচ্ছিন্ন করা হয়েছে</translation>
@@ -238,27 +230,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> সমর্থন করে না৷ রেজোলিউশন <ph name="FALLBACK_RESOLUTION" /> এ পরিবর্তিত হয়েছে</translation>
 <translation id="7562368315689366235">ইমোজি প্যালেট</translation>
 <translation id="7569509451529460200">ব্রেল এবং ChromeVox সক্ষম করেছেন</translation>
-<translation id="7581273696622423628">সমীক্ষায় যোগ দিন</translation>
 <translation id="7593891976182323525">Search অথবা Shift</translation>
 <translation id="7649070708921625228">সহায়তা</translation>
 <translation id="7692480393933218409">সংযুক্ত USB-C ডিভাইসগুলি চার্জ হচ্ছে</translation>
 <translation id="776344839111254542">আপডেটের বিশদ বিবরণ জানার জন্য ক্লিক করুন</translation>
 <translation id="7798302898096527229">Search টিপুন বা বাতিল করতে Shift টিপুন</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">আপনার সেটিংস সিঙ্ক করার পরে ভাষা "<ph name="FROM_LOCALE" />" থেকে "<ph name="TO_LOCALE" />" এ পরিবর্তন করা হয়েছে৷</translation>
 <translation id="7904094684485781019">এই অ্যাকাউন্টের প্রশাসক একাধিক প্রবেশ করুন অননুমোদিত করেছেন৷</translation>
 <translation id="7977927628060636163">মোবাইল নেটওয়ার্কগুলির জন্য অনুসন্ধান করছে...</translation>
 <translation id="7982789257301363584">নেটওয়ার্ক</translation>
 <translation id="8000066093800657092">কোনও নেটওয়ার্ক নেই</translation>
 <translation id="8054466585765276473">ব্যাটারি সময় গণনা করা হচ্ছে।</translation>
-<translation id="8077816382010018681">QU বৈশিষ্ট্য বিজ্ঞপ্তির শিরোনাম এখানে থাকবে</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> এ স্ক্রীন কাস্ট করা বন্ধ করুন</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> তে সংযুক্ত</translation>
 <translation id="813913629614996137">আরম্ভ হচ্ছে…</translation>
 <translation id="8142699993796781067">ব্যক্তিগত নেটওয়ার্ক</translation>
 <translation id="8180896103888046100">অজানা রিসিভারে কাস্ট করা বন্ধ করুন</translation>
-<translation id="8185286464235484130">আসুন, কয়েকটি প্রশ্নের উত্তর দিয়ে আমরা বুঝি যে আমরা কেমন আছি।</translation>
 <translation id="8190698733819146287">ভাষা এবং ইনপুট কাস্টমাইজ করুন...</translation>
+<translation id="8261506727792406068">মুছুন</translation>
 <translation id="8308637677604853869">পূর্ববর্তী মেনু</translation>
 <translation id="8351131234907093545">নোট তৈরি করুন</translation>
 <translation id="8392234662362215700">কীবোর্ড লেআউট স্যুইচ করতে Control-Shift-Space</translation>
@@ -291,7 +280,6 @@
 <translation id="9201131092683066720">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ৷</translation>
 <translation id="9210037371811586452">সমন্বিত ডেস্কটপ মোড থেকে প্রস্থান করছে</translation>
 <translation id="923686485342484400">প্রস্থান করার জন্য দুবার Control Shift Q টিপুন৷</translation>
-<translation id="939252827960237676">স্ক্রীনশট সংরক্ষণ করতে ব্যর্থ হয়েছে</translation>
 <translation id="945522503751344254">প্রতিক্রিয়া পাঠান</translation>
 <translation id="98515147261107953">ল্যান্ডস্কেপ</translation>
 </translationbundle>

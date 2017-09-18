@@ -53,6 +53,7 @@
 
       Jos tätä käytäntöä ei aseteta, käytetään oletustiheyttä 3 tuntia.
       Pienin sallittu arvo on 60 sekuntia.</translation>
+<translation id="1204263402976895730">Käytössä olevat yritystulostimet</translation>
 <translation id="1221359380862872747">Lataa määritetyt osoitteet esittelykirjautumisen yhteydessä</translation>
 <translation id="123081309365616809">Salli sisällön suoratoisto laitteeseen</translation>
 <translation id="1265053460044691532">Rajoita sitä, kuinka kauan SAML-todennuksen käyttäjä voi kirjautua sisään offline-tilassa</translation>
@@ -247,6 +248,7 @@
 <translation id="2024476116966025075">Määritä pakollinen verkkotunnuksen nimi etäkäytön asiakassovelluksia varten.</translation>
 <translation id="2030905906517501646">Oletushakupalvelun avainsana</translation>
 <translation id="203096360153626918">Tällä käytännöllä ei ole mitään vaikutusta Android-sovelluksiin. Ne voivat avautua koko näytön tilaan, vaikka tämän käytännön arvoksi olisi määritetty <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Käytöstä poistetut yritystulostimet</translation>
 <translation id="206623763829450685">Määrittää, mitä HTTP-todennustapoja <ph name="PRODUCT_NAME" /> tukee.
  
           Mahdollisia arvoja ovat basic, digest, ntlm ja negotiate. Erota arvot toisistaan pilkuilla.
@@ -323,6 +325,15 @@
           Jos tämä asetus on määritetty, pika-avaamista käyttäviä käyttäjiä pyydetään antamaan salasana lukitusnäytöllä tämän asetuksen mukaisesti.
 
           Jos tätä asetusta ei ole määritetty, pika-avaamista käyttäviä käyttäjiä pyydetään antamaan salasana lukitusnäytöllä päivittäin.</translation>
+<translation id="2194470398825717446">Tämä käytäntö on poistettu käytöstä M61:ssä, ota sen sijaan käyttöön EcryptfsMigrationStrategy.
+
+      Määrittää laitteen toiminnan, jos se toimitettiin ecryptfs-salauksen kanssa mutta on siirrettävä ext4-salaukseen.
+
+      Jos käytännön arvoksi määritetään DisallowArc, Android-sovellukset poistetaan kaikkien laitteen käyttäjien (myös niiden, joilla on jo ext4-salaus) käytöstä eikä käyttäjille tarjota lainkaan ecryptfs–ext4-siirtymistä.
+
+      Jos käytännön arvoksi määritetään AllowMigration, ext4-salaukseen siirtymistä tarjotaan tarvittaessa (tällä hetkellä Android N:n tullessa käyttöön laitteella), jos käyttäjän kotihakemisto käyttää ecryptfs-salausta.
+
+      Tämä käytäntö ei koske kioskisovelluksia – nämä siirretään automaattisesti. Jos tätä käytäntöä ei määritetä, toiminta vastaa DisallowArc-valintaa.</translation>
 <translation id="2201555246697292490">Määritä sallittujen luettelo laitteen omalle viestijärjestelmälle</translation>
 <translation id="2204753382813641270">Hallinnoi hyllyn automaattista piilottamista</translation>
 <translation id="2208976000652006649">POST-metodia käyttävän haun URL-osoitteen parametrit</translation>
@@ -518,6 +529,14 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos tämä käytäntö on käytössä, vain sellaiset tulostimet ovat käyttäjän 
       käytettävissä, joiden tunnukset vastaavat käytännössä mainittuja arvoja.
       Tunnusten on vastattava DeviceNativePrinters-kohdassa määritetyn tiedoston merkintöjä.</translation>
+<translation id="2794520838025002425">Määrittää tulostimet, joita käyttäjä ei voi käyttää.
+
+      Tätä käytäntöä käytetään vain jos NativePrintersBulkAccessMode-tilaksi on valittu
+      BlacklistRestriction.
+
+      Jos tätä käytäntöä käytetään, käyttäjä voi käyttää kaikkia tulostimia,
+      paitsi niitä, joiden tunnukset on lueteltu tässä.
+      </translation>
 <translation id="2801230735743888564">Anna käyttäjien pelata dinosauruspeliä laitteen ollessa offline-tilassa.
 
       Jos tämän käytännön arvo on epätosi, käyttäjät eivät voi pelata dinosauruspeliä laitteen ollessa offline-tilassa. Jos asetuksen arvo on tosi, käyttäjät voivat pelata peliä. Jos käytännön arvoa ei ole määritetty, käyttäjät eivät voi pelata dinosauruspeliä käyttöön otetulla Chrome-käyttöjärjestelmälaitteella, mutta voivat pelata peliä muissa olosuhteissa.</translation>
@@ -634,6 +653,7 @@ Jos tätä käytäntöä ei määritetä, käyttäjät voivat valita, haluavatko
 <translation id="3219421230122020860">Incognito-tila käytettävissä</translation>
 <translation id="3220624000494482595">Jos kioskisovellus on Android-sovellus, sillä ei ole vaikutusta tuotteen <ph name="PRODUCT_OS_NAME" /> versioon, vaikka käytännön arvoksi olisi määritetty <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">URL-kuviot, jotka sallivat laajennusten, sovellusten ja käyttäjien komentosarjojen asennuksen kohteesta</translation>
+<translation id="3240609035816615922">Tulostimien määrityksen käyttöoikeuskäytäntö</translation>
 <translation id="3243309373265599239">Määrittää käyttämättömyysajan, jonka kuluttua ruutu himmennetään, kun laitetta käytetään verkkovirralla.
 
           Kun tälle käytännölle asetetaan nollaa suurempi arvo, se määrittää käyttämättömyysajan, jonka kuluttua <ph name="PRODUCT_OS_NAME" /> himmentää ruudun.
@@ -887,6 +907,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Huomaa: Tällä hetkellä automaattiset uudelleenkäynnistykset ovat käytössä vain silloin, kun kirjautumisnäyttö on näkyvillä tai kioskisovellusistunto on käynnissä. Tämä muuttuu tulevaisuudessa ja käytäntö on aina käytössä, riippumatta siitä, onko minkäänlaista istuntoa käynnissä vai ei.
 
       Käytännön arvo on määritettävä sekunneissa. Arvon tulee olla vähintään 3600 (yksi tunti).</translation>
+<translation id="4203879074082863035">Vain sallittujen luettelossa olevat tulostimet näkyvät käyttäjille.</translation>
 <translation id="420512303455129789">Sanakirja, joka liittää URL-osoitteisiin totuusarvoja. Arvo määrittää, sallitaanko isännän käyttö (tosi) vai estetäänkö se (epätosi).
 
           Tämä käytäntö on tarkoitettu tuotteen <ph name="PRODUCT_NAME" /> sisäiseen käyttöön.</translation>
@@ -986,6 +1007,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4541530620466526913">Laitteeseen lisätyt tilit</translation>
 <translation id="4555850956567117258">Ota käyttöön etätodennus käyttäjälle</translation>
 <translation id="4557134566541205630">Oletusarvoisen hakujen tarjoajan uusi välilehti -sivun URL-osoite</translation>
+<translation id="4558592878156368639">Käytöstä poiston aikavälit, kun laitteen OffHours |ignored_policies| ‑käytännöt julkaistaan</translation>
 <translation id="4600786265870346112">Ota suuri osoitin käyttöön</translation>
 <translation id="4604931264910482931">Määritä kiellettyjen luettelo laitteen omalle viestijärjestelmälle</translation>
 <translation id="4617338332148204752">Ohita sisällönkuvauskenttien kirjaaminen kohteessa <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1389,6 +1411,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6211428344788340116">Ilmoita laitteen käyttöajat.
 
       Jos tätä asetusta ei ole määritetty tai sen arvo on tosi, laitteet ilmoittavat ajat, jolloin käyttäjä on käyttänyt laitetta. Jos arvo on epätosi, laitteen käyttöaikoja ei tallenneta tai ilmoiteta.</translation>
+<translation id="6212868225782276239">Kaikki tulostimet näkyvät, paitsi kieltolistalla olevat.</translation>
 <translation id="6219965209794245435">Tämä käytäntö pakottaa automaattisen täydennyksen lomaketietojen tuonnin aiemmasta oletusselaimesta. Käytössä ollessaan se vaikuttaa myös tuonnin valintaikkunaan.
 
       Jos käytäntö on pois käytöstä, automaattisen täydennyksen lomaketietoja ei tuoda.
@@ -1603,6 +1626,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7132877481099023201">URL-osoitteet, joille sallitaan pääsy videon kaappauslaitteisiin erikseen lupaa kysymättä</translation>
 <translation id="7167436895080860385">Anna käyttäjien katsella salasanoja salasanan hallinnassa (vanhentunut)</translation>
 <translation id="7173856672248996428">Lyhytkestoinen profiili</translation>
+<translation id="717630378807352957">Salli kaikki määritystiedoston tulostimet.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Päivityksille sallitut yhteystyypit</translation>
 <translation id="7194407337890404814">Oletushakupalvelun nimi</translation>
@@ -1885,6 +1909,17 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos käytäntö on poistettu käytöstä tai sitä ei ole asetettu, kirjautuminen avaa tavallisen profiilin.</translation>
 <translation id="8158758865057576716">Salli roaming-kopioiden luominen <ph name="PRODUCT_NAME" /> ‑profiilitiedoista.</translation>
+<translation id="8169931650834542988">Hallinnoi, mitkä tulostimet
+      NativePrintersBulkConfiguration-määrityksestä ovat käyttäjien käytettävissä.
+
+      Määrittää, mitä käyttöoikeuskäytäntöä käytetään tulostinjoukon määrittämiseen.
+      Jos AllowAll on valittu, kaikki tulostimet näytetään. Jos BlacklistRestrction
+      on valittu, NativePrintersBulkBlacklist-arvoa käytetään määritettyjen tulostimien
+      käytön rajoittamiseen. Jos WhitelistPrintersOnly on valittu,
+      NativePrintersWhitelist määrittää valittavissa olevat tulostimet.
+
+      Jos käytäntöä ei ole määritetty, oletuksena käytetään BlacklistRestriction-arvoa.
+      </translation>
 <translation id="8170878842291747619">Ottaa integroidun Googlen käännöspalvelun käyttöön tuotteessa <ph name="PRODUCT_NAME" />. Jos otat tämän asetuksen käyttöön,  <ph name="PRODUCT_NAME" /> näyttää integroidun työkalurivin, joka tarjoaa käyttäjän katseleman sivun käännöstä (jos sovellettavissa). Jos poistat tämän asetuksen käytöstä, käännöspalkkia ei näytetä. Valittuasi asetuksen käyttäjät eivät voi muuttaa tai ohittaa sitä tuotteessa <ph name="PRODUCT_NAME" />. Jos asetusta ei ole määritetty, käyttäjät voivat käyttää toimintoa halutessaan.</translation>
 <translation id="817455428376641507">Sallii luettelossa olevien URL-osoitteiden käytön poikkeuksina kiellettyjen URL-osoitteiden luettelosta.
 
@@ -1967,6 +2002,14 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8465065632133292531">POST-metodia käyttävän pikahaun URL-osoitteen parametrit</translation>
 <translation id="847472800012384958">Älä anna sivustojen näyttää ponnahdusikkunoita</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Määrittää tulostimet, joita käyttäjä voi käyttää.
+
+      Tätä käytäntöä käytetään vain, jos NativePrintersBulkAccessMode-tilaksi on valittu 
+      WhitelistPrintersOnly.
+
+      Jos tämä käytäntö on käytössä, vain sellaiset tulostimet ovat käyttäjän 
+      käytettävissä, joiden tunnukset vastaavat käytännössä mainittuja arvoja.
+      Tunnusten on vastattava NativePrintersBulkConfiguration-kohdassa määritetyn tiedoston merkintöjä.</translation>
 <translation id="8484458986062090479">Muokkaa niiden URL-mallien luetteloa, jotka isäntäselaimen tulee aina piirtää näytölle.
  
           Jos käytäntöä ei ole määritetty, kaikki sivustot piirretään näytölle ChromeFrameRendererSettings-käytännön näytölle piirtämisen oletusmäärityksien mukaan.
@@ -1977,6 +2020,29 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8519264904050090490">Hallinnoidun käyttäjän manuaalisten poikkeuksien URL-osoitteet</translation>
 <translation id="8544375438507658205">HTML-osoitteiden oletushahmonnin tuotteelle <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan</translation>
+<translation id="8555589883248082762">Tarjoaa määritystietoja laitteisiin sidotuille yritystulostimille.
+
+      Tämän käytännön avulla voit tarjota tulostinmäärityksiä laitteille, joiden 
+      käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" />.
+      Tiedoston koko saa olla korkeintaan 5 Mt ja se on oltava koodattuna JSON:ssä.
+      Muoto on sama kuin NativePrinters-sanakirjan muoto. Noin 21 000 tulostinta
+      sisältävä tiedosto koodautuu arviolta 5 Mt:n tiedostona.
+      Lataus todennetaan hajautusarvon avulla.
+
+      Tiedosto on ladattu ja tallennettu välimuistiin. Se ladataan uudelleen aina kun
+      URL-osoite tai hajautusarvo muuttuu.
+
+      Jos tämä käytäntö on määritetty,
+      <ph name="PRODUCT_OS_NAME" /> lataa tiedoston
+      tulostinmäärityksiä varten ja ottaa tulostimet käyttöön seuraavien mukaisesti:
+      NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
+      ja NativePrintersBulkBlacklist.
+
+      Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
+
+      Tällä käytännöllä ei ole vaikutusta siihen, voivatko käyttäjät määrittää
+      tulostimia yksittäisillä laitteilla. Se on tarkoitettu käytettäväksi yksittäisten
+      käyttäjien tulostinmääritysten lisäksi.</translation>
 <translation id="8566842294717252664">Piilota verkkokauppa uusi välilehti -sivulla ja sovellusten käynnistysohjelmassa</translation>
 <translation id="8587229956764455752">Salli uusien käyttäjätilien luominen</translation>
 <translation id="8614804915612153606">Poistaa automaattisen päivityksen käytöstä</translation>
@@ -2085,6 +2151,7 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="9096086085182305205">Sallittujen todennuspalvelimien luettelo</translation>
 <translation id="9098553063150791878">HTTP-todennuksen käytännöt</translation>
 <translation id="9105265795073104888">Vain osa välityspalvelinasetuksista on Android-sovellusten käytettävissä. Android-sovellukset voivat käyttää välityspalvelinta halutessaan. Et voi pakottaa niitä käyttämään välityspalvelinta.</translation>
+<translation id="9112727953998243860">Yritystulostimen määritystiedosto</translation>
 <translation id="9112897538922695510">Tämän käytännön avulla voit rekisteröidä luettelon protokollan käsittelijöitä. Tämä voi olla vain suositeltu käytäntö. |protocol|-ominaisuudeksi tulee asettaa malli, kuten "mailto", ja |url|-ominaisuudeksi tulee asettaa kyseistä mallia käsittelevän sovelluksen URL-osoitemalli. Osoitemalli voi sisältää merkin %s, joka korvataan käsiteltävällä URL-osoitteella.
 
           Käytännön avulla rekisteröidyt protokollan käsittelijät yhdistetään käyttäjän rekisteröimien käsittelijöiden kanssa, ja molemmat ovat käytettävissä. Käyttäjä voi ohittaa käytännön määrittämät protokollan käsittelijät asentamalla uuden oletuskäsittelijän. Käyttäjä ei kuitenkaan voi poistaa käytännön avulla rekisteröityjä protokollan käsittelijöitä.</translation>

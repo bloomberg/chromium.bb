@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">బ్యాకింగ్ నిల్వ చెల్లని స్థితిలో ఉంది</translation>
 <translation id="5023310440958281426">మీ నిర్వాహకుని విధానాలను చూడండి</translation>
 <translation id="5029568752722684782">కాపీని తీసివేయి</translation>
+<translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" యొక్క రూట్ సర్టిఫికేట్ అవసరం, కానీ అది ఇన్‌స్టాల్ చేయబడలేదు. ఈ సమస్యను పరిష్కరించాలంటే, మీ IT నిర్వాహకులు "<ph name="SOFTWARE_NAME" />" యొక్క కాన్ఫిగరేషన్ సూచనలను పరిశీలించాలి. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google అనువాదం గురించి</translation>
 <translation id="5039804452771397117">అనుమతించు</translation>
 <translation id="5040262127954254034">గోప్యత</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">అడగాలి (డిఫాల్ట్)</translation>
 <translation id="8041089156583427627">ప్రతిస్పందనను పంపండి</translation>
 <translation id="8041940743680923270">సార్వజనీన డిఫాల్ట్‌ను ఉపయోగించు (అడుగు)</translation>
+<translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />"ని సరిగ్గా కాన్ఫిగర్ చేయలేదు. సాధారణంగా "<ph name="SOFTWARE_NAME" />"ని అన్ఇన్‌స్టాల్ చేయడం ద్వారా సమస్య పరిష్కారం కావచ్చు. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">కథనాన్ని వీక్షించడంలో విఫలమైంది.</translation>
 <translation id="8091372947890762290">సక్రియం సర్వర్‌లో పెండింగ్‌లో ఉంది</translation>
 <translation id="8094917007353911263">మీరు ఉపయోగిస్తున్న నెట్‌వర్క్‌కి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
 <translation id="8103161714697287722">చెల్లింపు పద్ధతి</translation>
 <translation id="8118489163946903409">చెల్లింపు పద్ధతి</translation>
+<translation id="8127301229239896662">మీ కంప్యూటర్ లేదా నెట్‌వర్క్‌లో "<ph name="SOFTWARE_NAME" />" సరిగ్గా ఇన్‌స్టాల్ కాలేదు. ఈ సమస్యను పరిష్కరించమని మీ IT నిర్వాహకులను కోరండి.</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> సర్వర్ <ph name="BEGIN_ABBR" />DNS చిరునామా<ph name="END_ABBR" />ను కనుగొనడం సాధ్యపడలేదు.</translation>
 <translation id="8149426793427495338">మీ కంప్యూటర్ నిద్రావస్థకి వెళ్లింది.</translation>
@@ -1025,4 +1028,9 @@
 <translation id="988159990683914416">డెవలపర్ బిల్డ్</translation>
 <translation id="989988560359834682">చిరునామాను సవరించు</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">మీ కంప్యూటర్ లేదా నెట్‌వర్క్‌లో "<ph name="SOFTWARE_NAME" />" సరిగ్గా ఇన్‌స్టాల్ కాలేదు:
+    &lt;ul&gt;
+    &lt;li&gt;"<ph name="SOFTWARE_NAME" />"ని అన్ఇన్‌స్టాల్ చేయడానికి లేదా నిలిపివేయడానికి ప్రయత్నించండి&lt;/li&gt;
+    &lt;li&gt;మరో నెట్‌వర్క్‌కు కనెక్ట్ చేయడానికి ప్రయత్నించండి&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

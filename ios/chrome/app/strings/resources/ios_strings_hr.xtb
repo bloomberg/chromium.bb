@@ -66,9 +66,11 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="209018056901015185">Prikaži klasičnu stranicu</translation>
 <translation id="2103075008456228677">Otvori history.google.com</translation>
 <translation id="2116625576999540962">Broj premještenih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="213900355088104901">Da biste pregledavali privatno, otvorite anonimnu karticu</translation>
 <translation id="2149973817440762519">Uredi oznaku</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2230173723195178503">Web-stranica učitana</translation>
+<translation id="2256128224215992540">Prijedlozi pretraživanja i web-lokacija</translation>
 <translation id="2267753748892043616">Dodaj račun</translation>
 <translation id="2273327106802955778">Izbornik Više</translation>
 <translation id="2320166752086256636">Sakrij tipkovnicu</translation>
@@ -178,9 +180,11 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="430793432425771671">Sinkroniziraj sve</translation>
 <translation id="4342284590510997375">Novo</translation>
 <translation id="4359125752503270327">Stranica će se otvoriti u nekoj drugoj aplikaciji.</translation>
+<translation id="4370827530403103842">Sinkronizacija ne radi. Dodirnite za ispravak.</translation>
 <translation id="4375040482473363939">Pretraživanje QR kodova</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Obavijest o privatnosti</translation>
+<translation id="4460091562821778167">Pitaj me koju aplikaciju upotrijebiti svaki put</translation>
 <translation id="4508750114462689118">Zatvori promociju za prijavu</translation>
 <translation id="4526249700380860531">Prikaz spremljenih zaporki i upravljanje njima na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Pokušajte se ponovo prijaviti.</translation>
@@ -413,6 +417,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="9100610230175265781">Potrebna je zaporka</translation>
 <translation id="9148126808321036104">Prijavite se ponovno</translation>
 <translation id="914898748153555155">Tu postavku možete promijeniti u bilo kojem trenutku u postavkama Chromea</translation>
+<translation id="91549621916703028">Izradite više kartica za sve svoje zadatke</translation>
 <translation id="9157836665414082580">Izostavi dijaloge</translation>
 <translation id="9188680907066685419">Odjava s upravljanog računa</translation>
 <translation id="9203116392574189331">Handoff</translation>

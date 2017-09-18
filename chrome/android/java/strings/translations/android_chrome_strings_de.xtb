@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Lesezeichen verschieben</translation>
 <translation id="119944043368869598">Alle löschen</translation>
 <translation id="1201402288615127009">Weiter</translation>
+<translation id="1204037785786432551">Link herunterladen</translation>
+<translation id="1206892813135768548">Linktext kopieren</translation>
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
 <translation id="1211530540767271776">Kein USB-Gerät vorhanden</translation>
 <translation id="123724288017357924">Aktuelle Seite neu laden, Cache-Inhalte ignorieren</translation>
@@ -114,6 +116,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="2082238445998314030">Ergebnis <ph name="RESULT_NUMBER" /> von <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Melden Sie sich in Chrome an, um personalisierte, von Google vorgeschlagene Inhalte zu erhalten.</translation>
+<translation id="2091887806945687916">Ton</translation>
 <translation id="2095887075102408547">Wenn diese Funktion aktiviert ist, nutzt Chrome Google-Server, um besuchte Seiten vor dem Download zu komprimieren. Über private Verbindungen (HTTPS) oder in Inkognito-Tabs aufgerufene Seiten werden von Google nicht optimiert oder protokolliert.</translation>
 <translation id="2096396629993765042">Sie werden nicht von Ihrem Google-Konto abgemeldet. Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> weitere Arten von Browserverlaufsdaten für Ihr Google-Konto.</translation>
 <translation id="2100273922101894616">Automatisch anmelden</translation>
@@ -333,6 +336,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4256782883801055595">Open Source-Lizenzen</translation>
 <translation id="4259722352634471385">Die Navigation zu <ph name="URL" /> ist blockiert.</translation>
 <translation id="4262028915562328938">Es ist ein Synchronisierungsfehler aufgetreten. Tippen Sie, um Details zu erhalten.</translation>
+<translation id="4269820728363426813">URL kopieren</translation>
 <translation id="4275663329226226506">Medien</translation>
 <translation id="4278390842282768270">Zugelassen</translation>
 <translation id="42981349822642051">Maximieren</translation>
@@ -603,7 +607,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6701279291835318271">Sicherheitsberichte</translation>
 <translation id="6709133671862442373">Nachrichten</translation>
 <translation id="6710213216561001401">Zurück</translation>
-<translation id="6727612981472093924">Navigationsfeld geöffnet</translation>
 <translation id="6738867403308150051">Wird heruntergeladen...</translation>
 <translation id="6762156594045689028">Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Datei kann nicht geöffnet werden</translation>
@@ -662,6 +665,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7253272406652746122">Fügen Sie ein Google-Konto über die Seite "Konten" der App "Einstellungen" Ihres Geräts hinzu.</translation>
 <translation id="7274013316676448362">Blockierte Website</translation>
 <translation id="7307288900373049735">Google wird kontaktiert. Das kann einen Moment dauern.</translation>
+<translation id="7318797029885648322">Tippen Sie auf "Mehr", damit Artikel angezeigt werden</translation>
 <translation id="7333031090786104871">Vorherige Website wird noch hinzugefügt</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 ausgewähltes Element teilen}other{# ausgewählte Elemente teilen}}</translation>
@@ -800,6 +804,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8636825310635137004">Aktivieren Sie die Synchronisierung, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="8641930654639604085">Versuchen, nicht jugendfreie Websites zu blockieren</translation>
 <translation id="8662811608048051533">Sie werden von den meisten Websites abgemeldet.</translation>
+<translation id="867485229011312729">Wo befinden sich Lesezeichen, Downloads und der Verlauf?</translation>
 <translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstärke: # Balken}other{Signalstärke: # Balken}}</translation>
 <translation id="869891660844655955">Ablaufdatum</translation>

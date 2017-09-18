@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Di chuyển dấu trang</translation>
 <translation id="119944043368869598">Xóa tất cả</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
+<translation id="1204037785786432551">Tải xuống liên kết</translation>
+<translation id="1206892813135768548">Sao chép văn bản liên kết</translation>
 <translation id="1209206284964581585">Ẩn ngay bây giờ</translation>
 <translation id="1211530540767271776">Không có thiết bị USB nào ở đây</translation>
 <translation id="123724288017357924">Tải lại trang hiện tại, bỏ qua nội dung được lưu trong bộ nhớ cache</translation>
@@ -114,6 +116,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Để nhận nội dung được cá nhân hóa do Google đề xuất, hãy đăng nhập vào Chrome.</translation>
+<translation id="2091887806945687916">Âm thanh</translation>
 <translation id="2095887075102408547">Khi bạn bật tính năng này, Chrome sẽ sử dụng máy chủ Google để nén các trang mà bạn truy cập trước khi tải trang xuống. Google sẽ không tối ưu hóa hoặc thấy các trang được truy cập bằng kết nối riêng tư (HTTPS) hoặc trong tab ẩn danh.</translation>
 <translation id="2096396629993765042">Bạn sẽ không bị đăng xuất khỏi tài khoản Google của mình. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Tự động đăng nhập</translation>
@@ -333,6 +336,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
 <translation id="4259722352634471385">Điều hướng bị chặn: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Đã xảy ra lỗi đồng bộ hóa, hãy nhấn để biết thông tin chi tiết.</translation>
+<translation id="4269820728363426813">Sao chép địa chỉ liên kết</translation>
 <translation id="4275663329226226506">Truyền thông</translation>
 <translation id="4278390842282768270">Được cho phép</translation>
 <translation id="42981349822642051">Mở rộng</translation>
@@ -602,7 +606,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6701279291835318271">Báo cáo bảo mật</translation>
 <translation id="6709133671862442373">Tin tức</translation>
 <translation id="6710213216561001401">Trước đó</translation>
-<translation id="6727612981472093924">Đã mở bảng điều hướng</translation>
 <translation id="6738867403308150051">Đang tải xuống...</translation>
 <translation id="6762156594045689028">Để thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Không thể mở tệp</translation>
@@ -661,6 +664,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7253272406652746122">Thêm Tài khoản Google từ trang Tài khoản trong ứng dụng Cài đặt trên thiết bị của bạn.</translation>
 <translation id="7274013316676448362">Trang web bị chặn</translation>
 <translation id="7307288900373049735">Đang liên hệ với Google…quá trình này có thể mất ít phút</translation>
+<translation id="7318797029885648322">Hãy nhấn vào nút Thêm để xem bài viết</translation>
 <translation id="7333031090786104871">Vẫn đang thêm trang web trước</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Chia sẻ 1 mục đã chọn}other{Chia sẻ # mục đã chọn}}</translation>
@@ -799,6 +803,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8636825310635137004">Để có các tab từ các thiết bị khác của bạn, hãy bật đồng bộ hóa.</translation>
 <translation id="8641930654639604085">Cố gắng chặn các trang web cho người lớn</translation>
 <translation id="8662811608048051533">Đăng xuất bạn khỏi hầu hết các trang web.</translation>
+<translation id="867485229011312729">Dấu trang, tài nguyên đã tải xuống và lịch sử nằm ở đâu?</translation>
 <translation id="8676374126336081632">Xóa văn bản nhập</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Mức cường độ tín hiệu: # vạch}other{Mức cường độ tín hiệu: # vạch}}</translation>
 <translation id="869891660844655955">Ngày hết hạn</translation>

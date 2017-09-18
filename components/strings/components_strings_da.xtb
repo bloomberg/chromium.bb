@@ -418,7 +418,7 @@
 <translation id="4072486802667267160">Der opstod en fejl under behandlingen af din ordre. Prøv igen.</translation>
 <translation id="4075732493274867456">Klienten og serveren understøtter ikke en fælles SSL-protokolversion eller et fælles krypteringsprogram.</translation>
 <translation id="4079302484614802869">Proxykonfiguration er angivet til at anvende en webadresse for .pac-script, ikke faste proxyservere.</translation>
-<translation id="4098354747657067197">Misvisende website forude</translation>
+<translation id="4098354747657067197">Vildledende website forude</translation>
 <translation id="4103249731201008433">Enhedens serienummer er ugyldigt</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for at se listen over sortlistede webadresser og andre politikker, din systemadministrator har igangsat.</translation>
@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>
 <translation id="5023310440958281426">Læs din administrators politikker</translation>
 <translation id="5029568752722684782">Slet kopi</translation>
+<translation id="503069730517007720">Et rodcertifikat for "<ph name="SOFTWARE_NAME" />" er påkrævet, men ikke installeret. Din IT-administrator bør kigge på konfigurationsvejledningen til "<ph name="SOFTWARE_NAME" />" for at løse dette problem. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Om Google Oversæt</translation>
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5040262127954254034">Beskyttelse af personlige oplysninger</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">Spørg (standardindstilling)</translation>
 <translation id="8041089156583427627">Send feedback</translation>
 <translation id="8041940743680923270">Brug global standard (spørg)</translation>
+<translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" er ikke konfigureret korrekt. Problemet kan normalt løses ved at afinstallere "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Artiklen kunne ikke vises.</translation>
 <translation id="8091372947890762290">Aktivering afventer serveren</translation>
 <translation id="8094917007353911263">Det netværk, du bruger, kan kræve, at du går til <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Betalingsmetode</translation>
 <translation id="8118489163946903409">Betalingsmetode</translation>
+<translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" blev ikke korrekt installeret på computeren eller netværket. Bed din IT-administrator om at løse problemet.</translation>
 <translation id="8131740175452115882">Bekræft</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />DNS-adressen<ph name="END_ABBR" /> for <ph name="HOST_NAME" />s server blev ikke fundet.</translation>
 <translation id="8149426793427495338">Din computer gik i dvale.</translation>
@@ -1025,4 +1028,9 @@
 <translation id="988159990683914416">Udviklerversion</translation>
 <translation id="989988560359834682">Rediger adresse</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" blev ikke korrekt installeret på computeren eller netværket:
+    &lt;ul&gt;
+    &lt;li&gt;Prøv at afinstallere eller deaktivere "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
+    &lt;li&gt;Prøv at oprette forbindelse til et andet netværk&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

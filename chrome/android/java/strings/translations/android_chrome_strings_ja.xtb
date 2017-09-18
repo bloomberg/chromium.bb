@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">ブックマークを移動</translation>
 <translation id="119944043368869598">すべてクリア</translation>
 <translation id="1201402288615127009">次へ</translation>
+<translation id="1204037785786432551">リンクをダウンロード</translation>
+<translation id="1206892813135768548">リンク テキストをコピー</translation>
 <translation id="1209206284964581585">今は表示しない</translation>
 <translation id="1211530540767271776">USB デバイスはありません</translation>
 <translation id="123724288017357924">キャッシュ コンテンツを無視して現在のページを再読み込みする</translation>
@@ -114,6 +116,7 @@
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="2082238445998314030">結果 <ph name="TOTAL_RESULTS" /> 件中 <ph name="RESULT_NUMBER" /> 件目</translation>
 <translation id="2086652334978798447">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、Chrome にログインします。</translation>
+<translation id="2091887806945687916">音声</translation>
 <translation id="2095887075102408547">この機能が有効になっている場合、アクセスしたページはダウンロード前に Google サーバーで圧縮されます。プライベート接続（HTTPS）やシークレット タブでアクセスしたページには、Google による最適化や確認は行われません。</translation>
 <translation id="2096396629993765042">Google アカウントへのログイン状態は維持されます。Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="2100273922101894616">自動ログイン</translation>
@@ -333,6 +336,7 @@
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
 <translation id="4262028915562328938">同期エラーが発生しました。タップして詳細を確認できます。</translation>
+<translation id="4269820728363426813">リンクアドレスをコピー</translation>
 <translation id="4275663329226226506">メディア</translation>
 <translation id="4278390842282768270">許可</translation>
 <translation id="42981349822642051">展開</translation>
@@ -602,7 +606,6 @@
 <translation id="6701279291835318271">セキュリティ レポート</translation>
 <translation id="6709133671862442373">ニュース</translation>
 <translation id="6710213216561001401">前へ</translation>
-<translation id="6727612981472093924">ナビゲーションパネルを開きました</translation>
 <translation id="6738867403308150051">ダウンロードしています…</translation>
 <translation id="6762156594045689028">この設定を変更するには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="6764789522080107716">ファイルを開けません</translation>
@@ -661,6 +664,7 @@
 <translation id="7253272406652746122">端末の設定アプリのアカウント ページで Google アカウントを追加してください。</translation>
 <translation id="7274013316676448362">ブロック中のサイト</translation>
 <translation id="7307288900373049735">Google に問い合わせ中… 1 分ほどかかる場合があります</translation>
+<translation id="7318797029885648322">候補を表示するには [もっと見る] をタップしてください</translation>
 <translation id="7333031090786104871">前のサイトを追加中です</translation>
 <translation id="7352939065658542140">動画</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 件の選択されたアイテムを共有します}other{# 件の選択されたアイテムを共有します}}</translation>
@@ -799,6 +803,7 @@
 <translation id="8636825310635137004">他の端末と同じタブを使用するには、同期を有効にします。</translation>
 <translation id="8641930654639604085">成人向けのサイトを可能な限りブロックする</translation>
 <translation id="8662811608048051533">ほとんどのサイトからログアウトします。</translation>
+<translation id="867485229011312729">ブックマーク、ダウンロード、履歴を表示するには</translation>
 <translation id="8676374126336081632">入力内容を消去</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{電波強度: レベル #}other{電波強度: レベル #}}</translation>
 <translation id="869891660844655955">有効期限</translation>

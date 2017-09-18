@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">پشتیبان‌گیری ذخیره در وضعیت نادرست است</translation>
 <translation id="5023310440958281426">خط‌مشی‌های سرپرست سیستمتان را بررسی کنید</translation>
 <translation id="5029568752722684782">پاک کردن نسخه کپی</translation>
+<translation id="503069730517007720">برای «<ph name="SOFTWARE_NAME" />» گواهینامه ریشه‌ لازم است اما نصب نشده است. برای رفع این مشکل، سرپرست فناوری اطلاعات شما باید دستورالعمل‌های پیکربندی مربوط به «<ph name="SOFTWARE_NAME" />» را بررسی کند. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">‏درباره ‏‫مترجم Google‬</translation>
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5040262127954254034">حریم خصوصی</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">درخواست (پیش‌فرض)</translation>
 <translation id="8041089156583427627">ارسال بازخورد</translation>
 <translation id="8041940743680923270">استفاده از پیش‌فرض جهانی (سؤال شود)</translation>
+<translation id="8057711352706143257">«<ph name="SOFTWARE_NAME" />» درست پیکربندی نمی‌شود. معمولاً حذف‌ نصب «<ph name="SOFTWARE_NAME" />» مشکل را برطرف می‌کند. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">مشاهده مقاله ناموفق بود.</translation>
 <translation id="8091372947890762290">فعال‌سازی در سرور در حالت تعلیق است</translation>
 <translation id="8094917007353911263">شبکه‌ای که از آن استفاده می‌کنید ممکن است از شما بخواهد که <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> را ببینید.</translation>
 <translation id="8103161714697287722">روش پرداخت</translation>
 <translation id="8118489163946903409">روش پرداخت</translation>
+<translation id="8127301229239896662">«<ph name="SOFTWARE_NAME" />» به‌درستی در رایانه یا شبکه‌تان پیکربندی نشد. از سرپرست فناوری اطلاعات خود بخواهید این مشکل را حل کند.</translation>
 <translation id="8131740175452115882">تأیید</translation>
 <translation id="8134994873729925007">‏<ph name="BEGIN_ABBR" />نشانی DNS<ph name="END_ABBR" /> سرور <ph name="HOST_NAME" /> پیدا نشد.</translation>
 <translation id="8149426793427495338">رایانه‌تان به خواب رفته است.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">ساخت برنامه‌نویس</translation>
 <translation id="989988560359834682">ویرایش آدرس</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">‏«<ph name="SOFTWARE_NAME" />» به‌درستی در رایانه یا شبکه‌تان پیکربندی نشد:
+    &lt;ul&gt;
+    &lt;li&gt;«<ph name="SOFTWARE_NAME" />» را حذف‌نصب یا غیرفعال کنید&lt;/li&gt;
+    &lt;li&gt;به شبکه دیگری متصل شوید&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

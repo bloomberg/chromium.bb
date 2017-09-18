@@ -51,6 +51,7 @@
 
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy
       godziny. Minimalna dopuszczalna częstotliwość to 60 sekund.</translation>
+<translation id="1204263402976895730">Włączone drukarki firmowe</translation>
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
 <translation id="123081309365616809">Włącz przesyłanie treści na urządzenie</translation>
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
@@ -245,6 +246,7 @@
 <translation id="2024476116966025075">Konfiguracja wymaganej nazwy domeny dla klientów zdalnego dostępu</translation>
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
 <translation id="203096360153626918">Ta zasada nie ma wpływu na aplikacje na Androida. Mogą one działać w trybie pełnoekranowym, nawet gdy zasada jest ustawiona na <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Wyłączone drukarki firmowe</translation>
 <translation id="206623763829450685">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME" />.
 
           Możliwe wartości to „basic”, „digest”, „NTLM” i „negotiate”. Poszczególne wartości należy rozdzielić przecinkami.
@@ -260,7 +262,7 @@
 
       Ta zasada umożliwia udostępnianie konfiguracji drukarek
       urządzeniom z systemem <ph name="PRODUCT_OS_NAME" />.
-      Plik nie może być większy niż 5 MB i musi być kodowany w JSON.
+      Plik nie może być większy niż 5 MB i musi być zapisany w formacie JSON.
       Format jest taki sam jak w słowniku NativePrinters. Szacuje się, że
       w pliku o tym rozmiarze można zakodować około 21 000 drukarek.
       Do weryfikacji integralności pobranego pliku służy skrót
@@ -274,6 +276,7 @@
       plik do konfiguracji drukarek i udostępni drukarki
       zgodnie z zasadami DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist,
       i DeviceNativePrintersBlacklist.
+
       Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki
       na pojedynczych urządzeniach. Nie ma być ona uzupełnieniem
       konfiguracji drukarek wykonywanej przez poszczególnych użytkowników.
@@ -321,6 +324,15 @@
           Jeśli to ustawienie jest skonfigurowane, jego wartość określa, jak często użytkownicy korzystający z szybkiego odblokowania muszą podawać swoje hasło na ekranie blokady.
 
           Jeśli to ustawienie nie jest skonfigurowane, użytkownicy korzystający z szybkiego odblokowania muszą podawać swoje hasło na ekranie blokady codziennie.</translation>
+<translation id="2194470398825717446">Ta zasada jest wycofywana w wersji M61. Zmiast niej należy użyć zasady EcryptfsMigrationStrategy.
+
+      Określa, jak powinno zachowywać się urządzenie, które zostało dostarczone z systemem plików eCryptfs i wymaga przejścia na szyfrowany system plików ext4.
+
+      Jeśli wybierzesz dla tej zasady ustawienie „DisallowArc”, aplikacje na Androida zostaną wyłączone dla wszystkich użytkowników urządzenia (także tych, którzy już korzystają z systemu ext4). Użytkownicy nie będą mogli przeprowadzić migracji z systemu plików eCryptfs na ext4.
+
+      Jeśli wybierzesz dla tej zasady ustawienie „AllowMigration”, użytkownicy korzystający z katalogów domowych z systemem plików eCryptfs zobaczą opcję przeniesienia ich do na szyfrowany system plików ext4, jeśli będzie to konieczne (obecnie dzieje się to w momencie, gdy na urządzeniu pojawia się Android N).
+
+      Ta zasada nie obejmuje aplikacji kiosku – ich migracja odbywa się automatycznie. Jeśli zasada pozostanie nieskonfigurowana, urządzenie będzie zachowywać się tak samo jak po wybraniu opcji „DisallowArc”.</translation>
 <translation id="2201555246697292490">Skonfiguruj białą listę wiadomości natywnych</translation>
 <translation id="2204753382813641270">Steruj autoukrywaniem półki</translation>
 <translation id="2208976000652006649">Parametry dla adresów URL wyszukiwania używających POST</translation>
@@ -516,6 +528,14 @@
       Jeśli ta zasada jest używana, użytkownik ma dostęp tylko do drukarek,
       których identyfikatory pasują do wartości w niej ustawionych. Identyfikatory
       muszą być zgodne z pozycjami w pliku określonym w zasadzie DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Określa drukarki, z których użytkownik nie może korzystać.
+
+      Ta zasada jest używana tylko wtedy, gdy wybrano opcję
+      BlacklistRestriction dla zasady NativePrintersBulkAccessMode.
+
+      Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich
+      drukarek oprócz tych, których identyfikatory w niej określono.
+      </translation>
 <translation id="2801230735743888564">Daje użytkownikom dostęp do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline.
 
       Jeśli ta zasada jest wyłączona, użytkownicy nie mają dostępu do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline. Jeśli jest włączona, użytkownicy mogą grać w tę grę. Jeśli zasada nie jest ustawiona, użytkownicy nie mają dostępu do gry na zarejestrowanych urządzeniach z Chrome OS, a w innych przypadkach mogą w nią grać.</translation>
@@ -632,6 +652,7 @@
 <translation id="3219421230122020860">Tryb incognito dostępny</translation>
 <translation id="3220624000494482595">Jeśli aplikacja kiosku jest aplikacją na Androida, nie będzie mieć żadnej kontroli nad wersją <ph name="PRODUCT_OS_NAME" />, nawet jeśli ta zasada jest ustawiona na <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Wzorce URL-ów, z których dozwolone jest instalowanie rozszerzeń, aplikacji i skryptów użytkownika</translation>
+<translation id="3240609035816615922">Zasady dostępu do konfiguracji drukarki.</translation>
 <translation id="3243309373265599239">Określa, po jakim czasie nieaktywności użytkownika przyciemniany jest ekran przy zasilaniu z sieci.
 
           Jeśli ta zasada ma wartość większą niż zero, określa czas, przez który użytkownik musi pozostać bezczynny, zanim <ph name="PRODUCT_OS_NAME" /> przyciemni ekran.
@@ -662,6 +683,9 @@
 <translation id="3322771899429619102">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być generowane klucze. Jeśli wzorzec adresu URL znajduje się w zasadzie „KeygenBlockedForUrls”, zastępuje to te wyjątki.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultKeygenSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="332771718998993005">Określ nazwę używaną jako miejsce docelowe <ph name="PRODUCT_NAME" />.
+
+          Jeśli ta zasada jest ustawiona na niepusty ciąg znaków, to jest on nazwą miejsca docelowego <ph name="PRODUCT_NAME" />. W przeciwnym razie nazwą miejsca docelowego jest nazwa urządzenia. Jeśli ta zasada nie jest ustawiona, nazwą miejsca docelowego jest nazwa urządzenia, a właściciel urządzenia (lub użytkownik z domeny zarządzającej urządzeniem) może ją zmienić. Nazwa może mieć maksymalnie 24 znaki.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
 <translation id="3417418267404583991">Jeśli ta zasada zostanie włączona lub nie będzie skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał logowanie się w trybie gościa. Logowania w trybie gościa to anonimowe sesje użytkownika, które nie wymagają hasła.
 
@@ -697,7 +721,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 
           Ta zasada jest uwzględniana tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Włącz Tłumacza</translation>
-<translation id="3512226956150568738">Jeśli model urządzenia klienta obsługiwał środowisko ARC już wtedy, gdy do uruchomienia ARC nie była konieczna migracja do ext4, i jeśli zasada ArcEnabled jest ustawiona na wartość prawda, ta opcja będzie zachowywać się tak jak opcja AskUser (wartość 3). We wszystkich pozostałych przypadkach (jeśli model urządzenia nie obsługiwał wcześniej ARC lub jeśli zasada ArcEnabled jest ustawiona na wartość fałsz), ta wartość jest równoznaczna z opcją DisallowArc (wartość 0).</translation>
+<translation id="3512226956150568738">Jeśli model urządzenia klienta obsługiwał środowisko ARC już wtedy, gdy do uruchomienia ARC nie była konieczna migracja do ext4, i jeśli zasada ArcEnabled jest ustawiona na wartość prawda, ta opcja będzie zachowywać się tak jak opcja AskUser (wartość 3). We wszystkich pozostałych przypadkach (jeśli model urządzenia nie obsługiwał wcześniej ARC lub jeśli zasada ArcEnabled jest ustawiona na wartość fałsz), ta wartość jest równoznaczna z opcją DisallowArc (wartość 0).</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="3591584750136265240">Skonfiguruj sposób uwierzytelniania logowania</translation>
@@ -882,6 +906,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Uwaga: automatyczne ponowne uruchomienia obecnie działają tylko wtedy, gdy jest pokazywany ekran logowania lub trwa sesja aplikacji kiosku. W przyszłości to się zmieni i zasada będzie obowiązywała zawsze, niezależnie od tego, czy trwa sesja określonego typu.
 
       Wartość zasady należy podać w sekundach. Musi ona wynosić co najmniej 3600 (jedna godzina).</translation>
+<translation id="4203879074082863035">Użytkownicy widzą tylko drukarki dodane do białej listy</translation>
 <translation id="420512303455129789">Słownik mapujący URL-e na flagi wartości logicznej, która określa, czy dostęp do hosta jest dozwolony (prawda) czy zablokowany (fałsz).
 
           Ta zasada jest przeznaczona do użytku wewnętrznego w <ph name="PRODUCT_NAME" />.</translation>
@@ -980,6 +1005,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4541530620466526913">Lokalne konta na urządzeniu</translation>
 <translation id="4555850956567117258">Włącz zaświadczanie zdalne dla użytkownika</translation>
 <translation id="4557134566541205630">URL strony nowej karty domyślnego dostawcy wyszukiwania</translation>
+<translation id="4558592878156368639">Okresy bezczynności urządzeń, gdy aktywne są zasady OffHours |ignored_policies|</translation>
 <translation id="4600786265870346112">Włącz duży kursor</translation>
 <translation id="4604931264910482931">Skonfiguruj czarną listę wiadomości natywnych</translation>
 <translation id="4617338332148204752">Pomiń sprawdzanie metatagów w <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1135,6 +1161,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Wartość dla zasady należy podać w milisekundach. Wartości są ograniczane, tak aby nie przekraczały wartości opóźnienia nieaktywności.</translation>
 <translation id="5307432759655324440">Dostępność trybu incognito</translation>
 <translation id="5318185076587284965">Zezwalaj hostowi zdalnego dostępu na korzystanie z serwerów przekazujących</translation>
+<translation id="5323128137188992869">Zezwól na przesyłanie treści na urządzenie przy użyciu <ph name="PRODUCT_NAME" />.
+
+          Jeśli ta zasada jest ustawiona na wartość fałsz, użytkownicy nie mogą przesyłać treści na urządzenie. Jeśli jest ustawiona na wartość prawda – mogą to robić. Jeśli ta zasada nie jest ustawiona, użytkownicy nie mogą przesyłać treści na zarejestrowane urządzenia z Chrome OS. Mogą przesyłać treści na urządzenia niezarejestrowane.</translation>
 <translation id="5330684698007383292">Zezwalaj <ph name="PRODUCT_FRAME_NAME" /> na obsługę tych typów treści</translation>
 <translation id="5365946944967967336">Pokaż przycisk strony startowej na pasku narzędzi</translation>
 <translation id="5366977351895725771">Jeśli ta zasada ma wartość „fałsz”, ten użytkownik nie może tworzyć użytkowników nadzorowanych. Dotychczasowi użytkownicy nadzorowani będą nadal dostępni.
@@ -1349,6 +1378,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6111936128861357925">Zezwól na ukrytą grę-żart z dinozaurem</translation>
 <translation id="6114416803310251055">przestarzała</translation>
 <translation id="6133088669883929098">Zezwalaj na generowanie kluczy we wszystkich witrynach</translation>
+<translation id="6139485614509308022">Jeśli zasada „OffHours” jest ustawiona, to określone zasady dotyczące urządzeń są ignorowane (używane są ustawienia domyślne tych zasad) w konkretnych okresach. Zasady dotyczące urządzeń są ponownie stosowane przez Chrome za każdym razem, gdy zaczyna lub kończy się okres „OffHours”. Użytkownik otrzymuje powiadomienie i następuje wymuszone wylogowanie, gdy zakończenie okresu „OffHours” i zasady dotyczące urządzeń zmienią się (tzn. gdy użytkownik jest zalogowany na konto, które nie ma uprawnień).</translation>
 <translation id="6145799962557135888">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których może być wykonywany kod JavaScript. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="614662973812186053">Ta zasada kontroluje też zbieranie danych o użytkowaniu i danych diagnostycznych Androida.</translation>
 <translation id="6155936611791017817">Ustaw domyślny stan dużego kursora na ekranie logowania</translation>
@@ -1378,6 +1408,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6211428344788340116">Zgłasza godziny aktywności urządzenia.
 
       Jeśli to ustawienie nie jest określone lub jego wartość to Prawda, zarejestrowane urządzenie zgłasza, kiedy korzysta z niego użytkownik. Jeśli ta zasada ma wartość Fałsz, godziny aktywności urządzenia nie są rejestrowane ani zgłaszane.</translation>
+<translation id="6212868225782276239">Widoczne są wszystkie drukarki oprócz tych z czarnej listy.</translation>
 <translation id="6219965209794245435">Po włączeniu tej zasady wymuszany jest import danych autouzupełniania formularzy z poprzedniej przeglądarki domyślnej. Włączenie tej zasady ma również wpływ na opcje w oknie dialogowym importowania.
 
       Jeśli zasada zostanie wyłączona, dane autouzupełniania formularzy nie zostaną zaimportowane.
@@ -1584,6 +1615,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7132877481099023201">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania filmów</translation>
 <translation id="7167436895080860385">Zezwalaj użytkownikom na pokazywanie haseł w menedżerze haseł (wycofane)</translation>
 <translation id="7173856672248996428">Profil tymczasowy</translation>
+<translation id="717630378807352957">Zezwalaj na wszystkie drukarki z pliku konfiguracji.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Typy połączeń dozwolone dla aktualizacji</translation>
 <translation id="7194407337890404814">Nazwa domyślnego dostawcy wyszukiwania</translation>
@@ -1626,7 +1658,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta zasada ma wartość fałsz, automatycznie wybierane polecane treści nie będą wyświetlać się na stronie Nowa karta.</translation>
 <translation id="7323896582714668701">Dodatkowe parametry wiersza poleceń dla <ph name="PRODUCT_NAME" /></translation>
-<translation id="7326394567531622570">Podobna do opcji Wipe (wartość 2), ale próbuje zachować tokeny logowania, by użytkownik nie musiał ponownie się logować.</translation>
+<translation id="7326394567531622570">Ta opcja jest podobna do zasady Wipe (wartość 2), ale próbuje zachować tokeny logowania, by użytkownik nie musiał ponownie się logować.</translation>
 <translation id="7329842439428490522">Określa, po jakim czasie nieaktywności użytkownika wyłączany jest ekran przy zasilaniu z baterii.
 
           Jeśli ta zasada ma wartość większą niż zero, określa czas, przez który użytkownik musi pozostać bezczynny, zanim <ph name="PRODUCT_OS_NAME" /> wyłączy ekran.
@@ -1866,6 +1898,18 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
       Jeśli zasada jest wyłączona lub nie została ustawiona, logowanie prowadzi do zwykłych profili.</translation>
 <translation id="8158758865057576716">Włącz tworzenie przenośnych kopii danych profilu <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8169931650834542988">Steruje tym, które drukarki określone w zasadzie
+      NativePrintersBulkConfiguration są dostępne dla użytkowników.
+
+      Wskazuje zasadę dostępu, która jest używana do zbiorczego skonfigurowania drukarek.
+      Jeśli wybrano opcję AllowAll, pokazywane są wszystkie drukarki. Jeśli wybrano opcję BlacklistRestrction,
+      zasada NativePrintersBulkBlacklist jest używana do ograniczania dostępu do
+      określonych drukarek.  Jeśli wybrano ustawienie WhitelistPrintersOnly,
+      zasada NativePrintersWhitelist wskazuje tylko te drukarki, które można
+      wybrać.
+
+      Jeśli ta zasada nie jest ustawiona, domyślnie stosowana jest zasada BlacklistRestriction.
+      </translation>
 <translation id="8170878842291747619">Włącza zintegrowaną usługę Tłumacz Google w <ph name="PRODUCT_NAME" />. Jeśli włączysz tę opcję, w <ph name="PRODUCT_NAME" /> w razie potrzeby pojawi się zintegrowany pasek narzędzi oferujący możliwość przetłumaczenia strony. Jeśli wyłączysz tę opcję, użytkownicy nie zobaczą paska tłumaczeń. Ustawienie tej opcji zablokuje możliwość jej zmiany przez użytkowników w <ph name="PRODUCT_NAME" />. W przypadku nieokreślenia tego ustawienia użytkownicy mogą zdecydować, czy chcą używać tej funkcji czy nie.</translation>
 <translation id="817455428376641507">Zezwala na otwieranie wymienionych URL-i jako wyjątków względem czarnej listy URL-i.
 
@@ -1952,6 +1996,14 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8465065632133292531">Parametry dla URL-i dynamicznych używających POST</translation>
 <translation id="847472800012384958">Nie zezwalaj na pokazywanie wyskakujących okienek w żadnej witrynie</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Określa drukarki, z których może korzystać użytkownik.
+
+      Ta zasada jest używana tylko wtedy, gdy dla zasady
+      NativePrintersBulkAccessMode wybrano ustawienie WhitelistPrintersOnly.
+
+      Jeśli ta zasada jest używana, użytkownik ma dostęp tylko do drukarek,
+      których identyfikatory pasują do wartości w niej ustawionych.
+      Identyfikatory muszą być zgodne z pozycjami w pliku określonym w zasadzie NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Pozwala dostosować listę wzorców adresów URL stron, które przeglądarka hosta ma zawsze renderować.
 
           Jeśli nie ustawisz tej zasady, na wszystkich stronach działa domyślny mechanizm renderowania określony przez zasadę ChromeFrameRendererSettings.
@@ -1962,6 +2014,29 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8519264904050090490">Zarządzane adresy URL dodane przez użytkownika na listę wyjątków</translation>
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
+<translation id="8555589883248082762">Udostępnia konfiguracje drukarek firmowych.
+
+      Ta zasada umożliwia udostępnianie konfiguracji drukarek urządzeniom
+      z systemem <ph name="PRODUCT_OS_NAME" />.
+      Plik nie może być większy niż 5 MB i musi być kodowany w JSON.
+      Format jest taki sam jak w słowniku NativePrinters.
+      Szacuje się, że w pliku o tym rozmiarze można zakodować około 21 000 drukarek.
+      Do weryfikacji integralności pobranego pliku służy skrót kryptograficzny.
+
+      Pobrany plik zostaje zapisany w pamięci podręcznej. Po każdej
+      zmianie adresu URL lub skrótu jest pobierany ponownie.
+
+      Jeśli ta zasada jest ustawiona,
+      <ph name="PRODUCT_OS_NAME" /> pobierze
+      plik do konfiguracji drukarek i udostępni drukarki
+      zgodnie z zasadami NativePrintersBulkAccessMode,
+      NativePrintersBulkWhitelist i NativePrintersBulkBlacklist.
+
+      W przypadku ustawienia tej zasady użytkownicy nie będą mogli jej zmienić ani nadpisać.
+
+      Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować 
+      drukarki na pojedynczych urządzeniach.  Ma być ona uzupełnieniem
+      konfiguracji drukarek wykonywanej przez poszczególnych użytkowników.</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
 <translation id="8587229956764455752">Pozwól na tworzenie nowych kont użytkowników</translation>
 <translation id="8614804915612153606">Wyłącza automatyczne aktualizacje</translation>
@@ -2070,6 +2145,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>
 <translation id="9098553063150791878">Zasady uwierzytelniania HTTP</translation>
 <translation id="9105265795073104888">Aplikacje na Androida mają dostęp tylko do niektórych opcji konfiguracji serwera proxy. Nie można wymusić, by używały serwera proxy. Mogą go używać dobrowolnie.</translation>
+<translation id="9112727953998243860">Plik konfiguracji drukarki firmowej</translation>
 <translation id="9112897538922695510">Umożliwia zarejestrowanie listy modułów obsługi protokołów. Ta zasada może być tylko zalecana. We właściwości |protocol| należy wskazać schemat taki jak „mailto”, a we właściwości |url| należy wskazać wzorzec adresu URL aplikacji obsługującej ten schemat. Wzorzec może obejmować „%s”, który – jeśli występuje – zostanie zastąpiony przez obsługiwany adres URL.
 
           Moduły obsługi protokołów zarejestrowane przez zasadę są łączone z modułami zarejestrowanymi przez użytkownika i oba te typy są dostępne do użycia. Użytkownik może zastąpić moduły obsługi protokołów zainstalowane przez zasadę, instalując nowy moduł domyślny, ale nie może usunąć modułów zarejestrowanych przez zasadę.</translation>

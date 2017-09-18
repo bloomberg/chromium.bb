@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">Toque aqui</translation>
 <translation id="5076340679995252485">C&amp;olar</translation>
 <translation id="5120799197269191491">Pesquisar+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">Funcionalidade de desbloqueio por PIN</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Triângulo de divulgação</translation>
 <translation id="528468243742722775">End</translation>
@@ -92,7 +91,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hora}one{# hours}other{# horas}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Todas as aplicações</translation>
-<translation id="6022924867608035986">Limpar o texto da caixa de pesquisa</translation>
+<translation id="6022924867608035986">Limpar texto da caixa de pesquisa</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6119846243427417423">activar</translation>
 <translation id="6129953537138746214">Espaço</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;Copiar</translation>
 <translation id="7850320739366109486">Não incomodar</translation>
 <translation id="7907591526440419938">Abrir ficheiro</translation>
-<translation id="8054029954190364711">Funcionalidade de desbloqueio por impressão digital</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Há 1 hora}one{# hours ago}other{Há # horas}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Falta 1 s}one{# secs left}other{Faltam # s}}</translation>
 <translation id="815598010540052116">Deslocar-se para baixo</translation>

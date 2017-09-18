@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">За шириною сторінки</translation>
 <translation id="1088860948719068836">Додайте ім’я на картці</translation>
 <translation id="1103523840287552314">Завжди перекладати з такої мови: <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Показати всі збережені паролі…</translation>
 <translation id="1107591249535594099">Якщо вибрати цю опцію, Chrome зберігатиме копію даних вашої картки на цьому пристрої для швидшого заповнення форм.</translation>
 <translation id="1111153019813902504">Останні закладки</translation>
 <translation id="1113869188872983271">&amp;Відмінити перевпорядкування</translation>
@@ -525,6 +526,7 @@
 <translation id="5019198164206649151">Резервний носій пошкоджено</translation>
 <translation id="5023310440958281426">Перегляньте правила свого адміністратора</translation>
 <translation id="5029568752722684782">Видалити копію</translation>
+<translation id="503069730517007720">Для програмного забезпечення <ph name="SOFTWARE_NAME" /> потрібен кореневий сертифікат, однак його не встановлено. Вашому IT-адміністратору потрібно переглянути вказівки з налаштування <ph name="SOFTWARE_NAME" />, щоб вирішити цю проблему. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Про Перекладач Google</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="5040262127954254034">Конфіденційність</translation>
@@ -596,6 +598,7 @@
 <translation id="5540224163453853">Не вдалося знайти потрібну статтю.</translation>
 <translation id="5541546772353173584">Додайте електронну адресу</translation>
 <translation id="5544037170328430102">Повідомлення з вбудованої сторінки сайту <ph name="SITE" />:</translation>
+<translation id="5545756402275714221">Статті для вас</translation>
 <translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5560088892362098740">Термін дії</translation>
 <translation id="5565735124758917034">Активний клієнт</translation>
@@ -617,6 +620,7 @@
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5669703222995421982">Отримувати персоналізовані пропозиції</translation>
 <translation id="5675650730144413517">Сторінка не працює</translation>
+<translation id="5689199277474810259">Експортувати у форматі JSON</translation>
 <translation id="5710435578057952990">Ідентифікаційну інформацію цього веб-сайта не було перевірено.</translation>
 <translation id="5719499550583120431">Передплачені картки, які приймаються.</translation>
 <translation id="5720705177508910913">Поточний користувач</translation>
@@ -889,11 +893,13 @@
 <translation id="8037357227543935929">Запитувати (за умовчанням)</translation>
 <translation id="8041089156583427627">Надіслати відгук</translation>
 <translation id="8041940743680923270">Використовувати глобальне налаштування за умовчанням (Запитувати)</translation>
+<translation id="8057711352706143257"><ph name="SOFTWARE_NAME" /> налаштовано неправильно. Якщо видалити програмне забезпечення <ph name="SOFTWARE_NAME" />, проблема зазвичай зникає. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Не вдалося переглянути статтю.</translation>
 <translation id="8091372947890762290">Активація очікує на сервері</translation>
 <translation id="8094917007353911263">Можливо, щоб під’єднатися до цієї мережі, потрібно відвідати сторінку <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Спосіб оплати</translation>
 <translation id="8118489163946903409">Спосіб оплати</translation>
+<translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> неправильно встановлено на вашому комп’ютері або в мережі. Попросіть IT-адміністратора вирішити цю проблему.</translation>
 <translation id="8131740175452115882">Підтвердити</translation>
 <translation id="8134994873729925007">Не вдалося знайти <ph name="BEGIN_ABBR" />адресу DNS-сервера<ph name="END_ABBR" /> хосту <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Ваш комп’ютер перейшов у режим сну.</translation>
@@ -1025,4 +1031,9 @@
 <translation id="988159990683914416">Конструкція розробника</translation>
 <translation id="989988560359834682">Редагувати адресу</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401"><ph name="SOFTWARE_NAME" /> неправильно встановлено на вашому комп’ютері або в мережі.
+    &lt;ul&gt;
+    &lt;li&gt;Видаліть або вимкніть <ph name="SOFTWARE_NAME" />&lt;/li&gt;
+    &lt;li&gt;Під’єднайтеся до іншої мережі&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

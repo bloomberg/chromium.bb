@@ -69,6 +69,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2149973817440762519">Rediger bokmerke</translation>
 <translation id="2154710561487035718">Kopier nettadresse</translation>
 <translation id="2230173723195178503">Nettsiden er lastet inn</translation>
+<translation id="2256128224215992540">Nettsteds- og søkeforslag</translation>
 <translation id="2267753748892043616">Legg til konto</translation>
 <translation id="2273327106802955778">Mer-menyen</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
@@ -178,9 +179,11 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="430793432425771671">Synkroniser alt</translation>
 <translation id="4342284590510997375">Nytt</translation>
 <translation id="4359125752503270327">Denne siden åpnes i et annet program.</translation>
+<translation id="4370827530403103842">Synkronisering fungerer ikke. Trykk for å fikse.</translation>
 <translation id="4375040482473363939">QR-kodesøk</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Merknad om personvern</translation>
+<translation id="4460091562821778167">Spør meg hvilken app som skal brukes, hver gang</translation>
 <translation id="4508750114462689118">Lukk påloggingskampanjen</translation>
 <translation id="4526249700380860531">Se på og administrer lagrede passord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prøv å logge på igjen.</translation>

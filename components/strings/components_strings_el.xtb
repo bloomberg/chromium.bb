@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">Η αποθήκευση αντιγράφων ασφαλείας είναι σε κακή κατάσταση</translation>
 <translation id="5023310440958281426">Ελέγξτε τις πολιτικές του διαχειριστή</translation>
 <translation id="5029568752722684782">Διαγραφή αντιγράφου</translation>
+<translation id="503069730517007720">Απαιτείται πιστοποιητικό ρίζας για το λογισμικό "<ph name="SOFTWARE_NAME" />" αλλά δεν έχει εγκατασταθεί. Ο διαχειριστής IT πρέπει να εξετάσει τις οδηγίες διαμόρφωσης για το λογισμικό "<ph name="SOFTWARE_NAME" />", προκειμένου να διορθώσει αυτό το πρόβλημα. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Σχετικά με τη Google Μετάφραση</translation>
 <translation id="5039804452771397117">Επιτρέπεται</translation>
 <translation id="5040262127954254034">Απόρρητο</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">Να γίνεται ερώτηση (προεπιλογή)</translation>
 <translation id="8041089156583427627">Αποστολή σχολίων</translation>
 <translation id="8041940743680923270">Χρήση καθολικής προεπιλεγμένης ρύθμισης (Ερώτηση)</translation>
+<translation id="8057711352706143257">Το λογισμικό "<ph name="SOFTWARE_NAME" />" δεν έχει διαμορφωθεί σωστά. Το πρόβλημα διορθώνεται συνήθως με την απεγκατάσταση του λογισμικού "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Αποτυχία προβολής άρθρου.</translation>
 <translation id="8091372947890762290">Η ενεργοποίηση στο διακομιστή εκκρεμεί</translation>
 <translation id="8094917007353911263">Το δίκτυο που χρησιμοποιείτε ενδέχεται να σας ζητήσει να επισκεφτείτε τη διεύθυνση <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Τρόπος πληρωμής</translation>
 <translation id="8118489163946903409">Τρόπος πληρωμής</translation>
+<translation id="8127301229239896662">Το λογισμικό "<ph name="SOFTWARE_NAME" />" δεν εγκαταστάθηκε σωστά στον υπολογιστή ή στο δίκτυό σας. Ζητήστε από τον διαχειριστή IT να επιλύσει αυτό το πρόβλημα.</translation>
 <translation id="8131740175452115882">Επιβεβαίωση</translation>
 <translation id="8134994873729925007">Δεν ήταν δυνατή η εύρεση της <ph name="BEGIN_ABBR" />διεύθυνσης DNS<ph name="END_ABBR" /> του διακομιστή <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Ο υπολογιστής σας τέθηκε σε αδράνεια.</translation>
@@ -1025,4 +1028,9 @@
 <translation id="988159990683914416">Έκδοση προγραμματιστή</translation>
 <translation id="989988560359834682">Επεξεργασία διεύθυνσης</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">Το λογισμικό "<ph name="SOFTWARE_NAME" />" δεν εγκαταστάθηκε σωστά στον υπολογιστή ή στο δίκτυό σας:
+    &lt;ul&gt;
+    &lt;li&gt;Δοκιμάστε να απεγκαταστήσετε το λογισμικό "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
+    &lt;li&gt;Δοκιμάστε να συνδεθείτε σε κάποιο άλλο δίκτυο&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

@@ -526,6 +526,7 @@
 <translation id="5019198164206649151">Bloga atsarginio atminties įrenginio būsena</translation>
 <translation id="5023310440958281426">Patikrinkite savo administratoriaus politiką</translation>
 <translation id="5029568752722684782">Išvalyti kopiją</translation>
+<translation id="503069730517007720">Reikalingas „<ph name="SOFTWARE_NAME" />“ šakninis sertifikatas, bet jis nėra įdiegtas. Jūsų IT administratorius turėtų peržiūrėti „<ph name="SOFTWARE_NAME" />“ konfigūravimo instrukcijas, kad išspręstų šią problemą. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Apie „Google“ vertėją</translation>
 <translation id="5039804452771397117">Leisti</translation>
 <translation id="5040262127954254034">Privatumas</translation>
@@ -890,11 +891,13 @@
 <translation id="8037357227543935929">Klausti (numatytoji parinktis)</translation>
 <translation id="8041089156583427627">Siųsti atsiliepimą</translation>
 <translation id="8041940743680923270">Naudoti visuotinį numatytąjį nustatymą (klausti)</translation>
+<translation id="8057711352706143257">„<ph name="SOFTWARE_NAME" />“ netinkamai sukonfigūruota. Pašalinus „<ph name="SOFTWARE_NAME" />“ paprastai pavyksta išspręsti šią problemą. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Nepavyko peržiūrėti straipsnio.</translation>
 <translation id="8091372947890762290">Laukiama aktyvinimo serveryje</translation>
 <translation id="8094917007353911263">Naudojant šį tinklą gali būti prašoma apsilankyti <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Mokėjimo metodas</translation>
 <translation id="8118489163946903409">Mokėjimo metodas</translation>
+<translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />“ nebuvo tinkamai įdiegta kompiuteryje ar tinkle. Kreipkitės į IT administratorių, kad ši problema būtų išspręsta.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8134994873729925007">Nepavyko rasti <ph name="HOST_NAME" /> serverio <ph name="BEGIN_ABBR" />DNS adreso<ph name="END_ABBR" />.</translation>
 <translation id="8149426793427495338">Įjungta kompiuterio miego būsena.</translation>
@@ -1026,4 +1029,9 @@
 <translation id="988159990683914416">Vykdymo programa sukurta</translation>
 <translation id="989988560359834682">Adreso redagavimas</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">„<ph name="SOFTWARE_NAME" />“ nebuvo tinkamai įdiegta kompiuteryje ar tinkle.
+    &lt;ul&gt;
+    &lt;li&gt;Pabandykite pašalinti arba išjungti „<ph name="SOFTWARE_NAME" />“.&lt;/li&gt;
+    &lt;li&gt;Pabandykite prisijungti prie kito tinklo.&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

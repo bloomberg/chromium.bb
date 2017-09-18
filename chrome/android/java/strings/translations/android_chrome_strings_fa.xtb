@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">انتقال نشانک‌ها</translation>
 <translation id="119944043368869598">پاک کردن همه</translation>
 <translation id="1201402288615127009">بعدی</translation>
+<translation id="1204037785786432551">بارگیری پیوند</translation>
+<translation id="1206892813135768548">کپی نوشتار پیوند</translation>
 <translation id="1209206284964581585">فعلاً پنهان شود</translation>
 <translation id="1211530540767271776">‏هیچ دستگاه USB در اینجا وجود ندارد</translation>
 <translation id="123724288017357924">تازه‌سازی صفحه اصلی با نادیده گرفتن محتوای حافظه پنهان</translation>
@@ -114,6 +116,7 @@
 <translation id="2079545284768500474">لغو</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> نتیجه از <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، به Chrome وارد شوید.</translation>
+<translation id="2091887806945687916">صدا</translation>
 <translation id="2095887075102408547">‏وقتی این قابلیت روشن است، Chrome از سرورهای Google استفاده می‌کند تا صفحاتی را که بازدید می‌کنید قبل از بارگیری آن‌ها فشرده کند. Google صفحه‌هایی را که از طریق اتصالات خصوصی (HTTPS) یا برگه‌های حالت ناشناس به آن‌ها می‌روید بهینه‌سازی یا مشاهده نمی‌کند.</translation>
 <translation id="2096396629993765042">‏از حساب Google خود خارج نمی‌شوید. ممکن است اشکال دیگری از سابقه مرور در حساب Google شما در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> وجود داشته باشد.</translation>
 <translation id="2100273922101894616">ورود به سیستم خودکار</translation>
@@ -333,6 +336,7 @@
 <translation id="4256782883801055595">مجوزهای منبع آزاد</translation>
 <translation id="4259722352634471385">پیمایش مسدود است: <ph name="URL" /></translation>
 <translation id="4262028915562328938">خطای همگام‌سازی رخ داد برای دریافت جزئیات ضربه بزنید.</translation>
+<translation id="4269820728363426813">کپی آدرس پیوند</translation>
 <translation id="4275663329226226506">رسانه</translation>
 <translation id="4278390842282768270">مجاز است</translation>
 <translation id="42981349822642051">گسترده کردن</translation>
@@ -601,7 +605,6 @@
 <translation id="6701279291835318271">گزارش‌های امنیتی</translation>
 <translation id="6709133671862442373">اخبار</translation>
 <translation id="6710213216561001401">قبلی</translation>
-<translation id="6727612981472093924">پانل پیمایش باز شد</translation>
 <translation id="6738867403308150051">در حال بارگیری…</translation>
 <translation id="6762156594045689028">برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">فایل باز نمی‌شود</translation>
@@ -660,6 +663,7 @@
 <translation id="7253272406652746122">‏از صفحه «حساب‌ها» در برنامه «تنظیمات» دستگاه، یک حساب Google اضافه کنید.</translation>
 <translation id="7274013316676448362">سایت مسدودشده</translation>
 <translation id="7307288900373049735">‏درحال اتصال به Google…ممکن است یک دقیقه طول بکشد</translation>
+<translation id="7318797029885648322">برای دریافت مقاله‌ها، روی «بیشتر» ضربه بزنید</translation>
 <translation id="7333031090786104871">همچنان درحال افزودن سایت قبلی</translation>
 <translation id="7352939065658542140">ویدیو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{اشتراک‌گذاری ۱ مورد انتخاب‌شده}one{اشتراک‌گذاری # مورد انتخاب‌شده}other{اشتراک‌گذاری # مورد انتخاب‌شده}}</translation>
@@ -798,6 +802,7 @@
 <translation id="8636825310635137004">برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، همگام‌سازی را روشن کنید.</translation>
 <translation id="8641930654639604085">سایت‌های مخصوص بزرگ‌سالان مسدود شوند</translation>
 <translation id="8662811608048051533">شما را از سیستم اکثر سایت‌ها خارج می‌کند.</translation>
+<translation id="867485229011312729">نشانک‌‌ها، بارگیری‌ها و سابقه کجا هستند؟</translation>
 <translation id="8676374126336081632">پاک کردن ورودی</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{سطح قدرت سیگنال: # نوار}one{سطح قدرت سیگنال: # نوار}other{سطح قدرت سیگنال: # نوار}}</translation>
 <translation id="869891660844655955">تاریخ انقضا</translation>

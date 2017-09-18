@@ -69,6 +69,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en affichant 
 <translation id="2149973817440762519">Modifier le favori</translation>
 <translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2230173723195178503">Page Web chargée</translation>
+<translation id="2256128224215992540">Suggestions de recherches et de sites</translation>
 <translation id="2267753748892043616">Ajouter un compte</translation>
 <translation id="2273327106802955778">Menu Plus</translation>
 <translation id="2320166752086256636">Masquer le clavier</translation>
@@ -178,9 +179,11 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="430793432425771671">Tout synchroniser</translation>
 <translation id="4342284590510997375">Nouveau</translation>
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
+<translation id="4370827530403103842">La synchronisation ne fonctionne pas. Appuyez pour corriger.</translation>
 <translation id="4375040482473363939">Rechercher via un code QR</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="441868831736628555">Avis de confidentialité</translation>
+<translation id="4460091562821778167">Demander quelle application utiliser à chaque fois</translation>
 <translation id="4508750114462689118">Fermer la promo de connexion</translation>
 <translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés sur <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Veuillez essayer de vous reconnecter.</translation>

@@ -53,6 +53,7 @@
 
       Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 ure. Najmanjša
       dovoljena vrednost pogostosti je 60 sekund.</translation>
+<translation id="1204263402976895730">Omogočeni tiskalniki v podjetjih</translation>
 <translation id="1221359380862872747">Naloži določene URL-je v predstavitveni seji</translation>
 <translation id="123081309365616809">Omogočanje predvajanje vsebine v napravi</translation>
 <translation id="1265053460044691532">Omejitev časa, ki je uporabniku, katerega pristnost je preverjena prek SAML-ja, na voljo za prijavo brez internetne povezave</translation>
@@ -255,6 +256,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2024476116966025075">Konfiguriranje imena domene, potrebnega za odjemalce za oddaljeni dostop</translation>
 <translation id="2030905906517501646">Privzeta ključna beseda iskalnika</translation>
 <translation id="203096360153626918">Ta pravilnika ne vpliva na aplikacije za Android. Tudi če je ta pravilnik nastavljen na <ph name="FALSE" />, bodo aplikacije lahko preklopile v celozaslonski način.</translation>
+<translation id="2043770014371753404">Onemogočeni tiskalniki v podjetjih</translation>
 <translation id="206623763829450685">Določa, katere načine preverjanja pristnosti HTTP podpira <ph name="PRODUCT_NAME" />.
 
           Možne vrednosti so »basic«, »digest«, »ntlm« in »negotiate«. Več vrednosti ločite z vejicami.
@@ -273,11 +275,10 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Velikost datoteke ne sme presegati 5 MB in mora biti kodirana v obliki JSON.
       Oblika je enaka obliki imenika NativePrinters. Ocenjuje se,
       da je datoteka, ki vsebuje približno 21.000 tiskalnikov, kodirana kot datoteka velikosti
-      5 MB. Kriptografska razpršilna vrednost se uporablja za preverjanje celovitosti
-      prenosa.
+      5 MB. Za preverjanje celovitosti se uporablja kriptografska zgoščevalna vrednost.
 
       Datoteka se prenese in shrani v predpomnilnik. Ob vsaki spremembi
-      URL-ja ali razpršilne vrednosti se znova prenese.
+      URL-ja ali zgoščevalne vrednosti se znova prenese.
 
       Če je ta pravilnik nastavljen,
       <ph name="PRODUCT_OS_NAME" /> prenese
@@ -331,6 +332,15 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
           Če je ta nastavitev konfigurirana, bodo morali uporabniki, ki uporabljajo hitro odklepanje, na zaklenjenem zaslonu vnesti geslo glede na to nastavitev.
 
           Če ta nastavitev ni konfigurirana, bodo morali uporabniki, ki uporabljajo hitro odklepanje, na zaklenjenem zaslonu vnesti geslo vsak dan.</translation>
+<translation id="2194470398825717446">Ta pravilnik je zastarel v različici M61, uporabite EcryptfsMigrationStrategy.
+
+      Določa, kako naj deluje naprava, ki je bila dobavljena z ecryptfs in mora preiti na šifriranje ext4.
+
+      Če ta pravilnik nastavite na »DisallowArc«, bodo aplikacije za Android onemogočene za vse uporabnike naprave (vključno s tistimi, ki že imajo šifriranje ext4) in nobenemu uporabniku ne bo ponujena selitev s šifriranja ecryptfs na ext4.
+
+      Če ta pravilnik nastavite na »AllowMigration«, bo uporabnikom z domačimi imeniki ecryptfs po potrebi ponujena selitev na šifriranje ext4 (trenutno, ko je za napravo na voljo Android N).
+
+      Ta pravilnik se ne uporablja za aplikacije za kiosk – njihova selitev je opravljena samodejno. Če ta pravilnik ni nastavljen, bo naprava delovala, kot da bi bila izbrana možnost »DisallowArc«..</translation>
 <translation id="2201555246697292490">Konfiguracija seznama dovoljenih za izvorno pošiljanje sporočil</translation>
 <translation id="2204753382813641270">Nadzor samodejnega skrivanja police</translation>
 <translation id="2208976000652006649">Parametri za iskalni URL, ki uporablja POST</translation>
@@ -544,6 +554,14 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če se uporablja ta pravilnik, so uporabniku na voljo samo tiskalniki z ID-ji,
       ki se ujemajo z vrednostmi v tem pravilniku. ID-ji morajo ustrezati
       vnosom v datoteki, določeni v pravilniku DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Določa, katerih tiskalnikov uporabnik ne more uporabljati.
+
+      Ta pravilnik se uporablja samo, če je za pravilnik NativePrintersBulkAccessMode
+      izbrana možnost BlacklistRestriction.
+
+      Če se ta pravilnik uporablja, so uporabniku na voljo vsi tiskalniki z izjemo
+      ID-jev, navedenih v tem pravilniku.
+      </translation>
 <translation id="2801230735743888564">Uporabnikom dovoli igranje skrite igre z dinozavrom, ko je naprava brez internetne povezave.
 
       Če je ta pravilnik onemogočen, uporabniki ne bodo mogli igrati skrite igre z dinozavrom, ko je naprava brez internetne povezave. Če je nastavitev omogočena, bodo uporabniki lahko igrali igro. Če ta pravilnik ni nastavljen, uporabniki igre ne bodo mogli igrati v včlanjenem OS Chrome, lahko pa jo bodo igrali v drugih okoliščinah.</translation>
@@ -666,6 +684,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3219421230122020860">Način brez beleženja zgodovine je na voljo</translation>
 <translation id="3220624000494482595">Če je aplikacija za kiosk aplikacija za Android, ne bo imela nadzora nad različico sistema <ph name="PRODUCT_OS_NAME" />, tudi če je ta pravilnik nastavljen na <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Vzorci URL-jev, ki omogočajo namestitev razširitev, aplikacij in uporabniških skriptov iz</translation>
+<translation id="3240609035816615922">Pravilnik o dostopu do konfiguracij tiskalnikov.</translation>
 <translation id="3243309373265599239">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zatemni, če se napaja iz električnega omrežja.
 
           Če je pravilnik nastavljen na vrednost nad nič, določa, koliko časa mora biti uporabnik nedejaven, preden <ph name="PRODUCT_OS_NAME" /> zatemni zaslon.
@@ -929,6 +948,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Opomba: Samodejni vnovični zagoni so trenutno omogočeni samo, ko je prikazan prijavni zaslon ali poteka seja aplikacije za kiosk. To se bo v prihodnosti spremenilo in pravilnik bo vedno veljal ne glede na to, ali poteka seja katere koli vrste.
 
 Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol omejene na najmanj 3600 (eno uro).</translation>
+<translation id="4203879074082863035">Uporabnikom so prikazani samo tiskalniki na seznamu dovoljenih.</translation>
 <translation id="420512303455129789">Slovar, v katerem so URL-ji preslikani na logično zastavico, ki določa, ali naj bo dostop do gostitelja dovoljen (True) ali blokiran (False).
 
           Ta pravilnik je namenjen za notranjo uporabo v programu <ph name="PRODUCT_NAME" />.</translation>
@@ -1037,6 +1057,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4541530620466526913">Lokalni računi za napravo</translation>
 <translation id="4555850956567117258">Omogoči oddaljeno potrditev za uporabnika</translation>
 <translation id="4557134566541205630">URL novega zavihka s povezavami privzetega iskalnika</translation>
+<translation id="4558592878156368639">Intervali zunaj delovnega časa, ko pravilniki OffHours |ignored_policies| niso aktivni.</translation>
 <translation id="4600786265870346112">Omogoči velik kazalec</translation>
 <translation id="4604931264910482931">Konfiguracija seznama blokiranih za izvorno pošiljanje sporočil</translation>
 <translation id="4617338332148204752">Preskoči preverjanje metaoznak v izdelku <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1473,6 +1494,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6211428344788340116">Poročanje o času dejavnosti v napravi.
 
       Če nastavitev ni nastavljena ali je nastavljena na »True«, včlanjene naprave poročajo o času, ko je uporabnik aktiven v napravi. Če je nastavitev nastavljena na »False«, se čas dejavnosti v napravi ne beleži in se o njem ne poroča.</translation>
+<translation id="6212868225782276239">Prikazani so vsi tiskalniki razen tistih na seznamu prepovedanih.</translation>
 <translation id="6219965209794245435">Če je ta pravilnik omogočen, se podatki za samodejno izpolnjevanje obrazcev uvozijo iz prejšnjega privzetega brskalnika. Če je pravilnik omogočen, vpliva tudi na pogovorno okno za uvoz.
 
       Če je onemogočen, podatki za samodejno izpolnjevanje obrazcev niso uvoženi.
@@ -1715,6 +1737,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7132877481099023201">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem videa</translation>
 <translation id="7167436895080860385">Dovoli uporabnikom, da pokažejo gesla v upravitelju gesel (zastarelo).</translation>
 <translation id="7173856672248996428">Kratkotrajni profil</translation>
+<translation id="717630378807352957">Dovoli vse tiskalnike iz datoteke s konfiguracijo.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Dovoljene vrste povezav za posodobitve</translation>
 <translation id="7194407337890404814">Privzeto ime iskalnika</translation>
@@ -2011,6 +2034,18 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če je ta pravilnik onemogočen ali ni nastavljen, se pri prijavi uporabijo navadni profili.</translation>
 <translation id="8158758865057576716">Omogočanje ustvarjanja kopij podatkov profila izdelka <ph name="PRODUCT_NAME" /> za gostovanje.</translation>
+<translation id="8169931650834542988">Nadzira, kateri tiskalniki iz pravilnika
+      NativePrintersBulkConfiguration so na voljo uporabnikom.
+
+      Določa, kateri pravilnik o dostopu se uporablja za konfiguracijo tiskalnikov v velikem obsegu.
+      Če je izbrana možnost AllowAll, so prikazani vsi tiskalniki. Če je izbrana možnost BlacklistRestrction,
+      se omeji dostop do določenih tiskalnikov
+      s pravilnikom NativePrintersBulkBlacklist. Če je izbrana možnost WhitelistPrintersOnly,
+      pravilnik NativePrintersWhitelist določa samo tiste tiskalnike, ki jih je
+      mogoče izbrati.
+
+      Če ta pravilnik ni nastavljen, se predvideva uporaba pravilnika BlacklistRestriction.
+      </translation>
 <translation id="8170878842291747619">Omogoča integrirano storitev Google Prevajalnik v brskalniku <ph name="PRODUCT_NAME" />.
 
      Če to nastavitev omogočite, bo <ph name="PRODUCT_NAME" /> prikazal integrirano orodno vrstico z možnostjo prevoda strani za uporabnika, ko bo to primerno.
@@ -2101,6 +2136,14 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8465065632133292531">Parametri za takojšnji URL, ki uporablja POST</translation>
 <translation id="847472800012384958">Nobenemu mestu ne dovoli prikaza pojavnih oken</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Določa tiskalnike, ki jih uporabnik lahko uporablja.
+
+      Ta pravilnik se uporablja samo, če je za pravilnik NativePrintersBulkAccessMode
+      izbrana možnost WhitelistPrintersOnly.
+
+      Če se uporablja ta pravilnik, so uporabniku na voljo samo tiskalniki z ID-ji, ki se ujemajo z vrednostmi
+      v tem pravilniku. ID-ji morajo ustrezati
+      vnosom v datoteki, določeni v pravilniku NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Prilagodi seznam vzorcev URL-jev, ki naj jih vedno upodobi gostiteljski brskalnik.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta, določena s pravilnikom »ChromeFrameRendererSettings«, uporabljen privzeti upodabljalnik.
@@ -2111,6 +2154,30 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8519264904050090490">URL-ji ročnih izjem za upravljanega uporabnika</translation>
 <translation id="8544375438507658205">Privzeti upodabljalnik HTML-ja za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
+<translation id="8555589883248082762">Posreduje konfiguracije za tiskalnike v podjetjih.
+
+      Ta pravilnik vam omogoča, da posredujete konfiguracije tiskalnikov
+      napravam z operacijskim sistemom <ph name="PRODUCT_OS_NAME" />.
+      Velikost datoteke ne sme presegati 5 MB in mora biti kodirana v obliki JSON.
+      Oblika je enaka obliki imenika NativePrinters. Ocenjuje se,
+      da je datoteka, ki vsebuje približno 21.000 tiskalnikov, kodirana kot datoteka velikosti 5 MB.
+      Za preverjanje celovitosti se uporablja kriptografska zgoščevalna
+      vrednost.
+
+      Datoteka se prenese in shrani v predpomnilnik. Ob vsaki spremembi URL-ja ali zgoščevalne vrednosti
+      se znova prenese.
+
+      Če je ta pravilnik nastavljen,
+      <ph name="PRODUCT_OS_NAME" /> prenese
+      datoteko s konfiguracijami tiskalnikov in omogoči, da so tiskalniki na voljo
+      skladno s pravilniki NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
+      in NativePrintersBulkBlacklist.
+
+      Če nastavite ta pravilnik, ga uporabniki ne bodo mogli spremeniti ali preglasiti.
+
+      Ta pravilnik ne vpliva na to, ali lahko uporabniki konfigurirajo tiskalnike
+      v posameznih napravah. Namenjen je kot dopolnilo
+      konfiguracijam tiskalnikov, ki jih opravijo posamezni uporabniki.</translation>
 <translation id="8566842294717252664">Skrivanje spletne trgovine na strani »Nov zavihek« in v zaganjalniku aplikacij</translation>
 <translation id="8587229956764455752">Omogoči ustvarjanje novih uporabniških računov</translation>
 <translation id="8614804915612153606">Onemogoči samodejno posodabljanje</translation>
@@ -2178,7 +2245,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Določa, kateri pravilnik o dostopu se uporablja za konfiguracijo tiskalnikov v velikem obsegu.
       Če je izbrana možnost AllowAll, so prikazani vsi tiskalniki. Če je izbrana možnost BlacklistRestrction,
       se omeji dostop do določenih tiskalnikov s pravilnikom
-      DeviceNativePrintersBlacklist. Če je izbrana možnost WhitelistPrintersOnlym,
+      DeviceNativePrintersBlacklist. Če je izbrana možnost WhitelistPrintersOnly,
       pravilnik DeviceNativePrintersWhitelist določa samo tiste tiskalnike, ki jih je
       mogoče izbrati.
 
@@ -2230,6 +2297,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="9096086085182305205">Seznam dovoljenih strežnikov za preverjanje pristnosti</translation>
 <translation id="9098553063150791878">Pravilniki za preverjanje pristnosti HTTP</translation>
 <translation id="9105265795073104888">Aplikacijam za Android je dan na voljo samo podnabor nastavitev strežnika proxy. Aplikacije za Android se lahko prostovoljno odločijo, da bodo uporabljale strežnik proxy. V to jih ni mogoče prisiliti.</translation>
+<translation id="9112727953998243860">Datoteka s konfiguracijami tiskalnikov v podjetjih</translation>
 <translation id="9112897538922695510">Omogoča registracijo seznama rutin za obravnavo protokolov. Ta pravilnik je lahko samo priporočen. Lastnost |protocol| mora biti nastavljena na shemo, kot je »mailto«, in lastnost |url| mora biti nastavljena na vzorec URL aplikacije, ki obravnava shemo. Vzorec lahko vsebuje »%s«. Če ga, ta nadomesti obravnavani URL.
 
           Rutine za obravnavo protokola, registrirane s pravilnikom, so združene z rutinami, ki jih registrira uporabnik, oboje pa je na voljo za uporabo. Uporabnik lahko preglasi rutine za obravnavo protokola, nameščene s pravilnikom, tako da namesti novo privzeto rutino za obravnavo protokola, vendar ne more odstraniti rutine za obravnavo protokola, registrirane s pravilnikom.</translation>

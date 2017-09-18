@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">移動書籤</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">繼續</translation>
+<translation id="1204037785786432551">下載連結</translation>
+<translation id="1206892813135768548">複製連結文字</translation>
 <translation id="1209206284964581585">暫時隱藏</translation>
 <translation id="1211530540767271776">清單中沒有任何 USB 裝置</translation>
 <translation id="123724288017357924">重新載入目前的網頁，略過已快取的內容</translation>
@@ -114,6 +116,7 @@
 <translation id="2079545284768500474">復原</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 個結果，共 <ph name="TOTAL_RESULTS" /> 個</translation>
 <translation id="2086652334978798447">如要取得個人化的 Google 推薦內容，請登入 Chrome。</translation>
+<translation id="2091887806945687916">音訊</translation>
 <translation id="2095887075102408547">啟用這項功能後，Chrome 會先使用 Google 伺服器壓縮您要造訪的網頁資料，然後再下載這些網頁。使用私人連線 (HTTPS) 或無痕式分頁存取網頁時，Google 不會對這些網頁進行最佳化處理，也不會偵測到這些網頁。</translation>
 <translation id="2096396629993765042">您並不會因此登出 Google 帳戶，不過帳戶中可能仍保留了其他類型的瀏覽紀錄 (可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 查詢)。</translation>
 <translation id="2100273922101894616">自動登入</translation>
@@ -333,6 +336,7 @@
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4259722352634471385">瀏覽的網址已封鎖：<ph name="URL" /></translation>
 <translation id="4262028915562328938">發生同步處理錯誤，輕觸即可取得詳細資料。</translation>
+<translation id="4269820728363426813">複製連結網址</translation>
 <translation id="4275663329226226506">媒體</translation>
 <translation id="4278390842282768270">允許</translation>
 <translation id="42981349822642051">展開</translation>
@@ -602,7 +606,6 @@
 <translation id="6701279291835318271">安全性報告</translation>
 <translation id="6709133671862442373">新聞內容</translation>
 <translation id="6710213216561001401">返回</translation>
-<translation id="6727612981472093924">導覽面版已開啟</translation>
 <translation id="6738867403308150051">下載中…</translation>
 <translation id="6762156594045689028">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">無法開啟檔案</translation>
@@ -661,6 +664,7 @@
 <translation id="7253272406652746122">在裝置的「設定」應用程式中，透過「帳戶」頁面新增 Google 帳戶。</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
 <translation id="7307288900373049735">正在連線至 Google… 這可能需要一分鐘的時間</translation>
+<translation id="7318797029885648322">輕觸 [更多] 即可取得推薦文章</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個選取的項目}other{分享 # 個選取的項目}}</translation>
@@ -799,6 +803,7 @@
 <translation id="8636825310635137004">如要存取您在其他裝置上開啟的分頁，請開啟同步處理功能。</translation>
 <translation id="8641930654639604085">嘗試封鎖成人網站</translation>
 <translation id="8662811608048051533">你會從大多數網站登出。</translation>
+<translation id="867485229011312729">書籤、下載內容和歷史紀錄在哪裡？</translation>
 <translation id="8676374126336081632">清除輸入</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{訊號強度等級：# 格}other{訊號強度等級：# 格}}</translation>
 <translation id="869891660844655955">到期日</translation>

@@ -108,12 +108,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="3385242214819933234">Nieprawidłowy właściciel hosta.</translation>
 <translation id="3403830762023901068">Ustawienia zasad nie zezwalają na udostępnianie tego komputera jako hosta Chromoting. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
 <translation id="3423542133075182604">Proces zdalnego stosowania klucza bezpieczeństwa</translation>
-<translation id="3426467947138417795">Pulpit zdalny Chrome
-Pulpit zdalny
-Zdalny pecet
-Zdalny komputer
-Zdalny dostęp
-Pomoc zdalna</translation>
 <translation id="3581045510967524389">Nie można połączyć się z siecią. Sprawdź, czy urządzenie jest online.</translation>
 <translation id="3596628256176442606">Ta usługa umożliwia obsługę połączeń przychodzących z klientów funkcji Chromoting.</translation>
 <translation id="3606997049964069799">Nie jesteś zalogowany do Chromium. Zaloguj się i spróbuj ponownie.</translation>
@@ -122,13 +116,6 @@ Pomoc zdalna</translation>
 <translation id="3695446226812920698">Instrukcje</translation>
 <translation id="3718805989288361841">Wystąpił błąd związany z ustawieniami zasad dla Pulpitu zdalnego Chrome. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
 <translation id="3776024066357219166">Sesja Pulpitu zdalnego Chrome została zakończona.</translation>
-<translation id="3788372335219293587">Uzyskaj bezpieczny dostęp do swojego komputera z urządzenia z iOS. To rozwiązanie proste, szybkie i bezpłatne.
-
-• Na komputerze, do którego chcesz uzyskać zdalny dostęp, pobierz aplikację Pulpit zdalny Chrome ze sklepu Chrome Web Store: https://chrome.google.com/remotedesktop
-• Zainstaluj Pulpit zdalny Chrome i postępuj zgodnie z instrukcją, by zakończyć instalację.
-• Otwórz aplikację na urządzeniu z iOS i wybierz jeden z dostępnych komputerów, by się połączyć.
-
-Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Potwierdź poniżej swoje konto i kod PIN, by pozwolić na dostęp przez Pulpit zdalny Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (htt
 <translation id="7144878232160441200">Ponów próbę</translation>
 <translation id="7149517134817561223">Aplikacja do wysyłania poleceń do hosta Pulpitu zdalnego Chrome.</translation>
 <translation id="7215059001581613786">Wpisz PIN złożony z co najmniej sześciu cyfr.</translation>
-<translation id="7237767047212540055">Na komputerze, do którego chcesz uzyskać zdalnych dostęp, otwórz Chrome i wejdź na stronę <ph name="INSTALLATION_LINK" />
-Zainstaluj aplikację Pulpit zdalny Chrome i postępuj zgodnie z instrukcją, by dokończyć instalację.
-Po zakończeniu instalacji możesz na tej stronie uzyskać dostęp do komputera. Wystarczy, że wpiszesz kod dostępu lub PIN.</translation>
 <translation id="7312846573060934304">Host jest offline.</translation>
 <translation id="7319983568955948908">Zatrzymaj udostępnianie</translation>
 <translation id="7401733114166276557">Pulpit zdalny Chrome</translation>

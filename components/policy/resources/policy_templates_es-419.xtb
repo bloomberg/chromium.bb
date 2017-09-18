@@ -52,6 +52,7 @@
 <translation id="1198465924256827162">Frecuencia de envío de cargas de estado del dispositivo, en milisegundos.
 
       Si esta política no se establece, la frecuencia predeterminada es de 3 horas. La frecuencia mínima permitida es de 60 segundos.</translation>
+<translation id="1204263402976895730">Impresoras empresariales habilitadas</translation>
 <translation id="1221359380862872747">Cargar las URL especificadas en el inicio de sesión del demo</translation>
 <translation id="123081309365616809">Permite transmitir contenido al dispositivo</translation>
 <translation id="1265053460044691532">Permite limitar el tiempo durante el cual un usuario autenticado mediante SAML puede acceder sin conexión.</translation>
@@ -246,6 +247,7 @@
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
 <translation id="2030905906517501646">Palabra clave del proveedor de búsqueda predeterminado</translation>
 <translation id="203096360153626918">Esta política no tiene efecto en las apps de Android. Podrán implementar el modo de pantalla completa, incluso si esta política se establece como <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Impresoras empresariales inhabilitadas</translation>
 <translation id="206623763829450685">Especifica qué esquemas de autenticación de HTTP son compatibles con <ph name="PRODUCT_NAME" />.
 
           Los valores posibles son "basic", "digest", "ntlm" y "negotiate". Cuando haya más de un valor, sepáralos con comas.
@@ -283,7 +285,7 @@
       Esta política se suma a NativePrintersBulkConfiguration.
 
       Si no se establece esta política, no habrá impresoras asociadas a
-      dispositivos y las otras políticas NativeDevicePrinter* se ignorarán.</translation>
+      dispositivos, y las otras políticas NativeDevicePrinter* se ignorarán.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
 <translation id="2134437727173969994">Permite bloquear la pantalla</translation>
@@ -316,6 +318,15 @@
       Si se establece esta configuración, se les solicitará a los usuarios que usan el desbloqueo rápido que ingresen sus contraseñas en la pantalla bloqueada, de acuerdo con esta configuración.
 
       Si no se establece esta configuración, se les solicitará a los usuarios que usan el desbloqueo rápido que ingresen sus contraseñas en la pantalla bloqueada todos los días.</translation>
+<translation id="2194470398825717446">Esta política dejó de estar disponible en M61, usa EcryptfsMigrationStrategy en su lugar.
+
+Especifica el comportamiento de un dispositivo que se envió con ecryptfs y debe realizar una transición a la encriptación ext4.
+
+Si estableces esta política como "DisallowArc", las apps de Android se inhabilitarán para todos los usuarios en el dispositivo (incluidas las que ya tienen una encriptación ext4) y no se ofrecerá la migración de ecryptfs a la encriptación ext4 para los usuarios.
+
+Si estableces esta política como "AllowMigration", se les ofrecerá a los usuarios con directorios de inicio de ecryptfs migrar estos directorios a la encriptación ext4 si es necesario (actualmente, cuando Android N está disponible en el dispositivo).
+
+Esta política no se aplica a las aplicaciones de kiosko; estas se migran de forma automática. Si no se establece esta política, el dispositivo se comportará como si se eligiera la opción "DisallowArc".</translation>
 <translation id="2201555246697292490">Configurar la lista blanca de mensajería nativa</translation>
 <translation id="2204753382813641270">Controlar opción para ocultar archivos automáticamente</translation>
 <translation id="2208976000652006649">Parámetros para URL de búsqueda que utiliza POST</translation>
@@ -511,6 +522,12 @@
       Si se usa esta política, los usuarios podrán acceder solo a las impresoras
       con ID que coincidan con los valores en esta política. Los ID deben
       corresponder a las entradas en el archivo especificado en DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Especifica las impresoras que el usuario no puede usar.
+
+Esta política solo se usa si se elige BlacklistRestriction para NativePrintersBulkAccessMode.
+
+Si se usa esta política, el usuario accede a todas las impresoras, excepto los ID que se enumeran en esta política.
+      </translation>
 <translation id="2801230735743888564">Permitir que los usuarios jueguen con el huevo de pascua del dinosaurio cuando el dispositivo se encuentra sin conexión
 
       Si esta política se configura en False, los usuarios no podrán jugar con el huevo de pascua del dinosaurio cuando el dispositivo se encuentre sin conexión. Si esta configuración se establece en True, los usuarios podrán jugar con el dinosaurio. Si esta política no se configura, los usuarios no podrán jugar con el huevo de pascua del dinosaurio en el Sistema operativo Chrome registrado, pero se les permitirá jugar en otras circunstancias.</translation>
@@ -627,6 +644,7 @@
 <translation id="3219421230122020860">Modo incógnito disponible</translation>
 <translation id="3220624000494482595">Si la Aplicación de kiosko es una app de Android, esta no tendrá control sobre la versión de <ph name="PRODUCT_OS_NAME" />, incluso si esta política se establece como <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Patrones de URL desde los que se pueden instalar secuencias de comandos de usuario, aplicaciones y extensiones</translation>
+<translation id="3240609035816615922">Política de acceso para la configuración de las impresoras</translation>
 <translation id="3243309373265599239">Especifica el período de tiempo sin intervención del usuario luego del cual se atenúa la pantalla si se usa alimentación de CA.
 
            Si esta política se establece en un valor mayor que cero, se especifica el período de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> atenúe la pantalla.
@@ -655,6 +673,9 @@
 <translation id="3322771899429619102">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a utilizar la generación de claves. Si un patrón de URL tiene configurada la política "KeygenBlockedForUrls", se anulan estas excepciones.
 
           Si esta política no se configura, se usará el valor global predeterminado para todos los sitios, ya sea de la política "DefaultKeygenSetting" si está configurada o de otro tipo de configuración personal del usuario.</translation>
+<translation id="332771718998993005">Determina el nombre anunciado como un destino de <ph name="PRODUCT_NAME" />.
+
+          Si esta política se establece con una string no vacía, esa string se usará como el nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo, y el propietario del dispositivo (o un usuario del dominio que administre el dispositivo) podrá cambiarlo. El nombre tiene un límite máximo de 24 caracteres.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de manera predeterminada</translation>
 <translation id="3417418267404583991">Si esta política no se configura o se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no requieren contraseña.
 
@@ -693,7 +714,7 @@
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Habilitar Traductor de Google</translation>
-<translation id="3512226956150568738">Si el modelo del dispositivo del cliente ya era compatible con ARC antes, la migración a ext4 era necesaria para ejecutar ARC y se establece la política ArcEnabled como verdadera, esta opción se comportará como AskUser (valor 3). En los demás casos (si el modelo del dispositivo no era compatible con ARC antes o se establece la política ArcEnabled como falsa), este valor es equivalente a DisallowArc (valor 0).</translation>
+<translation id="3512226956150568738">Si el modelo del dispositivo del cliente ya era compatible con ARC, la migración a ext4 era necesaria para ejecutar ARC y se establece la política ArcEnabled como verdadera, esta opción se comportará como AskUser (valor 3). En los demás casos (si el modelo del dispositivo no era compatible con ARC o se establece la política ArcEnabled como falsa), este valor es equivalente a DisallowArc (valor 0).</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
@@ -880,6 +901,7 @@
       Nota: Actualmente, los reinicios automáticos solo se habilitan cuando se muestra la pantalla de acceso o cuando hay una sesión de la aplicación del kiosco en curso. Esta restricción se modificará en el futuro, y la política se aplicará en todo momento, sin importar si hay alguna sesión en curso.
 
       El valor de la política se debe especificar en segundos. Los valores deben ser iguales o superiores a 3600 segundos (una hora).</translation>
+<translation id="4203879074082863035">Los usuarios solo ven las impresoras en la lista blanca</translation>
 <translation id="420512303455129789">Es un diccionario que asigna URL a un indicador booleano que especifica si se debe permitir (true) o bloquear (false) el acceso al host.
 
           Esta política es para uso interno de <ph name="PRODUCT_NAME" />.</translation>
@@ -978,6 +1000,7 @@
 <translation id="4541530620466526913">Cuentas locales del dispositivo</translation>
 <translation id="4555850956567117258">Habilita la atestación remota para el usuario.</translation>
 <translation id="4557134566541205630">URL de la página Nueva pestaña del proveedor de búsqueda predeterminado</translation>
+<translation id="4558592878156368639">Intervalos de horas inactivas cuando se ejecutan las OffHours |ignored_policies| del dispositivo</translation>
 <translation id="4600786265870346112">Habilita el cursor grande.</translation>
 <translation id="4604931264910482931">Configurar la lista negra de mensajería nativa</translation>
 <translation id="4617338332148204752">Omitir la comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1137,6 +1160,9 @@
           El valor de la política deberá especificarse en milisegundos. Los valores deben ser menores o iguales que la demora por inactividad.</translation>
 <translation id="5307432759655324440">Disponibilidad del modo incógnito</translation>
 <translation id="5318185076587284965">Habilitar el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
+<translation id="5323128137188992869">Permite que se transmita contenido al dispositivo que esté usando <ph name="PRODUCT_NAME" />.
+
+          Si se establece esta política como falsa, los usuarios no podrán transmitir contenido al dispositivo. Si se establece como verdadera, los usuarios podrán transmitir contenido. Si no se establece, los usuarios no podrán transmitir contenido a dispositivos con Sistema operativo Chrome, pero sí podrán hacerlo a otros dispositivos.</translation>
 <translation id="5330684698007383292">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los siguientes tipos de contenido</translation>
 <translation id="5365946944967967336">Mostrar el botón "Página principal" en la barra de herramientas</translation>
 <translation id="5366977351895725771">Si está configurada en falso, la creación de usuarios supervisados por este usuario estará inhabilitada. Los usuarios supervisados existentes seguirán estando disponibles.
@@ -1349,6 +1375,7 @@
 <translation id="6111936128861357925">Permitir juego del huevo de pascua del dinosaurio</translation>
 <translation id="6114416803310251055">en desuso</translation>
 <translation id="6133088669883929098">Permitir que todos los sitios utilicen la generación de claves</translation>
+<translation id="6139485614509308022">Se se establece la política "OffHours", se ignorarán las políticas de dispositivo especificadas (se usará la configuración predeterminada de estas políticas) durante los intervalos definidos. Chrome vuelve a aplicar las políticas de dispositivo en todos los eventos cuando comienza y finaliza el período de "OffHours". Se le notificará al usuario y se lo obligará a salir de su cuenta cuando finalice el tiempo de "OffHours" y se modificará la configuración de las políticas de dispositivo (p. ej., cuando el usuario accede con una cuenta no habilitada).</translation>
 <translation id="6145799962557135888">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a ejecutar JavaScript. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultJavaScriptSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="614662973812186053">Esta política también controla la recopilación de datos de diagnóstico y uso de Android.</translation>
 <translation id="6155936611791017817">Establece el estado predeterminado del cursor grande en la pantalla de acceso.</translation>
@@ -1378,6 +1405,7 @@
 <translation id="6211428344788340116">Indica el tiempo de actividad del dispositivo.
 
       Si esta política no se establece o se establece en "True", los dispositivos registrados notificarán los períodos durante los que se utilice activamente el dispositivo. Si esta política se establece en "False", no se registrará ni se informará sobre el tiempo de actividad del dispositivo.</translation>
+<translation id="6212868225782276239">Se muestran todas las impresoras, excepto las de la lista negra.</translation>
 <translation id="6219965209794245435">Esta política, si se habilita, fuerza la importación de los datos del formulario de Autocompletar del navegador predeterminado anterior. Si se la habilita, esta política también afecta el cuadro de diálogo de importación.
 
       Si se inhabilita, no se importan los datos del formulario de Autocompletar.
@@ -1594,6 +1622,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7132877481099023201">Las URL que recibirán acceso a dispositivos de captura de video sin solicitarlo</translation>
 <translation id="7167436895080860385">Permitir que los usuarios muestren las contraseñas en el administrador de contraseñas (dejó de estar disponible)</translation>
 <translation id="7173856672248996428">Perfil efímero</translation>
+<translation id="717630378807352957">Permite todas las impresoras del archivo de configuración.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipos de conexión permitidos para realizar actualizaciones</translation>
 <translation id="7194407337890404814">Nombre del proveedor de búsqueda predeterminado</translation>
@@ -1876,6 +1905,12 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si esta política se inhabilita o no se establece, el acceso direcciona al usuario a los perfiles normales.</translation>
 <translation id="8158758865057576716">Habilita la creación de las copias de itinerancia para los datos de perfil de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8169931650834542988">Controla qué impresoras de NativePrintersBulkConfiguration están disponibles para los usuarios.
+
+Designa la política de acceso que se usa para la configuración de impresoras masiva. Si se selecciona AllowAll, se muestran todas las impresoras. Si se selecciona BlacklistRestrction, se usa NativePrintersBulkBlacklist para restringir el acceso a las impresoras especificadas. Si se selecciona WhitelistPrintersOnly, NativePrintersWhitelist designa solo las impresoras que se pueden seleccionar.
+
+      Si no se establece esta política, se define BlacklistRestriction.
+      </translation>
 <translation id="8170878842291747619">Habilita el servicio integrado de Google Traductor en <ph name="PRODUCT_NAME" />. Si habilitas esta configuración, <ph name="PRODUCT_NAME" /> mostrará una barra de herramientas integrada que ofrece traducir la página para el usuario, cuando corresponda. Si se inhabilita esta configuración, los usuarios no podrán ver la barra de traducción. Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />. Si esta opción no se configura, el usuario podrá decidir si desea usar esta función o no.</translation>
 <translation id="817455428376641507">Permite el acceso a las URL de la lista, como excepciones a la lista negra de URL.
 
@@ -1962,6 +1997,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre ventanas emergentes</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Especifica las impresoras que puede utilizar un usuario.
+
+Esta política solo se usa si se elige WhitelistPrintersOnly para NativePrintersBulkAccessMode.
+
+Si se usa esta política, los usuarios podrán acceder solo a las impresoras con ID que coincidan con los valores en esta política. Los ID deben corresponder a las entradas en el archivo especificado en NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Personaliza la lista de los patrones de URL que siempre deben procesarse en el navegador del host.
 
           Si esta política no se configura, se usará el procesador predeterminado para todos los sitios, como lo especifica la política "ChromeFrameRendererSettings".
@@ -1972,6 +2012,17 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8519264904050090490">Direcciones URL de excepción manual de usuario administrado</translation>
 <translation id="8544375438507658205">Procesador HTML predeterminado para <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Advierte cuando se visitan sitios fuera de los paquetes de contenido.</translation>
+<translation id="8555589883248082762">Proporciona configuraciones para las impresoras empresariales.
+
+Esta política te permite proporcionar configuraciones de impresoras para los dispositivos <ph name="PRODUCT_OS_NAME" />. El tamaño del archivo no debe exceder los 5 MB y debe estar codificado en JSON. El formato es el mismo que el diccionario NativePrinters. Se estima que un archivo que contiene aproximadamente 21,000 impresoras se codificará como un archivo de 5 MB. El hash criptográfico se usa para verificar la integridad de la descarga.
+
+El archivo se descargará y se almacenará en la memoria caché. Cada vez que cambie la URL o el hash, el archivo volverá a descargarse.
+
+Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo para las configuraciones de impresoras y hará que las impresoras estén disponibles según las políticas NativePrintersBulkAccessMode, NativePrintersBulkWhitelist y NativePrintersBulkBlacklist.
+
+Si se establece esta política, los usuarios no pueden cambiarla ni anularla.
+
+Esta política no afecta si los usuarios pueden configurar las impresoras en dispositivos individuales. Su objetivo es complementar la configuración de las impresoras a cargo de los usuarios individuales.</translation>
 <translation id="8566842294717252664">Ocultar ícono de Web Store en la página Nueva pestaña y el Selector de aplicaciones</translation>
 <translation id="8587229956764455752">Permitir la creación de nuevas cuentas de usuario</translation>
 <translation id="8614804915612153606">Desactiva la actualización automática.</translation>
@@ -2026,9 +2077,9 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8887644176044431146">Controla a qué impresoras de
       DeviceNativePrintersConfiguration pueden acceder los usuarios.
 
-      Designa la política de acceso que se usa para la configuración de impresoras masivas.
+      Designa la política de acceso que se usa para la configuración de impresoras masiva.
       Si se selecciona AllowAll, se muestran todas las impresoras. Si se
-       selecciona BlacklistRestrction, se usa DeviceNativePrintersBlacklist para
+       selecciona BlacklistRestriction, se usa DeviceNativePrintersBlacklist para
       restringir el acceso a las impresoras especificadas. Si se selecciona
       WhitelistPrintersOnly, DeviceNativePrintersWhitelist designa solo las
       impresoras que se pueden seleccionar.
@@ -2079,6 +2130,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="9096086085182305205">Lista blanca del servidor de autenticación</translation>
 <translation id="9098553063150791878">Políticas para la autenticación HTTP</translation>
 <translation id="9105265795073104888">Las apps de Android tienen a su disposición solo un subgrupo de opciones de configuración de proxy. Dichas apps pueden elegir usar el proxy de forma voluntaria, pero no puedes forzarlas a que lo usen.</translation>
+<translation id="9112727953998243860">Archivo de configuración de impresoras empresariales</translation>
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolo. Esto solo puede ser una política recomendada. La propiedad |protocol| se debe establecer para el esquema (por ejemplo, "mailto") de la URL, y la propiedad |url| se debe establecer para el patrón de la URL de la aplicación que controla el esquema. El patrón puede incluir una especificación "%s" que, si está presente, se reemplazará por la URL controlada.
 
           Los controladores de protocolo registrados por la política se fusionan con los registrados por el usuario, y todos están disponibles para utilizarse. El usuario puede anular los controladores de protocolos instalados por la política si instala un nuevo controlador predeterminado, pero no puede eliminar un controlador de protocolo registrado por la política.</translation>

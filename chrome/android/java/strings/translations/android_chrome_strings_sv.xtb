@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Flytta bokmärken</translation>
 <translation id="119944043368869598">Ta bort alla</translation>
 <translation id="1201402288615127009">Nästa</translation>
+<translation id="1204037785786432551">Ladda ned länk</translation>
+<translation id="1206892813135768548">Kopiera länktext</translation>
 <translation id="1209206284964581585">Dölj för tillfället</translation>
 <translation id="1211530540767271776">Det finns inga USB-enheter här</translation>
 <translation id="123724288017357924">Läs in den aktuella sidan igen och ignorera cachelagrat innehåll</translation>
@@ -114,6 +116,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Logga in i Chrome om du vill få förslag på anpassat innehåll från Google.</translation>
+<translation id="2091887806945687916">Ljud</translation>
 <translation id="2095887075102408547">När den här funktionen är aktiverad komprimerar Chrome sidor som du besöker med hjälp av Googles servrar innan de laddas ned. Sidor som öppnas via privata anslutningar (HTTPS) eller i inkognitoflikar varken optimeras eller visas av Google.</translation>
 <translation id="2096396629993765042">Du loggas inte ut från Google-kontot. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Automatisk inloggning</translation>
@@ -333,6 +336,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Ett synkroniseringsfel uppstod. Tryck här om du vill veta mer.</translation>
+<translation id="4269820728363426813">Kopiera länkadress</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
 <translation id="42981349822642051">Expandera</translation>
@@ -602,7 +606,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6701279291835318271">Säkerhetsrapporter</translation>
 <translation id="6709133671862442373">Nyheter</translation>
 <translation id="6710213216561001401">Föregående</translation>
-<translation id="6727612981472093924">Navigeringspanelen har öppnats</translation>
 <translation id="6738867403308150051">Laddar ned …</translation>
 <translation id="6762156594045689028"><ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen.</translation>
 <translation id="6764789522080107716">Det går inte att öppna filen</translation>
@@ -661,6 +664,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7253272406652746122">Lägg till ett Google-konto från kontosidan i appen Inställningar på enheten.</translation>
 <translation id="7274013316676448362">Blockerad webbplats</translation>
 <translation id="7307288900373049735">Kontaktar Google … Det här kan ta någon minut</translation>
+<translation id="7318797029885648322">Tryck på Mer om du vill ha artiklar</translation>
 <translation id="7333031090786104871">Processen pågår fortfarande för den förra webbplatsen</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dela 1 markerat objekt}other{Dela # markerade objekt}}</translation>
@@ -799,6 +803,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8636825310635137004">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="8641930654639604085">Försök blockera webbplatser med innehåll för vuxna</translation>
 <translation id="8662811608048051533">Du loggas ut från de flesta webbplatser.</translation>
+<translation id="867485229011312729">Var finns bokmärken, nedladdningar och historik?</translation>
 <translation id="8676374126336081632">Radera inmatning</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrka: # streck}other{Signalstyrka: # streck}}</translation>
 <translation id="869891660844655955">Utgångsdatum</translation>

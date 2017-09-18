@@ -108,12 +108,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="3385242214819933234">Invalid host owner.</translation>
 <translation id="3403830762023901068">Policy settings do not permit sharing this computer as a Chromoting host. Contact your system administrator for assistance.</translation>
 <translation id="3423542133075182604">Security Key Remoting Process</translation>
-<translation id="3426467947138417795">Chrome Remote Desktop
-Remote Desktop
-Remote PC
-Remote Computer
-Remote Access
-Remote Support</translation>
 <translation id="3581045510967524389">Could not connect to the network. Please check that your device is on-line.</translation>
 <translation id="3596628256176442606">This service enables incoming connections from Chromoting clients.</translation>
 <translation id="3606997049964069799">You are not signed in to Chromium. Please sign in and try again.</translation>
@@ -122,13 +116,6 @@ Remote Support</translation>
 <translation id="3695446226812920698">Find out how</translation>
 <translation id="3718805989288361841">There is an error with the policy settings for Chrome Remote Desktop. Contact your system administrator for assistance.</translation>
 <translation id="3776024066357219166">Your Chrome Remote Desktop session has ended.</translation>
-<translation id="3788372335219293587">Securely access your computer from your iOS device. Its fast, simple and free.
-
-• On the computer that you want to access remotely, find the Chrome Remote Desktop app on the Chrome Web Store – https://chrome.google.com/remotedesktop
-• Install Chrome Remote Desktop software and follow the instructions to complete setup.
-• On your iOS device, open the app and tap on any of your online computers to connect.
-
-For information about privacy, please see the Google Privacy Policy (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Please confirm your account and PIN below to allow access by Chrome Remote Desktop.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="7144878232160441200">Retry</translation>
 <translation id="7149517134817561223">Application to issue commands to Chrome remote desktop host.</translation>
 <translation id="7215059001581613786">Please enter a PIN consisting of six or more digits.</translation>
-<translation id="7237767047212540055">On the computer that you want to access remotely, open Chrome and visit <ph name="INSTALLATION_LINK" />
-Install Chrome Remote Desktop software and follow the instructions to complete setup
-After setup is complete, you'll be able to access the computer from this page by entering the PIN or access code</translation>
 <translation id="7312846573060934304">Host is offline.</translation>
 <translation id="7319983568955948908">Stop Sharing</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>

@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">移动书签</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">下一步</translation>
+<translation id="1204037785786432551">下载链接</translation>
+<translation id="1206892813135768548">复制链接文字</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="1211530540767271776">没有任何 USB 设备</translation>
 <translation id="123724288017357924">重新加载当前网页（忽略缓存的内容）</translation>
@@ -114,6 +116,7 @@
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
 <translation id="2086652334978798447">要获取 Google 推荐的个性化内容，请登录 Chrome。</translation>
+<translation id="2091887806945687916">声音</translation>
 <translation id="2095887075102408547">当此功能处于开启状态时，Chrome 会先使用 Google 服务器压缩您所访问的网页，然后再下载它们。Google 既不会优化也不会看到您通过私密连接 (HTTPS) 或在隐身标签页中访问的网页。</translation>
 <translation id="2096396629993765042">您不会因此而退出自己的 Google 帐号。您的 Google 帐号在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="2100273922101894616">自动登录</translation>
@@ -333,6 +336,7 @@
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
 <translation id="4262028915562328938">同步时出现错误，点按可了解详情。</translation>
+<translation id="4269820728363426813">复制链接地址</translation>
 <translation id="4275663329226226506">媒体</translation>
 <translation id="4278390842282768270">允许</translation>
 <translation id="42981349822642051">展开</translation>
@@ -602,7 +606,6 @@
 <translation id="6701279291835318271">安全报告</translation>
 <translation id="6709133671862442373">资讯</translation>
 <translation id="6710213216561001401">上一个</translation>
-<translation id="6727612981472093924">已打开导航面板</translation>
 <translation id="6738867403308150051">即将开始下载…</translation>
 <translation id="6762156594045689028">要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">无法打开文件</translation>
@@ -661,6 +664,7 @@
 <translation id="7253272406652746122">请在设备的“设置”应用中，通过“帐号”页面添加 Google 帐号。</translation>
 <translation id="7274013316676448362">禁止访问的网站</translation>
 <translation id="7307288900373049735">正在连接到 Google…请稍等片刻</translation>
+<translation id="7318797029885648322">点按“更多”即可获取相关文章</translation>
 <translation id="7333031090786104871">仍在添加先前的网站</translation>
 <translation id="7352939065658542140">视频</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 个所选项}other{分享 # 个所选项}}</translation>
@@ -799,6 +803,7 @@
 <translation id="8636825310635137004">要在您的其他设备上访问您的标签页，请开启同步功能。</translation>
 <translation id="8641930654639604085">尽量屏蔽成人网站</translation>
 <translation id="8662811608048051533">您会从大多数网站退出。</translation>
+<translation id="867485229011312729">“书签”、“下载内容”和“历史记录”这三项内容现在何处？</translation>
 <translation id="8676374126336081632">清除输入的内容</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{信号强度：# 格}other{信号强度：# 格}}</translation>
 <translation id="869891660844655955">截止日期</translation>

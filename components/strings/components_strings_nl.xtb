@@ -521,6 +521,7 @@
 <translation id="5019198164206649151">Backend-opslag in slechte staat</translation>
 <translation id="5023310440958281426">Neem het beleid van je beheerder door</translation>
 <translation id="5029568752722684782">Kopie wissen</translation>
+<translation id="503069730517007720">Er is een rootcertificaat voor '<ph name="SOFTWARE_NAME" />' vereist, maar niet geïnstalleerd. Je IT-beheerder moet de configuratie-instructies voor '<ph name="SOFTWARE_NAME" />' raadplegen om dit probleem op te lossen. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Over Google Translate</translation>
 <translation id="5039804452771397117">Toestaan</translation>
 <translation id="5040262127954254034">Privacy</translation>
@@ -884,11 +885,13 @@
 <translation id="8037357227543935929">Vragen (standaard)</translation>
 <translation id="8041089156583427627">Feedback verzenden</translation>
 <translation id="8041940743680923270">Algemene standaardinstelling gebruiken (Vragen)</translation>
+<translation id="8057711352706143257">'<ph name="SOFTWARE_NAME" />' is niet correct geconfigureerd. Als je '<ph name="SOFTWARE_NAME" />' verwijdert, wordt het probleem meestal opgelost. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Kan artikel niet bekijken.</translation>
 <translation id="8091372947890762290">Activering is in behandeling op de server</translation>
 <translation id="8094917007353911263">Het is mogelijk dat je <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> moet bezoeken van het netwerk dat je gebruikt.</translation>
 <translation id="8103161714697287722">Betaalmethode</translation>
 <translation id="8118489163946903409">Betaalmethode</translation>
+<translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />' is niet correct geïnstalleerd op je computer of netwerk. Neem contact op met je IT-beheerder om dit probleem op te lossen.</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8134994873729925007">Het <ph name="BEGIN_ABBR" />DNS-adres<ph name="END_ABBR" /> van de server van <ph name="HOST_NAME" /> kan niet worden gevonden.</translation>
 <translation id="8149426793427495338">De slaapstand van je computer is geactiveerd.</translation>
@@ -1019,4 +1022,9 @@
 <translation id="988159990683914416">Ontwikkelaarsbuild</translation>
 <translation id="989988560359834682">Adres bewerken</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">'<ph name="SOFTWARE_NAME" />' is niet correct geïnstalleerd op je computer of het netwerk:
+    &lt;ul&gt;
+    &lt;li&gt;Probeer '<ph name="SOFTWARE_NAME" />' te verwijderen of uit te schakelen&lt;/li&gt;
+    &lt;li&gt;Maak verbinding met een ander netwerk&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

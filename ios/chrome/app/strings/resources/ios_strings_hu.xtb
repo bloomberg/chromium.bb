@@ -66,9 +66,11 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="209018056901015185">Asztali webhely kérése</translation>
 <translation id="2103075008456228677">A history.google.com megnyitása</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem áthelyezve</translation>
+<translation id="213900355088104901">Privát böngészéshez nyisson inkognitólapot</translation>
 <translation id="2149973817440762519">Könyvjelző szerkesztése</translation>
 <translation id="2154710561487035718">URL másolása</translation>
 <translation id="2230173723195178503">A weboldal betöltött</translation>
+<translation id="2256128224215992540">Keresési és webhelyjavaslatok</translation>
 <translation id="2267753748892043616">Fiók hozzáadása</translation>
 <translation id="2273327106802955778">Továbbiak menü</translation>
 <translation id="2320166752086256636">Billentyűzet elrejtése</translation>
@@ -178,9 +180,11 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="430793432425771671">Minden szinkronizálása</translation>
 <translation id="4342284590510997375">Új</translation>
 <translation id="4359125752503270327">Az oldal egy másik alkalmazásban nyílik meg.</translation>
+<translation id="4370827530403103842">A szinkronizálás nem működik. Koppintson a javításához.</translation>
 <translation id="4375040482473363939">QR-kód keresése</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Adatvédelmi közlemény</translation>
+<translation id="4460091562821778167">Mindig kérdezzen rá, hogy melyik alkalmazást szeretném használni</translation>
 <translation id="4508750114462689118">Bejelentkezési promóció bezárása</translation>
 <translation id="4526249700380860531">A mentett jelszavak megtekintése és kezelése a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> címen</translation>
 <translation id="4536418791685807335">Próbáljon meg újra bejelentkezni.</translation>
@@ -414,6 +418,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="9100610230175265781">Összetett jelszó szükséges</translation>
 <translation id="9148126808321036104">Jelentkezzen be újra</translation>
 <translation id="914898748153555155">Bármikor módosíthatja a Chrome beállításaiban</translation>
+<translation id="91549621916703028">Nyisson akár több lapot is minden feladatához</translation>
 <translation id="9157836665414082580">Párbeszédablakok elrejtése</translation>
 <translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
 <translation id="9203116392574189331">Átadás</translation>

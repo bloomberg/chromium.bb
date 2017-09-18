@@ -66,9 +66,11 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="209018056901015185">Wersja na komputer</translation>
 <translation id="2103075008456228677">Otwórz history.google.com</translation>
 <translation id="2116625576999540962">Przeniesione elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="213900355088104901">Aby przeglądać prywatnie, otwórz kartę incognito</translation>
 <translation id="2149973817440762519">Edytuj zakładkę</translation>
 <translation id="2154710561487035718">Kopiuj adres URL</translation>
 <translation id="2230173723195178503">Wczytano stronę internetową</translation>
+<translation id="2256128224215992540">Podpowiadanie stron internetowych i wyszukiwanych słów</translation>
 <translation id="2267753748892043616">Dodaj konto</translation>
 <translation id="2273327106802955778">Menu Więcej</translation>
 <translation id="2320166752086256636">Ukryj klawiaturę</translation>
@@ -178,9 +180,11 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="430793432425771671">Synchronizuj wszystko</translation>
 <translation id="4342284590510997375">Nowe</translation>
 <translation id="4359125752503270327">Strona zostanie otwarta w innej aplikacji.</translation>
+<translation id="4370827530403103842">Synchronizacja nie działa. Kliknij, by ją naprawić.</translation>
 <translation id="4375040482473363939">Wyszukiwanie z użyciem kodu QR</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Informacje na temat ochrony prywatności</translation>
+<translation id="4460091562821778167">Za każdym razem pytaj, której aplikacji użyć</translation>
 <translation id="4508750114462689118">Zamknij okno zachęcające do logowania</translation>
 <translation id="4526249700380860531">Wyświetlaj zapisane hasła i zarządzaj nimi na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Spróbuj zalogować się jeszcze raz.</translation>
@@ -348,7 +352,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7649070708921625228">Pomoc</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7671141431838911305">ZAINSTALUJ</translation>
-<translation id="7677825787905683892">Wybierz domyślną aplikację e-mail</translation>
+<translation id="7677825787905683892">Wybierz domyślną aplikację do poczty</translation>
 <translation id="7765158879357617694">Przenieś</translation>
 <translation id="7769602470925380267">Zaakceptuj i wyloguj się</translation>
 <translation id="7772032839648071052">Potwierdź hasło</translation>
@@ -413,6 +417,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9148126808321036104">Zaloguj się ponownie</translation>
 <translation id="914898748153555155">W każdej chwili możesz zmienić to ustawienie w Ustawieniach Chrome</translation>
+<translation id="91549621916703028">Utwórz wiele kart na wszystkie swoje zadania</translation>
 <translation id="9157836665414082580">Ukryj okna dialogowe</translation>
 <translation id="9188680907066685419">Wyloguj się z konta zarządzanego</translation>
 <translation id="9203116392574189331">Handoff</translation>

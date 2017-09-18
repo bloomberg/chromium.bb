@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">نقل الإشارات المرجعية</translation>
 <translation id="119944043368869598">محو جميع التنزيلات</translation>
 <translation id="1201402288615127009">التالي</translation>
+<translation id="1204037785786432551">تنزيل الرابط</translation>
+<translation id="1206892813135768548">نسخ نص الرابط</translation>
 <translation id="1209206284964581585">إخفاء الآن</translation>
 <translation id="1211530540767271776">‏لا توجد أجهزة USB هنا</translation>
 <translation id="123724288017357924">إعادة تحميل الصفحة الحالية مع تجاهل المحتوى المُخزَّن مؤقتًا</translation>
@@ -114,6 +116,7 @@
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">‏للحصول على محتوى مخصص اقترحته Google، سجِّلْ الدخول إلى Chrome.</translation>
+<translation id="2091887806945687916">الصوت</translation>
 <translation id="2095887075102408547">‏عند تشغيل هذه الميزة، سيستخدم Chrome خوادم Google لضغط الصفحات التي تزورها قبل تنزيلها. ولن يتم تحسين الصفحات التي يتم الوصول إليها باستخدام الاتصالات الخاصة (HTTPS) أو من خلال علامات تبويب التصفح المتخفي أو لن يكتشفها متصفح Google.</translation>
 <translation id="2096396629993765042">‏لن يتم تسجيل خروجك من حسابك في Google. قد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">تسجيل الدخول التلقائي</translation>
@@ -333,6 +336,7 @@
 <translation id="4256782883801055595">تراخيص البرامج مفتوحة المصدر</translation>
 <translation id="4259722352634471385">التنقل محظور: <ph name="URL" /></translation>
 <translation id="4262028915562328938">حدث خطأ في المزامنة، انقر للحصول على التفاصيل.</translation>
+<translation id="4269820728363426813">نسخ عنوان الرابط</translation>
 <translation id="4275663329226226506">الوسائط</translation>
 <translation id="4278390842282768270">مسموح بها</translation>
 <translation id="42981349822642051">توسيع</translation>
@@ -603,7 +607,6 @@
 <translation id="6701279291835318271">تقارير الأمان</translation>
 <translation id="6709133671862442373">الأخبار</translation>
 <translation id="6710213216561001401">السابق</translation>
-<translation id="6727612981472093924">تم فتح لوحة التنقل</translation>
 <translation id="6738867403308150051">جارٍ التنزيل…</translation>
 <translation id="6762156594045689028">لتغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">يتعذر فتح الملف</translation>
@@ -662,6 +665,7 @@
 <translation id="7253272406652746122">‏أضف حساب Google من صفحة "الحسابات" في تطبيق إعدادات جهازك.</translation>
 <translation id="7274013316676448362">الموقع المحظور</translation>
 <translation id="7307288900373049735">‏جارٍ الاتصال بـ Google…قد يستغرق ذلك دقيقة واحدة</translation>
+<translation id="7318797029885648322">اضغط على زر "المزيد" للحصول على مقالات</translation>
 <translation id="7333031090786104871">لا تزال عملية إضافة موقع الويب السابق جارية</translation>
 <translation id="7352939065658542140">فيديو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{مشاركة عنصر واحد محدد}zero{مشاركة # عنصر محدد}two{مشاركة عنصرين (#) محددين}few{مشاركة # عناصر محددة}many{مشاركة # عنصرًا محددًا}other{مشاركة # عنصر محدد}}</translation>
@@ -800,6 +804,7 @@
 <translation id="8636825310635137004">للحصول على علامات التبويب من أجهزتك الأخرى، شغِّل المزامنة.</translation>
 <translation id="8641930654639604085">محاولة حظر مواقع الويب التي تتضمن محتوى للبالغين</translation>
 <translation id="8662811608048051533">يخرجك من معظم مواقع الويب.</translation>
+<translation id="867485229011312729">أين الإشارات المرجعية، والتنزيلات، والسجل؟</translation>
 <translation id="8676374126336081632">محو الإرسال</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{مستوى قوة الإشارة: شريط واحد (#)}zero{مستوى قوة الإشارة: # شريط}two{مستوى قوة الإشارة: شريطان (#)}few{مستوى قوة الإشارة: # أشرطة}many{مستوى قوة الإشارة: # شريطًا}other{مستوى قوة الإشارة: # شريط}}</translation>
 <translation id="869891660844655955">تاريخ انتهاء الصلاحية</translation>

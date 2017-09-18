@@ -54,6 +54,7 @@
 
       Bu politika ayarlanmadan bırakılırsa varsayılan sıklık 3 saattir. İzin
       verilen minimum sıklık ise 60 saniyedir.</translation>
+<translation id="1204263402976895730">Etkinleştirilmiş kurumsal yazıcılar</translation>
 <translation id="1221359380862872747">Demo girişinde belirtilen URL'leri yükle</translation>
 <translation id="123081309365616809">Cihaza içerik yayınlamayı etkinleştirme</translation>
 <translation id="1265053460044691532">SAML kullanarak kimlik doğrulaması yapmış kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırla</translation>
@@ -256,6 +257,7 @@
 <translation id="2024476116966025075">Uzaktan erişim istemcileri için gereken alan adını yapılandır</translation>
 <translation id="2030905906517501646">Varsayılan arama sağlayıcı anahtar kelimesi</translation>
 <translation id="203096360153626918">Bu politikanın Android uygulamaları üzerinde hiçbir etkisi yoktur. Bu politika <ph name="FALSE" /> seçeneğine ayarlansa bile uygulamalar tam ekran moduna girebilir.</translation>
+<translation id="2043770014371753404">Devre dışı bırakılmış kurumsal yazıcılar</translation>
 <translation id="206623763829450685"><ph name="PRODUCT_NAME" /> tarafından desteklenen HTTP kimlik doğrulaması şemalarını belirtir.
 
           Olası değerler "basic", "digest", "ntlm" ve "negotiate"dir. Birden çok değeri virgülle ayırın.
@@ -269,7 +271,7 @@
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
 <translation id="2126314858836465216">Cihazlara bağlı kurumsal yazıcılar için yapılandırmalar sağlar.
 
-      Bu politika, <ph name="PRODUCT_OS_NAME" /> cihazlarına yazıcı yapılandırmaları sağlamanıza olanak tanır. Dosya 5 MB'tan daha büyük olmamalı ve JSON olarak kodlanmamalıdır. Biçim, NativePrinters sözlüğü ile aynıdır. Yaklaşık 21.000 yazıcı içeren bir dosyanın 5 MB olacağı tahmin edilmektedir. İndirmenin bütünlüğünü doğrulamak için şifreleme karma değeri kullanılır.
+      Bu politika, <ph name="PRODUCT_OS_NAME" /> cihazlarına yazıcı yapılandırmaları sağlamanıza olanak tanır. Dosya 5 MB'tan daha büyük olmamalı ve JSON olarak kodlanmalıdır. Biçim, NativePrinters sözlüğü ile aynıdır. Yaklaşık 21.000 yazıcı içeren bir dosyanın 5 MB olacağı tahmin edilmektedir. İndirmenin bütünlüğünü doğrulamak için şifreleme karma değeri kullanılır.
 
       Dosya indirilir ve önbelleğe alınır. URL veya karma değer değiştiğinde yeniden indirilir.
 
@@ -318,6 +320,15 @@
           Bu ayar yapılandırılırsa, hızlı kilit açmayı kullanan kullanıcılardan kilit ekranında şifrelerini bu ayara göre girmeleri istenir.
 
           Bu ayar yapılandırılmazsa, hızlı kilit açmayı kullanan kullanıcılardan kilit ekranında şifrelerini her gün girmeleri istenir.</translation>
+<translation id="2194470398825717446">Bu politika M61'de kullanımdan kaldırılmıştır, onun yerine lütfen EcryptfsMigrationStrategy'yi kullanın.
+
+      Ecryptfs koduyla gönderilen ve ext4 şifrelemesine geçmesi gereken bir cihazın nasıl davranması gerektiğini belirtir.
+
+      Bu politikayı "DisallowArc" değerine ayarlarsanız, cihazdaki tüm kullanıcılar için Android uygulamaları devre dışı bırakılır (ext4 şifrelemesine önceden sahip olanlar dahil) ve kullanıcılara, ecryptfs'den ext4 şifrelemesine geçiş yapmaları teklif edilmez.
+
+      Bu politikayı "AllowMigration" değerine ayarlarsanız, ecryptfs ana dizinlerine sahip kullanıcılara gerektiğinde (şimdilik cihazda Android N kullanılabilir hale geldiğinde) bunların ext4 şifrelemesine taşınması teklif edilir).
+
+      Bu politika kiosk uygulamaları için geçerli değildir; bunlar otomatik olarak taşınır. Bu politika ayarlanmadan bırakılırsa, cihaz "DisallowArc" değeri seçilmiş gibi davranır.</translation>
 <translation id="2201555246697292490">Yerel mesajlaşma beyaz listesini yapılandır</translation>
 <translation id="2204753382813641270">Rafın otomatik olarak gizlenmesini kontrol et</translation>
 <translation id="2208976000652006649">POST kullanan arama URL'si için parametreler</translation>
@@ -526,6 +537,12 @@
       Bu politika yalnızca DeviceNativePrintersAccessMode için WhitelistPrintersOnly değeri seçilirse kullanılır.
 
       Bu politika kullanılırsa, kullanıcı yalnızca kimlikleri bu politikadaki değerlerle eşleşen yazıcıları kullanabilir. Kimliklerin, DeviceNativePrinters politikasında belirtilen dosyadaki girişlere karşılık gelmesi gerekir.</translation>
+<translation id="2794520838025002425">Kullanıcının kullanamayacağı yazıcıları belirtir.
+
+      Bu politika yalnızca NativePrintersBulkAccessMode için BlacklistRestriction değeri seçilirse kullanılır.
+
+      Bu politika kullanılırsa, bu politikada listelenen kimlikler dışında kalan tüm yazıcılar kullanıcıya sağlanır.
+      </translation>
 <translation id="2801230735743888564">Cihaz çevrimdışıyken kullanıcıların dinozor paskalya yumurtası oyununu oynamasına izin ver.
 
       Bu politika Yanlış seçeneğine ayarlanırsa kullanıcılar, cihaz çevrimdışıyken dinozor paskalya yumurtası oyununu oynayamaz. Bu ayar Doğru seçeneğine ayarlanırsa kullanıcıların dinozor oyununu oynamalarına izin verilir. Bu politika ayarlanmazsa kullanıcıların dinozor paskalya yumurtası oyununu oynamalarına kayıtlı Chrome OS'de izin verilmez, ancak diğer durumlarda izin verilir.</translation>
@@ -648,6 +665,7 @@
 <translation id="3219421230122020860">Gizli mod kullanılabilir</translation>
 <translation id="3220624000494482595">Kiosk uygulaması bir Android uygulamasıysa bu politika <ph name="TRUE" /> seçeneğine ayarlansa dahi <ph name="PRODUCT_OS_NAME" /> sürümü üzerinde herhangi bir kontrolü olmaz.</translation>
 <translation id="3236046242843493070">Uzantı, uygulama ve kullanıcı komut dosyası yüklemelerine izin veren URL kalıpları</translation>
+<translation id="3240609035816615922">Yazıcı yapılandırması erişim politikası.</translation>
 <translation id="3243309373265599239">AC güçle çalışırken, ekran karartılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
           Bu politika sıfırdan büyük bir değere ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> tarafından ekran karartılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
@@ -713,7 +731,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 
           Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="350797926066071931">Google Çeviri'yi etkinleştir</translation>
-<translation id="3512226956150568738">ARC'nin çalışması için ext4'e geçiş gerekmeden önce istemci cihaz modeli ARC'yi zaten destekliyorduysa ve ArcEnabled politikası doğru (true) değerine ayarlıysa, bu seçenek AskUser (3 değeri) şeklinde davranacaktır. Diğer tüm durumlarda (model önceden ARC'yi desteklemiyorduysa veya ArcEnabled politikası yanlış (false) değerine ayarlıysa), bu değer DisallowArc (0 değeri) ile aynı olacaktır.</translation>
+<translation id="3512226956150568738">Müşterinin cihaz modeli, ARC'yi çalıştırmak için ext4'e taşıma işlemi zorunlu olmadan önce ARC'yi destekliyorsa ve ArcEnabled politikası doğru değerine ayarlanmışsa, bu seçenek AskUser (3 değeri) gibi çalışır. Diğer tüm durumlarda (cihaz modeli daha önce ARC'yi desteklemiyorsa veya ArcEnabled politikası yanlış değerine ayarlanmışsa), bu değer DisallowArc'a (0 değeri) eşdeğer olur.</translation>
 <translation id="3528000905991875314">Alternatif hata sayfalarını etkinleştir</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
 <translation id="3591584750136265240">Giriş için kimlik doğrulama yöntemini yapılandır</translation>
@@ -901,6 +919,7 @@ politikayı geçersiz kılamaz.
       Not: Şu anda, otomatik yeniden başlatmalar yalnızca giriş ekranı gösteriliyorsa veya bir kiosk uygulama oturumu devam ediyorsa etkinleştirilir. Bu durum gelecekte değişecektir ve politika, herhangi bir özel türden oturumun devam edip etmediğinden bağımsız olarak her zaman uygulanacaktır.
 
       Politika değeri saniye olarak belirtilmelidir. Değerler en az 3600 (bir saat) olacak şekilde ayarlanır.</translation>
+<translation id="4203879074082863035">Kullanıcılara sadece beyaz listedeki yazıcılar gösterilir</translation>
 <translation id="420512303455129789">Ana makineye erişime izin verileceğini (doğru) veya engelleneceğini (yanlış) belirten bir boole bayrağına URL'leri eşleyen bir sözlük.
 
           Bu politika <ph name="PRODUCT_NAME" /> tarafından dahili kullanım içindir.</translation>
@@ -1009,6 +1028,7 @@ politikayı geçersiz kılamaz.
 <translation id="4541530620466526913">Cihaz-yerel hesaplar</translation>
 <translation id="4555850956567117258">Kullanıcı için uzaktan doğrulamayı etkinleştir</translation>
 <translation id="4557134566541205630">Varsayılan arama sağlayıcısı yeni sekme sayfası URL'si</translation>
+<translation id="4558592878156368639">Cihazın OffHours |ignored_policies| etkinleştirildiğinde kapalı olduğu saat aralıkları</translation>
 <translation id="4600786265870346112">Büyük imleci etkinleştir</translation>
 <translation id="4604931264910482931">Yerel mesajlaşma kara listesini yapılandır</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> cihazında meta etiket kontrolünü atla</translation>
@@ -1441,6 +1461,7 @@ politikayı geçersiz kılamaz.
 <translation id="6211428344788340116">Cihaz etkinlik zamanlarını bildirin.
 
       Bu ayar ayarlanmazsa veya Doğru (True) değerine ayarlanırsa kayıtlı cihazlar bir kullanıcının cihaz üzerinde etkin olduğu zamanları rapor eder. Bu ayar Yanlış (False) değerine ayarlanırsa cihaz etkinliği zamanları kaydedilmez veya rapor edilmez.</translation>
+<translation id="6212868225782276239">Kara listede olanlar hariç tüm yazıcılar gösterilir.</translation>
 <translation id="6219965209794245435">Bu politika etkinleştirilirse, önceki varsayılan tarayıcıdan otomatik doldurma form verilerinin içe aktarılmasını zorlar. Bu politika etkinleştirildiğinde içe aktarma iletişim kutusunu da etkiler.
 
       Devre dışı bırakılırsa, otomatik doldurma form verileri içe aktarılmaz.
@@ -1683,6 +1704,7 @@ politikayı geçersiz kılamaz.
 <translation id="7132877481099023201">Soru sorulmadan video yakalama cihazlarına erişim verilecek URL'ler</translation>
 <translation id="7167436895080860385">Kullanıcıların şifreleri Şifre Yöneticisi'nde görüntülemelerine izin ver (kullanımdan kalktı)</translation>
 <translation id="7173856672248996428">Geçici profil</translation>
+<translation id="717630378807352957">Yapılandırma dosyasındaki tüm yazıcılara izin verin.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Güncellemeler için izin verilen bağlantı türleri</translation>
 <translation id="7194407337890404814">Varsayılan arama sağlayıcının adı</translation>
@@ -1723,7 +1745,7 @@ politikayı geçersiz kılamaz.
 
 Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otomatik oluşturulan içerik önerileri gösterilmez.</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> için ek komut satırı parametreleri</translation>
-<translation id="7326394567531622570">Sil (2 değeri) seçeneğine benzer, ancak kullanıcının tekrar oturum açmak zorunda kalmaması için giriş jetonlarını saklar.</translation>
+<translation id="7326394567531622570">Wipe (2 değeri) seçeneğine benzer, ancak kullanıcının tekrar oturum açmak zorunda kalmaması için giriş jetonlarını saklar.</translation>
 <translation id="7329842439428490522">Pil gücüyle çalışırken, ekran kapatılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
           Bu politika sıfırdan büyük bir değere ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> tarafından ekran kapatılmadan önce kullanıcının ne kadar süre boşta kalması gerektiğini belirtir.
@@ -1978,6 +2000,12 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Politika devre dışı olarak ayarlanırsa veya ayarlanmadan bırakılırsa oturum açıldığında normal profiller kullanılır.</translation>
 <translation id="8158758865057576716"><ph name="PRODUCT_NAME" /> profil verileri için dolaşım kopyalarının oluşturulmasını etkinleştir.</translation>
+<translation id="8169931650834542988">Kullanıcıların NativePrintersBulkConfiguration politikasındaki hangi yazıcıları kullanabileceğini kontrol eder.
+
+      Toplu yazıcı yapılandırması için hangi erişim politikasının kullanılacağını belirler. AllowAll seçilirse tüm yazıcılar gösterilir. BlacklistRestrction seçilirse, belirtilen yazıcılara erişimi kısıtlamak için NativePrintersBulkBlacklist kullanılır. WhitelistPrintersOnly seçilirse, NativePrintersWhitelist yalnızca seçilebilir yazıcıları gösterir.
+
+      Bu politika ayarlanmazsa BlacklistRestriction uygulanır.
+      </translation>
 <translation id="8170878842291747619"><ph name="PRODUCT_NAME" /> üzerinde entegre Google Çeviri hizmetini sağlar.
 
       Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" />, uygun durumlarda sayfayı kullanıcı için çevirmeyi öneren entegre bir araç çubuğu gösterir.
@@ -2071,6 +2099,12 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8465065632133292531">POST kullanan anlık URL parametreleri</translation>
 <translation id="847472800012384958">Hiçbir sitenin pop-up göstermesine izin verme</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Bir kullanıcının kullanabileceği yazıcıları belirtir.
+
+      Bu politika yalnızca NativePrintersBulkAccessMode için WhitelistPrintersOnly değeri seçilirse kullanılır.
+      .
+
+      Bu politika kullanılırsa, kullanıcı yalnızca kimlikleri bu politikadaki değerlerle eşleşen yazıcıları kullanabilir. Kimliklerin, NativePrintersBulkConfiguration politikasında belirtilen dosyadaki girişlere karşılık gelmesi gerekir.</translation>
 <translation id="8484458986062090479">Her zaman ana makine tarayıcısı tarafından oluşturulması gereken URL kalıplarının listesini özelleştirir.
 
           Bu politika ayarlanmazsa, tüm siteler için "ChromeFrameRendererSettings" politikası tarafından belirtilen varsayılan oluşturucu kullanılır.
@@ -2081,6 +2115,19 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8519264904050090490">Yönetilen kullanıcı manuel istisna URL'leri</translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> için varsayılan HTML oluşturucusu</translation>
 <translation id="8549772397068118889">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar</translation>
+<translation id="8555589883248082762">Kurumsal yazıcılar için yapılandırmalar sağlar.
+
+      Bu politika, <ph name="PRODUCT_OS_NAME" /> cihazlarına yazıcı yapılandırmaları sağlamanıza olanak tanır.
+      Dosya 5 MB'tan daha büyük olmamalı ve JSON olarak kodlanmamalıdır.
+      Biçim, NativePrinters sözlüğü ile aynıdır. Yaklaşık 21.000 yazıcı içeren bir dosyanın 5 MB olacağı tahmin edilmektedir. İndirmenin bütünlüğünü doğrulamak için şifreleme karma değeri kullanılır.
+
+      Dosya indirilir ve önbelleğe alınır. URL veya karma değer değiştiğinde yeniden indirilir.
+
+      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME" />, yazıcı yapılandırmalarına ilişkin dosyayı indirir ve yazıcıları NativePrintersBulkAccessMode, NativePrintersBulkWhitelist ve NativePrintersBulkBlacklist ile uyumlu bir şekilde kullanıma sunar.
+
+      Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamaz.
+
+      Bu politikanın, kullanıcıların bağımsız cihazlardaki yazıcıları yapılandırıp yapılandıramamaları üzerinde herhangi bir etkisi yoktur. Bağımsız kullanıcıların yazıcı yapılandırmalarını tamamlaması amaçlanmıştır.</translation>
 <translation id="8566842294717252664">Yeni sekme sayfasında ve uygulama başlatıcıda web mağazasını gizle</translation>
 <translation id="8587229956764455752">Yeni kullanıcı hesapları oluşturulmasına izin ver</translation>
 <translation id="8614804915612153606">Otomatik Güncellemeyi devre dışı bırakır</translation>
@@ -2190,6 +2237,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="9096086085182305205">Kimlik doğrulama sunucusu beyaz listesi</translation>
 <translation id="9098553063150791878">HTTP kimlik doğrulaması için politikalar</translation>
 <translation id="9105265795073104888">Sadece proxy yapılandırma seçeneklerinin bir alt kümesi Android uygulamalarında kullanılabilir. Android uygulamaları proxy kullamayı kendi tercihleriyle seçebilir. Uygulamaları proxy kullanmaya zorlayamazsınız.</translation>
+<translation id="9112727953998243860">Kurumsal yazıcı yapılandırma dosyası</translation>
 <translation id="9112897538922695510">Bir protokol işleyicileri listesini kaydetmenize olanak tanır. Bu, yalnızca önerilen bir politika olabilir. |protocol| özelliğinin "mailto" gibi şemaya ayarlanması ve |url| özelliğinin de şemayı işleyen uygulamanın URL kalıbına ayarlanması gerekir. Kalıp bir "%s" makrosu içerebilir; bu durumda, makro işlenen URL tarafından değiştirilir.
 
           Politika tarafından kaydedilen protokol işleyicileri, kullanıcı tarafından kaydedilenlerle birleştirilir ve her ikisi de kullanılabilir. Kullanıcı, yeni bir varsayılan işleyici yükleyerek politika tarafından yüklenen politika işleyicilerini geçersiz kılabilir, ancak politika tarafından kaydedilen bir protokol işleyicisini kaldıramaz.</translation>

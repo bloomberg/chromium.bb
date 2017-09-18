@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Fit to width</translation>
 <translation id="1088860948719068836">Add Name on Card</translation>
 <translation id="1103523840287552314">Always translate <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Show all saved passwords...</translation>
 <translation id="1107591249535594099">If ticked, Chrome will store a copy of your card on this device for faster form filling.</translation>
 <translation id="1111153019813902504">Recent bookmarks</translation>
 <translation id="1113869188872983271">&amp;Undo reorder</translation>
@@ -525,6 +526,7 @@
 <translation id="5019198164206649151">Backing store in bad state</translation>
 <translation id="5023310440958281426">Check your administrator's policies</translation>
 <translation id="5029568752722684782">Clear copy</translation>
+<translation id="503069730517007720">A root certificate for '<ph name="SOFTWARE_NAME" />' is required but isn’t installed. Your IT administrator should look at configuration instructions for '<ph name="SOFTWARE_NAME" />' to fix this problem. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">About Google Translate</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
@@ -596,6 +598,7 @@
 <translation id="5540224163453853">Could not find the requested article.</translation>
 <translation id="5541546772353173584">Add Email</translation>
 <translation id="5544037170328430102">An embedded page at <ph name="SITE" /> says:</translation>
+<translation id="5545756402275714221">Articles for You</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5560088892362098740">Expiry Date</translation>
 <translation id="5565735124758917034">Active</translation>
@@ -617,6 +620,7 @@
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Get personalised content</translation>
 <translation id="5675650730144413517">This page isn’t working</translation>
+<translation id="5689199277474810259">Export to JSON</translation>
 <translation id="5710435578057952990">The identity of this website has not been verified.</translation>
 <translation id="5719499550583120431">Prepaid cards are accepted.</translation>
 <translation id="5720705177508910913">Current user</translation>
@@ -889,11 +893,13 @@
 <translation id="8037357227543935929">Ask (default)</translation>
 <translation id="8041089156583427627">Send Feedback</translation>
 <translation id="8041940743680923270">Use global default (Ask)</translation>
+<translation id="8057711352706143257">'<ph name="SOFTWARE_NAME" />' isn’t configured correctly. Uninstalling '<ph name="SOFTWARE_NAME" />' usually fixes the problem. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Failed to view article.</translation>
 <translation id="8091372947890762290">Activation is pending on the server</translation>
 <translation id="8094917007353911263">The network that you are using may require you to visit <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Payment Method</translation>
 <translation id="8118489163946903409">Payment method</translation>
+<translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />' wasn’t installed properly on your computer or network. Ask your IT administrator to resolve this issue.</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" />’s server <ph name="BEGIN_ABBR" />DNS address<ph name="END_ABBR" /> could not be found.</translation>
 <translation id="8149426793427495338">Your computer went to sleep.</translation>
@@ -1024,4 +1030,9 @@
 <translation id="988159990683914416">Developer Build</translation>
 <translation id="989988560359834682">Edit Address</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">'<ph name="SOFTWARE_NAME" />' wasn’t installed properly on your computer or the network:
+    &lt;ul&gt;
+    &lt;li&gt;Try uninstalling or disabling '<ph name="SOFTWARE_NAME" />'&lt;/li&gt;
+    &lt;li&gt;Try connecting to another network&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

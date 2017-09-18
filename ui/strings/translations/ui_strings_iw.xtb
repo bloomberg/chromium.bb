@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">הקש כאן</translation>
 <translation id="5076340679995252485">&amp;הדבק</translation>
 <translation id="5120799197269191491">חיפוש+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">‏התכונה 'ביטול נעילה עם PIN'</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">משולש הצגה</translation>
 <translation id="528468243742722775">End</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;העתק</translation>
 <translation id="7850320739366109486">נא לא להפריע</translation>
 <translation id="7907591526440419938">פתח קובץ</translation>
-<translation id="8054029954190364711">התכונה 'ביטול נעילה באמצעות טביעת אצבע'</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{לפני שעה אחת}two{לפני שעתיים}many{לפני # שעות}other{לפני # שעות}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{נותרה שנ‘ אחת}two{נותרו # שנ‘}many{נותרו # שנ‘}other{נותרו # שנ‘}}</translation>
 <translation id="815598010540052116">גלול למטה</translation>

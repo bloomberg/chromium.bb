@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">העבר סימניות</translation>
 <translation id="119944043368869598">נקה הכל</translation>
 <translation id="1201402288615127009">הבא</translation>
+<translation id="1204037785786432551">הורד קישור</translation>
+<translation id="1206892813135768548">העתק טקסט קישור</translation>
 <translation id="1209206284964581585">הסתר בינתיים</translation>
 <translation id="1211530540767271776">‏לא נמצאו מכשירי USB</translation>
 <translation id="123724288017357924">טען מחדש את הדף הנוכחי, תוך התעלמות מתוכן שמאוחסן בקובץ השמור</translation>
@@ -114,6 +116,7 @@
 <translation id="2079545284768500474">בטל פעולה</translation>
 <translation id="2082238445998314030">תוצאה <ph name="RESULT_NUMBER" /> מתוך <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">‏כדי לקבל מ-Google הצעות לתוכן מותאם אישית, היכנס אל Chrome.</translation>
+<translation id="2091887806945687916">צליל</translation>
 <translation id="2095887075102408547">‏כשהתכונה הזו פועלת, Chrome ישתמש בשרתי Google כדי לדחוס דפים שבהם אתה מבקר לפני הורדתם. Google לא תראה דפים שהגישה אליהם בוצעה בחיבור פרטי (HTTPS) או בכרטיסיות גלישה בסתר', וגם לא תבצע אופטימיזציה שלהם.</translation>
 <translation id="2096396629993765042">‏לא תבוצע יציאה מחשבון Google שלך. ייתכן שתוכל לגשת לסוגים אחרים של היסטוריית גלישה בחשבון Google בכתובת <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
@@ -333,6 +336,7 @@
 <translation id="4256782883801055595">רישיונות קוד פתוח</translation>
 <translation id="4259722352634471385">הניווט חסום: <ph name="URL" /></translation>
 <translation id="4262028915562328938">אירעה שגיאת סנכרון, הקש כדי לקבל פרטים.</translation>
+<translation id="4269820728363426813">העתק כתובת של קישור</translation>
 <translation id="4275663329226226506">מדיה</translation>
 <translation id="4278390842282768270">מותר</translation>
 <translation id="42981349822642051">הרחב</translation>
@@ -602,7 +606,6 @@
 <translation id="6701279291835318271">דוחות אבטחה</translation>
 <translation id="6709133671862442373">חדשות</translation>
 <translation id="6710213216561001401">הקודם</translation>
-<translation id="6727612981472093924">חלונית הניווט נפתחה</translation>
 <translation id="6738867403308150051">מוריד...</translation>
 <translation id="6762156594045689028"><ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /> כדי לשנות את ההגדרה הזו</translation>
 <translation id="6764789522080107716">לא ניתן לפתוח את הקובץ</translation>
@@ -661,6 +664,7 @@
 <translation id="7253272406652746122">‏הוסף חשבון Google מהדף 'חשבונות' שבאפליקציית ההגדרות של המכשיר.</translation>
 <translation id="7274013316676448362">אתר חסום</translation>
 <translation id="7307288900373049735">‏יוצר קשר עם Google… הפעולה עשויה להימשך כדקה</translation>
+<translation id="7318797029885648322">הקשה על 'עוד' תציג מאמרים</translation>
 <translation id="7333031090786104871">עדיין מוסיף את האתר הקודם</translation>
 <translation id="7352939065658542140">סרטון</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{שתף פריט אחד שנבחר}two{שתף # פריטים שנבחרו}many{שתף # פריטים שנבחרו}other{שתף # פריטים שנבחרו}}</translation>
@@ -797,6 +801,7 @@
 <translation id="8636825310635137004">כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את הסנכרון.</translation>
 <translation id="8641930654639604085">נסה לחסום אתרים שמכילים תוכן למבוגרים</translation>
 <translation id="8662811608048051533">תבוצע יציאה שלך מרוב האתרים.</translation>
+<translation id="867485229011312729">איפה הסימניות, ההורדות וההיסטוריה?</translation>
 <translation id="8676374126336081632">נקה קלט</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{רמת עוצמת אות: עמודה אחת}two{רמת עוצמת אות: שתי עמודות}many{רמת עוצמת אות: # עמודות}other{רמת עוצמת אות: # עמודות}}</translation>
 <translation id="869891660844655955">תאריך תפוגה</translation>

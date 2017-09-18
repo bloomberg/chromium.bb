@@ -69,6 +69,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2149973817440762519">Edició de l'adreça d'interès</translation>
 <translation id="2154710561487035718">Copia l'URL</translation>
 <translation id="2230173723195178503">La pàgina web s'ha carregat</translation>
+<translation id="2256128224215992540">Suggeriments de cerques i llocs</translation>
 <translation id="2267753748892043616">Afegeix un compte</translation>
 <translation id="2273327106802955778">Més opcions del menú</translation>
 <translation id="2320166752086256636">Amaga el teclat</translation>
@@ -178,9 +179,11 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="430793432425771671">Sincronitza-ho tot</translation>
 <translation id="4342284590510997375">Nou</translation>
 <translation id="4359125752503270327">Aquesta pàgina s'obrirà en una altra aplicació.</translation>
+<translation id="4370827530403103842">La sincronització no funciona. Toqueu per solucionar-ho.</translation>
 <translation id="4375040482473363939">Cerca mitjançant un codi QR</translation>
 <translation id="4378154925671717803">Telèfon</translation>
 <translation id="441868831736628555">Avís de privadesa</translation>
+<translation id="4460091562821778167">Pregunta'm cada vegada quina aplicació s'utilitza</translation>
 <translation id="4508750114462689118">Tanca la promoció d'inici de sessió</translation>
 <translation id="4526249700380860531">Consulta i gestiona les contrasenyes desades a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Torna a iniciar la sessió.</translation>

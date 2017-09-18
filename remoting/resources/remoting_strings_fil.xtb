@@ -108,12 +108,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="3385242214819933234">Di-wastong may-ari ng host.</translation>
 <translation id="3403830762023901068">Hindi pinapahintulutan ng mga setting ng patakaran ang pagbabahagi sa computer na ito bilang host ng Chromoting. Makipag-ugnay sa iyong system administrator para sa tulong.</translation>
 <translation id="3423542133075182604">Proseso ng Pagre-remote sa Security Key</translation>
-<translation id="3426467947138417795">Remote na Desktop ng Chrome
-Remote Desktop
-Remote PC
-Remote Computer
-Remote Access
-Remote Support</translation>
 <translation id="3581045510967524389">Hindi makakonekta sa network. Pakitiyak na on-line ang iyong device.</translation>
 <translation id="3596628256176442606">Ini-enable ng serbisyong ito ang mga papasok na koneksyon mula sa mga client ng Chromoting.</translation>
 <translation id="3606997049964069799">Hindi ka naka-sign in sa Chromium. Mangyaring mag-sign in at subukang muli.</translation>
@@ -122,13 +116,6 @@ Remote Support</translation>
 <translation id="3695446226812920698">Alamin kung paano</translation>
 <translation id="3718805989288361841">Mayroong error sa mga setting ng patakaran para sa Remote na Desktop ng Chrome. Makipag-ugnayan sa iyong system administrator para sa tulong.</translation>
 <translation id="3776024066357219166">Natapos na ang iyong session sa Remote na Desktop ng Chrome.</translation>
-<translation id="3788372335219293587">I-access nang secure ang iyong mga computer mula sa iOS device mo. Mabilis, simple, at libre ito.
-
-• Sa computer na gusto mong i-access nang malayuan, hanapin ang app na Remote na Desktop ng Chrome sa Chrome Web Store: https://chrome.google.com/remotedesktop
-• I-install ang software na Remote na Desktop ng Chrome at sundin ang mga tagubilin upang kumpletuhin ang pag-setup.
-• Sa iyong iOS device, buksan ang app at mag-tap sa alinman sa iyong mga online na computer upang kumonekta.
-
-Para sa impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa Privacy ng Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Pakikumpirma ang iyong account at PIN sa ibaba upang payagan ang pag-access ng Remote na Desktop ng Chrome.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ Para sa impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa Privacy ng 
 <translation id="7144878232160441200">Subukang muli</translation>
 <translation id="7149517134817561223">Application na magbibigay ng mga command sa host ng remote na desktop ng Chrome.</translation>
 <translation id="7215059001581613786">Mangyaring maglagay ng PIN na binubuo ng anim o higit pang mga digit.</translation>
-<translation id="7237767047212540055">Sa computer na gusto mong i-access nang malayuan, buksan ang Chrome at bisitahin ang <ph name="INSTALLATION_LINK" />
-I-install ang software na Remote na Desktop ng Chrome at sundin ang mga tagubilin upang kumpletuhin ang pag-set up
-Pagkatapos makumpleto ang pag-set up, maa-access mo ang computer mula sa page na ito sa pamamagitan ng paglalagay ng PIN o access code</translation>
 <translation id="7312846573060934304">Naka-offline ang host.</translation>
 <translation id="7319983568955948908">Ihinto ang Pagbabahagi</translation>
 <translation id="7401733114166276557">Remote na Desktop ng Chrome</translation>

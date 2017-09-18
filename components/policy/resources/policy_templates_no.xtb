@@ -53,6 +53,7 @@
 
       Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 timer. 
       Korteste tillatte frekvens er 60 sekunder.</translation>
+<translation id="1204263402976895730">Aktiverte bedriftsskrivere</translation>
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
 <translation id="123081309365616809">Slå på casting av innhold til enheten</translation>
 <translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
@@ -75,11 +76,11 @@
 <translation id="13356285923490863">Navn på retningslinje</translation>
 <translation id="134402861816424823">Angir skriverne som en bruker ikke kan bruke.
 
-      Disse retningslinjene brukes bare hvis BlacklistRestriction er valgt for
+      Denne regelen brukes bare hvis BlacklistRestriction er valgt for
       DeviceNativePrintersAccessMode.
 
-      Hvis disse retningslinjene brukes, er alle skriverne tilgjengelige for brukeren,
-      med unntak av ID-ene som er oppført i retningslinjene.
+      Hvis denne regelen brukes, er alle skriverne tilgjengelige for brukeren,
+      med unntak av ID-ene som er oppført i regelen.
       </translation>
 <translation id="1353966721814789986">Oppstartsider</translation>
 <translation id="1359553908012294236">Hvis denne regelen settes til true (sann) eller ikke konfigureres, slås gjestepålogginger på i <ph name="PRODUCT_NAME" />. Gjestepålogginger er <ph name="PRODUCT_NAME" />-profiler der alle vinduene er i inkognitomodus.
@@ -253,6 +254,7 @@
 <translation id="2024476116966025075">Konfigurer det nødvendige domenenavnet for klienter med ekstern tilgang</translation>
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="203096360153626918">Denne regelen har ingen innvirkning på Android-apper. Android-apper kan brukes i fullskjermmodus selv om denne regelen er angitt som <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Deaktiverte bedriftsskrivere</translation>
 <translation id="206623763829450685">Spesifiserer hvilke HTTP-autentiseringsskjemaer som støttes av <ph name="PRODUCT_NAME" />.
 
           Mulige verdier er «basic», «digest», «ntlm» og «negotiate». Bruk komma til å skille mellom flere verdier.
@@ -266,7 +268,7 @@
 <translation id="2113068765175018713">Begrens enhetens driftstid ved å bruke automatisk omstart</translation>
 <translation id="2126314858836465216">Gir konfigurasjoner for bedriftsskrivere som er knyttet til enheter.
 
-      Med disse retningslinjene kan du gi skriverkonfigurasjoner til
+      Med denne regelen kan du gi skriverkonfigurasjoner til
       <ph name="PRODUCT_OS_NAME" />-enheter.
       Filstørrelsen kan ikke overskride 5 MB og må være kodet i JSON.
       Formatet er det samme som NativePrinters-ordlisten. Det anslås
@@ -277,20 +279,20 @@
       Filen lastes ned og bufres. Den lastes ned på nytt hver gang
       nettadressen eller hash-koden endres.
 
-      Hvis disse retningslinjene er angitt,
-      kommer <ph name="PRODUCT_OS_NAME" /> til å laste ned
-      filen for skriverkonfigurasjoner og gjøre skrivere tilgjengelige i
+      Hvis denne regelen er angitt,
+      laster <ph name="PRODUCT_OS_NAME" /> ned filen for
+      skriverkonfigurasjoner og gjør skrivere tilgjengelige i
       henhold til DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
       og DeviceNativePrintersBlacklist.
 
-      Disse retningslinjene påvirker ikke hvorvidt brukere kan konfigurere skrivere på
+      Denne regelen påvirker ikke hvorvidt brukere kan konfigurere skrivere på
       ulike enheter. Den er ment å være et tillegg til
       konfigurering av skrivere som gjøres av individuelle brukere.
 
-      Disse retningslinjene er i tillegg til NativePrintersBulkConfiguration.
+      Denne regelen kommer i tillegg til NativePrintersBulkConfiguration.
 
-      Hvis disse retningslinjene ikke spesifiseres, er det ingen enhetsskrivere, og de andre
-      NativeDevicePrinter*-retningslinjene ignoreres.</translation>
+      Hvis denne regelen ikke spesifiseres, er det ingen enhetsskrivere, og de andre
+      NativeDevicePrinter*-reglene ignoreres.</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
 <translation id="2134437727173969994">Tillat låsing av skjermen</translation>
@@ -329,6 +331,15 @@
       Hvis denne innstillingen er konfigurert, kan brukere som bruker hurtigopplåsing, bli bedt om å skrive inn passordet sitt på låseskjermen. Dette avhenger imidlertid av hvilken innstilling som er valgt.
 
       Hvis denne innstillingen ikke konfigureres, blir brukere som bruker hurtigopplåsing, bedt om å skrive inn passordet sitt på låseskjermen hver dag.</translation>
+<translation id="2194470398825717446">Denne regelen er avviklet i M61. Bruk EcryptfsMigrationStrategy i stedet.
+
+      Spesifiserer hvordan enheter som har blitt levert med eCryptfs, og som må gå over til ext4-kryptering, bør oppføre seg.
+
+      Hvis du angir denne innstillingen som «DisallowArc», blir Android-apper deaktivert for alle brukere av enheten (inkludert brukerne som allerede har ext4-kryptering), og ingen brukere får muligheten til å overføre fra eCryptfs til ext4-kryptering.
+
+      Hvis du angir denne innstillingen som «AllowMigration», har brukere med eCryptfs-hjemmekataloger muligheten til å overføre disse til ext4-kryptering der det er nødvendig (for øyeblikket når Android N blir tilgjengelig på enheten).
+
+      Denne regelen gjelder ikke for kioskapper – disse overføres automatisk. Hvis denne innstillingen ikke angis, oppfører enheten seg som om «DisallowArc» er valgt.</translation>
 <translation id="2201555246697292490">Konfigurer godkjenning av innebygde meldinger</translation>
 <translation id="2204753382813641270">Kontrollér automatisk skjuling av hyllen</translation>
 <translation id="2208976000652006649">Parametere for søkenettadresser som bruker POST</translation>
@@ -526,12 +537,20 @@
 <translation id="2787173078141616821">Rapportér informasjon om Android-status</translation>
 <translation id="2789419769822054691">Angir hvilke skrivere en bruker kan bruke.
 
-      Disse retningslinjene brukes bare hvis WhitelistPrintersOnly er valgt for
+      Denne regelen brukes bare hvis WhitelistPrintersOnly er valgt for
       DeviceNativePrintersAccessMode.
 
-      Hvis disse retningslinjene brukes, er bare skriverne med ID-er som samsvarer
-      med verdiene i disse retningslinjene, tilgjengelige for brukeren. ID-ene må
+      Hvis denne regelen brukes, er bare skriverne med ID-er som samsvarer
+      med verdiene i denne regelen, tilgjengelige for brukeren. ID-ene må
       samsvare med oppføringene i filen som er spesifisert i DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Angir skriverne som en bruker ikke kan bruke.
+
+      Denne regelen brukes bare hvis BlacklistRestriction er valgt for
+      NativePrintersBulkAccessMode.
+
+      Hvis denne regelen brukes, er alle skriverne tilgjengelige for brukeren,
+      med unntak av ID-ene som er oppført i denne regelen.
+      </translation>
 <translation id="2801230735743888564">Gir brukerne mulighet til å spille dinosaurspill-påskeegget når enheten ikke er koblet til.
 
       Hvis denne regelen er satt til false (usann), kan ikke brukerne spille dinosaurspillet når enheten ikke er koblet til. Hvis regelen er satt til true (sann), kan brukerne spille dinosaurspillet. Hvis denne regelen ikke er angitt, kan ikke brukerne spille dinosaurspillet på registrerte Chrome OS-installasjoner, men de kan spille det i andre situasjoner.</translation>
@@ -647,6 +666,7 @@
 <translation id="3219421230122020860">Inkognitomodus er tilgjengelig</translation>
 <translation id="3220624000494482595">Hvis kioskappen er en Android-app, har den ikke kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen – selv ikke hvis regelen er angitt som <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Nettadressemønstre du vil tillate installasjoner av utvidelser, programmer og brukerskript fra</translation>
+<translation id="3240609035816615922">Regel for tilgang til konfigurering av skrivere.</translation>
 <translation id="3243309373265599239">Angir hvor lenge brukeren kan være inaktiv før skjermen nedtones når enheten kjører på batteristrøm.
 
           Når denne innstillingen er konfigurert til en verdi høyere enn null. angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME" /> nedtoner skjermen.
@@ -712,7 +732,7 @@
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="350797926066071931">Aktiver oversettelse</translation>
-<translation id="3512226956150568738">Hvis klientens enhetsmodell allerede støttet ARC før overføringen til ext4 var nødvendig for å kjøre ARC, og hvis ArcEnabled-retningslinjene er satt til sann, har dette alternativet samme effekt som AskUser (verdi 3). I alle andre tilfeller (hvis enhetsmodellen ikke støttet ARC tidligere, eller hvis ArcEnabled-retningslinjene er satt til usann), tilsvarer denne verdien DisallowArc (verdi 0).</translation>
+<translation id="3512226956150568738">Hvis klientens enhetsmodell allerede støttet ARC før overføringen til ext4 var nødvendig for å kjøre ARC, og hvis ArcEnabled-regelen er satt til sann, har dette alternativet samme effekt som AskUser (verdi 3). I alle andre tilfeller (hvis enhetsmodellen ikke støttet ARC tidligere, eller hvis ArcEnabled-regelen er satt til usann), tilsvarer denne verdien DisallowArc (verdi 0).</translation>
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
@@ -901,6 +921,7 @@
       Merk: For øyeblikket aktiveres automatisk omstart når påloggingsskjermen vises, eller en kiosk-app-økt er i gang. Dette kommer til å forandres i fremtiden, og innstillingen fortsetter å gjelde uavhengig av hvorvidt økter av en viss type er i gang eller ikke.
 
       Innstillingsverdien bør spesifiseres i sekunder. Verdier har et fastlåst minimum på 3600 (én time).</translation>
+<translation id="4203879074082863035">Bare skrivere i godkjenningslisten vises til brukere.</translation>
 <translation id="420512303455129789">En katalog som tilordner nettadresser boolske flagg som spesifiserer om tilgang til verten skal tillates (true/sann) eller blokkeres (false/usann).
 
           Denne regelen er bare for intern bruk i <ph name="PRODUCT_NAME" />.</translation>
@@ -1007,6 +1028,7 @@
 <translation id="4541530620466526913">Lokale kontoer på enheten</translation>
 <translation id="4555850956567117258">Slå på ekstern attestasjon for brukeren</translation>
 <translation id="4557134566541205630">Nettadresse for ny fane for standard søkeleverandør</translation>
+<translation id="4558592878156368639">Intervaller utenfor arbeidstiden når enhetens OffHours |ignored_policies| er tilgjengelig</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
 <translation id="4604931264910482931">Konfigurer svarteliste for innebygde meldinger</translation>
 <translation id="4617338332148204752">Hopp over sjekk av metatag i <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1437,6 +1459,7 @@
 <translation id="6211428344788340116">Rapportér aktivitetstider for enhet.
 
       Hvis denne innstillingen ikke angis eller angis som «true», rapporterer registrerte enheter om hvilke tidsperioder en bruker er aktiv på enheten. Hvis innstillingen angis som «false», blir ikke aktivitetstider registrert eller rapportert.</translation>
+<translation id="6212868225782276239">Alle skrivere vises, med unntak av de i svartelisten.</translation>
 <translation id="6219965209794245435">Hvis denne regelen er slått på, fremtvinger den import av autofylldataene for skjemaer fra den forrige standardnettleseren. Hvis den er slått på, berører den også importdialogen.
 
       Hvis regelen er slått av, importeres ikke autofylldataene for skjemaer.
@@ -1674,6 +1697,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7132877481099023201">Nettadresser som uten forespørsel blir gitt tilgang til enheter med videoopptak</translation>
 <translation id="7167436895080860385">Gi brukere tillatelse til å se passord i passordbehandlingen (avviklet)</translation>
 <translation id="7173856672248996428">Midlertidig profil</translation>
+<translation id="717630378807352957">Tillat alle skrivere fra konfigurasjonsfilen.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tilkoblingstyper som tillates for oppdateringer</translation>
 <translation id="7194407337890404814">Navn for standard søkeleverandør</translation>
@@ -1716,7 +1740,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis den er angitt som «false» (usann), vises ikke automatisk genererte innholdsforslag på nye faner.</translation>
 <translation id="7323896582714668701">Ytterligere kommandolinjeparametere for <ph name="PRODUCT_NAME" /></translation>
-<translation id="7326394567531622570">Ligner på Fjern (verdi 2), men forsøker å beholde påloggingstoken, slik at brukeren ikke må logge på igjen.</translation>
+<translation id="7326394567531622570">Ligner på Visk ut (verdi 2), men forsøker å beholde påloggingstoken, slik at brukeren ikke må logge på igjen.</translation>
 <translation id="7329842439428490522">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på batteristrøm.
 
           Når denne innstillingen er konfigurert til en verdi som er større en null, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME" /> slår av skjermen.
@@ -1933,7 +1957,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis innstillingen ikke er angitt, bruker enheten 24-timers klokkeformat som standard.</translation>
 <translation id="8114382167597081590">Fremtvinger ikke bruk av Begrenset innhold-modusen på YouTube</translation>
 <translation id="8118665053362250806">Angi størrelse på mediediskbuffer</translation>
-<translation id="8124468781472887384">Retningslinjer for tilgang til konfigurering av enhetsskrivere.</translation>
+<translation id="8124468781472887384">Regel for tilgang til konfigurering av enhetsskrivere.</translation>
 <translation id="8135937294926049787">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på batteristrøm.
 
           Når denne innstillingen er konfigurert til en verdi som er større en null, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME" /> slår av skjermen.
@@ -1966,6 +1990,18 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis regelen er slått av eller ikke angitt, aktiveres vanlige profiler ved pålogging.</translation>
 <translation id="8158758865057576716">Slår på oppretting av roamingkopier for <ph name="PRODUCT_NAME" />-profildata.</translation>
+<translation id="8169931650834542988">Kontrollerer hvilke skrivere fra
+      NativePrintersBulkConfiguration som er tilgjengelige for brukere.
+
+      Angir hvilken regel for tilgang som brukes for massekonfigurering av skrivere.
+      Hvis AllowAll er valgt, vises alle skrivere. Hvis BlacklistRestrction
+      er valgt, brukes NativePrintersBulkBlacklist til å begrense tilgangen til
+      de spesifiserte skriverne. Hvis WhitelistPrintersOnly er valgt, angir
+      NativePrintersWhitelist bare skriverne som kan
+      velges.
+
+      Hvis denne regelen ikke spesifiseres, antas det at BlacklistRestriction brukes.
+      </translation>
 <translation id="8170878842291747619">Aktiverer den integrerte Google Oversetter-tjenesten på <ph name="PRODUCT_NAME" />.
 
       Hvis du aktiverer denne innstillingen, vil <ph name="PRODUCT_NAME" /> vise en integrert verktøylinje som tilbyr brukeren oversettelse av siden når det er aktuelt.
@@ -2057,6 +2093,14 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Angir hvilke skrivere en bruker kan bruke.
+
+      Denne regelen brukes bare hvis WhitelistPrintersOnly er valgt for
+      NativePrintersBulkAccessMode.
+
+      Hvis denne regelen brukes, er bare skriverne med ID-er som samsvarer med verdiene
+      i denne regelen, tilgjengelige for brukeren. ID-ene må samsvare med
+      oppføringene i filen som er spesifisert i NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Tilpass listen over nettadressemønstre som alltid skal gjengis av vertsnettleseren.
 
           Hvis denne regelen ikke er angitt, brukes standardgjengivelsen for alle nettsteder, slik den er angitt i regelen «ChromeFrameRendererSettings».
@@ -2067,6 +2111,30 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8519264904050090490">Nettadresser med manuelle unntak for administrerte brukere</translation>
 <translation id="8544375438507658205">Standard gjengivelse av HTML for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
+<translation id="8555589883248082762">Gir konfigurasjoner for bedriftsskrivere.
+
+      Med denne regelen kan du gi skriverkonfigurasjoner til
+      <ph name="PRODUCT_OS_NAME" />-enheter.
+      Filstørrelsen kan ikke overskride 5 MB og må være kodet i JSON.
+      Formatet er det samme som NativePrinters-ordlisten. Det anslås
+      at en fil som inneholder omtrent 21 000 skrivere, omgjøres til en fil
+      på 5 MB. Den kryptografiske hash-koden brukes til å sikre integriteten til
+      nedlastingen.
+
+      Filen lastes ned og bufres. Den lastes ned på nytt hver gang
+      nettadressen eller hash-koden endres.
+
+      Hvis denne regelen er angitt,
+      laster <ph name="PRODUCT_OS_NAME" /> ned
+      filen for skriverkonfigurasjoner og gjør skrivere tilgjengelige i
+      henhold til NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
+      og NativePrintersBulkBlacklist.
+
+      Hvis du angir denne regelen, kan ikke brukere endre eller overstyre den.
+
+      Denne regelen påvirker ikke hvorvidt brukere kan konfigurere skrivere på
+      ulike enheter. Den er ment å være et tillegg til
+      konfigureringen av skrivere som gjøres av individuelle brukere.</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
 <translation id="8587229956764455752">Tillat oppretting av nye brukerkontoer</translation>
 <translation id="8614804915612153606">Deaktiverer automatiske oppdateringer</translation>
@@ -2125,14 +2193,14 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8887644176044431146">Kontrollerer hvilke skrivere fra
       DeviceNativePrintersConfiguration som er tilgjengelige for brukere.
 
-      Angir hvilke retningslinjer for tilgang som brukes for massekonfigurering av skrivere.
+      Angir hvilken regel for tilgang som brukes for massekonfigurering av skrivere.
       Hvis AllowAll er valgt, vises alle skrivere. Hvis BlacklistRestrction
       er valgt, brukes DeviceNativePrintersBlacklist til å begrense tilgangen til
       de spesifiserte skriverne. Hvis WhitelistPrintersOnly er valgt,
       angir DeviceNativePrintersWhitelist bare skriverne som kan
       velges.
 
-      Hvis disse retningslinjene ikke spesifiseres, antas det at BlacklistRestriction brukes.
+      Hvis denne regelen ikke spesifiseres, antas det at BlacklistRestriction brukes.
       </translation>
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>
 <translation id="8908294717014659003">Lar deg angi om nettsteder skal gis tillatelse til å bruke digitaliseringsenhetene dine. Bruk av digitaliseringsenheter kan tillates som standard, eller angis slik at brukeren blir spurt om tillatelse hver gang et nettsted ønsker å bruke slike enheter.
@@ -2180,6 +2248,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>
 <translation id="9098553063150791878">Regler for HTTP-autentisering</translation>
 <translation id="9105265795073104888">Bare en undergruppe av konfigurasjonsalternativer for proxy-tjenere er gjort tilgjengelig for Android-apper. Android-apper kan velge å bruke proxy-tjeneren frivillig. Du kan ikke tvinge dem til å bruke proxy-tjenere.</translation>
+<translation id="9112727953998243860">Konfigurasjonsfil for bedriftsskriver</translation>
 <translation id="9112897538922695510">Med denne innstillingen kan du registrere en liste over protokollbehandlere. Dette er bare en anbefalt innstilling. Egenskapen |protocol| bør settes til det aktuelle skjemaet, for eksempel «mailto», og egenskapen |url| bør settes til nettadressemønsteret for appen som behandler skjemaet. Mønsteret kan inkludere en «%s» som, hvis den brukes, erstattes av nettadressen som behandles.
 
           Protokollbehandlere som registreres via denne innstillingen, slås sammen med de som er registrert av brukeren, og begge er tilgjengelige for bruk. Brukeren kan overstyre protokollbehandlerne som innstillingen har installert, ved å installere en ny standardbehandler, men kan ikke fjerne en protokollbehandler som er registrert via en innstilling.</translation>

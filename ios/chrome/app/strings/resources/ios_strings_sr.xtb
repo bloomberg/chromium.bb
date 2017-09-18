@@ -69,6 +69,7 @@
 <translation id="2149973817440762519">Измените обележивач</translation>
 <translation id="2154710561487035718">Копирање URL адресе</translation>
 <translation id="2230173723195178503">Веб-страница је учитана</translation>
+<translation id="2256128224215992540">Предлози за претрагу и сајтове</translation>
 <translation id="2267753748892043616">Додај налог</translation>
 <translation id="2273327106802955778">Мени Још</translation>
 <translation id="2320166752086256636">Сакриј тастатуру</translation>
@@ -178,9 +179,11 @@
 <translation id="430793432425771671">Синхронизуј све</translation>
 <translation id="4342284590510997375">Ново</translation>
 <translation id="4359125752503270327">Ова страница ће се отворити у другој апликацији.</translation>
+<translation id="4370827530403103842">Синхронизација не функционише. Додирните да бисте решили проблем.</translation>
 <translation id="4375040482473363939">Претрага QR кодова</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Обавештење о приватности</translation>
+<translation id="4460091562821778167">Увек ме питај коју апликацију желим да користим</translation>
 <translation id="4508750114462689118">Затвори промоцију за пријављивање</translation>
 <translation id="4526249700380860531">Прегледајте сачуване лозинке и управљајте њима на <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Пробајте поново да се пријавите.</translation>

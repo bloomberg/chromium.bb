@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Ajustar al ancho</translation>
 <translation id="1088860948719068836">Agregar el nombre en la tarjeta</translation>
 <translation id="1103523840287552314">Siempre traducir <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Mostrar todas las contraseñas guardadas…</translation>
 <translation id="1107591249535594099">Si marcas esta opción, Chrome almacenará una copia de la tarjeta en el dispositivo para completar más rápidamente los formularios.</translation>
 <translation id="1111153019813902504">Favoritos recientes</translation>
 <translation id="1113869188872983271">&amp;Deshacer Reorganizar</translation>
@@ -526,6 +527,7 @@
 <translation id="5019198164206649151">La memoria auxiliar se encuentra en mal estado.</translation>
 <translation id="5023310440958281426">Revisa las políticas del administrador.</translation>
 <translation id="5029568752722684782">Borrar la copia</translation>
+<translation id="503069730517007720">Se requiere un certificado raíz para "<ph name="SOFTWARE_NAME" />", pero no está instalado. Tu administrador de IT debe analizar las instrucciones de configuración de "<ph name="SOFTWARE_NAME" />" para corregir este problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Acerca de Google Traductor</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidad</translation>
@@ -597,6 +599,7 @@
 <translation id="5540224163453853">No se pudo encontrar el artículo solicitado.</translation>
 <translation id="5541546772353173584">Agregar correo electrónico</translation>
 <translation id="5544037170328430102">Una página incrustada en <ph name="SITE" /> dice:</translation>
+<translation id="5545756402275714221">Artículos para ti</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5560088892362098740">Fecha de vencimiento</translation>
 <translation id="5565735124758917034">Activo</translation>
@@ -618,6 +621,7 @@
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5669703222995421982">Obtener contenido personalizado</translation>
 <translation id="5675650730144413517">Esta página no funciona</translation>
+<translation id="5689199277474810259">Exportar a JSON</translation>
 <translation id="5710435578057952990">No se ha verificado la identidad de este sitio web.</translation>
 <translation id="5719499550583120431">Se aceptan tarjetas de prepago.</translation>
 <translation id="5720705177508910913">Usuario actual</translation>
@@ -890,11 +894,13 @@
 <translation id="8037357227543935929">Preguntar (predeterminado)</translation>
 <translation id="8041089156583427627">Enviar comentario</translation>
 <translation id="8041940743680923270">Usar configuración global predeterminada (Preguntar)</translation>
+<translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" no se configuró correctamente. Prueba desinstalar "<ph name="SOFTWARE_NAME" />" para corregir el problema. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Error al visualizar artículo</translation>
 <translation id="8091372947890762290">La activación está pendiente en el servidor.</translation>
 <translation id="8094917007353911263">Es posible que la red que estás usando requiera que accedas a <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Forma de pago</translation>
 <translation id="8118489163946903409">Forma de pago</translation>
+<translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" no se instaló correctamente en tu computadora o red. Solicita al administrador de IT que corrija este problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8134994873729925007">No se encontró la <ph name="BEGIN_ABBR" />dirección DNS<ph name="END_ABBR" /> del servidor de <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">La computadora se suspendió.</translation>
@@ -1026,4 +1032,9 @@
 <translation id="988159990683914416">Build para desarrolladores</translation>
 <translation id="989988560359834682">Modificar dirección</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" no se instaló correctamente en tu computadora o red:
+    &lt;ul&gt;
+    &lt;li&gt;Prueba desinstalar o inhabilitar "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
+    &lt;li&gt;Prueba conectarte a otra red&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

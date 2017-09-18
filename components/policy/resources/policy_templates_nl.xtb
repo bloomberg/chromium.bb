@@ -52,6 +52,7 @@
 <translation id="1198465924256827162">De frequentie, in milliseconden, waarmee uploads van de apparaatstatus worden verzonden.
 
       Als dit beleid niet is ingesteld, is de standaardfrequentie 3 uur. De minimaal toegestane frequentie is 60 seconden.</translation>
+<translation id="1204263402976895730">Zakelijke printers ingeschakeld</translation>
 <translation id="1221359380862872747">Gespecificeerde URL's laden in demo-aanmeldvenster</translation>
 <translation id="123081309365616809">Casten van content naar het apparaat inschakelen</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
@@ -76,7 +77,7 @@
 
       Dit beleid wordt alleen gebruikt als BlacklistRestriction is gekozen voor DeviceNativePrintersAccessMode.
 
-      Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de ID's die in dit beleid worden vermeld.
+      Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de printer-ID's die in dit beleid worden vermeld.
       </translation>
 <translation id="1353966721814789986">Homepage's</translation>
 <translation id="1359553908012294236">Als dit beleid is ingesteld op 'waar' of niet is geconfigureerd, schakelt <ph name="PRODUCT_NAME" /> gast-logins in. Gast-logins zijn profielen van <ph name="PRODUCT_NAME" /> waarbij alle vensters in de incognitomodus worden geopend.
@@ -249,6 +250,7 @@
 <translation id="2024476116966025075">De vereiste domeinnaam configureren voor clients voor externe toegang</translation>
 <translation id="2030905906517501646">Zoekwoord voor standaardzoekprovider</translation>
 <translation id="203096360153626918">Dit beleid is niet van invloed op de Android-apps. Deze hebben toegang tot de modus voor volledig scherm, zelfs als dit beleid is ingesteld op <ph name="FALSE" /> (Onwaar).</translation>
+<translation id="2043770014371753404">Zakelijke printers uitgeschakeld</translation>
 <translation id="206623763829450685">Hiermee wordt gespecificeerd welke HTTP-verificatieschema's door <ph name="PRODUCT_NAME" /> worden ondersteund.
 
           Mogelijke waarden zijn 'basic', 'digest', 'ntlm' en 'negotiate'. Scheid meerdere waarden van elkaar met komma's.
@@ -313,6 +315,15 @@
           Als deze instelling is ingeschakeld, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, op basis van deze instelling gevraagd hun wachtwoord op te geven voor het vergrendelingsscherm.
 
           Als deze instelling niet is geconfigureerd, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, elke dag gevraagd hun wachtwoord voor het vergrendelingsscherm op te geven.</translation>
+<translation id="2194470398825717446">Dit beleid is beëindigd in M61. Gebruik EcryptfsMigrationStrategy.
+
+      Geeft aan hoe een apparaat zich moet gedragen dat is geleverd met eCryptfs en moet worden overgezet naar ext4-versleuteling.
+
+      Als je dit beleid instelt op 'DisallowArc', worden Android-apps uitgeschakeld voor alle gebruikers op het apparaat (waaronder gebruikers die al beschikken over ext4-versleuteling) en wordt er geen migratie van eCryptfs naar ext4-versleuteling aangeboden aan gebruikers.
+
+      Als je dit beleid instelt op 'AllowMigration', wordt aan gebruikers met eCryptfs-hoofdmappen aangeboden deze te migreren naar ext4-versleuteling indien nodig (momenteel is dit het geval wanneer Android N beschikbaar komt op het apparaat).
+
+      Dit beleid is niet van toepassing op kiosk-apps. Die worden automatisch gemigreerd. Als dit beleid niet wordt ingesteld, gedraagt het apparaat zich alsof 'DisallowArc' is gekozen.</translation>
 <translation id="2201555246697292490">Witte lijst voor systeemeigen berichten configureren</translation>
 <translation id="2204753382813641270">Automatisch verbergen van archief beheren</translation>
 <translation id="2208976000652006649">Parameters voor zoek-URL die POST gebruikt</translation>
@@ -523,6 +534,12 @@
       Dit beleid wordt alleen gebruikt als WhitelistPrintersOnly is gekozen voor DeviceNativePrintersAccessMode.
 
       Als dit beleid wordt gebruikt, zijn alleen de printers met ID's die overeenkomen met de waarden in dit beleid, beschikbaar voor de gebruiker. De ID's moeten overeenkomen met de vermeldingen in het bestand dat is opgegeven in DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Hiermee worden de printers gespecificeerd die een gebruiker niet kan gebruiken.
+
+      Dit beleid wordt alleen gebruikt als BlacklistRestriction is gekozen voor NativePrintersBulkAccessMode.
+
+      Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de printer-ID's die in dit beleid worden vermeld.
+      </translation>
 <translation id="2801230735743888564">Toestaan dat gebruikers de easter egg-dinosaurusgame spelen wanneer het apparaat offline is.
 
       Als dit beleid is ingesteld op 'oinwaar', kunnen gebruikers de easter egg-dinosaurusgame niet spelen wanneer het apparaat offline is. Als deze instelling is ingesteld op 'waar', kunnen gebruikers de easter egg-dinosaurusgame spelen. Als dit beleid niet is ingesteld, kunnen gebruikers de easter egg-dinosaurusgame niet spelen op geregistreerde Chrome OS-apparaten, maar kunnen ze deze wel onder andere omstandigheden spelen.</translation>
@@ -645,6 +662,7 @@
 <translation id="3219421230122020860">Incognitomodus beschikbaar</translation>
 <translation id="3220624000494482595">Als de kiosk-app een Android-app is, heeft deze geen controle over de <ph name="PRODUCT_OS_NAME" />-versie, zelfs niet als het beleid is ingesteld op <ph name="TRUE" /> (Waar).</translation>
 <translation id="3236046242843493070">URL-patronen om de installatie van extensies, apps en gebruikersscripts toe te staan vanaf</translation>
+<translation id="3240609035816615922">Toegangsbeleid voor printerconfiguratie.</translation>
 <translation id="3243309373265599239">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt gedimd wanneer er op netstroom wordt gewerkt.
 
            Als dit beleid is ingesteld op een grotere waarde dan nul, specificeert het de tijd die de gebruiker inactief moet blijven voordat het scherm wordt gedimd door <ph name="PRODUCT_OS_NAME" />.
@@ -712,7 +730,7 @@
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="350797926066071931">Vertalen inschakelen</translation>
-<translation id="3512226956150568738">Als het apparaatmodel van de klant al ondersteuning voor ARC bood voordat migratie naar ext4 nodig werd om ARC uit te voeren en als het beleid ArcEnabled is ingesteld op 'true' (waar), wordt AskUser (waarde 3) gebruikt voor deze optie. In alle andere gevallen (als het apparaatmodel voorheen geen ondersteuning voor ARC bood of als het beleid ArcEnabled is ingesteld op 'false' (onwaar)), is deze waarde gelijk aan DisallowArc (waarde 0).</translation>
+<translation id="3512226956150568738">Als het apparaatmodel van de klant al ondersteuning voor ARC bood voordat migratie naar ext4 nodig werd om ARC uit te voeren en als het beleid ArcEnabled is ingesteld op 'true' (waar), wordt AskUser (waarde 3) gebruikt voor deze optie. In alle andere gevallen (als het apparaatmodel voorheen geen ondersteuning voor ARC bood of als het beleid ArcEnabled op 'false' (onwaar) is ingesteld), is deze waarde gelijk aan DisallowArc (waarde 0).</translation>
 <translation id="3528000905991875314">Alternatieve foutpagina's inschakelen</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="3591584750136265240">Het verificatiegedrag voor inloggen configureren</translation>
@@ -907,6 +925,7 @@
       Opmerking: momenteel is automatisch opnieuw opstarten alleen ingeschakeld als het inlogscherm wordt weergegeven of een kiosk-appsessie wordt verwerkt. Binnenkort wordt dit veranderd en is het beleid altijd van toepassing, ongeacht of er een sessie van een bepaald type wordt verwerkt.
 
       De beleidswaarde moet in seconden worden ingevoerd. Waarden worden vastgezet zodat deze ten minste 3600 (één uur) zijn.</translation>
+<translation id="4203879074082863035">Alleen printers op de witte lijst worden weergegeven aan gebruikers</translation>
 <translation id="420512303455129789">Een woordenboek dat URL's toewijst aan een booleaanse markering die aangeeft of toegang tot de host moet worden toegestaan ('waar') of geblokkeerd ('onwaar').
 
           Dit beleid is bedoeld voor intern gebruik door <ph name="PRODUCT_NAME" /> zelf.</translation>
@@ -1015,6 +1034,7 @@
 <translation id="4541530620466526913">Lokale accounts op apparaat</translation>
 <translation id="4555850956567117258">Externe bevestiging van gebruiker inschakelen</translation>
 <translation id="4557134566541205630">URL van standaard zoekprovider voor nieuwe tabbladpagina</translation>
+<translation id="4558592878156368639">Intervallen buiten gebruikstijd wanneer OffHours van het apparaat |ignored_policies| worden vrijgegeven</translation>
 <translation id="4600786265870346112">Grote muisaanwijzer inschakelen</translation>
 <translation id="4604931264910482931">Zwarte lijst voor systeemeigen berichten configureren</translation>
 <translation id="4617338332148204752">De metatagcontrole in <ph name="PRODUCT_FRAME_NAME" /> overslaan</translation>
@@ -1448,6 +1468,7 @@
 <translation id="6211428344788340116">Perioden van apparaatgebruik melden.
 
       Als dit beleid niet is ingesteld of is ingesteld op 'waar' (true), melden aangemelde apparaten perioden waarin een gebruiker het apparaat gebruikt. Als deze instelling is ingesteld op 'onwaar' (false), worden perioden van apparaatgebruik niet geregistreerd of gemeld.</translation>
+<translation id="6212868225782276239">Alle printers worden weergegeven, behalve printers op de zwarte lijst.</translation>
 <translation id="6219965209794245435">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de formuliergegevens voor Automatisch aanvullen worden geïmporteerd uit de vorige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 
       Als het beleid is uitgeschakeld, worden formuliergegevens voor Automatisch aanvullen niet geïmporteerd.
@@ -1688,6 +1709,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7132877481099023201">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van video</translation>
 <translation id="7167436895080860385">Gebruikers toestaan wachtwoorden weer te geven in Wachtwoordbeheer (beëindigd)</translation>
 <translation id="7173856672248996428">Kort geldig profiel</translation>
+<translation id="717630378807352957">Alle printers in het configuratiebestand toestaan.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Verbindingstypen die zijn toegestaan voor updates</translation>
 <translation id="7194407337890404814">Naam van standaardzoekprovider</translation>
@@ -1985,6 +2007,12 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als het beleid is uitgeschakeld of niet is ingesteld, leidt inloggen tot het gebruik van gewone profielen.</translation>
 <translation id="8158758865057576716">Het maken van roaming-exemplaren voor <ph name="PRODUCT_NAME" />-profielgegevens inschakelen.</translation>
+<translation id="8169931650834542988">Hiermee wordt beheerd welke printers uit NativePrintersBulkConfiguration beschikbaar zijn voor gebruikers.
+
+      Hiermee wordt aangegeven welk toegangsbeleid wordt gebruikt voor bulksgewijze printerconfiguratie. Als AllowAll is geselecteerd, worden alle printers weergegeven. Als BlacklistRestrction is geselecteerd, wordt NativePrintersBulkBlacklist gebruikt om de toegang te beperken tot de gespecificeerde printers. Als WhitelistPrintersOnly is geselecteerd, geeft NativePrintersWhitelist alleen die printers aan die kunnen worden geselecteerd.
+
+      Als dit beleid niet is ingesteld, wordt uitgegaan van BlacklistRestriction.
+      </translation>
 <translation id="8170878842291747619">Hiermee wordt de geïntegreerde service Google Translate ingeschakeld in <ph name="PRODUCT_NAME" />.
 
       Als je deze instelling inschakelt, wordt in <ph name="PRODUCT_NAME" /> een geïntegreerde werkbalk weergegeven waarin de gebruiker wordt gevraagd of deze de pagina wil laten vertalen (indien van toepassing).
@@ -2075,6 +2103,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8465065632133292531">Parameters voor instant-URL die POST gebruikt</translation>
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
+
+      Dit beleid wordt alleen gebruikt als WhitelistPrintersOnly is gekozen voor NativePrintersBulkAccessMode.
+
+      Als dit beleid wordt gebruikt, zijn voor de gebruiker alleen de printers beschikbaar met ID's die overeenkomen met de waarden in dit beleid. De ID's moeten overeenkomen met de vermeldingen in het bestand dat is opgegeven in NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Hiermee kun je de lijst aanpassen van URL-patronen die altijd door de hostbrowser moeten worden verwerkt.
 
          Als dit beleid niet is ingesteld, wordt het standaard weergaveprogramma gebruikt voor alle sites die door het beleid 'ChromeFrameRendererSettings' zijn gespecificeerd.
@@ -2085,6 +2118,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8519264904050090490">URL's van handmatige uitzonderingen voor beheerde gebruikers</translation>
 <translation id="8544375438507658205">Standaard HTML-renderer voor <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Waarschuwen als sites worden bezocht die zich niet in de inhoudspakketten bevinden</translation>
+<translation id="8555589883248082762">Hiermee worden configuraties geleverd voor zakelijke printers.
+
+      Met dit beleid kun je printerconfiguraties leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten. Het bestand mag niet groter zijn dan 5 MB en moet zijn gecodeerd in JSON-indeling. De indeling is gelijk aan het NativePrinters-woordenboek. Naar schatting wordt een bestand dat ongeveer 21.000 printers bevat, gecodeerd als een bestand van 5 MB. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren.
+
+      Het bestand wordt gedownload en gecachet. Het bestand wordt opnieuw gedownload wanneer de URL of hash verandert.
+
+      Als dit beleid is ingesteld, wordt in <ph name="PRODUCT_OS_NAME" /> het bestand voor printerconfiguraties gedownload en worden printers beschikbaar gesteld in overeenstemming met NativePrintersBulkAccessMode, NativePrintersBulkWhitelist en NativePrintersBulkBlacklist.
+
+      Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
+
+      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten te configureren. Het is bedoeld als aanvulling op de configuratie van printers door individuele gebruikers.</translation>
 <translation id="8566842294717252664">De Web Store verbergen op de pagina 'Nieuw tabblad' en in de App Launcher</translation>
 <translation id="8587229956764455752">Het maken van nieuwe gebruikersaccounts toestaan</translation>
 <translation id="8614804915612153606">Schakelt 'Automatisch updaten' uit</translation>
@@ -2196,6 +2240,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="9096086085182305205">Witte lijst voor verificatieserver</translation>
 <translation id="9098553063150791878">Beleid voor HTTP-verificatie</translation>
 <translation id="9105265795073104888">Er is slechts een subset van de configuratieopties voor de proxy beschikbaar voor Android-apps. Android-apps kunnen op vrijwillige basis gebruikmaken van de proxy. Je kunt Android-apps niet dwingen een proxy te gebruiken.</translation>
+<translation id="9112727953998243860">Configuratiebestand voor zakelijke printers</translation>
 <translation id="9112897538922695510">Hiermee kun je een lijst met protocolhandlers registreren. Dit kan alleen een aanbevolen beleid zijn. De eigenschap |protocol| moet worden ingesteld op het schema, zoals 'mailto', en de eigenschap |url| moet worden ingesteld op het URL-patroon van de app die het schema verwerkt. Het patroon kan een '%s' bevatten, die indien aanwezig wordt vervangen door de verwerkte URL.
 
           De protocolhandlers die door het beleid zijn geregistreerd, worden samengevoegd met de handlers die door de gebruiker zijn geregistreerd en kunnen beide worden gebruikt. De gebruiker kan de protocolhandlers die door het beleid zijn geïnstalleerd, overschrijven door een nieuwe standaardhandler te installeren. Een protocolhandler die door het beleid is geregistreerd, kan echter niet worden verwijderd.</translation>

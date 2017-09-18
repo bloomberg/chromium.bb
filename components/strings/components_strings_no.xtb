@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
 <translation id="5023310440958281426">Kontrollér retningslinjene til administratoren din</translation>
 <translation id="5029568752722684782">Slett kopi</translation>
+<translation id="503069730517007720">Et rotsertifikat for «<ph name="SOFTWARE_NAME" />» kreves, men er ikke installert. IT-administratoren din bør se på konfigurasjonsveiledningen for «<ph name="SOFTWARE_NAME" />» for å løse dette problemet. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Om Google Oversett</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5040262127954254034">Personvern</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">Spør (standard)</translation>
 <translation id="8041089156583427627">Send tilbakemelding</translation>
 <translation id="8041940743680923270">Bruk global standardinnstilling (Spør)</translation>
+<translation id="8057711352706143257">«<ph name="SOFTWARE_NAME" />» er ikke riktig konfigurert. Avinstallering av «<ph name="SOFTWARE_NAME" />» løser vanligvis problemet. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Kunne ikke åpne artikkelen.</translation>
 <translation id="8091372947890762290">Aktivering venter på tjeneren</translation>
 <translation id="8094917007353911263">Det kan hende at nettverket du bruker, krever at du besøker <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Betalingsmåte</translation>
 <translation id="8118489163946903409">Betalingsmåte</translation>
+<translation id="8127301229239896662">«<ph name="SOFTWARE_NAME" />» er ikke riktig installert på datamaskinen eller på nettverket. Be IT-administratoren din om å løse problemet.</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" />-tjenerens <ph name="BEGIN_ABBR" />DNS-adresse<ph name="END_ABBR" /> ble ikke funnet.</translation>
 <translation id="8149426793427495338">Datamaskinen din gikk inn i hvilemodus.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">Utviklerversjon</translation>
 <translation id="989988560359834682">Rediger adresse</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">«<ph name="SOFTWARE_NAME" />» er ikke riktig installert på datamaskinen eller på nettverket:
+    &lt;ul&gt;
+    &lt;li&gt;Prøv å avinstallere eller slå av «<ph name="SOFTWARE_NAME" />»&lt;/li&gt;
+    &lt;li&gt;Prøv å koble til et annet nettverk&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

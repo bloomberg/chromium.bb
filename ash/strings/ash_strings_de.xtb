@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">Overscan</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
 <translation id="1252999807265626933">Wird über ein <ph name="POWER_SOURCE" /> aufgeladen</translation>
+<translation id="1267032506238418139">Änderung der Tastenkombination</translation>
 <translation id="1270290102613614947">Bildschirmtastatur deaktiviert</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (wird geladen…)</translation>
 <translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
-<translation id="1856813161013948396">Um den Sperrbildschirm zu überspringen, tippen Sie auf den Fingerabdrucksensor. Zum Konfigurieren klicken.</translation>
 <translation id="1864454756846565995">USB-C-Gerät (Port hinten)</translation>
 <translation id="1882897271359938046">Wird auf <ph name="DISPLAY_NAME" /> gespiegelt...</translation>
 <translation id="1919743966458266018">Die Tastenkombination zum Öffnen des Task-Managers hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">Bei Aktivierung der mobilen Daten wird auch Bluetooth aktiviert.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
-<translation id="2475982808118771221">Ein Fehler ist aufgetreten.</translation>
 <translation id="2501920221385095727">Sticky Keys</translation>
 <translation id="2509468283778169019">Feststelltaste An</translation>
 <translation id="2532589005999780174">Modus mit hohem Kontrast</translation>
 <translation id="2597972630681408282">Nachtlicht: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">Senden</translation>
 <translation id="2700058918926273959">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />. Sie werden dann abgemeldet.</translation>
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
 <translation id="2761704814324807722">Statusleiste, Uhrzeit <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">Sie werden jetzt abgemeldet.</translation>
 <translation id="2825619548187458965">Ablage</translation>
 <translation id="2844169650293029770">USB-C-Gerät (Port vorne links)</translation>
-<translation id="2857608528410806398">Benachrichtigungstext für schnelles Entsperren hier einfügen. Benachrichtigungstext für schnelles Entsperren hier einfügen. Benachrichtigungstext für schnelles Entsperren hier einfügen. Benachrichtigungstext für schnelles Entsperren hier einfügen. Benachrichtigungstext für schnelles Entsperren hier einfügen.</translation>
 <translation id="2865888419503095837">Netzwerkinformationen</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2942516765047364088">Ablageposition</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">Akku voll</translation>
 <translation id="3606978283550408104">Verbindung zur Braillezeile hergestellt</translation>
 <translation id="3621202678540785336">Eingang</translation>
-<translation id="3625258641415618104">Screenshot-Funktion deaktiviert</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
 <translation id="3712407551474845318">Bereich erfassen</translation>
 <translation id="371370241367527062">Mikrofon auf der Vorderseite</translation>
-<translation id="3742055079367172538">Screenshot erstellt</translation>
+<translation id="3771549900096082774">Modus mit hohem Kontrast</translation>
 <translation id="3775358506042162758">Bei der Mehrfachanmeldung sind maximal drei Konten zulässig.</translation>
 <translation id="3783640748446814672">Alt</translation>
 <translation id="3784455785234192852">Sperren</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">Spracheingabe</translation>
 <translation id="3901991538546252627">Verbindung mit <ph name="NAME" /> wird hergestellt.</translation>
 <translation id="394485226368336402">Audioeinstellungen</translation>
-<translation id="3967919079500697218">Die Funktion zum Erfassen von Screenshots wurde vom Administrator deaktiviert.</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
 <translation id="4017989525502048489">Laserpointer</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">Verbindung wird hergestellt...</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
-<translation id="4448844063988177157">Suche nach WLAN-Netzwerken läuft...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Entkoppelte Geräte</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Verbindung wird hergestellt...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">Die Tastenkombination zum Sperren des Bildschirms hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">ChromeVox aktiviert</translation>
 <translation id="4729904664295161097">Assistant steht nur für das Hauptprofil zur Verfügung.</translation>
+<translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">Suchen</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="4849058404725798627">Objekt mit Tastaturfokus hervorheben</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">Annehmen</translation>
 <translation id="4961318399572185831">Bildschirmübertragung</translation>
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
-<translation id="5170568018924773124">In Ordner anzeigen</translation>
 <translation id="5207949376430453814">Textcursor hervorheben</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="523505283826916779">Zugänglichkeitseinstellungen</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">Sie werden in <ph name="LOGOUT_TIME_LEFT" /> automatisch abgemeldet.</translation>
 <translation id="607652042414456612">Ihr Computer kann von Bluetooth-Geräten in der näheren Umgebung erkannt werden. Er erscheint als "<ph name="NAME" />" mit der Adresse <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> wird aufgeladen</translation>
-<translation id="6144938890088808325">Bei der Verbesserung von Chromebooks helfen</translation>
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Wird aktiviert...</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
-<translation id="7246339268451149667">Entsperren per Fingerabdruck aktivieren?</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
 <translation id="7348093485538360975">Bildschirmtastatur</translation>
 <translation id="735745346212279324">VPN-Verbindung getrennt</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> unterstützt <ph name="SPECIFIED_RESOLUTION" /> nicht. Die Auflösung wurde auf <ph name="FALLBACK_RESOLUTION" /> zurückgesetzt.</translation>
 <translation id="7562368315689366235">Emoji-Palette</translation>
 <translation id="7569509451529460200">Braille und ChromeVox sind aktiviert</translation>
-<translation id="7581273696622423628">An Umfrage teilnehmen</translation>
 <translation id="7593891976182323525">Suchen oder Shift</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7692480393933218409">Verbundene USB-C-Geräte werden geladen</translation>
 <translation id="776344839111254542">Zum Aufrufen von Aktualisierungsdetails klicken</translation>
 <translation id="7798302898096527229">Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> und <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">Nach der Synchronisierung Ihrer Einstellungen wurde die Sprache von "<ph name="FROM_LOCALE" />" in "<ph name="TO_LOCALE" />" geändert.</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
 <translation id="7977927628060636163">Nach Mobilfunknetzen wird gesucht…</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
 <translation id="8000066093800657092">Nicht verbunden</translation>
 <translation id="8054466585765276473">Akku-Laufzeit wird berechnet.</translation>
-<translation id="8077816382010018681">Titel der Benachrichtigung für schnelles Entsperren hier einfügen</translation>
 <translation id="8098591350844501178">Streamen von Bildschirm an <ph name="RECEIVER_NAME" /> beenden</translation>
 <translation id="8132793192354020517">Verbunden mit <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialisierung…</translation>
 <translation id="8142699993796781067">Privates Netzwerk</translation>
 <translation id="8180896103888046100">Streamen an unbekannten Empfänger beenden</translation>
-<translation id="8185286464235484130">Bitte geben Sie uns Feedback, indem Sie ein paar Fragen beantworten.</translation>
 <translation id="8190698733819146287">Sprache und Eingabe anpassen...</translation>
+<translation id="8261506727792406068">Löschen</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>
 <translation id="8351131234907093545">Notiz erstellen</translation>
 <translation id="8392234662362215700">Drücken Sie Strg + Shift + Leertaste, um das Tastaturlayout zu ändern.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">Akku ist zu <ph name="PERCENTAGE" /> % geladen.</translation>
 <translation id="9210037371811586452">Unified Desktop-Modus wird beendet</translation>
 <translation id="923686485342484400">Drücken Sie zum Abmelden zweimal Steuerung - Shift - Q.</translation>
-<translation id="939252827960237676">Screenshot konnte nicht gespeichert werden.</translation>
 <translation id="945522503751344254">Feedback geben</translation>
 <translation id="98515147261107953">Querformat</translation>
 </translationbundle>

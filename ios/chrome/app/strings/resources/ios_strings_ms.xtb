@@ -66,9 +66,11 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="209018056901015185">Minta Tapak Desktop</translation>
 <translation id="2103075008456228677">Buka history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dialihkan</translation>
+<translation id="213900355088104901">Untuk menyemak imbas secara tertutup, buka tab inkognito</translation>
 <translation id="2149973817440762519">Edit Penanda Halaman</translation>
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="2230173723195178503">Halaman web dimuatkan</translation>
+<translation id="2256128224215992540">Cadangan Carian dan Tapak</translation>
 <translation id="2267753748892043616">Tambahkan Akaun</translation>
 <translation id="2273327106802955778">Lagi menu</translation>
 <translation id="2320166752086256636">Sembunyikan papan kekunci</translation>
@@ -178,9 +180,11 @@ Untuk membetulkan istilah carian anda, tekan lama untuk memilih. Untuk memperhal
 <translation id="430793432425771671">Segerakkan Semua</translation>
 <translation id="4342284590510997375">Baharu</translation>
 <translation id="4359125752503270327">Halaman ini akan dibuka dalam aplikasi lain.</translation>
+<translation id="4370827530403103842">Penyegerakan tidak berfungsi. Ketik untuk membetulkannya.</translation>
 <translation id="4375040482473363939">Carian kod QR</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Notis Privasi</translation>
+<translation id="4460091562821778167">Tanya saya apl yang hendak digunakan setiap kali</translation>
 <translation id="4508750114462689118">Tutup promosi log masuk</translation>
 <translation id="4526249700380860531">Lihat dan urus kata laluan yang disimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Cuba log masuk semula.</translation>
@@ -413,6 +417,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="9100610230175265781">Frasa laluan diperlukan</translation>
 <translation id="9148126808321036104">Log masuk semula</translation>
 <translation id="914898748153555155">Anda boleh menukar pilihan ini pada bila-bila masa dalam tetapan Chrome</translation>
+<translation id="91549621916703028">Buat berbilang tab untuk semua tugasan anda</translation>
 <translation id="9157836665414082580">Sekat Dialog</translation>
 <translation id="9188680907066685419">Log keluar daripada akaun terurus</translation>
 <translation id="9203116392574189331">Serah</translation>

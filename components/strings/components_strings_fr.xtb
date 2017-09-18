@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">L'espace de stockage destiné à la sauvegarde est en mauvais état.</translation>
 <translation id="5023310440958281426">Vérifiez les règles définies par votre administrateur</translation>
 <translation id="5029568752722684782">Effacer la copie</translation>
+<translation id="503069730517007720">Veuillez installer un certificat racine pour "<ph name="SOFTWARE_NAME" />". Nous recommandons à votre administrateur informatique de lire les instructions de configuration du logiciel "<ph name="SOFTWARE_NAME" />" afin de remédier à la situation. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">À propos de Google Traduction</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">Demander (par défaut)</translation>
 <translation id="8041089156583427627">Envoyer</translation>
 <translation id="8041940743680923270">Utiliser le paramètre global par défaut ("Demander")</translation>
+<translation id="8057711352706143257">Le logiciel "<ph name="SOFTWARE_NAME" />" n'est pas configuré correctement. En général, la désinstallation de "<ph name="SOFTWARE_NAME" />" permet de remédier à la situation. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Échec de l'affichage de l'article.</translation>
 <translation id="8091372947890762290">Activation en attente sur le serveur.</translation>
 <translation id="8094917007353911263">Pour utiliser ce réseau, il est possible que deviez vous rendre sur la page <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Mode de paiement</translation>
 <translation id="8118489163946903409">Mode de paiement</translation>
+<translation id="8127301229239896662">Le logiciel "<ph name="SOFTWARE_NAME" />" n'a pas été installé correctement sur votre ordinateur ou sur votre réseau. Demandez à l'administrateur informatique de résoudre le problème.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8134994873729925007">Impossible de trouver l'<ph name="BEGIN_ABBR" />adresse DNS<ph name="END_ABBR" /> du serveur <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">Build de développement</translation>
 <translation id="989988560359834682">Modifier l'adresse</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">Le logiciel "<ph name="SOFTWARE_NAME" />" n'a pas été installé correctement sur votre ordinateur ou sur le réseau :
+    &lt;ul&gt;
+    &lt;li&gt;Essayez de désinstaller ou de désactiver "<ph name="SOFTWARE_NAME" />".&lt;/li&gt;
+    &lt;li&gt;Essayez de vous connecter à un autre réseau.&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

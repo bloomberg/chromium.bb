@@ -10,6 +10,7 @@
 <translation id="1195412055398077112">quét quá mức</translation>
 <translation id="1247372569136754018">Micrô (bên trong)</translation>
 <translation id="1252999807265626933">Đang sạc từ <ph name="POWER_SOURCE" /></translation>
+<translation id="1267032506238418139">Thay đổi phím tắt</translation>
 <translation id="1270290102613614947">Đã tắt bàn phím ảo</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Trợ lý (đang tải...)</translation>
 <translation id="1850504506766569011">Wi-Fi đang tắt.</translation>
-<translation id="1856813161013948396">Bỏ qua màn hình khóa bằng cách chỉ cần nhấn vào cảm biến vân tay. Nhấp để định cấu hình.</translation>
 <translation id="1864454756846565995">Thiết bị USB-C (cổng phía sau)</translation>
 <translation id="1882897271359938046">Đang phản chiếu tới <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Phím tắt để mở trình quản lý tác vụ đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">Bật dữ liệu di động sẽ bật Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Trước khi chấp nhận, vui lòng xác nhận rằng mã xác nhận này đã hiển thị trên thiết bị đó: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">Đã xảy ra lôi</translation>
 <translation id="2501920221385095727">Phím cố định</translation>
 <translation id="2509468283778169019">Đang bật CAPS LOCK</translation>
 <translation id="2532589005999780174">Chế độ tương phản cao</translation>
 <translation id="2597972630681408282">Đèn đọc sách: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">Gửi</translation>
 <translation id="2700058918926273959">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />. Bạn sẽ bị đăng xuất.</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2761704814324807722">Khay trạng thái, thời gian <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">Bạn sẽ bị đăng xuất bây giờ.</translation>
 <translation id="2825619548187458965">Giá</translation>
 <translation id="2844169650293029770">Thiết bị USB-C (cổng phía trước, bên trái)</translation>
-<translation id="2857608528410806398">Nội dung thông báo tính năng QU sẽ xuất hiện tại đây. Nội dung thông báo tính năng QU sẽ xuất hiện tại đây. Nội dung thông báo tính năng QU sẽ xuất hiện tại đây. Nội dung thông báo tính năng QU sẽ xuất hiện tại đây. Nội dung thông báo tính năng QU sẽ xuất hiện tại đây.</translation>
 <translation id="2865888419503095837">Thông tin mạng</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2942516765047364088">Vị trí giá</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">Pin đầy</translation>
 <translation id="3606978283550408104">Đã kết nối màn hình Braille.</translation>
 <translation id="3621202678540785336">Thiết bị vào</translation>
-<translation id="3625258641415618104">Đã tắt chụp ảnh màn hình</translation>
 <translation id="3626281679859535460">Độ sáng</translation>
 <translation id="3712407551474845318">Chụp một vùng màn hình</translation>
 <translation id="371370241367527062">Micrô mặt trước</translation>
-<translation id="3742055079367172538">Ảnh màn hình đã chụp</translation>
+<translation id="3771549900096082774">Chế độ tương phản cao</translation>
 <translation id="3775358506042162758">Bạn chỉ có thể có tối đa ba tài khoản khi đăng nhập nhiều tài khoản.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Khóa</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">Nhập bằng giọng nói</translation>
 <translation id="3901991538546252627">Đang kết nối với <ph name="NAME" /></translation>
 <translation id="394485226368336402">Cài đặt âm thanh</translation>
-<translation id="3967919079500697218">Quản trị viên của bạn đã tắt tính năng chụp ảnh màn hình.</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3995138139523574647">Thiết bị USB-C (cổng phía sau, bên phải)</translation>
 <translation id="4017989525502048489">Con trỏ laser</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">Đang kết nối…</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
-<translation id="4448844063988177157">Đang tìm kiếm mạng Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Thiết bị được hủy ghép nối</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Đang kết nối...</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">Phím tắt để khóa màn hình đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">Đã bật ChromeVox</translation>
 <translation id="4729904664295161097">Trợ lý chỉ có sẵn cho hồ sơ chính.</translation>
+<translation id="4776917500594043016">Mật khẩu cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Ngắt kết nối</translation>
 <translation id="4849058404725798627">Đánh dấu đối tượng bằng tiêu điểm bàn phím</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">Chấp nhận</translation>
 <translation id="4961318399572185831">Truyền màn hình</translation>
 <translation id="5168181903108465623">Có thiết bị truyền</translation>
-<translation id="5170568018924773124">Hiển thị trong thư mục</translation>
 <translation id="5207949376430453814">Đánh dấu điểm chèn văn bản</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="523505283826916779">Cài đặt trợ năng</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">Bạn sẽ tự động được đăng xuất sau <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Máy tính của bạn có thể phát hiện thiết bị Bluetooth gần đó và hiện thị dưới tên "<ph name="NAME" />" với địa chỉ là <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Đang sạc <ph name="POWER_SOURCE" /></translation>
-<translation id="6144938890088808325">Giúp chúng tôi cải thiện Chromebook</translation>
 <translation id="615957422585914272">Hiển thị bàn phím ảo</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Đang kích hoạt...</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7246339268451149667">Bật mở khóa bằng vân tay?</translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
 <translation id="7348093485538360975">Bàn phím ảo</translation>
 <translation id="735745346212279324">Đã ngắt kết nối VPN</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> không hỗ trợ <ph name="SPECIFIED_RESOLUTION" />. Độ phân giải đã được thay đổi thành <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Bảng màu biểu tượng cảm xúc</translation>
 <translation id="7569509451529460200">Đã bật chữ nổi Braille và ChromeVox</translation>
-<translation id="7581273696622423628">Thực hiện khảo sát</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7692480393933218409">Đang sạc thiết bị USB-C được kết nối</translation>
 <translation id="776344839111254542">Nhấp để xem chi tiết cập nhật</translation>
 <translation id="7798302898096527229">Nhấn phím Search hoặc Shift để hủy.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">Ngôn ngữ đã chuyển từ "<ph name="FROM_LOCALE" />" thành "<ph name="TO_LOCALE" />" sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="7977927628060636163">Đang tìm kiếm mạng di động...</translation>
 <translation id="7982789257301363584">Mạng</translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
 <translation id="8054466585765276473">Đang tính toán thời lượng pin.</translation>
-<translation id="8077816382010018681">Tiêu đề thông báo tính năng QU tại đây</translation>
 <translation id="8098591350844501178">Dừng truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME" /></translation>
 <translation id="813913629614996137">Đang khởi chạy...</translation>
 <translation id="8142699993796781067">Mạng riêng</translation>
 <translation id="8180896103888046100">Dừng truyền tới người nhận không xác định</translation>
-<translation id="8185286464235484130">Hãy cho chúng tôi biết tình hình hoạt động của chúng tôi bằng cách trả lời một vài câu hỏi.</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
+<translation id="8261506727792406068">Xóa</translation>
 <translation id="8308637677604853869">Menu trước</translation>
 <translation id="8351131234907093545">Tạo ghi chú</translation>
 <translation id="8392234662362215700">Ấn Control-Shift-Space để chuyển đổi bố cục bàn phím.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>
 <translation id="923686485342484400">Nhấn Control Shift Q hai lần để đăng xuất.</translation>
-<translation id="939252827960237676">Không lưu được ảnh chụp màn hình</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>
 <translation id="98515147261107953">Khổ ngang</translation>
 </translationbundle>

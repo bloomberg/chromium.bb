@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">Toca aquí</translation>
 <translation id="5076340679995252485">Engan&amp;xa</translation>
 <translation id="5120799197269191491">Cerca + <ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">Funció de desbloqueig amb PIN</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Triangle desplegable</translation>
 <translation id="528468243742722775">Fi</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;Copia</translation>
 <translation id="7850320739366109486">No molestis</translation>
 <translation id="7907591526440419938">Obre un fitxer</translation>
-<translation id="8054029954190364711">Funció de desbloqueig amb empremta digital</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{fa 1 hora}other{fa # hores}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 s restant}other{# s restants}}</translation>
 <translation id="815598010540052116">Desplaçament avall</translation>

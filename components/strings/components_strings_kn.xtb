@@ -520,6 +520,7 @@
 <translation id="5019198164206649151">ಕಳಪೆ ಸ್ಥಿತಿಯಲ್ಲಿ ಸಂಗ್ರಹಣೆಯನ್ನು ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ</translation>
 <translation id="5023310440958281426">ನಿಮ್ಮ ನಿರ್ವಾಹಕ ನೀತಿಗಳನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="5029568752722684782">ನಕಲು ತೆರವುಗೊಳಿಸು</translation>
+<translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" ಗೆ ರೂಟ್ ಪ್ರಮಾಣಪತ್ರದ ಅಗತ್ಯವಿದೆ ಆದರೆ ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಲಾಗಿಲ್ಲ. ಈ ಸಮಸ್ಯೆಯನ್ನು ಪರಿಹರಿಸಲು ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರು "<ph name="SOFTWARE_NAME" />" ಗಾಗಿ ಕಾನ್ಫಿಗರೇಶನ್ ಸೂಚನೆಗಳ ಕಡೆ ಗಮನವಿಡಬೇಕು. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google ಅನುವಾದದ ಕುರಿತು</translation>
 <translation id="5039804452771397117">ಅನುಮತಿಸಿ</translation>
 <translation id="5040262127954254034">ಗೌಪ್ಯತೆ</translation>
@@ -882,11 +883,13 @@
 <translation id="8037357227543935929">ಕೇಳು (ಡಿಫಾಲ್ಟ್)</translation>
 <translation id="8041089156583427627">ಪ್ರತಿಕ್ರಿಯೆ ಕಳುಹಿಸಿ</translation>
 <translation id="8041940743680923270">ಜಾಗತಿಕ ಡಿಫಾಲ್ಟ್ ಬಳಸಿ (ಕೇಳಿ)</translation>
+<translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" ಅನ್ನು ಸರಿಯಾಗಿ ಕಾನ್ಫಿಗರ್ ಮಾಡಲಾಗಿಲ್ಲ. ಸಾಮಾನ್ಯವಾಗಿ ಸಮಸ್ಯೆಯನ್ನು ಪರಿಹರಿಸಲು "<ph name="SOFTWARE_NAME" />" ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗುತ್ತಿದೆ. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">ಲೇಖನವನ್ನು ವೀಕ್ಷಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="8091372947890762290">ಸರ್ವರ್‌ನಲ್ಲಿ ಸಕ್ರಿಯತೆ ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="8094917007353911263">ನೀವು ಬಳಸುತ್ತಿರುವ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ನೀವು <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ಅನ್ನು ಭೇಟಿ ನೀಡುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="8103161714697287722">ಪಾವತಿ ವಿಧಾನ</translation>
 <translation id="8118489163946903409">ಪಾವತಿ ವಿಧಾನ</translation>
+<translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅಥವಾ ನೆಟ್‌ವರ್ಕ್ ನಲ್ಲಿ ಸರಿಯಾಗಿ ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಲಾಗಿಲ್ಲ: ಈ ಸಮಸ್ಯೆಯನ್ನು ಪರಿಹರಿಸಲು ನಿಮ್ಮ IT ನಿರ್ವಾಹಕರಿಗೆ ತಿಳಿಸಿ.</translation>
 <translation id="8131740175452115882">ದೃಢೀಕರಿಸು</translation>
 <translation id="8134994873729925007"><ph name="HOST_NAME" /> ಅವರ ಸರ್ವರ್‌ <ph name="BEGIN_ABBR" />DNS ವಿಳಾಸ<ph name="END_ABBR" /> ಕಂಡುಬಂದಿಲ್ಲ.</translation>
 <translation id="8149426793427495338">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ನಿದ್ರಾವಸ್ಥೆಗೆ ಹೋಗಿದೆ.</translation>
@@ -1018,4 +1021,5 @@
 <translation id="988159990683914416">ಡೆವಲಪರ್ ಬಿಲ್ಡ್</translation>
 <translation id="989988560359834682">ವಿಳಾಸವನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅಥವಾ ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ ಸರಿಯಾಗಿ ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಲಾಗಿಲ್ಲ: &lt;ul&gt; &lt;li&gt;"<ph name="SOFTWARE_NAME" />" ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಲು ಅಥವಾ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಪ್ರಯತ್ನಿಸಿ&lt;/li&gt; &lt;li&gt;ಇನ್ನೊಂದು ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಸಿಲು ಪ್ರಯತ್ನಿಸಿ &lt;/li&gt; &lt;/ul&gt;</translation>
 </translationbundle>

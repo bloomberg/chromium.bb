@@ -66,9 +66,11 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="209018056901015185">Request Desktop Site</translation>
 <translation id="2103075008456228677">Open history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items moved</translation>
+<translation id="213900355088104901">To browse privately, open an incognito tab</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="2230173723195178503">Web page loaded</translation>
+<translation id="2256128224215992540">Search and Site Suggestions</translation>
 <translation id="2267753748892043616">Add Account</translation>
 <translation id="2273327106802955778">More menu</translation>
 <translation id="2320166752086256636">Hide keyboard</translation>
@@ -178,9 +180,11 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="430793432425771671">Sync Everything</translation>
 <translation id="4342284590510997375">New</translation>
 <translation id="4359125752503270327">This page will open in another application.</translation>
+<translation id="4370827530403103842">Sync isn't working. Tap to fix.</translation>
 <translation id="4375040482473363939">QR code Search</translation>
 <translation id="4378154925671717803">Phone</translation>
 <translation id="441868831736628555">Privacy Notice</translation>
+<translation id="4460091562821778167">Ask me which app to use every time</translation>
 <translation id="4508750114462689118">Close sign-in promo</translation>
 <translation id="4526249700380860531">View and manage saved passwords at <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
@@ -413,6 +417,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9148126808321036104">Sign in again</translation>
 <translation id="914898748153555155">You can change this preference at any time in Chrome settings</translation>
+<translation id="91549621916703028">Create multiple tabs for all your tasks</translation>
 <translation id="9157836665414082580">Suppress Dialogues</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9203116392574189331">Handoff</translation>

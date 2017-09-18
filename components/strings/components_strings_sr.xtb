@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">Складиште тока података је у лошем стању</translation>
 <translation id="5023310440958281426">Проверите смернице администратора</translation>
 <translation id="5029568752722684782">Обриши копију</translation>
+<translation id="503069730517007720">Основни сертификат за софтвер „<ph name="SOFTWARE_NAME" />“ је обавезан, али није инсталиран. ИТ администратор треба да прегледа упутства за конфигурацију софтвера „<ph name="SOFTWARE_NAME" />“ да би решио овај проблем. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">О Google преводиоцу</translation>
 <translation id="5039804452771397117">Дозволи</translation>
 <translation id="5040262127954254034">Приватност</translation>
@@ -888,11 +889,13 @@
 <translation id="8037357227543935929">Питај (подразумевано)</translation>
 <translation id="8041089156583427627">Пошаљи повратне информације</translation>
 <translation id="8041940743680923270">Користи глобалну подразумевану вредност (Питај)</translation>
+<translation id="8057711352706143257">Софтвер „<ph name="SOFTWARE_NAME" />“ није правилно конфигурисан. Деинсталирање софтвера „<ph name="SOFTWARE_NAME" />“ обично решава проблем. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Прегледање чланка није успело.</translation>
 <translation id="8091372947890762290">Активација је на чекању на серверу</translation>
 <translation id="8094917007353911263">Мрежа коју користите ће можда захтевати да посетите <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Начин плаћања</translation>
 <translation id="8118489163946903409">Начин плаћања</translation>
+<translation id="8127301229239896662">Софтвер „<ph name="SOFTWARE_NAME" />“ није правилно инсталиран на рачунару или мрежи. Затражите од ИТ администратора да реши овај проблем.</translation>
 <translation id="8131740175452115882">Потврди</translation>
 <translation id="8134994873729925007">Нисмо успели да пронађемо <ph name="BEGIN_ABBR" />DNS адресу<ph name="END_ABBR" /> сервера хоста <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Рачунар је прешао у режим спавања.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">Верзија за програмере</translation>
 <translation id="989988560359834682">Измена адресе</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">Софтвер „<ph name="SOFTWARE_NAME" />“ није правилно инсталиран на рачунару или мрежи:
+    &lt;ul&gt;
+    &lt;li&gt;Пробајте да деинсталирате или онемогућите „<ph name="SOFTWARE_NAME" />“&lt;/li&gt;
+    &lt;li&gt;Пробајте да се повежете са другом мрежом&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

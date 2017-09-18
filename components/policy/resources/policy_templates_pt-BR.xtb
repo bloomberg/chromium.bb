@@ -49,6 +49,7 @@
 
       Se esta política não é configurada, a frequência padrão é de três horas. A frequência
       mínima permitida é de 60 segundos.</translation>
+<translation id="1204263402976895730">Impressoras empresariais ativadas</translation>
 <translation id="1221359380862872747">Carrega os urls especificados no login de demonstração</translation>
 <translation id="123081309365616809">Ativa transmissão de conteúdo para o dispositivo</translation>
 <translation id="1265053460044691532">Limite o tempo pelo qual um usuário autenticado via SAML pode fazer login off-line</translation>
@@ -243,6 +244,7 @@
 <translation id="2024476116966025075">Configurar o nome de domínio obrigatório para clientes de acesso remoto</translation>
 <translation id="2030905906517501646">Palavra-chave do provedor de pesquisa padrão</translation>
 <translation id="203096360153626918">Esta política não tem nenhum efeito sobre os apps Android. Eles poderão entrar no modo de tela cheia mesmo se a política estiver definida como <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Impressoras empresariais desativadas</translation>
 <translation id="206623763829450685">Especifica quais esquemas de autenticação HTTP são compatíveis com <ph name="PRODUCT_NAME" />.
 
           Os valores possíveis são "básico", "resumo", "ntlm" e "negociar". Separe valores múltiplos com vírgulas.
@@ -258,7 +260,7 @@
 
       Esta política permite que você forneça configurações de impressora para
       dispositivos <ph name="PRODUCT_OS_NAME" />.
-      O tamanho do arquivo não pode exceder a 5 MB e precisa estar codificado em JSON.
+      O tamanho do arquivo não pode exceder 5 MB e precisa estar codificado em JSON.
       O formato é o mesmo que o do dicionário NativePrinters. Estima-se 
       que um arquivo contendo aproximadamente 21.000 impressoras será codificado como um arquivo de
       5 MB. O hash criptográfico é usado para verificar a integridade do
@@ -319,6 +321,15 @@
           Se esta configuração for definida, os usuários que utilizam o desbloqueio rápido terão que informar as respectivas senhas na tela de bloqueio de acordo com esta configuração.
 
           Se esta configuração não for definida, os usuários que utilizam o desbloqueio rápido terão que informar as respectivas senhas na tela de bloqueio todos os dias.</translation>
+<translation id="2194470398825717446">O uso desta política foi suspenso no M61. Substitua-a por EcryptfsMigrationStrategy.
+
+      Especifica como um dispositivo deve se comportar tendo sido embarcado com ecryptfs e precisando fazer a transição para criptografia ext4.
+
+      Se você configurar esta política como 'DisallowArc', os apps Android serão desativados para todos os usuários do dispositivo (incluindo aqueles que já têm criptografia ext4), e a migração da criptografia ecryptfs para ext4 não será oferecida para nenhum usuário.
+
+      Se você configurar esta política como 'AllowMigration', usuários com diretório principal com criptografia ecryptfs terão a opção de migrar para ext4 conforme necessário (atualmente, quando o Android N estiver disponível para o dispositivo).
+
+      Esta política não se aplica a apps em Kiosk, porque eles migram automaticamente. Se esta política é deixada como não definida, o dispositivo se comporta como se a opção 'DisallowArc' tivesse sido escolhida.</translation>
 <translation id="2201555246697292490">Configurar a lista de permissões de mensagens nativas</translation>
 <translation id="2204753382813641270">Controlar a ocultação automática da estante</translation>
 <translation id="2208976000652006649">Parâmetros para URL de pesquisa que usa POST</translation>
@@ -513,6 +524,14 @@
       Se esta política for usada, apenas as impressoras com códigos correspondentes aos valores
       contidos nesta política serão disponibilizadas para o usuário. Os códigos precisam corresponder
       às entradas no arquivo especificado em DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Especifica as impressoras que um usuário não pode usar.
+
+      Esta política é usada apenas se BlacklistRestriction é escolhida para
+      NativePrintersBulkAccessMode.
+
+      Se esta política for usada, todas as impressoras serão fornecidas ao usuário,
+      com exceção dos códigos listados nesta política.
+      </translation>
 <translation id="2801230735743888564">Permite que os usuários joguem o easter egg de dinossauro quando o dispositivo estiver off-line.
 
       Se esta política for configurada como "False", não será possível jogar o easter egg de dinossauro quando o dispositivo estiver off-line. Se esta configuração for definida como "True", os usuários estarão autorizados a jogar o easter egg de dinossauro. Se esta política não for configurada, os usuários não terão autorização para jogar o easter egg de dinossauro em Chrome OS registrados, mas poderão jogá-lo em outras circunstâncias.</translation>
@@ -629,6 +648,7 @@
 <translation id="3219421230122020860">Modo sem rastros disponível</translation>
 <translation id="3220624000494482595">Se o app em Kiosk for um app Android, ele não terá nenhum controle sobre a versão do <ph name="PRODUCT_OS_NAME" />, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Padrões de URL para permitir instalação de extensões, aplicativos e scripts do usuário a partir de</translation>
+<translation id="3240609035816615922">Política de acesso à configuração de impressoras.</translation>
 <translation id="3243309373265599239">Especifica o período de inatividade do usuário após o qual a tela é escurecida no funcionamento com alimentação CA.
 
           Quando esta política está definida para um valor superior a zero, especifica por qual período o usuário deve permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> escureça a tela.
@@ -659,6 +679,9 @@
 <translation id="3322771899429619102">Permite que você defina uma lista de padrões de URL que especificam sites que têm permissão para usar a geração de chaves. Se um padrão de URL está na política "KeygenBlockedForUrls", essa política substitui essas exceções.
 
           Se esta política não for definida, o valor padrão global será utilizado para todos os sites a partir da política "DefaultKeygenSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
+<translation id="332771718998993005">Determina o nome anunciado como um destino do <ph name="PRODUCT_NAME" />.
+
+          Se essa política for definida como uma string não vazia, essa string será usada como o nome do destino do <ph name="PRODUCT_NAME" />. Caso contrário, o nome do destino será o nome do dispositivo. Se essa política não for definida, o nome do destino será o nome do dispositivo, e o proprietário do dispositivo (ou um usuário do domínio que está gerenciando o dispositivo) poderá alterá-lo. O nome é limitado a 24 caracteres.</translation>
 <translation id="3381968327636295719">Usar o navegador de host por padrão</translation>
 <translation id="3417418267404583991">Se esta política for definida como true ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> permitirá o login de visitantes. Os logins de visitantes são sessões anônimas de usuários e não requerem uma senha. Se esta política for configurada para false, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de visitantes.</translation>
 <translation id="3418871497193485241">Aplica um Modo restrito mínimo no YouTube e impede que os usuários
@@ -694,7 +717,7 @@
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" policy estiver ativada.</translation>
 <translation id="350797926066071931">Ativar Traduzir</translation>
-<translation id="3512226956150568738">Se o modelo do dispositivo do cliente já era compatível com ARC antes de a migração para ext4 ser necessária para executar ARC e se a política ArcEnabled estiver definida como true, esta opção se comportará como AskUser (valor 3). Em todos os outros casos (se o modelo do dispositivo não era compatível com ARC anteriormente ou se a política ArcEnabled estiver definida como false), esse valor será equivalente a DisallowArc (valor 0).</translation>
+<translation id="3512226956150568738">Se o modelo do dispositivo do cliente já era compatível com ARC antes de a migração para ext4 ser necessária para executar ARC e se a política ArcEnabled estiver definida como verdadeiro, esta opção vai se comportar como AskUser (valor 3). Em todos os outros casos (se o modelo do dispositivo não era compatível com ARC anteriormente ou se a política ArcEnabled estiver definida como falso), esse valor será equivalente a DisallowArc (valor 0).</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
@@ -880,6 +903,7 @@
       Observação: atualmente, as reinicializações automáticas ficam ativadas apenas enquanto a tela de login é exibida ou uma sessão de aplicativo de quiosque está em andamento. Isso mudará no futuro, quando a política será sempre aplicada, independentemente de uma sessão de qualquer tipo específico estar ou não em andamento.
 
       É preciso especificar o valor da política em segundos. Os valores são fixados em, pelo menos, 3.600 (uma hora).</translation>
+<translation id="4203879074082863035">Somente impressoras da lista de permissões são mostradas para os usuários</translation>
 <translation id="420512303455129789">Um dicionário que mapeia URLs para uma sinalização booleana e especifica se o acesso ao host deve ser permitido (verdadeiro) ou bloqueado (falso).
 
           Esta política é destinada a uso interno do próprio <ph name="PRODUCT_NAME" />.</translation>
@@ -978,6 +1002,7 @@
 <translation id="4541530620466526913">Contas locais de dispositivo</translation>
 <translation id="4555850956567117258">Ativar declaração remota para o usuário</translation>
 <translation id="4557134566541205630">URL da página "Nova guia" do provedor de pesquisa padrão</translation>
+<translation id="4558592878156368639">Intervalos de horas extras quando OffHours |ignored_policies| do dispositivo são lançadas</translation>
 <translation id="4600786265870346112">Ativar cursor grande</translation>
 <translation id="4604931264910482931">Configurar a lista negra de mensagens nativas</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1135,6 +1160,9 @@
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem iguais ou inferiores ao período de inatividade.</translation>
 <translation id="5307432759655324440">Disponibilidade do modo sem rastros</translation>
 <translation id="5318185076587284965">Ativar o uso de servidores relay pelo host de acesso remoto</translation>
+<translation id="5323128137188992869">Permite que o conteúdo seja transmitido no dispositivo usando o <ph name="PRODUCT_NAME" />.
+
+          Se essa política for definida como False, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como True, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos Chrome OS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo a seguir</translation>
 <translation id="5365946944967967336">Exibir o botão da Página inicial na barra de ferramentas</translation>
 <translation id="5366977351895725771">Se definida como falsa, a criação de usuários supervisionados por este usuário será desativada. Quaisquer usuários supervisionados existentes permanecerão disponíveis.
@@ -1346,6 +1374,7 @@
 <translation id="6111936128861357925">Permitir jogo easter egg de dinossauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Permitir que todos os sites usem a geração de chaves</translation>
+<translation id="6139485614509308022">Se a política "OffHours" for definida, as políticas do dispositivo especificadas serão ignoradas (use as configurações padrão dessas políticas) durante os intervalos de tempo definidos. As políticas do dispositivo são reaplicadas pelo Chrome em todos os eventos quando o período "OffHours" começa ou termina. O usuário será notificado e forçado a se desconectar quando o período "OffHours" terminar e as políticas do dispositivo forem alteradas (ou seja, quando o usuário estiver conectado com uma conta que não é permitida).</translation>
 <translation id="6145799962557135888">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar o JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="614662973812186053">Esta política também controla a coleta de dados de uso e diagnóstico do Android.</translation>
 <translation id="6155936611791017817">Definir estado padrão do cursor grande na tela de login</translation>
@@ -1375,6 +1404,7 @@
 <translation id="6211428344788340116">Informa o horário das atividades do dispositivo.
 
       Se essa configuração não for definida ou for definida como "True", os dispositivos inscritos informarão os períodos de tempo em que um usuário estiver ativo no dispositivo. Se essa configuração for definida como "False", os horários das atividades do dispositivo não serão gravados ou informados.</translation>
+<translation id="6212868225782276239">Todas as impressoras são mostradas, exceto as da lista negra.</translation>
 <translation id="6219965209794245435">Se ativada, esta política força a importação de dados de preenchimento automático de formulários a partir do navegador padrão anterior, além de afetar a caixa de diálogo de importação.
 
       Se desativada, os dados de preenchimento automático não são importados.
@@ -1589,6 +1619,7 @@
 <translation id="7132877481099023201">URLs que terão acesso a dispositivos de captura de vídeo sem solicitação</translation>
 <translation id="7167436895080860385">Permitir que os usuários exibam senhas no gerenciador de senhas (uso suspenso)</translation>
 <translation id="7173856672248996428">Perfil temporário</translation>
+<translation id="717630378807352957">Permitir todas as impressoras do arquivo de configuração.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipos de conexão permitidos para atualizações</translation>
 <translation id="7194407337890404814">Nome do provedor de pesquisa padrão</translation>
@@ -1871,6 +1902,18 @@
 
       Se a política for desativada ou não for definida, o login levará a perfis regulares.</translation>
 <translation id="8158758865057576716">Permite a criação de cópias em roaming dos dados de perfil do <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8169931650834542988">Controla quais impressoras da
+      NativePrintersBulkConfiguration estão disponíveis para os usuários.
+
+      Designa qual política de acesso é usada para configuração em massa de impressoras.
+      Se AllowAll for selecionada, todas as impressoras serão mostradas. Se BlacklistRestrction
+      for selecionada, NativePrintersBulkBlacklist será usada para restringir o acesso
+      às impressoras especificadas.  Se WhitelistPrintersOnly for selecionada,
+      NativePrintersWhitelist designará somente as impressoras
+      selecionáveis.
+
+      Se esta política não for definida, BlacklistRestriction será adotada.
+      </translation>
 <translation id="8170878842291747619">Permite o serviço integrado Google Tradutor em <ph name="PRODUCT_NAME" />. Se ativar esta configuração, <ph name="PRODUCT_NAME" /> mostrará uma barra de ferramentas Google integrada que oferece a tradução da página para o usuário, quando apropriado. Se desativar esta configuração, os usuários nunca visualizarão a barra de tradução. Se ativar ou desativar esta configuração, os usuários não podem alterar ou substituir esta configuração em <ph name="PRODUCT_NAME" />. Se essa configuração for deixada sem definição, o usuário pode optar por utilizar esta função ou não.</translation>
 <translation id="817455428376641507">Permite acesso aos URLs listados, como exceções à lista negra de URLs.
 
@@ -1949,6 +1992,14 @@
 <translation id="8465065632133292531">Parâmetros para URL de instantâneos que usa POST</translation>
 <translation id="847472800012384958">Não permite que nenhum site exiba pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Especifica as impressoras que um usuário pode usar.
+
+      Esta política será usada apenas se WhitelistPrintersOnly for escolhida para
+      NativePrintersBulkAccessMode.
+
+      Se esta política for usada, apenas as impressoras com códigos correspondentes aos valores 
+      contidos nesta política serão disponibilizadas para o usuário. Os códigos precisam corresponder
+      às entradas no arquivo especificado em NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Personaliza a lista de padrões de URL que deve sempre ser processada pelo navegador do host.
 
           Se esta política não estiver definida, o renderizador padrão será usado para todos os sites, conforme especificado pela política "ChromeFrameRendererSettings".
@@ -1959,6 +2010,30 @@
 <translation id="8519264904050090490">URLs de exceção manual do usuário gerenciado</translation>
 <translation id="8544375438507658205">Renderizador padrão de HTML para o <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avisar ao visitar sites fora de pacotes de conteúdo</translation>
+<translation id="8555589883248082762">Fornece configurações para impressoras empresariais.
+
+      Esta política permite fornecer configurações de impressoras para
+      <ph name="PRODUCT_OS_NAME" /> dispositivos.
+      O tamanho do arquivo não deve exceder a 5MB e deve estar codificado em JSON.
+      O formato é o mesmo que o do dicionário NativePrinters. Estima-se
+      que um arquivo contendo aproximadamente 21.000 impressoras será codificado como um arquivo de 5MB.
+      O hash criptográfico é usado para verificar a integridade do
+      download.
+
+      O arquivo é baixado e armazenado em cache. O download será feito novamente sempre que
+      o URL ou o hash for alterado.
+
+      Se esta política for definida,
+      o <ph name="PRODUCT_OS_NAME" /> fará o download
+      do arquivo de configuração das impressoras tornando-as disponíveis de
+      acordo com NativePrintersBulkAccessMode, NativePrintersBulkWhitelist,
+      e NativePrintersBulkBlacklist.
+
+      Se você definir esta política, os usuários não poderão alterar ou modificá-la.
+
+      Esta política não tem nenhum efeito sobre a possibilidade de os usuários configurarem impressoras em
+      dispositivos individuais.  Ela destina-se a complementar a
+      configuração de impressoras por usuários individuais.</translation>
 <translation id="8566842294717252664">Ocultar a loja on-line da página "Nova guia" e do Acesso rápido aos apps</translation>
 <translation id="8587229956764455752">Permite a criação de novas contas de usuários</translation>
 <translation id="8614804915612153606">Desativa a atualização automática</translation>
@@ -2068,6 +2143,7 @@
 <translation id="9096086085182305205">Lista branca do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
 <translation id="9105265795073104888">Somente um subconjunto de opções de configuração de proxy é disponibilizado para apps Android. Esses apps podem optar voluntariamente por usar o proxy. Não é possível forçá-los a usar um proxy.</translation>
+<translation id="9112727953998243860">Arquivo de configuração de impressora corporativa</translation>
 <translation id="9112897538922695510">Permite registrar uma lista de gerenciadores de protocolo. Essa política só pode ser uma política recomendada. A propriedade |protocolo| deve ser definida para o esquema, por exemplo, 'mailto', e a propriedade |url| deve ser definida para o padrão URL do aplicativo que administra o esquema. O padrão pode incluir '%s', que, se presente, será substituído por um URL administrado.
 
           Os gerenciadores de protocolos registrados pela política são misturados com os registrados pelo usuário, e ambos estão disponíveis para uso. O usuário pode substituir os gerenciadores de protocolos instalados por política, instalando um novo administrador padrão. Entretanto, o usuário não pode remover um gerenciador de protocolos registrado pela política.</translation>

@@ -69,6 +69,7 @@
 <translation id="2149973817440762519">Редактиране на отметката</translation>
 <translation id="2154710561487035718">Копиране на URL адреса</translation>
 <translation id="2230173723195178503">Уеб страницата се зареди</translation>
+<translation id="2256128224215992540">Предлагани сайтове и търсене</translation>
 <translation id="2267753748892043616">Добавяне на профил</translation>
 <translation id="2273327106802955778">Меню „Още“</translation>
 <translation id="2320166752086256636">Скриване на клавиатурата</translation>
@@ -178,9 +179,11 @@
 <translation id="430793432425771671">Синхронизиране на всичко</translation>
 <translation id="4342284590510997375">Ново</translation>
 <translation id="4359125752503270327">Тази страница ще се отвори в друго приложение.</translation>
+<translation id="4370827530403103842">Синхронизирането не работи. Докоснете, за да отстраните проблема.</translation>
 <translation id="4375040482473363939">Търсене по код за бърза реакция</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Съобщение за поверителност</translation>
+<translation id="4460091562821778167">Всеки път запитване за използваното приложение</translation>
 <translation id="4508750114462689118">Затваряне на подканата за вход</translation>
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Опитайте да влезете отново.</translation>

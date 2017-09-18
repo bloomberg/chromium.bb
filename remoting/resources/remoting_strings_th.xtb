@@ -108,12 +108,6 @@
 <translation id="3385242214819933234">เจ้าของโฮสต์ไม่ถูกต้อง</translation>
 <translation id="3403830762023901068">การตั้งค่านโยบายไม่อนุญาตให้แชร์คอมพิวเตอร์นี้เป็นโฮสต์ Chromoting โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
 <translation id="3423542133075182604">กระบวนการทำงานระยะไกลของคีย์ความปลอดภัย</translation>
-<translation id="3426467947138417795">Chrome Remote Desktop
-Remote Desktop
-พีซีระยะไกล
-คอมพิวเตอร์ระยะไกล
-การเข้าถึงระยะไกล
-การสนับสนุนระยะไกล</translation>
 <translation id="3581045510967524389">ไม่สามารถเชื่อมต่อเครือข่าย โปรดตรวจสอบว่าอุปกรณ์ออนไลน์อยู่</translation>
 <translation id="3596628256176442606">บริการนี้จะช่วยให้สามารถใช้การเชื่อมต่อขาเข้าจากไคลเอ็นต์ Chromoting</translation>
 <translation id="3606997049964069799">คุณยังไม่ได้ลงชื่อเข้าใช้ Chromium โปรดลงชื่อเข้าใช้และลองอีกครั้ง</translation>
@@ -122,13 +116,6 @@ Remote Desktop
 <translation id="3695446226812920698">เรียนรู้วิธี</translation>
 <translation id="3718805989288361841">การตั้งค่านโยบายของ Chrome Remote Desktop มีข้อผิดพลาด โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
 <translation id="3776024066357219166">เซสชัน Chrome Remote Desktop ของคุณสิ้นสุดแล้ว</translation>
-<translation id="3788372335219293587">เข้าถึงคอมพิวเตอร์จากอุปกรณ์ iOS อย่างปลอดภัย รวดเร็ว ง่ายดาย และฟรี
-
-• ในคอมพิวเตอร์ที่ต้องการเข้าถึงจากระยะไกล ให้ค้นหาแอป Chrome Remote Desktop จาก Chrome เว็บสโตร์ที่ https://chrome.google.com/remotedesktop
-• ติดตั้งซอฟต์แวร์ Chrome Remote Desktop และทำตามวิธีการตั้งค่าให้เสร็จสมบูรณ์
-• ในอุปกรณ์ iOS ให้เปิดแอปและแตะคอมพิวเตอร์เครื่องที่ออนไลน์อยู่เพื่อเชื่อมต่อ
-
-สำหรับข้อมูลเกี่ยวกับความเป็นส่วนตัว โปรดดูนโยบายความเป็นส่วนตัวของ Google (http://goo.gl/SyrVzj)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">โปรดยืนยันบัญชีและ PIN ของคุณด้านล่างเพื่ออนุญาตให้ Chrome Remote Desktop สามารถเข้าถึง</translation>
 <translation id="3897092660631435901">เมนู</translation>
@@ -267,9 +254,6 @@ Remote Desktop
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
 <translation id="7149517134817561223">แอปพลิเคชันที่จะออกคำสั่งให้โฮสต์ของ Chrome Remote Desktop</translation>
 <translation id="7215059001581613786">โปรดป้อน PIN ที่ประกอบด้วยตัวเลขอย่างน้อยหกหลัก</translation>
-<translation id="7237767047212540055">ในคอมพิวเตอร์ที่ต้องการเข้าถึงจากระยะไกล ให้เปิด Chrome แล้วไปที่ <ph name="INSTALLATION_LINK" />
-ติดตั้งซอฟต์แวร์ Chrome Remote Desktop แล้วทำตามวิธีการตั้งค่าให้เสร็จสมบูรณ์
-หลังจากตั้งค่าเสร็จแล้ว คุณสามารถเข้าถึงคอมพิวเตอร์ได้จากหน้านี้โดยป้อน PIN หรือรหัสการเข้าถึง</translation>
 <translation id="7312846573060934304">โฮสต์ออฟไลน์</translation>
 <translation id="7319983568955948908">หยุดการแชร์</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>

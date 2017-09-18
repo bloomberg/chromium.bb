@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Bladwijzers verplaatsen</translation>
 <translation id="119944043368869598">Alles wissen</translation>
 <translation id="1201402288615127009">Volgende</translation>
+<translation id="1204037785786432551">Link downloaden</translation>
+<translation id="1206892813135768548">Linktekst kopiëren</translation>
 <translation id="1209206284964581585">Voorlopig verbergen</translation>
 <translation id="1211530540767271776">Geen USB-apparaten hier</translation>
 <translation id="123724288017357924">De pagina opnieuw laden, gecachte content negeren</translation>
@@ -114,6 +116,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="2079545284768500474">Ongedaan maken</translation>
 <translation id="2082238445998314030">Resultaat <ph name="RESULT_NUMBER" /> van <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Log in bij Chrome om suggesties met gepersonaliseerde content van Google te ontvangen.</translation>
+<translation id="2091887806945687916">Geluid</translation>
 <translation id="2095887075102408547">Als deze functie is ingeschakeld, gebruikt Chrome Google-servers om pagina's die je bezoekt, te comprimeren voordat ze worden gedownload. Pagina's die worden geopend via privéverbindingen (HTTPS) of op incognitotabbladen, worden niet geoptimaliseerd of gezien door Google.</translation>
 <translation id="2096396629993765042">Je wordt niet uitgelogd van je Google-account. Voor je Google-account kunnen andere vormen van browsegeschiedenis beschikbaar zijn via <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Automatisch inloggen</translation>
@@ -333,6 +336,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4256782883801055595">Open-sourcelicenties</translation>
 <translation id="4259722352634471385">Navigatie is geblokkeerd: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Er is een synchronisatiefout opgetreden. Tik voor informatie.</translation>
+<translation id="4269820728363426813">Linkadres kopiëren</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Toegestaan</translation>
 <translation id="42981349822642051">Uitvouwen</translation>
@@ -602,7 +606,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6701279291835318271">Beveiligingsrapporten</translation>
 <translation id="6709133671862442373">Nieuws</translation>
 <translation id="6710213216561001401">Vorige</translation>
-<translation id="6727612981472093924">Navigatievenster geopend</translation>
 <translation id="6738867403308150051">Downloaden...</translation>
 <translation id="6762156594045689028">Als je deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />stel je de synchronisatie opnieuw in<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Kan bestand niet openen</translation>
@@ -661,6 +664,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7253272406652746122">Voeg een Google-account toe via de pagina Accounts in de app Instellingen van je apparaat.</translation>
 <translation id="7274013316676448362">Geblokkeerde site</translation>
 <translation id="7307288900373049735">Contact opnemen met Google. Dit kan even duren…</translation>
+<translation id="7318797029885648322">Tik op Meer om artikelen weer te geven</translation>
 <translation id="7333031090786104871">Nog steeds bezig met toevoegen van vorige site</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 geselecteerd item delen}other{# geselecteerde items delen}}</translation>
@@ -799,6 +803,7 @@ Maak verbinding met internet en speel je gedownloade content af om nieuwe licent
 <translation id="8636825310635137004">Schakel synchronisatie in om de tabbladen op je andere apparaten te bekijken</translation>
 <translation id="8641930654639604085">Sites met inhoud voor volwassenen proberen te blokkeren</translation>
 <translation id="8662811608048051533">Hiermee word je uitgelogd van de meeste sites.</translation>
+<translation id="867485229011312729">Waar vind ik mijn bladwijzers, downloads en geschiedenis?</translation>
 <translation id="8676374126336081632">Invoer wissen</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signaalsterkte: # streepje}other{Signaalsterkte: # streepjes}}</translation>
 <translation id="869891660844655955">Vervaldatum</translation>

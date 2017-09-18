@@ -66,9 +66,11 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="209018056901015185">Verze webu pro PC</translation>
 <translation id="2103075008456228677">Otevřít history.google.com</translation>
 <translation id="2116625576999540962">Počet přesunutých položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="213900355088104901">Procházejte internet v soukromí na anonymní kartě</translation>
 <translation id="2149973817440762519">Upravit záložku</translation>
 <translation id="2154710561487035718">Kopírovat adresu URL</translation>
 <translation id="2230173723195178503">Webová stránka byla načtena</translation>
+<translation id="2256128224215992540">Návrhy vyhledávacích dotazů a webů</translation>
 <translation id="2267753748892043616">Přidat účet</translation>
 <translation id="2273327106802955778">Nabídka Další</translation>
 <translation id="2320166752086256636">Skrýt klávesnici</translation>
@@ -178,9 +180,11 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="430793432425771671">Synchronizovat vše</translation>
 <translation id="4342284590510997375">Nové</translation>
 <translation id="4359125752503270327">Tato stránka se otevře v jiné aplikaci.</translation>
+<translation id="4370827530403103842">Synchronizace nefunguje. Problém odstraníte klepnutím.</translation>
 <translation id="4375040482473363939">Hledání QR kódu</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Oznámení o ochraně soukromí</translation>
+<translation id="4460091562821778167">Pokaždé se zeptat, kterou aplikaci chci použít</translation>
 <translation id="4508750114462689118">Zavřít propagační zprávu ohledně přihlášení</translation>
 <translation id="4526249700380860531">Uložená hesla můžete zobrazit a upravit na adrese <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Zkuste se přihlásit znovu.</translation>
@@ -413,6 +417,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="9148126808321036104">Znovu přihlásit</translation>
 <translation id="914898748153555155">Tuto předvolbu můžete kdykoliv změnit v nastavení Chromu</translation>
+<translation id="91549621916703028">Otevřete si několik karet pro všechny činnosti</translation>
 <translation id="9157836665414082580">Potlačit dialogová okna</translation>
 <translation id="9188680907066685419">Odhlásit se ze spravovaného účtu</translation>
 <translation id="9203116392574189331">Handoff</translation>

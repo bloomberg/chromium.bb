@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
 <translation id="5023310440958281426">Kiểm tra chính sách của quản trị viên của bạn</translation>
 <translation id="5029568752722684782">Xóa bản sao</translation>
+<translation id="503069730517007720">Cần có chứng chỉ gốc của "<ph name="SOFTWARE_NAME" />" nhưng chứng chỉ này chưa được cài đặt. Hãy yêu cầu quản trị viên CNTT xem hướng dẫn cấu hình cho "<ph name="SOFTWARE_NAME" />" để khắc phục sự cố này. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Giới thiệu về Google Dịch</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5040262127954254034">Bảo mật</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">Yêu cầu (mặc định)</translation>
 <translation id="8041089156583427627">Gửi phản hồi</translation>
 <translation id="8041940743680923270">Sử dụng cài đặt mặc định chung (Hỏi)</translation>
+<translation id="8057711352706143257">Cấu hình của "<ph name="SOFTWARE_NAME" />" không chính xác. Việc gỡ cài đặt "<ph name="SOFTWARE_NAME" />" thường sẽ khắc phục được sự cố này. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Không xem được bài viết.</translation>
 <translation id="8091372947890762290">Kích hoạt đang chờ xử lý trên máy chủ</translation>
 <translation id="8094917007353911263">Mạng mà bạn đang sử dụng có thể yêu cầu bạn phải truy cập <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Phương thức thanh toán</translation>
 <translation id="8118489163946903409">Phương thức thanh toán</translation>
+<translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" đã được cài đặt không đúng cách trên máy tính hoặc mạng của bạn. Hãy yêu cầu quản trị viên CNTT của bạn giải quyết vấn đề này.</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
 <translation id="8134994873729925007">Không thể tìm thấy <ph name="BEGIN_ABBR" />địa chỉ DNS<ph name="END_ABBR" /> của máy chủ của <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">Máy tính của bạn đã chuyển sang chế độ ngủ.</translation>
@@ -1025,4 +1028,9 @@
 <translation id="988159990683914416">Phiên bản dành cho Nhà phát triển</translation>
 <translation id="989988560359834682">Chỉnh sửa địa chỉ</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" đã được cài đặt không đúng cách trên máy tính hoặc mạng của bạn:
+    &lt;ul&gt;
+    &lt;li&gt;Hãy thử gỡ cài đặt hoặc vô hiệu hóa "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
+    &lt;li&gt;Hãy thử kết nối với một mạng khác&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

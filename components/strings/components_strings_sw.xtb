@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Fanya itoshe kwenye upana</translation>
 <translation id="1088860948719068836">Ongeza Jina kwenye Kadi</translation>
 <translation id="1103523840287552314">Tafsiri <ph name="LANGUAGE" /> kila wakati</translation>
+<translation id="1103778128462718200">Onyesha manenosiri yote yaliyohifadhiwa...</translation>
 <translation id="1107591249535594099">Ikiteuliwa, Chrome itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka.</translation>
 <translation id="1111153019813902504">Alamisho za hivi majuzi</translation>
 <translation id="1113869188872983271">Tendua kupanga upya</translation>
@@ -525,6 +526,7 @@
 <translation id="5019198164206649151">Hifadhi la kucheleza liko katika hali mbaya</translation>
 <translation id="5023310440958281426">Angalia sera za msimamizi wako</translation>
 <translation id="5029568752722684782">Futa nakala</translation>
+<translation id="503069730517007720">Cheti cha msingi cha "<ph name="SOFTWARE_NAME" />" kinahitajika lakini hakijasakinishwa. Ni lazima msimamizi wako wa TEHAMA asome mipangilio ya "<ph name="SOFTWARE_NAME" />" ili atatue tatizo hili. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Kuhusu Google Tafsiri</translation>
 <translation id="5039804452771397117">Ruhusu</translation>
 <translation id="5040262127954254034">Faragha</translation>
@@ -596,6 +598,7 @@
 <translation id="5540224163453853">Haikuweza kupata makala yaliyoitishwa.</translation>
 <translation id="5541546772353173584">Ongeza Anwani ya Barua Pepe</translation>
 <translation id="5544037170328430102">Ukurasa uliopachikwa kwenye <ph name="SITE" /> unasema:</translation>
+<translation id="5545756402275714221">Makala Unayopendekezewa</translation>
 <translation id="5556459405103347317">Pakia upya</translation>
 <translation id="5560088892362098740">Tarehe ya Mwisho wa Matumizi</translation>
 <translation id="5565735124758917034">Inatumika</translation>
@@ -617,6 +620,7 @@
 <translation id="5659593005791499971">Barua pepe</translation>
 <translation id="5669703222995421982">Pata maudhui yanayokufaa</translation>
 <translation id="5675650730144413517">Ukurasa huu haufanyi kazi</translation>
+<translation id="5689199277474810259">Hamisha katika mfumo wa JSON</translation>
 <translation id="5710435578057952990">Utambulisho wa tovuti hii haujathibitishwa.</translation>
 <translation id="5719499550583120431">Kadi za kulipia awali zinakubaliwa.</translation>
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
@@ -889,11 +893,13 @@
 <translation id="8037357227543935929">Uliza (chaguo-msingi)</translation>
 <translation id="8041089156583427627">Tuma Maoni</translation>
 <translation id="8041940743680923270">Tumia chaguo-msingi la duniani (Uliza)</translation>
+<translation id="8057711352706143257">Haikuweka mipangilio ya "<ph name="SOFTWARE_NAME" />" kwa njia sahihi. Kwa kawaida, kuondoa "<ph name="SOFTWARE_NAME" />" hurekebisha tatizo hili. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Haikufaulu kuangalia makala.</translation>
 <translation id="8091372947890762290">Uwashaji unasubiri kwenye seva</translation>
 <translation id="8094917007353911263">Mtandao unaotumia unaweza kukuhitaji kutembelea <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Njia ya Kulipa</translation>
 <translation id="8118489163946903409">Njia ya kulipa</translation>
+<translation id="8127301229239896662">Haikusakinisha "<ph name="SOFTWARE_NAME" />" kwa njia sahihi kwenye mtandao au kompyuta yako. Mweleze msimamizi wako wa TEHAMA asuluhishe tatizo hili.</translation>
 <translation id="8131740175452115882">Thibitisha</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Anwani ya DNS <ph name="END_ABBR" /> ya seva ya <ph name="HOST_NAME" /> haikupatikana.</translation>
 <translation id="8149426793427495338">Kompyuta yako iko katika hali tuli.</translation>
@@ -1025,4 +1031,9 @@
 <translation id="988159990683914416">Muundo wa Wasanidi Programu</translation>
 <translation id="989988560359834682">Badilisha Anwani</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">"<ph name="SOFTWARE_NAME" />" haikusakinishwa kwa njia sahihi kwenye mtandao au kompyuta yako:
+    &lt;ul&gt;
+    &lt;li&gt;Jaribu kuondoa au kuzima "<ph name="SOFTWARE_NAME" />"&lt;/li&gt;
+    &lt;li&gt;Jaribu kuunganisha kwenye mtandao mwingine&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

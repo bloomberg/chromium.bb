@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Přizpůsobit na šířku</translation>
 <translation id="1088860948719068836">Přidání jména na kartě</translation>
 <translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Zobrazit všechna uložená hesla...</translation>
 <translation id="1107591249535594099">Pokud je tato možnost zaškrtnuta, Chrome v tomto zařízení bude za účelem rychlejšího vyplňování formulářů uchovávat kopii vaší karty.</translation>
 <translation id="1111153019813902504">Nejnovější záložky</translation>
 <translation id="1113869188872983271">&amp;Vrátit změnu uspořádání zpět</translation>
@@ -521,6 +522,7 @@
 <translation id="5019198164206649151">Záložní úložiště je ve špatném stavu</translation>
 <translation id="5023310440958281426">Zkontrolujte zásady svého správce</translation>
 <translation id="5029568752722684782">Vymazat kopii</translation>
+<translation id="503069730517007720">Je vyžadován kořenový certifikát pro software <ph name="SOFTWARE_NAME" />, ale není nainstalován. Při řešení tohoto problému by si měl administrátor IT prostudovat pokyny ke konfiguraci softwaru <ph name="SOFTWARE_NAME" />. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">O Překladači Google</translation>
 <translation id="5039804452771397117">Povolit</translation>
 <translation id="5040262127954254034">Ochrana soukromí</translation>
@@ -592,6 +594,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5540224163453853">Požadovaný článek nebyl nalezen.</translation>
 <translation id="5541546772353173584">Přidání e-mailu</translation>
 <translation id="5544037170328430102">Vložená stránka na webu <ph name="SITE" /> říká:</translation>
+<translation id="5545756402275714221">Články pro vás</translation>
 <translation id="5556459405103347317">Načíst znovu</translation>
 <translation id="5560088892362098740">Datum vypršení platnosti</translation>
 <translation id="5565735124758917034">Aktivní</translation>
@@ -613,6 +616,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669703222995421982">Získejte personalizovaný obsah</translation>
 <translation id="5675650730144413517">Tato stránka nefunguje</translation>
+<translation id="5689199277474810259">Exportovat do formátu JSON</translation>
 <translation id="5710435578057952990">Identita těchto webových stránek nebyla ověřena.</translation>
 <translation id="5719499550583120431">Obchodník přijímá předplacené karty.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
@@ -884,11 +888,13 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8037357227543935929">Zeptat se (výchozí)</translation>
 <translation id="8041089156583427627">Odeslat svůj názor</translation>
 <translation id="8041940743680923270">Použít výchozí globální hodnotu (Dotázat se)</translation>
+<translation id="8057711352706143257">Software <ph name="SOFTWARE_NAME" /> není nakonfigurován správně. Tento problém lze obvykle vyřešit odinstalováním softwaru <ph name="SOFTWARE_NAME" />. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Zobrazení článku se nezdařilo.</translation>
 <translation id="8091372947890762290">Čeká se na aktivaci na serveru</translation>
 <translation id="8094917007353911263">Síť, kterou používáte, může vyžadovat, abyste navštívili stránku <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Platební metoda</translation>
 <translation id="8118489163946903409">Platební metoda</translation>
+<translation id="8127301229239896662">Software <ph name="SOFTWARE_NAME" /> na počítači nebo v síti nebyl nainstalován správně. Požádejte administrátora IT o vyřešení tohoto problému.</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Adresa DNS<ph name="END_ABBR" /> serveru <ph name="HOST_NAME" /> nebyla nalezena.</translation>
 <translation id="8149426793427495338">Počítač přešel do režimu spánku.</translation>
@@ -1020,4 +1026,9 @@ Kontaktujte administrátora systému.</translation>
 <translation id="988159990683914416">Vývojářské sestavení</translation>
 <translation id="989988560359834682">Upravit adresu</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">Software <ph name="SOFTWARE_NAME" /> na počítači nebo v síti nebyl nainstalován správně:
+    &lt;ul&gt;
+    &lt;li&gt;Zkuste software <ph name="SOFTWARE_NAME" /> odinstalovat nebo deaktivovat.&lt;/li&gt;
+    &lt;li&gt;Zkuste se připojit k jiné síti.&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Sposta i Preferiti</translation>
 <translation id="119944043368869598">Cancella tutto</translation>
 <translation id="1201402288615127009">Avanti</translation>
+<translation id="1204037785786432551">Scarica link</translation>
+<translation id="1206892813135768548">Copia testo link</translation>
 <translation id="1209206284964581585">Nascondi per ora</translation>
 <translation id="1211530540767271776">Nessun dispositivo USB qui</translation>
 <translation id="123724288017357924">Ricarica pag. corr. Ignora i contenuti nella cache</translation>
@@ -114,6 +116,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2082238445998314030">Risultato <ph name="RESULT_NUMBER" /> di <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Per ricevere contenuti suggeriti appositamente per te da Google, accedi a Chrome.</translation>
+<translation id="2091887806945687916">Audio</translation>
 <translation id="2095887075102408547">Quando questa funzione è attiva, Chrome utilizza i server di Google per comprimere le pagine che visiti prima di scaricarle. Le pagine visitate utilizzando connessioni private (HTTPS) o in schede di navigazione in incognito non vengono ottimizzate o viste da Google.</translation>
 <translation id="2096396629993765042">Non verrai scollegato dal tuo account Google. Il tuo account Google potrebbe avere altre forme di cronologia di navigazione alla pagina <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Accesso automatico</translation>
@@ -333,6 +336,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4256782883801055595">Licenze open source</translation>
 <translation id="4259722352634471385">Navigazione bloccata: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Si è verificato un errore di sincronizzazione. Tocca per avere i dettagli.</translation>
+<translation id="4269820728363426813">Copia indirizzo link</translation>
 <translation id="4275663329226226506">Multimediali</translation>
 <translation id="4278390842282768270">Consentiti</translation>
 <translation id="42981349822642051">Espandi</translation>
@@ -602,7 +606,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6701279291835318271">Rapporti sulla sicurezza</translation>
 <translation id="6709133671862442373">Notizie</translation>
 <translation id="6710213216561001401">Indietro</translation>
-<translation id="6727612981472093924">Riquadro di navigazione aperto</translation>
 <translation id="6738867403308150051">Download in corso…</translation>
 <translation id="6762156594045689028">Per modificare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">Impossibile aprire il file</translation>
@@ -661,6 +664,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7253272406652746122">Aggiungi un account Google dalla pagina Account nell'app Impostazioni del dispositivo.</translation>
 <translation id="7274013316676448362">Sito bloccato</translation>
 <translation id="7307288900373049735">Connessione a Google in corso… L'operazione potrebbe richiedere un minuto</translation>
+<translation id="7318797029885648322">Tocca Altro per ricevere articoli</translation>
 <translation id="7333031090786104871">Aggiunta del sito precedente ancora in corso</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Condividi 1 elemento selezionato}other{Condividi # elementi selezionati}}</translation>
@@ -799,6 +803,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="8636825310635137004">Attiva la sincronizzazione per trovare le tue schede degli altri dispositivi.</translation>
 <translation id="8641930654639604085">Prova a bloccare siti per adulti</translation>
 <translation id="8662811608048051533">Vieni scollegato dalla maggior parte dei siti.</translation>
+<translation id="867485229011312729">Dove si trovano i preferiti, i download e la cronologia?</translation>
 <translation id="8676374126336081632">Cancella testo inserito</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensità del segnale: # barra}other{Intensità del segnale: # barre}}</translation>
 <translation id="869891660844655955">Data di scadenza</translation>

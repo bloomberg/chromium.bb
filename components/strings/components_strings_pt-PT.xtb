@@ -15,6 +15,7 @@
 <translation id="1080116354587839789">Ajustar à largura</translation>
 <translation id="1088860948719068836">Adicionar nome no cartão</translation>
 <translation id="1103523840287552314">Traduzir sempre <ph name="LANGUAGE" /></translation>
+<translation id="1103778128462718200">Mostrar todas as palavras-passe guardadas…</translation>
 <translation id="1107591249535594099">Se marcada, o Chrome armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
 <translation id="1111153019813902504">Marcadores recentes</translation>
 <translation id="1113869188872983271">&amp;Anular reordenação</translation>
@@ -597,6 +598,7 @@
 <translation id="5540224163453853">Não foi possível encontrar o artigo solicitado.</translation>
 <translation id="5541546772353173584">Adicionar email</translation>
 <translation id="5544037170328430102">Uma página incorporada em <ph name="SITE" /> diz:</translation>
+<translation id="5545756402275714221">Artigos para si</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5560088892362098740">Data de validade</translation>
 <translation id="5565735124758917034">Ativo</translation>
@@ -618,6 +620,7 @@
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669703222995421982">Obter conteúdo personalizado</translation>
 <translation id="5675650730144413517">Esta página não está a funcionar</translation>
+<translation id="5689199277474810259">Exportar para JSON</translation>
 <translation id="5710435578057952990">A identidade deste Web site não foi verificada.</translation>
 <translation id="5719499550583120431">Os cartões pré-pagos são admitidos.</translation>
 <translation id="5720705177508910913">Utilizador atual</translation>
@@ -896,7 +899,7 @@
 <translation id="8094917007353911263">A rede que está a utilizar pode exigir que visite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Método de pagamento</translation>
 <translation id="8118489163946903409">Método de pagamento</translation>
-<translation id="8127301229239896662">O "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao administrador de TI para resolver este problema.</translation>
+<translation id="8127301229239896662">O "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao administrador de TI que resolva este problema.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8134994873729925007">Não foi possível encontrar o <ph name="BEGIN_ABBR" />endereço DNS<ph name="END_ABBR" /> do servidor de <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">O computador entrou em suspensão.</translation>

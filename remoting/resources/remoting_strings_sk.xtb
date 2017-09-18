@@ -108,11 +108,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="3385242214819933234">Neplatný vlastník hostiteľa</translation>
 <translation id="3403830762023901068">Nastavenia pravidiel nepovoľujú zdieľanie tohto počítača ako hostiteľa aplikácie Chromoting. Požiadajte o pomoc svojho správcu systému.</translation>
 <translation id="3423542133075182604">Proces vzdialeného prístupu bezpečnostného kľúča</translation>
-<translation id="3426467947138417795">Vzdialená plocha Chrome
-Vzdialená plocha
-Vzdialené PC
-Vzdialený počítač
-Vzdialený prístup</translation>
 <translation id="3581045510967524389">Nepodarilo sa pripojiť k sieti. Skontrolujte, či je vaše zariadenie online.</translation>
 <translation id="3596628256176442606">Táto služba povoľuje prichádzajúce pripojenia od klientov funkcie Chromoting.</translation>
 <translation id="3606997049964069799">Nie ste prihlásený/-á do prehliadača Chromium. Prihláste sa a skúste to znova.</translation>
@@ -121,12 +116,6 @@ Vzdialený prístup</translation>
 <translation id="3695446226812920698">Ako na to</translation>
 <translation id="3718805989288361841">V súvislosti s nastaveniami pravidiel pre Vzdialenú plochu Chrome sa vyskytla chyba. Požiadajte o pomoc správcu systému.</translation>
 <translation id="3776024066357219166">Vaša relácia Vzdialenej plochy Chrome bola ukončená.</translation>
-<translation id="3788372335219293587">Zaistite bezpečný prístup k počítaču zo zariadenia so systémom iOS. Je to rýchle, jednoduché a bezplatné.
-
-• V každom počítači, ktorý chcete vzdialene používať, nájdite aplikáciu Vzdialená plocha Chrome v Internetovom obchode Chrome na adrese https://chrome.google.com/remotedesktop.
-• V zariadení so systémom iOS spustite danú aplikáciu a klepnutím na hociktorý online počítač sa pripojte.
-
-Informácie o ochrane súkromia nájdete v pravidlách ochrany súkromia (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Spoločnosť Google Inc.</translation>
 <translation id="3884839335308961732">Ak chcete povoliť prístup k Vzdialenej ploche Chrome, potvrďte svoj účet a kód PIN nižšie.</translation>
 <translation id="3897092660631435901">Ponuka</translation>
@@ -265,9 +254,6 @@ Informácie o ochrane súkromia nájdete v pravidlách ochrany súkromia (http
 <translation id="7144878232160441200">Skúsiť znova</translation>
 <translation id="7149517134817561223">Aplikácia na zadávanie príkazov hostiteľovi Vzdialenej plochy Chrome.</translation>
 <translation id="7215059001581613786">Zadajte kód PIN obsahujúci 6 alebo viac číslic.</translation>
-<translation id="7237767047212540055">V počítači, ktorý chcete vzdialene používať, otvorte Chrome a prejdite na adresu <ph name="INSTALLATION_LINK" />
-Nainštalujte si softvér Vzdialená plocha Chrome a dokončite nastavenie podľa uvedených pokynov
-Po dokončení nastavenia budete môcť používať daný počítač prostredníctvom tejto stránky po zadaní kódu PIN alebo prístupového kódu.</translation>
 <translation id="7312846573060934304">Hostiteľ je v režime offline.</translation>
 <translation id="7319983568955948908">Prestať zdieľať</translation>
 <translation id="7401733114166276557">Vzdialená plocha Chrome</translation>

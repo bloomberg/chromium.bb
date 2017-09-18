@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">Varusalves esineb probleeme</translation>
 <translation id="5023310440958281426">Tutvuge administraatori reeglitega</translation>
 <translation id="5029568752722684782">Kustuta koopia</translation>
+<translation id="503069730517007720">Vaja on tarkvara „<ph name="SOFTWARE_NAME" />” juursertifikaati, kuid see pole installitud. Teie IT-administraator peaks probleemi lahendamiseks tarkvara „<ph name="SOFTWARE_NAME" />” seadistamisjuhised üle vaatama. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Teave Google'i tõlke kohta</translation>
 <translation id="5039804452771397117">Luba</translation>
 <translation id="5040262127954254034">Privaatsus</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">Küsi (vaikimisi)</translation>
 <translation id="8041089156583427627">Saada tagasiside</translation>
 <translation id="8041940743680923270">Kasuta globaalset vaikeseadet (küsi)</translation>
+<translation id="8057711352706143257">Tarkvara „<ph name="SOFTWARE_NAME" />” ei ole õigesti seadistatud. Tarkvara „<ph name="SOFTWARE_NAME" />” desinstallimine lahendab tavaliselt probleemi. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Artikli kuvamine ebaõnnestus.</translation>
 <translation id="8091372947890762290">Aktiveerimine on serveris ootel</translation>
 <translation id="8094917007353911263">Võrk, mida kasutate, võib nõuda veebilehe <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> külastamist.</translation>
 <translation id="8103161714697287722">Makseviis</translation>
 <translation id="8118489163946903409">Makseviis</translation>
+<translation id="8127301229239896662">Tarkvara „<ph name="SOFTWARE_NAME" />” ei installitud teie arvutisse või võrku korralikult. Paluge IT-administraatoril see probleem lahendada.</translation>
 <translation id="8131740175452115882">Kinnita</translation>
 <translation id="8134994873729925007">Hosti <ph name="HOST_NAME" /> serveri <ph name="BEGIN_ABBR" />DNS-aadressi<ph name="END_ABBR" /> ei leitud.</translation>
 <translation id="8149426793427495338">Teie arvuti lülitus unerežiimile.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">Arendaja järk</translation>
 <translation id="989988560359834682">Aadressi muutmine</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">Tarkvara „<ph name="SOFTWARE_NAME" />” ei installitud teie arvutisse või võrku korralikult.
+    &lt;ul&gt;
+    &lt;li&gt;Proovige tarkvara „<ph name="SOFTWARE_NAME" />” desinstallida või keelata&lt;/li&gt;
+    &lt;li&gt;Proovige luua ühendus mõne teise võrguga&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

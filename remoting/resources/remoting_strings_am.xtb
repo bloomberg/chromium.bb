@@ -108,12 +108,6 @@
 <translation id="3385242214819933234">ልክ ያልሆነ የአስተናጋጅ ባለቤት።</translation>
 <translation id="3403830762023901068">የመምሪያ ቅንብሮች ይህን ኮምፖውተር እንደ የChromoting አስተናጋጅ አድርጎ ማጋራት አይፈቅዱም። እርዳታ እንዲያገኙ የስርዓት አስተዳዳሪዎን ያግኙ።</translation>
 <translation id="3423542133075182604">የደህንነት ቁልፍ በርቀት የመጠቀም ሂደት</translation>
-<translation id="3426467947138417795">Chrome የርቀት ዴስክቶፕ
-የርቀት ዴስክቶፕ
-የርቀት ተኮ
-የርቀት ኮምፒውተር
-የርቀት መዳረሻ
-የርቀት ድጋፍ</translation>
 <translation id="3581045510967524389">ከአውታረ መረቡ ጋር መገናኘት አልተቻለም። እባክዎ መሥሪያዎ መስመር ላይ መሆኑን ያረጋግጡ።</translation>
 <translation id="3596628256176442606">ይህ አገልግሎት ከChromoting ደንበኞች ገቢ ግንኙነቶችን ያነቃል።</translation>
 <translation id="3606997049964069799">ወደ Chromium በመለያ አልገቡም። እባክዎ ይግቡ እና እንደገና ይሞክሩ።</translation>
@@ -122,13 +116,6 @@
 <translation id="3695446226812920698">እንዴት እንደሆነ ይወቁ</translation>
 <translation id="3718805989288361841">በChrome የርቀት ዴስክቶፕ የመመሪያ ቅንብሮች ውስጥ አንድ ስህተት አለ። እገዛ ለማግኘት የሥርዓት አስተዳዳሪዎን ያነጋግሩ።</translation>
 <translation id="3776024066357219166">የChrome የርቀት ዴስክቶፕ ክፍለ-ጊዜው ተጠናቅቋል።</translation>
-<translation id="3788372335219293587">ኮምፒወተርዎን ከiOS መሣሪያዎ ሆነው ደህንነቱ በተጠበቀ መልኩ ይድረሱበት። ፈጣን፣ ቀላል እና ነጻ ነው።
-
-• በርቀት ሊደርሱበት በሚፈልጉት ኮምፒውተር ላይ የChrome ርቀት ዴስክቶፕ መተግበሪያውን በChrome ድር መደብር https://chrome.google.com/remotedesktop ላይ ያግኙት
-• የChrome ርቀት ዴስክቶፕ ሶፍትዌሩን ይጫኑትና ማዋቀር ለማጠናቀቅ መመሪያዎቹን ይከተሉ።
-• በእርስዎ iOS መሣሪያ ላይ መተግበሪያውን ይክፈቱና ለመገናኘት ማንኛውም የመስመር ላይ ኮምፒውተሮችዎን መታ ያድርጉ።
-
-ስለግላዊነት መረጃ ለማግኘት እባክዎ የGoogle ግላዊነት መመሪያን (http://goo.gl/SyrVzj) ይመልከቱ።</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">እባክዎ በChrome የርቀት ዴስክቶፕ መዳረሻ ለመፍቀድ መለያዎን እና ፒንዎን ከዚህ በታች ያረጋግጡ።</translation>
 <translation id="3897092660631435901">ምናሌ</translation>
@@ -267,9 +254,6 @@
 <translation id="7144878232160441200">እንደገና ሞክር</translation>
 <translation id="7149517134817561223">ለChrome የርቀት ዴስክቶፕ አስተናጋጅ ትዕዛዞችን የሚሰጥ መተግበሪያ።</translation>
 <translation id="7215059001581613786">እባክዎ ስድስት ወይም ከዚያ በላይ የሆነ አኃዝ ያለው ፒን ያስገቡ።</translation>
-<translation id="7237767047212540055">በርቀት ሊደርሱበት በሚፈልጉት ኮምፒውተር ላይ Chromeን ይክፈቱና <ph name="INSTALLATION_LINK" />ን ይጎብኙ
-ማዋቀር ለማጠናቀቅ የChrome ርቀት ዴስክቶፕ ሶፍትዌሩን ይጫኑና መመሪያዎቹን ይከተሉ
-ማዋቀር ከተጠናቀቀ በኋላ ፒን ወይም የመዳረሻ ኮድ በማስገባት ከዚህ ገጽ ሆነው ኮምፒውተሩን መድረስ ይችላሉ</translation>
 <translation id="7312846573060934304">አስተናጋጅ ከመስመር ውጪ ነው።</translation>
 <translation id="7319983568955948908">ማጋራት አቁም</translation>
 <translation id="7401733114166276557">Chrome የርቀት ዴስክቶፕ</translation>

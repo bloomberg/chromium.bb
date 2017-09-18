@@ -286,7 +286,7 @@
 <translation id="3154506275960390542">Aquesta pàgina inclou un formulari que pot ser que no s'enviï de manera segura. La resta d'usuaris poden veure les dades que enviïs mentre estiguin en trànsit o un atacant podria modificar-les per canviar el contingut que rep el servidor.</translation>
 <translation id="3157931365184549694">Restaura</translation>
 <translation id="3162559335345991374">És possible que la xarxa Wi-Fi que esteu fent servir requereixi que visiteu la seva pàgina d'inici de sessió.</translation>
-<translation id="3167968892399408617">Les pàgines que consulteu en pestanyes d'incògnit no s'emmagatzemaran a l'historial del navegador, al magatzem de galetes ni a l'historial de cerca després d'haver tancat totes les pestanyes d'incògnit. Els fitxers que baixeu i les adreces d'interès que creeu sí que es desaran.</translation>
+<translation id="3167968892399408617">Les pàgines que consulteu en pestanyes d'incògnit no s'emmagatzemaran a l'historial del navegador, al magatzem de galetes ni a l'historial de cerques després d'haver tancat totes les pestanyes d'incògnit. Els fitxers que baixeu i les adreces d'interès que creeu sí que es desaran.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Illa</translation>
 <translation id="3176929007561373547">Comproveu la configuració del servidor intermediari o contacteu amb l'administrador de la xarxa per
@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">L'emmagatzematge de la còpia de seguretat està en mal estat</translation>
 <translation id="5023310440958281426">Consulteu les polítiques de l'administrador</translation>
 <translation id="5029568752722684782">Esborra la còpia</translation>
+<translation id="503069730517007720"><ph name="SOFTWARE_NAME" /> requereix un certificat arrel, però no està instal·lat. Per resoldre aquest problema, l'administrador de TI ha de consultar les instruccions per configurar <ph name="SOFTWARE_NAME" />. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Sobre el Traductor de Google</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5040262127954254034">Privadesa</translation>
@@ -780,7 +781,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /> sobre aquest problema.</translation>
 <translation id="7219179957768738017">La connexió utilitza <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">S'està processant</translation>
-<translation id="724691107663265825">Aquest lloc conté programari maliciós</translation>
+<translation id="724691107663265825">Aquest lloc web conté programari maliciós</translation>
 <translation id="724975217298816891">Introdueix la data de caducitat i el CVC de la targeta <ph name="CREDIT_CARD" /> per actualitzar-ne els detalls. Un cop confirmada, els detalls de la targeta es compartiran amb aquest lloc.</translation>
 <translation id="7260504762447901703">Revoca l'accés</translation>
 <translation id="7275334191706090484">Adreces d'interès gestionades</translation>
@@ -887,13 +888,15 @@
 <translation id="8025119109950072390">Els atacants d'aquest lloc et poden enganyar perquè facis alguna acció perillosa, com ara instal·lar programari o revelar informació personal (per exemple, contrasenyes, números de telèfon o targetes de crèdit).</translation>
 <translation id="8034522405403831421">Aquesta pàgina està escrita en <ph name="SOURCE_LANGUAGE" />. Vols traduir-la a <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8037357227543935929">Pregunta (opció predeterminada)</translation>
-<translation id="8041089156583427627">Envia comentaris</translation>
+<translation id="8041089156583427627">Envia suggeriments</translation>
 <translation id="8041940743680923270">Utilitza l'opció predeterminada global (Pregunta)</translation>
+<translation id="8057711352706143257"><ph name="SOFTWARE_NAME" /> no s'ha configurat correctament. Normalment el problema se soluciona desinstal·lant <ph name="SOFTWARE_NAME" />. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">No s'ha pogut consultar l'article.</translation>
 <translation id="8091372947890762290">L'activació està pendent al servidor</translation>
 <translation id="8094917007353911263">És possible que la xarxa que esteu fent servir requereixi que visiteu <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Mètode de pagament</translation>
 <translation id="8118489163946903409">Mètode de pagament</translation>
+<translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> no s'ha instal·lat correctament a l'ordinador o a la xarxa. Demana a l'administrador de TI que resolgui aquest problema.</translation>
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8134994873729925007">No s'ha trobat l'<ph name="BEGIN_ABBR" />adreça DNS<ph name="END_ABBR" /> del servidor de <ph name="HOST_NAME" />.</translation>
 <translation id="8149426793427495338">L'ordinador ha entrat en mode de repòs.</translation>
@@ -979,7 +982,7 @@
 <translation id="8957210676456822347">Autorització de portals captius</translation>
 <translation id="8971063699422889582">El certificat del servidor ha caducat.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
-<translation id="8996941253935762404">Aquest lloc conté programes perjudicials</translation>
+<translation id="8996941253935762404">Aquest lloc web conté programes perjudicials</translation>
 <translation id="8997023839087525404">El servidor ha presentat un certificat que no s'ha divulgat públicament mitjançant la política Transparència de certificats. Això és un requisit d'alguns certificats per garantir que són de confiança i una mesura de protecció contra els atacants.</translation>
 <translation id="9001074447101275817">El servidor intermediari del domini <ph name="DOMAIN" /> requereix un nom d'usuari i una contrasenya.</translation>
 <translation id="9005998258318286617">No es pot carregar el document PDF.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">Muntatge del desenvolupador</translation>
 <translation id="989988560359834682">Edita l'adreça</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401"><ph name="SOFTWARE_NAME" /> no s'ha instal·lat correctament a l'ordinador o a la xarxa:
+    &lt;ul&gt;
+    &lt;li&gt;Prova de desinstal·lar o desactivar <ph name="SOFTWARE_NAME" />&lt;/li&gt;
+    &lt;li&gt;Prova de connectar-te a una altra xarxa&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

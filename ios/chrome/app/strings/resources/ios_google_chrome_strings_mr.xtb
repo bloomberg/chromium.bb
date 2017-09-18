@@ -19,14 +19,14 @@
 <translation id="3678774398092457402">Chrome ने या साइटसाठी आपला संकेतशब्द जतन करावा असे आपण इच्छिता?</translation>
 <translation id="384394811301901750">Google Chrome आत्ता आपला कॅमेरा वापरू शकत नाही</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="3980220367029651214">आपण संकालित केलेली खाती <ph name="USER_EMAIL1" /> वरून <ph name="USER_EMAIL2" /> वर स्विच करीत आहात. आपला विद्यमान Chrome डेटा <ph name="DOMAIN" /> द्वारे व्यवस्थापित केला आहे. हे आपला डेटा या डीव्हाइस वरून हटवेल परंतु आपला डेटा <ph name="USER_EMAIL1" /> मध्ये असेल.</translation>
+<translation id="3980220367029651214">आपण संकालित केलेली खाती <ph name="USER_EMAIL1" /> वरून <ph name="USER_EMAIL2" /> वर स्विच करीत आहात. आपला विद्यमान Chrome डेटा <ph name="DOMAIN" /> द्वारे व्यवस्थापित केला आहे. हे आपला डेटा या डिव्हाइस वरून हटवेल परंतु आपला डेटा <ph name="USER_EMAIL1" /> मध्ये असेल.</translation>
 <translation id="3988789688219830639">Google Chrome ला आपल्या फोटो आणि व्हिडिओंमध्ये प्रवेश नाही. iOS सेटिंग्ज &gt; गोपनीयता &gt; फोटो मध्ये प्रवेश सक्षम करा.</translation>
 <translation id="4099578267706723511">वापर आकडेवारी आणि क्रॅश अहवाल Google कडे पाठवून Chrome अधिक चांगले करण्यास मदत करा.</translation>
 <translation id="415767770115540173">आपल्या स्थानावर आधारित Chrome मध्ये उत्कृष्ट Google अनुभव मिळवा.</translation>
 <translation id="4248297594476034182">आपल्या सर्व डिव्हाइसेसवर आपले टॅब प्राप्त करण्यासाठी, Chrome मध्ये साइन इन करा.</translation>
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
 <translation id="4523886039239821078">Chrome क्रॅश होण्याचे कारण काही अॅड-ऑन आहेत. कृपया ती अनइंस्टॉल करा:</translation>
-<translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यामधून आपण साइन आउट करीत आहात. हे आपला Chrome डेटा या डीव्हाइस वरून हटवेल परंतु आपला डेटा आपल्या Google खात्यामध्ये असेल.</translation>
+<translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यामधून आपण साइन आउट करीत आहात. हे आपला Chrome डेटा या डिव्हाइस वरून हटवेल परंतु आपला डेटा आपल्या Google खात्यामध्ये असेल.</translation>
 <translation id="5389212809648216794">Google Chrome आपला कॅमेरा वापरू शकत नाही कारण दुसरा अॅप्लिकेशन सध्या तो वापरत आहे.</translation>
 <translation id="5566557026214762153">हा अॅप्लिकेशन वापरून, आपण Chrome च्या <ph name="BEGIN_LINK" />सेवा अटीं<ph name="END_LINK" /> ना सहमती देता.</translation>
 <translation id="5639704535586432836">सेटिंग्ज &gt; गोपनीयता &gt; कॅमेरा &gt; Google Chrome उघडा आणि कॅमेरा चालू करा.</translation>
@@ -36,7 +36,7 @@
 <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">आपल्या अन्य डिव्हाइसेसवर आपण Chrome मध्ये उघडलेले टॅब येथे दिसतील.</translation>
 <translation id="6600954340915313787">Chrome वर कॉपी केले</translation>
-<translation id="6648150602980899529"><ph name="DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यासह आपण साइन इन करीत आहात आणि त्याच्या प्रशासकास आपल्या Chrome डेटाचे नियंत्रण देत आहात. आपला डेटा कायमचा या खात्यामध्ये असेल. Chrome मधून साइन आउट केल्याने आपला डेटा या डीव्हाइस वरून हटविला जाईल परंतु तो आपल्या Google खात्यामध्ये संचयित केलेला असेल.</translation>
+<translation id="6648150602980899529"><ph name="DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यासह आपण साइन इन करीत आहात आणि त्याच्या प्रशासकास आपल्या Chrome डेटाचे नियंत्रण देत आहात. आपला डेटा कायमचा या खात्यामध्ये असेल. Chrome मधून साइन आउट केल्याने आपला डेटा या डिव्हाइस वरून हटविला जाईल परंतु तो आपल्या Google खात्यामध्ये संचयित केलेला असेल.</translation>
 <translation id="690638524486313356">Google Chrome सेवा अटी</translation>
 <translation id="7165736900384873061">Google Chrome QR स्कॅनर वापरणे आरंभ करा</translation>
 <translation id="7172660552945675509">टीप: <ph name="BEGIN_LINK" />Chrome आपल्या डॉकमध्ये हलवा<ph name="END_LINK" /></translation>

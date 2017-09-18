@@ -108,12 +108,6 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="3385242214819933234">Ongeldige hosteigenaar.</translation>
 <translation id="3403830762023901068">De beleidsinstellingen staan het delen van deze computer als host voor Chromoting niet toe. Neem contact op met je systeembeheerder voor hulp.</translation>
 <translation id="3423542133075182604">Proces voor externe toegang tot beveiligingssleutel</translation>
-<translation id="3426467947138417795">Chrome Remote Desktop
-Remote Desktop
-Externe pc
-Externe computer
-Externe toegang
-Externe ondersteuning</translation>
 <translation id="3581045510967524389">Kan geen verbinding maken met het netwerk. Controleer of je apparaat online is.</translation>
 <translation id="3596628256176442606">Met deze service worden inkomende verbindingen van Chromoting-clients ingeschakeld.</translation>
 <translation id="3606997049964069799">Je bent niet ingelogd bij Chromium. Log in en probeer het opnieuw.</translation>
@@ -122,13 +116,6 @@ Externe ondersteuning</translation>
 <translation id="3695446226812920698">Meer informatie</translation>
 <translation id="3718805989288361841">Er is een probleem met de beleidsinstellingen voor Chrome Remote Desktop. Neem contact op met je systeembeheerder voor hulp.</translation>
 <translation id="3776024066357219166">Je Chrome Remote Desktop-sessie is beëindigd.</translation>
-<translation id="3788372335219293587">Krijg veilig toegang tot je computer vanaf je iOS-apparaat. Het is snel, eenvoudig en gratis.
-
-• Ga naar de computer waarvoor je externe toegang wilt hebben en zoek de Chrome Remote Desktop-app in de Chrome Web Store  https://chrome.google.com/remotedesktop
-• Installeer de Chrome Remote Desktop-software en volg de instructies om het instellen te voltooien.
-• Open de app op je iOS-apparaat en tik op een van je online computers om verbinding te maken.
-
-Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Bevestig je account en pincode hieronder om toegang door Chrome Remote Desktop toe te staan.</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -267,9 +254,6 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="7144878232160441200">Opnieuw proberen</translation>
 <translation id="7149517134817561223">App die opdrachten geeft aan de Chrome Remote Desktop-host.</translation>
 <translation id="7215059001581613786">Geef een pincode van zes of meer cijfers op.</translation>
-<translation id="7237767047212540055">Ga naar de computer waarvoor je externe toegang wilt hebben. Open Chrome en ga naar <ph name="INSTALLATION_LINK" />
-Installeer de Chrome Remote Desktop-software en volg de instructies om het instellen te voltooien
-Nadat het instellen is voltooid, kun je toegang tot de computer krijgen vanaf deze pagina door de pincode of toegangscode op te geven</translation>
 <translation id="7312846573060934304">Host is offline.</translation>
 <translation id="7319983568955948908">Delen stoppen</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>

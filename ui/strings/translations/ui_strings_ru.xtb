@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">Нажмите здесь</translation>
 <translation id="5076340679995252485">&amp;Вставить</translation>
 <translation id="5120799197269191491">Поиск + <ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">Разблокировка по PIN-коду</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5266161281976477809">Треугольник развертывания</translation>
 <translation id="528468243742722775">Завершить</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;Копировать</translation>
 <translation id="7850320739366109486">Не беспокоить</translation>
 <translation id="7907591526440419938">Открытие файла</translation>
-<translation id="8054029954190364711">Разблокировка по отпечатку пальца</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Осталась 1 сек.}one{Осталась # сек.}few{Осталось # сек.}many{Осталось # сек.}other{Осталось # сек.}}</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>

@@ -524,6 +524,7 @@
 <translation id="5019198164206649151">Dublējumu krātuve nav labā stāvoklī.</translation>
 <translation id="5023310440958281426">Administratora politiku pārbaude</translation>
 <translation id="5029568752722684782">Dzēst kopiju</translation>
+<translation id="503069730517007720">Programmatūrai <ph name="SOFTWARE_NAME" /> ir nepieciešams saknes sertifikāts, taču tas nav instalēts. Lai novērstu šo problēmu, tīkla administratoram ir jāapskata <ph name="SOFTWARE_NAME" /> konfigurācijas norādījumi. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Par Google tulkotāju</translation>
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="5040262127954254034">Konfidencialitāte</translation>
@@ -888,11 +889,13 @@
 <translation id="8037357227543935929">Vaicāt (pēc noklusējuma)</translation>
 <translation id="8041089156583427627">Sūtīt atsauksmes</translation>
 <translation id="8041940743680923270">Izmantot globālo noklusējumu (Vaicāt)</translation>
+<translation id="8057711352706143257">Programmatūra <ph name="SOFTWARE_NAME" /> nav pareizi konfigurēta. Atinstalējot programmatūru <ph name="SOFTWARE_NAME" />, parasti problēma tiek novērsta. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Rakstu neizdevās skatīt.</translation>
 <translation id="8091372947890762290">Aktivizācija vēl nav apstiprināta serverī.</translation>
 <translation id="8094917007353911263">Iespējams, izmantotajā tīklā tiks pieprasīts apmeklēt vietni <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Maksājuma veids</translation>
 <translation id="8118489163946903409">Maksājuma veids</translation>
+<translation id="8127301229239896662">Programmatūra <ph name="SOFTWARE_NAME" /> netika pareizi instalēta datorā vai tīklā. Lūdziet IT administratoram atrisināt šo problēmu.</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>
 <translation id="8134994873729925007">Nevarēja atrast <ph name="HOST_NAME" /> servera <ph name="BEGIN_ABBR" />DNS adresi<ph name="END_ABBR" />.</translation>
 <translation id="8149426793427495338">Dators tika pārslēgts miega režīmā.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">Attīstītāja konstrukcija</translation>
 <translation id="989988560359834682">Rediģēt adresi</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">Programmatūra <ph name="SOFTWARE_NAME" /> netika pareizi instalēta datorā vai tīklā.
+    &lt;ul&gt;
+    &lt;li&gt;Mēģiniet atinstalēt vai atspējot programmatūru <ph name="SOFTWARE_NAME" />.&lt;/li&gt;
+    &lt;li&gt;Mēģiniet izveidot savienojumu ar citu tīklu.&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

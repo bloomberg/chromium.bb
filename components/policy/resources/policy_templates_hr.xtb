@@ -53,6 +53,7 @@
 
       Ako se to pravilo ne postavi, zadana učestalost iznosi 3 sata. Minimalna
       dopuštena učestalost iznosi 60 sekundi.</translation>
+<translation id="1204263402976895730">Omogućeni pisači tvrtke</translation>
 <translation id="1221359380862872747">Učitaj navedene URL-ove pri demonstracijskoj prijavi</translation>
 <translation id="123081309365616809">Omogući emitiranje sadržaja na uređaju</translation>
 <translation id="1265053460044691532">Ograničite vrijeme koliko se dugo korisnik autentificiran putem SAML-a može izvanmrežno prijaviti</translation>
@@ -247,6 +248,7 @@
 <translation id="2024476116966025075">Konfiguriraj traženi naziv domene za klijente s daljinskim pristupom</translation>
 <translation id="2030905906517501646">Zadani davatelj usluga pretraživanja</translation>
 <translation id="203096360153626918">To pravilo nema utjecaja na Android aplikacije. Moći će pokrenuti način prikazivanja na cijelom zaslonu čak i ako je to pravilo postavljeno na <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Onemogućeni pisači tvrtke</translation>
 <translation id="206623763829450685">Određuje koje sheme HTTP autentifikacije <ph name="PRODUCT_NAME" /> podržava.
 
           Moguće su vrijednosti "basic" (osnovno), "digest" (sažeto), "NTLM" i "negotiate" (pregovaranje). Više vrijednosti odvojite zarezima.
@@ -323,6 +325,15 @@
           Ako se ta postavka konfigurira, korisnici koji upotrebljavaju brzo otključavanje morat će unijeti zaporku na zaključanom zaslonu ovisno o toj postavci.
 
           Ako se ta postavka ne konfigurira, korisnici koji upotrebljavaju brzo otključavanje morat će svaki dan unijeti zaporku na zaključanom zaslonu.</translation>
+<translation id="2194470398825717446">To je pravilo obustavljeno u verziji M61. Umjesto toga upotrijebite EcryptfsMigrationStrategy.
+
+      Određuje kako se treba ponašati uređaj koji je isporučen s enkripcijom ecryptfs, a treba se prebaciti na enkripciju ext4.
+
+      Ako to pravilo postavite na "DisallowArc", Android aplikacije bit će onemogućene za sve korisnike na uređaju (uključujući one koji već imaju enkripciju ext4) i korisnicima se neće nuditi prebacivanje s enkripcije ecryptfs na enkripciju ext4.
+
+      Ako to pravilo postavite na "AllowMigration", korisnicima koji imaju početne direktorije s enkripcijom ecryptfs ponudit će se prebacivanje na enkripciju ext4 prema potrebi (trenutačno kada Android N postane dostupan na uređaju).
+
+      To se pravilo ne primjenjuje na kiosk aplikacije – one se premještaju automatski. Ako se to pravilo ne postavi, uređaj će se ponašati kao da je odabrano "DisallowArc".</translation>
 <translation id="2201555246697292490">Konfiguriraj popis dopuštenih za lokalno slanje poruka</translation>
 <translation id="2204753382813641270">Kontroliraj automatsko skrivanje police</translation>
 <translation id="2208976000652006649">Parametri za URL pretraživanja koji upotrebljava POST</translation>
@@ -518,6 +529,14 @@
       Ako se to pravilo upotrebljava, korisniku su dostupni samo pisači s ID-ovima
       podudarnim s vrijednostima u tom pravilu. ID-ovi se moraju podudarati s
       unosima u datoteci navedenoj u pravilu DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Određuje pisače koje korisnik ne može upotrebljavati.
+
+      To se pravilo upotrebljava samo ako je BlacklistRestriction odabrano za
+      NativePrintersBulkAccessMode.
+
+      Ako se to pravilo upotrebljava, korisniku se pružaju svi pisači osim
+      ID-ova navedenih u tom pravilu.
+      </translation>
 <translation id="2801230735743888564">Dopusti korisnicima igranje skrivene igre s dinosaurom kada je uređaj izvan mreže.
 
       Ako se to pravilo postavi na "False", korisnici neće moći igrati skrivenu igru s dinosaurom kada uređaj nije povezan s mrežom. Ako se ta postavka postavi na "True", korisnici će moći igrati igru s dinosaurom. Ako se to pravilo ne postavi, korisnici neće moći igrati skrivenu igru s dinosaurom u prijavljenom OS-u Chrome, ali će je moći igrati u drugim okolnostima.</translation>
@@ -634,6 +653,7 @@
 <translation id="3219421230122020860">Dostupan je anoniman način rada</translation>
 <translation id="3220624000494482595">Ako je kiosk aplikacija Android aplikacija, neće imati kontrolu nad <ph name="PRODUCT_OS_NAME" /> verzijom, čak i ako se to pravilo postavi na <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Obrasci URL-ova za dopuštanje instalacija proširenja, aplikacija i korisničkih skripti iz izvora</translation>
+<translation id="3240609035816615922">Pravila za pristup konfiguraciji pisača.</translation>
 <translation id="3243309373265599239">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon zatamnio tijekom napajanja izmjeničnom strujom.
 
           Kada je postavljeno na vrijednost veću od nule, ovo pravilo određuje koliko vremena treba proteći u neaktivnosti prije nego što <ph name="PRODUCT_OS_NAME" /> zatamni zaslon.
@@ -660,6 +680,9 @@
 <translation id="3322771899429619102">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenBlockedForUrls", to nadjačava ove iznimke.
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
+<translation id="332771718998993005">Odredi naziv koji će se oglašavati kao odredište za <ph name="PRODUCT_NAME" />.
+
+          Ako se to pravilo postavi na niz koji nije prazan, taj će se niz upotrebljavati kao naziv odredišta za <ph name="PRODUCT_NAME" />. U suprotnom će naziv odredišta biti naziv uređaja. Ako se to pravilo ne postavi, naziv odredišta bit će naziv uređaja i vlasnik uređaja (ili korisnik s domene koja upravlja uređajem) moći će ga promijeniti. Duljina naziva ograničena je na 24 znaka.</translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
 <translation id="3417418267404583991">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju sesije anonimnih korisnika i zaporka nije potrebna.
 
@@ -698,7 +721,7 @@
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Omogući Prevoditelj</translation>
-<translation id="3512226956150568738">Ako je klijentov model uređaja već podržavao ARC prije nego što je premještanje na ext4 bilo obavezno za izvođenje ARC-a i ako je pravilo ArcEnabled postavljeno na točno, ta će se opcija ponašati kao AskUser (vrijednost 3). U svim ostalim slučajevima (ako model uređaja nije podržavao ARC ili ako je pravilo ArcEnabled postavljeno na netočno), ta je vrijednost ekvivalentna pravilu DisallowArc (vrijednost 0).</translation>
+<translation id="3512226956150568738">Ako je klijentov model uređaja već podržavao ARC prije nego što je premještanje na ext4 bilo obavezno za izvođenje ARC-a i ako je pravilo ArcEnabled postavljeno na true, ta će se opcija ponašati kao AskUser (vrijednost 3). U svim ostalim slučajevima (ako model uređaja nije podržavao ARC ili ako je pravilo ArcEnabled postavljeno na false), ta je vrijednost ekvivalentna pravilu DisallowArc (vrijednost 0).</translation>
 <translation id="3528000905991875314">Omogući alternativne stranice pogrešaka</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
 <translation id="3591584750136265240">Konfiguriraj ponašanje autentifikacije tijekom prijave</translation>
@@ -884,6 +907,7 @@
       Napomena: trenutačno su automatska ponovna pokretanja omogućena samo dok se prikazuje zaslon za prijavu ili dok traje sesija aplikacije kioska. To će se u budućnosti promijeniti i pravilo će se primjenjivati uvijek, bez obzira na to je li neka određena vrsta sesije u tijeku ili nije.
 
       Vrijednost pravila treba navesti u sekundama. Zadana je najmanja vrijednost 3600 (jedan sat).</translation>
+<translation id="4203879074082863035">Korisnicima se prikazuju samo pisači na popisu dopuštenih</translation>
 <translation id="420512303455129789">Rječnik koji mapira URL-ove na Booleovu oznaku koja određuje hoće li pristup hostu biti dopušten (točno) ili blokiran (netočno).
 
           To je pravilo za internu upotrebu preglednika <ph name="PRODUCT_NAME" />.</translation>
@@ -982,6 +1006,7 @@
 <translation id="4541530620466526913">Lokalni računi na uređaju</translation>
 <translation id="4555850956567117258">Omogući daljinsku ovjeru za korisnika</translation>
 <translation id="4557134566541205630">URL web-stranice nove kartice zadanog davatelja usluge pretraživanja</translation>
+<translation id="4558592878156368639">Razdoblja prekida rada kad se izdaju pravila OffHours |ignored_policies| za uređaj</translation>
 <translation id="4600786265870346112">Omogućivanje velikog pokazivača</translation>
 <translation id="4604931264910482931">Konfiguriraj popis nedopuštenih za lokalno slanje poruka</translation>
 <translation id="4617338332148204752">Preskoči provjeru metaoznaka u okviru <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1146,6 +1171,9 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Vrijednost pravila treba se postaviti u milisekundama. Vrijednosti se prilagođavaju kako bi bile manje ili jednake odgodi neaktivnosti.</translation>
 <translation id="5307432759655324440">Pristupačnost anonimnog načina rada</translation>
 <translation id="5318185076587284965">Omogući hostu za daljinski pristup upotrebu relejnih poslužitelja</translation>
+<translation id="5323128137188992869">Dopusti emitiranje sadržaja na uređaj pomoću usluge <ph name="PRODUCT_NAME" />.
+
+          Ako se to pravilo postavi na netočno, korisnici neće moći emitirati sadržaj na svom uređaju. Ako se pravilo postavi na točno, korisnici će moći emitirati sadržaj. Ako se pravilo ne postavi, korisnici neće moći emitirati sadržaj na registrirane uređaje s OS-om Chrome, ali će moći emitirati na neregistrirane uređaje.</translation>
 <translation id="5330684698007383292">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje sljedećim vrstama sadržaja</translation>
 <translation id="5365946944967967336">Prikaži gumb Početna na alatnoj traci</translation>
 <translation id="5366977351895725771">Ako je postavljeno na netočno, korisnik neće moći izrađivati nadzirane korisnike. Postojeći nadzirani korisnici i dalje će biti dostupni.
@@ -1361,6 +1389,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6111936128861357925">Dopuštanje skrivene igre s dinosaurom</translation>
 <translation id="6114416803310251055">neodobreno</translation>
 <translation id="6133088669883929098">Dopusti svim web-lokacijama da upotrebljavaju generiranje ključeva</translation>
+<translation id="6139485614509308022">Ako se postavi pravilo "OffHours", navedena pravila za uređaje zanemaruju se (upotreba zadanih postavki tih pravila) tijekom navedenih vremenskih intervala. Chrome ponovo primjenjuje pravila za uređaje na svaki događaj kada razdoblje "OffHours" započne ili završi. Korisnik će dobiti obavijest i morat će se odjaviti kada vrijeme za "OffHours" završi i kada se postavke pravila za uređaje promijene (odnosno kada je korisnik prijavljen računom koji nije dopušten).</translation>
 <translation id="6145799962557135888">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju pokretati JavaScript. Ako to pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultJavaScriptSetting", ako je postavljeno, odnosno iz osobne konfiguracije korisnika, ako nije.</translation>
 <translation id="614662973812186053">To pravilo kontrolira i prikupljanje podataka o upotrebi i dijagnostici na Androidu.</translation>
 <translation id="6155936611791017817">Postavljanje zadanog stanja velikog pokazivača na zaslonu za prijavu</translation>
@@ -1390,6 +1419,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6211428344788340116">Generira izvješće o vremenima aktivnosti uređaja.
 
       Ako se ta postavka ne postavi ili se postavi na istinito, registrirani uređaji izvješćivat će o razdobljima aktivnosti korisnika na uređaju. Ako se postavka postavi na neistinito, vremena aktivnosti uređaja neće se bilježiti niti će se o njima izvješćivati.</translation>
+<translation id="6212868225782276239">Prikazani su svi pisači osim onih na popisu zabranjenih.</translation>
 <translation id="6219965209794245435">Ako je omogućeno, to pravilo nameće uvoz podataka za automatsko popunjavanje obrazaca iz prethodnog zadanog preglednika, a utječe i na dijaloški okvir za uvoz.
 
       Ako je onemogućeno, ti se podaci ne uvoze.
@@ -1604,6 +1634,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7132877481099023201">URL-ovi koji će dobiti pristup uređajima za videosnimanje bez postavljanja upita</translation>
 <translation id="7167436895080860385">Omogući korisnicima prikazivanje zaporki u upravitelju zaporki (zastarjelo)</translation>
 <translation id="7173856672248996428">Kratkotrajni profil</translation>
+<translation id="717630378807352957">Dopušta sve pisače iz konfiguracijske datoteke.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Dopuštene vrste veza za ažuriranja</translation>
 <translation id="7194407337890404814">Naziv zadanog davatelja usluge pretraživanja</translation>
@@ -1646,7 +1677,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se postavi na neistinito, automatski generirani prijedlozi sadržaja neće se prikazivati na web-stranici nove kartice.</translation>
 <translation id="7323896582714668701">Dodatni parametri naredbenog retka za uslugu <ph name="PRODUCT_NAME" /></translation>
-<translation id="7326394567531622570">Slično pravilu Wipe (vrijednost 2), no pokušava zadržati tokene za prijavu kako se korisnik ne bi morao ponovo prijavljivati.</translation>
+<translation id="7326394567531622570">Slično pravilu Wipe (vrijednost 2), no pokušava zadržati oznake za prijavu kako se korisnik ne bi morao ponovo prijavljivati.</translation>
 <translation id="7329842439428490522">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon isključio tijekom baterijskog napajanja.
 
           Kada je postavljeno na vrijednost veću od nule, ovo pravilo određuje koliko vremena treba proteći u neaktivnosti prije nego što <ph name="PRODUCT_OS_NAME" /> isključi zaslon.
@@ -1886,6 +1917,18 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se pravilo postavi na onemogućeno ili se ne postavi, prijava vodi na normalne profile.</translation>
 <translation id="8158758865057576716">Omogućuje izradu roaming kopija podataka <ph name="PRODUCT_NAME" /> profila.</translation>
+<translation id="8169931650834542988">Određuje koji su pisači iz pravila 
+      NativePrintersBulkConfiguration dostupni korisnicima.
+
+      Određuje koje se pravilo za pristup upotrebljava za skupnu konfiguraciju pisača.
+      Ako se odabere AllowAll, prikazuju se svi pisači. Ako se odabere BlacklistRestrction,
+      NativePrintersBulkBlacklist upotrebljava se za ograničenje pristupa
+      navedenim pisačima. Ako se odabere WhitelistPrintersOnly,
+      NativePrintersWhitelist određuje samo one pisače koji se mogu odabrati.
+ 
+
+      Ako se to pravilo ne postavi, pretpostavlja se da vrijedi BlacklistRestriction.
+      </translation>
 <translation id="8170878842291747619">Omogućuje integriranu uslugu Google Prevoditelj u proizvodu <ph name="PRODUCT_NAME" />. Ako omogućite ovu postavku, usluga <ph name="PRODUCT_NAME" /> prikazivat će integriranu alatnu traku koja u odgovarajućem slučaju korisniku nudi prijevod stranice. Ako onemogućite ovu postavku, korisnicima se nikad neće prikazivati traka prevođenja. Ako omogućite ili onemogućite ovu postavku, korisnici ne mogu mijenjati niti poništiti tu postavku u proizvodu <ph name="PRODUCT_NAME" />. Ako ova postavka nije postavljena, korisnik može odlučiti hoće li upotrebljavati tu funkciju.</translation>
 <translation id="817455428376641507">Omogućuje pristup navedenim URL-ovima kao iznimkama s popisa zabranjenih URL-ova.
 
@@ -1968,6 +2011,14 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8465065632133292531">Parametri za URL usluge Instant koji upotrebljava POST</translation>
 <translation id="847472800012384958">Ne dopusti web-lokacijama prikazivanje skočnih prozora</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Određuje pisače koje korisnik može upotrebljavati.
+
+      To se pravilo upotrebljava samo ako je pravilo WhitelistPrintersOnly odabrano za
+      NativePrintersBulkAccessMode.
+
+      Ako se to pravilo upotrebljava, korisniku su dostupni samo pisači s ID-ovima
+      podudarnim s vrijednostima u tom pravilu. ID-ovi se moraju podudarati s
+      unosima u datoteci navedenoj u pravilu NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Prilagođava popis uzoraka URL-ova koje bi preglednik hosta trebao uvijek generirati.
 
           Ako se to pravilo ne postavi, zadani će se ispunjivač upotrebljavati za sve web-lokacije određene pravilom "ChromeFrameRendererSettings".
@@ -1978,6 +2029,30 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8519264904050090490">URL-ovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="8544375438507658205">Zadani alat za prikazivanje HTML-a za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Upozori kada se posjećuju web-lokacije izvan paketa sadržaja</translation>
+<translation id="8555589883248082762">Pruža konfiguracije za pisače tvrtke.
+
+      To vam pravilo omogućuje da pružite konfiguracije pisača za
+      <ph name="PRODUCT_OS_NAME" /> uređaje.
+      Datoteka ne smije biti veća od 5 MB i mora se kodirati u JSON-u.
+      Format je jednak kao za rječnik NativePrinters. Procjenjuje se
+      da će se datoteka koja sadrži približno 21.000 pisača kodirati kao datoteka od
+      5 MB. Kriptografsko raspršivanje upotrebljava se za potvrdu integriteta
+      preuzimanja.
+
+      Datoteka se preuzima i predmemorira. Ponovo će se preuzeti svaki put
+      kad se URL ili raspršivanje promijene.
+
+      Ako se to pravilo postavi,
+      <ph name="PRODUCT_OS_NAME" /> preuzet će
+      datoteku za konfiguracije pisača i učiniti pisače dostupnima
+      u skladu s pravilima NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
+      i NativePrintersBulkBlacklist.
+
+      Ako postavite to pravilo, korisnici ga ne mogu promijeniti ili nadjačati.
+
+      To pravilo ne utječe na to mogu li korisnici konfigurirati pisače na
+      pojedinačnim uređajima. Služi kao dodatno pravilo za
+      konfiguraciju pisača koju vrše pojedinačni korisnici.</translation>
 <translation id="8566842294717252664">Skrivanje web-trgovine na web-stranici nove kartice i pokretaču aplikacija</translation>
 <translation id="8587229956764455752">Dopusti stvaranje novih korisničkih računa</translation>
 <translation id="8614804915612153606">Onemogućuje automatsko ažuriranje</translation>
@@ -2091,6 +2166,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>
 <translation id="9098553063150791878">Pravila za HTTP autentifikaciju</translation>
 <translation id="9105265795073104888">Android aplikacijama dostupan je samo podskup opcija za konfiguraciju proxyja. Android aplikacije taj proxy mogu upotrebljavati dobrovoljno. Upotrebu proxyja ne možete im nametnuti.</translation>
+<translation id="9112727953998243860">Datoteka za konfiguraciju pisača tvrtke</translation>
 <translation id="9112897538922695510">Omogućuje vam registriranje popisa rukovatelja protokola. To pravilo može biti samo preporučeno. Entitet |protocol| treba se postaviti u shemu kao "mailto", a entitet |url| treba se postaviti u uzorak URL-a aplikacije koja rukuje shemom. Uzorak može uključivati "%s" koji će se, ako postoji, zamijeniti rukovanim URL-om.
 
           Rukovatelji protokola koji su registrirani pravilom spojeni su s onima koje je registrirao korisnik i za upotrebu su dostupne obje vrste rukovatelja. Korisnik može nadjačati rukovatelje protokola instalirane pravilom tako što će instalirati novog zadanog rukovatelja, ali ne može ukloniti onoga koji je pravilom registriran.</translation>

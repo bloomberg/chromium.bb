@@ -69,6 +69,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="2149973817440762519">Bladwijzer bewerken</translation>
 <translation id="2154710561487035718">URL kopiëren</translation>
 <translation id="2230173723195178503">Webpagina geladen</translation>
+<translation id="2256128224215992540">Zoek- en sitesuggesties</translation>
 <translation id="2267753748892043616">Account toevoegen</translation>
 <translation id="2273327106802955778">Menu Meer</translation>
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
@@ -178,9 +179,11 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="430793432425771671">Alles synchroniseren</translation>
 <translation id="4342284590510997375">Nieuw</translation>
 <translation id="4359125752503270327">Deze pagina wordt geopend in een andere app.</translation>
+<translation id="4370827530403103842">Synchronisatie werkt niet. Tik om te herstellen.</translation>
 <translation id="4375040482473363939">Zoeken naar QR-code</translation>
 <translation id="4378154925671717803">Telefoon</translation>
 <translation id="441868831736628555">Privacybeleid</translation>
+<translation id="4460091562821778167">Altijd vragen welke app moet worden gebruikt</translation>
 <translation id="4508750114462689118">Inlogpromo sluiten</translation>
 <translation id="4526249700380860531">Opgeslagen wachtwoorden bekijken en beheren via <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Probeer opnieuw in te loggen.</translation>
@@ -348,7 +351,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7671141431838911305">INSTALLEER</translation>
-<translation id="7677825787905683892">Standaard e-mailapp kiezen</translation>
+<translation id="7677825787905683892">Standaard e-mail-app kiezen</translation>
 <translation id="7765158879357617694">Verplaatsen</translation>
 <translation id="7769602470925380267">Accepteren en uitloggen</translation>
 <translation id="7772032839648071052">Bevestig de wachtwoordzin</translation>

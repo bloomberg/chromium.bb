@@ -108,12 +108,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="3385242214819933234">Isännän omistaja on virheellinen.</translation>
 <translation id="3403830762023901068">Käytäntöasetukset eivät salli tämän tietokoneen jakamista Chromoting-isäntänä. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="3423542133075182604">Suojausavaimen etäkäyttöprosessi</translation>
-<translation id="3426467947138417795">Chrome-etäkäyttö
-Tietokoneen etäkäyttö
-Etäyhteys tietokoneeseen
-Tietokoneen käyttö etänä
-Etäkäyttö
-Etätuki</translation>
 <translation id="3581045510967524389">Verkkoon yhdistäminen ei onnistu. Varmista, että laitteesi on online-tilassa.</translation>
 <translation id="3596628256176442606">Tämä palvelu mahdollistaa Chromoting-asiakkaiden muodostamat yhteydet.</translation>
 <translation id="3606997049964069799">Et ole kirjautunut Chromiumiin. Kirjaudu sisään ja yritä uudelleen.</translation>
@@ -122,13 +116,6 @@ Etätuki</translation>
 <translation id="3695446226812920698">Lisätietoja</translation>
 <translation id="3718805989288361841">Chrome-etäkäytön käytäntöasetuksissa on virhe. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="3776024066357219166">Chrome-etäkäyttökerta on päättynyt.</translation>
-<translation id="3788372335219293587">Käytä tietokoneitasi turvallisesti iOS-laitteella. Se on nopeaa, yksinkertaista ja maksutonta.
-
-• Kun olet tietokoneella, jota haluat käyttää etänä, etsi Chrome-etäkäyttö-sovellus Chrome Web Storesta:  https://chrome.google.com/remotedesktop.
-• Asenna Chrome-etäkäyttö-ohjelmisto ja suorita asennus loppuun ohjeiden mukaisesti.
-• Avaa sovellus iOS-laitteellasi ja napauta online-tilassa olevaa tietokonetta, johon haluat muodostaa yhteyden.
-
-Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/SyrVzj).</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3884839335308961732">Myönnä käyttöoikeus Chrome-etäkäytön kautta vahvistamalla tilisi ja PIN-koodisi alla.</translation>
 <translation id="3897092660631435901">Valikko</translation>
@@ -267,9 +254,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="7144878232160441200">Yritä uudelleen</translation>
 <translation id="7149517134817561223">Sovellus, joka antaa komentoja Chromen etätyöpöytäisännälle.</translation>
 <translation id="7215059001581613786">Anna PIN-koodi, jossa on vähintään kuusi numeroa.</translation>
-<translation id="7237767047212540055">Kun olet tietokoneella, jota haluat käyttää etänä, avaa Chrome ja siirry osoitteeseen <ph name="INSTALLATION_LINK" />.
-Asenna Chrome-etäkäyttö-ohjelmisto ja suorita määritys loppuun ohjeiden mukaisesti.
-Kun määritys on valmis, voit käyttää tietokonetta tältä sivulta antamalla PIN- tai käyttökoodin.</translation>
 <translation id="7312846573060934304">Isäntä on offline-tilassa.</translation>
 <translation id="7319983568955948908">Lopeta jakaminen</translation>
 <translation id="7401733114166276557">Chrome-etäkäyttö</translation>

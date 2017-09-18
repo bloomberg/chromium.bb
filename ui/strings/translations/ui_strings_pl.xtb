@@ -76,7 +76,6 @@
 <translation id="5046499563572181734">Kliknij tutaj</translation>
 <translation id="5076340679995252485">&amp;Wklej</translation>
 <translation id="5120799197269191491">Klawisz wyszukiwania+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="5153297660536091054">Funkcja odblokowania kodem PIN</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trójkąt rozwinięcia</translation>
 <translation id="528468243742722775">End</translation>
@@ -136,7 +135,6 @@
 <translation id="7814458197256864873">&amp;Kopiuj</translation>
 <translation id="7850320739366109486">Nie przeszkadzać</translation>
 <translation id="7907591526440419938">Otwórz plik</translation>
-<translation id="8054029954190364711">Funkcja odblokowania odciskiem palca</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 godzinę temu}few{# godziny temu}many{# godzin temu}other{# godziny temu}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Pozostała 1 s}few{Pozostały # s}many{Pozostało # s}other{Pozostało # s}}</translation>
 <translation id="815598010540052116">Przewiń w dół</translation>

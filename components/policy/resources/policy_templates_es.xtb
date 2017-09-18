@@ -52,6 +52,7 @@ Si esta política se establece en False, no se informará sobre el estado del co
 <translation id="1198465924256827162">Frecuencia con la que se envían los informes del estado del dispositivo, expresada en milisegundos.
 
 Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia mínima permitida son 60 segundos.</translation>
+<translation id="1204263402976895730">Impresoras de empresa habilitadas</translation>
 <translation id="1221359380862872747">Cargar URL especificadas en el inicio de sesión de demostración</translation>
 <translation id="123081309365616809">Habilita el envío de contenido al dispositivo</translation>
 <translation id="1265053460044691532">Limitar el tiempo durante el que un usuario autenticado a través de SAML puede iniciar sesión sin conexión</translation>
@@ -77,8 +78,8 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
       Esta política solo se usa si se asigna BlacklistRestriction a
       DeviceNativePrintersAccessMode.
 
-      Si se usa esta política, el usuario tendrá acceso a todas las impresoras, excepto
-      a los ID indicados en ella.
+      Si se usa esta política, el usuario tendrá acceso a todas las impresoras,
+      excepto a los ID indicados en ella.
       </translation>
 <translation id="1353966721814789986">Páginas de inicio</translation>
 <translation id="1359553908012294236">Si se asigna el valor true a esta política o si esta no se configura, <ph name="PRODUCT_NAME" /> habilitará los inicios de sesión como invitado. Los inicios de sesión como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo incógnito.
@@ -250,6 +251,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
 <translation id="203096360153626918">Esta política no influye en las aplicaciones para Android. Aunque se le asigne el valor <ph name="FALSE" />, las aplicaciones podrán acceder al modo de pantalla completa.</translation>
+<translation id="2043770014371753404">Impresoras de empresa inhabilitadas</translation>
 <translation id="206623763829450685">Especifica los esquemas de autenticación HTTP admitidos por <ph name="PRODUCT_NAME" />.
 
           Los valores posibles son "basic", "digest", "ntlm" y "negotiate". Si hay varios valores, se deben separar con comas.
@@ -263,31 +265,33 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2113068765175018713">Limitar tiempo de actividad de dispositivo mediante reinicio automático</translation>
 <translation id="2126314858836465216">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
 
-      Esta política permite proporcionar opciones de configuración de los
-      dispositivos <ph name="PRODUCT_OS_NAME" />.
-      El tamaño máximo del archivo es de 5 MB y se debe codificar con formato JSON.
-      El formato es el mismo que el del diccionario de NativePrinters. Se estima
-      que un archivo que contiene aproximadamente 21.000 impresoras tiene un tamaño de
-      5 MB. El hash criptográfico se utiliza para verificar la integridad de la
-      descarga.
+      Esta política permite proporcionar opciones de configuración de impresoras
+      a los dispositivos <ph name="PRODUCT_OS_NAME" />.
+      El tamaño máximo del archivo es de 5 MB y se debe codificar con formato
+      JSON.
+      El formato es el mismo que el del diccionario NativePrinters. Se estima
+      que un archivo que contiene aproximadamente 21.000 impresoras tiene un
+      tamaño de 5 MB. El hash criptográfico se utiliza para verificar la integridad
+      de la descarga.
 
-      El archivo se descarga y almacena en la memoria caché, y se vuelve a descargar cada vez que
-      la URL o el hash cambian.
+      El archivo se descarga y almacena en la memoria caché, y se vuelve a
+      descargar cada vez que la URL o el hash cambian.
 
       Si se establece esta política,
       <ph name="PRODUCT_OS_NAME" /> descargará
-      el archivo con las configuraciones de las impresoras y estas estarán disponibles
-      según lo especificado en las políticas DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist
-      y DeviceNativePrintersBlacklist.
+      el archivo con las configuraciones de las impresoras y estas estarán
+      disponibles según lo especificado en las políticas
+      DeviceNativePrintersAccessMode, DeviceNativePrintersWhitelist y
+      DeviceNativePrintersBlacklist.
 
-      Esta política no afecta a la capacidad de los usuarios para configurar impresoras en
-      determinados dispositivos. La política se ha diseñado como complemento a la
-      configuración de impresoras que realizan los usuarios.
+      Esta política no afecta a la capacidad de los usuarios para configurar
+      impresoras en determinados dispositivos. La política se ha diseñado como
+      complemento a la configuración de impresoras que realizan los usuarios.
 
       Esta política es complementaria a NativePrintersBulkConfiguration.
 
-      Si no se establece esta política, no habrá impresoras para los dispositivos y se ignorará
-      el resto de las políticas NativeDevicePrinter.*</translation>
+      Si se anula la selección de esta política, no habrá impresoras para los
+      dispositivos y se ignorará el resto de las políticas NativeDevicePrinter.*</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="2134437727173969994">Permitir que se bloquee la pantalla</translation>
@@ -326,6 +330,15 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
           Si se configura esta opción, se solicitará a los usuarios que utilicen el desbloqueo rápido que introduzcan sus contraseñas en la pantalla de bloqueo según corresponda.
 
           Si esta opción no se configura, se solicitará a los usuarios que utilicen el desbloqueo rápido que introduzcan su contraseña en la pantalla de bloqueo todos los días.</translation>
+<translation id="2194470398825717446">Esta política está obsoleta en M61. En su lugar, utiliza EcryptfsMigrationStrategy.
+
+      Especifica cómo debe comportarse un dispositivo que se ha enviado con eCryptfs y tiene que transferirse al sistema de cifrado ext4.
+
+      Si se asigna el valor DisallowArc a esta política, se inhabilitarán las aplicaciones Android para todos los usuarios del dispositivo (incluidos los que ya usen el sistema de cifrado ext4) y la migración de eCryptfs a ext4 no se ofrecerá a ningún usuario.
+
+      Si se asigna el valor AllowMigration a esta política, los usuarios que usen eCryptfs en sus directorios principales podrán migrarlos al sistema de cifrado ext4 si hace falta (cuando Android N esté disponible en el dispositivo).
+
+      Esta política no se aplica a las aplicaciones de kiosco porque se migran automáticamente. Si no se establece esta política, el dispositivo se comportará como si se hubiera seleccionado el valor DisallowArc.</translation>
 <translation id="2201555246697292490">Configurar la lista blanca de mensajes nativos</translation>
 <translation id="2204753382813641270">Controlar opción para ocultar archivos automáticamente</translation>
 <translation id="2208976000652006649">Parámetros para URL de búsqueda que utiliza POST</translation>
@@ -536,9 +549,18 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Esta política solo se usará si se asigna WhitelistPrintersOnly a
       DeviceNativePrintersAccessMode.
 
-      Si se usa esta política, el usuario solo podrá acceder a las impresoras cuyos ID se correspondan
-      con los valores incluidos en ella. Los IDs se deben corresponder con
-      las entradas del archivo especificado en la política DeviceNativePrinters.</translation>
+      Si se usa esta política, el usuario solo podrá acceder a las impresoras
+      cuyos ID se correspondan con los valores incluidos en ella. Los IDs se
+      deben corresponder con las entradas del archivo especificado en la política
+      DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Especifica las impresoras que un usuario no puede utilizar.
+
+      Esta política solo se usa si se asigna BlacklistRestriction a
+      NativePrintersBulkAccessMode.
+
+      Si se usa esta política, el usuario tendrá acceso a todas las impresoras,
+      excepto a los ID indicados en ella.
+      </translation>
 <translation id="2801230735743888564">Permite que los usuarios jueguen al juego del huevo de pascua de dinosaurio sin conexión.
 
       Si se asigna el valor False a esta política, los usuarios no podrán jugar al juego del huevo de pascua de dinosaurio sin conexión. Si se le asigna el valor True, los usuarios podrán jugar al juego del dinosaurio. Si no se establece esta política, los usuarios no podrán jugar a este juego en el dispositivo Chrome OS registrado, aunque podrán hacerlo en otras circunstancias.</translation>
@@ -661,6 +683,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3219421230122020860">Modo de incógnito disponible</translation>
 <translation id="3220624000494482595">Si la aplicación de kiosco es una aplicación para Android, no tendrá control sobre la versión de <ph name="PRODUCT_OS_NAME" />, incluso si se asigna el valor <ph name="TRUE" /> a esta política.</translation>
 <translation id="3236046242843493070">Patrones de URL desde los que se puede instalar secuencias de comandos de usuario, aplicaciones y extensiones</translation>
+<translation id="3240609035816615922">Política de acceso a la configuración de impresoras.</translation>
 <translation id="3243309373265599239">Permite especificar el tiempo transcurrido hasta la atenuación de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo está conectado a la red.
 
           Cuando esta política se establece en un valor superior a cero, especifica el tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> atenúe la pantalla.
@@ -922,6 +945,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Nota: En este momento, los reinicios automáticos solo se habilitan cuando se muestra la pantalla de inicio de sesión o está en curso una sesión de una aplicación del kiosco. Esta restricción se modificará en el futuro, y la política se aplicará en todo momento, independientemente de si un determinado tipo de sesión está o no en curso.
 
       El valor de la política se debe especificar en segundos. Los valores deben ser iguales o superiores a 3600 (una hora).</translation>
+<translation id="4203879074082863035">Solo se muestran a los usuarios las impresoras incluidas en la lista blanca.</translation>
 <translation id="420512303455129789">Diccionario que asigna URLs a un indicador booleano que especifica si se debe permitir (true) o bloquear (false) el acceso del host.
 
           Esta política solo está destinada a uso interno de <ph name="PRODUCT_NAME" />.</translation>
@@ -1030,6 +1054,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4541530620466526913">Cuentas locales del dispositivo</translation>
 <translation id="4555850956567117258">Habilitar confirmación remota para el usuario</translation>
 <translation id="4557134566541205630">URL de la página Nueva pestaña del proveedor de búsqueda predeterminado</translation>
+<translation id="4558592878156368639">Intervalos fuera del horario en los que se publican las políticas OffHours |ignored_policies| del dispositivo</translation>
 <translation id="4600786265870346112">Habilitar cursor grande</translation>
 <translation id="4604931264910482931">Configurar la lista negra de mensajes nativos</translation>
 <translation id="4617338332148204752">Omitir la comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1141,7 +1166,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5068140065960598044">La política de la nube de <ph name="PRODUCT_NAME" /> anula la política del equipo.</translation>
 <translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
 <translation id="5105313908130842249">Retraso de bloqueo de pantalla cuando el dispositivo funciona con la batería</translation>
-<translation id="5108031557082757679">Impresoras de dispositivos de empresa habilitadas</translation>
+<translation id="5108031557082757679">Impresoras de dispositivos de empresa inhabilitadas</translation>
 <translation id="5130288486815037971">Indicar si se han habilitado los conjuntos de cifrado de RC4 en TLS</translation>
 <translation id="5141670636904227950">Establecer el tipo de aumento de pantalla predeterminado habilitado en la pantalla de inicio de sesión</translation>
 <translation id="5142301680741828703">Mostrar siempre los patrones de URL indicados a continuación en <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1467,6 +1492,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="6211428344788340116">Permite informar sobre las horas de actividad del dispositivo.
 
 Si esta opción no está establecida o está establecida en True, los dispositivos registrados informarán sobre períodos de tiempo cuando un usuario esté activo en el dispositivo. Si está establecida en False, no se registrarán las horas de actividad del dispositivo ni se informará sobre ellas.</translation>
+<translation id="6212868225782276239">Se muestran todas las impresas excepto las que se incluyen en la lista negra.</translation>
 <translation id="6219965209794245435">Si se habilita, esta política fuerza la importación de los datos autocompletados del navegador predeterminado actual y afecta al cuadro de diálogo de importación.
 
       Si se inhabilita, no se importarán los datos autocompletados.
@@ -1708,6 +1734,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7132877481099023201">URLs a las que se concederá acceso a dispositivos de captura de vídeo sin confirmación</translation>
 <translation id="7167436895080860385">Permitir que los usuarios muestren contraseñas en el Administrador de Contraseñas (obsoleto)</translation>
 <translation id="7173856672248996428">Perfil efímero</translation>
+<translation id="717630378807352957">Permitir todas las impresoras del archivo de configuración.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipos de conexión permitidos para realizar actualizaciones</translation>
 <translation id="7194407337890404814">Nombre del proveedor de búsquedas predeterminadas</translation>
@@ -2005,6 +2032,17 @@ Si la política está establecida en False, no se informará sobre la lista de i
 
       Si esta política no se establece o no se habilita, se accederá a los perfiles normales al iniciar sesión.</translation>
 <translation id="8158758865057576716">Habilitar la creación de copias de itinerancia de los datos del perfil de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8169931650834542988">Controla a qué impresoras de la política
+      NativePrintersBulkConfiguration tienen acceso los usuarios.
+      Designa qué política de acceso se utiliza para configurar impresoras en bloque.
+      Si se selecciona AllowAll, se mostrarán todas las impresoras. Si se selecciona BlacklistRestrction,
+      se utilizará NativePrintersBulkBlacklist para restringir el acceso a
+      impresoras específicas. Si se selecciona WhitelistPrintersOnly,
+      NativePrintersWhitelist designará únicamente las impresoras
+      que se puedan seleccionar.
+
+      Si no se establece esta política, se utilizará BlacklistRestriction.
+      </translation>
 <translation id="8170878842291747619">Permite habilitar el servicio del Traductor de Google integrado en <ph name="PRODUCT_NAME" />.
 
       Si habilitas esta opción, se mostrará una barra integrada en <ph name="PRODUCT_NAME" /> que ofrecerá a los usuarios la posibilidad de traducir las páginas que sean pertinentes.
@@ -2095,6 +2133,14 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre pop-ups</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Especifica las impresoras que puede utilizar un usuario.
+
+      Esta política solo se usará si se asigna WhitelistPrintersOnly a
+      NativePrintersBulkAccessMode.
+
+      Si se usa esta política, el usuario solo podrá acceder a las impresoras cuyos ID
+      se correspondan con los valores incluidos en ella. Los ID se deben corresponder con
+      las entradas del archivo especificado en la política NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Personaliza la lista de patrones de URL que debería procesar siempre el navegador del host.
 
           Si no se establece esta política, se utilizará el procesador predeterminado para todos los sitios web, como se especifica en la política "ChromeFrameRendererSettings".
@@ -2105,6 +2151,29 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8519264904050090490">URLs de excepción manual de usuario administrado</translation>
 <translation id="8544375438507658205">Procesador de HTML predeterminado de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Advertir cuando se visitan sitios no incluidos en paquetes de contenido</translation>
+<translation id="8555589883248082762">Proporciona opciones de configuración de impresoras de empresa.
+
+      Esta política permite proporcionar opciones de configuración de impresoras a
+      los dispositivos <ph name="PRODUCT_OS_NAME" />.
+      El tamaño máximo del archivo es de 5 MB y se debe codificar con formato JSON.
+      El formato es el mismo que el del diccionario NativePrinters. Se estima
+      que un archivo que contiene aproximadamente 21.000 impresoras tiene un tamaño de 5 MB.
+      El hash criptográfico se utiliza para verificar la integridad
+      de la descarga.
+
+      El archivo se descarga y almacena en la memoria caché y se vuelve a descargar cada vez que
+      la URL o el hash cambian.
+      Si se establece esta política
+      <ph name="PRODUCT_OS_NAME" /> descargará
+      el archivo con las configuraciones de las impresoras y estas estarán disponibles
+      según lo especificado en las políticas NativePrintersBulkAccessMode, NativePrintersBulkWhitelist
+      y NativePrintersBulkBlacklist.
+
+      Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
+
+      Esta política no afecta a la capacidad de los usuarios para configurar impresoras
+      en determinados dispositivos. La política se ha diseñado como complemento
+      a la configuración de impresoras que realizan los usuarios.</translation>
 <translation id="8566842294717252664">Oculta tienda web en página Nueva pestaña y en menú de aplicaciones</translation>
 <translation id="8587229956764455752">Permitir la creación de nuevas cuentas de usuario</translation>
 <translation id="8614804915612153606">Inhabilitar las actualizaciones automáticas</translation>
@@ -2169,12 +2238,12 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8887644176044431146">Controla a qué impresoras de la política
       DeviceNativePrintersConfiguration tienen acceso los usuarios.
 
-      Designa qué política de acceso se utiliza para configurar impresoras en bloque.
-      Si se selecciona AllowAll, se mostrarán todas las impresoras. Si se selecciona BlacklistRestrction,
-      se utilizará DeviceNativePrintersBlacklist para restringir el acceso
-      a impresoras específicas. Si se selecciona WhitelistPrintersOnly,
-      DeviceNativePrintersWhitelist designará únicamente las impresoras
-      que se puedan seleccionar.
+      Designa qué política de acceso se utiliza para configurar impresoras en
+      bloque. Si se selecciona AllowAll, se mostrarán todas las impresoras. Si se
+      selecciona BlacklistRestrction, se utilizará DeviceNativePrintersBlacklist para
+      restringir el acceso a impresoras específicas. Si se selecciona
+      WhitelistPrintersOnly, DeviceNativePrintersWhitelist designará únicamente las
+      impresoras que se puedan seleccionar.
 
       Si no se establece esta política, se utilizará BlacklistRestriction.
       </translation>
@@ -2222,6 +2291,7 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="9096086085182305205">Lista de admisión de servidores de autenticación</translation>
 <translation id="9098553063150791878">Políticas para la autenticación HTTP</translation>
 <translation id="9105265795073104888">Solo se habilita la disponibilidad de un subconjunto de opciones de proxy para las aplicaciones de Android. Estas pueden elegir voluntariamente el uso del proxy. No puedes forzarlas a que utilicen un proxy.</translation>
+<translation id="9112727953998243860">Archivo de configuración de las impresoras de empresa</translation>
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolos. Solo puede tratarse de una política recomendada. La propiedad |protocol| se debe establecer según el esquema (por ejemplo, mailto), y la propiedad |url| se debe establecer según el patrón de URL de la aplicación que procesa el esquema. El patrón puede incluir un %s, que si está presente se sustituirá por la URL procesada.
 
 Los controladores de protocolos registrados por la política se combinan con los registrados por el usuario, y ambos pueden utilizarse. El usuario puede anular los controladores de protocolos instalados por la política. Para ello, debe instalar un nuevo controlador predeterminado, pero no puede eliminar un controlador de protocolo registrado por la política.</translation>

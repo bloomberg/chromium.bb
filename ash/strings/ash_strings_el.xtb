@@ -3,13 +3,14 @@
 <translationbundle lang="el">
 <translation id="1012876632442809908">Συσκευή USB-C (μπροστινή θύρα)</translation>
 <translation id="1013923882670373915">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτόν τον κωδικό PIN στη συγκεκριμένη συσκευή: <ph name="PINCODE" /></translation>
-<translation id="1032891413405719768">Η μπαταρία της γραφίδας είναι χαμηλή</translation>
+<translation id="1032891413405719768">Το επίπεδο της μπαταρίας της γραφίδας είναι χαμηλό</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">Αυτόματη απόκρυψη ραφιού</translation>
 <translation id="1153356358378277386">Συσκευές σε σύζευξη</translation>
 <translation id="1195412055398077112">υπερσάρωση</translation>
 <translation id="1247372569136754018">Μικρόφωνο (εσωτερικό)</translation>
 <translation id="1252999807265626933">Φόρτιση από <ph name="POWER_SOURCE" /></translation>
+<translation id="1267032506238418139">Αλλαγή συντόμευσης</translation>
 <translation id="1270290102613614947">Το πληκτρολόγιο οθόνης είναι απενεργοποιημένο</translation>
 <translation id="1272079795634619415">Διακοπή</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
@@ -32,7 +33,6 @@
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Βοηθός (φόρτωση…)</translation>
 <translation id="1850504506766569011">Το Wi-Fi έχει απενεργοποιηθεί.</translation>
-<translation id="1856813161013948396">Παραλείψτε την οθόνη κλειδώματος, πατώντας απλώς τον αισθητήρα δακτυλικών αποτυπωμάτων. Κάντε κλικ για διαμόρφωση.</translation>
 <translation id="1864454756846565995">Συσκευή USB-C (πίσω θύρα)</translation>
 <translation id="1882897271359938046">Κατοπτρισμός σε <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Η συντόμευση για το άνοιγμα της Διαχείρισης Εργασιών άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
@@ -61,11 +61,11 @@
 <translation id="2365393535144473978">Με την ενεργοποίηση των δεδομένων κινητής τηλεφωνίας θα ενεργοποιηθεί και το Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Προτού αποδεχτείτε, επιβεβαιώστε ότι αυτό το κλειδί πρόσβασης εμφανίζεται στη συγκεκριμένη συσκευή: <ph name="PASSKEY" /></translation>
-<translation id="2475982808118771221">Παρουσιάστηκε σφάλμα</translation>
 <translation id="2501920221385095727">Σταθερά πλήκτρα</translation>
 <translation id="2509468283778169019">Το CAPS LOCK είναι ενεργοποιημένο</translation>
 <translation id="2532589005999780174">Λειτουργία υψηλής αντίθεσης</translation>
 <translation id="2597972630681408282">Νυχτερινός φωτισμός: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2653659639078652383">Υποβολή</translation>
 <translation id="2700058918926273959">Η περίοδος σύνδεσης λήγει σε <ph name="SESSION_TIME_REMAINING" />. Θα αποσυνδεθείτε.</translation>
 <translation id="2727977024730340865">Σύνδεση με φορτιστή χαμηλής ισχύος. Η φόρτιση της μπαταρίας ενδέχεται να μη γίνεται με αξιόπιστο τρόπο.</translation>
 <translation id="2761704814324807722">Δίσκος κατάστασης, ώρα <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -74,7 +74,6 @@
 <translation id="2819276065543622893">Θα αποσυνδεθείτε τώρα.</translation>
 <translation id="2825619548187458965">Ράφι</translation>
 <translation id="2844169650293029770">Συσκευή USB-C (αριστερή μπροστινή θύρα)</translation>
-<translation id="2857608528410806398">Εδώ εμφανίζεται το κύριο μέρος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος. Εδώ εμφανίζεται το κύριο μέρος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος. Εδώ εμφανίζεται το κύριο μέρος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος. Εδώ εμφανίζεται το κύριο μέρος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος. Εδώ εμφανίζεται το κύριο μέρος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος.</translation>
 <translation id="2865888419503095837">Πληροφορίες δικτύου</translation>
 <translation id="2872961005593481000">Τερματισμός λειτουργίας</translation>
 <translation id="2942516765047364088">Θέση ραφιού</translation>
@@ -105,11 +104,10 @@
 <translation id="3595596368722241419">Μπαταρία πλήρης</translation>
 <translation id="3606978283550408104">Συνδέθηκε η οθόνη Braille.</translation>
 <translation id="3621202678540785336">Είσοδος</translation>
-<translation id="3625258641415618104">Τα στιγμιότυπα οθόνης απενεργοποιήθηκαν</translation>
 <translation id="3626281679859535460">Φωτεινότητα</translation>
 <translation id="3712407551474845318">Περιοχή λήψης</translation>
 <translation id="371370241367527062">Μπροστινό μικρόφωνο</translation>
-<translation id="3742055079367172538">Το στιγμιότυπο οθόνης έχει ληφθεί</translation>
+<translation id="3771549900096082774">Λειτουργία υψηλής αντίθεσης</translation>
 <translation id="3775358506042162758">Μπορείτε να συνδέεστε ταυτόχρονα με έως και τρεις λογαριασμούς.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Κλείδωμα</translation>
@@ -120,7 +118,6 @@
 <translation id="3899995891769452915">Φωνητική είσοδος</translation>
 <translation id="3901991538546252627">Σύνδεση με <ph name="NAME" /></translation>
 <translation id="394485226368336402">Ρυθμίσεις ήχου</translation>
-<translation id="3967919079500697218">Η δυνατότητα λήψης στιγμιότυπων οθόνης έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
 <translation id="3995138139523574647">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="4017989525502048489">Δείκτης λέιζερ</translation>
@@ -131,7 +128,6 @@
 <translation id="4378551569595875038">Σύνδεση…</translation>
 <translation id="4421231901400348175">Κοινόχρηστος έλεγχος της οθόνης σας με το χρήστη <ph name="HELPER_NAME" /> μέσω της απομακρυσμένης βοήθειας.</translation>
 <translation id="4430019312045809116">Ένταση</translation>
-<translation id="4448844063988177157">Αναζήτηση για δίκτυα Wi-Fi...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Συσκευές στις οποίες διακόπηκε η σύζευξη</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Σύνδεση…</translation>
@@ -140,6 +136,7 @@
 <translation id="4544944664594876241">Η συντόμευση για το κλείδωμα της οθόνης άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4659419629803378708">Το ChromeVox ενεργοποιήθηκε</translation>
 <translation id="4729904664295161097">Ο Βοηθός είναι διαθέσιμος μόνο για το κύριο προφίλ.</translation>
+<translation id="4776917500594043016">Κωδικός πρόσβασης για <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Αποσύνδεση</translation>
 <translation id="4849058404725798627">Επισήμανση αντικειμένου με εστίαση στο πληκτρολόγιο</translation>
@@ -149,7 +146,6 @@
 <translation id="4918086044614829423">Αποδοχή</translation>
 <translation id="4961318399572185831">Μετάδοση οθόνης</translation>
 <translation id="5168181903108465623">Διαθέσιμες συσκευές μετάδοσης</translation>
-<translation id="5170568018924773124">Εμφάνιση στο φάκελο</translation>
 <translation id="5207949376430453814">Επισήμανση δρομέα κειμένου</translation>
 <translation id="5222676887888702881">Έξοδος</translation>
 <translation id="523505283826916779">Ρυθμίσεις προσβασιμότητας</translation>
@@ -189,7 +185,6 @@
 <translation id="6062360702481658777">Θα αποσυνδεθείτε αυτόματα σε <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="607652042414456612">Ο υπολογιστής σας μπορεί να εντοπιστεί από κοντινές συσκευές Bluetooth και θα εμφανίζεται ως "<ph name="NAME" />" με διεύθυνση <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Φόρτιση <ph name="POWER_SOURCE" /></translation>
-<translation id="6144938890088808325">Βοηθήστε μας να βελτιώσουμε τα Chromebook</translation>
 <translation id="615957422585914272">Εμφάνιση πληκτρολογίου οθόνης</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ενεργοποίηση…</translation>
@@ -225,7 +220,6 @@
 <translation id="7098389117866926363">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Επαναφορά στην προηγούμενη ανάλυση σε <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7246339268451149667">Θέλετε να ενεργοποιήσετε το ξεκλείδωμα με δακτυλικό αποτύπωμα;</translation>
 <translation id="7256634071279256947">Πίσω μικρόφωνο</translation>
 <translation id="7348093485538360975">Πληκτρολόγιο οθόνης</translation>
 <translation id="735745346212279324">Το VPN αποσυνδέθηκε</translation>
@@ -238,27 +232,24 @@
 <translation id="7561014039265304140">Το <ph name="DISPLAY_NAME" /> δεν υποστηρίζει το <ph name="SPECIFIED_RESOLUTION" />. Η ανάλυση άλλαξε σε <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Παλέτα Emoji</translation>
 <translation id="7569509451529460200">Το Braille και το ChromeVox ενεργοποιήθηκαν</translation>
-<translation id="7581273696622423628">Συμμετοχή σε έρευνα</translation>
 <translation id="7593891976182323525">Search ή Shift</translation>
 <translation id="7649070708921625228">Βοήθεια</translation>
 <translation id="7692480393933218409">Φόρτιση συνδεδεμένων συσκευών USB-C</translation>
 <translation id="776344839111254542">Κάντε κλικ, για να δείτε τις λεπτομέρειες της ενημέρωσης</translation>
 <translation id="7798302898096527229">Πατήστε Search ή Shift για ακύρωση.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> και <ph name="MINUTE" /></translation>
-<translation id="7823564328645135659">Η γλώσσα του άλλαξε από "<ph name="FROM_LOCALE" />" σε "<ph name="TO_LOCALE" />" μετά τον συγχρονισμό των ρυθμίσεών σας.</translation>
 <translation id="7904094684485781019">Ο διαχειριστής αυτού του λογαριασμού δεν έχει επιτρέψει τις πολλαπλές συνδέσεις.</translation>
 <translation id="7977927628060636163">Αναζήτηση για δίκτυα κινητής τηλεφωνίας…</translation>
 <translation id="7982789257301363584">Δίκτυο</translation>
 <translation id="8000066093800657092">Κανένα δίκτυο</translation>
 <translation id="8054466585765276473">Υπολογισμός χρόνου μπαταρίας που απομένει.</translation>
-<translation id="8077816382010018681">Εδώ εμφανίζεται ο τίτλος της ειδοποίησης της λειτουργίας Γρήγορου ξεκλειδώματος</translation>
 <translation id="8098591350844501178">Διακοπή μετάδοσης οθόνης σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Έγινε σύνδεση με το δίκτυο <ph name="NAME" /></translation>
 <translation id="813913629614996137">Εκκίνηση…</translation>
 <translation id="8142699993796781067">Ιδιωτικό δίκτυο</translation>
 <translation id="8180896103888046100">Διακοπή μετάδοσης σε άγνωστο δέκτη</translation>
-<translation id="8185286464235484130">Πείτε μας πώς τα πηγαίνουμε απαντώντας σε ορισμένες ερωτήσεις.</translation>
 <translation id="8190698733819146287">Προσαρμογή γλωσσών και εισόδου...</translation>
+<translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8308637677604853869">Προηγούμενο μενού</translation>
 <translation id="8351131234907093545">Δημιουργία σημείωσης</translation>
 <translation id="8392234662362215700">Πατήστε Control-Shift-Space για εναλλαγή διάταξης πληκτρολογίου.</translation>
@@ -291,7 +282,6 @@
 <translation id="9201131092683066720">Η μπαταρία είναι πλήρης <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Έξοδος από λειτουργία ενοποιημένης επιφάνειας εργασίας</translation>
 <translation id="923686485342484400">Πατήστε Ctrl + Shift + Q δύο φορές για να αποσυνδεθείτε.</translation>
-<translation id="939252827960237676">Αποτυχία αποθήκευσης στιγμιότυπου οθόνης</translation>
 <translation id="945522503751344254">Αποστολή σχολίων</translation>
 <translation id="98515147261107953">Οριζόντια</translation>
 </translationbundle>

@@ -53,6 +53,7 @@
 
       Dacă această politică nu este configurată, frecvența prestabilită este de 3
       ore. Frecvența minimă permisă este de 60 de secunde.</translation>
+<translation id="1204263402976895730">Imprimantele activate ale companiei</translation>
 <translation id="1221359380862872747">Încărcați adrese URL specificate la conectarea demonstrativă</translation>
 <translation id="123081309365616809">Activează proiectarea conținutului pe dispozitiv</translation>
 <translation id="1265053460044691532">Limitați intervalul de timp pentru care un utilizator autentificat prin SAML se poate conecta offline</translation>
@@ -248,6 +249,7 @@
 <translation id="2024476116966025075">Configurează numele de domeniu necesar pentru clienții cu acces la distanță</translation>
 <translation id="2030905906517501646">Cuvânt cheie pentru furnizorul de căutare prestabilit</translation>
 <translation id="203096360153626918">Această politică nu afectează aplicațiile Android. Acestea vor putea fi deschise în modul ecran complet, chiar dacă politica este setată la <ph name="FALSE" />.</translation>
+<translation id="2043770014371753404">Imprimantele dezactivate ale companiei</translation>
 <translation id="206623763829450685">Specifică schemele de autentificare HTTP acceptate de <ph name="PRODUCT_NAME" />.
 
           Valorile posibile sunt „basic”, „digest”, „ntlm” și „negotiate”. Separă valorile multiple prin virgulă.
@@ -324,6 +326,15 @@
           Dacă setarea este configurată, utilizatorilor care folosesc deblocarea rapidă li se va solicita să își introducă parola pe ecranul de blocare, în funcție de această setare.
 
           Dacă setarea nu este configurată, utilizatorilor care folosesc deblocarea rapidă li se va solicita să își introducă parola pe ecranul de blocare în fiecare zi.</translation>
+<translation id="2194470398825717446">Politica nu mai este dezvoltată în M61, folosește EcryptfsMigrationStrategy.
+
+      Specifică modul în care trebuie să se comporte un dispozitiv care a fost livrat cu ecryptfs și necesită trecerea la criptarea ext4.
+
+      Dacă setezi politica la „DisallowArc”, aplicațiile Android vor fi dezactivate pentru toți utilizatorii de pe dispozitiv (inclusiv pentru cei care folosesc deja criptarea ext4). Niciunui utilizator nu i se va oferi migrarea de la ecryptfs la criptarea ext4.
+
+      Dacă setezi politica la „AllowMigration”, utilizatorilor cu directoare principale ecryptfs li se va oferi posibilitatea să migreze la criptarea ext4, după cum este necesar (când Android N devine disponibil pe dispozitiv).
+
+      Această politică nu se aplică pentru aplicațiile chioșc – acestea sunt migrate automat. Dacă politica nu este configurată, dispozitivul se comportă ca și cum ar fi aleasă opțiunea „DisallowArc”.</translation>
 <translation id="2201555246697292490">Configurați lista albă a mesageriei native</translation>
 <translation id="2204753382813641270">Controlați ascunderea automată a raftului</translation>
 <translation id="2208976000652006649">Parametrii pentru adresa URL a căutării care utilizează POST</translation>
@@ -521,6 +532,14 @@
       Dacă această politică este folosită, utilizatorilor le sunt disponibile numai imprimantele ale căror ID-uri se potrivesc cu valorile
       din politică. ID-urile trebuie să corespundă
       intrărilor din fișierul specificat în DeviceNativePrinters.</translation>
+<translation id="2794520838025002425">Specifică imprimantele pe care nu le poate folosi un utilizator.
+
+      Această politică este folosită numai dacă opțiunea BlacklistRestriction este aleasă pentru
+      NativePrintersBulkAccessMode.
+
+      Dacă această politică este folosită, utilizatorii vor putea folosi toate imprimantele, cu excepția celor ale căror
+      ID-uri sunt specificate în politică.
+      </translation>
 <translation id="2801230735743888564">Permite utilizatorilor să joace jocul ascuns cu dinozaurul când dispozitivul este offline.
 
       Dacă această politică este dezactivată, utilizatorii nu vor putea să joace jocul ascuns cu dinozaurul când dispozitivul este offline. Dacă această politică este activată, utilizatorii pot să joace jocul cu dinozaurul. Dacă această politică nu este configurată, utilizatorii nu pot să joace jocul ascuns cu dinozaurul pe un dispozitiv înregistrat, cu sistem de operare Chrome, însă pot să îl joace în alte circumstanțe.</translation>
@@ -637,6 +656,7 @@
 <translation id="3219421230122020860">Modul incognito este disponibil</translation>
 <translation id="3220624000494482595">Dacă aplicația chioșc este o aplicație Android, aceasta nu va avea control asupra versiunii <ph name="PRODUCT_OS_NAME" />, chiar dacă această politică este setată la <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Modele de adrese URL de la care se permite instalarea extensiilor, a aplicațiilor și a scripturilor de utilizator</translation>
+<translation id="3240609035816615922">Politica privind accesul la configurarea imprimantelor.</translation>
 <translation id="3243309373265599239">Indică intervalul de timp fără intervenția utilizatorului după care luminozitatea ecranului este redusă atunci când dispozitivul funcționează pe c.a.
 
           Dacă politica este setată la o valoare mai mare decât zero, specifică intervalul de timp în care utilizatorul trebuie să fie inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să reducă luminozitatea ecranului.
@@ -896,6 +916,7 @@
       Notă: în prezent, repornirile automate sunt activate numai când este afișat ecranul de conectare sau când este în curs o sesiune a unei aplicații de tip chioșc. Aceasta se va schimba pe viitor, iar politica se va aplica întotdeauna, indiferent dacă este în curs sau nu o sesiune de un anumit tip.
 
       Valoarea politicii trebuie specificată în secunde. Valoarea minimă presetată este 3600 (o oră).</translation>
+<translation id="4203879074082863035">Numai imprimantele din lista albă sunt afișate utilizatorilor</translation>
 <translation id="420512303455129789">Un dicționar care asociază adresele URL cu un semnalizator boolean care specifică dacă se permite accesul la gazdă (politică activată) sau nu (politică dezactivată).
 
           Această politică este destinată utilizării la nivel intern de <ph name="PRODUCT_NAME" />.</translation>
@@ -994,6 +1015,7 @@
 <translation id="4541530620466526913">Conturi locale de pe gadget</translation>
 <translation id="4555850956567117258">Activați atestarea la distanță pentru utilizator</translation>
 <translation id="4557134566541205630">Adresa URL pentru pagina Filă nouă a furnizorului de căutare prestabilit</translation>
+<translation id="4558592878156368639">Intervalele de inactivitate când politicile OffHours |ignored_policies| ale dispozitivului sunt lansate</translation>
 <translation id="4600786265870346112">Activați cursorul mare</translation>
 <translation id="4604931264910482931">Configurați lista neagră a mesageriei native</translation>
 <translation id="4617338332148204752">Ignoră verificarea existenței unor metaetichete în <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1401,6 +1423,7 @@
 <translation id="6211428344788340116">Raportează perioadele de activitate ale dispozitivului.
 
       Dacă setarea nu este configurată sau dacă este activată, dispozitivele înscrise vor raporta perioadele când un utilizator este activ pe dispozitiv. Dacă setarea este dezactivată, perioadele de activitate ale dispozitivului nu vor fi înregistrate sau raportate.</translation>
+<translation id="6212868225782276239">Sunt afișate toate imprimantele, cu excepția celor din lista neagră.</translation>
 <translation id="6219965209794245435">Dacă este activată, această politică forțează importul datelor salvate pentru completarea automată a formularelor din browserul prestabilit anterior. Dacă este activată, această politică afectează și caseta de dialog de import.
 
       Dacă este dezactivată, datele salvate pentru completarea automată a formularelor nu sunt importate.
@@ -1617,6 +1640,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7132877481099023201">Adresele URL cărora li se va acorda acces automat la dispozitivele de capturare a conținutului video</translation>
 <translation id="7167436895080860385">Permite utilizatorilor să afișeze parolele în managerul de parole (s-a renunțat la dezvoltare)</translation>
 <translation id="7173856672248996428">Profil efemer</translation>
+<translation id="717630378807352957">Permiteți toate imprimantele din fișierul de configurare.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipuri de conexiune permise pentru actualizări</translation>
 <translation id="7194407337890404814">Numele furnizorului de căutare prestabilit</translation>
@@ -1659,7 +1683,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă politica este dezactivată, sugestiile generate automat privind conținutul nu sunt afișate pe pagina Filă nouă.</translation>
 <translation id="7323896582714668701">Parametri de linie de comandă suplimentari pentru <ph name="PRODUCT_NAME" /></translation>
-<translation id="7326394567531622570">Similar cu golirea (valoarea 2), însă încearcă să păstreze indicativele de conectare, astfel încât utilizatorul să nu trebuiască să se conecteze din nou.</translation>
+<translation id="7326394567531622570">Similar cu Golirea (valoarea 2), însă încearcă să păstreze indicativele de conectare, astfel încât utilizatorul să nu trebuiască să se conecteze din nou.</translation>
 <translation id="7329842439428490522">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este oprit atunci când dispozitivul funcționează pe baterie.
 
           Dacă politica este setată la o valoare mai mare decât zero, specifică intervalul de timp în care utilizatorul trebuie să fie inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să oprească ecranul.
@@ -1899,6 +1923,18 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă politica este dezactivată sau nu este configurată, conectarea face legătura cu profilurile obișnuite.</translation>
 <translation id="8158758865057576716">Activează crearea unor copii de roaming pentru datele profilului <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8169931650834542988">Controlează care imprimante din
+      NativePrintersBulkConfiguration sunt disponibile utilizatorilor.
+
+      Indică politica privind accesul care este folosită pentru configurarea imprimantelor în bloc.
+      Dacă se selectează AllowAll, toate imprimantele sunt afișate. Dacă se selectează BlacklistRestriction,
+      se va folosi NativePrintersBulkBlacklist pentru a se restricționa accesul
+      la imprimantele specificate. Dacă se selectează WhitelistPrintersOnly,
+      NativePrintersWhitelist indică numai acele imprimante care
+      se pot selecta.
+
+      Dacă politica nu este configurată, se va folosi BlacklistRestriction în mod prestabilit.
+      </translation>
 <translation id="8170878842291747619">Activează serviciul integrat Google Traducere pe <ph name="PRODUCT_NAME" />. Dacă activați această setare, <ph name="PRODUCT_NAME" /> va afișa o bară de instrumente integrată, care oferă traducerea paginii pentru utilizator, atunci când este cazul. Dacă dezactivați această setare, utilizatorii nu vor vedea bara de traducere. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />. Dacă această setare este lăsată nesetată, utilizatorul poate decide dacă folosește sau nu această funcție.</translation>
 <translation id="817455428376641507">Permite accesul la adresele URL enumerate, ca excepții de la lista neagră cu adrese URL.
 
@@ -1980,6 +2016,14 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8465065632133292531">Parametrii pentru adresa URL a căutării instant care utilizează POST</translation>
 <translation id="847472800012384958">Nu permite niciunui site să afișeze ferestre pop-up</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
+<translation id="8480767919856518465">Specifică imprimantele pe care le poate folosi un utilizator.
+
+      Această politică este folosită numai dacă opțiunea WhitelistPrintersOnly este aleasă pentru
+      NativePrintersBulkAccessMode.
+
+      Dacă această politică este folosită, utilizatorilor le sunt disponibile numai imprimantele ale căror ID-uri se potrivesc cu valorile
+      din politică. ID-urile trebuie să corespundă
+      intrărilor din fișierul specificat în NativePrintersBulkConfiguration.</translation>
 <translation id="8484458986062090479">Personalizează lista cu șabloane de adrese URL care trebuie să fie redate întotdeauna de browserul gazdă.
 
           Dacă această politică nu este configurată, va fi folosit programul de redare prestabilit pentru toate site-urile, așa cum este indicat în politica „ChromeFrameRendererSettings”.
@@ -1990,6 +2034,30 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8519264904050090490">Adrese URL pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
 <translation id="8544375438507658205">Motor de redare HTML prestabilit pentru <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avertisment la accesarea site-urilor din afara pachetelor de conținut</translation>
+<translation id="8555589883248082762">Specifică configurațiile pentru imprimantele companiei.
+
+      Această politică îți permite să specifici configurațiile imprimantelor pentru
+      dispozitivele <ph name="PRODUCT_OS_NAME" />
+      Dimensiunea fișierului nu trebuie să depășească 5 MB, iar fișierul trebuie codificat în format JSON.
+      Formatul este același cu cel al dicționarului NativePrinters. Se estimează
+      că un fișier care conține aproximativ 21.000 de imprimante va fi codificat într-un fișier de 5 MB.
+      Codul hash criptografic este folosit pentru a se verifica integritatea
+      descărcării.
+
+      Fișierul este descărcat și stocat în memoria cache. Va fi descărcat din nou, ori de câte ori
+      adresa URL sau codul hash se modifică.
+
+      Dacă politica este configurată,
+      <ph name="PRODUCT_OS_NAME" /> va descărca
+      fișierul pentru configurațiile imprimantelor și va face imprimantele disponibile,
+      conform cu NativePrintersBulkAccessMode, NativePrintersBulkWhitelist,
+      și NativePrintersBulkBlacklist.
+
+      Dacă această politică este configurată, utilizatorii nu pot să o modifice sau să o ignore.
+
+      Această politică nu afectează opțiunea utilizatorilor de a configura
+      imprimantele pe dispozitive individuale. Este menită să fie suplimentară
+      față de configurarea imprimantelor de către utilizatori individuali.</translation>
 <translation id="8566842294717252664">Ascunde magazinul web în pagina Filă nouă și în lansatorul de aplicații</translation>
 <translation id="8587229956764455752">Permite crearea de noi conturi de utilizator</translation>
 <translation id="8614804915612153606">Dezactivează actualizarea automată</translation>
@@ -2101,6 +2169,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="9096086085182305205">Lista albă de autentificare a serverelor</translation>
 <translation id="9098553063150791878">Politici pentru autentificarea HTTP</translation>
 <translation id="9105265795073104888">Un singur subset de opțiuni pentru configurarea proxy-ului este pus la dispoziția aplicațiilor Android. Acestea pot alege în mod voluntar să folosească proxy-ul. Nu le poți forța să folosească un proxy.</translation>
+<translation id="9112727953998243860">Fișier de configurare a imprimantelor companiei</translation>
 <translation id="9112897538922695510">Vă permite să înregistrați o listă de handlere de protocol. Aceasta poate fi doar o politică recomandată. Valoarea proprietății |protocol| trebuie setată la o schemă ca „mailto”, iar valoarea proprietății |url| trebuie setată la șablonul adresei URL al aplicației care gestionează schema. Șablonul poate include „%s”, care, dacă este prezent, va fi înlocuit cu adresa URL gestionată.
 
           Handlerele de protocol înregistrate de politică sunt combinate cu cele înregistrate de utilizator și ambele sunt disponibile pentru a fi utilizate. Utilizatorul poate înlocui handlerele de protocol instalate de politică instalând un nou handler prestabilit, dar nu poate elimina un handler de protocol înregistrat de politică.</translation>

@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Siirrä kirjanmerkkejä</translation>
 <translation id="119944043368869598">Tyhjennä kaikki</translation>
 <translation id="1201402288615127009">Seuraava</translation>
+<translation id="1204037785786432551">Lataa linkin kohde</translation>
+<translation id="1206892813135768548">Kopioi linkin teksti</translation>
 <translation id="1209206284964581585">Piilota toistaiseksi</translation>
 <translation id="1211530540767271776">Ei USB-laitteita</translation>
 <translation id="123724288017357924">Päivitä nykyinen sivu, ohita välimuistin sisältö</translation>
@@ -114,6 +116,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="2082238445998314030">Tulos <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Kirjaudu Chromeen, niin voit lisätä Googlen suosittelemaa sisältöä.</translation>
+<translation id="2091887806945687916">Ääni</translation>
 <translation id="2095887075102408547">Kun tämä toiminto on käytössä, Chrome pakkaa lukemasi sivut Googlen palvelimilla ennen niiden lataamista. Suojattuja yhteyksiä (HTTPS) käyttäviä tai incognito-välilehdillä avattuja sivuja ei optimoida eikä Google näe niitä.</translation>
 <translation id="2096396629993765042">Sinua ei kirjata ulos Google-tililtäsi. Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Automaattinen kirjautuminen</translation>
@@ -333,6 +336,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4256782883801055595">Avoimen lähdekoodin käyttöluvat</translation>
 <translation id="4259722352634471385">Kohde on estetty: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Synkronoinnissa tapahtui virhe – saat lisätietoja napauttamalla.</translation>
+<translation id="4269820728363426813">Kopioi linkin osoite</translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Sallittu</translation>
 <translation id="42981349822642051">Laajenna</translation>
@@ -602,7 +606,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6701279291835318271">Tietoturvaraportit</translation>
 <translation id="6709133671862442373">Uutiset</translation>
 <translation id="6710213216561001401">Edellinen</translation>
-<translation id="6727612981472093924">Navigointipalkki avattu</translation>
 <translation id="6738867403308150051">Ladataan…</translation>
 <translation id="6762156594045689028">Jos haluat muokata tätä asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
 <translation id="6764789522080107716">Tiedoston avaaminen epäonnistui.</translation>
@@ -661,6 +664,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7253272406652746122">Lisää Google-tili laitteen Asetukset-sovelluksen Tilit-sivulla.</translation>
 <translation id="7274013316676448362">Estetty sivusto</translation>
 <translation id="7307288900373049735">Otetaan yhteyttä Googleen… Tämä voi kestää hetken.</translation>
+<translation id="7318797029885648322">Valitse Lisää, jos haluat nähdä artikkeleita.</translation>
 <translation id="7333031090786104871">Edellisen sivuston lisääminen kesken</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Jaa 1 valittu kohde}other{Jaa # valittua kohdetta}}</translation>
@@ -799,6 +803,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8636825310635137004">Ota synkronointi käyttöön, niin voit käyttää välilehtiäsi kaikilla laitteilla.</translation>
 <translation id="8641930654639604085">Pyri estämään aikuisille tarkoitetut sivustot</translation>
 <translation id="8662811608048051533">Kirjaa sinut ulos useimmilta sivustoilta.</translation>
+<translation id="867485229011312729">Missä ovat kirjanmerkit, lataukset ja historia?</translation>
 <translation id="8676374126336081632">Tyhjennä teksti</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signaalin voimakkuus: # palkki}other{Signaalin voimakkuus: # palkkia}}</translation>
 <translation id="869891660844655955">Vanhenemispäivämäärä</translation>

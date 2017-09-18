@@ -525,6 +525,7 @@
 <translation id="5019198164206649151">Neprimerno stanje rezervne shrambe</translation>
 <translation id="5023310440958281426">Preverite skrbnikove pravilnike</translation>
 <translation id="5029568752722684782">Počisti kopijo</translation>
+<translation id="503069730517007720">Korensko potrdilo za programsko opremo »<ph name="SOFTWARE_NAME" />« je obvezno, vendar ni nameščeno. Skrbnik za IT lahko za odpravo te težave upošteva navodila za konfiguracijo za programsko opremo »<ph name="SOFTWARE_NAME" />«. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="5031870354684148875">Google Prevajalnik – vizitka</translation>
 <translation id="5039804452771397117">Dovoli</translation>
 <translation id="5040262127954254034">Zasebnost</translation>
@@ -889,11 +890,13 @@
 <translation id="8037357227543935929">Zahteva (privzeto)</translation>
 <translation id="8041089156583427627">Pošlji povratne informacije</translation>
 <translation id="8041940743680923270">Uporabi globalno privzeto (Vprašaj)</translation>
+<translation id="8057711352706143257">Programska oprema »<ph name="SOFTWARE_NAME" />« ni pravilno konfigurirana. Običajno težavo odpravite tako, da odstranite programsko opremo »<ph name="SOFTWARE_NAME" />«. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8088680233425245692">Članka si ni bilo mogoče ogledati.</translation>
 <translation id="8091372947890762290">Čakanje na aktivacijo v strežniku</translation>
 <translation id="8094917007353911263">Omrežje, ki ga uporabljate, morda zahteva, da obiščete <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8103161714697287722">Plačilno sredstvo</translation>
 <translation id="8118489163946903409">Plačilno sredstvo</translation>
+<translation id="8127301229239896662">Programska oprema »<ph name="SOFTWARE_NAME" />« ni bila pravilno nameščena v računalniku ali omrežju. Obrnite se na skrbnika za IT glede odpravljanja te težave.</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8134994873729925007"><ph name="BEGIN_ABBR" />Naslova DNS<ph name="END_ABBR" /> strežnika spletnega mesta <ph name="HOST_NAME" /> ni bilo mogoče najti.</translation>
 <translation id="8149426793427495338">Računalnik je preklopil v stanje pripravljenosti.</translation>
@@ -1024,4 +1027,9 @@
 <translation id="988159990683914416">Različica za razvijalce</translation>
 <translation id="989988560359834682">Uredi naslov</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
+<translation id="992432478773561401">Programska oprema »<ph name="SOFTWARE_NAME" />« ni bila pravilno nameščena v računalniku ali omrežju:
+    &lt;ul&gt;
+    &lt;li&gt;Poskusite odstraniti »<ph name="SOFTWARE_NAME" />«&lt;/li&gt;
+    &lt;li&gt;Poskusite se povezati z drugim omrežjem&lt;/li&gt;
+    &lt;/ul&gt;</translation>
 </translationbundle>

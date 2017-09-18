@@ -41,7 +41,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2077129598763517140">Používať hardvérovú akceleráciu (keď je dostupná)</translation>
 <translation id="2084710999043359739">Pridať do prehliadača Chrome</translation>
 <translation id="2120620239521071941">Táto akcia odstráni zo zariadenia niekoľko položiek (počet: <ph name="ITEMS_COUNT" />). Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do Chromu ako používateľ <ph name="USER_EMAIL" />.</translation>
-<translation id="2123055963409958220">Nahláste <ph name="BEGIN_LINK" />aktuálne nastavenia<ph name="END_LINK" /> a pomôžte tak zlepšiť Chrome.</translation>
+<translation id="2123055963409958220">Nahlásiť <ph name="BEGIN_LINK" />aktuálne nastavenia<ph name="END_LINK" /> a pomôcť tak zlepšiť Chrome</translation>
 <translation id="216054706567564023">Nainštalujte si Chrome do telefónu. Pošleme vám správu SMS na telefónne číslo na obnovenie účtu.</translation>
 <translation id="2246246234298806438">Ak vstavaný zobrazovač súborov PDF chýba, prehliadač Google Chrome nemôže zobraziť ukážku pred tlačou.</translation>
 <translation id="2252923619938421629">Nahláste aktuálne nastavenia a pomôžte tak zlepšiť prehliadač Google Chrome</translation>
@@ -69,9 +69,9 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="2769762047821873045">Google Chrome nie je váš predvolený prehliadač.</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
 <translation id="2799223571221894425">Znova spustiť</translation>
-<translation id="2847461019998147611">Zobraziť Google Chrome v tomto jazyku</translation>
+<translation id="2847461019998147611">Zobrazovať Google Chrome v tomto jazyku</translation>
 <translation id="2871893339301912279">Ste prihlásený/-á do prehliadača Chrome.</translation>
-<translation id="2888126860611144412">Informácie o Google Chrome</translation>
+<translation id="2888126860611144412">O aplikácii Chrome</translation>
 <translation id="3037838751736561277">Google Chrome je v režime na pozadí.</translation>
 <translation id="3047079729301751317">Ak odpojíte účet <ph name="USERNAME" />, vymaže sa história, záložky, nastavenia a všetky ďalšie údaje prehliadača Chrome uložené na vašom zariadení. Údaje uložené v účte Google sa nevymažú a môžete ich spravovať v službe <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Karta Chrome</translation>
@@ -95,6 +95,7 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="345171907106878721">Pridajte si účet do prehliadača Chrome</translation>
 <translation id="3612333635265770873">Zistilo sa, že modul s rovnakým názvom spôsobuje konflikt s aplikáciou Google Chrome.</translation>
 <translation id="3622797965165704966">Teraz je používanie prehliadača Chrome s účtom Google a na zdieľaných počítačoch oveľa ľahšie.</translation>
+<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Zmluvné podmienky<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome OS</translation>
 <translation id="3718181793972440140">Táto akcia odstráni zo zariadenia jednu položku. Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do Chromu ako používateľ <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Rozšírenie „<ph name="EXTENSION_NAME" />“ zmenilo stránku, ktorá sa zobrazí pri spustení prehliadača Chrome.</translation>
 <translation id="3738139272394829648">Vyhľadávanie klepnutím</translation>
@@ -220,7 +221,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7339898014177206373">Nové okno</translation>
 <translation id="7369650938475876456">Použite silné heslo vygenerované Chromom</translation>
 <translation id="7398801000654795464">Do prehliadača Chrome ste boli prihlásený/-á ako <ph name="USER_EMAIL_ADDRESS" />. Ak sa chcete prihlásiť znova, použite rovnaký účet.</translation>
-<translation id="7400722733683201933">Informácie o prehliadači Google Chrome</translation>
+<translation id="7400722733683201933">O aplikácii Google Chrome</translation>
 <translation id="7408085963519505752">Zmluvné podmienky systému OS Chrome</translation>
 <translation id="7419046106786626209">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože možnosť synchronizácie nie je pre vašu doménu k dispozícii.</translation>
 <translation id="7437998757836447326">Odhlásenie z prehliadača Chrome</translation>

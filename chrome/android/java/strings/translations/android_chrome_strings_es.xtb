@@ -19,6 +19,8 @@
 <translation id="1197267115302279827">Mover marcadores</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
 <translation id="1201402288615127009">Siguiente</translation>
+<translation id="1204037785786432551">Descargar enlace</translation>
+<translation id="1206892813135768548">Copiar texto de enlace</translation>
 <translation id="1209206284964581585">Ocultar por ahora</translation>
 <translation id="1211530540767271776">No hay dispositivos USB</translation>
 <translation id="123724288017357924">Vuelve a cargar esta página sin contenido en caché</translation>
@@ -114,6 +116,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Para obtener contenido personalizado sugerido por Google, inicia sesión en Chrome.</translation>
+<translation id="2091887806945687916">Sonido</translation>
 <translation id="2095887075102408547">Si se activa esta función, Chrome utilizará los servidores de Google para comprimir las páginas que visites antes de descargarlas. Google no optimizará ni verá las páginas a las que accedas mediante conexiones privadas (HTTPS) o pestañas de incógnito.</translation>
 <translation id="2096396629993765042">No se cerrará la sesión en tu cuenta de Google. Es posible que tu cuenta de Google tenga otras formas del historial de navegación en la página <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="2100273922101894616">Iniciar sesión automáticamente</translation>
@@ -333,6 +336,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4256782883801055595">Licencias de código abierto</translation>
 <translation id="4259722352634471385">Se ha bloqueado la navegación: <ph name="URL" /></translation>
 <translation id="4262028915562328938">Se ha producido un error de sincronización. Toca para ver los detalles.</translation>
+<translation id="4269820728363426813">Copiar la dirección del enlace</translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="42981349822642051">Ampliar</translation>
@@ -602,7 +606,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6701279291835318271">Informes de seguridad</translation>
 <translation id="6709133671862442373">Noticias</translation>
 <translation id="6710213216561001401">Anterior</translation>
-<translation id="6727612981472093924">Panel de navegación abierto</translation>
 <translation id="6738867403308150051">Descargando…</translation>
 <translation id="6762156594045689028">Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
 <translation id="6764789522080107716">No se puede abrir el archivo</translation>
@@ -661,6 +664,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7253272406652746122">Añade una cuenta de Google desde la sección Cuentas de la aplicación de ajustes de tu dispositivo.</translation>
 <translation id="7274013316676448362">Sitio web bloqueado</translation>
 <translation id="7307288900373049735">Contactando con Google… Esto puede tardar un minuto</translation>
+<translation id="7318797029885648322">Toca Más para acceder a los artículos</translation>
 <translation id="7333031090786104871">Aún se está añadiendo el sitio web anterior</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartir 1 elemento seleccionado}other{Compartir # elementos seleccionados}}</translation>
@@ -799,6 +803,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8636825310635137004">Activa la sincronización para ver las pestañas de tus otros dispositivos.</translation>
 <translation id="8641930654639604085">Intentar bloquear sitios web para adultos</translation>
 <translation id="8662811608048051533">Cierra tu sesión en la mayoría de los sitios web.</translation>
+<translation id="867485229011312729">¿Dónde están los marcadores, las descargas y el historial?</translation>
 <translation id="8676374126336081632">Borrar entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de intensidad de la señal: # barra}other{Nivel de intensidad de la señal: # barras}}</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
