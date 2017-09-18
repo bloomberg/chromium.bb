@@ -23,7 +23,9 @@
 namespace {
 
 // Maximum time (in milliseconds) to wait to the search providers to finish.
-constexpr int kStopTimeMS = 1500;
+// The value is increased from 1500 ms. See crbug.com/765339.
+constexpr int kStopTimeMS = 60000;
+
 }
 
 namespace app_list {
