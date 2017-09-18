@@ -384,12 +384,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   [self presentViewController:navController animated:YES completion:NULL];
 }
 
-- (void)openAllNodes:(const std::vector<const bookmarks::BookmarkNode*>&)nodes
-         inIncognito:(BOOL)inIncognito {
+- (void)openAllNodes:(const std::vector<const bookmarks::BookmarkNode*>&)nodes {
   std::vector<GURL> urls = GetUrlsToOpen(nodes);
   [self.homeDelegate bookmarkHomeViewControllerWantsDismissal:self
-                                             navigationToUrls:urls
-                                                  inIncognito:inIncognito];
+                                             navigationToUrls:urls];
 }
 
 #pragma mark - Navigation Bar Callbacks
@@ -1407,18 +1405,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
               handler:^(UIAlertAction* _Nonnull action) {
                 std::vector<const BookmarkNode*> nodes =
                     [weakSelf.bookmarksTableView getEditNodesInVector];
-                [weakSelf openAllNodes:nodes inIncognito:NO];
+                [weakSelf openAllNodes:nodes];
               }];
 
   UIAlertAction* openInIncognitoAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(
                           IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)
                 style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction* _Nonnull action) {
-                std::vector<const BookmarkNode*> nodes =
-                    [weakSelf.bookmarksTableView getEditNodesInVector];
-                [weakSelf openAllNodes:nodes inIncognito:YES];
-              }];
+              handler:nil];
 
   UIAlertAction* moveAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
@@ -1468,11 +1462,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       actionWithTitle:l10n_util::GetNSString(
                           IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)
                 style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction* _Nonnull action) {
-                std::vector<const BookmarkNode*> nodes = {node};
-                [weakSelf openAllNodes:nodes inIncognito:YES];
-              }];
-
+              handler:nil];
   [alert addAction:editAction];
   [alert addAction:copyAction];
   [alert addAction:openInIncognitoAction];

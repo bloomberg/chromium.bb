@@ -256,6 +256,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (std::vector<const bookmarks::BookmarkNode*>)getEditNodesInVector {
   // Create a vector of edit nodes in the same order as the nodes in folder.
+  // TODO(crbug.com/695749): Check if this opening order is our desired
+  // behavior.
   std::vector<const bookmarks::BookmarkNode*> nodes;
   int childCount = _currentRootNode->child_count();
   for (int i = 0; i < childCount; ++i) {

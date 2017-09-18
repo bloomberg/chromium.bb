@@ -27,17 +27,10 @@ class BookmarkNode;
 
 @protocol BookmarkHomeViewControllerDelegate
 // The view controller wants to be dismissed. If |urls| is not empty, then
-// the user has selected to navigate to those URLs in the current tab mode.
+// the user has selected to navigate to those URLs.
 - (void)bookmarkHomeViewControllerWantsDismissal:
             (BookmarkHomeViewController*)controller
                                 navigationToUrls:(const std::vector<GURL>&)urls;
-
-// The view controller wants to be dismissed. If |urls| is not empty, then
-// the user has selected to navigate to those URLs with specified tab mode.
-- (void)bookmarkHomeViewControllerWantsDismissal:
-            (BookmarkHomeViewController*)controller
-                                navigationToUrls:(const std::vector<GURL>&)urls
-                                     inIncognito:(BOOL)inIncognito;
 
 @end
 

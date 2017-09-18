@@ -606,7 +606,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Verify the Open All functionality on multiple url selection.
 - (void)testContextMenuForMultipleURLOpenAll {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
@@ -615,179 +614,53 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
 
-  // Open 3 normal tabs from a normal session.
-  [BookmarksNewGenTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                               IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
 
-  // Verify there are 3 normal tabs.
-  [ChromeEarlGrey waitForMainTabCount:3];
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 0,
-                 @"Incognito tab count should be 0");
-
-  // Verify the order of open tabs.
-  [BookmarksNewGenTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
-
-  // Switch to Incognito mode by adding a new incognito tab.
-  chrome_test_util::OpenNewIncognitoTab();
-
-  [BookmarksNewGenTestCase openBookmarks];
-
-  // Open 3 normal tabs from a incognito session.
-  [BookmarksNewGenTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                               IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
-
-  // Verify there are 6 normal tabs and no new incognito tabs.
-  [ChromeEarlGrey waitForMainTabCount:6];
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
-                 @"Incognito tab count should be 1");
-
-  // Close the incognito tab to go back to normal mode.
-  chrome_test_util::CloseAllIncognitoTabs();
-
-  // The following verifies the selected bookmarks are open in the same order as
-  // in folder.
-
-  // Verify the order of open tabs.
-  [BookmarksNewGenTestCase verifyOrderOfTabsWithCurrentTabIndex:3];
-}
-
-// Verify the Open All in Incognito functionality on multiple url selection.
-- (void)testContextMenuForMultipleURLOpenAllInIncognito {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
-
-  // Open 3 incognito tabs from a normal session.
-  [BookmarksNewGenTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                               IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
-
-  // Verify there are 3 incognito tabs and no new normal tab.
-  [ChromeEarlGrey waitForIncognitoTabCount:3];
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
-                 @"Main tab count should be 1");
-
-  // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to switch to incognito mode");
-
-  // Verify the order of open tabs.
-  [BookmarksNewGenTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
-
-  [BookmarksNewGenTestCase openBookmarks];
-
-  // Open 3 incognito tabs from a incognito session.
-  [BookmarksNewGenTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                               IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
-
-  // The 3rd tab will be re-used to open one of the selected bookmarks.  So
-  // there will be 2 new tabs only.
-
-  // Verify there are 5 incognito tabs and no new normal tab.
-  [ChromeEarlGrey waitForIncognitoTabCount:5];
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
-                 @"Main tab count should be 1");
-
-  // Verify the order of open tabs.
-  [BookmarksNewGenTestCase verifyOrderOfTabsWithCurrentTabIndex:2];
-}
-
-// Verify the Open and Open in Incognito functionality on single url.
-- (void)testOpenSingleBookmarkInNormalAndIncognitoTab {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
-
-  [BookmarksNewGenTestCase setupStandardBookmarks];
-  [BookmarksNewGenTestCase openBookmarks];
-  [BookmarksNewGenTestCase openMobileBookmarks];
-
-  // Open a bookmark in a normal session.
+  // Select URLs.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
       performAction:grey_tap()];
-
-  // Verify "First URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFirstURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  [BookmarksNewGenTestCase openBookmarks];
-
-  // Open a incognito tab from a normal session (through a long press).
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      performAction:grey_longPress()];
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)]
       performAction:grey_tap()];
-
-  // Verify there is 1 incognito tab created and no new normal tab created.
-  [ChromeEarlGrey waitForIncognitoTabCount:1];
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
-                 @"Main tab count should be 1");
-
-  // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to switch to incognito mode");
-
-  // Verify "Second URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getSecondURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  [BookmarksNewGenTestCase openBookmarks];
-
-  // Open a bookmark from a incognito session.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
       performAction:grey_tap()];
 
-  // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to staying at incognito mode");
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap on Open All.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN)]
+      performAction:grey_tap()];
+
+  // Verify there are 3 tabs.
+  [ChromeEarlGrey waitForMainTabCount:3];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
+
+  // The following verifies the selected bookmarks are open in the same order as
+  // in folder.
 
   // Verify "French URL" appears in the omnibox.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           getFrenchURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  // Verify no new tabs created.
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
-                 @"Incognito tab count should be 1");
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
-                 @"Main tab count should be 1");
+  // Switch to the 2nd Tab and verify "Second URL" appears.
+  chrome_test_util::SelectTabAtIndexInCurrentMode(1);
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getSecondURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
 
-  [BookmarksNewGenTestCase openBookmarks];
-
-  // Open a bookmark in incognito from a incognito session (through a long
-  // press).
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
-      performAction:grey_longPress()];
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)]
-      performAction:grey_tap()];
-
-  // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to stayling at incognito mode");
-
-  // Verify "First URL" appears in the omnibox.
+  // Switch to the 3rd Tab and verify "First URL" appears.
+  chrome_test_util::SelectTabAtIndexInCurrentMode(2);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           getFirstURL().GetContent())]
       assertWithMatcher:grey_notNil()];
-
-  // Verify no new tabs created.
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
-                 @"Incognito tab count should be 1");
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
-                 @"Main tab count should be 1");
 }
 
 - (void)testContextBarForSingleFolderSelection {
@@ -2041,59 +1914,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                           [BookmarksNewGenTestCase
                                               contextBarCancelString])]
       performAction:grey_tap()];
-}
-
-// Select urls from Mobile Bookmarks and tap on a specified context bar button.
-+ (void)selectUrlsAndTapOnContextBarButtonWithLabelId:(int)buttonLabelId {
-  // Change to edit mode
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_trailing_button")]
-      performAction:grey_tap()];
-
-  // Select URLs.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"French URL")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                          [BookmarksNewGenTestCase
-                                              contextBarMoreString])]
-      performAction:grey_tap()];
-
-  // Tap on Open All.
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(buttonLabelId)]
-      performAction:grey_tap()];
-}
-
-// Verify the Mobile Bookmarks's urls are open in the same order as they are in
-// folder.
-+ (void)verifyOrderOfTabsWithCurrentTabIndex:(NSUInteger)tabIndex {
-  // Verify "French URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFrenchURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Switch to the next Tab and verify "Second URL" appears.
-  // TODO(crbug.com/695749): see we if can add switchToNextTab to
-  // chrome_test_util so that we don't need to pass tabIndex here.
-  chrome_test_util::SelectTabAtIndexInCurrentMode(tabIndex + 1);
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getSecondURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Switch to the next Tab and verify "First URL" appears.
-  chrome_test_util::SelectTabAtIndexInCurrentMode(tabIndex + 2);
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFirstURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
 }
 
 // Verifies that there is |count| children on the bookmark folder with |name|.
