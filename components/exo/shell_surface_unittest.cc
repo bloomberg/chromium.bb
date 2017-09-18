@@ -128,6 +128,11 @@ TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
   EXPECT_EQ(origin.ToString(),
             surface->window()->GetBoundsInRootWindow().origin().ToString());
 
+  // Compositor should be locked until configure request is acknowledged.
+  ui::Compositor* compositor =
+      shell_surface->GetWidget()->GetNativeWindow()->layer()->GetCompositor();
+  EXPECT_TRUE(compositor->IsLocked());
+
   shell_surface->AcknowledgeConfigure(kSerial);
   std::unique_ptr<Buffer> fullscreen_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(
@@ -137,6 +142,7 @@ TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
 
   EXPECT_EQ(gfx::Point().ToString(),
             surface->window()->GetBoundsInRootWindow().origin().ToString());
+  EXPECT_FALSE(compositor->IsLocked());
 }
 
 TEST_F(ShellSurfaceTest, SetParent) {

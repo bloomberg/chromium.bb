@@ -52,11 +52,15 @@ DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 // Application Id set by the client.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr);
 
-// Maximum amount of time to wait until the window is resized
-// to match the display's orientation in tablet mode.
+// Maximum amount of time to wait for contents that match the display's
+// orientation in tablet mode.
 // TODO(oshima): Looks like android is generating unnecessary frames.
 // Fix it on Android side and reduce the timeout.
-constexpr int kRotationLockTimeoutMs = 2500;
+constexpr int kOrientationLockTimeoutMs = 2500;
+
+// Maximum amount of time to wait for contents after a change to maximize,
+// fullscreen or pinned state.
+constexpr int kMaximizedOrFullscreenOrPinnedLockTimeoutMs = 100;
 
 // This is a struct for accelerator keys.
 struct Accelerator {
@@ -228,6 +232,20 @@ Orientation SizeToOrientation(const gfx::Size& size) {
 
 }  // namespace
 
+// Surface state associated with each configure request.
+struct ShellSurface::Config {
+  Config(uint32_t serial,
+         const gfx::Vector2d& origin_offset,
+         int resize_component,
+         std::unique_ptr<ui::CompositorLock> compositor_lock);
+  ~Config();
+
+  uint32_t serial;
+  gfx::Vector2d origin_offset;
+  int resize_component;
+  std::unique_ptr<ui::CompositorLock> compositor_lock;
+};
+
 // Helper class used to coalesce a number of changes into one "configure"
 // callback. Callbacks are suppressed while an instance of this class is
 // instantiated and instead called when the instance is destroyed.
@@ -262,6 +280,21 @@ class ShellSurface::ScopedAnimationsDisabled {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAnimationsDisabled);
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// ShellSurface, Config:
+
+ShellSurface::Config::Config(
+    uint32_t serial,
+    const gfx::Vector2d& origin_offset,
+    int resize_component,
+    std::unique_ptr<ui::CompositorLock> compositor_lock)
+    : serial(serial),
+      origin_offset(origin_offset),
+      resize_component(resize_component),
+      compositor_lock(std::move(compositor_lock)) {}
+
+ShellSurface::Config::~Config() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, ScopedConfigure:
@@ -380,17 +413,17 @@ void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
   // change to reflect the acknowledgement of configure request with |serial|
   // at the next call to Commit().
   while (!pending_configs_.empty()) {
-    auto config = pending_configs_.front();
+    std::unique_ptr<Config> config = std::move(pending_configs_.front());
     pending_configs_.pop_front();
 
     // Add the config offset to the accumulated offset that will be applied when
     // Commit() is called.
-    pending_origin_offset_ += config.origin_offset;
+    pending_origin_offset_ += config->origin_offset;
 
     // Set the resize direction that will be applied when Commit() is called.
-    pending_resize_component_ = config.resize_component;
+    pending_resize_component_ = config->resize_component;
 
-    if (config.serial == serial)
+    if (config->serial == serial)
       break;
   }
 
@@ -820,9 +853,9 @@ void ShellSurface::OnSurfaceCommit() {
     }
     orientation_ = pending_orientation_;
     if (expected_orientation_ == orientation_)
-      compositor_lock_.reset();
+      orientation_compositor_lock_.reset();
   } else {
-    compositor_lock_.reset();
+    orientation_compositor_lock_.reset();
   }
 }
 
@@ -1011,8 +1044,17 @@ void ShellSurface::OnPreWindowStateTypeChange(
     // account and without this cross-fade animations are unreliable.
     // TODO(domlaskowski): For BoundsMode::CLIENT, the configure callback does
     // not yet support window state changes. See crbug.com/699746.
-    if (configure_callback_.is_null() || bounds_mode_ == BoundsMode::CLIENT)
+    if (configure_callback_.is_null() || bounds_mode_ == BoundsMode::CLIENT) {
       scoped_animations_disabled_.reset(new ScopedAnimationsDisabled(this));
+    } else if (widget_) {
+      // Give client a chance to produce a frame that takes state change into
+      // account by acquiring a compositor lock.
+      ui::Compositor* compositor =
+          widget_->GetNativeWindow()->layer()->GetCompositor();
+      configure_compositor_lock_ = compositor->GetCompositorLock(
+          nullptr, base::TimeDelta::FromMilliseconds(
+                       kMaximizedOrFullscreenOrPinnedLockTimeoutMs));
+    }
   }
 }
 
@@ -1194,15 +1236,11 @@ void ShellSurface::OnDisplayMetricsChanged(const display::Display& new_display,
   if (orientation_ == target_orientation)
     return;
   expected_orientation_ = target_orientation;
-  EnsureCompositorIsLocked();
+  EnsureCompositorIsLockedForOrientationChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ui::CompositorLockClient overrides:
-
-void ShellSurface::CompositorLockTimedOut() {
-  compositor_lock_.reset();
-}
+// ui::EventHandler overrides:
 
 void ShellSurface::OnMouseEvent(ui::MouseEvent* event) {
   if (!resizer_) {
@@ -1313,6 +1351,13 @@ bool ShellSurface::AcceleratorPressed(const ui::Accelerator& accelerator) {
     }
   }
   return views::View::AcceleratorPressed(accelerator);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ui::CompositorLockClient overrides:
+
+void ShellSurface::CompositorLockTimedOut() {
+  orientation_compositor_lock_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1444,7 +1489,9 @@ void ShellSurface::Configure() {
 
   // Apply origin offset and resize component at the first Commit() after this
   // configure request has been acknowledged.
-  pending_configs_.push_back({serial, origin_offset, resize_component});
+  pending_configs_.push_back(
+      base::MakeUnique<Config>(serial, origin_offset, resize_component,
+                               std::move(configure_compositor_lock_)));
   LOG_IF(WARNING, pending_configs_.size() > 100)
       << "Number of pending configure acks for shell surface has reached: "
       << pending_configs_.size();
@@ -1855,12 +1902,12 @@ gfx::Point ShellSurface::GetMouseLocation() const {
   return location;
 }
 
-void ShellSurface::EnsureCompositorIsLocked() {
-  if (!compositor_lock_) {
+void ShellSurface::EnsureCompositorIsLockedForOrientationChange() {
+  if (!orientation_compositor_lock_) {
     ui::Compositor* compositor =
       widget_->GetNativeWindow()->layer()->GetCompositor();
-    compositor_lock_ = compositor->GetCompositorLock(
-        this, base::TimeDelta::FromMilliseconds(kRotationLockTimeoutMs));
+    orientation_compositor_lock_ = compositor->GetCompositorLock(
+        this, base::TimeDelta::FromMilliseconds(kOrientationLockTimeoutMs));
   }
 }
 
