@@ -5991,8 +5991,11 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="ContentSuggestionsBreakingNewsMessageContainsNews">
-  <int value="0" label="Without pushed news"/>
-  <int value="1" label="With (possibly empty) pushed news"/>
+  <int value="0" label="Without pushed news, handler listening"/>
+  <int value="1" label="With (possibly empty) pushed news, handler listening"/>
+  <int value="2" label="Without pushed news, handler not listening"/>
+  <int value="3"
+      label="With (possibly empty) pushed news, handler not listening"/>
 </enum>
 
 <enum name="ContentSuggestionsBreakingNewsTokenValidationOutcome">

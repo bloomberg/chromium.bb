@@ -16,7 +16,21 @@ namespace metrics {
 void OnSubscriptionRequestCompleted(const Status& status);
 void OnUnsubscriptionRequestCompleted(const Status& status);
 
-void OnMessageReceived(bool contains_pushed_news);
+void OnMessageReceived(bool is_handler_listening, bool contains_pushed_news);
+
+// Received message status to report whether it contained pushed news and
+// whether the handler was listening when it arrived. This enum is used in a UMA
+// histogram, therefore, don't remove or reorder elements, only add new ones at
+// the end (before COUNT), and keep in sync with
+// ContentSuggestionsBreakingNewsMessageContainsNews in enums.xml.
+enum ReceivedMessageStatus {
+  WITHOUT_PUSHED_NEWS_AND_HANDLER_WAS_LISTENING = 0,
+  WITH_PUSHED_NEWS_AND_HANDLER_WAS_LISTENING = 1,
+  WITHOUT_PUSHED_NEWS_AND_HANDLER_WAS_NOT_LISTENING = 2,
+  WITH_PUSHED_NEWS_AND_HANDLER_WAS_NOT_LISTENING = 3,
+  // Insert new values here!
+  COUNT
+};
 
 void OnTokenRetrieved(instance_id::InstanceID::Result result);
 
