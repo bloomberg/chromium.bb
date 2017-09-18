@@ -152,8 +152,8 @@ class CORE_EXPORT Element : public ContainerNode {
   bool hasAttribute(const QualifiedName&) const;
   const AtomicString& getAttribute(const QualifiedName&) const;
 
-  // Passing nullAtom as the second parameter removes the attribute when calling
-  // either of these set methods.
+  // Passing g_null_atom as the second parameter removes the attribute when
+  // calling either of these set methods.
   void setAttribute(const QualifiedName&, const AtomicString& value);
   void SetSynchronizedLazyAttribute(const QualifiedName&,
                                     const AtomicString& value);

@@ -264,7 +264,7 @@ class CORE_EXPORT CSSSelector {
 
   // WARNING: Use of QualifiedName by attribute() is a lie.
   // attribute() will return a QualifiedName with prefix and namespaceURI
-  // set to starAtom to mean "matches any namespace". Be very careful
+  // set to g_star_atom to mean "matches any namespace". Be very careful
   // how you use the returned QualifiedName.
   // http://www.w3.org/TR/css3-selectors/#attrnmsp
   const QualifiedName& Attribute() const;
