@@ -104,15 +104,14 @@ void ExpectSameElements(const std::vector<T*>& expectations,
   ASSERT_EQ(expectations.size(), results.size());
 
   std::vector<T*> expectations_copy = expectations;
-  std::sort(
-      expectations_copy.begin(), expectations_copy.end(), CompareElements<T>);
+  std::sort(expectations_copy.begin(), expectations_copy.end(),
+            CompareElements<T>);
   std::vector<T*> results_copy = results;
   std::sort(results_copy.begin(), results_copy.end(), CompareElements<T>);
 
-  EXPECT_EQ(std::mismatch(results_copy.begin(),
-                          results_copy.end(),
-                          expectations_copy.begin(),
-                          ElementsEqual<T>).first,
+  EXPECT_EQ(std::mismatch(results_copy.begin(), results_copy.end(),
+                          expectations_copy.begin(), ElementsEqual<T>)
+                .first,
             results_copy.end());
 }
 
@@ -127,9 +126,7 @@ class PersonalDataManagerTestBase {
     personal_data_.reset(new PersonalDataManager("en"));
     personal_data_->Init(
         scoped_refptr<AutofillWebDataService>(autofill_database_service_),
-        prefs_.get(),
-        account_tracker_.get(),
-        signin_manager_.get(),
+        prefs_.get(), account_tracker_.get(), signin_manager_.get(),
         is_incognito);
     personal_data_->AddObserver(&personal_data_observer_);
     personal_data_->OnSyncServiceInitialized(nullptr);
@@ -455,22 +452,19 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileSetModificationDate) {
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
   AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile0,
-      "Marion", "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  test::SetProfileInfo(&profile0, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
 
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1,
-      "Josephine", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
-      "US", "19482937549");
+  test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL,
+                       "Orlando", "FL", "32801", "US", "19482937549");
 
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile2,
-      "Josephine", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
-      "32801", "US", "19482937549");
+  test::SetProfileInfo(&profile2, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+                       "Orlando", "FL", "32801", "US", "19482937549");
 
   // Add two test profiles to the database.
   personal_data_->AddProfile(profile0);
@@ -621,10 +615,9 @@ TEST_F(PersonalDataManagerTest, AddCreditCard_BasicInformation) {
 TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   // Start with unverified data.
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
-  test::SetProfileInfo(&profile,
-      "Marion", "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
   EXPECT_FALSE(profile.IsVerified());
 
   CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
@@ -692,8 +685,8 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
 
 // Makes sure that full cards are re-masked when full PAN storage is off.
 TEST_F(PersonalDataManagerTest, RefuseToStoreFullCard) {
-  // On Linux this should be disabled automatically. Elsewhere, only if the
-  // flag is passed.
+// On Linux this should be disabled automatically. Elsewhere, only if the
+// flag is passed.
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableOfferStoreUnmaskedWalletCards));
@@ -844,16 +837,14 @@ TEST_F(PersonalDataManagerTest, SavesServerCardType) {
 
 TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
   AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile0,
-      "Marion", "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  test::SetProfileInfo(&profile0, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
 
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1,
-      "Josephine", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
-      "US", "19482937549");
+  test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL,
+                       "Orlando", "FL", "32801", "US", "19482937549");
 
   CreditCard credit_card0(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&credit_card0, "John Dillinger",
@@ -900,8 +891,8 @@ TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
 // correctly on load.
 TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
   AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile0,
-      "y", "", "", "", "", "", "", "", "", "", "", "");
+  test::SetProfileInfo(&profile0, "y", "", "", "", "", "", "", "", "", "", "",
+                       "");
 
   // Add the profile0 to the db.
   personal_data_->AddProfile(profile0);
@@ -915,8 +906,8 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
 
   // Add a new profile.
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1,
-      "z", "", "", "", "", "", "", "", "", "", "", "");
+  test::SetProfileInfo(&profile1, "z", "", "", "", "", "", "", "", "", "", "",
+                       "");
   personal_data_->AddProfile(profile1);
 
   WaitForOnPersonalDataChanged();
@@ -968,8 +959,8 @@ TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
 
 TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
   AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile0,
-      "", "", "", "", "", "", "", "", "", "", "", "");
+  test::SetProfileInfo(&profile0, "", "", "", "", "", "", "", "", "", "", "",
+                       "");
 
   // Add the empty profile to the database.
   personal_data_->AddProfile(profile0);
@@ -1005,16 +996,14 @@ TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
 
 TEST_F(PersonalDataManagerTest, Refresh) {
   AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile0,
-      "Marion", "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  test::SetProfileInfo(&profile0, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
 
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1,
-      "Josephine", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
-      "US", "19482937549");
+  test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL,
+                       "Orlando", "FL", "32801", "US", "19482937549");
 
   // Add the test profiles to the database.
   personal_data_->AddProfile(profile0);
@@ -1028,10 +1017,9 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile2,
-      "Josephine", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
-      "32801", "US", "19482937549");
+  test::SetProfileInfo(&profile2, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+                       "Orlando", "FL", "32801", "US", "19482937549");
 
   autofill_database_service_->AddAutofillProfile(profile2);
 
@@ -1071,17 +1059,17 @@ TEST_F(PersonalDataManagerTest, Refresh) {
 TEST_F(PersonalDataManagerTest, ImportAddressProfiles) {
   FormData form;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "theprez@gmail.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address1", "21 Laussat St", "text", &field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
   form.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
@@ -1096,9 +1084,9 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles) {
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL,
-      "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-      "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", NULL, "Washington",
+                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
+                       "San Francisco", "California", "94102", NULL, NULL);
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -1107,16 +1095,16 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles) {
 TEST_F(PersonalDataManagerTest, ImportAddressProfiles_BadEmail) {
   FormData form;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form.fields.push_back(field);
   test::CreateTestFormField("Email:", "email", "bogus", "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address1", "21 Laussat St", "text", &field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
   form.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
@@ -1135,11 +1123,11 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_BadEmail) {
 TEST_F(PersonalDataManagerTest, ImportAddressProfiles_TwoEmails) {
   FormData form;
   FormFieldData field;
-  test::CreateTestFormField(
-      "Name:", "name", "George Washington", "text", &field);
+  test::CreateTestFormField("Name:", "name", "George Washington", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address1", "21 Laussat St", "text", &field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
   form.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
@@ -1147,11 +1135,11 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_TwoEmails) {
   form.fields.push_back(field);
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "example@example.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "example@example.com", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Confirm email:", "confirm_email", "example@example.com", "text", &field);
+  test::CreateTestFormField("Confirm email:", "confirm_email",
+                            "example@example.com", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
@@ -1166,11 +1154,11 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_TwoEmails) {
 TEST_F(PersonalDataManagerTest, ImportAddressProfiles_TwoDifferentEmails) {
   FormData form;
   FormFieldData field;
-  test::CreateTestFormField(
-      "Name:", "name", "George Washington", "text", &field);
+  test::CreateTestFormField("Name:", "name", "George Washington", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address1", "21 Laussat St", "text", &field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
   form.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
@@ -1178,11 +1166,11 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_TwoDifferentEmails) {
   form.fields.push_back(field);
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "example@example.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "example@example.com", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email2", "example2@example.com", "text", &field);
+  test::CreateTestFormField("Email:", "email2", "example2@example.com", "text",
+                            &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
@@ -1195,14 +1183,14 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_TwoDifferentEmails) {
 TEST_F(PersonalDataManagerTest, ImportAddressProfiles_NotEnoughFilledFields) {
   FormData form;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Card number:", "card_number", "4111 1111 1111 1111", "text", &field);
+  test::CreateTestFormField("Card number:", "card_number",
+                            "4111 1111 1111 1111", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
@@ -1219,8 +1207,8 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MinimumAddressUSA) {
   FormFieldData field;
   test::CreateTestFormField("Name:", "name", "Barack Obama", "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address", "1600 Pennsylvania Avenue", "text", &field);
+  test::CreateTestFormField("Address:", "address", "1600 Pennsylvania Avenue",
+                            "text", &field);
   form.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "Washington", "text", &field);
   form.fields.push_back(field);
@@ -1246,16 +1234,16 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MinimumAddressGB) {
   FormFieldData field;
   test::CreateTestFormField("Name:", "name", "David Cameron", "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address", "10 Downing Street", "text", &field);
+  test::CreateTestFormField("Address:", "address", "10 Downing Street", "text",
+                            &field);
   form.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "London", "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Postcode:", "postcode", "SW1A 2AA", "text", &field);
+  test::CreateTestFormField("Postcode:", "postcode", "SW1A 2AA", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Country:", "country", "United Kingdom", "text", &field);
+  test::CreateTestFormField("Country:", "country", "United Kingdom", "text",
+                            &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
@@ -1271,11 +1259,11 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MinimumAddressGI) {
   // There are no cities or provinces and no postal/zip code system.
   FormData form;
   FormFieldData field;
-  test::CreateTestFormField(
-      "Name:", "name", "Sir Adrian Johns", "text", &field);
+  test::CreateTestFormField("Name:", "name", "Sir Adrian Johns", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address", "The Convent, Main Street", "text", &field);
+  test::CreateTestFormField("Address:", "address", "The Convent, Main Street",
+                            "text", &field);
   form.fields.push_back(field);
   test::CreateTestFormField("Country:", "country", "Gibraltar", "text", &field);
   form.fields.push_back(field);
@@ -1292,26 +1280,26 @@ TEST_F(PersonalDataManagerTest,
        ImportAddressProfiles_PhoneNumberSplitAcrossMultipleFields) {
   FormData form;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Phone #:", "home_phone_area_code", "650", "text", &field);
+  test::CreateTestFormField("Phone #:", "home_phone_area_code", "650", "text",
+                            &field);
   field.max_length = 3;
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Phone #:", "home_phone_prefix", "555", "text", &field);
+  test::CreateTestFormField("Phone #:", "home_phone_prefix", "555", "text",
+                            &field);
   field.max_length = 3;
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Phone #:", "home_phone_suffix", "0000", "text", &field);
+  test::CreateTestFormField("Phone #:", "home_phone_suffix", "0000", "text",
+                            &field);
   field.max_length = 4;
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address1", "21 Laussat St", "text", &field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
   form.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
@@ -1326,9 +1314,9 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL,
-      "Washington", NULL, NULL, "21 Laussat St", NULL,
-      "San Francisco", "California", "94102", NULL, "(650) 555-0000");
+  test::SetProfileInfo(&expected, "George", NULL, "Washington", NULL, NULL,
+                       "21 Laussat St", NULL, "San Francisco", "California",
+                       "94102", NULL, "(650) 555-0000");
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -1337,22 +1325,19 @@ TEST_F(PersonalDataManagerTest,
 TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MultilineAddress) {
   FormData form;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "theprez@gmail.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:",
-      "street_address",
-      "21 Laussat St\n"
-      "Apt. #42",
-      "textarea",
-      &field);
+  test::CreateTestFormField("Address:", "street_address",
+                            "21 Laussat St\n"
+                            "Apt. #42",
+                            "textarea", &field);
   form.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form.fields.push_back(field);
@@ -1367,9 +1352,9 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MultilineAddress) {
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL,
-      "Washington", "theprez@gmail.com", NULL, "21 Laussat St", "Apt. #42",
-      "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", NULL, "Washington",
+                       "theprez@gmail.com", NULL, "21 Laussat St", "Apt. #42",
+                       "San Francisco", "California", "94102", NULL, NULL);
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected.Compare(*results[0]));
@@ -1379,17 +1364,17 @@ TEST_F(PersonalDataManagerTest,
        ImportAddressProfiles_TwoValidProfilesDifferentForms) {
   FormData form1;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "theprez@gmail.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address1", "21 Laussat St", "text", &field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
   form1.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form1.fields.push_back(field);
@@ -1405,26 +1390,25 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL,
-      "Washington", "theprez@gmail.com", NULL, "21 Laussat St", NULL,
-      "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", NULL, "Washington",
+                       "theprez@gmail.com", NULL, "21 Laussat St", NULL,
+                       "San Francisco", "California", "94102", NULL, NULL);
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
 
   // Now create a completely different profile.
   FormData form2;
-  test::CreateTestFormField(
-      "First name:", "first_name", "John", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "John", "text",
+                            &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Adams", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Adams", "text", &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "second@gmail.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "second@gmail.com", "text",
+                            &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address1", "22 Laussat St", "text", &field);
+  test::CreateTestFormField("Address:", "address1", "22 Laussat St", "text",
+                            &field);
   form2.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form2.fields.push_back(field);
@@ -1440,9 +1424,9 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected2, "John", NULL,
-      "Adams", "second@gmail.com", NULL, "22 Laussat St", NULL,
-      "San Francisco", "California", "94102", NULL, NULL);
+  test::SetProfileInfo(&expected2, "John", NULL, "Adams", "second@gmail.com",
+                       NULL, "22 Laussat St", NULL, "San Francisco",
+                       "California", "94102", NULL, NULL);
   std::vector<AutofillProfile*> profiles;
   profiles.push_back(&expected);
   profiles.push_back(&expected2);
@@ -1540,8 +1524,7 @@ TEST_F(PersonalDataManagerTest,
 
   // There is an empty but hidden form section (this has been observed on sites
   // where users can choose which form section they choose by unhiding it).
-  test::CreateTestFormField("First name:", "first_name", "", "text",
-                            &field);
+  test::CreateTestFormField("First name:", "first_name", "", "text", &field);
   field.is_focusable = false;
   form.fields.push_back(field);
   test::CreateTestFormField("Last name:", "last_name", "", "text", &field);
@@ -1673,17 +1656,17 @@ TEST_F(PersonalDataManagerTest,
 TEST_F(PersonalDataManagerTest, ImportAddressProfiles_SameProfileWithConflict) {
   FormData form1;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address", "1600 Pennsylvania Avenue", "text", &field);
+  test::CreateTestFormField("Address:", "address", "1600 Pennsylvania Avenue",
+                            "text", &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address Line 2:", "address2", "Suite A", "text", &field);
+  test::CreateTestFormField("Address Line 2:", "address2", "Suite A", "text",
+                            &field);
   form1.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form1.fields.push_back(field);
@@ -1691,8 +1674,8 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_SameProfileWithConflict) {
   form1.fields.push_back(field);
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "theprez@gmail.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
   form1.fields.push_back(field);
   test::CreateTestFormField("Phone:", "phone", "6505556666", "text", &field);
   form1.fields.push_back(field);
@@ -1714,17 +1697,17 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_SameProfileWithConflict) {
 
   // Now create an updated profile.
   FormData form2;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address:", "address", "1600 Pennsylvania Avenue", "text", &field);
+  test::CreateTestFormField("Address:", "address", "1600 Pennsylvania Avenue",
+                            "text", &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address Line 2:", "address2", "Suite A", "text", &field);
+  test::CreateTestFormField("Address Line 2:", "address2", "Suite A", "text",
+                            &field);
   form2.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
   form2.fields.push_back(field);
@@ -1732,8 +1715,8 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_SameProfileWithConflict) {
   form2.fields.push_back(field);
   test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "theprez@gmail.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
   form2.fields.push_back(field);
   // Country gets added.
   test::CreateTestFormField("Country:", "country", "USA", "text", &field);
@@ -1762,14 +1745,14 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_SameProfileWithConflict) {
 TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInOld) {
   FormData form1;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address Line 1:", "address", "190 High Street", "text", &field);
+  test::CreateTestFormField("Address Line 1:", "address", "190 High Street",
+                            "text", &field);
   form1.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "Philadelphia", "text", &field);
   form1.fields.push_back(field);
@@ -1785,26 +1768,26 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInOld) {
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL,
-      "Washington", NULL, NULL, "190 High Street", NULL,
-      "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", NULL, "Washington", NULL, NULL,
+                       "190 High Street", NULL, "Philadelphia", "Pennsylvania",
+                       "19106", NULL, NULL);
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
 
   // Submit a form with new data for the first profile.
   FormData form2;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "theprez@gmail.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address Line 1:", "address", "190 High Street", "text", &field);
+  test::CreateTestFormField("Address Line 1:", "address", "190 High Street",
+                            "text", &field);
   form2.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "Philadelphia", "text", &field);
   form2.fields.push_back(field);
@@ -1822,9 +1805,9 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInOld) {
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
   AutofillProfile expected2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected2, "George", NULL,
-      "Washington", "theprez@gmail.com", NULL, "190 High Street", NULL,
-      "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
+  test::SetProfileInfo(&expected2, "George", NULL, "Washington",
+                       "theprez@gmail.com", NULL, "190 High Street", NULL,
+                       "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
   expected2.SetRawInfo(NAME_FULL, base::ASCIIToUTF16("George Washington"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
@@ -1833,20 +1816,20 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInOld) {
 TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInNew) {
   FormData form1;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Company:", "company", "Government", "text", &field);
+  test::CreateTestFormField("Company:", "company", "Government", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "theprez@gmail.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address Line 1:", "address", "190 High Street", "text", &field);
+  test::CreateTestFormField("Address Line 1:", "address", "190 High Street",
+                            "text", &field);
   form1.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "Philadelphia", "text", &field);
   form1.fields.push_back(field);
@@ -1862,27 +1845,28 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInNew) {
   WaitForOnPersonalDataChanged();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&expected, "George", NULL,
-      "Washington", "theprez@gmail.com", "Government", "190 High Street", NULL,
-      "Philadelphia", "Pennsylvania", "19106", NULL, NULL);
+  test::SetProfileInfo(&expected, "George", NULL, "Washington",
+                       "theprez@gmail.com", "Government", "190 High Street",
+                       NULL, "Philadelphia", "Pennsylvania", "19106", NULL,
+                       NULL);
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
 
   // Submit a form with new data for the first profile.
   FormData form2;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form2.fields.push_back(field);
   // Note missing Company field.
-  test::CreateTestFormField(
-      "Email:", "email", "theprez@gmail.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
   form2.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address Line 1:", "address", "190 High Street", "text", &field);
+  test::CreateTestFormField("Address Line 1:", "address", "190 High Street",
+                            "text", &field);
   form2.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "Philadelphia", "text", &field);
   form2.fields.push_back(field);
@@ -1908,20 +1892,20 @@ TEST_F(PersonalDataManagerTest, ImportAddressProfiles_MissingInfoInNew) {
 TEST_F(PersonalDataManagerTest, ImportAddressProfiles_InsufficientAddress) {
   FormData form1;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "George", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Last name:", "last_name", "Washington", "text", &field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Company:", "company", "Government", "text", &field);
+  test::CreateTestFormField("Company:", "company", "Government", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "theprez@gmail.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
   form1.fields.push_back(field);
-  test::CreateTestFormField(
-      "Address Line 1:", "address", "190 High Street", "text", &field);
+  test::CreateTestFormField("Address Line 1:", "address", "190 High Street",
+                            "text", &field);
   form1.fields.push_back(field);
   test::CreateTestFormField("City:", "city", "Philadelphia", "text", &field);
   form1.fields.push_back(field);
@@ -2972,10 +2956,9 @@ TEST_F(PersonalDataManagerTest, ImportFormData_TwoAddressesOneCreditCard) {
 TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
   // Start with an unverified profile.
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile,
-      "Marion", "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
   EXPECT_FALSE(profile.IsVerified());
 
   // Add the profile to the database.
@@ -3048,10 +3031,9 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
 
   // Test with one profile stored.
   AutofillProfile profile0(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile0,
-      "Marion", NULL, "Morrison",
-      "johnwayne@me.xyz", NULL, "123 Zoo St.", NULL, "Hollywood", "CA",
-      "91601", "US", "14155678910");
+  test::SetProfileInfo(&profile0, "Marion", NULL, "Morrison",
+                       "johnwayne@me.xyz", NULL, "123 Zoo St.", NULL,
+                       "Hollywood", "CA", "91601", "US", "14155678910");
 
   personal_data_->AddProfile(profile0);
 
@@ -3079,16 +3061,14 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
 
   // Test with multiple profiles stored.
   AutofillProfile profile1(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile1,
-      "Josephine", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
-      "US", "16502937549");
+  test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL,
+                       "Orlando", "FL", "32801", "US", "16502937549");
 
   AutofillProfile profile2(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile2,
-      "Josephine", "Alicia", "Saenz",
-      "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
-      "32801", "US", "16502937549");
+  test::SetProfileInfo(&profile2, "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+                       "Orlando", "FL", "32801", "US", "16502937549");
 
   personal_data_->AddProfile(profile1);
   personal_data_->AddProfile(profile2);
@@ -3166,8 +3146,8 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
 
   AutofillProfile steve_jobs(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&steve_jobs, "Steven", "Paul", "Jobs", "sjobs@apple.com",
-      "Apple Computer, Inc.", "1 Infinite Loop", "", "Cupertino", "CA", "95014",
-      "US", "(800) 275-2273");
+                       "Apple Computer, Inc.", "1 Infinite Loop", "",
+                       "Cupertino", "CA", "95014", "US", "(800) 275-2273");
   personal_data_->AddProfile(steve_jobs);
 
   CreditCard bill_gates(base::GenerateGUID(), "https://www.example.com");
@@ -3242,9 +3222,9 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
   EXPECT_EQ(2U, default_country.size());
 
   AutofillProfile moose(base::GenerateGUID(), kSettingsOrigin);
-  test::SetProfileInfo(&moose, "Moose", "P", "McMahon", "mpm@example.com",
-      "", "1 Taiga TKTR", "", "Calgary", "AB", "T2B 2K2",
-      "CA", "(800) 555-9000");
+  test::SetProfileInfo(&moose, "Moose", "P", "McMahon", "mpm@example.com", "",
+                       "1 Taiga TKTR", "", "Calgary", "AB", "T2B 2K2", "CA",
+                       "(800) 555-9000");
   personal_data_->AddProfile(moose);
 
   // Make sure everything is set up correctly.
@@ -3272,22 +3252,22 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
 
 TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
   AutofillProfile moose(base::GenerateGUID(), kSettingsOrigin);
-  test::SetProfileInfo(&moose, "Moose", "P", "McMahon", "mpm@example.com",
-      "", "1 Taiga TKTR", "", "Calgary", "AB", "T2B 2K2",
-      "CA", "(800) 555-9000");
+  test::SetProfileInfo(&moose, "Moose", "P", "McMahon", "mpm@example.com", "",
+                       "1 Taiga TKTR", "", "Calgary", "AB", "T2B 2K2", "CA",
+                       "(800) 555-9000");
   personal_data_->AddProfile(moose);
   ResetPersonalDataManager(USER_MODE_NORMAL);
   EXPECT_EQ("CA", personal_data_->GetDefaultCountryCodeForNewAddress());
 
   // Multiple profiles cast votes.
   AutofillProfile armadillo(base::GenerateGUID(), kSettingsOrigin);
-  test::SetProfileInfo(&armadillo, "Armin", "Dill", "Oh", "ado@example.com",
-      "", "1 Speed Bump", "", "Lubbock", "TX", "77500",
-      "MX", "(800) 555-9000");
+  test::SetProfileInfo(&armadillo, "Armin", "Dill", "Oh", "ado@example.com", "",
+                       "1 Speed Bump", "", "Lubbock", "TX", "77500", "MX",
+                       "(800) 555-9000");
   AutofillProfile armadillo2(base::GenerateGUID(), kSettingsOrigin);
   test::SetProfileInfo(&armadillo2, "Armin", "Dill", "Oh", "ado@example.com",
-      "", "2 Speed Bump", "", "Lubbock", "TX", "77500",
-      "MX", "(800) 555-9000");
+                       "", "2 Speed Bump", "", "Lubbock", "TX", "77500", "MX",
+                       "(800) 555-9000");
   personal_data_->AddProfile(armadillo);
   personal_data_->AddProfile(armadillo2);
   ResetPersonalDataManager(USER_MODE_NORMAL);
@@ -3316,9 +3296,9 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
   personal_data_->RemoveByGUID(armadillo.guid());
   personal_data_->RemoveByGUID(moose.guid());
   AutofillProfile space_invader(base::GenerateGUID(), kSettingsOrigin);
-  test::SetProfileInfo(&space_invader, "Marty", "", "Martian",
-      "mm@example.com", "", "1 Flying Object", "", "Valles Marineris", "",
-      "", "XX", "");
+  test::SetProfileInfo(&space_invader, "Marty", "", "Martian", "mm@example.com",
+                       "", "1 Flying Object", "", "Valles Marineris", "", "",
+                       "XX", "");
   personal_data_->AddProfile(moose);
   ResetPersonalDataManager(USER_MODE_NORMAL);
   EXPECT_EQ("MX", personal_data_->GetDefaultCountryCodeForNewAddress());
@@ -3326,10 +3306,9 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
 
 TEST_F(PersonalDataManagerTest, UpdateLanguageCodeInProfile) {
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile,
-      "Marion", "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
   personal_data_->AddProfile(profile);
 
   // Make sure everything is set up correctly.
@@ -3350,11 +3329,10 @@ TEST_F(PersonalDataManagerTest, UpdateLanguageCodeInProfile) {
 
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(&profile,
-      "Marion", "Mitchell", "Morrison",
-      "johnwayne@me.xyz", "Fox",
-      "123 Zoo St.\nSecond Line\nThird line", "unit 5", "Hollywood", "CA",
-      "91601", "US", "12345678910");
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
   personal_data_->AddProfile(profile);
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
@@ -3743,6 +3721,139 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ExpiredCards) {
   // The expired cards should be sorted by frecency
   EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
   EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[2].value);
+}
+
+// Test cards that are expired AND disused are suppressed when supression is
+// enabled and the input field is empty.
+TEST_F(PersonalDataManagerTest,
+       GetCreditCardSuggestions_SuppressDisusedCreditCardsOnEmptyField) {
+  ASSERT_EQ(0U, personal_data_->GetCreditCards().size());
+
+  // Add a never used non expired local credit card.
+  CreditCard credit_card0("002149C1-EE28-4213-A3B9-DA243FFF021B",
+                          "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card0, "Bonnie Parker",
+                          "5105105105105100" /* Mastercard */, "04", "2999",
+                          "1");
+  personal_data_->AddCreditCard(credit_card0);
+
+  auto now = AutofillClock::Now();
+
+  // Add an expired unmasked card last used 10 days ago
+  CreditCard credit_card1(CreditCard::FULL_SERVER_CARD, "c789");
+  test::SetCreditCardInfo(&credit_card1, "Clyde Barrow",
+                          "4234567890123456" /* Visa */, "04", "1999", "1");
+  credit_card1.set_use_date(now - base::TimeDelta::FromDays(10));
+
+  // Add an expired masked card last used 180 days ago.
+  CreditCard credit_card2(CreditCard::MASKED_SERVER_CARD, "c987");
+  test::SetCreditCardInfo(&credit_card2, "Jane Doe", "6543", "01", "1998", "1");
+  credit_card2.set_use_date(now - base::TimeDelta::FromDays(181));
+  credit_card2.SetNetworkForMaskedCard(kVisaCard);
+
+  // Save the server cards and set used_date to desired dates.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(credit_card1);
+  server_cards.push_back(credit_card2);
+  test::SetServerCreditCards(autofill_table_, server_cards);
+  personal_data_->UpdateServerCardMetadata(credit_card1);
+  personal_data_->UpdateServerCardMetadata(credit_card2);
+
+  // Add an expired local card last used 180 days ago.
+  CreditCard credit_card3("1141084B-72D7-4B73-90CF-3D6AC154673B",
+                          "https://www.example.com");
+  credit_card3.set_use_date(now - base::TimeDelta::FromDays(182));
+  test::SetCreditCardInfo(&credit_card3, "John Dillinger",
+                          "378282246310005" /* American Express */, "01",
+                          "1998", "1");
+  personal_data_->AddCreditCard(credit_card3);
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  ASSERT_EQ(4U, personal_data_->GetCreditCards().size());
+
+  // Verify credit card suppression is disabled by default.
+  {
+    ASSERT_FALSE(
+        base::FeatureList::IsEnabled(kAutofillSuppressDisusedCreditCards));
+  }
+
+  // Verify no suppression if feature is disabled.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitAndDisableFeature(kAutofillSuppressDisusedCreditCards);
+
+    std::vector<Suggestion> suggestions =
+        personal_data_->GetCreditCardSuggestions(
+            AutofillType(CREDIT_CARD_NAME_FULL), base::string16());
+    EXPECT_EQ(4U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
+    EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
+    EXPECT_EQ(base::ASCIIToUTF16("Jane Doe"), suggestions[2].value);
+    EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[3].value);
+  }
+
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(kAutofillSuppressDisusedCreditCards);
+
+  // Query with empty string only returns card0 and card1. Note expired
+  // masked card2 is not suggested on empty fields.
+  {
+    std::vector<Suggestion> suggestions =
+        personal_data_->GetCreditCardSuggestions(
+            AutofillType(CREDIT_CARD_NAME_FULL), base::string16());
+    EXPECT_EQ(2U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
+    EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
+  }
+
+  // Query with name prefix for card0 returns card0.
+  {
+    std::vector<Suggestion> suggestions =
+        personal_data_->GetCreditCardSuggestions(
+            AutofillType(CREDIT_CARD_NAME_FULL), base::ASCIIToUTF16("B"));
+
+    ASSERT_EQ(1U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("Bonnie Parker"), suggestions[0].value);
+  }
+
+  // Query with name prefix for card1 returns card1.
+  {
+    std::vector<Suggestion> suggestions =
+        personal_data_->GetCreditCardSuggestions(
+            AutofillType(CREDIT_CARD_NAME_FULL), base::ASCIIToUTF16("Cl"));
+
+    ASSERT_EQ(1U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("Clyde Barrow"), suggestions[0].value);
+  }
+
+  // Query with name prefix for card2 returns card2.
+  {
+    std::vector<Suggestion> suggestions =
+        personal_data_->GetCreditCardSuggestions(
+            AutofillType(CREDIT_CARD_NAME_FULL), base::ASCIIToUTF16("Jo"));
+
+    ASSERT_EQ(1U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("John Dillinger"), suggestions[0].value);
+  }
+
+  // Query with card number prefix for card1 returns card1 and card2.
+  // Expired masked card2 is shown when user starts to type credit card
+  // number because we are not sure if it is the masked card that they want.
+  {
+    std::vector<Suggestion> suggestions =
+        personal_data_->GetCreditCardSuggestions(
+            AutofillType(CREDIT_CARD_NUMBER), base::ASCIIToUTF16("4234"));
+
+    ASSERT_EQ(2U, suggestions.size());
+    EXPECT_EQ(
+        base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "3456"),
+        suggestions[0].value);
+    EXPECT_EQ(
+        base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "6543"),
+        suggestions[1].value);
+  }
 }
 
 // Test that a card that doesn't have a number is not shown in the suggestions
@@ -4207,8 +4318,8 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   CreditCard* unmasked_card = &server_cards.front();
   unmasked_card->set_record_type(CreditCard::FULL_SERVER_CARD);
   unmasked_card->SetNumber(base::ASCIIToUTF16("4234567890123456"));
-  EXPECT_NE(0, unmasked_card->Compare(
-      *personal_data_->GetCreditCards().front()));
+  EXPECT_NE(0,
+            unmasked_card->Compare(*personal_data_->GetCreditCards().front()));
   personal_data_->UpdateServerCreditCard(*unmasked_card);
 
   WaitForOnPersonalDataChanged();
@@ -6996,6 +7107,160 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
       "Autofill.StoredCreditCardCount.Server.Masked", 2, 1);
   histogram_tester.ExpectBucketCount(
       "Autofill.StoredCreditCardCount.Server.Unmasked", 2, 1);
+}
+
+TEST_F(PersonalDataManagerTest, RemoveExpiredCreditCardsNotUsedSinceTimestamp) {
+  const char kHistogramName[] = "Autofill.CreditCardsSuppressedForDisuse";
+  const base::Time kNow = AutofillClock::Now();
+  constexpr size_t kNumCards = 10;
+
+  // We construct a card vector as below, number indicate days of last used
+  // from |kNow|:
+  // [30, 90, 150, 210, 270, 0, 60, 120, 180, 240]
+  // |expires at 2999     |, |expired at 2001   |
+  std::vector<CreditCard> all_card_data;
+  std::vector<CreditCard*> all_card_ptrs;
+  all_card_data.reserve(kNumCards);
+  all_card_ptrs.reserve(kNumCards);
+  for (size_t i = 0; i < kNumCards; ++i) {
+    constexpr base::TimeDelta k30Days = base::TimeDelta::FromDays(30);
+    all_card_data.emplace_back(base::GenerateGUID(), "https://example.com");
+    if (i < 5) {
+      all_card_data.back().set_use_date(kNow - (i + i + 1) * k30Days);
+      test::SetCreditCardInfo(&all_card_data.back(), "Clyde Barrow",
+                              "378282246310005" /* American Express */, "04",
+                              "2999", "1");
+    } else {
+      all_card_data.back().set_use_date(kNow - (i + i - 10) * k30Days);
+      test::SetCreditCardInfo(&all_card_data.back(), "John Dillinger",
+                              "4234567890123456" /* Visa */, "04", "2001", "1");
+    }
+    all_card_ptrs.push_back(&all_card_data.back());
+  }
+
+  // Verify that only expired disused card are removed. Note that only the last
+  // two cards have use dates more than 175 days ago and are expired.
+  {
+    // Create a working copy of the card pointers.
+    std::vector<CreditCard*> cards(all_card_ptrs);
+
+    // The first 8 are either not expired or having use dates more recent
+    // than 175 days ago.
+    std::vector<CreditCard*> expected_cards(cards.begin(), cards.begin() + 8);
+
+    // Filter the cards while capturing histograms.
+    base::HistogramTester histogram_tester;
+    PersonalDataManager::RemoveExpiredCreditCardsNotUsedSinceTimestamp(
+        kNow, kNow - base::TimeDelta::FromDays(175), &cards);
+
+    // Validate that we get the expected filtered cards and histograms.
+    EXPECT_EQ(expected_cards, cards);
+    histogram_tester.ExpectTotalCount(kHistogramName, 1);
+    histogram_tester.ExpectBucketCount(kHistogramName, 2, 1);
+  }
+
+  // Reverse the card order and verify that only expired and disused cards
+  // are removed. Note that the first three cards, post reversal,
+  // have use dates more then 115 days ago.
+  {
+    // Create a reversed working copy of the card pointers.
+    std::vector<CreditCard*> cards(all_card_ptrs.rbegin(),
+                                   all_card_ptrs.rend());
+
+    // The last 7 cards have use dates more recent than 115 days ago.
+    std::vector<CreditCard*> expected_cards(cards.begin() + 3, cards.end());
+
+    // Filter the cards while capturing histograms.
+    base::HistogramTester histogram_tester;
+    PersonalDataManager::RemoveExpiredCreditCardsNotUsedSinceTimestamp(
+        kNow, kNow - base::TimeDelta::FromDays(115), &cards);
+
+    // Validate that we get the expected filtered cards and histograms.
+    EXPECT_EQ(expected_cards, cards);
+    histogram_tester.ExpectTotalCount(kHistogramName, 1);
+    histogram_tester.ExpectBucketCount(kHistogramName, 3, 1);
+  }
+  // Randomize the card order and validate that the filtered list retains
+  // that order. Note that the three cards have use dates more then 115
+  // days ago and are expired.
+  {
+    // A handy constant.
+    const base::Time k115DaysAgo = kNow - base::TimeDelta::FromDays(115);
+
+    // Created a shuffled master copy of the card pointers.
+    std::vector<CreditCard*> shuffled_cards(all_card_ptrs);
+    std::random_shuffle(shuffled_cards.begin(), shuffled_cards.end());
+
+    // Copy the shuffled card pointer collections to use as the working
+    // set.
+    std::vector<CreditCard*> cards(shuffled_cards);
+
+    // Filter the cards while capturing histograms.
+    base::HistogramTester histogram_tester;
+    PersonalDataManager::RemoveExpiredCreditCardsNotUsedSinceTimestamp(
+        kNow, k115DaysAgo, &cards);
+
+    // Validate that we have the right cards. Iterate of the the shuffled
+    // master copy and the filtered copy at the same time. making sure that
+    // the elements in the filtered copy occur in the same order as the shuffled
+    // master. Along the way, validate that the elements in and out of the
+    // filtered copy have appropriate use dates and expiration states.
+    EXPECT_EQ(7u, cards.size());
+    auto it = shuffled_cards.begin();
+    for (const CreditCard* card : cards) {
+      for (; it != shuffled_cards.end() && (*it) != card; ++it) {
+        EXPECT_LT((*it)->use_date(), k115DaysAgo);
+        ASSERT_TRUE((*it)->IsExpired(kNow));
+      }
+      ASSERT_TRUE(it != shuffled_cards.end());
+      ASSERT_TRUE(card->use_date() > k115DaysAgo || !card->IsExpired(kNow));
+      ++it;
+    }
+    for (; it != shuffled_cards.end(); ++it) {
+      EXPECT_LT((*it)->use_date(), k115DaysAgo);
+      ASSERT_TRUE((*it)->IsExpired(kNow));
+    }
+
+    // Validate the histograms.
+    histogram_tester.ExpectTotalCount(kHistogramName, 1);
+    histogram_tester.ExpectBucketCount(kHistogramName, 3, 1);
+  }
+
+  // Verify all cards are retained if they're sufficiently recently
+  // used.
+  {
+    // Create a working copy of the card pointers.
+    std::vector<CreditCard*> cards(all_card_ptrs);
+
+    // Filter the cards while capturing histograms.
+    base::HistogramTester histogram_tester;
+    PersonalDataManager::RemoveExpiredCreditCardsNotUsedSinceTimestamp(
+        kNow, kNow - base::TimeDelta::FromDays(720), &cards);
+
+    // Validate that we get the expected filtered cards and histograms.
+    EXPECT_EQ(all_card_ptrs, cards);
+    histogram_tester.ExpectTotalCount(kHistogramName, 1);
+    histogram_tester.ExpectBucketCount(kHistogramName, 0, 1);
+  }
+
+  // Verify all cards are removed if they're all disused and expired.
+  {
+    // Create a working copy of the card pointers.
+    std::vector<CreditCard*> cards(all_card_ptrs);
+    for (auto it = all_card_ptrs.begin(); it < all_card_ptrs.end(); it++) {
+      (*it)->SetExpirationYear(2001);
+    }
+
+    // Filter the cards while capturing histograms.
+    base::HistogramTester histogram_tester;
+    PersonalDataManager::RemoveExpiredCreditCardsNotUsedSinceTimestamp(
+        kNow, kNow + base::TimeDelta::FromDays(1), &cards);
+
+    // Validate that we get the expected filtered cards and histograms.
+    EXPECT_TRUE(cards.empty());
+    histogram_tester.ExpectTotalCount(kHistogramName, 1);
+    histogram_tester.ExpectBucketCount(kHistogramName, kNumCards, 1);
+  }
 }
 
 }  // namespace autofill

@@ -4533,6 +4533,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.CreditCardsSuppressedForDisuse">
+  <owner>wuandy@chromium.org</owner>
+  <summary>
+    The number of credit card suggestions not shown in the Autofill popup
+    because they have not been used recently enough and are expired. Note that
+    suppression only applies when the user has not typed any text into the
+    field. If any text is in the field, all matching cards are displayed,
+    regardless of how recently they have been used and their expiration status.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.DaysSinceLastUse.CreditCard" units="days">
   <owner>sebsg@chromium.org</owner>
   <summary>

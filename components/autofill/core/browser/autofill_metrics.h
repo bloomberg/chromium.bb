@@ -758,6 +758,14 @@ class AutofillMetrics {
       const std::vector<std::unique_ptr<CreditCard>>& server_cards,
       base::TimeDelta disused_data_threshold);
 
+  // Log the number of autofill credit card suggestions suppressed because they
+  // have not been used for a long time and are expired. Note that these cards
+  // are only suppressed when the user has not typed any data into the field
+  // from which autofill is triggered. Credit cards matching something the user
+  // has types are always offered, regardless of how recently they have been
+  // used.
+  static void LogNumberOfCreditCardsSuppressedForDisuse(size_t num_cards);
+
   // Log the number of profiles available when an autofillable form is
   // submitted.
   static void LogNumberOfProfilesAtAutofillableFormSubmission(

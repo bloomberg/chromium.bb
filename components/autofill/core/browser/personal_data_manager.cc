@@ -62,21 +62,18 @@ const int LOCAL_GUID_LENGTH = 36;
 
 constexpr base::TimeDelta kDisusedProfileTimeDelta =
     base::TimeDelta::FromDays(180);
+constexpr base::TimeDelta kDisusedCreditCardTimeDelta =
+    base::TimeDelta::FromDays(180);
 
-template<typename T>
+template <typename T>
 class FormGroupMatchesByGUIDFunctor {
  public:
   explicit FormGroupMatchesByGUIDFunctor(const std::string& guid)
-      : guid_(guid) {
-  }
+      : guid_(guid) {}
 
-  bool operator()(const T& form_group) {
-    return form_group.guid() == guid_;
-  }
+  bool operator()(const T& form_group) { return form_group.guid() == guid_; }
 
-  bool operator()(const T* form_group) {
-    return form_group->guid() == guid_;
-  }
+  bool operator()(const T* form_group) { return form_group->guid() == guid_; }
 
   bool operator()(const std::unique_ptr<T>& form_group) {
     return form_group->guid() == guid_;
@@ -86,25 +83,23 @@ class FormGroupMatchesByGUIDFunctor {
   const std::string guid_;
 };
 
-template<typename T, typename C>
+template <typename T, typename C>
 typename C::const_iterator FindElementByGUID(const C& container,
                                              const std::string& guid) {
-  return std::find_if(container.begin(),
-                      container.end(),
+  return std::find_if(container.begin(), container.end(),
                       FormGroupMatchesByGUIDFunctor<T>(guid));
 }
 
-template<typename T, typename C>
+template <typename T, typename C>
 bool FindByGUID(const C& container, const std::string& guid) {
   return FindElementByGUID<T>(container, guid) != container.end();
 }
 
-template<typename T>
+template <typename T>
 class IsEmptyFunctor {
  public:
   explicit IsEmptyFunctor(const std::string& app_locale)
-      : app_locale_(app_locale) {
-  }
+      : app_locale_(app_locale) {}
 
   bool operator()(const T& form_group) {
     return form_group.IsEmpty(app_locale_);
@@ -155,8 +150,7 @@ bool IsValidFieldTypeAndValue(const std::set<ServerFieldType>& types_seen,
   // Make an exception for PHONE_HOME_NUMBER however as both prefix and
   // suffix are stored against this type, and for EMAIL_ADDRESS because it is
   // common to see second 'confirm email address' fields on forms.
-  if (types_seen.count(field_type) &&
-      field_type != PHONE_HOME_NUMBER &&
+  if (types_seen.count(field_type) && field_type != PHONE_HOME_NUMBER &&
       field_type != EMAIL_ADDRESS)
     return false;
 
@@ -396,8 +390,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   }
 
   // If all requests have responded, then all personal data is loaded.
-  if (pending_profiles_query_ == 0 &&
-      pending_creditcards_query_ == 0 &&
+  if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0 &&
       pending_server_profiles_query_ == 0 &&
       pending_server_creditcards_query_ == 0) {
     is_data_loaded_ = true;
@@ -652,8 +645,7 @@ void PersonalDataManager::UpdateServerCreditCard(
   DCHECK_NE(existing_credit_card->record_type(), credit_card.record_type());
   DCHECK_EQ(existing_credit_card->Label(), credit_card.Label());
   if (existing_credit_card->record_type() == CreditCard::MASKED_SERVER_CARD) {
-    database_->UnmaskServerCreditCard(credit_card,
-                                      credit_card.number());
+    database_->UnmaskServerCreditCard(credit_card, credit_card.number());
   } else {
     database_->MaskServerCreditCard(credit_card.server_id());
   }
@@ -721,8 +713,8 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
     return;
 
   bool is_credit_card = FindByGUID<CreditCard>(local_credit_cards_, guid);
-  bool is_profile = !is_credit_card &&
-      FindByGUID<AutofillProfile>(web_profiles_, guid);
+  bool is_profile =
+      !is_credit_card && FindByGUID<AutofillProfile>(web_profiles_, guid);
   if (!is_credit_card && !is_profile)
     return;
 
@@ -994,14 +986,43 @@ const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest()
   return cards_to_suggest;
 }
 
+// static
+void PersonalDataManager::RemoveExpiredCreditCardsNotUsedSinceTimestamp(
+    base::Time comparison_time,
+    base::Time min_last_used,
+    std::vector<CreditCard*>* cards) {
+  const size_t original_size = cards->size();
+  // Split the vector into [unexpired-or-expired-but-after-timestamp,
+  // expired-and-before-timestamp], then delete the latter.
+  cards->erase(std::stable_partition(
+                   cards->begin(), cards->end(),
+                   [comparison_time, min_last_used](const CreditCard* c) {
+                     return !c->IsExpired(comparison_time) ||
+                            c->use_date() > min_last_used;
+                   }),
+               cards->end());
+  const size_t num_cards_supressed = original_size - cards->size();
+  AutofillMetrics::LogNumberOfCreditCardsSuppressedForDisuse(
+      num_cards_supressed);
+}
+
 std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     const AutofillType& type,
     const base::string16& field_contents) {
   if (IsInAutofillSuggestionsDisabledExperiment())
     return std::vector<Suggestion>();
+  std::vector<CreditCard*> cards = GetCreditCardsToSuggest();
+  // If enabled, suppress disused address profiles when triggered from an empty
+  // field.
+  if (field_contents.empty() &&
+      base::FeatureList::IsEnabled(kAutofillSuppressDisusedCreditCards)) {
+    const base::Time min_last_used =
+        AutofillClock::Now() - kDisusedCreditCardTimeDelta;
+    RemoveExpiredCreditCardsNotUsedSinceTimestamp(AutofillClock::Now(),
+                                                  min_last_used, &cards);
+  }
 
-  return GetSuggestionsForCards(type, field_contents,
-                                GetCreditCardsToSuggest());
+  return GetSuggestionsForCards(type, field_contents, cards);
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
@@ -1019,10 +1040,10 @@ void PersonalDataManager::SetPrefService(PrefService* pref_service) {
   // |pref_service_| can be nullptr in tests.
   if (pref_service_) {
     enabled_pref_->Init(prefs::kAutofillEnabled, pref_service_,
-        base::Bind(&PersonalDataManager::EnabledPrefChanged,
-                   base::Unretained(this)));
-    wallet_enabled_pref_->Init(prefs::kAutofillWalletImportEnabled,
-        pref_service_,
+                        base::Bind(&PersonalDataManager::EnabledPrefChanged,
+                                   base::Unretained(this)));
+    wallet_enabled_pref_->Init(
+        prefs::kAutofillWalletImportEnabled, pref_service_,
         base::Bind(&PersonalDataManager::EnabledPrefChanged,
                    base::Unretained(this)));
   }
@@ -1115,15 +1136,15 @@ std::string PersonalDataManager::MergeProfile(
   return guid;
 }
 
-bool PersonalDataManager::IsCountryOfInterest(const std::string& country_code)
-    const {
+bool PersonalDataManager::IsCountryOfInterest(
+    const std::string& country_code) const {
   DCHECK_EQ(2U, country_code.size());
 
   const std::vector<AutofillProfile*>& profiles = web_profiles();
   std::list<std::string> country_codes;
   for (size_t i = 0; i < profiles.size(); ++i) {
-    country_codes.push_back(base::ToLowerASCII(base::UTF16ToASCII(
-        profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY))));
+    country_codes.push_back(base::ToLowerASCII(
+        base::UTF16ToASCII(profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY))));
   }
 
   std::string timezone_country = CountryCodeForCurrentTimezone();
@@ -1406,8 +1427,8 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
   const std::vector<std::string>& country_codes =
       CountryDataMap::GetInstance()->country_codes();
   for (size_t i = 0; i < profiles.size(); ++i) {
-    std::string country_code = base::ToUpperASCII(base::UTF16ToASCII(
-        profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY)));
+    std::string country_code = base::ToUpperASCII(
+        base::UTF16ToASCII(profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY)));
 
     if (base::ContainsValue(country_codes, country_code)) {
       // Verified profiles count 100x more than unverified ones.
@@ -1621,8 +1642,7 @@ bool PersonalDataManager::ImportCreditCard(
     // Make a local copy so that the data in |local_credit_cards_| isn't
     // modified directly by the UpdateFromImportedCard() call.
     CreditCard card_copy(*card);
-    if (card_copy.UpdateFromImportedCard(candidate_credit_card,
-                                         app_locale_)) {
+    if (card_copy.UpdateFromImportedCard(candidate_credit_card, app_locale_)) {
       UpdateCreditCard(card_copy);
       // If we should not return the local card, return that we merged it,
       // without setting |imported_credit_card|.
