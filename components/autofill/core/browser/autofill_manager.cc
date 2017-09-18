@@ -1452,7 +1452,6 @@ int AutofillManager::SetProfilesForCreditCardUpload(
       }
     }
     if (found_conflicting_names) {
-      if (!upload_decision_metrics)
       upload_decision_metrics |=
           AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES;
     }
@@ -1461,7 +1460,6 @@ int AutofillManager::SetProfilesForCreditCardUpload(
   // If neither the card nor any of the addresses have a name associated with
   // them, the candidate set is invalid.
   if (verified_name.empty()) {
-    if (!upload_decision_metrics)
     upload_decision_metrics |= AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME;
   }
 
