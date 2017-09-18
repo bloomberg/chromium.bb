@@ -46,6 +46,8 @@ blink_modules_sources("accessibility") {
     "AXProgressIndicator.h",
     "AXRadioInput.cpp",
     "AXRadioInput.h",
+    "AXRelationCache.cpp",
+    "AXRelationCache.h",
     "AXSVGRoot.cpp",
     "AXSVGRoot.h",
     "AXSlider.cpp",
