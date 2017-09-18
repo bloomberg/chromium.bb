@@ -120,7 +120,8 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     intptr_t old) {
   // ShelfIDs should never change except when replacing Mash temporary defaults.
   // TODO(msw): Extend this Mash behavior to all Ash configs.
-  if (Shell::GetAshConfig() == Config::MASH && key == kShelfIDKey) {
+  if (Shell::GetAshConfig() == Config::MASH && key == kShelfIDKey &&
+      window_watcher_->user_windows_with_items_.count(window) > 0) {
     ShelfID old_id = ShelfID::Deserialize(reinterpret_cast<std::string*>(old));
     ShelfID new_id = ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
     if (old_id != new_id && !old_id.IsNull() && !new_id.IsNull() &&
