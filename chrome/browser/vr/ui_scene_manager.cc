@@ -13,11 +13,11 @@
 #include "chrome/browser/vr/elements/exclusive_screen_toast.h"
 #include "chrome/browser/vr/elements/exit_prompt.h"
 #include "chrome/browser/vr/elements/exit_prompt_backplane.h"
+#include "chrome/browser/vr/elements/full_screen_rect.h"
 #include "chrome/browser/vr/elements/grid.h"
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/loading_indicator.h"
 #include "chrome/browser/vr/elements/rect.h"
-#include "chrome/browser/vr/elements/screen_dimmer.h"
 #include "chrome/browser/vr/elements/system_indicator.h"
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -160,54 +160,9 @@ static constexpr float kContentBoundsPropagationThreshold = 0.2f;
 // distorted content much more quickly. Thus, have a smaller threshold here.
 static constexpr float kContentAspectRatioPropagationThreshold = 0.01f;
 
-}  // namespace
+static constexpr float kScreenDimmerOpacity = 0.9f;
 
-// The scene manager creates and maintains UiElements that form the following
-// hierarchy.
-//
-// kRoot
-//   k2dBrowsingRoot
-//     k2dBrowsingBackground
-//       kBackgroundLeft
-//       kBackgroundRight
-//       kBackgroundTop
-//       kBackgroundBottom
-//       kBackgroundFront
-//       kBackgroundBack
-//       kFloor
-//       kCeiling
-//     k2dBrowsingForeground
-//       k2dBrowsingContentGroup
-//         kContentQuad
-//         kBackplane
-//         kIndicatorLayout
-//           kAudioCaptureIndicator
-//           kVideoCaptureIndicator
-//           kScreenCaptureIndicator
-//           kLocationAccessIndicator
-//           kBluetoothConnectedIndicator
-//           kLoadingIndicator
-//         kExitPrompt
-//           kExitPromptBackplane
-//       kCloseButton
-//       kUrlBar
-//         kLoadingIndicator
-//         kExitButton
-//     kFullscreenToast
-//     kScreenDimmer
-//     k2dBrowsingViewportAwareRoot
-//       kExitWarning
-//   kWebVrRoot
-//     kWebVrContent
-//     kWebVrViewportAwareRoot
-//       kSplashScreenText
-//       kWebVrPresentationToast
-//       kWebVrPermanentHttpSecurityWarning
-//       kWebVrTransientHttpSecurityWarning
-//       kWebVrUrlToast
-//
-// TODO(vollick): The above hierarchy is complex, brittle, and would be easier
-// to manage if it were specified in a declarative format.
+}  // namespace
 
 UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
                                UiScene* scene,
@@ -246,28 +201,24 @@ UiSceneManager::~UiSceneManager() {}
 void UiSceneManager::Create2dBrowsingSubtreeRoots() {
   auto element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingRoot);
-  element->set_draw_phase(kPhaseNone);
   element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(kRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingBackground);
-  element->set_draw_phase(kPhaseNone);
   element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingForeground);
-  element->set_draw_phase(kPhaseNone);
   element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingContentGroup);
-  element->set_draw_phase(kPhaseNone);
   element->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
   element->SetSize(kContentWidth, kContentHeight);
   element->SetVisible(true);
@@ -279,20 +230,20 @@ void UiSceneManager::Create2dBrowsingSubtreeRoots() {
 void UiSceneManager::CreateWebVrRoot() {
   auto element = base::MakeUnique<UiElement>();
   element->set_name(kWebVrRoot);
-  element->set_draw_phase(kPhaseNone);
   element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(kRoot, std::move(element));
 }
 
 void UiSceneManager::CreateScreenDimmer() {
-  std::unique_ptr<UiElement> element;
-  element = base::MakeUnique<ScreenDimmer>();
+  auto element = base::MakeUnique<FullScreenRect>();
   element->set_name(kScreenDimmer);
-  element->set_draw_phase(kPhaseForeground);
+  element->set_draw_phase(kPhaseOverlayBackground);
   element->SetVisible(false);
   element->set_hit_testable(false);
-  element->set_is_overlay(true);
+  element->SetOpacity(kScreenDimmerOpacity);
+  element->SetCenterColor(color_scheme().dimmer_inner);
+  element->SetEdgeColor(color_scheme().dimmer_outer);
   screen_dimmer_ = element.get();
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 }
@@ -304,7 +255,7 @@ void UiSceneManager::CreateSecurityWarnings() {
   // textured UI elements.
   element = base::MakeUnique<PermanentSecurityWarning>(512);
   element->set_name(kWebVrPermanentHttpSecurityWarning);
-  element->set_draw_phase(kPhaseForeground);
+  element->set_draw_phase(kPhaseOverlayForeground);
   element->SetSize(kPermanentWarningWidthDMM, kPermanentWarningHeightDMM);
   element->SetTranslate(0, kWarningDistance * sin(kWarningAngleRadians),
                         -kWarningDistance * cos(kWarningAngleRadians));
@@ -312,7 +263,6 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->SetScale(kWarningDistance, kWarningDistance, 1);
   element->SetVisible(false);
   element->set_hit_testable(false);
-  element->set_viewport_aware(true);
   permanent_security_warning_ = element.get();
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(element));
 
@@ -321,24 +271,21 @@ void UiSceneManager::CreateSecurityWarnings() {
   transient_security_warning_ = transient_warning.get();
   element = std::move(transient_warning);
   element->set_name(kWebVrTransientHttpSecurityWarning);
-  element->set_draw_phase(kPhaseForeground);
+  element->set_draw_phase(kPhaseOverlayForeground);
   element->SetSize(kTransientWarningWidthDMM, kTransientWarningHeightDMM);
   element->SetTranslate(0, 0, -kWarningDistance);
   element->SetScale(kWarningDistance, kWarningDistance, 1);
   element->SetVisible(false);
   element->set_hit_testable(false);
-  element->set_viewport_aware(true);
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(element));
 
   element = base::MakeUnique<ExitWarning>(1024);
   element->set_name(kExitWarning);
-  element->set_draw_phase(kPhaseForeground);
   element->SetSize(kExitWarningWidth, kExitWarningHeight);
   element->SetTranslate(0, 0, -kExitWarningDistance);
   element->SetScale(kExitWarningDistance, kExitWarningDistance, 1);
   element->SetVisible(false);
   element->set_hit_testable(false);
-  element->set_viewport_aware(true);
   exit_warning_ = element.get();
   scene_->AddUiElement(k2dBrowsingViewportAwareRoot, std::move(element));
 }
@@ -369,7 +316,6 @@ void UiSceneManager::CreateSystemIndicators() {
       base::MakeUnique<LinearLayout>(LinearLayout::kHorizontal);
   indicator_layout->set_name(kIndicatorLayout);
   indicator_layout->set_hit_testable(false);
-  indicator_layout->set_draw_phase(kPhaseForeground);
   indicator_layout->set_y_anchoring(YAnchoring::YTOP);
   indicator_layout->SetTranslate(0, kIndicatorVerticalOffset,
                                  kIndicatorDistanceOffset);
@@ -395,7 +341,6 @@ void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
   // reticle roughly planar with the content if near content.
   std::unique_ptr<UiElement> hit_plane = base::MakeUnique<UiElement>();
   hit_plane->set_name(kBackplane);
-  hit_plane->set_draw_phase(kPhaseForeground);
   hit_plane->SetSize(kBackplaneSize, kBackplaneSize);
   hit_plane->SetTranslate(0, 0, -kTextureOffset);
   content_elements_.push_back(hit_plane.get());
@@ -427,14 +372,22 @@ void UiSceneManager::CreateSplashScreen() {
       }),
       IDS_VR_POWERED_BY_CHROME_MESSAGE);
   text->set_name(kSplashScreenText);
-  text->set_viewport_aware(true);
-  text->set_draw_phase(kPhaseForeground);
+  text->set_draw_phase(kPhaseOverlayForeground);
   text->set_hit_testable(false);
   text->SetSize(kSplashScreenTextWidthM, kSplashScreenTextHeightM);
   text->SetTranslate(0, kSplashScreenTextVerticalOffset,
                      -kSplashScreenTextDistance);
-  splash_screen_text_ = text.get();
+  splash_screen_ = text.get();
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(text));
+
+  auto bg = base::MakeUnique<FullScreenRect>();
+  bg->set_name(kSplashScreenBackground);
+  bg->set_draw_phase(kPhaseOverlayBackground);
+  bg->SetVisible(true);
+  bg->set_hit_testable(false);
+  bg->SetCenterColor(color_scheme().splash_screen_background);
+  bg->SetEdgeColor(color_scheme().splash_screen_background);
+  scene_->AddUiElement(kSplashScreenText, std::move(bg));
 }
 
 void UiSceneManager::CreateUnderDevelopmentNotice() {
@@ -517,14 +470,12 @@ void UiSceneManager::CreateBackground() {
 void UiSceneManager::CreateViewportAwareRoot() {
   auto element = base::MakeUnique<ViewportAwareRoot>();
   element->set_name(kWebVrViewportAwareRoot);
-  element->set_draw_phase(kPhaseForeground);
   element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(kWebVrRoot, std::move(element));
 
   element = base::MakeUnique<ViewportAwareRoot>();
   element->set_name(k2dBrowsingViewportAwareRoot);
-  element->set_draw_phase(kPhaseForeground);
   element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
@@ -565,8 +516,7 @@ void UiSceneManager::CreateWebVrUrlToast() {
       base::Bind(&UiSceneManager::OnUnsupportedMode, base::Unretained(this)));
   url_bar->set_name(kWebVrUrlToast);
   url_bar->set_opacity_when_visible(0.8);
-  url_bar->set_draw_phase(kPhaseForeground);
-  url_bar->set_viewport_aware(true);
+  url_bar->set_draw_phase(kPhaseOverlayForeground);
   url_bar->SetVisible(false);
   url_bar->set_hit_testable(false);
   url_bar->SetTranslate(0, kWebVrToastDistance * sin(kWebVrUrlToastRotationRad),
@@ -615,7 +565,6 @@ void UiSceneManager::CreateExitPrompt() {
   exit_prompt_backplane_ = backplane.get();
   element = std::move(backplane);
   element->set_name(kExitPromptBackplane);
-  element->set_draw_phase(kPhaseForeground);
   element->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
   element->SetTranslate(0.0, 0.0, -kTextureOffset);
   exit_prompt_backplane_ = element.get();
@@ -643,7 +592,7 @@ void UiSceneManager::CreateToasts() {
   element = base::MakeUnique<ExclusiveScreenToast>(
       512, base::TimeDelta::FromSeconds(kToastTimeoutSeconds));
   element->set_name(kExclusiveScreenToastViewportAware);
-  element->set_draw_phase(kPhaseForeground);
+  element->set_draw_phase(kPhaseOverlayForeground);
   element->SetSize(kToastWidthDMM, kToastHeightDMM);
   element->SetTranslate(0, kWebVrToastDistance * sin(kWebVrAngleRadians),
                         -kWebVrToastDistance * cos(kWebVrAngleRadians));
@@ -651,7 +600,6 @@ void UiSceneManager::CreateToasts() {
   element->SetScale(kWebVrToastDistance, kWebVrToastDistance, 1);
   element->SetVisible(false);
   element->set_hit_testable(false);
-  element->set_viewport_aware(true);
   exclusive_screen_toast_viewport_aware_ = element.get();
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(element));
 }
@@ -768,7 +716,7 @@ void UiSceneManager::ConfigureScene() {
   bool showing_web_vr_content = web_vr_mode_ && !showing_web_vr_splash_screen_;
   scene_->set_web_vr_rendering_enabled(showing_web_vr_content);
   // Splash screen.
-  splash_screen_text_->SetVisible(showing_web_vr_splash_screen_);
+  splash_screen_->SetVisible(showing_web_vr_splash_screen_);
 
   // Exit warning.
   exit_warning_->SetVisible(exiting_);
@@ -844,16 +792,9 @@ void UiSceneManager::ConfigureScene() {
 }
 
 void UiSceneManager::ConfigureBackgroundColor() {
-  // TODO(vollick): it would be nice if ceiling, floor and the grid were
-  // UiElement subclasses and could respond to the OnSetMode signal.
   for (Rect* panel : background_panels_) {
-    if (showing_web_vr_splash_screen_) {
-      panel->SetCenterColor(color_scheme().splash_screen_background);
-      panel->SetEdgeColor(color_scheme().splash_screen_background);
-    } else {
-      panel->SetCenterColor(color_scheme().world_background);
-      panel->SetEdgeColor(color_scheme().world_background);
-    }
+    panel->SetCenterColor(color_scheme().world_background);
+    panel->SetEdgeColor(color_scheme().world_background);
   }
   ceiling_->SetCenterColor(color_scheme().ceiling);
   ceiling_->SetEdgeColor(color_scheme().world_background);
