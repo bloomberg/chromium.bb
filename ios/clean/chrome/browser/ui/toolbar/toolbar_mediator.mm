@@ -117,6 +117,11 @@
 - (void)setWebStateList:(WebStateList*)webStateList {
   // TODO(crbug.com/727427):Add support for DCHECK(webStateList).
   _webStateList = webStateList;
+  if (!webStateList) {
+    _webStateListObserver.reset();
+    _scopedWebStateListObserver.reset();
+    return;
+  }
   _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
   _scopedWebStateListObserver = base::MakeUnique<
       ScopedObserver<WebStateList, WebStateListObserverBridge>>(
