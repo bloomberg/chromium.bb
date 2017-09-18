@@ -31,7 +31,8 @@ def apply_computed_style_builder_function_parameters(property_):
     # implemented and not shared (denoted by api_class = true. Shared classes
     # are denoted by api_class = "some string").
     property_['should_declare_application_functions'] = \
-        property_['unique'] \
+        property_['api_class'] \
+        and isinstance(property_['api_class'], types.BooleanType) \
         and property_['is_property'] \
         and not property_['use_handlers_for'] \
         and not property_['longhands'] \
@@ -85,8 +86,10 @@ class CSSPropertyAPIHeadersWriter(CSSPropertyAPIWriter):
         for property_ in self.properties().values():
             if property_['api_class'] is None:
                 continue
-            property_['unique'] = isinstance(property_['api_class'], types.BooleanType)
-            property_['api_methods'] = [self._api_methods[method_name] for method_name in property_['api_methods']]
+            methods = []
+            for method_name in property_['api_methods']:
+                methods.append(self._api_methods[method_name])
+            property_['api_methods'] = methods
             classname = self.get_classname(property_)
             assert classname is not None
             apply_computed_style_builder_function_parameters(property_)
