@@ -323,7 +323,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view)
     all_apps_indicator_ = new IndicatorChipView(
         l10n_util::GetStringUTF16(IDS_ALL_APPS_INDICATOR));
     AddChildView(all_apps_indicator_);
-    if (features::IsAppListMaskLayerEnabled()) {
+    if (features::IsBackgroundBlurEnabled()) {
       // TODO(newcomer): Improve implementation of the mask layer so we can
       // enable it on all devices crbug.com/765292.
       fadeout_layer_delegate_.reset(new FadeoutLayerDelegate);
