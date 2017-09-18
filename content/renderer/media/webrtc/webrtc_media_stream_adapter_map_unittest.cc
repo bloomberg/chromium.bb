@@ -122,15 +122,15 @@ class WebRtcMediaStreamAdapterMapTest : public ::testing::Test {
 };
 
 TEST_F(WebRtcMediaStreamAdapterMapTest, AddAndRemoveLocalStreamAdapter) {
-  blink::WebMediaStream local_stream = CreateLocalStream("local_stream");
+  blink::WebMediaStream local_web_stream = CreateLocalStream("local_stream");
   std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref =
-      map_->GetOrCreateLocalStreamAdapter(local_stream);
+      map_->GetOrCreateLocalStreamAdapter(local_web_stream);
   EXPECT_TRUE(adapter_ref);
-  EXPECT_TRUE(adapter_ref->adapter().IsEqual(local_stream));
+  EXPECT_TRUE(adapter_ref->adapter().IsEqual(local_web_stream));
   EXPECT_EQ(1u, map_->GetLocalStreamCount());
 
   std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref2 =
-      map_->GetLocalStreamAdapter("local_stream");
+      map_->GetLocalStreamAdapter(local_web_stream);
   EXPECT_TRUE(adapter_ref2);
   EXPECT_EQ(&adapter_ref2->adapter(), &adapter_ref->adapter());
   EXPECT_EQ(1u, map_->GetLocalStreamCount());
@@ -141,20 +141,35 @@ TEST_F(WebRtcMediaStreamAdapterMapTest, AddAndRemoveLocalStreamAdapter) {
   EXPECT_EQ(0u, map_->GetLocalStreamCount());
 }
 
+TEST_F(WebRtcMediaStreamAdapterMapTest, LookUpLocalAdapterByWebRtcStream) {
+  blink::WebMediaStream local_web_stream = CreateLocalStream("local_stream");
+  std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref =
+      map_->GetOrCreateLocalStreamAdapter(local_web_stream);
+  EXPECT_TRUE(adapter_ref);
+  EXPECT_TRUE(adapter_ref->adapter().IsEqual(local_web_stream));
+  EXPECT_EQ(1u, map_->GetLocalStreamCount());
+
+  std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref2 =
+      map_->GetLocalStreamAdapter(adapter_ref->adapter().web_stream());
+  EXPECT_TRUE(adapter_ref2);
+  EXPECT_EQ(&adapter_ref2->adapter(), &adapter_ref->adapter());
+}
+
 TEST_F(WebRtcMediaStreamAdapterMapTest, GetLocalStreamAdapterInvalidID) {
-  EXPECT_FALSE(map_->GetLocalStreamAdapter("invalid"));
+  blink::WebMediaStream local_web_stream = CreateLocalStream("missing");
+  EXPECT_FALSE(map_->GetLocalStreamAdapter(local_web_stream));
 }
 
 TEST_F(WebRtcMediaStreamAdapterMapTest, AddAndRemoveRemoteStreamAdapter) {
-  scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream =
+  scoped_refptr<webrtc::MediaStreamInterface> remote_webrtc_stream =
       CreateRemoteStream("remote_stream");
   std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref =
-      GetOrCreateRemoteStreamAdapter(webrtc_stream.get());
-  EXPECT_EQ(webrtc_stream, adapter_ref->adapter().webrtc_stream());
+      GetOrCreateRemoteStreamAdapter(remote_webrtc_stream.get());
+  EXPECT_EQ(remote_webrtc_stream, adapter_ref->adapter().webrtc_stream());
   EXPECT_EQ(1u, map_->GetRemoteStreamCount());
 
   std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref2 =
-      map_->GetRemoteStreamAdapter("remote_stream");
+      map_->GetRemoteStreamAdapter(remote_webrtc_stream.get());
   EXPECT_TRUE(adapter_ref2);
   EXPECT_EQ(&adapter_ref2->adapter(), &adapter_ref->adapter());
   EXPECT_EQ(1u, map_->GetRemoteStreamCount());
@@ -165,8 +180,25 @@ TEST_F(WebRtcMediaStreamAdapterMapTest, AddAndRemoveRemoteStreamAdapter) {
   EXPECT_EQ(0u, map_->GetRemoteStreamCount());
 }
 
+TEST_F(WebRtcMediaStreamAdapterMapTest, LookUpRemoteAdapterByWebStream) {
+  scoped_refptr<webrtc::MediaStreamInterface> remote_webrtc_stream =
+      CreateRemoteStream("remote_stream");
+  std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref =
+      GetOrCreateRemoteStreamAdapter(remote_webrtc_stream.get());
+  EXPECT_EQ(remote_webrtc_stream, adapter_ref->adapter().webrtc_stream());
+  EXPECT_EQ(1u, map_->GetRemoteStreamCount());
+
+  std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref2 =
+      map_->GetRemoteStreamAdapter(
+          adapter_ref->adapter().webrtc_stream().get());
+  EXPECT_TRUE(adapter_ref2);
+  EXPECT_EQ(&adapter_ref2->adapter(), &adapter_ref->adapter());
+}
+
 TEST_F(WebRtcMediaStreamAdapterMapTest, GetRemoteStreamAdapterInvalidID) {
-  EXPECT_FALSE(map_->GetRemoteStreamAdapter("invalid"));
+  scoped_refptr<webrtc::MediaStreamInterface> remote_webrtc_stream =
+      CreateRemoteStream("missing");
+  EXPECT_FALSE(map_->GetRemoteStreamAdapter(remote_webrtc_stream.get()));
 }
 
 }  // namespace content
