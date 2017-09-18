@@ -83,6 +83,13 @@ PATTS_DIR=/usr/share/chromeos-assets/speech_synthesis/patts
 sudo unzip $PATTS_DIR/tts_service_x86-64.nexe.zip -d $PATTS_DIR 
 ```
 
+You may need to update permissions for the unzipped files within within
+speech_synthesis/patts:
+
+```
+sudo find $PATTS_DIR -type f -exec chmod 755 {} \;
+```
+
 **Be sure to check permissions of /usr/share/chromeos-assets, some users report
 they need to chmod or chown too, it really depends on your system.**
 
