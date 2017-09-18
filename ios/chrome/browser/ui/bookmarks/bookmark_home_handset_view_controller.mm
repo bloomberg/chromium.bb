@@ -129,8 +129,6 @@ using bookmarks::BookmarkNode;
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
-    // TODO(crbug.com/695749): See if we need to store/restore the content
-    // scroll position for BookmarkTableView here.
     return;
   }
 

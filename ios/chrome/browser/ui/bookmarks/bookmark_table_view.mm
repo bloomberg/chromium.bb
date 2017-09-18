@@ -292,9 +292,13 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (void)setContentPosition:(CGFloat)position {
   NSIndexPath* path =
       [NSIndexPath indexPathForRow:position inSection:self.bookmarksSection];
-  [self.tableView scrollToRowAtIndexPath:path
-                        atScrollPosition:UITableViewScrollPositionTop
-                                animated:NO];
+  // Anchoring |position| as the starting point calculate the visible rect area,
+  // based on screen size.
+  CGRect visibleRect = [self.tableView rectForRowAtIndexPath:path];
+  visibleRect =
+      CGRectMake(visibleRect.origin.x, visibleRect.origin.y,
+                 visibleRect.size.width, self.tableView.frame.size.height);
+  [self.tableView scrollRectToVisible:visibleRect animated:NO];
 }
 
 #pragma mark - UITableViewDataSource
