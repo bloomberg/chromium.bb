@@ -35,17 +35,17 @@ dictionary MediaTrackSettings {
     // https://w3c.github.io/mediacapture-image/#mediatracksettings-section
     // TODO(mcasas) move out when partial dictionaries are supported
     // http://crbug.com/579896.
-    [RuntimeEnabled=ImageCapture] DOMString         whiteBalanceMode;
-    [RuntimeEnabled=ImageCapture] DOMString         exposureMode;
-    [RuntimeEnabled=ImageCapture] DOMString         focusMode;
-    [RuntimeEnabled=ImageCapture] sequence<Point2D> pointsOfInterest;
-    [RuntimeEnabled=ImageCapture] double            exposureCompensation;
-    [RuntimeEnabled=ImageCapture] double            colorTemperature;
-    [RuntimeEnabled=ImageCapture] double            iso;
-    [RuntimeEnabled=ImageCapture] double            brightness;
-    [RuntimeEnabled=ImageCapture] double            contrast;
-    [RuntimeEnabled=ImageCapture] double            saturation;
-    [RuntimeEnabled=ImageCapture] double            sharpness;
-    [RuntimeEnabled=ImageCapture] double            zoom;
-    [RuntimeEnabled=ImageCapture] boolean           torch;
+    DOMString         whiteBalanceMode;
+    DOMString         exposureMode;
+    DOMString         focusMode;
+    sequence<Point2D> pointsOfInterest;
+    double            exposureCompensation;
+    double            colorTemperature;
+    double            iso;
+    double            brightness;
+    double            contrast;
+    double            saturation;
+    double            sharpness;
+    double            zoom;
+    boolean           torch;
 };

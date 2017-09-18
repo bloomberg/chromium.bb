@@ -38,19 +38,19 @@ dictionary MediaTrackConstraintSet {
     // https://w3c.github.io/mediacapture-image/#mediatrackconstraintset-section
     // TODO(mcasas) move out when partial dictionaries are supported
     // http://crbug.com/579896.
-    [RuntimeEnabled=ImageCapture] ConstrainDOMString whiteBalanceMode;
-    [RuntimeEnabled=ImageCapture] ConstrainDOMString exposureMode;
-    [RuntimeEnabled=ImageCapture] ConstrainDOMString focusMode;
-    [RuntimeEnabled=ImageCapture] ConstrainPoint2D   pointsOfInterest;
-    [RuntimeEnabled=ImageCapture] ConstrainDouble    exposureCompensation;
-    [RuntimeEnabled=ImageCapture] ConstrainDouble    colorTemperature;
-    [RuntimeEnabled=ImageCapture] ConstrainDouble    iso;
-    [RuntimeEnabled=ImageCapture] ConstrainDouble    brightness;
-    [RuntimeEnabled=ImageCapture] ConstrainDouble    contrast;
-    [RuntimeEnabled=ImageCapture] ConstrainDouble    saturation;
-    [RuntimeEnabled=ImageCapture] ConstrainDouble    sharpness;
-    [RuntimeEnabled=ImageCapture] ConstrainDouble    zoom;
-    [RuntimeEnabled=ImageCapture] ConstrainBoolean   torch;
+    ConstrainDOMString whiteBalanceMode;
+    ConstrainDOMString exposureMode;
+    ConstrainDOMString focusMode;
+    ConstrainPoint2D   pointsOfInterest;
+    ConstrainDouble    exposureCompensation;
+    ConstrainDouble    colorTemperature;
+    ConstrainDouble    iso;
+    ConstrainDouble    brightness;
+    ConstrainDouble    contrast;
+    ConstrainDouble    saturation;
+    ConstrainDouble    sharpness;
+    ConstrainDouble    zoom;
+    ConstrainBoolean   torch;
     // The "mandatory" and "_optional" members are retained for conformance
     // with https://www.w3.org/TR/2013/WD-mediacapture-streams-20130903/
     Dictionary mandatory;

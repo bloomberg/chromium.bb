@@ -37,17 +37,17 @@ dictionary MediaTrackSupportedConstraints {
     // https://w3c.github.io/mediacapture-image/#mediatracksupportedconstraints-section
     // TODO(mcasas) move out when partial dictionaries are supported
     // http://crbug.com/579896.
-    [RuntimeEnabled=ImageCapture] boolean whiteBalanceMode = true;
-    [RuntimeEnabled=ImageCapture] boolean exposureMode = true;
-    [RuntimeEnabled=ImageCapture] boolean focusMode = true;
-    [RuntimeEnabled=ImageCapture] boolean pointsOfInterest = true;
-    [RuntimeEnabled=ImageCapture] boolean exposureCompensation = true;
-    [RuntimeEnabled=ImageCapture] boolean colorTemperature = true;
-    [RuntimeEnabled=ImageCapture] boolean iso = true;
-    [RuntimeEnabled=ImageCapture] boolean brightness = true;
-    [RuntimeEnabled=ImageCapture] boolean contrast = true;
-    [RuntimeEnabled=ImageCapture] boolean saturation = true;
-    [RuntimeEnabled=ImageCapture] boolean sharpness = true;
-    [RuntimeEnabled=ImageCapture] boolean zoom = true;
-    [RuntimeEnabled=ImageCapture] boolean torch = true;
+    boolean whiteBalanceMode = true;
+    boolean exposureMode = true;
+    boolean focusMode = true;
+    boolean pointsOfInterest = true;
+    boolean exposureCompensation = true;
+    boolean colorTemperature = true;
+    boolean iso = true;
+    boolean brightness = true;
+    boolean contrast = true;
+    boolean saturation = true;
+    boolean sharpness = true;
+    boolean zoom = true;
+    boolean torch = true;
 };

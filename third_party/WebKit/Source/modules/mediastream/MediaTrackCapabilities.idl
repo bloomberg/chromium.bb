@@ -7,16 +7,16 @@ dictionary MediaTrackCapabilities {
     // https://w3c.github.io/mediacapture-image/#mediatrackcapabilities-section
     // TODO(mcasas) move out when partial dictionaries are supported
     // http://crbug.com/579896.
-    [RuntimeEnabled=ImageCapture] sequence<DOMString>  whiteBalanceMode;
-    [RuntimeEnabled=ImageCapture] sequence<DOMString>  exposureMode;
-    [RuntimeEnabled=ImageCapture] sequence<DOMString>  focusMode;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   exposureCompensation;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   colorTemperature;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   iso;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   brightness;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   contrast;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   saturation;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   sharpness;
-    [RuntimeEnabled=ImageCapture] MediaSettingsRange   zoom;
-    [RuntimeEnabled=ImageCapture] boolean              torch;
+    sequence<DOMString>  whiteBalanceMode;
+    sequence<DOMString>  exposureMode;
+    sequence<DOMString>  focusMode;
+    MediaSettingsRange   exposureCompensation;
+    MediaSettingsRange   colorTemperature;
+    MediaSettingsRange   iso;
+    MediaSettingsRange   brightness;
+    MediaSettingsRange   contrast;
+    MediaSettingsRange   saturation;
+    MediaSettingsRange   sharpness;
+    MediaSettingsRange   zoom;
+    boolean              torch;
 };
