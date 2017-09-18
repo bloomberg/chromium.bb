@@ -99,7 +99,7 @@ static void CollectEventListeners(v8::Isolate* isolate,
     if (!listeners)
       continue;
     for (size_t k = 0; k < listeners->size(); ++k) {
-      EventListener* event_listener = listeners->at(k).Listener();
+      EventListener* event_listener = listeners->at(k).Callback();
       if (event_listener->GetType() != EventListener::kJSEventListenerType)
         continue;
       V8AbstractEventListener* v8_listener =

@@ -898,7 +898,7 @@ void SVGElement::AddedEventListener(
   HeapHashSet<WeakMember<SVGElement>> instances;
   CollectInstancesForSVGElement(this, instances);
   AddEventListenerOptionsResolved options = registered_listener.Options();
-  EventListener* listener = registered_listener.Listener();
+  EventListener* listener = registered_listener.Callback();
   for (SVGElement* element : instances) {
     bool result =
         element->Node::AddEventListenerInternal(event_type, listener, options);
@@ -915,7 +915,7 @@ void SVGElement::RemovedEventListener(
   HeapHashSet<WeakMember<SVGElement>> instances;
   CollectInstancesForSVGElement(this, instances);
   EventListenerOptions options = registered_listener.Options();
-  const EventListener* listener = registered_listener.Listener();
+  const EventListener* listener = registered_listener.Callback();
   for (SVGElement* shadow_tree_element : instances) {
     DCHECK(shadow_tree_element);
 
