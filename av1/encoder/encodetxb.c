@@ -1599,6 +1599,8 @@ int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
   const int16_t *scan = scan_order->scan;
   int cul_level = 0;
   int c;
+
+  if (eob == 0) return 0;
   for (c = 0; c < eob; ++c) {
     cul_level += abs(qcoeff[scan[c]]);
   }
