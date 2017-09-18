@@ -28,16 +28,13 @@ SettingsAccessibilityTest.axeOptions = {
     // Disable 'skip-link' check since there are few tab stops before the main
     // content.
     'skip-link': {enabled: false},
+  // TODO(crbug.com/761461): enable after addressing flaky tests.
+    'color-contrast': {enabled: false},
   }
 };
 
 // Default accessibility audit options. Specify in test definition to use.
 SettingsAccessibilityTest.violationFilter = {
-  // TODO(crbug.com/748608): remove this exception once the color contrast issue
-  // is resolved.
-  'color-contrast': function(nodeResult) {
-    return nodeResult.element.id === 'prompt';
-  },
   // Polymer components use aria-active-attribute.
   'aria-valid-attr': function(nodeResult) {
     return nodeResult.element.hasAttribute('aria-active-attribute');

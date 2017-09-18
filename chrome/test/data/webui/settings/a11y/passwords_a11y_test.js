@@ -32,13 +32,10 @@ AccessibilityTest.define('SettingsA11yManagePasswords', {
   passwordManager: null,
   /** @type {PasswordsSectionElement}*/
   passwordsSection: null,
-  axeOptions: {
-    'rules': {
-      // TODO(hcarmona): enable 'region' after addressing violation.
-      'region': {enabled: false},
-      // Disable 'skip-link' check since there are few tab stops before the main
-      // content.
-      'skip-link': {enabled: false},
+  // TODO(hcarmona): Create function that overrides defaults to simplify this.
+  axeOptions: Object.assign({}, SettingsAccessibilityTest.axeOptions, {
+    'rules': Object.assign({}, SettingsAccessibilityTest.axeOptions.rules, {
+      // TODO(hcarmona): Investigate flakyness and enable these tests.
       // Disable rules flaky for CFI build.
       'meta-viewport': {enabled: false},
       'list': {enabled: false},
@@ -47,8 +44,8 @@ AccessibilityTest.define('SettingsA11yManagePasswords', {
       'hidden-content': {enabled: false},
       'aria-valid-attr-value': {enabled: false},
       'button-name': {enabled: false},
-    }
-  },
+    }),
+  }),
   /** @override */
   setup: function() {
     return new Promise((resolve) => {
