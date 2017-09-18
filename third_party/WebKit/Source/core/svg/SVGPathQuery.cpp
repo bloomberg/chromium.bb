@@ -38,20 +38,17 @@ class SVGPathTraversalState final : public SVGPathConsumer {
   SVGPathTraversalState(
       PathTraversalState::PathTraversalAction traversal_action,
       float desired_length = 0)
-      : traversal_state_(traversal_action), segment_index_(0) {
+      : traversal_state_(traversal_action) {
     traversal_state_.desired_length_ = desired_length;
   }
 
-  unsigned SegmentIndex() const { return segment_index_; }
   float TotalLength() const { return traversal_state_.total_length_; }
   FloatPoint ComputedPoint() const { return traversal_state_.current_; }
 
-  bool ProcessSegment(bool has_more_data) {
+  bool ProcessSegment() {
     traversal_state_.ProcessSegment();
     if (traversal_state_.success_)
       return true;
-    if (has_more_data)
-      segment_index_++;
     return false;
   }
 
@@ -59,7 +56,6 @@ class SVGPathTraversalState final : public SVGPathConsumer {
   void EmitSegment(const PathSegmentData&) override;
 
   PathTraversalState traversal_state_;
-  unsigned segment_index_;
 };
 
 void SVGPathTraversalState::EmitSegment(const PathSegmentData& segment) {
@@ -97,7 +93,7 @@ void ExecuteQuery(const SVGPathByteStream& path_byte_stream,
     normalizer.EmitSegment(segment);
 
     has_more_data = source.HasMoreData();
-    if (traversal_state.ProcessSegment(has_more_data))
+    if (traversal_state.ProcessSegment())
       break;
   }
 }
