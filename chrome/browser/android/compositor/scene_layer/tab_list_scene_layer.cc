@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/compositor/scene_layer/tab_list_scene_layer.h"
 
-#include "base/android/jni_android.h"
 #include "chrome/browser/android/compositor/layer/content_layer.h"
 #include "chrome/browser/android/compositor/layer/tab_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
@@ -184,11 +183,6 @@ void TabListSceneLayer::PutTabLayer(
   gfx::RectF content(x, y, width, height);
 
   content_obscures_self_ |= content.Contains(self);
-}
-
-base::android::ScopedJavaLocalRef<jobject> TabListSceneLayer::GetJavaObject(
-    JNIEnv* env) {
-  return base::android::ScopedJavaLocalRef<jobject>(java_obj_);
 }
 
 void TabListSceneLayer::OnDetach() {
