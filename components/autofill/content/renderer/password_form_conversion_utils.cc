@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <set>
 #include <string>
 
 #include "base/i18n/case_conversion.h"
@@ -384,7 +383,7 @@ bool GetPasswordForm(
   std::map<blink::WebInputElement, blink::WebInputElement>
       last_text_input_before_password;
   std::vector<WebInputElement> all_possible_usernames;
-  std::set<base::string16> other_possible_passwords;
+  std::vector<base::string16> other_possible_passwords;
 
   std::map<WebInputElement, PasswordFormFieldPredictionType> predicted_elements;
   if (form_predictions) {
@@ -515,10 +514,14 @@ bool GetPasswordForm(
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kEnablePasswordSelection)) {
-    // Add non-empty possible passwords to the set.
+    // Add non-empty unique possible passwords to the vector.
     for (const WebInputElement& password_element : passwords) {
-      if (!password_element.Value().IsEmpty())
-        other_possible_passwords.insert(password_element.Value().Utf16());
+      base::string16 element = password_element.Value().Utf16();
+      if (!element.empty() &&
+          find(other_possible_passwords.begin(), other_possible_passwords.end(),
+               element) == other_possible_passwords.end()) {
+        other_possible_passwords.push_back(std::move(element));
+      }
     }
 
     DCHECK(!new_password.IsNull() || !password.IsNull());
@@ -526,9 +529,8 @@ bool GetPasswordForm(
         (new_password.IsNull() ? password : new_password).Value().Utf16();
 
     if (!other_possible_passwords.empty()) {
-      std::move(other_possible_passwords.begin(),
-                other_possible_passwords.end(),
-                std::back_inserter(password_form->other_possible_passwords));
+      password_form->other_possible_passwords =
+          std::move(other_possible_passwords);
     }
   }
 
