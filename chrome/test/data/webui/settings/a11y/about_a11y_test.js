@@ -15,12 +15,7 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   /** @override */
   name: 'ABOUT',
   /** @override */
-  axeOptions: {
-    'rules': {
-      // TODO(hcarmona): enable 'region' after addressing violation.
-      'region': {enabled: false},
-    }
-  },
+  axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
     settings.router.navigateTo(settings.routes.ABOUT);
