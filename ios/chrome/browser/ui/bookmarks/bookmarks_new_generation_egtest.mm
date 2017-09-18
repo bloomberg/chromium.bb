@@ -73,15 +73,17 @@ id<GREYMatcher> BookmarksDeleteSwipeButton() {
 
 // Matcher for the Back button on the bookmarks UI.
 id<GREYMatcher> BookmarksBackButton() {
-  return grey_accessibilityLabel(
-      l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_BACK_LABEL));
+  return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                        IDS_IOS_BOOKMARK_NEW_BACK_LABEL)),
+                    grey_enabled(), nil);
 }
 
 // Matcher for the DONE button on the bookmarks UI.
 id<GREYMatcher> BookmarksDoneButton() {
   return grey_allOf(
       ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
-      grey_not(grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey)), nil);
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey)),
+      grey_sufficientlyVisible(), nil);
 }
 
 // Matcher for context bar leading button.
@@ -107,6 +109,12 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
                     grey_accessibilityTrait(UIAccessibilityTraitButton),
                     grey_sufficientlyVisible(), nil);
 }
+
+// Matcher for tappable bookmark node.
+id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
+  return grey_allOf(grey_accessibilityID(label), grey_sufficientlyVisible(),
+                    nil);
+}
 }  // namespace
 
 // Bookmark integration tests for Chrome.
@@ -116,7 +124,11 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 @implementation BookmarksNewGenTestCase
 
 - (void)setUp {
+  // Set flags before setup.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
   [super setUp];
+
   // Wait for bookmark model to be loaded.
   GREYAssert(testing::WaitUntilConditionOrTimeout(
                  testing::kWaitForUIElementTimeout,
@@ -138,10 +150,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 #pragma mark - Tests
 
 - (void)testUndoDeleteBookmarkFromSwipe {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -150,7 +158,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openMobileBookmarks];
 
   // Swipe action on the URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
 
   // Verify context bar does not change when "Delete" shows up.
@@ -177,9 +186,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Tests that the bookmark context bar is shown in MobileBookmarks.
 - (void)testBookmarkContextBarShown {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -201,9 +207,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testBookmarkContextBarInVariousSelectionModes {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -242,7 +245,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Select single URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
@@ -260,7 +264,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
@@ -285,7 +290,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Select single Folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
@@ -303,7 +309,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
@@ -328,9 +335,11 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Multi select URL and folders.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
@@ -348,7 +357,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect Folder 1, so that Second URL is selected.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled
@@ -367,10 +377,12 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all, but one Folder - Folder 1 is selected.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
   // Unselect URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
 
   // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
@@ -388,7 +400,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 
   // Unselect all.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Verify context bar shows disabled "Delete" disabled "More" enabled
@@ -419,9 +432,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testContextMenuForSingleURLSelection {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -435,7 +445,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -449,9 +460,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Verify Edit functionality on single URL selection.
 - (void)testEditFunctionalityOnSingleURL {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -514,9 +522,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Verify Copy URL functionality on single URL selection.
 - (void)testCopyFunctionalityOnSingleURL {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -555,9 +560,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testContextMenuForMultipleURLSelection {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -571,9 +573,11 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URLs.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -604,9 +608,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Verify the Open All functionality on multiple url selection.
 - (void)testContextMenuForMultipleURLOpenAll {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -790,9 +791,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testContextBarForSingleFolderSelection {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -806,7 +804,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select Folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -827,9 +826,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testContextMenuForMultipleFolderSelection {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -843,9 +839,11 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select Folders.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -858,9 +856,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testContextMenuForMixedSelection {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -874,9 +869,11 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URL and folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -889,9 +886,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testLongPressOnSingleURL {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -899,7 +893,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_longPress()];
 
   // Verify context menu.
@@ -907,9 +902,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testLongPressOnSingleFolder {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -917,7 +909,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_longPress()];
 
   // Verify it shows the context menu.
@@ -938,9 +931,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Verify Edit functionality for single folder selection.
 - (void)testEditFunctionalityOnSingleFolder {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -949,7 +939,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openMobileBookmarks];
 
   // Invoke Edit through long press.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_longPress()];
 
   [[EarlGrey
@@ -975,9 +966,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Verify Move functionality on single folder selection.
 - (void)testMoveFunctionalityOnSingleFolder {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -986,7 +974,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openMobileBookmarks];
 
   // Invoke Move through long press.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
       performAction:grey_longPress()];
 
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -1023,7 +1012,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
   [BookmarksNewGenTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
 
   // Select Folder 2 as new parent folder for "Title For New Folder".
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
       performAction:grey_tap()];
 
   // Verify folder picker is dismissed and folder creator is now visible.
@@ -1054,12 +1044,14 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
                            ofFolderWithName:@"Title For New Folder"];
 
   // Drill down to where "Folder 1.1" has been moved and assert it's presence.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Title For New Folder")]
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"Title For New Folder")]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -1067,9 +1059,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Verify Move functionality on multiple folder selection.
 - (void)testMoveFunctionalityOnMultipleFolder {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1083,9 +1072,11 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select multiple folders.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -1099,8 +1090,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Choose to move into a new folder.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Create New Folder")]
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"Create New Folder")]
       performAction:grey_tap()];
 
   // Enter custom new folder name.
@@ -1135,8 +1126,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
   // Drill down to where "Folder 1.1" and "Folder 1" have been moved and assert
   // it's presence.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Title For New Folder")]
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"Title For New Folder")]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -1146,9 +1137,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Verify Move functionality on mixed folder / url selection.
 - (void)testMoveFunctionalityOnMixedSelection {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1162,9 +1150,11 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URL and folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -1215,8 +1205,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
   // Drill down to where "Second URL" and "Folder 1" have been moved and assert
   // it's presence.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Title For New Folder")]
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"Title For New Folder")]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -1226,9 +1216,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Verify Move functionality on multiple url selection.
 - (void)testMoveFunctionalityOnMultipleUrlSelection {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1242,9 +1229,11 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URL and folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -1259,7 +1248,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Choose to move into Folder 1.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Verify all folder flow UI is now closed.
@@ -1276,7 +1266,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
   // Drill down to where "Second URL" and "First URL" have been moved and assert
   // it's presence.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -1286,9 +1277,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Try deleting a bookmark from the edit screen, then undoing that delete.
 - (void)testUndoDeleteBookmarkFromEditScreen {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1302,7 +1290,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select Folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Tap context menu.
@@ -1352,9 +1341,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testDeleteSingleURLNode {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1368,7 +1354,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select single URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
 
   // Delete it.
@@ -1402,9 +1389,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testDeleteSingleFolderNode {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1418,7 +1402,8 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select single URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Delete it.
@@ -1452,9 +1437,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testDeleteMultipleNodes {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1468,9 +1450,11 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select Folder and URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
       performAction:grey_tap()];
 
   // Delete it.
@@ -1500,9 +1484,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 // Tests that the promo view is only seen at root level and not in any of the
 // child nodes.
 - (void)testPromoViewIsSeenOnlyInRootNode {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1539,9 +1520,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Tests that tapping No thanks on the promo make it disappear.
 - (void)testPromoNoThanksMakeItDisappear {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1574,9 +1552,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 // state makes the sign-in sheet appear, and the promo still appears after
 // dismissing the sheet.
 - (void)testSignInPromoWithColdStateUsingPrimaryButton {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1605,9 +1580,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 // state makes the confirmaiton sheet appear, and the promo still appears after
 // dismissing the sheet.
 - (void)testSignInPromoWithWarmStateUsingPrimaryButton {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1652,9 +1624,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 // state makes the sign-in sheet appear, and the promo still appears after
 // dismissing the sheet.
 - (void)testSignInPromoWithWarmStateUsingSecondaryButton {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1690,9 +1659,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 
 // Tests that the sign-in promo should not be shown after been shown 19 times.
 - (void)testAutomaticSigninPromoDismiss {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1721,10 +1687,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 // Tests the creation of new folders by tapping on 'New Folder' button of the
 // context bar.
 - (void)testCreateNewFolderWithContextBar {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1767,9 +1729,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testEmptyBackgroundAndSelectButton {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1823,10 +1782,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testCachePositionIsRecreated {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1851,10 +1806,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testCachePositionIsRecreatedWhenNodeIsDeleted {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -1885,10 +1836,6 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
 }
 
 - (void)testCachePositionIsRecreatedWhenNodeIsMoved {
-  if (IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -2104,11 +2051,14 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select URLs.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"French URL")]
       performAction:grey_tap()];
 
   // Tap context menu.
