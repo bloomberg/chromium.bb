@@ -450,12 +450,6 @@ public class LocaleManager {
      */
     public void recordLocaleBasedSearchWidgetMetrics(boolean widgetPresent) {}
 
-    // Deprecated.  Use hasCompletedSearchEnginePromo.
-    // TODO(tedchoc): Remove once downstream uses hasCompletedSearchEnginePromo.
-    public boolean hasShownSearchEnginePromo() {
-        return hasCompletedSearchEnginePromo();
-    }
-
     /**
      * @return Whether the search engine promo has been shown and the user selected a valid option
      *         and successfully completed the promo.

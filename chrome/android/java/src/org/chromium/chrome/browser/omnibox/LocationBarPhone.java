@@ -227,7 +227,9 @@ public class LocationBarPhone extends LocationBarLayout {
         ToolbarDataProvider toolbarDataProvider = getToolbarDataProvider();
         if (toolbarDataProvider == null) return;
 
-        if (LocaleManager.getInstance().hasShownSearchEnginePromo()) {
+        LocaleManager localeManager = LocaleManager.getInstance();
+        if (localeManager.hasCompletedSearchEnginePromo()
+                || localeManager.hasShownSearchEnginePromoThisSession()) {
             mGoogleGContainer.setVisibility(View.GONE);
             return;
         }
