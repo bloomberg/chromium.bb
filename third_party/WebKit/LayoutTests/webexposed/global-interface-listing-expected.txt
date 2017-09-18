@@ -4477,6 +4477,7 @@ interface Navigator
     getter userAgent
     getter vendor
     getter vendorSub
+    getter vr
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
     method cancelKeyboardLock
@@ -7152,6 +7153,14 @@ interface USBOutTransferResult
     getter bytesWritten
     getter status
     method constructor
+interface VR : EventTarget
+    attribute @@toStringTag
+    getter ondeviceconnect
+    getter ondevicedisconnect
+    method constructor
+    method getDevices
+    setter ondeviceconnect
+    setter ondevicedisconnect
 interface VRDisplay : EventTarget
     attribute @@toStringTag
     getter capabilities
