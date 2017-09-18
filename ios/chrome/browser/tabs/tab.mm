@@ -52,6 +52,7 @@
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/history/history_tab_helper.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
@@ -550,22 +551,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)saveTitleToHistoryDB {
-  // If incognito, don't update history.
-  if (_browserState->IsOffTheRecord())
-    return;
-  // Don't update the history if current entry has no title.
-  NSString* title = [self title];
-  if (![title length] ||
-      [title isEqualToString:l10n_util::GetNSString(IDS_DEFAULT_TAB_TITLE)]) {
-    return;
-  }
+  web::WebState* webState = self.webState;
+  HistoryTabHelper* helper = HistoryTabHelper::FromWebState(webState);
 
-  history::HistoryService* historyService =
-      ios::HistoryServiceFactory::GetForBrowserState(
-          _browserState, ServiceAccessType::IMPLICIT_ACCESS);
-  DCHECK(historyService);
-  historyService->SetPageTitle(self.lastCommittedURL,
-                               base::SysNSStringToUTF16(title));
+  web::NavigationItem* item =
+      webState->GetNavigationManager()->GetLastCommittedItem();
+  if (item) {
+    helper->UpdateHistoryPageTitle(*item);
+  }
 }
 
 - (void)addCurrentEntryToHistoryDB {
