@@ -2519,6 +2519,7 @@ crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread
 # crbug.com/664858 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Pass Failure ]
 
 crbug.com/684874 virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Pass Failure ]
+crbug.com/766357 virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Pass Failure ]
 
 # ====== Random order flaky tests end here ======
 
