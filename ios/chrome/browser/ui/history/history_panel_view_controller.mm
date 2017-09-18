@@ -173,7 +173,7 @@ CGFloat kShadowOpacity = 0.2f;
     @"clearBrowsingBar" : _clearBrowsingBar,
   };
   NSArray* constraints = @[
-    @"V:|[collectionView][clearBrowsingBar(==48)]|", @"H:|[collectionView]|",
+    @"V:|[collectionView][clearBrowsingBar]|", @"H:|[collectionView]|",
     @"H:|[clearBrowsingBar]|"
   ];
   ApplyVisualConstraints(constraints, views);
