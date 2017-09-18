@@ -380,7 +380,9 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
      */
     private void updateSearchBoxLogo() {
         TextView searchBoxTextView = (TextView) mSearchBoxView.findViewById(R.id.search_box_text);
-        if (mSearchProviderIsGoogle && !LocaleManager.getInstance().hasShownSearchEnginePromo()
+        LocaleManager localeManager = LocaleManager.getInstance();
+        if (mSearchProviderIsGoogle && !localeManager.hasCompletedSearchEnginePromo()
+                && !localeManager.hasShownSearchEnginePromoThisSession()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX)) {
             searchBoxTextView.setCompoundDrawablePadding(
                     getResources().getDimensionPixelOffset(R.dimen.ntp_search_box_logo_padding));
