@@ -4248,6 +4248,11 @@ void daala_idct32(const tran_low_t *input, tran_low_t *output) {
   for (i = 0; i < 32; i++) output[i] = (tran_low_t)x[i];
 }
 
+void daala_idtx32(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  for (i = 0; i < 32; i++) output[i] = input[i];
+}
+
 #if CONFIG_TX64X64
 void daala_fdct64(const tran_low_t *input, tran_low_t *output) {
   int i;

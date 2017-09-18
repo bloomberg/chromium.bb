@@ -1140,11 +1140,7 @@ static void fidtx16(const tran_low_t *input, tran_low_t *output) {
 static void fidtx32(const tran_low_t *input, tran_low_t *output) {
   int i;
   for (i = 0; i < 32; ++i) {
-#if CONFIG_DAALA_DCT32
-    output[i] = input[i];
-#else
     output[i] = input[i] * 4;
-#endif
   }
 }
 
@@ -2429,13 +2425,13 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
     { fhalfright32, fhalfright32 },  // FLIPADST_FLIPADST
     { fhalfright32, fhalfright32 },  // ADST_FLIPADST
     { fhalfright32, fhalfright32 },  // FLIPADST_ADST
-    { fidtx32, fidtx32 },            // IDTX
-    { daala_fdct32, fidtx32 },       // V_DCT
-    { fidtx32, daala_fdct32 },       // H_DCT
-    { fhalfright32, fidtx32 },       // V_ADST
-    { fidtx32, fhalfright32 },       // H_ADST
-    { fhalfright32, fidtx32 },       // V_FLIPADST
-    { fidtx32, fhalfright32 },       // H_FLIPADST
+    { daala_idtx32, daala_idtx32 },  // IDTX
+    { daala_fdct32, daala_idtx32 },  // V_DCT
+    { daala_idtx32, daala_fdct32 },  // H_DCT
+    { fhalfright32, daala_idtx32 },  // V_ADST
+    { daala_idtx32, fhalfright32 },  // H_ADST
+    { fhalfright32, daala_idtx32 },  // V_FLIPADST
+    { daala_idtx32, fhalfright32 },  // H_FLIPADST
 #endif
 #else
     { fdct32, fdct32 },              // DCT_DCT

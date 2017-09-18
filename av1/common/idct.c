@@ -57,11 +57,7 @@ static void iidtx16_c(const tran_low_t *input, tran_low_t *output) {
 static void iidtx32_c(const tran_low_t *input, tran_low_t *output) {
   int i;
   for (i = 0; i < 32; ++i) {
-#if CONFIG_DAALA_DCT32
-    output[i] = input[i];
-#else
     output[i] = input[i] * 4;
-#endif
   }
 }
 
@@ -1381,13 +1377,13 @@ void av1_iht32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { ihalfright32_c, ihalfright32_c },  // FLIPADST_FLIPADST
     { ihalfright32_c, ihalfright32_c },  // ADST_FLIPADST
     { ihalfright32_c, ihalfright32_c },  // FLIPADST_ADST
-    { iidtx32_c, iidtx32_c },            // IDTX
-    { daala_idct32, iidtx32_c },         // V_DCT
-    { iidtx32_c, daala_idct32 },         // H_DCT
-    { ihalfright32_c, iidtx32_c },       // V_ADST
-    { iidtx32_c, ihalfright32_c },       // H_ADST
-    { ihalfright32_c, iidtx32_c },       // V_FLIPADST
-    { iidtx32_c, ihalfright32_c },       // H_FLIPADST
+    { daala_idtx32, daala_idtx32 },      // IDTX
+    { daala_idct32, daala_idtx32 },      // V_DCT
+    { daala_idtx32, daala_idct32 },      // H_DCT
+    { ihalfright32_c, daala_idtx32 },    // V_ADST
+    { daala_idtx32, ihalfright32_c },    // H_ADST
+    { ihalfright32_c, daala_idtx32 },    // V_FLIPADST
+    { daala_idtx32, ihalfright32_c },    // H_FLIPADST
 #endif
 #else
     { aom_idct32_c, aom_idct32_c },      // DCT_DCT
