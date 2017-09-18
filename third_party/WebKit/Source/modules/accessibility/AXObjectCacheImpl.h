@@ -44,6 +44,7 @@
 namespace blink {
 
 class AbstractInlineTextBox;
+class AXRelationCache;
 class HTMLAreaElement;
 class LocalFrameView;
 
@@ -194,12 +195,6 @@ class MODULES_EXPORT AXObjectCacheImpl
                       const Vector<String>& id_vector,
                       HeapVector<Member<AXObject>>& owned_children);
 
-  // Given an element in the DOM tree that was either just added or whose id
-  // just changed, check to see if another object wants to be its parent due to
-  // aria-owns. If so, update the tree by calling childrenChanged() on the
-  // potential owner, possibly reparenting this element.
-  void UpdateTreeIfElementIdIsAriaOwned(Element*);
-
   // Synchronously returns whether or not we currently have permission to
   // call AOM event listeners.
   bool CanCallAOMEventListeners() const;
@@ -231,39 +226,12 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   HashSet<AXID> ids_in_use_;
 
+  std::unique_ptr<AXRelationCache> relation_cache_;
+
 #if DCHECK_IS_ON()
   // Verified when finalizing.
   bool has_been_disposed_ = false;
 #endif
-
-  //
-  // Aria-owns
-  //
-
-  // Map from the AXID of the owner to the AXIDs of the children.
-  // This is a validated map, it doesn't contain illegal, duplicate,
-  // or cyclical matches, or references to IDs that don't exist.
-  HashMap<AXID, Vector<AXID>> aria_owner_to_children_mapping_;
-
-  // Map from the AXID of a child to the AXID of the parent that owns it.
-  HashMap<AXID, AXID> aria_owned_child_to_owner_mapping_;
-
-  // Map from the AXID of a child to the AXID of its real parent in the tree if
-  // we ignored aria-owns. This is needed in case the owner no longer wants to
-  // own it.
-  HashMap<AXID, AXID> aria_owned_child_to_real_parent_mapping_;
-
-  // Map from the AXID of any object with an aria-owns attribute to the set of
-  // ids of its children. This is *unvalidated*, it includes ids that may not
-  // currently exist in the tree.
-  HashMap<AXID, HashSet<String>> aria_owner_to_ids_mapping_;
-
-  // Map from an ID (the ID attribute of a DOM element) to the set of elements
-  // that want to own that ID. This is *unvalidated*, it includes possible
-  // duplicates.  This is used so that when an element with an ID is added to
-  // the tree or changes its ID, we can quickly determine if it affects an
-  // aria-owns relationship.
-  HashMap<String, std::unique_ptr<HashSet<AXID>>> id_to_aria_owners_mapping_;
 
   TaskRunnerTimer<AXObjectCacheImpl> notification_post_timer_;
   HeapVector<std::pair<Member<AXObject>, AXNotification>>

@@ -2670,6 +2670,7 @@ void AXNodeObject::UpdateAccessibilityRole() {
 void AXNodeObject::ComputeAriaOwnsChildren(
     HeapVector<Member<AXObject>>& owned_children) const {
   Vector<String> id_vector;
+  // Case 1: owned children not allowed
   if (!CanHaveChildren() || IsNativeTextControl() ||
       HasContentEditableAttributeSet()) {
     if (GetNode())
@@ -2677,6 +2678,7 @@ void AXNodeObject::ComputeAriaOwnsChildren(
     return;
   }
 
+  // Case 2: AOM owns property
   HeapVector<Member<Element>> elements;
   if (HasAOMProperty(AOMRelationListProperty::kOwns, elements)) {
     AxObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
@@ -2693,6 +2695,7 @@ void AXNodeObject::ComputeAriaOwnsChildren(
   if (!HasAttribute(aria_ownsAttr))
     return;
 
+  // Case 3: aria-owns attribute
   TokenVectorFromAttribute(id_vector, aria_ownsAttr);
   AxObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
 }
