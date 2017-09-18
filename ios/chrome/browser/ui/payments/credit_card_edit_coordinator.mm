@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/payments/credit_card_edit_mediator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
+#import "ios/chrome/browser/ui/payments/payment_request_navigation_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -77,7 +78,7 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
 
 @property(nonatomic, strong) AddressEditCoordinator* addressEditCoordinator;
 
-@property(nonatomic, strong) UINavigationController* viewController;
+@property(nonatomic, strong) PaymentRequestNavigationController* viewController;
 
 @property(nonatomic, strong)
     PaymentRequestEditViewController* editViewController;
@@ -112,12 +113,12 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
   [_editViewController setDataSource:_mediator];
   [_editViewController loadModel];
 
-  self.viewController = [[UINavigationController alloc]
+  self.viewController = [[PaymentRequestNavigationController alloc]
       initWithRootViewController:self.editViewController];
-  [self.viewController setModalPresentationStyle:UIModalPresentationFormSheet];
-  [self.viewController
-      setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
-  [self.viewController setNavigationBarHidden:YES];
+  self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;
+  self.viewController.modalTransitionStyle =
+      UIModalTransitionStyleCoverVertical;
+  self.viewController.navigationBarHidden = YES;
 
   [[self baseViewController] presentViewController:self.viewController
                                           animated:YES

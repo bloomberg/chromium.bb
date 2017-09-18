@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/ui/payments/full_card_requester.h"
 #include "ios/chrome/browser/ui/payments/payment_request_mediator.h"
+#import "ios/chrome/browser/ui/payments/payment_request_navigation_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -43,7 +44,7 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 @end
 
 @implementation PaymentRequestCoordinator {
-  UINavigationController* _navigationController;
+  PaymentRequestNavigationController* _navigationController;
   AddressEditCoordinator* _addressEditCoordinator;
   CreditCardEditCoordinator* _creditCardEditCoordinator;
   ContactInfoEditCoordinator* _contactInfoEditCoordinator;
@@ -97,13 +98,12 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
   [_viewController setDataSource:_mediator];
   [_viewController loadModel];
 
-  _navigationController = [[UINavigationController alloc]
+  _navigationController = [[PaymentRequestNavigationController alloc]
       initWithRootViewController:_viewController];
-  [_navigationController
-      setModalPresentationStyle:UIModalPresentationFormSheet];
-  [_navigationController
-      setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
-  [_navigationController setNavigationBarHidden:YES];
+  _navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
+  _navigationController.modalTransitionStyle =
+      UIModalTransitionStyleCoverVertical;
+  _navigationController.navigationBarHidden = YES;
 
   [[self baseViewController] presentViewController:_navigationController
                                           animated:YES
