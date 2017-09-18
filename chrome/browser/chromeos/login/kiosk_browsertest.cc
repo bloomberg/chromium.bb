@@ -1207,7 +1207,13 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
       content::NotificationService::AllSources()).Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, DoNotLaunchWhenUntrusted) {
+// crbug.com/766169
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DoNotLaunchWhenUntrusted DISABLED_DoNotLaunchWhenUntrusted
+#else
+#define MAYBE_DoNotLaunchWhenUntrusted DoNotLaunchWhenUntrusted
+#endif
+IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_DoNotLaunchWhenUntrusted) {
   PrepareAppLaunch();
   SimulateNetworkOnline();
 
@@ -1231,9 +1237,17 @@ IN_PROC_BROWSER_TEST_F(KioskTest, DoNotLaunchWhenUntrusted) {
       &ignored));
 }
 
+// crbug.com/766169
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_NoConsumerAutoLaunchWhenUntrusted \
+  DISABLED_NoConsumerAutoLaunchWhenUntrusted
+#else
+#define MAYBE_NoConsumerAutoLaunchWhenUntrusted \
+  NoConsumerAutoLaunchWhenUntrusted
+#endif
 // Verifies that a consumer device does not auto-launch kiosk mode when cros
 // settings are untrusted.
-IN_PROC_BROWSER_TEST_F(KioskTest, NoConsumerAutoLaunchWhenUntrusted) {
+IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_NoConsumerAutoLaunchWhenUntrusted) {
   EnableConsumerKioskMode();
 
   // Wait for and confirm the auto-launch warning.
