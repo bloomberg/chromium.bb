@@ -105,8 +105,8 @@ bool InitializeGLOneOffImplementation(GLImplementation impl,
 void ShutdownGL() {
   ShutdownGLPlatform();
 
-  UnloadGLNativeLibraries();
   SetGLImplementation(kGLImplementationNone);
+  UnloadGLNativeLibraries();
 }
 
 scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
