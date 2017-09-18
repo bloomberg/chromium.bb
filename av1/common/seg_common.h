@@ -32,7 +32,7 @@ typedef enum {
   SEG_LVL_ALT_LF = 1,     // Use alternate loop filter value...
   SEG_LVL_REF_FRAME = 2,  // Optional Segment reference frame
   SEG_LVL_SKIP = 3,       // Optional Segment (0,0) + skip mode
-#ifdef CONFIG_SEGMENT_ZEROMV
+#if CONFIG_SEGMENT_ZEROMV
   SEG_LVL_ZEROMV = 4,
   SEG_LVL_MAX = 5
 #else
