@@ -46,7 +46,7 @@ buildflag_header("features") {
     "ENABLE_SUPERVISED_USERS=$enable_supervised_users",
     "ENABLE_WAYLAND_SERVER=$enable_wayland_server",
     "PGO_BUILD=$pgo_build",
-    "USE_VULCANIZE=$use_vulcanize",
+    "OPTIMIZE_WEBUI=$optimize_webui",
   ]
 }
 

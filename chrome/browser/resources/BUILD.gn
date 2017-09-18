@@ -95,7 +95,7 @@ if (!is_android) {
   }
 
   grit("settings_resources") {
-    if (use_vulcanize) {
+    if (optimize_webui) {
       source = "settings/settings_resources_vulcanized.grd"
 
       # The .grd contains references to generated files.

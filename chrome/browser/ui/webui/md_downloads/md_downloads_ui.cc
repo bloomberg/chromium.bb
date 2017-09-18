@@ -103,7 +103,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("2x/no_downloads.png",
                           IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG);
 
-#if BUILDFLAG(USE_VULCANIZE)
+#if BUILDFLAG(OPTIMIZE_WEBUI)
   source->UseGzip({"1x/incognito_marker.png", "1x/no_downloads.png",
                    "2x/incognito_marker.png", "2x/no_downloads.png"});
 
