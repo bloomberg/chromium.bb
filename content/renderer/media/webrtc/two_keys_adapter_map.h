@@ -31,10 +31,11 @@ template <typename PrimaryKey, typename SecondaryKey, typename Value>
 class TwoKeysAdapterMap {
  public:
   // Maps the primary key to the value, increasing |PrimarySize| by one and
-  // allowing lookup of the value based on primary key.
-  // There must not already exist a mapping for this primary key, in other words
-  // |!FindByPrimary(primary)| must hold.
-  void Insert(PrimaryKey primary, Value value) {
+  // allowing lookup of the value based on primary key. Returns a pointer to the
+  // value in the map, the pointer is valid for as long as the value is in the
+  // map. There must not already exist a mapping for this primary key, in other
+  // words |!FindByPrimary(primary)| must hold.
+  Value* Insert(PrimaryKey primary, Value value) {
     DCHECK(entries_by_primary_.find(primary) == entries_by_primary_.end());
     auto it = entries_by_primary_
                   .insert(std::make_pair(
@@ -42,6 +43,7 @@ class TwoKeysAdapterMap {
                       std::unique_ptr<Entry>(new Entry(std::move(value)))))
                   .first;
     it->second->primary_it = it;
+    return &it->second->value;
   }
 
   // Maps the secondary key to the value mapped by the primary key, increasing

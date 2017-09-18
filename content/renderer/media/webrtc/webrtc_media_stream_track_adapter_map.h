@@ -97,11 +97,11 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
   // thread. The adapter is a associated with a blink and webrtc track, lookup
   // works by either track.
   // First variety: If an adapter exists it will already be initialized, if one
-  // does not exist for then null is returned.
+  // does not exist null is returned.
   std::unique_ptr<AdapterRef> GetRemoteTrackAdapter(
       const blink::WebMediaStreamTrack& web_track);
   // Second variety: If an adapter exists it may or may not be initialized, see
-  // |AdapterRef::is_initialized|. If an adapter does not exist then null is
+  // |AdapterRef::is_initialized|. If an adapter does not exist null is
   // returned.
   std::unique_ptr<AdapterRef> GetRemoteTrackAdapter(
       webrtc::MediaStreamTrackInterface* webrtc_track);
@@ -114,23 +114,27 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
       scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track);
   size_t GetRemoteTrackCount() const;
 
- protected:
+ private:
   friend class base::RefCountedThreadSafe<WebRtcMediaStreamTrackAdapterMap>;
 
-  // Invoke on the main thread.
-  virtual ~WebRtcMediaStreamTrackAdapterMap();
-
- private:
+  // "(blink::WebMediaStreamTrack, webrtc::MediaStreamTrackInterface) ->
+  // WebRtcMediaStreamTrackAdapter" maps. The primary key is based on the object
+  // used to create the adapter. Local tracks are created from
+  // |blink::WebMediaStreamTrack|s, remote tracks are created from
+  // |webrtc::MediaStreamTrackInterface|s.
   // The adapter keeps the |webrtc::MediaStreamTrackInterface| alive with ref
   // counting making it safe to use a raw pointer for key.
   using LocalTrackAdapterMap =
-      TwoKeysAdapterMap<int,
+      TwoKeysAdapterMap<int,  // blink::WebMediaStreamTrack::UniqueId()
                         webrtc::MediaStreamTrackInterface*,
                         scoped_refptr<WebRtcMediaStreamTrackAdapter>>;
   using RemoteTrackAdapterMap =
       TwoKeysAdapterMap<webrtc::MediaStreamTrackInterface*,
-                        int,
+                        int,  // blink::WebMediaStreamTrack::UniqueId()
                         scoped_refptr<WebRtcMediaStreamTrackAdapter>>;
+
+  // Invoke on the main thread.
+  virtual ~WebRtcMediaStreamTrackAdapterMap();
 
   void OnRemoteTrackAdapterInitialized(std::unique_ptr<AdapterRef> adapter_ref);
 

@@ -23,14 +23,12 @@ WebRtcMediaStreamAdapterMap::AdapterEntry::~AdapterEntry() {
 
 WebRtcMediaStreamAdapterMap::AdapterRef::AdapterRef(
     scoped_refptr<WebRtcMediaStreamAdapterMap> map,
-    std::map<std::string, AdapterEntry> WebRtcMediaStreamAdapterMap::*
-        stream_adapters,
-    const MapEntryIterator& it)
-    : map_(std::move(map)), stream_adapters_(stream_adapters), it_(it) {
+    Type type,
+    AdapterEntry* adapter_entry)
+    : map_(std::move(map)), type_(type), adapter_entry_(adapter_entry) {
   DCHECK(map_);
-  DCHECK(stream_adapters_);
-  DCHECK(entry()->adapter);
-  ++entry()->ref_count;
+  DCHECK(adapter_entry_);
+  ++adapter_entry_->ref_count;
 }
 
 WebRtcMediaStreamAdapterMap::AdapterRef::~AdapterRef() {
@@ -38,9 +36,19 @@ WebRtcMediaStreamAdapterMap::AdapterRef::~AdapterRef() {
   std::unique_ptr<WebRtcMediaStreamAdapter> removed_adapter;
   {
     base::AutoLock scoped_lock(map_->lock_);
-    if (--entry()->ref_count == 0) {
-      removed_adapter = std::move(entry()->adapter);
-      (*map_.*stream_adapters_).erase(it_);
+    --adapter_entry_->ref_count;
+    if (adapter_entry_->ref_count == 0) {
+      removed_adapter = std::move(adapter_entry_->adapter);
+      // "GetOrCreate..." ensures the adapter is initialized and the secondary
+      // key is set before the last |AdapterRef| is destroyed. We can use either
+      // the primary or secondary key for removal.
+      if (type_ == Type::kLocal) {
+        map_->local_stream_adapters_.EraseByPrimary(
+            removed_adapter->web_stream().UniqueId());
+      } else {
+        map_->remote_stream_adapters_.EraseByPrimary(
+            removed_adapter->webrtc_stream().get());
+      }
     }
   }
   // Destroy the adapter whilst not holding the lock so that it is safe for
@@ -52,7 +60,7 @@ WebRtcMediaStreamAdapterMap::AdapterRef::~AdapterRef() {
 std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
 WebRtcMediaStreamAdapterMap::AdapterRef::Copy() const {
   base::AutoLock scoped_lock(map_->lock_);
-  return base::WrapUnique(new AdapterRef(map_, stream_adapters_, it_));
+  return base::WrapUnique(new AdapterRef(map_, type_, adapter_entry_));
 }
 
 WebRtcMediaStreamAdapterMap::WebRtcMediaStreamAdapterMap(
@@ -72,74 +80,122 @@ WebRtcMediaStreamAdapterMap::~WebRtcMediaStreamAdapterMap() {
 }
 
 std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
-WebRtcMediaStreamAdapterMap::GetLocalStreamAdapter(const std::string& id) {
+WebRtcMediaStreamAdapterMap::GetLocalStreamAdapter(
+    const blink::WebMediaStream& web_stream) {
   base::AutoLock scoped_lock(lock_);
-  auto it = local_stream_adapters_.find(id);
-  if (it == local_stream_adapters_.end())
+  AdapterEntry* adapter_entry =
+      local_stream_adapters_.FindByPrimary(web_stream.UniqueId());
+  if (!adapter_entry)
     return nullptr;
-  return base::WrapUnique(new AdapterRef(
-      this, &WebRtcMediaStreamAdapterMap::local_stream_adapters_, it));
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kLocal, adapter_entry));
+}
+
+std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
+WebRtcMediaStreamAdapterMap::GetLocalStreamAdapter(
+    webrtc::MediaStreamInterface* webrtc_stream) {
+  base::AutoLock scoped_lock(lock_);
+  AdapterEntry* adapter_entry =
+      local_stream_adapters_.FindBySecondary(webrtc_stream);
+  if (!adapter_entry)
+    return nullptr;
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kLocal, adapter_entry));
 }
 
 std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
 WebRtcMediaStreamAdapterMap::GetOrCreateLocalStreamAdapter(
     const blink::WebMediaStream& web_stream) {
   DCHECK(main_thread_->BelongsToCurrentThread());
-  return GetOrCreateStreamAdapter(
-      &WebRtcMediaStreamAdapterMap::local_stream_adapters_,
-      base::Bind(&WebRtcMediaStreamAdapter::CreateLocalStreamAdapter, factory_,
-                 track_adapter_map_, web_stream),
-      web_stream.Id().Utf8());
+  base::AutoLock scoped_lock(lock_);
+  AdapterEntry* adapter_entry =
+      local_stream_adapters_.FindByPrimary(web_stream.UniqueId());
+  if (!adapter_entry) {
+    adapter_entry = local_stream_adapters_.Insert(
+        web_stream.UniqueId(),
+        WebRtcMediaStreamAdapter::CreateLocalStreamAdapter(
+            factory_, track_adapter_map_, web_stream));
+    DCHECK(adapter_entry->adapter->is_initialized());
+    local_stream_adapters_.SetSecondaryKey(
+        web_stream.UniqueId(), adapter_entry->adapter->webrtc_stream().get());
+  }
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kLocal, adapter_entry));
 }
 
 size_t WebRtcMediaStreamAdapterMap::GetLocalStreamCount() const {
   base::AutoLock scoped_lock(lock_);
-  return local_stream_adapters_.size();
+  return local_stream_adapters_.PrimarySize();
 }
 
 std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
-WebRtcMediaStreamAdapterMap::GetRemoteStreamAdapter(const std::string& id) {
+WebRtcMediaStreamAdapterMap::GetRemoteStreamAdapter(
+    const blink::WebMediaStream& web_stream) {
   base::AutoLock scoped_lock(lock_);
-  auto it = remote_stream_adapters_.find(id);
-  if (it == remote_stream_adapters_.end())
+  AdapterEntry* adapter_entry =
+      remote_stream_adapters_.FindBySecondary(web_stream.UniqueId());
+  if (!adapter_entry)
     return nullptr;
-  return base::WrapUnique(new AdapterRef(
-      this, &WebRtcMediaStreamAdapterMap::remote_stream_adapters_, it));
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kRemote, adapter_entry));
+}
+
+std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
+WebRtcMediaStreamAdapterMap::GetRemoteStreamAdapter(
+    webrtc::MediaStreamInterface* webrtc_stream) {
+  base::AutoLock scoped_lock(lock_);
+  AdapterEntry* adapter_entry =
+      remote_stream_adapters_.FindByPrimary(webrtc_stream);
+  if (!adapter_entry)
+    return nullptr;
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kRemote, adapter_entry));
 }
 
 std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
 WebRtcMediaStreamAdapterMap::GetOrCreateRemoteStreamAdapter(
     scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream) {
   DCHECK(!main_thread_->BelongsToCurrentThread());
-  return GetOrCreateStreamAdapter(
-      &WebRtcMediaStreamAdapterMap::remote_stream_adapters_,
-      base::Bind(&WebRtcMediaStreamAdapter::CreateRemoteStreamAdapter,
-                 main_thread_, track_adapter_map_, webrtc_stream),
-      webrtc_stream->label());
+  DCHECK(webrtc_stream);
+  base::AutoLock scoped_lock(lock_);
+  AdapterEntry* adapter_entry =
+      remote_stream_adapters_.FindByPrimary(webrtc_stream.get());
+  if (!adapter_entry) {
+    adapter_entry = remote_stream_adapters_.Insert(
+        webrtc_stream.get(),
+        WebRtcMediaStreamAdapter::CreateRemoteStreamAdapter(
+            main_thread_, track_adapter_map_, webrtc_stream.get()));
+    // The new adapter is initialized in a post to the main thread. As soon as
+    // it is initialized we map its |webrtc_stream| to the
+    // |remote_stream_adapters_| entry as its secondary key. This ensures that
+    // there is at least one |AdapterRef| alive until after the adapter is
+    // initialized and its secondary key is set.
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &WebRtcMediaStreamAdapterMap::OnRemoteStreamAdapterInitialized,
+            this,
+            base::Passed(base::WrapUnique(new AdapterRef(
+                this, AdapterRef::Type::kRemote, adapter_entry)))));
+  }
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kRemote, adapter_entry));
 }
 
 size_t WebRtcMediaStreamAdapterMap::GetRemoteStreamCount() const {
   base::AutoLock scoped_lock(lock_);
-  return remote_stream_adapters_.size();
+  return remote_stream_adapters_.PrimarySize();
 }
 
-std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
-WebRtcMediaStreamAdapterMap::GetOrCreateStreamAdapter(
-    std::map<std::string, AdapterEntry> WebRtcMediaStreamAdapterMap::*
-        stream_adapters,
-    base::Callback<std::unique_ptr<WebRtcMediaStreamAdapter>()>
-        create_adapter_callback,
-    const std::string& id) {
-  base::AutoLock scoped_lock(lock_);
-  auto it = (this->*stream_adapters).find(id);
-  if (it == (this->*stream_adapters).end()) {
-    std::unique_ptr<WebRtcMediaStreamAdapter> adapter =
-        create_adapter_callback.Run();
-    it = (this->*stream_adapters)
-             .insert(std::make_pair(id, AdapterEntry(std::move(adapter))))
-             .first;
+void WebRtcMediaStreamAdapterMap::OnRemoteStreamAdapterInitialized(
+    std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref) {
+  DCHECK(adapter_ref->is_initialized());
+  {
+    base::AutoLock scoped_lock(lock_);
+    remote_stream_adapters_.SetSecondaryKey(
+        adapter_ref->adapter().webrtc_stream().get(),
+        adapter_ref->adapter().web_stream().UniqueId());
   }
-  return base::WrapUnique(new AdapterRef(this, stream_adapters, it));
 }
 
 }  // namespace content
