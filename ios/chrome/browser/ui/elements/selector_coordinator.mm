@@ -13,9 +13,7 @@
 #endif
 
 @interface SelectorCoordinator ()<SelectorViewControllerDelegate,
-                                  UIViewControllerTransitioningDelegate> {
-  __unsafe_unretained id<SelectorCoordinatorDelegate> _delegate;
-}
+                                  UIViewControllerTransitioningDelegate>
 
 // Redeclaration of infoBarPickerController as readwrite.
 @property(nonatomic, nullable, strong)

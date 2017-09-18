@@ -252,7 +252,7 @@ class ContextualSearchJsTest : public ChromeWebTest {
   }
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  __unsafe_unretained JsContextualSearchAdditionsManager* jsUnittestsAdditions_;
+  __weak JsContextualSearchAdditionsManager* jsUnittestsAdditions_ = nil;
   ContextualSearchController* controller_;
   id mockDelegate_;
   id mockToolbarDelegate_;

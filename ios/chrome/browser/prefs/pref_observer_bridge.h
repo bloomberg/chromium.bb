@@ -5,9 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_PREFS_PREF_OBSERVER_BRIDGE_H_
 #define IOS_CHROME_BROWSER_PREFS_PREF_OBSERVER_BRIDGE_H_
 
-#include <string>
+#import <Foundation/Foundation.h>
 
-#include "base/compiler_specific.h"
+#include <string>
 
 class PrefChangeRegistrar;
 
@@ -26,7 +26,7 @@ class PrefObserverBridge {
  private:
   virtual void OnPreferenceChanged(const std::string& pref_name);
 
-  __unsafe_unretained id<PrefObserverDelegate> delegate_;
+  __weak id<PrefObserverDelegate> delegate_ = nil;
 };
 
 #endif  // IOS_CHROME_BROWSER_PREFS_PREF_OBSERVER_BRIDGE_H_

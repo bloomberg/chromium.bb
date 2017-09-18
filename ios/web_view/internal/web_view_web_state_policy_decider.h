@@ -32,7 +32,7 @@ class WebViewWebStatePolicyDecider : public web::WebStatePolicyDecider {
 
  private:
   // Delegates to |delegate| property of this web view.
-  __unsafe_unretained CWVWebView* web_view_;
+  __weak CWVWebView* web_view_ = nil;
 };
 
 }  // namespace ios_web_view

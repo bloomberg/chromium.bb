@@ -172,7 +172,7 @@ class ScopedBlockPopupsException {
   [ChromeEarlGrey waitForMainTabCount:1];
 
   // Request popup and make sure the popup opened in a new tab.
-  __unsafe_unretained NSError* error = nil;
+  NSError* error = nil;
   chrome_test_util::ExecuteJavaScript(kOpenPopupScript, &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
   [ChromeEarlGrey waitForMainTabCount:2];
@@ -204,7 +204,7 @@ class ScopedBlockPopupsException {
   // Request popup, then make sure it was blocked and an infobar was displayed.
   // The window.open() call is run via async JS, so the infobar may not open
   // immediately.
-  __unsafe_unretained NSError* error = nil;
+  NSError* error = nil;
   chrome_test_util::ExecuteJavaScript(kOpenPopupScript, &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
 

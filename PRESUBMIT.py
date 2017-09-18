@@ -147,6 +147,15 @@ _BANNED_OBJC_FUNCTIONS = (
       ),
       True,
     ),
+    (
+      r'__unsafe_unretained',
+      (
+        'The use of __unsafe_unretained is almost certainly wrong, unless',
+        'when interacting with NSFastEnumeration or NSInvocation.',
+        'Please use __weak in files build with ARC, nothing otherwise.',
+      ),
+      False,
+    ),
 )
 
 

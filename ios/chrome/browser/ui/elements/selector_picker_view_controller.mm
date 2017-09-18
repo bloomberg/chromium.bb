@@ -19,7 +19,7 @@ CGFloat kUIPickerFontSize = 26;
 
 @interface SelectorPickerViewController ()<UIPickerViewDelegate,
                                            UIPickerViewDataSource> {
-  __unsafe_unretained id<SelectorViewControllerDelegate> _delegate;
+  __weak id<SelectorViewControllerDelegate> _delegate;
 }
 // Options to display.
 @property(nonatomic, copy) NSOrderedSet<NSString*>* options;

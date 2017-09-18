@@ -28,7 +28,7 @@
 
 @interface BrowserViewWrangler ()<TabModelObserver> {
   ios::ChromeBrowserState* _browserState;
-  __unsafe_unretained id<TabModelObserver> _tabModelObserver;
+  __weak id<TabModelObserver> _tabModelObserver;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
   BOOL _isShutdown;
 }

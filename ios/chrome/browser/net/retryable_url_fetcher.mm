@@ -30,7 +30,7 @@ class URLRequestDelegate : public net::URLFetcherDelegate {
   }
 
  private:
-  __unsafe_unretained RetryableURLFetcher* owner_;  // Weak.
+  __weak RetryableURLFetcher* owner_ = nil;
 };
 
 @implementation RetryableURLFetcher {
@@ -39,7 +39,7 @@ class URLRequestDelegate : public net::URLFetcherDelegate {
   std::unique_ptr<net::URLFetcher> fetcher_;
   std::unique_ptr<net::BackoffEntry> backoffEntry_;
   int retryCount_;
-  __unsafe_unretained id<RetryableURLFetcherDelegate> delegate_;  // Weak.
+  __weak id<RetryableURLFetcherDelegate> delegate_;
 }
 
 - (instancetype)

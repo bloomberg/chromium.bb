@@ -78,7 +78,7 @@ class SavePasswordsConsumer : public PasswordStoreConsumer {
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:
-  __unsafe_unretained SavePasswordsCollectionViewController* delegate_;  // weak
+  __weak SavePasswordsCollectionViewController* delegate_ = nil;
   DISALLOW_COPY_AND_ASSIGN(SavePasswordsConsumer);
 };
 
