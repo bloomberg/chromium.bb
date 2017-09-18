@@ -48,9 +48,9 @@ bool ParseDefaultApplications(base::DictionaryValue* dict,
     return false;
   }
 
-  std::string item;
   for (size_t i = 0; i < apps_number; ++i) {
-    if (!list->GetString(i, &item) && item.empty()) {
+    std::string item;
+    if (!list->GetString(i, &item) || item.empty()) {
       LOG(ERROR) << "Each entry in \"" << kDefaultApplications
                  << "\" must be a string.";
       web_app_manifest_urls->clear();
@@ -83,17 +83,19 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
 
   *all_origins_supported = false;
 
-  std::string item;
-  if (dict->GetString(kSupportedOrigins, &item)) {
-    if (item != "*") {
-      LOG(ERROR) << "\"" << item << "\" is not a valid value for \""
-                 << kSupportedOrigins
-                 << "\". Must be either \"*\" or a list of origins.";
-      return false;
-    }
+  {
+    std::string item;
+    if (dict->GetString(kSupportedOrigins, &item)) {
+      if (item != "*") {
+        LOG(ERROR) << "\"" << item << "\" is not a valid value for \""
+                   << kSupportedOrigins
+                   << "\". Must be either \"*\" or a list of origins.";
+        return false;
+      }
 
-    *all_origins_supported = true;
-    return true;
+      *all_origins_supported = true;
+      return true;
+    }
   }
 
   base::ListValue* list = nullptr;
@@ -112,7 +114,8 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
   }
 
   for (size_t i = 0; i < supported_origins_number; ++i) {
-    if (!list->GetString(i, &item) && item.empty()) {
+    std::string item;
+    if (!list->GetString(i, &item) || item.empty()) {
       LOG(ERROR) << "Each entry in \"" << kSupportedOrigins
                  << "\" must be a string.";
       supported_origins->clear();
