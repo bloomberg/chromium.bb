@@ -14,10 +14,19 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
 #include "chrome/common/crash_keys.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
+
+#if defined(OS_WIN)
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#endif
 
 namespace printing {
 
@@ -62,6 +71,27 @@ GetPrinterCapabilitiesOnBlockingPoolThread(const std::string& device_name) {
   return printer_capabilities;
 }
 
+#if defined(OS_WIN)
+std::string GetUserFriendlyName(const std::string& printer_name) {
+  // |printer_name| may be a UNC path like \\printserver\printername.
+  if (!base::StartsWith(printer_name, "\\\\",
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+    return printer_name;
+  }
+
+  // If it is a UNC path, split the "printserver\printername" portion and
+  // generate a friendly name, like Windows does.
+  std::string printer_name_trimmed = printer_name.substr(2);
+  std::vector<std::string> tokens = base::SplitString(
+      printer_name_trimmed, "\\", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (tokens.size() != 2 || tokens[0].empty() || tokens[1].empty())
+    return printer_name;
+  return l10n_util::GetStringFUTF8(
+      IDS_PRINT_PREVIEW_FRIENDLY_WIN_NETWORK_PRINTER_NAME,
+      base::UTF8ToUTF16(tokens[1]), base::UTF8ToUTF16(tokens[0]));
+}
+#endif
+
 }  // namespace
 
 std::pair<std::string, std::string> GetPrinterNameAndDescription(
@@ -76,6 +106,9 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
   if (it != printer.options.end())
     real_description = it->second;
   return std::make_pair(real_name, real_description);
+#elif defined(OS_WIN)
+  return std::make_pair(GetUserFriendlyName(printer.printer_name),
+                        printer.printer_description);
 #else
   return std::make_pair(printer.printer_name, printer.printer_description);
 #endif
