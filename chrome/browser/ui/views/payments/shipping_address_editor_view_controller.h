@@ -63,8 +63,7 @@ class ShippingAddressEditorViewController : public EditorViewController {
   std::unique_ptr<views::Button> CreatePrimaryButton() override;
 
  private:
-  bool GetSheetId(DialogViewID* sheet_id) override;
-
+  friend class ShippingAddressValidationDelegate;
   class ShippingAddressValidationDelegate : public ValidationDelegate {
    public:
     ShippingAddressValidationDelegate(
@@ -95,43 +94,8 @@ class ShippingAddressEditorViewController : public EditorViewController {
 
     DISALLOW_COPY_AND_ASSIGN(ShippingAddressValidationDelegate);
   };
-  friend class ShippingAddressValidationDelegate;
 
-  // Called when |profile_to_edit_| was successfully edited.
-  base::OnceClosure on_edited_;
-  // Called when a new profile was added. The const reference is short-lived,
-  // and the callee should make a copy.
-  base::OnceCallback<void(const autofill::AutofillProfile&)> on_added_;
-
-  // If non-nullptr, a point to an object to be edited, which should outlive
-  // this controller.
-  autofill::AutofillProfile* profile_to_edit_;
-
-  // A temporary profile to keep unsaved data in between relayout (e.g., when
-  // the country is changed and fields set may be different).
-  autofill::AutofillProfile temporary_profile_;
-
-  // List of fields, reset everytime the current country changes.
-  std::vector<EditorField> editor_fields_;
-
-  // The currently chosen country. Defaults to an invalid constant until
-  // |countries_| is properly initialized and then 0 as the first entry in
-  // |countries_|, which is the generated default value received from
-  // autofill::CountryComboboxModel::countries() which is documented to always
-  // have the default country at the top as well as within the sorted list. If
-  // |profile_to_edit_| is not null, then use the country from there to set
-  // |chosen_country_index_|.
-  size_t chosen_country_index_;
-
-  // The list of country codes and names as ordered in the country combobox
-  // model.
-  std::vector<std::pair<std::string, base::string16>> countries_;
-
-  // Identifies whether we tried and failed to load region data.
-  bool failed_to_load_region_data_;
-
-  // Owned by the state combobox, which is owned by this object's base class.
-  autofill::RegionComboboxModel* region_model_;
+  bool GetSheetId(DialogViewID* sheet_id) override;
 
   // Updates |countries_| with the content of |model| if it's not null,
   // otherwise use a local model.
@@ -155,6 +119,46 @@ class ShippingAddressEditorViewController : public EditorViewController {
 
   // Failed to fetch the region data in time.
   void RegionDataLoadTimedOut();
+
+  // Called when |profile_to_edit_| was successfully edited.
+  base::OnceClosure on_edited_;
+  // Called when a new profile was added. The const reference is short-lived,
+  // and the callee should make a copy.
+  base::OnceCallback<void(const autofill::AutofillProfile&)> on_added_;
+
+  // If non-nullptr, a point to an object to be edited, which should outlive
+  // this controller.
+  autofill::AutofillProfile* profile_to_edit_;
+
+  // A temporary profile to keep unsaved data in between relayout (e.g., when
+  // the country is changed and fields set may be different).
+  autofill::AutofillProfile temporary_profile_;
+
+  // List of fields, reset everytime the current country changes.
+  std::vector<EditorField> editor_fields_;
+
+  // The language code to be used for this address, reset everytime the current
+  // country changes.
+  std::string language_code_;
+
+  // The currently chosen country. Defaults to an invalid constant until
+  // |countries_| is properly initialized and then 0 as the first entry in
+  // |countries_|, which is the generated default value received from
+  // autofill::CountryComboboxModel::countries() which is documented to always
+  // have the default country at the top as well as within the sorted list. If
+  // |profile_to_edit_| is not null, then use the country from there to set
+  // |chosen_country_index_|.
+  size_t chosen_country_index_;
+
+  // The list of country codes and names as ordered in the country combobox
+  // model.
+  std::vector<std::pair<std::string, base::string16>> countries_;
+
+  // Identifies whether we tried and failed to load region data.
+  bool failed_to_load_region_data_;
+
+  // Owned by the state combobox, which is owned by this object's base class.
+  autofill::RegionComboboxModel* region_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ShippingAddressEditorViewController);
 };
