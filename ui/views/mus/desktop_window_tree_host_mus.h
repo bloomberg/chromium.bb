@@ -16,7 +16,6 @@
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace wm {
 class CursorManager;
@@ -27,7 +26,6 @@ namespace views {
 class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
     : public DesktopWindowTreeHost,
       public MusClientObserver,
-      public WidgetObserver,
       public aura::FocusSynchronizerObserver,
       public aura::WindowObserver,
       public aura::WindowTreeHostMus {
@@ -50,6 +48,10 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   void SendClientAreaToServer();
   void SendHitTestMaskToServer();
 
+  // Returns true if the FocusClient associated with our window is installed on
+  // the FocusSynchronizer.
+  bool IsFocusClientInstalledOnFocusSynchronizer() const;
+
   // Helper function to get the scale factor.
   float GetScaleFactor() const;
 
@@ -62,7 +64,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   void Init(aura::Window* content_window,
             const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
-  void OnNativeWidgetActivationChanged(bool active) override;
+  void OnActiveWindowChanged(bool active) override;
   void OnWidgetInitDone() override;
   std::unique_ptr<corewm::Tooltip> CreateTooltip() override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
@@ -126,9 +128,6 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
 
   // MusClientObserver:
   void OnWindowManagerFrameValuesChanged() override;
-
-  // WidgetObserver:
-  void OnWidgetActivationChanged(Widget* widget, bool active) override;
 
   // aura::FocusSynchronizerObserver:
   void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,

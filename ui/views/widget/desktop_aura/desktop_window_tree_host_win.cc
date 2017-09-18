@@ -157,7 +157,7 @@ void DesktopWindowTreeHostWin::OnNativeWidgetCreated(
   SetWindowTransparency();
 }
 
-void DesktopWindowTreeHostWin::OnNativeWidgetActivationChanged(bool active) {}
+void DesktopWindowTreeHostWin::OnActiveWindowChanged(bool active) {}
 
 void DesktopWindowTreeHostWin::OnWidgetInitDone() {}
 

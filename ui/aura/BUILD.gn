@@ -340,6 +340,7 @@ test("aura_unittests") {
     "gestures/gesture_recognizer_unittest.cc",
     "hit_test_data_provider_aura_unittest.cc",
     "mus/drag_drop_controller_mus_unittest.cc",
+    "mus/focus_synchronizer_unittest.cc",
     "mus/input_method_mus_unittest.cc",
     "mus/os_exchange_data_provider_mus_unittest.cc",
     "mus/property_converter_unittest.cc",
@@ -372,6 +373,7 @@ test("aura_unittests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
+    "//ui/wm",
   ]
 
   if (is_linux) {

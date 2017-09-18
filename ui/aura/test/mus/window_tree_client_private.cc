@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/mus/window_tree_client_private.h"
 
+#include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
@@ -115,6 +116,18 @@ WindowMus* WindowTreeClientPrivate::NewWindowFromWindowData(
     WindowMus* parent,
     const ui::mojom::WindowData& window_data) {
   return tree_client_impl_->NewWindowFromWindowData(parent, window_data);
+}
+
+bool WindowTreeClientPrivate::HasInFlightChanges() {
+  return !tree_client_impl_->in_flight_map_.empty();
+}
+
+bool WindowTreeClientPrivate::HasChangeInFlightOfType(ChangeType type) {
+  for (auto& pair : tree_client_impl_->in_flight_map_) {
+    if (pair.second->change_type() == type)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace aura

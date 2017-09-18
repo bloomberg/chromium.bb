@@ -50,7 +50,10 @@ void FocusSynchronizer::SetFocusFromServer(WindowMus* window) {
       SetActiveFocusClient(client::GetFocusClient(root), root);
     window->GetWindow()->Focus();
   } else if (active_focus_client_) {
-    active_focus_client_->FocusWindow(nullptr);
+    if (is_singleton_focus_client_)
+      active_focus_client_->FocusWindow(nullptr);
+    else
+      SetActiveFocusClient(nullptr, nullptr);
   }
 }
 

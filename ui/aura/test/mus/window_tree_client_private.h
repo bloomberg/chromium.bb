@@ -33,6 +33,8 @@ class WindowMus;
 class WindowTreeClient;
 class WindowTreeHostMus;
 
+enum class ChangeType;
+
 struct WindowTreeHostMusInitParams;
 
 // Use to access implementation details of WindowTreeClient.
@@ -74,6 +76,10 @@ class WindowTreeClientPrivate {
 
   WindowMus* NewWindowFromWindowData(WindowMus* parent,
                                      const ui::mojom::WindowData& window_data);
+
+  bool HasInFlightChanges();
+
+  bool HasChangeInFlightOfType(ChangeType type);
 
  private:
   WindowTreeClient* tree_client_impl_;

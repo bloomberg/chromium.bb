@@ -55,6 +55,9 @@ class ChangeCompletionWaiter : public WindowTreeClientTestObserver {
   DISALLOW_COPY_AND_ASSIGN(ChangeCompletionWaiter);
 };
 
+// Waits until there are no more pending changes.
+void WaitForAllChangesToComplete(WindowTreeClient* client);
+
 }  // namespace test
 }  // namespace aura
 

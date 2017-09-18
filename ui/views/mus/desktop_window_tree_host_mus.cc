@@ -212,7 +212,6 @@ DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
   MusClient::Get()->AddObserver(this);
   MusClient::Get()->window_tree_client()->focus_synchronizer()->AddObserver(
       this);
-  native_widget_delegate_->AsWidget()->AddObserver(this);
   desktop_native_widget_aura_->content_window()->AddObserver(this);
   // DesktopNativeWidgetAura registers the association between |content_window_|
   // and Widget, but code may also want to go from the root (window()) to the
@@ -229,7 +228,6 @@ DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
   // |cursor_manager_| is destroyed.
   aura::client::SetCursorClient(window(), nullptr);
   desktop_native_widget_aura_->content_window()->RemoveObserver(this);
-  native_widget_delegate_->AsWidget()->RemoveObserver(this);
   MusClient::Get()->RemoveObserver(this);
   MusClient::Get()->window_tree_client()->focus_synchronizer()->RemoveObserver(
       this);
@@ -266,6 +264,14 @@ void DesktopWindowTreeHostMus::SendHitTestMaskToServer() {
   gfx::Rect mask_rect =
       gfx::ToEnclosingRect(gfx::SkRectToRectF(mask_path.getBounds()));
   SetHitTestMask(mask_rect);
+}
+
+bool DesktopWindowTreeHostMus::IsFocusClientInstalledOnFocusSynchronizer()
+    const {
+  return MusClient::Get()
+             ->window_tree_client()
+             ->focus_synchronizer()
+             ->active_focus_client() == aura::client::GetFocusClient(window());
 }
 
 float DesktopWindowTreeHostMus::GetScaleFactor() const {
@@ -339,11 +345,23 @@ void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
   native_widget_delegate_->OnNativeWidgetCreated(true);
 }
 
-void DesktopWindowTreeHostMus::OnNativeWidgetActivationChanged(bool active) {
-  // In Mus, when our aura Window receives an activation signal, it can be
-  // because of remote messages. We need to forward that to Widget so that
-  // Widget can notify everyone listening for that signal.
-  native_widget_delegate_->OnNativeWidgetActivationChanged(active);
+void DesktopWindowTreeHostMus::OnActiveWindowChanged(bool active) {
+  // This function is called when there is a change in the active window the
+  // FocusClient for window() is associated with. This needs to potentially
+  // propagate to mus (the change may originate locally, not from mus).
+  // Propagating to the server is done by resetting the ActiveFocusClient.
+  if (active && !IsFocusClientInstalledOnFocusSynchronizer()) {
+    MusClient::Get()
+        ->window_tree_client()
+        ->focus_synchronizer()
+        ->SetActiveFocusClient(aura::client::GetFocusClient(window()),
+                               window());
+  } else if (!active && IsFocusClientInstalledOnFocusSynchronizer()) {
+    MusClient::Get()
+        ->window_tree_client()
+        ->focus_synchronizer()
+        ->SetActiveFocusClient(nullptr, nullptr);
+  }
 }
 
 void DesktopWindowTreeHostMus::OnWidgetInitDone() {
@@ -559,8 +577,21 @@ void DesktopWindowTreeHostMus::Activate() {
 }
 
 void DesktopWindowTreeHostMus::Deactivate() {
-  if (is_active_)
-    DeactivateWindow();
+  if (!is_active_)
+    return;
+
+  // Reset the active focus client, which will trigger resetting active status.
+  // This is done so that we deactivate immediately.
+  DCHECK(IsFocusClientInstalledOnFocusSynchronizer());
+  MusClient::Get()
+      ->window_tree_client()
+      ->focus_synchronizer()
+      ->SetActiveFocusClient(nullptr, nullptr);
+  DCHECK(!is_active_);
+
+  // Then ask the window manager to deactivate, which effectively means pick
+  // another window to activate.
+  DeactivateWindow();
 }
 
 bool DesktopWindowTreeHostMus::IsActive() const {
@@ -749,21 +780,14 @@ void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {
   SendHitTestMaskToServer();
 }
 
-void DesktopWindowTreeHostMus::OnWidgetActivationChanged(Widget* widget,
-                                                         bool active) {
-  // TODO(erg): Theoretically, this shouldn't be necessary. We should be able
-  // to just set |is_active_| in OnNativeWidgetActivationChanged() above,
-  // instead of asking the Widget to change the activation and have the widget
-  // then tell us the activation has changed. But if we do that, focus breaks.
-  is_active_ = active;
-}
-
 void DesktopWindowTreeHostMus::OnActiveFocusClientChanged(
     aura::client::FocusClient* focus_client,
     aura::Window* focus_client_root) {
   if (focus_client_root == this->window()) {
+    is_active_ = true;
     desktop_native_widget_aura_->HandleActivationChanged(true);
   } else if (is_active_) {
+    is_active_ = false;
     desktop_native_widget_aura_->HandleActivationChanged(false);
   }
 }
@@ -793,6 +817,16 @@ void DesktopWindowTreeHostMus::ShowImpl() {
 }
 
 void DesktopWindowTreeHostMus::HideImpl() {
+  // When hiding we can't possibly be active any more. Reset the FocusClient,
+  // which effectively triggers giving up focus (and activation). Mus will
+  // eventually generate a focus event, but that's async.
+  if (IsFocusClientInstalledOnFocusSynchronizer()) {
+    MusClient::Get()
+        ->window_tree_client()
+        ->focus_synchronizer()
+        ->SetActiveFocusClient(nullptr, nullptr);
+  }
+
   native_widget_delegate_->OnNativeWidgetVisibilityChanging(false);
   WindowTreeHostMus::HideImpl();
   window()->Hide();
