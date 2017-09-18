@@ -3059,7 +3059,6 @@ crbug.com/626703 [ Win7 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout 
 
 crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
-crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/controls-video-keynav.html [ Failure ]
 
 crbug.com/626703 [ Win7 ] external/wpt/html/semantics/embedded-content/the-img-element/decode/image-decode-path-changes.html [ Crash Pass ]
 
@@ -3107,7 +3106,6 @@ crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/editor/
 # Sheriff failures 2017-07-28
 crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
 crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
-crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Failure ]
 
 # Sheriff failures 2017-08-04
 crbug.com/626703 [ Win7 Mac10.11 ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]
@@ -3702,3 +3700,9 @@ crbug.com/765685 [ Android ] external/wpt/mediacapture-streams/MediaStream-idl.h
 crbug.com/763605 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ NeedsManualRebaseline ]
 crbug.com/763605 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ NeedsManualRebaseline ]
 crbug.com/763605 virtual/gpu-rasterization/images/color-profile-svg.html [ NeedsManualRebaseline ]
+
+# controls-video-keynav.html issues
+crbug.com/749965 [ Mac ] media/controls/controls-video-keynav.html [ Failure Pass ]
+crbug.com/749965 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/controls-video-keynav.html [ Failure Pass ]
+crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/controls-video-keynav.html [ Failure ]
+crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Failure ]
