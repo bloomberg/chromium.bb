@@ -428,7 +428,7 @@ mr.TestProvider = class {
    * @private
    */
   isValidSource_(sourceUrn) {
-    return sourceUrn.startsWith('test:') ||
+    return sourceUrn.startsWith('test:') || sourceUrn.startsWith('urn:') ||
         mr.MediaSourceUtils.isPresentationSource(sourceUrn);
   }
 
