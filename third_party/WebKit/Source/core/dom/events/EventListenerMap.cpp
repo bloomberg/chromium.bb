@@ -188,10 +188,10 @@ static void CopyListenersNotCreatedFromMarkupToTarget(
     EventListenerVector* listener_vector,
     EventTarget* target) {
   for (auto& event_listener : *listener_vector) {
-    if (event_listener.Listener()->WasCreatedFromMarkup())
+    if (event_listener.Callback()->WasCreatedFromMarkup())
       continue;
     AddEventListenerOptionsResolved options = event_listener.Options();
-    target->addEventListener(event_type, event_listener.Listener(), options);
+    target->addEventListener(event_type, event_listener.Callback(), options);
   }
 }
 

@@ -116,7 +116,7 @@ void ReportBlockedEvent(ExecutionContext* context,
                         const Event* event,
                         RegisteredEventListener* registered_listener,
                         double delayed_seconds) {
-  if (registered_listener->Listener()->GetType() !=
+  if (registered_listener->Callback()->GetType() !=
       EventListener::kJSEventListenerType)
     return;
 
@@ -129,7 +129,7 @@ void ReportBlockedEvent(ExecutionContext* context,
 
   PerformanceMonitor::ReportGenericViolation(
       context, PerformanceMonitor::kBlockedEvent, message_text, delayed_seconds,
-      GetFunctionLocation(context, registered_listener->Listener()));
+      GetFunctionLocation(context, registered_listener->Callback()));
   registered_listener->SetBlockedEventWarningEmitted();
 }
 
@@ -465,7 +465,7 @@ RegisteredEventListener* EventTarget::GetAttributeRegisteredEventListener(
     return nullptr;
 
   for (auto& event_listener : *listener_vector) {
-    EventListener* listener = event_listener.Listener();
+    EventListener* listener = event_listener.Callback();
     if (listener->IsAttribute() &&
         listener->BelongsToTheCurrentWorld(GetExecutionContext()))
       return &event_listener;
@@ -479,11 +479,11 @@ bool EventTarget::SetAttributeEventListener(const AtomicString& event_type,
       GetAttributeRegisteredEventListener(event_type);
   if (!listener) {
     if (registered_listener)
-      removeEventListener(event_type, registered_listener->Listener(), false);
+      removeEventListener(event_type, registered_listener->Callback(), false);
     return false;
   }
   if (registered_listener) {
-    registered_listener->SetListener(listener);
+    registered_listener->SetCallback(listener);
     return true;
   }
   return addEventListener(event_type, listener, false);
@@ -494,7 +494,7 @@ EventListener* EventTarget::GetAttributeEventListener(
   RegisteredEventListener* registered_listener =
       GetAttributeRegisteredEventListener(event_type);
   if (registered_listener)
-    return registered_listener->Listener();
+    return registered_listener->Callback();
   return nullptr;
 }
 
@@ -747,7 +747,7 @@ bool EventTarget::FireEventListeners(Event* event,
         registered_listener.Capture())
       continue;
 
-    EventListener* listener = registered_listener.Listener();
+    EventListener* listener = registered_listener.Callback();
     // The listener will be retained by Member<EventListener> in the
     // registeredListener, i and size are updated with the firing event iterator
     // in case the listener is removed from the listener vector below.
@@ -773,7 +773,7 @@ bool EventTarget::FireEventListeners(Event* event,
     // If we're about to report this event listener as blocking, make sure it
     // wasn't removed while handling the event.
     if (should_report_blocked_event && i > 0 &&
-        entry[i - 1].Listener() == listener && !entry[i - 1].Passive() &&
+        entry[i - 1].Callback() == listener && !entry[i - 1].Passive() &&
         !entry[i - 1].BlockedEventWarningEmitted() &&
         !event->defaultPrevented()) {
       ReportBlockedEvent(context, event, &entry[i - 1],

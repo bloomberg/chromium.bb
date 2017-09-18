@@ -46,7 +46,7 @@ class RegisteredEventListener {
 
   RegisteredEventListener(EventListener* listener,
                           const AddEventListenerOptionsResolved& options)
-      : listener_(listener),
+      : callback_(listener),
         use_capture_(options.capture()),
         passive_(options.passive()),
         once_(options.once()),
@@ -55,8 +55,8 @@ class RegisteredEventListener {
             options.PassiveForcedForDocumentTarget()),
         passive_specified_(options.PassiveSpecified()) {}
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(listener_); }
-  DEFINE_INLINE_TRACE_WRAPPERS() { visitor->TraceWrappers(listener_); }
+  DEFINE_INLINE_TRACE() { visitor->Trace(callback_); }
+  DEFINE_INLINE_TRACE_WRAPPERS() { visitor->TraceWrappers(callback_); }
 
   AddEventListenerOptionsResolved Options() const {
     AddEventListenerOptionsResolved result;
@@ -69,11 +69,11 @@ class RegisteredEventListener {
     return result;
   }
 
-  const EventListener* Listener() const { return listener_; }
+  const EventListener* Callback() const { return callback_; }
 
-  EventListener* Listener() { return listener_; }
+  EventListener* Callback() { return callback_; }
 
-  void SetListener(EventListener* listener) { listener_ = listener; }
+  void SetCallback(EventListener* listener) { callback_ = listener; }
 
   bool Passive() const { return passive_; }
 
@@ -98,21 +98,21 @@ class RegisteredEventListener {
   bool Matches(const EventListener* listener,
                const EventListenerOptions& options) const {
     // Equality is soley based on the listener and useCapture flags.
-    DCHECK(listener_);
+    DCHECK(callback_);
     DCHECK(listener);
-    return *listener_ == *listener &&
+    return *callback_ == *listener &&
            static_cast<bool>(use_capture_) == options.capture();
   }
 
   bool operator==(const RegisteredEventListener& other) const {
     // Equality is soley based on the listener and useCapture flags.
-    DCHECK(listener_);
-    DCHECK(other.listener_);
-    return *listener_ == *other.listener_ && use_capture_ == other.use_capture_;
+    DCHECK(callback_);
+    DCHECK(other.callback_);
+    return *callback_ == *other.callback_ && use_capture_ == other.use_capture_;
   }
 
  private:
-  TraceWrapperMember<EventListener> listener_;
+  TraceWrapperMember<EventListener> callback_;
   unsigned use_capture_ : 1;
   unsigned passive_ : 1;
   unsigned once_ : 1;
