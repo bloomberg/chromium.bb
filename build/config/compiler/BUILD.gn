@@ -443,7 +443,7 @@ config("compiler") {
   # TODO(hans): Remove this once Clang generates better optimized debug info by
   # default. https://crbug.com/765793
   if (is_clang && !is_nacl && current_toolchain == host_toolchain &&
-      (!is_chromeos || default_toolchain != "//build/toolchain/cros:target")) {
+      !is_chromeos) {
     cflags += [
       "-Xclang",
       "-mllvm",
