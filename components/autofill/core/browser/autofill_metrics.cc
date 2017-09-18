@@ -233,13 +233,9 @@ void LogUMAHistogramEnumeration(const std::string& name,
   DCHECK_LT(sample, boundary_value);
 
   // Note: This leaks memory, which is expected behavior.
-  base::HistogramBase* histogram =
-      base::LinearHistogram::FactoryGet(
-          name,
-          1,
-          boundary_value,
-          boundary_value + 1,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
+  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+      name, 1, boundary_value, boundary_value + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(sample);
 }
 
@@ -248,13 +244,9 @@ void LogUMAHistogramEnumeration(const std::string& name,
 void LogUMAHistogramLongTimes(const std::string& name,
                               const base::TimeDelta& duration) {
   // Note: This leaks memory, which is expected behavior.
-  base::HistogramBase* histogram =
-      base::Histogram::FactoryTimeGet(
-          name,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromHours(1),
-          50,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
+  base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
+      name, base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
+      50, base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->AddTime(duration);
 }
 
@@ -734,30 +726,24 @@ void AutofillMetrics::LogUserHappinessMetric(UserHappinessMetric metric) {
 void AutofillMetrics::LogFormFillDurationFromLoadWithAutofill(
     const base::TimeDelta& duration) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Autofill.FillDuration.FromLoad.WithAutofill",
-                             duration,
-                             base::TimeDelta::FromMilliseconds(100),
-                             base::TimeDelta::FromMinutes(10),
-                             50);
+                             duration, base::TimeDelta::FromMilliseconds(100),
+                             base::TimeDelta::FromMinutes(10), 50);
 }
 
 // static
 void AutofillMetrics::LogFormFillDurationFromLoadWithoutAutofill(
     const base::TimeDelta& duration) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Autofill.FillDuration.FromLoad.WithoutAutofill",
-                             duration,
-                             base::TimeDelta::FromMilliseconds(100),
-                             base::TimeDelta::FromMinutes(10),
-                             50);
+                             duration, base::TimeDelta::FromMilliseconds(100),
+                             base::TimeDelta::FromMinutes(10), 50);
 }
 
 // static
 void AutofillMetrics::LogFormFillDurationFromInteractionWithAutofill(
     const base::TimeDelta& duration) {
   UMA_HISTOGRAM_CUSTOM_TIMES(
-      "Autofill.FillDuration.FromInteraction.WithAutofill",
-      duration,
-      base::TimeDelta::FromMilliseconds(100),
-      base::TimeDelta::FromMinutes(10),
+      "Autofill.FillDuration.FromInteraction.WithAutofill", duration,
+      base::TimeDelta::FromMilliseconds(100), base::TimeDelta::FromMinutes(10),
       50);
 }
 
@@ -765,11 +751,9 @@ void AutofillMetrics::LogFormFillDurationFromInteractionWithAutofill(
 void AutofillMetrics::LogFormFillDurationFromInteractionWithoutAutofill(
     const base::TimeDelta& duration) {
   UMA_HISTOGRAM_CUSTOM_TIMES(
-       "Autofill.FillDuration.FromInteraction.WithoutAutofill",
-       duration,
-       base::TimeDelta::FromMilliseconds(100),
-       base::TimeDelta::FromMinutes(10),
-       50);
+      "Autofill.FillDuration.FromInteraction.WithoutAutofill", duration,
+      base::TimeDelta::FromMilliseconds(100), base::TimeDelta::FromMinutes(10),
+      50);
 }
 
 // static
@@ -914,6 +898,13 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
                             num_masked_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Unmasked",
                             num_unmasked_cards);
+}
+
+// static
+void AutofillMetrics::LogNumberOfCreditCardsSuppressedForDisuse(
+    size_t num_cards) {
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.CreditCardsSuppressedForDisuse",
+                            num_cards);
 }
 
 // static

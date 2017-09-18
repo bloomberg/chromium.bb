@@ -235,6 +235,14 @@ class PersonalDataManager : public KeyedService,
   // vector.
   const std::vector<CreditCard*> GetCreditCardsToSuggest() const;
 
+  // Remove credit cards that are expired at |comparison_time| and not used
+  // since |min_last_used| from |cards|. The relative ordering of |cards| is
+  // maintained.
+  static void RemoveExpiredCreditCardsNotUsedSinceTimestamp(
+      base::Time comparison_time,
+      base::Time min_last_used,
+      std::vector<CreditCard*>* cards);
+
   // Gets credit cards that can suggest data for |type|. See
   // GetProfileSuggestions for argument descriptions. The variant in each
   // GUID pair should be ignored.
@@ -286,9 +294,7 @@ class PersonalDataManager : public KeyedService,
       std::list<CreditCard*>* cards_to_suggest);
 
   // Notifies test observers that personal data has changed.
-  void NotifyPersonalDataChangedForTest() {
-    NotifyPersonalDataChanged();
-  }
+  void NotifyPersonalDataChangedForTest() { NotifyPersonalDataChanged(); }
 
   // Sets the URL request context getter to be used when normalizing addresses
   // with libaddressinput's address validator.
@@ -361,11 +367,13 @@ class PersonalDataManager : public KeyedService,
   friend class ::RemoveAutofillTester;
   friend std::default_delete<PersonalDataManager>;
   friend void autofill_helper::SetProfiles(
-      int, std::vector<autofill::AutofillProfile>*);
+      int,
+      std::vector<autofill::AutofillProfile>*);
   friend void autofill_helper::SetCreditCards(
-      int, std::vector<autofill::CreditCard>*);
-  friend void SetTestProfiles(
-      Browser* browser, std::vector<AutofillProfile>* profiles);
+      int,
+      std::vector<autofill::CreditCard>*);
+  friend void SetTestProfiles(Browser* browser,
+                              std::vector<AutofillProfile>* profiles);
 
   // Sets |web_profiles_| to the contents of |profiles| and updates the web
   // database by adding, updating and removing profiles.
