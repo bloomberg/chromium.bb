@@ -187,7 +187,6 @@
     },
     {
       name: "CorsRFC1918",
-      status: "test",
     },
     {
       name: "CSS3Text",

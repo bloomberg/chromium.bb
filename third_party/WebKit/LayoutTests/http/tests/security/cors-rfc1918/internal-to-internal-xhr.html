@@ -18,7 +18,7 @@
 
             xhr.open("GET", preflightURL('fail-with-500', 'json'), true);
             xhr.send();
-        }, "XHR should pass on failed preflight (because no preflight is sent)");
+        }, "XHR should pass on preflight with 500 error (because no preflight is sent)");
 
         async_test(function (t) {
             var xhr = new XMLHttpRequest;
@@ -30,7 +30,7 @@
 
             xhr.open("GET", preflightURL('fail-without-allow', 'json'), true);
             xhr.send();
-        }, "XHR should pass on failed preflight (because no preflight is sent)");
+        }, "XHR should pass on preflight without allow (because no preflight is sent)");
 
 
         async_test(function (t) {
