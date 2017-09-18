@@ -180,8 +180,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // initializing a GL context, so start the sandbox early.
   // TODO(zmo): Need to collect OS version before this.
   if (command_line->HasSwitch(switches::kGpuSandboxStartEarly)) {
-    gpu_info_.sandboxed =
-        sandbox_helper_->EnsureSandboxInitialized(watchdog_thread_.get());
+    gpu_info_.sandboxed = sandbox_helper_->EnsureSandboxInitialized(
+        watchdog_thread_.get(), &gpu_info_);
     attempted_startsandbox = true;
   }
 #endif  // defined(OS_LINUX)
@@ -247,8 +247,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
 
   if (!gpu_info_.sandboxed && !attempted_startsandbox) {
-    gpu_info_.sandboxed =
-        sandbox_helper_->EnsureSandboxInitialized(watchdog_thread_.get());
+    gpu_info_.sandboxed = sandbox_helper_->EnsureSandboxInitialized(
+        watchdog_thread_.get(), &gpu_info_);
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.Sandbox.InitializedSuccessfully",
                         gpu_info_.sandboxed);

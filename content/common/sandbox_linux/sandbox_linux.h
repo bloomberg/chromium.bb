@@ -14,6 +14,7 @@
 #include "base/posix/global_descriptors.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/sandbox_linux.h"
+#include "gpu/config/gpu_info.h"
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
     defined(THREAD_SANITIZER) || defined(LEAK_SANITIZER) || \
@@ -93,7 +94,7 @@ class LinuxSandbox {
   // limitations. This will instantiate the LinuxSandbox singleton if it
   // doesn't already exist.
   // This function should only be called without any thread running.
-  static bool InitializeSandbox();
+  static bool InitializeSandbox(const gpu::GPUInfo* gpu_info = NULL);
 
   // Stop |thread| in a way that can be trusted by the sandbox.
   static void StopThread(base::Thread* thread);
@@ -120,7 +121,8 @@ class LinuxSandbox {
   // Check the policy and eventually start the seccomp-bpf sandbox. This should
   // never be called with threads started. If we detect that threads have
   // started we will crash.
-  bool StartSeccompBPF(const std::string& process_type);
+  bool StartSeccompBPF(const std::string& process_type,
+                       const gpu::GPUInfo* gpu_info);
 
   // Limit the address space of the current process (and its children).
   // to make some vulnerabilities harder to exploit.
@@ -147,7 +149,7 @@ class LinuxSandbox {
 
   // Some methods are static and get an instance of the Singleton. These
   // are the non-static implementations.
-  bool InitializeSandboxImpl();
+  bool InitializeSandboxImpl(const gpu::GPUInfo* gpu_info);
   void StopThreadImpl(base::Thread* thread);
   // We must have been pre_initialized_ before using these.
   bool seccomp_bpf_supported() const;
