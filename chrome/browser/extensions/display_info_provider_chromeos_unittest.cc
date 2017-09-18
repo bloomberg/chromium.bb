@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "ash/ash_switches.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/shell.h"
@@ -1563,5 +1564,46 @@ TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationSuccess) {
   EXPECT_EQ(bounds.width, data.bounds.width());
   EXPECT_EQ(bounds.height, data.bounds.height());
 }
+
+class DisplayInfoProviderChromeosTouchviewTest
+    : public DisplayInfoProviderChromeosTest {
+ public:
+  DisplayInfoProviderChromeosTouchviewTest() {}
+
+  ~DisplayInfoProviderChromeosTouchviewTest() override {}
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFirstDisplayAsInternal);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshEnableTabletMode);
+    ash::AshTestBase::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderChromeosTouchviewTest);
+};
+
+TEST_F(DisplayInfoProviderChromeosTouchviewTest, GetTabletMode) {
+  UpdateDisplay("500x600,400x520");
+
+  // Check initial state.
+  DisplayUnitInfoList result = GetAllDisplaysInfo();
+  ASSERT_EQ(2u, result.size());
+  EXPECT_TRUE(result[0].has_accelerometer_support);
+  EXPECT_FALSE(result[0].is_tablet_mode);
+  EXPECT_FALSE(result[1].has_accelerometer_support);
+  EXPECT_FALSE(result[1].is_tablet_mode);
+
+  EnableTabletMode(true);
+  result = GetAllDisplaysInfo();
+  ASSERT_EQ(2u, result.size());
+  EXPECT_TRUE(result[0].has_accelerometer_support);
+  ASSERT_TRUE(result[0].is_tablet_mode);
+  EXPECT_TRUE(*result[0].is_tablet_mode);
+  EXPECT_FALSE(result[1].has_accelerometer_support);
+  EXPECT_FALSE(result[1].is_tablet_mode);
+}
+
 }  // namespace
 }  // namespace extensions

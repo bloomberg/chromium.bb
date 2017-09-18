@@ -144,7 +144,7 @@
             [[getResolutionText_(selectedDisplay, selectedModePref_.value)]]
           </div>
         </div>
-        <settings-slider disabled="[[!enableSetResolution_(selectedDisplay)]]"
+        <settings-slider disabled="[[selectedDisplay.isTabletMode]]"
             tick-values="[[modeValues_]]" pref="{{selectedModePref_}}"
             on-change="onSelectedModeChange_">
         </settings-slider>
@@ -157,6 +157,7 @@
           </div>
           <div class="md-select-wrapper">
             <select class="md-select" value="[[selectedDisplay.rotation]]"
+                disabled="[[!enableSetOrientation_(selectedDisplay)]]"
                 aria-labelledby="displayOrientation"
                 on-change="onOrientationChange_">
               <option value="0">$i18n{displayOrientationStandard}</option>

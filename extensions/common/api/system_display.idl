@@ -133,6 +133,13 @@ namespace system.display {
     // for $(ref:enableUnifiedDesktop).
     boolean isUnified;
 
+    // True when the display is in tablet mode. This may be set for touch
+    // devices where hasAccelerometerSupport is true, e.g. when an app opens in
+    // tablet mode. The default value is false.
+    // Provided for ChromeOS Settings UI only. TODO(stevenjb): Remove when
+    // Settings switches to a mojo API.
+    [nodoc] boolean? isTabletMode;
+
     // The number of pixels per inch along the x-axis.
     double dpiX;
 
@@ -164,6 +171,11 @@ namespace system.display {
 
     // True if this display has a touch input device associated with it.
     boolean hasTouchSupport;
+
+    // True if this display has an accelerometer associated with it.
+    // Provided for ChromeOS Settings UI only. TODO(stevenjb): Remove when
+    // Settings switches to a mojo API. NOTE: The name of this may change.
+    [nodoc] boolean hasAccelerometerSupport;
   };
 
   dictionary DisplayProperties {

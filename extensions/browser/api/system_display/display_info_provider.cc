@@ -73,6 +73,9 @@ api::system_display::DisplayUnitInfo DisplayInfoProvider::CreateDisplayUnitInfo(
   unit.work_area.height = work_area.height();
   unit.has_touch_support =
       display.touch_support() == display::Display::TOUCH_SUPPORT_AVAILABLE;
+  unit.has_accelerometer_support =
+      display.accelerometer_support() ==
+      display::Display::ACCELEROMETER_SUPPORT_AVAILABLE;
   return unit;
 }
 
