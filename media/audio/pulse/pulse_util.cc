@@ -108,27 +108,19 @@ bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
   }
 #endif  // defined(DLOPEN_PULSEAUDIO)
 
+  // The setup order below follows the pattern used by pa_simple_new():
+  // https://github.com/pulseaudio/pulseaudio/blob/master/src/pulse/simple.c
+
   // Create a mainloop API and connect to the default server.
   // The mainloop is the internal asynchronous API event loop.
   pa_threaded_mainloop* pa_mainloop = pa_threaded_mainloop_new();
   if (!pa_mainloop)
     return false;
 
-  // Start the threaded mainloop.
-  if (pa_threaded_mainloop_start(pa_mainloop)) {
-    pa_threaded_mainloop_free(pa_mainloop);
-    return false;
-  }
-
-  // Lock the event loop object, effectively blocking the event loop thread
-  // from processing events. This is necessary.
-  auto mainloop_lock = base::MakeUnique<AutoPulseLock>(pa_mainloop);
-
   pa_mainloop_api* pa_mainloop_api = pa_threaded_mainloop_get_api(pa_mainloop);
   pa_context* pa_context = pa_context_new(pa_mainloop_api, "Chrome input");
   if (!pa_context) {
-    mainloop_lock.reset();
-    DestroyMainloop(pa_mainloop);
+    pa_threaded_mainloop_free(pa_mainloop);
     return false;
   }
 
@@ -139,6 +131,16 @@ bool InitPulse(pa_threaded_mainloop** mainloop, pa_context** context) {
             << pa_strerror(pa_context_errno(pa_context));
     pa_context_set_state_callback(pa_context, NULL, NULL);
     pa_context_unref(pa_context);
+    pa_threaded_mainloop_free(pa_mainloop);
+    return false;
+  }
+
+  // Lock the event loop object, effectively blocking the event loop thread
+  // from processing events. This is necessary.
+  auto mainloop_lock = std::make_unique<AutoPulseLock>(pa_mainloop);
+
+  // Start the threaded mainloop after everything has been configured.
+  if (pa_threaded_mainloop_start(pa_mainloop)) {
     mainloop_lock.reset();
     DestroyMainloop(pa_mainloop);
     return false;
