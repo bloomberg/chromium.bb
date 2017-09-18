@@ -467,10 +467,6 @@
       status: "test",
     },
     {
-      name: "ImageCapture",
-      status: "stable",
-    },
-    {
       name: "ImageOrientation",
       status: "test",
     },
@@ -596,16 +592,6 @@
     },
     {
       name: "MediaStreamTrackContentHint",
-      status: "experimental",
-    },
-    {
-      name: "MediaTrackApplyConstraints",
-      implied_by: ["ImageCapture"],
-      status: "experimental",
-    },
-    {
-      name: "MediaTrackCapabilities",
-      implied_by: ["ImageCapture"],
       status: "experimental",
     },
     {
