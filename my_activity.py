@@ -107,6 +107,9 @@ gerrit_instances = [
   {
     'url': 'android-review.googlesource.com',
   },
+  {
+    'url': 'pdfium-review.googlesource.com',
+  },
 ]
 
 google_code_projects = [
@@ -123,6 +126,11 @@ google_code_projects = [
   },
   {
     'name': 'skia',
+  },
+  {
+    'name': 'pdfium',
+    'shorturl': 'crbug.com/pdfium',
+    'short_url_protocol': 'https',
   },
 ]
 
