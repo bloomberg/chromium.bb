@@ -71,7 +71,7 @@ constexpr int kAppListThresholdDenominator = 3;
 
 // The velocity the app list must be dragged in order to transition to the next
 // state, measured in DIPs/event.
-constexpr int kAppListDragVelocityThreshold = 25;
+constexpr int kAppListDragVelocityThreshold = 6;
 
 // The scroll offset in order to transition from PEEKING to FULLSCREEN
 constexpr int kAppListMinScrollToSwitchStates = 20;
@@ -671,7 +671,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
     }
     switch (app_list_state_) {
       case FULLSCREEN_ALL_APPS:
-        if (std::abs(drag_delta) > app_list_threshold) {
+        if (drag_delta < -app_list_threshold) {
           if (is_tablet_mode_ || is_side_shelf_)
             Dismiss();
           else

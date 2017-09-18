@@ -465,14 +465,22 @@ TEST_F(FullscreenAppListPresenterDelegateTest, AppListViewDragHandler) {
             app_list::AppListView::FULLSCREEN_ALL_APPS);
 
   // Execute a short downward drag, this should fail to transition the app list.
-  generator.GestureScrollSequence(gfx::Point(10, 10), gfx::Point(10, 100),
-                                  base::TimeDelta::FromMilliseconds(100), 10);
+  gfx::Point start(10, 10);
+  gfx::Point end(10, 100);
+  generator.GestureScrollSequence(
+      start, end,
+      generator.CalculateScrollDurationForFlingVelocity(start, end, 1, 100),
+      100);
   EXPECT_EQ(app_list->app_list_state(),
             app_list::AppListView::FULLSCREEN_ALL_APPS);
 
   // Execute a long and slow downward drag to switch to peeking.
-  generator.GestureScrollSequence(gfx::Point(10, 200), gfx::Point(10, 650),
-                                  base::TimeDelta::FromMilliseconds(1500), 100);
+  start = gfx::Point(10, 200);
+  end = gfx::Point(10, 650);
+  generator.GestureScrollSequence(
+      start, end,
+      generator.CalculateScrollDurationForFlingVelocity(start, end, 1, 100),
+      100);
   EXPECT_EQ(app_list->app_list_state(), app_list::AppListView::PEEKING);
 
   // Transition to fullscreen.
@@ -488,8 +496,12 @@ TEST_F(FullscreenAppListPresenterDelegateTest, AppListViewDragHandler) {
             app_list::AppListView::FULLSCREEN_SEARCH);
 
   // Execute a short downward drag, this should fail to close the app list.
-  generator.GestureScrollSequence(gfx::Point(10, 10), gfx::Point(10, 100),
-                                  base::TimeDelta::FromMilliseconds(100), 10);
+  start = gfx::Point(10, 10);
+  end = gfx::Point(10, 100);
+  generator.GestureScrollSequence(
+      start, end,
+      generator.CalculateScrollDurationForFlingVelocity(start, end, 1, 100),
+      100);
   EXPECT_EQ(app_list->app_list_state(),
             app_list::AppListView::FULLSCREEN_SEARCH);
 
@@ -874,8 +886,12 @@ TEST_P(FullscreenAppListPresenterDelegateTest,
   EXPECT_EQ(view->app_list_state(), app_list::AppListView::FULLSCREEN_ALL_APPS);
 
   // Swipe down slowly, the app list should return to peeking mode.
-  generator.GestureScrollSequence(gfx::Point(0, 0), gfx::Point(0, 650),
-                                  base::TimeDelta::FromMilliseconds(1500), 100);
+  gfx::Point start(0, 0);
+  gfx::Point end(0, 500);
+  generator.GestureScrollSequence(
+      start, end,
+      generator.CalculateScrollDurationForFlingVelocity(start, end, 1, 100),
+      100);
   EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
 
   // Move mouse away from the searchbox, mousewheel scroll up.
@@ -1002,6 +1018,28 @@ TEST_F(FullscreenAppListPresenterDelegateTest,
   app_list_presenter_impl()->ProcessMouseWheelOffset(-30);
 
   ASSERT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS, view->app_list_state());
+}
+
+TEST_F(FullscreenAppListPresenterDelegateTest,
+       LongUpwardDragInFullscreenShouldNotClose) {
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  app_list::AppListView* view = app_list_presenter_impl()->GetView();
+  FlingUpOrDown(GetEventGenerator(), view, true);
+  EXPECT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS, view->app_list_state());
+
+  // Drag from the center of the applist to the top of the screen very slowly.
+  // This should not trigger a state transition.
+  gfx::Point drag_start = view->GetBoundsInScreen().CenterPoint();
+  drag_start.set_x(15);
+  gfx::Point drag_end = view->GetBoundsInScreen().top_right();
+  drag_end.set_x(15);
+  GetEventGenerator().GestureScrollSequence(
+      drag_start, drag_end,
+      GetEventGenerator().CalculateScrollDurationForFlingVelocity(
+          drag_start, drag_end, 1, 1000),
+      1000);
+
+  EXPECT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS, view->app_list_state());
 }
 
 }  // namespace ash

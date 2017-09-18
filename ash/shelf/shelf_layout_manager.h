@@ -68,7 +68,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   // The velocity the app list must be dragged in order to change the state of
   // the app list for fling event, measured in DIPs/event.
-  static constexpr int kAppListDragVelocityThreshold = 100;
+  static constexpr int kAppListDragVelocityThreshold = 6;
 
   ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf);
   ~ShelfLayoutManager() override;
