@@ -2490,24 +2490,7 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 #if CONFIG_TX64X64
-#if CONFIG_DAALA_DCT64
-#if CONFIG_EXT_TX
-// For use in lieu of ADST
-static void fhalfright64(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  tran_low_t inputhalf[32];
-  // No scaling within; Daala transforms are all orthonormal
-  for (i = 0; i < 32; ++i) {
-    output[32 + i] = input[i];
-  }
-  for (i = 0; i < 32; ++i) {
-    inputhalf[i] = input[i + 32];
-  }
-  daala_fdct32(inputhalf, output);
-  // Note overall scaling factor is 2 times unitary
-}
-#endif  // CONFIG_EXT_TX
-#else
+#if !CONFIG_DAALA_DCT64
 #if CONFIG_EXT_TX
 static void fidtx64(const tran_low_t *input, tran_low_t *output) {
   int i;
@@ -2561,21 +2544,21 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
 #if CONFIG_DAALA_DCT64
     { daala_fdct64, daala_fdct64 },  // DCT_DCT
 #if CONFIG_EXT_TX
-    { fhalfright64, daala_fdct64 },  // ADST_DCT
-    { daala_fdct64, fhalfright64 },  // DCT_ADST
-    { fhalfright64, fhalfright64 },  // ADST_ADST
-    { fhalfright64, daala_fdct64 },  // FLIPADST_DCT
-    { daala_fdct64, fhalfright64 },  // DCT_FLIPADST
-    { fhalfright64, fhalfright64 },  // FLIPADST_FLIPADST
-    { fhalfright64, fhalfright64 },  // ADST_FLIPADST
-    { fhalfright64, fhalfright64 },  // FLIPADST_ADST
+    { daala_fdst64, daala_fdct64 },  // ADST_DCT
+    { daala_fdct64, daala_fdst64 },  // DCT_ADST
+    { daala_fdst64, daala_fdst64 },  // ADST_ADST
+    { daala_fdst64, daala_fdct64 },  // FLIPADST_DCT
+    { daala_fdct64, daala_fdst64 },  // DCT_FLIPADST
+    { daala_fdst64, daala_fdst64 },  // FLIPADST_FLIPADST
+    { daala_fdst64, daala_fdst64 },  // ADST_FLIPADST
+    { daala_fdst64, daala_fdst64 },  // FLIPADST_ADST
     { daala_idtx64, daala_idtx64 },  // IDTX
     { daala_fdct64, daala_idtx64 },  // V_DCT
     { daala_idtx64, daala_fdct64 },  // H_DCT
-    { fhalfright64, daala_idtx64 },  // V_ADST
-    { daala_idtx64, fhalfright64 },  // H_ADST
-    { fhalfright64, daala_idtx64 },  // V_FLIPADST
-    { daala_idtx64, fhalfright64 },  // H_FLIPADST
+    { daala_fdst64, daala_idtx64 },  // V_ADST
+    { daala_idtx64, daala_fdst64 },  // H_ADST
+    { daala_fdst64, daala_idtx64 },  // V_FLIPADST
+    { daala_idtx64, daala_fdst64 },  // H_FLIPADST
 #endif
 #else
     { fdct64_col, fdct64_row },      // DCT_DCT
