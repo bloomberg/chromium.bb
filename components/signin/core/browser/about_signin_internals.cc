@@ -342,6 +342,10 @@ void AboutSigninInternals::OnRefreshTokensLoaded() {
   NotifyObservers();
 }
 
+void AboutSigninInternals::OnEndBatchChanges() {
+  NotifyObservers();
+}
+
 void AboutSigninInternals::OnTokenRemoved(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes) {
