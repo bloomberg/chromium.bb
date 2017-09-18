@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
+#import "ios/chrome/browser/ui/payments/payment_request_navigation_controller.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -147,9 +148,9 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, StartAndStop) {
   // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_TRUE([base_view_controller.presentedViewController
-      isMemberOfClass:[UINavigationController class]]);
-  UINavigationController* navigation_controller =
-      base::mac::ObjCCastStrict<UINavigationController>(
+      isMemberOfClass:[PaymentRequestNavigationController class]]);
+  PaymentRequestNavigationController* navigation_controller =
+      base::mac::ObjCCastStrict<PaymentRequestNavigationController>(
           base_view_controller.presentedViewController);
   EXPECT_TRUE([navigation_controller.visibleViewController
       isMemberOfClass:[PaymentRequestEditViewController class]]);
@@ -209,9 +210,9 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingWithSave) {
 
   // Call the controller delegate method.
   EXPECT_TRUE([base_view_controller.presentedViewController
-      isMemberOfClass:[UINavigationController class]]);
-  UINavigationController* navigation_controller =
-      base::mac::ObjCCastStrict<UINavigationController>(
+      isMemberOfClass:[PaymentRequestNavigationController class]]);
+  PaymentRequestNavigationController* navigation_controller =
+      base::mac::ObjCCastStrict<PaymentRequestNavigationController>(
           base_view_controller.presentedViewController);
   PaymentRequestEditViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
@@ -265,9 +266,9 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingNoSave) {
 
   // Call the controller delegate method.
   EXPECT_TRUE([base_view_controller.presentedViewController
-      isMemberOfClass:[UINavigationController class]]);
-  UINavigationController* navigation_controller =
-      base::mac::ObjCCastStrict<UINavigationController>(
+      isMemberOfClass:[PaymentRequestNavigationController class]]);
+  PaymentRequestNavigationController* navigation_controller =
+      base::mac::ObjCCastStrict<PaymentRequestNavigationController>(
           base_view_controller.presentedViewController);
   PaymentRequestEditViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
@@ -326,9 +327,9 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishEditing) {
 
   // Call the controller delegate method.
   EXPECT_TRUE([base_view_controller.presentedViewController
-      isMemberOfClass:[UINavigationController class]]);
-  UINavigationController* navigation_controller =
-      base::mac::ObjCCastStrict<UINavigationController>(
+      isMemberOfClass:[PaymentRequestNavigationController class]]);
+  PaymentRequestNavigationController* navigation_controller =
+      base::mac::ObjCCastStrict<PaymentRequestNavigationController>(
           base_view_controller.presentedViewController);
   PaymentRequestEditViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
@@ -366,9 +367,9 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidCancel) {
 
   // Call the controller delegate method.
   EXPECT_TRUE([base_view_controller.presentedViewController
-      isMemberOfClass:[UINavigationController class]]);
-  UINavigationController* navigation_controller =
-      base::mac::ObjCCastStrict<UINavigationController>(
+      isMemberOfClass:[PaymentRequestNavigationController class]]);
+  PaymentRequestNavigationController* navigation_controller =
+      base::mac::ObjCCastStrict<PaymentRequestNavigationController>(
           base_view_controller.presentedViewController);
   PaymentRequestEditViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestEditViewController>(

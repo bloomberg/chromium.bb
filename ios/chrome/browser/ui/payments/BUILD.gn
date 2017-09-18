@@ -114,6 +114,8 @@ source_set("payments_ui") {
     "payment_request_error_view_controller.h",
     "payment_request_error_view_controller.mm",
     "payment_request_error_view_controller_actions.h",
+    "payment_request_navigation_controller.h",
+    "payment_request_navigation_controller.mm",
     "payment_request_picker_row.h",
     "payment_request_picker_row.mm",
     "payment_request_picker_view_controller.h",

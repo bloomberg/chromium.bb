@@ -19,6 +19,7 @@
 #include "components/payments/core/payment_shipping_option.h"
 #include "components/payments/core/payments_test_util.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
+#import "ios/chrome/browser/ui/payments/payment_request_navigation_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_unittest_base.h"
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/test/scoped_key_window.h"
@@ -121,9 +122,9 @@ TEST_F(PaymentRequestCoordinatorTest, StartAndStop) {
   // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1));
   EXPECT_TRUE([base_view_controller.presentedViewController
-      isMemberOfClass:[UINavigationController class]]);
-  UINavigationController* navigation_controller =
-      base::mac::ObjCCastStrict<UINavigationController>(
+      isMemberOfClass:[PaymentRequestNavigationController class]]);
+  PaymentRequestNavigationController* navigation_controller =
+      base::mac::ObjCCastStrict<PaymentRequestNavigationController>(
           base_view_controller.presentedViewController);
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
   EXPECT_TRUE([navigation_controller.visibleViewController
