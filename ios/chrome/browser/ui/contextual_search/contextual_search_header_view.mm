@@ -99,14 +99,14 @@ const NSTimeInterval kLogoIrisAnimationDuration = ios::material::kDuration1;
 @implementation ContextualSearchHeaderView {
   CGFloat _height;
   // Circular logo positioned leading side.
-  __unsafe_unretained IrisingImageView* _logo;
+  __weak IrisingImageView* _logo;
   // Up/down caret positioned trailing side.
-  __unsafe_unretained UIImageView* _caret;
+  __weak UIImageView* _caret;
   // Close control position identically to the caret.
-  __unsafe_unretained TappableButton* _closeButton;
+  __weak TappableButton* _closeButton;
   // Label showing the text the user tapped on in the web page, and any
   // additional context that will be displayed.
-  __unsafe_unretained UILabel* _textLabel;
+  __weak UILabel* _textLabel;
   __weak id<ContextualSearchPanelTapHandler> _tapHandler;
   UIGestureRecognizer* _tapRecognizer;
 }

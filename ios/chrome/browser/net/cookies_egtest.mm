@@ -87,7 +87,7 @@ NSString* const kIncognitoCookieValue = @"rainbow";
        "  var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;"
        "  document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';"
        "}";
-  __unsafe_unretained NSError* error = nil;
+  NSError* error = nil;
   chrome_test_util::ExecuteJavaScript(clearCookieScript, &error);
   [super tearDown];
 }

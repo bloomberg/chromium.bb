@@ -59,7 +59,7 @@ class PageInfoModelBubbleBridge : public PageInfoModelObserver {
  private:
   void PerformLayout();
 
-  __unsafe_unretained PageInfoViewController* controller_;
+  __weak PageInfoViewController* controller_ = nil;
 
   base::WeakPtrFactory<PageInfoModelBubbleBridge> weak_ptr_factory_;
 

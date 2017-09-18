@@ -79,7 +79,7 @@ NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
 - (void)testLinkWithBlankTargetSessionStorage {
   using chrome_test_util::ExecuteJavaScript;
 
-  __unsafe_unretained NSError* error = nil;
+  NSError* error = nil;
   ExecuteJavaScript(@"sessionStorage.setItem('key', 'value');", &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
 

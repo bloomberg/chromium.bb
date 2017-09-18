@@ -48,19 +48,19 @@ id ExecuteJavaScript(CRWJSInjectionReceiver* receiver, NSString* script) {
 }
 
 id ExecuteJavaScript(WKWebView* web_view, NSString* script) {
-  return ExecuteJavaScript(web_view, script, nullptr);
+  return ExecuteJavaScript(web_view, script, nil);
 }
 
 id ExecuteJavaScript(WKWebView* web_view,
                      NSString* script,
-                     NSError* __unsafe_unretained* error) {
+                     NSError* __autoreleasing* error) {
   __block id result;
   __block bool completed = false;
-  __block NSError* temp_error = nil;
+  __block NSError* block_error = nil;
   [web_view evaluateJavaScript:script
              completionHandler:^(id script_result, NSError* script_error) {
                result = [script_result copy];
-               temp_error = [script_error copy];
+               block_error = [script_error copy];
                completed = true;
              }];
   BOOL success = testing::WaitUntilConditionOrTimeout(
@@ -72,8 +72,7 @@ id ExecuteJavaScript(WKWebView* web_view,
                        << base::SysNSStringToUTF8([[NSThread callStackSymbols]
                               componentsJoinedByString:@"\n"]);
   if (error) {
-    NSError* __autoreleasing auto_released_error = temp_error;
-    *error = auto_released_error;
+    *error = block_error;
   }
   return result;
 }

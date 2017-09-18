@@ -92,7 +92,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   JsSuggestionManager* _jsSuggestionManager;
 
   // The provider for the current set of suggestions.
-  __unsafe_unretained id<FormSuggestionProvider> _provider;  // weak
+  __weak id<FormSuggestionProvider> _provider;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState

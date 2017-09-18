@@ -35,7 +35,7 @@ NSString* GetFocusedElementId() {
   NSString* js = @"(function() {"
                   "  return document.activeElement.id;"
                   "})();";
-  __unsafe_unretained NSError* error = nil;
+  NSError* error = nil;
   NSString* result = chrome_test_util::ExecuteJavaScript(js, &error);
   GREYAssertTrue(!error, @"Unexpected error when executing JavaScript.");
   return result;

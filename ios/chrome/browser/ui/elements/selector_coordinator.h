@@ -26,7 +26,7 @@
 // if the user performs a cancel action.
 @property(nonatomic, nullable, copy) NSString* defaultOption;
 
-@property(nonatomic, nullable, assign) id<SelectorCoordinatorDelegate> delegate;
+@property(nonatomic, nullable, weak) id<SelectorCoordinatorDelegate> delegate;
 
 @end
 

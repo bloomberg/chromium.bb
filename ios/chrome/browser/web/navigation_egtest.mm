@@ -538,7 +538,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
                      "});",
                     kNoHashChangeText, content.c_str()];
 
-  __unsafe_unretained NSError* error = nil;
+  NSError* error = nil;
   chrome_test_util::ExecuteJavaScript(script, &error);
 }
 

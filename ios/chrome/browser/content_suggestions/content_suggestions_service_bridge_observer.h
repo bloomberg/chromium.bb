@@ -60,7 +60,7 @@ class ContentSuggestionsServiceBridge
   void OnFullRefreshRequired() override;
   void ContentSuggestionsServiceShutdown() override;
 
-  __unsafe_unretained id<ContentSuggestionsServiceObserver> observer_;
+  __weak id<ContentSuggestionsServiceObserver> observer_ = nil;
   ntp_snippets::ContentSuggestionsService* service_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestionsServiceBridge);

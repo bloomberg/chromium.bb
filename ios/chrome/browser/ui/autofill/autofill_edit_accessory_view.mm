@@ -57,7 +57,7 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
 @interface AutofillEditAccessoryView () {
   UIButton* _previousButton;
   UIButton* _nextButton;
-  __unsafe_unretained id<AutofillEditAccessoryDelegate> _delegate;  // weak
+  __weak id<AutofillEditAccessoryDelegate> _delegate;
 }
 @end
 

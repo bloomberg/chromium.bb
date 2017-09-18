@@ -27,11 +27,9 @@ id ExecuteJavaScript(CRWJSInjectionReceiver* receiver, NSString* script);
 
 // Executes JavaScript on |web_view| and returns the result as an id.
 // |error| can be null and will be updated only if script execution fails.
-// TODO(crbug.com/730062): Remove __unsafe_unretained when all callers are
-// are converted to ARC.
 id ExecuteJavaScript(WKWebView* web_view,
                      NSString* script,
-                     NSError* __unsafe_unretained* error);
+                     NSError* __autoreleasing* error);
 
 // Executes JavaScript on |web_view| and returns the result as an id.
 // Fails if there was an error during script execution.

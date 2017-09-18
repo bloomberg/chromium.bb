@@ -34,7 +34,7 @@
 namespace chrome_test_util {
 
 id ExecuteJavaScript(NSString* javascript,
-                     NSError* __unsafe_unretained* out_error) {
+                     NSError* __autoreleasing* out_error) {
   __block bool did_complete = false;
   __block id result = nil;
   __block NSError* temp_error = nil;
@@ -82,9 +82,7 @@ id ExecuteJavaScript(NSString* javascript,
   NSString* const kGetCookiesScript =
       @"document.cookie ? document.cookie.split(/;\\s*/) : [];";
 
-  // TODO(crbug.com/690057): Remove __unsafe_unretained once all callers of
-  // |ExecuteJavaScript| are converted to ARC.
-  NSError* __unsafe_unretained error = nil;
+  NSError* error = nil;
   id result = chrome_test_util::ExecuteJavaScript(kGetCookiesScript, &error);
 
   GREYAssertTrue(result && !error, @"Failed to get cookies.");
