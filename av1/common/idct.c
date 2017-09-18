@@ -50,11 +50,7 @@ static void iidtx8_c(const tran_low_t *input, tran_low_t *output) {
 static void iidtx16_c(const tran_low_t *input, tran_low_t *output) {
   int i;
   for (i = 0; i < 16; ++i) {
-#if CONFIG_DAALA_DCT16
-    output[i] = input[i];
-#else
     output[i] = (tran_low_t)dct_const_round_shift(input[i] * 2 * Sqrt2);
-#endif
   }
 }
 
@@ -1290,13 +1286,13 @@ void av1_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { daala_idst16, daala_idst16 },  // FLIPADST_FLIPADST
     { daala_idst16, daala_idst16 },  // ADST_FLIPADST
     { daala_idst16, daala_idst16 },  // FLIPADST_ADST
-    { iidtx16_c, iidtx16_c },        // IDTX
-    { daala_idct16, iidtx16_c },     // V_DCT
-    { iidtx16_c, daala_idct16 },     // H_DCT
-    { daala_idst16, iidtx16_c },     // V_ADST
-    { iidtx16_c, daala_idst16 },     // H_ADST
-    { daala_idst16, iidtx16_c },     // V_FLIPADST
-    { iidtx16_c, daala_idst16 },     // H_FLIPADST
+    { daala_idtx16, daala_idtx16 },  // IDTX
+    { daala_idct16, daala_idtx16 },  // V_DCT
+    { daala_idtx16, daala_idct16 },  // H_DCT
+    { daala_idst16, daala_idtx16 },  // V_ADST
+    { daala_idtx16, daala_idst16 },  // H_ADST
+    { daala_idst16, daala_idtx16 },  // V_FLIPADST
+    { daala_idtx16, daala_idst16 },  // H_FLIPADST
 #endif
 #else
     { aom_idct16_c, aom_idct16_c },    // DCT_DCT  = 0
