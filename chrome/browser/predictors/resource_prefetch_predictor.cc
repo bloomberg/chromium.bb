@@ -324,7 +324,8 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
 
   // Use host data if the URL-based prediction isn't available.
   std::string main_frame_url_host = main_frame_url.host();
-  if (GetRedirectEndpoint(main_frame_url_host, *host_redirect_data_,
+  if (config_.is_host_learning_enabled &&
+      GetRedirectEndpoint(main_frame_url_host, *host_redirect_data_,
                           &redirect_endpoint) &&
       PopulatePrefetcherRequest(redirect_endpoint, *host_resource_data_,
                                 urls)) {
@@ -477,11 +478,14 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
     }
   }
 
-  // Host level data - no cutoff, always learn the navigation if enabled.
   const std::string host = summary.main_frame_url.host();
-  LearnNavigation(host, summary.subresource_requests,
-                  host_resource_data_.get());
   LearnRedirect(summary.initial_url.host(), host, host_redirect_data_.get());
+
+  if (config_.is_host_learning_enabled) {
+    // Host level data - no cutoff, always learn the navigation if enabled.
+    LearnNavigation(host, summary.subresource_requests,
+                    host_resource_data_.get());
+  }
 
   if (config_.is_origin_learning_enabled)
     LearnOrigins(host, summary.origins);

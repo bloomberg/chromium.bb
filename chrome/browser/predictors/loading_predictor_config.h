@@ -7,9 +7,15 @@
 
 #include <cstddef>
 
+#include "base/feature_list.h"
+
 class Profile;
 
 namespace predictors {
+
+extern const char kSpeculativePreconnectFeatureName[];
+extern const char kPreconnectMode[];
+extern const base::Feature kSpeculativePreconnectFeature;
 
 struct LoadingPredictorConfig;
 
@@ -17,6 +23,10 @@ struct LoadingPredictorConfig;
 // nullptr.
 bool IsLoadingPredictorEnabled(Profile* profile,
                                LoadingPredictorConfig* config);
+
+// Returns true if speculative preconnect is enabled, and initializes |config|,
+// if not nullptr.
+bool MaybeEnableSpeculativePreconnect(LoadingPredictorConfig* config);
 
 // Indicates what caused the page load hint.
 enum class HintOrigin { NAVIGATION, EXTERNAL };
@@ -84,10 +94,10 @@ struct LoadingPredictorConfig {
   // Maximum number of prefetches that can be inflight for a host for a single
   // navigation.
   size_t max_prefetches_inflight_per_host_per_navigation;
-  // True iff the predictor could use a url-based database.
+  // True iff the predictor can use a host-based subresources database.
+  bool is_host_learning_enabled;
+  // True iff the predictor can use a url-based subresources database.
   bool is_url_learning_enabled;
-  // True iff the predictor could use manifests.
-  bool is_manifests_enabled;
   // True iff origin-based learning is enabled.
   bool is_origin_learning_enabled;
 };

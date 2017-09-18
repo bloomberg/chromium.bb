@@ -4,6 +4,7 @@
 
 #include "chrome/browser/predictors/loading_predictor_config.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,6 +44,7 @@ bool IsPreconnectEnabledInternal(Profile* profile, int mode, int mask) {
 }  // namespace
 
 const char kSpeculativePreconnectFeatureName[] = "SpeculativePreconnect";
+const char kPreconnectMode[] = "preconnect";
 
 const base::Feature kSpeculativePreconnectFeature{
     kSpeculativePreconnectFeatureName, base::FEATURE_DISABLED_BY_DEFAULT};
@@ -51,13 +53,24 @@ bool MaybeEnableSpeculativePreconnect(LoadingPredictorConfig* config) {
   if (!base::FeatureList::IsEnabled(kSpeculativePreconnectFeature))
     return false;
 
-  if (config) {
-    config->mode |=
-        LoadingPredictorConfig::LEARNING | LoadingPredictorConfig::PRECONNECT;
-    config->is_origin_learning_enabled = true;
+  std::string mode_value = base::GetFieldTrialParamValueByFeature(
+      kSpeculativePreconnectFeature, kModeParamName);
+  if (mode_value == kLearningMode) {
+    if (config) {
+      config->mode |= LoadingPredictorConfig::LEARNING;
+      config->is_origin_learning_enabled = true;
+    }
+    return true;
+  } else if (mode_value == kPreconnectMode) {
+    if (config) {
+      config->mode |=
+          LoadingPredictorConfig::LEARNING | LoadingPredictorConfig::PRECONNECT;
+      config->is_origin_learning_enabled = true;
+    }
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 bool IsLoadingPredictorEnabled(Profile* profile,
@@ -86,8 +99,8 @@ LoadingPredictorConfig::LoadingPredictorConfig()
       min_resource_hits_to_trigger_prefetch(2),
       max_prefetches_inflight_per_navigation(5),
       max_prefetches_inflight_per_host_per_navigation(3),
+      is_host_learning_enabled(false),
       is_url_learning_enabled(false),
-      is_manifests_enabled(false),
       is_origin_learning_enabled(false) {}
 
 LoadingPredictorConfig::LoadingPredictorConfig(
