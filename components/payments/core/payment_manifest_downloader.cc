@@ -49,9 +49,9 @@ GURL ParseResponseHeader(const net::URLFetcher* source) {
     return GURL();
   }
 
-  std::string payment_method_manifest_url;
-  std::unordered_map<std::string, base::Optional<std::string>> params;
   for (const auto& value : link_header_util::SplitLinkHeader(link_header)) {
+    std::string payment_method_manifest_url;
+    std::unordered_map<std::string, base::Optional<std::string>> params;
     if (!link_header_util::ParseLinkHeaderValue(
             value.first, value.second, &payment_method_manifest_url, &params)) {
       continue;
