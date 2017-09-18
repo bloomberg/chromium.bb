@@ -80,25 +80,21 @@ cr.define('cr.ui', function() {
     }
   };
 
-  /**
-   * Array of Document and FocusOutlineManager pairs.
-   * @type {Array}
-   */
-  var docsToManager = [];
+  /** @type {!Map<!Document, !cr.ui.FocusOutlineManager>} */
+  var docsToManager = new Map();
 
   /**
    * Gets a per document singleton focus outline manager.
-   * @param {Document} doc The document to get the |FocusOutlineManager| for.
-   * @return {cr.ui.FocusOutlineManager} The per document singleton focus
+   * @param {!Document} doc The document to get the |FocusOutlineManager| for.
+   * @return {!cr.ui.FocusOutlineManager} The per document singleton focus
    *     outline manager.
    */
   FocusOutlineManager.forDocument = function(doc) {
-    for (var i = 0; i < docsToManager.length; i++) {
-      if (doc == docsToManager[i][0])
-        return docsToManager[i][1];
+    var manager = docsToManager.get(doc);
+    if (!manager) {
+      manager = new FocusOutlineManager(doc);
+      docsToManager.set(doc, manager);
     }
-    var manager = new FocusOutlineManager(doc);
-    docsToManager.push([doc, manager]);
     return manager;
   };
 
