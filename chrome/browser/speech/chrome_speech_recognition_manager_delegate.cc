@@ -71,8 +71,6 @@ void TabClosedCallbackOnIOThread(int render_process_id, int render_view_id) {
 // Simple utility to get notified when a WebContent (a tab or an extension's
 // background page) is closed or crashes. The callback will always be called on
 // the UI thread.
-// There is no restriction on the constructor, however this class must be
-// destroyed on the UI thread, due to the NotificationRegistrar dependency.
 class ChromeSpeechRecognitionManagerDelegate::TabWatcher
     : public base::RefCountedThreadSafe<TabWatcher> {
  public:
@@ -174,9 +172,6 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
   friend class base::RefCountedThreadSafe<TabWatcher>;
 
   ~TabWatcher() {
-    // Must be destroyed on the UI thread due to |registrar_| non thread-safety.
-    // TODO(lazyboy): Do we still need this?
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
   // Helper function to find the iterator in |registered_web_contents_| which
