@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.widget;
 
 import android.content.res.Resources;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.view.View;
@@ -28,31 +27,6 @@ public class ViewHighlighter {
     public static final int IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS = 200;
 
     /**
-     * Gets a Rect that contains the View's padding values.
-     *
-     * @param view The View whose padding we're requesting.
-     * @return A Rect containing all the padding values in px.
-     */
-    private static Rect getPaddingRect(View view) {
-        int paddingBottom = view.getPaddingBottom();
-        int paddingTop = view.getPaddingTop();
-        int paddingLeft = view.getPaddingLeft();
-        int paddingRight = view.getPaddingRight();
-        return new Rect(paddingLeft, paddingTop, paddingRight, paddingBottom);
-    }
-
-    /**
-     * Sets the padding for the View based on a Rect containing the padding values. This is
-     * currently necessary for Jelly Bean devices.
-     *
-     * @param view The View whose padding we're setting.
-     * @param padding The Rect containing the padding values in px.
-     */
-    private static void setPaddingRect(View view, Rect padding) {
-        view.setPadding(padding.left, padding.top, padding.right, padding.bottom);
-    }
-
-    /**
      * Create a highlight layer over the view.
      * @param view The view to be highlighted.
      * @param circular Whether the highlight should be a circle or rectangle.
@@ -60,7 +34,6 @@ public class ViewHighlighter {
     public static void turnOnHighlight(View view, boolean circular) {
         if (view == null) return;
 
-        Rect padding = getPaddingRect(view);
         boolean highlighted = view.getTag(R.id.highlight_state) != null
                 ? (boolean) view.getTag(R.id.highlight_state)
                 : false;
@@ -81,7 +54,6 @@ public class ViewHighlighter {
                                                      : new Drawable[] {background, pulseDrawable});
         view.setBackground(drawable);
         view.setTag(R.id.highlight_state, true);
-        setPaddingRect(view, padding);
 
         pulseDrawable.start();
     }
@@ -93,7 +65,6 @@ public class ViewHighlighter {
     public static void turnOffHighlight(View view) {
         if (view == null) return;
 
-        Rect padding = getPaddingRect(view);
         boolean highlighted = view.getTag(R.id.highlight_state) != null
                 ? (boolean) view.getTag(R.id.highlight_state)
                 : false;
@@ -111,6 +82,5 @@ public class ViewHighlighter {
                 view.setBackground(null);
             }
         }
-        setPaddingRect(view, padding);
     }
 }
