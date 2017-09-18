@@ -24,6 +24,7 @@
  */
 
 #ifndef MockImageDecoder_h
+#define MockImageDecoder_h
 
 #include <memory>
 #include "platform/image-decoders/ImageDecoder.h"
