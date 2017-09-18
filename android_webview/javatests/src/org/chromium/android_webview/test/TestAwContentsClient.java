@@ -7,8 +7,8 @@ package org.chromium.android_webview.test;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.net.http.SslError;
-import android.webkit.ConsoleMessage;
 
+import org.chromium.android_webview.AwConsoleMessage;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.base.Callback;
@@ -363,7 +363,7 @@ public class TestAwContentsClient extends NullContentsClient {
     }
 
     @Override
-    public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+    public boolean onConsoleMessage(AwConsoleMessage consoleMessage) {
         mAddMessageToConsoleHelper.notifyCalled(consoleMessage);
         return false;
     }
@@ -372,19 +372,19 @@ public class TestAwContentsClient extends NullContentsClient {
      * Callback helper for AddMessageToConsole.
      */
     public static class AddMessageToConsoleHelper extends CallbackHelper {
-        private List<ConsoleMessage> mMessages = new ArrayList<ConsoleMessage>();
+        private List<AwConsoleMessage> mMessages = new ArrayList<AwConsoleMessage>();
 
         public void clearMessages() {
             mMessages.clear();
         }
 
-        public List<ConsoleMessage> getMessages() {
+        public List<AwConsoleMessage> getMessages() {
             return mMessages;
         }
 
         public int getLevel() {
             assert getCallCount() > 0;
-            return getLastMessage().messageLevel().ordinal();
+            return getLastMessage().messageLevel();
         }
 
         public String getMessage() {
@@ -402,11 +402,11 @@ public class TestAwContentsClient extends NullContentsClient {
             return getLastMessage().sourceId();
         }
 
-        private ConsoleMessage getLastMessage() {
+        private AwConsoleMessage getLastMessage() {
             return mMessages.get(mMessages.size() - 1);
         }
 
-        void notifyCalled(ConsoleMessage message) {
+        void notifyCalled(AwConsoleMessage message) {
             mMessages.add(message);
             notifyCalled();
         }

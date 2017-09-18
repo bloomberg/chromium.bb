@@ -19,7 +19,6 @@ import android.provider.Browser;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
-import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
 import android.webkit.WebChromeClient;
 
@@ -138,7 +137,7 @@ public abstract class AwContentsClient {
 
     public abstract void onUnhandledKeyEvent(KeyEvent event);
 
-    public abstract boolean onConsoleMessage(ConsoleMessage consoleMessage);
+    public abstract boolean onConsoleMessage(AwConsoleMessage consoleMessage);
 
     public abstract void onReceivedHttpAuthRequest(AwHttpAuthHandler handler,
             String host, String realm);
