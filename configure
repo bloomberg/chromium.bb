@@ -588,8 +588,6 @@ post_process_cmdline() {
     fi
     if enabled daala_dct4 || enabled daala_dct8 || enabled daala_dct16 ||
         enabled daala_dct32 || enabled daala_dct64; then
-      disable_feature rect_tx
-      disable_feature var_tx
       disable_feature lgt
       enable_feature lowbitdepth
     fi
