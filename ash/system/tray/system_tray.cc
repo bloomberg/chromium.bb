@@ -595,7 +595,13 @@ void SystemTray::AnchorUpdated() {
   if (system_bubble_) {
     UpdateClippingWindowBounds();
     system_bubble_->bubble_view()->UpdateBubble();
-    UpdateBubbleViewArrow(system_bubble_->bubble_view());
+    // Should check |system_bubble_| again here. Since UpdateBubble above
+    // set the bounds of the bubble which will stop the current animation.
+    // If the system tray bubble is during animation to close,
+    // CloseBubbleObserver in TrayBackgroundView will close the bubble if
+    // animation finished.
+    if (system_bubble_)
+      UpdateBubbleViewArrow(system_bubble_->bubble_view());
   }
 }
 
