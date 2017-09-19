@@ -100379,9 +100379,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Password protection triggered by entering a saved password that
              does NOT match the sync password. (TODO(nparker): Rename this to
              NonSyncPasswordEntry)"/>
+  <suffix name="SyncProtectedPasswordEntry"
+      label="This was renamed by SyncPasswordEntry in M62 (it was misspelled
+             in the code) . Password protection triggered by entering the sync
+             password, which may or may not also match a saved password.">
+    <obsolete>
+      Replaced by ProtectedPasswordEntry in M62.
+    </obsolete>
+  </suffix>
   <suffix name="SyncPasswordEntry"
       label="Password protection triggered by entering the sync password,
-             which may or may not also match a saved password."/>
+             which may or may not also match a saved password. (This was
+             called SyncProtectedPasswordEntry before M62)"/>
   <suffix name="AnyPasswordEntry"
       label="Password protection triggered by entering a password that
              matches either/both the sync password or a saved password This
