@@ -10,25 +10,15 @@ namespace ui {
 
 namespace {
 SystemInputInjectorFactory* override_factory_ = nullptr;
-SystemInputInjectorFactory* native_factory_ = nullptr;
 }  // namespace
 
-void SetOverrideInputInjectorFactory(SystemInputInjectorFactory* factory) {
+void SetSystemInputInjectorFactory(SystemInputInjectorFactory* factory) {
   DCHECK(!factory || !override_factory_);
   override_factory_ = factory;
 }
 
-void SetNativeInputInjectorFactory(SystemInputInjectorFactory* factory) {
-  DCHECK(!factory || !native_factory_);
-  native_factory_ = factory;
-}
-
 SystemInputInjectorFactory* GetSystemInputInjectorFactory() {
-  if (override_factory_)
-    return override_factory_;
-  if (native_factory_)
-    return native_factory_;
-  return nullptr;
+  return override_factory_;
 }
 
 }  // namespace ui

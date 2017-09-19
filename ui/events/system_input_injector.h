@@ -61,23 +61,15 @@ class EVENTS_EXPORT SystemInputInjectorFactory {
 };
 
 // Sets a global SystemInputInjectorFactory which is used in remoting instead
-// of requesting the usual Ozone version, as specified in
-// SetNativeInputInjectorFactory().
+// of requesting the usual Ozone version.
 //
 // This is placed in //ui/events not just since it's event related, but also
 // because its one of the few places that both //remoting/ and //ui/ozone can
 // depend on.
-EVENTS_EXPORT void SetOverrideInputInjectorFactory(
+EVENTS_EXPORT void SetSystemInputInjectorFactory(
     SystemInputInjectorFactory* factory);
 
-// Sets a global SystemInputInjectorFactory which is used if there isn't an
-// override injector factory. Currently, this is always the ozone
-// implementation.
-EVENTS_EXPORT void SetNativeInputInjectorFactory(
-    SystemInputInjectorFactory* factory);
-
-// Returns the override input injector factory, the native one, or null if
-// neither are set.
+// Returns the override input injector factory, or null if neither are set.
 EVENTS_EXPORT SystemInputInjectorFactory* GetSystemInputInjectorFactory();
 
 }  // namespace ui

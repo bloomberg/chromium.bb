@@ -982,7 +982,8 @@ static_library("extensions") {
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/file_manager",
-      "//ui/views/",
+      "//ui/ozone",
+      "//ui/views",
     ]
     if (enable_nacl) {
       deps += [ "//chrome/browser/resources/chromeos/zip_archiver" ]

@@ -24,13 +24,11 @@ OzonePlatform::OzonePlatform() {
   instance_ = this;
   g_platform_initialized_ui = false;
   g_platform_initialized_gpu = false;
-  SetNativeInputInjectorFactory(this);
 }
 
 OzonePlatform::~OzonePlatform() {
   DCHECK_EQ(instance_, this);
   instance_ = NULL;
-  SetNativeInputInjectorFactory(nullptr);
 }
 
 // static
