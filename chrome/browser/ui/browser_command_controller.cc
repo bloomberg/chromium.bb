@@ -28,7 +28,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -68,12 +67,9 @@
 #include "content/public/browser/gpu_data_manager.h"
 #endif
 
-#if defined(USE_ASH)
-#include "ash/accelerators/accelerator_commands_classic.h"  // nogncheck
-#include "chrome/browser/ui/ash/ash_util.h"  // nogncheck
-#endif
-
 #if defined(OS_CHROMEOS)
+#include "ash/accelerators/accelerator_commands_classic.h"  // mash-ok
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser_commands_chromeos.h"
@@ -757,10 +753,8 @@ void BrowserCommandController::InitCommandState() {
   UpdateTabRestoreCommandState();
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
   command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
-#if defined(USE_ASH)
-  command_updater_.UpdateCommandEnabled(IDC_MINIMIZE_WINDOW, true);
-#endif
 #if defined(OS_CHROMEOS)
+  command_updater_.UpdateCommandEnabled(IDC_MINIMIZE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_2, true);
   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_3, true);
 #endif

@@ -41,10 +41,6 @@
 #include "content/public/browser/notification_service.h"
 #endif
 
-#if defined(USE_ASH)
-#include "ash/shell.h"  // nogncheck
-#endif
-
 using content::BrowserThread;
 using content::WebContents;
 using extensions::Extension;
