@@ -54,7 +54,7 @@ class FakeRendererScheduler : public RendererScheduler {
   void ResumeTimerQueue() override;
   void VirtualTimePaused() override;
   void VirtualTimeResumed() override;
-  void SetTimerQueueStoppingWhenBackgroundedEnabled(bool enabled) override;
+  void SetStoppingWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void SetRAILModeObserver(RAILModeObserver* observer) override;

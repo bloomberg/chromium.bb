@@ -1203,7 +1203,7 @@ bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return !IsStandaloneExtensionProcess();
 }
 
-bool ChromeContentRendererClient::AllowStoppingTimersWhenProcessBackgrounded() {
+bool ChromeContentRendererClient::AllowStoppingWhenProcessBackgrounded() {
 #if defined(OS_ANDROID)
   return true;
 #else

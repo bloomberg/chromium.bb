@@ -173,9 +173,9 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // TaskQueueThrottler.
   virtual void VirtualTimeResumed() = 0;
 
-  // Sets whether to allow suspension of timers after the backgrounded signal is
+  // Sets whether to allow suspension of tasks after the backgrounded signal is
   // received via SetRendererBackgrounded(true). Defaults to disabled.
-  virtual void SetTimerQueueStoppingWhenBackgroundedEnabled(bool enabled) = 0;
+  virtual void SetStoppingWhenBackgroundedEnabled(bool enabled) = 0;
 
   // Sets the default blame context to which top level work should be
   // attributed in this renderer. |blame_context| must outlive this scheduler.
