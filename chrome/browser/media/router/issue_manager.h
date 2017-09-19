@@ -7,10 +7,12 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -41,6 +43,9 @@ class IssueManager {
   // |issue_id|: Issue::Id of the issue to be removed.
   void ClearIssue(const Issue::Id& issue_id);
 
+  // Clears all non-blocking issues.
+  void ClearNonBlockingIssues();
+
   // Registers an issue observer |observer|. The observer will be triggered
   // when the highest priority issue changes.
   // If there is already an observer registered with this instance, do nothing.
@@ -58,17 +63,37 @@ class IssueManager {
   }
 
  private:
+  // Issues tracked internally by the IssueManager.
+  // TODO(imcheng): Rather than holding a base::CancelableClosure, it might be a
+  // bit simpler to use a CancelableTaskTracker and track TaskIds here. This
+  // will require adding support for delayed tasks to CancelableTaskTracker.
+  struct Entry {
+    Entry(const Issue& issue,
+          std::unique_ptr<base::CancelableClosure> cancelable_dismiss_callback);
+    ~Entry();
+
+    Issue issue;
+
+    // Set to non-null if |issue| can be auto-dismissed.
+    std::unique_ptr<base::CancelableClosure> cancelable_dismiss_callback;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Entry);
+  };
+
   // Checks if the current top issue has changed. Updates |top_issue_|.
   // If |top_issue_| has changed, observers in |issues_observers_| will be
   // notified of the new top issue.
   void MaybeUpdateTopIssue();
 
-  std::vector<std::unique_ptr<Issue>> issues_;
+  base::small_map<std::map<Issue::Id, std::unique_ptr<Entry>>> blocking_issues_;
+  base::small_map<std::map<Issue::Id, std::unique_ptr<Entry>>>
+      non_blocking_issues_;
 
-  // IssueObserver insteances are not owned by the manager.
+  // IssueObserver instances are not owned by the manager.
   base::ObserverList<IssuesObserver> issues_observers_;
 
-  // ID of the top Issue in |issues_|, or |nullptr| if there are no issues.
+  // Pointer to the top Issue in |issues_|, or |nullptr| if there are no issues.
   const Issue* top_issue_;
 
   // The SingleThreadTaskRunner that this IssueManager runs on, and is used
@@ -77,12 +102,6 @@ class IssueManager {
   // will be added to remove the issue. This is done to automatically clean up
   // issues that are no longer relevant.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  // Tracks auto-dimiss callbacks that are posted to |task_runner_|. If an
-  // Issue is cleared by the user before the auto-dimiss timeout, then the
-  // callback will be canceled.
-  std::map<Issue::Id, std::unique_ptr<base::CancelableClosure>>
-      auto_dismiss_issue_callbacks_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

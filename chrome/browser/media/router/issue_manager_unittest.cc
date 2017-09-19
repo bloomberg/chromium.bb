@@ -9,7 +9,6 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/router/issue_manager.h"
-#include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,7 +40,6 @@ class IssueManagerTest : public ::testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle runner_handler_;
   IssueManager manager_;
-  MockMediaRouter router_;
 };
 
 TEST_F(IssueManagerTest, AddAndClearIssue) {
@@ -51,11 +49,13 @@ TEST_F(IssueManagerTest, AddAndClearIssue) {
   manager_.AddIssue(issue_info1);
 
   Issue issue1((IssueInfo()));
-  MockIssuesObserver observer(&router_);
+  MockIssuesObserver observer(&manager_);
   EXPECT_CALL(observer, OnIssue(_)).WillOnce(SaveArg<0>(&issue1));
-  manager_.RegisterObserver(&observer);
+  observer.Init();
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer));
   EXPECT_EQ(issue_info1, issue1.info());
   Issue::Id issue1_id = issue1.id();
+  EXPECT_FALSE(issue1.info().is_blocking);
 
   IssueInfo issue_info2 = CreateTestIssue(IssueInfo::Severity::FATAL);
   EXPECT_TRUE(issue_info2.is_blocking);
@@ -64,12 +64,14 @@ TEST_F(IssueManagerTest, AddAndClearIssue) {
   Issue issue2((IssueInfo()));
   EXPECT_CALL(observer, OnIssue(_)).WillOnce(SaveArg<0>(&issue2));
   manager_.AddIssue(issue_info2);
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer));
   EXPECT_EQ(issue_info2, issue2.info());
 
   // Clear |issue2|. Observer will be notified with |issue1| again as it is now
   // the top issue.
   EXPECT_CALL(observer, OnIssue(_)).WillOnce(SaveArg<0>(&issue1));
   manager_.ClearIssue(issue2.id());
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer));
   EXPECT_EQ(issue1_id, issue1.id());
   EXPECT_EQ(issue_info1, issue1.info());
 
@@ -77,19 +79,18 @@ TEST_F(IssueManagerTest, AddAndClearIssue) {
   // no more issues.
   EXPECT_CALL(observer, OnIssuesCleared());
   manager_.ClearIssue(issue1.id());
-
-  manager_.UnregisterObserver(&observer);
 }
 
 TEST_F(IssueManagerTest, AddSameIssueInfoHasNoEffect) {
   IssueInfo issue_info = CreateTestIssue(IssueInfo::Severity::WARNING);
 
-  MockIssuesObserver observer(&router_);
-  manager_.RegisterObserver(&observer);
+  MockIssuesObserver observer(&manager_);
+  observer.Init();
 
   Issue issue((IssueInfo()));
   EXPECT_CALL(observer, OnIssue(_)).WillOnce(SaveArg<0>(&issue));
   manager_.AddIssue(issue_info);
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer));
   EXPECT_EQ(issue_info, issue.info());
 
   // Adding the same IssueInfo has no effect.
@@ -97,12 +98,11 @@ TEST_F(IssueManagerTest, AddSameIssueInfoHasNoEffect) {
 
   EXPECT_CALL(observer, OnIssuesCleared());
   manager_.ClearIssue(issue.id());
-  manager_.UnregisterObserver(&observer);
 }
 
 TEST_F(IssueManagerTest, NonBlockingIssuesGetAutoDismissed) {
-  MockIssuesObserver observer(&router_);
-  manager_.RegisterObserver(&observer);
+  MockIssuesObserver observer(&manager_);
+  observer.Init();
 
   EXPECT_CALL(observer, OnIssue(_)).Times(1);
   IssueInfo issue_info1 = CreateTestIssue(IssueInfo::Severity::NOTIFICATION);
@@ -127,13 +127,14 @@ TEST_F(IssueManagerTest, NonBlockingIssuesGetAutoDismissed) {
 }
 
 TEST_F(IssueManagerTest, IssueAutoDismissNoopsIfAlreadyCleared) {
-  MockIssuesObserver observer(&router_);
-  manager_.RegisterObserver(&observer);
+  MockIssuesObserver observer(&manager_);
+  observer.Init();
 
   Issue issue1((IssueInfo()));
   EXPECT_CALL(observer, OnIssue(_)).Times(1).WillOnce(SaveArg<0>(&issue1));
   IssueInfo issue_info1 = CreateTestIssue(IssueInfo::Severity::NOTIFICATION);
   manager_.AddIssue(issue_info1);
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer));
 
   EXPECT_CALL(observer, OnIssuesCleared()).Times(1);
   manager_.ClearIssue(issue1.id());
@@ -147,8 +148,8 @@ TEST_F(IssueManagerTest, IssueAutoDismissNoopsIfAlreadyCleared) {
 }
 
 TEST_F(IssueManagerTest, BlockingIssuesDoNotGetAutoDismissed) {
-  MockIssuesObserver observer(&router_);
-  manager_.RegisterObserver(&observer);
+  MockIssuesObserver observer(&manager_);
+  observer.Init();
 
   EXPECT_CALL(observer, OnIssue(_)).Times(1);
   IssueInfo issue_info1 = CreateTestIssue(IssueInfo::Severity::WARNING);
@@ -168,6 +169,48 @@ TEST_F(IssueManagerTest, BlockingIssuesDoNotGetAutoDismissed) {
   timeout = IssueManager::GetAutoDismissTimeout(issue_info2);
   EXPECT_TRUE(timeout.is_zero());
   EXPECT_FALSE(task_runner_->HasPendingTask());
+}
+
+TEST_F(IssueManagerTest, ClearNonBlockingIssues) {
+  MockIssuesObserver observer(&manager_);
+  observer.Init();
+
+  EXPECT_CALL(observer, OnIssue(_)).Times(1);
+  manager_.AddIssue(CreateTestIssue(IssueInfo::Severity::NOTIFICATION));
+  manager_.AddIssue(CreateTestIssue(IssueInfo::Severity::WARNING));
+
+  EXPECT_CALL(observer, OnIssuesCleared()).Times(1);
+  manager_.ClearNonBlockingIssues();
+}
+
+TEST_F(IssueManagerTest, ClearNonBlockingIssuesDoesNotClearBlockingIssue) {
+  MockIssuesObserver observer(&manager_);
+  observer.Init();
+
+  // Add a blocking issue and a couple of non-blocking issues.
+  Issue blocking_issue((IssueInfo()));
+  EXPECT_CALL(observer, OnIssue(_))
+      .Times(1)
+      .WillOnce(SaveArg<0>(&blocking_issue));
+  manager_.AddIssue(CreateTestIssue(IssueInfo::Severity::FATAL));
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer));
+
+  manager_.AddIssue(CreateTestIssue(IssueInfo::Severity::NOTIFICATION));
+  manager_.AddIssue(CreateTestIssue(IssueInfo::Severity::WARNING));
+
+  EXPECT_CALL(observer, OnIssuesCleared()).Times(0);
+
+  // The blocking issue remains.
+  manager_.ClearNonBlockingIssues();
+
+  Issue same_blocking_issue((IssueInfo()));
+  MockIssuesObserver observer2(&manager_);
+  EXPECT_CALL(observer2, OnIssue(_))
+      .Times(1)
+      .WillOnce(SaveArg<0>(&same_blocking_issue));
+  observer2.Init();
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer2));
+  EXPECT_EQ(blocking_issue.id(), same_blocking_issue.id());
 }
 
 }  // namespace media_router

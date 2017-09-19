@@ -10,20 +10,21 @@
 
 namespace media_router {
 
-class MediaRouter;
+class IssueManager;
 
-// Base class for observing Media Router Issue. There is at most one Issue
-// at any given time.
+// Base class for observing Media Router related Issues. IssueObserver will
+// receive at most one Issue at any given time.
+// TODO(imcheng): Combine this with issue_manager.{h,cc}.
 class IssuesObserver {
  public:
-  explicit IssuesObserver(MediaRouter* router);
+  explicit IssuesObserver(IssueManager* issue_manager);
   virtual ~IssuesObserver();
 
-  // Registers with Media Router to start observing for Issues. No-ops if Init()
-  // has already been called before.
+  // Registers with |issue_manager_| to start observing for Issues. No-ops if
+  // Init() has already been called before.
   void Init();
 
-  // Called when there is an updated Media Router Issue.
+  // Called when there is an updated Issue.
   // Note that |issue| is owned by the IssueManager that is calling the
   // observers. Implementations that wish to retain the data must make a copy
   // of |issue|.
@@ -33,7 +34,7 @@ class IssuesObserver {
   virtual void OnIssuesCleared() {}
 
  private:
-  MediaRouter* router_;
+  IssueManager* const issue_manager_;
   bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(IssuesObserver);

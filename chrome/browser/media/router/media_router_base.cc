@@ -75,6 +75,10 @@ void MediaRouterBase::OnIncognitoProfileShutdown() {
     TerminateRoute(route_id);
 }
 
+IssueManager* MediaRouterBase::GetIssueManager() {
+  return &issue_manager_;
+}
+
 std::vector<MediaRoute> MediaRouterBase::GetCurrentRoutes() const {
   return internal_routes_observer_->current_routes;
 }

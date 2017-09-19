@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
+#include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -160,8 +161,8 @@ void MediaRouterUI::FileDialogSelectionFailed(const IssueInfo& issue) {
 // updated.
 class MediaRouterUI::UIIssuesObserver : public IssuesObserver {
  public:
-  UIIssuesObserver(MediaRouter* router, MediaRouterUI* ui)
-      : IssuesObserver(router), ui_(ui) {
+  UIIssuesObserver(IssueManager* issue_manager, MediaRouterUI* ui)
+      : IssuesObserver(issue_manager), ui_(ui) {
     DCHECK(ui);
   }
 
@@ -392,6 +393,8 @@ void MediaRouterUI::InitForTest(
     OnDefaultPresentationChanged(
         start_presentation_context_->presentation_request());
   }
+
+  UIInitialized();
 }
 
 void MediaRouterUI::InitForTest(
@@ -478,7 +481,7 @@ void MediaRouterUI::UIInitialized() {
   ui_initialized_ = true;
 
   // Register for Issue updates.
-  issues_observer_.reset(new UIIssuesObserver(router_, this));
+  issues_observer_.reset(new UIIssuesObserver(GetIssueManager(), this));
   issues_observer_->Init();
 }
 
@@ -510,6 +513,7 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
     return false;
   }
 
+  GetIssueManager()->ClearNonBlockingIssues();
   router_->CreateRoute(source_id, sink_id, origin, tab_contents,
                        std::move(route_response_callbacks), timeout, incognito);
   return true;
@@ -643,6 +647,7 @@ bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
     SendIssueForUnableToCast(MediaCastMode::PRESENTATION);
     return false;
   }
+  GetIssueManager()->ClearNonBlockingIssues();
   router_->ConnectRouteByRouteId(source_id, route_id, origin, initiator_,
                                  std::move(route_response_callbacks), timeout,
                                  incognito);
@@ -654,11 +659,11 @@ void MediaRouterUI::CloseRoute(const MediaRoute::Id& route_id) {
 }
 
 void MediaRouterUI::AddIssue(const IssueInfo& issue) {
-  router_->AddIssue(issue);
+  GetIssueManager()->AddIssue(issue);
 }
 
 void MediaRouterUI::ClearIssue(const Issue::Id& issue_id) {
-  router_->ClearIssue(issue_id);
+  GetIssueManager()->ClearIssue(issue_id);
 }
 
 void MediaRouterUI::OpenFileDialog() {
@@ -822,18 +827,7 @@ void MediaRouterUI::OnSearchSinkResponseReceived(
   DVLOG(1) << "OnSearchSinkResponseReceived";
   handler_->ReturnSearchResult(found_sink_id);
 
-  MediaSource::Id source_id;
-  url::Origin origin;
-  std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  base::TimeDelta timeout;
-  bool incognito;
-  if (!SetRouteParameters(found_sink_id, cast_mode, &source_id, &origin,
-                          &route_response_callbacks, &timeout, &incognito)) {
-    SendIssueForUnableToCast(cast_mode);
-    return;
-  }
-  router_->CreateRoute(source_id, found_sink_id, origin, initiator_,
-                       std::move(route_response_callbacks), timeout, incognito);
+  CreateRoute(found_sink_id, cast_mode);
 }
 
 void MediaRouterUI::SendIssueForRouteTimeout(
@@ -968,6 +962,10 @@ std::string MediaRouterUI::GetSerializedInitiatorOrigin() const {
                            ? url::Origin(initiator_->GetLastCommittedURL())
                            : url::Origin();
   return origin.Serialize();
+}
+
+IssueManager* MediaRouterUI::GetIssueManager() {
+  return router_->GetIssueManager();
 }
 
 }  // namespace media_router

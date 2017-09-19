@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
@@ -42,7 +43,7 @@ MATCHER_P(SequenceEquals, other, "") {
 
 // Matcher for IssueInfo title.
 MATCHER_P(IssueTitleEquals, title, "") {
-  return arg.title == title;
+  return arg.info().title == title;
 }
 
 MATCHER_P(StateChangeInfoEquals, other, "") {
@@ -55,7 +56,7 @@ std::string PresentationConnectionMessageToString(
 
 class MockIssuesObserver : public IssuesObserver {
  public:
-  explicit MockIssuesObserver(MediaRouter* router);
+  explicit MockIssuesObserver(IssueManager* issue_manager);
   ~MockIssuesObserver() override;
 
   MOCK_METHOD1(OnIssue, void(const Issue& issue));

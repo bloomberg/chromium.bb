@@ -39,7 +39,7 @@ media_router::MediaRouter* GetMediaRouter(Browser* browser) {
 
 MediaRouterAction::MediaRouterAction(Browser* browser,
                                      ToolbarActionsBar* toolbar_actions_bar)
-    : media_router::IssuesObserver(GetMediaRouter(browser)),
+    : media_router::IssuesObserver(GetMediaRouter(browser)->GetIssueManager()),
       media_router::MediaRoutesObserver(GetMediaRouter(browser)),
       current_icon_(&vector_icons::kMediaRouterIdleIcon),
       has_local_display_route_(false),

@@ -127,14 +127,6 @@ void MediaRouterAndroid::SendRouteBinaryMessage(
   std::move(callback).Run(false);
 }
 
-void MediaRouterAndroid::AddIssue(const IssueInfo& issue_info) {
-  NOTIMPLEMENTED();
-}
-
-void MediaRouterAndroid::ClearIssue(const Issue::Id& issue_id) {
-  NOTIMPLEMENTED();
-}
-
 void MediaRouterAndroid::OnUserGesture() {
 }
 
@@ -206,14 +198,6 @@ void MediaRouterAndroid::UnregisterMediaRoutesObserver(
   if (!routes_observers_.HasObserver(observer))
     return;
   routes_observers_.RemoveObserver(observer);
-}
-
-void MediaRouterAndroid::RegisterIssuesObserver(IssuesObserver* observer) {
-  NOTIMPLEMENTED();
-}
-
-void MediaRouterAndroid::UnregisterIssuesObserver(IssuesObserver* observer) {
-  NOTIMPLEMENTED();
 }
 
 void MediaRouterAndroid::RegisterRouteMessageObserver(
