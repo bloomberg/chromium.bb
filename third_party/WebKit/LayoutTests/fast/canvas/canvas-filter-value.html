@@ -25,6 +25,8 @@ test(function(t) {
     assert_equals(ctx.filter, 'blur(5px)');
     ctx.filter = 'initial';
     assert_equals(ctx.filter, 'blur(5px)');
+    ctx.filter = 'unset';
+    assert_equals(ctx.filter, 'blur(5px)');
     
     ctx.filter = '';
     assert_equals(ctx.filter, 'blur(5px)');

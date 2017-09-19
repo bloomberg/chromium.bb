@@ -417,8 +417,7 @@ void BaseRenderingContext2D::setFilter(const String& filter_string) {
       CSSParser::ParseSingleValue(CSSPropertyFilter, filter_string,
                                   CSSParserContext::Create(kHTMLStandardMode));
 
-  if (!filter_value || filter_value->IsInitialValue() ||
-      filter_value->IsInheritedValue())
+  if (!filter_value || filter_value->IsCSSWideKeyword())
     return;
 
   ModifiableState().SetUnparsedFilter(filter_string);
