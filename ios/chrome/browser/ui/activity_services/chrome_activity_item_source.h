@@ -10,14 +10,6 @@
 
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 
-// Returns a text to the UIActivities that can take advantage of it.
-@interface UIActivityTextSource : NSObject<UIActivityItemSource>
-
-// Default initializer. |text| must not be nil.
-- (instancetype)initWithText:(NSString*)text;
-
-@end
-
 // Returns an image to the UIActivities that can take advantage of it.
 @interface UIActivityImageSource : NSObject<UIActivityItemSource>
 
