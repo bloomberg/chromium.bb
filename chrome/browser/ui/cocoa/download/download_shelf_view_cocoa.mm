@@ -16,7 +16,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 
 namespace {
-constexpr CGFloat kMDShelfHeight = 48;
+constexpr CGFloat kMDShelfHeight = 44;
 }  // namespace
 
 @interface DownloadShelfView ()

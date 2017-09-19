@@ -80,11 +80,11 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 // initial layout in a way that works with autoresizing masks.
 const CGFloat kMDShelfInitialWidth = 500;
 
-// Space between the edges of the shelf view and its content.
-const CGFloat kMDShelfPadding = 6;
+// Space between elements of the shelf.
+const CGFloat kMDContentSpacing = 12;
 
 // Width and height of the close button in MD mode.
-const CGFloat kMDCloseButtonSize = 32;
+const CGFloat kMDCloseButtonSize = 24;
 
 }  // namespace
 
@@ -161,11 +161,10 @@ const CGFloat kMDCloseButtonSize = 32;
                                  [DownloadShelfView shelfHeight])];
     view.autoresizingMask = [NSView
         cr_localizedAutoresizingMask:NSViewWidthSizable | NSViewMaxYMargin];
-    const NSRect paddedRect =
-        NSInsetRect(view.bounds, kMDShelfPadding, kMDShelfPadding);
+    const NSRect bounds = view.bounds;
     const NSRect closeButtonFrame =
-        NSMakeRect(NSMaxX(paddedRect) - kMDCloseButtonSize,
-                   NSMidY(paddedRect) - (kMDCloseButtonSize / 2),
+        NSMakeRect(NSMaxX(bounds) - kMDCloseButtonSize - kMDContentSpacing,
+                   NSMidY(bounds) - (kMDCloseButtonSize / 2),
                    kMDCloseButtonSize, kMDCloseButtonSize);
     base::scoped_nsobject<MDDownloadShelfCloseButton> scopedCloseButton(
         [[MDDownloadShelfCloseButton alloc]
@@ -189,18 +188,18 @@ const CGFloat kMDCloseButtonSize = 32;
     showAllButton.autoresizingMask =
         [NSView cr_localizedAutoresizingMask:NSViewMinXMargin];
     NSRect showAllButtonFrame = showAllButton.frame;
-    showAllButtonFrame.origin.x = NSMinX(closeButtonFrame) - kMDShelfPadding -
+    showAllButtonFrame.origin.x = NSMinX(closeButtonFrame) - kMDContentSpacing -
                                   NSWidth(showAllButton.frame);
     showAllButtonFrame.origin.y =
-        NSMidY(paddedRect) - (NSHeight(showAllButtonFrame) / 2);
+        NSMidY(bounds) - (NSHeight(showAllButtonFrame) / 2);
     showAllButton.frame = [view cr_localizedRect:showAllButtonFrame];
     [view addSubview:showAllButton];
 
     base::scoped_nsobject<NSView> itemContainerView([[NSView alloc]
         initWithFrame:[view cr_localizedRect:NSMakeRect(
-                                                 NSMinX(paddedRect), 0,
+                                                 0, 0,
                                                  NSMinX(showAllButtonFrame) -
-                                                     kMDShelfPadding,
+                                                     kMDContentSpacing,
                                                  NSHeight(view.bounds))]]);
     itemContainerView_ = itemContainerView;
     itemContainerView_.autoresizingMask =

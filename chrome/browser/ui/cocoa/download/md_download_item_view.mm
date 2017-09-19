@@ -34,7 +34,7 @@
 namespace {
 
 // Size of a download item in a non-dangerous state.
-constexpr CGSize kNormalSize = {227, 48};
+constexpr CGSize kNormalSize = {239, 44};
 
 constexpr CGFloat kDangerousDownloadIconX = 10;
 constexpr CGFloat kDangerousDownloadIconSize = 24;
@@ -42,23 +42,26 @@ constexpr CGFloat kDangerousDownloadLabelX =
     kDangerousDownloadIconX + kDangerousDownloadIconSize + 6;
 constexpr CGFloat kDangerousDownloadLabelButtonSpacing = 6;
 constexpr CGFloat kDangerousDownloadLabelMinWidth = 140;
+constexpr CGFloat kDangerousDownloadLabelYInset = 8;
 
-constexpr CGRect kProgressIndicatorFrame{{10, 10}, {27, 27}};
-constexpr CGRect kImageFrame{{16, 16}, {16, 16}};
+constexpr CGRect kProgressIndicatorFrame{{12, 10}, {24, 24}};
+constexpr CGFloat kImageXInset = 16;
+constexpr CGSize kImageSize{16, 16};
 constexpr CGFloat kDividerWidth = 1;
-constexpr CGFloat kDividerYInset = 6;
-constexpr CGFloat kDangerViewYInset = 10;
+constexpr CGFloat kDividerYInset = 8;
+constexpr CGFloat kButtonLeadingInset = 8;
+constexpr CGFloat kButtonTrailingInset = 5;
+constexpr CGFloat kButtonYInset = 6;
 
-constexpr CGFloat kTextX = 45;
-constexpr CGFloat kFilenameY = 16;
-constexpr CGFloat kFilenameWithStatusY = 23;
-constexpr CGFloat kStatusTextY = 9;
+constexpr CGFloat kTextX = 46;
+constexpr CGFloat kFilenameY = 15;
+constexpr CGFloat kFilenameWithStatusY = 22;
+constexpr CGFloat kStatusTextY = 8;
 constexpr CGFloat kMenuButtonSpacing = 8;
 
-constexpr CGFloat kMenuButtonTrailingMargin = 6;
-constexpr CGFloat kMenuButtonSize = 32;
-constexpr const gfx::VectorIcon* kMenuButtonInactiveIcon = &kCaretDownIcon;
-constexpr const gfx::VectorIcon* kMenuButtonActiveIcon = &kCaretUpIcon;
+constexpr CGFloat kMenuButtonTrailingMargin = 9;
+constexpr CGFloat kMenuButtonSize = 24;
+constexpr const gfx::VectorIcon* kMenuButtonIcon = &kHorizontalMenuIcon;
 
 NSTextField* MakeLabel(
     NSFont* font,
@@ -87,7 +90,7 @@ NSTextField* MakeLabel(
 
 - (instancetype)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
-    self.icon = kMenuButtonInactiveIcon;
+    self.icon = kMenuButtonIcon;
     self.imagePosition = NSImageOnly;
   }
   return self;
@@ -104,11 +107,13 @@ NSTextField* MakeLabel(
       [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:YES]);
   popUpCell_ = popUpCell;  // Cleared below, within this function.
   popUpCell_.menu = [self.superview menu];
-  self.icon = kMenuButtonActiveIcon;
   self.hoverState = kHoverStateMouseDown;
-  [popUpCell_ trackMouse:event inRect:self.bounds ofView:self untilMouseUp:YES];
+  // The inset positions the menu flush with the edges of the buttion.
+  [popUpCell_ trackMouse:event
+                  inRect:NSInsetRect(self.bounds, -4, 0)
+                  ofView:self
+            untilMouseUp:YES];
   popUpCell_ = nil;
-  self.icon = kMenuButtonInactiveIcon;
   [self checkImageState];
 }
 
@@ -162,7 +167,7 @@ NSTextField* MakeLabel(
     [self addSubview:iconView_];
 
     label_ = MakeLabel([NSFont systemFontOfSize:10], NSLineBreakByWordWrapping);
-    label_.frame = self.bounds;
+    label_.frame = NSInsetRect(self.bounds, 0, kDangerousDownloadLabelYInset);
     label_.autoresizingMask =
         [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
     [self addSubview:label_];
@@ -183,14 +188,6 @@ NSTextField* MakeLabel(
   return self;
 }
 
-- (void)viewWillDraw {
-  if (const ui::ThemeProvider* themeProvider = [self.window themeProvider]) {
-    label_.textColor =
-        themeProvider->GetNSColor(ThemeProperties::COLOR_TAB_TEXT);
-  }
-  [super viewWillDraw];
-}
-
 - (CGFloat)preferredWidth {
   CGFloat preferredWidth = kDangerousDownloadLabelX + NSWidth(label_.frame) +
                            kDangerousDownloadLabelButtonSpacing +
@@ -209,6 +206,16 @@ NSTextField* MakeLabel(
   labelRect.origin.x = kDangerousDownloadLabelX;
   labelRect.origin.y = NSMidY(self.bounds) - NSMidY(label_.bounds);
   label_.frame = [self cr_localizedRect:labelRect];
+}
+
+// NSView overrides
+
+- (void)layout {
+  if (const ui::ThemeProvider* themeProvider = [self.window themeProvider]) {
+    label_.textColor =
+        themeProvider->GetNSColor(ThemeProperties::COLOR_TAB_TEXT);
+  }
+  [super layout];
 }
 
 @end
@@ -238,11 +245,14 @@ NSTextField* MakeLabel(
 - (instancetype)init {
   if ((self = [super initWithFrame:NSMakeRect(0, 0, kNormalSize.width,
                                               kNormalSize.height)])) {
+    const NSRect bounds = self.bounds;
+    const NSRect buttonRect =
+        NSMakeRect(kButtonLeadingInset, kButtonYInset,
+                   NSWidth(bounds) - kButtonLeadingInset - kButtonTrailingInset,
+                   NSHeight(bounds) - kButtonYInset * 2);
     base::scoped_nsobject<MDHoverButton> button(
-        [[MDHoverButton alloc] initWithFrame:self.bounds]);
+        [[MDHoverButton alloc] initWithFrame:buttonRect]);
     button_ = button;
-    button_.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-    button_.layer.cornerRadius = 0;
     button_.imagePosition = NSImageOnly;
     [self addSubview:button_];
 
@@ -255,7 +265,12 @@ NSTextField* MakeLabel(
     [self addSubview:progressIndicator_];
 
     base::scoped_nsobject<NSImageView> imageView([[NSImageView alloc]
-        initWithFrame:[self cr_localizedRect:kImageFrame]]);
+        initWithFrame:[self
+                          cr_localizedRect:NSMakeRect(kImageXInset,
+                                                      NSMidY(bounds) -
+                                                          kImageSize.height / 2,
+                                                      kImageSize.width,
+                                                      kImageSize.height)]]);
     imageView_ = imageView;
     imageView_.autoresizingMask =
         [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
@@ -263,9 +278,8 @@ NSTextField* MakeLabel(
     [self addSubview:imageView_];
 
     NSRect menuButtonRect = NSMakeRect(
-        NSMaxX(self.bounds) - kMenuButtonSize - kMenuButtonTrailingMargin,
-        NSMaxY(self.bounds) / 2 - kMenuButtonSize / 2, kMenuButtonSize,
-        kMenuButtonSize);
+        NSMaxX(bounds) - kMenuButtonSize - kMenuButtonTrailingMargin,
+        NSMidY(bounds) - kMenuButtonSize / 2, kMenuButtonSize, kMenuButtonSize);
     base::scoped_nsobject<MDDownloadItemMenuButton> menuButton(
         [[MDDownloadItemMenuButton alloc]
             initWithFrame:[button_ cr_localizedRect:menuButtonRect]]);
@@ -290,7 +304,7 @@ NSTextField* MakeLabel(
     dividerView_.wantsLayer = YES;
     [self addSubview:dividerView_];
 
-    filenameView_ = MakeLabel([NSFont systemFontOfSize:13]);
+    filenameView_ = MakeLabel([NSFont systemFontOfSize:12]);
     NSRect filenameRect =
         NSMakeRect(kTextX, kFilenameY,
                    (NSMinX(menuButtonRect) - kMenuButtonSpacing) - kTextX,
@@ -300,7 +314,7 @@ NSTextField* MakeLabel(
         [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
     [self addSubview:filenameView_];
 
-    statusTextView_ = MakeLabel([NSFont systemFontOfSize:10]);
+    statusTextView_ = MakeLabel([NSFont systemFontOfSize:12]);
     NSRect statusTextRect =
         NSMakeRect(kTextX, kStatusTextY, NSWidth(filenameRect),
                    NSHeight(statusTextView_.bounds));
@@ -322,7 +336,7 @@ NSTextField* MakeLabel(
   }
 }
 
-- (void)viewWillDraw {
+- (void)layout {
   const ui::ThemeProvider* themeProvider = [self.window themeProvider];
   if (!themeProvider)
     return;
@@ -330,14 +344,16 @@ NSTextField* MakeLabel(
   NSColor* textColor =
       themeProvider->GetNSColor(ThemeProperties::COLOR_TAB_TEXT);
   filenameView_.textColor = textColor;
-  statusTextView_.textColor = [textColor colorWithAlphaComponent:0.6];
+  statusTextView_.textColor = themeProvider->ShouldIncreaseContrast()
+                                  ? textColor
+                                  : [textColor colorWithAlphaComponent:0.6];
   dividerView_.layer.backgroundColor =
       themeProvider->ShouldIncreaseContrast()
           ? CGColorGetConstantColor(darkTheme ? kCGColorWhite : kCGColorBlack)
           : themeProvider
                 ->GetNSColor(ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR)
                 .CGColor;
-  [super viewWillDraw];
+  [super layout];
 }
 
 - (id)target {
@@ -375,12 +391,11 @@ NSTextField* MakeLabel(
       for (NSView* view in [self normalViews]) {
         view.hidden = YES;
       }
-      NSRect dangerViewRect = NSInsetRect(
+      NSRect dangerViewRect =
           NSMakeRect(0, 0,
                      NSWidth(self.bounds) - NSWidth(menuButton_.frame) -
                          kMenuButtonSpacing - kMenuButtonTrailingMargin,
-                     NSHeight(self.bounds)),
-          0, kDangerViewYInset);
+                     NSHeight(self.bounds));
       base::scoped_nsobject<MDDownloadItemDangerView> dangerView(
           [[MDDownloadItemDangerView alloc]
               initWithFrame:[self cr_localizedRect:dangerViewRect]]);

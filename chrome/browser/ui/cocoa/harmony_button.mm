@@ -35,12 +35,14 @@ NSColor* GetBackgroundColor(HoverState state, BOOL dark_theme) {
 }
 
 NSColor* GetBorderColor(BOOL dark_theme) {
-  return [NSColor colorWithCalibratedWhite:dark_theme ? 1 : 0 alpha:0.2];
+  return [NSColor colorWithCalibratedWhite:dark_theme ? 1 : 0 alpha:0.3];
 }
 
 NSColor* GetShadowColor() {
   return NSColor.blackColor;
 }
+
+constexpr CGFloat kTextAlpha = 0x8A / (CGFloat)0xFF;
 
 constexpr CGSize kNormalShadowOffset{0, 0};
 constexpr CGSize kMouseOverShadowOffset{0, 1};
@@ -169,8 +171,20 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
   NSColor* textColor;
   if (const ui::ThemeProvider* themeProvider = [self.window themeProvider]) {
     textColor = themeProvider->GetNSColor(ThemeProperties::COLOR_TAB_TEXT);
+    if (!themeProvider->ShouldIncreaseContrast())
+      textColor = [textColor colorWithAlphaComponent:kTextAlpha];
   } else {
     textColor = [NSColor controlTextColor];
+  }
+
+  NSFont* font;
+  if (@available(macOS 10.11, *)) {
+    font = [NSFont systemFontOfSize:[NSFont systemFontSize]
+                             weight:NSFontWeightMedium];
+  } else {
+    font = [[NSFontManager sharedFontManager]
+        convertWeight:YES
+               ofFont:[NSFont systemFontOfSize:12]];
   }
 
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
@@ -180,6 +194,7 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
       [[NSAttributedString alloc]
           initWithString:title
               attributes:@{
+                NSFontAttributeName : font,
                 NSForegroundColorAttributeName : textColor,
                 NSParagraphStyleAttributeName : paragraphStyle,
               }]);
@@ -201,13 +216,13 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
 
 // NSView overrides.
 
-- (void)viewWillDraw {
+- (void)layout {
   CALayer* layer = self.layer;
   layer.shadowPath = CGPathCreateWithRoundedRect(
       layer.bounds, layer.cornerRadius, layer.cornerRadius, nullptr);
   [self updateHoverButtonAppearanceAnimated:NO];
   self.title = self.title;  // Match the theme.
-  [super viewWillDraw];
+  [super layout];
 }
 
 - (void)drawFocusRingMask {

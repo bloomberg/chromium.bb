@@ -16,6 +16,7 @@
 
 namespace {
 constexpr int kDefaultIconSize = 16;
+constexpr SkAlpha kIconAlpha = 0x8A;
 constexpr CGFloat kHoverAnimationDuration = 0.25;
 
 NSColor* GetHoveringColor(BOOL dark_theme) {
@@ -48,12 +49,12 @@ NSColor* GetActiveColor(BOOL dark_theme) {
 
 - (void)setIcon:(const gfx::VectorIcon*)icon {
   icon_ = icon;
-  self.needsDisplay = YES;
+  self.needsLayout = YES;
 }
 
 - (void)setIconSize:(int)iconSize {
   iconSize_ = iconSize;
-  self.needsDisplay = YES;
+  self.needsLayout = YES;
 }
 
 - (void)setHoverSuppressed:(BOOL)hoverSuppressed {
@@ -63,27 +64,27 @@ NSColor* GetActiveColor(BOOL dark_theme) {
 
 - (SkColor)iconColor {
   const ui::ThemeProvider* provider = [[self window] themeProvider];
-  return [[self window] hasDarkTheme]
-             ? SK_ColorWHITE
-             : provider ? provider->ShouldIncreaseContrast()
-                              ? SK_ColorBLACK
-                              : gfx::kChromeIconGrey
-                        : gfx::kPlaceholderColor;
+  if (!provider)
+    return gfx::kPlaceholderColor;
+  return SkColorSetA(
+      [[self window] hasDarkTheme] ? SK_ColorWHITE : SK_ColorBLACK,
+      provider->ShouldIncreaseContrast() ? 0xFF : kIconAlpha);
 }
 
 - (void)updateHoverButtonAppearanceAnimated:(BOOL)animated {
   const BOOL darkTheme = [[self window] hasDarkTheme];
-  CGColorRef targetBackgroundColor = nil;
-  if (!hoverSuppressed_) {
+  const CGColorRef targetBackgroundColor = [&]() -> CGColorRef {
+    if (hoverSuppressed_)
+      return nil;
     switch (self.hoverState) {
       case kHoverStateMouseDown:
-        targetBackgroundColor = GetActiveColor(darkTheme).CGColor;
+        return GetActiveColor(darkTheme).CGColor;
       case kHoverStateMouseOver:
-        targetBackgroundColor = GetHoveringColor(darkTheme).CGColor;
+        return GetHoveringColor(darkTheme).CGColor;
       case kHoverStateNone:
-        break;
+        return nil;
     }
-  }
+  }();
   if (CGColorEqualToColor(targetBackgroundColor, self.layer.backgroundColor)) {
     return;
   }
@@ -115,16 +116,14 @@ NSColor* GetActiveColor(BOOL dark_theme) {
 
 // NSView overrides.
 
-- (void)viewWillDraw {
+- (void)layout {
   if (!icon_ || icon_->is_empty() || iconSize_ == 0) {
     self.image = nil;
     return;
   }
-  const SkColor iconColor =
-      color_utils::DeriveDefaultIconColor([self iconColor]);
-  self.image =
-      NSImageFromImageSkia(gfx::CreateVectorIcon(*icon_, iconSize_, iconColor));
-  [super viewWillDraw];
+  self.image = NSImageFromImageSkia(
+      gfx::CreateVectorIcon(*icon_, iconSize_, [self iconColor]));
+  [super layout];
 }
 
 - (void)drawFocusRingMask {
