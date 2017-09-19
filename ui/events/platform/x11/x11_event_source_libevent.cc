@@ -26,7 +26,7 @@ std::unique_ptr<TouchEvent> CreateTouchEvent(EventType event_type,
   std::unique_ptr<TouchEvent> event = base::MakeUnique<TouchEvent>(
       event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
       ui::PointerDetails(
-          ui::EventPointerType::POINTER_TYPE_TOUCH, GetTouchIdFromXEvent(xev),
+          GetTouchPointerTypeFromXEvent(xev), GetTouchIdFromXEvent(xev),
           GetTouchRadiusXFromXEvent(xev), GetTouchRadiusYFromXEvent(xev),
           GetTouchForceFromXEvent(xev)));
 

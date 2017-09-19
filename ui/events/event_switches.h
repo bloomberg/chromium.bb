@@ -16,6 +16,7 @@ EVENTS_BASE_EXPORT extern const char kCompensateForUnstablePinchZoom[];
 
 #if defined(OS_LINUX)
 EVENTS_BASE_EXPORT extern const char kTouchDevices[];
+EVENTS_BASE_EXPORT extern const char kPenDevices[];
 #endif
 
 #if defined(USE_X11) || defined(USE_OZONE)

@@ -64,6 +64,10 @@ EVENTS_X_EXPORT float GetTouchAngleFromXEvent(const XEvent& xev);
 // Gets the force from a native_event. Normalized to be [0, 1]. Default is 0.0.
 EVENTS_X_EXPORT float GetTouchForceFromXEvent(const XEvent& xev);
 
+// Gets the pointer type from a native_event.
+EVENTS_X_EXPORT EventPointerType
+GetTouchPointerTypeFromXEvent(const XEvent& xev);
+
 // Returns whether this is a scroll event and optionally gets the amount to be
 // scrolled. |x_offset|, |y_offset| and |finger_count| can be NULL.
 EVENTS_X_EXPORT bool GetScrollOffsetsFromXEvent(const XEvent& xev,

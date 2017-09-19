@@ -22,6 +22,11 @@ const char kCompensateForUnstablePinchZoom[] =
 // available with XInput 2 (i.e. X server 1.8 or above). The id's of the
 // devices can be retrieved from 'xinput list'.
 const char kTouchDevices[] = "touch-devices";
+
+// Tells chrome to interpret events from these devices as pen events. Only
+// available with XInput 2 (i.e. X server 1.8 or above). The id's of the
+// devices can be retrieved from 'xinput list'.
+const char kPenDevices[] = "pen-devices";
 #endif
 
 #if defined(USE_X11) || defined(USE_OZONE)
