@@ -52,7 +52,24 @@ CGFloat CurrentScreenWidth() {
   return [UIScreen mainScreen].bounds.size.width;
 }
 
+bool IsIPhoneX() {
+  UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
+  return (idiom == UIUserInterfaceIdiomPhone &&
+          CGRectGetHeight([[UIScreen mainScreen] nativeBounds]) == 2436);
+}
+
 CGFloat StatusBarHeight() {
+  // This is a temporary solution until usage of StatusBarHeight has been
+  // replaced with topLayoutGuide.
+
+  // iPhone X doesn't have the same statusBarFrame issues as previous phones
+  // (see below), so it's possible to use this here, rather than a static
+  // value like below.
+  if (IsIPhoneX()) {
+    CGRect statusBarFrame = [UIApplication sharedApplication].statusBarFrame;
+    return CGRectGetHeight(statusBarFrame);
+  }
+
   // Checking [UIApplication sharedApplication].statusBarFrame will return the
   // wrong offset when the application is started while in a phone call, so
   // simply return 20 here.

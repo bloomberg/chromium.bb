@@ -556,6 +556,9 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 
   // Coordinator for displaying Repost Form dialog.
   RepostFormCoordinator* _repostFormCoordinator;
+
+  // Fake status bar view used to blend the toolbar into the status bar.
+  UIView* _fakeStatusBarView;
 }
 
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -1288,6 +1291,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_contentArea addGestureRecognizer:tapRecognizer];
 }
 
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
+  // Gate this behind iPhone X, since it's currently the only device that
+  // needs layout updates here after startup.
+  if (IsIPhoneX())
+    [self setUpViewLayout];
+}
+
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   self.viewVisible = YES;
@@ -1796,26 +1807,20 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (void)installFakeStatusBar {
+  CGFloat statusBarHeight = StatusBarHeight();
+  CGRect statusBarFrame =
+      CGRectMake(0, 0, [[self view] frame].size.width, statusBarHeight);
+  _fakeStatusBarView = [[UIView alloc] initWithFrame:statusBarFrame];
+  [_fakeStatusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
   if (IsIPadIdiom()) {
-    CGFloat statusBarHeight = StatusBarHeight();
-    CGRect statusBarFrame =
-        CGRectMake(0, 0, [[self view] frame].size.width, statusBarHeight);
-    UIView* statusBarView = [[UIView alloc] initWithFrame:statusBarFrame];
-    [statusBarView setBackgroundColor:StatusBarBackgroundColor()];
-    [statusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-    [statusBarView layer].zPosition = 99;
-    [[self view] addSubview:statusBarView];
-  }
-
-  // Add a white bar on phone so that the status bar on the NTP is white.
-  if (!IsIPadIdiom()) {
-    CGFloat statusBarHeight = StatusBarHeight();
-    CGRect statusBarFrame =
-        CGRectMake(0, 0, [[self view] frame].size.width, statusBarHeight);
-    UIView* statusBarView = [[UIView alloc] initWithFrame:statusBarFrame];
-    [statusBarView setBackgroundColor:[UIColor whiteColor]];
-    [statusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-    [self.view insertSubview:statusBarView atIndex:0];
+    [_fakeStatusBarView setBackgroundColor:StatusBarBackgroundColor()];
+    [_fakeStatusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+    [_fakeStatusBarView layer].zPosition = 99;
+    [[self view] addSubview:_fakeStatusBarView];
+  } else {
+    // Add a white bar on phone so that the status bar on the NTP is white.
+    [_fakeStatusBarView setBackgroundColor:[UIColor whiteColor]];
+    [self.view insertSubview:_fakeStatusBarView atIndex:0];
   }
 }
 
@@ -1938,6 +1943,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   CGFloat widthOfView = CGRectGetWidth([self view].bounds);
   CGFloat minY = [self headerOffset];
 
+  // Update the fake toolbar background height.
+  CGRect fakeStatusBarFrame = _fakeStatusBarView.frame;
+  fakeStatusBarFrame.size.height = StatusBarHeight();
+  _fakeStatusBarView.frame = fakeStatusBarFrame;
+
   if (self.tabStripView) {
     minY += CGRectGetHeight([self.tabStripView frame]);
   }
@@ -1966,9 +1976,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // the toolbar is not fullscreen.
   CGRect contentFrame = [_contentArea frame];
   CGFloat marginWithHeader = StatusBarHeight();
-  CGFloat overlap = [self headerHeight] != 0 ? marginWithHeader : minY;
-  contentFrame.size.height = CGRectGetMaxY(contentFrame) - overlap;
-  contentFrame.origin.y = overlap;
+  contentFrame.size.height = CGRectGetMaxY(contentFrame) - marginWithHeader;
+  contentFrame.origin.y = marginWithHeader;
   [_contentArea setFrame:contentFrame];
 
   // Adjust the infobar container to be either at the bottom of the screen
