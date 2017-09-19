@@ -106,6 +106,33 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
   impl->setULongLongAttribute(cppValue);
 }
 
+static void longWithClampAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestTypedefs* impl = V8TestTypedefs::ToImpl(holder);
+
+  V8SetReturnValueInt(info, impl->longWithClampAttribute());
+}
+
+static void longWithClampAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestTypedefs* impl = V8TestTypedefs::ToImpl(holder);
+
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestTypedefs", "longWithClampAttribute");
+
+  // Prepare the value to be set.
+  int32_t cppValue = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8Value, exceptionState, kClamp);
+  if (exceptionState.HadException())
+    return;
+
+  impl->setLongWithClampAttribute(cppValue);
+}
+
 static void domStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -385,6 +412,20 @@ void V8TestTypedefs::uLongLongAttributeAttributeSetterCallback(const v8::Functio
   TestTypedefsV8Internal::uLongLongAttributeAttributeSetter(v8Value, info);
 }
 
+void V8TestTypedefs::longWithClampAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_longWithClampAttribute_Getter");
+
+  TestTypedefsV8Internal::longWithClampAttributeAttributeGetter(info);
+}
+
+void V8TestTypedefs::longWithClampAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_longWithClampAttribute_Setter");
+
+  v8::Local<v8::Value> v8Value = info[0];
+
+  TestTypedefsV8Internal::longWithClampAttributeAttributeSetter(v8Value, info);
+}
+
 void V8TestTypedefs::tAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_tAttribute_ConstructorGetterCallback");
 
@@ -498,6 +539,8 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsLazyDataAt
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestTypedefsAccessors[] = {
     { "uLongLongAttribute", V8TestTypedefs::uLongLongAttributeAttributeGetterCallback, V8TestTypedefs::uLongLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+
+    { "longWithClampAttribute", V8TestTypedefs::longWithClampAttributeAttributeGetterCallback, V8TestTypedefs::longWithClampAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
     { "domStringOrDoubleOrNullAttribute", V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeGetterCallback, V8TestTypedefs::domStringOrDoubleOrNullAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 };

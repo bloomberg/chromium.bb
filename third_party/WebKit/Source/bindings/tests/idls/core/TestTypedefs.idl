@@ -35,6 +35,7 @@
 typedef boolean                    BooleanType;
 typedef float                      Float;
 typedef unsigned long long         ULongLong;
+typedef [Clamp] long               LongWithClamp;
 typedef TestInterfaceEmpty         TestInterfaceEmptyType;
 typedef sequence<long>             LongSequence;
 typedef DOMString                  String;
@@ -53,6 +54,7 @@ typedef (ULongLong or (BooleanType or TestCallbackInterfaceType)) UnionWithTyped
     Constructor(String stringArg)
 ] interface TestTypedefs {
     attribute ULongLong uLongLongAttribute;
+    attribute LongWithClamp longWithClampAttribute;
     attribute T tAttribute;
     attribute DOMStringOrDouble? domStringOrDoubleOrNullAttribute;
 

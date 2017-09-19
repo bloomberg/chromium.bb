@@ -448,8 +448,8 @@ class IDLParser(object):
     p[0] = self.BuildNamed('Callback', p, 1, ListFromConcat(p[3], arguments))
 
   def p_Typedef(self, p):
-    """Typedef : TYPEDEF ExtendedAttributeList Type identifier ';'"""
-    p[0] = self.BuildNamed('Typedef', p, 4, ListFromConcat(p[2], p[3]))
+    """Typedef : TYPEDEF TypeWithExtendedAttributes identifier ';'"""
+    p[0] = self.BuildNamed('Typedef', p, 3, p[2])
 
   # Error recovery for Typedefs
   def p_TypedefError(self, p):
@@ -867,8 +867,8 @@ class IDLParser(object):
     """NonAnyType : PrimitiveType Null
                   | PromiseType Null
                   | identifier Null
-                  | SEQUENCE '<' Type '>' Null
-                  | FROZENARRAY '<' Type '>' Null
+                  | SEQUENCE '<' TypeWithExtendedAttributes '>' Null
+                  | FROZENARRAY '<' TypeWithExtendedAttributes '>' Null
                   | RecordType Null"""
     if len(p) == 3:
       if type(p[1]) == str:
