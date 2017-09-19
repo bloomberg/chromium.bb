@@ -13,7 +13,7 @@ import posixpath
 import sys
 
 from utilities import get_file_contents
-from utilities import idl_filename_to_basename
+from utilities import get_first_interface_name_from_idl
 from utilities import read_idl_files_list_from_file
 from utilities import should_generate_impl_file_from_idl
 from utilities import write_file
@@ -75,8 +75,8 @@ def extract_meta_data(file_paths):
         if not should_generate_impl_file_from_idl(idl_file_contents):
             continue
 
-        # Extract interface name from file name
-        basename = idl_filename_to_basename(file_path)
+        # Extract interface name from file content
+        basename = get_first_interface_name_from_idl(idl_file_contents)
 
         meta_data = {
             'basename': basename,
