@@ -1031,6 +1031,11 @@ const char kPasswordImportExportName[] = "Password import and export";
 const char kPasswordImportExportDescription[] =
     "Import and Export functionality in password settings.";
 
+const char kPasswordSelectionName[] =
+    "Password selection and eye icon in prompt";
+const char kPasswordSelectionDescription[] =
+    "Show a password selector and an eye icon in prompt";
+
 const char kPermissionActionReportingName[] = "Permission Action Reporting";
 const char kPermissionActionReportingDescription[] =
     "Enables permission action reporting to Safe Browsing servers for opted in "
