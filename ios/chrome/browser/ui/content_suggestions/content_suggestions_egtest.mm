@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -659,7 +658,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
         selectElementWithMatcher:grey_accessibilityID(
                                      [ContentSuggestionsViewController
                                          collectionAccessibilityIdentifier])]
-        assertWithMatcher:grey_sufficientlyVisible()
+        assertWithMatcher:grey_notNil()
                     error:&error];
     return error == nil;
   };
@@ -678,11 +677,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests the "Open in New Incognito Tab" action of the Most Visited context
 // menu.
 - (void)testMostVisitedNewIncognitoTab {
-  // TODO(crbug.com/766495): Reenable this test.
-  if (base::ios::IsRunningOnIOS11OrLater() && !IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11 phones.");
-  }
-
   [self setupMostVisitedTileLongPress];
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
