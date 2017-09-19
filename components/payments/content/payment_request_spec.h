@@ -138,13 +138,16 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   const std::vector<mojom::PaymentShippingOptionPtr>& GetShippingOptions()
       const;
 
+  const mojom::PaymentDetails& details() const { return *details_.get(); }
+  const std::vector<mojom::PaymentMethodDataPtr>& method_data() const {
+    return method_data_;
+  }
+
  private:
   // Returns the first applicable modifier in the Payment Request for the
   // |selected_instrument|.
   const mojom::PaymentDetailsModifierPtr* GetApplicableModifier(
       PaymentInstrument* selected_instrument) const;
-
-  const mojom::PaymentDetails& details() const { return *details_.get(); }
 
   // Updates the |selected_shipping_option| based on the data passed to this
   // payment request by the website. This will set selected_shipping_option_ to
@@ -168,6 +171,7 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
 
   mojom::PaymentOptionsPtr options_;
   mojom::PaymentDetailsPtr details_;
+  std::vector<mojom::PaymentMethodDataPtr> method_data_;
   const std::string app_locale_;
   // The currently shipping option as specified by the merchant.
   mojom::PaymentShippingOption* selected_shipping_option_;

@@ -75,6 +75,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   using CanMakePaymentCallback = base::OnceCallback<void(bool)>;
 
   PaymentRequestState(content::BrowserContext* context,
+                      const GURL& top_level_origin,
+                      const GURL& frame_origin,
                       PaymentRequestSpec* spec,
                       Delegate* delegate,
                       const std::string& app_locale,
@@ -229,11 +231,17 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   bool ArePaymentOptionsSatisfied();
 
   // The PaymentAppProvider::GetAllPaymentAppsCallback.
-  void GetAllPaymentAppsCallback(content::PaymentAppProvider::PaymentApps apps);
+  void GetAllPaymentAppsCallback(content::BrowserContext* context,
+                                 const GURL& top_level_origin,
+                                 const GURL& frame_origin,
+                                 content::PaymentAppProvider::PaymentApps apps);
 
   // Creates ServiceWorkerPaymentInstrument according to requested payment
   // methods of the payment request.
   void CreateServiceWorkerPaymentApps(
+      content::BrowserContext* context,
+      const GURL& top_level_origin,
+      const GURL& frame_origin,
       content::PaymentAppProvider::PaymentApps& apps,
       std::vector<GURL>& requested_method_urls);
 
