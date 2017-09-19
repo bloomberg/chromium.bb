@@ -1862,7 +1862,7 @@ config("minimal_symbols") {
     }
     cflags += [ "-g1" ]
     ldflags = []
-    if (is_android) {
+    if (is_android && is_clang) {
       # Android defaults to symbol_level=1 builds in production builds
       # (https://crbug.com/648948), but clang, unlike gcc, doesn't emit
       # DW_AT_linkage_name in -g1 builds. -fdebug-info-for-profiling enables
