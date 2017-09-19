@@ -1700,7 +1700,7 @@ CrSettingsGoogleAssistantPageTest.prototype = {
 
   /** @override */
   browsePreload:
-      'chrome://md-settings/google_assistant_page/google_assistant_page.html',
+      'chrome://settings/google_assistant_page/google_assistant_page.html',
 
   /** @override */
   commandLineSwitches: [{
