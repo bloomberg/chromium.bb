@@ -662,7 +662,7 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
         xd->mi[x_idx + y * mis] = mi_addr;
       }
 
-#if CONFIG_DELTA_Q && !CONFIG_EXT_DELTA_Q
+#if !CONFIG_EXT_DELTA_Q
   if (cpi->oxcf.aq_mode > NO_AQ && cpi->oxcf.aq_mode < DELTA_AQ)
     av1_init_plane_quantizers(cpi, x, xd->mi[0]->mbmi.segment_id);
 #else
@@ -1608,7 +1608,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
   const BLOCK_SIZE bsize = mbmi->sb_type;
   FRAME_CONTEXT *fc = xd->tile_ctx;
 
-#if CONFIG_DELTA_Q
   // delta quant applies to both intra and inter
   int super_block_upper_left =
       ((mi_row & MAX_MIB_MASK) == 0) && ((mi_col & MAX_MIB_MASK) == 0);
@@ -1637,10 +1636,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
     }
 #endif
   }
-#else
-  (void)mi_row;
-  (void)mi_col;
-#endif
   if (!frame_is_intra_only(cm)) {
     FRAME_COUNTS *const counts = td->counts;
     RD_COUNTS *rdc = &td->rd_counts;
@@ -4525,14 +4520,12 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   // Initialize the left context for the new SB row
   av1_zero_left_context(xd);
 
-#if CONFIG_DELTA_Q
   // Reset delta for every tile
   if (cm->delta_q_present_flag)
     if (mi_row == tile_info->mi_row_start) xd->prev_qindex = cm->base_qindex;
 #if CONFIG_EXT_DELTA_Q
   if (cm->delta_lf_present_flag)
     if (mi_row == tile_info->mi_row_start) xd->prev_delta_lf_from_base = 0;
-#endif
 #endif
 
   // Code each SB in the row
@@ -4589,7 +4582,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 #if CONFIG_AMVR
     xd->cur_frame_mv_precision_level = cm->cur_frame_mv_precision_level;
 #endif
-#if CONFIG_DELTA_Q
+
     if (cm->delta_q_present_flag) {
       // Test mode for delta quantization
       int sb_row = mi_row >> 3;
@@ -4634,7 +4627,6 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       }
 #endif  // CONFIG_EXT_DELTA_Q
     }
-#endif  // CONFIG_DELTA_Q
 
     x->source_variance = UINT_MAX;
     if (sf->partition_search_type == FIXED_PARTITION || seg_skip) {
@@ -5368,7 +5360,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
   cm->tx_mode = select_tx_mode(cpi);
 
-#if CONFIG_DELTA_Q
   // Fix delta q resolution for the moment
   cm->delta_q_res = DEFAULT_DELTA_Q_RES;
 // Set delta_q_present_flag before it is used for the first time
@@ -5381,7 +5372,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cm->delta_q_present_flag =
       cpi->oxcf.aq_mode == DELTA_AQ && cm->base_qindex > 0;
 #endif  // CONFIG_EXT_DELTA_Q
-#endif
 
   av1_frame_init_quantizer(cpi);
 

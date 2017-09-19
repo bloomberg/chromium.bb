@@ -626,7 +626,6 @@ typedef enum {
 #define SKIP_NEARESTMV_SUB8X8_OFFSET 11
 
 #define INTER_MODE_CONTEXTS 7
-#if CONFIG_DELTA_Q
 #define DELTA_Q_SMALL 3
 #define DELTA_Q_PROBS (DELTA_Q_SMALL)
 #define DEFAULT_DELTA_Q_RES 4
@@ -634,7 +633,6 @@ typedef enum {
 #define DELTA_LF_SMALL 3
 #define DELTA_LF_PROBS (DELTA_LF_SMALL)
 #define DEFAULT_DELTA_LF_RES 2
-#endif
 #endif
 
 /* Segment Feature Masks */

@@ -1615,7 +1615,6 @@ static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
 #endif  // CONFIG_NEW_MULTISYMBOL
 #endif
 
-#if CONFIG_DELTA_Q
 static const aom_prob default_delta_q_probs[DELTA_Q_PROBS] = { 220, 220, 220 };
 static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {
   AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0
@@ -1626,7 +1625,6 @@ static const aom_prob default_delta_lf_probs[DELTA_LF_PROBS] = { 220, 220,
 static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
   AOM_ICDF(28160), AOM_ICDF(32120), AOM_ICDF(32677), AOM_ICDF(32768), 0
 };
-#endif
 #endif
 
 #if CONFIG_SMOOTH_HV
@@ -5052,14 +5050,12 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   av1_copy(fc->seg.tree_cdf, default_seg_tree_cdf);
   av1_copy(fc->tx_size_cdf, default_tx_size_cdf);
-#if CONFIG_DELTA_Q
   av1_copy(fc->delta_q_prob, default_delta_q_probs);
   av1_copy(fc->delta_q_cdf, default_delta_q_cdf);
 #if CONFIG_EXT_DELTA_Q
   av1_copy(fc->delta_lf_prob, default_delta_lf_probs);
   av1_copy(fc->delta_lf_cdf, default_delta_lf_cdf);
 #endif
-#endif  // CONFIG_DELTA_Q
 #if CONFIG_CFL
   av1_copy(fc->cfl_sign_cdf, default_cfl_sign_cdf);
   av1_copy(fc->cfl_alpha_cdf, default_cfl_alpha_cdf);
@@ -5303,7 +5299,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
         av1_mode_mv_merge_probs(pre_fc->partition_prob[i][PARTITION_HORZ], ct);
   }
 #endif
-#if CONFIG_DELTA_Q
   for (i = 0; i < DELTA_Q_PROBS; ++i)
     fc->delta_q_prob[i] =
         mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);
@@ -5312,7 +5307,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
     fc->delta_lf_prob[i] =
         mode_mv_merge_probs(pre_fc->delta_lf_prob[i], counts->delta_lf[i]);
 #endif  // CONFIG_EXT_DELTA_Q
-#endif
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP
   for (i = 0; i < INTRA_FILTERS + 1; ++i) {

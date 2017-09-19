@@ -1617,7 +1617,6 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   const QUANTS *const quants = &cpi->quants;
 
-#if CONFIG_DELTA_Q
 #if CONFIG_EXT_DELTA_Q
   int current_q_index =
       AOMMAX(0, AOMMIN(QINDEX_RANGE - 1,
@@ -1631,9 +1630,6 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
                                          : cm->base_qindex));
 #endif
   const int qindex = av1_get_qindex(&cm->seg, segment_id, current_q_index);
-#else
-  const int qindex = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
-#endif
   const int rdmult = av1_compute_rd_mult(cpi, qindex + cm->y_dc_delta_q);
   int i;
 #if CONFIG_AOM_QM

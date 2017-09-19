@@ -467,11 +467,9 @@ typedef struct MB_MODE_INFO {
 #endif  // CONFIG_NEW_QUANT
   /* deringing gain *per-superblock* */
   int8_t cdef_strength;
-#if CONFIG_DELTA_Q
   int current_q_index;
 #if CONFIG_EXT_DELTA_Q
   int current_delta_lf_from_base;
-#endif
 #endif
 #if CONFIG_RD_DEBUG
   RD_STATS rd_stats;
@@ -824,7 +822,6 @@ typedef struct macroblockd {
 #if CONFIG_GLOBAL_MOTION
   WarpedMotionParams *global_motion;
 #endif  // CONFIG_GLOBAL_MOTION
-#if CONFIG_DELTA_Q
   int prev_qindex;
   int delta_qindex;
   int current_qindex;
@@ -837,7 +834,6 @@ typedef struct macroblockd {
   // superblock's actual lf and current lf.
   int prev_delta_lf_from_base;
   int current_delta_lf_from_base;
-#endif
 #endif
 #if CONFIG_ADAPT_SCAN
   const EobThresholdMD *eob_threshold_md;

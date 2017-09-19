@@ -456,7 +456,7 @@ static const arg_def_t frame_parallel_decoding =
     ARG_DEF(NULL, "frame-parallel", 1,
             "Enable frame parallel decodability features "
             "(0: false (default), 1: true)");
-#if CONFIG_DELTA_Q && !CONFIG_EXT_DELTA_Q
+#if !CONFIG_EXT_DELTA_Q
 static const arg_def_t aq_mode = ARG_DEF(
     NULL, "aq-mode", 1,
     "Adaptive quantization mode (0: off (default), 1: variance 2: complexity, "

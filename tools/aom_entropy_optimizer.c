@@ -732,8 +732,7 @@ int main(int argc, const char **argv) {
       "static const aom_cdf_prob default_intrabc_cdf[CDF_SIZE(2)]");
 #endif
 
-/* delta_q experiment */
-#if CONFIG_DELTA_Q
+  /* delta_q */
   cts_each_dim[0] = DELTA_Q_PROBS;
   cts_each_dim[1] = 2;
   optimize_entropy_table(
@@ -745,7 +744,6 @@ int main(int argc, const char **argv) {
   optimize_entropy_table(
       &fc.delta_lf[0][0], probsfile, 2, cts_each_dim, NULL, 1,
       "static const aom_prob default_delta_lf_probs[DELTA_LF_PROBS]");
-#endif
 #endif
 
 /* Transform type */

@@ -303,7 +303,6 @@ EXPERIMENT_LIST="
     chroma_2x2
     chroma_sub8x8
     frame_size
-    delta_q
     ext_delta_q
     adapt_scan
     filter_7bit
@@ -508,7 +507,6 @@ post_process_cmdline() {
     soft_enable chroma_sub8x8
     soft_enable filter_7bit
     soft_enable reference_buffer
-    soft_enable delta_q
     soft_enable rect_tx
     soft_enable global_motion
     soft_enable ext_tx
@@ -554,7 +552,6 @@ post_process_cmdline() {
     enabled pvq && disable_feature palette_throughput
     enabled mrc_tx && enable_feature ext_tx
     enabled mrc_tx && enable_feature var_tx
-    enabled ext_delta_q && soft_enable delta_q
     enabled txk_sel && soft_enable lv_map
     enabled ctx1d && soft_enable lv_map
     enabled ctx1d && soft_enable ext_tx
@@ -573,10 +570,6 @@ post_process_cmdline() {
     enabled cdef_singlepass && enable_feature cdef
     enabled new_multisymbol && enable_feature restrict_compressed_hdr
 
-    if ! enabled delta_q && enabled ext_delta_q; then
-      log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"
-      disable_feature ext_delta_q
-    fi
     if enabled rawbits && enabled ans; then
       log_echo "rawbits requires not ans, so disabling rawbits"
       disable_feature rawbits

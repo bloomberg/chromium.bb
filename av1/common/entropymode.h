@@ -363,12 +363,10 @@ typedef struct frame_contexts {
   aom_cdf_prob kf_y_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)];
   aom_cdf_prob tx_size_cdf[MAX_TX_DEPTH][TX_SIZE_CONTEXTS]
                           [CDF_SIZE(MAX_TX_DEPTH + 1)];
-#if CONFIG_DELTA_Q
   aom_cdf_prob delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)];
 #if CONFIG_EXT_DELTA_Q
   aom_cdf_prob delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)];
 #endif
-#endif  // CONFIG_DELTA_Q
 #if CONFIG_EXT_TX
   aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                                [CDF_SIZE(TX_TYPES)];
@@ -381,11 +379,9 @@ typedef struct frame_contexts {
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   aom_cdf_prob intra_filter_cdf[INTRA_FILTERS + 1][CDF_SIZE(INTRA_FILTERS)];
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
-#if CONFIG_DELTA_Q
   aom_prob delta_q_prob[DELTA_Q_PROBS];
 #if CONFIG_EXT_DELTA_Q
   aom_prob delta_lf_prob[DELTA_LF_PROBS];
-#endif
 #endif
 #if CONFIG_PVQ
   // TODO(any): If PVQ is enabled, most of coefficient related cdf,
@@ -515,11 +511,9 @@ typedef struct FRAME_COUNTS {
   unsigned int intrabc[2];
   nmv_context_counts dv;
 #endif
-#if CONFIG_DELTA_Q
   unsigned int delta_q[DELTA_Q_PROBS][2];
 #if CONFIG_EXT_DELTA_Q
   unsigned int delta_lf[DELTA_LF_PROBS][2];
-#endif
 #endif
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
   unsigned int tx_size_implied[TX_SIZES][TX_SIZES];
