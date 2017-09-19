@@ -299,9 +299,30 @@ TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidScheme) {
           /*desired_size_in_pixel=*/61, /*may_page_url_be_private=*/true,
           TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
 
-  EXPECT_CALL(
-      callback,
-      Run(favicon_base::GoogleFaviconServerRequestStatus::FAILURE_INVALID));
+  EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
+                                FAILURE_TARGET_URL_SKIPPED));
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  "Favicons.LargeIconService.DownloadedSize"),
+              IsEmpty());
+}
+
+TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidURL) {
+  const GURL kDummyInvalidUrl("htt");
+
+  EXPECT_CALL(*mock_image_fetcher_, StartOrQueueNetworkRequest(_, _, _, _))
+      .Times(0);
+
+  base::MockCallback<favicon_base::GoogleFaviconServerCallback> callback;
+
+  large_icon_service_
+      .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
+          GURL(kDummyInvalidUrl), /*min_source_size_in_pixel=*/42,
+          /*desired_size_in_pixel=*/61, /*may_page_url_be_private=*/true,
+          TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
+
+  EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
+                                FAILURE_TARGET_URL_INVALID));
   scoped_task_environment_.RunUntilIdle();
   EXPECT_THAT(histogram_tester_.GetAllSamples(
                   "Favicons.LargeIconService.DownloadedSize"),
