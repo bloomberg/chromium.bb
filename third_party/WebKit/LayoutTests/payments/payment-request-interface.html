@@ -157,9 +157,14 @@ test(function() {
 
 test(function() {
     var shippingOptions = [buildItem({'id': 'express', 'selected': false}), buildItem({'id': 'express', 'selected': true})];
-    var request = new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': shippingOptions}, {'requestShipping': true});
-    assert_equals(null, request.shippingOption);
-}, 'No shipping option selected for duplicate shipping option identifiers.');
+    assert_throws(
+    new TypeError(),
+    () => {
+      new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': shippingOptions}, {'requestShipping': true});
+    },
+    "Expected to throw a TypeError because duplicate shipping option IDs"
+  );
+}, 'A TypeError should be thrown for duplicate shipping option identifiers.');
 
 test(function() {
     var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': false});
