@@ -250,6 +250,29 @@ StyleSelfAlignmentData ComputedStyle::ResolvedJustifySelf(
   return parent_style->ResolvedJustifyItems(normal_value_behaviour);
 }
 
+StyleContentAlignmentData ResolvedContentAlignment(
+    const StyleContentAlignmentData& value,
+    const StyleContentAlignmentData& normal_behaviour) {
+  return (value.GetPosition() == kContentPositionNormal &&
+          value.Distribution() == kContentDistributionDefault)
+             ? normal_behaviour
+             : value;
+}
+
+StyleContentAlignmentData ComputedStyle::ResolvedAlignContent(
+    const StyleContentAlignmentData& normal_behaviour) const {
+  // We will return the behaviour of 'normal' value if needed, which is specific
+  // of each layout model.
+  return ResolvedContentAlignment(AlignContent(), normal_behaviour);
+}
+
+StyleContentAlignmentData ComputedStyle::ResolvedJustifyContent(
+    const StyleContentAlignmentData& normal_behaviour) const {
+  // We will return the behaviour of 'normal' value if needed, which is specific
+  // of each layout model.
+  return ResolvedContentAlignment(JustifyContent(), normal_behaviour);
+}
+
 static inline ContentPosition ResolvedContentAlignmentPosition(
     const StyleContentAlignmentData& value,
     const StyleContentAlignmentData& normal_value_behavior) {

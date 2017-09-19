@@ -229,11 +229,15 @@ class ComputedStyle : public ComputedStyleBase,
   StyleSelfAlignmentData ResolvedAlignSelf(
       ItemPosition normal_value_behaviour,
       const ComputedStyle* parent_style = nullptr) const;
+  StyleContentAlignmentData ResolvedAlignContent(
+      const StyleContentAlignmentData& normal_behaviour) const;
   StyleSelfAlignmentData ResolvedJustifyItems(
       ItemPosition normal_value_behaviour) const;
   StyleSelfAlignmentData ResolvedJustifySelf(
       ItemPosition normal_value_behaviour,
       const ComputedStyle* parent_style = nullptr) const;
+  StyleContentAlignmentData ResolvedJustifyContent(
+      const StyleContentAlignmentData& normal_behaviour) const;
 
   StyleDifference VisualInvalidationDiff(const ComputedStyle&) const;
 

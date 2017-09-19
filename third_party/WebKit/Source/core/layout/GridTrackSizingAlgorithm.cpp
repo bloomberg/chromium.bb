@@ -1336,19 +1336,11 @@ void GridTrackSizingAlgorithm::StretchFlexibleTracks(
 }
 
 void GridTrackSizingAlgorithm::StretchAutoTracks() {
-  if (auto_sized_tracks_index_.IsEmpty())
-    return;
-
   Optional<LayoutUnit> free_space = FreeSpace(direction_);
-  if (!free_space || free_space.value() <= 0 ||
-      (direction_ == kForColumns &&
-       layout_grid_->StyleRef().ResolvedJustifyContentDistribution(
-           layout_grid_->ContentAlignmentNormalBehavior()) !=
-           kContentDistributionStretch) ||
-      (direction_ == kForRows &&
-       layout_grid_->StyleRef().ResolvedAlignContentDistribution(
-           layout_grid_->ContentAlignmentNormalBehavior()) !=
-           kContentDistributionStretch))
+  if (auto_sized_tracks_index_.IsEmpty() ||
+      (!free_space || free_space.value() <= 0) ||
+      (layout_grid_->ContentAlignment(direction_).Distribution() !=
+       kContentDistributionStretch))
     return;
 
   unsigned number_of_auto_sized_tracks = auto_sized_tracks_index_.size();
