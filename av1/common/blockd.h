@@ -961,51 +961,6 @@ static const int av1_ext_tx_set_idx_to_type[2][AOMMAX(EXT_TX_SETS_INTRA,
   }
 };
 
-static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
-    {
-#if CONFIG_CHROMA_2X2
-      { 1, 1, 1, 1, 1 },  // unused
-      { 0, 1, 1, 0, 0 },
-      { 0, 0, 0, 1, 0 },
-#if CONFIG_MRC_TX
-      { 0, 0, 0, 0, 1 },
-#endif  // CONFIG_MRC_TX
-#else   // CONFIG_CHROMA_2X2
-      { 1, 1, 1, 1 },  // unused
-      { 1, 1, 0, 0 },
-      { 0, 0, 1, 0 },
-#if CONFIG_MRC_TX
-      { 0, 0, 0, 1 },
-#endif  // CONFIG_MRC_TX
-#endif  // CONFIG_CHROMA_2X2
-    };
-
-static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
-    {
-#if CONFIG_CHROMA_2X2
-      { 1, 1, 1, 1, 1 },  // unused
-      { 0, 1, 1, 0, 0 }, { 0, 0, 0, 1, 0 }, { 0, 0, 0, 0, 1 },
-#if CONFIG_MRC_TX
-      { 0, 0, 0, 0, 1 },
-#endif  // CONFIG_MRC_TX
-#else   // CONFIG_CHROMA_2X2
-      { 1, 1, 1, 1 },  // unused
-      { 1, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 },
-#if CONFIG_MRC_TX
-      { 0, 0, 0, 1 },
-#endif  // CONFIG_MRC_TX
-#endif  // CONFIG_CHROMA_2X2
-    };
-
-// 1D Transforms used in inter set, this needs to be changed if
-// ext_tx_used_inter is changed
-static const int ext_tx_used_inter_1D[EXT_TX_SETS_INTER][TX_TYPES_1D] = {
-  { 1, 0, 0, 0 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 0, 0, 1 },
-#if CONFIG_MRC_TX
-  { 1, 0, 0, 1 },
-#endif  // CONFIG_MRC_TX
-};
-
 #if CONFIG_MRC_TX
 static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
   {

@@ -64,6 +64,44 @@ static const uint8_t rd_thresh_block_size_factor[BLOCK_SIZES_ALL] = {
   4,  4,  8,  8, 16, 16
 };
 
+#if CONFIG_EXT_TX
+static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
+    {
+#if CONFIG_CHROMA_2X2
+      { 1, 1, 1, 1, 1 },  // unused
+      { 0, 1, 1, 0, 0 },
+      { 0, 0, 0, 1, 0 },
+#if CONFIG_MRC_TX
+      { 0, 0, 0, 0, 1 },
+#endif  // CONFIG_MRC_TX
+#else   // CONFIG_CHROMA_2X2
+      { 1, 1, 1, 1 },  // unused
+      { 1, 1, 0, 0 },
+      { 0, 0, 1, 0 },
+#if CONFIG_MRC_TX
+      { 0, 0, 0, 1 },
+#endif  // CONFIG_MRC_TX
+#endif  // CONFIG_CHROMA_2X2
+    };
+
+static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
+    {
+#if CONFIG_CHROMA_2X2
+      { 1, 1, 1, 1, 1 },  // unused
+      { 0, 1, 1, 0, 0 }, { 0, 0, 0, 1, 0 }, { 0, 0, 0, 0, 1 },
+#if CONFIG_MRC_TX
+      { 0, 0, 0, 0, 1 },
+#endif  // CONFIG_MRC_TX
+#else   // CONFIG_CHROMA_2X2
+      { 1, 1, 1, 1 },  // unused
+      { 1, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 },
+#if CONFIG_MRC_TX
+      { 0, 0, 0, 1 },
+#endif  // CONFIG_MRC_TX
+#endif  // CONFIG_CHROMA_2X2
+    };
+#endif  // CONFIG_EXT_TX
+
 void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                          FRAME_CONTEXT *fc) {
   int i, j;

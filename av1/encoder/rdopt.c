@@ -1257,6 +1257,17 @@ static int prune_one_for_sby(const AV1_COMP *cpi, BLOCK_SIZE bsize,
                           pd->dst.stride);
 }
 
+#if CONFIG_EXT_TX
+// 1D Transforms used in inter set, this needs to be changed if
+// ext_tx_used_inter is changed
+static const int ext_tx_used_inter_1D[EXT_TX_SETS_INTER][TX_TYPES_1D] = {
+  { 1, 0, 0, 0 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 0, 0, 1 },
+#if CONFIG_MRC_TX
+  { 1, 0, 0, 1 },
+#endif  // CONFIG_MRC_TX
+};
+#endif  // CONFIG_EXT_TX
+
 static int prune_tx_types(const AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
                           const MACROBLOCKD *const xd, int tx_set) {
 #if CONFIG_EXT_TX
