@@ -49,6 +49,10 @@
       "reason": "disappeared"
     },
     {
+      "object": "LayoutText #text",
+      "reason": "disappeared"
+    },
+    {
       "object": "LayoutBlockFlow (anonymous)",
       "reason": "geometry"
     },

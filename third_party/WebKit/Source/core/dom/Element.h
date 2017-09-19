@@ -451,7 +451,7 @@ class CORE_EXPORT Element : public ContainerNode {
       const WhitespaceAttacher& whitespace_attacher) const {
     return NeedsReattachLayoutTree() || ChildNeedsReattachLayoutTree() ||
            IsActiveSlotOrActiveV0InsertionPoint() ||
-           (whitespace_attacher.LastTextNodeNeedsReattach() &&
+           (whitespace_attacher.TraverseIntoDisplayContents() &&
             HasDisplayContentsStyle());
   }
   void RebuildLayoutTree(WhitespaceAttacher&);

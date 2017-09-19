@@ -9,6 +9,5 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (16,0) size 61x18
             text run at (16,0) width 61: "summary"
         LayoutBlockFlow {DIV} at (0,18) size 784x18
-          LayoutText {#text} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 160x18
             text run at (0,0) width 160: "should have no bold test."
