@@ -220,10 +220,6 @@
                             thumbnailGenerator:data.thumbnailGenerator];
   [activityItems addObject:loginActionProvider];
 
-  UIActivityTextSource* textProvider =
-      [[UIActivityTextSource alloc] initWithText:data.title];
-  [activityItems addObject:textProvider];
-
   if (data.image) {
     UIActivityImageSource* imageProvider =
         [[UIActivityImageSource alloc] initWithImage:data.image];
