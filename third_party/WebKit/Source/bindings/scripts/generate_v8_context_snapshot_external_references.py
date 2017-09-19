@@ -6,6 +6,7 @@
 
 import argparse
 import os
+import posixpath
 
 from code_generator import initialize_jinja_env
 from idl_reader import IdlReader
@@ -197,10 +198,20 @@ class ExternalReferenceTableGenerator(object):
         header_name = 'V8ContextSnapshotExternalReferences.h'
         if self._opts.snake_case_generated_files:
             header_name = 'v8_context_snapshot_external_references.h'
+        include_files = list(self._include_files)
+        # TODO(tkent): Update INCLUDES after the great mv, and remove the
+        # following block. crbug.com/760462
+        if self._opts.snake_case_generated_files:
+            include_files = []
+            for include in self._include_files:
+                dirname, basename = posixpath.split(include)
+                name, ext = posixpath.splitext(basename)
+                include_files.append(posixpath.join(
+                    dirname, utilities.to_snake_case(name) + ext))
         return {
             'class': 'V8ContextSnapshotExternalReferences',
             'interfaces': interfaces,
-            'include_files': sorted(list(self._include_files)),
+            'include_files': sorted(include_files),
             'this_include_header_name': header_name,
         }
 
