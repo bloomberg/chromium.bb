@@ -44,6 +44,7 @@
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/chromeos/dbus/chrome_component_updater_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolution_service_provider_delegate.h"
@@ -123,6 +124,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/services/component_updater_service_provider.h"
 #include "chromeos/dbus/services/console_service_provider.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "chromeos/dbus/services/display_power_service_provider.h"
@@ -373,6 +375,14 @@ class DBusServices {
             base::MakeUnique<LivenessServiceProvider>(
                 kLivenessServiceInterface)));
 
+    component_updater_service_ = CrosDBusService::Create(
+        kComponentUpdaterServiceName,
+        dbus::ObjectPath(kComponentUpdaterServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            base::MakeUnique<ComponentUpdaterServiceProvider>(
+                base::MakeUnique<
+                    ChromeComponentUpdaterServiceProviderDelegate>())));
+
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
 
@@ -426,6 +436,7 @@ class DBusServices {
     proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
     liveness_service_.reset();
+    component_updater_service_.reset();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
@@ -452,6 +463,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
   std::unique_ptr<CrosDBusService> liveness_service_;
+  std::unique_ptr<CrosDBusService> component_updater_service_;
 
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
 
