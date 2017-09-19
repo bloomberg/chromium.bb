@@ -372,12 +372,10 @@ void VisualViewport::CreateLayerTree() {
   inner_viewport_container_layer_->SetSize(FloatSize(size_));
 
   inner_viewport_scroll_layer_->PlatformLayer()->SetScrollable(size_);
-  if (MainFrame()) {
-    if (Document* document = MainFrame()->GetDocument()) {
-      inner_viewport_scroll_layer_->SetElementId(
-          CompositorElementIdFromUniqueObjectId(unique_id_));
-    }
-  }
+  DCHECK(MainFrame());
+  DCHECK(MainFrame()->GetDocument());
+  inner_viewport_scroll_layer_->SetElementId(
+      CompositorElementIdFromUniqueObjectId(unique_id_));
 
   root_transform_layer_->AddChild(inner_viewport_container_layer_.get());
   inner_viewport_container_layer_->AddChild(overscroll_elasticity_layer_.get());
@@ -711,7 +709,7 @@ void VisualViewport::PaintContents(const GraphicsLayer*,
 LocalFrame* VisualViewport::MainFrame() const {
   return GetPage().MainFrame() && GetPage().MainFrame()->IsLocalFrame()
              ? GetPage().DeprecatedLocalMainFrame()
-             : 0;
+             : nullptr;
 }
 
 bool VisualViewport::ScheduleAnimation() {
