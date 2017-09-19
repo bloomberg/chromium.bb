@@ -205,7 +205,7 @@ struct ValueToString<int> {
 
 namespace {
 
-void InsertionAndDeletionTest(int32_t seed, int tree_size) {
+void TreeInsertionAndDeletionTest(int32_t seed, int tree_size) {
   InitRandom(seed);
   int maximum_value = tree_size;
   // Build the tree
@@ -279,11 +279,11 @@ void InsertionAndDeletionTest(int32_t seed, int tree_size) {
 }  // anonymous namespace
 
 TEST(PODIntervalTreeTest, RandomDeletionAndInsertionRegressionTest1) {
-  InsertionAndDeletionTest(13972, 100);
+  TreeInsertionAndDeletionTest(13972, 100);
 }
 
 TEST(PODIntervalTreeTest, RandomDeletionAndInsertionRegressionTest2) {
-  InsertionAndDeletionTest(1283382113, 10);
+  TreeInsertionAndDeletionTest(1283382113, 10);
 }
 
 TEST(PODIntervalTreeTest, RandomDeletionAndInsertionRegressionTest3) {
