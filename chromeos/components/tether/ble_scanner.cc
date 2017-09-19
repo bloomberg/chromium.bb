@@ -56,7 +56,6 @@ BleScanner::BleScanner(
       adapter_(adapter),
       eid_generator_(std::move(eid_generator)),
       local_device_data_provider_(local_device_data_provider),
-      is_initializing_discovery_session_(false),
       discovery_session_(nullptr),
       weak_ptr_factory_(this) {
   adapter_->AddObserver(this);
@@ -113,6 +112,20 @@ bool BleScanner::UnregisterScanFilterForDevice(
   return false;
 }
 
+bool BleScanner::ShouldDiscoverySessionBeActive() {
+  return !registered_remote_devices_.empty();
+}
+
+bool BleScanner::IsDiscoverySessionActive() {
+  if (discovery_session_) {
+    // Once the session is stopped, the pointer is cleared.
+    DCHECK(discovery_session_->IsActive());
+    return true;
+  }
+
+  return false;
+}
+
 bool BleScanner::IsDeviceRegistered(const std::string& device_id) {
   for (auto it = registered_remote_devices_.begin();
        it != registered_remote_devices_.end(); ++it) {
@@ -132,12 +145,6 @@ void BleScanner::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void BleScanner::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
-                                       bool powered) {
-  DCHECK_EQ(adapter_.get(), adapter);
-  UpdateDiscoveryStatus();
-}
-
 void BleScanner::DeviceAdded(device::BluetoothAdapter* adapter,
                              device::BluetoothDevice* bluetooth_device) {
   DCHECK_EQ(adapter_.get(), adapter);
@@ -150,28 +157,34 @@ void BleScanner::DeviceChanged(device::BluetoothAdapter* adapter,
   HandleDeviceUpdated(bluetooth_device);
 }
 
-void BleScanner::UpdateDiscoveryStatus() {
-  if (registered_remote_devices_.empty()) {
-    StopDiscoverySession();
-    return;
-  }
-
-  if (!adapter_->IsPowered()) {
-    // If the adapter has powered off, no devices can be discovered.
-    StopDiscoverySession();
-    return;
-  }
-
-  if (is_initializing_discovery_session_) {
-    return;
-  } else if (!discovery_session_ ||
-             (discovery_session_ && !discovery_session_->IsActive())) {
-    StartDiscoverySession();
-  }
+void BleScanner::NotifyReceivedAdvertisementFromDevice(
+    const std::string& device_address,
+    const cryptauth::RemoteDevice& remote_device) {
+  for (auto& observer : observer_list_)
+    observer.OnReceivedAdvertisementFromDevice(device_address, remote_device);
 }
 
-void BleScanner::StartDiscoverySession() {
+void BleScanner::NotifyDiscoverySessionStateChanged(
+    bool discovery_session_active) {
+  for (auto& observer : observer_list_)
+    observer.OnDiscoverySessionStateChanged(discovery_session_active);
+}
+
+void BleScanner::UpdateDiscoveryStatus() {
+  if (ShouldDiscoverySessionBeActive())
+    EnsureDiscoverySessionActive();
+  else
+    EnsureDiscoverySessionNotActive();
+}
+
+void BleScanner::EnsureDiscoverySessionActive() {
   DCHECK(adapter_);
+
+  // If the session is active or is in the process of becoming active, there is
+  // nothing to do.
+  if (IsDiscoverySessionActive() || is_initializing_discovery_session_)
+    return;
+
   is_initializing_discovery_session_ = true;
 
   // Note: Ideally, we would use a filter for only LE devices here. However,
@@ -191,20 +204,44 @@ void BleScanner::OnDiscoverySessionStarted(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   is_initializing_discovery_session_ = false;
   discovery_session_ = std::move(discovery_session);
+
+  NotifyDiscoverySessionStateChanged(true /* discovery_session_active */);
+
+  UpdateDiscoveryStatus();
 }
 
 void BleScanner::OnStartDiscoverySessionError() {
   PA_LOG(WARNING) << "Error starting discovery session. Initialization failed.";
   is_initializing_discovery_session_ = false;
+  UpdateDiscoveryStatus();
 }
 
-void BleScanner::StopDiscoverySession() {
-  if (!discovery_session_) {
-    // If there is no discovery session to stop, return early.
+void BleScanner::EnsureDiscoverySessionNotActive() {
+  // If there is no session, there is nothing to do.
+  if (!IsDiscoverySessionActive() || is_stopping_discovery_session_)
     return;
-  }
 
+  is_stopping_discovery_session_ = true;
+
+  discovery_session_->Stop(base::Bind(&BleScanner::OnDiscoverySessionStopped,
+                                      weak_ptr_factory_.GetWeakPtr()),
+                           base::Bind(&BleScanner::OnStopDiscoverySessionError,
+                                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BleScanner::OnDiscoverySessionStopped() {
+  is_stopping_discovery_session_ = false;
   discovery_session_.reset();
+
+  NotifyDiscoverySessionStateChanged(false /* discovery_session_active */);
+
+  UpdateDiscoveryStatus();
+}
+
+void BleScanner::OnStopDiscoverySessionError() {
+  PA_LOG(WARNING) << "Error stopping discovery session.";
+  is_stopping_discovery_session_ = false;
+  UpdateDiscoveryStatus();
 }
 
 void BleScanner::HandleDeviceUpdated(
@@ -247,10 +284,8 @@ void BleScanner::CheckForMatchingScanFilters(
   if (!identified_device)
     return;
 
-  for (auto& observer : observer_list_) {
-    observer.OnReceivedAdvertisementFromDevice(bluetooth_device->GetAddress(),
-                                               *identified_device);
-  }
+  NotifyReceivedAdvertisementFromDevice(bluetooth_device->GetAddress(),
+                                        *identified_device);
 }
 
 }  // namespace tether

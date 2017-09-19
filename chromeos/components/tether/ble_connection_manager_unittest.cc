@@ -156,11 +156,11 @@ class MockBleScanner : public BleScanner {
   MOCK_METHOD1(UnregisterScanFilterForDevice,
                bool(const cryptauth::RemoteDevice&));
 
-  void SimulateScanResults(const std::string& device_address,
-                           const cryptauth::RemoteDevice& remote_device) {
-    for (auto& observer : observer_list_) {
-      observer.OnReceivedAdvertisementFromDevice(device_address, remote_device);
-    }
+  void NotifyReceivedAdvertisementFromDevice(
+      const std::string& device_address,
+      const cryptauth::RemoteDevice& remote_device) {
+    BleScanner::NotifyReceivedAdvertisementFromDevice(device_address,
+                                                      remote_device);
   }
 };
 
@@ -218,7 +218,7 @@ std::vector<cryptauth::RemoteDevice> CreateTestDevices(size_t num_to_create) {
   std::vector<cryptauth::RemoteDevice> test_devices =
       cryptauth::GenerateTestRemoteDevices(num_to_create);
   for (auto& device : test_devices) {
-    device.user_id = std::string(kUserId);
+    device.user_id = kUserId;
   }
   return test_devices;
 }
@@ -301,7 +301,7 @@ class BleConnectionManagerTest : public testing::Test {
     mock_timer_factory_ = new MockTimerFactory();
 
     fake_connection_factory_ = base::WrapUnique(new FakeConnectionFactory(
-        mock_adapter_, device::BluetoothUUID(std::string(kGattServerUuid))));
+        mock_adapter_, device::BluetoothUUID(kGattServerUuid)));
     cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
         SetInstanceForTesting(fake_connection_factory_.get());
 
@@ -461,7 +461,8 @@ class BleConnectionManagerTest : public testing::Test {
     VerifyDeviceRegistered(remote_device);
 
     fake_secure_channel_factory_->SetExpectedDeviceAddress(bluetooth_address);
-    mock_ble_scanner_->SimulateScanResults(bluetooth_address, remote_device);
+    mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(bluetooth_address,
+                                                             remote_device);
     return GetChannelForDevice(remote_device);
   }
 
@@ -508,7 +509,7 @@ class BleConnectionManagerTest : public testing::Test {
     ASSERT_EQ(expected_size, channel->sent_messages().size());
     cryptauth::FakeSecureChannel::SentMessage sent_message =
         channel->sent_messages()[expected_size - 1];
-    EXPECT_EQ(std::string(kTetherFeature), sent_message.feature);
+    EXPECT_EQ(kTetherFeature, sent_message.feature);
     EXPECT_EQ(payload, sent_message.payload);
 
     std::vector<int> sent_sequence_numbers_before_finished =
@@ -689,10 +690,9 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_FailsAuthentication) {
       {test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED,
        cryptauth::SecureChannel::Status::CONNECTING}});
 
-  fake_secure_channel_factory_->SetExpectedDeviceAddress(
-      std::string(kBluetoothAddress1));
-  mock_ble_scanner_->SimulateScanResults(std::string(kBluetoothAddress1),
-                                         test_devices_[0]);
+  fake_secure_channel_factory_->SetExpectedDeviceAddress(kBluetoothAddress1);
+  mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1,
+                                                           test_devices_[0]);
   FakeSecureChannel* channel = GetChannelForDevice(test_devices_[0]);
 
   // Should not result in an additional "disconnected => connecting" broadcast.
@@ -730,20 +730,20 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_SendAndReceive) {
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
 
   FakeSecureChannel* channel =
-      ConnectSuccessfully(test_devices_[0], std::string(kBluetoothAddress1),
+      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
                           MessageType::TETHER_AVAILABILITY_REQUEST);
 
   int sequence_number = manager_->SendMessage(test_devices_[0], "request1");
   VerifyLastMessageSent(channel, sequence_number, "request1", 1);
 
-  channel->ReceiveMessage(std::string(kTetherFeature), "response1");
+  channel->ReceiveMessage(kTetherFeature, "response1");
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[0], "response1"}});
 
   sequence_number = manager_->SendMessage(test_devices_[0], "request2");
   VerifyLastMessageSent(channel, sequence_number, "request2", 2);
 
-  channel->ReceiveMessage(std::string(kTetherFeature), "response2");
+  channel->ReceiveMessage(kTetherFeature, "response2");
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[0], "response2"}});
 
@@ -773,21 +773,20 @@ TEST_F(BleConnectionManagerTest,
       {test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED,
        cryptauth::SecureChannel::Status::CONNECTING}});
 
-  fake_secure_channel_factory_->SetExpectedDeviceAddress(
-      std::string(kBluetoothAddress1));
+  fake_secure_channel_factory_->SetExpectedDeviceAddress(kBluetoothAddress1);
 
   // Simulate multiple advertisements being received:
-  mock_ble_scanner_->SimulateScanResults(std::string(kBluetoothAddress1),
-                                         test_devices_[0]);
+  mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1,
+                                                           test_devices_[0]);
   FakeSecureChannel* channel = GetChannelForDevice(test_devices_[0]);
 
-  mock_ble_scanner_->SimulateScanResults(std::string(kBluetoothAddress1),
-                                         test_devices_[0]);
+  mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1,
+                                                           test_devices_[0]);
   // Verify that a new channel has not been created:
   EXPECT_EQ(channel, GetChannelForDevice(test_devices_[0]));
 
-  mock_ble_scanner_->SimulateScanResults(std::string(kBluetoothAddress1),
-                                         test_devices_[0]);
+  mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1,
+                                                           test_devices_[0]);
   // Verify that a new channel has not been created:
   EXPECT_EQ(channel, GetChannelForDevice(test_devices_[0]));
 }
@@ -802,7 +801,7 @@ TEST_F(BleConnectionManagerTest,
               UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
 
-  ConnectSuccessfully(test_devices_[0], std::string(kBluetoothAddress1),
+  ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
                       MessageType::TETHER_AVAILABILITY_REQUEST);
 
   // Now, register a different connection reason.
@@ -850,10 +849,9 @@ TEST_F(BleConnectionManagerTest, TestGetStatusForDevice) {
   EXPECT_TRUE(manager_->GetStatusForDevice(test_devices_[0], &status));
   EXPECT_EQ(cryptauth::SecureChannel::Status::CONNECTING, status);
 
-  fake_secure_channel_factory_->SetExpectedDeviceAddress(
-      std::string(kBluetoothAddress1));
-  mock_ble_scanner_->SimulateScanResults(std::string(kBluetoothAddress1),
-                                         test_devices_[0]);
+  fake_secure_channel_factory_->SetExpectedDeviceAddress(kBluetoothAddress1);
+  mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1,
+                                                           test_devices_[0]);
   FakeSecureChannel* channel = GetChannelForDevice(test_devices_[0]);
 
   channel->ChangeStatus(cryptauth::SecureChannel::Status::CONNECTING);
@@ -904,7 +902,7 @@ TEST_F(BleConnectionManagerTest,
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
 
   FakeSecureChannel* channel =
-      ConnectSuccessfully(test_devices_[0], std::string(kBluetoothAddress1),
+      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
                           MessageType::TETHER_AVAILABILITY_REQUEST);
 
   channel->ChangeStatus(cryptauth::SecureChannel::Status::DISCONNECTED);
@@ -1064,7 +1062,7 @@ TEST_F(BleConnectionManagerTest, TwoDevices_OneConnects) {
       .Times(2);
 
   // Successfully connect to device 0.
-  ConnectSuccessfully(test_devices_[0], std::string(kBluetoothAddress1),
+  ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
                       MessageType::TETHER_AVAILABILITY_REQUEST);
 
   // Register device 1.
@@ -1118,11 +1116,11 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[1]));
 
   FakeSecureChannel* channel0 =
-      ConnectSuccessfully(test_devices_[0], std::string(kBluetoothAddress1),
+      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
                           MessageType::TETHER_AVAILABILITY_REQUEST);
 
   FakeSecureChannel* channel1 =
-      ConnectSuccessfully(test_devices_[1], std::string(kBluetoothAddress2),
+      ConnectSuccessfully(test_devices_[1], kBluetoothAddress2,
                           MessageType::TETHER_AVAILABILITY_REQUEST);
 
   int sequence_number =
@@ -1132,11 +1130,11 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
   sequence_number = manager_->SendMessage(test_devices_[1], "request1_device1");
   VerifyLastMessageSent(channel1, sequence_number, "request1_device1", 1);
 
-  channel0->ReceiveMessage(std::string(kTetherFeature), "response1_device0");
+  channel0->ReceiveMessage(kTetherFeature, "response1_device0");
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[0], "response1_device0"}});
 
-  channel1->ReceiveMessage(std::string(kTetherFeature), "response1_device1");
+  channel1->ReceiveMessage(kTetherFeature, "response1_device1");
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[1], "response1_device1"}});
 
@@ -1146,11 +1144,11 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
   sequence_number = manager_->SendMessage(test_devices_[1], "request2_device1");
   VerifyLastMessageSent(channel1, sequence_number, "request2_device1", 2);
 
-  channel0->ReceiveMessage(std::string(kTetherFeature), "response2_device0");
+  channel0->ReceiveMessage(kTetherFeature, "response2_device0");
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[0], "response2_device0"}});
 
-  channel1->ReceiveMessage(std::string(kTetherFeature), "response2_device1");
+  channel1->ReceiveMessage(kTetherFeature, "response2_device1");
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[1], "response2_device1"}});
 
@@ -1227,7 +1225,7 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
 
   // Device 0 connects successfully.
   FakeSecureChannel* channel0 =
-      ConnectChannel(test_devices_[0], std::string(kBluetoothAddress1));
+      ConnectChannel(test_devices_[0], kBluetoothAddress1);
 
   // Since device 0 has connected, advertising to that device is no longer
   // necessary. Device 2 should have filled up that advertising slot.
@@ -1251,7 +1249,7 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
   int sequence_number = manager_->SendMessage(test_devices_[0], "request1");
   VerifyLastMessageSent(channel0, sequence_number, "request1", 1);
 
-  channel0->ReceiveMessage(std::string(kTetherFeature), "response1");
+  channel0->ReceiveMessage(kTetherFeature, "response1");
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[0], "response1"}});
 
@@ -1275,7 +1273,7 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
 
   // Device 3 connects successfully.
   FakeSecureChannel* channel3 =
-      ConnectChannel(test_devices_[3], std::string(kBluetoothAddress3));
+      ConnectChannel(test_devices_[3], kBluetoothAddress3);
 
   // Since device 3 has connected, device 2 starts connecting again.
   VerifyConnectionStateChanges(std::vector<SecureChannelStatusChange>{
@@ -1287,7 +1285,7 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
   sequence_number = manager_->SendMessage(test_devices_[3], "request3");
   VerifyLastMessageSent(channel3, sequence_number, "request3", 1);
 
-  channel3->ReceiveMessage(std::string(kTetherFeature), "response3");
+  channel3->ReceiveMessage(kTetherFeature, "response3");
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[3], "response3"}});
 
@@ -1335,7 +1333,7 @@ TEST_F(BleConnectionManagerTest, ObserverUnregisters) {
       .Times(2);
 
   FakeSecureChannel* channel =
-      ConnectSuccessfully(test_devices_[0], std::string(kBluetoothAddress1),
+      ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
                           MessageType::TETHER_AVAILABILITY_REQUEST);
 
   // Register two separate UnregisteringObservers. When a message is received,
@@ -1350,7 +1348,7 @@ TEST_F(BleConnectionManagerTest, ObserverUnregisters) {
   // Receive a message over the channel. This should invoke the observer
   // callbacks. This would have caused a crash before the fix for
   // crbug.com/733360.
-  channel->ReceiveMessage(std::string(kTetherFeature), "response1");
+  channel->ReceiveMessage(kTetherFeature, "response1");
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[0], "response1"}});
 

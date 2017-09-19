@@ -115,7 +115,7 @@ class BleConnectionManager : public BleScanner::Observer {
   // BleScanner::Observer:
   void OnReceivedAdvertisementFromDevice(
       const std::string& device_address,
-      cryptauth::RemoteDevice remote_device) override;
+      const cryptauth::RemoteDevice& remote_device) override;
 
  protected:
   BleConnectionManager(

@@ -320,7 +320,7 @@ void BleConnectionManager::RemoveObserver(Observer* observer) {
 
 void BleConnectionManager::OnReceivedAdvertisementFromDevice(
     const std::string& device_address,
-    cryptauth::RemoteDevice remote_device) {
+    const cryptauth::RemoteDevice& remote_device) {
   ConnectionMetadata* connection_metadata =
       GetConnectionMetadata(remote_device);
   if (!connection_metadata) {
