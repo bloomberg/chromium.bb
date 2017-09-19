@@ -263,6 +263,9 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
     // TODO(halliwell): Revert after fix for b/63101386.
     {switches::kDisallowNonExactResourceReuse, ""},
     {switches::kEnableMediaSuspend, ""},
+    // Enable autoplay without requiring any user gesture.
+    {switches::kAutoplayPolicy,
+     switches::autoplay::kNoUserGestureRequiredPolicy},
 };
 
 void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
