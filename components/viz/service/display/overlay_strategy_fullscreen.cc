@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/overlay_strategy_fullscreen.h"
+#include "components/viz/service/display/overlay_strategy_fullscreen.h"
 
-#include "cc/base/math_util.h"
-#include "cc/output/overlay_candidate_validator.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-namespace cc {
+namespace viz {
 
 OverlayStrategyFullscreen::OverlayStrategyFullscreen(
     OverlayCandidateValidator* capability_checker)
@@ -22,15 +21,15 @@ OverlayStrategyFullscreen::OverlayStrategyFullscreen(
 OverlayStrategyFullscreen::~OverlayStrategyFullscreen() {}
 
 bool OverlayStrategyFullscreen::Attempt(
-    DisplayResourceProvider* resource_provider,
-    viz::RenderPass* render_pass,
-    OverlayCandidateList* candidate_list,
+    cc::DisplayResourceProvider* resource_provider,
+    RenderPass* render_pass,
+    cc::OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
-  viz::QuadList* quad_list = &render_pass->quad_list;
+  QuadList* quad_list = &render_pass->quad_list;
   // First quad of quad_list is the top most quad.
   auto front = quad_list->begin();
   while (front != quad_list->end()) {
-    if (!OverlayCandidate::IsInvisibleQuad(*front))
+    if (!cc::OverlayCandidate::IsInvisibleQuad(*front))
       break;
     front++;
   }
@@ -38,12 +37,13 @@ bool OverlayStrategyFullscreen::Attempt(
   if (front == quad_list->end())
     return false;
 
-  const viz::DrawQuad* quad = *front;
+  const DrawQuad* quad = *front;
   if (quad->ShouldDrawWithBlending())
     return false;
 
-  OverlayCandidate candidate;
-  if (!OverlayCandidate::FromDrawQuad(resource_provider, quad, &candidate)) {
+  cc::OverlayCandidate candidate;
+  if (!cc::OverlayCandidate::FromDrawQuad(resource_provider, quad,
+                                          &candidate)) {
     return false;
   }
 
@@ -56,7 +56,7 @@ bool OverlayStrategyFullscreen::Attempt(
 
   candidate.plane_z_order = 0;
   candidate.overlay_handled = true;
-  OverlayCandidateList new_candidate_list;
+  cc::OverlayCandidateList new_candidate_list;
   new_candidate_list.push_back(candidate);
   capability_checker_->CheckOverlaySupport(&new_candidate_list);
   if (!new_candidate_list.front().overlay_handled)
@@ -64,8 +64,8 @@ bool OverlayStrategyFullscreen::Attempt(
 
   candidate_list->swap(new_candidate_list);
 
-  render_pass->quad_list = viz::QuadList();  // Remove all the quads
+  render_pass->quad_list = QuadList();  // Remove all the quads
   return true;
 }
 
-}  // namespace cc
+}  // namespace viz

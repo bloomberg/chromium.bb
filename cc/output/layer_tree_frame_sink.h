@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "cc/cc_export.h"
-#include "cc/output/overlay_candidate_validator.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/returned_resource.h"

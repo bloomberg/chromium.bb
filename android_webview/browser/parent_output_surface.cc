@@ -6,21 +6,20 @@
 
 #include "android_webview/browser/aw_render_thread_context_provider.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace android_webview {
 
 ParentOutputSurface::ParentOutputSurface(
     scoped_refptr<AwRenderThreadContextProvider> context_provider)
-    : cc::OutputSurface(std::move(context_provider)) {
-}
+    : viz::OutputSurface(std::move(context_provider)) {}
 
 ParentOutputSurface::~ParentOutputSurface() {
 }
 
-void ParentOutputSurface::BindToClient(cc::OutputSurfaceClient* client) {}
+void ParentOutputSurface::BindToClient(viz::OutputSurfaceClient* client) {}
 
 void ParentOutputSurface::EnsureBackbuffer() {}
 
@@ -76,7 +75,7 @@ uint32_t ParentOutputSurface::GetFramebufferCopyTextureFormat() {
   return gl->GetCopyTextureInternalFormat();
 }
 
-cc::OverlayCandidateValidator*
+viz::OverlayCandidateValidator*
 ParentOutputSurface::GetOverlayCandidateValidator() const {
   return nullptr;
 }

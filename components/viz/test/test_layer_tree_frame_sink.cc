@@ -10,10 +10,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
-#include "cc/output/output_surface.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/service/display/direct_renderer.h"
+#include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 
@@ -74,7 +74,7 @@ bool TestLayerTreeFrameSink::BindToClient(
 
   frame_sink_manager_ = base::MakeUnique<FrameSinkManagerImpl>();
 
-  std::unique_ptr<cc::OutputSurface> display_output_surface =
+  std::unique_ptr<OutputSurface> display_output_surface =
       test_client_->CreateDisplayOutputSurface(context_provider());
   bool display_context_shared_with_compositor =
       display_output_surface->context_provider() == context_provider();

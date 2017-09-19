@@ -19,7 +19,7 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorWin
   CompositorOverlayCandidateValidatorWin();
   ~CompositorOverlayCandidateValidatorWin() override;
 
-  void GetStrategies(cc::OverlayProcessor::StrategyList* strategies) override;
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
   void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;
   bool AllowCALayerOverlays() override;
   bool AllowDCLayerOverlays() override;

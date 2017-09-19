@@ -128,7 +128,7 @@ class DisplayTest : public testing::Test {
       const RendererSettings& settings,
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<DisplayScheduler> scheduler,
-      std::unique_ptr<cc::OutputSurface> output_surface) {
+      std::unique_ptr<OutputSurface> output_surface) {
     auto display = base::MakeUnique<Display>(
         &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
         settings, frame_sink_id, std::move(output_surface),

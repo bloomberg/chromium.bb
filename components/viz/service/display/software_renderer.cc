@@ -8,7 +8,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/base/render_surface_filters.h"
-#include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
 #include "cc/resources/scoped_resource.h"
@@ -20,6 +19,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/service/display/output_surface.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -56,7 +56,7 @@ bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
 
 SoftwareRenderer::SoftwareRenderer(
     const RendererSettings* settings,
-    cc::OutputSurface* output_surface,
+    OutputSurface* output_surface,
     cc::DisplayResourceProvider* resource_provider)
     : DirectRenderer(settings, output_surface, resource_provider),
       output_device_(output_surface->software_device()) {}

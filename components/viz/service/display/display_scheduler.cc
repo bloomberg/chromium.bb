@@ -9,8 +9,8 @@
 #include "base/auto_reset.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/output/output_surface.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/service/display/output_surface.h"
 
 namespace viz {
 

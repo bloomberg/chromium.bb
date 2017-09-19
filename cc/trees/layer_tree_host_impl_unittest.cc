@@ -9162,7 +9162,7 @@ class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
       scoped_refptr<viz::ContextProvider> display_context_provider)
       : display_context_provider_(std::move(display_context_provider)) {}
 
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
     return FakeOutputSurface::Create3d(std::move(display_context_provider_));

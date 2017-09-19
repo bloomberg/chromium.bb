@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "cc/output/output_surface.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/in_process_context_provider.h"
+#include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/display_output_surface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -46,7 +46,7 @@ class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
   // TODO(rjkroege): Implement the equivalent of Reflector.
 
  private:
-  // cc::OutputSurface implementation.
+  // OutputSurface implementation.
   void BindFramebuffer() override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,

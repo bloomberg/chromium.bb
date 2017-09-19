@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display_embedder/buffer_queue.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor.h"
 
-#include "cc/output/dc_layer_overlay.h"
-#include "cc/output/output_surface.h"
-#include "cc/output/overlay_strategy_single_on_top.h"
-#include "cc/output/overlay_strategy_underlay.h"
+#include "build/build_config.h"
 #include "cc/resources/display_resource_provider.h"
+#include "components/viz/service/display/dc_layer_overlay.h"
+#include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_strategy_single_on_top.h"
+#include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -38,10 +39,10 @@ class SendPromotionHintsBeforeReturning {
 
 }  // namespace
 
-namespace cc {
+namespace viz {
 
-OverlayProcessor::OverlayProcessor(OutputSurface* surface) : surface_(surface) {
-}
+OverlayProcessor::OverlayProcessor(OutputSurface* surface)
+    : surface_(surface) {}
 
 void OverlayProcessor::Initialize() {
   DCHECK(surface_);
@@ -60,11 +61,11 @@ gfx::Rect OverlayProcessor::GetAndResetOverlayDamage() {
 }
 
 bool OverlayProcessor::ProcessForCALayers(
-    DisplayResourceProvider* resource_provider,
-    viz::RenderPass* render_pass,
+    cc::DisplayResourceProvider* resource_provider,
+    RenderPass* render_pass,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
-    OverlayCandidateList* overlay_candidates,
+    cc::OverlayCandidateList* overlay_candidates,
     CALayerOverlayList* ca_layer_overlays,
     gfx::Rect* damage_rect) {
   OverlayCandidateValidator* overlay_validator =
@@ -88,11 +89,11 @@ bool OverlayProcessor::ProcessForCALayers(
 }
 
 bool OverlayProcessor::ProcessForDCLayers(
-    DisplayResourceProvider* resource_provider,
-    viz::RenderPassList* render_passes,
+    cc::DisplayResourceProvider* resource_provider,
+    RenderPassList* render_passes,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
-    OverlayCandidateList* overlay_candidates,
+    cc::OverlayCandidateList* overlay_candidates,
     DCLayerOverlayList* dc_layer_overlays,
     gfx::Rect* damage_rect) {
   OverlayCandidateValidator* overlay_validator =
@@ -109,11 +110,11 @@ bool OverlayProcessor::ProcessForDCLayers(
 }
 
 void OverlayProcessor::ProcessForOverlays(
-    DisplayResourceProvider* resource_provider,
-    viz::RenderPassList* render_passes,
+    cc::DisplayResourceProvider* resource_provider,
+    RenderPassList* render_passes,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
-    OverlayCandidateList* candidates,
+    cc::OverlayCandidateList* candidates,
     CALayerOverlayList* ca_layer_overlays,
     DCLayerOverlayList* dc_layer_overlays,
     gfx::Rect* damage_rect,
@@ -130,7 +131,7 @@ void OverlayProcessor::ProcessForOverlays(
   const gfx::Rect previous_frame_underlay_rect = previous_frame_underlay_rect_;
   previous_frame_underlay_rect_ = gfx::Rect();
 
-  viz::RenderPass* render_pass = render_passes->back().get();
+  RenderPass* render_pass = render_passes->back().get();
 
   // If we have any copy requests, we can't remove any quads for overlays or
   // CALayers because the framebuffer would be missing the removed quads'
@@ -173,12 +174,12 @@ void OverlayProcessor::ProcessForOverlays(
 // previous frame. This only handles the common case of a single underlay quad
 // for fullscreen video.
 void OverlayProcessor::UpdateDamageRect(
-    OverlayCandidateList* candidates,
+    cc::OverlayCandidateList* candidates,
     const gfx::Rect& previous_frame_underlay_rect,
     gfx::Rect* damage_rect) {
   gfx::Rect output_surface_overlay_damage_rect;
   gfx::Rect this_frame_underlay_rect;
-  for (const OverlayCandidate& overlay : *candidates) {
+  for (const cc::OverlayCandidate& overlay : *candidates) {
     if (overlay.plane_z_order >= 0) {
       const gfx::Rect overlay_display_rect =
           ToEnclosedRect(overlay.display_rect);
@@ -202,4 +203,4 @@ void OverlayProcessor::UpdateDamageRect(
   damage_rect->Union(output_surface_overlay_damage_rect);
 }
 
-}  // namespace cc
+}  // namespace viz

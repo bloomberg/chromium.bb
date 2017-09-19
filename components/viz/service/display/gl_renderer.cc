@@ -31,7 +31,6 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/resource_pool.h"
@@ -46,6 +45,7 @@
 #include "components/viz/service/display/draw_polygon.h"
 #include "components/viz/service/display/dynamic_geometry_binding.h"
 #include "components/viz/service/display/layer_quad.h"
+#include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/static_geometry_binding.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -396,7 +396,7 @@ class GLRenderer::SyncQuery {
 };
 
 GLRenderer::GLRenderer(const RendererSettings* settings,
-                       cc::OutputSurface* output_surface,
+                       OutputSurface* output_surface,
                        cc::DisplayResourceProvider* resource_provider,
                        TextureMailboxDeleter* texture_mailbox_deleter)
     : DirectRenderer(settings, output_surface, resource_provider),
@@ -3303,9 +3303,9 @@ void GLRenderer::ScheduleCALayers() {
     overlay_resource_pool_->CheckBusyResources();
   }
 
-  scoped_refptr<cc::CALayerOverlaySharedState> shared_state;
+  scoped_refptr<CALayerOverlaySharedState> shared_state;
   size_t copied_render_pass_count = 0;
-  for (const cc::CALayerOverlay& ca_layer_overlay :
+  for (const CALayerOverlay& ca_layer_overlay :
        current_frame()->ca_layer_overlay_list) {
     if (ca_layer_overlay.rpdq) {
       ScheduleRenderPassDrawQuad(&ca_layer_overlay);
@@ -3367,9 +3367,9 @@ void GLRenderer::ScheduleDCLayers() {
     overlay_resource_pool_->CheckBusyResources();
   }
 
-  scoped_refptr<cc::DCLayerOverlaySharedState> shared_state;
+  scoped_refptr<DCLayerOverlaySharedState> shared_state;
   size_t copied_render_pass_count = 0;
-  for (cc::DCLayerOverlay& dc_layer_overlay :
+  for (DCLayerOverlay& dc_layer_overlay :
        current_frame()->dc_layer_overlay_list) {
     DCHECK(!dc_layer_overlay.rpdq);
 
@@ -3437,21 +3437,22 @@ void GLRenderer::ScheduleOverlays() {
     return;
 
   cc::OverlayCandidateList& overlays = current_frame()->overlay_list;
-  for (const cc::OverlayCandidate& overlay : overlays) {
+  for (const auto& overlay_candidate : overlays) {
     unsigned texture_id = 0;
-    if (overlay.use_output_surface_for_resource) {
+    if (overlay_candidate.use_output_surface_for_resource) {
       texture_id = output_surface_->GetOverlayTextureId();
       DCHECK(texture_id || IsContextLost());
     } else {
       pending_overlay_resources_.push_back(
           base::MakeUnique<cc::DisplayResourceProvider::ScopedReadLockGL>(
-              resource_provider_, overlay.resource_id));
+              resource_provider_, overlay_candidate.resource_id));
       texture_id = pending_overlay_resources_.back()->texture_id();
     }
 
     context_support_->ScheduleOverlayPlane(
-        overlay.plane_z_order, overlay.transform, texture_id,
-        ToNearestRect(overlay.display_rect), overlay.uv_rect);
+        overlay_candidate.plane_z_order, overlay_candidate.transform,
+        texture_id, ToNearestRect(overlay_candidate.display_rect),
+        overlay_candidate.uv_rect);
   }
 }
 
@@ -3471,7 +3472,7 @@ void GLRenderer::ScheduleOverlays() {
 //   4. Allocate an IOSurface as the drawing destination.
 //   5. Draw the RPDQ.
 void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
-    const cc::CALayerOverlay* ca_layer_overlay,
+    const CALayerOverlay* ca_layer_overlay,
     cc::Resource** resource,
     gfx::RectF* new_bounds) {
   // Don't carry over any GL state from previous RenderPass draw operations.
@@ -3597,7 +3598,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 }
 
 void GLRenderer::ScheduleRenderPassDrawQuad(
-    const cc::CALayerOverlay* ca_layer_overlay) {
+    const CALayerOverlay* ca_layer_overlay) {
   DCHECK(ca_layer_overlay->rpdq);
 
   if (!overlay_resource_pool_) {

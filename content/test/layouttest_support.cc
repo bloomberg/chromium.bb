@@ -385,7 +385,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
   }
 
   // TestLayerTreeFrameSinkClient implementation.
-  std::unique_ptr<cc::OutputSurface> CreateDisplayOutputSurface(
+  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
     // This is for an offscreen context for the compositor. So the default

@@ -151,7 +151,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   // LayerTreeFrameSink. Or override it and create your own OutputSurface to
   // change what type of OutputSurface is used, such as a real OutputSurface for
   // pixel tests or a software-compositing OutputSurface.
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
+  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) override;
 
   gfx::Vector2dF ScrollDelta(LayerImpl* layer_impl);

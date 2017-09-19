@@ -34,7 +34,7 @@ class TestLayerTreeFrameSinkClient {
 
   // This passes the ContextProvider being used by LayerTreeHostImpl which
   // can be used for the OutputSurface optionally.
-  virtual std::unique_ptr<cc::OutputSurface> CreateDisplayOutputSurface(
+  virtual std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<ContextProvider> compositor_context_provider) = 0;
 
   virtual void DisplayReceivedLocalSurfaceId(

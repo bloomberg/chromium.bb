@@ -472,7 +472,7 @@ class LayerTreeTestLayerTreeFrameSinkClient
       : hooks_(hooks) {}
 
   // viz::TestLayerTreeFrameSinkClient implementation.
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurface(
+  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
     return hooks_->CreateDisplayOutputSurfaceOnThread(
@@ -895,7 +895,7 @@ LayerTreeTest::CreateLayerTreeFrameSink(
       refresh_rate);
 }
 
-std::unique_ptr<OutputSurface>
+std::unique_ptr<viz::OutputSurface>
 LayerTreeTest::CreateDisplayOutputSurfaceOnThread(
     scoped_refptr<viz::ContextProvider> compositor_context_provider) {
   // By default the Display shares a context with the LayerTreeHostImpl.

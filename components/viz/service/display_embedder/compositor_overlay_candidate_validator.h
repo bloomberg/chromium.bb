@@ -6,13 +6,13 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_H_
 
 #include "base/macros.h"
-#include "cc/output/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
 
 class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidator
-    : public cc::OverlayCandidateValidator {
+    : public OverlayCandidateValidator {
  public:
   CompositorOverlayCandidateValidator() {}
   ~CompositorOverlayCandidateValidator() override {}

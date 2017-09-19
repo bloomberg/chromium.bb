@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_OUTPUT_SURFACE_H_
-#define CC_OUTPUT_OUTPUT_SURFACE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_H_
 
 #include <deque>
 #include <memory>
@@ -11,29 +11,31 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "cc/cc_export.h"
-#include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/software_output_device.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
+
+namespace cc {
+class OutputSurfaceFrame;
+}
 
 namespace gfx {
 class ColorSpace;
 class Size;
-}
+}  // namespace gfx
 
-namespace cc {
-
+namespace viz {
 class OutputSurfaceClient;
-class OutputSurfaceFrame;
 
 // This class represents a platform-independent API for presenting
 // buffers to display via GPU or software compositing. Implementations
 // can provide platform-specific behaviour.
-class CC_EXPORT OutputSurface {
+class VIZ_SERVICE_EXPORT OutputSurface {
  public:
   struct Capabilities {
     Capabilities() = default;
@@ -51,12 +53,13 @@ class CC_EXPORT OutputSurface {
   };
 
   // Constructor for GL-based compositing.
-  explicit OutputSurface(scoped_refptr<viz::ContextProvider> context_provider);
+  explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
   // Constructor for software compositing.
-  explicit OutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device);
+  explicit OutputSurface(
+      std::unique_ptr<cc::SoftwareOutputDevice> software_device);
   // Constructor for Vulkan-based compositing.
   explicit OutputSurface(
-      scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider);
+      scoped_refptr<VulkanContextProvider> vulkan_context_provider);
 
   virtual ~OutputSurface();
 
@@ -66,13 +69,11 @@ class CC_EXPORT OutputSurface {
   // surface. Either of these may return a null pointer, but not both.
   // In the event of a lost context, the entire output surface should be
   // recreated.
-  viz::ContextProvider* context_provider() const {
-    return context_provider_.get();
-  }
-  viz::VulkanContextProvider* vulkan_context_provider() const {
+  ContextProvider* context_provider() const { return context_provider_.get(); }
+  VulkanContextProvider* vulkan_context_provider() const {
     return vulkan_context_provider_.get();
   }
-  SoftwareOutputDevice* software_device() const {
+  cc::SoftwareOutputDevice* software_device() const {
     return software_device_.get();
   }
 
@@ -121,18 +122,18 @@ class CC_EXPORT OutputSurface {
   // Swaps the current backbuffer to the screen. For successful swaps, the
   // implementation must call OutputSurfaceClient::DidReceiveSwapBuffersAck()
   // after returning from this method in order to unblock the next frame.
-  virtual void SwapBuffers(OutputSurfaceFrame frame) = 0;
+  virtual void SwapBuffers(cc::OutputSurfaceFrame frame) = 0;
 
  protected:
   struct OutputSurface::Capabilities capabilities_;
-  scoped_refptr<viz::ContextProvider> context_provider_;
-  scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider_;
-  std::unique_ptr<SoftwareOutputDevice> software_device_;
+  scoped_refptr<ContextProvider> context_provider_;
+  scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
+  std::unique_ptr<cc::SoftwareOutputDevice> software_device_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_OUTPUT_SURFACE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_H_

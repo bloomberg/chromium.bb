@@ -31,8 +31,8 @@ class VulkanBrowserCompositorOutputSurface
   bool Initialize(gfx::AcceleratedWidget widget);
   void Destroy();
 
-  // cc::OutputSurface implementation.
-  void BindToClient(cc::OutputSurfaceClient* client) override;
+  // viz::OutputSurface implementation.
+  void BindToClient(viz::OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
@@ -53,7 +53,7 @@ class VulkanBrowserCompositorOutputSurface
   void SwapBuffersAck();
 
   std::unique_ptr<gpu::VulkanSurface> surface_;
-  cc::OutputSurfaceClient* client_ = nullptr;
+  viz::OutputSurfaceClient* client_ = nullptr;
   base::WeakPtrFactory<VulkanBrowserCompositorOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanBrowserCompositorOutputSurface);

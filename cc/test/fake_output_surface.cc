@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/output/output_surface_client.h"
 #include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_utils.h"
@@ -71,7 +71,7 @@ uint32_t FakeOutputSurface::GetFramebufferCopyTextureFormat() {
     return GL_RGB;
 }
 
-void FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
+void FakeOutputSurface::BindToClient(viz::OutputSurfaceClient* client) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;
@@ -85,8 +85,8 @@ bool FakeOutputSurface::SurfaceIsSuspendForRecycle() const {
   return suspended_for_recycle_;
 }
 
-OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
-    const {
+viz::OverlayCandidateValidator*
+FakeOutputSurface::GetOverlayCandidateValidator() const {
   return overlay_candidate_validator_;
 }
 

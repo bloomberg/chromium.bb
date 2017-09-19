@@ -29,7 +29,7 @@ class TileDrawQuad;
 class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  public:
   SkiaRenderer(const RendererSettings* settings,
-               cc::OutputSurface* output_surface,
+               OutputSurface* output_surface,
                cc::DisplayResourceProvider* resource_provider);
 
   ~SkiaRenderer() override;

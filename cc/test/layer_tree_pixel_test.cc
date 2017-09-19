@@ -66,7 +66,7 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   return delegating_output_surface;
 }
 
-std::unique_ptr<OutputSurface>
+std::unique_ptr<viz::OutputSurface>
 LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     scoped_refptr<viz::ContextProvider> compositor_context_provider) {
   std::unique_ptr<PixelTestOutputSurface> display_output_surface;

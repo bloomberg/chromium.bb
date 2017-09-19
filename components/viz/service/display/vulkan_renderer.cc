@@ -4,8 +4,8 @@
 
 #include "components/viz/service/display/vulkan_renderer.h"
 
-#include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
+#include "components/viz/service/display/output_surface.h"
 
 namespace viz {
 
@@ -18,7 +18,7 @@ void VulkanRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
 }
 
 VulkanRenderer::VulkanRenderer(const RendererSettings* settings,
-                               cc::OutputSurface* output_surface,
+                               OutputSurface* output_surface,
                                cc::DisplayResourceProvider* resource_provider)
     : DirectRenderer(settings, output_surface, resource_provider) {}
 

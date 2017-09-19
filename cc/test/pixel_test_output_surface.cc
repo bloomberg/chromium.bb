@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/transform.h"
@@ -33,7 +33,7 @@ PixelTestOutputSurface::PixelTestOutputSurface(
 
 PixelTestOutputSurface::~PixelTestOutputSurface() = default;
 
-void PixelTestOutputSurface::BindToClient(OutputSurfaceClient* client) {
+void PixelTestOutputSurface::BindToClient(viz::OutputSurfaceClient* client) {
   client_ = client;
 }
 
@@ -79,7 +79,7 @@ void PixelTestOutputSurface::SwapBuffersCallback() {
   client_->DidReceiveSwapBuffersAck();
 }
 
-OverlayCandidateValidator*
+viz::OverlayCandidateValidator*
 PixelTestOutputSurface::GetOverlayCandidateValidator() const {
   return nullptr;
 }

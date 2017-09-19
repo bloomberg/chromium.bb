@@ -14,9 +14,16 @@ include_rules = [
   "+third_party/skia",
   "+third_party/khronos",
   "+ui/latency",
+  "+ui/gl/ca_renderer_layer_params.h",
+  "+ui/gl/dc_renderer_layer_params.h",
 ]
 
 specific_include_rules = {
+  "dc_layer_overlay.cc|overlay_unittest.cc": [
+    # TODO(danakj): gl_switches.h brings runtime flags into the compositor which
+    # makes testing coverage harder/less clear, it should not be here.
+    "+ui/gl/gl_switches.h",
+  ],
   ".*_(unit|pixel|perf)test\.cc": [
     "+cc/test",
     "+components/viz/service/frame_sinks",

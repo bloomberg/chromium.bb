@@ -30,7 +30,6 @@ class TileDrawQuad;
 
 namespace cc {
 class DisplayResourceProvider;
-class DrawQuad;
 
 class CC_EXPORT OverlayCandidate {
  public:

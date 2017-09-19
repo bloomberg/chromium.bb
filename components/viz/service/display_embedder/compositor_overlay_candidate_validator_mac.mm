@@ -16,7 +16,7 @@ CompositorOverlayCandidateValidatorMac::
     ~CompositorOverlayCandidateValidatorMac() {}
 
 void CompositorOverlayCandidateValidatorMac::GetStrategies(
-    cc::OverlayProcessor::StrategyList* strategies) {}
+    OverlayProcessor::StrategyList* strategies) {}
 
 bool CompositorOverlayCandidateValidatorMac::AllowCALayerOverlays() {
   return !ca_layer_disabled_ && !software_mirror_active_;

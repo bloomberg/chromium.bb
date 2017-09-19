@@ -10,13 +10,13 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/viz_service_export.h"
@@ -26,7 +26,6 @@
 
 namespace cc {
 class DisplayResourceProvider;
-class OutputSurface;
 class RendererSettings;
 }  // namespace cc
 
@@ -41,6 +40,7 @@ class Size;
 namespace viz {
 class DirectRenderer;
 class DisplayClient;
+class OutputSurface;
 class SharedBitmapManager;
 class SoftwareRenderer;
 class TextureMailboxDeleter;
@@ -56,7 +56,7 @@ class VIZ_SERVICE_EXPORT DisplayObserver {
 // (OutputSurface). The client is responsible for creating and sizing the
 // surface IDs used to draw into the display and deciding when to draw.
 class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
-                                   public cc::OutputSurfaceClient {
+                                   public OutputSurfaceClient {
  public:
   // The |begin_frame_source| and |scheduler| may be null (together). In that
   // case, DrawAndSwap must be called externally when needed.
@@ -64,7 +64,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
           gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
           const RendererSettings& settings,
           const FrameSinkId& frame_sink_id,
-          std::unique_ptr<cc::OutputSurface> output_surface,
+          std::unique_ptr<OutputSurface> output_surface,
           std::unique_ptr<DisplayScheduler> scheduler,
           std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter);
 
@@ -130,7 +130,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   bool swapped_since_resize_ = false;
   bool output_is_secure_ = false;
 
-  std::unique_ptr<cc::OutputSurface> output_surface_;
+  std::unique_ptr<OutputSurface> output_surface_;
   std::unique_ptr<DisplayScheduler> scheduler_;
   std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;

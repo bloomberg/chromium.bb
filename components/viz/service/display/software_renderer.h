@@ -27,7 +27,7 @@ class TileDrawQuad;
 class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
   SoftwareRenderer(const RendererSettings* settings,
-                   cc::OutputSurface* output_surface,
+                   OutputSurface* output_surface,
                    cc::DisplayResourceProvider* resource_provider);
 
   ~SoftwareRenderer() override;

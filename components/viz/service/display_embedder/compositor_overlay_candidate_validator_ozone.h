@@ -27,8 +27,8 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorOzone
       std::string strategies_string);
   ~CompositorOverlayCandidateValidatorOzone() override;
 
-  // cc::OverlayCandidateValidator implementation.
-  void GetStrategies(cc::OverlayProcessor::StrategyList* strategies) override;
+  // OverlayCandidateValidator implementation.
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
   bool AllowCALayerOverlays() override;
   bool AllowDCLayerOverlays() override;
   void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;
@@ -40,7 +40,7 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorOzone
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates_;
   // Callback declaration to allocate a new OverlayProcessor::Strategy.
   using StrategyInstantiator =
-      base::Callback<std::unique_ptr<cc::OverlayProcessor::Strategy>(
+      base::Callback<std::unique_ptr<OverlayProcessor::Strategy>(
           CompositorOverlayCandidateValidatorOzone*)>;
   // List callbacks used to instantiate OverlayProcessor::Strategy
   // as defined by |strategies_string| paramter in the constructor.

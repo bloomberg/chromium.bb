@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "cc/output/output_surface.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/resources/single_release_callback_impl.h"
 #include "cc/trees/layer_tree_impl.h"

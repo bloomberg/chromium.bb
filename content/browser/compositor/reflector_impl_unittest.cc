@@ -25,6 +25,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 
 #if defined(USE_OZONE)
+#include "cc/output/overlay_candidate.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #endif  // defined(USE_OZONE)
@@ -85,7 +86,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
 
-  void BindToClient(cc::OutputSurfaceClient* client) override {}
+  void BindToClient(viz::OutputSurfaceClient* client) override {}
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {}

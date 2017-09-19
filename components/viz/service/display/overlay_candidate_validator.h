@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_OVERLAY_CANDIDATE_VALIDATOR_H_
-#define CC_OUTPUT_OVERLAY_CANDIDATE_VALIDATOR_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_CANDIDATE_VALIDATOR_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_CANDIDATE_VALIDATOR_H_
 
 #include <vector>
 
-#include "cc/cc_export.h"
 #include "cc/output/overlay_candidate.h"
-#include "cc/output/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor.h"
+#include "components/viz/service/viz_service_export.h"
 
-namespace cc {
+namespace viz {
 
 // This class that can be used to answer questions about possible overlay
 // configurations for a particular output device.
-class CC_EXPORT OverlayCandidateValidator {
+class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
  public:
   // Populates a list of strategies that may work with this validator.
   virtual void GetStrategies(OverlayProcessor::StrategyList* strategies) = 0;
@@ -33,11 +33,11 @@ class CC_EXPORT OverlayCandidateValidator {
   // to be traditionally composited. Candidates with |overlay_handled| set to
   // true must also have their |display_rect| converted to integer
   // coordinates if necessary.
-  virtual void CheckOverlaySupport(OverlayCandidateList* surfaces) = 0;
+  virtual void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) = 0;
 
   virtual ~OverlayCandidateValidator() {}
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_OVERLAY_CANDIDATE_VALIDATOR_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_CANDIDATE_VALIDATOR_H_

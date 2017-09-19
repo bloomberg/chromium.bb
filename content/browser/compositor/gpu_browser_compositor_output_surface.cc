@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
@@ -70,7 +70,7 @@ void GpuBrowserCompositorOutputSurface::OnReflectorChanged() {
 }
 
 void GpuBrowserCompositorOutputSurface::BindToClient(
-    cc::OutputSurfaceClient* client) {
+    viz::OutputSurfaceClient* client) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;

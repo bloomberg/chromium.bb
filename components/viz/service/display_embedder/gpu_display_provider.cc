@@ -71,7 +71,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   // TODO(rjkroege): If there is something better to do than CHECK, add it.
   CHECK(context_provider->BindToCurrentThread());
 
-  std::unique_ptr<cc::OutputSurface> display_output_surface;
+  std::unique_ptr<OutputSurface> display_output_surface;
   if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
     display_output_surface = base::MakeUnique<DisplayOutputSurfaceOzone>(
