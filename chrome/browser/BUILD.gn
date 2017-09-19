@@ -4388,8 +4388,6 @@ static_library("test_support") {
     "notifications/stub_notification_display_service.h",
     "permissions/mock_permission_request.cc",
     "permissions/mock_permission_request.h",
-    "policy/test/local_policy_test_server.cc",
-    "policy/test/local_policy_test_server.h",
     "search_engines/template_url_service_factory_test_util.cc",
     "search_engines/template_url_service_factory_test_util.h",
     "search_engines/template_url_service_test_util.cc",
@@ -4452,6 +4450,13 @@ static_library("test_support") {
     "//testing/gtest",
     "//ui/gfx",
   ]
+
+  if (!is_android && !is_ios && !is_fuchsia) {
+    sources += [
+      "policy/test/local_policy_test_server.cc",
+      "policy/test/local_policy_test_server.h",
+    ]
+  }
 
   if (is_android) {
     sources += [
