@@ -77,7 +77,6 @@ LayerTreeImpl::LayerTreeImpl(
       root_layer_for_testing_(nullptr),
       hud_layer_(nullptr),
       background_color_(0),
-      has_transparent_background_(false),
       last_scrolled_scroll_node_index_(ScrollTree::kInvalidNodeId),
       page_scale_factor_(page_scale_factor),
       min_page_scale_factor_(0),
@@ -453,7 +452,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // LayerTreeHost::finishCommitOnImplThread().
   target_tree->set_source_frame_number(source_frame_number());
   target_tree->set_background_color(background_color());
-  target_tree->set_has_transparent_background(has_transparent_background());
   target_tree->set_have_scroll_event_handlers(have_scroll_event_handlers());
   target_tree->set_event_listener_properties(
       EventListenerClass::kTouchStartOrMove,

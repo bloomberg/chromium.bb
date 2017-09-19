@@ -258,13 +258,6 @@ class CC_EXPORT LayerTreeImpl {
   SkColor background_color() const { return background_color_; }
   void set_background_color(SkColor color) { background_color_ = color; }
 
-  bool has_transparent_background() const {
-    return has_transparent_background_;
-  }
-  void set_has_transparent_background(bool transparent) {
-    has_transparent_background_ = transparent;
-  }
-
   void UpdatePropertyTreeAnimationFromMainThread();
 
   void SetPageScaleOnActiveTree(float active_page_scale);
@@ -577,7 +570,6 @@ class CC_EXPORT LayerTreeImpl {
   HeadsUpDisplayLayerImpl* hud_layer_;
   PropertyTrees property_trees_;
   SkColor background_color_;
-  bool has_transparent_background_;
 
   int last_scrolled_scroll_node_index_;
 

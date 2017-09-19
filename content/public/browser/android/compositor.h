@@ -71,9 +71,6 @@ class CONTENT_EXPORT Compositor {
   // Set the output surface which the compositor renders into.
   virtual void SetSurface(jobject surface) = 0;
 
-  // Tells the view tree to assume a transparent background when rendering.
-  virtual void SetHasTransparentBackground(bool flag) = 0;
-
   // Tells the compositor to allocate an alpha channel.  This won't take effect
   // until the compositor selects a new egl config, usually when the underlying
   // Android Surface changes format.

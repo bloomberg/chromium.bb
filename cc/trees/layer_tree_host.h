@@ -307,13 +307,6 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
   void set_background_color(SkColor color) { background_color_ = color; }
   SkColor background_color() const { return background_color_; }
 
-  void set_has_transparent_background(bool transparent) {
-    has_transparent_background_ = transparent;
-  }
-  bool has_transparent_background() const {
-    return has_transparent_background_;
-  }
-
   void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                bool use_anchor,
                                float scale,
@@ -627,7 +620,6 @@ class CC_EXPORT LayerTreeHost : public viz::SurfaceReferenceOwner,
   bool defer_commits_ = false;
 
   SkColor background_color_ = SK_ColorWHITE;
-  bool has_transparent_background_ = false;
 
   LayerSelection selection_;
 

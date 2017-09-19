@@ -313,11 +313,10 @@ void BrowserCompositorMac::OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {
   delegated_frame_host_->DidNotProduceFrame(ack);
 }
 
-void BrowserCompositorMac::SetHasTransparentBackground(bool transparent) {
-  has_transparent_background_ = transparent;
+void BrowserCompositorMac::SetBackgroundColor(SkColor background_color) {
+  background_color_ = background_color;
   if (recyclable_compositor_) {
-    recyclable_compositor_->compositor()->SetHostHasTransparentBackground(
-        has_transparent_background_);
+    recyclable_compositor_->compositor()->SetBackgroundColor(background_color_);
   }
 }
 
@@ -360,8 +359,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   if (state_ == HasNoCompositor && new_state != HasNoCompositor) {
     recyclable_compositor_ = RecyclableCompositorMac::Create();
     recyclable_compositor_->compositor()->SetRootLayer(root_layer_.get());
-    recyclable_compositor_->compositor()->SetHostHasTransparentBackground(
-        has_transparent_background_);
+    recyclable_compositor_->compositor()->SetBackgroundColor(background_color_);
     recyclable_compositor_->accelerated_widget_mac()->SetNSView(
         accelerated_widget_mac_ns_view_);
     state_ = HasDetachedCompositor;

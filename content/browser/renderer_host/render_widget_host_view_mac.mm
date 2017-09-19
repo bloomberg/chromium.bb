@@ -1639,13 +1639,13 @@ void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
   // to set a reasonable color to show before the web content generates its
   // first frame. This will be overridden by the web contents.
   SetBackgroundLayerColor(color);
+  browser_compositor_->SetBackgroundColor(color);
 
   DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
          SkColorGetA(color) == SK_AlphaTRANSPARENT);
   bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
   if (background_is_opaque_ != opaque) {
     background_is_opaque_ = opaque;
-    browser_compositor_->SetHasTransparentBackground(!opaque);
     if (render_widget_host_)
       render_widget_host_->SetBackgroundOpaque(opaque);
   }

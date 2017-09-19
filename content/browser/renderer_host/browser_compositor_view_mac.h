@@ -64,7 +64,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   void SubmitCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack);
-  void SetHasTransparentBackground(bool transparent);
+  void SetBackgroundColor(SkColor background_color);
   void SetDisplayColorSpace(const gfx::ColorSpace& color_space);
   void UpdateVSyncParameters(const base::TimeTicks& timebase,
                              const base::TimeDelta& interval);
@@ -169,7 +169,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   std::unique_ptr<DelegatedFrameHost> delegated_frame_host_;
   std::unique_ptr<ui::Layer> root_layer_;
 
-  bool has_transparent_background_ = false;
+  SkColor background_color_ = SK_ColorWHITE;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 

@@ -631,26 +631,8 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   root_window_->GetLayer()->SetBounds(size);
 }
 
-void CompositorImpl::SetHasTransparentBackground(bool transparent) {
-  DCHECK(host_);
-  host_->set_has_transparent_background(transparent);
-
-  // Give a delay in setting the background color to avoid the color for
-  // the normal mode (white) affecting the UI transition.
-  base::ThreadTaskRunnerHandle::Get().get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&CompositorImpl::SetBackgroundColor,
-                 weak_factory_.GetWeakPtr(),
-                 transparent ? SK_ColorBLACK : SK_ColorWHITE),
-      base::TimeDelta::FromMilliseconds(500));
-}
-
 void CompositorImpl::SetRequiresAlphaChannel(bool flag) {
   requires_alpha_channel_ = flag;
-}
-
-void CompositorImpl::SetBackgroundColor(int color) {
-  host_->set_background_color(color);
 }
 
 void CompositorImpl::SetNeedsComposite() {
