@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/vr/color_scheme.h"
+#include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/elements/ui_element_iterator.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -32,15 +34,6 @@ class UiElement;
 
 class UiScene {
  public:
-  enum Command {
-    ADD_ELEMENT,
-    UPDATE_ELEMENT,
-    REMOVE_ELEMENT,
-    ADD_ANIMATION,
-    REMOVE_ANIMATION,
-    CONFIGURE_SCENE,
-  };
-
   UiScene();
   virtual ~UiScene();
 
@@ -97,6 +90,23 @@ class UiScene {
   }
 
   void OnGlInitialized();
+
+  UiElement::iterator begin() { return root_element_->begin(); }
+  UiElement::iterator end() { return root_element_->end(); }
+
+  UiElement::const_iterator begin() const {
+    return const_cast<const UiElement&>(*root_element_).begin();
+  }
+  UiElement::const_iterator end() const {
+    return const_cast<const UiElement&>(*root_element_).end();
+  }
+
+  UiElement::Reversed<UiElement> reversed() {
+    return UiElement::Reversed<UiElement>(root_element_.get());
+  }
+  const UiElement::Reversed<const UiElement> reversed() const {
+    return UiElement::Reversed<const UiElement>(root_element_.get());
+  }
 
  private:
   void Animate(const base::TimeTicks& current_time);

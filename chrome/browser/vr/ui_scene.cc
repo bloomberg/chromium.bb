@@ -18,35 +18,13 @@ namespace vr {
 
 namespace {
 
-template <typename F>
-void ForAllElements(UiElement* e, F f) {
-  f(e);
-  for (auto& child : e->children()) {
-    ForAllElements(child.get(), f);
-  }
-}
-
 template <typename P>
-UiElement* FindElement(UiElement* e, P predicate) {
-  if (predicate(e)) {
-    return e;
-  }
-  for (const auto& child : e->children()) {
-    if (UiElement* match = FindElement(child.get(), predicate)) {
-      return match;
-    }
-  }
-  return nullptr;
-}
-
-template <typename P>
-UiScene::Elements GetVisibleElements(UiElement* e, P predicate) {
+UiScene::Elements GetVisibleElements(UiElement* root, P predicate) {
   UiScene::Elements elements;
-  ForAllElements(e, [&elements, predicate](UiElement* element) {
-    if (element->IsVisible() && predicate(element)) {
-      elements.push_back(element);
-    }
-  });
+  for (auto& element : *root) {
+    if (element.IsVisible() && predicate(&element))
+      elements.push_back(&element);
+  }
   return elements;
 }
 
@@ -82,22 +60,22 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
 
 void UiScene::OnBeginFrame(const base::TimeTicks& current_time,
                            const gfx::Vector3dF& look_at) {
-  ForAllElements(root_element_.get(), [current_time](UiElement* element) {
+  for (auto& element : *root_element_) {
     // Process all animations before calculating object transforms.
-    element->Animate(current_time);
-  });
+    element.Animate(current_time);
+  }
 
-  ForAllElements(root_element_.get(), [look_at](UiElement* element) {
-    element->LayOutChildren();
-    element->AdjustRotationForHeadPose(look_at);
-  });
+  for (auto& element : *root_element_) {
+    element.LayOutChildren();
+    element.AdjustRotationForHeadPose(look_at);
+  }
 
   root_element_->UpdateInheritedProperties();
 }
 
 void UiScene::PrepareToDraw() {
-  ForAllElements(root_element_.get(),
-                 [](UiElement* element) { element->PrepareToDraw(); });
+  for (auto& element : *root_element_)
+    element.PrepareToDraw();
 }
 
 UiElement& UiScene::root_element() {
@@ -105,16 +83,19 @@ UiElement& UiScene::root_element() {
 }
 
 UiElement* UiScene::GetUiElementById(int element_id) const {
-  return FindElement(root_element_.get(), [element_id](UiElement* element) {
-    return element->id() == element_id;
-  });
+  for (auto& element : *root_element_) {
+    if (element.id() == element_id)
+      return &element;
+  }
+  return nullptr;
 }
 
 UiElement* UiScene::GetUiElementByName(UiElementName name) const {
-  DCHECK(name != UiElementName::kNone);
-  return FindElement(root_element_.get(), [name](UiElement* element) {
-    return element->name() == name;
-  });
+  for (auto& element : *root_element_) {
+    if (element.name() == name)
+      return &element;
+  }
+  return nullptr;
 }
 
 UiScene::Elements UiScene::GetVisible2dBrowsingElements() const {
@@ -162,8 +143,8 @@ UiScene::~UiScene() = default;
 // initialize when the binding fires, automatically.
 void UiScene::OnGlInitialized() {
   gl_initialized_ = true;
-  ForAllElements(root_element_.get(),
-                 [](UiElement* element) { element->Initialize(); });
+  for (auto& element : *root_element_)
+    element.Initialize();
 }
 
 }  // namespace vr
