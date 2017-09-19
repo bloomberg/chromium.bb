@@ -9,7 +9,7 @@
 #include "third_party/WebKit/public/platform/WebRTCCertificate.h"
 #include "third_party/WebKit/public/platform/WebRTCCertificateGenerator.h"
 #include "third_party/WebKit/public/platform/WebRTCKeyParams.h"
-#include "third_party/webrtc/rtc_base/optional.h"
+#include "third_party/webrtc/api/optional.h"
 
 namespace content {
 
