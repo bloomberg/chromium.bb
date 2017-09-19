@@ -214,14 +214,22 @@ void SurfaceAggregator::HandleSurfaceQuad(
         // developers notice there's an error when debugging.
         background_color = SK_ColorMAGENTA;
 #endif
+        std::stringstream error_stream;
+        error_stream << surface_id;
+#if DCHECK_IS_ON()
+        std::string frame_sink_debug_label(
+            manager_->GetFrameSinkDebugLabel(surface_id.frame_sink_id()));
+        if (!frame_sink_debug_label.empty())
+          error_stream << " [" << frame_sink_debug_label << "]";
+#endif
         if (!surface) {
-          DLOG(ERROR) << surface_id << " is missing during aggregation";
+          error_stream << " is missing during aggregation";
           ++uma_stats_.missing_surface;
         } else {
-          DLOG(ERROR) << surface_id
-                      << " has no active frame during aggregation";
+          error_stream << " has no active frame during aggregation";
           ++uma_stats_.no_active_frame;
         }
+        DLOG(ERROR) << error_stream.str();
       }
       // This is a primary SurfaceDrawQuad and there is no fallback
       // SurfaceDrawQuad so create a SolidColorDrawQuad with the default
