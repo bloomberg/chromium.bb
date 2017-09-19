@@ -3,4 +3,4 @@ rootWebArea pageLocation=(0, 0)
 ++++rootWebArea pageLocation=(0, 100)
 ++++++iframe pageLocation=(200, 100) transform
 ++++++++rootWebArea pageLocation=(200, 100)
-++++++++++image pageLocation=(240, 140) pageSize=(800, 800)
+++++++++++image pageLocation=(240, 140) pageSize=(560, 460)

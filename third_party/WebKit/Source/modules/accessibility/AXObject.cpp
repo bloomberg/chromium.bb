@@ -1814,7 +1814,7 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
   if (IsWebArea()) {
     if (layout_object->GetFrame()->View()) {
       out_bounds_in_container.SetSize(
-          FloatSize(layout_object->GetFrame()->View()->ContentsSize()));
+          FloatSize(layout_object->GetFrame()->View()->Size()));
     }
     return;
   }

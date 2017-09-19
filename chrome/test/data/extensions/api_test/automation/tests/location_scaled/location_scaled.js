@@ -44,8 +44,8 @@ var allTests = [
       'innerBounds': {
         'left': 50,
         'top': 150,
-        'width': 400,
-        'height': 400
+        'width': 800,
+        'height': 800
       }
     });
   }
