@@ -17,6 +17,9 @@
 #   header_filename:
 #     Name of the generated header file.
 #
+#   major_branch_date_filepath:
+#     A path to the file with the base date.
+#
 template("generate_expired_histograms_array") {
   action(target_name) {
     header_filename = "$target_gen_dir/" + invoker.header_filename
@@ -27,6 +30,7 @@ template("generate_expired_histograms_array") {
     ]
 
     inputs = invoker.inputs
+    major_branch_date_filepath = invoker.major_branch_date_filepath
 
     args = []
 
@@ -37,6 +41,7 @@ template("generate_expired_histograms_array") {
     args += [
               "-o" + rebase_path(root_gen_dir, root_build_dir),
               "-H" + rebase_path(header_filename, root_gen_dir),
+              "-d" + rebase_path(major_branch_date_filepath, root_build_dir),
             ] + rebase_path(inputs, root_build_dir)
   }
 }

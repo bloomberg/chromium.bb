@@ -82,13 +82,39 @@ class ExpiredHistogramsTest(unittest.TestCase):
     base_date = datetime.date(2000, 10, 01)
 
     with self.assertRaises(generate_expired_histograms_array.Error) as error:
-        _ = generate_expired_histograms_array._GetExpiredHistograms(histograms,
+        generate_expired_histograms_array._GetExpiredHistograms(histograms,
             base_date)
 
     self.assertEqual(
         "Unable to parse expiry date 2000-10-01 in histogram SecondHistogram.",
         str(error.exception))
 
+  def testGetBaseDate(self):
+    pattern = generate_expired_histograms_array._DATE_FILE_PATTERN
+
+    # Does not match the pattern.
+    content = "MAJOR_BRANCH__FAKE_DATE=2017/09/09"
+    with self.assertRaises(generate_expired_histograms_array.Error):
+        generate_expired_histograms_array._GetBaseDate(content, pattern)
+
+    # Has invalid format.
+    content = "MAJOR_BRANCH_DATE=2010-01-01"
+    with self.assertRaises(generate_expired_histograms_array.Error):
+        generate_expired_histograms_array._GetBaseDate(content, pattern)
+
+    # Has invalid format.
+    content = "MAJOR_BRANCH_DATE=2010/20/02"
+    with self.assertRaises(generate_expired_histograms_array.Error):
+        generate_expired_histograms_array._GetBaseDate(content, pattern)
+
+    # Has invalid date.
+    content = "MAJOR_BRANCH_DATE=2017/02/29"
+    with self.assertRaises(generate_expired_histograms_array.Error):
+        generate_expired_histograms_array._GetBaseDate(content, pattern)
+
+    content = "!!FOO!\nMAJOR_BRANCH_DATE=2010/01/01\n!FOO!!"
+    base_date = generate_expired_histograms_array._GetBaseDate(content, pattern)
+    self.assertEqual(base_date, datetime.date(2010, 01, 01))
 
   def testGenerateHeaderFileContent(self):
     header_filename = "test/test.h"
