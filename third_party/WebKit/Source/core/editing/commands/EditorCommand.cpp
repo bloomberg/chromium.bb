@@ -3022,12 +3022,11 @@ bool Editor::Command::Execute(const String& parameter,
               EventTargetNodeForDocument(frame_->GetDocument()), input_type,
               GetTargetRanges()) != DispatchEventResult::kNotCanceled)
         return true;
+      // 'beforeinput' event handler may destroy target frame.
+      if (frame_->GetDocument()->GetFrame() != frame_)
+        return false;
     }
   }
-
-  // 'beforeinput' event handler may destroy target frame.
-  if (frame_->GetDocument()->GetFrame() != frame_)
-    return false;
 
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   DEFINE_STATIC_LOCAL(SparseHistogram, command_histogram,
