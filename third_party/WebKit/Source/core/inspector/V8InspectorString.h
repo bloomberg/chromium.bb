@@ -64,6 +64,7 @@ class CORE_EXPORT StringUtil {
   static void builderAppend(StringBuilder& builder, const char* s, size_t len) {
     builder.Append(s, len);
   }
+  static void builderAppendQuotedString(StringBuilder&, const String&);
   static void builderReserve(StringBuilder& builder, unsigned capacity) {
     builder.ReserveCapacity(capacity);
   }
