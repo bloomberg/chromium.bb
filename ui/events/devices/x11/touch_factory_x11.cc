@@ -26,6 +26,23 @@
 #include "ui/events/event_switches.h"
 
 namespace ui {
+namespace {
+
+void AddPointerDevicesFromString(
+    const std::string& pointer_devices,
+    EventPointerType type,
+    std::vector<std::pair<int, EventPointerType>>* devices) {
+  for (const base::StringPiece& dev : base::SplitStringPiece(
+           pointer_devices, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    int devid;
+    if (base::StringToInt(dev, &devid))
+      devices->push_back({devid, type});
+    else
+      DLOG(WARNING) << "Invalid device id: " << dev.as_string();
+  }
+}
+
+}  // namespace
 
 TouchFactory::TouchFactory()
     : pointer_device_lookup_(),
@@ -53,23 +70,16 @@ void TouchFactory::SetTouchDeviceListFromCommandLine() {
   // Get a list of pointer-devices that should be treated as touch-devices.
   // This is primarily used for testing/debugging touch-event processing when a
   // touch-device isn't available.
-  std::string touch_devices =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTouchDevices);
-
-  if (!touch_devices.empty()) {
-    std::vector<int> device_ids;
-    for (const base::StringPiece& dev :
-         base::SplitStringPiece(touch_devices, ",", base::TRIM_WHITESPACE,
-                                base::SPLIT_WANT_ALL)) {
-      int devid;
-      if (base::StringToInt(dev, &devid))
-        device_ids.push_back(devid);
-      else
-        DLOG(WARNING) << "Invalid touch-device id: " << dev.as_string();
-    }
-    ui::TouchFactory::GetInstance()->SetTouchDeviceList(device_ids);
-  }
+  std::vector<std::pair<int, EventPointerType>> devices;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  AddPointerDevicesFromString(
+      command_line->GetSwitchValueASCII(switches::kTouchDevices),
+      EventPointerType::POINTER_TYPE_TOUCH, &devices);
+  AddPointerDevicesFromString(
+      command_line->GetSwitchValueASCII(switches::kPenDevices),
+      EventPointerType::POINTER_TYPE_PEN, &devices);
+  if (!devices.empty())
+    ui::TouchFactory::GetInstance()->SetTouchDeviceList(devices);
 }
 
 void TouchFactory::UpdateDeviceList(XDisplay* display) {
@@ -118,7 +128,8 @@ void TouchFactory::UpdateDeviceList(XDisplay* display) {
           continue;
 
         touch_device_lookup_[master_id] = true;
-        touch_device_list_[master_id] = true;
+        touch_device_list_[master_id] = {true,
+                                         EventPointerType::POINTER_TYPE_TOUCH};
 
         if (devinfo.use != XIMasterPointer)
           CacheTouchscreenIds(devinfo.deviceid);
@@ -126,7 +137,8 @@ void TouchFactory::UpdateDeviceList(XDisplay* display) {
         if (devinfo.use == XISlavePointer) {
           device_master_id_list_[devinfo.deviceid] = master_id;
           touch_device_lookup_[devinfo.deviceid] = true;
-          touch_device_list_[devinfo.deviceid] = false;
+          touch_device_list_[devinfo.deviceid] = {
+              false, EventPointerType::POINTER_TYPE_TOUCH};
         }
       }
       pointer_device_lookup_[devinfo.deviceid] =
@@ -157,7 +169,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
     // For a 'floating' touchscreen device, X11 sends only one event for
     // each touch, with both deviceid and sourceid set to the id of the
     // touchscreen device.
-    bool is_from_master_or_float = touch_device_list_[xiev->deviceid];
+    bool is_from_master_or_float = touch_device_list_[xiev->deviceid].is_master;
     bool is_from_slave_device = !is_from_master_or_float
         && xiev->sourceid == xiev->deviceid;
     return !is_touch_disabled &&
@@ -229,18 +241,21 @@ void TouchFactory::SetupXI2ForXWindow(Window window) {
   XFlush(display);
 }
 
-void TouchFactory::SetTouchDeviceList(const std::vector<int>& devices) {
+void TouchFactory::SetTouchDeviceList(
+    const std::vector<std::pair<int, EventPointerType>>& devices) {
   touch_device_lookup_.reset();
   touch_device_list_.clear();
-  for (int deviceid : devices) {
+  for (auto& device : devices) {
+    int deviceid = device.first;
+    EventPointerType type = device.second;
     DCHECK(IsValidDevice(deviceid));
     touch_device_lookup_[deviceid] = true;
-    touch_device_list_[deviceid] = false;
+    touch_device_list_[deviceid] = {false, type};
     if (device_master_id_list_.find(deviceid) != device_master_id_list_.end()) {
       // When we set the device through the "--touch-devices" flag to slave
       // touch device, we also set its master device to be touch device.
       touch_device_lookup_[device_master_id_list_[deviceid]] = true;
-      touch_device_list_[device_master_id_list_[deviceid]] = false;
+      touch_device_list_[device_master_id_list_[deviceid]] = {false, type};
     }
   }
 }
@@ -256,8 +271,13 @@ bool TouchFactory::IsTouchDevice(int deviceid) const {
 
 bool TouchFactory::IsMultiTouchDevice(int deviceid) const {
   return (IsValidDevice(deviceid) && touch_device_lookup_[deviceid])
-             ? touch_device_list_.find(deviceid)->second
+             ? touch_device_list_.find(deviceid)->second.is_master
              : false;
+}
+
+EventPointerType TouchFactory::GetTouchDevicePointerType(int deviceid) const {
+  DCHECK(IsTouchDevice(deviceid));
+  return touch_device_list_.find(deviceid)->second.pointer_type;
 }
 
 bool TouchFactory::QuerySlotForTrackingID(uint32_t tracking_id, int* slot) {
@@ -297,7 +317,7 @@ void TouchFactory::SetTouchDeviceForTest(
        iter != devices.end(); ++iter) {
     DCHECK(IsValidDevice(*iter));
     touch_device_lookup_[*iter] = true;
-    touch_device_list_[*iter] = true;
+    touch_device_list_[*iter] = {true, EventPointerType::POINTER_TYPE_TOUCH};
   }
   SetTouchscreensEnabled(true);
 }
