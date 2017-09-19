@@ -10,6 +10,18 @@
 
 namespace content {
 
+namespace {
+
+// Must be in sync with "sandbox_type" value in mojo service manifest.json
+// files.
+const char kNoSandbox[] = "none";
+const char kNetworkSandbox[] = "network";
+const char kPpapiSandbox[] = "ppapi";
+const char kUtilitySandbox[] = "utility";
+const char kWidevineSandbox[] = "widevine";
+
+}  // namespace
+
 void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
                                        SandboxType sandbox_type) {
   switch (sandbox_type) {
@@ -25,22 +37,36 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
              switches::kUtilityProcess);
       DCHECK(!command_line->HasSwitch(switches::kUtilityProcessSandboxType));
       command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
-                                      "utility");
+                                      kUtilitySandbox);
       break;
     case SANDBOX_TYPE_GPU:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kGpuProcess);
       break;
     case SANDBOX_TYPE_PPAPI:
-      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
-             switches::kPpapiPluginProcess);
+      if (command_line->GetSwitchValueASCII(switches::kProcessType) ==
+          switches::kUtilityProcess) {
+        command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
+                                        kPpapiSandbox);
+      } else {
+        DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
+               switches::kPpapiPluginProcess);
+      }
       break;
     case SANDBOX_TYPE_NETWORK:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
       DCHECK(!command_line->HasSwitch(switches::kUtilityProcessSandboxType));
       command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
-                                      "network");
+                                      kNetworkSandbox);
+      break;
+    case SANDBOX_TYPE_WIDEVINE:
+      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
+             switches::kUtilityProcess);
+      DCHECK(!command_line->HasSwitch(switches::kUtilityProcessSandboxType));
+      command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
+                                      kWidevineSandbox);
+      break;
     default:
       break;
   }
@@ -80,10 +106,14 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
 }
 
 SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
-  if (sandbox_string == "none")
+  if (sandbox_string == kNoSandbox)
     return SANDBOX_TYPE_NO_SANDBOX;
-  if (sandbox_string == "network")
+  if (sandbox_string == kNetworkSandbox)
     return SANDBOX_TYPE_NETWORK;
+  if (sandbox_string == kPpapiSandbox)
+    return SANDBOX_TYPE_PPAPI;
+  if (sandbox_string == kWidevineSandbox)
+    return SANDBOX_TYPE_WIDEVINE;
   return SANDBOX_TYPE_UTILITY;
 }
 

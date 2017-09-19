@@ -62,6 +62,7 @@ SandboxTypeToResourceIDMapping kDefaultSandboxTypeToResourceIDMapping[] = {
     {SANDBOX_TYPE_GPU, IDR_GPU_SANDBOX_PROFILE},
     {SANDBOX_TYPE_PPAPI, IDR_PPAPI_SANDBOX_PROFILE},
     {SANDBOX_TYPE_NETWORK, -1},
+    {SANDBOX_TYPE_WIDEVINE, IDR_PPAPI_SANDBOX_PROFILE},
 };
 
 static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) == \
