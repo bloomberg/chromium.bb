@@ -227,8 +227,7 @@ void TestResultsTracker::AddDisabledTest(const std::string& test_name) {
 void TestResultsTracker::AddTestLocation(const std::string& test_name,
                                          const std::string& file,
                                          int line) {
-  test_locations_.insert(std::make_pair(
-      TestNameWithoutDisabledPrefix(test_name), CodeLocation(file, line)));
+  test_locations_.insert(std::make_pair(test_name, CodeLocation(file, line)));
 }
 
 void TestResultsTracker::AddTestResult(const TestResult& result) {
