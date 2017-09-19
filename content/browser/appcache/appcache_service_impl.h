@@ -103,7 +103,7 @@ class CONTENT_EXPORT AppCacheServiceImpl
 
   // AppCacheService implementation:
   void GetAllAppCacheInfo(AppCacheInfoCollection* collection,
-                          const net::CompletionCallback& callback) override;
+                          OnceCompletionCallback callback) override;
   void DeleteAppCacheGroup(const GURL& manifest_url,
                            const net::CompletionCallback& callback) override;
 
