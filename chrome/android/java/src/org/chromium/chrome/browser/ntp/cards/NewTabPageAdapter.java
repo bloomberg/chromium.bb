@@ -118,12 +118,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mRoot.addChildren(mSections, mSigninPromo, mAllDismissed);
         }
 
-        if (SuggestionsConfig.scrollToLoad()) {
-            mFooter = null;
-        } else {
-            mFooter = new Footer();
-            mRoot.addChild(mFooter);
-        }
+        mFooter = new Footer();
+        mRoot.addChild(mFooter);
 
         if (mAboveTheFoldView == null
                 || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT)) {
@@ -264,9 +260,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         boolean hasAllBeenDismissed = hasAllBeenDismissed();
 
         mAllDismissed.setVisible(areRemoteSuggestionsEnabled && hasAllBeenDismissed);
-        if (!SuggestionsConfig.scrollToLoad()) {
-            mFooter.setVisible(areRemoteSuggestionsEnabled && !hasAllBeenDismissed);
-        }
+        mFooter.setVisible(!SuggestionsConfig.scrollToLoad() && areRemoteSuggestionsEnabled
+                && !hasAllBeenDismissed);
 
         if (mBottomSpacer != null) {
             mBottomSpacer.setVisible(areRemoteSuggestionsEnabled || !hasAllBeenDismissed);
