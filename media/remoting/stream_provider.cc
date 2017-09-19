@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_rotation.h"
@@ -93,7 +94,7 @@ class MediaStream final : public DemuxerStream {
 
   base::Closure error_callback_;  // Called only once when first error occurs.
 
-  std::deque<scoped_refptr<DecoderBuffer>> buffers_;
+  base::circular_deque<scoped_refptr<DecoderBuffer>> buffers_;
 
   // Current audio/video config.
   AudioDecoderConfig audio_decoder_config_;

@@ -42,6 +42,7 @@
 #include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
@@ -211,7 +212,7 @@ class EncodedVideoFrameTracker : public RawEventSubscriber {
  private:
   FakeMediaSource* media_source_;
   CastLoggingEvent last_frame_event_type_;
-  std::queue<scoped_refptr<media::VideoFrame> > video_frames_;
+  base::queue<scoped_refptr<media::VideoFrame>> video_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(EncodedVideoFrameTracker);
 };

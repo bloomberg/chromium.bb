@@ -7,10 +7,9 @@
 
 #include <stdint.h>
 
-#include <deque>
-
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -96,7 +95,7 @@ class MEDIA_EXPORT SilentSinkSuspender
   bool is_transition_pending_ = false;
 
   // Buffers accumulated during the transition from |fake_sink_| to |sink_|.
-  std::deque<std::unique_ptr<AudioBus>> buffers_after_silence_;
+  base::circular_deque<std::unique_ptr<AudioBus>> buffers_after_silence_;
 
   // A cancelable task that is posted to switch to or from the |fake_sink_|
   // after a period of silence or first non-silent audio respective. We do this

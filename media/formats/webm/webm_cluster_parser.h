@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_export.h"
@@ -26,9 +26,9 @@ namespace media {
 
 class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
  public:
-  typedef StreamParser::TrackId TrackId;
-  typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
-  typedef std::map<TrackId, const BufferQueue> TextBufferQueueMap;
+  using TrackId = StreamParser::TrackId;
+  using BufferQueue = base::circular_deque<scoped_refptr<StreamParserBuffer>>;
+  using TextBufferQueueMap = std::map<TrackId, const BufferQueue>;
 
   // Numbers chosen to estimate the duration of a buffer if none is set and
   // there is not enough information to get a better estimate.

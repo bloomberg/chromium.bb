@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -191,12 +192,14 @@ class CourierRenderer : public Renderer {
   // Stores all |current_media_time_| and the local time when updated in the
   // moving time window. This is used to check whether the playback duration
   // matches the update duration in the window.
-  std::deque<std::pair<base::TimeTicks, base::TimeDelta>> media_time_queue_;
+  base::circular_deque<std::pair<base::TimeTicks, base::TimeDelta>>
+      media_time_queue_;
 
   // Stores all updates on the number of video frames decoded/dropped, and the
   // local time when updated in the moving time window. This is used to check
   // whether too many video frames were dropped.
-  std::deque<std::tuple<base::TimeTicks, int, int>> video_stats_queue_;
+  base::circular_deque<std::tuple<base::TimeTicks, int, int>>
+      video_stats_queue_;
 
   // The total number of frames decoded/dropped in the time window.
   int sum_video_frames_decoded_ = 0;

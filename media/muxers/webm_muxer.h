@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_piece.h"
@@ -162,7 +162,8 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
    private:
     DISALLOW_IMPLICIT_CONSTRUCTORS(EncodedVideoFrame);
   };
-  std::deque<std::unique_ptr<EncodedVideoFrame>> encoded_frames_queue_;
+  base::circular_deque<std::unique_ptr<EncodedVideoFrame>>
+      encoded_frames_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(WebmMuxer);
 };

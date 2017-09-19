@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <list>
-#include <queue>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/bitstream_buffer.h"
@@ -76,7 +76,7 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
 
   // A queue containing the necessary data for incoming frames. The boolean
   // represent whether the queued frame should force a key frame.
-  std::queue<bool> queued_frames_;
+  base::queue<bool> queued_frames_;
 
   // A list of buffers available for putting fake encoded frames in.
   std::list<BitstreamBuffer> available_buffers_;

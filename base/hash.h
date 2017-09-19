@@ -50,7 +50,10 @@ inline size_t HashInts(T1 value1, T2 value2) {
   return HashInts32(value1, value2);
 }
 
-// A templated hasher for pairs of integer types.
+// A templated hasher for pairs of integer types. Example:
+//
+//   using MyPair = std::pair<int32_t, int32_t>;
+//   std::unordered_set<MyPair, base::IntPairHash<MyPair>> set;
 template <typename T>
 struct IntPairHash;
 

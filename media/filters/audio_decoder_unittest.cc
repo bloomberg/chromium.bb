@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/md5.h"
@@ -401,7 +402,7 @@ class AudioDecoderTest
   bool pending_reset_;
   DecodeStatus last_decode_status_;
 
-  std::deque<scoped_refptr<AudioBuffer> > decoded_audio_;
+  base::circular_deque<scoped_refptr<AudioBuffer>> decoded_audio_;
   base::TimeDelta start_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderTest);

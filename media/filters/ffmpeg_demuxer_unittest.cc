@@ -6,7 +6,6 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <deque>
 #include <string>
 
 #include "base/bind.h"

@@ -6,9 +6,9 @@
 #define MEDIA_BASE_SERIAL_RUNNER_H_
 
 #include <memory>
-#include <queue>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -46,7 +46,7 @@ class MEDIA_EXPORT SerialRunner {
     BoundPipelineStatusCB Pop();
     bool empty();
 
-    std::queue<BoundPipelineStatusCB> bound_fns_;
+    base::queue<BoundPipelineStatusCB> bound_fns_;
   };
 
   // Executes the bound functions in series, executing |done_cb| when finished.

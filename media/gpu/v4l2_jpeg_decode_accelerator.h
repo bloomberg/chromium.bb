@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -161,8 +161,8 @@ class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
 
   // All the below members except |weak_factory_| are accessed from
   // |decoder_thread_| only (if it's running).
-  std::queue<linked_ptr<JobRecord>> input_jobs_;
-  std::queue<linked_ptr<JobRecord>> running_jobs_;
+  base::queue<linked_ptr<JobRecord>> input_jobs_;
+  base::queue<linked_ptr<JobRecord>> running_jobs_;
 
   // Input queue state.
   bool input_streamon_;

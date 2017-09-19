@@ -10,10 +10,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -412,13 +412,13 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   struct BitstreamBufferRef;
   // Input queue of stream buffers coming from the client.
-  std::queue<linked_ptr<BitstreamBufferRef>> decoder_input_queue_;
+  base::queue<linked_ptr<BitstreamBufferRef>> decoder_input_queue_;
   // BitstreamBuffer currently being processed.
   std::unique_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
 
   // Queue storing decode surfaces ready to be output as soon as they are
   // decoded. The surfaces must be output in order they are queued.
-  std::queue<scoped_refptr<V4L2DecodeSurface>> decoder_display_queue_;
+  base::queue<scoped_refptr<V4L2DecodeSurface>> decoder_display_queue_;
 
   // Decoder state.
   State state_;
@@ -460,7 +460,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   };
 
   // Pictures that are ready but not sent to PictureReady yet.
-  std::queue<PictureRecord> pending_picture_ready_;
+  base::queue<PictureRecord> pending_picture_ready_;
 
   // The number of pictures that are sent to PictureReady and will be cleared.
   int picture_clearing_count_;

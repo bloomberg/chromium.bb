@@ -6,9 +6,9 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <deque>
 
 #include "base/big_endian.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
@@ -83,8 +83,8 @@ class TestPacketSender : public PacketTransport {
   bool expecting_nothing_else() const { return expected_packet_sizes_.empty(); }
 
  private:
-  std::deque<int> expected_packet_sizes_;
-  std::deque<uint16_t> expected_packet_ids_;
+  base::circular_deque<int> expected_packet_sizes_;
+  base::circular_deque<uint16_t> expected_packet_ids_;
   int64_t bytes_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPacketSender);

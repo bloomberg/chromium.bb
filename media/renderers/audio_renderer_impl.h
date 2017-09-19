@@ -21,7 +21,6 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 
 #include "base/macros.h"

@@ -7,8 +7,7 @@
 #ifndef MEDIA_GPU_VIDEO_ACCELERATOR_UNITTEST_HELPERS_H_
 #define MEDIA_GPU_VIDEO_ACCELERATOR_UNITTEST_HELPERS_H_
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 
@@ -32,7 +31,7 @@ class ClientStateNotification {
  private:
   base::Lock lock_;
   base::ConditionVariable cv_;
-  std::queue<StateEnum> pending_states_for_notification_;
+  base::queue<StateEnum> pending_states_for_notification_;
 };
 
 template <typename StateEnum>

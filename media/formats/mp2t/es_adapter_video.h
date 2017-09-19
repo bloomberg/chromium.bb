@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <list>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -56,8 +56,8 @@ class MEDIA_EXPORT EsAdapterVideo {
       const scoped_refptr<StreamParserBuffer>& stream_parser_buffer);
 
  private:
-  typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
-  typedef std::pair<int64_t, VideoDecoderConfig> ConfigEntry;
+  using BufferQueue = base::circular_deque<scoped_refptr<StreamParserBuffer>>;
+  using ConfigEntry = std::pair<int64_t, VideoDecoderConfig>;
 
   void ProcessPendingBuffers(bool flush);
 

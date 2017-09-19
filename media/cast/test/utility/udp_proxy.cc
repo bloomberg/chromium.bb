@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -104,7 +105,7 @@ class Buffer : public PacketPipe {
     }
   }
 
-  std::deque<linked_ptr<Packet> > buffer_;
+  base::circular_deque<linked_ptr<Packet>> buffer_;
   base::TimeTicks last_schedule_;
   size_t buffer_size_;
   size_t max_buffer_size_;
@@ -282,7 +283,7 @@ class RandomSortedDelay : public PacketPipe {
   }
 
   base::TimeTicks block_until_;
-  std::deque<linked_ptr<Packet> > buffer_;
+  base::circular_deque<linked_ptr<Packet>> buffer_;
   double random_delay_;
   double extra_delay_;
   double seconds_between_extra_delay_;
@@ -402,8 +403,8 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
   const base::WeakPtr<InterruptedPoissonProcess> ipp_;
   size_t stored_size_;
   const size_t stored_limit_;
-  std::deque<linked_ptr<Packet> > buffer_;
-  std::deque<base::TimeTicks> buffer_time_;
+  base::circular_deque<linked_ptr<Packet>> buffer_;
+  base::circular_deque<base::TimeTicks> buffer_time_;
   base::TickClock* clock_;
   base::WeakPtrFactory<InternalBuffer> weak_factory_;
 

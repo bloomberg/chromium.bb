@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <cmath>
-#include <deque>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
@@ -129,7 +129,7 @@ class MEDIA_EXPORT AudioClock {
   const base::TimeDelta start_timestamp_;
   const double microseconds_per_frame_;
 
-  std::deque<AudioData> buffered_;
+  base::circular_deque<AudioData> buffered_;
   int64_t total_buffered_frames_;
 
   // Use double rather than TimeDelta to avoid loss of partial microseconds when

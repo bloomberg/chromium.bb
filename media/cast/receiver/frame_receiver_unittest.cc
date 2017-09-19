@@ -7,11 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -64,7 +64,7 @@ class FakeFrameClient {
   int number_times_called() const { return num_called_; }
 
  private:
-  std::deque<std::pair<FrameId, base::TimeTicks>> expected_results_;
+  base::circular_deque<std::pair<FrameId, base::TimeTicks>> expected_results_;
   int num_called_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFrameClient);

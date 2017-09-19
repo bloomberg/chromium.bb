@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 
+#include "base/containers/circular_deque.h"
 #include "base/memory/linked_ptr.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
@@ -95,7 +95,7 @@ private:
     linked_ptr<AudioBus> audio;
   };
 
-  typedef std::deque<AudioQueueEntry> AudioShifterQueue;
+  using AudioShifterQueue = base::circular_deque<AudioQueueEntry>;
 
   // Set from constructor.
   const base::TimeDelta max_buffer_size_;

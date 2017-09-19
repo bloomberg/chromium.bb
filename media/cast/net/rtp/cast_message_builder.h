@@ -9,9 +9,9 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 
+#include "base/containers/circular_deque.h"
 #include "base/time/tick_clock.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 
@@ -58,7 +58,7 @@ class CastMessageBuilder {
 
   bool slowing_down_ack_;
   bool acked_last_frame_;
-  std::deque<FrameId> ack_queue_;
+  base::circular_deque<FrameId> ack_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMessageBuilder);
 };

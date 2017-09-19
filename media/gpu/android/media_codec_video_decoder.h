@@ -5,6 +5,7 @@
 #ifndef MEDIA_GPU_ANDROID_MEDIA_CODEC_VIDEO_DECODER_H_
 #define MEDIA_GPU_ANDROID_MEDIA_CODEC_VIDEO_DECODER_H_
 
+#include "base/containers/circular_deque.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -180,7 +181,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
 
   // Whether initialization still needs to be done on the first decode call.
   bool lazy_init_pending_ = true;
-  std::deque<PendingDecode> pending_decodes_;
+  base::circular_deque<PendingDecode> pending_decodes_;
 
   // Whether we've seen MediaCodec return MEDIA_CODEC_NO_KEY indicating that
   // the corresponding key was not set yet, and MediaCodec will not accept

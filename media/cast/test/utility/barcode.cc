@@ -22,9 +22,9 @@
 // start of the pattern.
 
 #include <algorithm>
-#include <deque>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/cast/test/utility/barcode.h"
@@ -85,7 +85,7 @@ bool DecodeBarCodeRows(const scoped_refptr<VideoFrame>& frame,
                        int min_row,
                        int max_row) {
   // Do a basic run-length encoding
-  std::deque<int> runs;
+  base::circular_deque<int> runs;
   bool is_black = true;
   int length = 0;
   for (int pos = 0; pos < frame->row_bytes(VideoFrame::kYPlane); pos++) {
@@ -107,7 +107,7 @@ bool DecodeBarCodeRows(const scoped_refptr<VideoFrame>& frame,
 
   // Try decoding starting at each white-black transition.
   while (runs.size() >=  output->size() * 2 + 7) {
-    std::deque<int>::const_iterator i = runs.begin();
+    base::circular_deque<int>::const_iterator i = runs.begin();
     double unit_size = (i[1] + i[2] + i[3] + i[4]) / 4;
     bool valid = true;
     if (i[0] > unit_size * 2 || i[0] < unit_size / 2) valid = false;

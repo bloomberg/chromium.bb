@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/synchronization/lock.h"
@@ -32,7 +32,7 @@ namespace media {
 
 class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
  public:
-  typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
+  using BufferQueue = base::circular_deque<scoped_refptr<StreamParserBuffer>>;
 
   ChunkDemuxerStream(Type type, MediaTrack::Id media_track_id);
   ~ChunkDemuxerStream() override;

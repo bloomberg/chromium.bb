@@ -5,8 +5,6 @@
 #ifndef MEDIA_REMOTING_STREAM_PROVIDER_H_
 #define MEDIA_REMOTING_STREAM_PROVIDER_H_
 
-#include <deque>
-
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
