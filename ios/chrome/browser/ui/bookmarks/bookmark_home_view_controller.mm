@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -1094,7 +1095,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                   attributes:titleAttributes]];
   [titleView sizeToFit];
   // iOS11 navigation bar uses auto layout, hence explicitly set this to NO.
-  titleView.translatesAutoresizingMaskIntoConstraints = NO;
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    titleView.translatesAutoresizingMaskIntoConstraints = NO;
+  }
   self.navigationItem.leftItemsSupplementBackButton = YES;
   return [[UIBarButtonItem alloc] initWithCustomView:titleView];
 }
