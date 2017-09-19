@@ -169,6 +169,11 @@ class DownloadAnimationWebObserver;
 void DownloadStartedAnimation::Show(content::WebContents* web_contents) {
   DCHECK(web_contents);
 
+  // There's code above for an MD version of the animation, but the current
+  // plan is to not show it at all.
+  if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf))
+    return;
+
   // Will be deleted when the animation is complete.
   [DownloadStartedAnimationMac startAnimationWithWebContents:web_contents];
 }

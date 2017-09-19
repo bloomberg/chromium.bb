@@ -49,6 +49,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "folder_supervised.icon",
     "globe.icon",
     "google_g_logo.icon",
+    "horizontal_menu.1x.icon",
+    "horizontal_menu.icon",
     "image.icon",
     "inactive_toast_close.icon",
     "inactive_toast_logo.icon",

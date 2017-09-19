@@ -23,10 +23,18 @@ constexpr CGFloat kIndeterminateAnimationDuration = 4.5;
 // …stored under this key.
 NSString* const kIndeterminateAnimationKey = @"indeterminate";
 
+base::ScopedCFTypeRef<CGMutablePathRef> CirclePathWithBounds(CGRect bounds) {
+  base::ScopedCFTypeRef<CGMutablePathRef> path(CGPathCreateMutable());
+  CGPathAddArc(path, nullptr, NSMidX(bounds), NSMidY(bounds),
+               NSWidth(bounds) / 2, 2 * M_PI + M_PI_2, M_PI_2, true);
+  return path;
+}
+
 }  // namespace
 
 @implementation MDDownloadItemProgressIndicator {
-  CAShapeLayer* progressShapeLayer_;
+  CAShapeLayer* progressLayer_;
+  CAShapeLayer* strokeLayer_;
 }
 
 @synthesize progress = progress_;
@@ -35,13 +43,13 @@ NSString* const kIndeterminateAnimationKey = @"indeterminate";
 - (void)updateProgress {
   BOOL isIndeterminate = progress_ < 0;
   if (isIndeterminate &&
-      ![progressShapeLayer_ animationForKey:kIndeterminateAnimationKey]) {
+      ![strokeLayer_ animationForKey:kIndeterminateAnimationKey]) {
     CABasicAnimation* anim =
         [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
     anim.byValue = @(M_PI * -2);
     anim.duration = kIndeterminateAnimationDuration;
     anim.repeatCount = HUGE_VALF;
-    [progressShapeLayer_ addAnimation:anim forKey:kIndeterminateAnimationKey];
+    [strokeLayer_ addAnimation:anim forKey:kIndeterminateAnimationKey];
   }
   [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
     context.duration = 0.25;
@@ -50,7 +58,7 @@ NSString* const kIndeterminateAnimationKey = @"indeterminate";
     // If the bar was in an indeterminate state, replace the continuous
     // rotation animation with a one-shot animation that resets it.
     CGFloat rotation =
-        static_cast<NSNumber*>([progressShapeLayer_.presentationLayer
+        static_cast<NSNumber*>([strokeLayer_.presentationLayer
                                    valueForKeyPath:@"transform.rotation.z"])
             .doubleValue;
     if (!isIndeterminate && rotation) {
@@ -58,9 +66,9 @@ NSString* const kIndeterminateAnimationKey = @"indeterminate";
           [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
       anim.fromValue = @(rotation);
       anim.byValue = @(-(rotation < 0 ? rotation : -(M_PI + rotation)));
-      [progressShapeLayer_ addAnimation:anim forKey:kIndeterminateAnimationKey];
+      [strokeLayer_ addAnimation:anim forKey:kIndeterminateAnimationKey];
     }
-    progressShapeLayer_.strokeEnd =
+    strokeLayer_.strokeEnd =
         isIndeterminate ? kIndeterminateArcSize : progress_;
   }
                       completionHandler:nil];
@@ -81,14 +89,14 @@ NSString* const kIndeterminateAnimationKey = @"indeterminate";
   paused_ = paused;
   if (paused_) {
     if (CAAnimation* indeterminateAnimation =
-            [progressShapeLayer_ animationForKey:kIndeterminateAnimationKey]) {
-      [progressShapeLayer_ setValue:[progressShapeLayer_.presentationLayer
-                                        valueForKeyPath:@"transform.rotation.z"]
-                         forKeyPath:@"transform.rotation.z"];
-      [progressShapeLayer_ removeAnimationForKey:kIndeterminateAnimationKey];
+            [strokeLayer_ animationForKey:kIndeterminateAnimationKey]) {
+      [strokeLayer_ setValue:[strokeLayer_.presentationLayer
+                                 valueForKeyPath:@"transform.rotation.z"]
+                  forKeyPath:@"transform.rotation.z"];
+      [strokeLayer_ removeAnimationForKey:kIndeterminateAnimationKey];
     }
   } else {
-    [progressShapeLayer_ setValue:@0 forKey:@"transform.rotation.z"];
+    [strokeLayer_ setValue:@0 forKey:@"transform.rotation.z"];
     [self updateProgress];
   }
 }
@@ -108,8 +116,8 @@ NSString* const kIndeterminateAnimationKey = @"indeterminate";
   animGroup.timingFunction =
       CAMediaTimingFunction.cr_materialEaseInOutTimingFunction;
   block(animGroup);
-  progressShapeLayer_.hidden = YES;
-  [progressShapeLayer_ addAnimation:animGroup forKey:nil];
+  progressLayer_.hidden = YES;
+  [progressLayer_ addAnimation:animGroup forKey:nil];
 }
 
 - (void)cancel {
@@ -140,38 +148,43 @@ NSString* const kIndeterminateAnimationKey = @"indeterminate";
 
 - (CALayer*)makeBackingLayer {
   CALayer* layer = [super makeBackingLayer];
-  base::scoped_nsobject<CAShapeLayer> progressShapeLayer(
+
+  base::scoped_nsobject<CAShapeLayer> progressLayer(
       [[CAShapeLayer alloc] init]);
-  progressShapeLayer_ = progressShapeLayer;
-  progressShapeLayer_.bounds = layer.bounds;
-  progressShapeLayer_.autoresizingMask =
+  progressLayer_ = progressLayer;
+  progressLayer_.bounds = layer.bounds;
+  progressLayer_.autoresizingMask =
       kCALayerWidthSizable | kCALayerHeightSizable;
-  progressShapeLayer_.lineWidth = 2;
+  [layer addSublayer:progressLayer_];
+
+  base::scoped_nsobject<CAShapeLayer> strokeLayer([[CAShapeLayer alloc] init]);
+  strokeLayer_ = strokeLayer;
+  strokeLayer_.bounds = progressLayer_.bounds;
+  strokeLayer_.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
+  strokeLayer_.fillColor = nil;
+  strokeLayer_.lineWidth = 1.5;
+  [progressLayer_ addSublayer:strokeLayer_];
+
   [self updateProgress];
-  [layer addSublayer:progressShapeLayer_];
   return layer;
 }
 
-- (void)viewWillDraw {
-  {
-    base::ScopedCFTypeRef<CGMutablePathRef> path(CGPathCreateMutable());
-    CGPathAddArc(path, nullptr, NSMidX(self.layer.bounds),
-                 NSMidY(self.layer.bounds), NSWidth(self.layer.bounds) / 2 - 1,
-                 2 * M_PI + M_PI_2, M_PI_2, true);
-    progressShapeLayer_.path = path;
-  }
+- (void)layout {
   [CATransaction begin];
   [CATransaction setDisableActions:YES];
+  progressLayer_.path = CirclePathWithBounds(self.layer.bounds);
+  strokeLayer_.path =
+      CirclePathWithBounds(CGRectInset(self.layer.bounds, 0.75, 0.75));
   const ui::ThemeProvider* provider = [[self window] themeProvider];
   NSColor* indicatorColor =
       provider->GetNSColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING);
-  progressShapeLayer_.strokeColor = indicatorColor.CGColor;
-  progressShapeLayer_.fillColor =
+  strokeLayer_.strokeColor = indicatorColor.CGColor;
+  progressLayer_.fillColor =
       provider->ShouldIncreaseContrast()
           ? CGColorGetConstantColor(kCGColorClear)
           : [indicatorColor colorWithAlphaComponent:0.2].CGColor;
   [CATransaction commit];
-  [super viewWillDraw];
+  [super layout];
 }
 
 // NSObject overrides.
