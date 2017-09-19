@@ -38,6 +38,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapLinkedStack.h"
 #include "platform/heap/HeapTerminatedArrayBuilder.h"
+#include "platform/heap/HeapTestUtilities.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/heap/ThreadState.h"
@@ -53,17 +54,6 @@
 namespace blink {
 
 namespace {
-
-void PreciselyCollectGarbage() {
-  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
-                                         BlinkGC::kGCWithSweep,
-                                         BlinkGC::kForcedGC);
-}
-
-void ConservativelyCollectGarbage() {
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::kHeapPointersOnStack, BlinkGC::kGCWithSweep, BlinkGC::kForcedGC);
-}
 
 class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
  public:
@@ -428,18 +418,6 @@ class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
   static const int kArraySize = 1000;
   int8_t array_[kArraySize];
 };
-
-// Do several GCs to make sure that later GCs don't free up old memory from
-// previously run tests in this process.
-static void ClearOutOldGarbage() {
-  ThreadHeap& heap = ThreadState::Current()->Heap();
-  while (true) {
-    size_t used = heap.ObjectPayloadSizeForTesting();
-    PreciselyCollectGarbage();
-    if (heap.ObjectPayloadSizeForTesting() >= used)
-      break;
-  }
-}
 
 class OffHeapInt : public RefCounted<OffHeapInt> {
  public:
