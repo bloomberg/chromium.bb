@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/input/scrollbar.h"
+#include "cc/layers/nine_patch_generator.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
-#include "cc/quads/nine_patch_generator.h"
 #include "cc/resources/ui_resource_client.h"
 
 namespace cc {

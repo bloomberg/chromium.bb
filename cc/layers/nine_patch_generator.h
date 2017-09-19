@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_QUADS_NINE_PATCH_GENERATOR_H_
-#define CC_QUADS_NINE_PATCH_GENERATOR_H_
+#ifndef CC_LAYERS_NINE_PATCH_GENERATOR_H_
+#define CC_LAYERS_NINE_PATCH_GENERATOR_H_
 
 #include <string>
 #include <vector>
@@ -23,7 +23,7 @@ class DictionaryValue;
 namespace viz {
 class RenderPass;
 class SharedQuadState;
-}
+}  // namespace viz
 
 namespace cc {
 class LayerImpl;
@@ -129,4 +129,4 @@ class CC_EXPORT NinePatchGenerator {
 
 }  // namespace cc
 
-#endif  // CC_QUADS_NINE_PATCH_GENERATOR_H_
+#endif  // CC_LAYERS_NINE_PATCH_GENERATOR_H_

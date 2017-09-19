@@ -167,6 +167,7 @@ viz_source_set("unit_tests") {
     "frame_sinks/delay_based_time_source_unittest.cc",
     "gl_helper_unittest.cc",
     "quads/draw_quad_unittest.cc",
+    "quads/render_pass_unittest.cc",
     "resources/buffer_to_texture_target_map_unittest.cc",
     "resources/platform_color_unittest.cc",
     "surfaces/surface_sequence_generator_unittest.cc",

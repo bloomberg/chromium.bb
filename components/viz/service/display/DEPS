@@ -3,7 +3,6 @@ include_rules = [
   "+cc/base",
   "+cc/benchmarks",
   "+cc/output",
-  "+cc/quads",
   "+cc/resources",
   "+cc/scheduler",
   "+gpu/command_buffer/client",

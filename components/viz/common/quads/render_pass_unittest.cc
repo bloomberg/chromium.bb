@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <utility>
+#include <vector>
 
-#include "cc/base/math_util.h"
 #include "cc/test/geometry_test_utils.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -16,7 +16,7 @@
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/transform.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 struct RenderPassSize {
@@ -26,22 +26,22 @@ struct RenderPassSize {
   gfx::Rect output_rect;
   gfx::Rect damage_rect;
   gfx::Transform transform_to_root_target;
-  FilterOperations filters;
-  FilterOperations background_filters;
+  cc::FilterOperations filters;
+  cc::FilterOperations background_filters;
   gfx::ColorSpace color_space;
   bool has_transparent_background;
   bool generate_mipmap;
-  std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_callbacks;
-  viz::QuadList quad_list;
-  viz::SharedQuadStateList shared_quad_state_list;
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_callbacks;
+  QuadList quad_list;
+  SharedQuadStateList shared_quad_state_list;
 };
 
-static void CompareRenderPassLists(const viz::RenderPassList& expected_list,
-                                   const viz::RenderPassList& actual_list) {
+static void CompareRenderPassLists(const RenderPassList& expected_list,
+                                   const RenderPassList& actual_list) {
   EXPECT_EQ(expected_list.size(), actual_list.size());
   for (size_t i = 0; i < actual_list.size(); ++i) {
-    viz::RenderPass* expected = expected_list[i].get();
-    viz::RenderPass* actual = actual_list[i].get();
+    RenderPass* expected = expected_list[i].get();
+    RenderPass* actual = actual_list[i].get();
 
     EXPECT_EQ(expected->id, actual->id);
     EXPECT_EQ(expected->output_rect, actual->output_rect);
@@ -60,8 +60,7 @@ static void CompareRenderPassLists(const viz::RenderPassList& expected_list,
 
     for (auto exp_iter = expected->quad_list.cbegin(),
               act_iter = actual->quad_list.cbegin();
-         exp_iter != expected->quad_list.cend();
-         ++exp_iter, ++act_iter) {
+         exp_iter != expected->quad_list.cend(); ++exp_iter, ++act_iter) {
       EXPECT_EQ(exp_iter->rect.ToString(), act_iter->rect.ToString());
       EXPECT_EQ(exp_iter->shared_quad_state->quad_layer_rect.ToString(),
                 act_iter->shared_quad_state->quad_layer_rect.ToString());
@@ -70,40 +69,40 @@ static void CompareRenderPassLists(const viz::RenderPassList& expected_list,
 }
 
 TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
-  viz::RenderPassId render_pass_id = 3u;
+  RenderPassId render_pass_id = 3u;
   gfx::Rect output_rect(45, 22, 120, 13);
   gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateOpacityFilter(0.5));
-  FilterOperations background_filters;
-  background_filters.Append(FilterOperation::CreateInvertFilter(1.0));
+  cc::FilterOperations filters;
+  filters.Append(cc::FilterOperation::CreateOpacityFilter(0.5));
+  cc::FilterOperations background_filters;
+  background_filters.Append(cc::FilterOperation::CreateInvertFilter(1.0));
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   bool has_transparent_background = true;
   bool cache_render_pass = false;
   bool has_damage_from_contributing_content = false;
   bool generate_mipmap = false;
 
-  std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                filters, background_filters, color_space,
                has_transparent_background, cache_render_pass,
                has_damage_from_contributing_content, generate_mipmap);
-  pass->copy_requests.push_back(viz::CopyOutputRequest::CreateStubForTesting());
+  pass->copy_requests.push_back(CopyOutputRequest::CreateStubForTesting());
 
   // Stick a quad in the pass, this should not get copied.
-  viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(), gfx::Rect(), gfx::Rect(),
                        false, false, 1, SkBlendMode::kSrcOver, 0);
 
-  auto* color_quad = pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+  auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad->SetNew(pass->shared_quad_state_list.back(), gfx::Rect(),
                      gfx::Rect(), SkColor(), false);
 
-  viz::RenderPassId new_render_pass_id = 63u;
+  RenderPassId new_render_pass_id = 63u;
 
-  std::unique_ptr<viz::RenderPass> copy = pass->Copy(new_render_pass_id);
+  std::unique_ptr<RenderPass> copy = pass->Copy(new_render_pass_id);
   EXPECT_EQ(new_render_pass_id, copy->id);
   EXPECT_EQ(pass->output_rect, copy->output_rect);
   EXPECT_EQ(pass->transform_to_root_target, copy->transform_to_root_target);
@@ -118,59 +117,59 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   EXPECT_EQ(1u, pass->copy_requests.size());
   EXPECT_EQ(0u, copy->copy_requests.size());
 
-  EXPECT_EQ(sizeof(RenderPassSize), sizeof(viz::RenderPass));
+  EXPECT_EQ(sizeof(RenderPassSize), sizeof(RenderPass));
 }
 
 TEST(RenderPassTest, CopyAllShouldBeIdentical) {
-  viz::RenderPassList pass_list;
+  RenderPassList pass_list;
 
   int id = 3;
   gfx::Rect output_rect(45, 22, 120, 13);
   gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateOpacityFilter(0.5));
-  FilterOperations background_filters;
-  background_filters.Append(FilterOperation::CreateInvertFilter(1.0));
+  cc::FilterOperations filters;
+  filters.Append(cc::FilterOperation::CreateOpacityFilter(0.5));
+  cc::FilterOperations background_filters;
+  background_filters.Append(cc::FilterOperation::CreateInvertFilter(1.0));
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   bool has_transparent_background = true;
   bool cache_render_pass = false;
   bool has_damage_from_contributing_content = false;
   bool generate_mipmap = false;
 
-  std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
                background_filters, color_space, has_transparent_background,
                cache_render_pass, has_damage_from_contributing_content,
                generate_mipmap);
 
   // Two quads using one shared state.
-  viz::SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
   shared_state1->SetAll(gfx::Transform(), gfx::Rect(0, 0, 1, 1), gfx::Rect(),
                         gfx::Rect(), false, false, 1, SkBlendMode::kSrcOver, 0);
 
-  auto* color_quad1 = pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+  auto* color_quad1 = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad1->SetNew(pass->shared_quad_state_list.back(),
                       gfx::Rect(1, 1, 1, 1), gfx::Rect(1, 1, 1, 1), SkColor(),
                       false);
 
-  auto* color_quad2 = pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+  auto* color_quad2 = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad2->SetNew(pass->shared_quad_state_list.back(),
                       gfx::Rect(2, 2, 2, 2), gfx::Rect(2, 2, 2, 2), SkColor(),
                       false);
 
   // And two quads using another shared state.
-  viz::SharedQuadState* shared_state2 = pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_state2 = pass->CreateAndAppendSharedQuadState();
   shared_state2->SetAll(gfx::Transform(), gfx::Rect(0, 0, 2, 2), gfx::Rect(),
                         gfx::Rect(), false, false, 1, SkBlendMode::kSrcOver, 0);
 
-  auto* color_quad3 = pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+  auto* color_quad3 = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad3->SetNew(pass->shared_quad_state_list.back(),
                       gfx::Rect(3, 3, 3, 3), gfx::Rect(3, 3, 3, 3), SkColor(),
                       false);
 
-  auto* color_quad4 = pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+  auto* color_quad4 = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad4->SetNew(pass->shared_quad_state_list.back(),
                       gfx::Rect(4, 4, 4, 4), gfx::Rect(4, 4, 4, 4), SkColor(),
                       false);
@@ -181,17 +180,18 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   gfx::Transform contrib_transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect contrib_damage_rect(11, 16, 10, 15);
-  FilterOperations contrib_filters;
-  contrib_filters.Append(FilterOperation::CreateSepiaFilter(0.5));
-  FilterOperations contrib_background_filters;
-  contrib_background_filters.Append(FilterOperation::CreateSaturateFilter(1));
+  cc::FilterOperations contrib_filters;
+  contrib_filters.Append(cc::FilterOperation::CreateSepiaFilter(0.5));
+  cc::FilterOperations contrib_background_filters;
+  contrib_background_filters.Append(
+      cc::FilterOperation::CreateSaturateFilter(1));
   gfx::ColorSpace contrib_color_space = gfx::ColorSpace::CreateSCRGBLinear();
   bool contrib_has_transparent_background = true;
   bool contrib_cache_render_pass = false;
   bool contrib_has_damage_from_contributing_content = false;
   bool contrib_generate_mipmap = false;
 
-  std::unique_ptr<viz::RenderPass> contrib = viz::RenderPass::Create();
+  std::unique_ptr<RenderPass> contrib = RenderPass::Create();
   contrib->SetAll(contrib_id, contrib_output_rect, contrib_damage_rect,
                   contrib_transform_to_root, contrib_filters,
                   contrib_background_filters, contrib_color_space,
@@ -199,20 +199,19 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                   contrib_has_damage_from_contributing_content,
                   contrib_generate_mipmap);
 
-  viz::SharedQuadState* contrib_shared_state =
+  SharedQuadState* contrib_shared_state =
       contrib->CreateAndAppendSharedQuadState();
   contrib_shared_state->SetAll(gfx::Transform(), gfx::Rect(0, 0, 2, 2),
                                gfx::Rect(), gfx::Rect(), false, false, 1,
                                SkBlendMode::kSrcOver, 0);
 
-  auto* contrib_quad =
-      contrib->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+  auto* contrib_quad = contrib->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   contrib_quad->SetNew(contrib->shared_quad_state_list.back(),
                        gfx::Rect(3, 3, 3, 3), gfx::Rect(3, 3, 3, 3), SkColor(),
                        false);
 
-  // And a viz::RenderPassDrawQuad for the contributing pass.
-  auto pass_quad = std::make_unique<viz::RenderPassDrawQuad>();
+  // And a RenderPassDrawQuad for the contributing pass.
+  auto pass_quad = std::make_unique<RenderPassDrawQuad>();
   pass_quad->SetNew(pass->shared_quad_state_list.back(), contrib_output_rect,
                     contrib_output_rect, contrib_id, 0, gfx::RectF(),
                     gfx::Size(), gfx::Vector2dF(), gfx::PointF(), gfx::RectF());
@@ -221,62 +220,62 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   pass_list.push_back(std::move(contrib));
 
   // Make a copy with CopyAll().
-  viz::RenderPassList copy_list;
-  viz::RenderPass::CopyAll(pass_list, &copy_list);
+  RenderPassList copy_list;
+  RenderPass::CopyAll(pass_list, &copy_list);
 
   CompareRenderPassLists(pass_list, copy_list);
 }
 
 TEST(RenderPassTest, CopyAllWithCulledQuads) {
-  viz::RenderPassList pass_list;
+  RenderPassList pass_list;
 
   int id = 3;
   gfx::Rect output_rect(45, 22, 120, 13);
   gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   gfx::Rect damage_rect(56, 123, 19, 43);
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateOpacityFilter(0.5));
-  FilterOperations background_filters;
-  background_filters.Append(FilterOperation::CreateInvertFilter(1.0));
+  cc::FilterOperations filters;
+  filters.Append(cc::FilterOperation::CreateOpacityFilter(0.5));
+  cc::FilterOperations background_filters;
+  background_filters.Append(cc::FilterOperation::CreateInvertFilter(1.0));
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSCRGBLinear();
   bool has_transparent_background = true;
   bool cache_render_pass = false;
   bool has_damage_from_contributing_content = false;
   bool generate_mipmap = false;
 
-  std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
+  std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
                background_filters, color_space, has_transparent_background,
                cache_render_pass, has_damage_from_contributing_content,
                generate_mipmap);
 
   // A shared state with a quad.
-  viz::SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
   shared_state1->SetAll(gfx::Transform(), gfx::Rect(0, 0, 1, 1), gfx::Rect(),
                         gfx::Rect(), false, false, 1, SkBlendMode::kSrcOver, 0);
 
-  auto* color_quad1 = pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+  auto* color_quad1 = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad1->SetNew(pass->shared_quad_state_list.back(),
                       gfx::Rect(1, 1, 1, 1), gfx::Rect(1, 1, 1, 1), SkColor(),
                       false);
 
   // A shared state with no quads, they were culled.
-  viz::SharedQuadState* shared_state2 = pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_state2 = pass->CreateAndAppendSharedQuadState();
   shared_state2->SetAll(gfx::Transform(), gfx::Rect(0, 0, 2, 2), gfx::Rect(),
                         gfx::Rect(), false, false, 1, SkBlendMode::kSrcOver, 0);
 
   // A second shared state with no quads.
-  viz::SharedQuadState* shared_state3 = pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_state3 = pass->CreateAndAppendSharedQuadState();
   shared_state3->SetAll(gfx::Transform(), gfx::Rect(0, 0, 2, 2), gfx::Rect(),
                         gfx::Rect(), false, false, 1, SkBlendMode::kSrcOver, 0);
 
   // A last shared state with a quad again.
-  viz::SharedQuadState* shared_state4 = pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_state4 = pass->CreateAndAppendSharedQuadState();
   shared_state4->SetAll(gfx::Transform(), gfx::Rect(0, 0, 2, 2), gfx::Rect(),
                         gfx::Rect(), false, false, 1, SkBlendMode::kSrcOver, 0);
 
-  auto* color_quad2 = pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+  auto* color_quad2 = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad2->SetNew(pass->shared_quad_state_list.back(),
                       gfx::Rect(3, 3, 3, 3), gfx::Rect(3, 3, 3, 3), SkColor(),
                       false);
@@ -284,17 +283,16 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
   pass_list.push_back(std::move(pass));
 
   // Make a copy with CopyAll().
-  viz::RenderPassList copy_list;
-  viz::RenderPass::CopyAll(pass_list, &copy_list);
+  RenderPassList copy_list;
+  RenderPass::CopyAll(pass_list, &copy_list);
 
   CompareRenderPassLists(pass_list, copy_list);
 }
 
 TEST(RenderPassTest, ReplacedQuadsShouldntMove) {
-  std::unique_ptr<viz::SharedQuadState> quad_state =
-      std::make_unique<viz::SharedQuadState>();
-  viz::QuadList quad_list;
-  auto* quad = quad_list.AllocateAndConstruct<viz::SolidColorDrawQuad>();
+  auto quad_state = std::make_unique<SharedQuadState>();
+  QuadList quad_list;
+  auto* quad = quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
   gfx::Rect quad_rect(1, 2, 3, 4);
   quad->SetNew(quad_state.get(), quad_rect, quad_rect, SkColor(), false);
   quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(
@@ -303,4 +301,4 @@ TEST(RenderPassTest, ReplacedQuadsShouldntMove) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz
