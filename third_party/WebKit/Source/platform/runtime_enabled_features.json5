@@ -257,7 +257,7 @@
     },
     {
       name: "CSSScrollBoundaryBehavior",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSScrollSnapPoints",

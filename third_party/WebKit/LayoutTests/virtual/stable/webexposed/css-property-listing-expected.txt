@@ -281,6 +281,8 @@ All changes to this list should go through Blink's feature review process: http:
     rx
     ry
     scroll-behavior
+    scroll-boundary-behavior-x
+    scroll-boundary-behavior-y
     shape-image-threshold
     shape-margin
     shape-outside
@@ -583,6 +585,9 @@ All changes to this list should go through Blink's feature review process: http:
     place-self
         align-self
         justify-self
+    scroll-boundary-behavior
+        scroll-boundary-behavior-x
+        scroll-boundary-behavior-y
     text-decoration
         text-decoration-color
         text-decoration-line
