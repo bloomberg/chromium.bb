@@ -605,7 +605,7 @@ TEST_F(FormSaverImplTest, PresaveGeneratedPassword_CloneUpdates) {
 
 // Check that a clone can still work after the original is destroyed.
 TEST_F(FormSaverImplTest, PresaveGeneratedPassword_CloneSurvives) {
-  auto original = base::MakeUnique<FormSaverImpl>(mock_store_.get());
+  auto original = std::make_unique<FormSaverImpl>(mock_store_.get());
   PasswordForm generated = CreatePending("nameofuser", "wordToP4a55");
 
   EXPECT_CALL(*mock_store_, AddLogin(_));

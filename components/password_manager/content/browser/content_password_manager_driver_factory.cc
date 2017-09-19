@@ -4,6 +4,7 @@
 
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -40,6 +41,7 @@ void ContentPasswordManagerDriverFactory::CreateForWebContents(
   if (FromWebContents(web_contents))
     return;
 
+  // NOTE: Can't use |std::make_unique| due to private constructor.
   auto new_factory = base::WrapUnique(new ContentPasswordManagerDriverFactory(
       web_contents, password_client, autofill_client));
   const std::vector<content::RenderFrameHost*> frames =
@@ -111,7 +113,7 @@ void ContentPasswordManagerDriverFactory::RenderFrameCreated(
   // This is called twice for the main frame.
   if (insertion_result.second) {  // This was the first time.
     insertion_result.first->second =
-        base::MakeUnique<ContentPasswordManagerDriver>(
+        std::make_unique<ContentPasswordManagerDriver>(
             render_frame_host, password_client_, autofill_client_);
   }
 }

@@ -4,9 +4,9 @@
 
 #include "components/password_manager/core/browser/password_store_factory_util.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
@@ -73,15 +73,14 @@ void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
     ActivateAffiliationBasedMatching(password_store, request_context_getter,
                                      GetAffiliationDatabasePath(profile_path));
   } else if (!matching_should_be_active && matching_is_active) {
-    password_store->SetAffiliatedMatchHelper(
-        base::WrapUnique<AffiliatedMatchHelper>(nullptr));
+    password_store->SetAffiliatedMatchHelper(nullptr);
   }
 }
 
 std::unique_ptr<LoginDatabase> CreateLoginDatabase(
     const base::FilePath& profile_path) {
   base::FilePath login_db_file_path = profile_path.Append(kLoginDataFileName);
-  return base::MakeUnique<LoginDatabase>(login_db_file_path);
+  return std::make_unique<LoginDatabase>(login_db_file_path);
 }
 
 }  // namespace password_manager

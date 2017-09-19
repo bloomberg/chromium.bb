@@ -4,8 +4,9 @@
 
 #include "components/password_manager/core/browser/http_data_cleaner.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -69,7 +70,7 @@ class HTTPDataCleanerTest : public testing::Test {
  public:
   HTTPDataCleanerTest()
       : store_(new NiceMock<MockPasswordStore>),
-        prefs_(base::MakeUnique<TestingPrefServiceSimple>()),
+        prefs_(std::make_unique<TestingPrefServiceSimple>()),
         request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())) {
     prefs()->registry()->RegisterBooleanPref(prefs::kWasObsoleteHttpDataCleaned,

@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -41,8 +40,8 @@ void AffiliationService::Initialize(
   DCHECK(!backend_);
   backend_ =
       new AffiliationBackend(request_context_getter, backend_task_runner_,
-                             base::WrapUnique(new base::DefaultClock),
-                             base::WrapUnique(new base::DefaultTickClock));
+                             std::make_unique<base::DefaultClock>(),
+                             std::make_unique<base::DefaultTickClock>());
 
   std::unique_ptr<base::TickClock> tick_clock(new base::DefaultTickClock);
   backend_task_runner_->PostTask(

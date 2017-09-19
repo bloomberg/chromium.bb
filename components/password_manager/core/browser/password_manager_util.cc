@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/log_manager.h"

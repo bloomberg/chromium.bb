@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
@@ -57,11 +56,11 @@ std::unique_ptr<blink::WebCredential> CredentialInfoToWebCredential(
     const CredentialInfo& info) {
   switch (info.type) {
     case CredentialType::CREDENTIAL_TYPE_FEDERATED:
-      return base::MakeUnique<blink::WebFederatedCredential>(
+      return std::make_unique<blink::WebFederatedCredential>(
           blink::WebString::FromUTF16(info.id), info.federation,
           blink::WebString::FromUTF16(info.name), info.icon);
     case CredentialType::CREDENTIAL_TYPE_PASSWORD:
-      return base::MakeUnique<blink::WebPasswordCredential>(
+      return std::make_unique<blink::WebPasswordCredential>(
           blink::WebString::FromUTF16(info.id),
           blink::WebString::FromUTF16(info.password),
           blink::WebString::FromUTF16(info.name), info.icon);

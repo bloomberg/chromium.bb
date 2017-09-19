@@ -46,7 +46,7 @@ std::unique_ptr<net::FakeURLFetcher> AssetLinksFetcherCreator(
     const std::string& response_data,
     net::HttpStatusCode response_code,
     net::URLRequestStatus::Status status) {
-  return base::MakeUnique<AssetLinksTestFetcher>(url, delegate, response_data,
+  return std::make_unique<AssetLinksTestFetcher>(url, delegate, response_data,
                                                  response_code, status);
 }
 

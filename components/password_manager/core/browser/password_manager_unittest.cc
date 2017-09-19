@@ -4,13 +4,13 @@
 
 #include "components/password_manager/core/browser/password_manager.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -112,7 +112,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 // Invokes the password store consumer with a single copy of |form|.
 ACTION_P(InvokeConsumer, form) {
   std::vector<std::unique_ptr<PasswordForm>> result;
-  result.push_back(base::MakeUnique<PasswordForm>(form));
+  result.push_back(std::make_unique<PasswordForm>(form));
   arg0->OnGetPasswordStoreResults(std::move(result));
 }
 

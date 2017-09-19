@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -94,9 +93,9 @@ void FormSaverImpl::WipeOutdatedCopies(
 }
 
 std::unique_ptr<FormSaver> FormSaverImpl::Clone() {
-  auto result = base::MakeUnique<FormSaverImpl>(store_);
+  auto result = std::make_unique<FormSaverImpl>(store_);
   if (presaved_)
-    result->presaved_ = base::MakeUnique<PasswordForm>(*presaved_);
+    result->presaved_ = std::make_unique<PasswordForm>(*presaved_);
   return std::move(result);
 }
 

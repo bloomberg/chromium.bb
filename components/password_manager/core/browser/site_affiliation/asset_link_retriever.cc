@@ -4,11 +4,11 @@
 
 #include "components/password_manager/core/browser/site_affiliation/asset_link_retriever.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "net/base/load_flags.h"
@@ -76,7 +76,7 @@ void AssetLinkRetriever::OnURLFetchComplete(const net::URLFetcher* source) {
     source->GetResponseAsString(&response_string);
     scoped_refptr<base::TaskRunner> task_runner =
         base::CreateTaskRunnerWithTraits({base::TaskPriority::USER_BLOCKING});
-    auto data = base::MakeUnique<AssetLinkData>();
+    auto data = std::make_unique<AssetLinkData>();
     AssetLinkData* data_raw = data.get();
     base::PostTaskAndReplyWithResult(
         task_runner.get(), FROM_HERE,

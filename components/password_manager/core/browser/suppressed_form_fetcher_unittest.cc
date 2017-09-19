@@ -5,7 +5,6 @@
 #include "components/password_manager/core/browser/suppressed_form_fetcher.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"

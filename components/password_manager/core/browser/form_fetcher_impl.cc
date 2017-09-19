@@ -5,9 +5,9 @@
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
@@ -102,7 +102,7 @@ std::vector<std::unique_ptr<PasswordForm>> MakeCopies(
   std::vector<std::unique_ptr<PasswordForm>> result(source.size());
   std::transform(source.begin(), source.end(), result.begin(),
                  [](const std::unique_ptr<PasswordForm>& ptr) {
-                   return base::MakeUnique<PasswordForm>(*ptr);
+                   return std::make_unique<PasswordForm>(*ptr);
                  });
   return result;
 }
@@ -192,13 +192,13 @@ void FormFetcherImpl::OnGetPasswordStoreResults(
   if (should_query_suppressed_forms_ &&
       form_digest_.scheme == PasswordForm::SCHEME_HTML &&
       GURL(form_digest_.signon_realm).SchemeIsHTTPOrHTTPS()) {
-    suppressed_form_fetcher_ = base::MakeUnique<SuppressedFormFetcher>(
+    suppressed_form_fetcher_ = std::make_unique<SuppressedFormFetcher>(
         form_digest_.signon_realm, client_, this);
   }
 
   if (should_migrate_http_passwords_ && results.empty() &&
       form_digest_.origin.SchemeIs(url::kHttpsScheme)) {
-    http_migrator_ = base::MakeUnique<HttpPasswordStoreMigrator>(
+    http_migrator_ = std::make_unique<HttpPasswordStoreMigrator>(
         form_digest_.origin, client_, this);
     return;
   }
@@ -271,7 +271,7 @@ void FormFetcherImpl::Fetch() {
 std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
   // Create the copy without the "HTTPS migration" activated. If it was needed,
   // then it was done by |this| already.
-  auto result = base::MakeUnique<FormFetcherImpl>(
+  auto result = std::make_unique<FormFetcherImpl>(
       form_digest_, client_, false, should_query_suppressed_forms_);
 
   if (state_ != State::NOT_WAITING) {

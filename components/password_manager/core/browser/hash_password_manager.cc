@@ -5,7 +5,6 @@
 #include "components/password_manager/core/browser/hash_password_manager.h"
 
 #include "base/base64.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"

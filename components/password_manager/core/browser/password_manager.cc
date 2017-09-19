@@ -5,10 +5,11 @@
 #include "components/password_manager/core/browser/password_manager.h"
 
 #include <stddef.h>
+
 #include <map>
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -290,10 +291,9 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
   // ability to detect forms.
-  auto manager = base::MakeUnique<PasswordFormManager>(
+  auto manager = std::make_unique<PasswordFormManager>(
       this, client_, driver->AsWeakPtr(), form,
-      base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())),
-      nullptr);
+      std::make_unique<FormSaverImpl>(client_->GetPasswordStore()), nullptr);
   manager->Init(nullptr);
   pending_login_managers_.push_back(std::move(manager));
 }
@@ -552,10 +552,10 @@ void PasswordManager::CreatePendingLoginManagers(
 
     if (logger)
       logger->LogFormSignatures(Logger::STRING_ADDING_SIGNATURE, *iter);
-    auto manager = base::MakeUnique<PasswordFormManager>(
+    auto manager = std::make_unique<PasswordFormManager>(
         this, client_,
         (driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>()),
-        *iter, base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())),
+        *iter, std::make_unique<FormSaverImpl>(client_->GetPasswordStore()),
         nullptr);
     manager->Init(nullptr);
     pending_login_managers_.push_back(std::move(manager));

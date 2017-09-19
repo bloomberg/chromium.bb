@@ -6,11 +6,11 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
@@ -114,7 +114,7 @@ void AppendPasswordFromSpecifics(
     const sync_pb::PasswordSpecificsData& specifics,
     base::Time sync_time,
     std::vector<std::unique_ptr<autofill::PasswordForm>>* entries) {
-  entries->push_back(base::MakeUnique<autofill::PasswordForm>(
+  entries->push_back(std::make_unique<autofill::PasswordForm>(
       PasswordFromSpecifics(specifics)));
   entries->back()->date_synced = sync_time;
 }
@@ -609,7 +609,7 @@ void PasswordSyncableService::MergeSyncDataWithLocalData(
               it_local_data_correct == unmatched_data_from_password_db->end()
                   ? syncer::SyncChange::ACTION_ADD
                   : syncer::SyncChange::ACTION_UPDATE);
-          local_changes->push_back(base::MakeUnique<autofill::PasswordForm>(
+          local_changes->push_back(std::make_unique<autofill::PasswordForm>(
               result.new_local_correct.value()));
           local_changes->back()->date_synced = clock_->Now();
         }
@@ -619,7 +619,7 @@ void PasswordSyncableService::MergeSyncDataWithLocalData(
               it_local_data_incorrect == unmatched_data_from_password_db->end()
                   ? syncer::SyncChange::ACTION_ADD
                   : syncer::SyncChange::ACTION_UPDATE);
-          local_changes->push_back(base::MakeUnique<autofill::PasswordForm>(
+          local_changes->push_back(std::make_unique<autofill::PasswordForm>(
               result.new_local_incorrect.value()));
           local_changes->back()->date_synced = clock_->Now();
         }

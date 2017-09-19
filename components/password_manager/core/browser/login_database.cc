@@ -9,13 +9,13 @@
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
@@ -1268,7 +1268,7 @@ bool LoginDatabase::StatementToForms(
 
   forms->clear();
   while (statement->Step()) {
-    auto new_form = base::MakeUnique<PasswordForm>();
+    auto new_form = std::make_unique<PasswordForm>();
     EncryptionResult result =
         InitPasswordFormFromStatement(new_form.get(), *statement);
     if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)

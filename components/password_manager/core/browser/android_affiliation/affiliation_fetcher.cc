@@ -11,7 +11,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_api.pb.h"
@@ -153,7 +152,7 @@ std::string AffiliationFetcher::PreparePayload() const {
     lookup_request.add_facet(uri.canonical_spec());
 
   // Enable request for branding information.
-  auto mask = base::MakeUnique<affiliation_pb::LookupAffiliationMask>();
+  auto mask = std::make_unique<affiliation_pb::LookupAffiliationMask>();
   mask->set_branding_info(true);
   lookup_request.set_allocated_mask(mask.release());
 

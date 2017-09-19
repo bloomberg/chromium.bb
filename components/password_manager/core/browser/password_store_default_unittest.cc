@@ -4,13 +4,13 @@
 
 #include "components/password_manager/core/browser/password_store_default.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -108,7 +108,7 @@ PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate()
           base::test::ScopedTaskEnvironment::MainThreadType::UI) {
   SetupTempDir();
   store_ = CreateInitializedStore(
-      base::MakeUnique<LoginDatabase>(test_login_db_file_path()));
+      std::make_unique<LoginDatabase>(test_login_db_file_path()));
 }
 
 PasswordStoreDefaultTestDelegate::PasswordStoreDefaultTestDelegate(
@@ -242,7 +242,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
 // notifications.
 TEST(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   PasswordStoreDefaultTestDelegate delegate(
-      base::MakeUnique<BadLoginDatabase>());
+      std::make_unique<BadLoginDatabase>());
   PasswordStoreDefault* bad_store = delegate.store();
   delegate.FinishAsyncProcessing();
   ASSERT_EQ(nullptr, bad_store->login_db());
