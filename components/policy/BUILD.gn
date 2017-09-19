@@ -155,74 +155,87 @@ action("full_runtime_code_generate") {
 
 policy_templates_grd_file = "resources/policy_templates.grd"
 
-grit("grit_policy_templates") {
+# Translates policy_templates.json into various languages.
+grit("translate_policy_templates") {
   source = policy_templates_grd_file
+  inputs = [
+    "resources/policy_templates.json",
+  ]
   output_dir = "$root_gen_dir/chrome"
+  outputs = policy_templates_translation_outputs
+}
+
+# Generate the various templates and docs (admx, doc, json, etc.)
+action("policy_templates") {
+  script = "tools/template_writers/template_formatter.py"
+  deps = [
+    ":translate_policy_templates",
+  ]
+  inputs = policy_templates_translation_outputs
   outputs = []
-  defines = []
+  args = [
+           "--translations",
+           rebase_path(policy_templates_translation_json_path, root_build_dir),
+           "--languages",
+           policy_templates_languages_str,
+         ] + grit_defines
 
   if (gen_policy_templates_common) {
-    outputs += policy_templates_doc_outputs
-    defines += [ "gen_policy_templates_common" ]
+    outputs += policy_templates_common_outputs
+    args += [
+      "--doc",
+      rebase_path(policy_templates_doc_path, root_build_dir),
+    ]
   }
   if (gen_policy_templates_android) {
     outputs += policy_templates_android_outputs
-    defines += [ "gen_policy_templates_android" ]
+    args += [
+      "--android_policy",
+      rebase_path(policy_templates_android_policy_path, root_build_dir),
+    ]
   }
   if (gen_policy_templates_linux) {
     outputs += policy_templates_linux_outputs
-    defines += [ "gen_policy_templates_linux" ]
+    args += [
+      "--json",
+      rebase_path(policy_templates_json_path, root_build_dir),
+    ]
   }
   if (gen_policy_templates_mac) {
     outputs += policy_templates_mac_outputs
-    defines += [
+    args += [
+      "--plist",
+      rebase_path(policy_templates_plist_path, root_build_dir),
+      "--plist_strings",
+      rebase_path(policy_templates_plist_strings_path, root_build_dir),
+      "-D",
       "mac_bundle_id=$chrome_mac_bundle_id",
-      "gen_policy_templates_mac",
     ]
   }
   if (gen_policy_templates_win) {
-    outputs += policy_templates_windows_outputs
-    defines += [ "gen_policy_templates_win" ]
-  }
-}
-
-if (gen_policy_templates_win && is_chrome_branded) {
-  # Creates google.admx and google.adml files that define a common 'Google'
-  # category used for Chrome, Chrome OS and possibly external tools, see
-  # crbug.com/665400.
-  action("create_google_admx") {
-    script = "tools/create_google_admx.py"
-    inputs = [
-               policy_templates_grd_file,
-               grit_info_script,
-             ] + policy_templates_windows_outputs
-    outputs = policy_templates_windows_google_outputs
-    deps = [
-      ":grit_policy_templates",
+    outputs += policy_templates_win_outputs
+    args += [
+      "--reg",
+      rebase_path(policy_templates_win_reg_path, root_build_dir),
+      "--adm",
+      rebase_path(policy_templates_win_adm_path, root_build_dir),
+      "--adml",
+      rebase_path(policy_templates_win_adml_path, root_build_dir),
+      "--admx",
+      rebase_path(policy_templates_win_admx_path, root_build_dir),
     ]
-
-    # Don't pass in outputs directly, it would exceed a limit on Windows!
-    args = [
-             "--basedir",
-             rebase_path(policy_templates_base_dir, root_build_dir),
-             "--grd_strip_path_prefix",
-             "app/policy/",
-             "--grd_input",
-             rebase_path(policy_templates_grd_file, root_build_dir),
-             "--grit_info",
-             rebase_path(grit_info_script, root_build_dir),
-             "-D",
-             "gen_policy_templates_win",
-           ] + grit_defines
-  }
-}
-
-group("policy_templates") {
-  public_deps = [
-    ":grit_policy_templates",
-  ]
-  if (gen_policy_templates_win && is_chrome_branded) {
-    public_deps += [ ":create_google_admx" ]
+    if (is_chrome_branded) {
+      # Create google.admx and google.adml files that define a common 'Google'
+      # category used for Chrome, Chrome OS and possibly external tools, see
+      # crbug.com/665400.
+      outputs += policy_templates_win_google_outputs
+      args += [
+        "--google_adml",
+        rebase_path(policy_templates_win_google_adml_path, root_build_dir),
+        "--google_admx",
+        rebase_path(policy_templates_win_google_admx_path, root_build_dir),
+      ]
+    }
   }
 }
 
@@ -327,7 +340,7 @@ if (gen_policy_templates_android && is_android) {
         [ "$_generated_resources_dir/xml-v21/app_restrictions.xml" ]
     deps = [
       ":app_restrictions_resources_copy",
-      ":grit_policy_templates",
+      ":policy_templates",
     ]
   }
 } else if (gen_policy_templates_mac && is_mac) {
@@ -400,8 +413,7 @@ if (gen_policy_templates_android && is_android) {
 }
 
 if (gen_policy_templates_common && gen_policy_templates_win) {
-  version_file = "VERSION"
-  version_path = "$policy_templates_base_dir/$version_file"
+  version_path = "$policy_templates_base_dir/VERSION"
 
   copy("add_version") {
     sources = [
@@ -415,34 +427,39 @@ if (gen_policy_templates_common && gen_policy_templates_win) {
   action("pack_policy_templates") {
     output_zip_file = "$root_out_dir/policy_templates.zip"
     script = "tools/make_policy_zip.py"
-    inputs = [
-               version_path,
-               policy_templates_grd_file,
-               grit_info_script,
-             ] + policy_templates_windows_outputs + policy_templates_doc_outputs
+    inputs = [ version_path ] + policy_templates_win_outputs +
+             policy_templates_common_outputs
     outputs = [
       output_zip_file,
     ]
     args = [
-             "--output",
-             rebase_path(output_zip_file, root_build_dir),
-             "--basedir",
-             rebase_path(policy_templates_base_dir, root_build_dir),
-             "--grd_input",
-             rebase_path(policy_templates_grd_file, root_build_dir),
-             "--grd_strip_path_prefix",
-             "app/policy",
-             "--extra_input",
-             version_file,
-             "--grit_info",
-             rebase_path(grit_info_script, root_build_dir),
-             "-D",
-             "gen_policy_templates_common",
-             "-D",
-             "gen_policy_templates_win",
-           ] + grit_defines
+      "--output",
+      rebase_path(output_zip_file, root_build_dir),
+      "--base_dir",
+      rebase_path(policy_templates_base_dir, root_build_dir),
+      "--languages",
+      policy_templates_languages_str,
+      "--add",
+      rebase_path(version_path, root_build_dir),
+      "--add",
+      rebase_path(policy_templates_doc_path, root_build_dir),
+      "--add",
+      rebase_path(policy_templates_win_reg_path, root_build_dir),
+      "--add",
+      rebase_path(policy_templates_win_adm_path, root_build_dir),
+      "--add",
+      rebase_path(policy_templates_win_adml_path, root_build_dir),
+      "--add",
+      rebase_path(policy_templates_win_admx_path, root_build_dir),
+    ]
     if (is_chrome_branded) {
-      args += [ "--include_google_admx" ]
+      inputs += policy_templates_win_google_outputs
+      args += [
+        "--add",
+        rebase_path(policy_templates_win_google_adml_path, root_build_dir),
+        "--add",
+        rebase_path(policy_templates_win_google_admx_path, root_build_dir),
+      ]
     }
     deps = [
       ":add_version",
