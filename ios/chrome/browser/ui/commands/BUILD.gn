@@ -26,8 +26,6 @@ source_set("commands") {
     "qr_scanner_commands.h",
     "reading_list_add_command.h",
     "reading_list_add_command.mm",
-    "show_mail_composer_command.h",
-    "show_mail_composer_command.mm",
     "show_signin_command.h",
     "show_signin_command.mm",
     "start_voice_search_command.h",
