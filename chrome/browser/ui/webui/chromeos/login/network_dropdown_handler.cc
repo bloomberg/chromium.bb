@@ -4,11 +4,15 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "components/login/localized_values_builder.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -23,8 +27,7 @@ const char kJsApiNetworkDropdownHide[] = "networkDropdownHide";
 const char kJsApiNetworkDropdownRefresh[] = "networkDropdownRefresh";
 const char kJsApiLaunchProxySettingsDialog[] = "launchProxySettingsDialog";
 const char kJsApiLaunchAddWiFiNetworkDialog[] = "launchAddWiFiNetworkDialog";
-const char kJsApiLaunchAddMobileNetworkDialog[] =
-    "launchAddMobileNetworkDialog";
+const char kJsApiShowNetworkDetails[] = "showNetworkDetails";
 
 }  // namespace
 
@@ -70,21 +73,32 @@ void NetworkDropdownHandler::RegisterMessages() {
               &NetworkDropdownHandler::HandleLaunchProxySettingsDialog);
   AddCallback(kJsApiLaunchAddWiFiNetworkDialog,
               &NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog);
-  AddCallback(kJsApiLaunchAddMobileNetworkDialog,
-              &NetworkDropdownHandler::HandleLaunchAddMobileNetworkDialog);
+  AddRawCallback(kJsApiShowNetworkDetails,
+                 &NetworkDropdownHandler::HandleShowNetworkDetails);
 }
 
 void NetworkDropdownHandler::HandleLaunchProxySettingsDialog() {
-  dropdown_->OpenButtonOptions();
+  // Empty string opens the internet detail dialog for the default network.
+  LoginDisplayHost::default_host()->OpenProxySettings("");
 }
 
 void NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog() {
+  // Make sure WiFi is enabled.
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  if (handler->GetTechnologyState(NetworkTypePattern::WiFi()) !=
+      NetworkStateHandler::TECHNOLOGY_ENABLED) {
+    handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), true,
+                                  network_handler::ErrorCallback());
+  }
   NetworkConfigView::ShowForType(shill::kTypeWifi);
 }
 
-void NetworkDropdownHandler::HandleLaunchAddMobileNetworkDialog() {
-  gfx::NativeWindow native_window = GetNativeWindow();
-  ChooseMobileNetworkDialog::ShowDialog(native_window);
+void NetworkDropdownHandler::HandleShowNetworkDetails(
+    const base::ListValue* args) {
+  std::string guid;
+  args->GetString(0, &guid);
+  // OpenProxySettings shows the internet detail dialog for the network.
+  LoginDisplayHost::default_host()->OpenProxySettings(guid);
 }
 
 void NetworkDropdownHandler::OnConnectToNetworkRequested() {

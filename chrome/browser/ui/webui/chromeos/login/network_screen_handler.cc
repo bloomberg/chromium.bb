@@ -190,7 +190,6 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("keyboardDropdownLabel", IDS_KEYBOARD_DROPDOWN_LABEL);
   builder->Add("proxySettingsMenuName", IDS_PROXY_SETTINGS_MENU_NAME);
   builder->Add("addWiFiNetworkMenuName", IDS_ADD_WI_FI_NETWORK_MENU_NAME);
-  builder->Add("addMobileNetworkMenuName", IDS_ADD_MOBILE_NETWORK_MENU_NAME);
 
   builder->Add("highContrastOptionOff", IDS_HIGH_CONTRAST_OPTION_OFF);
   builder->Add("highContrastOptionOn", IDS_HIGH_CONTRAST_OPTION_ON);

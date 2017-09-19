@@ -423,6 +423,29 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  hasDeviceFields_: function() {
+    return this.hasVisibleFields_(this.getDeviceFields_());
+  },
+
+  /**
+   * @return {!Array<string>} The fields to display in the device section.
+   * @private
+   */
+  getDeviceFields_: function() {
+    /** @type {!Array<string>} */ var fields = [];
+    if (this.networkProperties.Type == CrOnc.Type.CELLULAR) {
+      fields.push(
+          'Cellular.HomeProvider.Name', 'Cellular.ESN', 'Cellular.ICCID',
+          'Cellular.IMEI', 'Cellular.IMSI', 'Cellular.MDN', 'Cellular.MEID',
+          'Cellular.MIN');
+    }
+    return fields;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
   hasInfoFields_: function() {
     return this.hasVisibleFields_(this.getInfoFields_());
   },
