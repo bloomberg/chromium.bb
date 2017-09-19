@@ -122,14 +122,13 @@ void TPMTokenInfoGetter::RetryLater() {
   tpm_request_delay_ = GetNextRequestDelayMs(tpm_request_delay_);
 }
 
-void TPMTokenInfoGetter::OnTpmIsEnabled(DBusMethodCallStatus call_status,
-                                        bool tpm_is_enabled) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+void TPMTokenInfoGetter::OnTpmIsEnabled(base::Optional<bool> tpm_is_enabled) {
+  if (!tpm_is_enabled.has_value()) {
     RetryLater();
     return;
   }
 
-  if (!tpm_is_enabled) {
+  if (!tpm_is_enabled.value()) {
     state_ = STATE_DONE;
     callback_.Run(TPMTokenInfo());
     return;

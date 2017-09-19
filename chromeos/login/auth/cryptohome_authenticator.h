@@ -11,10 +11,10 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "chromeos/login/auth/authenticator.h"
@@ -241,7 +241,7 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
   void OnOwnershipChecked(bool is_owner);
 
   // Handles completion of cryptohome unmount.
-  void OnUnmount(DBusMethodCallStatus call_status, bool success);
+  void OnUnmount(base::Optional<bool> success);
 
   // Signal login completion status for cases when a new user is added via
   // an external authentication provider (i.e. GAIA extension).

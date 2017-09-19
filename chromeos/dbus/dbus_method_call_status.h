@@ -37,15 +37,6 @@ using VoidDBusMethodCallback =
 
 // TODO(crbug.com/739622): Use OnceCallback in following definition, too.
 
-// A callback to handle responses of methods returning a bool value.
-typedef base::Callback<void(DBusMethodCallStatus call_status,
-                            bool result)> BoolDBusMethodCallback;
-
-// A callback to handle responses of methods returning a boolean value.
-typedef base::Callback<void(
-    DBusMethodCallStatus call_status,
-    bool result)> BooleanDBusMethodCallback;
-
 // A callback to handle responses of methods returning a ObjectPath value.
 typedef base::Callback<void(
     DBusMethodCallStatus call_status,

@@ -15,8 +15,8 @@ void FakeImageLoaderClient::RegisterComponent(
     const std::string& name,
     const std::string& version,
     const std::string& component_folder_abs_path,
-    const BoolDBusMethodCallback& callback) {
-  callback.Run(DBUS_METHOD_CALL_FAILURE, false);
+    DBusMethodCallback<bool> callback) {
+  std::move(callback).Run(base::nullopt);
 }
 void FakeImageLoaderClient::LoadComponent(
     const std::string& name,

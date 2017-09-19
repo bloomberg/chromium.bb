@@ -35,8 +35,8 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void SetLowDiskSpaceHandler(const LowDiskSpaceHandler& handler) override;
   void WaitForServiceToBeAvailable(
       const WaitForServiceToBeAvailableCallback& callback) override;
-  void IsMounted(const BoolDBusMethodCallback& callback) override;
-  void Unmount(const BoolDBusMethodCallback& callback) override;
+  void IsMounted(DBusMethodCallback<bool> callback) override;
+  void Unmount(DBusMethodCallback<bool> callback) override;
   void AsyncCheckKey(const cryptohome::Identification& cryptohome_id,
                      const std::string& key,
                      const AsyncMethodCallback& callback) override;
@@ -68,18 +68,18 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void AsyncMountPublic(const cryptohome::Identification& public_mount_id,
                         int flags,
                         const AsyncMethodCallback& callback) override;
-  void TpmIsReady(const BoolDBusMethodCallback& callback) override;
-  void TpmIsEnabled(const BoolDBusMethodCallback& callback) override;
+  void TpmIsReady(DBusMethodCallback<bool> callback) override;
+  void TpmIsEnabled(DBusMethodCallback<bool> callback) override;
   bool CallTpmIsEnabledAndBlock(bool* enabled) override;
   void TpmGetPassword(DBusMethodCallback<std::string> callback) override;
-  void TpmIsOwned(const BoolDBusMethodCallback& callback) override;
+  void TpmIsOwned(DBusMethodCallback<bool> callback) override;
   bool CallTpmIsOwnedAndBlock(bool* owned) override;
-  void TpmIsBeingOwned(const BoolDBusMethodCallback& callback) override;
+  void TpmIsBeingOwned(DBusMethodCallback<bool> callback) override;
   bool CallTpmIsBeingOwnedAndBlock(bool* owning) override;
   void TpmCanAttemptOwnership(VoidDBusMethodCallback callback) override;
   void TpmClearStoredPassword(VoidDBusMethodCallback callback) override;
   bool CallTpmClearStoredPasswordAndBlock() override;
-  void Pkcs11IsTpmTokenReady(const BoolDBusMethodCallback& callback) override;
+  void Pkcs11IsTpmTokenReady(DBusMethodCallback<bool> callback) override;
   void Pkcs11GetTpmTokenInfo(
       const Pkcs11GetTpmTokenInfoCallback& callback) override;
   void Pkcs11GetTpmTokenInfoForUser(
@@ -92,14 +92,11 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
                             const std::vector<uint8_t>& value,
                             bool* successful) override;
   bool InstallAttributesFinalize(bool* successful) override;
-  void InstallAttributesIsReady(
-      const BoolDBusMethodCallback& callback) override;
+  void InstallAttributesIsReady(DBusMethodCallback<bool> callback) override;
   bool InstallAttributesIsInvalid(bool* is_invalid) override;
   bool InstallAttributesIsFirstInstall(bool* is_first_install) override;
-  void TpmAttestationIsPrepared(
-      const BoolDBusMethodCallback& callback) override;
-  void TpmAttestationIsEnrolled(
-      const BoolDBusMethodCallback& callback) override;
+  void TpmAttestationIsPrepared(DBusMethodCallback<bool> callback) override;
+  void TpmAttestationIsEnrolled(DBusMethodCallback<bool> callback) override;
   void AsyncTpmAttestationCreateEnrollRequest(
       chromeos::attestation::PrivacyCAType pca_type,
       const AsyncMethodCallback& callback) override;
@@ -122,7 +119,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      const BoolDBusMethodCallback& callback) override;
+      DBusMethodCallback<bool> callback) override;
   void TpmAttestationGetCertificate(
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
@@ -163,12 +160,11 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const std::string& payload,
-      const BoolDBusMethodCallback& callback) override;
-  void TpmAttestationDeleteKeys(
-      attestation::AttestationKeyType key_type,
-      const cryptohome::Identification& cryptohome_id,
-      const std::string& key_prefix,
-      const BoolDBusMethodCallback& callback) override;
+      DBusMethodCallback<bool> callback) override;
+  void TpmAttestationDeleteKeys(attestation::AttestationKeyType key_type,
+                                const cryptohome::Identification& cryptohome_id,
+                                const std::string& key_prefix,
+                                DBusMethodCallback<bool> callback) override;
   void TpmGetVersion(DBusMethodCallback<std::string> callback) override;
   void GetKeyDataEx(const cryptohome::Identification& cryptohome_id,
                     const cryptohome::AuthorizationRequest& auth,
@@ -213,7 +209,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const cryptohome::SetFirmwareManagementParametersRequest& request,
       const ProtobufMethodCallback& callback) override;
   void NeedsDircryptoMigration(const cryptohome::Identification& cryptohome_id,
-                               const BoolDBusMethodCallback& callback) override;
+                               DBusMethodCallback<bool> callback) override;
 
   // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
   // pending callbacks if is_available is true.
