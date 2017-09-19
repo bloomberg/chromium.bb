@@ -428,8 +428,7 @@ class SigninScreenHandler
   void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
   void HandleSendFeedbackAndResyncUserData();
   void HandleRequestNewNoteAction(const std::string& request_type);
-  void HandleRecordLockScreenAppUnlockUIAction(const std::string& action);
-  void HandleSetLockScreenAppsState(const std::string& state);
+  void HandleCloseLockScreenApp();
 
   // Sends the list of |keyboard_layouts| available for the |locale| that is
   // currently selected for the public session identified by |user_id|.

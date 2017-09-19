@@ -66,19 +66,6 @@ class StateController : public ash::mojom::TrayActionClient,
                         public ui::InputDeviceEventObserver,
                         public chromeos::PowerManagerClient::Observer {
  public:
-  // Action taken by the user on lock screen when a lock screen app window was
-  // in the background - used primarily for metrics reporting.
-  // IMPORTANT: The values should be kept in sync with
-  // LockScreenNoteTakingUnlockUIAction, and assigned values should never be
-  // changed.
-  enum class LockScreenUnlockAction {
-    kSessionUnlocked = 0,
-    kUnlockCancelled = 1,
-    kShutdown = 2,
-    kSignOut = 3,
-    kCount
-  };
-
   // Returns whether the StateController is enabled - it is currently guarded by
   // a feature flag. If not enabled, |StateController| instance is not allowed
   // to be created. |Get| will still work, but it will return nullptr.
@@ -170,19 +157,6 @@ class StateController : public ash::mojom::TrayActionClient,
   // |focus_cycler_delegate_|.
   // Returns whether the focus has been taken from the app window.
   bool HandleTakeFocus(content::WebContents* web_contents, bool reverse);
-
-  // If there are any active lock screen action handlers, moved their windows
-  // to background, to ensure lock screen UI is visible.
-  void MoveToBackground();
-
-  // If there are any lock screen action handler in background, moves their
-  // windows back to foreground (i.e. visible over lock screen UI).
-  void MoveToForeground();
-
-  // Records the user action taken on lock screen when the lock screen app
-  // unlock UI is shown - i.e. when lock UI is shown on top of backgrounded
-  // lock screen app window.
-  void RecordLockScreenAppUnlockAction(LockScreenUnlockAction action);
 
  private:
   // Called when profiles needed to run lock screen apps are ready - i.e. when
