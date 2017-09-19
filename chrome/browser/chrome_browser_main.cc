@@ -1510,9 +1510,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       case TryChromeDialog::OPEN_CHROME_WELCOME:
         browser_creator_->set_welcome_back_page(
             StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard);
+        break;
       case TryChromeDialog::OPEN_CHROME_WELCOME_WIN10:
         browser_creator_->set_welcome_back_page(
             StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10);
+        break;
       case TryChromeDialog::OPEN_CHROME_DEFAULT:
         break;
       case TryChromeDialog::OPEN_CHROME_DEFER:
