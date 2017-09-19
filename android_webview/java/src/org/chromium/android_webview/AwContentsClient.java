@@ -59,6 +59,14 @@ public abstract class AwContentsClient {
         this(Looper.myLooper());
     }
 
+    /**
+     *
+     * See {@link android.webkit.WebChromeClient}. */
+    public interface CustomViewCallback {
+        /* See {@link android.webkit.WebChromeClient}. */
+        public void onCustomViewHidden();
+    }
+
     // Alllow injection of the callback thread, for testing.
     public AwContentsClient(Looper looper) {
         mCallbackHelper = new AwContentsClientCallbackHelper(looper, this);
@@ -373,7 +381,7 @@ public abstract class AwContentsClient {
     public abstract void onReceivedHttpError(AwWebResourceRequest request,
             AwWebResourceResponse response);
 
-    public abstract void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback);
+    public abstract void onShowCustomView(View view, CustomViewCallback callback);
 
     public abstract void onHideCustomView();
 

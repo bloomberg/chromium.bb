@@ -10,11 +10,11 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import org.chromium.android_webview.AwContentsClient;
 import org.chromium.base.test.util.CallbackHelper;
 
 import java.util.concurrent.TimeUnit;
@@ -33,7 +33,7 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
     private final Activity mActivity;
     private final boolean mAllowHardwareAcceleration;
     private View mCustomView;
-    private WebChromeClient.CustomViewCallback mExitCallback;
+    private AwContentsClient.CustomViewCallback mExitCallback;
 
     public FullScreenVideoTestAwContentsClient(Activity activity,
             boolean allowHardwareAcceleration) {
@@ -42,7 +42,7 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
     }
 
     @Override
-    public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+    public void onShowCustomView(View view, AwContentsClient.CustomViewCallback callback) {
         mCustomView = view;
         if (!mAllowHardwareAcceleration) {
             // The hardware emulation in the testing infrastructure is not perfect, and this is
@@ -78,7 +78,7 @@ public class FullScreenVideoTestAwContentsClient extends TestAwContentsClient {
         }
     }
 
-    public WebChromeClient.CustomViewCallback getExitCallback() {
+    public AwContentsClient.CustomViewCallback getExitCallback() {
         return mExitCallback;
     }
 

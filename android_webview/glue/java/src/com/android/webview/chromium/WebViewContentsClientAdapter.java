@@ -1152,12 +1152,13 @@ class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     @Override
-    public void onShowCustomView(View view, CustomViewCallback cb) {
+    public void onShowCustomView(View view, final CustomViewCallback cb) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onShowCustomView");
             if (mWebChromeClient != null) {
                 if (TRACE) Log.d(TAG, "onShowCustomView");
-                mWebChromeClient.onShowCustomView(view, cb);
+                mWebChromeClient.onShowCustomView(
+                        view, cb == null ? null : () -> cb.onCustomViewHidden());
             }
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onShowCustomView");

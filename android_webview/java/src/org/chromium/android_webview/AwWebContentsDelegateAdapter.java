@@ -18,7 +18,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.URLUtil;
-import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
@@ -297,7 +296,7 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         if (fullscreenView == null) {
             return;
         }
-        WebChromeClient.CustomViewCallback cb = () -> {
+        AwContentsClient.CustomViewCallback cb = () -> {
             if (mCustomView != null) {
                 mAwContents.requestExitFullscreen();
             }
