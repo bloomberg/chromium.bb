@@ -1,9 +1,0 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-# TODO(crbug.com/764286): this is a forwarding .gni file to avoid breaking
-# the downstream repository that still reference this old path; remove it
-# once downstream has been fixed to use the new path.
-
-import("//build/config/ios/asset_catalog.gni")
