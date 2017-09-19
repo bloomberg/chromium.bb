@@ -56,7 +56,7 @@ AudioNode* AudioBasicInspectorNode::connect(AudioNode* destination,
                                             ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  BaseAudioContext::AutoLocker locker(context());
+  BaseAudioContext::GraphAutoLocker locker(context());
 
   AudioNode::connect(destination, output_index, input_index, exception_state);
   static_cast<AudioBasicInspectorHandler&>(Handler()).UpdatePullStatus();
@@ -68,7 +68,7 @@ void AudioBasicInspectorNode::disconnect(unsigned output_index,
                                          ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  BaseAudioContext::AutoLocker locker(context());
+  BaseAudioContext::GraphAutoLocker locker(context());
 
   AudioNode::disconnect(output_index, exception_state);
   static_cast<AudioBasicInspectorHandler&>(Handler()).UpdatePullStatus();

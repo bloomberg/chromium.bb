@@ -126,7 +126,7 @@ DEFINE_TRACE(AudioContext) {
 
 ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
   DCHECK(IsMainThread());
-  AutoLocker locker(this);
+  GraphAutoLocker locker(this);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -179,7 +179,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
   // Save the resolver which will get resolved when the destination node starts
   // pulling on the graph again.
   {
-    AutoLocker locker(this);
+    GraphAutoLocker locker(this);
     resume_resolvers_.push_back(resolver);
   }
 

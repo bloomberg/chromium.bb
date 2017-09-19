@@ -98,7 +98,7 @@ void DeferredTaskHandler::MarkSummingJunctionDirty(
 void DeferredTaskHandler::RemoveMarkedSummingJunction(
     AudioSummingJunction* summing_junction) {
   DCHECK(IsMainThread());
-  AutoLocker locker(*this);
+  GraphAutoLocker locker(*this);
   dirty_summing_junctions_.erase(summing_junction);
 }
 
@@ -241,7 +241,7 @@ void DeferredTaskHandler::ContextWillBeDestroyed() {
   // Some handlers might live because of their cross thread tasks.
 }
 
-DeferredTaskHandler::AutoLocker::AutoLocker(BaseAudioContext* context)
+DeferredTaskHandler::GraphAutoLocker::GraphAutoLocker(BaseAudioContext* context)
     : handler_(context->GetDeferredTaskHandler()) {
   handler_.lock();
 }
@@ -274,13 +274,13 @@ void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
 
 void DeferredTaskHandler::DeleteHandlersOnMainThread() {
   DCHECK(IsMainThread());
-  AutoLocker locker(*this);
+  GraphAutoLocker locker(*this);
   deletable_orphan_handlers_.clear();
 }
 
 void DeferredTaskHandler::ClearHandlersToBeDeleted() {
   DCHECK(IsMainThread());
-  AutoLocker locker(*this);
+  GraphAutoLocker locker(*this);
   rendering_orphan_handlers_.clear();
   deletable_orphan_handlers_.clear();
 }

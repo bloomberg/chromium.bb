@@ -318,7 +318,7 @@ double ScriptProcessorHandler::LatencyTime() const {
 void ScriptProcessorHandler::SetChannelCount(unsigned long channel_count,
                                              ExceptionState& exception_state) {
   DCHECK(IsMainThread());
-  BaseAudioContext::AutoLocker locker(Context());
+  BaseAudioContext::GraphAutoLocker locker(Context());
 
   if (channel_count != channel_count_) {
     exception_state.ThrowDOMException(
@@ -332,7 +332,7 @@ void ScriptProcessorHandler::SetChannelCountMode(
     const String& mode,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
-  BaseAudioContext::AutoLocker locker(Context());
+  BaseAudioContext::GraphAutoLocker locker(Context());
 
   if ((mode == "max") || (mode == "clamped-max")) {
     exception_state.ThrowDOMException(

@@ -144,7 +144,7 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
   {
     // The context must be locked since changing the buffer can
     // re-configure the number of channels that are output.
-    BaseAudioContext::AutoLocker context_locker(Context());
+    BaseAudioContext::GraphAutoLocker context_locker(Context());
 
     // Synchronize with process().
     MutexLocker locker(process_lock_);
@@ -198,7 +198,7 @@ unsigned ConvolverHandler::ComputeNumberOfOutputChannels(
 void ConvolverHandler::SetChannelCount(unsigned long channel_count,
                                        ExceptionState& exception_state) {
   DCHECK(IsMainThread());
-  BaseAudioContext::AutoLocker locker(Context());
+  BaseAudioContext::GraphAutoLocker locker(Context());
 
   // channelCount must be 2.
   if (channel_count != 2) {
@@ -211,7 +211,7 @@ void ConvolverHandler::SetChannelCount(unsigned long channel_count,
 void ConvolverHandler::SetChannelCountMode(const String& mode,
                                            ExceptionState& exception_state) {
   DCHECK(IsMainThread());
-  BaseAudioContext::AutoLocker locker(Context());
+  BaseAudioContext::GraphAutoLocker locker(Context());
 
   // channcelCountMode must be 'clamped-max'.
   if (mode != "clamped-max") {

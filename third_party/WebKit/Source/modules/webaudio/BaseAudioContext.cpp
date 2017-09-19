@@ -738,7 +738,7 @@ bool BaseAudioContext::AreAutoplayRequirementsFulfilled() const {
 
 void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {
   DCHECK(IsMainThread());
-  AutoLocker locker(this);
+  GraphAutoLocker locker(this);
 
   active_source_nodes_.push_back(node);
   node->Handler().MakeConnection();
@@ -807,7 +807,7 @@ void BaseAudioContext::HandlePostRenderTasks() {
 
 void BaseAudioContext::PerformCleanupOnMainThread() {
   DCHECK(IsMainThread());
-  AutoLocker locker(this);
+  GraphAutoLocker locker(this);
 
   if (is_resolving_resume_promises_) {
     for (auto& resolver : resume_resolvers_) {
@@ -926,7 +926,7 @@ bool BaseAudioContext::IsAllowedToStart() const {
 
 AudioIOPosition BaseAudioContext::OutputPosition() {
   DCHECK(IsMainThread());
-  AutoLocker locker(this);
+  GraphAutoLocker locker(this);
   return output_position_;
 }
 

@@ -283,8 +283,8 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* script_state,
   }
 
   // Wait until the suspend map is available for the insertion. Here we should
-  // use AutoLocker because it locks the graph from the main thread.
-  AutoLocker locker(this);
+  // use GraphAutoLocker because it locks the graph from the main thread.
+  GraphAutoLocker locker(this);
 
   // If there is a duplicate suspension at the same quantized frame,
   // reject the promise.
@@ -412,7 +412,7 @@ void OfflineAudioContext::ResolveSuspendOnMainThread(size_t frame) {
   SetContextState(kSuspended);
 
   // Wait until the suspend map is available for the removal.
-  AutoLocker locker(this);
+  GraphAutoLocker locker(this);
 
   // If the context is going away, m_scheduledSuspends could have had all its
   // entries removed.  Check for that here.
@@ -431,7 +431,7 @@ void OfflineAudioContext::RejectPendingResolvers() {
   DCHECK(IsMainThread());
 
   // Wait until the suspend map is available for removal.
-  AutoLocker locker(this);
+  GraphAutoLocker locker(this);
 
   // Offline context is going away so reject any promises that are still
   // pending.

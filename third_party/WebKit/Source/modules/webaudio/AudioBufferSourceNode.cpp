@@ -399,7 +399,7 @@ void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
 
   // The context must be locked since changing the buffer can re-configure the
   // number of channels that are output.
-  BaseAudioContext::AutoLocker context_locker(Context());
+  BaseAudioContext::GraphAutoLocker context_locker(Context());
 
   // This synchronizes with process().
   MutexLocker process_locker(process_lock_);

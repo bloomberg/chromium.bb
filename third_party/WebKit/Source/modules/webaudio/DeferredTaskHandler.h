@@ -129,16 +129,16 @@ class MODULES_EXPORT DeferredTaskHandler final
   // Returns true if this thread owns the context's lock.
   bool IsGraphOwner();
 
-  class MODULES_EXPORT AutoLocker {
+  class MODULES_EXPORT GraphAutoLocker {
     STACK_ALLOCATED();
 
    public:
-    explicit AutoLocker(DeferredTaskHandler& handler) : handler_(handler) {
+    explicit GraphAutoLocker(DeferredTaskHandler& handler) : handler_(handler) {
       handler_.lock();
     }
-    explicit AutoLocker(BaseAudioContext*);
+    explicit GraphAutoLocker(BaseAudioContext*);
 
-    ~AutoLocker() { handler_.unlock(); }
+    ~GraphAutoLocker() { handler_.unlock(); }
 
    private:
     DeferredTaskHandler& handler_;
