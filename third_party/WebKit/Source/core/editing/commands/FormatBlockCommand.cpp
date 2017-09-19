@@ -31,6 +31,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/Position.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/html/HTMLBRElement.h"

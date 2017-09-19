@@ -5,8 +5,8 @@
 #ifndef SelectionAdjuster_h
 #define SelectionAdjuster_h
 
+#include "core/CoreExport.h"
 #include "core/editing/Forward.h"
-#include "core/editing/Position.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

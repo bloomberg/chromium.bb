@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "core/dom/DocumentFragment.h"
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/dom/Text.h"

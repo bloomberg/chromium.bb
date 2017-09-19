@@ -5,10 +5,12 @@
 #ifndef HotModeSpellCheckRequester_h
 #define HotModeSpellCheckRequester_h
 
-#include "core/editing/Position.h"
+#include "core/editing/Forward.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
+class Element;
 class SpellCheckRequester;
 
 // This class is only supposed to be used by IdleSpellCheckCallback in hot mode

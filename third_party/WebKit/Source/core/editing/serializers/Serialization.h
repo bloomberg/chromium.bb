@@ -30,7 +30,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/editing/Forward.h"
-#include "core/editing/Position.h"
 #include "core/editing/serializers/HTMLInterchange.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"

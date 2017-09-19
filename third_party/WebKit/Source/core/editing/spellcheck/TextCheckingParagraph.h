@@ -22,7 +22,6 @@
 #define TextCheckingParagraph_h
 
 #include "core/editing/EphemeralRange.h"
-#include "core/editing/Position.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

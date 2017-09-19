@@ -30,6 +30,7 @@
 #include "core/dom/MutationObserver.h"
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationRecord.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/PointerEvent.h"

@@ -31,7 +31,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/Forward.h"
-#include "core/editing/Position.h"
 #include "core/editing/SetSelectionOptions.h"
 #include "core/layout/ScrollAlignment.h"
 #include "platform/geometry/IntRect.h"
@@ -42,6 +41,7 @@
 namespace blink {
 
 class DisplayItemClient;
+class Element;
 class LayoutBlock;
 class LocalFrame;
 class FrameCaret;

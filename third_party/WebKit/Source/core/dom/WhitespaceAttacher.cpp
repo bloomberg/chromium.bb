@@ -5,6 +5,7 @@
 #include "core/dom/WhitespaceAttacher.h"
 
 #include "core/dom/Element.h"
+#include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Text.h"
 #include "core/layout/LayoutText.h"
 #include "platform/ScriptForbiddenScope.h"

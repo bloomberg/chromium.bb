@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/Forward.h"
+#include "core/editing/Position.h"
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextGranularity.h"

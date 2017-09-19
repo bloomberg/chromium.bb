@@ -4,10 +4,12 @@
 
 #include "core/clipboard/DataTransfer.h"
 
+#include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/timing/Performance.h"

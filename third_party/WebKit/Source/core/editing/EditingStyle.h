@@ -36,7 +36,6 @@
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
-#include "core/editing/Position.h"
 #include "core/editing/WritingDirection.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"

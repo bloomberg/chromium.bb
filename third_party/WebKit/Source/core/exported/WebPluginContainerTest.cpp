@@ -42,6 +42,7 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameImpl.h"
+#include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
 #include "platform/KeyboardCodes.h"
