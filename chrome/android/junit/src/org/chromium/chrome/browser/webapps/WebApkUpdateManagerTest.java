@@ -369,8 +369,7 @@ public class WebApkUpdateManagerTest {
             assertTrue(updateManager.updateCheckStarted());
         }
 
-        // Chrome is killed. Neither
-        // {@link WebApkUpdateManager#OnGotManifestData()} is not called.
+        // Chrome is killed. {@link WebApkUpdateManager#OnGotManifestData()} is not called.
 
         {
             // Relaunching the WebAPK should do an is-update-needed check.
@@ -486,7 +485,7 @@ public class WebApkUpdateManagerTest {
         assertTrue(updateManager.updateRequested());
         assertEquals(NAME, updateManager.requestedUpdateName());
 
-        // Check that the {@link ManifestUpgradeDetector} has been destroyed. This prevents
+        // Check that the {@link WebApkUpdateDataFetcher} has been destroyed. This prevents
         // {@link #onGotManifestData()} from getting called.
         assertTrue(updateManager.destroyedFetcher());
     }
@@ -519,8 +518,6 @@ public class WebApkUpdateManagerTest {
      * - The user eventually navigates to a page pointing to a Web Manifest with the correct URL.
      * AND
      * - The Web Manifest has changed.
-     *
-     * This scenario can occur if the WebAPK's start_url is a Javascript redirect.
      */
     @Test
     public void testStartUrlRedirectsToPageWithUpdatedWebManifest() {
@@ -531,13 +528,15 @@ public class WebApkUpdateManagerTest {
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
-        // start_url does not have a Web Manifest. No update should be requested.
+        // start_url does not have a Web Manifest. {@link #onGotManifestData} is called as a result
+        // of update manager timing out. No update should be requested.
+        updateManager.onGotManifestData(null, null, null);
         assertFalse(updateManager.updateRequested());
-        // {@link ManifestUpgradeDetector} should still be alive so that it can get
+        // {@link WebApkUpdateDataFetcher} should still be alive so that it can get
         // {@link #onGotManifestData} when page with the Web Manifest finishes loading.
         assertFalse(updateManager.destroyedFetcher());
 
-        // start_url redirects to page with Web Manifest.
+        // User eventually navigates to page with Web Manifest.
 
         ManifestData manifestData = defaultManifestData();
         manifestData.name = DIFFERENT_NAME;
@@ -563,10 +562,13 @@ public class WebApkUpdateManagerTest {
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
         updateIfNeeded(updateManager);
+
+        // Update manager times out.
+        updateManager.onGotManifestData(null, null, null);
         onGotManifestData(updateManager, defaultManifestData());
         assertFalse(updateManager.updateRequested());
 
-        // We got the Web Manifest. The {@link ManifestUpgradeDetector} should be destroyed to stop
+        // We got the Web Manifest. The {@link WebApkUpdateDataFetcher} should be destroyed to stop
         // it from fetching the Web Manifest for subsequent page loads.
         assertTrue(updateManager.destroyedFetcher());
     }
