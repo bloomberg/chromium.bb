@@ -194,9 +194,9 @@ class CONTENT_EXPORT ContentRendererClient {
   // all widgets are hidden.
   virtual bool RunIdleHandlerWhenWidgetsHidden();
 
-  // Returns true if the renderer process should allow shared timer suspension
+  // Returns true if the renderer process should allow task suspension
   // after the process has been backgrounded. Defaults to false.
-  virtual bool AllowStoppingTimersWhenProcessBackgrounded();
+  virtual bool AllowStoppingWhenProcessBackgrounded();
 
   // Returns true if a popup window should be allowed.
   virtual bool AllowPopup();

@@ -121,7 +121,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void ResumeTimerQueue() override;
   void VirtualTimePaused() override;
   void VirtualTimeResumed() override;
-  void SetTimerQueueStoppingWhenBackgroundedEnabled(bool enabled) override;
+  void SetStoppingWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void SetRAILModeObserver(RAILModeObserver* observer) override;
@@ -428,10 +428,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // defined by RAILS.
   static const int kRailsResponseTimeMillis = 50;
 
-  // The amount of time to wait before suspending shared timers after the
-  // renderer has been backgrounded. This is used only if background suspension
-  // of shared timers is enabled.
-  static const int kStopTimersWhenBackgroundedDelayMillis = 5 * 60 * 1000;
+  // The amount of time to wait before suspending shared timers, and loading
+  // etc. after the renderer has been backgrounded. This is used only if
+  // background suspension is enabled.
+  static const int kStopWhenBackgroundedDelayMillis = 5 * 60 * 1000;
 
   // The time we should stay in a priority-escalated mode after a call to
   // DidAnimateForInputOnCompositorThread().
@@ -569,8 +569,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool renderer_hidden;
     bool renderer_backgrounded;
     bool renderer_paused;
-    bool timer_queue_stopping_when_backgrounded_enabled;
-    bool timer_queue_stopped_when_backgrounded;
+    bool stopping_when_backgrounded_enabled;
+    bool stopped_when_backgrounded;
     bool was_shutdown;
     bool loading_tasks_seem_expensive;
     bool timer_tasks_seem_expensive;
