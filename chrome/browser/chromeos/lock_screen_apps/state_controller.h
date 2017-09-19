@@ -66,35 +66,6 @@ class StateController : public ash::mojom::TrayActionClient,
                         public ui::InputDeviceEventObserver,
                         public chromeos::PowerManagerClient::Observer {
  public:
-  // Type of action that triggered a request for new note.
-  // Used in histograms - should be kept in sync with
-  // NewLockScreenNoteRequestType histogram enum, and assigned values should
-  // never be changed.
-  enum class NewNoteRequestType {
-    kTrayAction = 0,
-    kLockScreenUiTap = 1,
-    kLockScreenUiSwipe = 2,
-    kLockScreenUiKeyboard = 3,
-    kStylusEject = 4,
-    kCount,
-  };
-
-  // Reason for resetting note taking app window, and exiting note taking app.
-  // Used primarily for metrics reporting.
-  // IMPORTANT: The values should be kept in sync with
-  // LockScreenNoteTakingExitReason histogram enum, and assigned values should
-  // never be changed.
-  enum class NoteTakingExitReason {
-    kSessionUnlock = 0,
-    kShutdown = 1,
-    kScreenDimmed = 2,
-    kSuspend = 3,
-    kAppWindowClosed = 4,
-    kAppLockScreenSupportDisabled = 5,
-    kUnlockButtonPressed = 6,
-    kCount
-  };
-
   // Action taken by the user on lock screen when a lock screen app window was
   // in the background - used primarily for metrics reporting.
   // IMPORTANT: The values should be kept in sync with
@@ -163,8 +134,10 @@ class StateController : public ash::mojom::TrayActionClient,
   ash::mojom::TrayActionState GetLockScreenNoteState() const;
 
   // ash::mojom::TrayActionClient:
-  void RequestNewLockScreenNote() override;
-  void CloseLockScreenNote() override;
+  void RequestNewLockScreenNote(
+      ash::mojom::LockScreenNoteOrigin origin) override;
+  void CloseLockScreenNote(
+      ash::mojom::CloseLockScreenNoteReason reason) override;
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
@@ -206,9 +179,6 @@ class StateController : public ash::mojom::TrayActionClient,
   // windows back to foreground (i.e. visible over lock screen UI).
   void MoveToForeground();
 
-  // Handles new note requests that come from lock screen UI.
-  void HandleNewNoteRequestFromLockScreen(NewNoteRequestType type);
-
   // Records the user action taken on lock screen when the lock screen app
   // unlock UI is shown - i.e. when lock UI is shown on top of backgrounded
   // lock screen app window.
@@ -235,9 +205,6 @@ class StateController : public ash::mojom::TrayActionClient,
   // lock screen context.
   void InitializeWithCryptoKey(Profile* profile, const std::string& crypto_key);
 
-  // Handles request to launch a new-note lock screen flow.
-  void HandleNewNoteRequest(NewNoteRequestType type);
-
   // Called when app manager reports that note taking availability has changed.
   void OnNoteTakingAvailabilityChanged();
 
@@ -247,7 +214,7 @@ class StateController : public ash::mojom::TrayActionClient,
   // on whether lock screen note taking action can still be handled.
   void ResetNoteTakingWindowAndMoveToNextState(
       bool close_window,
-      NoteTakingExitReason exit_reason);
+      ash::mojom::CloseLockScreenNoteReason reason);
 
   // Requests lock screen note action state change to |state|.
   // Returns whether the action state has changed.

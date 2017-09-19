@@ -63,7 +63,8 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
       Shell::Get()->shell_delegate()->Exit();
       break;
     case kCloseNote:
-      Shell::Get()->tray_action()->CloseLockScreenNote();
+      Shell::Get()->tray_action()->CloseLockScreenNote(
+          mojom::CloseLockScreenNoteReason::kUnlockButtonPressed);
       break;
     case kCancel:
       Shell::Get()->lock_screen_controller()->CancelAddUser();

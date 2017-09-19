@@ -194,21 +194,26 @@ TEST_F(TrayActionTest, RequestAction) {
   tray_action->SetClient(action_client.CreateInterfacePtrAndBind(),
                          TrayActionState::kNotAvailable);
 
-  EXPECT_EQ(0, action_client.action_requests_count());
-  tray_action->RequestNewLockScreenNote();
+  EXPECT_TRUE(action_client.note_origins().empty());
+  tray_action->RequestNewLockScreenNote(
+      mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
   tray_action->FlushMojoForTesting();
-  EXPECT_EQ(0, action_client.action_requests_count());
+  EXPECT_TRUE(action_client.note_origins().empty());
 
   tray_action->UpdateLockScreenNoteState(TrayActionState::kAvailable);
-  tray_action->RequestNewLockScreenNote();
+  tray_action->RequestNewLockScreenNote(
+      mojom::LockScreenNoteOrigin::kTrayAction);
   tray_action->FlushMojoForTesting();
-  EXPECT_EQ(1, action_client.action_requests_count());
+  EXPECT_EQ(std::vector<mojom::LockScreenNoteOrigin>(
+                {mojom::LockScreenNoteOrigin::kTrayAction}),
+            action_client.note_origins());
 }
 
 // Tests that there is no crash if handler is not set.
 TEST_F(TrayActionTest, RequestActionWithNoHandler) {
   TrayAction* tray_action = Shell::Get()->tray_action();
-  tray_action->RequestNewLockScreenNote();
+  tray_action->RequestNewLockScreenNote(
+      mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
   tray_action->FlushMojoForTesting();
 }
 
@@ -220,16 +225,20 @@ TEST_F(TrayActionTest, CloseLockScreenNote) {
                          TrayActionState::kNotAvailable);
 
   tray_action->UpdateLockScreenNoteState(TrayActionState::kActive);
-  EXPECT_EQ(0, action_client.action_close_count());
-  tray_action->CloseLockScreenNote();
+  EXPECT_TRUE(action_client.close_note_reasons().empty());
+  tray_action->CloseLockScreenNote(
+      mojom::CloseLockScreenNoteReason::kUnlockButtonPressed);
   tray_action->FlushMojoForTesting();
-  EXPECT_EQ(1, action_client.action_close_count());
+  EXPECT_EQ(std::vector<mojom::CloseLockScreenNoteReason>(
+                {mojom::CloseLockScreenNoteReason::kUnlockButtonPressed}),
+            action_client.close_note_reasons());
 }
 
 // Tests that there is no crash if handler is not set.
 TEST_F(TrayActionTest, CloseLockScreenNoteWithNoHandler) {
   TrayAction* tray_action = Shell::Get()->tray_action();
-  tray_action->CloseLockScreenNote();
+  tray_action->CloseLockScreenNote(
+      mojom::CloseLockScreenNoteReason::kUnlockButtonPressed);
   tray_action->FlushMojoForTesting();
 }
 

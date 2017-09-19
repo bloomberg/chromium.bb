@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "ash/login/ui/login_constants.h"
@@ -1529,17 +1530,14 @@ void SigninScreenHandler::HandleRequestNewNoteAction(
       lock_screen_apps::StateController::Get();
 
   if (request_type == kNewNoteRequestTap) {
-    state_controller->HandleNewNoteRequestFromLockScreen(
-        lock_screen_apps::StateController::NewNoteRequestType::
-            kLockScreenUiTap);
+    state_controller->RequestNewLockScreenNote(
+        ash::mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
   } else if (request_type == kNewNoteRequestSwipe) {
-    state_controller->HandleNewNoteRequestFromLockScreen(
-        lock_screen_apps::StateController::NewNoteRequestType::
-            kLockScreenUiSwipe);
+    state_controller->RequestNewLockScreenNote(
+        ash::mojom::LockScreenNoteOrigin::kLockScreenButtonSwipe);
   } else if (request_type == kNewNoteRequestKeyboard) {
-    state_controller->HandleNewNoteRequestFromLockScreen(
-        lock_screen_apps::StateController::NewNoteRequestType::
-            kLockScreenUiKeyboard);
+    state_controller->RequestNewLockScreenNote(
+        ash::mojom::LockScreenNoteOrigin::kLockScreenButtonKeyboard);
   } else {
     NOTREACHED() << "Unknown request type " << request_type;
   }
