@@ -4369,6 +4369,9 @@ All users must sign out to continue.
   </message>
 
   <!-- 3G data Notifications -->
+  <message name="IDS_MOBILE_DATA_NOTIFICATION_TITLE" desc="Title of notification telling that mobile data is enabled.">
+    Mobile data
+  </message>
   <message name="IDS_3G_NOTIFICATION_MESSAGE" desc="Text of the 3G data notification telling that 3G data is enabled.">
     Google Chrome will use mobile data if you're not connected to another network.
   </message>
