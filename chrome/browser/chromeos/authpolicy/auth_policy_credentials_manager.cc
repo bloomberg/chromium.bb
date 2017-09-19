@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -31,6 +32,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 
 namespace {
 
@@ -317,13 +319,21 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
       l10n_util::GetStringUTF16(message_id),
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_NOTIFICATION_ALERT),
+      message_center::IsNewStyleNotificationEnabled()
+          ? gfx::Image()
+          : ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                IDR_NOTIFICATION_ALERT),
       notifier_id, l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
       GURL(notification_id), notification_id, data,
       new SigninNotificationDelegate());
-  notification.set_accent_color(
-      message_center::kSystemNotificationColorCriticalWarning);
+  if (message_center::IsNewStyleNotificationEnabled()) {
+    notification.set_accent_color(
+        message_center::kSystemNotificationColorCriticalWarning);
+    notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
+        kNotificationWarningIcon, message_center::kSmallImageSizeMD,
+        message_center::kSystemNotificationColorWarning)));
+    notification.set_vector_small_image(kNotificationWarningIcon);
+  }
   notification.SetSystemPriority();
 
   NotificationUIManager* notification_ui_manager =
