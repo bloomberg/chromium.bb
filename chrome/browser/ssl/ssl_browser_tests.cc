@@ -157,6 +157,8 @@ using web_modal::WebContentsModalDialogManager;
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
+const uint32_t kLargeVersionId = 0xFFFFFFu;
+
 namespace {
 
 enum ProceedDecision {
@@ -4957,6 +4959,18 @@ using SSLUICaptivePortalListTest = SSLUITest;
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 
+std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
+MakeCaptivePortalConfig(int version_id,
+                        const std::set<std::string>& spki_hashes) {
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->set_version_id(version_id);
+  for (const std::string& hash : spki_hashes) {
+    config_proto->add_captive_portal_cert()->set_sha256_hash(hash);
+  }
+  return config_proto;
+}
+
 // Tests that the captive portal certificate list is not used when the feature
 // is disabled via Finch. The list is passed to SSLErrorHandler via a proto.
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Disabled) {
@@ -4973,11 +4987,9 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Disabled) {
   // Mark the server's cert as a captive portal cert.
   const net::HashValue server_spki_hash =
       GetSPKIHash(https_server_mismatched_.GetCertificate().get());
-  auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
-  config_proto->add_captive_portal_cert()->set_sha256_hash(
-      server_spki_hash.ToString());
-  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+  SSLErrorHandler::SetErrorAssistantProto(MakeCaptivePortalConfig(
+      kLargeVersionId, std::set<std::string>{server_spki_hash.ToString()}));
+  ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
 
   // Navigate to an unsafe page on the server. A normal SSL interstitial should
   // be displayed since CaptivePortalCertificateList feature is disabled.
@@ -5017,11 +5029,9 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Enabled_FromProto) {
   // Mark the server's cert as a captive portal cert.
   const net::HashValue server_spki_hash =
       GetSPKIHash(https_server_mismatched_.GetCertificate().get());
-  auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
-  config_proto->add_captive_portal_cert()->set_sha256_hash(
-      server_spki_hash.ToString());
-  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+  SSLErrorHandler::SetErrorAssistantProto(MakeCaptivePortalConfig(
+      kLargeVersionId, std::set<std::string>{server_spki_hash.ToString()}));
+  ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
 
   // Navigate to an unsafe page on the server. The captive portal interstitial
   // should be displayed since CaptivePortalCertificateList feature is enabled.
@@ -5177,7 +5187,7 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest, Enabled) {
                                SSLErrorHandler::CAPTIVE_PORTAL_CERT_FOUND, 1);
 }
 
-// Same as SSLUICaptivePortalListResourceBundleTest.Enabled, but this time the
+// Same as SSLUICaptivePortalListResourceBundleTest. Enabled, but this time the
 // proto is dynamically updated (e.g. by the component updater). The dynamic
 // update should always override the proto loaded from the resource bundle.
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
@@ -5197,13 +5207,12 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
   {
     // Dynamically update the SSL error assistant config, do not include the
     // captive portal SPKI hash.
-    auto config_proto =
-        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
-    config_proto->add_captive_portal_cert()->set_sha256_hash(
-        "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-    config_proto->add_captive_portal_cert()->set_sha256_hash(
-        "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-    SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+    SSLErrorHandler::SetErrorAssistantProto(MakeCaptivePortalConfig(
+        kLargeVersionId,
+        std::set<std::string>{"sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                              "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}));
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
 
     // Navigate to an unsafe page on the server. A generic SSL interstitial
     // should be displayed because the dynamic update doesn't contain the hash
@@ -5230,16 +5239,13 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
   {
     // Dynamically update the error assistant config and add the captive portal
     // SPKI hash.
-    auto config_proto =
-        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
-    config_proto->set_version_id(1);
-    config_proto->add_captive_portal_cert()->set_sha256_hash(
-        "sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-    config_proto->add_captive_portal_cert()->set_sha256_hash(
-        "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-    config_proto->add_captive_portal_cert()->set_sha256_hash(
-        kCaptivePortalSPKI);
-    SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+    SSLErrorHandler::SetErrorAssistantProto(MakeCaptivePortalConfig(
+        kLargeVersionId + 1,
+        std::set<std::string>{"sha256/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                              "sha256/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                              kCaptivePortalSPKI}));
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
 
     // Navigate to the unsafe page again. This time, a captive portal
     // interstitial should be displayed.
@@ -5268,10 +5274,10 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
     // Try dynamically updating the error assistant config with an empty config
     // with the same version number. The update should be ignored, and a captive
     // portal interstitial should still be displayed.
-    auto empty_config =
-        base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
-    empty_config->set_version_id(1);
-    SSLErrorHandler::SetErrorAssistantProto(std::move(empty_config));
+    SSLErrorHandler::SetErrorAssistantProto(
+        MakeCaptivePortalConfig(kLargeVersionId + 1, std::set<std::string>()));
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
 
     // Navigate to the unsafe page again. This time, a captive portal
     // interstitial should be displayed.
@@ -5348,13 +5354,9 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, PortalChecksDisabled) {
   base::HistogramTester histograms;
 
   // Mark the server's cert as a captive portal cert.
-  const net::HashValue server_spki_hash =
-      GetSPKIHash(https_server_mismatched_.GetCertificate().get());
-  auto config_proto =
-      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
-  config_proto->add_captive_portal_cert()->set_sha256_hash(
-      server_spki_hash.ToString());
-  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+  SSLErrorHandler::SetErrorAssistantProto(MakeCaptivePortalConfig(
+      kLargeVersionId + 1, std::set<std::string>{server_spki_hash.ToString()}));
+  ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
 
   // Navigate to an unsafe page on the server. The captive portal interstitial
   // should be displayed since CaptivePortalCertificateList feature is enabled.
@@ -5430,9 +5432,11 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
 
   // Sets up an SSLErrorAssistantProto that lists |https_server_|'s default
   // certificate as a MITM software certificate.
-  void SetUpMITMSoftwareCertList() {
+  void SetUpMITMSoftwareCertList(uint32_t version_id) {
     auto config_proto =
         base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+    config_proto->set_version_id(version_id);
+
     chrome_browser_ssl::MITMSoftware* mitm_software =
         config_proto->add_mitm_software();
     mitm_software->set_name(kTestMITMSoftwareName);
@@ -5441,6 +5445,8 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
     mitm_software->set_issuer_organization_regex(
         https_server()->GetCertificate().get()->issuer().organization_names[0]);
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
   }
 
   // Returns a URL which triggers an interstitial with the host name that has
@@ -5456,7 +5462,8 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
   void TestMITMSoftwareInterstitial() {
     base::HistogramTester histograms;
     ASSERT_TRUE(https_server()->Start());
-    SetUpMITMSoftwareCertList();
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
 
     // Navigate to an unsafe page on the server. Mock out the URL host name to
     // equal the one set for HSTS.
@@ -5486,7 +5493,8 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
   void TestNoMITMSoftwareInterstitial() {
     base::HistogramTester histograms;
     ASSERT_TRUE(https_server()->Start());
-    SetUpMITMSoftwareCertList();
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
 
     // Navigate to an unsafe page on the server. Mock out the URL host name to
     // equal the one set for HSTS.
@@ -5572,6 +5580,7 @@ class SSLUIMITMSoftwareDisabledTest : public SSLUIMITMSoftwareTest {
 // is disabled by Finch.
 IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareDisabledTest, DisabledWithFinch) {
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
+  SetUpMITMSoftwareCertList(kLargeVersionId);
   TestNoMITMSoftwareInterstitial();
 }
 
@@ -5579,6 +5588,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareDisabledTest, DisabledWithFinch) {
 // enabled by Finch.
 IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest, EnabledWithFinch) {
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
+  SetUpMITMSoftwareCertList(kLargeVersionId);
   TestMITMSoftwareInterstitial();
 }
 
@@ -5605,6 +5615,7 @@ IN_PROC_BROWSER_TEST_F(
   mitm_software->set_issuer_organization_regex(
       "pattern-that-does-not-match-anything");
   SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+  ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
 
   // Navigate to an unsafe page on the server. Mock out the URL host name to
   // equal the one set for HSTS.
@@ -5652,6 +5663,7 @@ IN_PROC_BROWSER_TEST_F(
   mitm_software->set_issuer_organization_regex(
       https_server()->GetCertificate().get()->issuer().organization_names[0]);
   SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+  ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
 
   // Navigate to an unsafe page on the server. Mock out the URL host name to
   // equal the one set for HSTS.
@@ -5697,6 +5709,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
   mitm_software->set_issuer_organization_regex(
       "pattern-that-does-not-match-anything");
   SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+  ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
 
   // Navigate to an unsafe page on the server. Mock out the URL host name to
   // equal the one set for HSTS.
@@ -5727,6 +5740,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
                        TwoCertErrors_NoMITMSoftwareInterstitial) {
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID |
                     net::CERT_STATUS_COMMON_NAME_INVALID);
+  SetUpMITMSoftwareCertList(kLargeVersionId);
   TestNoMITMSoftwareInterstitial();
 }
 
@@ -5735,6 +5749,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
 IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
                        WrongCertError_NoMITMSoftwareInterstitial) {
   SetUpCertVerifier(net::CERT_STATUS_COMMON_NAME_INVALID);
+  SetUpMITMSoftwareCertList(kLargeVersionId);
   TestNoMITMSoftwareInterstitial();
 }
 
@@ -5747,7 +5762,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
 
   ASSERT_TRUE(https_server()->Start());
-  SetUpMITMSoftwareCertList();
+  SetUpMITMSoftwareCertList(kLargeVersionId);
 
   // Navigate to an unsafe page to trigger an interstitial, but don't replace
   // the host name with the one set for HSTS.
@@ -5781,6 +5796,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest, EnterpriseManaged) {
   SSLErrorHandler::SetEnterpriseManagedForTesting(true);
   ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
 
+  SetUpMITMSoftwareCertList(kLargeVersionId);
   TestMITMSoftwareInterstitial();
 
   InterstitialPage* interstitial_page = browser()
@@ -5811,6 +5827,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest, NotEnterpriseManaged) {
   SSLErrorHandler::SetEnterpriseManagedForTesting(false);
   ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
 
+  SetUpMITMSoftwareCertList(kLargeVersionId);
   TestMITMSoftwareInterstitial();
 
   InterstitialPage* interstitial_page = browser()
@@ -5829,6 +5846,19 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest, NotEnterpriseManaged) {
 
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
       interstitial_page, expected_explanation));
+}
+
+// Initialize MITMSoftware certificate list but set the version_id to zero. This
+// less than the version_id of the local resource bundle, so the dynamic
+// update will be ignored and a non-MITM interstitial will be shown.
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
+                       IgnoreDynamicUpdateWithSmallVersionId) {
+  SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
+  SSLErrorHandler::SetEnterpriseManagedForTesting(false);
+  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
+
+  SetUpMITMSoftwareCertList(0u);
+  TestNoMITMSoftwareInterstitial();
 }
 
 class SuperfishSSLUITest : public CertVerifierBrowserTest {

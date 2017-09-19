@@ -295,6 +295,8 @@ class ConfigSingleton {
           error_assistant_proto);
   void SetEnterpriseManagedForTesting(bool enterprise_managed);
   bool IsEnterpriseManagedFlagSetForTesting() const;
+  int GetErrorAssistantProtoVersionIdForTesting() const;
+
   bool IsEnterpriseManaged() const;
 
  private:
@@ -405,6 +407,10 @@ bool ConfigSingleton::IsEnterpriseManagedFlagSetForTesting() const {
   return true;
 }
 
+int ConfigSingleton::GetErrorAssistantProtoVersionIdForTesting() const {
+  return error_assistant_proto_->version_id();
+}
+
 bool ConfigSingleton::IsEnterpriseManaged() const {
   // Return the value of the testing flag if it's set.
   if (is_enterprise_managed_for_testing_ == ENTERPRISE_MANAGED_STATUS_TRUE) {
@@ -431,6 +437,17 @@ void ConfigSingleton::SetErrorAssistantProto(
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> proto) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CHECK(proto);
+  if (!error_assistant_proto_) {
+    // If the user hasn't seen an SSL error and a component update is available,
+    // the local resource bundle won't have been read and error_assistant_proto_
+    // will be null. It's possible that the local resource bundle has a higher
+    // version_id than the component updater component, so load the local
+    // resource bundle once to compare versions.
+    // TODO(meacer): Ideally, ReadErrorAssistantProtoFromResourceBundle should
+    // only be called once and not on the UI thread. Move the call to the
+    // component updater component.
+    error_assistant_proto_ = ReadErrorAssistantProtoFromResourceBundle();
+  }
   // Ignore versions that are not new.
   if (error_assistant_proto_ &&
       proto->version_id() <= error_assistant_proto_->version_id()) {
@@ -753,6 +770,11 @@ bool SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting() {
 // static
 std::string SSLErrorHandler::GetHistogramNameForTesting() {
   return kHistogram;
+}
+
+// static
+int SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() {
+  return g_config.Pointer()->GetErrorAssistantProtoVersionIdForTesting();
 }
 
 bool SSLErrorHandler::IsTimerRunningForTesting() const {

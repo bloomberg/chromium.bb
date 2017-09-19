@@ -135,9 +135,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   static void SetEnterpriseManagedForTesting(bool enterprise_managed);
   static bool IsEnterpriseManagedFlagSetForTesting();
   static std::string GetHistogramNameForTesting();
-  static void SetErrorAssistantConfig(
-      std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
-          config_proto);
+  static int GetErrorAssistantProtoVersionIdForTesting();
   bool IsTimerRunningForTesting() const;
 
  protected:
