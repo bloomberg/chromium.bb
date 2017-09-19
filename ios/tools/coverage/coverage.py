@@ -291,12 +291,13 @@ def _PrintLineCoverageStats(total_lines, executed_lines):
   """
   missed_lines = total_lines - executed_lines
   coverage = float(executed_lines) / total_lines if total_lines > 0 else None
-  percentage_coverage = '{}%'.format(int(coverage * 100)) if coverage else None
+  percentage_coverage = ('{}%'.format(int(coverage * 100))
+                         if coverage is not None else 'NA')
 
   output = ('Total Lines: {}\tExecuted Lines: {}\tMissed Lines: {}\t'
             'Coverage: {}\n')
   print output.format(total_lines, executed_lines, missed_lines,
-                      percentage_coverage or 'NA')
+                      percentage_coverage)
 
 
 def _BuildTargetWithCoverageConfiguration(target, jobs_count):
