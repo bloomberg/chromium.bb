@@ -1473,6 +1473,8 @@ FcFreeTypeQueryFace (const FT_Face  face,
 #endif
 		case TT_NAME_ID_PREFERRED_SUBFAMILY:
 		case TT_NAME_ID_FONT_SUBFAMILY:
+		    if (variable)
+			break;
 		    if (utf8)
 		    {
 			pp = utf8;
@@ -1551,7 +1553,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	++nfamily;
     }
 
-    if (!nstyle && face->style_name &&
+    if (!variable && !nstyle && face->style_name &&
 	FcStrCmpIgnoreBlanksAndCase ((FcChar8 *) face->style_name, (FcChar8 *) "") != 0)
     {
 	if (FcDebug () & FC_DBG_SCANV)
