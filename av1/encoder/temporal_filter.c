@@ -291,15 +291,33 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
 
   x->mv_limits = tmp_mv_limits;
 
-  // Ignore mv costing by sending NULL pointer instead of cost array
-  bestsme = cpi->find_fractional_mv_step(
-      x, &best_ref_mv1, cpi->common.allow_high_precision_mv, x->errorperbit,
-      &cpi->fn_ptr[BLOCK_16X16], 0, mv_sf->subpel_iters_per_step,
-      cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL,
-#if CONFIG_EXT_INTER
-      NULL, 0, 0,
+// Ignore mv costing by sending NULL pointer instead of cost array
+#if CONFIG_AMVR
+  if (cpi->common.cur_frame_mv_precision_level == 1) {
+    const uint8_t *const src_address = x->plane[0].src.buf;
+    const int src_stride = x->plane[0].src.stride;
+    const uint8_t *const y = xd->plane[0].pre[0].buf;
+    const int y_stride = xd->plane[0].pre[0].stride;
+    const int offset = x->best_mv.as_mv.row * y_stride + x->best_mv.as_mv.col;
+
+    x->best_mv.as_mv.row *= 8;
+    x->best_mv.as_mv.col *= 8;
+
+    bestsme = cpi->fn_ptr[BLOCK_16X16].vf(y + offset, y_stride, src_address,
+                                          src_stride, &sse);
+  } else {
 #endif
-      0, 0, 0);
+    bestsme = cpi->find_fractional_mv_step(
+        x, &best_ref_mv1, cpi->common.allow_high_precision_mv, x->errorperbit,
+        &cpi->fn_ptr[BLOCK_16X16], 0, mv_sf->subpel_iters_per_step,
+        cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL,
+#if CONFIG_EXT_INTER
+        NULL, 0, 0,
+#endif
+        0, 0, 0);
+#if CONFIG_AMVR
+  }
+#endif
 
   x->e_mbd.mi[0]->bmi[0].as_mv[0] = x->best_mv;
 

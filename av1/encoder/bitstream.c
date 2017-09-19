@@ -4447,6 +4447,16 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     aom_wb_write_literal(wb, cpi->common.ans_window_size_log2 - 8, 4);
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
+#if CONFIG_AMVR
+    if (cm->allow_screen_content_tools) {
+      if (cm->seq_mv_precision_level == 2) {
+        aom_wb_write_bit(wb, 1);
+      } else {
+        aom_wb_write_bit(wb, 0);
+        aom_wb_write_bit(wb, cm->seq_mv_precision_level == 0);
+      }
+    }
+#endif
   } else {
     if (!cm->show_frame) aom_wb_write_bit(wb, cm->intra_only);
     if (cm->intra_only) aom_wb_write_bit(wb, cm->allow_screen_content_tools);
@@ -4534,6 +4544,11 @@ static void write_uncompressed_header(AV1_COMP *cpi,
       write_frame_size_with_refs(cpi, wb);
 #endif
 
+#if CONFIG_AMVR
+      if (cm->seq_mv_precision_level == 2) {
+        aom_wb_write_bit(wb, cm->cur_frame_mv_precision_level == 0);
+      }
+#endif
       aom_wb_write_bit(wb, cm->allow_high_precision_mv);
 
       fix_interp_filter(cm, cpi->td.counts);

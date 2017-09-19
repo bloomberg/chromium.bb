@@ -223,6 +223,10 @@ if (CONFIG_WARPED_MOTION)
   endif ()
 endif ()
 
+if (CONFIG_AMVR)
+  change_config_and_warn(CONFIG_HASH_ME 1 CONFIG_AMVR)
+endif ()
+
 if ("${AOM_TARGET_SYSTEM}" MATCHES "Darwin\|Linux\|Windows")
   set(CONFIG_OS_SUPPORT 1)
 endif ()

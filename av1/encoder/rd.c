@@ -607,11 +607,25 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   set_block_thresholds(cm, rd);
 
   for (nmv_ctx = 0; nmv_ctx < NMV_CONTEXTS; ++nmv_ctx) {
+#if CONFIG_AMVR
+    if (cm->cur_frame_mv_precision_level) {
+      av1_build_nmv_cost_table(x->nmv_vec_cost[nmv_ctx], x->nmvcost[nmv_ctx],
+                               &cm->fc->nmvc[nmv_ctx], MV_SUBPEL_NONE);
+    } else {
+      av1_build_nmv_cost_table(
+          x->nmv_vec_cost[nmv_ctx],
+          cm->allow_high_precision_mv ? x->nmvcost_hp[nmv_ctx]
+                                      : x->nmvcost[nmv_ctx],
+          &cm->fc->nmvc[nmv_ctx], cm->allow_high_precision_mv);
+    }
+
+#else
     av1_build_nmv_cost_table(
         x->nmv_vec_cost[nmv_ctx],
         cm->allow_high_precision_mv ? x->nmvcost_hp[nmv_ctx]
                                     : x->nmvcost[nmv_ctx],
         &cm->fc->nmvc[nmv_ctx], cm->allow_high_precision_mv);
+#endif
   }
   x->mvcost = x->mv_cost_stack[0];
   x->nmvjointcost = x->nmv_vec_cost[0];

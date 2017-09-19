@@ -1244,9 +1244,9 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 }
 
 static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
-#if CONFIG_INTRABC
+#if CONFIG_INTRABC || CONFIG_AMVR
                              int use_subpel,
-#endif  // CONFIG_INTRABC
+#endif  // CONFIG_INTRABC || CONFIG_AMVR
                              int usehp) {
   int mag, d, fr, hp;
 #if CONFIG_NEW_MULTISYMBOL
@@ -1275,9 +1275,9 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
     mag = CLASS0_SIZE << (mv_class + 2);
   }
 
-#if CONFIG_INTRABC
+#if CONFIG_INTRABC || CONFIG_AMVR
   if (use_subpel) {
-#endif  // CONFIG_INTRABC
+#endif  // CONFIG_INTRABC || CONFIG_AMVR
         // Fractional part
     fr = aom_read_symbol(r, class0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
                          MV_FP_SIZE, ACCT_STR);
@@ -1292,12 +1292,12 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
   hp = usehp ? aom_read(r, class0 ? mvcomp->class0_hp : mvcomp->hp, ACCT_STR)
              : 1;
 #endif
-#if CONFIG_INTRABC
+#if CONFIG_INTRABC || CONFIG_AMVR
   } else {
     fr = 3;
     hp = 1;
   }
-#endif  // CONFIG_INTRABC
+#endif  // CONFIG_INTRABC || CONFIG_AMVR
 
   // Result
   mag += ((d << 3) | (fr << 1) | hp) + 1;
@@ -1314,16 +1314,16 @@ static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
 
   if (mv_joint_vertical(joint_type))
     diff.row = read_mv_component(r, &ctx->comps[0],
-#if CONFIG_INTRABC
+#if CONFIG_INTRABC || CONFIG_AMVR
                                  precision > MV_SUBPEL_NONE,
-#endif  // CONFIG_INTRABC
+#endif  // CONFIG_INTRABC || CONFIG_AMVR
                                  precision > MV_SUBPEL_LOW_PRECISION);
 
   if (mv_joint_horizontal(joint_type))
     diff.col = read_mv_component(r, &ctx->comps[1],
-#if CONFIG_INTRABC
+#if CONFIG_INTRABC || CONFIG_AMVR
                                  precision > MV_SUBPEL_NONE,
-#endif  // CONFIG_INTRABC
+#endif  // CONFIG_INTRABC || CONFIG_AMVR
                                  precision > MV_SUBPEL_LOW_PRECISION);
 
   av1_inc_mv(&diff, counts, precision);
@@ -1853,7 +1853,11 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   (void)mi_row;
   (void)mi_col;
   (void)bsize;
-
+#if CONFIG_AMVR
+  if (cm->cur_frame_mv_precision_level) {
+    allow_hp = MV_SUBPEL_NONE;
+  }
+#endif
   switch (mode) {
     case NEWMV: {
       FRAME_COUNTS *counts = xd->counts;
@@ -1892,12 +1896,22 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION
       mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
                                           cm->allow_high_precision_mv, bsize,
-                                          mi_col, mi_row, block)
+                                          mi_col, mi_row, block
+#if CONFIG_AMVR
+                                          ,
+                                          cm->cur_frame_mv_precision_level
+#endif
+                                          )
                          .as_int;
       if (is_compound)
         mv[1].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[1]],
                                             cm->allow_high_precision_mv, bsize,
-                                            mi_col, mi_row, block)
+                                            mi_col, mi_row, block
+#if CONFIG_AMVR
+                                            ,
+                                            cm->cur_frame_mv_precision_level
+#endif
+                                            )
                            .as_int;
 #else
       mv[0].as_int = 0;
@@ -2077,11 +2091,21 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION
       mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
                                           cm->allow_high_precision_mv, bsize,
-                                          mi_col, mi_row, block)
+                                          mi_col, mi_row, block
+#if CONFIG_AMVR
+                                          ,
+                                          cm->cur_frame_mv_precision_level
+#endif
+                                          )
                          .as_int;
       mv[1].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[1]],
                                           cm->allow_high_precision_mv, bsize,
-                                          mi_col, mi_row, block)
+                                          mi_col, mi_row, block
+#if CONFIG_AMVR
+                                          ,
+                                          cm->cur_frame_mv_precision_level
+#endif
+                                          )
                          .as_int;
 #else
       mv[0].as_int = 0;
@@ -2284,21 +2308,39 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_GLOBAL_MOTION
       zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
                                               cm->allow_high_precision_mv,
-                                              bsize, mi_col, mi_row, 0)
+                                              bsize, mi_col, mi_row, 0
+#if CONFIG_AMVR
+                                              ,
+                                              cm->cur_frame_mv_precision_level
+#endif
+                                              )
                              .as_int;
-      zeromv[1].as_int = (rf[1] != NONE_FRAME)
-                             ? gm_get_motion_vector(&cm->global_motion[rf[1]],
-                                                    cm->allow_high_precision_mv,
-                                                    bsize, mi_col, mi_row, 0)
-                                   .as_int
-                             : 0;
+      zeromv[1].as_int =
+          (rf[1] != NONE_FRAME)
+              ? gm_get_motion_vector(&cm->global_motion[rf[1]],
+                                     cm->allow_high_precision_mv, bsize, mi_col,
+                                     mi_row, 0
+#if CONFIG_AMVR
+                                     ,
+                                     cm->cur_frame_mv_precision_level
+#endif
+                                     )
+                    .as_int
+              : 0;
 #else
       zeromv[0].as_int = zeromv[1].as_int = 0;
 #endif
       for (ref = 0; ref < 2; ++ref) {
         if (rf[ref] == NONE_FRAME) continue;
+#if CONFIG_AMVR
+        lower_mv_precision(&ref_mvs[rf[ref]][0].as_mv, allow_hp,
+                           cm->cur_frame_mv_precision_level);
+        lower_mv_precision(&ref_mvs[rf[ref]][1].as_mv, allow_hp,
+                           cm->cur_frame_mv_precision_level);
+#else
         lower_mv_precision(&ref_mvs[rf[ref]][0].as_mv, allow_hp);
         lower_mv_precision(&ref_mvs[rf[ref]][1].as_mv, allow_hp);
+#endif
         if (ref_mvs[rf[ref]][0].as_int != zeromv[ref].as_int ||
             ref_mvs[rf[ref]][1].as_int != zeromv[ref].as_int)
           inter_mode_ctx[ref_frame] &= ~(1 << ALL_ZERO_FLAG_OFFSET);
@@ -2364,8 +2406,14 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_EXT_INTER
   {
     for (ref = 0; ref < 1 + is_compound; ++ref) {
+#if CONFIG_AMVR
+      av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
+                            &nearestmv[ref], &nearmv[ref],
+                            cm->cur_frame_mv_precision_level);
+#else
       av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
                             &nearestmv[ref], &nearmv[ref]);
+#endif
     }
   }
 
@@ -2395,8 +2443,15 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_EXT_INTER
         nearestmv[0] = xd->ref_mv_stack[ref_frame_type][0].this_mv;
         nearestmv[1] = xd->ref_mv_stack[ref_frame_type][0].comp_mv;
-        lower_mv_precision(&nearestmv[0].as_mv, allow_hp);
-        lower_mv_precision(&nearestmv[1].as_mv, allow_hp);
+#if CONFIG_AMVR
+        lower_mv_precision(&nearestmv[0].as_mv, allow_hp,
+                           cm->cur_frame_mv_precision_level);
+        lower_mv_precision(&nearestmv[1].as_mv, allow_hp,
+                           cm->cur_frame_mv_precision_level);
+#else
+      lower_mv_precision(&nearestmv[0].as_mv, allow_hp);
+      lower_mv_precision(&nearestmv[1].as_mv, allow_hp);
+#endif
 #if CONFIG_EXT_INTER
       } else if (mbmi->mode == NEAREST_NEWMV
 #if CONFIG_COMPOUND_SINGLEREF
@@ -2405,10 +2460,21 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_COMPOUND_SINGLEREF
                  ) {
         nearestmv[0] = xd->ref_mv_stack[ref_frame_type][0].this_mv;
+
+#if CONFIG_AMVR
+        lower_mv_precision(&nearestmv[0].as_mv, allow_hp,
+                           cm->cur_frame_mv_precision_level);
+#else
         lower_mv_precision(&nearestmv[0].as_mv, allow_hp);
+#endif
       } else if (mbmi->mode == NEW_NEARESTMV) {
         nearestmv[1] = xd->ref_mv_stack[ref_frame_type][0].comp_mv;
+#if CONFIG_AMVR
+        lower_mv_precision(&nearestmv[1].as_mv, allow_hp,
+                           cm->cur_frame_mv_precision_level);
+#else
         lower_mv_precision(&nearestmv[1].as_mv, allow_hp);
+#endif
       }
 #endif  // CONFIG_EXT_INTER
     }
@@ -2421,12 +2487,22 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_COMPOUND_SINGLEREF
         if (compound_ref0_mode(mbmi->mode) == NEARMV) {
           nearmv[0] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
-          lower_mv_precision(&nearmv[0].as_mv, allow_hp);
+#if CONFIG_AMVR
+          lower_mv_precision(&nearmv[0].as_mv, allow_hp,
+                             cm->cur_frame_mv_precision_level);
+#else
+        lower_mv_precision(&nearmv[0].as_mv, allow_hp);
+#endif
         }
 
         if (compound_ref1_mode(mbmi->mode) == NEARMV) {
           nearmv[1] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
-          lower_mv_precision(&nearmv[1].as_mv, allow_hp);
+#if CONFIG_AMVR
+          lower_mv_precision(&nearmv[1].as_mv, allow_hp,
+                             cm->cur_frame_mv_precision_level);
+#else
+        lower_mv_precision(&nearmv[1].as_mv, allow_hp);
+#endif
         }
 #if CONFIG_COMPOUND_SINGLEREF
       } else {
@@ -2510,8 +2586,14 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
             if (have_newmv_in_inter_mode(b_mode)) {
               mv_ref_list[0].as_int = nearest_sub8x8[ref].as_int;
               mv_ref_list[1].as_int = near_sub8x8[ref].as_int;
+#if CONFIG_AMVR
+              av1_find_best_ref_mvs(allow_hp, mv_ref_list, &ref_mv[0][ref],
+                                    &ref_mv[1][ref],
+                                    cm->cur_frame_mv_precision_level);
+#else
               av1_find_best_ref_mvs(allow_hp, mv_ref_list, &ref_mv[0][ref],
                                     &ref_mv[1][ref]);
+#endif
             }
           }
 #endif  // CONFIG_EXT_INTER
@@ -2519,7 +2601,12 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
         for (ref = 0; ref < 1 + is_compound && b_mode != ZEROMV; ++ref) {
           ref_mv_s8[ref] = nearest_sub8x8[ref];
+#if CONFIG_AMVR
+          lower_mv_precision(&ref_mv_s8[ref].as_mv, allow_hp,
+                             cm->cur_frame_mv_precision_level);
+#else
           lower_mv_precision(&ref_mv_s8[ref].as_mv, allow_hp);
+#endif
         }
 #if CONFIG_EXT_INTER
         (void)ref_mv_s8;

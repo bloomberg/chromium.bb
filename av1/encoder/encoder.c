@@ -254,11 +254,21 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
   }
 }
 
-static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv) {
+static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv
+#if CONFIG_AMVR
+                                  ,
+                                  int cur_frame_mv_precision_level
+#endif
+                                  ) {
   MACROBLOCK *const mb = &cpi->td.mb;
   cpi->common.allow_high_precision_mv = allow_high_precision_mv;
 
+#if CONFIG_AMVR
+  if (cpi->common.allow_high_precision_mv &&
+      cur_frame_mv_precision_level == 0) {
+#else
   if (cpi->common.allow_high_precision_mv) {
+#endif
     int i;
     for (i = 0; i < NMV_CONTEXTS; ++i) {
       mb->mv_cost_stack[i] = mb->nmvcost_hp[i];
@@ -998,6 +1008,11 @@ static void init_buffer_indices(AV1_COMP *cpi) {
   cpi->gld_fb_idx = 1;
   cpi->alt_fb_idx = 2;
 #endif  // CONFIG_EXT_REFS
+#if CONFIG_AMVR
+  cpi->rate_index = 0;
+  cpi->rate_size = 0;
+  cpi->cur_poc = -1;
+#endif
 }
 
 static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
@@ -2320,7 +2335,11 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   set_compound_tools(cm);
 #endif  // CONFIG_EXT_INTER
   av1_reset_segment_features(cm);
+#if CONFIG_AMVR
+  set_high_precision_mv(cpi, 0, 0);
+#else
   set_high_precision_mv(cpi, 0);
+#endif
 
   set_rc_buffer_sizes(rc, &cpi->oxcf);
 
@@ -2384,6 +2403,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
   cpi->common.ans_window_size_log2 = cpi->oxcf.ans_window_size_log2;
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
+#if CONFIG_AMVR
+  cm->seq_mv_precision_level = 2;
+#endif
 }
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
@@ -3940,7 +3962,12 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 #endif
 
   if (!frame_is_intra_only(cm)) {
+#if CONFIG_AMVR
+    set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH,
+                          cpi->common.cur_frame_mv_precision_level);
+#else
     set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH);
+#endif
   }
 
   // Configure experimental use of segmentation for enhanced coding of
@@ -5829,6 +5856,123 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
 }
 #endif  // CONFIG_INTERNAL_STATS
 
+#if CONFIG_AMVR
+static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
+                         const YV12_BUFFER_CONFIG *last_picture,
+                         hash_table *last_hash_table) {
+  aom_clear_system_state();
+  // check use hash ME
+  int k;
+  uint32_t hash_value_1;
+  uint32_t hash_value_2;
+
+  const int block_size = 8;
+  const double threshold_current = 0.8;
+  const double threshold_average = 0.95;
+  const int max_history_size = 32;
+  int T = 0;  // total block
+  int C = 0;  // match with collocated block
+  int S = 0;  // smooth region but not match with collocated block
+  int M = 0;  // match with other block
+
+  const int pic_width = cur_picture->y_width;
+  const int pic_height = cur_picture->y_height;
+  for (int i = 0; i + block_size <= pic_height; i += block_size) {
+    for (int j = 0; j + block_size <= pic_width; j += block_size) {
+      const int x_pos = j;
+      const int y_pos = i;
+      int match = 1;
+      T++;
+
+      // check whether collocated block match with current
+      uint8_t *p_cur = cur_picture->y_buffer;
+      uint8_t *p_ref = last_picture->y_buffer;
+      int stride_cur = cur_picture->y_stride;
+      int stride_ref = last_picture->y_stride;
+      p_cur += (y_pos * stride_cur + x_pos);
+      p_ref += (y_pos * stride_ref + x_pos);
+
+      for (int tmpY = 0; tmpY < block_size && match; tmpY++) {
+        for (int tmpX = 0; tmpX < block_size && match; tmpX++) {
+          if (p_cur[tmpX] != p_ref[tmpX]) {
+            match = 0;
+          }
+        }
+        p_cur += stride_cur;
+        p_ref += stride_ref;
+      }
+
+      if (match) {
+        C++;
+        continue;
+      }
+
+      if (av1_hash_is_horizontal_perfect(cur_picture, block_size, x_pos,
+                                         y_pos) ||
+          av1_hash_is_vertical_perfect(cur_picture, block_size, x_pos, y_pos)) {
+        S++;
+        continue;
+      }
+
+      av1_get_block_hash_value(
+          cur_picture->y_buffer + y_pos * stride_cur + x_pos, stride_cur,
+          block_size, &hash_value_1, &hash_value_2);
+
+      if (av1_has_exact_match(last_hash_table, hash_value_1, hash_value_2)) {
+        M++;
+      }
+    }
+  }
+
+  assert(T > 0);
+  double csm_rate = ((double)(C + S + M)) / ((double)(T));
+  double m_rate = ((double)(M)) / ((double)(T));
+
+  cpi->csm_rate_array[cpi->rate_index] = csm_rate;
+  cpi->m_rate_array[cpi->rate_index] = m_rate;
+
+  cpi->rate_index = (cpi->rate_index + 1) % max_history_size;
+  cpi->rate_size++;
+  cpi->rate_size = AOMMIN(cpi->rate_size, max_history_size);
+
+  if (csm_rate < threshold_current) {
+    return 0;
+  }
+
+  if (C == T) {
+    return 1;
+  }
+
+  double csm_average = 0.0;
+  double m_average = 0.0;
+
+  for (k = 0; k < cpi->rate_size; k++) {
+    csm_average += cpi->csm_rate_array[k];
+    m_average += cpi->m_rate_array[k];
+  }
+  csm_average /= cpi->rate_size;
+  m_average /= cpi->rate_size;
+
+  if (csm_average < threshold_average) {
+    return 0;
+  }
+
+  if (M > (T - C - S) / 3) {
+    return 1;
+  }
+
+  if (csm_rate > 0.99 && m_rate > 0.01) {
+    return 1;
+  }
+
+  if (csm_average + m_average > 1.01) {
+    return 1;
+  }
+
+  return 0;
+}
+#endif
+
 int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, int64_t *time_stamp,
                             int64_t *time_end, int flush) {
@@ -5859,7 +6003,11 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   aom_usec_timer_start(&cmptimer);
 
+#if CONFIG_AMVR
+  set_high_precision_mv(cpi, ALTREF_HIGH_PRECISION_MV, 0);
+#else
   set_high_precision_mv(cpi, ALTREF_HIGH_PRECISION_MV);
+#endif
 
   // Is multi-arf enabled.
   // Note that at the moment multi_arf is only configured for 2 pass VBR
@@ -6161,6 +6309,22 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     cpi->common.current_frame_id = -1;
   }
 #endif
+#if CONFIG_AMVR
+  cpi->cur_poc++;
+  if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
+    if (cpi->common.seq_mv_precision_level == 2) {
+      struct lookahead_entry *previous_entry =
+          cpi->lookahead->buf + cpi->previsous_index;
+      cpi->common.cur_frame_mv_precision_level = is_integer_mv(
+          cpi, cpi->source, &previous_entry->img, cpi->previsou_hash_table);
+    } else {
+      cpi->common.cur_frame_mv_precision_level =
+          cpi->common.seq_mv_precision_level;
+    }
+  } else {
+    cpi->common.cur_frame_mv_precision_level = 0;
+  }
+#endif
 
 #if CONFIG_XIPHRC
   if (oxcf->pass == 1) {
@@ -6250,6 +6414,23 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
         aom_free(is_block_same[k][j]);
       }
     }
+#if CONFIG_AMVR
+    cpi->previsou_hash_table = &cm->cur_frame->hash_table;
+    {
+      int l;
+      for (l = -MAX_PRE_FRAMES; l < cpi->lookahead->max_sz; l++) {
+        if ((cpi->lookahead->buf + l) == source) {
+          cpi->previsous_index = l;
+          break;
+        }
+      }
+
+      if (l == cpi->lookahead->max_sz) {
+        aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                           "Failed to find last frame original buffer");
+      }
+    }
+#endif
   }
 
 #endif

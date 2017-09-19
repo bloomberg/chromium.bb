@@ -133,7 +133,7 @@ typedef struct {
 } nmv_context_counts;
 
 typedef enum {
-#if CONFIG_INTRABC
+#if CONFIG_INTRABC || CONFIG_AMVR
   MV_SUBPEL_NONE = -1,
 #endif
   MV_SUBPEL_LOW_PRECISION = 0,

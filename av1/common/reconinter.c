@@ -182,7 +182,11 @@ static INLINE void av1_make_inter_predictor(
       build_for_obmc,
 #endif  // CONFIG_MOTION_VAR
       &final_warp_params);
-  if (do_warp) {
+  if (do_warp
+#if CONFIG_AMVR
+      && xd->cur_frame_mv_precision_level == 0
+#endif
+      ) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const struct buf_2d *const pre_buf = &pd->pre[ref];
     av1_warp_plane(&final_warp_params,

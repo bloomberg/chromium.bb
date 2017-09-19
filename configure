@@ -346,6 +346,7 @@ EXPERIMENT_LIST="
     colorspace_headers
     mfmv
     jnt_comp
+    amvr
 "
 CONFIG_LIST="
     dependency_tracking
@@ -612,6 +613,11 @@ post_process_cmdline() {
     if enabled analyzer; then
       soft_enable accounting
       soft_enable inspection
+    fi
+    # Enable hash_me if amvr is enabled
+    if enabled amvr; then
+      log_echo "amvr requires hash_me"
+      enable_feature hash_me
     fi
 }
 

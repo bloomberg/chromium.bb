@@ -20,7 +20,12 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
                                     uint8_t *refmv_count,
                                     CANDIDATE_MV *ref_mv_stack,
                                     const int use_hp, int len, int block,
-                                    int col, int weight) {
+                                    int col, int weight
+#if CONFIG_AMVR
+                                    ,
+                                    int is_integer
+#endif
+                                    ) {
   int index = 0, ref;
   int newmv_count = 0;
 #if CONFIG_CB4X4
@@ -35,7 +40,11 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
     for (ref = 0; ref < 2; ++ref) {
       if (candidate->ref_frame[ref] == rf[0]) {
         int_mv this_refmv = get_sub_block_mv(candidate_mi, ref, col, block);
+#if CONFIG_AMVR
+        lower_mv_precision(&this_refmv.as_mv, use_hp, is_integer);
+#else
         lower_mv_precision(&this_refmv.as_mv, use_hp);
+#endif
 
         for (index = 0; index < *refmv_count; ++index)
           if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int) break;
@@ -57,8 +66,11 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
             !unify_bsize) {
           int alt_block = 3 - block;
           this_refmv = get_sub_block_mv(candidate_mi, ref, col, alt_block);
+#if CONFIG_AMVR
+          lower_mv_precision(&this_refmv.as_mv, use_hp, is_integer);
+#else
           lower_mv_precision(&this_refmv.as_mv, use_hp);
-
+#endif
           for (index = 0; index < *refmv_count; ++index)
             if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int) break;
 
@@ -85,7 +97,12 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
 
       for (ref = 0; ref < 2; ++ref) {
         this_refmv[ref] = get_sub_block_mv(candidate_mi, ref, col, block);
+
+#if CONFIG_AMVR
+        lower_mv_precision(&this_refmv[ref].as_mv, use_hp, is_integer);
+#else
         lower_mv_precision(&this_refmv[ref].as_mv, use_hp);
+#endif
       }
 
       for (index = 0; index < *refmv_count; ++index)
@@ -120,9 +137,13 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
         this_refmv[0] = get_sub_block_mv(candidate_mi, 0, col, alt_block);
         this_refmv[1] = get_sub_block_mv(candidate_mi, 1, col, alt_block);
 
-        for (ref = 0; ref < 2; ++ref)
+        for (ref = 0; ref < 2; ++ref) {
+#if CONFIG_AMVR
+          lower_mv_precision(&this_refmv[ref].as_mv, use_hp, is_integer);
+#else
           lower_mv_precision(&this_refmv[ref].as_mv, use_hp);
-
+#endif
+        }
         for (index = 0; index < *refmv_count; ++index)
           if (ref_mv_stack[index].this_mv.as_int == this_refmv[0].as_int &&
               ref_mv_stack[index].comp_mv.as_int == this_refmv[1].as_int)
@@ -202,9 +223,16 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       *processed_rows = inc - row_offset - 1;
     }
 
+#if CONFIG_AMVR
+    newmv_count += add_ref_mv_candidate(
+        candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
+        cm->allow_high_precision_mv, len, block, col_offset + i, weight,
+        cm->cur_frame_mv_precision_level);
+#else
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
         cm->allow_high_precision_mv, len, block, col_offset + i, weight);
+#endif
     i += len;
   }
 
@@ -256,9 +284,16 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       *processed_cols = inc - col_offset - 1;
     }
 
+#if CONFIG_AMVR
+    newmv_count += add_ref_mv_candidate(
+        candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
+        cm->allow_high_precision_mv, len, block, col_offset, weight,
+        cm->cur_frame_mv_precision_level);
+#else
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
         cm->allow_high_precision_mv, len, block, col_offset, weight);
+#endif
     i += len;
   }
 
@@ -284,9 +319,16 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
     const int len = mi_size_wide[BLOCK_8X8];
 
+#if CONFIG_AMVR
+    newmv_count += add_ref_mv_candidate(
+        candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
+        cm->allow_high_precision_mv, len, block, mi_pos.col, 2,
+        cm->cur_frame_mv_precision_level);
+#else
     newmv_count += add_ref_mv_candidate(
         candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
         cm->allow_high_precision_mv, len, block, mi_pos.col, 2);
+#endif
   }  // Analyze a single 8x8 block motion information.
 
   return newmv_count;
@@ -473,8 +515,12 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
   for (ref = 0; ref < 2; ++ref) {
     if (prev_frame_mvs->ref_frame[ref] == ref_frame) {
       int_mv this_refmv = prev_frame_mvs->mv[ref];
+#if CONFIG_AMVR
+      lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv,
+                         cm->cur_frame_mv_precision_level);
+#else
       lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
-
+#endif
       if (abs(this_refmv.as_mv.row) >= 16 || abs(this_refmv.as_mv.col) >= 16)
         mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
 
@@ -1057,14 +1103,25 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     av1_set_ref_frame(rf, ref_frame);
     zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
                                             cm->allow_high_precision_mv, bsize,
-                                            mi_col, mi_row, 0)
+                                            mi_col, mi_row, 0
+#if CONFIG_AMVR
+                                            ,
+                                            cm->cur_frame_mv_precision_level
+#endif
+                                            )
                            .as_int;
-    zeromv[1].as_int = (rf[1] != NONE_FRAME)
-                           ? gm_get_motion_vector(&cm->global_motion[rf[1]],
-                                                  cm->allow_high_precision_mv,
-                                                  bsize, mi_col, mi_row, 0)
-                                 .as_int
-                           : 0;
+    zeromv[1].as_int =
+        (rf[1] != NONE_FRAME)
+            ? gm_get_motion_vector(&cm->global_motion[rf[1]],
+                                   cm->allow_high_precision_mv, bsize, mi_col,
+                                   mi_row, 0
+#if CONFIG_AMVR
+                                   ,
+                                   cm->cur_frame_mv_precision_level
+#endif
+                                   )
+                  .as_int
+            : 0;
   } else {
     zeromv[0].as_int = zeromv[1].as_int = 0;
   }
@@ -1107,11 +1164,20 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 
 void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
-                           int_mv *near_mv) {
+                           int_mv *near_mv
+#if CONFIG_AMVR
+                           ,
+                           int is_integer
+#endif
+                           ) {
   int i;
   // Make sure all the candidates are properly clamped etc
   for (i = 0; i < MAX_MV_REF_CANDIDATES; ++i) {
+#if CONFIG_AMVR
+    lower_mv_precision(&mvlist[i].as_mv, allow_hp, is_integer);
+#else
     lower_mv_precision(&mvlist[i].as_mv, allow_hp);
+#endif
   }
   *nearest_mv = mvlist[0];
   *near_mv = mvlist[1];
@@ -1143,7 +1209,12 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION
   zeromv.as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
                                        cm->allow_high_precision_mv,
-                                       mi->mbmi.sb_type, mi_col, mi_row, block)
+                                       mi->mbmi.sb_type, mi_col, mi_row, block
+#if CONFIG_AMVR
+                                       ,
+                                       cm->cur_frame_mv_precision_level
+#endif
+                                       )
                       .as_int;
 #else
   zeromv.as_int = 0;

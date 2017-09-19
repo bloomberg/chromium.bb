@@ -4562,6 +4562,17 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     cm->ans_window_size_log2 = aom_rb_read_literal(rb, 4) + 8;
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
     cm->allow_screen_content_tools = aom_rb_read_bit(rb);
+#if CONFIG_AMVR
+    if (cm->allow_screen_content_tools) {
+      if (aom_rb_read_bit(rb)) {
+        cm->seq_mv_precision_level = 2;
+      } else {
+        cm->seq_mv_precision_level = aom_rb_read_bit(rb) ? 0 : 1;
+      }
+    } else {
+      cm->seq_mv_precision_level = 0;
+    }
+#endif
 #if CONFIG_TEMPMV_SIGNALING
     cm->use_prev_frame_mvs = 0;
 #endif
@@ -4661,6 +4672,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       setup_frame_size_with_refs(cm, rb);
 #endif
 
+#if CONFIG_AMVR
+      if (cm->seq_mv_precision_level == 2) {
+        cm->cur_frame_mv_precision_level = aom_rb_read_bit(rb) ? 0 : 1;
+      } else {
+        cm->cur_frame_mv_precision_level = cm->seq_mv_precision_level;
+      }
+#endif
       cm->allow_high_precision_mv = aom_rb_read_bit(rb);
       cm->interp_filter = read_frame_interp_filter(rb);
 #if CONFIG_TEMPMV_SIGNALING
@@ -4831,7 +4849,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 #endif
-
+#if CONFIG_AMVR
+  xd->cur_frame_mv_precision_level = cm->cur_frame_mv_precision_level;
+#endif
   for (i = 0; i < MAX_SEGMENTS; ++i) {
     const int qindex = cm->seg.enabled
                            ? av1_get_qindex(&cm->seg, i, cm->base_qindex)
@@ -4974,8 +4994,14 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 
 #if !CONFIG_NEW_MULTISYMBOL
-    for (i = 0; i < NMV_CONTEXTS; ++i)
-      read_mv_probs(&fc->nmvc[i], cm->allow_high_precision_mv, &r);
+#if CONFIG_AMVR
+    if (cm->cur_frame_mv_precision_level == 0) {
+#endif
+      for (i = 0; i < NMV_CONTEXTS; ++i)
+        read_mv_probs(&fc->nmvc[i], cm->allow_high_precision_mv, &r);
+#if CONFIG_AMVR
+    }
+#endif
 #endif
 #if CONFIG_SUPERTX
     if (!xd->lossless[0]) read_supertx_probs(fc, &r);

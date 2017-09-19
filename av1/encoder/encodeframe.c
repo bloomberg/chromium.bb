@@ -4637,7 +4637,9 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       int segment_id = get_segment_id(cm, map, cm->sb_size, mi_row, mi_col);
       seg_skip = segfeature_active(seg, segment_id, SEG_LVL_SKIP);
     }
-
+#if CONFIG_AMVR
+    xd->cur_frame_mv_precision_level = cm->cur_frame_mv_precision_level;
+#endif
 #if CONFIG_DELTA_Q
     if (cm->delta_q_present_flag) {
       // Test mode for delta quantization

@@ -260,6 +260,11 @@ typedef struct AV1Common {
   uint8_t last_intra_only;
 
   int allow_high_precision_mv;
+#if CONFIG_AMVR
+  int seq_mv_precision_level;        // 0 the default in AOM, 1 only integer, 2
+                                     // adaptive
+  int cur_frame_mv_precision_level;  // 0 the default in AOM, 1 only integer
+#endif
 
   int allow_screen_content_tools;
 #if CONFIG_EXT_INTER
