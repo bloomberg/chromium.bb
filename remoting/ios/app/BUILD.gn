@@ -76,6 +76,7 @@ source_set("common_source_set") {
     "//remoting/ios:ios_core",
     "//remoting/ios/app/resources:assets",
     "//remoting/ios/app/settings",
+    "//remoting/ios/audio",
     "//remoting/ios/display",
     "//remoting/ios/domain",
     "//remoting/ios/mdc",

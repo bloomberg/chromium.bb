@@ -40,22 +40,20 @@ AudioPlayerBuffer::AudioFrameRequest::AudioFrameRequest(
     : bytes_needed_(bytes_needed),
       samples_(samples),
       callback_(callback),
-
       bytes_extracted_(0) {}
 
 AudioPlayerBuffer::AudioPlayerBuffer()
     : queued_bytes_(0), bytes_consumed_(0), weak_factory_(this) {
-  ResetQueue();
+  DETACH_FROM_THREAD(thread_checker_);
 }
 
-// TODO(nicholss): Fix the impl for auto_lock when integrating the AudioPlayer.
-
 AudioPlayerBuffer::~AudioPlayerBuffer() {
-  //  base::AutoLock auto_lock(lock_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ResetQueue();
 }
 
 void AudioPlayerBuffer::AddAudioPacket(std::unique_ptr<AudioPacket> packet) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CHECK_EQ(1, packet->data_size());
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
   DCHECK_NE(AudioPacket::SAMPLING_RATE_INVALID, packet->sampling_rate());
@@ -66,8 +64,6 @@ void AudioPlayerBuffer::AddAudioPacket(std::unique_ptr<AudioPacket> packet) {
   DCHECK_EQ(packet->data(0).size() %
                 (buffered_channels() * buffered_byes_per_sample()),
             0u);
-
-  //  base::AutoLock auto_lock(lock_);
 
   // Push the new data to the back of the queue.
   queued_bytes_ += packet->data(0).size();
@@ -89,12 +85,14 @@ void AudioPlayerBuffer::AddAudioPacket(std::unique_ptr<AudioPacket> packet) {
 }
 
 void AudioPlayerBuffer::Stop() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ResetQueue();
 }
 
 void AudioPlayerBuffer::AsyncGetAudioFrame(uint32_t buffer_size,
                                            void* buffer,
                                            const base::Closure& callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Create an AudioFrameRequest and enqueue it into the buffer.
   CHECK_EQ(buffer_size % bytes_per_frame(), 0u);
   std::unique_ptr<AudioFrameRequest> audioFrameRequest(
@@ -105,20 +103,16 @@ void AudioPlayerBuffer::AsyncGetAudioFrame(uint32_t buffer_size,
 }
 
 void AudioPlayerBuffer::ResetQueue() {
-  //  lock_.AssertAcquired();
-  // TODO(nicholss): STLDeleteElements has been removed. Leaks from pointers?
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   queued_packets_.clear();
   queued_bytes_ = 0;
   bytes_consumed_ = 0;
-  // TODO(nicholss): STLDeleteElements has been removed. Leaks from pointers?
   queued_requests_.clear();
 }
 
 uint32_t AudioPlayerBuffer::GetAudioFrame(uint32_t buffer_size, void* buffer) {
-  //  base::AutoLock auto_lock(lock_);
-
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   const size_t bytes_needed = bytes_per_frame();
-
   // Make sure we don't overrun the buffer.
   CHECK_EQ(buffer_size, bytes_needed);
 
@@ -155,14 +149,9 @@ uint32_t AudioPlayerBuffer::GetAudioFrame(uint32_t buffer_size, void* buffer) {
 
 // This is called when the Frame Request Queue or the Sample Queue is changed.
 void AudioPlayerBuffer::ProcessFrameRequestQueue() {
-  // TODO(nicholss): this function will attempt to copy data from the input
-  // queue into a pending frame request as it can. If it is able to copy enough
-  // data from the input queue into a request, it will call that request's
-  // callback with the request context.
-
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Get the active request if there is one.
   while (!queued_requests_.empty() && !queued_packets_.empty()) {
-    //    base::AutoLock auto_lock(lock_);
     AudioFrameRequest* activeRequest = queued_requests_.front().get();
 
     // Copy any available data into the active request up to as much requested
@@ -220,7 +209,8 @@ uint32_t AudioPlayerBuffer::bytes_per_frame() const {
   return buffered_channels() * buffered_byes_per_sample() * samples_per_frame();
 }
 
-base::WeakPtr<AudioStreamConsumer> AudioPlayerBuffer::AudioConsumerAsWeakPtr() {
+base::WeakPtr<AudioStreamConsumer>
+AudioPlayerBuffer::AudioStreamConsumerAsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 

@@ -29,7 +29,7 @@ class AudioStreamConsumer : public protocol::AudioStub {
   // requested.
   virtual void AddAudioPacket(std::unique_ptr<AudioPacket> packet) = 0;
   // Get a weak refrence to the audio consumer.
-  virtual base::WeakPtr<AudioStreamConsumer> AudioConsumerAsWeakPtr() = 0;
+  virtual base::WeakPtr<AudioStreamConsumer> AudioStreamConsumerAsWeakPtr() = 0;
 
   // AudioStub implementation. Delegates to AddAudioPacket. Used for
   // integration with |protocol::AudioStub| API users but AddAudioPacket
