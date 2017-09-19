@@ -14,13 +14,13 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/output_surface.h"
-#include "cc/output/software_renderer.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/skia_renderer.h"
+#include "components/viz/service/display/software_renderer.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -206,7 +206,7 @@ void Display::InitializeRenderer() {
     NOTREACHED();
 #endif
   } else {
-    auto renderer = base::MakeUnique<cc::SoftwareRenderer>(
+    auto renderer = base::MakeUnique<SoftwareRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get());
     software_renderer_ = renderer.get();
     renderer_ = std::move(renderer);

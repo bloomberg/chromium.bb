@@ -29,7 +29,6 @@ class DirectRenderer;
 class DisplayResourceProvider;
 class OutputSurface;
 class RendererSettings;
-class SoftwareRenderer;
 }  // namespace cc
 
 namespace gpu {
@@ -44,6 +43,7 @@ namespace viz {
 
 class DisplayClient;
 class SharedBitmapManager;
+class SoftwareRenderer;
 class TextureMailboxDeleter;
 
 class VIZ_SERVICE_EXPORT DisplayObserver {
@@ -137,7 +137,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::unique_ptr<SurfaceAggregator> aggregator_;
   std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
   std::unique_ptr<cc::DirectRenderer> renderer_;
-  cc::SoftwareRenderer* software_renderer_ = nullptr;
+  SoftwareRenderer* software_renderer_ = nullptr;
   std::vector<ui::LatencyInfo> stored_latency_info_;
 
  private:

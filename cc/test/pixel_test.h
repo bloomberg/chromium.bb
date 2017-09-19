@@ -4,11 +4,11 @@
 
 #include "base/files/file_util.h"
 #include "cc/output/output_surface.h"
-#include "cc/output/software_renderer.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/gl_renderer.h"
+#include "components/viz/service/display/software_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_implementation.h"
@@ -19,6 +19,7 @@
 namespace viz {
 class CopyOutputResult;
 class TestGpuMemoryBufferManager;
+class TextureMailboxDeleter;
 }
 
 namespace cc {
@@ -26,7 +27,6 @@ class DisplayResourceProvider;
 class DirectRenderer;
 class FakeOutputSurfaceClient;
 class OutputSurface;
-class SoftwareRenderer;
 class TestSharedBitmapManager;
 
 class PixelTest : public testing::Test {
@@ -69,7 +69,7 @@ class PixelTest : public testing::Test {
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<viz::TextureMailboxDeleter> texture_mailbox_deleter_;
   std::unique_ptr<DirectRenderer> renderer_;
-  SoftwareRenderer* software_renderer_ = nullptr;
+  viz::SoftwareRenderer* software_renderer_ = nullptr;
   std::unique_ptr<SkBitmap> result_bitmap_;
 
   void SetUpGLRenderer(bool flipped_output_surface);
@@ -113,7 +113,7 @@ class GLRendererWithExpandedViewport : public viz::GLRenderer {
                         texture_mailbox_deleter) {}
 };
 
-class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
+class SoftwareRendererWithExpandedViewport : public viz::SoftwareRenderer {
  public:
   SoftwareRendererWithExpandedViewport(
       const viz::RendererSettings* settings,
@@ -151,7 +151,7 @@ inline void RendererPixelTest<GLRendererWithFlippedSurface>::SetUp() {
 }
 
 template <>
-inline void RendererPixelTest<SoftwareRenderer>::SetUp() {
+inline void RendererPixelTest<viz::SoftwareRenderer>::SetUp() {
   SetUpSoftwareRenderer();
 }
 
@@ -161,7 +161,7 @@ inline void RendererPixelTest<SoftwareRendererWithExpandedViewport>::SetUp() {
 }
 
 typedef RendererPixelTest<viz::GLRenderer> GLRendererPixelTest;
-typedef RendererPixelTest<SoftwareRenderer> SoftwareRendererPixelTest;
+typedef RendererPixelTest<viz::SoftwareRenderer> SoftwareRendererPixelTest;
 
 }  // namespace cc
 

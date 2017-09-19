@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/software_renderer.h"
+#include "components/viz/service/display/software_renderer.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
@@ -35,7 +35,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 static inline bool IsScalarNearlyInteger(SkScalar scalar) {
@@ -54,9 +54,10 @@ bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
 
 }  // anonymous namespace
 
-SoftwareRenderer::SoftwareRenderer(const viz::RendererSettings* settings,
-                                   OutputSurface* output_surface,
-                                   DisplayResourceProvider* resource_provider)
+SoftwareRenderer::SoftwareRenderer(
+    const RendererSettings* settings,
+    cc::OutputSurface* output_surface,
+    cc::DisplayResourceProvider* resource_provider)
     : DirectRenderer(settings, output_surface, resource_provider),
       output_device_(output_surface->software_device()) {}
 
@@ -66,7 +67,7 @@ bool SoftwareRenderer::CanPartialSwap() {
   return true;
 }
 
-viz::ResourceFormat SoftwareRenderer::BackbufferFormat() const {
+ResourceFormat SoftwareRenderer::BackbufferFormat() const {
   return resource_provider_->best_texture_format();
 }
 
@@ -88,7 +89,7 @@ void SoftwareRenderer::FinishDrawingFrame() {
 void SoftwareRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(visible_);
   TRACE_EVENT0("cc", "SoftwareRenderer::SwapBuffers");
-  OutputSurfaceFrame output_frame;
+  cc::OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(latency_info);
   output_surface_->SwapBuffers(std::move(output_frame));
 }
@@ -113,14 +114,14 @@ void SoftwareRenderer::BindFramebufferToOutputSurface() {
 }
 
 bool SoftwareRenderer::BindFramebufferToTexture(
-    const ScopedResource* texture) {
+    const cc::ScopedResource* texture) {
   DCHECK(texture->id());
 
   // Explicitly release lock, otherwise we can crash when try to lock
   // same texture again.
   current_framebuffer_lock_ = nullptr;
   current_framebuffer_lock_ =
-      std::make_unique<ResourceProvider::ScopedWriteLockSoftware>(
+      std::make_unique<cc::ResourceProvider::ScopedWriteLockSoftware>(
           resource_provider_, texture->id());
   current_framebuffer_canvas_ =
       std::make_unique<SkCanvas>(current_framebuffer_lock_->sk_bitmap());
@@ -194,12 +195,12 @@ void SoftwareRenderer::PrepareSurfaceForPass(
   }
 }
 
-bool SoftwareRenderer::IsSoftwareResource(viz::ResourceId resource_id) const {
+bool SoftwareRenderer::IsSoftwareResource(ResourceId resource_id) const {
   switch (resource_provider_->GetResourceType(resource_id)) {
-    case ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER:
-    case ResourceProvider::RESOURCE_TYPE_GL_TEXTURE:
+    case cc::ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER:
+    case cc::ResourceProvider::RESOURCE_TYPE_GL_TEXTURE:
       return false;
-    case ResourceProvider::RESOURCE_TYPE_BITMAP:
+    case cc::ResourceProvider::RESOURCE_TYPE_BITMAP:
       return true;
   }
 
@@ -207,7 +208,7 @@ bool SoftwareRenderer::IsSoftwareResource(viz::ResourceId resource_id) const {
   return false;
 }
 
-void SoftwareRenderer::DoDrawQuad(const viz::DrawQuad* quad,
+void SoftwareRenderer::DoDrawQuad(const DrawQuad* quad,
                                   const gfx::QuadF* draw_region) {
   if (!current_canvas_)
     return;
@@ -237,10 +238,9 @@ void SoftwareRenderer::DoDrawQuad(const viz::DrawQuad* quad,
       !IsScaleAndIntegerTranslate(sk_device_matrix)) {
     // TODO(danakj): Until we can enable AA only on exterior edges of the
     // layer, disable AA if any interior edges are present. crbug.com/248175
-    bool all_four_edges_are_exterior = quad->IsTopEdge() &&
-                                       quad->IsLeftEdge() &&
-                                       quad->IsBottomEdge() &&
-                                       quad->IsRightEdge();
+    bool all_four_edges_are_exterior =
+        quad->IsTopEdge() && quad->IsLeftEdge() && quad->IsBottomEdge() &&
+        quad->IsRightEdge();
     if (settings_->allow_antialiasing &&
         (settings_->force_antialiasing || all_four_edges_are_exterior))
       current_paint_.setAntiAlias(true);
@@ -272,32 +272,32 @@ void SoftwareRenderer::DoDrawQuad(const viz::DrawQuad* quad,
   }
 
   switch (quad->material) {
-    case viz::DrawQuad::DEBUG_BORDER:
-      DrawDebugBorderQuad(viz::DebugBorderDrawQuad::MaterialCast(quad));
+    case DrawQuad::DEBUG_BORDER:
+      DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad));
       break;
-    case viz::DrawQuad::PICTURE_CONTENT:
-      DrawPictureQuad(viz::PictureDrawQuad::MaterialCast(quad));
+    case DrawQuad::PICTURE_CONTENT:
+      DrawPictureQuad(PictureDrawQuad::MaterialCast(quad));
       break;
-    case viz::DrawQuad::RENDER_PASS:
-      DrawRenderPassQuad(viz::RenderPassDrawQuad::MaterialCast(quad));
+    case DrawQuad::RENDER_PASS:
+      DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad));
       break;
-    case viz::DrawQuad::SOLID_COLOR:
-      DrawSolidColorQuad(viz::SolidColorDrawQuad::MaterialCast(quad));
+    case DrawQuad::SOLID_COLOR:
+      DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad));
       break;
-    case viz::DrawQuad::TEXTURE_CONTENT:
-      DrawTextureQuad(viz::TextureDrawQuad::MaterialCast(quad));
+    case DrawQuad::TEXTURE_CONTENT:
+      DrawTextureQuad(TextureDrawQuad::MaterialCast(quad));
       break;
-    case viz::DrawQuad::TILED_CONTENT:
-      DrawTileQuad(viz::TileDrawQuad::MaterialCast(quad));
+    case DrawQuad::TILED_CONTENT:
+      DrawTileQuad(TileDrawQuad::MaterialCast(quad));
       break;
-    case viz::DrawQuad::SURFACE_CONTENT:
+    case DrawQuad::SURFACE_CONTENT:
       // Surface content should be fully resolved to other quad types before
       // reaching a direct renderer.
       NOTREACHED();
       break;
-    case viz::DrawQuad::INVALID:
-    case viz::DrawQuad::YUV_VIDEO_CONTENT:
-    case viz::DrawQuad::STREAM_VIDEO_CONTENT:
+    case DrawQuad::INVALID:
+    case DrawQuad::YUV_VIDEO_CONTENT:
+    case DrawQuad::STREAM_VIDEO_CONTENT:
       DrawUnsupportedQuad(quad);
       NOTREACHED();
       break;
@@ -306,14 +306,12 @@ void SoftwareRenderer::DoDrawQuad(const viz::DrawQuad* quad,
   current_canvas_->resetMatrix();
 }
 
-void SoftwareRenderer::DrawDebugBorderQuad(
-    const viz::DebugBorderDrawQuad* quad) {
+void SoftwareRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
   // We need to apply the matrix manually to have pixel-sized stroke width.
   SkPoint vertices[4];
   gfx::RectFToSkRect(QuadVertexRect()).toQuad(vertices);
   SkPoint transformed_vertices[4];
-  current_canvas_->getTotalMatrix().mapPoints(transformed_vertices,
-                                              vertices,
+  current_canvas_->getTotalMatrix().mapPoints(transformed_vertices, vertices,
                                               4);
   current_canvas_->resetMatrix();
 
@@ -322,16 +320,15 @@ void SoftwareRenderer::DrawDebugBorderQuad(
                           SkColorGetA(quad->color));
   current_paint_.setStyle(SkPaint::kStroke_Style);
   current_paint_.setStrokeWidth(quad->width);
-  current_canvas_->drawPoints(SkCanvas::kPolygon_PointMode,
-                              4, transformed_vertices, current_paint_);
+  current_canvas_->drawPoints(SkCanvas::kPolygon_PointMode, 4,
+                              transformed_vertices, current_paint_);
 }
 
-void SoftwareRenderer::DrawPictureQuad(const viz::PictureDrawQuad* quad) {
+void SoftwareRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
   SkMatrix content_matrix;
-  content_matrix.setRectToRect(
-      gfx::RectFToSkRect(quad->tex_coord_rect),
-      gfx::RectFToSkRect(QuadVertexRect()),
-      SkMatrix::kFill_ScaleToFit);
+  content_matrix.setRectToRect(gfx::RectFToSkRect(quad->tex_coord_rect),
+                               gfx::RectFToSkRect(QuadVertexRect()),
+                               SkMatrix::kFill_ScaleToFit);
   current_canvas_->concat(content_matrix);
 
   const bool needs_transparency =
@@ -365,7 +362,7 @@ void SoftwareRenderer::DrawPictureQuad(const viz::PictureDrawQuad* quad) {
   }
 
   // Treat all subnormal values as zero for performance.
-  ScopedSubnormalFloatDisabler disabler;
+  cc::ScopedSubnormalFloatDisabler disabler;
 
   raster_canvas->save();
   raster_canvas->translate(-quad->content_rect.x(), -quad->content_rect.y());
@@ -375,8 +372,8 @@ void SoftwareRenderer::DrawPictureQuad(const viz::PictureDrawQuad* quad) {
   raster_canvas->restore();
 }
 
-void SoftwareRenderer::DrawSolidColorQuad(const viz::SolidColorDrawQuad* quad) {
-  gfx::RectF visible_quad_vertex_rect = MathUtil::ScaleRectProportional(
+void SoftwareRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad) {
+  gfx::RectF visible_quad_vertex_rect = cc::MathUtil::ScaleRectProportional(
       QuadVertexRect(), gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
   current_paint_.setColor(quad->color);
   current_paint_.setAlpha(quad->shared_quad_state->opacity *
@@ -385,25 +382,25 @@ void SoftwareRenderer::DrawSolidColorQuad(const viz::SolidColorDrawQuad* quad) {
                             current_paint_);
 }
 
-void SoftwareRenderer::DrawTextureQuad(const viz::TextureDrawQuad* quad) {
+void SoftwareRenderer::DrawTextureQuad(const TextureDrawQuad* quad) {
   if (!IsSoftwareResource(quad->resource_id())) {
     DrawUnsupportedQuad(quad);
     return;
   }
 
   // TODO(skaslev): Add support for non-premultiplied alpha.
-  DisplayResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
-                                                      quad->resource_id());
+  cc::DisplayResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
+                                                          quad->resource_id());
   if (!lock.valid())
     return;
   const SkImage* image = lock.sk_image();
   gfx::RectF uv_rect = gfx::ScaleRect(
       gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right),
       image->width(), image->height());
-  gfx::RectF visible_uv_rect = MathUtil::ScaleRectProportional(
+  gfx::RectF visible_uv_rect = cc::MathUtil::ScaleRectProportional(
       uv_rect, gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
   SkRect sk_uv_rect = gfx::RectFToSkRect(visible_uv_rect);
-  gfx::RectF visible_quad_vertex_rect = MathUtil::ScaleRectProportional(
+  gfx::RectF visible_quad_vertex_rect = cc::MathUtil::ScaleRectProportional(
       QuadVertexRect(), gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
   SkRect quad_rect = gfx::RectFToSkRect(visible_quad_vertex_rect);
 
@@ -429,21 +426,21 @@ void SoftwareRenderer::DrawTextureQuad(const viz::TextureDrawQuad* quad) {
     current_canvas_->restore();
 }
 
-void SoftwareRenderer::DrawTileQuad(const viz::TileDrawQuad* quad) {
+void SoftwareRenderer::DrawTileQuad(const TileDrawQuad* quad) {
   // |resource_provider_| can be NULL in resourceless software draws, which
   // should never produce tile quads in the first place.
   DCHECK(resource_provider_);
   DCHECK(IsSoftwareResource(quad->resource_id()));
 
-  DisplayResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
-                                                      quad->resource_id());
+  cc::DisplayResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
+                                                          quad->resource_id());
   if (!lock.valid())
     return;
 
-  gfx::RectF visible_tex_coord_rect = MathUtil::ScaleRectProportional(
+  gfx::RectF visible_tex_coord_rect = cc::MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, gfx::RectF(quad->rect),
       gfx::RectF(quad->visible_rect));
-  gfx::RectF visible_quad_vertex_rect = MathUtil::ScaleRectProportional(
+  gfx::RectF visible_quad_vertex_rect = cc::MathUtil::ScaleRectProportional(
       QuadVertexRect(), gfx::RectF(quad->rect), gfx::RectF(quad->visible_rect));
 
   SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
@@ -454,32 +451,34 @@ void SoftwareRenderer::DrawTileQuad(const viz::TileDrawQuad* quad) {
                                  &current_paint_);
 }
 
-void SoftwareRenderer::DrawRenderPassQuad(const viz::RenderPassDrawQuad* quad) {
-  ScopedResource* content_texture =
+void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
+  cc::ScopedResource* content_texture =
       render_pass_textures_[quad->render_pass_id].get();
   DCHECK(content_texture);
   DCHECK(content_texture->id());
   DCHECK(IsSoftwareResource(content_texture->id()));
 
-  DisplayResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
-                                                       content_texture->id());
+  cc::DisplayResourceProvider::ScopedReadLockSoftware lock(
+      resource_provider_, content_texture->id());
   if (!lock.valid())
     return;
 
   SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
-  SkRect dest_visible_rect = gfx::RectFToSkRect(
-      MathUtil::ScaleRectProportional(QuadVertexRect(), gfx::RectF(quad->rect),
-                                      gfx::RectF(quad->visible_rect)));
+  SkRect dest_visible_rect =
+      gfx::RectFToSkRect(cc::MathUtil::ScaleRectProportional(
+          QuadVertexRect(), gfx::RectF(quad->rect),
+          gfx::RectF(quad->visible_rect)));
   SkRect content_rect = RectFToSkRect(quad->tex_coord_rect);
 
   const SkBitmap* content = lock.sk_bitmap();
 
   sk_sp<SkImage> filter_image;
-  const FilterOperations* filters = FiltersForPass(quad->render_pass_id);
+  const cc::FilterOperations* filters = FiltersForPass(quad->render_pass_id);
   if (filters) {
     DCHECK(!filters->IsEmpty());
-    sk_sp<SkImageFilter> image_filter = RenderSurfaceFilters::BuildImageFilter(
-        *filters, gfx::SizeF(content_texture->size()));
+    sk_sp<SkImageFilter> image_filter =
+        cc::RenderSurfaceFilters::BuildImageFilter(
+            *filters, gfx::SizeF(content_texture->size()));
     if (image_filter) {
       SkIRect result_rect;
       // TODO(ajuma): Apply the filter in the same pass as the content where
@@ -492,7 +491,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const viz::RenderPassDrawQuad* quad) {
       if (filter_image) {
         gfx::RectF rect = gfx::SkRectToRectF(SkRect::Make(result_rect));
         dest_rect = dest_visible_rect =
-            gfx::RectFToSkRect(MathUtil::ScaleRectProportional(
+            gfx::RectFToSkRect(cc::MathUtil::ScaleRectProportional(
                 QuadVertexRect(), gfx::RectF(quad->rect), rect));
         content_rect =
             SkRect::MakeWH(result_rect.width(), result_rect.height());
@@ -514,12 +513,12 @@ void SoftwareRenderer::DrawRenderPassQuad(const viz::RenderPassDrawQuad* quad) {
                                       SkShader::kClamp_TileMode, &content_mat);
   }
 
-  std::unique_ptr<DisplayResourceProvider::ScopedReadLockSoftware> mask_lock;
+  std::unique_ptr<cc::DisplayResourceProvider::ScopedReadLockSoftware>
+      mask_lock;
   if (quad->mask_resource_id()) {
     mask_lock =
-        std::unique_ptr<DisplayResourceProvider::ScopedReadLockSoftware>(
-            new DisplayResourceProvider::ScopedReadLockSoftware(
-                resource_provider_, quad->mask_resource_id()));
+        std::make_unique<cc::DisplayResourceProvider::ScopedReadLockSoftware>(
+            resource_provider_, quad->mask_resource_id());
 
     if (!mask_lock->valid())
       return;
@@ -558,7 +557,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const viz::RenderPassDrawQuad* quad) {
   current_canvas_->drawRect(dest_visible_rect, current_paint_);
 }
 
-void SoftwareRenderer::DrawUnsupportedQuad(const viz::DrawQuad* quad) {
+void SoftwareRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
 #ifdef NDEBUG
   current_paint_.setColor(SK_ColorWHITE);
 #else
@@ -570,7 +569,7 @@ void SoftwareRenderer::DrawUnsupportedQuad(const viz::DrawQuad* quad) {
 }
 
 void SoftwareRenderer::CopyDrawnRenderPass(
-    std::unique_ptr<viz::CopyOutputRequest> request) {
+    std::unique_ptr<CopyOutputRequest> request) {
   // SoftwareRenderer supports RGBA_BITMAP only. For legacy reasons, if a
   // RGBA_TEXTURE request is being made, clients are prepared to accept
   // RGBA_BITMAP results.
@@ -579,8 +578,8 @@ void SoftwareRenderer::CopyDrawnRenderPass(
   // RGBA_TEXTURE requests once tab capture is moved into VIZ.
   // http://crbug.com/754872
   switch (request->result_format()) {
-    case viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP:
-    case viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE:
+    case CopyOutputRequest::ResultFormat::RGBA_BITMAP:
+    case CopyOutputRequest::ResultFormat::RGBA_TEXTURE:
       break;
   }
 
@@ -598,7 +597,7 @@ void SoftwareRenderer::CopyDrawnRenderPass(
     return;  // |request| auto-sends empty result on out-of-scope.
 
   request->SendResult(
-      std::make_unique<viz::CopyOutputSkBitmapResult>(copy_rect, bitmap));
+      std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
 }
 
 void SoftwareRenderer::SetEnableDCLayers(bool enable) {
@@ -617,8 +616,8 @@ void SoftwareRenderer::GenerateMipmap() {
 }
 
 bool SoftwareRenderer::ShouldApplyBackgroundFilters(
-    const viz::RenderPassDrawQuad* quad,
-    const FilterOperations* background_filters) const {
+    const RenderPassDrawQuad* quad,
+    const cc::FilterOperations* background_filters) const {
   if (!background_filters)
     return false;
   DCHECK(!background_filters->IsEmpty());
@@ -634,7 +633,7 @@ bool SoftwareRenderer::ShouldApplyBackgroundFilters(
 // input bitmap.
 sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
     SkImageFilter* filter,
-    const viz::RenderPassDrawQuad* quad,
+    const RenderPassDrawQuad* quad,
     const SkBitmap& to_filter,
     SkIRect* auto_bounds) const {
   if (!filter)
@@ -663,7 +662,7 @@ sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
 
   SkPaint paint;
   // Treat subnormal float values as zero for performance.
-  ScopedSubnormalFloatDisabler disabler;
+  cc::ScopedSubnormalFloatDisabler disabler;
   paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
   surface->getCanvas()->translate(-dst_rect.x(), -dst_rect.y());
   surface->getCanvas()->drawBitmap(to_filter, quad->rect.x(), quad->rect.y(),
@@ -684,13 +683,13 @@ SkBitmap SoftwareRenderer::GetBackdropBitmap(
 }
 
 gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
-    const viz::RenderPassDrawQuad* quad,
+    const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform,
-    const FilterOperations* background_filters,
+    const cc::FilterOperations* background_filters,
     gfx::Rect* unclipped_rect) const {
   DCHECK(ShouldApplyBackgroundFilters(quad, background_filters));
-  gfx::Rect backdrop_rect = gfx::ToEnclosingRect(
-      MathUtil::MapClippedRect(contents_device_transform, QuadVertexRect()));
+  gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
+      contents_device_transform, QuadVertexRect()));
 
   SkMatrix matrix;
   matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
@@ -704,9 +703,9 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
 }
 
 sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
-    const viz::RenderPassDrawQuad* quad,
+    const RenderPassDrawQuad* quad,
     SkShader::TileMode content_tile_mode) const {
-  const FilterOperations* background_filters =
+  const cc::FilterOperations* background_filters =
       BackgroundFiltersForPass(quad->render_pass_id);
   if (!ShouldApplyBackgroundFilters(quad, background_filters))
     return nullptr;
@@ -739,7 +738,7 @@ sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
   gfx::Vector2dF clipping_offset =
       (unclipped_rect.top_right() - backdrop_rect.top_right()) +
       (backdrop_rect.bottom_left() - unclipped_rect.bottom_left());
-  sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
+  sk_sp<SkImageFilter> filter = cc::RenderSurfaceFilters::BuildImageFilter(
       *background_filters,
       gfx::SizeF(backdrop_bitmap.width(), backdrop_bitmap.height()),
       clipping_offset);
@@ -753,4 +752,4 @@ sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
                                            &filter_backdrop_transform);
 }
 
-}  // namespace cc
+}  // namespace viz
