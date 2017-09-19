@@ -31,6 +31,7 @@ _format_modules = {
   'android':                  'android_xml',
   'c_format':                 'c_format',
   'chrome_messages_json':     'chrome_messages_json',
+  'policy_templates':         'policy_templates_json',
   'data_package':             'data_pack',
   'js_map_format':            'js_map_format',
   'rc_all':                   'rc',
@@ -41,11 +42,6 @@ _format_modules = {
   'resource_map_source':      'resource_map',
   'resource_file_map_source': 'resource_map',
 }
-_format_modules.update(
-    (type, 'policy_templates.template_formatter') for type in
-        [ 'adm', 'admx', 'adml', 'reg', 'doc', 'json',
-          'plist', 'plist_strings', 'android_policy' ])
-
 
 def GetFormatter(type):
   modulename = 'grit.format.' + _format_modules[type]
