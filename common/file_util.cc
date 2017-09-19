@@ -17,6 +17,7 @@
 #include <cstring>
 #include <fstream>
 #include <ios>
+#include <string>
 
 namespace libwebm {
 
