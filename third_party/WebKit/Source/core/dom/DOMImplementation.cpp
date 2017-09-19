@@ -201,7 +201,7 @@ bool DOMImplementation::IsTextMIMEType(const String& mime_type) {
          IsJSONMIMEType(mime_type) || IsTextPlainType(mime_type);
 }
 
-HTMLDocument* DOMImplementation::createHTMLDocument(const String& title) {
+Document* DOMImplementation::createHTMLDocument(const String& title) {
   DocumentInit init =
       DocumentInit::Create()
           .WithContextDocument(document_->ContextDocument())
