@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
+// The direct usage of //ash/ is fine here, as this code is only executed in
+// classic ash. See //c/b/u/v/tabs/window_finder_chromeos.h.
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/wm/root_window_finder.h"
+#include "ash/wm/root_window_finder.h"  // mash-ok
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
