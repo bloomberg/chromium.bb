@@ -114,6 +114,7 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, EnabledWithDice);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileWhithoutSignin);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceLastKnownFirstAccount);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DiceReconcileReuseGaiaFirstAccount);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
@@ -261,6 +262,8 @@ class AccountReconcilor : public KeyedService,
   std::vector<std::string> chrome_accounts_;
   std::vector<std::string> add_to_cookie_;
   bool chrome_accounts_changed_;
+  // Last known "first account". Used when cookies are lost as a best guess.
+  std::string last_known_first_account_;
 
   // Used for the Lock.
   // StartReconcile() is blocked while this is > 0.
