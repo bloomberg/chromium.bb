@@ -103,8 +103,6 @@ class TestRunner : public WebTestRunner {
   void SetFocus(blink::WebView* web_view, bool focus) override;
 
   // Methods used by WebViewTestClient and WebFrameTestClient.
-  void OnNavigationBegin(blink::WebFrame* frame);
-  void OnNavigationEnd() { will_navigate_ = false; }
   std::string GetAcceptLanguages() const;
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   MockScreenOrientationClient* getMockScreenOrientationClient();
@@ -625,12 +623,6 @@ class TestRunner : public WebTestRunner {
   std::unique_ptr<MockContentSettingsClient> mock_content_settings_client_;
 
   bool use_mock_theme_;
-
-  // This is true in the period between the start of a navigation and when the
-  // provisional load for that navigation is started. Note that when
-  // browser-side navigation is enabled there is an arbitrary gap between these
-  // two events.
-  bool will_navigate_;
 
   std::unique_ptr<MockCredentialManagerClient> credential_manager_client_;
   std::unique_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;

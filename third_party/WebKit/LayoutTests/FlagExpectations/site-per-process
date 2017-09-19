@@ -4,34 +4,6 @@
 # https://crbug.com/765779: unique name trouble with PlzNavigate
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
 
-# https://crbug.com/765752: testRunner.notifyDone() ignored with PlzNavigate.
-crbug.com/765752 http/tests/cookies/set-cookie-on-redirect.html [ Timeout ]
-crbug.com/765752 http/tests/misc/selectionAsMarkup.html [ Timeout ]
-crbug.com/765752 http/tests/security/cookies/third-party-cookie-blocking-main-frame.html [ Timeout ]
-crbug.com/765752 http/tests/security/cookies/third-party-cookie-blocking-user-action.html [ Timeout ]
-crbug.com/765752 http/tests/security/cookies/third-party-cookie-blocking.html [ Timeout ]
-crbug.com/765752 http/tests/security/frameNavigation/sandbox-ALLOWED-top-navigation-with-two-flags.html [ Timeout ]
-crbug.com/765752 http/tests/security/frameNavigation/sandbox-ALLOWED-top-navigation-with-user-gesture.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-on-client-redirect.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-attribute-img-no-referrer-when-downgrade.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-conflicting-policies.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-https-always.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-https-default.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-https-never.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-https-no-referrer-when-downgrade.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-https-no-referrer.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-https-origin-when-crossorigin.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-https-origin.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-https-unsafe-url.html [ Timeout ]
-crbug.com/765752 http/tests/security/referrer-policy-origin-when-crossorigin-is-crossorigin.html [ Timeout ]
-crbug.com/765752 http/tests/security/xssAuditor/get-from-iframe.html [ Timeout ]
-crbug.com/765752 http/tests/security/xssAuditor/post-from-iframe.html [ Timeout ]
-crbug.com/765752 http/tests/security/xssAuditor/script-tag-post-control-char.html [ Timeout ]
-crbug.com/765752 http/tests/security/xssAuditor/script-tag-post-null-char.html [ Timeout ]
-crbug.com/765752 http/tests/security/xssAuditor/script-tag-post-redirect.html [ Timeout ]
-crbug.com/765752 http/tests/security/xssAuditor/script-tag-post.html [ Timeout ]
-crbug.com/765752 http/tests/security/xssAuditor/xss-filter-bypass-long-string.html [ Timeout ]
-
 # https://crbug.com/758075: Uninvestigated timeout.
 # (apparently https://crbug.com/599670 doesn't affect the Site Isolation bot,
 # so there is no need to carry-over the [ Failure ] expectation from baseline

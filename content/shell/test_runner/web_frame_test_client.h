@@ -74,10 +74,6 @@ class WebFrameTestClient : public blink::WebFrameClient {
   void DidFailLoad(const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override;
   void DidFinishLoad() override;
-  void DidNavigateWithinPage(const blink::WebHistoryItem& history_item,
-                             blink::WebHistoryCommitType commit_type,
-                             bool contentInitiated) override;
-  void DidStartLoading(bool to_different_document) override;
   void DidStopLoading() override;
   void DidDetectXSS(const blink::WebURL& insecure_url,
                     bool did_block_entire_page) override;
