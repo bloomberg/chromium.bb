@@ -88,6 +88,8 @@ class MoveBlinkSource(object):
         self._basename_map = None
         self._basename_re = None
         self._idl_generated_impl_headers = None
+        # _checked_in_header_re is used to distinguish checked-in header files
+        # and generated header files.
         self._checked_in_header_re = None
 
     def update(self):
@@ -167,13 +169,13 @@ class MoveBlinkSource(object):
         for source, dest in file_pairs:
             _, source_base = self._fs.split(source)
             _, dest_base = self._fs.split(dest)
+            # ConditionalFeaturesForCore.h in bindings/tests/results/modules/
+            # confuses generated/checked-in detection in _replace_include_path().
+            if 'bindings/tests' in source.replace('\\', '/'):
+                continue
             if source_base.endswith('.h'):
                 header_pattern += re.escape(source_base) + '|'
             if source_base == dest_base:
-                continue
-            # ConditionalFeaturesForCore.* in bindings/tests/results/modules/
-            # confuses generated/checked-in detection in _replace_include_path().
-            if 'bindings/tests' in source.replace('\\', '/'):
                 continue
             basename_map[source_base] = dest_base
             pattern += re.escape(source_base) + '|'
