@@ -503,8 +503,8 @@ TEST_F(MediaRouterMojoImplTest, TerminateRouteFails) {
 }
 
 TEST_F(MediaRouterMojoImplTest, HandleIssue) {
-  MockIssuesObserver issue_observer1(router());
-  MockIssuesObserver issue_observer2(router());
+  MockIssuesObserver issue_observer1(router()->GetIssueManager());
+  MockIssuesObserver issue_observer2(router()->GetIssueManager());
   issue_observer1.Init();
   issue_observer2.Init();
 
@@ -523,17 +523,6 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
   ASSERT_EQ(issue_from_observer1.id(), issue_from_observer2.id());
   EXPECT_EQ(issue_info, issue_from_observer1.info());
   EXPECT_EQ(issue_info, issue_from_observer2.info());
-
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer1));
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer2));
-
-  EXPECT_CALL(issue_observer1, OnIssuesCleared());
-  EXPECT_CALL(issue_observer2, OnIssuesCleared());
-
-  router()->ClearIssue(issue_from_observer1.id());
-
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer1));
-  EXPECT_TRUE(Mock::VerifyAndClearExpectations(&issue_observer2));
 }
 
 TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {

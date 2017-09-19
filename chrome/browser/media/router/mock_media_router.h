@@ -12,7 +12,6 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_base.h"
-#include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
@@ -120,8 +119,6 @@ class MockMediaRouter : public MediaRouterBase {
                     std::vector<uint8_t>* data,
                     SendRouteMessageCallback& callback));
 
-  MOCK_METHOD1(AddIssue, void(const IssueInfo& issue));
-  MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
   MOCK_METHOD0(OnUserGesture, void());
 
   void SearchSinks(const MediaSink::Id& sink_id,
@@ -162,8 +159,6 @@ class MockMediaRouter : public MediaRouterBase {
   MOCK_METHOD1(OnAddPresentationConnectionStateChangedCallbackInvoked,
                void(const content::PresentationConnectionStateChangedCallback&
                         callback));
-  MOCK_METHOD1(RegisterIssuesObserver, void(IssuesObserver* observer));
-  MOCK_METHOD1(UnregisterIssuesObserver, void(IssuesObserver* observer));
   MOCK_METHOD1(RegisterMediaSinksObserver, bool(MediaSinksObserver* observer));
   MOCK_METHOD1(UnregisterMediaSinksObserver,
                void(MediaSinksObserver* observer));

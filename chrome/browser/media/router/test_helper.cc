@@ -28,8 +28,8 @@ std::string PresentationConnectionMessageToString(
   return result;
 }
 
-MockIssuesObserver::MockIssuesObserver(MediaRouter* router)
-    : IssuesObserver(router) {}
+MockIssuesObserver::MockIssuesObserver(IssueManager* issue_manager)
+    : IssuesObserver(issue_manager) {}
 MockIssuesObserver::~MockIssuesObserver() {}
 
 MockMediaSinksObserver::MockMediaSinksObserver(MediaRouter* router,

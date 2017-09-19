@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/common/media_router/media_route.h"
@@ -23,23 +24,19 @@ class MediaRouterBase : public MediaRouter {
  public:
   ~MediaRouterBase() override;
 
+  // MediaRouter implementation.
   std::unique_ptr<PresentationConnectionStateSubscription>
   AddPresentationConnectionStateChangedCallback(
       const MediaRoute::Id& route_id,
       const content::PresentationConnectionStateChangedCallback& callback)
       override;
-
-  // Called when the incognito profile for this instance is being shut down.
-  // This will terminate all incognito media routes.
   void OnIncognitoProfileShutdown() override;
-
+  IssueManager* GetIssueManager() final;
   std::vector<MediaRoute> GetCurrentRoutes() const override;
-
 #if !defined(OS_ANDROID)
   scoped_refptr<MediaRouteController> GetRouteController(
       const MediaRoute::Id& route_id) override;
 #endif  // !defined(OS_ANDROID)
-
   void RegisterRemotingSource(int32_t tab_id,
                               CastRemotingConnector* remoting_source) override;
   void UnregisterRemotingSource(int32_t tab_id) override;
@@ -109,6 +106,8 @@ class MediaRouterBase : public MediaRouter {
   void DetachRouteController(const MediaRoute::Id& route_id,
                              MediaRouteController* controller) override;
 #endif  // !defined(OS_ANDROID)
+
+  IssueManager issue_manager_;
 
   std::unique_ptr<InternalMediaRoutesObserver> internal_routes_observer_;
   bool initialized_;

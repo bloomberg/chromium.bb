@@ -55,6 +55,7 @@ class MockMediaRouterWebUIMessageHandler
       : MediaRouterWebUIMessageHandler(media_router_ui) {}
   ~MockMediaRouterWebUIMessageHandler() override {}
 
+  MOCK_METHOD1(UpdateIssue, void(const Issue& issue));
   MOCK_METHOD1(UpdateMediaRouteStatus, void(const MediaStatus& status));
   MOCK_METHOD3(UpdateCastModes,
                void(const CastModeSet& cast_modes,
@@ -110,8 +111,10 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
     mock_router_ = static_cast<MockMediaRouter*>(
         MediaRouterFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), &MockMediaRouter::Create));
-    ON_CALL(*mock_router_, GetCurrentRoutes())
-        .WillByDefault(Return(std::vector<MediaRoute>()));
+    EXPECT_CALL(*mock_router_, OnUserGesture()).Times(AnyNumber());
+    EXPECT_CALL(*mock_router_, GetCurrentRoutes())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(std::vector<MediaRoute>()));
   }
 
   void TearDown() override {
@@ -209,7 +212,7 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
 
   std::string expected_title = l10n_util::GetStringUTF8(
       IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
-  EXPECT_CALL(*mock_router_, AddIssue(IssueTitleEquals(expected_title)));
+  EXPECT_CALL(*message_handler_, UpdateIssue(IssueTitleEquals(expected_title)));
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
   for (auto& callback : callbacks)
@@ -228,7 +231,7 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
 
   std::string expected_title = l10n_util::GetStringUTF8(
       IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_DESKTOP);
-  EXPECT_CALL(*mock_router_, AddIssue(IssueTitleEquals(expected_title)));
+  EXPECT_CALL(*message_handler_, UpdateIssue(IssueTitleEquals(expected_title)));
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
   for (auto& callback : callbacks)
@@ -252,7 +255,7 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
   std::string expected_title =
       l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
                                 base::UTF8ToUTF16("frameurl.fakeurl"));
-  EXPECT_CALL(*mock_router_, AddIssue(IssueTitleEquals(expected_title)));
+  EXPECT_CALL(*message_handler_, UpdateIssue(IssueTitleEquals(expected_title)));
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
   for (auto& callback : callbacks)
@@ -296,7 +299,7 @@ TEST_F(MediaRouterUITest, RouteCreationParametersCantBeCreated) {
       "sinkId", "search input", "domain", MediaCastMode::PRESENTATION);
   std::string expected_title = l10n_util::GetStringUTF8(
       IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
-  EXPECT_CALL(*mock_router_, AddIssue(IssueTitleEquals(expected_title)));
+  EXPECT_CALL(*message_handler_, UpdateIssue(IssueTitleEquals(expected_title)));
   std::move(sink_callback).Run("foundSinkId");
 }
 

@@ -46,6 +46,7 @@ class Browser;
 namespace media_router {
 
 class EventPageRequestManager;
+class IssueManager;
 class IssuesObserver;
 class MediaRoute;
 class MediaRouter;
@@ -372,6 +373,9 @@ class MediaRouterUI
   // Called by the internal route controller observer. Notifies the message
   // handler of a media status update for the route currently shown in the UI.
   void UpdateMediaRouteStatus(const MediaStatus& status);
+
+  // Returns the IssueManager associated with |router_|.
+  IssueManager* GetIssueManager();
 
   // Owned by the |web_ui| passed in the ctor, and guaranteed to be deleted
   // only after it has deleted |this|.

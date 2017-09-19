@@ -54,7 +54,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
                                      const MediaRoute* route);
   void ReturnSearchResult(const std::string& sink_id);
 
-  void UpdateIssue(const Issue& issue);
+  virtual void UpdateIssue(const Issue& issue);
   void ClearIssue();
 
   // Updates the maximum dialog height to allow the WebUI properly scale when
