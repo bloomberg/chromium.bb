@@ -301,7 +301,7 @@ shouldThrow('document.getElementById("marquee").loop = 0;');
 
 debug('Setting "loop" to a negative value raises an exception:');
 testParent.innerHTML = '<marquee id="marquee">test</marquee>';
-shouldThrow('document.getElementById("marquee").scrollDelay = -5;');
+shouldThrow('document.getElementById("marquee").loop = -5;');
 
 debug('"loop" can be set to -1 by script:');
 testParent.innerHTML = '<marquee id="marquee" loop="5">test</marquee>';
