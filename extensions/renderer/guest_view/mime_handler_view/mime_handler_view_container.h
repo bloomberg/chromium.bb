@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/guest_view/renderer/guest_view_container.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
 #include "ui/gfx/geometry/size.h"
@@ -122,7 +123,7 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   bool guest_loaded_;
 
   // The size of the element.
-  gfx::Size element_size_;
+  base::Optional<gfx::Size> element_size_;
 
   base::WeakPtrFactory<MimeHandlerViewContainer> weak_factory_;
 
