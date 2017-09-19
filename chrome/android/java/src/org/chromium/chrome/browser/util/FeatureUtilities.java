@@ -283,8 +283,8 @@ public class FeatureUtilities {
                             chromeHomeExperimentEnabled);
                 }
             }
+            ChromePreferenceManager.setChromeHomeEnabledDate(sChromeHomeEnabled);
         }
-
         return sChromeHomeEnabled;
     }
 
