@@ -121,16 +121,24 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
 void av1_encode_token_init(void) {
 #if CONFIG_EXT_TX
   int s;
-#endif  // CONFIG_EXT_TX
-#if CONFIG_EXT_TX
   for (s = 1; s < EXT_TX_SETS_INTER; ++s) {
-    av1_tokens_from_tree(ext_tx_inter_encodings[s], av1_ext_tx_inter_tree[s]);
+    av1_tokens_from_tree(ext_tx_inter_encodings[s],
+                         av1_ext_tx_tree[av1_ext_tx_set_type_inter[s]]);
   }
   for (s = 1; s < EXT_TX_SETS_INTRA; ++s) {
-    av1_tokens_from_tree(ext_tx_intra_encodings[s], av1_ext_tx_intra_tree[s]);
+    av1_tokens_from_tree(ext_tx_intra_encodings[s],
+                         av1_ext_tx_tree[av1_ext_tx_set_type_intra[s]]);
+  }
+  for (s = 1; s < EXT_TX_SET_TYPES; ++s) {
+    av1_indices_from_tree(av1_ext_tx_ind[s], av1_ext_tx_inv[s],
+                          av1_ext_tx_tree[s]);
   }
 #else
   av1_tokens_from_tree(ext_tx_encodings, av1_ext_tx_tree);
+  /* This hack is necessary because the four TX_TYPES are not consecutive,
+      e.g., 0, 1, 2, 3, when doing an in-order traversal of the av1_ext_tx_tree
+      structure. */
+  av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, av1_ext_tx_tree);
 #endif  // CONFIG_EXT_TX
 
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
@@ -158,19 +166,6 @@ void av1_encode_token_init(void) {
       an in-order traversal of the av1_switchable_interp_tree structure. */
   av1_indices_from_tree(av1_switchable_interp_ind, av1_switchable_interp_inv,
                         av1_switchable_interp_tree);
-/* This hack is necessary because the four TX_TYPES are not consecutive,
-    e.g., 0, 1, 2, 3, when doing an in-order traversal of the av1_ext_tx_tree
-    structure. */
-#if CONFIG_EXT_TX
-  for (s = 1; s < EXT_TX_SETS_INTRA; ++s)
-    av1_indices_from_tree(av1_ext_tx_intra_ind[s], av1_ext_tx_intra_inv[s],
-                          av1_ext_tx_intra_tree[s]);
-  for (s = 1; s < EXT_TX_SETS_INTER; ++s)
-    av1_indices_from_tree(av1_ext_tx_inter_ind[s], av1_ext_tx_inter_inv[s],
-                          av1_ext_tx_inter_tree[s]);
-#else
-  av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, av1_ext_tx_tree);
-#endif
 }
 
 static void write_intra_mode_kf(const AV1_COMMON *cm, FRAME_CONTEXT *frame_ctx,
@@ -1607,23 +1602,23 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
       if (tx_type == MRC_DCT)
         assert(mbmi->valid_mrc_mask && "Invalid MRC mask");
 #endif  // CONFIG_MRC_TX
-
+      const TxSetType tx_set_type = get_ext_tx_set_type(
+          tx_size, bsize, is_inter, cm->reduced_tx_set_used);
       const int eset =
           get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
       // eset == 0 should correspond to a set with only DCT_DCT and there
       // is no need to send the tx_type
       assert(eset > 0);
+      assert(av1_ext_tx_used[tx_set_type][tx_type]);
       if (is_inter) {
-        assert(ext_tx_used_inter[eset][tx_type]);
-        aom_write_symbol(w, av1_ext_tx_inter_ind[eset][tx_type],
+        aom_write_symbol(w, av1_ext_tx_ind[tx_set_type][tx_type],
                          ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
-                         ext_tx_cnt_inter[eset]);
+                         av1_num_ext_tx_set[tx_set_type]);
       } else if (ALLOW_INTRA_EXT_TX) {
-        assert(ext_tx_used_intra[eset][tx_type]);
         aom_write_symbol(
-            w, av1_ext_tx_intra_ind[eset][tx_type],
+            w, av1_ext_tx_ind[tx_set_type][tx_type],
             ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
-            ext_tx_cnt_intra[eset]);
+            av1_num_ext_tx_set[tx_set_type]);
       }
     }
 #else
@@ -3082,10 +3077,12 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
         !skip) {
       const int eset =
           get_ext_tx_set(supertx_size, bsize, 1, cm->reduced_tx_set_used);
+      const int tx_set_type =
+          get_ext_tx_set_type(supertx_size, bsize, 1, cm->reduced_tx_set_used);
       if (eset > 0) {
-        aom_write_symbol(w, av1_ext_tx_inter_ind[eset][mbmi->tx_type],
+        aom_write_symbol(w, av1_ext_tx_ind[tx_set_type][mbmi->tx_type],
                          ec_ctx->inter_ext_tx_cdf[eset][supertx_size],
-                         ext_tx_cnt_inter[eset]);
+                         av1_num_ext_tx_set[tx_set_type]);
       }
     }
 #else

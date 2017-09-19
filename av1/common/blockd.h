@@ -933,75 +933,142 @@ static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
 #if CONFIG_EXT_TX
 #define ALLOW_INTRA_EXT_TX 1
 
-typedef enum {
-  // DCT only
-  EXT_TX_SET_DCTONLY = 0,
-  // DCT + Identity only
-  EXT_TX_SET_DCT_IDTX,
+// Number of transform types in each set type
+static const int av1_num_ext_tx_set[EXT_TX_SET_TYPES] = {
+  1, 2,
 #if CONFIG_MRC_TX
-  // DCT + MRC_DCT
+  2, 3,
+#endif  // CONFIG_MRC_TX
+  5, 7, 12, 16,
+};
+
+// Maps intra set index to the set type
+static const int av1_ext_tx_set_type_intra[EXT_TX_SETS_INTRA] = {
+  EXT_TX_SET_DCTONLY, EXT_TX_SET_DTT4_IDTX_1DDCT, EXT_TX_SET_DTT4_IDTX,
+#if CONFIG_MRC_TX
   EXT_TX_SET_MRC_DCT,
-  // DCT + MRC_DCT + IDTX
+#endif  // CONFIG_MRC_TX
+};
+
+// Maps inter set index to the set type
+static const int av1_ext_tx_set_type_inter[EXT_TX_SETS_INTER] = {
+  EXT_TX_SET_DCTONLY,         EXT_TX_SET_ALL16,
+  EXT_TX_SET_DTT9_IDTX_1DDCT, EXT_TX_SET_DCT_IDTX,
+#if CONFIG_MRC_TX
   EXT_TX_SET_MRC_DCT_IDTX,
 #endif  // CONFIG_MRC_TX
-  // Discrete Trig transforms w/o flip (4) + Identity (1)
-  EXT_TX_SET_DTT4_IDTX,
-  // Discrete Trig transforms w/o flip (4) + Identity (1) + 1D Hor/vert DCT (2)
-  EXT_TX_SET_DTT4_IDTX_1DDCT,
-  // Discrete Trig transforms w/ flip (9) + Identity (1) + 1D Hor/Ver DCT (2)
-  EXT_TX_SET_DTT9_IDTX_1DDCT,
-  // Discrete Trig transforms w/ flip (9) + Identity (1) + 1D Hor/Ver (6)
-  EXT_TX_SET_ALL16,
-  EXT_TX_SET_TYPES
-} TxSetType;
+};
 
+// Maps set types above to the indices used for intra
+static const int ext_tx_set_index_intra[EXT_TX_SET_TYPES] = {
+  0, -1,
 #if CONFIG_MRC_TX
-// Number of transform types in each set type
-static const int num_ext_tx_set[EXT_TX_SET_TYPES] = {
-  1, 2, 2, 3, 5, 7, 12, 16
+  3, -1,
+#endif  // CONFIG_MRC_TX
+  2, 1,  -1, -1,
 };
-
-// Maps intra set index to the set type
-static const int ext_tx_set_type_intra[EXT_TX_SETS_INTRA] = {
-  EXT_TX_SET_DCTONLY, EXT_TX_SET_DTT4_IDTX_1DDCT, EXT_TX_SET_DTT4_IDTX,
-  EXT_TX_SET_MRC_DCT
-};
-
-// Maps inter set index to the set type
-static const int ext_tx_set_type_inter[EXT_TX_SETS_INTER] = {
-  EXT_TX_SET_DCTONLY, EXT_TX_SET_ALL16, EXT_TX_SET_DTT9_IDTX_1DDCT,
-  EXT_TX_SET_DCT_IDTX, EXT_TX_SET_MRC_DCT_IDTX
-};
-
-// Maps set types above to the indices used for intra
-static const int ext_tx_set_index_intra[EXT_TX_SET_TYPES] = { 0, -1, 3,  -1,
-                                                              2, 1,  -1, -1 };
-
-// Maps set types above to the indices used for inter
-static const int ext_tx_set_index_inter[EXT_TX_SET_TYPES] = { 0,  3,  -1, 4,
-                                                              -1, -1, 2,  1 };
-#else   // CONFIG_MRC_TX
-// Number of transform types in each set type
-static const int num_ext_tx_set[EXT_TX_SET_TYPES] = { 1, 2, 5, 7, 12, 16 };
-
-// Maps intra set index to the set type
-static const int ext_tx_set_type_intra[EXT_TX_SETS_INTRA] = {
-  EXT_TX_SET_DCTONLY, EXT_TX_SET_DTT4_IDTX_1DDCT, EXT_TX_SET_DTT4_IDTX
-};
-
-// Maps inter set index to the set type
-static const int ext_tx_set_type_inter[EXT_TX_SETS_INTER] = {
-  EXT_TX_SET_DCTONLY, EXT_TX_SET_ALL16, EXT_TX_SET_DTT9_IDTX_1DDCT,
-  EXT_TX_SET_DCT_IDTX
-};
-
-// Maps set types above to the indices used for intra
-static const int ext_tx_set_index_intra[EXT_TX_SET_TYPES] = { 0, -1, 2,
-                                                              1, -1, -1 };
 
 // Maps set types above to the indices used for inter
 static const int ext_tx_set_index_inter[EXT_TX_SET_TYPES] = {
-  0, 3, -1, -1, 2, 1
+  0,  3,
+#if CONFIG_MRC_TX
+  -1, 4,
+#endif  // CONFIG_MRC_TX
+  -1, -1, 2, 1,
+};
+
+static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
+    {
+#if CONFIG_CHROMA_2X2
+      { 1, 1, 1, 1, 1 },  // unused
+      { 0, 1, 1, 0, 0 },
+      { 0, 0, 0, 1, 0 },
+#if CONFIG_MRC_TX
+      { 0, 0, 0, 0, 1 },
+#endif  // CONFIG_MRC_TX
+#else   // CONFIG_CHROMA_2X2
+      { 1, 1, 1, 1 },  // unused
+      { 1, 1, 0, 0 },
+      { 0, 0, 1, 0 },
+#if CONFIG_MRC_TX
+      { 0, 0, 0, 1 },
+#endif  // CONFIG_MRC_TX
+#endif  // CONFIG_CHROMA_2X2
+    };
+
+static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
+    {
+#if CONFIG_CHROMA_2X2
+      { 1, 1, 1, 1, 1 },  // unused
+      { 0, 1, 1, 0, 0 }, { 0, 0, 0, 1, 0 }, { 0, 0, 0, 0, 1 },
+#if CONFIG_MRC_TX
+      { 0, 0, 0, 0, 1 },
+#endif  // CONFIG_MRC_TX
+#else   // CONFIG_CHROMA_2X2
+      { 1, 1, 1, 1 },  // unused
+      { 1, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 },
+#if CONFIG_MRC_TX
+      { 0, 0, 0, 1 },
+#endif  // CONFIG_MRC_TX
+#endif  // CONFIG_CHROMA_2X2
+    };
+
+// 1D Transforms used in inter set, this needs to be changed if
+// ext_tx_used_inter is changed
+static const int ext_tx_used_inter_1D[EXT_TX_SETS_INTER][TX_TYPES_1D] = {
+  { 1, 0, 0, 0 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 0, 0, 1 },
+#if CONFIG_MRC_TX
+  { 1, 0, 0, 1 },
+#endif  // CONFIG_MRC_TX
+};
+
+#if CONFIG_MRC_TX
+static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
+  {
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+  },
+  {
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1,
+  },
+  {
+      1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+  },
+  {
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+  },
+  {
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+  },
+};
+#else   // CONFIG_MRC_TX
+static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
+  {
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+  },
+  {
+      1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
+  },
+  {
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+  },
+  {
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  },
 };
 #endif  // CONFIG_MRC_TX
 
@@ -1043,124 +1110,11 @@ static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
                   : ext_tx_set_index_intra[set_type];
 }
 
-#if CONFIG_MRC_TX
-static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
-    {
-#if CONFIG_CHROMA_2X2
-      { 1, 1, 1, 1, 1 },  // unused
-      { 0, 1, 1, 0, 0 },
-      { 0, 0, 0, 1, 0 },
-      { 0, 0, 0, 0, 1 },
-#else
-      { 1, 1, 1, 1 },  // unused
-      { 1, 1, 0, 0 },
-      { 0, 0, 1, 0 },
-      { 0, 0, 0, 1 },
-#endif  // CONFIG_CHROMA_2X2
-    };
-
-static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
-    {
-#if CONFIG_CHROMA_2X2
-      { 1, 1, 1, 1, 1 },  // unused
-      { 0, 1, 1, 0, 0 }, { 0, 0, 0, 1, 0 },
-      { 0, 0, 0, 0, 1 }, { 0, 0, 0, 0, 1 },
-#else
-      { 1, 1, 1, 1 },  // unused
-      { 1, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 }, { 0, 0, 0, 1 },
-#endif  // CONFIG_CHROMA_2X2
-    };
-
-// Transform types used in each intra set
-static const int ext_tx_used_intra[EXT_TX_SETS_INTRA][TX_TYPES] = {
-  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0 },
-  { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
-  { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1 },
-};
-
-// Numbers of transform types used in each intra set
-static const int ext_tx_cnt_intra[EXT_TX_SETS_INTRA] = { 1, 7, 5, 2 };
-
-// Transform types used in each inter set
-static const int ext_tx_used_inter[EXT_TX_SETS_INTER][TX_TYPES] = {
-  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0 },
-  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 },
-  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 },
-  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1 },
-};
-
-// Numbers of transform types used in each inter set
-static const int ext_tx_cnt_inter[EXT_TX_SETS_INTER] = { 1, 16, 12, 2, 3 };
-
-// 1D Transforms used in inter set, this needs to be changed if
-// ext_tx_used_inter is changed
-static const int ext_tx_used_inter_1D[EXT_TX_SETS_INTER][TX_TYPES_1D] = {
-  { 1, 0, 0, 0 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 0, 0, 1 }, { 1, 0, 0, 1 }
-};
-#else  // CONFIG_MRC_TX
-static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
-    {
-#if CONFIG_CHROMA_2X2
-      { 1, 1, 1, 1, 1 },  // unused
-      { 0, 1, 1, 0, 0 },
-      { 0, 0, 0, 1, 0 },
-#else
-      { 1, 1, 1, 1 },  // unused
-      { 1, 1, 0, 0 },
-      { 0, 0, 1, 0 },
-#endif  // CONFIG_CHROMA_2X2
-    };
-
-static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
-    {
-#if CONFIG_CHROMA_2X2
-      { 1, 1, 1, 1, 1 },  // unused
-      { 0, 1, 1, 0, 0 },
-      { 0, 0, 0, 1, 0 },
-      { 0, 0, 0, 0, 1 },
-#else
-      { 1, 1, 1, 1 },  // unused
-      { 1, 1, 0, 0 },
-      { 0, 0, 1, 0 },
-      { 0, 0, 0, 1 },
-#endif  // CONFIG_CHROMA_2X2
-    };
-
-// Transform types used in each intra set
-static const int ext_tx_used_intra[EXT_TX_SETS_INTRA][TX_TYPES] = {
-  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 },
-  { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
-};
-
-// Numbers of transform types used in each intra set
-static const int ext_tx_cnt_intra[EXT_TX_SETS_INTRA] = { 1, 7, 5 };
-
-// Transform types used in each inter set
-static const int ext_tx_used_inter[EXT_TX_SETS_INTER][TX_TYPES] = {
-  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
-  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
-  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
-};
-
-// Numbers of transform types used in each inter set
-static const int ext_tx_cnt_inter[EXT_TX_SETS_INTER] = { 1, 16, 12, 2 };
-
-// 1D Transforms used in inter set, this needs to be changed if
-// ext_tx_used_inter is changed
-static const int ext_tx_used_inter_1D[EXT_TX_SETS_INTER][TX_TYPES_1D] = {
-  { 1, 0, 0, 0 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 0, 0, 1 },
-};
-#endif  // CONFIG_MRC_TX
-
 static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
                                    int use_reduced_set) {
   const int set_type =
       get_ext_tx_set_type(tx_size, bs, is_inter, use_reduced_set);
-  return num_ext_tx_set[set_type];
+  return av1_num_ext_tx_set[set_type];
 }
 
 #if CONFIG_RECT_TX

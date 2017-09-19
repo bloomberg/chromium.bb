@@ -6073,16 +6073,20 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const int eset =
         get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
     if (eset > 0) {
+      const TxSetType tx_set_type = get_ext_tx_set_type(
+          tx_size, bsize, is_inter, cm->reduced_tx_set_used);
       if (is_inter) {
         update_cdf(fc->inter_ext_tx_cdf[eset][txsize_sqr_map[tx_size]],
-                   av1_ext_tx_inter_ind[eset][tx_type], ext_tx_cnt_inter[eset]);
+                   av1_ext_tx_ind[tx_set_type][tx_type],
+                   av1_num_ext_tx_set[tx_set_type]);
         ++counts->inter_ext_tx[eset][txsize_sqr_map[tx_size]][tx_type];
       } else {
         ++counts->intra_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->mode]
                               [tx_type];
         update_cdf(
             fc->intra_ext_tx_cdf[eset][txsize_sqr_map[tx_size]][mbmi->mode],
-            av1_ext_tx_intra_ind[eset][tx_type], ext_tx_cnt_intra[eset]);
+            av1_ext_tx_ind[tx_set_type][tx_type],
+            av1_num_ext_tx_set[tx_set_type]);
       }
     }
   }
@@ -7327,9 +7331,6 @@ static void rd_supertx_sb(const AV1_COMP *const cpi, ThreadData *td,
   TX_SIZE tx_size;
   MB_MODE_INFO *mbmi;
   TX_TYPE tx_type, best_tx_nostx;
-#if CONFIG_EXT_TX
-  int ext_tx_set;
-#endif  // CONFIG_EXT_TX
   int tmp_rate_tx = 0, skip_tx = 0;
   int64_t tmp_dist_tx = 0, rd_tx, bestrd_tx = INT64_MAX;
 
@@ -7399,7 +7400,9 @@ static void rd_supertx_sb(const AV1_COMP *const cpi, ThreadData *td,
   tx_size = max_txsize_lookup[bsize];
   av1_subtract_plane(x, bsize, 0);
 #if CONFIG_EXT_TX
-  ext_tx_set = get_ext_tx_set(tx_size, bsize, 1, cm->reduced_tx_set_used);
+  int ext_tx_set = get_ext_tx_set(tx_size, bsize, 1, cm->reduced_tx_set_used);
+  const TxSetType tx_set_type =
+      get_ext_tx_set_type(tx_size, bsize, 1, cm->reduced_tx_set_used);
 #endif  // CONFIG_EXT_TX
   for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
 #if CONFIG_VAR_TX
@@ -7410,7 +7413,7 @@ static void rd_supertx_sb(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_VAR_TX
 
 #if CONFIG_EXT_TX
-    if (!ext_tx_used_inter[ext_tx_set][tx_type]) continue;
+    if (!av1_ext_tx_used[tx_set_type][tx_type]) continue;
 #else
     if (tx_size >= TX_32X32 && tx_type != DCT_DCT) continue;
 #endif  // CONFIG_EXT_TX

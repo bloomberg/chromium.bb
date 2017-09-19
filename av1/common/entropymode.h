@@ -551,10 +551,8 @@ extern const aom_prob
 extern const int av1_intra_mode_ind[INTRA_MODES];
 extern const int av1_intra_mode_inv[INTRA_MODES];
 #if CONFIG_EXT_TX
-extern int av1_ext_tx_intra_ind[EXT_TX_SETS_INTRA][TX_TYPES];
-extern int av1_ext_tx_intra_inv[EXT_TX_SETS_INTRA][TX_TYPES];
-extern int av1_ext_tx_inter_ind[EXT_TX_SETS_INTER][TX_TYPES];
-extern int av1_ext_tx_inter_inv[EXT_TX_SETS_INTER][TX_TYPES];
+extern int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES];
+extern int av1_ext_tx_inv[EXT_TX_SET_TYPES][TX_TYPES];
 #endif
 
 #if CONFIG_EXT_INTER
@@ -588,6 +586,8 @@ extern const aom_tree_index av1_ext_tx_inter_tree[EXT_TX_SETS_INTER]
                                                  [TREE_SIZE(TX_TYPES)];
 extern const aom_tree_index av1_ext_tx_intra_tree[EXT_TX_SETS_INTRA]
                                                  [TREE_SIZE(TX_TYPES)];
+extern const aom_tree_index av1_ext_tx_tree[EXT_TX_SET_TYPES]
+                                           [TREE_SIZE(TX_TYPES)];
 #else
 extern const aom_tree_index av1_ext_tx_tree[TREE_SIZE(TX_TYPES)];
 #endif  // CONFIG_EXT_TX

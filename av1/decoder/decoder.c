@@ -55,13 +55,10 @@ static void initialize_dec(void) {
     av1_indices_from_tree(av1_switchable_interp_ind, av1_switchable_interp_inv,
                           av1_switchable_interp_tree);
 #if CONFIG_EXT_TX
-    int s;
-    for (s = 1; s < EXT_TX_SETS_INTRA; ++s)
-      av1_indices_from_tree(av1_ext_tx_intra_ind[s], av1_ext_tx_intra_inv[s],
-                            av1_ext_tx_intra_tree[s]);
-    for (s = 1; s < EXT_TX_SETS_INTER; ++s)
-      av1_indices_from_tree(av1_ext_tx_inter_ind[s], av1_ext_tx_inter_inv[s],
-                            av1_ext_tx_inter_tree[s]);
+    for (int s = 1; s < EXT_TX_SET_TYPES; ++s) {
+      av1_indices_from_tree(av1_ext_tx_ind[s], av1_ext_tx_inv[s],
+                            av1_ext_tx_tree[s]);
+    }
 #else
     av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, av1_ext_tx_tree);
 #endif

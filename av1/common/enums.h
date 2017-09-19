@@ -292,6 +292,28 @@ typedef enum {
 } TX_TYPE;
 
 #if CONFIG_EXT_TX
+typedef enum {
+  // DCT only
+  EXT_TX_SET_DCTONLY = 0,
+  // DCT + Identity only
+  EXT_TX_SET_DCT_IDTX,
+#if CONFIG_MRC_TX
+  // DCT + MRC_DCT
+  EXT_TX_SET_MRC_DCT,
+  // DCT + MRC_DCT + IDTX
+  EXT_TX_SET_MRC_DCT_IDTX,
+#endif  // CONFIG_MRC_TX
+  // Discrete Trig transforms w/o flip (4) + Identity (1)
+  EXT_TX_SET_DTT4_IDTX,
+  // Discrete Trig transforms w/o flip (4) + Identity (1) + 1D Hor/vert DCT (2)
+  EXT_TX_SET_DTT4_IDTX_1DDCT,
+  // Discrete Trig transforms w/ flip (9) + Identity (1) + 1D Hor/Ver DCT (2)
+  EXT_TX_SET_DTT9_IDTX_1DDCT,
+  // Discrete Trig transforms w/ flip (9) + Identity (1) + 1D Hor/Ver (6)
+  EXT_TX_SET_ALL16,
+  EXT_TX_SET_TYPES
+} TxSetType;
+
 #define IS_2D_TRANSFORM(tx_type) (tx_type < IDTX)
 #else
 #define IS_2D_TRANSFORM(tx_type) 1

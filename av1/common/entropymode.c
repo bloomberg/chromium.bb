@@ -1409,10 +1409,8 @@ static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
 #endif
 #endif
 #if CONFIG_EXT_TX
-int av1_ext_tx_intra_ind[EXT_TX_SETS_INTRA][TX_TYPES];
-int av1_ext_tx_intra_inv[EXT_TX_SETS_INTRA][TX_TYPES];
-int av1_ext_tx_inter_ind[EXT_TX_SETS_INTER][TX_TYPES];
-int av1_ext_tx_inter_inv[EXT_TX_SETS_INTER][TX_TYPES];
+int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES];
+int av1_ext_tx_inv[EXT_TX_SET_TYPES][TX_TYPES];
 #endif
 
 #if CONFIG_SMOOTH_HV
@@ -2485,70 +2483,59 @@ static const aom_prob default_switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS]
 
 #if CONFIG_EXT_TX
 /* clang-format off */
-const aom_tree_index av1_ext_tx_inter_tree[EXT_TX_SETS_INTER]
-                                           [TREE_SIZE(TX_TYPES)] = {
-  { // ToDo(yaowu): remove used entry 0.
-    0
-  }, {
-    -IDTX, 2,
-    4, 14,
-    6, 8,
-    -V_DCT, -H_DCT,
-    10, 12,
-    -V_ADST, -H_ADST,
-    -V_FLIPADST, -H_FLIPADST,
-    -DCT_DCT, 16,
-    18, 24,
-    20, 22,
-    -ADST_DCT, -DCT_ADST,
-    -FLIPADST_DCT, -DCT_FLIPADST,
-    26, 28,
-    -ADST_ADST, -FLIPADST_FLIPADST,
-    -ADST_FLIPADST, -FLIPADST_ADST
-  }, {
-    -IDTX, 2,
-    4, 6,
-    -V_DCT, -H_DCT,
-    -DCT_DCT, 8,
-    10, 16,
-    12, 14,
-    -ADST_DCT, -DCT_ADST,
-    -FLIPADST_DCT, -DCT_FLIPADST,
-    18, 20,
-    -ADST_ADST, -FLIPADST_FLIPADST,
-    -ADST_FLIPADST, -FLIPADST_ADST
-  }, {
-    -IDTX, -DCT_DCT,
-  },
+const aom_tree_index av1_ext_tx_tree[EXT_TX_SET_TYPES][TREE_SIZE(TX_TYPES)] = {
+    // TODO(yaowu@google.com): remove used entry 0.
+    { 0 },
+    { -IDTX, -DCT_DCT, },
 #if CONFIG_MRC_TX
-  {
-    -IDTX, 2, -DCT_DCT, -MRC_DCT,
-  }
+    { -DCT_DCT, -MRC_DCT, },
+    {   -IDTX, 2,
+        -DCT_DCT, -MRC_DCT, },
 #endif  // CONFIG_MRC_TX
-};
-
-const aom_tree_index av1_ext_tx_intra_tree[EXT_TX_SETS_INTRA]
-                                           [TREE_SIZE(TX_TYPES)] = {
-  {  // ToDo(yaowu): remove unused entry 0.
-    0
-  }, {
-    -IDTX, 2,
-    -DCT_DCT, 4,
-    6, 8,
-    -V_DCT, -H_DCT,
-    -ADST_ADST, 10,
-    -ADST_DCT, -DCT_ADST,
-  }, {
-    -IDTX, 2,
-    -DCT_DCT, 4,
-    -ADST_ADST, 6,
-    -ADST_DCT, -DCT_ADST,
-  },
-#if CONFIG_MRC_TX
-  {
-    -DCT_DCT, -MRC_DCT,
-  }
-#endif  // CONFIG_MRC_TX
+    {
+        -IDTX, 2,
+        -DCT_DCT, 4,
+        -ADST_ADST, 6,
+        -ADST_DCT, -DCT_ADST,
+    },
+    {
+        -IDTX, 2,
+        -DCT_DCT, 4,
+        6, 8,
+        -V_DCT, -H_DCT,
+        -ADST_ADST, 10,
+        -ADST_DCT, -DCT_ADST,
+    },
+    {
+        -IDTX, 2,
+        4, 6,
+        -V_DCT, -H_DCT,
+        -DCT_DCT, 8,
+        10, 16,
+        12, 14,
+        -ADST_DCT, -DCT_ADST,
+        -FLIPADST_DCT, -DCT_FLIPADST,
+        18, 20,
+        -ADST_ADST, -FLIPADST_FLIPADST,
+        -ADST_FLIPADST, -FLIPADST_ADST,
+    },
+    {
+        -IDTX, 2,
+        4, 14,
+        6, 8,
+        -V_DCT, -H_DCT,
+        10, 12,
+        -V_ADST, -H_ADST,
+        -V_FLIPADST, -H_FLIPADST,
+        -DCT_DCT, 16,
+        18, 24,
+        20, 22,
+        -ADST_DCT, -DCT_ADST,
+        -FLIPADST_DCT, -DCT_FLIPADST,
+        26, 28,
+        -ADST_ADST, -FLIPADST_FLIPADST,
+        -ADST_FLIPADST, -FLIPADST_ADST,
+    },
 };
 /* clang-format on */
 
@@ -5531,17 +5518,20 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
     int s;
     for (s = 1; s < EXT_TX_SETS_INTER; ++s) {
       if (use_inter_ext_tx_for_txsize[s][i]) {
-        aom_tree_merge_probs(
-            av1_ext_tx_inter_tree[s], pre_fc->inter_ext_tx_prob[s][i],
-            counts->inter_ext_tx[s][i], fc->inter_ext_tx_prob[s][i]);
+        aom_tree_merge_probs(av1_ext_tx_tree[av1_ext_tx_set_type_inter[s]],
+                             pre_fc->inter_ext_tx_prob[s][i],
+                             counts->inter_ext_tx[s][i],
+                             fc->inter_ext_tx_prob[s][i]);
       }
     }
     for (s = 1; s < EXT_TX_SETS_INTRA; ++s) {
       if (use_intra_ext_tx_for_txsize[s][i]) {
-        for (j = 0; j < INTRA_MODES; ++j)
-          aom_tree_merge_probs(
-              av1_ext_tx_intra_tree[s], pre_fc->intra_ext_tx_prob[s][i][j],
-              counts->intra_ext_tx[s][i][j], fc->intra_ext_tx_prob[s][i][j]);
+        for (j = 0; j < INTRA_MODES; ++j) {
+          aom_tree_merge_probs(av1_ext_tx_tree[av1_ext_tx_set_type_intra[s]],
+                               pre_fc->intra_ext_tx_prob[s][i][j],
+                               counts->intra_ext_tx[s][i][j],
+                               fc->intra_ext_tx_prob[s][i][j]);
+        }
       }
     }
   }
