@@ -200,15 +200,11 @@ static REFERENCE_MODE read_frame_reference_mode(
   }
 }
 
+#if !CONFIG_NEW_MULTISYMBOL
 static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
-#if CONFIG_NEW_MULTISYMBOL && !CONFIG_EXT_COMP_REFS
-  (void)r;
-#else
   FRAME_CONTEXT *const fc = cm->fc;
   int i;
-#endif
 
-#if !CONFIG_NEW_MULTISYMBOL
   if (cm->reference_mode == REFERENCE_MODE_SELECT)
     for (i = 0; i < COMP_INTER_CONTEXTS; ++i)
       av1_diff_update_prob(r, &fc->comp_inter_prob[i], ACCT_STR);
@@ -221,7 +217,6 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
       }
     }
   }
-#endif
 
   if (cm->reference_mode != SINGLE_REFERENCE) {
 #if CONFIG_EXT_COMP_REFS
@@ -235,7 +230,6 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
     }
 #endif  // CONFIG_EXT_COMP_REFS
 
-#if !CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < REF_CONTEXTS; ++i) {
       int j;
 #if CONFIG_EXT_REFS
@@ -248,11 +242,9 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
         av1_diff_update_prob(r, &fc->comp_ref_prob[i][j], ACCT_STR);
 #endif  // CONFIG_EXT_REFS
     }
-#endif  // CONFIG_NEW_MULTISYMBOL
   }
 }
 
-#if !CONFIG_NEW_MULTISYMBOL
 static void update_mv_probs(aom_prob *p, int n, aom_reader *r) {
   int i;
   for (i = 0; i < n; ++i) av1_diff_update_prob(r, &p[i], ACCT_STR);
@@ -5061,7 +5053,9 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
     if (cm->reference_mode != SINGLE_REFERENCE)
       setup_compound_reference_mode(cm);
+#if !CONFIG_NEW_MULTISYMBOL
     read_frame_reference_mode_probs(cm, &r);
+#endif
 
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
     for (i = 0; i < COMP_INTER_MODE_CONTEXTS; i++)
