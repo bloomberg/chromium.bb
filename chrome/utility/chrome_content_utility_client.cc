@@ -19,6 +19,7 @@
 #include "chrome/common/file_patcher.mojom.h"
 #include "chrome/common/profiling/constants.mojom.h"
 #include "chrome/profiling/profiling_service.h"
+#include "chrome/utility/printing/pdf_to_pwg_raster_converter_impl.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
@@ -303,6 +304,11 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
 #if defined(FULL_SAFE_BROWSING)
     registry->AddInterface(base::Bind(&SafeArchiveAnalyzerImpl::Create),
                            base::ThreadTaskRunnerHandle::Get());
+#endif
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+    registry->AddInterface(
+        base::Bind(&printing::PDFToPWGRasterConverterImpl::Create),
+        base::ThreadTaskRunnerHandle::Get());
 #endif
   }
 

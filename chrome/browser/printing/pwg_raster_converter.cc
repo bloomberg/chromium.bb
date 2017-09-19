@@ -22,6 +22,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
+#include "chrome/common/printing/pdf_to_pwg_raster_converter.mojom.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
@@ -29,6 +30,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
 #include "printing/units.h"
@@ -59,18 +61,14 @@ class FileHandlers {
     return temp_dir_.GetPath().AppendASCII("input.pdf");
   }
 
-  IPC::PlatformFileForTransit GetPdfForProcess() {
+  base::PlatformFile GetPdfForProcess() {
     DCHECK(pdf_file_.IsValid());
-    IPC::PlatformFileForTransit transit =
-        IPC::TakePlatformFileForTransit(std::move(pdf_file_));
-    return transit;
+    return pdf_file_.TakePlatformFile();
   }
 
-  IPC::PlatformFileForTransit GetPwgForProcess() {
+  base::PlatformFile GetPwgForProcess() {
     DCHECK(pwg_file_.IsValid());
-    IPC::PlatformFileForTransit transit =
-        IPC::TakePlatformFileForTransit(std::move(pwg_file_));
-    return transit;
+    return pwg_file_.TakePlatformFile();
   }
 
  private:
@@ -131,10 +129,6 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
  private:
   ~PwgUtilityProcessHostClient() override;
 
-  // Message handlers.
-  void OnSucceeded();
-  void OnFailed();
-
   void RunCallback(bool success);
 
   void StartProcessOnIOThread();
@@ -144,6 +138,8 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
 
   PdfRenderSettings settings_;
   PwgRasterSettings bitmap_settings_;
+  mojo::InterfacePtr<printing::mojom::PDFToPWGRasterConverter>
+      pdf_to_pwg_raster_converter_ptr_;
   PWGRasterConverter::ResultCallback callback_;
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unique_ptr<FileHandlers, base::OnTaskRunnerDeleter> files_;
@@ -182,30 +178,12 @@ void PwgUtilityProcessHostClient::Convert(
 }
 
 void PwgUtilityProcessHostClient::OnProcessCrashed(int exit_code) {
-  OnFailed();
+  RunCallback(false);
 }
 
 bool PwgUtilityProcessHostClient::OnMessageReceived(
   const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PwgUtilityProcessHostClient, message)
-    IPC_MESSAGE_HANDLER(
-        ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Succeeded, OnSucceeded)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Failed,
-                        OnFailed)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void PwgUtilityProcessHostClient::OnSucceeded() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  RunCallback(true);
-}
-
-void PwgUtilityProcessHostClient::OnFailed() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  RunCallback(false);
+  return false;
 }
 
 void PwgUtilityProcessHostClient::OnFilesReadyOnUIThread() {
@@ -224,17 +202,34 @@ void PwgUtilityProcessHostClient::OnFilesReadyOnUIThread() {
 void PwgUtilityProcessHostClient::StartProcessOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  auto request = MakeRequest(&pdf_to_pwg_raster_converter_ptr_);
+  pdf_to_pwg_raster_converter_ptr_.set_connection_error_handler(
+      base::Bind(&PwgUtilityProcessHostClient::RunCallback, this, false));
+
+  base::string16 process_name =
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PWG_RASTER_CONVERTOR_NAME);
   content::UtilityProcessHost* utility_process_host =
       content::UtilityProcessHost::Create(this,
                                           base::ThreadTaskRunnerHandle::Get());
-  utility_process_host->SetName(l10n_util::GetStringUTF16(
-      IDS_UTILITY_PROCESS_PWG_RASTER_CONVERTOR_NAME));
-  utility_process_host->Send(new ChromeUtilityMsg_RenderPDFPagesToPWGRaster(
-      files_->GetPdfForProcess(), settings_, bitmap_settings_,
-      files_->GetPwgForProcess()));
+  utility_process_host->SetName(process_name);
+  if (!utility_process_host->Start()) {
+    LOG(ERROR) << "Failed to start utility process host " << process_name;
+    RunCallbackOnUIThread(false);
+    return;
+  }
+
+  utility_process_host->BindInterface(
+      printing::mojom::PDFToPWGRasterConverter::Name_,
+      request.PassMessagePipe());
+
+  pdf_to_pwg_raster_converter_ptr_->Convert(
+      mojo::WrapPlatformFile(files_->GetPdfForProcess()), settings_,
+      bitmap_settings_, mojo::WrapPlatformFile(files_->GetPwgForProcess()),
+      base::Bind(&PwgUtilityProcessHostClient::RunCallback, this));
 }
 
 void PwgUtilityProcessHostClient::RunCallback(bool success) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&PwgUtilityProcessHostClient::RunCallbackOnUIThread, this,
