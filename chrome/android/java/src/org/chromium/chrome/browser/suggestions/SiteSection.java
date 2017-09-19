@@ -17,9 +17,6 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
 import org.chromium.chrome.browser.ntp.cards.OptionalLeaf;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.suggestions.SiteSectionViewHolder.UpdateIconViewCallback;
-import org.chromium.chrome.browser.suggestions.SiteSectionViewHolder.UpdateOfflineBadgeCallback;
-import org.chromium.chrome.browser.suggestions.SiteSectionViewHolder.UpdateTilesCallback;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
@@ -89,7 +86,8 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
     @Override
     public void onTileDataChanged() {
         setVisibilityInternal(!mTileGroup.isEmpty());
-        if (isVisible()) notifyItemChanged(0, new UpdateTilesCallback());
+        if (!isVisible()) return;
+        notifyItemChanged(0, (holder) -> ((SiteSectionViewHolder) holder).refreshData());
     }
 
     @Override
@@ -99,12 +97,14 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
 
     @Override
     public void onTileIconChanged(Tile tile) {
-        if (isVisible()) notifyItemChanged(0, new UpdateIconViewCallback(tile));
+        if (!isVisible()) return;
+        notifyItemChanged(0, (holder) -> ((SiteSectionViewHolder) holder).updateIconView(tile));
     }
 
     @Override
     public void onTileOfflineBadgeVisibilityChanged(Tile tile) {
-        if (isVisible()) notifyItemChanged(0, new UpdateOfflineBadgeCallback(tile));
+        if (!isVisible()) return;
+        notifyItemChanged(0, (holder) -> ((SiteSectionViewHolder) holder).updateOfflineBadge(tile));
     }
 
     public TileGroup getTileGroup() {

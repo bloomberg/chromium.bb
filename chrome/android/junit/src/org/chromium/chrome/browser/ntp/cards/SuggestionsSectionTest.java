@@ -36,14 +36,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DisableHistogramsRule;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.UpdateLayoutParamsCallback;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
@@ -73,6 +75,7 @@ import java.util.TreeSet;
 @Config(manifest = Config.NONE)
 // TODO(bauerb): Enable these tests with the modern layout.
 @Features({
+        @Features.Register(value = ChromeFeatureList.CHROME_HOME, enabled = false),
         @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT, enabled = false)
 })
 public class SuggestionsSectionTest {
@@ -102,6 +105,7 @@ public class SuggestionsSectionTest {
     public void setUp() {
         RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
 
         mBridge = new FakeOfflinePageBridge();
 
@@ -113,7 +117,7 @@ public class SuggestionsSectionTest {
         when(mUiDelegate.getEventReporter()).thenReturn(mock(SuggestionsEventReporter.class));
 
         // Set empty variation params for the test.
-        CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
+        CardsVariationParameters.setTestVariationParams(new HashMap<>());
     }
 
     @After
@@ -782,7 +786,7 @@ public class SuggestionsSectionTest {
         // Remove the first card. The second one should get the update.
         section.removeSuggestionById(suggestions.get(0).mIdWithinCategory);
         verify(mParent).onItemRangeChanged(
-                same(section), eq(1), eq(1), any(UpdateLayoutParamsCallback.class));
+                same(section), eq(1), eq(1), any(PartialBindCallback.class));
     }
 
     @Test
@@ -796,7 +800,7 @@ public class SuggestionsSectionTest {
         // Remove the last card. The penultimate one should get the update.
         section.removeSuggestionById(suggestions.get(4).mIdWithinCategory);
         verify(mParent).onItemRangeChanged(
-                same(section), eq(4), eq(1), any(UpdateLayoutParamsCallback.class));
+                same(section), eq(4), eq(1), any(PartialBindCallback.class));
     }
 
     @Test
@@ -810,7 +814,7 @@ public class SuggestionsSectionTest {
         // Remove the last card. The penultimate one should get the update.
         section.removeSuggestionById(suggestions.get(1).mIdWithinCategory);
         verify(mParent).onItemRangeChanged(
-                same(section), eq(1), eq(1), any(UpdateLayoutParamsCallback.class));
+                same(section), eq(1), eq(1), any(PartialBindCallback.class));
     }
 
     @Test
@@ -852,7 +856,7 @@ public class SuggestionsSectionTest {
         section.appendSuggestions(createDummySuggestions(2, /* categoryId = */ 42, "new"),
                 /*keepSectionSize=*/false);
         verify(mParent).onItemRangeChanged(
-                same(section), eq(5), eq(1), any(UpdateLayoutParamsCallback.class));
+                same(section), eq(5), eq(1), any(PartialBindCallback.class));
     }
 
     private SuggestionsSection createSectionWithSuggestions(List<SnippetArticle> snippets) {

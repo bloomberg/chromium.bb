@@ -317,7 +317,7 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         }
 
         private void notifyPersonalizedPromoIfVisible() {
-            if (isVisible()) notifyItemChanged(0, new UpdatePersonalizedSigninPromoCallback());
+            if (isVisible()) notifyItemChanged(0, PersonalizedPromoViewHolder::update);
         }
     }
 
@@ -357,6 +357,14 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
             // Modern does not update the card background.
             assert !FeatureUtilities.isChromeHomeModernEnabled();
             return R.drawable.ntp_signin_promo_card_single;
+        }
+
+        /**
+         * Triggers an update of the personalized signin promo. Intended to be used as
+         * {@link NewTabPageViewHolder.PartialBindCallback}.
+         */
+        public static void update(NewTabPageViewHolder viewHolder) {
+            ((PersonalizedPromoViewHolder) viewHolder).updatePersonalizedSigninPromo();
         }
 
         private void updatePersonalizedSigninPromo() {
@@ -435,17 +443,6 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
             // Modern does not update the card background.
             assert !FeatureUtilities.isChromeHomeModernEnabled();
             return R.drawable.ntp_signin_promo_card_single;
-        }
-    }
-
-    /**
-     * Callback to update the personalized signin promo.
-     */
-    private static class UpdatePersonalizedSigninPromoCallback
-            extends NewTabPageViewHolder.PartialBindCallback {
-        @Override
-        public void onResult(NewTabPageViewHolder result) {
-            ((PersonalizedPromoViewHolder) result).updatePersonalizedSigninPromo();
         }
     }
 }

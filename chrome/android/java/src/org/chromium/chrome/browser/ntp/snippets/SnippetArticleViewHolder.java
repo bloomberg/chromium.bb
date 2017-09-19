@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -31,13 +30,6 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
  * A class that represents the view for a single card snippet.
  */
 public class SnippetArticleViewHolder extends CardViewHolder implements ImpressionTracker.Listener {
-    /**
-     * A single instance of {@link RefreshOfflineBadgeVisibilityCallback} that can be reused as it
-     * has no state.
-     */
-    public static final RefreshOfflineBadgeVisibilityCallback
-            REFRESH_OFFLINE_BADGE_VISIBILITY_CALLBACK = new RefreshOfflineBadgeVisibilityCallback();
-
     private final SuggestionsUiDelegate mUiDelegate;
     private final SuggestionsBinder mSuggestionsBinder;
 
@@ -60,13 +52,8 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
         mUiDelegate = uiDelegate;
         mSuggestionsBinder = new SuggestionsBinder(itemView, uiDelegate);
-        mDisplayStyleObserver =
-                new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
-                    @Override
-                    public void onDisplayStyleChanged(UiConfig.DisplayStyle newDisplayStyle) {
-                        updateLayout();
-                    }
-                });
+        mDisplayStyleObserver = new DisplayStyleObserverAdapter(
+                itemView, uiConfig, newDisplayStyle -> updateLayout());
 
         new ImpressionTracker(itemView, this);
     }
@@ -138,6 +125,14 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mDisplayStyleObserver.detach();
         mSuggestionsBinder.recycle();
         super.recycle();
+    }
+
+    /**
+     * Triggers a refresh of the offline badge visibility. Intended to be used as
+     * {@link NewTabPageViewHolder.PartialBindCallback}
+     */
+    public static void refreshOfflineBadgeVisibility(NewTabPageViewHolder holder) {
+        ((SnippetArticleViewHolder) holder).refreshOfflineBadgeVisibility();
     }
 
     /**
@@ -217,15 +212,5 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             return R.layout.new_tab_page_snippets_card_large_thumbnail;
         }
         return R.layout.new_tab_page_snippets_card;
-    }
-
-    /**
-     * Callback to refresh the offline badge visibility.
-     */
-    public static class RefreshOfflineBadgeVisibilityCallback extends PartialBindCallback {
-        @Override
-        public void onResult(NewTabPageViewHolder holder) {
-            ((SnippetArticleViewHolder) holder).refreshOfflineBadgeVisibility();
-        }
     }
 }
