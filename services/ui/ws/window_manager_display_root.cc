@@ -26,8 +26,9 @@ WindowManagerDisplayRoot::WindowManagerDisplayRoot(Display* display)
       std::vector<uint8_t>(name.begin(), name.end());
 
   WindowId id = window_server()->display_manager()->GetAndAdvanceNextRootId();
-  root_.reset(window_server()->CreateServerWindow(id, id.ToClientWindowId(),
-                                                  properties));
+  ClientWindowId client_window_id(id.client_id, id.window_id);
+  root_.reset(
+      window_server()->CreateServerWindow(id, client_window_id, properties));
   root_->set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   // Our root is always a child of the Display's root. Do this

@@ -21,7 +21,10 @@ namespace ui {
 namespace ws {
 
 ServerWindow::ServerWindow(ServerWindowDelegate* delegate, const WindowId& id)
-    : ServerWindow(delegate, id, id.ToClientWindowId(), Properties()) {}
+    : ServerWindow(delegate,
+                   id,
+                   viz::FrameSinkId(id.client_id, id.window_id),
+                   Properties()) {}
 
 ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
                            const WindowId& id,
