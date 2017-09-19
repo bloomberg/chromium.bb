@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
@@ -145,7 +146,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   ~BrowserPlugin() override;
 
-  gfx::Rect view_rect() const { return view_rect_; }
+  gfx::Rect view_rect() const { return view_rect_.value_or(gfx::Rect()); }
 
   void UpdateInternalInstanceId();
 
@@ -175,7 +176,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   const int render_frame_routing_id_;
   blink::WebPluginContainer* container_;
   // The plugin's rect in css pixels.
-  gfx::Rect view_rect_;
+  base::Optional<gfx::Rect> view_rect_;
   bool guest_crashed_;
   bool plugin_focused_;
   // Tracks the visibility of the browser plugin regardless of the whole

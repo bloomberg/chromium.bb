@@ -263,10 +263,12 @@ void BrowserPlugin::OnGuestReady(int browser_plugin_instance_id,
                                  const viz::FrameSinkId& frame_sink_id) {
   guest_crashed_ = false;
   frame_sink_id_ = frame_sink_id;
-  gfx::Rect view_rect = view_rect_;
+  if (!view_rect_)
+    return;
+
+  gfx::Rect view_rect = *view_rect_;
   view_rect_ = gfx::Rect();
-  if (!view_rect.IsEmpty())
-    ViewRectsChanged(view_rect);
+  ViewRectsChanged(view_rect);
 }
 
 void BrowserPlugin::OnSetCursor(int browser_plugin_instance_id,
@@ -321,7 +323,8 @@ void BrowserPlugin::UpdateInternalInstanceId() {
 }
 
 void BrowserPlugin::ViewRectsChanged(const gfx::Rect& view_rect) {
-  bool rect_size_changed = view_rect_.size() != view_rect.size();
+  bool rect_size_changed =
+      !view_rect_ || view_rect_->size() != view_rect.size();
   if (rect_size_changed || !local_surface_id_.is_valid()) {
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
     if (compositing_helper_ && enable_surface_synchronization_ &&
@@ -343,11 +346,11 @@ void BrowserPlugin::ViewRectsChanged(const gfx::Rect& view_rect) {
   if (attached()) {
     // Let the browser know about the updated view rect.
     BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateGeometry(
-        browser_plugin_instance_id_, view_rect_, local_surface_id_));
+        browser_plugin_instance_id_, *view_rect_, local_surface_id_));
   }
 
   if (rect_size_changed && delegate_)
-    delegate_->DidResizeElement(view_rect_.size());
+    delegate_->DidResizeElement(view_rect_->size());
 }
 
 void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {

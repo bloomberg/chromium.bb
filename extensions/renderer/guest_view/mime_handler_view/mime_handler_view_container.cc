@@ -317,7 +317,7 @@ void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
 }
 
 void MimeHandlerViewContainer::CreateMimeHandlerViewGuestIfNecessary() {
-  if (guest_created_ || element_size_.IsEmpty() || view_id_.empty())
+  if (guest_created_ || !element_size_.has_value() || view_id_.empty())
     return;
 
   // The loader has completed loading |view_id_| so we can dispose it.
@@ -334,7 +334,7 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuestIfNecessary() {
   render_frame()->Send(
       new ExtensionsGuestViewHostMsg_CreateMimeHandlerViewGuest(
           render_frame()->GetRoutingID(), view_id_, element_instance_id(),
-          element_size_));
+          *element_size_));
 
   guest_created_ = true;
 }
