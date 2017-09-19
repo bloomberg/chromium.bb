@@ -71,7 +71,7 @@ class FindBadConstructsConsumer
                            clang::CXXRecordDecl* record);
 
   bool InTestingNamespace(const clang::Decl* record);
-  bool IsMethodInBannedOrTestingNamespace(const clang::CXXMethodDecl* method);
+  bool IsMethodInTestingNamespace(const clang::CXXMethodDecl* method);
 
   // Returns a diagnostic builder that only emits the diagnostic if the spelling
   // location (the actual characters that make up the token) is not in an
@@ -80,7 +80,6 @@ class FindBadConstructsConsumer
   // generally can't be easily updated.
   SuppressibleDiagnosticBuilder ReportIfSpellingLocNotIgnored(
       clang::SourceLocation loc,
-      const clang::Decl* record,
       unsigned diagnostic_id);
 
   void CheckVirtualMethods(clang::SourceLocation record_location,

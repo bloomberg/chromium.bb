@@ -305,7 +305,7 @@ void FindBadConstructsConsumer::CheckChromeEnum(LocationType location_type,
     if (((name.size() > 4 && name.compare(name.size() - 4, 4, "Last") == 0) ||
          (name.size() > 5 && name.compare(name.size() - 5, 5, "_LAST") == 0)) &&
         iter->getInitVal() < max_so_far) {
-      ReportIfSpellingLocNotIgnored(iter->getLocation(), enum_decl,
+      ReportIfSpellingLocNotIgnored(iter->getLocation(),
                                     diag_bad_enum_last_value_);
     }
   }
@@ -377,8 +377,7 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
 
   if (ctor_score >= 10) {
     if (!record->hasUserDeclaredConstructor()) {
-      ReportIfSpellingLocNotIgnored(record_location, record,
-                                    diag_no_explicit_ctor_);
+      ReportIfSpellingLocNotIgnored(record_location, diag_no_explicit_ctor_);
     } else {
       // Iterate across all the constructors in this file and yell if we
       // find one that tries to be inline.
@@ -402,7 +401,7 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
             // be emitted on other platforms too, reevaluate if we want to keep
             // surpressing this then http://crbug.com/467288
             if (!record->hasAttr<DLLExportAttr>())
-              ReportIfSpellingLocNotIgnored(record_location, record,
+              ReportIfSpellingLocNotIgnored(record_location,
                                             diag_no_explicit_copy_ctor_);
           } else {
             // See the comment in the previous branch about copy constructors.
@@ -412,7 +411,7 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
                 !record->hasUserDeclaredMoveConstructor() &&
                 record->hasAttr<DLLExportAttr>();
             if (!is_likely_compiler_generated_dllexport_move_ctor)
-              ReportIfSpellingLocNotIgnored(it->getInnerLocStart(), record,
+              ReportIfSpellingLocNotIgnored(it->getInnerLocStart(),
                                             diag_inline_complex_ctor_);
           }
         } else if (it->isInlined() && !it->isInlineSpecified() &&
@@ -423,7 +422,7 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
           // constructors in the previously mentioned situation. To preserve
           // compatibility with existing Chromium code, only warn if it's an
           // explicitly defaulted copy or move constructor.
-          ReportIfSpellingLocNotIgnored(it->getInnerLocStart(), record,
+          ReportIfSpellingLocNotIgnored(it->getInnerLocStart(),
                                         diag_inline_complex_ctor_);
         }
       }
@@ -434,12 +433,11 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
   // trivial members; 20 ints don't need a destructor.
   if (dtor_score >= 10 && !record->hasTrivialDestructor()) {
     if (!record->hasUserDeclaredDestructor()) {
-      ReportIfSpellingLocNotIgnored(record_location, record,
-                                    diag_no_explicit_dtor_);
+      ReportIfSpellingLocNotIgnored(record_location, diag_no_explicit_dtor_);
     } else if (CXXDestructorDecl* dtor = record->getDestructor()) {
       if (dtor->isInlined() && !dtor->isInlineSpecified() &&
           !dtor->isDeleted()) {
-        ReportIfSpellingLocNotIgnored(dtor->getInnerLocStart(), record,
+        ReportIfSpellingLocNotIgnored(dtor->getInnerLocStart(),
                                       diag_inline_complex_dtor_);
       }
     }
@@ -450,15 +448,13 @@ bool FindBadConstructsConsumer::InTestingNamespace(const Decl* record) {
   return GetNamespace(record).find("testing") != std::string::npos;
 }
 
-bool FindBadConstructsConsumer::IsMethodInBannedOrTestingNamespace(
+bool FindBadConstructsConsumer::IsMethodInTestingNamespace(
     const CXXMethodDecl* method) {
-  if (InBannedNamespace(method))
-    return true;
   for (CXXMethodDecl::method_iterator i = method->begin_overridden_methods();
        i != method->end_overridden_methods();
        ++i) {
     const CXXMethodDecl* overridden = *i;
-    if (IsMethodInBannedOrTestingNamespace(overridden) ||
+    if (IsMethodInTestingNamespace(overridden) ||
         // Provide an exception for ::testing::Test. gtest itself uses some
         // magic to try to make sure SetUp()/TearDown() aren't capitalized
         // incorrectly, but having the plugin enforce override is also nice.
@@ -474,10 +470,9 @@ bool FindBadConstructsConsumer::IsMethodInBannedOrTestingNamespace(
 SuppressibleDiagnosticBuilder
 FindBadConstructsConsumer::ReportIfSpellingLocNotIgnored(
     SourceLocation loc,
-    const Decl* record,
     unsigned diagnostic_id) {
-  LocationType type = ClassifyLocation(
-      instance().getSourceManager().getSpellingLoc(loc), record);
+  LocationType type =
+      ClassifyLocation(instance().getSourceManager().getSpellingLoc(loc));
   bool ignored =
       type == LocationType::kThirdParty || type == LocationType::kBlink;
   return SuppressibleDiagnosticBuilder(&diagnostic(), loc, diagnostic_id,
@@ -537,7 +532,7 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
   OverrideAttr* override_attr = method->getAttr<OverrideAttr>();
   FinalAttr* final_attr = method->getAttr<FinalAttr>();
 
-  if (IsMethodInBannedOrTestingNamespace(method))
+  if (IsMethodInTestingNamespace(method))
     return;
 
   SourceManager& manager = instance().getSourceManager();
@@ -549,7 +544,7 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
     // Note this is just an educated guess: the assumption here is that any
     // macro for declaring methods will probably be at the start of the method's
     // source range.
-    ReportIfSpellingLocNotIgnored(method->getLocStart(), method,
+    ReportIfSpellingLocNotIgnored(method->getLocStart(),
                                   diag_redundant_virtual_specifier_)
         << "'virtual'"
         << (override_attr ? static_cast<Attr*>(override_attr) : final_attr)
@@ -600,23 +595,23 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
     // Again, only emit the warning if it doesn't originate from a macro in
     // a system header.
     if (loc.isValid()) {
-      ReportIfSpellingLocNotIgnored(loc, method, diag_method_requires_override_)
+      ReportIfSpellingLocNotIgnored(loc, diag_method_requires_override_)
           << FixItHint::CreateInsertion(loc, " override");
     } else {
-      ReportIfSpellingLocNotIgnored(range.getBegin(), method,
+      ReportIfSpellingLocNotIgnored(range.getBegin(),
                                     diag_method_requires_override_);
     }
   }
 
   if (final_attr && override_attr) {
-    ReportIfSpellingLocNotIgnored(override_attr->getLocation(), method,
+    ReportIfSpellingLocNotIgnored(override_attr->getLocation(),
                                   diag_redundant_virtual_specifier_)
         << override_attr << final_attr
         << FixItHint::CreateRemoval(override_attr->getRange());
   }
 
   if (final_attr && !is_override) {
-    ReportIfSpellingLocNotIgnored(method->getLocStart(), method,
+    ReportIfSpellingLocNotIgnored(method->getLocStart(),
                                   diag_base_method_virtual_and_final_)
         << FixItRemovalForVirtual(manager, lang_opts, method)
         << FixItHint::CreateRemoval(final_attr->getRange());
@@ -637,8 +632,7 @@ void FindBadConstructsConsumer::CheckVirtualBodies(
         bool emit = true;
         if (loc.isMacroID()) {
           SourceManager& manager = instance().getSourceManager();
-          LocationType type =
-              ClassifyLocation(manager.getSpellingLoc(loc), method);
+          LocationType type = ClassifyLocation(manager.getSpellingLoc(loc));
           if (type == LocationType::kThirdParty || type == LocationType::kBlink)
             emit = false;
           else {
@@ -650,8 +644,7 @@ void FindBadConstructsConsumer::CheckVirtualBodies(
           }
         }
         if (emit)
-          ReportIfSpellingLocNotIgnored(loc, method,
-                                        diag_virtual_with_inline_body_);
+          ReportIfSpellingLocNotIgnored(loc, diag_virtual_with_inline_body_);
       }
     }
   }
@@ -867,7 +860,7 @@ void FindBadConstructsConsumer::CheckRefCountedDtors(
     if (dtor->getAccess() == AS_protected && !dtor->isVirtual()) {
       loc = dtor->getInnerLocStart();
       ReportIfSpellingLocNotIgnored(
-          loc, dtor, diag_refcounted_with_protected_non_virtual_dtor_);
+          loc, diag_refcounted_with_protected_non_virtual_dtor_);
       return;
     }
   }
@@ -984,7 +977,7 @@ void FindBadConstructsConsumer::CheckWeakPtrFactoryMembers(
     // one of those, it means there is at least one member after a factory.
     if (weak_ptr_factory_location.isValid() &&
         !param_is_weak_ptr_factory_to_self) {
-      ReportIfSpellingLocNotIgnored(weak_ptr_factory_location, record,
+      ReportIfSpellingLocNotIgnored(weak_ptr_factory_location,
                                     diag_weak_ptr_factory_order_);
     }
   }
@@ -1030,9 +1023,8 @@ void FindBadConstructsConsumer::CheckVarDecl(clang::VarDecl* var_decl) {
           // should be fewer auto types than banned namespace/directory types,
           // so check this last.
           LocationType location_type =
-              ClassifyLocation(var_decl->getLocStart(), var_decl);
-          if (!InBannedNamespace(var_decl) &&
-              location_type != LocationType::kThirdParty) {
+              ClassifyLocation(var_decl->getLocStart());
+          if (location_type != LocationType::kThirdParty) {
             // The range starts from |var_decl|'s loc start, which is the
             // beginning of the full expression defining this |var_decl|. It
             // ends, however, where this |var_decl|'s type loc ends, since
@@ -1043,7 +1035,7 @@ void FindBadConstructsConsumer::CheckVarDecl(clang::VarDecl* var_decl) {
             clang::SourceRange range(
                 var_decl->getLocStart(),
                 var_decl->getTypeSourceInfo()->getTypeLoc().getLocEnd());
-            ReportIfSpellingLocNotIgnored(range.getBegin(), var_decl,
+            ReportIfSpellingLocNotIgnored(range.getBegin(),
                                           diag_auto_deduced_to_a_pointer_type_)
                 << FixItHint::CreateReplacement(
                        range,
