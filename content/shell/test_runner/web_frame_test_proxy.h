@@ -8,8 +8,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
@@ -259,6 +261,10 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
   }
 
   blink::WebUserMediaClient* UserMediaClient() override {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kUseFakeUIForMediaStream)) {
+      return Base::UserMediaClient();
+    }
     return test_client()->UserMediaClient();
   }
 

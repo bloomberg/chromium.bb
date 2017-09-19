@@ -778,6 +778,7 @@ external/wpt/html/semantics/forms/the-textarea-element/textarea-select-manual.ht
 external/wpt/html/semantics/selectors/pseudo-classes/checked-001-manual.html [ WontFix ]
 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-manual.html [ WontFix ]
 external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
+virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
 external/wpt/notifications/body-basic-manual.html [ WontFix ]
 external/wpt/notifications/body-empty-manual.html [ WontFix ]
 external/wpt/notifications/event-onclick-manual.html [ WontFix ]
@@ -929,6 +930,9 @@ external/wpt/css/CSS2/text/text-decoration-062.xht [ WontFix ]
 external/wpt/css/CSS2/text/text-decoration-063.xht [ WontFix ]
 external/wpt/css/CSS2/text/text-decoration-064.xht [ WontFix ]
 external/wpt/css/CSS2/text/text-decoration-069.xht [ WontFix ]
+
+# Requires --use-fake-ui-for-media-stream to run.
+external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.sub.html [ WontFix ]
 
 # These directories have manual tests that don't have to run with
 # run-webkit-tests; see https://crbug.com/359838.
