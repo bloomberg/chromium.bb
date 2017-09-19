@@ -122,7 +122,7 @@ void UpdateClientImpl::Update(const std::vector<std::string>& ids,
   if (tasks_.empty()) {
     RunTask(std::move(task));
   } else {
-    task_queue_.push(task.release());
+    task_queue_.push_back(task.release());
   }
 }
 
@@ -157,7 +157,7 @@ void UpdateClientImpl::OnTaskComplete(const Callback& callback,
   // task is running.
   if (tasks_.empty() && !task_queue_.empty()) {
     RunTask(std::unique_ptr<Task>(task_queue_.front()));
-    task_queue_.pop();
+    task_queue_.pop_front();
   }
 }
 
@@ -193,6 +193,13 @@ bool UpdateClientImpl::IsUpdating(const std::string& id) const {
     }
   }
 
+  for (const auto* task : task_queue_) {
+    const auto ids(task->GetIds());
+    if (std::find(ids.begin(), ids.end(), id) != ids.end()) {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -216,7 +223,7 @@ void UpdateClientImpl::Stop() {
   // task runner yet.
   while (!task_queue_.empty()) {
     auto* task(task_queue_.front());
-    task_queue_.pop();
+    task_queue_.pop_front();
     task->Cancel();
   }
 }
