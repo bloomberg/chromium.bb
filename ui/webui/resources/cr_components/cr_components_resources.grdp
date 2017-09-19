@@ -88,6 +88,12 @@
     <structure name="IDR_WEBUI_CHROMEOS_NETWORK_APNLIST_JS"
                file="cr_components/chromeos/network/network_apnlist.js"
                type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_CHOOSE_MOBILE_HTML"
+               file="cr_components/chromeos/network/network_choose_mobile.html"
+               type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_CHOOSE_MOBILE_JS"
+               file="cr_components/chromeos/network/network_choose_mobile.js"
+               type="chrome_html" />
     <structure name="IDR_WEBUI_CHROMEOS_NETWORK_IP_CONFIG_HTML"
                file="cr_components/chromeos/network/network_ip_config.html"
                type="chrome_html" />

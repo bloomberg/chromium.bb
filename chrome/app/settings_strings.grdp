@@ -1329,11 +1329,20 @@
     <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING" desc="Settings > Internet > Network details: Toggle label to allow mobile data roaming.">
       Allow mobile data roaming
     </message>
-    <message name="IDS_SETTINGS_SETTINGS_NETWORK_CHOOSE_MOBILE_DETAIL" desc="Settings > Internet > Network details: Label for section to choose a mobile data network.">
-      Choose a mobile data network
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CHOOSE_MOBILE" desc="Settings > Internet > Network details: Label for control to choose a mobile data network.">
+      Mobile data network
     </message>
-    <message name="IDS_SETTINGS_SETTINGS_NETWORK_CHOOSE_MOBILE_BUTTON" desc="Settings > Internet > Network details: Label for button to choose a mobile data network.">
-      Choose network
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCAN" desc="Settings > Internet > Network details: Label for button to start a Cellular scan.">
+      Scan
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCAN_COMPLETED" desc="Settings > Internet > Network details: Status text when a scan has completed.">
+      Scan completed
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCANNING" desc="Settings > Internet > Network details: Status text when a scan is in progress.">
+      Scanning...
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_NO_NETWORKS" desc="Settings > Internet > Network details: Dropdown text when no cellular networks were found after a scan.">
+      No networks
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SHARED" desc="Settings > Internet > Network details: Text to show when a network is shared.">
       Other users of this device can use this network.

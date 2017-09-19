@@ -453,6 +453,8 @@ namespace networking.onc {
     long? PRLVersion;
     // The roaming state of the cellular modem on the current network.
     DOMString? RoamingState;
+    // True when a cellular network scan is in progress.
+    boolean? Scanning;
     // Information about the operator on whose network the modem is currently
     // registered.
     CellularProviderProperties? ServingOperator;
@@ -501,6 +503,8 @@ namespace networking.onc {
     long? PRLVersion;
     // See $(ref:CellularProperties.RoamingState).
     DOMString? RoamingState;
+    // See $(ref:CellularProperties.Scanning).
+    boolean? Scanning;
     // See $(ref:CellularProperties.ServingOperator).
     CellularProviderProperties? ServingOperator;
     // See $(ref:CellularProperties.SIMLockStatus).

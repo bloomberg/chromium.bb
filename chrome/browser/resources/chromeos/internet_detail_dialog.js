@@ -223,6 +223,16 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  showCellularChooseNetwork_: function(networkProperties) {
+    return networkProperties.Type == CrOnc.Type.CELLULAR &&
+        !!this.get('Cellular.SupportNetworkScan', this.networkProperties);
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
   showConnect_: function(networkProperties) {
     return networkProperties.Type != CrOnc.Type.ETHERNET &&
         networkProperties.ConnectionState ==
