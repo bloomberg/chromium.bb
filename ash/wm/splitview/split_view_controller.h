@@ -22,7 +22,7 @@ namespace ash {
 
 class SplitViewControllerTest;
 class SplitViewDivider;
-class WindowSelectorTest;
+class SplitViewWindowSelectorTest;
 
 // The controller for the split view. It snaps a window to left/right side of
 // the screen. It also observes the two snapped windows and decides when to exit
@@ -113,7 +113,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
  private:
   friend class SplitViewControllerTest;
-  friend class WindowSelectorTest;
+  friend class SplitViewWindowSelectorTest;
 
   // Starts/Stops observing |window|.
   void StartObserving(aura::Window* window);
