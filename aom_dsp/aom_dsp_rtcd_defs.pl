@@ -116,12 +116,24 @@ specialize qw/aom_dc_128_predictor_32x32 msa neon sse2/;
 
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   specialize qw/aom_highbd_v_predictor_4x4 sse2/;
-  specialize qw/aom_highbd_dc_predictor_4x4 sse2/;
+  specialize qw/aom_highbd_v_predictor_4x8 sse2/;
+  specialize qw/aom_highbd_v_predictor_8x4 sse2/;
   specialize qw/aom_highbd_v_predictor_8x8 sse2/;
-  specialize qw/aom_highbd_dc_predictor_8x8 sse2/;;
+  specialize qw/aom_highbd_v_predictor_8x16 sse2/;
+  specialize qw/aom_highbd_v_predictor_16x8 sse2/;
   specialize qw/aom_highbd_v_predictor_16x16 sse2/;
-  specialize qw/aom_highbd_dc_predictor_16x16 sse2/;
+  specialize qw/aom_highbd_v_predictor_16x32 sse2/;
+  specialize qw/aom_highbd_v_predictor_32x16 sse2/;
   specialize qw/aom_highbd_v_predictor_32x32 sse2/;
+  specialize qw/aom_highbd_dc_predictor_4x4 sse2/;
+  specialize qw/aom_highbd_dc_predictor_4x8 sse2/;
+  specialize qw/aom_highbd_dc_predictor_8x4 sse2/;;
+  specialize qw/aom_highbd_dc_predictor_8x8 sse2/;;
+  specialize qw/aom_highbd_dc_predictor_8x16 sse2/;;
+  specialize qw/aom_highbd_dc_predictor_16x8 sse2/;
+  specialize qw/aom_highbd_dc_predictor_16x16 sse2/;
+  specialize qw/aom_highbd_dc_predictor_16x32 sse2/;
+  specialize qw/aom_highbd_dc_predictor_32x16 sse2/;
   specialize qw/aom_highbd_dc_predictor_32x32 sse2/;
   specialize qw/aom_highbd_h_predictor_4x4 sse2/;
   specialize qw/aom_highbd_h_predictor_4x8 sse2/;
