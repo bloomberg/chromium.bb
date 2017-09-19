@@ -320,6 +320,9 @@ void PerformanceBase::AddResourceTiming(const ResourceTimingInfo& info) {
           info, allow_timing_details
                     ? PerformanceServerTiming::ShouldAllowTimingDetails::Yes
                     : PerformanceServerTiming::ShouldAllowTimingDetails::No);
+  if (serverTiming.size()) {
+    UseCounter::Count(context, WebFeature::kPerformanceServerTiming);
+  }
 
   if (info.RedirectChain().IsEmpty()) {
     PerformanceEntry* entry = PerformanceResourceTiming::Create(
