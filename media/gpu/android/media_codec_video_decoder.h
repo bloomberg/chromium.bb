@@ -38,6 +38,16 @@ struct PendingDecode {
 };
 
 // An Android VideoDecoder that delegates to MediaCodec.
+//
+// This decoder initializes in two stages. Low overhead initialization is done
+// eagerly in Initialize(), but the rest is done lazily and is kicked off by the
+// first Decode() (see StartLazyInit()). We do this because there are cases in
+// our media pipeline where we'll initialize a decoder but never use it
+// (e.g., MSE with no media data appended), and if we eagerly allocator decoder
+// resources, like MediaCodecs and SurfaceTextures, we will block other
+// playbacks that need them.
+// TODO: Lazy initialization should be handled at a higher layer of the media
+// stack for both simplicity and cross platform support.
 class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
     : public VideoDecoder,
       public AVDACodecAllocatorClient {
@@ -81,7 +91,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   friend class base::DeleteHelper<MediaCodecVideoDecoder>;
 
   enum class State {
-    // We're initializing.
+    // Initializing resources required to create a codec.
     kInitializing,
     // Initialization has completed and we're running. This is the only state
     // in which |codec_| might be non-null. If |codec_| is null, a codec
@@ -133,12 +143,15 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // a new one.
   void FlushCodec();
 
-  // Attempts to queue input and dequeue output from the codec. If
-  // |force_start_timer| is true the timer idle timeout is reset.
+  // Attempts to queue input and dequeue output from the codec. Calls
+  // StartTimer() even if the codec is idle when |force_start_timer|.
   void PumpCodec(bool force_start_timer);
-  void ManageTimer(bool start_timer);
   bool QueueInput();
   bool DequeueOutput();
+
+  // Starts |pump_codec_timer_| if it's not started and resets the idle timeout.
+  void StartTimer();
+  void StopTimerIfIdle();
 
   // Forwards |frame| via |output_cb_| if there hasn't been a Reset() since the
   // frame was created (i.e., |reset_generation| matches |reset_generation_|).
@@ -166,13 +179,13 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   State state_;
 
   // Whether initialization still needs to be done on the first decode call.
-  bool lazy_init_pending_;
+  bool lazy_init_pending_ = true;
   std::deque<PendingDecode> pending_decodes_;
 
   // Whether we've seen MediaCodec return MEDIA_CODEC_NO_KEY indicating that
   // the corresponding key was not set yet, and MediaCodec will not accept
   // buffers until OnKeyAdded() is called.
-  bool waiting_for_key_;
+  bool waiting_for_key_ = false;
 
   // The reason for the current drain operation if any.
   base::Optional<DrainType> drain_type_;
@@ -181,7 +194,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   base::Closure reset_cb_;
 
   // A generation counter that's incremented every time Reset() is called.
-  int reset_generation_;
+  int reset_generation_ = 0;
 
   // The EOS decode cb for an EOS currently being processed by the codec. Called
   // when the EOS is output.
@@ -195,11 +208,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   std::vector<uint8_t> csd0_;
   std::vector<uint8_t> csd1_;
 
-  // The surface bundle that we should transition to if a transition is pending.
-  scoped_refptr<AVDASurfaceBundle> incoming_surface_;
-
   std::unique_ptr<CodecWrapper> codec_;
-  base::Optional<base::ElapsedTimer> idle_timer_;
+  base::ElapsedTimer idle_timer_;
   base::RepeatingTimer pump_codec_timer_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::Callback<gpu::GpuCommandBufferStub*()> get_stub_cb_;
