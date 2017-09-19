@@ -309,22 +309,9 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
 
   if (auto_wrap_) {
     // Try to break inside of this text item.
-    BreakText(item_result, item, available_width - line_.position);
+    BreakText(item_result, item, available_width - line_.position, line_info);
     LayoutUnit next_position = line_.position + item_result->inline_size;
     bool is_overflow = next_position > available_width;
-
-    // If overflow and no break opportunities exist, and if 'break-word', try to
-    // break at every grapheme cluster boundary.
-    if (is_overflow && break_if_overflow_ &&
-        IsFirstBreakOpportunity(item_result->end_offset, line_info)) {
-      DCHECK_EQ(break_iterator_.BreakType(), LineBreakType::kNormal);
-      break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
-      BreakText(item_result, item, available_width - line_.position);
-      break_iterator_.SetBreakType(LineBreakType::kNormal);
-      next_position = line_.position + item_result->inline_size;
-      is_overflow = next_position > available_width;
-    }
-
     line_.position = next_position;
     item_result->no_break_opportunities_inside = is_overflow;
     if (item_result->end_offset < item.EndOffset())
@@ -353,7 +340,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
   // Because the start position may need to reshape, run ShapingLineBreaker
   // with max available width.
   DCHECK_NE(offset_, item.StartOffset());
-  BreakText(item_result, item, LayoutUnit::Max());
+  BreakText(item_result, item, LayoutUnit::Max(), line_info);
   DCHECK_EQ(item_result->end_offset, item.EndOffset());
   item_result->no_break_opportunities_inside = true;
   item_result->prohibit_break_after = true;
@@ -364,7 +351,8 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
 
 void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
                               const NGInlineItem& item,
-                              LayoutUnit available_width) {
+                              LayoutUnit available_width,
+                              const NGLineInfo& line_info) {
   DCHECK_EQ(item.Type(), NGInlineItem::kText);
   item.AssertOffset(item_result->start_offset);
 
@@ -389,13 +377,26 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
     // overflow. Some details are different, but it's the closest behavior.
     item_result->inline_size = available_width;
     DCHECK(!result.is_hyphenated);
-  } else if (result.is_hyphenated) {
-    AppendHyphen(*item.Style(), shape_result.Get());
-    item_result->inline_size = shape_result->SnappedWidth();
-    // TODO(kojii): Implement when adding a hyphen caused overflow.
-    item_result->text_end_effect = NGTextEndEffect::kHyphen;
   } else {
     item_result->inline_size = shape_result->SnappedWidth();
+
+    // If overflow and no break opportunities exist, and if 'word-wrap:
+    // break-word', try to break at every grapheme cluster boundary.
+    if (item_result->inline_size > available_width && break_if_overflow_ &&
+        break_iterator_.BreakType() == LineBreakType::kNormal &&
+        IsFirstBreakOpportunity(result.break_offset, line_info)) {
+      break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
+      BreakText(item_result, item, available_width, line_info);
+      break_iterator_.SetBreakType(LineBreakType::kNormal);
+      return;
+    }
+
+    if (result.is_hyphenated) {
+      AppendHyphen(*item.Style(), shape_result.Get());
+      item_result->inline_size = shape_result->SnappedWidth();
+      // TODO(kojii): Implement when adding a hyphen caused overflow.
+      item_result->text_end_effect = NGTextEndEffect::kHyphen;
+    }
   }
   item_result->end_offset = result.break_offset;
   item_result->shape_result = std::move(shape_result);
@@ -721,7 +722,7 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
       LayoutUnit item_available_width =
           std::min(-next_width_to_rewind, item_result->inline_size - 1);
       SetCurrentStyle(*item.Style());
-      BreakText(item_result, item, item_available_width);
+      BreakText(item_result, item, item_available_width, *line_info);
       if (item_result->inline_size <= item_available_width) {
         DCHECK(item_result->end_offset < item.EndOffset() ||
                (item_result->end_offset == item.EndOffset() &&
