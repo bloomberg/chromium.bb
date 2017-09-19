@@ -97,6 +97,23 @@ RemoteSuggestion::CreateFromContentSuggestionsDictionary(
   GetURLValue(dict, "ampUrl", &snippet->amp_url_);  // May fail; OK.
   // TODO(sfiera): also favicon URL.
 
+  const base::Value* image_dominant_color_value =
+      dict.FindKey("imageDominantColor");
+  if (image_dominant_color_value) {
+    // The field is defined as fixed32 in the proto (effectively 32 bits
+    // unsigned int), however, JSON does not support unsigned types. As a result
+    // the value is parsed as int if it fits and as double otherwise. Double can
+    // hold 32 bits precisely.
+    uint32_t image_dominant_color;
+    if (image_dominant_color_value->is_int()) {
+      image_dominant_color = image_dominant_color_value->GetInt();
+    } else if (image_dominant_color_value->is_double()) {
+      image_dominant_color =
+          static_cast<uint32_t>(image_dominant_color_value->GetDouble());
+    }
+    snippet->image_dominant_color_ = image_dominant_color;
+  }
+
   double score;
   if (dict.GetDouble("score", &score)) {
     snippet->score_ = score;
@@ -175,7 +192,12 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
 
   snippet->title_ = proto.title();
   snippet->snippet_ = proto.snippet();
+
   snippet->salient_image_url_ = GURL(proto.salient_image_url());
+  if (proto.has_image_dominant_color()) {
+    snippet->image_dominant_color_ = proto.image_dominant_color();
+  }
+
   snippet->publish_date_ = base::Time::FromInternalValue(proto.publish_date());
   snippet->expiry_date_ = base::Time::FromInternalValue(proto.expiry_date());
   snippet->score_ = proto.score();
@@ -228,6 +250,9 @@ SnippetProto RemoteSuggestion::ToProto() const {
   }
   if (salient_image_url_.is_valid()) {
     result.set_salient_image_url(salient_image_url_.spec());
+  }
+  if (image_dominant_color_.has_value()) {
+    result.set_image_dominant_color(*image_dominant_color_);
   }
   if (!publish_date_.is_null()) {
     result.set_publish_date(publish_date_.ToInternalValue());
@@ -289,6 +314,7 @@ ContentSuggestion RemoteSuggestion::ToContentSuggestion(
   if (content_type_ == ContentType::VIDEO) {
     suggestion.set_is_video_suggestion(true);
   }
+  suggestion.set_optional_image_dominant_color(image_dominant_color_);
   return suggestion;
 }
 

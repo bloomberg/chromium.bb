@@ -36,24 +36,26 @@ std::unique_ptr<RemoteSuggestion> SnippetFromContentSuggestionJSON(
 }
 
 TEST(RemoteSuggestionTest, FromContentSuggestionsDictionary) {
-  const std::string kJsonStr =
-      "{"
-      "  \"ids\" : [\"http://localhost/foobar\"],"
-      "  \"title\" : \"Foo Barred from Baz\","
-      "  \"snippet\" : \"...\","
-      "  \"fullPageUrl\" : \"http://localhost/foobar\","
-      "  \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
-      "  \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
-      "  \"attribution\" : \"Foo News\","
-      "  \"imageUrl\" : \"http://localhost/foobar.jpg\","
-      "  \"ampUrl\" : \"http://localhost/amp\","
-      "  \"faviconUrl\" : \"http://localhost/favicon.ico\", "
-      "  \"score\": 9001,\n"
-      "  \"notificationInfo\": {\n"
-      "    \"shouldNotify\": true,"
-      "    \"deadline\": \"2016-06-30T13:01:37.000Z\"\n"
-      "  }\n"
-      "}";
+  const std::string kJsonStr = R"(
+    {
+      "ids" : ["http://localhost/foobar"],
+      "title" : "Foo Barred from Baz",
+      "snippet" : "...",
+      "fullPageUrl" : "http://localhost/foobar",
+      "creationTime" : "2016-06-30T11:01:37.000Z",
+      "expirationTime" : "2016-07-01T11:01:37.000Z",
+      "attribution" : "Foo News",
+      "imageUrl" : "http://localhost/foobar.jpg",
+      "ampUrl" : "http://localhost/amp",
+      "faviconUrl" : "http://localhost/favicon.ico",
+      "score": 9001,
+      "notificationInfo": {
+        "shouldNotify": true,
+        "deadline": "2016-06-30T13:01:37.000Z"
+      },
+      "imageDominantColor": 4289379276
+    }
+  )";
   const base::Time fetch_date = base::Time::FromInternalValue(1466634774L);
   auto snippet = SnippetFromContentSuggestionJSON(kJsonStr, fetch_date);
   ASSERT_THAT(snippet, NotNull());
@@ -62,6 +64,8 @@ TEST(RemoteSuggestionTest, FromContentSuggestionsDictionary) {
   EXPECT_EQ(snippet->title(), "Foo Barred from Baz");
   EXPECT_EQ(snippet->snippet(), "...");
   EXPECT_EQ(snippet->salient_image_url(), GURL("http://localhost/foobar.jpg"));
+  ASSERT_TRUE(snippet->optional_image_dominant_color().has_value());
+  EXPECT_EQ(*snippet->optional_image_dominant_color(), 4289379276u);
   EXPECT_EQ(snippet->score(), 9001);
   auto unix_publish_date = snippet->publish_date() - base::Time::UnixEpoch();
   auto expiry_duration = snippet->expiry_date() - snippet->publish_date();
@@ -81,19 +85,20 @@ TEST(RemoteSuggestionTest, FromContentSuggestionsDictionary) {
 
 TEST(RemoteSuggestionTest,
      ShouldSupportMultipleIdsFromContentSuggestionsServer) {
-  const std::string kJsonStr =
-      "{"
-      "  \"ids\" : [\"http://localhost/foobar\", \"012345\"],"
-      "  \"title\" : \"Foo Barred from Baz\","
-      "  \"snippet\" : \"...\","
-      "  \"fullPageUrl\" : \"http://localhost/foobar\","
-      "  \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
-      "  \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
-      "  \"attribution\" : \"Foo News\","
-      "  \"imageUrl\" : \"http://localhost/foobar.jpg\","
-      "  \"ampUrl\" : \"http://localhost/amp\","
-      "  \"faviconUrl\" : \"http://localhost/favicon.ico\" "
-      "}";
+  const std::string kJsonStr = R"(
+    {
+      "ids" : ["http://localhost/foobar", "012345"],
+      "title" : "Foo Barred from Baz",
+      "snippet" : "...",
+      "fullPageUrl" : "http://localhost/foobar",
+      "creationTime" : "2016-06-30T11:01:37.000Z",
+      "expirationTime" : "2016-07-01T11:01:37.000Z",
+      "attribution" : "Foo News",
+      "imageUrl" : "http://localhost/foobar.jpg",
+      "ampUrl" : "http://localhost/amp",
+      "faviconUrl" : "http://localhost/favicon.ico"
+    }
+  )";
   auto snippet = SnippetFromContentSuggestionJSON(kJsonStr, base::Time());
   ASSERT_THAT(snippet, NotNull());
 
@@ -109,6 +114,7 @@ TEST(RemoteSuggestionTest, CreateFromProtoToProtoRoundtrip) {
   proto.set_title("a suggestion title");
   proto.set_snippet("the snippet describing the suggestion.");
   proto.set_salient_image_url("http://google.com/logo/");
+  proto.set_image_dominant_color(4289379276);
   proto.set_publish_date(1476095492);
   proto.set_expiry_date(1476354691);
   proto.set_score(0.1f);
@@ -158,27 +164,51 @@ TEST(RemoteSuggestionTest, CreateFromProtoIgnoreMissingFetchDate) {
   std::unique_ptr<RemoteSuggestion> snippet =
       RemoteSuggestion::CreateFromProto(proto);
   ASSERT_THAT(snippet, NotNull());
-  // The snippet database relies on the fact that the first id in the protocol
-  // buffer is considered the unique id.
-  EXPECT_EQ(snippet->id(), "foo");
   EXPECT_EQ(snippet->fetch_date(), base::Time());
 }
 
+TEST(RemoteSuggestionTest, CreateFromProtoIgnoreMissingImageDominantColor) {
+  SnippetProto proto;
+  proto.add_ids("foo");
+  proto.add_ids("bar");
+  proto.set_title("a suggestion title");
+  proto.set_snippet("the snippet describing the suggestion.");
+  proto.set_salient_image_url("http://google.com/logo/");
+  proto.set_publish_date(1476095492);
+  proto.set_expiry_date(1476354691);
+  proto.set_score(0.1f);
+  proto.set_dismissed(false);
+  proto.set_remote_category_id(1);
+  auto* source = proto.mutable_source();
+  source->set_url("http://cool-suggestions.com/");
+  source->set_publisher_name("Great Suggestions Inc.");
+  source->set_amp_url("http://cdn.ampproject.org/c/foo/");
+
+  std::unique_ptr<RemoteSuggestion> snippet =
+      RemoteSuggestion::CreateFromProto(proto);
+  ASSERT_THAT(snippet, NotNull());
+  // The snippet database relies on the fact that the first id in the protocol
+  // buffer is considered the unique id.
+  EXPECT_EQ(snippet->id(), "foo");
+  EXPECT_FALSE(snippet->optional_image_dominant_color().has_value());
+}
+
 std::unique_ptr<base::DictionaryValue> ContentSuggestionSnippet() {
-  const std::string kJsonStr =
-      "{"
-      "  \"ids\" : [\"http://localhost/foobar\"],"
-      "  \"title\" : \"Foo Barred from Baz\","
-      "  \"snippet\" : \"...\","
-      "  \"fullPageUrl\" : \"http://localhost/foobar\","
-      "  \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
-      "  \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
-      "  \"attribution\" : \"Foo News\","
-      "  \"imageUrl\" : \"http://localhost/foobar.jpg\","
-      "  \"ampUrl\" : \"http://localhost/amp\","
-      "  \"faviconUrl\" : \"http://localhost/favicon.ico\", "
-      "  \"score\": 9001\n"
-      "}";
+  const std::string kJsonStr = R"(
+    {
+      "ids" : ["http://localhost/foobar"],
+      "title" : "Foo Barred from Baz",
+      "snippet" : "...",
+      "fullPageUrl" : "http://localhost/foobar",
+      "creationTime" : "2016-06-30T11:01:37.000Z",
+      "expirationTime" : "2016-07-01T11:01:37.000Z",
+      "attribution" : "Foo News",
+      "imageUrl" : "http://localhost/foobar.jpg",
+      "ampUrl" : "http://localhost/amp",
+      "faviconUrl" : "http://localhost/favicon.ico",
+      "score": 9001
+    }
+  )";
   auto json_value = base::JSONReader::Read(kJsonStr);
   base::DictionaryValue* json_dict;
   CHECK(json_value->GetAsDictionary(&json_dict));
@@ -314,6 +344,49 @@ TEST(RemoteSuggestionTest, ToContentSuggestionWithMissingContentType) {
       Category::FromKnownCategory(KnownCategories::ARTICLES));
 
   EXPECT_THAT(content_suggestion.is_video_suggestion(), Eq(false));
+}
+
+TEST(RemoteSuggestionTest, ToContentSuggestionWithLargeImageDominantColor) {
+  auto json = ContentSuggestionSnippet();
+  // JSON does not support unsigned types. As a result the value is parsed as
+  // int if it fits and as double otherwise.
+  json->SetDouble("imageDominantColor", 4289379276.);
+  auto snippet = RemoteSuggestion::CreateFromContentSuggestionsDictionary(
+      *json, 0, base::Time());
+  ASSERT_THAT(snippet, NotNull());
+  ContentSuggestion content_suggestion = snippet->ToContentSuggestion(
+      Category::FromKnownCategory(KnownCategories::ARTICLES));
+
+  ASSERT_TRUE(content_suggestion.optional_image_dominant_color().has_value());
+  EXPECT_THAT(*content_suggestion.optional_image_dominant_color(),
+              Eq(4289379276u));
+}
+
+TEST(RemoteSuggestionTest, ToContentSuggestionWithSmallImageDominantColor) {
+  auto json = ContentSuggestionSnippet();
+  // JSON does not support unsigned types. As a result the value is parsed as
+  // int if it fits and as double otherwise.
+  json->SetInteger("imageDominantColor", 16777216 /*=0x1000000*/);
+  auto snippet = RemoteSuggestion::CreateFromContentSuggestionsDictionary(
+      *json, 0, base::Time());
+  ASSERT_THAT(snippet, NotNull());
+  ContentSuggestion content_suggestion = snippet->ToContentSuggestion(
+      Category::FromKnownCategory(KnownCategories::ARTICLES));
+
+  ASSERT_TRUE(content_suggestion.optional_image_dominant_color().has_value());
+  EXPECT_THAT(*content_suggestion.optional_image_dominant_color(),
+              Eq(16777216u));
+}
+
+TEST(RemoteSuggestionTest, ToContentSuggestionWithoutImageDominantColor) {
+  auto json = ContentSuggestionSnippet();
+  auto snippet = RemoteSuggestion::CreateFromContentSuggestionsDictionary(
+      *json, 0, base::Time());
+  ASSERT_THAT(snippet, NotNull());
+  ContentSuggestion content_suggestion = snippet->ToContentSuggestion(
+      Category::FromKnownCategory(KnownCategories::ARTICLES));
+
+  EXPECT_FALSE(content_suggestion.optional_image_dominant_color().has_value());
 }
 
 }  // namespace

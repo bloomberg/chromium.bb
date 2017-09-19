@@ -38,6 +38,9 @@ message SnippetProto {
   // The values may be not consecutive. Must be set on the client. May be absent
   // in suggestions created before it was introduced.
   optional int32 rank = 13;
+
+  // Encoded as @ColorInt.
+  optional fixed32 image_dominant_color = 14;
 }
 
 message SnippetImageProto {

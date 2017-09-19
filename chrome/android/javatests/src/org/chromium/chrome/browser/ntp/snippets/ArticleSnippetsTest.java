@@ -230,7 +230,7 @@ public class ArticleSnippetsTest {
 
                 SnippetArticle download = new SnippetArticle(KnownCategories.DOWNLOADS, "id1",
                         "test_image.jpg", "example.com", null, "http://example.com", timestamp, 10f,
-                        timestamp, false);
+                        timestamp, false, /* thumbnailDominantColor = */ null);
                 download.setAssetDownloadData("asdf", filePath, "image/jpeg");
                 SuggestionsCategoryInfo categoryInfo =
                         new SuggestionsCategoryInfo(KnownCategories.DOWNLOADS, "Downloads",
@@ -301,7 +301,8 @@ public class ArticleSnippetsTest {
                 1466614774, // Publish timestamp
                 10f, // Score
                 1466634774, // Fetch timestamp
-                false); // IsVideoSuggestion
+                false, // IsVideoSuggestion
+                null); // ThumbnailDominantColor
 
         Drawable drawable = ThumbnailGradient.createDrawableWithGradientIfNeeded(
                 thumbnail, mActivityTestRule.getActivity().getResources());
@@ -314,7 +315,8 @@ public class ArticleSnippetsTest {
                 1466614074, // Publish timestamp
                 20f, // Score
                 1466634774, // Fetch timestamp
-                false); // IsVideoSuggestion
+                false, // IsVideoSuggestion
+                null); // ThumbnailDominantColor
 
         SnippetArticle minimalSnippet = new SnippetArticle(minimalCategory, "id3",
                 new String(new char[20]).replace("\0", "Bookmark "), "Publisher",
@@ -322,14 +324,16 @@ public class ArticleSnippetsTest {
                 1466614774, // Publish timestamp
                 10f, // Score
                 1466634774, // Fetch timestamp
-                false); // IsVideoSuggestion
+                false, // IsVideoSuggestion
+                null); // ThumbnailDominantColor
 
         SnippetArticle minimalSnippet2 = new SnippetArticle(minimalCategory, "id4", "Bookmark",
                 "Publisher", "This should not be displayed", "www.google.com",
                 1466614774, // Publish timestamp
                 10f, // Score
                 1466634774, // Fetch timestamp
-                false); // IsVideoSuggestion
+                false, // IsVideoSuggestion
+                null); // ThumbnailDominantColor
 
         mSnippetsSource.setInfoForCategory(fullCategory,
                 new SuggestionsCategoryInfo(fullCategory, "Section Title",
