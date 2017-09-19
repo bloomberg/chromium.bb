@@ -14,9 +14,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/animation_util.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
 #include "ios/chrome/browser/ui/page_info/page_info_model.h"
+#import "ios/chrome/browser/ui/page_info/requirements/page_info_reloading.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -203,7 +204,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
              bridge:(PageInfoModelObserver*)bridge
         sourcePoint:(CGPoint)sourcePoint
          parentView:(UIView*)parent
-         dispatcher:(id<BrowserCommands>)dispatcher {
+         dispatcher:(id<PageInfoCommands, PageInfoReloading>)dispatcher {
   DCHECK(parent);
   self = [super init];
   if (self) {

@@ -14,7 +14,8 @@
 #include "ios/chrome/browser/ui/page_info/page_info_model_observer.h"
 
 @class BidiContainerView;
-@protocol BrowserCommands;
+@protocol PageInfoCommands;
+@protocol PageInfoReloading;
 class PageInfoModel;
 
 // TODO(crbug.com/227827) Merge 178763: PageInfoModel has been removed in
@@ -29,10 +30,10 @@ class PageInfoModel;
              bridge:(PageInfoModelObserver*)bridge
         sourcePoint:(CGPoint)sourcePoint
          parentView:(UIView*)parent
-         dispatcher:(id<BrowserCommands>)dispatcher;
+         dispatcher:(id<PageInfoCommands, PageInfoReloading>)dispatcher;
 
 // Dispatcher for this view controller.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
+@property(nonatomic, weak) id<PageInfoCommands, PageInfoReloading> dispatcher;
 
 // Dismisses the view.
 - (void)dismiss;
