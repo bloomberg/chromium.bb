@@ -212,6 +212,8 @@ APP_LIST_EXPORT gfx::ShadowValue GetShadowForZHeight(int z_height);
 APP_LIST_EXPORT const gfx::ShadowValues& IconStartShadows();
 APP_LIST_EXPORT const gfx::ShadowValues& IconEndShadows();
 
+APP_LIST_EXPORT const gfx::FontList& FullscreenAppListAppTitleFont();
+
 }  // namespace app_list
 
 #endif  // UI_APP_LIST_APP_LIST_CONSTANTS_H_
