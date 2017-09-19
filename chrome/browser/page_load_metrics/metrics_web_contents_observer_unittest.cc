@@ -1012,9 +1012,9 @@ TEST_F(MetricsWebContentsObserverTest,
   // committed RFH are ignored. There isn't a way to hold on to an old RFH (it
   // gets cleaned up soon after being navigated away from) so instead we use an
   // RFH from another WebContents, as a way to simulate the desired behavior.
-  content::WebContents* other_web_contents =
+  std::unique_ptr<content::WebContents> other_web_contents(
       content::WebContentsTester::CreateTestWebContents(browser_context(),
-                                                        nullptr);
+                                                        nullptr));
   observer()->OnRequestComplete(
       GURL("http://www.other.com/"), net::HostPortPair(),
       other_web_contents->GetMainFrame()->GetFrameTreeNodeId(),
