@@ -301,7 +301,6 @@ EXPERIMENT_LIST="
     frame_size
     ext_delta_q
     adapt_scan
-    filter_7bit
     parallel_deblocking
     deblock_13tap
     loopfiltering_across_tiles
@@ -507,7 +506,6 @@ post_process_cmdline() {
     soft_enable adopted_experiments
     if enabled adopted_experiments; then
       soft_enable chroma_sub8x8
-      soft_enable filter_7bit
       soft_enable reference_buffer
       soft_enable rect_tx
       soft_enable global_motion
