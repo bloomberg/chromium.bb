@@ -29,6 +29,7 @@
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/win/singleton_hwnd_observer.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -159,8 +160,8 @@ void TryChromeDialog::ModalShowDelegate::SetToastLocation(
     installer::ExperimentMetrics::ToastLocation toast_location) {
   time_shown_ = base::TimeTicks::Now();
 
-  auto lock = storage_.AcquireLock();
   installer::Experiment experiment;
+  auto lock = storage_.AcquireLock();
   if (lock->LoadExperiment(&experiment)) {
     experiment.SetDisplayTime(base::Time::Now());
     experiment.SetToastCount(experiment.toast_count() + 1);
@@ -172,10 +173,11 @@ void TryChromeDialog::ModalShowDelegate::SetToastLocation(
 
 void TryChromeDialog::ModalShowDelegate::SetExperimentState(
     installer::ExperimentMetrics::State state) {
-  auto lock = storage_.AcquireLock();
   installer::Experiment experiment;
+  auto lock = storage_.AcquireLock();
   if (lock->LoadExperiment(&experiment)) {
-    experiment.SetActionDelay(base::TimeTicks::Now() - time_shown_);
+    if (!time_shown_.is_null())
+      experiment.SetActionDelay(base::TimeTicks::Now() - time_shown_);
     experiment.SetState(state);
     lock->StoreExperiment(experiment);
   }
@@ -226,6 +228,9 @@ TryChromeDialog::~TryChromeDialog() {
 void TryChromeDialog::ShowDialogAsync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
+  endsession_observer_ = std::make_unique<gfx::SingletonHwndObserver>(
+      base::Bind(&TryChromeDialog::OnWindowMessage, base::Unretained(this)));
+
   // Get the bounding rectangle of Chrome's taskbar icon on the primary monitor.
   FindTaskbarIcon(base::BindOnce(&TryChromeDialog::OnTaskbarIconRect,
                                  base::Unretained(this)));
@@ -242,6 +247,10 @@ void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
     CompleteInteraction();
     return;
   }
+
+  // It's also possible that a WM_ENDSESSION arrived while searching (see
+  // OnWindowMessage). In this case, continue processing since it's possible
+  // that the logoff was cancelled. The toast may as well be shown.
 
   // Create the popup.
   auto icon = base::MakeUnique<views::ImageView>();
@@ -444,6 +453,7 @@ gfx::Rect TryChromeDialog::ComputePopupBoundsOverNoficationArea(
 }
 
 void TryChromeDialog::CompleteInteraction() {
+  endsession_observer_.reset();
   delegate_->SetExperimentState(state_);
   delegate_->InteractionComplete();
 }
@@ -464,6 +474,25 @@ void TryChromeDialog::OnProcessNotification() {
   state_ = installer::ExperimentMetrics::kOtherLaunch;
   if (popup_)
     popup_->Close();
+}
+
+void TryChromeDialog::OnWindowMessage(HWND window,
+                                      UINT message,
+                                      WPARAM wparam,
+                                      LPARAM lparam) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+  // wparam == FALSE means the system is not shutting down.
+  if (message != WM_ENDSESSION || wparam == FALSE)
+    return;
+
+  // The ship is going down. Record the endsession event, but don't bother
+  // trying to close the window or take any other steps to shut down -- the OS
+  // will tear everything down soon enough. It's always possible that the
+  // endsession is aborted, in which case the dialog may as well stay onscreen.
+  result_ = NOT_NOW;
+  state_ = installer::ExperimentMetrics::kUserLogOff;
+  delegate_->SetExperimentState(state_);
 }
 
 void TryChromeDialog::ButtonPressed(views::Button* sender,
