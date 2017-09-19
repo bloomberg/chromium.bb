@@ -33,7 +33,7 @@
 
 #include "public/platform/WebCommon.h"
 #if INSIDE_BLINK
-#include "core/editing/EphemeralRange.h"
+#include "core/editing/Forward.h"
 #endif
 
 namespace blink {

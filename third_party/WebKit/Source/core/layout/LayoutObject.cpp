@@ -40,6 +40,7 @@
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/TextAffinity.h"

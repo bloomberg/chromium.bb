@@ -32,6 +32,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/VisibleSelection.h"

@@ -45,6 +45,7 @@
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/editing/EditingStyleUtilities.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/SelectionTemplate.h"

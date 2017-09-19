@@ -16,7 +16,12 @@ using EditingInFlatTreeStrategy = EditingAlgorithm<FlatTreeTraversal>;
 
 // TODO(editing-dev): Add forward declaration of
 // - PositionTemplate
-// - EphemeralRangeTemplate
+
+template <typename Strategy>
+class EphemeralRangeTemplate;
+using EphemeralRange = EphemeralRangeTemplate<EditingStrategy>;
+using EphemeralRangeInFlatTree =
+    EphemeralRangeTemplate<EditingInFlatTreeStrategy>;
 
 template <typename Strategy>
 class PositionWithAffinityTemplate;

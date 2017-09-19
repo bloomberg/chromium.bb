@@ -4,6 +4,7 @@
 
 #include "core/editing/SelectionTemplate.h"
 
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

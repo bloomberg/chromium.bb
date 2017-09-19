@@ -37,6 +37,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/Editor.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/PositionIterator.h"
 #include "core/editing/PositionWithAffinity.h"

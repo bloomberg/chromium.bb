@@ -27,6 +27,7 @@
 #include "core/editing/SelectionAdjuster.h"
 
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/EphemeralRange.h"
 
 namespace blink {
 

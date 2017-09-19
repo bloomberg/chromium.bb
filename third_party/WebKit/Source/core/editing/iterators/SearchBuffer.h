@@ -28,10 +28,12 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/editing/EphemeralRange.h"
 #include "core/editing/FindOptions.h"
+#include "core/editing/Forward.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

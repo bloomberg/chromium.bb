@@ -12,6 +12,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/Text.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisibleUnits.h"

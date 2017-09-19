@@ -30,6 +30,7 @@
 
 #include "core/page/PageWidgetDelegate.h"
 
+#include "core/dom/AXObjectCache.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"

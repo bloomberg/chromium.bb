@@ -42,6 +42,7 @@
 #include "core/dom/events/Event.h"
 #include "core/editing/EditingStyleUtilities.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionModifier.h"
 #include "core/editing/SelectionTemplate.h"

@@ -29,7 +29,7 @@
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/dom/SynchronousMutationObserver.h"
-#include "core/editing/EphemeralRange.h"
+#include "core/editing/Forward.h"
 #include "core/editing/ImeTextSpan.h"
 #include "core/editing/PlainTextRange.h"
 #include "platform/heap/Handle.h"

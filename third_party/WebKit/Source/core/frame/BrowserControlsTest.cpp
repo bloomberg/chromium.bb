@@ -30,6 +30,7 @@
 #include "core/frame/BrowserControls.h"
 
 #include "build/build_config.h"
+#include "core/dom/Element.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"

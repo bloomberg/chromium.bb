@@ -32,6 +32,7 @@
 #define FrameSerializer_h
 
 #include "core/CoreExport.h"
+#include "core/dom/Attribute.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KURLHash.h"
@@ -42,7 +43,6 @@
 
 namespace blink {
 
-class Attribute;
 class CSSRule;
 class CSSStyleSheet;
 class CSSValue;

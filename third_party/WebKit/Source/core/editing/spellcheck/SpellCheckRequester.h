@@ -28,7 +28,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
-#include "core/editing/EphemeralRange.h"
+#include "core/editing/Forward.h"
 #include "platform/Timer.h"
 #include "platform/text/TextChecking.h"
 #include "platform/wtf/Deque.h"

@@ -32,6 +32,7 @@
 
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutBlock.h"

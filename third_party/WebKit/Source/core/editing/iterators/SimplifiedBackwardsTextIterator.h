@@ -26,7 +26,7 @@
 #ifndef SimplifiedBackwardsTextIterator_h
 #define SimplifiedBackwardsTextIterator_h
 
-#include "core/editing/EphemeralRange.h"
+#include "core/editing/Forward.h"
 #include "core/editing/Position.h"
 #include "core/editing/iterators/BackwardsTextBuffer.h"
 #include "core/editing/iterators/FullyClippedStateStack.h"

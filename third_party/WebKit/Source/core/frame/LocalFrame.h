@@ -33,6 +33,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/WeakIdentifierMap.h"
+#include "core/editing/Forward.h"
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/loader/FrameLoader.h"
@@ -51,11 +52,7 @@ class Color;
 class ContentSettingsClient;
 class Document;
 class Editor;
-template <typename Traversal>
-class EditingAlgorithm;
 class Element;
-template <typename Strategy>
-class EphemeralRangeTemplate;
 class EventHandler;
 class FetchParameters;
 class FloatSize;
@@ -76,8 +73,6 @@ class NavigationScheduler;
 class Node;
 class NodeTraversal;
 class PerformanceMonitor;
-template <typename Strategy>
-class PositionWithAffinityTemplate;
 class PluginData;
 class ResourceRequest;
 class ScriptController;

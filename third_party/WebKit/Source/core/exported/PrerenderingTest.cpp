@@ -31,6 +31,8 @@
 #include <functional>
 #include <list>
 #include <memory>
+#include "core/HTMLElementTypeHelpers.h"
+#include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameImpl.h"

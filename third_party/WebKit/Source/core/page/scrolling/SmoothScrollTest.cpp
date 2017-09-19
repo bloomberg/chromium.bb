@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "bindings/core/v8/scroll_into_view_options_or_boolean.h"
+#include "core/dom/Element.h"
 #include "core/frame/ScrollIntoViewOptions.h"
 #include "core/frame/ScrollToOptions.h"
 #include "core/frame/WebLocalFrameImpl.h"

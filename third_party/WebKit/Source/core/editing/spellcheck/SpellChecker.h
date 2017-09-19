@@ -27,7 +27,8 @@
 #define SpellChecker_h
 
 #include "core/CoreExport.h"
-#include "core/editing/EphemeralRange.h"
+#include "core/editing/Forward.h"
+#include "core/editing/Position.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextChecking.h"
@@ -36,6 +37,7 @@ namespace blink {
 
 class IdleSpellCheckCallback;
 class LocalFrame;
+class HTMLElement;
 class SpellCheckerClient;
 class SpellCheckMarker;
 class SpellCheckRequest;

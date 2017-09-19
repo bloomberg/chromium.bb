@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/EditingStrategy.h"
-#include "core/editing/EphemeralRange.h"
 #include "core/editing/Forward.h"
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"

@@ -28,6 +28,7 @@
 #include "core/editing/iterators/SearchBuffer.h"
 
 #include "core/dom/Document.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
 #include "core/editing/iterators/TextSearcherICU.h"

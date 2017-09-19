@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/animation/ElementAnimation.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/css/PropertyDescriptor.h"
 #include "core/css/PropertyRegistration.h"
 #include "core/frame/WebLocalFrameImpl.h"

@@ -7,7 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/DocumentShutdownObserver.h"
-#include "core/editing/EphemeralRange.h"
+#include "core/editing/Forward.h"
+#include "core/editing/Position.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/input_host.mojom-blink.h"

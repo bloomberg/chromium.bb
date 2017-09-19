@@ -37,6 +37,7 @@
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/RelocatablePosition.h"
 #include "core/editing/SelectionTemplate.h"

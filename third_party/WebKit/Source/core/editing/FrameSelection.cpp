@@ -41,6 +41,7 @@
 #include "core/editing/CaretDisplayItemClient.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameCaret.h"
 #include "core/editing/GranularityStrategy.h"
 #include "core/editing/InputMethodController.h"
