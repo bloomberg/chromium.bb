@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_TEST_TEST_BROWSER_DIALOG_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -80,7 +81,9 @@ class TestBrowserDialog {
 template <class Base>
 class SupportsTestDialog : public Base, public TestBrowserDialog {
  protected:
-  SupportsTestDialog() {}
+  template <class... Args>
+  explicit SupportsTestDialog(Args&&... args)
+      : Base(std::forward<Args>(args)...) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupportsTestDialog);

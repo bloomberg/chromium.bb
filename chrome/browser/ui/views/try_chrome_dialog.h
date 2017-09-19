@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
@@ -15,6 +17,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_observer.h"
+
+namespace gfx {
+class SingletonHwndObserver;
+}
 
 namespace views {
 class Widget;
@@ -83,7 +89,7 @@ class TryChromeDialog : public views::ButtonListener,
 
   class ModalShowDelegate;
 
-  friend class TryChromeDialogTest;
+  friend class TryChromeDialogBrowserTestBase;
 
   // Creates a Try Chrome toast dialog. |group| signifies an experiment group
   // which dictactes messaging text and presence of ui elements. |delegate|,
@@ -131,6 +137,11 @@ class TryChromeDialog : public views::ButtonListener,
   void OnWidgetDestroyed(views::Widget* widget) override;
   Result result() const { return result_; }
 
+  // A gfx::SingletonHwndObserver::WndProc for handling WM_ENDSESSION messages.
+  void OnWindowMessage(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
+
+  views::Widget* widget() { return popup_; }
+
   // Controls which experiment group to use for varying the layout and controls.
   const size_t group_;
   Delegate* const delegate_;
@@ -140,6 +151,10 @@ class TryChromeDialog : public views::ButtonListener,
 
   // The pessimistic result that will prevent launching Chrome.
   Result result_ = NOT_NOW;
+
+  // An observer to handle WM_ENDSESSION messages by updating the experiment
+  // state accordingly.
+  std::unique_ptr<gfx::SingletonHwndObserver> endsession_observer_;
 
   // The pessimistic state indicating that the dialog was closed via some means
   // other than its intended UX.

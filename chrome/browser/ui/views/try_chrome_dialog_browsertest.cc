@@ -9,7 +9,14 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/ui_base_switches.h"
+
+using ::testing::_;
+using ::testing::Eq;
+using ::testing::InSequence;
+using ::testing::InvokeWithoutArgs;
+using ::testing::Range;
 
 // Unfortunately, this needs to be Windows only for now. Even though this test
 // is meant to exercise code that is for Windows only, it is a good general
@@ -20,6 +27,11 @@
 // See http://crbug.com/45115 for details.
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/try_chrome_dialog.h"
+
+#include "ui/aura/window.h"
+#include "ui/gfx/win/singleton_hwnd.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
+#include "ui/views/widget/widget.h"
 
 // By passing kTryChromeAgain with a magic value > 10000 we cause Chrome
 // to exit fairly early.
@@ -59,57 +71,176 @@ class TryChromeDialogBrowserTest : public InProcessBrowserTest {
 // only makes the problem worse.
 IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTest, ToastCrasher) {}
 
-// Test harness to display the TryChromeDialog for testing. Template parameter 0
-// is the group number to be evaluated.
-class TryChromeDialogTest : public DialogBrowserTest,
-                            public ::testing::WithParamInterface<int>,
-                            public TryChromeDialog::Delegate {
- protected:
-  TryChromeDialogTest() : dialog_(GetParam(), this) {}
+// A test fixture that provides a convenience method for synchronously showing
+// the TryChromeDialog and a mock delegate suitable for use in testing various
+// functionality.
+class TryChromeDialogBrowserTestBase : public InProcessBrowserTest {
+ public:
+  // Breaks ShowDialog() out of its modal run loop.
+  void QuitModalLoop() {
+    if (quit_closure_)
+      quit_closure_.Run();
+  }
 
-  // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
+ protected:
+  class MockDelegate : public TryChromeDialog::Delegate {
+   public:
+    MOCK_METHOD1(SetToastLocation,
+                 void(installer::ExperimentMetrics::ToastLocation));
+    MOCK_METHOD1(SetExperimentState, void(installer::ExperimentMetrics::State));
+    MOCK_METHOD0(InteractionComplete, void());
+  };
+
+  explicit TryChromeDialogBrowserTestBase(int group = 0)
+      : dialog_(group, &delegate_) {
+    // Configure the delegate to exit the modal loop when the dialog is shown
+    // and again when it has finished its work.
+    ON_CALL(delegate_, SetToastLocation(_))
+        .WillByDefault(InvokeWithoutArgs(
+            this, &TryChromeDialogBrowserTestBase::QuitModalLoop));
+    ON_CALL(delegate_, InteractionComplete())
+        .WillByDefault(InvokeWithoutArgs(
+            this, &TryChromeDialogBrowserTestBase::QuitModalLoop));
+  }
+
+  MockDelegate& delegate() { return delegate_; }
+
+  // Returns the result of showing the dialog.
+  TryChromeDialog::Result result() const { return dialog_.result(); }
+
+  // Returns the HWND housing the dialog.
+  HWND dialog_hwnd() {
+    return dialog_.widget()
+        ->GetNativeWindow()
+        ->GetHost()
+        ->GetAcceleratedWidget();
+  }
+
+  // Fires off the task(s) to show the dialog, breaking out of the message loop
+  // once the dialog has been shown.
+  void ShowDialogSync() {
+    dialog_.ShowDialogAsync();
+    RunUntilQuit();
+  }
+
+  // Runs a loop until it is quit via either the dialog being shown (by way of
+  // the default action on the mock delegate's SetLayoutManager) or the
+  // interaction with the dialog completing (by way of the default action on the
+  // mock delegate's InteractionComplete).
+  void RunUntilQuit() {
     base::RunLoop run_loop;
 
-    // Fire off the task(s) to show the dialog, breaking out of the message loop
-    // once the dialog has been shown.
     quit_closure_ = run_loop.QuitClosure();
-    dialog_.ShowDialogAsync();
     run_loop.Run();
-    quit_closure_ = base::Closure();
+    quit_closure_.Reset();
   }
+
+ private:
+  ::testing::NiceMock<MockDelegate> delegate_;
+  TryChromeDialog dialog_;
+  base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(TryChromeDialogBrowserTestBase);
+};
+
+// Showing the dialog then closing it via WM_CLOSE should not launch the
+// browser.
+IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTestBase, ShowAndCloseNotNow) {
+  // Open the toast, expecting that the delegate gets the location.
+  EXPECT_CALL(delegate(), SetToastLocation(_));
+  ShowDialogSync();
+  ::testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // Now close it, verifying that the delegate is invoked as appropriate.
+  {
+    InSequence delegate_sequence;
+    EXPECT_CALL(delegate(),
+                SetExperimentState(installer::ExperimentMetrics::kOtherClose));
+    EXPECT_CALL(delegate(), InteractionComplete());
+  }
+
+  // Close the popup from the outside.
+  ::PostMessage(dialog_hwnd(), WM_CLOSE, 0, 0);
+
+  RunUntilQuit();
+  ::testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // Since the dialog was closed by external factors, the overall result should
+  // be to exit the browser process.
+  EXPECT_THAT(result(), Eq(TryChromeDialog::NOT_NOW));
+}
+
+// Showing the dialog then receiving a WM_ENDSESSION should not launch the
+// browser.
+IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTestBase, ShowAndEndSession) {
+  // Open the toast, expecting that the delegate gets the location.
+  EXPECT_CALL(delegate(), SetToastLocation(_));
+  ShowDialogSync();
+  ::testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // Expect that the state is moved to UserLogOff without completing the
+  // interaction.
+  EXPECT_CALL(delegate(),
+              SetExperimentState(installer::ExperimentMetrics::kUserLogOff))
+      .WillOnce(InvokeWithoutArgs(
+          this, &TryChromeDialogBrowserTestBase::QuitModalLoop));
+  EXPECT_CALL(delegate(), InteractionComplete()).Times(0);
+
+  // Send a WM_ENDSESSION to the singleton hwnd to simulate user logoff.
+  ::PostMessage(gfx::SingletonHwnd::GetInstance()->hwnd(), WM_ENDSESSION, TRUE,
+                0);
+  RunUntilQuit();
+  ::testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // The dialog is still open, so the result remains in its initial state.
+  EXPECT_THAT(result(), Eq(TryChromeDialog::NOT_NOW));
+}
+
+// Receiving a WM_ENDSESSION before the dialog is even shown should not launch
+// the browser.
+IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTestBase, EarlyEndSession) {
+  // Send a WM_ENDSESSION to the singleton hwnd to simulate user logoff.
+  ::PostMessage(gfx::SingletonHwnd::GetInstance()->hwnd(), WM_ENDSESSION, TRUE,
+                0);
+
+  // Expect that the state is moved to UserLogOff without the toast being shown
+  // or completing the interaction.
+  EXPECT_CALL(delegate(), SetToastLocation(_)).Times(0);
+  EXPECT_CALL(delegate(),
+              SetExperimentState(installer::ExperimentMetrics::kUserLogOff))
+      .WillOnce(InvokeWithoutArgs(
+          this, &TryChromeDialogBrowserTestBase::QuitModalLoop));
+  EXPECT_CALL(delegate(), InteractionComplete()).Times(0);
+  ShowDialogSync();
+  ::testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // The dialog is still open, so the result remains in its initial state.
+  EXPECT_THAT(result(), Eq(TryChromeDialog::NOT_NOW));
+}
+
+// Test harness to display the TryChromeDialog for testing. Template parameter 0
+// is the group number to be evaluated.
+class TryChromeDialogTest
+    : public SupportsTestDialog<TryChromeDialogBrowserTestBase>,
+      public ::testing::WithParamInterface<int> {
+ protected:
+  TryChromeDialogTest()
+      : SupportsTestDialog<TryChromeDialogBrowserTestBase>(GetParam()) {}
+
+  // DialogBrowserTest:
+  void ShowDialog(const std::string& name) override { ShowDialogSync(); }
 
   // content::BrowserTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
   }
 
-  TryChromeDialog::Result result() const { return dialog_.result(); }
-  installer::ExperimentMetrics::State state() const { return state_; }
-
  private:
-  // TryChromeDialog::Delegate:
-  void SetToastLocation(
-      installer::ExperimentMetrics::ToastLocation toast_location) override {
-    quit_closure_.Run();
-  }
-  void SetExperimentState(installer::ExperimentMetrics::State state) override {
-    state_ = state;
-  }
-  void InteractionComplete() override {}
-
-  TryChromeDialog dialog_;
-  installer::ExperimentMetrics::State state_ =
-      installer::ExperimentMetrics::kUninitialized;
-  base::Closure quit_closure_;
-
   DISALLOW_COPY_AND_ASSIGN(TryChromeDialogTest);
 };
 
 IN_PROC_BROWSER_TEST_P(TryChromeDialogTest, InvokeDialog_default) {
   RunDialog();
-  EXPECT_EQ(result(), TryChromeDialog::NOT_NOW);
-  EXPECT_EQ(state(), installer::ExperimentMetrics::kOtherClose);
 }
 
 // TODO(skare): Remove " - 1" hack when
@@ -117,8 +248,7 @@ IN_PROC_BROWSER_TEST_P(TryChromeDialogTest, InvokeDialog_default) {
 INSTANTIATE_TEST_CASE_P(
     Variations,
     TryChromeDialogTest,
-    ::testing::Range(
-        0,
-        static_cast<int>(installer::ExperimentMetrics::kHoldbackGroup) - 1));
+    Range(0,
+          static_cast<int>(installer::ExperimentMetrics::kHoldbackGroup) - 1));
 
 #endif  // defined(OS_WIN)
