@@ -76,6 +76,8 @@ class AdSamplerTriggerTest : public content::RenderViewHostTestHarness {
         web_contents(), &trigger_manager_, &prefs_, nullptr, nullptr);
     safe_browsing::AdSamplerTrigger::FromWebContents(web_contents())
         ->sampler_frequency_denominator_ = denominator;
+    safe_browsing::AdSamplerTrigger::FromWebContents(web_contents())
+        ->finish_report_delay_ms_ = 0;
   }
 
   // Returns the final RenderFrameHost after navigation commits.
