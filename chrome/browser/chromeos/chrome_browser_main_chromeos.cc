@@ -273,7 +273,11 @@ class ChromeLauncherControllerInitializer
     if (session_manager::SessionManager::Get()->session_state() ==
         session_manager::SessionState::ACTIVE) {
       chrome_shelf_model_ = std::make_unique<ash::ShelfModel>();
-      ash::ShelfModel* model = ash_util::IsRunningInMash()
+      const bool should_synchronize_shelf_models =
+          ash_util::IsRunningInMash() ||
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              ash::switches::kAshEnableShelfModelSynchronization);
+      ash::ShelfModel* model = should_synchronize_shelf_models
                                    ? chrome_shelf_model_.get()
                                    : ash::Shell::Get()->shelf_model();
       chrome_launcher_controller_ =
@@ -284,8 +288,9 @@ class ChromeLauncherControllerInitializer
   }
 
  private:
-  // This shelf model is synced with Ash's ShelfController instance in Mash.
-  // ChromeLauncherController uses Ash's ShelfModel instance directly in Cash.
+  // This shelf model is synced with Ash's ShelfController instance in Mash and
+  // when kAshEnableShelfModelSynchronization is supplied in Classic Ash;
+  // otherwise ChromeLauncherController uses Ash's ShelfModel instance directly.
   std::unique_ptr<ash::ShelfModel> chrome_shelf_model_;
   std::unique_ptr<ChromeLauncherController> chrome_launcher_controller_;
 

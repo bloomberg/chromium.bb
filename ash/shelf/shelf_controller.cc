@@ -4,6 +4,7 @@
 
 #include "ash/shelf/shelf_controller.h"
 
+#include "ash/ash_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
@@ -16,6 +17,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -86,6 +88,14 @@ void SetShelfBehaviorsFromPrefs() {
 }  // namespace
 
 ShelfController::ShelfController() {
+  // Synchronization is required in the Mash config, since Chrome and Ash run in
+  // separate processes; it's optional via kAshEnableShelfModelSynchronization
+  // in the Classic Ash config, where Chrome can uses Ash's ShelfModel directly.
+  should_synchronize_shelf_models_ =
+      Shell::GetAshConfig() == Config::MASH ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableShelfModelSynchronization);
+
   // Set the delegate and title string for the app list item.
   model_.SetShelfItemDelegate(ShelfID(kAppListId),
                               base::MakeUnique<AppListShelfItemDelegate>());
@@ -138,8 +148,8 @@ void ShelfController::AddObserver(
   mojom::ShelfObserverAssociatedPtr observer_ptr;
   observer_ptr.Bind(std::move(observer));
 
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // Mash synchronizes two ShelfModel instances, owned by Ash and Chrome.
+  if (should_synchronize_shelf_models_) {
+    // Synchronize two ShelfModel instances, one each owned by Ash and Chrome.
     // Notify Chrome of existing ShelfModel items and delegates created by Ash.
     for (int i = 0; i < model_.item_count(); ++i) {
       const ShelfItem& item = model_.items()[i];
@@ -158,7 +168,7 @@ void ShelfController::AddObserver(
 }
 
 void ShelfController::AddShelfItem(int32_t index, const ShelfItem& item) {
-  DCHECK_EQ(Shell::GetAshConfig(), Config::MASH) << " Unexpected model sync";
+  DCHECK(should_synchronize_shelf_models_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   index = index < 0 ? model_.item_count() : index;
   DCHECK_GT(index, 0) << " Items can not precede the AppList";
@@ -169,7 +179,7 @@ void ShelfController::AddShelfItem(int32_t index, const ShelfItem& item) {
 }
 
 void ShelfController::RemoveShelfItem(const ShelfID& id) {
-  DCHECK_EQ(Shell::GetAshConfig(), Config::MASH) << " Unexpected model sync";
+  DCHECK(should_synchronize_shelf_models_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   const int index = model_.ItemIndexByID(id);
   DCHECK_GE(index, 0) << " No item found with the id: " << id;
@@ -181,7 +191,7 @@ void ShelfController::RemoveShelfItem(const ShelfID& id) {
 }
 
 void ShelfController::MoveShelfItem(const ShelfID& id, int32_t index) {
-  DCHECK_EQ(Shell::GetAshConfig(), Config::MASH) << " Unexpected model sync";
+  DCHECK(should_synchronize_shelf_models_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   const int current_index = model_.ItemIndexByID(id);
   DCHECK_GE(current_index, 0) << " No item found with the id: " << id;
@@ -199,7 +209,7 @@ void ShelfController::MoveShelfItem(const ShelfID& id, int32_t index) {
 }
 
 void ShelfController::UpdateShelfItem(const ShelfItem& item) {
-  DCHECK_EQ(Shell::GetAshConfig(), Config::MASH) << " Unexpected model sync";
+  DCHECK(should_synchronize_shelf_models_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   const int index = model_.ItemIndexByID(item.id);
   DCHECK_GE(index, 0) << " No item found with the id: " << item.id;
@@ -212,7 +222,7 @@ void ShelfController::UpdateShelfItem(const ShelfItem& item) {
 void ShelfController::SetShelfItemDelegate(
     const ShelfID& id,
     mojom::ShelfItemDelegatePtr delegate) {
-  DCHECK_EQ(Shell::GetAshConfig(), Config::MASH) << " Unexpected model sync";
+  DCHECK(should_synchronize_shelf_models_) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
   if (delegate.is_bound())
@@ -223,10 +233,8 @@ void ShelfController::SetShelfItemDelegate(
 }
 
 void ShelfController::ShelfItemAdded(int index) {
-  if (applying_remote_shelf_model_changes_ ||
-      Shell::GetAshConfig() != Config::MASH) {
+  if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
     return;
-  }
 
   const ShelfItem& item = model_.items()[index];
   observers_.ForAllPtrs([index, item](mojom::ShelfObserver* observer) {
@@ -235,10 +243,8 @@ void ShelfController::ShelfItemAdded(int index) {
 }
 
 void ShelfController::ShelfItemRemoved(int index, const ShelfItem& old_item) {
-  if (applying_remote_shelf_model_changes_ ||
-      Shell::GetAshConfig() != Config::MASH) {
+  if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
     return;
-  }
 
   observers_.ForAllPtrs([old_item](mojom::ShelfObserver* observer) {
     observer->OnShelfItemRemoved(old_item.id);
@@ -246,10 +252,8 @@ void ShelfController::ShelfItemRemoved(int index, const ShelfItem& old_item) {
 }
 
 void ShelfController::ShelfItemMoved(int start_index, int target_index) {
-  if (applying_remote_shelf_model_changes_ ||
-      Shell::GetAshConfig() != Config::MASH) {
+  if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
     return;
-  }
 
   const ShelfItem& item = model_.items()[target_index];
   observers_.ForAllPtrs([item, target_index](mojom::ShelfObserver* observer) {
@@ -258,10 +262,8 @@ void ShelfController::ShelfItemMoved(int start_index, int target_index) {
 }
 
 void ShelfController::ShelfItemChanged(int index, const ShelfItem& old_item) {
-  if (applying_remote_shelf_model_changes_ ||
-      Shell::GetAshConfig() != Config::MASH) {
+  if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
     return;
-  }
 
   const ShelfItem& item = model_.items()[index];
   observers_.ForAllPtrs([item](mojom::ShelfObserver* observer) {
@@ -271,10 +273,8 @@ void ShelfController::ShelfItemChanged(int index, const ShelfItem& old_item) {
 
 void ShelfController::ShelfItemDelegateChanged(const ShelfID& id,
                                                ShelfItemDelegate* delegate) {
-  if (applying_remote_shelf_model_changes_ ||
-      Shell::GetAshConfig() != Config::MASH) {
+  if (applying_remote_shelf_model_changes_ || !should_synchronize_shelf_models_)
     return;
-  }
 
   observers_.ForAllPtrs([id, delegate](mojom::ShelfObserver* observer) {
     observer->OnShelfItemDelegateChanged(

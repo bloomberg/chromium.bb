@@ -122,6 +122,7 @@
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
+#include "ash/ash_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_features.h"
 #include "components/ui_devtools/switches.h"
@@ -139,10 +140,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/switches.h"
 #endif  // ENABLE_EXTENSIONS
-
-#if defined(USE_ASH)
-#include "ash/ash_switches.h"
-#endif  // USE_ASH
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_switches.h"
@@ -459,7 +456,7 @@ const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
      switches::kTopChromeMDMaterialHybrid},
 };
 
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kAshShelfColorChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceEnabled, ash::switches::kAshShelfColor,
@@ -488,9 +485,7 @@ const FeatureEntry::Choice kAshShelfColorSchemeChoices[] = {
      ash::switches::kAshShelfColorScheme,
      ash::switches::kAshShelfColorSchemeDarkMuted},
 };
-#endif  // USE_ASH
 
-#if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kMaterialDesignInkDropAnimationFast,
@@ -1575,7 +1570,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableHDRDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kHighDynamicRange)},
 #endif  // OS_WIN
-#if defined(USE_ASH)
+#if defined(OS_CHROMEOS)
     {
         "ash-debug-shortcuts", flag_descriptions::kDebugShortcutsName,
         flag_descriptions::kDebugShortcutsDescription, kOsAll,
@@ -1593,8 +1588,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-shelf-color-scheme", flag_descriptions::kAshShelfColorScheme,
      flag_descriptions::kAshShelfColorSchemeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAshShelfColorSchemeChoices)},
-#endif  // USE_ASH
-#if defined(OS_CHROMEOS)
+    {"ash-shelf-model-synchronization",
+     flag_descriptions::kAshEnableShelfModelSynchronization,
+     flag_descriptions::kAshEnableShelfModelSynchronizationDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnableShelfModelSynchronization)},
     {"material-design-ink-drop-animation-speed",
      flag_descriptions::kMaterialDesignInkDropAnimationSpeedName,
      flag_descriptions::kMaterialDesignInkDropAnimationSpeedDescription,

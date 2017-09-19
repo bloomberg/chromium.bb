@@ -2720,8 +2720,15 @@ const char kAshShelfColorSchemeLightMuted[] = "Light & Muted";
 const char kAshShelfColorSchemeNormalMuted[] = "Normal & Muted";
 const char kAshShelfColorSchemeDarkMuted[] = "Dark & Muted";
 
+const char kAshEnableShelfModelSynchronization[] =
+    "Enable shelf model synchronization";
+const char kAshEnableShelfModelSynchronizationDescription[] =
+    "Synchronize separate Chrome OS shelf data model instances between Chrome "
+    "and Ash. This only applies to the Classic Ash config; synchronization is "
+    "required when running the Mash config via --mash.";
+
 const char kMaterialDesignInkDropAnimationSpeedName[] =
-    "Material Design Ink Drop Animation Speed";
+    "Material design ink drop animation speed";
 const char kMaterialDesignInkDropAnimationSpeedDescription[] =
     "Sets the speed of the experimental visual feedback animations for "
     "material design.";
