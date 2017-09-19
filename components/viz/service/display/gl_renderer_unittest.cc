@@ -15,8 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
-#include "cc/output/overlay_strategy_single_on_top.h"
-#include "cc/output/overlay_strategy_underlay.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -32,6 +30,8 @@
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/service/display/overlay_strategy_single_on_top.h"
+#include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -372,12 +372,12 @@ INSTANTIATE_TEST_CASE_P(MaskShadersCompile,
 class FakeRendererGL : public GLRenderer {
  public:
   FakeRendererGL(const RendererSettings* settings,
-                 cc::OutputSurface* output_surface,
+                 OutputSurface* output_surface,
                  cc::DisplayResourceProvider* resource_provider)
       : GLRenderer(settings, output_surface, resource_provider, nullptr) {}
 
   FakeRendererGL(const RendererSettings* settings,
-                 cc::OutputSurface* output_surface,
+                 OutputSurface* output_surface,
                  cc::DisplayResourceProvider* resource_provider,
                  TextureMailboxDeleter* texture_mailbox_deleter)
       : GLRenderer(settings,
@@ -385,7 +385,7 @@ class FakeRendererGL : public GLRenderer {
                    resource_provider,
                    texture_mailbox_deleter) {}
 
-  void SetOverlayProcessor(cc::OverlayProcessor* processor) {
+  void SetOverlayProcessor(OverlayProcessor* processor) {
     overlay_processor_.reset(processor);
   }
 
@@ -656,7 +656,7 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::OutputSurface> output_surface(
+  std::unique_ptr<OutputSurface> output_surface(
       cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
@@ -692,7 +692,7 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::OutputSurface> output_surface(
+  std::unique_ptr<OutputSurface> output_surface(
       cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
@@ -726,7 +726,7 @@ TEST_F(GLRendererTest, OpaqueBackground) {
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::OutputSurface> output_surface(
+  std::unique_ptr<OutputSurface> output_surface(
       cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
@@ -770,7 +770,7 @@ TEST_F(GLRendererTest, TransparentBackground) {
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::OutputSurface> output_surface(
+  std::unique_ptr<OutputSurface> output_surface(
       cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
@@ -807,7 +807,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::OutputSurface> output_surface(
+  std::unique_ptr<OutputSurface> output_surface(
       cc::FakeOutputSurface::CreateOffscreen(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
@@ -866,7 +866,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::OutputSurface> output_surface(
+  std::unique_ptr<OutputSurface> output_surface(
       cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
@@ -949,7 +949,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::OutputSurface> output_surface(
+  std::unique_ptr<OutputSurface> output_surface(
       cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
@@ -1039,7 +1039,7 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::OutputSurface> output_surface(
+  std::unique_ptr<OutputSurface> output_surface(
       cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
@@ -1759,7 +1759,7 @@ class OutputSurfaceMockContext : public cc::TestWebGraphicsContext3D {
   // Specifically override methods even if they are unused (used in conjunction
   // with StrictMock). We need to make sure that GLRenderer does not issue
   // framebuffer-related GLuint calls directly. Instead these are supposed to go
-  // through the cc::OutputSurface abstraction.
+  // through the OutputSurface abstraction.
   MOCK_METHOD2(bindFramebuffer, void(GLenum target, GLuint framebuffer));
   MOCK_METHOD3(reshapeWithScaleFactor,
                void(int width, int height, float scale_factor));
@@ -1767,13 +1767,13 @@ class OutputSurfaceMockContext : public cc::TestWebGraphicsContext3D {
                void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
 };
 
-class MockOutputSurface : public cc::OutputSurface {
+class MockOutputSurface : public OutputSurface {
  public:
   explicit MockOutputSurface(scoped_refptr<ContextProvider> provider)
-      : cc::OutputSurface(std::move(provider)) {}
+      : OutputSurface(std::move(provider)) {}
   virtual ~MockOutputSurface() {}
 
-  void BindToClient(cc::OutputSurfaceClient*) override {}
+  void BindToClient(OutputSurfaceClient*) override {}
 
   MOCK_METHOD0(EnsureBackbuffer, void());
   MOCK_METHOD0(DiscardBackbuffer, void());
@@ -1791,7 +1791,7 @@ class MockOutputSurface : public cc::OutputSurface {
     SwapBuffers_(frame);
   }
   MOCK_CONST_METHOD0(GetOverlayCandidateValidator,
-                     cc::OverlayCandidateValidator*());
+                     OverlayCandidateValidator*());
   MOCK_CONST_METHOD0(IsDisplayedAsOverlayPlane, bool());
   MOCK_CONST_METHOD0(GetOverlayTextureId, unsigned());
   MOCK_CONST_METHOD0(GetOverlayBufferFormat, gfx::BufferFormat());
@@ -1877,9 +1877,9 @@ TEST_F(MockOutputSurfaceTest, BackbufferDiscard) {
   Mock::VerifyAndClearExpectations(output_surface_.get());
 }
 
-class TestOverlayProcessor : public cc::OverlayProcessor {
+class TestOverlayProcessor : public OverlayProcessor {
  public:
-  class Strategy : public cc::OverlayProcessor::Strategy {
+  class Strategy : public OverlayProcessor::Strategy {
    public:
     Strategy() {}
     ~Strategy() override {}
@@ -1890,10 +1890,9 @@ class TestOverlayProcessor : public cc::OverlayProcessor {
                       std::vector<gfx::Rect>* content_bounds));
   };
 
-  class Validator : public cc::OverlayCandidateValidator {
+  class Validator : public OverlayCandidateValidator {
    public:
-    void GetStrategies(
-        cc::OverlayProcessor::StrategyList* strategies) override {}
+    void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
 
     // Returns true if draw quads can be represented as CALayers (Mac only).
     MOCK_METHOD0(AllowCALayerOverlays, bool());
@@ -1908,8 +1907,8 @@ class TestOverlayProcessor : public cc::OverlayProcessor {
     void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) {}
   };
 
-  explicit TestOverlayProcessor(cc::OutputSurface* surface)
-      : cc::OverlayProcessor(surface) {}
+  explicit TestOverlayProcessor(OutputSurface* surface)
+      : OverlayProcessor(surface) {}
   ~TestOverlayProcessor() override {}
   void Initialize() override {
     strategy_ = new Strategy();
@@ -2063,15 +2062,13 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                                                           ResourceIdSet());
 }
 
-class SingleOverlayOnTopProcessor : public cc::OverlayProcessor {
+class SingleOverlayOnTopProcessor : public OverlayProcessor {
  public:
-  class SingleOverlayValidator : public cc::OverlayCandidateValidator {
+  class SingleOverlayValidator : public OverlayCandidateValidator {
    public:
     void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-      strategies->push_back(
-          base::MakeUnique<cc::OverlayStrategySingleOnTop>(this));
-      strategies->push_back(
-          base::MakeUnique<cc::OverlayStrategyUnderlay>(this));
+      strategies->push_back(base::MakeUnique<OverlayStrategySingleOnTop>(this));
+      strategies->push_back(base::MakeUnique<OverlayStrategyUnderlay>(this));
     }
 
     bool AllowCALayerOverlays() override { return false; }
@@ -2084,12 +2081,12 @@ class SingleOverlayOnTopProcessor : public cc::OverlayProcessor {
     }
   };
 
-  explicit SingleOverlayOnTopProcessor(cc::OutputSurface* surface)
+  explicit SingleOverlayOnTopProcessor(OutputSurface* surface)
       : OverlayProcessor(surface) {}
 
   void Initialize() override {
     strategies_.push_back(
-        base::MakeUnique<cc::OverlayStrategySingleOnTop>(&validator_));
+        base::MakeUnique<OverlayStrategySingleOnTop>(&validator_));
   }
 
   SingleOverlayValidator validator_;
@@ -2123,7 +2120,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       &MockOverlayScheduler::Schedule, base::Unretained(&overlay_scheduler)));
 
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::OutputSurface> output_surface(
+  std::unique_ptr<OutputSurface> output_surface(
       cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
@@ -2344,9 +2341,9 @@ TEST_F(GLRendererPartialSwapTest, SetDrawRectangle_NoPartialSwap) {
   RunTest(false, true);
 }
 
-class DCLayerValidator : public cc::OverlayCandidateValidator {
+class DCLayerValidator : public OverlayCandidateValidator {
  public:
-  void GetStrategies(cc::OverlayProcessor::StrategyList* strategies) override {}
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
   bool AllowCALayerOverlays() override { return false; }
   bool AllowDCLayerOverlays() override { return true; }
   void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {}
@@ -2497,7 +2494,7 @@ class GLRendererWithMockContextTest : public ::testing::Test {
   RendererSettings settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   MockContextSupport* context_support_ptr_;
-  std::unique_ptr<cc::OutputSurface> output_surface_;
+  std::unique_ptr<OutputSurface> output_surface_;
   std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
   std::unique_ptr<GLRenderer> renderer_;
 };
@@ -2520,7 +2517,7 @@ class SwapWithBoundsMockGLES2Interface : public cc::TestGLES2Interface {
   }
 };
 
-class ContentBoundsOverlayProcessor : public cc::OverlayProcessor {
+class ContentBoundsOverlayProcessor : public OverlayProcessor {
  public:
   class Strategy : public OverlayProcessor::Strategy {
    public:
@@ -2539,7 +2536,7 @@ class ContentBoundsOverlayProcessor : public cc::OverlayProcessor {
     const std::vector<gfx::Rect> content_bounds_;
   };
 
-  ContentBoundsOverlayProcessor(cc::OutputSurface* surface,
+  ContentBoundsOverlayProcessor(OutputSurface* surface,
                                 const std::vector<gfx::Rect>& content_bounds)
       : OverlayProcessor(surface), content_bounds_(content_bounds) {}
 
@@ -2576,7 +2573,7 @@ class GLRendererSwapWithBoundsTest : public GLRendererTest {
     EXPECT_EQ(true, renderer.use_swap_with_bounds());
     renderer.SetVisible(true);
 
-    cc::OverlayProcessor* processor =
+    OverlayProcessor* processor =
         new ContentBoundsOverlayProcessor(output_surface.get(), content_bounds);
     processor->Initialize();
     renderer.SetOverlayProcessor(processor);

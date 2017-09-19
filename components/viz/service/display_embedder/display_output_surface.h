@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "cc/output/output_surface.h"
 #include "components/viz/common/gpu/in_process_context_provider.h"
+#include "components/viz/service/display/output_surface.h"
 #include "ui/latency/latency_tracker.h"
 
 namespace viz {
@@ -17,14 +17,14 @@ class SyntheticBeginFrameSource;
 
 // An OutputSurface implementation that directly draws and
 // swaps to an actual GL surface.
-class DisplayOutputSurface : public cc::OutputSurface {
+class DisplayOutputSurface : public OutputSurface {
  public:
   DisplayOutputSurface(scoped_refptr<InProcessContextProvider> context_provider,
                        SyntheticBeginFrameSource* synthetic_begin_frame_source);
   ~DisplayOutputSurface() override;
 
-  // cc::OutputSurface implementation
-  void BindToClient(cc::OutputSurfaceClient* client) override;
+  // OutputSurface implementation
+  void BindToClient(OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
@@ -36,7 +36,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
                bool use_stencil) override;
   void SwapBuffers(cc::OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
@@ -45,7 +45,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
   void ApplyExternalStencil() override;
 
  protected:
-  cc::OutputSurfaceClient* client() const { return client_; }
+  OutputSurfaceClient* client() const { return client_; }
 
   // Called when a swap completion is signaled from ImageTransportSurface.
   virtual void DidReceiveSwapBuffersAck(gfx::SwapResult result);
@@ -59,7 +59,7 @@ class DisplayOutputSurface : public cc::OutputSurface {
   void OnVSyncParametersUpdated(base::TimeTicks timebase,
                                 base::TimeDelta interval);
 
-  cc::OutputSurfaceClient* client_ = nullptr;
+  OutputSurfaceClient* client_ = nullptr;
   SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
   ui::LatencyTracker latency_tracker_;
 

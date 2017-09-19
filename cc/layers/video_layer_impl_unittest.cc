@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "cc/layers/video_frame_provider_client_impl.h"
-#include "cc/output/output_surface.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -16,6 +15,7 @@
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
+#include "components/viz/service/display/output_surface.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

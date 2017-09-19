@@ -4,8 +4,8 @@
 
 #include "content/browser/compositor/gpu_output_surface_mac.h"
 
-#include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/ipc/client/gpu_process_hosted_ca_layer_tree_params.h"

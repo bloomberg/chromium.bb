@@ -8,10 +8,10 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/resources/resource_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
@@ -48,7 +48,7 @@ OffscreenBrowserCompositorOutputSurface::
 }
 
 void OffscreenBrowserCompositorOutputSurface::BindToClient(
-    cc::OutputSurfaceClient* client) {
+    viz::OutputSurfaceClient* client) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;

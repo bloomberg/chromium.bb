@@ -35,8 +35,8 @@ class OffscreenBrowserCompositorOutputSurface
   ~OffscreenBrowserCompositorOutputSurface() override;
 
  private:
-  // cc::OutputSurface implementation.
-  void BindToClient(cc::OutputSurfaceClient* client) override;
+  // viz::OutputSurface implementation.
+  void BindToClient(viz::OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
@@ -61,7 +61,7 @@ class OffscreenBrowserCompositorOutputSurface
 
   void OnSwapBuffersComplete(const std::vector<ui::LatencyInfo>& latency_info);
 
-  cc::OutputSurfaceClient* client_ = nullptr;
+  viz::OutputSurfaceClient* client_ = nullptr;
   gfx::Size reshape_size_;
   uint32_t fbo_ = 0;
   bool reflector_changed_ = false;

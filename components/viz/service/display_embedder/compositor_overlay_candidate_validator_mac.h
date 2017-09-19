@@ -19,8 +19,8 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorMac
   explicit CompositorOverlayCandidateValidatorMac(bool ca_layer_disabled);
   ~CompositorOverlayCandidateValidatorMac() override;
 
-  // cc::OverlayCandidateValidator implementation.
-  void GetStrategies(cc::OverlayProcessor::StrategyList* strategies) override;
+  // OverlayCandidateValidator implementation.
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
   bool AllowCALayerOverlays() override;
   bool AllowDCLayerOverlays() override;
   void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override;

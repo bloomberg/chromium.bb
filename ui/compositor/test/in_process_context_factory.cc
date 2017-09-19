@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
 #include "cc/base/switches.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -22,6 +21,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -59,18 +59,18 @@ class FakeReflector : public Reflector {
 
 // An OutputSurface implementation that directly draws and swaps to an actual
 // GL surface.
-class DirectOutputSurface : public cc::OutputSurface {
+class DirectOutputSurface : public viz::OutputSurface {
  public:
   explicit DirectOutputSurface(
       scoped_refptr<InProcessContextProvider> context_provider)
-      : cc::OutputSurface(context_provider), weak_ptr_factory_(this) {
+      : viz::OutputSurface(context_provider), weak_ptr_factory_(this) {
     capabilities_.flipped_output_surface = true;
   }
 
   ~DirectOutputSurface() override {}
 
-  // cc::OutputSurface implementation.
-  void BindToClient(cc::OutputSurfaceClient* client) override {
+  // viz::OutputSurface implementation.
+  void BindToClient(viz::OutputSurfaceClient* client) override {
     client_ = client;
   }
   void EnsureBackbuffer() override {}
@@ -111,7 +111,8 @@ class DirectOutputSurface : public cc::OutputSurface {
     auto* gl = static_cast<InProcessContextProvider*>(context_provider());
     return gl->GetCopyTextureInternalFormat();
   }
-  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
+  viz::OverlayCandidateValidator* GetOverlayCandidateValidator()
+      const override {
     return nullptr;
   }
   bool IsDisplayedAsOverlayPlane() const override { return false; }
@@ -126,7 +127,7 @@ class DirectOutputSurface : public cc::OutputSurface {
  private:
   void OnSwapBuffersComplete() { client_->DidReceiveSwapBuffersAck(); }
 
-  cc::OutputSurfaceClient* client_ = nullptr;
+  viz::OutputSurfaceClient* client_ = nullptr;
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);
@@ -228,7 +229,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
           &gpu_memory_buffer_manager_, &image_factory_, data->surface_handle,
           "UICompositor");
 
-  std::unique_ptr<cc::OutputSurface> display_output_surface;
+  std::unique_ptr<viz::OutputSurface> display_output_surface;
   if (use_test_surface_) {
     bool flipped_output_surface = false;
     display_output_surface = base::MakeUnique<cc::PixelTestOutputSurface>(

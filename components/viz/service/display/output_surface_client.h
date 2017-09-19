@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_OUTPUT_SURFACE_CLIENT_H_
-#define CC_OUTPUT_OUTPUT_SURFACE_CLIENT_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_CLIENT_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_CLIENT_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "cc/cc_export.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/returned_resource.h"
+#include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT OutputSurfaceClient {
+class VIZ_SERVICE_EXPORT OutputSurfaceClient {
  public:
   // A notification that the swap of the backbuffer to the hardware is complete
   // and is now visible to the user.
@@ -33,6 +33,6 @@ class CC_EXPORT OutputSurfaceClient {
   virtual ~OutputSurfaceClient() {}
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_OUTPUT_SURFACE_CLIENT_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_CLIENT_H_

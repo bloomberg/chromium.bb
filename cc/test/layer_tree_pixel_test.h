@@ -44,7 +44,7 @@ class LayerTreePixelTest : public LayerTreeTest {
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::ContextProvider> worker_context_provider) override;
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
+  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) override;
 
   virtual std::unique_ptr<viz::CopyOutputRequest> CreateCopyOutputRequest();

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/overlay_strategy_single_on_top.h"
+#include "components/viz/service/display/overlay_strategy_single_on_top.h"
 
-#include "cc/base/math_util.h"
-#include "cc/output/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 const gfx::BufferFormat kOverlayFormatsWithAlpha[] = {
@@ -25,18 +24,19 @@ OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
 OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
 bool OverlayStrategySingleOnTop::Attempt(
-    DisplayResourceProvider* resource_provider,
-    viz::RenderPass* render_pass,
-    OverlayCandidateList* candidate_list,
+    cc::DisplayResourceProvider* resource_provider,
+    RenderPass* render_pass,
+    cc::OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
-  viz::QuadList* quad_list = &render_pass->quad_list;
+  QuadList* quad_list = &render_pass->quad_list;
   // Build a list of candidates with the associated quad.
-  OverlayCandidate best_candidate;
+  cc::OverlayCandidate best_candidate;
   auto best_quad_it = quad_list->end();
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
-    OverlayCandidate candidate;
-    if (OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate) &&
-        !OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
+    cc::OverlayCandidate candidate;
+    if (cc::OverlayCandidate::FromDrawQuad(resource_provider, *it,
+                                           &candidate) &&
+        !cc::OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
       // We currently reject quads with alpha that do not request alpha blending
       // since the alpha channel might not be set to 1 and we're not disabling
       // blending when scanning out.
@@ -65,19 +65,19 @@ bool OverlayStrategySingleOnTop::Attempt(
 }
 
 bool OverlayStrategySingleOnTop::TryOverlay(
-    viz::QuadList* quad_list,
-    OverlayCandidateList* candidate_list,
-    const OverlayCandidate& candidate,
-    viz::QuadList::Iterator candidate_iterator) {
+    QuadList* quad_list,
+    cc::OverlayCandidateList* candidate_list,
+    const cc::OverlayCandidate& candidate,
+    QuadList::Iterator candidate_iterator) {
   // Add the overlay.
-  OverlayCandidateList new_candidate_list = *candidate_list;
+  cc::OverlayCandidateList new_candidate_list = *candidate_list;
   new_candidate_list.push_back(candidate);
   new_candidate_list.back().plane_z_order = 1;
 
   // Check for support.
   capability_checker_->CheckOverlaySupport(&new_candidate_list);
 
-  const OverlayCandidate& overlay_candidate = new_candidate_list.back();
+  const cc::OverlayCandidate& overlay_candidate = new_candidate_list.back();
   // If the candidate can be handled by an overlay, create a pass for it.
   if (overlay_candidate.overlay_handled) {
     quad_list->EraseAndInvalidateAllPointers(candidate_iterator);
@@ -88,4 +88,4 @@ bool OverlayStrategySingleOnTop::TryOverlay(
   return false;
 }
 
-}  // namespace cc
+}  // namespace viz

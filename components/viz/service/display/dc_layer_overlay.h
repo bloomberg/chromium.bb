@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_DC_LAYER_OVERLAY_H_
-#define CC_OUTPUT_DC_LAYER_OVERLAY_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_DC_LAYER_OVERLAY_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_DC_LAYER_OVERLAY_H_
 
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
-#include "cc/cc_export.h"
 #include "components/viz/common/quads/render_pass.h"
+#include "components/viz/service/viz_service_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 
 namespace cc {
-class DrawQuad;
 class ResourceProvider;
+}
 
-class CC_EXPORT DCLayerOverlaySharedState
+namespace viz {
+
+class VIZ_SERVICE_EXPORT DCLayerOverlaySharedState
     : public base::RefCounted<DCLayerOverlaySharedState> {
  public:
   DCLayerOverlaySharedState() {}
@@ -37,7 +39,7 @@ class CC_EXPORT DCLayerOverlaySharedState
 };
 
 // Holds all information necessary to construct a DCLayer from a DrawQuad.
-class CC_EXPORT DCLayerOverlay {
+class VIZ_SERVICE_EXPORT DCLayerOverlay {
  public:
   DCLayerOverlay();
   DCLayerOverlay(const DCLayerOverlay& other);
@@ -48,7 +50,7 @@ class CC_EXPORT DCLayerOverlay {
 
   // Resource ids that correspond to the DXGI textures to set as the contents
   // of the DCLayer.
-  viz::DrawQuad::Resources resources;
+  DrawQuad::Resources resources;
   // The contents rect property for the DCLayer.
   gfx::RectF contents_rect;
   // The bounds for the DCLayer in pixels.
@@ -61,7 +63,7 @@ class CC_EXPORT DCLayerOverlay {
   unsigned filter;
   // If |rpdq| is present, then the renderer must draw the filter effects and
   // copy the result into an IOSurface.
-  const viz::RenderPassDrawQuad* rpdq = nullptr;
+  const RenderPassDrawQuad* rpdq = nullptr;
 
   // This is the color-space the texture should be displayed as. If invalid,
   // then the default for the texture should be used. For YUV textures, that's
@@ -94,9 +96,9 @@ class DCLayerOverlayProcessor {
   DCLayerOverlayProcessor();
   ~DCLayerOverlayProcessor();
 
-  void Process(ResourceProvider* resource_provider,
+  void Process(cc::ResourceProvider* resource_provider,
                const gfx::RectF& display_rect,
-               viz::RenderPassList* render_passes,
+               RenderPassList* render_passes,
                gfx::Rect* overlay_damage_rect,
                gfx::Rect* damage_rect,
                DCLayerOverlayList* ca_layer_overlays);
@@ -106,34 +108,33 @@ class DCLayerOverlayProcessor {
   }
 
  private:
-  DCLayerResult FromDrawQuad(ResourceProvider* resource_provider,
+  DCLayerResult FromDrawQuad(cc::ResourceProvider* resource_provider,
                              const gfx::RectF& display_rect,
-                             viz::QuadList::ConstIterator quad_list_begin,
-                             viz::QuadList::ConstIterator quad,
+                             QuadList::ConstIterator quad_list_begin,
+                             QuadList::ConstIterator quad,
                              DCLayerOverlay* ca_layer_overlay);
   // Returns an iterator to the element after |it|.
-  viz::QuadList::Iterator ProcessRenderPassDrawQuad(
-      viz::RenderPass* render_pass,
-      gfx::Rect* damage_rect,
-      viz::QuadList::Iterator it);
-  void ProcessRenderPass(ResourceProvider* resource_provider,
+  QuadList::Iterator ProcessRenderPassDrawQuad(RenderPass* render_pass,
+                                               gfx::Rect* damage_rect,
+                                               QuadList::Iterator it);
+  void ProcessRenderPass(cc::ResourceProvider* resource_provider,
                          const gfx::RectF& display_rect,
-                         viz::RenderPass* render_pass,
+                         RenderPass* render_pass,
                          bool is_root,
                          gfx::Rect* overlay_damage_rect,
                          gfx::Rect* damage_rect,
                          DCLayerOverlayList* ca_layer_overlays);
   bool ProcessForOverlay(const gfx::RectF& display_rect,
-                         viz::QuadList* quad_list,
+                         QuadList* quad_list,
                          const gfx::Rect& quad_rectangle,
                          const gfx::RectF& occlusion_bounding_box,
-                         viz::QuadList::Iterator* it,
+                         QuadList::Iterator* it,
                          gfx::Rect* damage_rect);
   bool ProcessForUnderlay(const gfx::RectF& display_rect,
-                          viz::RenderPass* render_pass,
+                          RenderPass* render_pass,
                           const gfx::Rect& quad_rectangle,
                           const gfx::RectF& occlusion_bounding_box,
-                          const viz::QuadList::Iterator& it,
+                          const QuadList::Iterator& it,
                           bool is_root,
                           gfx::Rect* damage_rect,
                           gfx::Rect* this_frame_underlay_rect,
@@ -153,9 +154,9 @@ class DCLayerOverlayProcessor {
     float opacity;
   };
 
-  base::flat_map<viz::RenderPassId, std::vector<PunchThroughRect>> pass_info_;
+  base::flat_map<RenderPassId, std::vector<PunchThroughRect>> pass_info_;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_DC_LAYER_OVERLAY_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_DC_LAYER_OVERLAY_H_

@@ -14,8 +14,6 @@
 #include "cc/blink/web_layer_impl.h"
 #include "cc/blink/web_scrollbar_layer_impl.h"
 #include "cc/layers/layer.h"
-#include "cc/output/output_surface.h"
-#include "cc/output/software_output_device.h"
 
 using blink::WebContentLayer;
 using blink::WebContentLayerClient;

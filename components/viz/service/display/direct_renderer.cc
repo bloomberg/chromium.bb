@@ -15,13 +15,13 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/filter_operations.h"
 #include "cc/base/math_util.h"
-#include "cc/output/output_surface.h"
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display/bsp_walk_action.h"
+#include "components/viz/service/display/output_surface.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -78,13 +78,12 @@ DirectRenderer::DrawingFrame::DrawingFrame() = default;
 DirectRenderer::DrawingFrame::~DrawingFrame() = default;
 
 DirectRenderer::DirectRenderer(const RendererSettings* settings,
-                               cc::OutputSurface* output_surface,
+                               OutputSurface* output_surface,
                                cc::DisplayResourceProvider* resource_provider)
     : settings_(settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),
-      overlay_processor_(
-          std::make_unique<cc::OverlayProcessor>(output_surface)) {}
+      overlay_processor_(std::make_unique<OverlayProcessor>(output_surface)) {}
 
 DirectRenderer::~DirectRenderer() = default;
 

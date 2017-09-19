@@ -4,7 +4,7 @@
 
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_win.h"
 
-#include "cc/output/overlay_processor.h"
+#include "components/viz/service/display/overlay_processor.h"
 
 namespace viz {
 
@@ -15,7 +15,7 @@ CompositorOverlayCandidateValidatorWin::
     ~CompositorOverlayCandidateValidatorWin() {}
 
 void CompositorOverlayCandidateValidatorWin::GetStrategies(
-    cc::OverlayProcessor::StrategyList* strategies) {}
+    OverlayProcessor::StrategyList* strategies) {}
 
 void CompositorOverlayCandidateValidatorWin::CheckOverlaySupport(
     cc::OverlayCandidateList* candidates) {

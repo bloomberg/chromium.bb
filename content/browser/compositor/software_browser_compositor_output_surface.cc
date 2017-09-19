@@ -12,9 +12,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/latency/latency_info.h"
@@ -35,7 +35,7 @@ SoftwareBrowserCompositorOutputSurface::
 }
 
 void SoftwareBrowserCompositorOutputSurface::BindToClient(
-    cc::OutputSurfaceClient* client) {
+    viz::OutputSurfaceClient* client) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;

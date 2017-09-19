@@ -6,11 +6,11 @@
 #define CC_TEST_PIXEL_TEST_OUTPUT_SURFACE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "cc/output/output_surface.h"
+#include "components/viz/service/display/output_surface.h"
 
 namespace cc {
 
-class PixelTestOutputSurface : public OutputSurface {
+class PixelTestOutputSurface : public viz::OutputSurface {
  public:
   explicit PixelTestOutputSurface(
       scoped_refptr<viz::ContextProvider> context_provider,
@@ -20,7 +20,7 @@ class PixelTestOutputSurface : public OutputSurface {
   ~PixelTestOutputSurface() override;
 
   // OutputSurface implementation.
-  void BindToClient(OutputSurfaceClient* client) override;
+  void BindToClient(viz::OutputSurfaceClient* client) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void BindFramebuffer() override;
@@ -33,7 +33,7 @@ class PixelTestOutputSurface : public OutputSurface {
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  viz::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
@@ -48,7 +48,7 @@ class PixelTestOutputSurface : public OutputSurface {
   void SwapBuffersCallback();
 
   bool external_stencil_test_ = false;
-  OutputSurfaceClient* client_ = nullptr;
+  viz::OutputSurfaceClient* client_ = nullptr;
   base::WeakPtrFactory<PixelTestOutputSurface> weak_ptr_factory_;
 };
 

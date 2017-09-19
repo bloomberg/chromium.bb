@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/dc_layer_overlay.h"
+#include "components/viz/service/display/dc_layer_overlay.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "cc/base/math_util.h"
@@ -14,13 +14,13 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_switches.h"
 
-namespace cc {
+namespace viz {
 
 namespace {
 
 DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
-    ResourceProvider* resource_provider,
-    const viz::YUVVideoDrawQuad* quad,
+    cc::ResourceProvider* resource_provider,
+    const YUVVideoDrawQuad* quad,
     DCLayerOverlay* ca_layer_overlay) {
   for (const auto& resource : quad->resources) {
     if (!resource_provider->IsOverlayCandidate(resource))
@@ -35,8 +35,8 @@ DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
 }
 
 // This returns the smallest rectangle in target space that contains the quad.
-gfx::RectF ClippedQuadRectangle(const viz::DrawQuad* quad) {
-  gfx::RectF quad_rect = MathUtil::MapClippedRect(
+gfx::RectF ClippedQuadRectangle(const DrawQuad* quad) {
+  gfx::RectF quad_rect = cc::MathUtil::MapClippedRect(
       quad->shared_quad_state->quad_to_target_transform,
       gfx::RectF(quad->rect));
   if (quad->shared_quad_state->is_clipped)
@@ -47,18 +47,18 @@ gfx::RectF ClippedQuadRectangle(const viz::DrawQuad* quad) {
 // Find a rectangle containing all the quads in a list that occlude the area
 // in target_quad.
 gfx::RectF GetOcclusionBounds(const gfx::RectF& target_quad,
-                              viz::QuadList::ConstIterator quad_list_begin,
-                              viz::QuadList::ConstIterator quad_list_end) {
+                              QuadList::ConstIterator quad_list_begin,
+                              QuadList::ConstIterator quad_list_end) {
   gfx::RectF occlusion_bounding_box;
   for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
        ++overlap_iter) {
     float opacity = overlap_iter->shared_quad_state->opacity;
     if (opacity < std::numeric_limits<float>::epsilon())
       continue;
-    const viz::DrawQuad* quad = *overlap_iter;
+    const DrawQuad* quad = *overlap_iter;
     gfx::RectF overlap_rect = ClippedQuadRectangle(quad);
-    if (quad->material == viz::DrawQuad::SOLID_COLOR) {
-      SkColor color = viz::SolidColorDrawQuad::MaterialCast(quad)->color;
+    if (quad->material == DrawQuad::SOLID_COLOR) {
+      SkColor color = SolidColorDrawQuad::MaterialCast(quad)->color;
       float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
       if (quad->ShouldDrawWithBlending() &&
           alpha < std::numeric_limits<float>::epsilon())
@@ -90,20 +90,20 @@ DCLayerOverlayProcessor::DCLayerOverlayProcessor() = default;
 DCLayerOverlayProcessor::~DCLayerOverlayProcessor() = default;
 
 DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
-    ResourceProvider* resource_provider,
+    cc::ResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
-    viz::QuadList::ConstIterator quad_list_begin,
-    viz::QuadList::ConstIterator quad,
+    QuadList::ConstIterator quad_list_begin,
+    QuadList::ConstIterator quad,
     DCLayerOverlay* ca_layer_overlay) {
   if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
     return DC_LAYER_FAILED_QUAD_BLEND_MODE;
 
   DCLayerResult result;
   switch (quad->material) {
-    case viz::DrawQuad::YUV_VIDEO_CONTENT:
-      result = FromYUVQuad(resource_provider,
-                           viz::YUVVideoDrawQuad::MaterialCast(*quad),
-                           ca_layer_overlay);
+    case DrawQuad::YUV_VIDEO_CONTENT:
+      result =
+          FromYUVQuad(resource_provider, YUVVideoDrawQuad::MaterialCast(*quad),
+                      ca_layer_overlay);
       break;
     default:
       return DC_LAYER_FAILED_UNSUPPORTED_QUAD;
@@ -129,9 +129,9 @@ DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
   return result;
 }
 
-void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
+void DCLayerOverlayProcessor::Process(cc::ResourceProvider* resource_provider,
                                       const gfx::RectF& display_rect,
-                                      viz::RenderPassList* render_passes,
+                                      RenderPassList* render_passes,
                                       gfx::Rect* overlay_damage_rect,
                                       gfx::Rect* damage_rect,
                                       DCLayerOverlayList* ca_layer_overlays) {
@@ -154,13 +154,12 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
   pass_info_.clear();
 }
 
-viz::QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
-    viz::RenderPass* render_pass,
+QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
+    RenderPass* render_pass,
     gfx::Rect* damage_rect,
-    viz::QuadList::Iterator it) {
-  DCHECK_EQ(viz::DrawQuad::RENDER_PASS, it->material);
-  const viz::RenderPassDrawQuad* rpdq =
-      viz::RenderPassDrawQuad::MaterialCast(*it);
+    QuadList::Iterator it) {
+  DCHECK_EQ(DrawQuad::RENDER_PASS, it->material);
+  const RenderPassDrawQuad* rpdq = RenderPassDrawQuad::MaterialCast(*it);
 
   ++it;
   // Check if this quad is broken to avoid corrupting pass_info.
@@ -171,8 +170,7 @@ viz::QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
   pass_info_[render_pass->id] = std::vector<PunchThroughRect>();
   auto& pass_info = pass_info_[rpdq->render_pass_id];
 
-  const viz::SharedQuadState* original_shared_quad_state =
-      rpdq->shared_quad_state;
+  const SharedQuadState* original_shared_quad_state = rpdq->shared_quad_state;
 
   // Punch holes through for all child video quads that will be displayed in
   // underlays. This doesn't work perfectly in all cases - it breaks with
@@ -186,14 +184,14 @@ viz::QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
   // with premultiplied alpha that reduces the opacity of the current content
   // by the opacity of the layer.
   it = render_pass->quad_list
-           .InsertBeforeAndInvalidateAllPointers<viz::SolidColorDrawQuad>(
+           .InsertBeforeAndInvalidateAllPointers<SolidColorDrawQuad>(
                it, pass_info.size());
   rpdq = nullptr;
   for (size_t i = 0; i < pass_info.size(); i++, ++it) {
     auto& punch_through = pass_info[i];
-    viz::SharedQuadState* new_shared_quad_state =
+    SharedQuadState* new_shared_quad_state =
         render_pass->shared_quad_state_list
-            .AllocateAndConstruct<viz::SharedQuadState>();
+            .AllocateAndConstruct<SharedQuadState>();
     gfx::Transform new_transform(
         original_shared_quad_state->quad_to_target_transform,
         punch_through.transform_to_target);
@@ -202,7 +200,7 @@ viz::QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
     new_shared_quad_state->SetAll(new_transform, punch_through.rect,
                                   punch_through.rect, punch_through.rect, false,
                                   true, new_opacity, SkBlendMode::kDstOut, 0);
-    auto* solid_quad = static_cast<viz::SolidColorDrawQuad*>(*it);
+    auto* solid_quad = static_cast<SolidColorDrawQuad*>(*it);
     solid_quad->SetAll(new_shared_quad_state, punch_through.rect,
                        punch_through.rect, false, 0xff000000, true);
     damage_rect->Union(gfx::ToEnclosingRect(ClippedQuadRectangle(solid_quad)));
@@ -219,15 +217,15 @@ viz::QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
 }
 
 void DCLayerOverlayProcessor::ProcessRenderPass(
-    ResourceProvider* resource_provider,
+    cc::ResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
-    viz::RenderPass* render_pass,
+    RenderPass* render_pass,
     bool is_root,
     gfx::Rect* overlay_damage_rect,
     gfx::Rect* damage_rect,
     DCLayerOverlayList* ca_layer_overlays) {
   gfx::Rect this_frame_underlay_rect;
-  viz::QuadList* quad_list = &render_pass->quad_list;
+  QuadList* quad_list = &render_pass->quad_list;
 
   auto next_it = quad_list->begin();
   for (auto it = quad_list->begin(); it != quad_list->end(); it = next_it) {
@@ -236,7 +234,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     // next_it may be modified inside the loop if methods modify the quad list
     // and invalidate iterators to it.
 
-    if (it->material == viz::DrawQuad::RENDER_PASS) {
+    if (it->material == DrawQuad::RENDER_PASS) {
       next_it = ProcessRenderPassDrawQuad(render_pass, damage_rect, it);
       continue;
     }
@@ -282,7 +280,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     }
 
     if (processed_overlay) {
-      gfx::Rect rect_in_root = MathUtil::MapEnclosingClippedRect(
+      gfx::Rect rect_in_root = cc::MathUtil::MapEnclosingClippedRect(
           render_pass->transform_to_root_target, quad_rectangle);
       overlay_damage_rect->Union(rect_in_root);
 
@@ -305,10 +303,10 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
 
 bool DCLayerOverlayProcessor::ProcessForOverlay(
     const gfx::RectF& display_rect,
-    viz::QuadList* quad_list,
+    QuadList* quad_list,
     const gfx::Rect& quad_rectangle,
     const gfx::RectF& occlusion_bounding_box,
-    viz::QuadList::Iterator* it,
+    QuadList::Iterator* it,
     gfx::Rect* damage_rect) {
   bool display_rect_changed = (display_rect != previous_display_rect_);
   if (!occlusion_bounding_box.IsEmpty())
@@ -327,10 +325,10 @@ bool DCLayerOverlayProcessor::ProcessForOverlay(
 
 bool DCLayerOverlayProcessor::ProcessForUnderlay(
     const gfx::RectF& display_rect,
-    viz::RenderPass* render_pass,
+    RenderPass* render_pass,
     const gfx::Rect& quad_rectangle,
     const gfx::RectF& occlusion_bounding_box,
-    const viz::QuadList::Iterator& it,
+    const QuadList::Iterator& it,
     bool is_root,
     gfx::Rect* damage_rect,
     gfx::Rect* this_frame_underlay_rect,
@@ -361,17 +359,16 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
     *this_frame_underlay_rect = quad_rectangle;
   }
   dc_layer->shared_state->z_order = -1;
-  const viz::SharedQuadState* shared_quad_state = it->shared_quad_state;
+  const SharedQuadState* shared_quad_state = it->shared_quad_state;
   gfx::Rect rect = it->visible_rect;
 
   if (shared_quad_state->opacity < 1.0) {
-    viz::SharedQuadState* new_shared_quad_state =
+    SharedQuadState* new_shared_quad_state =
         render_pass->shared_quad_state_list.AllocateAndCopyFrom(
             shared_quad_state);
     new_shared_quad_state->blend_mode = SkBlendMode::kDstOut;
     auto* replacement =
-        render_pass->quad_list.ReplaceExistingElement<viz::SolidColorDrawQuad>(
-            it);
+        render_pass->quad_list.ReplaceExistingElement<SolidColorDrawQuad>(it);
     replacement->SetAll(shared_quad_state, rect, rect, false, 0xff000000, true);
   } else {
     // When the opacity == 1.0, drawing with transparent will be done without
@@ -415,4 +412,4 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
   return true;
 }
 
-}  // namespace cc
+}  // namespace viz

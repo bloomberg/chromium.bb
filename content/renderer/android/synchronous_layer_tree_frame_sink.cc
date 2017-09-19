@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/layer_tree_frame_sink_client.h"
-#include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -24,6 +23,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
+#include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -77,13 +77,13 @@ class SoftwareDevice : public cc::SoftwareOutputDevice {
 }  // namespace
 
 class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
-    : public cc::OutputSurface {
+    : public viz::OutputSurface {
  public:
   SoftwareOutputSurface(std::unique_ptr<SoftwareDevice> software_device)
-      : cc::OutputSurface(std::move(software_device)) {}
+      : viz::OutputSurface(std::move(software_device)) {}
 
-  // cc::OutputSurface implementation.
-  void BindToClient(cc::OutputSurfaceClient* client) override {}
+  // viz::OutputSurface implementation.
+  void BindToClient(viz::OutputSurfaceClient* client) override {}
   void EnsureBackbuffer() override {}
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {}
@@ -95,7 +95,8 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
                bool has_alpha,
                bool use_stencil) override {}
   uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
-  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
+  viz::OverlayCandidateValidator* GetOverlayCandidateValidator()
+      const override {
     return nullptr;
   }
   bool IsDisplayedAsOverlayPlane() const override { return false; }

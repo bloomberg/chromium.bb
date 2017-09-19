@@ -11,11 +11,11 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "cc/output/ca_layer_overlay.h"
-#include "cc/output/dc_layer_overlay.h"
-#include "cc/output/overlay_processor.h"
 #include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/service/display/ca_layer_overlay.h"
+#include "components/viz/service/display/dc_layer_overlay.h"
+#include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -45,7 +45,7 @@ class RenderPass;
 class VIZ_SERVICE_EXPORT DirectRenderer {
  public:
   DirectRenderer(const RendererSettings* settings,
-                 cc::OutputSurface* output_surface,
+                 OutputSurface* output_surface,
                  cc::DisplayResourceProvider* resource_provider);
   virtual ~DirectRenderer();
 
@@ -92,8 +92,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     gfx::Transform window_matrix;
 
     cc::OverlayCandidateList overlay_list;
-    cc::CALayerOverlayList ca_layer_overlay_list;
-    cc::DCLayerOverlayList dc_layer_overlay_list;
+    CALayerOverlayList ca_layer_overlay_list;
+    DCLayerOverlayList dc_layer_overlay_list;
   };
 
   void DisableColorChecksForTesting() {
@@ -184,10 +184,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   }
 
   const RendererSettings* const settings_;
-  cc::OutputSurface* const output_surface_;
+  OutputSurface* const output_surface_;
   cc::DisplayResourceProvider* const resource_provider_;
   // This can be replaced by test implementations.
-  std::unique_ptr<cc::OverlayProcessor> overlay_processor_;
+  std::unique_ptr<OverlayProcessor> overlay_processor_;
 
   // Whether it's valid to SwapBuffers with an empty rect. Trivially true when
   // using partial swap.

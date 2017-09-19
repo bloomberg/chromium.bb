@@ -10,6 +10,10 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
+namespace viz {
+class OutputSurface;
+}
+
 namespace cc {
 
 class CompositorFrame;
@@ -125,7 +129,8 @@ class TestHooks : public AnimationDelegate {
   // OutputSurface indirections to the LayerTreeTest, that can be further
   // overridden.
   virtual void RequestNewLayerTreeFrameSink() = 0;
-  virtual std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
+  virtual std::unique_ptr<viz::OutputSurface>
+  CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) = 0;
 };
 

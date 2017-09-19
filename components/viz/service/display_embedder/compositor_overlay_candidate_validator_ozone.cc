@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
-#include "cc/output/overlay_strategy_fullscreen.h"
-#include "cc/output/overlay_strategy_single_on_top.h"
-#include "cc/output/overlay_strategy_underlay.h"
-#include "cc/output/overlay_strategy_underlay_cast.h"
+#include "components/viz/service/display/overlay_strategy_fullscreen.h"
+#include "components/viz/service/display/overlay_strategy_single_on_top.h"
+#include "components/viz/service/display/overlay_strategy_underlay.h"
+#include "components/viz/service/display/overlay_strategy_underlay_cast.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace viz {
@@ -22,7 +22,7 @@ namespace {
 // Templated function used to create an OverlayProcessor::Strategy
 // of type |S|.
 template <typename S>
-std::unique_ptr<cc::OverlayProcessor::Strategy> MakeOverlayStrategy(
+std::unique_ptr<OverlayProcessor::Strategy> MakeOverlayStrategy(
     CompositorOverlayCandidateValidatorOzone* capability_checker) {
   return base::MakeUnique<S>(capability_checker);
 }
@@ -49,16 +49,16 @@ CompositorOverlayCandidateValidatorOzone::
                               base::SPLIT_WANT_NONEMPTY)) {
     if (strategy_name == "single-fullscreen") {
       strategies_instantiators_.push_back(
-          base::Bind(MakeOverlayStrategy<cc::OverlayStrategyFullscreen>));
+          base::Bind(MakeOverlayStrategy<OverlayStrategyFullscreen>));
     } else if (strategy_name == "single-on-top") {
       strategies_instantiators_.push_back(
-          base::Bind(MakeOverlayStrategy<cc::OverlayStrategySingleOnTop>));
+          base::Bind(MakeOverlayStrategy<OverlayStrategySingleOnTop>));
     } else if (strategy_name == "underlay") {
       strategies_instantiators_.push_back(
-          base::Bind(MakeOverlayStrategy<cc::OverlayStrategyUnderlay>));
+          base::Bind(MakeOverlayStrategy<OverlayStrategyUnderlay>));
     } else if (strategy_name == "cast") {
       strategies_instantiators_.push_back(
-          base::Bind(MakeOverlayStrategy<cc::OverlayStrategyUnderlayCast>));
+          base::Bind(MakeOverlayStrategy<OverlayStrategyUnderlayCast>));
     } else {
       LOG(WARNING) << "Unrecognized overlay strategy " << strategy_name;
     }
@@ -69,7 +69,7 @@ CompositorOverlayCandidateValidatorOzone::
     ~CompositorOverlayCandidateValidatorOzone() {}
 
 void CompositorOverlayCandidateValidatorOzone::GetStrategies(
-    cc::OverlayProcessor::StrategyList* strategies) {
+    OverlayProcessor::StrategyList* strategies) {
   for (auto& instantiator : strategies_instantiators_)
     strategies->push_back(instantiator.Run(this));
 }

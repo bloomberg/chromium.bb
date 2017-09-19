@@ -54,7 +54,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   class ScopedUseGrContext;
 
   GLRenderer(const RendererSettings* settings,
-             cc::OutputSurface* output_surface,
+             OutputSurface* output_surface,
              cc::DisplayResourceProvider* resource_provider,
              TextureMailboxDeleter* texture_mailbox_deleter);
   ~GLRenderer() override;
@@ -260,13 +260,13 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // The resulting cc::Resource may be larger than the original quad. The new
   // size and position is placed in |new_bounds|.
   void CopyRenderPassDrawQuadToOverlayResource(
-      const cc::CALayerOverlay* ca_layer_overlay,
+      const CALayerOverlay* ca_layer_overlay,
       cc::Resource** resource,
       gfx::RectF* new_bounds);
 
   // Schedules the |ca_layer_overlay|, which is guaranteed to have a non-null
   // |rpdq| parameter.
-  void ScheduleRenderPassDrawQuad(const cc::CALayerOverlay* ca_layer_overlay);
+  void ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay);
 
   // Setup/flush all pending overdraw feedback to framebuffer.
   void SetupOverdrawFeedback();

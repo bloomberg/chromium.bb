@@ -25,7 +25,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/video_layer.h"
-#include "cc/output/output_surface.h"
 #include "cc/output/swap_promise.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
@@ -62,6 +61,7 @@
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/service/display/output_surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -6482,7 +6482,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEnds);
 class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
     : public LayerTreeHostTestCrispUpAfterPinchEnds {
  protected:
-  std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(
+  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
     scoped_refptr<TestContextProvider> display_context_provider =

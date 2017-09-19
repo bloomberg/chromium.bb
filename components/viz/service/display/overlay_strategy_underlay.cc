@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/overlay_strategy_underlay.h"
+#include "components/viz/service/display/overlay_strategy_underlay.h"
 
-#include "cc/output/overlay_candidate_validator.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 
-namespace cc {
+namespace viz {
 
 OverlayStrategyUnderlay::OverlayStrategyUnderlay(
     OverlayCandidateValidator* capability_checker)
@@ -19,18 +19,18 @@ OverlayStrategyUnderlay::OverlayStrategyUnderlay(
 OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
 bool OverlayStrategyUnderlay::Attempt(
-    DisplayResourceProvider* resource_provider,
-    viz::RenderPass* render_pass,
-    OverlayCandidateList* candidate_list,
+    cc::DisplayResourceProvider* resource_provider,
+    RenderPass* render_pass,
+    cc::OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
-  viz::QuadList& quad_list = render_pass->quad_list;
+  QuadList& quad_list = render_pass->quad_list;
   for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
-    OverlayCandidate candidate;
-    if (!OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate))
+    cc::OverlayCandidate candidate;
+    if (!cc::OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate))
       continue;
 
     // Add the overlay.
-    OverlayCandidateList new_candidate_list = *candidate_list;
+    cc::OverlayCandidateList new_candidate_list = *candidate_list;
     new_candidate_list.push_back(candidate);
     new_candidate_list.back().plane_z_order = -1;
 
@@ -41,7 +41,7 @@ bool OverlayStrategyUnderlay::Attempt(
     // need to switch out the video quad with a black transparent one.
     if (new_candidate_list.back().overlay_handled) {
       new_candidate_list.back().is_unoccluded =
-          !OverlayCandidate::IsOccluded(candidate, quad_list.cbegin(), it);
+          !cc::OverlayCandidate::IsOccluded(candidate, quad_list.cbegin(), it);
       quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(it);
       candidate_list->swap(new_candidate_list);
 
@@ -63,4 +63,4 @@ bool OverlayStrategyUnderlay::Attempt(
   return false;
 }
 
-}  // namespace cc
+}  // namespace viz

@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display_embedder/buffer_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"

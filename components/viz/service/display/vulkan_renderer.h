@@ -18,7 +18,7 @@ namespace viz {
 class VIZ_SERVICE_EXPORT VulkanRenderer : public DirectRenderer {
  public:
   VulkanRenderer(const RendererSettings* settings,
-                 cc::OutputSurface* output_surface,
+                 OutputSurface* output_surface,
                  cc::DisplayResourceProvider* resource_provider);
   ~VulkanRenderer() override;
 

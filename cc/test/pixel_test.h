@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
-#include "cc/output/output_surface.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/gl_renderer.h"
+#include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/software_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -62,7 +62,7 @@ class PixelTest : public testing::Test {
   gfx::Size device_viewport_size_;
   bool disable_picture_quad_image_filtering_;
   std::unique_ptr<FakeOutputSurfaceClient> output_surface_client_;
-  std::unique_ptr<OutputSurface> output_surface_;
+  std::unique_ptr<viz::OutputSurface> output_surface_;
   std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<BlockingTaskRunner> main_thread_task_runner_;
@@ -104,7 +104,7 @@ class GLRendererWithExpandedViewport : public viz::GLRenderer {
  public:
   GLRendererWithExpandedViewport(
       const viz::RendererSettings* settings,
-      OutputSurface* output_surface,
+      viz::OutputSurface* output_surface,
       DisplayResourceProvider* resource_provider,
       viz::TextureMailboxDeleter* texture_mailbox_deleter)
       : viz::GLRenderer(settings,
@@ -117,7 +117,7 @@ class SoftwareRendererWithExpandedViewport : public viz::SoftwareRenderer {
  public:
   SoftwareRendererWithExpandedViewport(
       const viz::RendererSettings* settings,
-      OutputSurface* output_surface,
+      viz::OutputSurface* output_surface,
       DisplayResourceProvider* resource_provider)
       : SoftwareRenderer(settings, output_surface, resource_provider) {}
 };
@@ -126,7 +126,7 @@ class GLRendererWithFlippedSurface : public viz::GLRenderer {
  public:
   GLRendererWithFlippedSurface(
       const viz::RendererSettings* settings,
-      OutputSurface* output_surface,
+      viz::OutputSurface* output_surface,
       DisplayResourceProvider* resource_provider,
       viz::TextureMailboxDeleter* texture_mailbox_deleter)
       : viz::GLRenderer(settings,

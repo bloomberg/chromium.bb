@@ -32,8 +32,6 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/output_surface.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/resources/ui_resource_manager.h"
@@ -47,6 +45,8 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -256,12 +256,12 @@ void CreateContextProviderAfterGpuChannelEstablished(
   callback.Run(std::move(context_provider));
 }
 
-class AndroidOutputSurface : public cc::OutputSurface {
+class AndroidOutputSurface : public viz::OutputSurface {
  public:
   AndroidOutputSurface(
       scoped_refptr<ui::ContextProviderCommandBuffer> context_provider,
       base::Closure swap_buffers_callback)
-      : cc::OutputSurface(std::move(context_provider)),
+      : viz::OutputSurface(std::move(context_provider)),
         swap_buffers_callback_(std::move(swap_buffers_callback)),
         overlay_candidate_validator_(
             new viz::CompositorOverlayCandidateValidatorAndroid()),
@@ -281,7 +281,7 @@ class AndroidOutputSurface : public cc::OutputSurface {
     }
   }
 
-  void BindToClient(cc::OutputSurfaceClient* client) override {
+  void BindToClient(viz::OutputSurfaceClient* client) override {
     DCHECK(client);
     DCHECK(!client_);
     client_ = client;
@@ -312,7 +312,8 @@ class AndroidOutputSurface : public cc::OutputSurface {
         gl::GetGLColorSpace(color_space), has_alpha);
   }
 
-  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
+  viz::OverlayCandidateValidator* GetOverlayCandidateValidator()
+      const override {
     return overlay_candidate_validator_.get();
   }
 
@@ -351,14 +352,14 @@ class AndroidOutputSurface : public cc::OutputSurface {
   }
 
  private:
-  cc::OutputSurfaceClient* client_ = nullptr;
+  viz::OutputSurfaceClient* client_ = nullptr;
   base::Closure swap_buffers_callback_;
-  std::unique_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator_;
+  std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator_;
   base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;
 };
 
 #if BUILDFLAG(ENABLE_VULKAN)
-class VulkanOutputSurface : public cc::OutputSurface {
+class VulkanOutputSurface : public viz::OutputSurface {
  public:
   explicit VulkanOutputSurface(
       scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
@@ -382,7 +383,7 @@ class VulkanOutputSurface : public cc::OutputSurface {
     return true;
   }
 
-  bool BindToClient(cc::OutputSurfaceClient* client) override {
+  bool BindToClient(viz::OutputSurfaceClient* client) override {
     if (!OutputSurface::BindToClient(client))
       return false;
     return true;
@@ -799,7 +800,7 @@ void CompositorImpl::OnGpuChannelEstablished(
 }
 
 void CompositorImpl::InitializeDisplay(
-    std::unique_ptr<cc::OutputSurface> display_output_surface,
+    std::unique_ptr<viz::OutputSurface> display_output_surface,
     scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
     scoped_refptr<viz::ContextProvider> context_provider) {
   DCHECK(layer_tree_frame_sink_request_pending_);
