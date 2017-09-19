@@ -13,6 +13,8 @@ namespace service_manager {
 
 // Represents the identity of an application.
 // |name| is the structured name of the application.
+// |user_id| is a GUID string representing the identity of a user in the system.
+// Every running service instance is associated with a specific user ID.
 // |instance| is a string that allows to tie a specific instance to another. A
 // typical use case of instance is to control process grouping for a given name.
 class SERVICE_MANAGER_PUBLIC_CPP_TYPES_EXPORT Identity {
