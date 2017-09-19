@@ -2099,11 +2099,15 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   NSString* titleIdentifier = @"bookmark_editing_text";
 
   // Type the folder title.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(titleIdentifier),
+                                          grey_sufficientlyVisible(), nil)]
       performAction:grey_replaceText(folderTitle)];
 
   // Press the keyboard return key.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(titleIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(titleIdentifier),
+                                          grey_sufficientlyVisible(), nil)]
       performAction:grey_typeText(@"\n")];
 
   // Wait until the editing textfield is gone.
@@ -2114,9 +2118,11 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 // 1. Spinner background.
 // 2. Reorder bookmarks.
 // 3. Current root node removed: Verify that the New Folder, Select button are
-// disabled and empty background appears when _currentRootNode becomes NULL
-// (maybe programmatically remove the current root node from model, and trigger
-// a sync).
+//    disabled and empty background appears when _currentRootNode becomes NULL
+//    (maybe programmatically remove the current root node from model, and
+//    trigger a sync).
 // 4. Restoring y position when opening from cache.
+// 5. Adding new folder when when existing bookmarks list covers full screen
+//    height,to ensure we scroll to the newly added folder.
 
 @end
