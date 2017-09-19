@@ -954,9 +954,15 @@ class EBuild(object):
     stable_commit_hash = self.cros_workon_vars.commit
     srcdir = srcdirs[0]
     logrange = '%s..%s' % (stable_commit_hash, current_commit_hash)
-    git_args = ['log', '--oneline', logrange, '--']
-    git_args.extend(self.cros_workon_vars.rev_subdirs)
-    git_args.extend(subdirs_to_rev)
+    dirs = []
+    dirs.extend(self.cros_workon_vars.rev_subdirs)
+    dirs.extend(subdirs_to_rev)
+    if dirs:
+      # Any change to the unstable ebuild must generate an uprev. If there are
+      # no dirs then this happens automatically (since the git log has no file
+      # list). Otherwise we must ensure that it works here.
+      dirs.append('*9999.ebuild')
+    git_args = ['log', '--oneline', logrange, '--'] + dirs
 
     try:
       output = EBuild._RunGit(srcdir, git_args)
