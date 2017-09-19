@@ -27,8 +27,8 @@ const int kShowingDuration = 500;
 
 class ModeIndicatorFrameView : public views::BubbleFrameView {
  public:
-  explicit ModeIndicatorFrameView(const gfx::Insets& content_margins)
-      : views::BubbleFrameView(gfx::Insets(), content_margins) {}
+  explicit ModeIndicatorFrameView()
+      : views::BubbleFrameView(gfx::Insets(), gfx::Insets()) {}
   ~ModeIndicatorFrameView() override {}
 
  private:
@@ -99,7 +99,7 @@ void ModeIndicatorView::Init() {
 
 views::NonClientFrameView* ModeIndicatorView::CreateNonClientFrameView(
     views::Widget* widget) {
-  views::BubbleFrameView* frame = new ModeIndicatorFrameView(margins());
+  views::BubbleFrameView* frame = new ModeIndicatorFrameView();
   // arrow adjustment in BubbleDialogDelegateView is unnecessary because arrow
   // of this bubble is always center.
   frame->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
