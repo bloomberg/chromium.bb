@@ -603,6 +603,8 @@ SkSurface* Canvas2DLayerBridge::GetOrCreateSurface(AccelerationHint hint) {
   bool surface_is_accelerated;
   surface_ = CreateSkSurface(gr, size_, msaa_sample_count_, opacity_mode_,
                              color_params_, &surface_is_accelerated);
+  if (!surface_)
+    return nullptr;
   if (color_params_.ColorCorrectNoColorSpaceToSRGB()) {
     surface_paint_canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(
         surface_->getCanvas(), color_params_.GetSkColorSpace()));
