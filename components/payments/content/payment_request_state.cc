@@ -28,6 +28,8 @@ namespace payments {
 
 PaymentRequestState::PaymentRequestState(
     content::BrowserContext* context,
+    const GURL& top_level_origin,
+    const GURL& frame_origin,
     PaymentRequestSpec* spec,
     Delegate* delegate,
     const std::string& app_locale,
@@ -53,7 +55,8 @@ PaymentRequestState::PaymentRequestState(
     get_all_instruments_finished_ = false;
     content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
         context, base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
-                                weak_ptr_factory_.GetWeakPtr()));
+                                weak_ptr_factory_.GetWeakPtr(), context,
+                                top_level_origin, frame_origin));
   } else {
     PopulateProfileCache();
     SetDefaultProfileSelections();
@@ -63,11 +66,15 @@ PaymentRequestState::PaymentRequestState(
 PaymentRequestState::~PaymentRequestState() {}
 
 void PaymentRequestState::GetAllPaymentAppsCallback(
+    content::BrowserContext* context,
+    const GURL& top_level_origin,
+    const GURL& frame_origin,
     content::PaymentAppProvider::PaymentApps apps) {
   std::vector<GURL> requested_method_urls =
       spec_->url_payment_method_identifiers();
   if (!apps.empty() && requested_method_urls.size() > 0) {
-    CreateServiceWorkerPaymentApps(apps, requested_method_urls);
+    CreateServiceWorkerPaymentApps(context, top_level_origin, frame_origin,
+                                   apps, requested_method_urls);
   }
 
   PopulateProfileCache();
@@ -82,6 +89,9 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
 }
 
 void PaymentRequestState::CreateServiceWorkerPaymentApps(
+    content::BrowserContext* context,
+    const GURL& top_level_origin,
+    const GURL& frame_origin,
     content::PaymentAppProvider::PaymentApps& apps,
     std::vector<GURL>& requested_method_urls) {
   std::unordered_set<std::string> requested_method_strings;
@@ -100,8 +110,8 @@ void PaymentRequestState::CreateServiceWorkerPaymentApps(
     if (i >= it->second->enabled_methods.size())
       continue;
 
-    auto instrument =
-        base::MakeUnique<ServiceWorkerPaymentInstrument>(std::move(it->second));
+    auto instrument = base::MakeUnique<ServiceWorkerPaymentInstrument>(
+        context, top_level_origin, frame_origin, spec_, std::move(it->second));
     available_instruments_.push_back(std::move(instrument));
   }
 }

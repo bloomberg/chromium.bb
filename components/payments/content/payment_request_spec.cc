@@ -83,13 +83,14 @@ PaymentRequestSpec::PaymentRequestSpec(
     const std::string& app_locale)
     : options_(std::move(options)),
       details_(std::move(details)),
+      method_data_(std::move(method_data)),
       app_locale_(app_locale),
       selected_shipping_option_(nullptr) {
   if (observer)
     AddObserver(observer);
   UpdateSelectedShippingOption(/*after_update=*/false);
   PopulateValidatedMethodData(
-      method_data, &supported_card_networks_, &basic_card_specified_networks_,
+      method_data_, &supported_card_networks_, &basic_card_specified_networks_,
       &supported_card_networks_set_, &supported_card_types_set_,
       &url_payment_method_identifiers_, &stringified_method_data_);
 }
@@ -182,7 +183,7 @@ const mojom::PaymentItemPtr& PaymentRequestSpec::GetTotal(
     PaymentInstrument* selected_instrument) const {
   const mojom::PaymentDetailsModifierPtr* modifier =
       GetApplicableModifier(selected_instrument);
-  return modifier ? (*modifier)->total : details().total;
+  return modifier ? (*modifier)->total : details_->total;
 }
 
 std::vector<const mojom::PaymentItemPtr*> PaymentRequestSpec::GetDisplayItems(
@@ -190,7 +191,7 @@ std::vector<const mojom::PaymentItemPtr*> PaymentRequestSpec::GetDisplayItems(
   std::vector<const mojom::PaymentItemPtr*> display_items;
   const mojom::PaymentDetailsModifierPtr* modifier =
       GetApplicableModifier(selected_instrument);
-  for (const auto& item : details().display_items) {
+  for (const auto& item : details_->display_items) {
     display_items.push_back(&item);
   }
 
@@ -204,7 +205,7 @@ std::vector<const mojom::PaymentItemPtr*> PaymentRequestSpec::GetDisplayItems(
 
 const std::vector<mojom::PaymentShippingOptionPtr>&
 PaymentRequestSpec::GetShippingOptions() const {
-  return details().shipping_options;
+  return details_->shipping_options;
 }
 
 const mojom::PaymentDetailsModifierPtr*
@@ -214,7 +215,7 @@ PaymentRequestSpec::GetApplicableModifier(
       !base::FeatureList::IsEnabled(features::kWebPaymentsModifiers))
     return nullptr;
 
-  for (const auto& modifier : details().modifiers) {
+  for (const auto& modifier : details_->modifiers) {
     std::vector<std::string> supported_networks;
     std::set<autofill::CreditCard::CardType> supported_types;
     // The following 4 are unused but required by PopulateValidatedMethodData.
@@ -243,14 +244,14 @@ void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {
 
   selected_shipping_option_ = nullptr;
   selected_shipping_option_error_.clear();
-  if (details().shipping_options.empty()) {
+  if (details_->shipping_options.empty()) {
     // No options are provided by the merchant.
     if (after_update) {
       // This is after an update, which means that the selected address is not
       // supported. The merchant may have customized the error string, or a
       // generic one is used.
-      if (!details().error.empty()) {
-        selected_shipping_option_error_ = base::UTF8ToUTF16(details().error);
+      if (!details_->error.empty()) {
+        selected_shipping_option_error_ = base::UTF8ToUTF16(details_->error);
       } else {
         // The generic error string depends on the shipping type.
         switch (shipping_type()) {
@@ -276,11 +277,11 @@ void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {
   // one in the array that has its selected field set to true. If none are
   // selected by the merchant, |selected_shipping_option_| stays nullptr.
   auto selected_shipping_option_it = std::find_if(
-      details().shipping_options.rbegin(), details().shipping_options.rend(),
+      details_->shipping_options.rbegin(), details_->shipping_options.rend(),
       [](const payments::mojom::PaymentShippingOptionPtr& element) {
         return element->selected;
       });
-  if (selected_shipping_option_it != details().shipping_options.rend()) {
+  if (selected_shipping_option_it != details_->shipping_options.rend()) {
     selected_shipping_option_ = selected_shipping_option_it->get();
   }
 }
