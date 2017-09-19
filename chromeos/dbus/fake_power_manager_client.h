@@ -40,6 +40,7 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   bool have_video_activity_report() const {
     return !video_activity_reports_.empty();
   }
+  bool backlights_forced_off() const { return backlights_forced_off_; }
   int num_set_backlights_forced_off_calls() const {
     return num_set_backlights_forced_off_calls_;
   }

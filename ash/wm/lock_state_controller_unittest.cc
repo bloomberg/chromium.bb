@@ -7,10 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "ash/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
+#include "ash/shell_test_api.h"
 #include "ash/shutdown_controller.h"
 #include "ash/shutdown_reason.h"
 #include "ash/test/ash_test_base.h"
@@ -21,9 +23,11 @@
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/test_session_state_animator.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/fake_display_snapshot.h"
@@ -66,17 +70,16 @@ class TestShutdownController : public ShutdownController {
 
 class LockStateControllerTest : public AshTestBase {
  public:
-  LockStateControllerTest()
-      : power_button_controller_(nullptr),
-        lock_state_controller_(nullptr),
-        session_manager_client_(nullptr),
-        test_animator_(nullptr) {}
-  ~LockStateControllerTest() override {}
+  LockStateControllerTest() {}
+  ~LockStateControllerTest() override = default;
 
   void SetUp() override {
+    std::unique_ptr<chromeos::DBusThreadManagerSetter> setter =
+        chromeos::DBusThreadManager::GetSetterForTesting();
+    power_manager_client_ = new chromeos::FakePowerManagerClient();
+    setter->SetPowerManagerClient(base::WrapUnique(power_manager_client_));
     session_manager_client_ = new chromeos::FakeSessionManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        base::WrapUnique(session_manager_client_));
+    setter->SetSessionManagerClient(base::WrapUnique(session_manager_client_));
     AshTestBase::SetUp();
 
     test_animator_ = new TestSessionStateAnimator;
@@ -102,6 +105,15 @@ class LockStateControllerTest : public AshTestBase {
   }
 
  protected:
+  // Sets the flag for forcing clamshell-like power button behavior and resets
+  // |power_button_controller_|.
+  void ForceClamshellPowerButton() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kForceClamshellPowerButton);
+    ShellTestApi().ResetPowerButtonControllerForTest();
+    power_button_controller_ = Shell::Get()->power_button_controller();
+  }
+
   void GenerateMouseMoveEvent() {
     ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
     generator.MoveMouseTo(10, 10);
@@ -296,12 +308,12 @@ class LockStateControllerTest : public AshTestBase {
     power_button_controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
   }
 
-  void PressVolumeDown() {
-    GetEventGenerator().PressKey(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  void PressKey(ui::KeyboardCode key_code) {
+    GetEventGenerator().PressKey(key_code, ui::EF_NONE);
   }
 
-  void ReleaseVolumeDown() {
-    GetEventGenerator().ReleaseKey(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
+  void ReleaseKey(ui::KeyboardCode key_code) {
+    GetEventGenerator().ReleaseKey(key_code, ui::EF_NONE);
   }
 
   void SystemLocks() {
@@ -336,14 +348,17 @@ class LockStateControllerTest : public AshTestBase {
       SetCanLockScreen(false);
   }
 
-  PowerButtonController* power_button_controller_;  // not owned
-  LockStateController* lock_state_controller_;      // not owned
+  PowerButtonController* power_button_controller_ = nullptr;  // not owned
+  LockStateController* lock_state_controller_ = nullptr;      // not owned
   TestShutdownController test_shutdown_controller_;
-  // Ownership is passed on to chromeos::DBusThreadManager.
-  chromeos::FakeSessionManagerClient* session_manager_client_;
-  TestSessionStateAnimator* test_animator_;       // not owned
+
+  // Owned by chromeos::DBusThreadManager.
+  chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
+  chromeos::FakeSessionManagerClient* session_manager_client_ = nullptr;
+
+  TestSessionStateAnimator* test_animator_ = nullptr;  // not owned
   std::unique_ptr<LockStateControllerTestApi> test_api_;
-  TestShellDelegate* shell_delegate_;  // not owned
+  TestShellDelegate* shell_delegate_ = nullptr;  // not owned
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LockStateControllerTest);
@@ -502,6 +517,11 @@ TEST_F(LockStateControllerTest, LockAndUnlock) {
   ReleasePowerButton();
   ExpectLockedState();
   EXPECT_FALSE(test_api_->lock_to_shutdown_timer_is_running());
+
+  // The backlights shouldn't be forced off when clamshell power button behavior
+  // isn't explicitly requested.
+  EXPECT_FALSE(power_button_controller_->TriggerDisplayOffTimerForTesting());
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Notify that the screen has been unlocked.  We should show the
   // non-screen-locker windows.
@@ -1025,6 +1045,75 @@ TEST_F(LockStateControllerTest, TestHiddenWallpaperLockUnlock) {
   ExpectUnlockedState();
 }
 
+// Test that backlights are forced off shortly after the screen is locked when
+// clamshell-style power button behavior is forced.
+TEST_F(LockStateControllerTest, ClamshellDisplayOffAfterLock) {
+  ForceClamshellPowerButton();
+  Initialize(false, LoginStatus::USER);
+
+  // If the power button isn't held long enough for the screen to be locked, the
+  // backlights shouldn't be forced off.
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_button_controller_->TriggerDisplayOffTimerForTesting());
+
+  // Now hold the power button long enough to lock the screen.
+  PressPowerButton();
+  Advance(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
+  SystemLocks();
+  EXPECT_FALSE(power_button_controller_->TriggerDisplayOffTimerForTesting());
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+
+  // After releasing the power button, the display should still be on, but it
+  // should be forced off after the display-off timer fires.
+  ReleasePowerButton();
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(power_button_controller_->TriggerDisplayOffTimerForTesting());
+  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+
+  // Pressing the power button should turn the display back on.
+  PressPowerButton();
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  ReleasePowerButton();
+
+  // Now that the screen is already locked, the timer shouldn't be started if
+  // the power button is pressed and released again.
+  PressPowerButton();
+  ReleasePowerButton();
+  ASSERT_FALSE(power_button_controller_->TriggerDisplayOffTimerForTesting());
+  ASSERT_FALSE(power_manager_client_->backlights_forced_off());
+}
+
+// Test that user activity prevents backlights from being forced off after the
+// screen is locked.
+TEST_F(LockStateControllerTest, CancelClamshellDisplayOffAfterLock) {
+  ForceClamshellPowerButton();
+  Initialize(false, LoginStatus::USER);
+
+  // If a key is pressed shortly after locking, the display-off timer should be
+  // stopped.
+  PressPowerButton();
+  Advance(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
+  SystemLocks();
+  ReleasePowerButton();
+  PressKey(ui::VKEY_A);
+  ReleaseKey(ui::VKEY_A);
+  EXPECT_FALSE(power_button_controller_->TriggerDisplayOffTimerForTesting());
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  SystemUnlocks();
+
+  // Mouse events should also stop the timer.
+  PressPowerButton();
+  Advance(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
+  SystemLocks();
+  ReleasePowerButton();
+  GenerateMouseMoveEvent();
+  EXPECT_FALSE(power_button_controller_->TriggerDisplayOffTimerForTesting());
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  SystemUnlocks();
+}
+
 TEST_F(LockStateControllerTest, Screenshot) {
   // TODO: fails because of no screenshot in mash. http://crbug.com/698033.
   if (Shell::GetAshConfig() == Config::MASH)
@@ -1037,10 +1126,10 @@ TEST_F(LockStateControllerTest, Screenshot) {
 
   // Screenshot handling should not be active when not in tablet mode.
   ASSERT_EQ(0, delegate->handle_take_screenshot_count());
-  PressVolumeDown();
+  PressKey(ui::VKEY_VOLUME_DOWN);
   PressPowerButton();
   ReleasePowerButton();
-  ReleaseVolumeDown();
+  ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
   EnableTabletMode(true);
@@ -1052,8 +1141,8 @@ TEST_F(LockStateControllerTest, Screenshot) {
 
   // Press & release volume then pressing power does not take a screenshot.
   ASSERT_EQ(0, delegate->handle_take_screenshot_count());
-  PressVolumeDown();
-  ReleaseVolumeDown();
+  PressKey(ui::VKEY_VOLUME_DOWN);
+  ReleaseKey(ui::VKEY_VOLUME_DOWN);
   PressPowerButton();
   ReleasePowerButton();
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
@@ -1062,16 +1151,16 @@ TEST_F(LockStateControllerTest, Screenshot) {
   ASSERT_EQ(0, delegate->handle_take_screenshot_count());
   PressPowerButton();
   ReleasePowerButton();
-  PressVolumeDown();
-  ReleaseVolumeDown();
+  PressKey(ui::VKEY_VOLUME_DOWN);
+  ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
   // Holding volume down and pressing power takes a screenshot.
   ASSERT_EQ(0, delegate->handle_take_screenshot_count());
-  PressVolumeDown();
+  PressKey(ui::VKEY_VOLUME_DOWN);
   PressPowerButton();
   ReleasePowerButton();
-  ReleaseVolumeDown();
+  ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
 }
 
