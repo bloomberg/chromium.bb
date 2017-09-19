@@ -18,8 +18,10 @@ const char kBookmarkSessionTimeMet[] = "bookmark_session_time_met";
 const char kOmniboxInteraction[] = "omnibox_used";
 const char kNewTabSessionTimeMet[] = "new_tab_session_time_met";
 
-const char kHistoryDeleted[] = "history_deleted";
 const char kIncognitoWindowOpened[] = "incognito_window_opened";
+const char kIncognitoWindowSessionTimeMet[] =
+    "incognito_window_session_time_met";
+
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)

@@ -75,6 +75,7 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/features.h"
+#include "components/feature_engagement/features.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
@@ -140,8 +141,9 @@
 #include "chrome/browser/ui/desktop_ios_promotion/sms_service_factory.h"
 #endif
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/bookmark/bookmark_tracker_factory.h"
+#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
 
@@ -285,8 +287,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   MediaGalleriesPreferencesFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();
 #endif
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::BookmarkTrackerFactory::GetInstance();
+  feature_engagement::IncognitoWindowTrackerFactory::GetInstance();
   feature_engagement::NewTabTrackerFactory::GetInstance();
 #endif
   ContentSuggestionsServiceFactory::GetInstance();

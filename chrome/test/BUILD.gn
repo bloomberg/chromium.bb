@@ -3902,6 +3902,7 @@ test("unit_tests") {
     sources += [
       "../browser/feature_engagement/bookmark/bookmark_tracker_unittest.cc",
       "../browser/feature_engagement/feature_tracker_unittest.cc",
+      "../browser/feature_engagement/incognito_window/incognito_window_tracker_unittest.cc",
       "../browser/feature_engagement/new_tab/new_tab_tracker_unittest.cc",
       "../browser/feature_engagement/session_duration_updater_unittest.cc",
     ]

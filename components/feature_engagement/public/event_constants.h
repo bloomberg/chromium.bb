@@ -34,10 +34,12 @@ extern const char kNewTabSessionTimeMet[];
 // All the events declared below are the string names of deferred onboarding
 // events for the Incognito Window.
 
-// The user has deleted browsing history.
-extern const char kHistoryDeleted[];
 // The user has opened an incognito window.
 extern const char kIncognitoWindowOpened[];
+// The user has satisfied the session time requirement to show the
+// IncognitoWindowPromo by accumulating 2 hours of active session time (one-off
+// event).
+extern const char kIncognitoWindowSessionTimeMet[];
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)

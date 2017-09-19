@@ -49,7 +49,6 @@ class NewTabTracker : public FeatureTracker {
   FRIEND_TEST_ALL_PREFIXES(NewTabTrackerTest, TestShouldShowPromo);
   FRIEND_TEST_ALL_PREFIXES(NewTabTrackerBrowserTest, TestShowPromo);
 
-  base::TimeTicks last_promo_seen_;
   // FeatureTracker:
   void OnSessionTimeMet() override;
 
