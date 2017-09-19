@@ -2292,7 +2292,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         To get personalized content suggested by Google, sign in to Chrome.
       </message>
       <message name="IDS_SIGNIN_PROMO_DESCRIPTION_RECENT_TABS" desc="Description string for 'Continue as' signin promo shown in Recent Tabs screen.">
-        To get your tabs on all your devices, sign in to Chrome.
+        To get your tabs from your other devices, sign in to Chrome.
       </message>
       <message name="IDS_SIGNIN_PROMO_DESCRIPTION_SETTINGS" desc="Description string for 'Continue as' signin promo shown in Settings screen.">
         Sign in to Chrome to get your bookmarks, passwords, and more on all your devices.
