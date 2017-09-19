@@ -4232,9 +4232,9 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   SpdySerializedFrame req(
       spdy_util_.ConstructSpdyHeaders(1, std::move(headers), LOWEST, true));
   MockWrite writes0[] = {CreateMockWrite(req, 0)};
-  SpdySerializedFrame go_away(spdy_util_.ConstructSpdyGoAway(
-      0, ERROR_CODE_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
-  MockRead reads0[] = {CreateMockRead(go_away, 1)};
+  SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_HTTP_1_1_REQUIRED));
+  MockRead reads0[] = {CreateMockRead(rst, 1)};
   SequencedSocketData data0(reads0, arraysize(reads0), writes0,
                             arraysize(writes0));
 
@@ -4308,9 +4308,9 @@ TEST_F(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
       nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
   MockWrite writes0[] = {CreateMockWrite(req, 0)};
-  SpdySerializedFrame go_away(spdy_util_.ConstructSpdyGoAway(
-      0, ERROR_CODE_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
-  MockRead reads0[] = {CreateMockRead(go_away, 1)};
+  SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_HTTP_1_1_REQUIRED));
+  MockRead reads0[] = {CreateMockRead(rst, 1)};
   SequencedSocketData data0(reads0, arraysize(reads0), writes0,
                             arraysize(writes0));
 
