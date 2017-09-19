@@ -17,6 +17,14 @@ modules_core_global_constructors_original_interfaces = [
   "ServiceWorkerGlobalScope",
 ]
 
+# The size and the order in the following list must match to the previous one.
+modules_core_global_constructors_original_interface_basenames = [
+  "audio_worklet_global_scope",
+  "compositor_worker_global_scope",
+  "paint_worklet_global_scope",
+  "service_worker_global_scope",
+]
+
 modules_global_constructors_original_interfaces = [
   "AudioWorkletGlobalScope",
   "CompositorWorkerGlobalScope",
@@ -27,15 +35,26 @@ modules_global_constructors_original_interfaces = [
   "Window",
 ]
 
+# The size and the order in the following list must match to the previous one.
+modules_global_constructors_original_interface_basenames = [
+  "audio_worklet_global_scope",
+  "compositor_worker_global_scope",
+  "dedicated_worker_global_scope",
+  "paint_worklet_global_scope",
+  "service_worker_global_scope",
+  "shared_worker_global_scope",
+  "window",
+]
+
 # The interfaces aren't technically files, but we can treat them as file names
 # to get process_file_template to generate lists of IDL files corresponding
 # to each interface.
 modules_core_global_constructors_generated_idl_files = process_file_template(
-        modules_core_global_constructors_original_interfaces,
-        [ "$blink_modules_output_dir/{{source_name_part}}CoreConstructors.idl" ])
+        modules_core_global_constructors_original_interface_basenames,
+        [ "$blink_modules_output_dir/{{source_name_part}}_core_constructors.idl" ])
 modules_global_constructors_generated_idl_files = process_file_template(
-        modules_global_constructors_original_interfaces,
-        [ "$blink_modules_output_dir/{{source_name_part}}ModulesConstructors.idl" ])
+        modules_global_constructors_original_interface_basenames,
+        [ "$blink_modules_output_dir/{{source_name_part}}_modules_constructors.idl" ])
 
 modules_idl_files =
     get_path_info([

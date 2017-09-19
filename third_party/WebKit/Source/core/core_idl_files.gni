@@ -17,13 +17,20 @@ core_global_constructors_original_interfaces = [
   "DedicatedWorkerGlobalScope",
 ]
 
+# The size and the order in the following list must match to the previous one.
+core_global_constructors_original_interface_basenames = [
+  "window",
+  "shared_worker_global_scope",
+  "dedicated_worker_global_scope",
+]
+
 # The interfaces aren't technically files, but we can treat them as file names
 # to get process_file_template to generate lists of IDL files corresponding
 # to each interface.
 core_global_constructors_generated_idl_files =
     process_file_template(
-        core_global_constructors_original_interfaces,
-        [ "$blink_core_output_dir/{{source_name_part}}CoreConstructors.idl" ])
+        core_global_constructors_original_interface_basenames,
+        [ "$blink_core_output_dir/{{source_name_part}}_core_constructors.idl" ])
 
 core_idl_files =
     get_path_info([
