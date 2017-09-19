@@ -315,6 +315,7 @@ public class VrShellImpl
     @SuppressLint("NewApi")
     public void initializeNative(Tab currentTab, boolean forWebVr,
             boolean webVrAutopresentationExpected, boolean inCct) {
+        assert currentTab != null;
         // Get physical and pixel size of the display, which is needed by native
         // to dynamically calculate the content's resolution and window size.
         DisplayMetrics dm = new DisplayMetrics();
@@ -329,7 +330,7 @@ public class VrShellImpl
                 dm.heightPixels);
 
         reparentAllTabs(mContentVrWindowAndroid);
-        swapToForegroundTab();
+        swapToTab(currentTab);
         createTabList();
         mActivity.getTabModelSelector().addObserver(mTabModelSelectorObserver);
         createTabModelSelectorTabObserver();
@@ -358,10 +359,15 @@ public class VrShellImpl
     private void swapToForegroundTab() {
         Tab tab = mActivity.getActivityTab();
         if (tab == mTab) return;
-        if (!mDelegate.canEnterVr(tab, false)) {
+        if (tab == null || !mDelegate.canEnterVr(tab, false)) {
             forceExitVr();
             return;
         }
+        swapToTab(tab);
+    }
+
+    private void swapToTab(Tab tab) {
+        assert tab != null;
         if (mTab != null) {
             mTab.removeObserver(mTabObserver);
             restoreTabFromVR();
@@ -457,7 +463,8 @@ public class VrShellImpl
 
         Point size = new Point(surfaceWidth, surfaceHeight);
         mContentVirtualDisplay.update(size, dpr, null, null, null, null, null);
-        if (mTab != null && mTab.getContentViewCore() != null) {
+        assert mTab != null;
+        if (mTab.getContentViewCore() != null) {
             mTab.getContentViewCore().onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
             nativeOnPhysicalBackingSizeChanged(
                     mNativeVrShell, mTab.getWebContents(), surfaceWidth, surfaceHeight);
@@ -530,14 +537,12 @@ public class VrShellImpl
         mTab.removeObserver(mTabObserver);
         restoreTabFromVR();
 
-        if (mTab != null) {
-            if (mTab.getContentViewCore() != null) {
-                View parent = mTab.getContentViewCore().getContainerView();
-                mTab.getContentViewCore().onSizeChanged(
-                        parent.getWidth(), parent.getHeight(), 0, 0);
-            }
-            mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
+        assert mTab != null;
+        if (mTab.getContentViewCore() != null) {
+            View parent = mTab.getContentViewCore().getContainerView();
+            mTab.getContentViewCore().onSizeChanged(parent.getWidth(), parent.getHeight(), 0, 0);
         }
+        mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
 
         mContentVirtualDisplay.destroy();
         super.shutdown();
@@ -711,10 +716,7 @@ public class VrShellImpl
     }
 
     private void updateHistoryButtonsVisibility() {
-        if (mTab == null) {
-            nativeSetHistoryButtonsEnabled(mNativeVrShell, false, false);
-            return;
-        }
+        assert mTab != null;
         boolean willCloseTab = false;
         if (mActivity instanceof ChromeTabbedActivity) {
             // If hitting back would minimize Chrome, disable the back button.
