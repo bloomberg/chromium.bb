@@ -1992,12 +1992,27 @@ void RendererSchedulerImpl::EnableVirtualTime() {
 }
 
 void RendererSchedulerImpl::DisableVirtualTimeForTesting() {
+  // Reset virtual time and all tasks queues back to their initial state.
   main_thread_only().use_virtual_time = false;
+
+  if (main_thread_only().virtual_time_stopped) {
+    main_thread_only().virtual_time_stopped = false;
+
+    for (const auto& pair : task_runners_) {
+      if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::TIMER) {
+        DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
+        DCHECK(pair.first->HasFence());
+        pair.first->RemoveFence();
+      }
+    }
+  }
+
+  ForceUpdatePolicy();
 
   virtual_time_control_task_queue_->UnregisterTaskQueue();
   virtual_time_control_task_queue_ = nullptr;
-
-  ForceUpdatePolicy();
+  UnregisterTimeDomain(virtual_time_domain_.get());
+  virtual_time_domain_.reset();
 }
 
 bool RendererSchedulerImpl::ShouldDisableThrottlingBecauseOfAudio(

@@ -50,19 +50,28 @@ class VirtualTimeTest : public SimTest {
     // runloop to busy loop. Disabling virtual time here fixes that.
     WebView().Scheduler()->DisableVirtualTimeForTesting();
   }
+
+  void StopVirtualTimeAndExitRunLoop() {
+    WebView().Scheduler()->SetVirtualTimePolicy(
+        WebViewScheduler::VirtualTimePolicy::PAUSE);
+    testing::ExitRunLoop();
+  }
+
+  // Some task queues may have repeating v8 tasks that run forever so we impose
+  // a hard (virtual) time limit.
+  void RunTasksForPeriod(double delay_ms) {
+    Platform::Current()
+        ->CurrentThread()
+        ->Scheduler()
+        ->LoadingTaskRunner()
+        ->PostDelayedTask(
+            BLINK_FROM_HERE,
+            WTF::Bind(&VirtualTimeTest::StopVirtualTimeAndExitRunLoop,
+                      WTF::Unretained(this)),
+            TimeDelta::FromMillisecondsD(delay_ms));
+    testing::EnterRunLoop();
+  }
 };
-
-namespace {
-
-// Some task queues may have repeating v8 tasks that run forever so we impose a
-// hard time limit.
-void RunTasksForPeriod(double delay_ms) {
-  Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostDelayedTask(
-      BLINK_FROM_HERE, WTF::Bind(&testing::ExitRunLoop),
-      TimeDelta::FromMillisecondsD(delay_ms));
-  testing::EnterRunLoop();
-}
-}  // namespace
 
 // http://crbug.com/633321
 #if defined(OS_ANDROID)
@@ -80,16 +89,16 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder) {
       "function timerFn(delay, value) {"
       "  setTimeout(function() { run_order.push(value); }, delay);"
       "};"
-      "var one_hour = 60 * 60 * 1000;"
-      "timerFn(one_hour * 100, 'a');"
-      "timerFn(one_hour * 10, 'b');"
-      "timerFn(one_hour, 'c');");
+      "var one_minute = 60 * 1000;"
+      "timerFn(one_minute * 4, 'a');"
+      "timerFn(one_minute * 2, 'b');"
+      "timerFn(one_minute, 'c');");
 
   // Normally the JS runs pretty much instantly but the timer callbacks will
-  // take 100h to fire, but thanks to timer fast forwarding we can make them
+  // take 4 mins to fire, but thanks to timer fast forwarding we can make them
   // fire immediatly.
 
-  testing::RunPendingTasks();
+  RunTasksForPeriod(60 * 1000 * 4);
   EXPECT_EQ("c, b, a", ExecuteJavaScript("run_order.join(', ')"));
 }
 
@@ -115,7 +124,7 @@ TEST_F(VirtualTimeTest, MAYBE_SetInterval) {
       "}, 1000);"
       "setTimeout(function() { run_order.push('timer'); }, 1500);");
 
-  RunTasksForPeriod(12000);
+  RunTasksForPeriod(10001);
 
   EXPECT_EQ("9, timer, 8, 7, 6, 5, 4, 3, 2, 1, 0",
             ExecuteJavaScript("run_order.join(', ')"));
@@ -165,9 +174,7 @@ TEST_F(VirtualTimeTest,
   WebView().Scheduler()->SetVirtualTimePolicy(
       WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
 
-  // To ensure determinism virtual time is not allowed to advance until we have
-  // seen at least one load.
-  EXPECT_FALSE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
+  EXPECT_TRUE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
 
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest css_resource("https://example.com/test.css", "text/css");

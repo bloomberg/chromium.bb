@@ -87,8 +87,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void MaybeInitializeBackgroundCPUTimeBudgetPool();
 
   void SetAllowVirtualTimeToAdvance(bool allow_virtual_time_to_advance);
-  void ApplyVirtualTimePolicyForLoading();
-  void ApplyVirtualTimePolicyToTimers();
+  void ApplyVirtualTimePolicy();
 
   void OnThrottlingReported(base::TimeDelta throttling_duration);
 
@@ -119,8 +118,6 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool page_visible_;
   bool disable_background_timer_throttling_;
   bool allow_virtual_time_to_advance_;
-  bool virtual_time_paused_;
-  bool have_seen_loading_task_;
   bool virtual_time_;
   bool is_audio_playing_;
   bool reported_background_throttling_since_navigation_;
