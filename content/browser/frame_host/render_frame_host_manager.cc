@@ -1154,17 +1154,34 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   // other tabs in the current BrowsingInstance will be unable to script it.
   // This is used for cases that require a process swap even in the
   // process-per-tab model, such as WebUI pages.
-  // TODO(clamy): Remove the dependency on the current entry.
-  const NavigationEntry* current_entry =
-      delegate_->GetLastCommittedNavigationEntryForRenderManager();
+
+  // First determine the effective URL of the current RenderFrameHost. This is
+  // the last URL it successfully committed. If it has yet to commit a URL, this
+  // falls back to the Site URL of its SiteInstance.
+  // Note: the effective URL of the current RenderFrameHost may differ from the
+  // URL of the last committed NavigationEntry, which cannot be used to decide
+  // whether to use a new SiteInstance. This happens when navigating a subframe,
+  // or when a new RenderFrameHost has been swapped in at the beginning of a
+  // navigation to replace a crashed RenderFrameHost.
   BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
-  const GURL& current_effective_url = current_entry ?
-      SiteInstanceImpl::GetEffectiveURL(browser_context,
-                                        current_entry->GetURL()) :
-      render_frame_host_->GetSiteInstance()->GetSiteURL();
+  const GURL& current_effective_url =
+      !render_frame_host_->last_successful_url().is_empty()
+          ? SiteInstanceImpl::GetEffectiveURL(
+                browser_context, render_frame_host_->last_successful_url())
+          : render_frame_host_->GetSiteInstance()->GetSiteURL();
+
+  // Determine if the current RenderFrameHost is in view source mode.
+  // TODO(clamy): If the current_effective_url doesn't match the last committed
+  // NavigationEntry's URL, current_is_view_source_mode should not be computed
+  // using the NavigationEntry. This can happen when a tab crashed, and a new
+  // RenderFrameHost was swapped in at the beginning of the navigation. See
+  // https://crbug.com/766630.
+  const NavigationEntry* current_entry =
+      delegate_->GetLastCommittedNavigationEntryForRenderManager();
   bool current_is_view_source_mode = current_entry ?
       current_entry->IsViewSourceMode() : dest_is_view_source_mode;
+
   bool force_swap = ShouldSwapBrowsingInstancesForNavigation(
       current_effective_url,
       current_is_view_source_mode,
