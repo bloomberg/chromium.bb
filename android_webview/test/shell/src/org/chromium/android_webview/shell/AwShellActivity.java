@@ -18,7 +18,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.GeolocationPermissions;
 import android.webkit.WebChromeClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -30,6 +29,7 @@ import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwDevToolsServer;
+import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.android_webview.test.NullContentsClient;
@@ -157,8 +157,8 @@ public class AwShellActivity extends Activity {
             }
 
             @Override
-            public void onGeolocationPermissionsShowPrompt(String origin,
-                    GeolocationPermissions.Callback callback) {
+            public void onGeolocationPermissionsShowPrompt(
+                    String origin, AwGeolocationPermissions.Callback callback) {
                 callback.invoke(origin, false, false);
             }
         };

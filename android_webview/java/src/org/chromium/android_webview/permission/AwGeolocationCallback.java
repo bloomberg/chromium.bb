@@ -4,9 +4,8 @@
 
 package org.chromium.android_webview.permission;
 
-import android.webkit.GeolocationPermissions;
-
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.CleanupReference;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -14,10 +13,10 @@ import org.chromium.base.ThreadUtils;
 import java.lang.ref.WeakReference;
 
 /**
- * This class implements GeolocationPermissions.Callback, and will be sent to
+ * This class implements AwGeolocationPermissions.Callback, and will be sent to
  * WebView applications through WebChromeClient.onGeolocationPermissionsShowPrompt().
  */
-public class AwGeolocationCallback implements GeolocationPermissions.Callback {
+public class AwGeolocationCallback implements AwGeolocationPermissions.Callback {
     private static final String TAG = "cr.Geolocation";
 
     private CleanupRunable mCleanupRunable;

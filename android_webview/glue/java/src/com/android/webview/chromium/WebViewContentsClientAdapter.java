@@ -44,6 +44,7 @@ import org.chromium.android_webview.AwConsoleMessage;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClientBridge;
+import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwHttpAuthHandler;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
 import org.chromium.android_webview.AwSafeBrowsingResponse;
@@ -705,8 +706,8 @@ class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     @Override
-    public void onGeolocationPermissionsShowPrompt(String origin,
-            GeolocationPermissions.Callback callback) {
+    public void onGeolocationPermissionsShowPrompt(
+            String origin, AwGeolocationPermissions.Callback callback) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onGeolocationPermissionsShowPrompt");
             if (mWebChromeClient == null) {
@@ -723,7 +724,9 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                 return;
             }
             if (TRACE) Log.d(TAG, "onGeolocationPermissionsShowPrompt");
-            mWebChromeClient.onGeolocationPermissionsShowPrompt(origin, callback);
+            mWebChromeClient.onGeolocationPermissionsShowPrompt(origin,
+                    callback == null ? null : (callbackOrigin, allow, retain)
+                            -> callback.invoke(callbackOrigin, allow, retain));
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onGeolocationPermissionsShowPrompt");
         }

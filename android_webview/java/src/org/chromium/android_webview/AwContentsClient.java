@@ -19,7 +19,6 @@ import android.provider.Browser;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
-import android.webkit.GeolocationPermissions;
 import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.permission.AwPermissionRequest;
@@ -299,8 +298,8 @@ public abstract class AwContentsClient {
     public abstract void showFileChooser(
             Callback<String[]> uploadFilePathsCallback, FileChooserParamsImpl fileChooserParams);
 
-    public abstract void onGeolocationPermissionsShowPrompt(String origin,
-            GeolocationPermissions.Callback callback);
+    public abstract void onGeolocationPermissionsShowPrompt(
+            String origin, AwGeolocationPermissions.Callback callback);
 
     public abstract void onGeolocationPermissionsHidePrompt();
 
