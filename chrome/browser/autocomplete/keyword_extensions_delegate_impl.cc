@@ -143,8 +143,8 @@ void KeywordExtensionsDelegateImpl::Observe(
       // session.
       base::string16 keyword, remaining_input;
       if (matches()->empty() || current_keyword_extension_id_.empty() ||
-          !KeywordProvider::ExtractKeywordFromInput(
-              input, &keyword, &remaining_input))
+          !KeywordProvider::ExtractKeywordFromInput(input, model, &keyword,
+                                                    &remaining_input))
         return;
 
       const TemplateURL* template_url(
@@ -166,7 +166,7 @@ void KeywordExtensionsDelegateImpl::Observe(
       // direct calls from the development console, outside the normal flow of
       // user input.
       base::string16 keyword, remaining_input;
-      if (!KeywordProvider::ExtractKeywordFromInput(input, &keyword,
+      if (!KeywordProvider::ExtractKeywordFromInput(input, model, &keyword,
                                                     &remaining_input))
         return;
       const TemplateURL* template_url =
