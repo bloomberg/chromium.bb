@@ -11,13 +11,17 @@
 #include "base/macros.h"
 #include "content/child/child_message_filter.h"
 #include "content/child/scoped_child_process_reference.h"
+#include "content/common/shared_worker/shared_worker.mojom.h"
+#include "content/common/shared_worker/shared_worker_host.mojom.h"
+#include "content/common/shared_worker/shared_worker_info.mojom.h"
 #include "ipc/ipc_listener.h"
-#include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/WebAddressSpace.h"
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
+#include "third_party/WebKit/public/web/worker_content_settings_proxy.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -28,7 +32,6 @@ class WebSharedWorker;
 }
 
 namespace content {
-class MessagePort;
 class SharedWorkerDevToolsAgent;
 class WebApplicationCacheHostImpl;
 class WebMessagePortChannelImpl;
@@ -44,25 +47,24 @@ class WebMessagePortChannelImpl;
 // In either case the corresponding blink::WebSharedWorker also deletes
 // itself.
 class EmbeddedSharedWorkerStub : public IPC::Listener,
-                                 public blink::WebSharedWorkerClient {
+                                 public blink::WebSharedWorkerClient,
+                                 public mojom::SharedWorker {
  public:
   EmbeddedSharedWorkerStub(
-      const GURL& url,
-      const base::string16& name,
-      const base::string16& content_security_policy,
-      blink::WebContentSecurityPolicyType security_policy_type,
-      blink::WebAddressSpace creation_address_space,
+      mojom::SharedWorkerInfoPtr info,
       bool pause_on_start,
       int route_id,
-      bool data_saver_enabled,
-      mojo::ScopedMessagePipeHandle content_settings_handle);
+      blink::mojom::WorkerContentSettingsProxyPtr content_settings,
+      mojom::SharedWorkerHostPtr host,
+      mojom::SharedWorkerRequest request);
+  ~EmbeddedSharedWorkerStub() override;
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelError() override;
 
   // blink::WebSharedWorkerClient implementation.
-  void CountFeature(uint32_t feature) override;
+  void CountFeature(blink::mojom::WebFeature feature) override;
   void WorkerContextClosed() override;
   void WorkerContextDestroyed() override;
   void WorkerReadyForInspection() override;
@@ -84,21 +86,21 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
       blink::WebServiceWorkerNetworkProvider*) override;
 
  private:
-  ~EmbeddedSharedWorkerStub() override;
-
   void Shutdown();
-  bool Send(IPC::Message* message);
 
   // WebSharedWorker will own |channel|.
   void ConnectToChannel(int connection_request_id,
                         std::unique_ptr<WebMessagePortChannelImpl> channel);
 
-  void OnConnect(int connection_request_id,
-                 const MessagePort& sent_message_port);
-  void OnTerminateWorkerContext();
+  // mojom::SharedWorker methods:
+  void Connect(int connection_request_id,
+               mojo::ScopedMessagePipeHandle port) override;
+  void Terminate() override;
 
-  int route_id_;
-  base::string16 name_;
+  mojo::Binding<mojom::SharedWorker> binding_;
+  mojom::SharedWorkerHostPtr host_;
+  const int route_id_;
+  const std::string name_;
   bool running_ = false;
   GURL url_;
   blink::WebSharedWorker* impl_ = nullptr;
