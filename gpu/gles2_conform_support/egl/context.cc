@@ -276,7 +276,8 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
 
   std::unique_ptr<gpu::gles2::GLES2Decoder> decoder(
       gpu::gles2::GLES2Decoder::Create(command_buffer.get(),
-                                       command_buffer->service(), group.get()));
+                                       command_buffer->service(), &outputter_,
+                                       group.get()));
 
   command_buffer->set_handler(decoder.get());
 

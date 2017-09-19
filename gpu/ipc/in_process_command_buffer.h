@@ -65,6 +65,7 @@ namespace gles2 {
 struct ContextCreationAttribHelper;
 class FramebufferCompletenessCache;
 class MailboxManager;
+class Outputter;
 class ProgramCache;
 class ShaderTranslatorCache;
 }
@@ -111,14 +112,13 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                                 int32_t start,
                                 int32_t end) override;
   void SetGetBuffer(int32_t shm_id) override;
-  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
-                                                  int32_t* id) override;
+  scoped_refptr<Buffer> CreateTransferBuffer(size_t size, int32_t* id) override;
   void DestroyTransferBuffer(int32_t id) override;
 
   // GpuControl implementation:
   // NOTE: The GpuControlClient will be called on the client thread.
   void SetGpuControlClient(GpuControlClient*) override;
-  gpu::Capabilities GetCapabilities() override;
+  Capabilities GetCapabilities() override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
                       size_t height,
@@ -173,7 +173,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   using SwapBuffersCompletionCallback = base::Callback<void(
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result,
-      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac)>;
+      const GpuProcessHostedCALayerTreeParamsMac* params_mac)>;
   void SetSwapBuffersCompletionCallback(
       const SwapBuffersCompletionCallback& callback);
 
@@ -222,6 +222,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds();
     scoped_refptr<gl::GLShareGroup> share_group();
     gles2::MailboxManager* mailbox_manager() { return mailbox_manager_; }
+    gles2::Outputter* outputter();
     gles2::ProgramCache* program_cache();
     gles2::ImageManager* image_manager() { return &image_manager_; }
     ServiceDiscardableManager* discardable_manager() {
@@ -240,6 +241,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     const GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
     std::unique_ptr<gles2::MailboxManager> owned_mailbox_manager_;
     gles2::MailboxManager* mailbox_manager_ = nullptr;
+    std::unique_ptr<gles2::Outputter> outputter_;
     scoped_refptr<gl::GLShareGroup> share_group_;
     std::unique_ptr<gles2::ProgramCache> program_cache_;
     // No-op default initialization is used in in-process mode.
@@ -255,7 +257,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     bool is_offscreen;
     SurfaceHandle window;
     const gles2::ContextCreationAttribHelper& attribs;
-    gpu::Capabilities* capabilities;  // Ouptut.
+    Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* context_group;
     ImageFactory* image_factory;
 
@@ -263,7 +265,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
         bool is_offscreen,
         SurfaceHandle window,
         const gles2::ContextCreationAttribHelper& attribs,
-        gpu::Capabilities* capabilities,
+        Capabilities* capabilities,
         InProcessCommandBuffer* share_group,
         ImageFactory* image_factory)
         : is_offscreen(is_offscreen),
@@ -338,7 +340,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   State last_state_;
   base::Lock last_state_lock_;
   int32_t last_put_offset_;
-  gpu::Capabilities capabilities_;
+  Capabilities capabilities_;
   GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   uint64_t next_fence_sync_release_;
   uint64_t flushed_fence_sync_release_;

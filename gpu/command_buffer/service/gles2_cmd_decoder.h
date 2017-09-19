@@ -48,6 +48,7 @@ class FramebufferManager;
 class GLES2Util;
 class ImageManager;
 class Logger;
+class Outputter;
 class QueryManager;
 class ShaderTranslatorInterface;
 class Texture;
@@ -127,6 +128,7 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder, public AsyncAPIInterface {
   // Creates a decoder.
   static GLES2Decoder* Create(GLES2DecoderClient* client,
                               CommandBufferServiceBase* command_buffer_service,
+                              Outputter* outputter,
                               ContextGroup* group);
 
   ~GLES2Decoder() override;
@@ -156,6 +158,8 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder, public AsyncAPIInterface {
   void set_log_commands(bool log_commands) {
     log_commands_ = log_commands;
   }
+
+  Outputter* outputter() const { return outputter_; }
 
   virtual base::WeakPtr<GLES2Decoder> AsWeakPtr() = 0;
 
@@ -342,14 +346,17 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder, public AsyncAPIInterface {
                          bool can_bind_to_sampler) = 0;
 
  protected:
-  explicit GLES2Decoder(CommandBufferServiceBase* command_buffer_service);
+  GLES2Decoder(CommandBufferServiceBase* command_buffer_service,
+               Outputter* outputter);
 
   base::StringPiece GetLogPrefix() override;
 
  private:
-  bool initialized_;
-  bool debug_;
-  bool log_commands_;
+  bool initialized_ = false;
+  bool debug_ = false;
+  bool log_commands_ = false;
+  Outputter* outputter_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2Decoder);
 };
 

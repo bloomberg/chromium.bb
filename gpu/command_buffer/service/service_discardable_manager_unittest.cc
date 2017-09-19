@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -67,7 +68,7 @@ class ServiceDiscardableManagerTest : public GpuServiceTest {
  protected:
   void SetUp() override {
     GpuServiceTest::SetUp();
-    decoder_.reset(new MockGLES2Decoder(&command_buffer_service_));
+    decoder_.reset(new MockGLES2Decoder(&command_buffer_service_, &outputter_));
     feature_info_ = new FeatureInfo();
     context_group_ = scoped_refptr<ContextGroup>(new ContextGroup(
         gpu_preferences_, false, &mailbox_manager_, nullptr, nullptr, nullptr,
@@ -114,6 +115,7 @@ class ServiceDiscardableManagerTest : public GpuServiceTest {
   }
 
   MailboxManagerImpl mailbox_manager_;
+  TraceOutputter outputter_;
   ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;
   GpuPreferences gpu_preferences_;

@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,7 +70,8 @@ class QueryManagerTest : public GpuServiceTest {
     buffer = command_buffer_service_->CreateTransferBufferHelper(
         kSharedBufferSize, &shared_memory2_id_);
     memset(buffer->memory(), kInitialMemoryValue, kSharedBufferSize);
-    decoder_.reset(new MockGLES2Decoder(command_buffer_service_.get()));
+    decoder_.reset(
+        new MockGLES2Decoder(command_buffer_service_.get(), &outputter_));
     TestHelper::SetupFeatureInfoInitExpectations(
         gl_.get(), extension_expectations);
     EXPECT_CALL(*decoder_.get(), GetGLContext())
@@ -122,6 +124,7 @@ class QueryManagerTest : public GpuServiceTest {
     manager_->EndQuery(query, submit_count);
   }
 
+  TraceOutputter outputter_;
   std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
   std::unique_ptr<MockGLES2Decoder> decoder_;
   std::unique_ptr<QueryManager> manager_;

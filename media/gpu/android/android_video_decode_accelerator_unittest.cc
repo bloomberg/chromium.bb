@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/mock_android_overlay.h"
 #include "media/base/android/mock_media_codec_bridge.h"
@@ -84,7 +85,8 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
  public:
   // Default to baseline H264 because it's always supported.
   AndroidVideoDecodeAcceleratorTest()
-      : gl_decoder_(&command_buffer_service_), config_(H264PROFILE_BASELINE) {}
+      : gl_decoder_(&command_buffer_service_, &outputter_),
+        config_(H264PROFILE_BASELINE) {}
 
   void SetUp() override {
     ASSERT_TRUE(gl::init::InitializeGLOneOff());
@@ -195,6 +197,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   gpu::FakeCommandBufferServiceBase command_buffer_service_;
+  gpu::gles2::TraceOutputter outputter_;
   NiceMock<gpu::gles2::MockGLES2Decoder> gl_decoder_;
   NiceMock<MockVDAClient> client_;
   std::unique_ptr<FakeCodecAllocator> codec_allocator_;

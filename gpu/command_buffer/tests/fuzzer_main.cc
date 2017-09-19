@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
@@ -160,9 +161,9 @@ class CommandBufferSetup {
     command_buffer_.reset(new CommandBufferDirect(
         context_group->transfer_buffer_manager(), &sync_point_manager_));
 
-    decoder_.reset(gles2::GLES2Decoder::Create(command_buffer_.get(),
-                                               command_buffer_->service(),
-                                               context_group.get()));
+    decoder_.reset(gles2::GLES2Decoder::Create(
+        command_buffer_.get(), command_buffer_->service(), &outputter_,
+        context_group.get()));
     command_buffer_->set_handler(decoder_.get());
 
     InitializeInitialCommandBuffer();
@@ -270,6 +271,7 @@ class CommandBufferSetup {
   GpuPreferences gpu_preferences_;
 
   gles2::MailboxManagerImpl mailbox_manager_;
+  gles2::TraceOutputter outputter_;
   scoped_refptr<gl::GLShareGroup> share_group_;
   SyncPointManager sync_point_manager_;
   gles2::ImageManager image_manager_;

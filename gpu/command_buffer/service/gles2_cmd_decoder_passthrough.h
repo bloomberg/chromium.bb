@@ -101,6 +101,7 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
  public:
   GLES2DecoderPassthroughImpl(GLES2DecoderClient* client,
                               CommandBufferServiceBase* command_buffer_service,
+                              Outputter* outputter,
                               ContextGroup* group);
   ~GLES2DecoderPassthroughImpl() override;
 

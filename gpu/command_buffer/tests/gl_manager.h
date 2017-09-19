@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
@@ -165,6 +166,7 @@ class GLManager : private GpuControl {
   gpu::GpuPreferences gpu_preferences_;
 
   gles2::MailboxManagerImpl owned_mailbox_manager_;
+  gles2::TraceOutputter outputter_;
   gles2::ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;
   std::unique_ptr<gles2::ShaderTranslatorCache> translator_cache_;

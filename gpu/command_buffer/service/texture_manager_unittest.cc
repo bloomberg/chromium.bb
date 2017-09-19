@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/mocks.h"
@@ -87,7 +88,7 @@ class TextureManagerTest : public GpuServiceTest {
     TestHelper::SetupTextureManagerInitExpectations(
         gl_.get(), false, false, false, {}, kUseDefaultTextures);
     manager_->Initialize();
-    error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
+    error_state_.reset(new ::testing::StrictMock<MockErrorState>());
   }
 
   void TearDown() override {
@@ -677,9 +678,9 @@ class TextureTestBase : public GpuServiceTest {
         kMaxCubeMapTextureSize, kMaxRectangleTextureSize, kMax3DTextureSize,
         kMaxArrayTextureLayers, kUseDefaultTextures, nullptr,
         &discardable_manager_));
-    decoder_.reset(new ::testing::StrictMock<gles2::MockGLES2Decoder>(
-        &command_buffer_service_));
-    error_state_.reset(new ::testing::StrictMock<gles2::MockErrorState>());
+    decoder_.reset(new ::testing::StrictMock<MockGLES2Decoder>(
+        &command_buffer_service_, &outputter_));
+    error_state_.reset(new ::testing::StrictMock<MockErrorState>());
     manager_->CreateTexture(kClient1Id, kService1Id);
     texture_ref_ = manager_->GetTexture(kClient1Id);
     ASSERT_TRUE(texture_ref_.get() != NULL);
@@ -711,6 +712,7 @@ class TextureTestBase : public GpuServiceTest {
   }
 
   FakeCommandBufferServiceBase command_buffer_service_;
+  TraceOutputter outputter_;
   std::unique_ptr<MockGLES2Decoder> decoder_;
   std::unique_ptr<MockErrorState> error_state_;
   scoped_refptr<FeatureInfo> feature_info_;

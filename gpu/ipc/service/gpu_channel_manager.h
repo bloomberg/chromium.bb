@@ -49,6 +49,7 @@ class SyncPointManager;
 struct SyncToken;
 namespace gles2 {
 class MailboxManager;
+class Outputter;
 class ProgramCache;
 }
 }
@@ -106,6 +107,7 @@ class GPU_EXPORT GpuChannelManager {
   ServiceDiscardableManager* discardable_manager() {
     return &discardable_manager_;
   }
+  gles2::Outputter* outputter();
   gles2::ProgramCache* program_cache();
   gles2::ShaderTranslatorCache* shader_translator_cache() {
     return &shader_translator_cache_;
@@ -178,6 +180,7 @@ class GPU_EXPORT GpuChannelManager {
   scoped_refptr<PreemptionFlag> preemption_flag_;
 
   std::unique_ptr<gles2::MailboxManager> mailbox_manager_;
+  std::unique_ptr<gles2::Outputter> outputter_;
   GpuMemoryManager gpu_memory_manager_;
   Scheduler* scheduler_;
   // SyncPointManager guaranteed to outlive running MessageLoop.

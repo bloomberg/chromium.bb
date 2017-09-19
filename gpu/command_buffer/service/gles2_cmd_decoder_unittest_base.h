@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -668,6 +669,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   scoped_refptr<gl::GLSurfaceStub> surface_;
   scoped_refptr<GLContextMock> context_;
   std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
+  TraceOutputter outputter_;
   std::unique_ptr<MockGLES2Decoder> mock_decoder_;
   std::unique_ptr<GLES2Decoder> decoder_;
   MemoryTracker* memory_tracker_;
@@ -914,6 +916,7 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
+  TraceOutputter outputter_;
   std::unique_ptr<GLES2DecoderPassthroughImpl> decoder_;
   scoped_refptr<ContextGroup> group_;
 };
