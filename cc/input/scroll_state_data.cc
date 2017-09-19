@@ -19,7 +19,6 @@ ScrollStateData::ScrollStateData()
       is_beginning(false),
       is_in_inertial_phase(false),
       is_ending(false),
-      should_propagate(false),
       from_user_input(false),
       delta_consumed_for_scroll_sequence(false),
       is_direct_manipulation(false),

@@ -41,7 +41,6 @@ ScrollState* ScrollState::Create(ScrollStateInit init) {
   scroll_state_data->is_beginning = init.isBeginning();
   scroll_state_data->is_in_inertial_phase = init.isInInertialPhase();
   scroll_state_data->is_ending = init.isEnding();
-  scroll_state_data->should_propagate = init.shouldPropagate();
   scroll_state_data->from_user_input = init.fromUserInput();
   scroll_state_data->is_direct_manipulation = init.isDirectManipulation();
   scroll_state_data->delta_granularity = init.deltaGranularity();

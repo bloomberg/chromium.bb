@@ -2339,19 +2339,11 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
 
   switch (type) {
     case WebInputEvent::kGestureScrollUpdate: {
-      bool preventPropagation = false;
-      if (!args->PeekNext().IsEmpty()) {
-        if (!args->GetNext(&preventPropagation)) {
-          args->ThrowError();
-          return;
-        }
-      }
       if (!GetScrollUnits(args, &event.data.scroll_update.delta_units))
         return;
 
       event.data.scroll_update.delta_x = static_cast<float>(x);
       event.data.scroll_update.delta_y = static_cast<float>(y);
-      event.data.scroll_update.prevent_propagation = preventPropagation;
       event.x = current_gesture_location_.x;
       event.y = current_gesture_location_.y;
       current_gesture_location_.x =

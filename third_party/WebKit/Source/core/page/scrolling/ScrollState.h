@@ -65,8 +65,6 @@ class CORE_EXPORT ScrollState final
   // True if this scroll is the result of the user interacting directly with
   // the screen, e.g., via touch.
   bool isDirectManipulation() const { return data_->is_direct_manipulation; }
-  // True if this scroll is allowed to bubble upwards.
-  bool shouldPropagate() const { return data_->should_propagate; };
 
   // Non web exposed methods.
   void ConsumeDeltaNative(double x, double y);

@@ -587,11 +587,9 @@ void Element::NativeDistributeScroll(ScrollState& scroll_state) {
 
   scroll_state.distributeToScrollChainDescendant();
 
-  // If the scroll doesn't propagate, and we're currently scrolling
-  // an element other than this one, prevent the scroll from
-  // propagating to this element.
-  if (!scroll_state.shouldPropagate() &&
-      scroll_state.DeltaConsumedForScrollSequence() &&
+  // The scroll doesn't propagate, and we're currently scrolling an element
+  // other than this one, prevent the scroll from propagating to this element.
+  if (scroll_state.DeltaConsumedForScrollSequence() &&
       scroll_state.CurrentNativeScrollingElement() != this) {
     return;
   }

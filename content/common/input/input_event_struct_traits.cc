@@ -200,8 +200,6 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
                 .previous_update_in_sequence_prevented =
                 gesture_data->scroll_data->update_details
                     ->previous_update_in_sequence_prevented;
-            gesture_event->data.scroll_update.prevent_propagation =
-                gesture_data->scroll_data->update_details->prevent_propagation;
           }
           break;
       }
@@ -253,8 +251,6 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
                 .previous_update_in_sequence_prevented =
                 gesture_data->scroll_data->update_details
                     ->previous_update_in_sequence_prevented;
-            gesture_event->data.scroll_update.prevent_propagation =
-                gesture_data->scroll_data->update_details->prevent_propagation;
           }
           break;
       }
@@ -488,8 +484,7 @@ StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::gesture_data(
               gesture_event->data.scroll_update.velocity_x,
               gesture_event->data.scroll_update.velocity_y,
               gesture_event->data.scroll_update
-                  .previous_update_in_sequence_prevented,
-              gesture_event->data.scroll_update.prevent_propagation));
+                  .previous_update_in_sequence_prevented));
       break;
     case blink::WebInputEvent::Type::kGestureFlingStart:
       gesture_data->fling_data = content::mojom::FlingData::New(

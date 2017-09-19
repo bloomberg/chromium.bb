@@ -445,7 +445,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
   scroll_state_data->velocity_y = velocity.Height();
   scroll_state_data->position_x = position.X();
   scroll_state_data->position_y = position.Y();
-  scroll_state_data->should_propagate = !gesture_event.PreventPropagation();
   scroll_state_data->is_in_inertial_phase =
       gesture_event.InertialPhase() == WebGestureEvent::kMomentumPhase;
   scroll_state_data->is_direct_manipulation =

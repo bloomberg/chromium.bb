@@ -170,7 +170,6 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     web_gesture_event.data.scroll_update.velocity_y = 42;
     web_gesture_event.data.scroll_update.inertial_phase =
         WebGestureEvent::kMomentumPhase;
-    web_gesture_event.data.scroll_update.prevent_propagation = true;
 
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
@@ -188,7 +187,6 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     EXPECT_EQ(42, scaled_gesture_event.VelocityY());
     EXPECT_EQ(WebGestureEvent::kMomentumPhase,
               scaled_gesture_event.InertialPhase());
-    EXPECT_TRUE(scaled_gesture_event.PreventPropagation());
   }
 
   {

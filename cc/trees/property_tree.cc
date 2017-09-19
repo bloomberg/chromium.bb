@@ -1534,11 +1534,9 @@ void ScrollTree::DistributeScroll(ScrollNode* scroll_node,
     return;
   scroll_state->DistributeToScrollChainDescendant();
 
-  // If the scroll doesn't propagate, and we're currently scrolling
-  // a node other than this one, prevent the scroll from
-  // propagating to this node.
-  if (!scroll_state->should_propagate() &&
-      scroll_state->delta_consumed_for_scroll_sequence() &&
+  // If we're currently scrolling a node other than this one, prevent the scroll
+  // from propagating to this node.
+  if (scroll_state->delta_consumed_for_scroll_sequence() &&
       scroll_state->current_native_scrolling_node()->id != scroll_node->id) {
     return;
   }
