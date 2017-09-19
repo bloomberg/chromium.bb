@@ -242,6 +242,8 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
     //   character set.
     // - Disallow Arabic non-spacing marks after non-Arabic characters.
     // - Disallow Hebrew non-spacing marks after non-Hebrew characters.
+    // - Disallow U+0307 (dot above) after 'i', 'j', 'l' or dotless i (U+0131).
+    //   Dotless j (U+0237) is not in the allowed set to begin with.
     dangerous_pattern = new icu::RegexMatcher(
         icu::UnicodeString(
             R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}])"
@@ -260,7 +262,8 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
             R"([\p{sc=tfng}].*[a-z]|[a-z].*[\p{sc=tfng}]|)"
             R"([^\p{scx=latn}\p{scx=grek}\p{scx=cyrl}][\u0300-\u0339]|)"
             R"([^\p{scx=arab}][\u064b-\u0655\u0670]|)"
-            R"([^\p{scx=hebr}]\u05b4)",
+            R"([^\p{scx=hebr}]\u05b4|)"
+            R"([ijl\u0131]\u0307)",
             -1, US_INV),
         0, status);
     tls_index.Set(dangerous_pattern);

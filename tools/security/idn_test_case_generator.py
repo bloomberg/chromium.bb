@@ -89,24 +89,24 @@ def make_case(unicode_domain, unicode_allowed=True, case_name=None):
     prepare the test case in C++ syntax.
 
     >>> make_case(u'\u5317\u4eac\u5927\u5b78.cn', True, 'Hanzi (Chinese)')
-      // Hanzi (Chinese)
-      {"xn--1lq90ic7f1rc.cn", L"\\x5317\\x4eac\\x5927\\x5b78.cn", true},
+        // Hanzi (Chinese)
+        {"xn--1lq90ic7f1rc.cn", L"\\x5317\\x4eac\\x5927\\x5b78.cn", true},
     >>> make_case(u'b\u00fccher.de', True)
-      {"xn--bcher-kva.de", L"b\\x00fc" L"cher.de", true},
+        {"xn--bcher-kva.de", L"b\\x00fc" L"cher.de", true},
 
     This will also apply normalization to the Unicode domain, as required by the
     IDNA algorithm. This example shows U+210F normalized to U+0127 (this
     generates the exact same test case as u'\u0127ello'):
 
     >>> make_case(u'\u210fello', True)
-      {"xn--ello-4xa", L"\\x0127" L"ello", true},
+        {"xn--ello-4xa", L"\\x0127" L"ello", true},
     """
     idna_input = codecs.encode(unicode_domain, 'idna')
     # Round-trip to ensure normalization.
     unicode_output = codecs.decode(idna_input, 'idna')
     if case_name:
-      print('  // %s' % case_name)
-    print('  {%s, %s, %s},' %
+      print('    // %s' % case_name)
+    print('    {%s, %s, %s},' %
           (str_to_c_string(idna_input), unicode_to_c_wstring(unicode_output),
            repr(unicode_allowed).lower()))
 
