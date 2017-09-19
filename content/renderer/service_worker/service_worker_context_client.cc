@@ -8,8 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -627,7 +625,6 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
-      is_script_streaming_(is_script_streaming),
       sender_(ChildThreadImpl::current()->thread_safe_sender()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       proxy_(nullptr),
@@ -806,13 +803,6 @@ void ServiceWorkerContextClient::DidEvaluateWorkerScript(bool success) {
   worker_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerContextClient::SendWorkerStarted,
                                 GetWeakPtr()));
-
-  // Temporary for https://crbug.com/760427.
-  if (!success && is_script_streaming_) {
-    base::debug::ScopedCrashKey key("script_streaming_failure_url",
-                                    script_url_.spec());
-    base::debug::DumpWithoutCrashing();
-  }
 
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "EVALUATE_SCRIPT", this,
                                   "Status", success ? "Success" : "Failure");
