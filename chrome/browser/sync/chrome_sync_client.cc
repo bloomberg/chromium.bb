@@ -353,10 +353,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
      return base::WeakPtr<syncer::SyncableService>();
   }
   switch (type) {
-    case syncer::DEVICE_INFO:
-      return ProfileSyncServiceFactory::GetForProfile(profile_)
-          ->GetDeviceInfoSyncableService()
-          ->AsWeakPtr();
     case syncer::PREFERENCES:
       return PrefServiceSyncableFromProfile(profile_)
           ->GetSyncableService(syncer::PREFERENCES)

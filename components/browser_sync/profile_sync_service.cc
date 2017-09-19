@@ -46,7 +46,6 @@
 #include "components/sync/base/system_encryptor.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_bridge.h"
-#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/directory_data_type_controller.h"
@@ -95,7 +94,6 @@ using syncer::DataTypeController;
 using syncer::DataTypeManager;
 using syncer::DataTypeStatusTable;
 using syncer::DeviceInfoSyncBridge;
-using syncer::DeviceInfoSyncService;
 using syncer::JsBackend;
 using syncer::JsController;
 using syncer::JsEventDetails;
@@ -240,18 +238,13 @@ void ProfileSyncService::Initialize() {
                  sync_enabled_weak_factory_.GetWeakPtr(),
                  syncer::ModelTypeSet(syncer::SESSIONS)));
 
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
-    const syncer::ModelTypeStoreFactory& store_factory =
-        GetModelTypeStoreFactory(syncer::DEVICE_INFO, base_directory_);
-    device_info_sync_bridge_ = std::make_unique<DeviceInfoSyncBridge>(
-        local_device_.get(), store_factory,
-        base::BindRepeating(
-            &ModelTypeChangeProcessor::Create,
-            base::BindRepeating(&syncer::ReportUnrecoverableError, channel_)));
-  } else {
-    device_info_sync_service_ =
-        std::make_unique<DeviceInfoSyncService>(local_device_.get());
-  }
+  const syncer::ModelTypeStoreFactory& store_factory =
+      GetModelTypeStoreFactory(syncer::DEVICE_INFO, base_directory_);
+  device_info_sync_bridge_ = std::make_unique<DeviceInfoSyncBridge>(
+      local_device_.get(), store_factory,
+      base::BindRepeating(
+          &ModelTypeChangeProcessor::Create,
+          base::BindRepeating(&syncer::ReportUnrecoverableError, channel_)));
 
   syncer::SyncApiComponentFactory::RegisterDataTypesMethod
       register_platform_types_callback =
@@ -403,12 +396,7 @@ sync_sessions::FaviconCache* ProfileSyncService::GetFaviconCache() {
 
 syncer::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // One of the two should always be non-null after initialization is done.
-  if (device_info_sync_bridge_) {
-    return device_info_sync_bridge_.get();
-  } else {
-    return device_info_sync_service_.get();
-  }
+  return device_info_sync_bridge_.get();
 }
 
 syncer::LocalDeviceInfoProvider*
@@ -2240,11 +2228,6 @@ std::string ProfileSyncService::GetAccessTokenForTest() const {
 syncer::SyncableService* ProfileSyncService::GetSessionsSyncableService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return sessions_sync_manager_.get();
-}
-
-syncer::SyncableService* ProfileSyncService::GetDeviceInfoSyncableService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return device_info_sync_service_.get();
 }
 
 syncer::ModelTypeSyncBridge* ProfileSyncService::GetDeviceInfoSyncBridge() {
