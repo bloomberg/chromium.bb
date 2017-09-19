@@ -131,7 +131,8 @@ public class AndroidSyncSettingsTest {
     }
 
     private void setupTestAccounts(Context context) {
-        mAccountManager = new FakeAccountManagerDelegate(context);
+        mAccountManager = new FakeAccountManagerDelegate(
+                FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
         AccountManagerFacade.overrideAccountManagerFacadeForTests(context, mAccountManager);
         mAccount = setupTestAccount("account@example.com");
         mAlternateAccount = setupTestAccount("alternate@example.com");

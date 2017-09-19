@@ -53,7 +53,8 @@ public final class SigninTestUtil {
                 ProcessInitializationHandler.getInstance().initializePreNative();
             }
         });
-        sAccountManager = new FakeAccountManagerDelegate(sContext);
+        sAccountManager = new FakeAccountManagerDelegate(
+                FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
         AccountManagerFacade.overrideAccountManagerFacadeForTests(sContext, sAccountManager);
         overrideAccountIdProvider();
         resetSigninState();
