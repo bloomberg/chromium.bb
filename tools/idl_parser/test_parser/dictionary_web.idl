@@ -83,10 +83,18 @@ dictionary {
  *  Key(mandatory)
  *    Type()
  *      StringType(DOMString)
+ *  Key(sequenceOfLongWithClamp)
+ *    Type()
+ *      Sequence()
+ *        Type()
+ *          PrimitiveType(long)
+ *          ExtAttributes()
+ *            ExtAttribute(Clamp)
  *  Error(Unexpected keyword "optional" after ">".)
  */
 dictionary MyDictionaryInvalidOptional {
   DOMString mandatory;
+  sequence<[Clamp] long> sequenceOfLongWithClamp;
   sequence<DOMString> optional;
 };
 

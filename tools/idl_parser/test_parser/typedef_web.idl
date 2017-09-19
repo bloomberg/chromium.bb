@@ -31,10 +31,10 @@ typedef long MyLong;
 
 /** TREE
  *Typedef(MyLong)
- *  ExtAttributes()
- *    ExtAttribute(foo)
  *  Type()
  *    PrimitiveType(long)
+ *    ExtAttributes()
+ *      ExtAttribute(foo)
  */
 typedef [foo] long MyLong;
 

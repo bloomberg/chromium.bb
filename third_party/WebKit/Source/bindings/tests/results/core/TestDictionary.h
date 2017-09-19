@@ -278,6 +278,13 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setTestObjectSequenceMember(const HeapVector<Member<TestObject>>&);
 
+  bool hasTreatNullAsStringSequenceMember() const { return has_treat_null_as_string_sequence_member_; }
+  const Vector<String>& treatNullAsStringSequenceMember() const {
+    DCHECK(has_treat_null_as_string_sequence_member_);
+    return treat_null_as_string_sequence_member_;
+  }
+  void setTreatNullAsStringSequenceMember(const Vector<String>&);
+
   bool hasUint8ArrayMember() const { return uint8_array_member_; }
   NotShared<DOMUint8Array> uint8ArrayMember() const {
     return uint8_array_member_;
@@ -326,6 +333,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_test_interface_garbage_collected_sequence_member_ = false;
   bool has_test_interface_sequence_member_ = false;
   bool has_test_object_sequence_member_ = false;
+  bool has_treat_null_as_string_sequence_member_ = false;
   bool has_union_in_record_member_ = false;
   bool has_unrestricted_double_member_ = false;
 
@@ -364,6 +372,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   Member<TestInterfaceImplementation> test_interface_or_null_member_;
   HeapVector<Member<TestInterfaceImplementation>> test_interface_sequence_member_;
   HeapVector<Member<TestObject>> test_object_sequence_member_;
+  Vector<String> treat_null_as_string_sequence_member_;
   Member<DOMUint8Array> uint8_array_member_;
   HeapVector<std::pair<String, LongOrBoolean>> union_in_record_member_;
   FloatOrBoolean union_with_typedefs_;

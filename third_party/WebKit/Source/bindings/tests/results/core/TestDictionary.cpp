@@ -30,6 +30,7 @@ TestDictionary::TestDictionary() {
   setStringSequenceMember(Vector<String>());
   setTestInterfaceGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceGarbageCollected>>());
   setTestInterfaceSequenceMember(HeapVector<Member<TestInterfaceImplementation>>());
+  setTreatNullAsStringSequenceMember(Vector<String>());
   setUnrestrictedDoubleMember(3.14);
 }
 
@@ -118,6 +119,11 @@ void TestDictionary::setTestInterfaceSequenceMember(const HeapVector<Member<Test
 void TestDictionary::setTestObjectSequenceMember(const HeapVector<Member<TestObject>>& value) {
   test_object_sequence_member_ = value;
   has_test_object_sequence_member_ = true;
+}
+
+void TestDictionary::setTreatNullAsStringSequenceMember(const Vector<String>& value) {
+  treat_null_as_string_sequence_member_ = value;
+  has_treat_null_as_string_sequence_member_ = true;
 }
 
 void TestDictionary::setUnionInRecordMember(const HeapVector<std::pair<String, LongOrBoolean>>& value) {

@@ -471,9 +471,18 @@ interface MyIfaceSerializer {
  *      FrozenArray()
  *        Type()
  *          StringType(DOMString)
+ *  Attribute(bar)
+ *    READONLY: True
+ *    Type()
+ *      FrozenArray()
+ *        Type()
+ *          StringType(DOMString)
+ *          ExtAttributes()
+ *            ExtAttribute(TreatNullAs) = "EmptyString"
  */
 interface MyIfaceFrozenArray {
   readonly attribute FrozenArray<DOMString> foo;
+  readonly attribute FrozenArray<[TreatNullAs=EmptyString] DOMString> bar;
 };
 
 /** TREE
