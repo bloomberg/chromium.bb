@@ -18,7 +18,6 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.WebChromeClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -127,7 +126,7 @@ public class AwShellActivity extends Activity {
             }
 
             @Override
-            public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+            public void onShowCustomView(View view, AwContentsClient.CustomViewCallback callback) {
                 getWindow().setFlags(
                         WindowManager.LayoutParams.FLAG_FULLSCREEN,
                         WindowManager.LayoutParams.FLAG_FULLSCREEN);

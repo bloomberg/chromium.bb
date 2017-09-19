@@ -12,7 +12,6 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.AwConsoleMessage;
 import org.chromium.android_webview.AwContentsClient;
@@ -230,8 +229,7 @@ public class NullContentsClient extends AwContentsClient {
     }
 
     @Override
-    public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
-    }
+    public void onShowCustomView(View view, AwContentsClient.CustomViewCallback callback) {}
 
     @Override
     public void onHideCustomView() {
