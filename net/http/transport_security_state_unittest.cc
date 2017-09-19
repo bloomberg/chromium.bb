@@ -917,7 +917,6 @@ TEST_F(TransportSecurityStateTest, IsPreloaded) {
   const std::string aypal = "aypal.com";
   const std::string google = "google";
   const std::string www_google = "www.google";
-  const std::string foo = "foo";
 
   TransportSecurityState state;
   TransportSecurityState::STSState sts_state;
@@ -928,7 +927,6 @@ TEST_F(TransportSecurityStateTest, IsPreloaded) {
   EXPECT_FALSE(sts_state.include_subdomains);
   EXPECT_TRUE(GetStaticDomainState(&state, google, &sts_state, &pkp_state));
   EXPECT_TRUE(GetStaticDomainState(&state, www_google, &sts_state, &pkp_state));
-  EXPECT_TRUE(GetStaticDomainState(&state, foo, &sts_state, &pkp_state));
   EXPECT_FALSE(
       GetStaticDomainState(&state, a_www_paypal, &sts_state, &pkp_state));
   EXPECT_FALSE(
@@ -1035,8 +1033,6 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("ssl.google-analytics.com"));
   EXPECT_TRUE(StaticShouldRedirect("google"));
   EXPECT_TRUE(StaticShouldRedirect("foo.google"));
-  EXPECT_TRUE(StaticShouldRedirect("foo"));
-  EXPECT_TRUE(StaticShouldRedirect("domaintest.foo"));
   EXPECT_TRUE(StaticShouldRedirect("gmail.com"));
   EXPECT_TRUE(StaticShouldRedirect("www.gmail.com"));
   EXPECT_TRUE(StaticShouldRedirect("googlemail.com"));
