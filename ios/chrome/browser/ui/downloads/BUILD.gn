@@ -2,9 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/ios/asset_catalog.gni")
-import("//build/config/ios/rules.gni")
-
 source_set("downloads") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -12,11 +9,11 @@ source_set("downloads") {
     "download_manager_controller.mm",
   ]
   deps = [
-    ":download_manager_controller_xib",
-    ":error_icon",
-    ":file_icon_body",
-    ":file_icon_fold",
-    ":file_icon_fold_complete",
+    "resources:download_manager_controller_xib",
+    "resources:error_icon",
+    "resources:file_icon_body",
+    "resources:file_icon_fold",
+    "resources:file_icon_fold_complete",
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings",
@@ -53,45 +50,5 @@ source_set("unit_tests") {
     "//net:test_support",
     "//testing/gtest",
     "//third_party/ocmock:ocmock",
-  ]
-}
-
-bundle_data_ib_file("download_manager_controller_xib") {
-  source = "resources/DownloadManagerController.xib"
-}
-
-imageset("error_icon") {
-  sources = [
-    "resources/download_manager_assets.xcassets/error_icon.imageset/Contents.json",
-    "resources/download_manager_assets.xcassets/error_icon.imageset/error_icon.png",
-    "resources/download_manager_assets.xcassets/error_icon.imageset/error_icon@2x.png",
-    "resources/download_manager_assets.xcassets/error_icon.imageset/error_icon@3x.png",
-  ]
-}
-
-imageset("file_icon_body") {
-  sources = [
-    "resources/download_manager_assets.xcassets/file_icon_body.imageset/Contents.json",
-    "resources/download_manager_assets.xcassets/file_icon_body.imageset/file_icon_body.png",
-    "resources/download_manager_assets.xcassets/file_icon_body.imageset/file_icon_body@2x.png",
-    "resources/download_manager_assets.xcassets/file_icon_body.imageset/file_icon_body@3x.png",
-  ]
-}
-
-imageset("file_icon_fold") {
-  sources = [
-    "resources/download_manager_assets.xcassets/file_icon_fold.imageset/Contents.json",
-    "resources/download_manager_assets.xcassets/file_icon_fold.imageset/file_icon_fold.png",
-    "resources/download_manager_assets.xcassets/file_icon_fold.imageset/file_icon_fold@2x.png",
-    "resources/download_manager_assets.xcassets/file_icon_fold.imageset/file_icon_fold@3x.png",
-  ]
-}
-
-imageset("file_icon_fold_complete") {
-  sources = [
-    "resources/download_manager_assets.xcassets/file_icon_fold_complete.imageset/Contents.json",
-    "resources/download_manager_assets.xcassets/file_icon_fold_complete.imageset/file_icon_fold_complete.png",
-    "resources/download_manager_assets.xcassets/file_icon_fold_complete.imageset/file_icon_fold_complete@2x.png",
-    "resources/download_manager_assets.xcassets/file_icon_fold_complete.imageset/file_icon_fold_complete@3x.png",
   ]
 }

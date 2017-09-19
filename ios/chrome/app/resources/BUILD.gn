@@ -93,19 +93,19 @@ bundle_data("chromium_icons") {
 
 imageset("launchscreen_app_logo") {
   sources = [
-    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/Contents.json",
-    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo.png",
-    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo@2x.png",
-    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo@3x.png",
+    "launchscreen_app_logo.imageset/Contents.json",
+    "launchscreen_app_logo.imageset/launchscreen_app_logo.png",
+    "launchscreen_app_logo.imageset/launchscreen_app_logo@2x.png",
+    "launchscreen_app_logo.imageset/launchscreen_app_logo@3x.png",
   ]
 }
 
 imageset("launchscreen_brand_name") {
   sources = [
-    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/Contents.json",
-    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name.png",
-    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name@2x.png",
-    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name@3x.png",
+    "launchscreen_brand_name.imageset/Contents.json",
+    "launchscreen_brand_name.imageset/launchscreen_brand_name.png",
+    "launchscreen_brand_name.imageset/launchscreen_brand_name@2x.png",
+    "launchscreen_brand_name.imageset/launchscreen_brand_name@3x.png",
   ]
 }
 

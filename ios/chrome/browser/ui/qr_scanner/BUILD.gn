@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/ios/asset_catalog.gni")
-
 source_set("qr_scanner") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -19,8 +17,8 @@ source_set("qr_scanner") {
     "qr_scanner_view_controller.mm",
   ]
   deps = [
-    ":qr_scanner_torch_off",
-    ":qr_scanner_torch_on",
+    "resources:qr_scanner_torch_off",
+    "resources:qr_scanner_torch_on",
     "//base",
     "//components/version_info",
     "//ios/chrome/app/strings",
@@ -87,23 +85,5 @@ source_set("eg_tests") {
   libs = [
     "AVFoundation.framework",
     "UIKit.framework",
-  ]
-}
-
-imageset("qr_scanner_torch_off") {
-  sources = [
-    "resources/QRScanner.xcassets/qr_scanner_torch_off.imageset/Contents.json",
-    "resources/QRScanner.xcassets/qr_scanner_torch_off.imageset/torch_off.png",
-    "resources/QRScanner.xcassets/qr_scanner_torch_off.imageset/torch_off@2x.png",
-    "resources/QRScanner.xcassets/qr_scanner_torch_off.imageset/torch_off@3x.png",
-  ]
-}
-
-imageset("qr_scanner_torch_on") {
-  sources = [
-    "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/Contents.json",
-    "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/torch_on.png",
-    "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/torch_on@2x.png",
-    "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/torch_on@3x.png",
   ]
 }
