@@ -448,7 +448,6 @@ FcListAppend (FcListHashTable	*table,
 	e = FcPatternObjectFindElt (font, FcObjectFromName (os->objects[o]));
 	if (e)
 	{
-	    idx = 0;
 	    if (FcRefIsConst (&font->ref) && !strcmp (os->objects[o], FC_FILE))
 	    {
 		struct stat statb;
@@ -481,13 +480,13 @@ FcListAppend (FcListHashTable	*table,
 			}
 			FcStrFree (s);
 			FcStrFree (dir);
-			idx++;
+			goto bail3;
 		    }
 		    else
 			FcStrFree (dir);
 		}
 	    }
-	    for (v = FcPatternEltValues(e); v;
+	    for (v = FcPatternEltValues(e), idx = 0; v;
 		 v = FcValueListNext(v), ++idx)
 	    {
 		if (!FcPatternAdd (bucket->pattern,
@@ -495,6 +494,7 @@ FcListAppend (FcListHashTable	*table,
 				   FcValueCanonicalize(&v->value), defidx != idx))
 		    goto bail2;
 	    }
+	  bail3:;
 	}
     }
     *prev = bucket;

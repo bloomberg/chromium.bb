@@ -670,6 +670,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 						       FcTrue);
 			FcStrFree (s);
 			FcStrFree (dir);
+			goto bail0;
 		    }
 		    else
 			FcStrFree (dir);
@@ -678,6 +679,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 	    FcPatternObjectListAdd (new, fe->object,
 				    FcValueListDuplicate (FcPatternEltValues (fe)),
 				    FcTrue);
+	  bail0:;
 	}
     }
     for (i = 0; i < pat->num; i++)
