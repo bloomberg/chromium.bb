@@ -59,9 +59,7 @@ ModelTypeSet UnifiedSyncServiceTypes() {
   if (FeatureList::IsEnabled(switches::kSyncUSSAutocomplete)) {
     set.Put(syncer::AUTOFILL);
   }
-  if (FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
-    set.Put(syncer::DEVICE_INFO);
-  }
+  set.Put(syncer::DEVICE_INFO);
   // PRINTERS was the first USS type, and should precede all other USS types.
   // All new types should be USS. This logic is fragile to reordering ModelType.
   for (int typeInt = syncer::PRINTERS; typeInt < syncer::FIRST_PROXY_TYPE;

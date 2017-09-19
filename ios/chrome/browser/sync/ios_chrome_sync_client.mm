@@ -264,11 +264,6 @@ IOSChromeSyncClient::GetSyncSessionsClient() {
 base::WeakPtr<syncer::SyncableService>
 IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   switch (type) {
-    case syncer::DEVICE_INFO:
-      return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_)
-          ->GetDeviceInfoSyncableService()
-          ->AsWeakPtr();
     case syncer::PREFERENCES:
       return browser_state_->GetSyncablePrefs()
           ->GetSyncableService(syncer::PREFERENCES)

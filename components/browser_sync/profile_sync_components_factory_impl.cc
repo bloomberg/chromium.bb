@@ -28,7 +28,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/device_info/device_info_data_type_controller.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/data_type_manager_impl.h"
@@ -61,7 +60,6 @@ using syncer::DataTypeController;
 using syncer::DataTypeManager;
 using syncer::DataTypeManagerImpl;
 using syncer::DataTypeManagerObserver;
-using syncer::DeviceInfoDataTypeController;
 using syncer::ModelTypeController;
 using syncer::ProxyDataTypeController;
 
@@ -141,19 +139,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
       base::Bind(&syncer::ReportUnrecoverableError, channel_);
 
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
-  if (FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
-    // Use an error callback that always uploads a stacktrace if it can to help
-    // get USS as stable as possible.
-    sync_service->RegisterDataTypeController(
-        std::make_unique<ModelTypeController>(syncer::DEVICE_INFO, sync_client_,
-                                              ui_thread_));
-  } else {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<DeviceInfoDataTypeController>(
-            error_callback, sync_client_,
-            sync_service->GetLocalDeviceInfoProvider()));
-  }
-
+  // Use an error callback that always uploads a stacktrace if it can to help
+  // get USS as stable as possible.
+  sync_service->RegisterDataTypeController(
+      std::make_unique<ModelTypeController>(syncer::DEVICE_INFO, sync_client_,
+                                            ui_thread_));
   // These features are enabled only if there's a DB thread to post tasks to.
   if (db_thread_) {
     // Autocomplete sync is enabled by default.  Register unless explicitly
