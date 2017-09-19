@@ -123,9 +123,12 @@ class EventFactoryWriter(json5_generator.Writer):
         self.namespace = self.json5_file.metadata['namespace'].strip('"')
         assert self.namespace == 'Event', 'namespace field should be "Event".'
         self.suffix = self.json5_file.metadata['suffix'].strip('"')
-        self._outputs = {('Event%sHeaders.h' % self.suffix): self.generate_headers_header,
-                         ('Event%s.cpp' % self.suffix): self.generate_implementation,
-                        }
+        snake_suffix = (self.suffix.lower() + '_') if self.suffix else ''
+        self._headers_header_basename = 'event_%sheaders.h' % snake_suffix
+        self._outputs = {
+            self._headers_header_basename: self.generate_headers_header,
+            ('event_%sfactory.cc' % snake_suffix): self.generate_implementation,
+        }
 
     def _fatal(self, message):
         print 'FATAL ERROR: ' + message
@@ -163,7 +166,7 @@ class EventFactoryWriter(json5_generator.Writer):
     def generate_headers_header(self):
         base_header_for_suffix = ''
         if self.suffix:
-            base_header_for_suffix = '\n#include "core/EventHeaders.h"\n'
+            base_header_for_suffix = '\n#include "core/event_headers.h"\n'
         return HEADER_TEMPLATE % {
             'input_files': self._input_files,
             'license': license.license_for_generated_cpp(),
@@ -175,6 +178,7 @@ class EventFactoryWriter(json5_generator.Writer):
     @template_expander.use_jinja('templates/EventFactory.cpp.tmpl', filters=filters)
     def generate_implementation(self):
         return {
+            'headers_header_basename': self._headers_header_basename,
             'input_files': self._input_files,
             'suffix': self.suffix,
             'events': self.json5_file.name_dictionaries,
