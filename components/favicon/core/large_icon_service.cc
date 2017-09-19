@@ -35,6 +35,8 @@
 namespace favicon {
 namespace {
 
+using favicon_base::GoogleFaviconServerRequestStatus;
+
 // This feature is only used for accessing field trial parameters, not for
 // switching on/off the code.
 const base::Feature kLargeIconServiceFetchingFeature{
@@ -174,6 +176,13 @@ void ProcessIconOnBackgroundThread(
                               fallback_icon_size);
 }
 
+void FinishServerRequestAsynchronously(
+    const favicon_base::GoogleFaviconServerCallback& callback,
+    favicon_base::GoogleFaviconServerRequestStatus status) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, status));
+}
+
 // Processes the bitmap data returned from the FaviconService as part of a
 // LargeIconService request.
 class LargeIconWorker : public base::RefCountedThreadSafe<LargeIconWorker> {
@@ -278,10 +287,8 @@ void ReportDownloadedSize(int size) {
 void OnSetOnDemandFaviconComplete(
     const favicon_base::GoogleFaviconServerCallback& callback,
     bool success) {
-  callback.Run(
-      success
-          ? favicon_base::GoogleFaviconServerRequestStatus::SUCCESS
-          : favicon_base::GoogleFaviconServerRequestStatus::FAILURE_ON_WRITE);
+  callback.Run(success ? GoogleFaviconServerRequestStatus::SUCCESS
+                       : GoogleFaviconServerRequestStatus::FAILURE_ON_WRITE);
 }
 
 void OnFetchIconFromGoogleServerComplete(
@@ -294,12 +301,10 @@ void OnFetchIconFromGoogleServerComplete(
   if (image.IsEmpty()) {
     DLOG(WARNING) << "large icon server fetch empty " << server_request_url;
     favicon_service->UnableToDownloadFavicon(GURL(server_request_url));
-    callback.Run(metadata.http_response_code ==
-                         net::URLFetcher::RESPONSE_CODE_INVALID
-                     ? favicon_base::GoogleFaviconServerRequestStatus::
-                           FAILURE_CONNECTION_ERROR
-                     : favicon_base::GoogleFaviconServerRequestStatus::
-                           FAILURE_HTTP_ERROR);
+    callback.Run(
+        metadata.http_response_code == net::URLFetcher::RESPONSE_CODE_INVALID
+            ? GoogleFaviconServerRequestStatus::FAILURE_CONNECTION_ERROR
+            : GoogleFaviconServerRequestStatus::FAILURE_HTTP_ERROR);
     ReportDownloadedSize(0);
     return;
   }
@@ -334,6 +339,8 @@ LargeIconService::LargeIconService(
   large_icon_types_.push_back(favicon_base::IconType::FAVICON);
   large_icon_types_.push_back(favicon_base::IconType::TOUCH_ICON);
   large_icon_types_.push_back(favicon_base::IconType::TOUCH_PRECOMPOSED_ICON);
+  // TODO(jkrcal): Add non-null image_fetcher into remaining unit-tests and add
+  // a DCHECK(image_fetcher_) here.
 }
 
 LargeIconService::~LargeIconService() {
@@ -376,35 +383,38 @@ void LargeIconService::
   if (net::NetworkChangeNotifier::IsOffline()) {
     // By exiting early when offline, we avoid caching the failure and thus
     // allow icon fetches later when coming back online.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, favicon_base::GoogleFaviconServerRequestStatus::
-                                 FAILURE_CONNECTION_ERROR));
+    FinishServerRequestAsynchronously(
+        callback, GoogleFaviconServerRequestStatus::FAILURE_CONNECTION_ERROR);
+    return;
+  }
+
+  if (!page_url.is_valid()) {
+    FinishServerRequestAsynchronously(
+        callback, GoogleFaviconServerRequestStatus::FAILURE_TARGET_URL_INVALID);
     return;
   }
 
   const GURL trimmed_page_url = TrimPageUrlForGoogleServer(page_url);
+  if (!trimmed_page_url.is_valid()) {
+    FinishServerRequestAsynchronously(
+        callback, GoogleFaviconServerRequestStatus::FAILURE_TARGET_URL_SKIPPED);
+    return;
+  }
+
   const GURL server_request_url = GetRequestUrlForGoogleServerV2(
       trimmed_page_url, min_source_size_in_pixel, desired_size_in_pixel,
       may_page_url_be_private);
-
-  if (!server_request_url.is_valid() || !trimmed_page_url.is_valid() ||
-      !image_fetcher_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            callback,
-            favicon_base::GoogleFaviconServerRequestStatus::FAILURE_INVALID));
+  if (!server_request_url.is_valid()) {
+    FinishServerRequestAsynchronously(
+        callback, GoogleFaviconServerRequestStatus::FAILURE_SERVER_URL_INVALID);
     return;
   }
 
   // Do not download if there is a previous cache miss recorded for
   // |server_request_url|.
   if (favicon_service_->WasUnableToDownloadFavicon(server_request_url)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, favicon_base::GoogleFaviconServerRequestStatus::
-                                 FAILURE_HTTP_ERROR_CACHED));
+    FinishServerRequestAsynchronously(
+        callback, GoogleFaviconServerRequestStatus::FAILURE_HTTP_ERROR_CACHED);
     return;
   }
 
