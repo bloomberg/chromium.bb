@@ -86,6 +86,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
     return unhandled_password_reuses_;
   }
 
+  // Called when sync user's Gaia password changed.
+  void OnGaiaPasswordChanged();
+
  protected:
   // PasswordProtectionService overrides.
   // Obtains referrer chain of |event_url| and |event_tab_id| and add this
@@ -123,9 +126,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // when user clicks on the security chip.
   void UpdateSecurityState(SBThreatType threat_type,
                            content::WebContents* web_contents) override;
-
-  // Called when sync user's Gaia password changed.
-  void OnGaiaPasswordChanged();
 
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyUserPopulationForPasswordOnFocusPing);

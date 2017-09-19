@@ -24,7 +24,7 @@ class X509Certificate;
 }
 
 namespace safe_browsing {
-class PasswordProtectionService;
+class ChromePasswordProtectionService;
 }
 
 class ChromeSSLHostStateDelegate;
@@ -256,7 +256,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
   // Used to handle changing password, and whitelisting site.
-  safe_browsing::PasswordProtectionService* password_protection_service_;
+  safe_browsing::ChromePasswordProtectionService* password_protection_service_;
 #endif
 
   // Set when the user ignored the password reuse modal warning dialog. When
