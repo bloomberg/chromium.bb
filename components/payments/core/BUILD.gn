@@ -117,6 +117,7 @@ source_set("unit_tests") {
     "payment_currency_amount_unittest.cc",
     "payment_details_modifier_unittest.cc",
     "payment_details_unittest.cc",
+    "payment_details_validation_unittest.cc",
     "payment_item_unittest.cc",
     "payment_manifest_downloader_unittest.cc",
     "payment_method_data_unittest.cc",

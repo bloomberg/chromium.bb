@@ -21,4 +21,7 @@ specific_include_rules = {
   "journey_logger_unittest\.cc": [
     "+components/ukm",
   ],
+  ".*_unittest\.cc": [
+    "+base/json/json_reader.h",
+  ]
 }
