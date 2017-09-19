@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/platform/platform_generated.gni")
 
@@ -13,7 +14,7 @@ make_names("make_platform_loader_generated_fetch_initiator_type_names") {
   ]
 }
 
-source_set("loader") {
+jumbo_source_set("loader") {
   # This target is a logical part of the platform and only the platform target
   # should depend on it.
   visibility = [ "//third_party/WebKit/Source/platform" ]
@@ -111,7 +112,7 @@ source_set("loader") {
   ]
 }
 
-source_set("unit_tests") {
+jumbo_source_set("unit_tests") {
   # This target defines test files for blink_platform_unittests and only the
   # blink_platform_unittests target should depend on it.
   visibility = [ "//third_party/WebKit/Source/platform:*" ]
@@ -150,7 +151,7 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("test_support") {
+jumbo_source_set("test_support") {
   # This target defines test files for platform:test_support that
   # blink_platform_unittests and webkit_unit_tests can use.
   visibility = [ "//third_party/WebKit/Source/platform:test_support" ]
