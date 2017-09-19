@@ -56,7 +56,7 @@ class CodecConfig : public base::RefCountedThreadSafe<CodecConfig> {
   scoped_refptr<AVDASurfaceBundle> surface_bundle;
 
   // The MediaCrypto that MediaCodec is configured with for an encrypted stream.
-  MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto;
+  JavaObjectPtr media_crypto;
 
   // Whether MediaCrypto requires a secure codec.
   bool requires_secure_codec = false;

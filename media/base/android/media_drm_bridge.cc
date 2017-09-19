@@ -918,7 +918,7 @@ MediaDrmBridge::~MediaDrmBridge() {
 
   if (!media_crypto_ready_cb_.is_null()) {
     base::ResetAndReturn(&media_crypto_ready_cb_)
-        .Run(CreateJavaObjectPtr(nullptr), IsSecureCodecRequired());
+        .Run(CreateJavaObjectPtr(nullptr), false);
   }
 
   // Rejects all pending promises.
@@ -945,8 +945,6 @@ void MediaDrmBridge::NotifyMediaCryptoReady(JavaObjectPtr j_media_crypto) {
     return;
 
   // We have to use scoped_ptr to pass ScopedJavaGlobalRef with a callback.
-  // TODO(yucliu): Check whether we can simply pass j_media_crypto_->obj() in
-  // the callback.
   base::ResetAndReturn(&media_crypto_ready_cb_)
       .Run(CreateJavaObjectPtr(j_media_crypto_->obj()),
            IsSecureCodecRequired());

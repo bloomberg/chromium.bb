@@ -127,10 +127,9 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
   void SetCdm(CdmContext* cdm_context, const InitCB& init_cb);
 
   // This callback is called after CDM obtained a MediaCrypto object.
-  void OnMediaCryptoReady(
-      const InitCB& init_cb,
-      media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
-      bool requires_secure_video_codec);
+  void OnMediaCryptoReady(const InitCB& init_cb,
+                          JavaObjectPtr media_crypto,
+                          bool requires_secure_video_codec);
 
   // Callback called when a new key is available.
   void OnKeyAdded();
@@ -204,7 +203,7 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
 
   // The MediaCrypto object is used in the MediaCodec.configure() in case of
   // an encrypted stream.
-  media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto_;
+  JavaObjectPtr media_crypto_;
 
   base::WeakPtrFactory<MediaCodecAudioDecoder> weak_factory_;
 
