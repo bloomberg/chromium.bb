@@ -101,6 +101,17 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
                               uint64_t total)>
       DircryptoMigrationProgessHandler;
 
+  // Holds TPM version info. Mirrors cryptohome::Tpm::TpmVersionInfo from CrOS
+  // side.
+  struct TpmVersionInfo {
+    uint32_t family = 0;
+    uint64_t spec_level = 0;
+    uint32_t manufacturer = 0;
+    uint32_t tpm_model = 0;
+    uint64_t firmware_version = 0;
+    std::string vendor_specific;
+  };
+
   ~CryptohomeClient() override;
 
   // Factory function, creates a new instance and returns ownership.
@@ -491,8 +502,8 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const BoolDBusMethodCallback& callback) = 0;
 
   // Asynchronously gets the underlying TPM version information and passes it to
-  // the given callback as a string.
-  virtual void TpmGetVersion(DBusMethodCallback<std::string> callback) = 0;
+  // the given callback.
+  virtual void TpmGetVersion(DBusMethodCallback<TpmVersionInfo> callback) = 0;
 
   // Asynchronously calls the GetKeyDataEx method. |callback| will be invoked
   // with the reply protobuf.
