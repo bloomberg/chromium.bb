@@ -7,17 +7,21 @@ package org.chromium.components.signin.test;
 import android.accounts.Account;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
+import android.support.test.rule.UiThreadTestRule;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.components.signin.test.util.SimpleFuture;
@@ -27,13 +31,17 @@ import org.chromium.components.signin.test.util.SimpleFuture;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class AccountManagerFacadeTest {
+    @Rule
+    public UiThreadTestRule mRule = new UiThreadTestRule();
+
     private FakeAccountManagerDelegate mDelegate;
     private AccountManagerFacade mHelper;
 
     @Before
     public void setUp() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        mDelegate = new FakeAccountManagerDelegate(context);
+        mDelegate = new FakeAccountManagerDelegate(
+                FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
         Assert.assertFalse(mDelegate.isRegisterObserversCalled());
         AccountManagerFacade.overrideAccountManagerFacadeForTests(context, mDelegate);
         Assert.assertTrue(mDelegate.isRegisterObserversCalled());
@@ -66,6 +74,26 @@ public class AccountManagerFacadeTest {
         Assert.assertTrue(hasAccountForName("testme@gmail.com"));
         Assert.assertTrue(hasAccountForName("Testme@gmail.com"));
         Assert.assertTrue(hasAccountForName("te.st.me@gmail.com"));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testProfileDataSource() throws InterruptedException {
+        String accountName = "test@gmail.com";
+        addTestAccount(accountName, "password");
+        ProfileDataSource.ProfileData profileData = new ProfileDataSource.ProfileData(
+                accountName, null, "Test Full Name", "Test Given Name");
+
+        ProfileDataSource profileDataSource = mDelegate.getProfileDataSource();
+        Assert.assertNotNull(profileDataSource);
+        mDelegate.setProfileData(accountName, profileData);
+        Assert.assertArrayEquals(profileDataSource.getProfileDataMap().values().toArray(),
+                new ProfileDataSource.ProfileData[] {profileData});
+
+        mDelegate.setProfileData(accountName, null);
+        Assert.assertArrayEquals(profileDataSource.getProfileDataMap().values().toArray(),
+                new ProfileDataSource.ProfileData[0]);
     }
 
     private Account addTestAccount(String accountName, String password) {

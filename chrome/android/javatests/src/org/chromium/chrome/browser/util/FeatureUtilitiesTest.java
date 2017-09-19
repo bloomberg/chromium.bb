@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.util;
 
 import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.speech.RecognizerIntent;
@@ -109,9 +108,8 @@ public class FeatureUtilitiesTest {
     private static class FakeAuthenticationAccountManager extends FakeAccountManagerDelegate {
         private final String mAccountType;
 
-        public FakeAuthenticationAccountManager(
-                Context localContext, String accountType, Account... accounts) {
-            super(localContext, accounts);
+        public FakeAuthenticationAccountManager(String accountType) {
+            super(FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
             mAccountType = accountType;
         }
 
@@ -139,7 +137,7 @@ public class FeatureUtilitiesTest {
     }
 
     private void setUpAccountManager(String accountType) {
-        mAccountManager = new FakeAuthenticationAccountManager(mAccountTestingContext, accountType);
+        mAccountManager = new FakeAuthenticationAccountManager(accountType);
         AccountManagerFacade.overrideAccountManagerFacadeForTests(
                 mAccountTestingContext, mAccountManager);
     }
