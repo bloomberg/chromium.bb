@@ -52,12 +52,13 @@ def NoLeakingProcesses(popen):
   try:
     yield popen
   finally:
-    try:
-      if popen.poll() is None:
-        popen.kill()
-    except OSError:
-      logging.warning('Failed to kill %s. Process may be leaked.',
-                      str(popen.pid))
+    if popen is not None:
+      try:
+        if popen.poll() is None:
+          popen.kill()
+      except OSError:
+        logging.warning('Failed to kill %s. Process may be leaked.',
+                        str(popen.pid))
 
 
 def main():
@@ -67,8 +68,10 @@ def main():
   logging.basicConfig(level=logging.INFO)
   test_cmd = [
       os.path.join('bin', 'run_%s' % args.target),
-      '--target-devices-file', args.target_devices_file,
       '-v']
+  if args.target_devices_file:
+    test_cmd += ['--target-devices-file', args.target_devices_file]
+
   test_env = dict(os.environ)
   logdog_cmd = []
 
@@ -102,14 +105,19 @@ def main():
 
     test_cmd += extra_cmd_args
 
-    with NoLeakingProcesses(subprocess.Popen(logdog_cmd)) as logdog_proc:
+    logdog_proc = None
+    if logdog_cmd:
+      logdog_proc = subprocess.Popen(logdog_cmd)
+
+    with NoLeakingProcesses(logdog_proc):
       with NoLeakingProcesses(
           subprocess.Popen(test_cmd, env=test_env)) as test_proc:
         with signal_handler.SignalHandler(signal.SIGTERM,
                                           CreateStopTestsMethod(test_proc)):
           result = test_proc.wait()
-          logdog_proc.terminate()
-          logdog_proc.wait()
+          if logdog_proc:
+            logdog_proc.terminate()
+            logdog_proc.wait()
 
   return result
 
