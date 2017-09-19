@@ -29,6 +29,7 @@ SkColorType ResourceFormatToClosestSkColorType(ResourceFormat format) {
     case ETC1:
     case RED_8:
     case LUMINANCE_F16:
+    case R16_EXT:
       return kN32_SkColorType;
     case RGBA_F16:
       return kRGBA_F16_SkColorType;
@@ -47,6 +48,7 @@ int BitsPerPixel(ResourceFormat format) {
     case RGBA_4444:
     case RGB_565:
     case LUMINANCE_F16:
+    case R16_EXT:
       return 16;
     case ALPHA_8:
     case LUMINANCE_8:
@@ -72,6 +74,7 @@ unsigned int GLDataType(ResourceFormat format) {
       GL_UNSIGNED_BYTE,           // RED_8
       GL_HALF_FLOAT_OES,          // LUMINANCE_F16
       GL_HALF_FLOAT_OES,          // RGBA_F16
+      GL_UNSIGNED_SHORT,          // R16_EXT
   };
   static_assert(arraysize(format_gl_data_type) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_type does not handle all cases.");
@@ -92,6 +95,7 @@ unsigned int GLDataFormat(ResourceFormat format) {
       GL_RED_EXT,        // RED_8
       GL_LUMINANCE,      // LUMINANCE_F16
       GL_RGBA,           // RGBA_F16
+      GL_R16_EXT,        // R16_EXT
   };
   static_assert(arraysize(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_format does not handle all cases.");
@@ -123,6 +127,7 @@ unsigned int GLCopyTextureInternalFormat(ResourceFormat format) {
       GL_LUMINANCE,  // RED_8
       GL_LUMINANCE,  // LUMINANCE_F16
       GL_RGBA,       // RGBA_F16
+      GL_LUMINANCE,  // R16_EXT
   };
   static_assert(arraysize(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_format does not handle all cases.");
@@ -135,6 +140,8 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
       return gfx::BufferFormat::BGRA_8888;
     case RED_8:
       return gfx::BufferFormat::R_8;
+    case R16_EXT:
+      return gfx::BufferFormat::R_16;
     case RGBA_4444:
       return gfx::BufferFormat::RGBA_4444;
     case RGBA_8888:
@@ -187,6 +194,7 @@ bool DoesResourceFormatSupportAlpha(ResourceFormat format) {
     case ETC1:
     case RED_8:
     case LUMINANCE_F16:
+    case R16_EXT:
       return false;
   }
   NOTREACHED();

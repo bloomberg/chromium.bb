@@ -105,12 +105,12 @@ class VideoResourceUpdaterTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-
     shared_bitmap_manager_.reset(new SharedBitmapManagerAllocationCounter());
     resource_provider3d_ = FakeResourceProvider::Create(
-        context_provider_.get(), shared_bitmap_manager_.get());
-    resource_provider_software_ =
-        FakeResourceProvider::Create(nullptr, shared_bitmap_manager_.get());
+        context_provider_.get(), shared_bitmap_manager_.get(),
+        high_bit_for_testing_);
+    resource_provider_software_ = FakeResourceProvider::Create(
+        nullptr, shared_bitmap_manager_.get(), high_bit_for_testing_);
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {
@@ -251,6 +251,7 @@ class VideoResourceUpdaterTest : public testing::Test {
   std::unique_ptr<ResourceProvider> resource_provider3d_;
   std::unique_ptr<ResourceProvider> resource_provider_software_;
   gpu::SyncToken release_sync_token_;
+  bool high_bit_for_testing_ = false;
 };
 
 const gpu::SyncToken VideoResourceUpdaterTest::kMailboxSyncToken =
@@ -310,6 +311,40 @@ TEST_F(VideoResourceUpdaterTestWithF16, HighBitFrame) {
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources2.type);
   EXPECT_NEAR(resources2.multiplier, 2.0, 0.1);
   EXPECT_NEAR(resources2.offset, 0.5, 0.1);
+}
+
+class VideoResourceUpdaterTestWithR16 : public VideoResourceUpdaterTest {
+ public:
+  VideoResourceUpdaterTestWithR16() : VideoResourceUpdaterTest() {
+    high_bit_for_testing_ = true;
+    context3d_->set_support_texture_norm16(true);
+  }
+};
+
+TEST_F(VideoResourceUpdaterTestWithR16, HighBitFrame) {
+  bool use_stream_video_draw_quad = false;
+  VideoResourceUpdater updater(context_provider_.get(),
+                               resource_provider3d_.get(),
+                               use_stream_video_draw_quad);
+  updater.SetUseR16ForTesting(true);
+  scoped_refptr<media::VideoFrame> video_frame = CreateTestHighBitFrame();
+
+  VideoFrameExternalResources resources =
+      updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
+
+  // Max 10-bit values as read by a sampler.
+  double max_10bit_value = ((1 << 10) - 1) / 65535.0;
+  EXPECT_NEAR(resources.multiplier * max_10bit_value, 1.0, 0.0001);
+  EXPECT_NEAR(resources.offset, 0.0, 0.1);
+
+  // Create the resource again, to test the path where the
+  // resources are cached.
+  VideoFrameExternalResources resources2 =
+      updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources2.type);
+  EXPECT_NEAR(resources2.multiplier * max_10bit_value, 1.0, 0.0001);
+  EXPECT_NEAR(resources2.offset, 0.0, 0.1);
 }
 
 TEST_F(VideoResourceUpdaterTest, HighBitFrameSoftwareCompositor) {
