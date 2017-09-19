@@ -317,7 +317,6 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
                                                &manager_,
                                                kArbitraryReservedFrameSinkId,
                                                kChildIsRoot,
-
                                                kNeedsSyncPoints)) {}
   SurfaceAggregatorValidSurfaceTest()
       : SurfaceAggregatorValidSurfaceTest(false) {}
@@ -1115,6 +1114,35 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ValidSurfaceReferenceWithNoFrame) {
   Quad expected_quads[] = {Quad::SolidColorQuad(SK_ColorGREEN),
                            Quad::SolidColorQuad(SK_ColorYELLOW),
                            Quad::SolidColorQuad(SK_ColorBLUE)};
+  Pass expected_passes[] = {Pass(expected_quads, arraysize(expected_quads))};
+  SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
+  SurfaceId ids[] = {root_surface_id, surface_with_no_frame_id};
+  AggregateAndVerify(expected_passes, arraysize(expected_passes), ids,
+                     arraysize(ids));
+}
+
+// Tests a reference to a valid primary surface and a fallback surface
+// with no submitted frame. A SolidColorDrawQuad should be placed in lieu of a
+// frame.
+TEST_F(SurfaceAggregatorValidSurfaceTest, ValidFallbackWithNoFrame) {
+  const LocalSurfaceId empty_local_surface_id = allocator_.GenerateId();
+  const SurfaceId surface_with_no_frame_id(support_->frame_sink_id(),
+                                           empty_local_surface_id);
+
+  Quad quads[] = {Quad::SurfaceQuad(
+      surface_with_no_frame_id, surface_with_no_frame_id, SK_ColorYELLOW, 1.f)};
+  Pass passes[] = {Pass(quads, arraysize(quads))};
+
+  SubmitCompositorFrame(support_.get(), passes, arraysize(passes),
+                        root_local_surface_id_);
+
+  Quad expected_quads[] = {
+#if DCHECK_IS_ON()
+    Quad::SolidColorQuad(SK_ColorMAGENTA),
+#else
+    Quad::SolidColorQuad(SK_ColorYELLOW),
+#endif
+  };
   Pass expected_passes[] = {Pass(expected_quads, arraysize(expected_quads))};
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
   SurfaceId ids[] = {root_surface_id, surface_with_no_frame_id};
