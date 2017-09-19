@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_math.h"
 #include "base/test/scoped_task_environment.h"
@@ -71,7 +70,7 @@ class AffiliationFetchThrottlerTest : public testing::Test {
   ~AffiliationFetchThrottlerTest() override {}
 
   std::unique_ptr<AffiliationFetchThrottler> CreateThrottler() {
-    return base::MakeUnique<AffiliationFetchThrottler>(
+    return std::make_unique<AffiliationFetchThrottler>(
         &mock_delegate_, task_runner_, mock_tick_clock_.get());
   }
 

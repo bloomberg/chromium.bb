@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
@@ -104,7 +105,7 @@ TestPasswordStore::FillMatchingLogins(const FormDigest& form) {
              password_manager::IsFederatedRealm(stored_form.signon_realm,
                                                 form.origin))) {
           matched_forms.push_back(
-              base::MakeUnique<autofill::PasswordForm>(stored_form));
+              std::make_unique<autofill::PasswordForm>(stored_form));
           matched_forms.back()->is_public_suffix_match = is_psl;
         }
       }
@@ -160,7 +161,7 @@ bool TestPasswordStore::FillAutofillableLogins(
   for (const auto& forms_for_realm : stored_passwords_) {
     for (const autofill::PasswordForm& form : forms_for_realm.second) {
       if (!form.blacklisted_by_user)
-        forms->push_back(base::MakeUnique<autofill::PasswordForm>(form));
+        forms->push_back(std::make_unique<autofill::PasswordForm>(form));
     }
   }
   return true;
@@ -171,7 +172,7 @@ bool TestPasswordStore::FillBlacklistLogins(
   for (const auto& forms_for_realm : stored_passwords_) {
     for (const autofill::PasswordForm& form : forms_for_realm.second) {
       if (form.blacklisted_by_user)
-        forms->push_back(base::MakeUnique<autofill::PasswordForm>(form));
+        forms->push_back(std::make_unique<autofill::PasswordForm>(form));
     }
   }
   return true;

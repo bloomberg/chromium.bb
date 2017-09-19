@@ -4,7 +4,8 @@
 
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
@@ -71,7 +72,7 @@ void FakeFormFetcher::Fetch() {
 }
 
 std::unique_ptr<FormFetcher> FakeFormFetcher::Clone() {
-  return base::MakeUnique<FakeFormFetcher>();
+  return std::make_unique<FakeFormFetcher>();
 }
 
 }  // namespace password_manager

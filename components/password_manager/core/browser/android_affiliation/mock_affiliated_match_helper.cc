@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,8 +14,7 @@
 namespace password_manager {
 
 MockAffiliatedMatchHelper::MockAffiliatedMatchHelper()
-    : AffiliatedMatchHelper(nullptr,
-                            base::WrapUnique<AffiliationService>(nullptr)) {}
+    : AffiliatedMatchHelper(nullptr, nullptr) {}
 
 MockAffiliatedMatchHelper::~MockAffiliatedMatchHelper() {}
 

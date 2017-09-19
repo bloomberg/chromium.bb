@@ -233,7 +233,7 @@ void InitiateCleaning(
     PrefService* prefs,
     const scoped_refptr<net::URLRequestContextGetter>& request_context) {
   WaitUntilCleaningIsDone(
-      base::MakeUnique<ObsoleteHttpCleaner>(store, request_context), prefs);
+      std::make_unique<ObsoleteHttpCleaner>(store, request_context), prefs);
 }
 
 void DelayCleanObsoleteHttpDataForPasswordStoreAndPrefsImpl(

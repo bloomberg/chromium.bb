@@ -8,11 +8,11 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
@@ -237,7 +237,7 @@ PasswordFormManager::PasswordFormManager(
       form_saver_(std::move(form_saver)),
       owned_form_fetcher_(
           form_fetcher ? nullptr
-                       : base::MakeUnique<FormFetcherImpl>(
+                       : std::make_unique<FormFetcherImpl>(
                              PasswordStore::FormDigest(observed_form),
                              client,
                              true /* should_migrate_http_passwords */,
@@ -364,7 +364,7 @@ void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK(!client_->IsIncognito());
 
   if (!new_blacklisted_) {
-    new_blacklisted_ = base::MakeUnique<PasswordForm>(observed_form_);
+    new_blacklisted_ = std::make_unique<PasswordForm>(observed_form_);
     blacklisted_matches_.push_back(new_blacklisted_.get());
   }
   form_saver_->PermanentlyBlacklist(new_blacklisted_.get());
@@ -1413,7 +1413,7 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   // renderer process, to which the driver serves as an interface. The full
   // |observed_form_| needs to be copied, because it is used to created the
   // blacklisting entry if needed.
-  auto result = base::MakeUnique<PasswordFormManager>(
+  auto result = std::make_unique<PasswordFormManager>(
       password_manager_, client_, base::WeakPtr<PasswordManagerDriver>(),
       observed_form_, form_saver_->Clone(), fetcher.get());
   result->Init(metrics_recorder_);
@@ -1433,11 +1433,11 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   //   (3) They are not changed during ProcessMatches, triggered at some point
   //       by the cloned FormFetcher.
   if (submitted_form_)
-    result->submitted_form_ = base::MakeUnique<PasswordForm>(*submitted_form_);
+    result->submitted_form_ = std::make_unique<PasswordForm>(*submitted_form_);
   result->other_possible_username_action_ = other_possible_username_action_;
   if (username_correction_vote_) {
     result->username_correction_vote_ =
-        base::MakeUnique<PasswordForm>(*username_correction_vote_);
+        std::make_unique<PasswordForm>(*username_correction_vote_);
   }
   result->pending_credentials_ = pending_credentials_;
   result->is_new_login_ = is_new_login_;

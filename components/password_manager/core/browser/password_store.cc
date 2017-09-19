@@ -5,13 +5,13 @@
 #include "components/password_manager/core/browser/password_store.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -339,7 +339,7 @@ PasswordStore::GetPasswordSyncableService() {
 void PasswordStore::CheckReuse(const base::string16& input,
                                const std::string& domain,
                                PasswordReuseDetectorConsumer* consumer) {
-  auto check_reuse_request = base::MakeUnique<CheckReuseRequest>(consumer);
+  auto check_reuse_request = std::make_unique<CheckReuseRequest>(consumer);
   ScheduleTask(base::Bind(&PasswordStore::CheckReuseImpl, this,
                           base::Passed(&check_reuse_request), input, domain));
 }
@@ -389,7 +389,7 @@ void PasswordStore::InitOnBackgroundSequence(
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   reuse_detector_ = new PasswordReuseDetector;
   GetAutofillableLoginsImpl(
-      base::MakeUnique<GetLoginsRequest>(reuse_detector_));
+      std::make_unique<GetLoginsRequest>(reuse_detector_));
 #endif
 }
 
@@ -676,7 +676,7 @@ std::unique_ptr<PasswordForm> PasswordStore::GetLoginImpl(
       return std::move(candidate);
     }
   }
-  return base::WrapUnique<PasswordForm>(nullptr);
+  return nullptr;
 }
 
 void PasswordStore::FindAndUpdateAffiliatedWebLogins(

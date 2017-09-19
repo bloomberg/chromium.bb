@@ -10,7 +10,6 @@
 #include <limits>
 #include <set>
 
-#include "base/memory/ptr_util.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 

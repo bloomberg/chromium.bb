@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/rand_util.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -240,7 +239,7 @@ class FacetManagerTest : public testing::Test {
     // The order is important: FacetManager will read the DB in its constructor.
     facet_manager_host_.set_expected_facet_uri(
         FacetURI::FromCanonicalSpec(kTestFacetURI1));
-    facet_manager_ = base::MakeUnique<FacetManager>(
+    facet_manager_ = std::make_unique<FacetManager>(
         FacetURI::FromCanonicalSpec(kTestFacetURI1), fake_facet_manager_host(),
         main_clock_.get());
     facet_manager_notifier_.set_facet_manager(facet_manager_.get());

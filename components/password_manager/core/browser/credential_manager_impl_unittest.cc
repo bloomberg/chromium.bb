@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -13,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -730,8 +730,8 @@ TEST_F(CredentialManagerImplTest,
   store_->AddLogin(affiliated_form1_);
   store_->AddLogin(affiliated_form2_);
 
-  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
-  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+  store_->SetAffiliatedMatchHelper(
+      std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;
@@ -990,8 +990,8 @@ TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialAffiliatedPasswordMatch) {
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
-  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
-  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+  store_->SetAffiliatedMatchHelper(
+      std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;
@@ -1011,8 +1011,8 @@ TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialAffiliatedPasswordNoMatch) {
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
-  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
-  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+  store_->SetAffiliatedMatchHelper(
+      std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;
@@ -1034,8 +1034,8 @@ TEST_F(CredentialManagerImplTest,
   affiliated_form1_.password_value = base::string16();
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
-  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
-  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+  store_->SetAffiliatedMatchHelper(
+      std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<GURL> federations;
   federations.push_back(GURL("https://example.com/"));
@@ -1058,8 +1058,8 @@ TEST_F(CredentialManagerImplTest,
   affiliated_form1_.password_value = base::string16();
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
-  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
-  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+  store_->SetAffiliatedMatchHelper(
+      std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<GURL> federations;
   federations.push_back(GURL("https://not-example.com/"));
@@ -1325,8 +1325,8 @@ TEST_F(CredentialManagerImplTest, ZeroClickWithAffiliatedFormInPasswordStore) {
   // ought to be returned automagically.
   store_->AddLogin(affiliated_form1_);
 
-  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
-  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+  store_->SetAffiliatedMatchHelper(
+      std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;
@@ -1347,8 +1347,8 @@ TEST_F(CredentialManagerImplTest,
   store_->AddLogin(affiliated_form1_);
   store_->AddLogin(affiliated_form2_);
 
-  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
-  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+  store_->SetAffiliatedMatchHelper(
+      std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;
@@ -1370,7 +1370,7 @@ TEST_F(CredentialManagerImplTest,
   store_->AddLogin(affiliated_form1_);
 
   store_->SetAffiliatedMatchHelper(
-      base::MakeUnique<MockAffiliatedMatchHelper>());
+      std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<std::string> affiliated_realms;
   PasswordStore::FormDigest digest =
@@ -1398,8 +1398,8 @@ TEST_F(CredentialManagerImplTest,
   store_->AddLogin(form_);
   store_->AddLogin(affiliated_form1_);
 
-  auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
-  store_->SetAffiliatedMatchHelper(std::move(mock_helper));
+  store_->SetAffiliatedMatchHelper(
+      std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<GURL> federations;
   std::vector<std::string> affiliated_realms;

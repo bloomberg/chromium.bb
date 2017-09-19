@@ -12,7 +12,6 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -124,7 +123,7 @@ MATCHER_P2(SyncChangeIs, change_type, password, "") {
 // The argument is std::vector<autofill::PasswordForm*>*. The caller is
 // responsible for the lifetime of all the password forms.
 ACTION_P(AppendForm, form) {
-  arg0->push_back(base::MakeUnique<autofill::PasswordForm>(form));
+  arg0->push_back(std::make_unique<autofill::PasswordForm>(form));
   return true;
 }
 
@@ -132,7 +131,7 @@ ACTION_P(AppendForm, form) {
 // responsible for the lifetime of all the password forms.
 ACTION_P(AppendForms, forms) {
   for (const autofill::PasswordForm& form : forms)
-    arg0->push_back(base::MakeUnique<autofill::PasswordForm>(form));
+    arg0->push_back(std::make_unique<autofill::PasswordForm>(form));
   return true;
 }
 
@@ -186,7 +185,7 @@ class PasswordSyncableServiceWrapper {
     password_store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
     service_.reset(
         new PasswordSyncableService(password_store_->GetSyncInterface()));
-    auto clock = base::MakeUnique<base::SimpleTestClock>();
+    auto clock = std::make_unique<base::SimpleTestClock>();
     clock->SetNow(time());
     service_->set_clock(std::move(clock));
     ON_CALL(*password_store_, AddLoginImpl(HasDateSynced(time())))
@@ -820,9 +819,9 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, FourWayMerge) {
     SCOPED_TRACE(*FillPasswordFormWithData(data[3]));
 
     for (bool correct_sync_first : {true, false}) {
-      auto wrapper = base::MakeUnique<PasswordSyncableServiceWrapper>();
+      auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
       auto processor =
-          base::MakeUnique<testing::StrictMock<MockSyncChangeProcessor>>();
+          std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
 
       std::vector<autofill::PasswordForm> stored_forms = {local_correct,
                                                           local_incorrect};
@@ -884,19 +883,19 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, ThreeWayMerge) {
       std::vector<std::unique_ptr<PasswordFormData>> data;
       int date_index = 0;
       data.push_back(entry_present[0]
-                         ? base::MakeUnique<PasswordFormData>(
+                         ? std::make_unique<PasswordFormData>(
                                android_correct(dates[date_index++]))
                          : nullptr);
       data.push_back(entry_present[1]
-                         ? base::MakeUnique<PasswordFormData>(
+                         ? std::make_unique<PasswordFormData>(
                                android_incorrect(dates[date_index++]))
                          : nullptr);
       data.push_back(entry_present[2]
-                         ? base::MakeUnique<PasswordFormData>(
+                         ? std::make_unique<PasswordFormData>(
                                android_correct2(dates[date_index++]))
                          : nullptr);
       data.push_back(entry_present[3]
-                         ? base::MakeUnique<PasswordFormData>(
+                         ? std::make_unique<PasswordFormData>(
                                android_incorrect2(dates[date_index++]))
                          : nullptr);
 
@@ -940,9 +939,9 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, ThreeWayMerge) {
       }
 
       for (bool swap_sync_list : {false, true}) {
-        auto wrapper = base::MakeUnique<PasswordSyncableServiceWrapper>();
+        auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
         auto processor =
-            base::MakeUnique<testing::StrictMock<MockSyncChangeProcessor>>();
+            std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
 
         EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
             .WillOnce(AppendForms(stored_forms));
@@ -1018,9 +1017,9 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, TwoWayServerAndLocalMerge) {
       const PasswordFormData* latest_data =
           dates[1] > dates[0] ? &local_data : &sync_data;
 
-      auto wrapper = base::MakeUnique<PasswordSyncableServiceWrapper>();
+      auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
       auto processor =
-          base::MakeUnique<testing::StrictMock<MockSyncChangeProcessor>>();
+          std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
 
       EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
           .WillOnce(AppendForm(*FillPasswordFormWithData(local_data)));
@@ -1112,9 +1111,9 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, OneEntryOnly) {
     PasswordFormData data =
         entry_is_correct ? android_correct(100) : android_incorrect(100);
 
-    auto wrapper = base::MakeUnique<PasswordSyncableServiceWrapper>();
+    auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
     auto processor =
-        base::MakeUnique<testing::StrictMock<MockSyncChangeProcessor>>();
+        std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
 
     if (entry_is_local) {
       EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
@@ -1168,9 +1167,9 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, FourEqualEntries) {
   syncer::SyncData sync_incorrect = SyncDataFromPassword(local_incorrect);
 
   for (bool correct_sync_first : {true, false}) {
-    auto wrapper = base::MakeUnique<PasswordSyncableServiceWrapper>();
+    auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
     auto processor =
-        base::MakeUnique<testing::StrictMock<MockSyncChangeProcessor>>();
+        std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
 
     std::vector<autofill::PasswordForm> stored_forms = {local_correct,
                                                         local_incorrect};
@@ -1199,9 +1198,9 @@ TEST_F(PasswordSyncableServiceAndroidAutofillTest, AndroidCorrectEqualEntries) {
   autofill::PasswordForm local_correct = FormWithCorrectTag(data);
   syncer::SyncData sync_correct = SyncDataFromPassword(local_correct);
 
-  auto wrapper = base::MakeUnique<PasswordSyncableServiceWrapper>();
+  auto wrapper = std::make_unique<PasswordSyncableServiceWrapper>();
   auto processor =
-      base::MakeUnique<testing::StrictMock<MockSyncChangeProcessor>>();
+      std::make_unique<testing::StrictMock<MockSyncChangeProcessor>>();
 
   EXPECT_CALL(*wrapper->password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(local_correct));

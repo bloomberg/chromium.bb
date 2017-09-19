@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "components/password_manager/core/browser/credential_manager_impl.h"
 
+#include <memory>
+
 #include "base/metrics/user_metrics.h"
 #include "components/password_manager/core/browser/credential_manager_logger.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
@@ -55,9 +57,9 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
   // Create a custom form fetcher without HTTP->HTTPS migration, as well as
   // without fetching of suppressed HTTPS credentials on HTTP origins as the API
   // is only available on HTTPS origins.
-  auto form_fetcher = base::MakeUnique<FormFetcherImpl>(
+  auto form_fetcher = std::make_unique<FormFetcherImpl>(
       PasswordStore::FormDigest(*observed_form), client_, false, false);
-  form_manager_ = base::MakeUnique<CredentialManagerPasswordFormManager>(
+  form_manager_ = std::make_unique<CredentialManagerPasswordFormManager>(
       client_, *observed_form, std::move(form), this, nullptr,
       std::move(form_fetcher));
   form_manager_->Init(nullptr);

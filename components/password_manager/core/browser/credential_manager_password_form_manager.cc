@@ -4,11 +4,11 @@
 
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
@@ -31,7 +31,7 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
                           nullptr,
                           observed_form,
                           (form_saver ? std::move(form_saver)
-                                      : base::MakeUnique<FormSaverImpl>(
+                                      : std::make_unique<FormSaverImpl>(
                                             client->GetPasswordStore())),
                           form_fetcher.get()),
       delegate_(delegate),

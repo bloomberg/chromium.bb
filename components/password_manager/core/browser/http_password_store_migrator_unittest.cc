@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/http_password_store_migrator.h"
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -174,9 +174,9 @@ void HttpPasswordStoreMigratorTest::TestFullStore(bool is_hsts) {
   EXPECT_CALL(store(), RemoveLogin(form)).Times(is_hsts);
   EXPECT_CALL(consumer(), ProcessForms(ElementsAre(Pointee(expected_form))));
   std::vector<std::unique_ptr<autofill::PasswordForm>> results;
-  results.push_back(base::MakeUnique<PasswordForm>(psl_form));
-  results.push_back(base::MakeUnique<PasswordForm>(form));
-  results.push_back(base::MakeUnique<PasswordForm>(android_form));
+  results.push_back(std::make_unique<PasswordForm>(psl_form));
+  results.push_back(std::make_unique<PasswordForm>(form));
+  results.push_back(std::make_unique<PasswordForm>(android_form));
   migrator.OnGetPasswordStoreResults(std::move(results));
 }
 
@@ -193,7 +193,7 @@ void HttpPasswordStoreMigratorTest::TestMigratorDeletionByConsumer(
 
   // Construct the migrator, call |OnGetPasswordStoreResults| explicitly and
   // manually delete it.
-  auto migrator = base::MakeUnique<HttpPasswordStoreMigrator>(
+  auto migrator = std::make_unique<HttpPasswordStoreMigrator>(
       GURL(kTestHttpsURL), &client(), &consumer());
   migrator->OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>>());

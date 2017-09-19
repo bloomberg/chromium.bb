@@ -6,11 +6,11 @@
 
 #include <stdint.h>
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/clock.h"
@@ -115,7 +115,7 @@ FacetManager* AffiliationBackend::GetOrCreateFacetManager(
   std::unique_ptr<FacetManager>& facet_manager = facet_managers_[facet_uri];
   if (!facet_manager) {
     facet_manager =
-        base::MakeUnique<FacetManager>(facet_uri, this, clock_.get());
+        std::make_unique<FacetManager>(facet_uri, this, clock_.get());
   }
   return facet_manager.get();
 }

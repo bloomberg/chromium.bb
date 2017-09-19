@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/autofill/core/common/password_form.h"
@@ -48,10 +47,10 @@ class CredentialManagerPasswordFormManagerTest : public testing::Test {
 TEST_F(CredentialManagerPasswordFormManagerTest, AbortEarly) {
   PasswordForm observed_form;
   MockDelegate delegate;
-  auto form_manager = base::MakeUnique<CredentialManagerPasswordFormManager>(
-      &client_, observed_form, base::MakeUnique<PasswordForm>(observed_form),
-      &delegate, base::MakeUnique<StubFormSaver>(),
-      base::MakeUnique<FakeFormFetcher>());
+  auto form_manager = std::make_unique<CredentialManagerPasswordFormManager>(
+      &client_, observed_form, std::make_unique<PasswordForm>(observed_form),
+      &delegate, std::make_unique<StubFormSaver>(),
+      std::make_unique<FakeFormFetcher>());
   form_manager->Init(nullptr);
 
   auto deleter = [&form_manager]() { form_manager.reset(); };
@@ -78,10 +77,10 @@ TEST_F(CredentialManagerPasswordFormManagerTest, AbortEarly) {
 TEST_F(CredentialManagerPasswordFormManagerTest, GetCredentialSource) {
   PasswordForm observed_form;
   MockDelegate delegate;
-  auto form_manager = base::MakeUnique<CredentialManagerPasswordFormManager>(
-      &client_, observed_form, base::MakeUnique<PasswordForm>(observed_form),
-      &delegate, base::MakeUnique<StubFormSaver>(),
-      base::MakeUnique<FakeFormFetcher>());
+  auto form_manager = std::make_unique<CredentialManagerPasswordFormManager>(
+      &client_, observed_form, std::make_unique<PasswordForm>(observed_form),
+      &delegate, std::make_unique<StubFormSaver>(),
+      std::make_unique<FakeFormFetcher>());
   form_manager->Init(nullptr);
   ASSERT_EQ(metrics_util::CredentialSourceType::kCredentialManagementAPI,
             form_manager->GetCredentialSource());

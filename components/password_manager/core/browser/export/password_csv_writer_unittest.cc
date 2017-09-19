@@ -7,7 +7,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/import/csv_reader.h"
@@ -39,7 +38,7 @@ TEST(PasswordCSVWriterTest, SerializePasswords_SinglePassword) {
   form.origin = GURL("http://example.com");
   form.username_value = base::UTF8ToUTF16("Someone");
   form.password_value = base::UTF8ToUTF16("Secret");
-  passwords.push_back(base::MakeUnique<PasswordForm>(form));
+  passwords.push_back(std::make_unique<PasswordForm>(form));
 
   std::vector<std::string> column_names;
   std::vector<std::map<std::string, std::string>> records;
@@ -60,11 +59,11 @@ TEST(PasswordCSVWriterTest, SerializePasswords_TwoPasswords) {
   form.origin = GURL("http://example.com");
   form.username_value = base::UTF8ToUTF16("Someone");
   form.password_value = base::UTF8ToUTF16("Secret");
-  passwords.push_back(base::MakeUnique<PasswordForm>(form));
+  passwords.push_back(std::make_unique<PasswordForm>(form));
   form.origin = GURL("http://other.org");
   form.username_value = base::UTF8ToUTF16("Anyone");
   form.password_value = base::UTF8ToUTF16("None");
-  passwords.push_back(base::MakeUnique<PasswordForm>(form));
+  passwords.push_back(std::make_unique<PasswordForm>(form));
 
   std::vector<std::string> column_names;
   std::vector<std::map<std::string, std::string>> records;
