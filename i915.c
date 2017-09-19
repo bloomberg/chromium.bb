@@ -430,6 +430,9 @@ static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane, int
 		struct drm_i915_gem_mmap gem_map;
 		memset(&gem_map, 0, sizeof(gem_map));
 
+		if ((bo->flags & BO_USE_SCANOUT) && !(bo->flags & BO_USE_RENDERSCRIPT))
+			gem_map.flags = I915_MMAP_WC;
+
 		gem_map.handle = bo->handles[0].u32;
 		gem_map.offset = 0;
 		gem_map.size = bo->total_size;
