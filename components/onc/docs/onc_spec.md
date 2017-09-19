@@ -1331,6 +1331,10 @@ ONC configuration of of **Cellular** networks is not yet supported.
     * `Allowed values are` *Home*,
         *Roaming*, or if the provider has no home network, *Required*.
 
+* **Scanning**
+    * (optional, read-only) - **boolean**
+    * True when a cellular network scan is in progress.
+
 * **ServingOperator**
     * (optional, read-only, provided only if **Family** is *GSM*) -
       [CellularProvider](#CellularProvider-type)

@@ -703,7 +703,7 @@ chrome.networkingPrivate.CellularProperties;
  *   FirmwareRevision: (string|undefined),
  *   FoundNetworks: (!Array<!chrome.networkingPrivate.FoundNetworkProperties>|undefined),
  *   HardwareRevision: (string|undefined),
- *   HomeProvider: (!Array<!chrome.networkingPrivate.CellularProviderProperties>|undefined),
+ *   HomeProvider: (!chrome.networkingPrivate.CellularProviderProperties|undefined),
  *   ICCID: (string|undefined),
  *   IMEI: (string|undefined),
  *   LastGoodAPN: (!chrome.networkingPrivate.APNProperties|undefined),
@@ -1352,8 +1352,8 @@ chrome.networkingPrivate.unlockCellularSim = function(networkGuid, pin, puk, cal
 chrome.networkingPrivate.setCellularSimState = function(networkGuid, simState, callback) {};
 
 /**
- * Selects whic Cellular Mobile Network to use. |networkId| must be the
- * NetworkId property of a member of Cellular.FoundNetworks for the network
+ * Selects which Cellular Mobile Network to use. |networkId| must be the
+ * NetworkId property of a member of Cellular.FoundNetworks from the network
  * properties for the specified Cellular network.
  * @param {string} networkGuid The GUID of the cellular network to select the
  *     network     for. If empty, the default cellular device will be used.
@@ -1361,8 +1361,7 @@ chrome.networkingPrivate.setCellularSimState = function(networkGuid, simState, c
  * @param {function():void=} callback Called when the operation has completed.
  * @see https://developer.chrome.com/extensions/networkingPrivate#method-selectCellularMobileNetwork
  */
-chrome.networkingPrivate.selectCellularMobileNetwork = function(
-    networkGuid, networkId, callback) {};
+chrome.networkingPrivate.selectCellularMobileNetwork = function(networkGuid, networkId, callback) {};
 
 /**
  * Gets the global policy properties. These properties are not expected to

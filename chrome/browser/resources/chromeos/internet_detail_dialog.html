@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_apnlist.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_choose_mobile.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_ip_config.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_nameservers.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_property_list.html">
@@ -98,7 +99,17 @@
       </div>
     </template>
 
-    <!-- APN -->
+    <!-- Choose Mobile Network (Cellular only). -->
+    <template is="dom-if"
+        if="[[showCellularChooseNetwork_(networkProperties)]]">
+      <div class="section single-column">
+        <network-choose-mobile networking-private="[[networkingPrivate]]"
+            network-properties="[[networkProperties]]">
+        </network-choose-mobile>
+      </div>
+    </template>
+
+    <!-- APN (Cellular only) -->
     <template is="dom-if" if="[[isCellular_(networkProperties)]]">
       <div class="section single-column">
         <network-apnlist editable on-apn-change="onNetworkPropertyChange_"

@@ -1,0 +1,50 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/md_select_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="network_shared_css.html">
+
+<dom-module id="network-choose-mobile">
+  <template>
+    <style include="network-shared md-select">
+      paper-button {
+        margin: 0;
+      }
+      paper-button[disabled] {
+        background: none;
+      }
+      /* Align select with button and scan messages */
+      select {
+        margin-top: 4px;
+      }
+    </style>
+    <div class="property-box first">
+      <div class="start">[[i18n('networkChooseMobile')]]</div>
+      <template is="dom-if" if="[[getShowScanStatus_(networkProperties)]]">
+        <div>[[getScanStatus_(networkProperties)]]</div>
+      </template>
+      <template is="dom-if" if="[[getShowScanButton_(networkProperties)]]">
+        <paper-button on-tap="onScanTap_"
+            disabled="[[!getEnableScanButton_(networkProperties)]]">
+          [[i18n('networkCellularScan')]]
+        </paper-button>
+      </template>
+      <div class="md-select-wrapper">
+        <select class="md-select" on-change="onChange_"
+            value="[[selectedMobileNetworkId_]]"
+            aria-label="[[i18n('networkChooseMobile')]]">
+          <template is="dom-repeat" items="[[mobileNetworkList_]]">
+            <option value="[[item.NetworkId]]"
+                disabled="[[getMobileNetworkIsDisabled_(item)]]">
+              [[getName_(item)]]
+            </option>
+          </template>
+        </select>
+        <span class="md-select-underline"></span>
+      </div>
+    </div>
+  </template>
+  <script src="network_choose_mobile.js"></script>
+</dom-module>
