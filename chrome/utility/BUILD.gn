@@ -37,6 +37,7 @@ static_library("utility") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
+    "//chrome/common/printing:interfaces",
     "//chrome/common/profiling",
     "//chrome/profiling",
     "//components/payments/content/utility",
@@ -157,6 +158,10 @@ static_library("utility") {
   }
 
   if (enable_print_preview || (enable_basic_printing && is_win)) {
+    sources += [
+      "printing/pdf_to_pwg_raster_converter_impl.cc",
+      "printing/pdf_to_pwg_raster_converter_impl.h",
+    ]
     deps += [ "//pdf" ]
   } else {
     sources -= [

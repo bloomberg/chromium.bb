@@ -20,8 +20,6 @@
 
 namespace printing {
 
-struct PwgRasterSettings;
-
 // Dispatches IPCs for printing.
 class PrintingHandler : public UtilityMessageHandler {
  public:
@@ -41,12 +39,6 @@ class PrintingHandler : public UtilityMessageHandler {
       IPC::PlatformFileForTransit output_file);
   void OnRenderPDFPagesToMetafileStop();
 #endif  // OS_WIN
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void OnRenderPDFPagesToPWGRaster(IPC::PlatformFileForTransit pdf_transit,
-                                   const PdfRenderSettings& settings,
-                                   const PwgRasterSettings& bitmap_settings,
-                                   IPC::PlatformFileForTransit bitmap_transit);
-#endif  // ENABLE_PRINT_PREVIEW
 
 #if defined(OS_WIN)
   int LoadPDF(base::File pdf_file);
@@ -56,11 +48,6 @@ class PrintingHandler : public UtilityMessageHandler {
                                bool postscript);
 #endif  // OS_WIN
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  bool RenderPDFPagesToPWGRaster(base::File pdf_file,
-                                 const PdfRenderSettings& settings,
-                                 const PwgRasterSettings& bitmap_settings,
-                                 base::File bitmap_file);
-
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
   void OnGetPrinterSemanticCapsAndDefaults(const std::string& printer_name);
 #endif  // ENABLE_PRINT_PREVIEW
