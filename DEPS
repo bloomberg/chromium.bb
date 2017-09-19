@@ -535,7 +535,6 @@ skip_child_includes = [
   'breakpad',
   'native_client_sdk',
   'out',
-  'sdch',
   'skia',
   'testing',
   'v8',
