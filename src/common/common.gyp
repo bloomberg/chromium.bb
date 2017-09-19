@@ -238,9 +238,9 @@
       ],
       'dependencies': [
         'common',
-        '../build/testing.gypi:gmock_main',
-        '../build/testing.gypi:gmock',
-        '../build/testing.gypi:gtest',
+        '../build/testing.gyp:gmock_main',
+        '../build/testing.gyp:gmock',
+        '../build/testing.gyp:gtest',
       ],
       'libraries': [
         '-ldl',
