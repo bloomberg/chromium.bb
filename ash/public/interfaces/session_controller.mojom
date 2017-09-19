@@ -169,6 +169,10 @@ interface SessionController {
   // Shows a dialog to confirm that the user wants to teleport a window to
   // another desktop. If |on_accept| is false, |permanently_accept| is ignored.
   ShowTeleportWarningDialog() => (bool on_accept, bool permanently_accept);
+
+  // Shows a dialog that explains that the given user is no longer allowed in
+  // the session due to a policy change, and aborts the session.
+  ShowMultiprofilesSessionAbortedDialog(string user_email);
 };
 
 // Interface for ash to request session service from its client (e.g. Chrome).

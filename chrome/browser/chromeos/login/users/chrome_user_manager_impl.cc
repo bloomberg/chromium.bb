@@ -11,6 +11,8 @@
 #include <utility>
 
 #include "ash/multi_profile_uma.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -48,7 +50,6 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -60,6 +61,7 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -84,6 +86,8 @@
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -1209,7 +1213,13 @@ void ChromeUserManagerImpl::NotifyUserAddedToSession(
 void ChromeUserManagerImpl::OnUserNotAllowed(const std::string& user_email) {
   LOG(ERROR) << "Shutdown session because a user is not allowed to be in the "
                 "current session";
-  chromeos::ShowMultiprofilesSessionAbortedDialog(user_email);
+  ash::mojom::SessionControllerPtr session_controller;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &session_controller);
+  session_controller->ShowMultiprofilesSessionAbortedDialog(user_email);
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::MULTIPROFILES_SESSION_ABORTED);
 }
 
 void ChromeUserManagerImpl::RemovePendingBootstrapUser(

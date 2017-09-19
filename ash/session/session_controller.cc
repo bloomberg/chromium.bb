@@ -9,6 +9,7 @@
 
 #include "ash/public/interfaces/pref_connector.mojom.h"
 #include "ash/public/interfaces/user_info.mojom.h"
+#include "ash/session/session_aborted_dialog.h"
 #include "ash/session/session_observer.h"
 #include "ash/session/teleport_warning_dialog.h"
 #include "ash/shell.h"
@@ -409,6 +410,11 @@ void SessionController::CanSwitchActiveUser(
 void SessionController::ShowTeleportWarningDialog(
     ShowTeleportWarningDialogCallback callback) {
   TeleportWarningDialog::Show(std::move(callback));
+}
+
+void SessionController::ShowMultiprofilesSessionAbortedDialog(
+    const std::string& user_email) {
+  SessionAbortedDialog::Show(user_email);
 }
 
 void SessionController::ClearUserSessionsForTest() {

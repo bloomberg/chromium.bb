@@ -142,6 +142,8 @@ class TestSessionController : public ash::mojom::SessionController {
       ShowTeleportWarningDialogCallback callback) override {
     std::move(callback).Run(true, false);
   }
+  void ShowMultiprofilesSessionAbortedDialog(
+      const std::string& user_email) override {}
 
   base::TimeDelta last_session_length_limit_;
   base::TimeTicks last_session_start_time_;
