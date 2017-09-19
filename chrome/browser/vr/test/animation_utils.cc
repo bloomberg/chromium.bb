@@ -40,6 +40,38 @@ std::unique_ptr<cc::Animation> CreateBoundsAnimation(int id,
   return animation;
 }
 
+std::unique_ptr<cc::Animation> CreateOpacityAnimation(
+    int id,
+    int group,
+    float from,
+    float to,
+    base::TimeDelta duration) {
+  std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve(
+      cc::KeyframedFloatAnimationCurve::Create());
+  curve->AddKeyframe(
+      cc::FloatKeyframe::Create(base::TimeDelta(), from, nullptr));
+  curve->AddKeyframe(cc::FloatKeyframe::Create(duration, to, nullptr));
+  std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
+      std::move(curve), id, group, TargetProperty::OPACITY));
+  return animation;
+}
+
+std::unique_ptr<cc::Animation> CreateBackgroundColorAnimation(
+    int id,
+    int group,
+    SkColor from,
+    SkColor to,
+    base::TimeDelta duration) {
+  std::unique_ptr<cc::KeyframedColorAnimationCurve> curve(
+      cc::KeyframedColorAnimationCurve::Create());
+  curve->AddKeyframe(
+      cc::ColorKeyframe::Create(base::TimeDelta(), from, nullptr));
+  curve->AddKeyframe(cc::ColorKeyframe::Create(duration, to, nullptr));
+  std::unique_ptr<cc::Animation> animation(cc::Animation::Create(
+      std::move(curve), id, group, TargetProperty::BACKGROUND_COLOR));
+  return animation;
+}
+
 base::TimeTicks MicrosecondsToTicks(uint64_t us) {
   base::TimeTicks to_return;
   return base::TimeDelta::FromMicroseconds(us) + to_return;
@@ -60,7 +92,7 @@ base::TimeDelta MsToDelta(uint64_t ms) {
 bool IsAnimating(UiElement* element,
                  const std::vector<TargetProperty>& properties) {
   for (auto property : properties) {
-    if (!element->animation_player().IsAnimatingProperty(property))
+    if (!element->IsAnimatingProperty(property))
       return false;
   }
   return true;

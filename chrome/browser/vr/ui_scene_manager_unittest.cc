@@ -634,4 +634,29 @@ TEST_F(UiSceneManagerTest, RendererUsesCorrectOpacity) {
   CheckRendererOpacityRecursive(&scene_->root_element());
 }
 
+// This test ensures that we maintain a specific view hierarchy so that our UI
+// is not distorted based on a device's physical screen size. This test ensures
+// that we don't silently cause distoration by changing the hierarchy. The long
+// term solution is tracked by crbug.com/766318.
+TEST_F(UiSceneManagerTest, EnforceSceneHierarchyForProjMatrixChanges) {
+  MakeManager(kNotInCct, kNotInWebVr);
+  UiElement* browsing_content_group =
+      scene_->GetUiElementByName(k2dBrowsingContentGroup);
+  UiElement* browsing_foreground =
+      scene_->GetUiElementByName(k2dBrowsingForeground);
+  UiElement* browsing_root = scene_->GetUiElementByName(k2dBrowsingRoot);
+  UiElement* root = scene_->GetUiElementByName(kRoot);
+  EXPECT_EQ(browsing_content_group->parent(), browsing_foreground);
+  EXPECT_EQ(browsing_foreground->parent(), browsing_root);
+  EXPECT_EQ(browsing_root->parent(), root);
+  EXPECT_EQ(root->parent(), nullptr);
+  // Parents of k2dBrowsingContentGroup should not animate transform. Note that
+  // this test is not perfect because these could be animated anytime, but its
+  // better than having no test.
+  EXPECT_FALSE(
+      browsing_foreground->IsAnimatingProperty(TargetProperty::TRANSFORM));
+  EXPECT_FALSE(browsing_root->IsAnimatingProperty(TargetProperty::TRANSFORM));
+  EXPECT_FALSE(root->IsAnimatingProperty(TargetProperty::TRANSFORM));
+}
+
 }  // namespace vr

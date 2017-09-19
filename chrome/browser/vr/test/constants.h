@@ -27,7 +27,7 @@ static const gfx::Transform kProjMatrix(1.03317f,
                                         -1.0f,
                                         0.0f);
 
-constexpr float kEpsilon = 0.0001f;
+constexpr float kEpsilon = 1e-5f;
 
 }  // namespace vr
 

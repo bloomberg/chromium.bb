@@ -84,14 +84,18 @@ class AnimationPlayer final {
 
   bool IsAnimatingProperty(int property) const;
 
-  // TODO(754822): Implement target getters for other value types.
   cc::TransformOperations GetTargetTransformOperationsValue(
-      int target_property) const;
-  gfx::SizeF GetTargetSizeValue(int target_property) const;
+      int target_property,
+      cc::TransformOperations default_value) const;
+  gfx::SizeF GetTargetSizeValue(int target_property,
+                                gfx::SizeF default_value) const;
+  float GetTargetFloatValue(int target_property, float default_value) const;
+  SkColor GetTargetColorValue(int target_property, SkColor default_value) const;
 
  private:
   void StartAnimations(base::TimeTicks monotonic_time);
   cc::Animation* GetRunningAnimationForProperty(int target_property) const;
+  cc::Animation* GetAnimationForProperty(int target_property) const;
 
   cc::AnimationTarget* target_ = nullptr;
   Animations animations_;
