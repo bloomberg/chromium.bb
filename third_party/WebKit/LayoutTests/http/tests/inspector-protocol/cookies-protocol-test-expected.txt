@@ -155,3 +155,10 @@ Num of cookies 0
 
 Running test: deleteAllCookies
 
+Running test: nonUnicodeCookie
+Adding multiple cookies
+Num of cookies 1
+name: cookie1, value: привет, domain: .chromium.org, path: /path, session
+
+Running test: deleteAllCookies
+

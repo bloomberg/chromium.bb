@@ -28,10 +28,10 @@ class CONTENT_EXPORT StringBuilder {
  public:
   StringBuilder();
   ~StringBuilder();
-  void append(const std::string&);
+  void append(const String&);
   void append(char);
   void append(const char*, size_t);
-  std::string toString();
+  String toString();
   void reserveCapacity(size_t);
 
  private:
@@ -73,12 +73,15 @@ class CONTENT_EXPORT StringUtil {
   static void builderAppend(StringBuilder& builder, const char* s, size_t len) {
     builder.append(s, len);
   }
+  static void builderAppendQuotedString(StringBuilder& builder,
+                                        const String& str);
   static void builderReserve(StringBuilder& builder, unsigned capacity) {
     builder.reserveCapacity(capacity);
   }
   static String builderToString(StringBuilder& builder) {
     return builder.toString();
   }
+
   static std::unique_ptr<protocol::Value> parseJSON(const String&);
 };
 
