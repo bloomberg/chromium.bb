@@ -57,13 +57,11 @@ SearchResultTileItemView::SearchResultTileItemView(
   SetVisible(false);
 
   if (is_play_store_search_enabled) {
-    const gfx::FontList& base_font =
-        ui::ResourceBundle::GetSharedInstance().GetFontList(
-            ui::ResourceBundle::BaseFont);
-
+    const gfx::FontList& font = FullscreenAppListAppTitleFont();
     rating_ = new views::Label;
     rating_->SetEnabledColor(kSearchAppRatingColor);
-    rating_->SetFontList(base_font);
+    rating_->SetFontList(font);
+    rating_->SetLineHeight(font.GetHeight());
     rating_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
     rating_->SetVisible(false);
     AddChildView(rating_);
@@ -78,7 +76,8 @@ SearchResultTileItemView::SearchResultTileItemView(
 
     price_ = new views::Label;
     price_->SetEnabledColor(kSearchAppPriceColor);
-    price_->SetFontList(base_font);
+    price_->SetFontList(font);
+    price_->SetLineHeight(font.GetHeight());
     price_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     price_->SetVisible(false);
     AddChildView(price_);
@@ -115,14 +114,12 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   SetPrice(item_->formatted_price());
 
   if (is_fullscreen_app_list_enabled_) {
-    const gfx::FontList& base_font =
-        ui::ResourceBundle::GetSharedInstance().GetFontList(
-            ui::ResourceBundle::BaseFont);
-
+    const gfx::FontList& font = FullscreenAppListAppTitleFont();
     if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
       set_is_recommendation(true);
 
-      title()->SetFontList(base_font.DeriveWithSizeDelta(1));
+      title()->SetFontList(font);
+      title()->SetLineHeight(font.GetHeight());
       title()->SetEnabledColor(kGridTitleColorFullscreen);
     } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
       // Set solid color background to avoid broken text. See crbug.com/746563.
@@ -136,7 +133,8 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
       }
       title()->SetBackground(
           views::CreateSolidBackground(kCardBackgroundColorFullscreen));
-      title()->SetFontList(base_font.DeriveWithSizeDelta(1));
+      title()->SetFontList(font);
+      title()->SetLineHeight(font.GetHeight());
       title()->SetEnabledColor(kSearchTitleColor);
     }
 

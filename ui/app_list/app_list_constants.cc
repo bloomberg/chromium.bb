@@ -279,4 +279,22 @@ const gfx::ShadowValues& IconEndShadows() {
   return icon_shadows;
 }
 
+const gfx::FontList& FullscreenAppListAppTitleFont() {
+  // The max line height of app titles while the fullscreen launcher is enabled,
+  // which is determined by the sizes of app tile views, its paddings, and the
+  // icon.
+  constexpr int kFullscreenAppTitleMaxLineHeight = 16;
+
+  // The font for app titles while the fullscreen launcher is enabled. We're
+  // getting the largest font that doesn't exceed
+  // |kFullscreenAppTitleMaxLineHeight|.
+  // Note: we resize the font to 1px larger, otherwise it looks too small.
+  static const gfx::FontList kFullscreenAppListAppTitleFont =
+      ui::ResourceBundle::GetSharedInstance()
+          .GetFontList(ui::ResourceBundle::LargeFont)
+          .DeriveWithHeightUpperBound(kFullscreenAppTitleMaxLineHeight)
+          .DeriveWithSizeDelta(1);
+  return kFullscreenAppListAppTitleFont;
+}
+
 }  // namespace app_list
