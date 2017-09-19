@@ -3704,6 +3704,9 @@ crbug.com/764180 [ Android ] virtual/display_list_2d_canvas/fast/canvas/script-i
 # Sheriff failure 2017-09-15
 crbug.com/765685 [ Android ] external/wpt/mediacapture-streams/MediaStream-idl.https.html [ Pass Failure ]
 
+# Sheriff failure 2017-09-18
+crbug.com/766404 [ Mac ] plugins/keyboard-events.html [ Pass Failure ]
+
 # JPEG decoding change in Skia
 crbug.com/763605 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ NeedsManualRebaseline ]
 crbug.com/763605 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ NeedsManualRebaseline ]
