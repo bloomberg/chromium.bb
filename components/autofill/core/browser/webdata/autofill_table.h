@@ -87,6 +87,9 @@ struct FormFieldData;
 //                      code starts with the postal code, but a JP address with
 //                      "ja-latn" language code starts with the recipient name.
 //                      Added in version 56.
+//   validity_bitfield  A bitfield representing the validity state of different
+//                      fields in the profile.
+//                      Added in version 75.
 //
 // autofill_profile_names
 //                      This table contains the multi-valued name fields
@@ -469,6 +472,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion72RenameCardTypeToIssuerNetwork();
   bool MigrateToVersion73AddMaskedCardBankName();
   bool MigrateToVersion74AddServerCardTypeColumn();
+  bool MigrateToVersion75AddProfileValidityBitfieldColumn();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
