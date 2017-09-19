@@ -942,39 +942,23 @@ static const int av1_num_ext_tx_set[EXT_TX_SET_TYPES] = {
   5, 7, 12, 16,
 };
 
-// Maps intra set index to the set type
-static const int av1_ext_tx_set_type_intra[EXT_TX_SETS_INTRA] = {
-  EXT_TX_SET_DCTONLY, EXT_TX_SET_DTT4_IDTX_1DDCT, EXT_TX_SET_DTT4_IDTX,
+static const int av1_ext_tx_set_idx_to_type[2][AOMMAX(EXT_TX_SETS_INTRA,
+                                                      EXT_TX_SETS_INTER)] = {
+  {
+      // Intra
+      EXT_TX_SET_DCTONLY, EXT_TX_SET_DTT4_IDTX_1DDCT, EXT_TX_SET_DTT4_IDTX,
 #if CONFIG_MRC_TX
-  EXT_TX_SET_MRC_DCT,
+      EXT_TX_SET_MRC_DCT,
 #endif  // CONFIG_MRC_TX
-};
-
-// Maps inter set index to the set type
-static const int av1_ext_tx_set_type_inter[EXT_TX_SETS_INTER] = {
-  EXT_TX_SET_DCTONLY,         EXT_TX_SET_ALL16,
-  EXT_TX_SET_DTT9_IDTX_1DDCT, EXT_TX_SET_DCT_IDTX,
+  },
+  {
+      // Inter
+      EXT_TX_SET_DCTONLY, EXT_TX_SET_ALL16, EXT_TX_SET_DTT9_IDTX_1DDCT,
+      EXT_TX_SET_DCT_IDTX,
 #if CONFIG_MRC_TX
-  EXT_TX_SET_MRC_DCT_IDTX,
+      EXT_TX_SET_MRC_DCT_IDTX,
 #endif  // CONFIG_MRC_TX
-};
-
-// Maps set types above to the indices used for intra
-static const int ext_tx_set_index_intra[EXT_TX_SET_TYPES] = {
-  0, -1,
-#if CONFIG_MRC_TX
-  3, -1,
-#endif  // CONFIG_MRC_TX
-  2, 1,  -1, -1,
-};
-
-// Maps set types above to the indices used for inter
-static const int ext_tx_set_index_inter[EXT_TX_SET_TYPES] = {
-  0,  3,
-#if CONFIG_MRC_TX
-  -1, 4,
-#endif  // CONFIG_MRC_TX
-  -1, -1, 2, 1,
+  }
 };
 
 static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
@@ -1102,12 +1086,31 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
                                     : EXT_TX_SET_DTT4_IDTX_1DDCT);
 }
 
+// Maps tx set types to the indices.
+static const int ext_tx_set_index[2][EXT_TX_SET_TYPES] = {
+  {
+      // Intra
+      0, -1,
+#if CONFIG_MRC_TX
+      3, -1,
+#endif  // CONFIG_MRC_TX
+      2, 1, -1, -1,
+  },
+  {
+      // Inter
+      0, 3,
+#if CONFIG_MRC_TX
+      -1, 4,
+#endif  // CONFIG_MRC_TX
+      -1, -1, 2, 1,
+  },
+};
+
 static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
                                  int use_reduced_set) {
   const TxSetType set_type =
       get_ext_tx_set_type(tx_size, bs, is_inter, use_reduced_set);
-  return is_inter ? ext_tx_set_index_inter[set_type]
-                  : ext_tx_set_index_intra[set_type];
+  return ext_tx_set_index[is_inter][set_type];
 }
 
 static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
