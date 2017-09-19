@@ -322,14 +322,6 @@ typedef struct frame_contexts {
   aom_cdf_prob intrabc_cdf[CDF_SIZE(2)];
 #endif
   int initialized;
-#if CONFIG_EXT_TX
-  aom_prob inter_ext_tx_prob[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES - 1];
-  aom_prob intra_ext_tx_prob[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
-                            [TX_TYPES - 1];
-#else
-  aom_prob intra_ext_tx_prob[EXT_TX_SIZES][TX_TYPES][TX_TYPES - 1];
-  aom_prob inter_ext_tx_prob[EXT_TX_SIZES][TX_TYPES - 1];
-#endif  // CONFIG_EXT_TX
 #if CONFIG_SUPERTX
   aom_prob supertx_prob[PARTITION_SUPERTX_CONTEXTS][TX_SIZES];
 #endif  // CONFIG_SUPERTX
@@ -513,10 +505,11 @@ typedef struct FRAME_COUNTS {
   unsigned int delta_lf[DELTA_LF_PROBS][2];
 #endif
 #endif
-#if CONFIG_EXT_TX
-#if CONFIG_RECT_TX
+#if CONFIG_EXT_TX && CONFIG_RECT_TX
   unsigned int tx_size_implied[TX_SIZES][TX_SIZES];
-#endif  // CONFIG_RECT_TX
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#if CONFIG_ENTROPY_STATS
+#if CONFIG_EXT_TX
   unsigned int inter_ext_tx[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];
   unsigned int intra_ext_tx[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                            [TX_TYPES];
@@ -524,6 +517,7 @@ typedef struct FRAME_COUNTS {
   unsigned int intra_ext_tx[EXT_TX_SIZES][TX_TYPES][TX_TYPES];
   unsigned int inter_ext_tx[EXT_TX_SIZES][TX_TYPES];
 #endif  // CONFIG_EXT_TX
+#endif  // CONFIG_ENTROPY_STATS
 #if CONFIG_SUPERTX
   unsigned int supertx[PARTITION_SUPERTX_CONTEXTS][TX_SIZES][2];
   unsigned int supertx_size[TX_SIZES];

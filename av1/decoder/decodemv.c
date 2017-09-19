@@ -992,19 +992,24 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       // eset == 0 should correspond to a set with only DCT_DCT and
       // there is no need to read the tx_type
       assert(eset != 0);
+#if CONFIG_ENTROPY_STATS
       FRAME_COUNTS *counts = xd->counts;
-
+#endif  // CONFIG_ENTROPY_STATS
       if (inter_block) {
         *tx_type = av1_ext_tx_inv[tx_set_type][aom_read_symbol(
             r, ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
             av1_num_ext_tx_set[tx_set_type], ACCT_STR)];
+#if CONFIG_ENTROPY_STATS
         if (counts) ++counts->inter_ext_tx[eset][square_tx_size][*tx_type];
+#endif  // CONFIG_ENTROPY_STATS
       } else if (ALLOW_INTRA_EXT_TX) {
         *tx_type = av1_ext_tx_inv[tx_set_type][aom_read_symbol(
             r, ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
             av1_num_ext_tx_set[tx_set_type], ACCT_STR)];
+#if CONFIG_ENTROPY_STATS
         if (counts)
           ++counts->intra_ext_tx[eset][square_tx_size][mbmi->mode][*tx_type];
+#endif  // CONFIG_ENTROPY_STATS
       }
     } else {
       *tx_type = DCT_DCT;
@@ -1019,18 +1024,23 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         !supertx_enabled &&
 #endif  // CONFIG_SUPERTX
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
+#if CONFIG_ENTROPY_STATS
       FRAME_COUNTS *counts = xd->counts;
-
+#endif  // CONFIG_ENTROPY_STATS
       if (inter_block) {
         *tx_type = av1_ext_tx_inv[aom_read_symbol(
             r, ec_ctx->inter_ext_tx_cdf[tx_size], TX_TYPES, ACCT_STR)];
+#if CONFIG_ENTROPY_STATS
         if (counts) ++counts->inter_ext_tx[tx_size][*tx_type];
+#endif  // CONFIG_ENTROPY_STATS
       } else {
         const TX_TYPE tx_type_nom = intra_mode_to_tx_type_context[mbmi->mode];
         *tx_type = av1_ext_tx_inv[aom_read_symbol(
             r, ec_ctx->intra_ext_tx_cdf[tx_size][tx_type_nom], TX_TYPES,
             ACCT_STR)];
+#if CONFIG_ENTROPY_STATS
         if (counts) ++counts->intra_ext_tx[tx_size][tx_type_nom][*tx_type];
+#endif  // CONFIG_ENTROPY_STATS
       }
     } else {
       *tx_type = DCT_DCT;

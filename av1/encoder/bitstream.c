@@ -76,12 +76,6 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
   }
 }
 
-#if CONFIG_EXT_TX
-static struct av1_token ext_tx_inter_encodings[EXT_TX_SETS_INTER][TX_TYPES];
-static struct av1_token ext_tx_intra_encodings[EXT_TX_SETS_INTRA][TX_TYPES];
-#else
-static struct av1_token ext_tx_encodings[TX_TYPES];
-#endif  // CONFIG_EXT_TX
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP
 static struct av1_token intra_filter_encodings[INTRA_FILTERS];
@@ -120,21 +114,11 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
 #endif
 void av1_encode_token_init(void) {
 #if CONFIG_EXT_TX
-  int s;
-  for (s = 1; s < EXT_TX_SETS_INTER; ++s) {
-    av1_tokens_from_tree(ext_tx_inter_encodings[s],
-                         av1_ext_tx_tree[av1_ext_tx_set_type_inter[s]]);
-  }
-  for (s = 1; s < EXT_TX_SETS_INTRA; ++s) {
-    av1_tokens_from_tree(ext_tx_intra_encodings[s],
-                         av1_ext_tx_tree[av1_ext_tx_set_type_intra[s]]);
-  }
-  for (s = 1; s < EXT_TX_SET_TYPES; ++s) {
+  for (int s = 1; s < EXT_TX_SET_TYPES; ++s) {
     av1_indices_from_tree(av1_ext_tx_ind[s], av1_ext_tx_inv[s],
                           av1_ext_tx_tree[s]);
   }
 #else
-  av1_tokens_from_tree(ext_tx_encodings, av1_ext_tx_tree);
   /* This hack is necessary because the four TX_TYPES are not consecutive,
       e.g., 0, 1, 2, 3, when doing an in-order traversal of the av1_ext_tx_tree
       structure. */

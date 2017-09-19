@@ -2474,14 +2474,18 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
               aom_read_symbol(r, ec_ctx->inter_ext_tx_cdf[eset][supertx_size],
                               av1_num_ext_tx_set[tx_set_type], ACCT_STR);
           txfm = av1_ext_tx_inv[tx_set_type][packed_sym];
+#if CONFIG_ENTROPY_STATS
           if (xd->counts) ++xd->counts->inter_ext_tx[eset][supertx_size][txfm];
+#endif  // CONFIG_ENTROPY_STATS
         }
       }
 #else
       if (supertx_size < TX_32X32) {
         txfm = aom_read_symbol(r, ec_ctx->inter_ext_tx_cdf[supertx_size],
                                TX_TYPES, ACCT_STR);
+#if CONFIG_ENTROPY_STATS
         if (xd->counts) ++xd->counts->inter_ext_tx[supertx_size][txfm];
+#endif  // CONFIG_ENTROPY_STATS
       }
 #endif  // CONFIG_EXT_TX
     }
@@ -5240,10 +5244,12 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
       !memcmp(&cm->counts.mv[0], &zero_counts.mv[0], sizeof(cm->counts.mv[0])));
   assert(
       !memcmp(&cm->counts.mv[1], &zero_counts.mv[1], sizeof(cm->counts.mv[0])));
+#if CONFIG_ENTROPY_STATS
   assert(!memcmp(cm->counts.inter_ext_tx, zero_counts.inter_ext_tx,
                  sizeof(cm->counts.inter_ext_tx)));
   assert(!memcmp(cm->counts.intra_ext_tx, zero_counts.intra_ext_tx,
                  sizeof(cm->counts.intra_ext_tx)));
+#endif  // CONFIG_ENTROPY_STATS
 }
 #endif  // NDEBUG
 
