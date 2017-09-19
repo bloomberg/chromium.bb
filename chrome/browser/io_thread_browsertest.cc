@@ -189,7 +189,7 @@ class IOThreadBrowserTestWithPacFileURL : public IOThreadBrowserTest {
 IN_PROC_BROWSER_TEST_F(IOThreadBrowserTestWithPacFileURL, FilePac) {
   TestURLFetcherDelegate fetcher_delegate;
   std::unique_ptr<net::URLFetcher> fetcher =
-      net::URLFetcher::Create(GURL("http://foo:12345/echoheader?Foo"),
+      net::URLFetcher::Create(GURL("http://foo.test:12345/echoheader?Foo"),
                               net::URLFetcher::GET, &fetcher_delegate);
   fetcher->AddExtraRequestHeader("Foo: Bar");
   fetcher->SetRequestContext(
