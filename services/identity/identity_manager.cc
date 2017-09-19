@@ -85,6 +85,7 @@ IdentityManager::IdentityManager(mojom::IdentityManagerRequest request,
 IdentityManager::~IdentityManager() {
   token_service_->RemoveObserver(this);
   signin_manager_->RemoveObserver(this);
+  binding_.Close();
 }
 
 void IdentityManager::GetPrimaryAccountInfo(

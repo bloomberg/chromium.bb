@@ -247,6 +247,32 @@ TEST_F(IdentityManagerTest, SigninManagerShutdownAfterConnection) {
   run_loop.Run();
 }
 
+// Tests that the Identity Manager properly handles its own destruction in the
+// case where there is an active consumer request (i.e., a pending callback from
+// a Mojo call). In particular, this flow should not cause a DCHECK to fire in
+// debug mode.
+TEST_F(IdentityManagerTest, IdentityManagerShutdownWithActiveRequest) {
+  base::RunLoop run_loop;
+  SetIdentityManagerConnectionErrorHandler(run_loop.QuitClosure());
+
+  // Call a method on the IdentityManager that will cause it to store a pending
+  // callback. This callback will never be invoked, so just pass dummy arguments
+  // to it.
+  GetIdentityManager()->GetPrimaryAccountWhenAvailable(
+      base::Bind(&IdentityManagerTest::OnPrimaryAccountAvailable,
+                 base::Unretained(this), base::Closure(), nullptr, nullptr));
+
+  // Ensure that the IdentityManager has received the above call before
+  // invoking SigninManagerBase::Shutdown(), as otherwise this test is
+  // pointless.
+  FlushIdentityManagerForTesting();
+
+  // This flow is what would cause a DCHECK to fire if IdentityManager is not
+  // properly closing its binding on shutdown.
+  signin_manager()->Shutdown();
+  run_loop.Run();
+}
+
 // Check that the primary account info is null if not signed in.
 TEST_F(IdentityManagerTest, GetPrimaryAccountInfoNotSignedIn) {
   base::RunLoop run_loop;
