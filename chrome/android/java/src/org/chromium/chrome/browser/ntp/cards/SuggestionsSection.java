@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.annotation.CallSuper;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.chromium.base.Callback;
@@ -190,6 +191,7 @@ public class SuggestionsSection extends InnerNode {
             return suggestion;
         }
 
+        @NonNull
         @Override
         public Iterator<SnippetArticle> iterator() {
             return mSuggestions.iterator();
@@ -235,8 +237,7 @@ public class SuggestionsSection extends InnerNode {
             article.setIsPrefetched(isPrefetched);
 
             if ((oldId == null) == (newId == null)) return;
-            notifyItemChanged(
-                    index, SnippetArticleViewHolder.REFRESH_OFFLINE_BADGE_VISIBILITY_CALLBACK);
+            notifyItemChanged(index, SnippetArticleViewHolder::refreshOfflineBadgeVisibility);
         }
     }
 
@@ -258,7 +259,7 @@ public class SuggestionsSection extends InnerNode {
         // When the ActionItem stops being dismissable, it is possible that it was being
         // interacted with. We need to reset the view's related property changes.
         if (mMoreButton.isVisible()) {
-            mMoreButton.notifyItemChanged(0, NewTabPageRecyclerView.RESET_FOR_DISMISS_CALLBACK);
+            mMoreButton.notifyItemChanged(0, NewTabPageRecyclerView::resetForDismissCallback);
         }
     }
 
@@ -310,11 +311,11 @@ public class SuggestionsSection extends InnerNode {
         assert aboveNeighbour < belowNeighbour;
 
         if (aboveNeighbour >= 0) {
-            notifyItemChanged(aboveNeighbour, NewTabPageViewHolder.UPDATE_LAYOUT_PARAMS_CALLBACK);
+            notifyItemChanged(aboveNeighbour, NewTabPageViewHolder::updateLayoutParams);
         }
 
         if (belowNeighbour < getItemCount()) {
-            notifyItemChanged(belowNeighbour, NewTabPageViewHolder.UPDATE_LAYOUT_PARAMS_CALLBACK);
+            notifyItemChanged(belowNeighbour, NewTabPageViewHolder::updateLayoutParams);
         }
     }
 
@@ -389,7 +390,7 @@ public class SuggestionsSection extends InnerNode {
         return value;
     }
 
-    public String[] getDisplayedSuggestionIds() {
+    private String[] getDisplayedSuggestionIds() {
         String[] suggestionIds = new String[mSuggestionsList.getItemCount()];
         for (int i = 0; i < mSuggestionsList.getItemCount(); ++i) {
             suggestionIds[i] = mSuggestionsList.getSuggestionAt(i).mIdWithinCategory;
@@ -514,19 +515,16 @@ public class SuggestionsSection extends InnerNode {
         // avoid fetching the same suggestions twice. See crbug.com/739648.
         mMoreButton.setEnabled(false);
         mMoreButton.setVisible(false);
-        mSuggestionsSource.fetchSuggestions(mCategoryInfo.getCategory(),
-                getDisplayedSuggestionIds(), new Callback<List<SnippetArticle>>() {
-                    @Override
-                    public void onResult(List<SnippetArticle> additionalSuggestions) {
-                        if (!isAttached()) return; // The section has been dismissed.
+        mSuggestionsSource.fetchSuggestions(
+                mCategoryInfo.getCategory(), getDisplayedSuggestionIds(), additionalSuggestions -> {
+                    if (!isAttached()) return; // The section has been dismissed.
 
-                        mProgressIndicator.setVisible(false);
+                    mProgressIndicator.setVisible(false);
 
-                        appendSuggestions(additionalSuggestions, /* keepSectionSize = */ false);
+                    appendSuggestions(additionalSuggestions, /* keepSectionSize = */ false);
 
-                        mMoreButton.setEnabled(true);
-                        mMoreButton.setVisible(true);
-                    }
+                    mMoreButton.setEnabled(true);
+                    mMoreButton.setVisible(true);
                 });
 
         mProgressIndicator.setVisible(true);

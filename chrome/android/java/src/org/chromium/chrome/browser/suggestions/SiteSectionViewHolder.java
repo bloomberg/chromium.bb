@@ -58,46 +58,4 @@ public abstract class SiteSectionViewHolder extends NewTabPageViewHolder {
 
     @Nullable
     protected abstract TileView findTileView(SiteSuggestion data);
-
-    /**
-     * Callback to update all the tiles in the view holder.
-     */
-    public static class UpdateTilesCallback extends PartialBindCallback {
-        @Override
-        public void onResult(NewTabPageViewHolder holder) {
-            ((SiteSectionViewHolder) holder).refreshData();
-        }
-    }
-
-    /**
-     * Callback to update the icon view for the view holder.
-     */
-    public static class UpdateIconViewCallback extends PartialBindCallback {
-        private final Tile mTile;
-
-        public UpdateIconViewCallback(Tile tile) {
-            mTile = tile;
-        }
-
-        @Override
-        public void onResult(NewTabPageViewHolder holder) {
-            ((SiteSectionViewHolder) holder).updateIconView(mTile);
-        }
-    }
-
-    /**
-     * Callback to update the offline badge for the view holder.
-     */
-    public static class UpdateOfflineBadgeCallback extends PartialBindCallback {
-        private final Tile mTile;
-
-        public UpdateOfflineBadgeCallback(Tile tile) {
-            mTile = tile;
-        }
-
-        @Override
-        public void onResult(NewTabPageViewHolder holder) {
-            ((SiteSectionViewHolder) holder).updateOfflineBadge(mTile);
-        }
-    }
 }
