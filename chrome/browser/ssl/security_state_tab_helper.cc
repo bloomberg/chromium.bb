@@ -35,7 +35,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
-#include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SecurityStateTabHelper);
@@ -199,11 +199,15 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
       case safe_browsing::SB_THREAT_TYPE_PASSWORD_REUSE:
 #if defined(SAFE_BROWSING_DB_LOCAL)
         if (base::FeatureList::IsEnabled(
-                safe_browsing::kGoogleBrandedPhishingWarning) &&
-            sb_service->GetPasswordProtectionService(
-                Profile::FromBrowserContext(
-                    web_contents()->GetBrowserContext()))) {
-          return security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE;
+                safe_browsing::kGoogleBrandedPhishingWarning)) {
+          if (safe_browsing::ChromePasswordProtectionService::
+                  ShouldShowChangePasswordSettingUI(Profile::FromBrowserContext(
+                      web_contents()->GetBrowserContext()))) {
+            return security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE;
+          }
+          // If user has already changed Gaia password, returns the regular
+          // social engineering content status.
+          return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
         }
         break;
 #endif

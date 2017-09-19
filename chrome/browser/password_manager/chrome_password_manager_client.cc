@@ -70,9 +70,7 @@
 #include "third_party/re2/src/re2/re2.h"
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -428,11 +426,8 @@ void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
 #if defined(SAFE_BROWSING_DB_LOCAL)
 safe_browsing::PasswordProtectionService*
 ChromePasswordManagerClient::GetPasswordProtectionService() const {
-  if (g_browser_process && g_browser_process->safe_browsing_service()) {
-    return g_browser_process->safe_browsing_service()
-        ->GetPasswordProtectionService(profile_);
-  }
-  return nullptr;
+  return safe_browsing::ChromePasswordProtectionService::
+      GetPasswordProtectionService(profile_);
 }
 
 void ChromePasswordManagerClient::CheckSafeBrowsingReputation(

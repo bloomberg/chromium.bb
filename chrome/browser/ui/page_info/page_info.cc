@@ -81,7 +81,7 @@
 #endif
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
-#include "components/safe_browsing/password_protection/password_protection_service.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -292,18 +292,11 @@ PageInfo::PageInfo(PageInfoUI* ui,
       profile_(profile),
       security_level_(security_state::NONE),
 #if defined(SAFE_BROWSING_DB_LOCAL)
-      password_protection_service_(nullptr),
+      password_protection_service_(
+          safe_browsing::ChromePasswordProtectionService::
+              GetPasswordProtectionService(profile_)),
 #endif
       show_change_password_buttons_(false) {
-#if defined(SAFE_BROWSING_DB_LOCAL)
-  safe_browsing::SafeBrowsingService* sb_service =
-      g_browser_process->safe_browsing_service();
-  if (sb_service && sb_service->enabled_by_prefs()) {
-    password_protection_service_ =
-        sb_service->GetPasswordProtectionService(profile_);
-  }
-#endif
-
   Init(url, security_info);
 
   PresentSitePermissions();

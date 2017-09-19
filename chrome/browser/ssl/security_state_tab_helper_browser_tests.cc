@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_window.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,7 +28,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
-#include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/security_state.h"
 #include "components/security_state/core/switches.h"
@@ -875,17 +874,25 @@ IN_PROC_BROWSER_TEST_F(
                                https_server_.GetURL("/ssl/google.html"));
   // Update security state of the current page to match
   // SB_THREAT_TYPE_PASSWORD_REUSE.
-  safe_browsing::PasswordProtectionService* service =
-      g_browser_process->safe_browsing_service()->GetPasswordProtectionService(
-          browser()->profile());
-  service->UpdateSecurityState(safe_browsing::SB_THREAT_TYPE_PASSWORD_REUSE,
-                               contents);
+  safe_browsing::ChromePasswordProtectionService* service =
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(browser()->profile());
+  service->ShowModalWarning(contents, "unused-token");
   observer.WaitForDidChangeVisibleSecurityState();
 
   security_state::SecurityInfo security_info;
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE,
+            security_info.malicious_content_status);
+
+  // Simulates a Gaia password change, then malicious content status will
+  // change to MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING.
+  service->OnGaiaPasswordChanged();
+  base::RunLoop().RunUntilIdle();
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
             security_info.malicious_content_status);
 }
 
@@ -899,7 +906,9 @@ IN_PROC_BROWSER_TEST_F(
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  // safe_browsing::kGoogleBrandedPhishingWarning feature is disabled by default
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      safe_browsing::kGoogleBrandedPhishingWarning);
 
   SecurityStyleTestObserver observer(contents);
 
@@ -912,8 +921,8 @@ IN_PROC_BROWSER_TEST_F(
   // Update security state of the current page to match
   // SB_THREAT_TYPE_PASSWORD_REUSE.
   safe_browsing::PasswordProtectionService* service =
-      g_browser_process->safe_browsing_service()->GetPasswordProtectionService(
-          browser()->profile());
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(browser()->profile());
   service->UpdateSecurityState(safe_browsing::SB_THREAT_TYPE_PASSWORD_REUSE,
                                contents);
   observer.WaitForDidChangeVisibleSecurityState();
