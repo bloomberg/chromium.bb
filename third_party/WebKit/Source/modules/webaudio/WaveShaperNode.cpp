@@ -129,7 +129,7 @@ void WaveShaperNode::setOversample(const String& type) {
   // This is to synchronize with the changes made in
   // AudioBasicProcessorNode::checkNumberOfChannelsForInput() where we can
   // initialize() and uninitialize().
-  BaseAudioContext::AutoLocker context_locker(context());
+  BaseAudioContext::GraphAutoLocker context_locker(context());
 
   if (type == "none") {
     GetWaveShaperProcessor()->SetOversample(

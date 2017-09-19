@@ -298,7 +298,7 @@ class MODULES_EXPORT BaseAudioContext
   // Returns true if this thread owns the context's lock.
   bool IsGraphOwner() { return GetDeferredTaskHandler().IsGraphOwner(); }
 
-  using AutoLocker = DeferredTaskHandler::AutoLocker;
+  using GraphAutoLocker = DeferredTaskHandler::GraphAutoLocker;
 
   // Returns the maximum numuber of channels we can support.
   static unsigned MaxNumberOfChannels() { return kMaxNumberOfChannels; }
