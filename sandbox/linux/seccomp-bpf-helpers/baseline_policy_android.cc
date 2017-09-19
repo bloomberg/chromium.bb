@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
+#include "sandbox/linux/system_headers/linux_syscalls.h"
 
 #if defined(__x86_64__)
 #include <asm/prctl.h>
@@ -146,6 +147,13 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
   if (sysno == __NR_rt_tgsigqueueinfo) {
     const Arg<pid_t> tgid(0);
     return If(tgid == policy_pid(), Allow())
+           .Else(Error(EPERM));
+  }
+
+  // https://crbug.com/766245
+  if (sysno == __NR_process_vm_readv) {
+    const Arg<pid_t> pid(0);
+    return If(pid == policy_pid(), Allow())
            .Else(Error(EPERM));
   }
 
