@@ -26,6 +26,7 @@
 #include "core/editing/PositionIterator.h"
 
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/Position.h"
 
 namespace blink {
 

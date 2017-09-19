@@ -57,6 +57,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/dom/PseudoElement.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/events/AnimationEvent.h"
 #include "core/events/TransitionEvent.h"
 #include "core/frame/UseCounter.h"

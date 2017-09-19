@@ -30,6 +30,7 @@
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/Position.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/html/HTMLFormControlElement.h"

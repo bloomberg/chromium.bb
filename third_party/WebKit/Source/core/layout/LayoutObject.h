@@ -28,10 +28,11 @@
 #define LayoutObject_h
 
 #include "core/CoreExport.h"
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycle.h"
+#include "core/dom/Element.h"
 #include "core/editing/Forward.h"
-#include "core/editing/Position.h"
 #include "core/editing/TextAffinity.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutObjectChildList.h"

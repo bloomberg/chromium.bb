@@ -28,6 +28,7 @@
 
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/Position.h"
 
 namespace blink {
 

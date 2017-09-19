@@ -46,6 +46,7 @@
 #include "core/editing/GranularityStrategy.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/LayoutSelection.h"
+#include "core/editing/Position.h"
 #include "core/editing/SelectionController.h"
 #include "core/editing/SelectionEditor.h"
 #include "core/editing/SelectionModifier.h"

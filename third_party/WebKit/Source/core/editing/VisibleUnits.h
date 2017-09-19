@@ -29,18 +29,20 @@
 #include "core/CoreExport.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/Forward.h"
-#include "core/editing/Position.h"
+#include "platform/geometry/LayoutRect.h"
 #include "platform/text/TextDirection.h"
+#include "platform/wtf/text/icu/UnicodeIcu.h"
 
 namespace blink {
 
-class LayoutRect;
 class LayoutUnit;
 class LayoutObject;
 class Node;
 class IntPoint;
 class InlineBox;
+class IntRect;
 class LocalFrame;
+enum class TextAffinity;
 
 enum EWordSide { kRightWordIfOnBoundary = false, kLeftWordIfOnBoundary = true };
 

@@ -5,6 +5,7 @@
 #ifndef GeneratedChildren_h
 #define GeneratedChildren_h
 
+#include "core/HTMLElementTypeHelpers.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {

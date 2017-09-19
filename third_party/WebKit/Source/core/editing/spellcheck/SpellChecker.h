@@ -28,13 +28,14 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
-#include "core/editing/Position.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextChecking.h"
 
 namespace blink {
 
+class Document;
+class Element;
 class IdleSpellCheckCallback;
 class LocalFrame;
 class HTMLElement;
