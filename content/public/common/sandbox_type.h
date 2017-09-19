@@ -37,8 +37,11 @@ enum SandboxType {
   // The PPAPI plugin process.
   SANDBOX_TYPE_PPAPI,
 
-  // The network process.
+  // The network service process.
   SANDBOX_TYPE_NETWORK,
+
+  // The CDM service process.
+  SANDBOX_TYPE_WIDEVINE,
 
   SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };

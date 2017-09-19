@@ -50,13 +50,21 @@ TEST(SandboxTypeTest, Utility) {
   EXPECT_EQ(SANDBOX_TYPE_NETWORK, SandboxTypeFromCommandLine(command_line2));
 
   base::CommandLine command_line3(command_line);
-  SetCommandLineFlagsForSandboxType(&command_line3, SANDBOX_TYPE_NO_SANDBOX);
-  EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX, SandboxTypeFromCommandLine(command_line3));
+  SetCommandLineFlagsForSandboxType(&command_line3, SANDBOX_TYPE_WIDEVINE);
+  EXPECT_EQ(SANDBOX_TYPE_WIDEVINE, SandboxTypeFromCommandLine(command_line3));
 
   base::CommandLine command_line4(command_line);
-  command_line4.AppendSwitchASCII(switches::kUtilityProcessSandboxType,
+  SetCommandLineFlagsForSandboxType(&command_line4, SANDBOX_TYPE_NO_SANDBOX);
+  EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX, SandboxTypeFromCommandLine(command_line4));
+
+  base::CommandLine command_line5(command_line);
+  SetCommandLineFlagsForSandboxType(&command_line5, SANDBOX_TYPE_PPAPI);
+  EXPECT_EQ(SANDBOX_TYPE_PPAPI, SandboxTypeFromCommandLine(command_line5));
+
+  base::CommandLine command_line6(command_line);
+  command_line6.AppendSwitchASCII(switches::kUtilityProcessSandboxType,
                                   "bogus");
-  EXPECT_EQ(SANDBOX_TYPE_UTILITY, SandboxTypeFromCommandLine(command_line4));
+  EXPECT_EQ(SANDBOX_TYPE_UTILITY, SandboxTypeFromCommandLine(command_line6));
 
   command_line.AppendSwitch(switches::kNoSandbox);
   EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX, SandboxTypeFromCommandLine(command_line));
