@@ -53,13 +53,6 @@ template("json_features") {
                              "deps",
                              "public_deps",
                            ])
-
-    # Append a dependency on the extensions system. Headers in this target
-    # are included by the feature compiler automatically.
-    if (!defined(deps)) {
-      deps = []
-    }
-    deps += [ "//extensions/common" ]
   }
 
   source_set(target_name) {
@@ -74,5 +67,12 @@ template("json_features") {
       public_deps = []
     }
     public_deps += [ ":$action_name" ]
+
+    # Append a dependency on the extensions system. Headers in this target
+    # are included by the feature compiler automatically.
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += [ "//extensions/common" ]
   }
 }
