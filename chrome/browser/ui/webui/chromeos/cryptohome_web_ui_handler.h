@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -37,13 +38,12 @@ class CryptohomeWebUIHandler : public content::WebUIMessageHandler {
   void DidGetNSSUtilInfoOnUIThread(bool is_tpm_token_ready);
 
   // Returns a callback to handle Cryptohome property values.
-  BoolDBusMethodCallback GetCryptohomeBoolCallback(
+  DBusMethodCallback<bool> GetCryptohomeBoolCallback(
       const std::string& destination_id);
 
   // This method is called when Cryptohome D-Bus method call completes.
   void OnCryptohomeBoolProperty(const std::string& destination_id,
-                                DBusMethodCallStatus call_status,
-                                bool value);
+                                base::Optional<bool> result);
 
   // Sets textcontent of the element whose id is |destination_id| to |value|.
   void SetCryptohomeProperty(const std::string& destination_id,

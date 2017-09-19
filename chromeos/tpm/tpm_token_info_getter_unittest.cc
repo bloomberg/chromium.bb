@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
@@ -135,20 +136,17 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
 
  private:
   // FakeCryptohomeClient override.
-  void TpmIsEnabled(const chromeos::BoolDBusMethodCallback& callback) override {
+  void TpmIsEnabled(chromeos::DBusMethodCallback<bool> callback) override {
     ASSERT_FALSE(tpm_is_enabled_succeeded_);
+    base::Optional<bool> result;
     if (tpm_is_enabled_failure_count_ > 0) {
       --tpm_is_enabled_failure_count_;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, chromeos::DBUS_METHOD_CALL_FAILURE, false));
     } else {
       tpm_is_enabled_succeeded_ = true;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(callback,
-                     chromeos::DBUS_METHOD_CALL_SUCCESS, tpm_is_enabled_));
+      result.emplace(tpm_is_enabled_);
     }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), result));
   }
 
   void Pkcs11GetTpmTokenInfo(

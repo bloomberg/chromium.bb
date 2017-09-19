@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -95,8 +96,7 @@ class CHROMEOS_EXPORT TPMTokenInfoGetter {
   void RetryLater();
 
   // Cryptohome methods callbacks.
-  void OnTpmIsEnabled(DBusMethodCallStatus call_status,
-                      bool tpm_is_enabled);
+  void OnTpmIsEnabled(base::Optional<bool> tpm_is_enabled);
   void OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
                                const std::string& token_name,
                                const std::string& user_pin,

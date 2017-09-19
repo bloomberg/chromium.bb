@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -35,7 +36,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
@@ -270,17 +270,16 @@ class UserSelectionScreen::DircryptoMigrationChecker {
     const cryptohome::Identification cryptohome_id(account_id);
     DBusThreadManager::Get()->GetCryptohomeClient()->NeedsDircryptoMigration(
         cryptohome_id,
-        base::Bind(&DircryptoMigrationChecker::
-                       OnCryptohomeNeedsDircryptoMigrationCallback,
-                   weak_ptr_factory_.GetWeakPtr(), account_id));
+        base::BindOnce(&DircryptoMigrationChecker::
+                           OnCryptohomeNeedsDircryptoMigrationCallback,
+                       weak_ptr_factory_.GetWeakPtr(), account_id));
   }
 
   // Callback invoked when NeedsDircryptoMigration call is finished.
   void OnCryptohomeNeedsDircryptoMigrationCallback(
       const AccountId& account_id,
-      DBusMethodCallStatus call_status,
-      bool needs_migration) {
-    if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+      base::Optional<bool> needs_migration) {
+    if (!needs_migration.has_value()) {
       LOG(ERROR) << "Failed to call cryptohome NeedsDircryptoMigration.";
       // Hide the banner to avoid confusion in http://crbug.com/721948.
       // Cache is not updated so that cryptohome call will still be attempted.
@@ -288,8 +287,8 @@ class UserSelectionScreen::DircryptoMigrationChecker {
       return;
     }
 
-    needs_dircrypto_migration_cache_[account_id] = needs_migration;
-    UpdateUI(account_id, needs_migration);
+    needs_dircrypto_migration_cache_[account_id] = needs_migration.value();
+    UpdateUI(account_id, needs_migration.value());
   }
 
   // Update UI for the given user when the check result is available.
