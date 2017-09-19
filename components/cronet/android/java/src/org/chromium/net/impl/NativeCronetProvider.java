@@ -29,7 +29,7 @@ public class NativeCronetProvider extends CronetProvider {
 
     @Override
     public CronetEngine.Builder createBuilder() {
-        ICronetEngineBuilder impl = new NativeCronetEngineBuilderImpl(mContext);
+        ICronetEngineBuilder impl = new NativeCronetEngineBuilderWithLibraryLoaderImpl(mContext);
         return new ExperimentalCronetEngine.Builder(impl);
     }
 

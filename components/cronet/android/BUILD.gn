@@ -349,6 +349,7 @@ android_library("cronet_impl_native_java") {
     "java/src/org/chromium/net/impl/CronetUrlRequest.java",
     "java/src/org/chromium/net/impl/CronetUrlRequestContext.java",
     "java/src/org/chromium/net/impl/NativeCronetEngineBuilderImpl.java",
+    "java/src/org/chromium/net/impl/NativeCronetEngineBuilderWithLibraryLoaderImpl.java",
     "java/src/org/chromium/net/impl/NativeCronetProvider.java",
     "java/src/org/chromium/net/urlconnection/CronetBufferedOutputStream.java",
     "java/src/org/chromium/net/urlconnection/CronetChunkedOutputStream.java",
@@ -456,8 +457,8 @@ instrumentation_test_apk("cronet_sample_test_apk") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//net/android:net_java_test_support",
-    "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_support_test_runner:rules_java",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
   ]
   additional_apks = [ "//net/android:net_test_support_apk" ]
@@ -585,8 +586,8 @@ android_library("cronet_smoketests_native_java") {
     ":cronet_test_apk_java",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//third_party/junit",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
     "//third_party/netty4:netty_all_java",
   ]
 }
@@ -753,8 +754,8 @@ android_library("cronet_smoketests_platform_only_java") {
   deps = [
     ":cronet_api_java",
     "//base:base_java_test_support",
-    "//third_party/junit",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
     "//third_party/netty4:netty_all_java",
   ]
 }
@@ -805,8 +806,8 @@ android_library("cronet_smoketests_missing_native_library_java") {
     ":cronet_test_apk_java",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//third_party/junit",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
     "//third_party/netty4:netty_all_java",
   ]
 }
