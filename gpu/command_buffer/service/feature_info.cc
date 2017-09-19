@@ -177,6 +177,35 @@ bool IsWebGLDrawBuffersSupported(bool webglCompatibilityContext,
 
 }  // anonymous namespace.
 
+namespace {
+
+enum GpuTextureResultR16_L16 {
+  // Values synced with 'GpuTextureResultR16_L16' in
+  // src/tools/metrics/histograms/histograms.xml
+  kHaveNone = 0,
+  kHaveR16 = 1,
+  kHaveL16 = 2,
+  kHaveR16AndL16 = 3,
+  kMax = kHaveR16AndL16
+};
+
+// TODO(riju): For UMA, remove after crbug.com/759456 is resolved.
+bool g_r16_is_present;
+bool g_l16_is_present;
+
+GpuTextureResultR16_L16 GpuTextureUMAHelper() {
+  if (g_r16_is_present && g_l16_is_present) {
+    return GpuTextureResultR16_L16::kHaveR16AndL16;
+  } else if (g_r16_is_present) {
+    return GpuTextureResultR16_L16::kHaveR16;
+  } else if (g_l16_is_present) {
+    return GpuTextureResultR16_L16::kHaveL16;
+  }
+  return GpuTextureResultR16_L16::kHaveNone;
+}
+
+}  // anonymous namespace.
+
 FeatureInfo::FeatureFlags::FeatureFlags() {}
 
 FeatureInfo::FeatureInfo() {
@@ -1298,6 +1327,7 @@ void FeatureInfo::InitializeFeatures() {
   if (gl_version_info_->is_desktop_core_profile ||
       gl::HasExtension(extensions, "GL_EXT_texture_norm16")) {
     feature_flags_.ext_texture_norm16 = true;
+    g_r16_is_present = true;
     AddExtensionString("GL_EXT_texture_norm16");
 
     // Note: EXT_texture_norm16 is not exposed through WebGL API so we validate
@@ -1307,6 +1337,10 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_internal_format.AddValue(GL_RED_EXT);
     validators_.texture_unsized_internal_format.AddValue(GL_RED_EXT);
   }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "GPU.TextureR16Ext_LuminanceF16", GpuTextureUMAHelper(),
+      static_cast<int>(GpuTextureResultR16_L16::kMax) + 1);
 
   bool has_opengl_dual_source_blending =
       gl_version_info_->IsAtLeastGL(3, 3) ||
@@ -1618,6 +1652,9 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
           GL_LUMINANCE_ALPHA16F_EXT);
     }
   }
+
+  g_l16_is_present =
+      enable_texture_half_float && feature_flags_.ext_texture_storage;
 }
 
 bool FeatureInfo::IsES3Capable() const {
