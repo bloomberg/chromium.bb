@@ -45,7 +45,7 @@ SettingsAccessibilityTest.prototype = {
   __proto__: PolymerTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/',
+  browsePreload: 'chrome://settings/',
 
   // Include files that define the mocha tests.
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
