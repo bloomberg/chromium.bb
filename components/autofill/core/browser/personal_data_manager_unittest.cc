@@ -7263,4 +7263,71 @@ TEST_F(PersonalDataManagerTest, RemoveExpiredCreditCardsNotUsedSinceTimestamp) {
   }
 }
 
+TEST_F(PersonalDataManagerTest, CreateDataForTest) {
+  // By default, the creation of test data is disabled.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+  ASSERT_EQ(0U, personal_data_->GetProfiles().size());
+  ASSERT_EQ(0U, personal_data_->GetCreditCards().size());
+
+  // Turn on test data creation for the rest of this scope.
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(kAutofillCreateDataForTest);
+
+  // Reloading the test profile should result in test data being created.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+  const std::vector<AutofillProfile*> addresses = personal_data_->GetProfiles();
+  const std::vector<CreditCard*> credit_cards =
+      personal_data_->GetCreditCards();
+  ASSERT_EQ(2U, addresses.size());
+  ASSERT_EQ(2U, credit_cards.size());
+
+  const base::Time disused_threshold =
+      AutofillClock::Now() - base::TimeDelta::FromDays(180);
+  // Verify that there was a valid address created.
+  {
+    auto it = std::find_if(
+        addresses.begin(), addresses.end(), [this](const AutofillProfile* p) {
+          return p->GetInfo(NAME_FULL, this->personal_data_->app_locale()) ==
+                 base::UTF8ToUTF16("John McTester");
+        });
+    ASSERT_TRUE(it != addresses.end());
+    EXPECT_GT((*it)->use_date(), disused_threshold);
+  }
+
+  // Verify that there was a disused address created.
+  {
+    auto it = std::find_if(
+        addresses.begin(), addresses.end(), [this](const AutofillProfile* p) {
+          return p->GetInfo(NAME_FULL, this->personal_data_->app_locale()) ==
+                 base::UTF8ToUTF16("Polly Disused");
+        });
+    ASSERT_TRUE(it != addresses.end());
+    EXPECT_LT((*it)->use_date(), disused_threshold);
+  }
+
+  // Verify that there was a valid credit card created.
+  {
+    auto it = std::find_if(
+        credit_cards.begin(), credit_cards.end(), [this](const CreditCard* cc) {
+          return cc->GetInfo(CREDIT_CARD_NAME_FULL,
+                             this->personal_data_->app_locale()) ==
+                 base::UTF8ToUTF16("Alice Testerson");
+        });
+    ASSERT_TRUE(it != credit_cards.end());
+    EXPECT_GT((*it)->use_date(), disused_threshold);
+  }
+
+  // Verify that there was a disused credit card created.
+  {
+    auto it = std::find_if(
+        credit_cards.begin(), credit_cards.end(), [this](const CreditCard* cc) {
+          return cc->GetInfo(CREDIT_CARD_NAME_FULL,
+                             this->personal_data_->app_locale()) ==
+                 base::UTF8ToUTF16("Bob Disused");
+        });
+    ASSERT_TRUE(it != credit_cards.end());
+    EXPECT_LT((*it)->use_date(), disused_threshold);
+  }
+}
+
 }  // namespace autofill

@@ -582,6 +582,16 @@ class PersonalDataManager : public KeyedService,
       const AutofillProfile& server_address,
       std::vector<AutofillProfile>* existing_profiles);
 
+  // If the AutofillCreateDataForTest feature is enabled, this helper creates
+  // autofill address data that would otherwise be difficult to create
+  // manually using the UI.
+  void CreateTestAddresses();
+
+  // If the AutofillCreateDataForTest feature is enabled, this helper creates
+  // autofill credit card data that would otherwise be difficult to create
+  // manually using the UI.
+  void CreateTestCreditCards();
+
   const std::string app_locale_;
 
   // The default country code for new addresses.
@@ -618,6 +628,10 @@ class PersonalDataManager : public KeyedService,
 
   // Whether new information was received from the sync server.
   bool has_synced_new_data_ = false;
+
+  // True if test data has been created this session.
+  bool has_created_test_addresses_ = false;
+  bool has_created_test_credit_cards_ = false;
 
   // The context for the request to be used to fetch libaddressinput's address
   // validation rules.

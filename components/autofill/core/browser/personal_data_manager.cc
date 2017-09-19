@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/address_i18n.h"
@@ -108,6 +109,12 @@ class IsEmptyFunctor {
  private:
   const std::string app_locale_;
 };
+
+bool IsSyncEnabledFor(const syncer::SyncService* sync_service,
+                      syncer::ModelType model_type) {
+  return sync_service != nullptr && sync_service->CanSyncStart() &&
+         sync_service->GetPreferredDataTypes().Has(model_type);
+}
 
 // Returns true if minimum requirements for import of a given |profile| have
 // been met.  An address submitted via a form must have at least the fields
@@ -251,6 +258,87 @@ bool IsValidSuggestionForFieldContents(base::string16 suggestion_canon,
   return false;
 }
 
+AutofillProfile CreateBasicTestAddress(const std::string& locale) {
+  const base::Time use_date =
+      AutofillClock::Now() - base::TimeDelta::FromDays(20);
+  AutofillProfile profile;
+  profile.SetInfo(NAME_FULL, base::UTF8ToUTF16("John McTester"), locale);
+  profile.SetInfo(COMPANY_NAME, base::UTF8ToUTF16("Test Inc."), locale);
+  profile.SetInfo(EMAIL_ADDRESS,
+                  base::UTF8ToUTF16("jmctester@fake.chromium.org"), locale);
+  profile.SetInfo(ADDRESS_HOME_LINE1, base::UTF8ToUTF16("123 Invented Street"),
+                  locale);
+  profile.SetInfo(ADDRESS_HOME_LINE2, base::UTF8ToUTF16("Suite A"), locale);
+  profile.SetInfo(ADDRESS_HOME_CITY, base::UTF8ToUTF16("Mountain View"),
+                  locale);
+  profile.SetInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("California"), locale);
+  profile.SetInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("94043"), locale);
+  profile.SetInfo(ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16("US"), locale);
+  profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16("844-555-0173"),
+                  locale);
+  profile.set_use_date(use_date);
+  return profile;
+}
+
+AutofillProfile CreateDisusedTestAddress(const std::string& locale) {
+  const base::Time use_date =
+      AutofillClock::Now() - base::TimeDelta::FromDays(185);
+  AutofillProfile profile;
+  profile.SetInfo(NAME_FULL, base::UTF8ToUTF16("Polly Disused"), locale);
+  profile.SetInfo(COMPANY_NAME,
+                  base::UTF8ToUTF16(base::StringPrintf(
+                      "%lld Inc.", static_cast<long long>(use_date.ToTimeT()))),
+                  locale);
+  profile.SetInfo(EMAIL_ADDRESS,
+                  base::UTF8ToUTF16("polly.disused@fake.chromium.org"), locale);
+  profile.SetInfo(ADDRESS_HOME_LINE1, base::UTF8ToUTF16("456 Disused Lane"),
+                  locale);
+  profile.SetInfo(ADDRESS_HOME_LINE2, base::UTF8ToUTF16("Apt. B"), locale);
+  profile.SetInfo(ADDRESS_HOME_CITY, base::UTF8ToUTF16("Austin"), locale);
+  profile.SetInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("Texas"), locale);
+  profile.SetInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("73301"), locale);
+  profile.SetInfo(ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16("US"), locale);
+  profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16("844-555-0174"),
+                  locale);
+  profile.set_use_date(use_date);
+  return profile;
+}
+
+// Create a card expiring 500 days from now which was last used 10 days ago.
+CreditCard CreateBasicTestCreditCard(const std::string& locale) {
+  const base::Time now = AutofillClock::Now();
+  const base::Time use_date = now - base::TimeDelta::FromDays(10);
+  base::Time::Exploded expiry_date;
+  (now + base::TimeDelta::FromDays(500)).LocalExplode(&expiry_date);
+
+  CreditCard credit_card;
+  credit_card.SetInfo(CREDIT_CARD_NAME_FULL,
+                      base::UTF8ToUTF16("Alice Testerson"), locale);
+  credit_card.SetInfo(CREDIT_CARD_NUMBER, base::UTF8ToUTF16("4545454545454545"),
+                      locale);
+  credit_card.SetExpirationMonth(expiry_date.month);
+  credit_card.SetExpirationYear(expiry_date.year);
+  credit_card.set_use_date(use_date);
+  return credit_card;
+}
+
+CreditCard CreateDisusedTestCreditCard(const std::string& locale) {
+  const base::Time now = AutofillClock::Now();
+  const base::Time use_date = now - base::TimeDelta::FromDays(185);
+  base::Time::Exploded expiry_date;
+  (now - base::TimeDelta::FromDays(200)).LocalExplode(&expiry_date);
+
+  CreditCard credit_card;
+  credit_card.SetInfo(CREDIT_CARD_NAME_FULL, base::UTF8ToUTF16("Bob Disused"),
+                      locale);
+  credit_card.SetInfo(CREDIT_CARD_NUMBER, base::UTF8ToUTF16("4111111111111111"),
+                      locale);
+  credit_card.SetExpirationMonth(expiry_date.month);
+  credit_card.SetExpirationYear(expiry_date.year);
+  credit_card.set_use_date(use_date);
+  return credit_card;
+}
+
 }  // namespace
 
 const char kFrecencyFieldTrialName[] = "AutofillProfileOrderByFrecency";
@@ -317,28 +405,21 @@ PersonalDataManager::~PersonalDataManager() {
 
 void PersonalDataManager::OnSyncServiceInitialized(
     syncer::SyncService* sync_service) {
-  // We want to know when, if at all, we need to run autofill profile de-
-  // duplication: now or after waiting until sync has started.
-  if (!is_autofill_profile_cleanup_pending_) {
-    // De-duplication isn't enabled.
-    return;
+  // If the sync service is not enabled for autofill address profiles then run
+  // address cleanup/startup code here. Otherwise, defer until after sync has
+  // started.
+  if (!IsSyncEnabledFor(sync_service, syncer::AUTOFILL_PROFILE)) {
+    ApplyProfileUseDatesFix();  // One-time fix, otherwise NOP.
+    ApplyDedupingRoutine();     // Once per major version, otherwise NOP.
+    CreateTestAddresses();      // Once per user profile startup.
   }
 
-  // If the sync service is configured to start and to sync autofill profiles,
-  // then we can just let the notification that sync has started trigger the
-  // de-duplication.
-  if (sync_service && sync_service->CanSyncStart() &&
-      sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE)) {
-    return;
+  // Similarly, if the sync service is not enabled for autofill credit cards
+  // then run credit card address cleanup/startup code here. Otherwise, defer
+  // until after sync has started.
+  if (!IsSyncEnabledFor(sync_service, syncer::AUTOFILL_WALLET_DATA)) {
+    CreateTestCreditCards();  // Once per user profile startup.
   }
-
-  // This runs as a one-time fix, tracked in syncable prefs. If it has already
-  // run, it is a NOP (other than checking the pref).
-  ApplyProfileUseDatesFix();
-
-  // This runs at most once per major version, tracked in syncable prefs. If it
-  // has already run for this version, it's a NOP, other than checking the pref.
-  ApplyDedupingRoutine();
 }
 
 void PersonalDataManager::OnWebDataServiceRequestDone(
@@ -406,16 +487,18 @@ void PersonalDataManager::AutofillMultipleChanged() {
 }
 
 void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
-  if (model_type == syncer::AUTOFILL_PROFILE &&
-      is_autofill_profile_cleanup_pending_) {
-    // This runs as a one-time fix, tracked in syncable prefs. If it has already
-    // run, it is a NOP (other than checking the pref).
-    ApplyProfileUseDatesFix();
+  // Run deferred autofill address profile startup code.
+  // See: OnSyncServiceInitialized
+  if (model_type == syncer::AUTOFILL_PROFILE) {
+    ApplyProfileUseDatesFix();  // One-time fix, otherwise NOP.
+    ApplyDedupingRoutine();     // Once per major version, otherwise NOP.
+    CreateTestAddresses();      // Once per user profile startup.
+  }
 
-    // This runs at most once per major version, tracked in syncable prefs. If
-    // it has already run for this version, it's a NOP, other than checking the
-    // pref.
-    ApplyDedupingRoutine();
+  // Run deferred credit card startup code.
+  // See: OnSyncServiceInitialized
+  if (model_type == syncer::AUTOFILL_WALLET_DATA) {
+    CreateTestCreditCards();  // Once per user profile startup.
   }
 }
 
@@ -2150,6 +2233,30 @@ std::string PersonalDataManager::MergeServerAddressesIntoProfiles(
   }
 
   return guid;
+}
+
+void PersonalDataManager::CreateTestAddresses() {
+  if (has_created_test_addresses_)
+    return;
+
+  has_created_test_addresses_ = true;
+  if (!base::FeatureList::IsEnabled(kAutofillCreateDataForTest))
+    return;
+
+  AddProfile(CreateBasicTestAddress(app_locale_));
+  AddProfile(CreateDisusedTestAddress(app_locale_));
+}
+
+void PersonalDataManager::CreateTestCreditCards() {
+  if (has_created_test_credit_cards_)
+    return;
+
+  has_created_test_credit_cards_ = true;
+  if (!base::FeatureList::IsEnabled(kAutofillCreateDataForTest))
+    return;
+
+  AddCreditCard(CreateBasicTestCreditCard(app_locale_));
+  AddCreditCard(CreateDisusedTestCreditCard(app_locale_));
 }
 
 }  // namespace autofill

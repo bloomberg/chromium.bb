@@ -27,6 +27,8 @@ namespace autofill {
 
 const base::Feature kAutofillAlwaysFillAddresses{
     "AlwaysFillAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAutofillCreateDataForTest{
+    "AutofillCreateDataForTest", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardAssist{
     "AutofillCreditCardAssist", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillScanCardholderName{
