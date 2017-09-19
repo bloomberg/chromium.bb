@@ -31,13 +31,12 @@
 #ifndef LayoutPoint_h
 #define LayoutPoint_h
 
-#include <algorithm>
+#include <iosfwd>
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 
@@ -77,13 +76,8 @@ class PLATFORM_EXPORT LayoutPoint {
     y_ *= sy;
   }
 
-  LayoutPoint ExpandedTo(const LayoutPoint& other) const {
-    return LayoutPoint(std::max(x_, other.x_), std::max(y_, other.y_));
-  }
-
-  LayoutPoint ShrunkTo(const LayoutPoint& other) const {
-    return LayoutPoint(std::min(x_, other.x_), std::min(y_, other.y_));
-  }
+  LayoutPoint ExpandedTo(const LayoutPoint&) const;
+  LayoutPoint ShrunkTo(const LayoutPoint&) const;
 
   void ClampNegativeToZero() { *this = ExpandedTo(Zero()); }
 

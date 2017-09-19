@@ -34,6 +34,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

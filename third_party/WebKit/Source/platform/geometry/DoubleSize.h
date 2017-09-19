@@ -5,11 +5,11 @@
 #ifndef DoubleSize_h
 #define DoubleSize_h
 
+#include <iosfwd>
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

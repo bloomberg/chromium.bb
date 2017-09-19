@@ -170,6 +170,10 @@ float FloatRect::SquaredDistanceTo(const FloatPoint& point) const {
   return (point - closest_point).DiagonalLengthSquared();
 }
 
+FloatRect::operator SkRect() const {
+  return SkRect::MakeXYWH(X(), Y(), Width(), Height());
+}
+
 FloatRect::operator gfx::RectF() const {
   return gfx::RectF(X(), Y(), Width(), Height());
 }

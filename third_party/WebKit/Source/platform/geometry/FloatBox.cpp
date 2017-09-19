@@ -4,9 +4,32 @@
 
 #include "platform/geometry/FloatBox.h"
 
+#include <algorithm>
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
+
+void FloatBox::ExpandTo(const FloatPoint3D& low, const FloatPoint3D& high) {
+  DCHECK_LE(low.X(), high.X());
+  DCHECK_LE(low.Y(), high.Y());
+  DCHECK_LE(low.Z(), high.Z());
+
+  float min_x = std::min(x_, low.X());
+  float min_y = std::min(y_, low.Y());
+  float min_z = std::min(z_, low.Z());
+
+  float max_x = std::max(Right(), high.X());
+  float max_y = std::max(Bottom(), high.Y());
+  float max_z = std::max(front(), high.Z());
+
+  x_ = min_x;
+  y_ = min_y;
+  z_ = min_z;
+
+  width_ = max_x - min_x;
+  height_ = max_y - min_y;
+  depth_ = max_z - min_z;
+}
 
 String FloatBox::ToString() const {
   return String::Format("%lg,%lg,%lg %lgx%lgx%lg", X(), Y(), Z(), Width(),

@@ -32,8 +32,12 @@
 #include "platform/geometry/LayoutSize.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/WTFString.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 namespace blink {
+
+FloatSize::FloatSize(const SkSize& size)
+    : width_(size.width()), height_(size.height()) {}
 
 FloatSize::FloatSize(const LayoutSize& size)
     : width_(size.Width().ToFloat()), height_(size.Height().ToFloat()) {}
@@ -53,6 +57,10 @@ bool FloatSize::IsExpressibleAsIntSize() const {
 
 FloatSize FloatSize::NarrowPrecision(double width, double height) {
   return FloatSize(clampTo<float>(width), clampTo<float>(height));
+}
+
+FloatSize::operator SkSize() const {
+  return SkSize::Make(width_, height_);
 }
 
 String FloatSize::ToString() const {

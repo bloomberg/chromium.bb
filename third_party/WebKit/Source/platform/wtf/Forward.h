@@ -30,7 +30,10 @@ template <typename T>
 class RefPtr;
 template <typename T>
 class StringBuffer;
-template <typename T, size_t inlineCapacity, typename Allocator>
+class PartitionAllocator;
+template <typename T,
+          size_t inlineCapacity = 0,
+          typename Allocator = PartitionAllocator>
 class Vector;
 
 class ArrayBuffer;

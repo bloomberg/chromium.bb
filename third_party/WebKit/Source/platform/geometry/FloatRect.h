@@ -35,8 +35,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
-#include "third_party/skia/include/core/SkRect.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGRect CGRect;
@@ -45,6 +43,8 @@ typedef struct CGRect CGRect;
 #import <Foundation/Foundation.h>
 #endif
 #endif
+
+struct SkRect;
 
 namespace gfx {
 class RectF;
@@ -192,9 +192,7 @@ class PLATFORM_EXPORT FloatRect {
   operator CGRect() const;
 #endif
 
-  operator SkRect() const {
-    return SkRect::MakeXYWH(X(), Y(), Width(), Height());
-  }
+  operator SkRect() const;
   operator gfx::RectF() const;
 
 #if DCHECK_IS_ON()
