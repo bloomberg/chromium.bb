@@ -131,9 +131,6 @@ deps = {
   'src/buildtools':
     Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
 
-  'src/sdch/open-vcdiff':
-    Var('chromium_git') + '/external/github.com/google/open-vcdiff.git' + '@' + '7162d8ee5a7f1cca110749ec5c7585cdab3f0144',
-
   'src/third_party/freetype/src':
     Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
 
