@@ -303,6 +303,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     /**
      * Verify that opening a new window hides keyboard.
      */
+    @DisabledTest(message = "crbug.com/766735")
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
