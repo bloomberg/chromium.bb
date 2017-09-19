@@ -59,6 +59,7 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "media/base/media_switches.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebCompositorMutatorClient.h"
@@ -349,6 +350,9 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     const ScreenInfo& screen_info,
     bool is_threaded) {
   cc::LayerTreeSettings settings;
+
+  settings.resource_settings.use_r16_texture =
+      base::FeatureList::IsEnabled(media::kUseR16Texture);
 
   settings.commit_to_active_tree = !is_threaded;
   settings.is_layer_tree_for_subframe = is_for_subframe;

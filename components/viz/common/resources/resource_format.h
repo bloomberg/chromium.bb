@@ -20,7 +20,8 @@ enum ResourceFormat {
   RED_8,
   LUMINANCE_F16,
   RGBA_F16,
-  RESOURCE_FORMAT_MAX = RGBA_F16,
+  R16_EXT,
+  RESOURCE_FORMAT_MAX = R16_EXT,
 };
 
 }  // namespace viz

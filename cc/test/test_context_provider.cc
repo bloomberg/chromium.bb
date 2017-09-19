@@ -28,9 +28,9 @@ namespace {
 
 // Various tests rely on functionality (capabilities) enabled by these extension
 // strings.
-const char* const kExtensions[] = {"GL_EXT_stencil_wrap",
-                                   "GL_EXT_texture_format_BGRA8888",
-                                   "GL_OES_rgb8_rgba8"};
+const char* const kExtensions[] = {
+    "GL_EXT_stencil_wrap", "GL_EXT_texture_format_BGRA8888",
+    "GL_OES_rgb8_rgba8", "GL_EXT_texture_norm16"};
 
 class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
  public:
