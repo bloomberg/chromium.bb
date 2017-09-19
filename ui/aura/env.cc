@@ -45,7 +45,7 @@ Env::~Env() {
   if (is_os_exchange_data_provider_factory_)
     ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
   if (is_override_input_injector_factory_)
-    ui::SetOverrideInputInjectorFactory(nullptr);
+    ui::SetSystemInputInjectorFactory(nullptr);
 
 #if defined(USE_OZONE)
   gfx::ClientNativePixmapFactory::ResetInstance();
@@ -200,7 +200,7 @@ void Env::EnableMusOSExchangeDataProvider() {
 
 void Env::EnableMusOverrideInputInjector() {
   if (!is_override_input_injector_factory_) {
-    ui::SetOverrideInputInjectorFactory(this);
+    ui::SetSystemInputInjectorFactory(this);
     is_override_input_injector_factory_ = true;
   }
 }
