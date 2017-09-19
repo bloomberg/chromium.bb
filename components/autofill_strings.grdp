@@ -170,6 +170,10 @@
     Show all saved passwords...
   </message>
 
+  <message name="IDS_AUTOFILL_GENERATE_PASSWORD_FALLBACK" desc="The text shown as an option in the suggestion drop down when a password field is clicked">
+    Generate a strong password...
+  </message>
+
   <!-- Autofill Credit Card Assisted Filling Infobar -->
   <if expr="is_android">
     <message name="IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_TITLE" desc="Title text for the Autofill Credit Card Assisted Filling Infobar">

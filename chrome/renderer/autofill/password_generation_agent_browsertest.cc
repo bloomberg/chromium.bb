@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
 #include "chrome/renderer/autofill/fake_password_manager_client.h"
 #include "chrome/renderer/autofill/password_generation_test_utils.h"
@@ -20,6 +21,7 @@
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -124,6 +126,11 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     password_generation_->UserTriggeredGeneratePassword();
   }
 
+  void SelectGenerationFallback(const char* element_id) {
+    FocusField(element_id);
+    password_generation_->UserSelectedManualGenerationOption();
+  }
+
   void BindPasswordManagerDriver(mojo::ScopedMessagePipeHandle handle) {
     fake_driver_.BindRequest(
         mojom::PasswordManagerDriverRequest(std::move(handle)));
@@ -134,10 +141,17 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
         mojom::PasswordManagerClientAssociatedRequest(std::move(handle)));
   }
 
+  void SetManualGenerationFallback() {
+    scoped_feature_list_.InitAndEnableFeature(
+        password_manager::features::kEnableManualFallbacksGeneration);
+  }
+
   FakeContentPasswordManagerDriver fake_driver_;
   FakePasswordManagerClient fake_pw_client_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTest);
 };
 
@@ -823,6 +837,19 @@ TEST_F(PasswordGenerationAgentTest, JavascriptClearedTheField) {
   FocusField(kGenerationElementId);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_no_longer_generated());
+}
+
+TEST_F(PasswordGenerationAgentTest, GenerationFallbackTest) {
+  SetManualGenerationFallback();
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebElement element =
+      document.GetElementById(WebString::FromUTF8("first_password"));
+  ASSERT_FALSE(element.IsNull());
+  WebInputElement first_password_element = element.To<WebInputElement>();
+  EXPECT_TRUE(first_password_element.Value().IsNull());
+  SelectGenerationFallback("first_password");
+  EXPECT_TRUE(first_password_element.Value().IsNull());
 }
 
 }  // namespace autofill

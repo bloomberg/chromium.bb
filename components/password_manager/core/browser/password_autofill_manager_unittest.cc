@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -28,6 +29,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/fake_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,8 +86,23 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   GURL main_frame_url_;
 };
 
+class MockSyncService : public syncer::FakeSyncService {
+ public:
+  MockSyncService() {}
+  virtual ~MockSyncService() {}
+  MOCK_CONST_METHOD0(IsFirstSetupComplete, bool());
+  MOCK_CONST_METHOD0(IsSyncActive, bool());
+  MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
+  MOCK_CONST_METHOD0(GetActiveDataTypes, syncer::ModelTypeSet());
+};
+
 class MockAutofillClient : public autofill::TestAutofillClient {
  public:
+  MockAutofillClient() : sync_service_(nullptr) {}
+  MockAutofillClient(MockSyncService* sync_service)
+      : sync_service_(sync_service) {
+    LOG(ERROR) << "init mpck client";
+  }
   MOCK_METHOD4(ShowAutofillPopup,
                void(const gfx::RectF& element_bounds,
                     base::i18n::TextDirection text_direction,
@@ -93,6 +110,11 @@ class MockAutofillClient : public autofill::TestAutofillClient {
                     base::WeakPtr<autofill::AutofillPopupDelegate> delegate));
   MOCK_METHOD0(HideAutofillPopup, void());
   MOCK_METHOD1(ExecuteCommand, void(int));
+
+  syncer::SyncService* GetSyncService() override { return sync_service_; }
+
+ private:
+  MockSyncService* sync_service_;
 };
 
 bool IsPreLollipopAndroid() {
@@ -168,6 +190,79 @@ class PasswordAutofillManagerTest : public testing::Test {
     return base::FeatureList::IsEnabled(
                password_manager::features::kEnableManualFallbacksFilling) &&
            !IsPreLollipopAndroid();
+  }
+
+  void SetManualFallbacks(bool enabled) {
+    std::vector<std::string> features = {
+        password_manager::features::kEnableManualFallbacksFilling.name,
+        password_manager::features::kEnableManualFallbacksFillingStandalone
+            .name,
+        password_manager::features::kEnableManualFallbacksGeneration.name};
+    if (enabled) {
+      scoped_feature_list_.InitFromCommandLine(base::JoinString(features, ","),
+                                               std::string());
+    } else {
+      scoped_feature_list_.InitFromCommandLine(std::string(),
+                                               base::JoinString(features, ","));
+    }
+  }
+
+  void TestGenerationFallback(bool custom_passphrase_enabled) {
+    MockSyncService mock_sync_service;
+    EXPECT_CALL(mock_sync_service, IsFirstSetupComplete())
+        .WillRepeatedly(::testing::Return(true));
+    EXPECT_CALL(mock_sync_service, IsSyncActive())
+        .WillRepeatedly(::testing::Return(true));
+    EXPECT_CALL(mock_sync_service, GetActiveDataTypes())
+        .Times(::testing::AnyNumber())
+        .WillRepeatedly(
+            ::testing::Return(syncer::ModelTypeSet(syncer::PASSWORDS)));
+    EXPECT_CALL(mock_sync_service, IsUsingSecondaryPassphrase())
+        .WillRepeatedly(::testing::Return(custom_passphrase_enabled));
+    std::unique_ptr<TestPasswordManagerClient> client(
+        new TestPasswordManagerClient);
+    std::unique_ptr<MockAutofillClient> autofill_client(
+        new MockAutofillClient(&mock_sync_service));
+    InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+    gfx::RectF element_bounds;
+    autofill::PasswordFormFillData data;
+    data.username_field.value = test_username_;
+    data.password_field.value = test_password_;
+    data.origin = GURL("https://foo.test");
+
+    int dummy_key = 0;
+    password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+    SetManualFallbacks(true);
+
+    std::vector<base::string16> elements = {
+        l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_PASSWORD_FIELD_SUGGESTIONS_TITLE),
+        test_username_};
+    if (!IsPreLollipopAndroid() || !custom_passphrase_enabled) {
+#if !defined(OS_ANDROID)
+      elements.push_back(base::string16());
+#endif
+      elements.push_back(
+          l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK));
+      if (!custom_passphrase_enabled) {
+#if !defined(OS_ANDROID)
+        elements.push_back(base::string16());
+#endif
+        elements.push_back(
+            l10n_util::GetStringUTF16(IDS_AUTOFILL_GENERATE_PASSWORD_FALLBACK));
+      }
+    }
+
+    EXPECT_CALL(
+        *autofill_client,
+        ShowAutofillPopup(
+            element_bounds, _,
+            SuggestionVectorValuesAre(testing::ElementsAreArray(elements)), _));
+
+    password_autofill_manager_->OnShowPasswordSuggestions(
+        dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
+        autofill::IS_PASSWORD_FIELD, element_bounds);
   }
 
   std::unique_ptr<PasswordAutofillManager> password_autofill_manager_;
@@ -937,8 +1032,8 @@ TEST_F(PasswordAutofillManagerTest, ShowedFormNotSecureHistogram) {
   data.username_field.value = test_username_;
   data.password_field.value = test_password_;
   data.origin = GURL("http://foo.test");
-  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
 
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
   EXPECT_CALL(*autofill_client, ShowAutofillPopup(element_bounds, _, _, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
@@ -986,6 +1081,21 @@ TEST_F(PasswordAutofillManagerTest,
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
+}
+
+// Tests that the "Generate Password Suggestion" suggestion isn't shown in the
+// Suggestion popup when the user is sync user with custom passphrase and manual
+// fallbacks experiment is enabled.
+TEST_F(PasswordAutofillManagerTest,
+       NotShowGeneratePasswordOptionOnPasswordFieldWhenCustomPassphraseUser) {
+  TestGenerationFallback(true /* custom_passphrase_enabled */);
+}
+
+// Tests that the "Generate Password Suggestion" suggestion is shown along
+// with "Use password for" and "Show all passwords" in the popup for the user
+// with custom passphrase.
+TEST_F(PasswordAutofillManagerTest, ShowGeneratePasswordOptionOnPasswordField) {
+  TestGenerationFallback(false /* custom_passphrase_enabled */);
 }
 
 // Tests that the "Show all passwords" suggestion is shown along with

@@ -57,6 +57,9 @@ class PasswordManagerDriver
   // Notifies the driver that the user has accepted a generated password.
   virtual void GeneratedPasswordAccepted(const base::string16& password) = 0;
 
+  // User have selected a password generation option.
+  virtual void UserSelectedManualGenerationOption() = 0;
+
   // Tells the driver to fill the form with the |username| and |password|.
   virtual void FillSuggestion(const base::string16& username,
                               const base::string16& password) = 0;
