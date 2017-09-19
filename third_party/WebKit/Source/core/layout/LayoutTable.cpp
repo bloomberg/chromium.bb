@@ -675,13 +675,14 @@ void LayoutTable::UpdateLayout() {
 
     LayoutUnit original_offset_for_table_headers =
         state.HeightOffsetForTableHeaders();
+    LayoutUnit offset_for_table_headers = original_offset_for_table_headers;
     LayoutUnit original_offset_for_table_footers =
         state.HeightOffsetForTableFooters();
+    LayoutUnit offset_for_table_footers = original_offset_for_table_footers;
     if (state.IsPaginated() && IsPageLogicalHeightKnown()) {
       // If the repeating header group allows at least one row of content,
       // then store the offset for other sections to offset their rows
       // against.
-      LayoutUnit offset_for_table_headers = original_offset_for_table_headers;
       if (header && header->IsRepeatingHeaderGroup()) {
         offset_for_table_headers += header->LogicalHeight();
         // Don't include any strut in the header group - we only want the
@@ -690,15 +691,14 @@ void LayoutTable::UpdateLayout() {
           offset_for_table_headers -= row->PaginationStrut();
         SetRowOffsetFromRepeatingHeader(offset_for_table_headers);
       }
-      state.SetHeightOffsetForTableHeaders(offset_for_table_headers);
 
-      LayoutUnit offset_for_table_footers = original_offset_for_table_footers;
       if (footer && footer->IsRepeatingFooterGroup()) {
         offset_for_table_footers += footer->LogicalHeight();
         SetRowOffsetFromRepeatingFooter(offset_for_table_footers);
       }
-      state.SetHeightOffsetForTableFooters(offset_for_table_footers);
     }
+    state.SetHeightOffsetForTableHeaders(offset_for_table_headers);
+    state.SetHeightOffsetForTableFooters(offset_for_table_footers);
 
     // Lay out table body groups, and column groups.
     for (LayoutObject* child = FirstChild(); child;
