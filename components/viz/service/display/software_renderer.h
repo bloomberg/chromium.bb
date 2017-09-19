@@ -2,13 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_SOFTWARE_RENDERER_H_
-#define CC_OUTPUT_SOFTWARE_RENDERER_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_SOFTWARE_RENDERER_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_SOFTWARE_RENDERER_H_
 
 #include "base/macros.h"
-#include "cc/cc_export.h"
 #include "cc/output/direct_renderer.h"
+#include "components/viz/service/viz_service_export.h"
 #include "ui/latency/latency_info.h"
+
+namespace cc {
+class OutputSurface;
+class DisplayResourceProvider;
+class SoftwareOutputDevice;
+}  // namespace cc
 
 namespace viz {
 class DebugBorderDrawQuad;
@@ -17,18 +23,12 @@ class RenderPassDrawQuad;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
-}  // namespace viz
 
-namespace cc {
-class OutputSurface;
-class DisplayResourceProvider;
-class SoftwareOutputDevice;
-
-class CC_EXPORT SoftwareRenderer : public DirectRenderer {
+class VIZ_SERVICE_EXPORT SoftwareRenderer : public cc::DirectRenderer {
  public:
-  SoftwareRenderer(const viz::RendererSettings* settings,
-                   OutputSurface* output_surface,
-                   DisplayResourceProvider* resource_provider);
+  SoftwareRenderer(const RendererSettings* settings,
+                   cc::OutputSurface* output_surface,
+                   cc::DisplayResourceProvider* resource_provider);
 
   ~SoftwareRenderer() override;
 
@@ -40,21 +40,19 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 
  protected:
   bool CanPartialSwap() override;
-  viz::ResourceFormat BackbufferFormat() const override;
+  ResourceFormat BackbufferFormat() const override;
   void BindFramebufferToOutputSurface() override;
-  bool BindFramebufferToTexture(const ScopedResource* texture) override;
+  bool BindFramebufferToTexture(const cc::ScopedResource* texture) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
-  void DoDrawQuad(const viz::DrawQuad* quad,
-                  const gfx::QuadF* draw_region) override;
+  void DoDrawQuad(const DrawQuad* quad, const gfx::QuadF* draw_region) override;
   void BeginDrawingFrame() override;
   void FinishDrawingFrame() override;
   bool FlippedFramebuffer() const override;
   void EnsureScissorTestEnabled() override;
   void EnsureScissorTestDisabled() override;
-  void CopyDrawnRenderPass(
-      std::unique_ptr<viz::CopyOutputRequest> request) override;
+  void CopyDrawnRenderPass(std::unique_ptr<CopyOutputRequest> request) override;
   void SetEnableDCLayers(bool enable) override;
   void DidChangeVisibility() override;
   void GenerateMipmap() override;
@@ -63,30 +61,30 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
   void SetClipRect(const gfx::Rect& rect);
-  bool IsSoftwareResource(viz::ResourceId resource_id) const;
+  bool IsSoftwareResource(ResourceId resource_id) const;
 
-  void DrawDebugBorderQuad(const viz::DebugBorderDrawQuad* quad);
-  void DrawPictureQuad(const viz::PictureDrawQuad* quad);
-  void DrawRenderPassQuad(const viz::RenderPassDrawQuad* quad);
-  void DrawSolidColorQuad(const viz::SolidColorDrawQuad* quad);
-  void DrawTextureQuad(const viz::TextureDrawQuad* quad);
-  void DrawTileQuad(const viz::TileDrawQuad* quad);
-  void DrawUnsupportedQuad(const viz::DrawQuad* quad);
+  void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
+  void DrawPictureQuad(const PictureDrawQuad* quad);
+  void DrawRenderPassQuad(const RenderPassDrawQuad* quad);
+  void DrawSolidColorQuad(const SolidColorDrawQuad* quad);
+  void DrawTextureQuad(const TextureDrawQuad* quad);
+  void DrawTileQuad(const TileDrawQuad* quad);
+  void DrawUnsupportedQuad(const DrawQuad* quad);
   bool ShouldApplyBackgroundFilters(
-      const viz::RenderPassDrawQuad* quad,
-      const FilterOperations* background_filters) const;
+      const RenderPassDrawQuad* quad,
+      const cc::FilterOperations* background_filters) const;
   sk_sp<SkImage> ApplyImageFilter(SkImageFilter* filter,
-                                  const viz::RenderPassDrawQuad* quad,
+                                  const RenderPassDrawQuad* quad,
                                   const SkBitmap& to_filter,
                                   SkIRect* auto_bounds) const;
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
-      const viz::RenderPassDrawQuad* quad,
+      const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
-      const FilterOperations* background_filters,
+      const cc::FilterOperations* background_filters,
       gfx::Rect* unclipped_rect) const;
   SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
   sk_sp<SkShader> GetBackgroundFilterShader(
-      const viz::RenderPassDrawQuad* quad,
+      const RenderPassDrawQuad* quad,
       SkShader::TileMode content_tile_mode) const;
 
   bool disable_picture_quad_image_filtering_ = false;
@@ -94,17 +92,17 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   bool is_scissor_enabled_ = false;
   gfx::Rect scissor_rect_;
 
-  SoftwareOutputDevice* output_device_;
+  cc::SoftwareOutputDevice* output_device_;
   SkCanvas* root_canvas_ = nullptr;
   SkCanvas* current_canvas_ = nullptr;
   SkPaint current_paint_;
-  std::unique_ptr<ResourceProvider::ScopedWriteLockSoftware>
+  std::unique_ptr<cc::ResourceProvider::ScopedWriteLockSoftware>
       current_framebuffer_lock_;
   std::unique_ptr<SkCanvas> current_framebuffer_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareRenderer);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_SOFTWARE_RENDERER_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_SOFTWARE_RENDERER_H_

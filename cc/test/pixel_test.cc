@@ -13,7 +13,6 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
-#include "cc/output/software_renderer.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -26,6 +25,7 @@
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/service/display/gl_renderer.h"
+#include "components/viz/service/display/software_renderer.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -205,7 +205,7 @@ void PixelTest::SetUpSoftwareRenderer() {
       main_thread_task_runner_.get(), delegated_sync_points_required,
       settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
-  auto renderer = std::make_unique<SoftwareRenderer>(
+  auto renderer = std::make_unique<viz::SoftwareRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get());
   software_renderer_ = renderer.get();
   renderer_ = std::move(renderer);
