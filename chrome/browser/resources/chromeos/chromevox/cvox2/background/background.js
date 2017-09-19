@@ -19,7 +19,6 @@ goog.require('FindHandler');
 goog.require('LiveRegions');
 goog.require('MediaAutomationHandler');
 goog.require('NextEarcons');
-goog.require('Notifications');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('PanelCommand');
@@ -276,7 +275,6 @@ Background.prototype = {
     this.keyboardHandler_.onModeChanged(newMode, oldMode);
     CommandHandler.onModeChanged(newMode, oldMode);
     FindHandler.onModeChanged(newMode, oldMode);
-    Notifications.onModeChange(newMode, oldMode);
 
     // The below logic handles transition between the classic engine
     // (content script) and next engine (no content script) as well as
@@ -331,45 +329,6 @@ Background.prototype = {
       if (cvox.TabsApiHandler)
         cvox.TabsApiHandler.shouldOutputSpeechAndBraille = true;
     }
-  },
-
-  /**
-   * Toggles between force next and classic/compat modes.
-   * This toggle automatically handles deciding between classic/compat based on
-   * the start of the current range.
-   * @param {boolean=} opt_setValue Directly set to force next (true) or
-   *                                classic/compat (false).
-   * @return {boolean} True to announce current position.
-   */
-  toggleNext: function(opt_setValue) {
-    var useNext;
-    if (opt_setValue !== undefined)
-      useNext = opt_setValue;
-    else
-      useNext = localStorage['useClassic'] == 'true';
-
-    if (useNext) {
-      chrome.metricsPrivate.recordUserAction(
-          'Accessibility.ChromeVox.ToggleNextOn');
-    } else {
-      chrome.metricsPrivate.recordUserAction(
-          'Accessibility.ChromeVox.ToggleNextOff');
-    }
-
-    localStorage['useClassic'] = !useNext;
-    if (useNext)
-      this.setCurrentRangeToFocus_();
-    else
-      this.setCurrentRange(null);
-
-    var announce =
-        Msgs.getMsg(useNext ? 'switch_to_next' : 'switch_to_classic');
-    cvox.ChromeVox.tts.speak(
-        announce, cvox.QueueMode.FLUSH, {doNotInterrupt: true});
-
-    // If the new mode is Classic, return false now so we don't announce
-    // anything more.
-    return useNext;
   },
 
   /**

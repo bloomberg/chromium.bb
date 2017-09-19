@@ -465,28 +465,6 @@ TEST_F('BackgroundTest', 'EarconsForControls', function() {
     }.bind(this));
 });
 
-TEST_F('BackgroundTest', 'ToggleChromeVoxVersion', function() {
-  var mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
-    var gotCmd = CommandHandler.onCommand;
-
-    // The command came from the background keyboard handler.
-    var togglerFromBackground = gotCmd.bind(gotCmd, 'toggleChromeVoxVersion');
-
-    // The command came from a content script.
-    var togglerFromContent = gotCmd.bind(gotCmd, 'toggleChromeVoxVersion',
-                                         true);
-
-    mockFeedback.call(togglerFromBackground)
-        .expectSpeech('Switched to Classic ChromeVox')
-        .call(togglerFromContent)
-        .expectSpeech('Switched to ChromeVox Next')
-        .call(togglerFromBackground)
-        .expectSpeech('Switched to Classic ChromeVox');
-    mockFeedback.replay();
-  });
-});
-
 SYNC_TEST_F('BackgroundTest', 'GlobsToRegExp', function() {
   assertEquals('/^()$/', Background.globsToRegExp_([]).toString());
   assertEquals(
@@ -791,7 +769,7 @@ TEST_F('BackgroundTest', 'ForwardObjectNavigationThroughIframes', function() {
     mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('After', 'Button');
     mockFeedback.call(doCmd('previousObject'))
-        .expectSpeech('Inside', 'Heading 1');
+        .expectSpeech('Heading 1', 'Inside');
     mockFeedback.call(doCmd('previousObject'))
         .expectSpeech('Inside', 'Button');
     mockFeedback.call(doCmd('previousObject'))

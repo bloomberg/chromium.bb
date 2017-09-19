@@ -449,16 +449,6 @@
       }
     },
     {
-      "command": "toggleChromeVoxVersion",
-      "sequence": {
-        "cvoxModifier": true,
-        "keys": {
-          "keyCode": [81],
-          "shitKey": [true]
-        }
-      }
-    },
-    {
       "command": "toggleStickyMode",
       "sequence": {
         "doubleTap": true,
