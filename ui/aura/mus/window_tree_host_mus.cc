@@ -83,7 +83,7 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
     SetSharedInputMethod(input_method_.get());
   }
 
-  compositor()->SetHostHasTransparentBackground(true);
+  compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   // Mus windows are assumed hidden.
   compositor()->SetVisible(false);

@@ -801,8 +801,6 @@ void RenderWidgetCompositor::SetDeviceScaleFactor(float device_scale) {
 
 void RenderWidgetCompositor::SetBackgroundColor(blink::WebColor color) {
   layer_tree_host_->set_background_color(color);
-  layer_tree_host_->set_has_transparent_background(SkColorGetA(color) <
-                                                   SK_AlphaOPAQUE);
 }
 
 void RenderWidgetCompositor::SetVisible(bool visible) {

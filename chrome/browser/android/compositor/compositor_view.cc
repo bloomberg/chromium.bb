@@ -197,7 +197,6 @@ void CompositorView::SetOverlayVideoMode(JNIEnv* env,
     return;
   overlay_video_mode_ = enabled;
   compositor_->SetRequiresAlphaChannel(enabled);
-  compositor_->SetHasTransparentBackground(enabled);
   SetNeedsComposite(env, object);
 }
 

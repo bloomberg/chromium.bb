@@ -1046,7 +1046,8 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
   InitCompositor();
 
   // Transparent window support.
-  layer()->GetCompositor()->SetHostHasTransparentBackground(translucent);
+  layer()->GetCompositor()->SetBackgroundColor(translucent ? SK_ColorTRANSPARENT
+                                                           : SK_ColorWHITE);
   layer()->SetFillsBoundsOpaquely(!translucent);
 
   // Use the regular window background for window modal sheets. The layer() will

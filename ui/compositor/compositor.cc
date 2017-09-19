@@ -307,11 +307,6 @@ cc::AnimationTimeline* Compositor::GetAnimationTimeline() const {
   return animation_timeline_.get();
 }
 
-void Compositor::SetHostHasTransparentBackground(
-    bool host_has_transparent_background) {
-  host_->set_has_transparent_background(host_has_transparent_background);
-}
-
 void Compositor::ScheduleFullRedraw() {
   // TODO(enne): Some callers (mac) call this function expecting that it
   // will also commit.  This should probably just redraw the screen
