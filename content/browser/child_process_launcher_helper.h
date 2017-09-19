@@ -195,6 +195,12 @@ class ChildProcessLauncherHelper :
   static void ForceNormalProcessTerminationSync(
       ChildProcessLauncherHelper::Process process);
 
+#if defined(OS_ANDROID)
+  void set_java_peer_available_on_client_thread() {
+    java_peer_avaiable_on_client_thread_ = true;
+  }
+#endif
+
   const int child_process_id_;
   const BrowserThread::ID client_thread_id_;
   base::TimeTicks begin_launch_time_;
@@ -211,6 +217,7 @@ class ChildProcessLauncherHelper :
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_peer_;
+  bool java_peer_avaiable_on_client_thread_ = false;
 #endif
 };
 

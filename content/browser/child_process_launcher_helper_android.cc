@@ -132,6 +132,11 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
   java_peer_.Reset(Java_ChildProcessLauncherHelper_createAndStart(
       env, reinterpret_cast<intptr_t>(this), param_key, j_argv, j_file_infos));
   AddRef();  // Balanced by OnChildProcessStarted.
+  BrowserThread::PostTask(
+      client_thread_id_, FROM_HERE,
+      base::Bind(
+          &ChildProcessLauncherHelper::set_java_peer_available_on_client_thread,
+          this));
 
   return Process();
 }
@@ -145,7 +150,8 @@ base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
     const ChildProcessLauncherHelper::Process& process,
     bool known_dead,
     int* exit_code) {
-  if (Java_ChildProcessLauncherHelper_isOomProtected(AttachCurrentThread(),
+  if (java_peer_avaiable_on_client_thread_ &&
+      Java_ChildProcessLauncherHelper_isOomProtected(AttachCurrentThread(),
                                                      java_peer_)) {
     return base::TERMINATION_STATUS_OOM_PROTECTED;
   }
