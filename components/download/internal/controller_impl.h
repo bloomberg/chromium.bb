@@ -80,6 +80,7 @@ class ControllerImpl : public Controller,
                         FailureType failure_type) override;
   void OnDownloadSucceeded(const DriverEntry& download) override;
   void OnDownloadUpdated(const DriverEntry& download) override;
+  bool IsTrackingDownload(const std::string& guid) const override;
 
   // Model::Client implementation.
   void OnModelReady(bool success) override;

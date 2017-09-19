@@ -59,6 +59,9 @@ class DownloadDriver {
 
     // Called when any download is updated.
     virtual void OnDownloadUpdated(const DriverEntry& download) = 0;
+
+    // Returns whether the client is tracking the download with |guid|.
+    virtual bool IsTrackingDownload(const std::string& guid) const = 0;
   };
 
   virtual ~DownloadDriver() = default;
