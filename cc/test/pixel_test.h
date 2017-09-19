@@ -18,13 +18,13 @@
 
 namespace viz {
 class CopyOutputResult;
+class DirectRenderer;
 class TestGpuMemoryBufferManager;
 class TextureMailboxDeleter;
 }
 
 namespace cc {
 class DisplayResourceProvider;
-class DirectRenderer;
 class FakeOutputSurfaceClient;
 class OutputSurface;
 class TestSharedBitmapManager;
@@ -68,7 +68,7 @@ class PixelTest : public testing::Test {
   std::unique_ptr<BlockingTaskRunner> main_thread_task_runner_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<viz::TextureMailboxDeleter> texture_mailbox_deleter_;
-  std::unique_ptr<DirectRenderer> renderer_;
+  std::unique_ptr<viz::DirectRenderer> renderer_;
   viz::SoftwareRenderer* software_renderer_ = nullptr;
   std::unique_ptr<SkBitmap> result_bitmap_;
 

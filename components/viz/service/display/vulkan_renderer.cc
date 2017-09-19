@@ -20,7 +20,7 @@ void VulkanRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
 VulkanRenderer::VulkanRenderer(const RendererSettings* settings,
                                cc::OutputSurface* output_surface,
                                cc::DisplayResourceProvider* resource_provider)
-    : cc::DirectRenderer(settings, output_surface, resource_provider) {}
+    : DirectRenderer(settings, output_surface, resource_provider) {}
 
 void VulkanRenderer::DidChangeVisibility() {
   NOTIMPLEMENTED();

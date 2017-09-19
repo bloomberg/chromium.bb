@@ -1,5 +1,0 @@
-specific_include_rules = {
-  ".*_unittest\.cc": [
-  "+components/viz/service/display",
-  ]
-}

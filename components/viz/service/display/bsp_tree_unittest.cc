@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/bsp_tree.h"
+#include "components/viz/service/display/bsp_tree.h"
 
 #include <stddef.h>
 
@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/output/bsp_walk_action.h"
-#include "cc/output/draw_polygon.h"
+#include "components/viz/service/display/bsp_walk_action.h"
+#include "components/viz/service/display/draw_polygon.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 #define EXPECT_SORTED_LISTS_EQ(polygon_list, compare_list)        \
@@ -374,4 +374,4 @@ TEST(BspTreeTest, CoplanarSplit) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz

@@ -11,7 +11,6 @@
 #include "base/cancelable_callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "cc/output/direct_renderer.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -19,6 +18,7 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/service/display/color_lut_cache.h"
+#include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/gl_renderer_draw_cache.h"
 #include "components/viz/service/display/program_binding.h"
 #include "components/viz/service/viz_service_export.h"
@@ -49,7 +49,7 @@ class TextureMailboxDeleter;
 struct DrawRenderPassDrawQuadParams;
 
 // Class that handles drawing of composited render layers using GL.
-class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
+class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
  public:
   class ScopedUseGrContext;
 

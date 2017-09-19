@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_BSP_COMPARE_RESULT_H_
-#define CC_OUTPUT_BSP_COMPARE_RESULT_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_BSP_COMPARE_RESULT_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_BSP_COMPARE_RESULT_H_
 
-namespace cc {
+namespace viz {
 
 enum BspCompareResult {
   BSP_FRONT,
@@ -16,6 +16,6 @@ enum BspCompareResult {
   BSP_COPLANAR,
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_BSP_COMPARE_RESULT_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_BSP_COMPARE_RESULT_H_
