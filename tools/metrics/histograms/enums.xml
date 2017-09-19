@@ -19466,6 +19466,17 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="active, was active"/>
 </enum>
 
+<enum name="GpuTextureResultR16_L16">
+  <summary>
+    Keeps track of how many users have R16_EXT or/and LUMINANCE_F16, and also
+    how many have none of the two.
+  </summary>
+  <int value="0" label="HAVE_NONE"/>
+  <int value="1" label="HAVE_R16"/>
+  <int value="2" label="HAVE_L16"/>
+  <int value="3" label="HAVE_R16_AND_L16"/>
+</enum>
+
 <enum name="GPUThreeDAPIInfoBarDismissal">
   <summary>Results of user actions when a 3D API info bar is raised.</summary>
   <int value="0" label="Ignored"/>

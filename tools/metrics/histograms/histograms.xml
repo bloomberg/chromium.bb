@@ -25744,6 +25744,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.TextureR16Ext_LuminanceF16" enum="GpuTextureResultR16_L16">
+  <owner>hubbe@chromium.org</owner>
+  <owner>rijubrata.bhaumik@intel.com</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Whether LUMINANCE_F16 and/or R16_EXT texture support is available. Recorded
+    each time a new context group is initialized and extensions are detected.
+  </summary>
+</histogram>
+
 <histogram name="GPU.TextureRG" enum="BooleanAvailable">
   <owner>reveman@chromium.org</owner>
   <summary>
