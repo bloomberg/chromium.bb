@@ -6334,13 +6334,13 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
   SpdySerializedFrame request1(spdy_util_.ConstructSpdyHeaders(
       3, std::move(request_headers1), LOWEST, true));
 
-  SpdySerializedFrame go_away(spdy_util_.ConstructSpdyGoAway(
-      0, ERROR_CODE_HTTP_1_1_REQUIRED, "NTLM not supported over HTTP/2."));
+  SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(3, ERROR_CODE_HTTP_1_1_REQUIRED));
 
   MockWrite writes0[] = {
       CreateMockWrite(request0, 0), CreateMockWrite(request1, 2),
   };
-  MockRead reads0[] = {CreateMockRead(resp, 1), CreateMockRead(go_away, 3)};
+  MockRead reads0[] = {CreateMockRead(resp, 1), CreateMockRead(rst, 3)};
 
   // Retry yet again using HTTP/1.1.
   MockWrite writes1[] = {
