@@ -696,7 +696,8 @@ class ResizingCspVideoSource : public ::libaom_test::DummyVideoSource {
   }
 };
 
-#if defined(DISABLE_TRELLISQ_SEARCH) && DISABLE_TRELLISQ_SEARCH
+#if (defined(DISABLE_TRELLISQ_SEARCH) && DISABLE_TRELLISQ_SEARCH) || \
+    CONFIG_INTRA_EDGE
 TEST_P(ResizeCspTest, DISABLED_TestResizeCspWorks) {
 #else
 TEST_P(ResizeCspTest, TestResizeCspWorks) {

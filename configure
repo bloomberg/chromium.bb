@@ -512,6 +512,7 @@ post_process_cmdline() {
     soft_enable ext_tx
     soft_enable cdef
     soft_enable ext_intra
+    soft_enable intra_edge
     soft_enable mv_compress
     soft_enable ext_refs
     soft_enable dual_filter
