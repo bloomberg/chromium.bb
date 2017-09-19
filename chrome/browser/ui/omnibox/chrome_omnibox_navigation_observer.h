@@ -74,9 +74,15 @@ class ChromeOmniboxNavigationObserver : public OmniboxNavigationObserver,
   // the broken engine again.
   void On404();
 
+ protected:
+  // Creates/displays the alternate nav infobar.  Overridden in tests.
+  virtual void CreateAlternateNavInfoBar();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeOmniboxNavigationObserverTest,
                            DeleteBrokenCustomSearchEngines);
+  FRIEND_TEST_ALL_PREFIXES(ChromeOmniboxNavigationObserverTest,
+                           AlternateNavInfoBar);
 
   enum FetchState {
     FETCH_NOT_COMPLETE,
