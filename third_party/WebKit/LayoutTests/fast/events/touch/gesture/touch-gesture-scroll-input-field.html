@@ -141,8 +141,8 @@
             shouldBe('container.scrollTop', '0');
 
             eventSender.gestureScrollBegin(gestureX, gestureY);
-            eventSender.gestureScrollUpdate(0, -30, true);
-            eventSender.gestureScrollUpdate(0, -30, true);
+            eventSender.gestureScrollUpdate(0, -30);
+            eventSender.gestureScrollUpdate(0, -30);
             eventSender.gestureScrollEnd(0, 0);
 
             debug("Vertically flinging input text should scroll the containing div the specified amount");
@@ -162,7 +162,7 @@
 
             eventSender.gestureScrollBegin(gestureX, gestureY);
             eventSender.gestureScrollUpdate(-30, 0);
-            eventSender.gestureScrollUpdate(-30, 0, true);
+            eventSender.gestureScrollUpdate(-30, 0);
             eventSender.gestureScrollEnd(0, 0);
 
             shouldBe('box.scrollLeft', '0');

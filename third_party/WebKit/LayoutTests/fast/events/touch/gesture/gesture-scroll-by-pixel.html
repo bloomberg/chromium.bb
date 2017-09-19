@@ -33,9 +33,9 @@
 function gestureScroll()
 {
     eventSender.gestureScrollBegin("touchpad", 10, 20);
-    eventSender.gestureScrollUpdate("touchpad", 0, -100, false, "Pixels");
-    eventSender.gestureScrollUpdate("touchpad", 0, -215, false, "Pixels");
-    eventSender.gestureScrollUpdate("touchpad", 0, 20, false, "Pixels");
+    eventSender.gestureScrollUpdate("touchpad", 0, -100, "Pixels");
+    eventSender.gestureScrollUpdate("touchpad", 0, -215, "Pixels");
+    eventSender.gestureScrollUpdate("touchpad", 0, 20, "Pixels");
     eventSender.gestureScrollEnd("touchpad", 0, 0);
 
     shouldBecomeEqual("document.scrollingElement.scrollTop", "295", finishJSTest, 1000);

@@ -33,9 +33,9 @@
 function gestureScroll()
 {
     eventSender.gestureScrollBegin("touchpad", 10, 20);
-    eventSender.gestureScrollUpdate("touchpad", 0, -1, false, "Page");
-    eventSender.gestureScrollUpdate("touchpad", 0, -2, false, "Page");
-    eventSender.gestureScrollUpdate("touchpad", 0, 1, false, "Page");
+    eventSender.gestureScrollUpdate("touchpad", 0, -1, "Page");
+    eventSender.gestureScrollUpdate("touchpad", 0, -2, "Page");
+    eventSender.gestureScrollUpdate("touchpad", 0, 1, "Page");
     eventSender.gestureScrollEnd("touchpad", 0, 0);
 
     // see kMinFractionToStepWhenPaging in ScrollableArea.cppP

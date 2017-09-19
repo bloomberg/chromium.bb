@@ -57,8 +57,6 @@ class CC_EXPORT ScrollState {
   bool is_ending() const { return data_.is_ending; }
   void set_is_ending(bool is_ending) { data_.is_ending = is_ending; }
 
-  // True if this scroll is allowed to bubble upwards.
-  bool should_propagate() const { return data_.should_propagate; }
   // True if the user interacts directly with the screen, e.g., via touch.
   bool is_direct_manipulation() const { return data_.is_direct_manipulation; }
   void set_is_direct_manipulation(bool is_direct_manipulation) {

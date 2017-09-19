@@ -122,7 +122,6 @@ class WebGestureEvent : public WebInputEvent {
       // determining whether the observed scroll update sequence captures
       // the entirety of the generative motion.
       bool previous_update_in_sequence_prevented;
-      bool prevent_propagation;
       InertialPhaseState inertial_phase;
       // Default initialized to ScrollUnits::PrecisePixels.
       ScrollUnits delta_units;
@@ -203,14 +202,6 @@ class WebGestureEvent : public WebInputEvent {
   // Sets any scaled values to be their computed values and sets |frame_scale_|
   // back to 1 and |frame_translate_| X and Y coordinates back to 0.
   BLINK_PLATFORM_EXPORT void FlattenTransform();
-
-  bool PreventPropagation() const {
-    // TODO(tdresser) Once we've decided if we're getting rid of scroll
-    // chaining, we should remove all scroll chaining related logic. See
-    // crbug.com/526462 for details.
-    DCHECK(type_ == WebInputEvent::kGestureScrollUpdate);
-    return true;
-  }
 
   bool IsScrollEvent() const {
     switch (type_) {

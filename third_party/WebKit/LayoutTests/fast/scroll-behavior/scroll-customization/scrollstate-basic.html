@@ -25,7 +25,6 @@ if ('ScrollState' in window) {
     assert_equals(scrollState.isBeginning, false);
     assert_equals(scrollState.isEnding, false);
     assert_equals(scrollState.fromUserInput, false);
-    assert_equals(scrollState.shouldPropagate, true);
   }, "Empty constructor behaves correctly.");
 
   test(function() {
@@ -39,7 +38,6 @@ if ('ScrollState' in window) {
       isBeginning: true,
       isInInertialPhase: true,
       isEnding: true,
-      shouldPropagate: false,
       fromUserInput: true,
       isDirectManipulation: true,
       deltaGranularity: 148.3
@@ -54,7 +52,6 @@ if ('ScrollState' in window) {
     assert_equals(scrollState.isBeginning, init.isBeginning);
     assert_equals(scrollState.inInertialPhase, init.isInInertialPhase);
     assert_equals(scrollState.isEnding, init.isEnding);
-    assert_equals(scrollState.shouldPropagate, init.shouldPropagate);
     assert_equals(scrollState.fromUserInput, init.fromUserInput);
     assert_equals(scrollState.isDirectManipulation, init.isDirectManipulation);
     assert_equals(scrollState.deltaGranularity, init.deltaGranularity);

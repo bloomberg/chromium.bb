@@ -18,7 +18,6 @@
     readonly attribute boolean isBeginning;
     readonly attribute boolean inInertialPhase;
     readonly attribute boolean isEnding;
-    readonly attribute boolean shouldPropagate;
     readonly attribute boolean fromUserInput;
     readonly attribute boolean isDirectManipulation;
     readonly attribute double deltaGranularity;

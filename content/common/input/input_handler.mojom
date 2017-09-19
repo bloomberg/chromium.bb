@@ -73,7 +73,6 @@ struct ScrollUpdate {
   float velocity_x;
   float velocity_y;
   bool previous_update_in_sequence_prevented;
-  bool prevent_propagation;
 };
 
 struct ScrollData {

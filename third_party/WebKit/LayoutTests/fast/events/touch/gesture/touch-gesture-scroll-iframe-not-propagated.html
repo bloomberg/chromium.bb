@@ -71,11 +71,10 @@ function firstGestureScroll()
 
     debug("first gesture");
     eventSender.gestureScrollBegin(10, 72);
-    // Prevent scroll to propagate by passing true for third parameter
-    eventSender.gestureScrollUpdate(0, -700, true);
-    eventSender.gestureScrollUpdate(0, -100, true);
-    eventSender.gestureScrollUpdate(0, -70, true);
-    eventSender.gestureScrollUpdate(0, -10, true);
+    eventSender.gestureScrollUpdate(0, -700);
+    eventSender.gestureScrollUpdate(0, -100);
+    eventSender.gestureScrollUpdate(0, -70);
+    eventSender.gestureScrollUpdate(0, -10);
     eventSender.gestureScrollEnd(0, 0);
 
     // Make sure the actual iframe got fully scrolled

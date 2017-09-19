@@ -38,7 +38,6 @@ class CC_EXPORT ScrollStateData {
   bool is_in_inertial_phase;
   bool is_ending;
 
-  bool should_propagate;
   bool from_user_input;
 
   // Whether the scroll sequence has had any delta consumed, in the

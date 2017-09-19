@@ -77,11 +77,10 @@ function firstGestureScroll()
     shouldBe('iframeScrollingElement.scrollHeight - iframeScrollingElement.scrollTop', 'iframe.clientHeight');
 
     eventSender.gestureScrollBegin(10, 72);
-    // Prevent scroll to propagate by passing true for third parameter
-    eventSender.gestureScrollUpdate(0, -20, true);  
-    eventSender.gestureScrollUpdate(0, -18, true);
-    eventSender.gestureScrollUpdate(0, -15, true);
-    eventSender.gestureScrollUpdate(0, -10, true);
+    eventSender.gestureScrollUpdate(0, -20);  
+    eventSender.gestureScrollUpdate(0, -18);
+    eventSender.gestureScrollUpdate(0, -15);
+    eventSender.gestureScrollUpdate(0, -10);
     eventSender.gestureScrollEnd(0, 0);
 
     amountToScroll = movedbox.scrollHeight - movedbox.clientHeight;
