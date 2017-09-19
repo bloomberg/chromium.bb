@@ -7,8 +7,6 @@
 
 #include <string>
 
-// TODO(crbug.com/760946): Write unit tests for this function.
-
 namespace payments {
 
 class PaymentDetails;
