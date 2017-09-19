@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include <queue>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
@@ -57,9 +57,9 @@ class MEDIA_GPU_EXPORT FakeVideoDecodeAccelerator
   gfx::Size frame_buffer_size_;
 
   // Picture buffer ids that are available for putting fake frames in.
-  std::queue<int> free_output_buffers_;
+  base::queue<int> free_output_buffers_;
   // BitstreamBuffer ids for buffers that contain new data to decode.
-  std::queue<int> queued_bitstream_ids_;
+  base::queue<int> queued_bitstream_ids_;
 
   bool flushing_;
 

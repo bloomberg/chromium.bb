@@ -6,9 +6,9 @@
 #define MEDIA_BLINK_BUFFERED_DATA_SOURCE_HOST_IMPL_H_
 
 #include <stdint.h>
-#include <deque>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
@@ -85,7 +85,7 @@ class MEDIA_BLINK_EXPORT BufferedDataSourceHostImpl
 
   // Contains how much we had downloaded at a given time.
   // Pruned to contain roughly the last 10 seconds of data.
-  std::deque<std::pair<base::TimeTicks, uint64_t>> download_history_;
+  base::circular_deque<std::pair<base::TimeTicks, uint64_t>> download_history_;
   base::Closure progress_cb_;
 
   base::TickClock* tick_clock_;

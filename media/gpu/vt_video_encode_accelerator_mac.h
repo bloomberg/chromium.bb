@@ -5,10 +5,10 @@
 #ifndef MEDIA_GPU_VT_VIDEO_ENCODE_ACCELERATOR_MAC_H_
 #define MEDIA_GPU_VT_VIDEO_ENCODE_ACCELERATOR_MAC_H_
 
-#include <deque>
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -111,10 +111,11 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   webrtc::BitrateAdjuster bitrate_adjuster_;
 
   // Bitstream buffers ready to be used to return encoded output as a FIFO.
-  std::deque<std::unique_ptr<BitstreamBufferRef>> bitstream_buffer_queue_;
+  base::circular_deque<std::unique_ptr<BitstreamBufferRef>>
+      bitstream_buffer_queue_;
 
   // EncodeOutput needs to be copied into a BitstreamBufferRef as a FIFO.
-  std::deque<std::unique_ptr<EncodeOutput>> encoder_output_queue_;
+  base::circular_deque<std::unique_ptr<EncodeOutput>> encoder_output_queue_;
 
   // Our original calling task runner for the child thread.
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;

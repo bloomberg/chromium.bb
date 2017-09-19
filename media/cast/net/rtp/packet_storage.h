@@ -8,8 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "media/cast/net/pacing/paced_sender.h"
 
@@ -34,7 +33,7 @@ class PacketStorage {
   size_t GetNumberOfStoredFrames() const;
 
  private:
-  std::deque<SendPacketVector> frames_;
+  base::circular_deque<SendPacketVector> frames_;
   FrameId first_frame_id_in_list_;
 
   // The number of frames whose packets have been released, but the entry in the

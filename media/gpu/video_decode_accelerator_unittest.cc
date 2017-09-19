@@ -21,7 +21,6 @@
 #include <sys/types.h>
 
 #include <algorithm>
-#include <deque>
 #include <map>
 #include <memory>
 #include <tuple>

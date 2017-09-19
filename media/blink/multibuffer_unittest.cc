@@ -5,12 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/circular_deque.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
@@ -115,7 +115,7 @@ class FakeMultiBufferDataProvider : public MultiBuffer::DataProvider {
   }
 
  private:
-  std::deque<scoped_refptr<DataBuffer>> fifo_;
+  base::circular_deque<scoped_refptr<DataBuffer>> fifo_;
   MultiBufferBlockId pos_;
   int32_t blocks_until_deferred_;
   int32_t max_blocks_after_defer_;

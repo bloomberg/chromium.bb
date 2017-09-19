@@ -8,9 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
-
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -278,7 +277,7 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   int out_of_order_frame_logs_ = 0;
 
   // Queue of incoming frames waiting for rendering.
-  using VideoFrameQueue = std::deque<ReadyFrame>;
+  using VideoFrameQueue = base::circular_deque<ReadyFrame>;
   VideoFrameQueue frame_queue_;
 
   // Handles cadence detection and frame cadence assignments.

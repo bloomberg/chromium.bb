@@ -4,10 +4,9 @@
 
 #include <stdint.h>
 
-#include <queue>
-
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -121,7 +120,7 @@ class MetadataRecorder : public base::RefCountedThreadSafe<MetadataRecorder> {
     RtpTimeTicks expected_rtp_timestamp;
     base::TimeTicks expected_reference_time;
   };
-  std::queue<Expectation> expectations_;
+  base::queue<Expectation> expectations_;
 
   DISALLOW_COPY_AND_ASSIGN(MetadataRecorder);
 };
@@ -170,7 +169,7 @@ class EndToEndFrameChecker
 
   MediaLog media_log_;
   FFmpegVideoDecoder decoder_;
-  std::queue<scoped_refptr<VideoFrame>> expectations_;
+  base::queue<scoped_refptr<VideoFrame>> expectations_;
   int count_frames_checked_;
 
   DISALLOW_COPY_AND_ASSIGN(EndToEndFrameChecker);

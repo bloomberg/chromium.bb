@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <vector>
 
 #include "media/midi/midi_export.h"

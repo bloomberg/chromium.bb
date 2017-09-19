@@ -17,6 +17,7 @@
 #include <map>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/scoped_comptr.h"
@@ -139,7 +140,7 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
 
   base::TimeTicks first_ref_time_;
 
-  std::queue<TakePhotoCallback> take_photo_callbacks_;
+  base::queue<TakePhotoCallback> take_photo_callbacks_;
 
   base::ThreadChecker thread_checker_;
 

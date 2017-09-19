@@ -12,7 +12,6 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <list>
 #include <memory>
 #include <string>

@@ -10,9 +10,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -252,7 +252,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   size_t cached_h264_header_size_ = 0;
 
   // Video frames ready to be encoded.
-  std::queue<scoped_refptr<VideoFrame>> encoder_input_queue_;
+  base::queue<scoped_refptr<VideoFrame>> encoder_input_queue_;
 
   // Encoder device.
   scoped_refptr<V4L2Device> device_;
@@ -286,7 +286,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // thread.
   std::vector<int> free_image_processor_output_buffers_;
   // Video frames ready to be processed. Only accessed on child thread.
-  std::queue<ImageProcessorInputRecord> image_processor_input_queue_;
+  base::queue<ImageProcessorInputRecord> image_processor_input_queue_;
   // Mapping of int index to fds of image processor output buffer.
   std::vector<std::vector<base::ScopedFD>> image_processor_output_buffer_map_;
 

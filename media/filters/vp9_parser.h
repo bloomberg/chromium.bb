@@ -16,10 +16,10 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#include <deque>
 #include <memory>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_export.h"
@@ -403,7 +403,7 @@ class MEDIA_EXPORT Vp9Parser {
     off_t size = 0;
   };
 
-  std::deque<FrameInfo> ParseSuperframe();
+  base::circular_deque<FrameInfo> ParseSuperframe();
 
   // Returns true and populates |result| with the parsing result if parsing of
   // current frame is finished (possibly unsuccessfully). |fhdr| will only be
@@ -432,7 +432,7 @@ class MEDIA_EXPORT Vp9Parser {
   const bool parsing_compressed_header_;
 
   // FrameInfo for the remaining frames in the current superframe to be parsed.
-  std::deque<FrameInfo> frames_;
+  base::circular_deque<FrameInfo> frames_;
 
   Context context_;
 

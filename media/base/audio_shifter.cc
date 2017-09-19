@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "media/base/audio_bus.h"
 
 namespace media {
@@ -69,7 +70,8 @@ class ClockSmoother {
 
  private:
   base::TimeDelta clock_accuracy_;
-  std::deque<std::pair<base::TimeDelta, base::TimeDelta> > inaccuracies_;
+  base::circular_deque<std::pair<base::TimeDelta, base::TimeDelta>>
+      inaccuracies_;
   base::TimeDelta inaccuracy_sum_;
   base::TimeDelta inaccuracy_delta_;
   base::TimeTicks previous_;

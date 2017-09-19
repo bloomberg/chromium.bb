@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "media/cast/logging/logging_defines.h"
@@ -75,7 +75,7 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
   // to differentiate between video and audio frames, but since the
   // implementation doesn't mix audio and video frame events, RTP timestamp
   // only as key is fine.
-  std::deque<RtcpEventPair> rtcp_events_;
+  base::circular_deque<RtcpEventPair> rtcp_events_;
 
   // Counts how many events have been removed from rtcp_events_.
   uint64_t popped_events_;
@@ -92,7 +92,7 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
   // send_ptrs_[N+1] is always at least kResendDelay frames behind
   // send_ptrs_[N]. Old information is removed so that information
   // for (kNumResends + 1) * kResendDelay frames remain.
-  std::deque<uint64_t> event_levels_for_past_frames_;
+  base::circular_deque<uint64_t> event_levels_for_past_frames_;
 
   // Ensures methods are only called on the main thread.
   base::ThreadChecker thread_checker_;

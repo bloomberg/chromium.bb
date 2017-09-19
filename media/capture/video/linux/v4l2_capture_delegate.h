@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -87,7 +88,7 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
   std::unique_ptr<VideoCaptureDevice::Client> client_;
   base::ScopedFD device_fd_;
 
-  std::queue<VideoCaptureDevice::TakePhotoCallback> take_photo_callbacks_;
+  base::queue<VideoCaptureDevice::TakePhotoCallback> take_photo_callbacks_;
 
   // Vector of BufferTracker to keep track of mmap()ed pointers and their use.
   std::vector<scoped_refptr<BufferTracker>> buffer_tracker_pool_;

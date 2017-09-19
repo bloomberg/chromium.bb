@@ -10,7 +10,6 @@
 #include <climits>
 #include <cstdarg>
 #include <cstdio>
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -18,6 +17,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -527,7 +527,7 @@ class NaivePlayer : public InProcessReceiver,
   // Video playout queue.
   typedef std::pair<base::TimeTicks, scoped_refptr<VideoFrame> >
       VideoQueueEntry;
-  std::deque<VideoQueueEntry> video_playout_queue_;
+  base::circular_deque<VideoQueueEntry> video_playout_queue_;
   base::TimeTicks last_popped_video_playout_time_;
   int64_t num_video_frames_processed_;
 
@@ -536,7 +536,7 @@ class NaivePlayer : public InProcessReceiver,
   // Audio playout queue, synchronized by |audio_lock_|.
   base::Lock audio_lock_;
   typedef std::pair<base::TimeTicks, AudioBus*> AudioQueueEntry;
-  std::deque<AudioQueueEntry> audio_playout_queue_;
+  base::circular_deque<AudioQueueEntry> audio_playout_queue_;
   base::TimeTicks last_popped_audio_playout_time_;
   int64_t num_audio_frames_processed_;
 

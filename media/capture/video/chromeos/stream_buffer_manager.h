@@ -5,6 +5,7 @@
 #ifndef MEDIA_CAPTURE_VIDEO_CHROMEOS_STREAM_BUFFER_MANAGER_H_
 #define MEDIA_CAPTURE_VIDEO_CHROMEOS_STREAM_BUFFER_MANAGER_H_
 
+#include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
 #include "media/capture/video/chromeos/camera_device_delegate.h"
 #include "media/capture/video/chromeos/mojo/arc_camera3.mojom.h"
@@ -133,7 +134,7 @@ class CAPTURE_EXPORT StreamBufferManager final
     std::vector<std::unique_ptr<gfx::GpuMemoryBuffer>> buffers;
     // The free buffers of this stream.  The queue stores indices into the
     // |buffers| vector.
-    std::queue<size_t> free_buffers;
+    base::queue<size_t> free_buffers;
   };
 
   // The stream context of the preview stream.

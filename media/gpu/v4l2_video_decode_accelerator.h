@@ -14,10 +14,10 @@
 
 #include <list>
 #include <memory>
-#include <queue>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -479,7 +479,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // picture buffers.
   bool reset_pending_;
   // Input queue for decoder_thread_: BitstreamBuffers in.
-  std::queue<linked_ptr<BitstreamBufferRef>> decoder_input_queue_;
+  base::queue<linked_ptr<BitstreamBufferRef>> decoder_input_queue_;
   // For H264 decode, hardware requires that we send it frame-sized chunks.
   // We'll need to parse the stream.
   std::unique_ptr<H264Parser> decoder_h264_parser_;
@@ -496,7 +496,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   //
 
   // Completed decode buffers.
-  std::queue<int> input_ready_queue_;
+  base::queue<int> input_ready_queue_;
 
   // Input buffer state.
   bool input_streamon_;
@@ -523,7 +523,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   size_t output_planes_count_;
 
   // Pictures that are ready but not sent to PictureReady yet.
-  std::queue<PictureRecord> pending_picture_ready_;
+  base::queue<PictureRecord> pending_picture_ready_;
 
   // The number of pictures that are sent to PictureReady and will be cleared.
   int picture_clearing_count_;
@@ -577,7 +577,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // IDs of bitstream buffers sent to image processor to process. After a
   // buffer is processed, it will sent to render if the id is in this
   // queue. If the id is not in this queue, the buffer will be dropped.
-  std::queue<int> image_processor_bitstream_buffer_ids_;
+  base::queue<int> image_processor_bitstream_buffer_ids_;
 
   // Input format V4L2 fourccs this class supports.
   static const uint32_t supported_input_fourccs_[];

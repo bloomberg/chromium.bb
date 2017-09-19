@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "media/midi/midi_export.h"
 
@@ -64,7 +64,7 @@ class MIDI_EXPORT MidiMessageQueue {
   void Get(std::vector<uint8_t>* message);
 
  private:
-  std::deque<uint8_t> queue_;
+  base::circular_deque<uint8_t> queue_;
   std::vector<uint8_t> next_message_;
   const bool allow_running_status_;
   DISALLOW_COPY_AND_ASSIGN(MidiMessageQueue);

@@ -10,10 +10,10 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -140,7 +140,7 @@ class RenderingHelper {
     int frames_to_drop;
 
     // The video frames pending for rendering.
-    std::queue<scoped_refptr<VideoFrameTexture>> pending_frames;
+    base::queue<scoped_refptr<VideoFrameTexture>> pending_frames;
 
     RenderedVideo();
     RenderedVideo(const RenderedVideo& other);

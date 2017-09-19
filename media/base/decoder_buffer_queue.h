@@ -7,8 +7,7 @@
 
 #include <stddef.h>
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -58,7 +57,7 @@ class MEDIA_EXPORT DecoderBufferQueue {
   size_t data_size() const { return data_size_; }
 
  private:
-  typedef std::deque<scoped_refptr<DecoderBuffer> > Queue;
+  using Queue = base::circular_deque<scoped_refptr<DecoderBuffer>>;
   Queue queue_;
 
   // A subset of |queue_| that contains buffers that are in strictly

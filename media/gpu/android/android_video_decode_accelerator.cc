@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -1346,7 +1347,7 @@ void AndroidVideoDecodeAccelerator::Destroy() {
   client_ = nullptr;
 
   // We don't want to queue more inputs while draining.
-  std::queue<BitstreamRecord>().swap(pending_bitstream_records_);
+  base::queue<BitstreamRecord>().swap(pending_bitstream_records_);
   StartCodecDrain(DRAIN_FOR_DESTROY);
 }
 

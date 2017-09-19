@@ -485,6 +485,21 @@ TEST(CircularDeque, IteratorIntegerOps) {
   }
 }
 
+TEST(CircularDeque, IteratorArrayAccess) {
+  circular_deque<int> q = MakeSequence(10);
+
+  circular_deque<int>::iterator begin = q.begin();
+  EXPECT_EQ(0, begin[0]);
+  EXPECT_EQ(9, begin[9]);
+
+  circular_deque<int>::iterator end = q.end();
+  EXPECT_EQ(0, end[-10]);
+  EXPECT_EQ(9, end[-1]);
+
+  begin[0] = 100;
+  EXPECT_EQ(100, end[-10]);
+}
+
 TEST(CircularDeque, ReverseIterator) {
   circular_deque<int> q;
   q.push_back(4);

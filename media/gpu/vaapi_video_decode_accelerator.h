@@ -14,10 +14,10 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <queue>
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -221,7 +221,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   };
 
   // Queue for available PictureBuffers (picture_buffer_ids).
-  typedef std::queue<linked_ptr<InputBuffer>> InputBuffers;
+  using InputBuffers = base::queue<linked_ptr<InputBuffer>>;
   InputBuffers input_buffers_;
   // Signalled when input buffers are queued onto the input_buffers_ queue.
   base::ConditionVariable input_ready_;
@@ -230,7 +230,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   linked_ptr<InputBuffer> curr_input_buffer_;
 
   // Queue for incoming output buffers (texture ids).
-  typedef std::queue<int32_t> OutputBuffers;
+  using OutputBuffers = base::queue<int32_t>;
   OutputBuffers output_buffers_;
 
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
@@ -261,8 +261,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // requests output, we'll store the request on pending_output_cbs_ queue for
   // later and run it once the client gives us more textures
   // via ReusePictureBuffer().
-  typedef base::Callback<void(VaapiPicture*)> OutputCB;
-  std::queue<OutputCB> pending_output_cbs_;
+  using OutputCB = base::Callback<void(VaapiPicture*)>;
+  base::queue<OutputCB> pending_output_cbs_;
 
   // ChildThread's task runner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

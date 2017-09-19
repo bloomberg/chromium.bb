@@ -6,10 +6,10 @@
 #include <string.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "media/base/test_data_util.h"
@@ -93,7 +93,7 @@ class H264DecoderTest : public ::testing::Test {
   MockH264Accelerator accelerator_;
 
  private:
-  std::queue<std::string> input_frame_files_;
+  base::queue<std::string> input_frame_files_;
   std::string bitstream_;
 };
 

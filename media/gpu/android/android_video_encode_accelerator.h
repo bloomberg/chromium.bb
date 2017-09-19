@@ -10,10 +10,10 @@
 
 #include <list>
 #include <memory>
-#include <queue>
 #include <tuple>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -85,8 +85,8 @@ class MEDIA_GPU_EXPORT AndroidVideoEncodeAccelerator
 
   // Frames waiting to be passed to the codec, queued until an input buffer is
   // available.  Each element is a tuple of <Frame, key_frame, enqueue_time>.
-  typedef std::queue<std::tuple<scoped_refptr<VideoFrame>, bool, base::Time>>
-      PendingFrames;
+  using PendingFrames =
+      base::queue<std::tuple<scoped_refptr<VideoFrame>, bool, base::Time>>;
   PendingFrames pending_frames_;
 
   // Repeating timer responsible for draining pending IO to the codec.

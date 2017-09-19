@@ -9,10 +9,10 @@
 
 #include <list>
 #include <map>
-#include <queue>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -283,7 +283,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // This keeps the free picture buffer ids which can be used for sending
   // decoded frames to the client.
-  std::queue<int32_t> free_picture_ids_;
+  base::queue<int32_t> free_picture_ids_;
 
   // The low-level decoder which Android SDK provides.
   std::unique_ptr<MediaCodecBridge> media_codec_;
@@ -310,7 +310,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // Encoded bitstream buffers to be passed to media codec, queued until an
   // input buffer is available.
-  std::queue<BitstreamRecord> pending_bitstream_records_;
+  base::queue<BitstreamRecord> pending_bitstream_records_;
 
   // A map of presentation timestamp to bitstream buffer id for the bitstream
   // buffers that have been submitted to the decoder but haven't yet produced an

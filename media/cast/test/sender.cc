@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <utility>
 
 #include "base/at_exit.h"

@@ -5,13 +5,13 @@
 #ifndef MEDIA_FILTERS_DECODER_STREAM_H_
 #define MEDIA_FILTERS_DECODER_STREAM_H_
 
-#include <deque>
 #include <list>
 #include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
@@ -248,12 +248,12 @@ class MEDIA_EXPORT DecoderStream {
 
   // Stores buffers that might be reused if the decoder fails right after
   // Initialize().
-  std::deque<scoped_refptr<DecoderBuffer>> pending_buffers_;
+  base::circular_deque<scoped_refptr<DecoderBuffer>> pending_buffers_;
 
   // Stores buffers that are guaranteed to be fed to the decoder before fetching
   // more from the demuxer stream. All buffers in this queue first were in
   // |pending_buffers_|.
-  std::deque<scoped_refptr<DecoderBuffer>> fallback_buffers_;
+  base::circular_deque<scoped_refptr<DecoderBuffer>> fallback_buffers_;
 
   // TODO(tguilbert): support config changes during decoder fallback, see
   // crbug.com/603713

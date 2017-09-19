@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_ANDROID_MEDIA_CODEC_LOOP_H_
 #define MEDIA_BASE_ANDROID_MEDIA_CODEC_LOOP_H_
 
-#include <deque>
 #include <memory>
 #include <utility>
 #include <vector>

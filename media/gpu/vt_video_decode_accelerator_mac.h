@@ -9,10 +9,10 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 
 #include <VideoToolbox/VideoToolbox.h>
 
+#include "base/containers/queue.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -202,10 +202,10 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
 
   // Queue of pending flush tasks. This is used to drop frames when a reset
   // is pending.
-  std::queue<TaskType> pending_flush_tasks_;
+  base::queue<TaskType> pending_flush_tasks_;
 
   // Queue of tasks to complete in the GPU thread.
-  std::queue<Task> task_queue_;
+  base::queue<Task> task_queue_;
 
   // Queue of decoded frames in presentation order.
   std::priority_queue<linked_ptr<Frame>,

@@ -5,8 +5,7 @@
 #ifndef MEDIA_REMOTING_FAKE_MEDIA_RESOURCE_H_
 #define MEDIA_REMOTING_FAKE_MEDIA_RESOURCE_H_
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_resource.h"
@@ -35,7 +34,7 @@ class FakeDemuxerStream : public DemuxerStream {
   void CreateFakeFrame(size_t size, bool key_frame, int pts_ms);
 
  private:
-  using BufferQueue = std::deque<scoped_refptr<DecoderBuffer>>;
+  using BufferQueue = base::circular_deque<scoped_refptr<DecoderBuffer>>;
   BufferQueue buffer_queue_;
   ReadCB pending_read_cb_;
   Type type_;

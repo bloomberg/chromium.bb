@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -368,7 +369,7 @@ Vp9Parser::ContextRefreshCallback Vp9Parser::GetContextRefreshCb(
 }
 
 // Annex B Superframes
-std::deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
+base::circular_deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
   const uint8_t* stream = stream_;
   off_t bytes_left = bytes_left_;
 
@@ -377,7 +378,7 @@ std::deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
   bytes_left_ = 0;
 
   if (bytes_left < 1)
-    return std::deque<FrameInfo>();
+    return base::circular_deque<FrameInfo>();
 
   // If this is a superframe, the last byte in the stream will contain the
   // superframe marker. If not, the whole buffer contains a single frame.
@@ -396,18 +397,18 @@ std::deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
   off_t index_size = 2 + mag * num_frames;
 
   if (bytes_left < index_size)
-    return std::deque<FrameInfo>();
+    return base::circular_deque<FrameInfo>();
 
   const uint8_t* index_ptr = stream + bytes_left - index_size;
   if (marker != *index_ptr)
-    return std::deque<FrameInfo>();
+    return base::circular_deque<FrameInfo>();
 
   ++index_ptr;
   bytes_left -= index_size;
 
   // Parse frame information contained in the index and add a pointer to and
   // size of each frame to frames.
-  std::deque<FrameInfo> frames;
+  base::circular_deque<FrameInfo> frames;
   for (size_t i = 0; i < num_frames; ++i) {
     uint32_t size = 0;
     for (size_t j = 0; j < mag; ++j) {
@@ -417,7 +418,7 @@ std::deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSuperframe() {
 
     if (base::checked_cast<off_t>(size) > bytes_left) {
       DVLOG(1) << "Not enough data in the buffer for frame " << i;
-      return std::deque<FrameInfo>();
+      return base::circular_deque<FrameInfo>();
     }
 
     frames.push_back(FrameInfo(stream, size));

@@ -82,7 +82,11 @@ class AdaptiveCongestionControl : public CongestionControl {
   const int max_bitrate_configured_;
   const int min_bitrate_configured_;
   const double max_frame_rate_;
+
+  // This can not be a base::circular_deque because the AckFrame implementation
+  // preserves a FrameStats* pointing inside the deque across mutations.
   std::deque<FrameStats> frame_stats_;
+
   FrameId last_frame_stats_;
   // This is the latest known frame that all previous frames (having smaller
   // |frame_id|) and this frame were acked by receiver.

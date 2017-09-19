@@ -5,13 +5,13 @@
 #include <stdint.h>
 #include <cstdio>
 #include <cstdlib>
-#include <deque>
 #include <string>
 #include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -59,9 +59,9 @@ class ByteCounter {
  private:
   uint64_t bytes_;
   uint64_t packets_;
-  std::deque<uint64_t> byte_data_;
-  std::deque<uint64_t> packet_data_;
-  std::deque<base::TimeTicks> time_data_;
+  base::circular_deque<uint64_t> byte_data_;
+  base::circular_deque<uint64_t> packet_data_;
+  base::circular_deque<base::TimeTicks> time_data_;
 };
 
 namespace {

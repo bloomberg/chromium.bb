@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <queue>
 #include <string>
 #include <utility>
 
@@ -16,6 +15,7 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
@@ -701,8 +701,8 @@ class VideoFrameQualityValidator
   const base::Closure flush_complete_cb_;
   const base::Closure decode_error_cb_;
   State decoder_state_;
-  std::queue<scoped_refptr<VideoFrame>> original_frames_;
-  std::queue<scoped_refptr<DecoderBuffer>> decode_buffers_;
+  base::queue<scoped_refptr<VideoFrame>> original_frames_;
+  base::queue<scoped_refptr<DecoderBuffer>> decode_buffers_;
   std::vector<FrameStats> frame_stats_;
   base::ThreadChecker thread_checker_;
 };
@@ -1289,7 +1289,7 @@ class VEAClient : public VEAClientBase {
   std::unique_ptr<base::RepeatingTimer> input_timer_;
 
   // The timestamps for each frame in the order of CreateFrame() invocation.
-  std::queue<base::TimeDelta> frame_timestamps_;
+  base::queue<base::TimeDelta> frame_timestamps_;
 
   // The last timestamp popped from |frame_timestamps_|.
   base::TimeDelta previous_timestamp_;

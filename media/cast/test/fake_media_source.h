@@ -12,8 +12,7 @@
 
 #include <stdint.h>
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/macros.h"
@@ -160,13 +159,13 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   // Track the timestamp of audio sent to the receiver.
   std::unique_ptr<media::AudioTimestampHelper> audio_sent_ts_;
 
-  std::queue<scoped_refptr<VideoFrame> > video_frame_queue_;
-  std::queue<scoped_refptr<VideoFrame> > inserted_video_frame_queue_;
+  base::queue<scoped_refptr<VideoFrame>> video_frame_queue_;
+  base::queue<scoped_refptr<VideoFrame>> inserted_video_frame_queue_;
   int64_t video_first_pts_;
   bool video_first_pts_set_;
   base::TimeDelta last_video_frame_timestamp_;
 
-  std::queue<AudioBus*> audio_bus_queue_;
+  base::queue<AudioBus*> audio_bus_queue_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FakeMediaSource> weak_factory_;

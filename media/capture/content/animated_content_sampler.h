@@ -5,8 +5,7 @@
 #ifndef MEDIA_CAPTURE_CONTENT_ANIMATED_CONTENT_SAMPLER_H_
 #define MEDIA_CAPTURE_CONTENT_ANIMATED_CONTENT_SAMPLER_H_
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/time/time.h"
 #include "media/capture/capture_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -80,7 +79,7 @@ class CAPTURE_EXPORT AnimatedContentSampler {
     Observation(const gfx::Rect& d, base::TimeTicks e)
         : damage_rect(d), event_time(e) {}
   };
-  typedef std::deque<Observation> ObservationFifo;
+  using ObservationFifo = base::circular_deque<Observation>;
 
   // Adds an observation to |observations_|, and prunes-out the old ones.
   void AddObservation(const gfx::Rect& damage_rect, base::TimeTicks event_time);
