@@ -1118,7 +1118,6 @@ class MetaBuildWrapper(object):
           '--target', target,
           '--target-devices-file', '${SWARMING_BOT_FILE}',
           '--logdog-bin-cmd', '../../bin/logdog_butler',
-          '--logcat-output-file', '${ISOLATED_OUTDIR}/logcats',
           '--store-tombstones']
     elif is_fuchsia and test_type != 'script':
       cmdline = [os.path.join('bin', 'run_%s' % target)]

@@ -413,12 +413,15 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
       for f in flags:
         logging.info('  %s', f)
 
-      with contextlib_ext.Optional(
-          trace_event.trace(str(test)),
-          self._env.trace_output):
-        output = self._delegate.Run(
-            test, device, flags=' '.join(flags),
-            timeout=timeout, retries=0)
+      with local_device_environment.OptionalPerTestLogcat(
+          device, hash(tuple(test)),
+          self._test_instance.should_save_logcat) as logmon:
+        with contextlib_ext.Optional(
+            trace_event.trace(str(test)),
+            self._env.trace_output):
+          output = self._delegate.Run(
+              test, device, flags=' '.join(flags),
+              timeout=timeout, retries=0)
 
       if self._test_instance.enable_xml_result_parsing:
         try:
@@ -431,6 +434,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
               device_tmp_results_file.name,
               str(e))
           gtest_xml = None
+
+      logcat_url = logmon.GetLogcatURL()
 
     for s in self._servers[str(device)]:
       s.Reset()
@@ -451,14 +456,14 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
       results = gtest_test_instance.ParseGTestOutput(
           output, self._test_instance.symbolizer, device.product_cpu_abi)
 
-    # Check whether there are any crashed testcases.
-    self._crashes.update(r.GetName() for r in results
-                         if r.GetType() == base_test_result.ResultType.CRASH)
+    tombstones_url = None
+    for r in results:
+      if self._test_instance.should_save_logcat:
+        r.SetLink('logcat', logcat_url)
 
-    if self._test_instance.store_tombstones:
-      tombstones_url = None
-      for result in results:
-        if result.GetType() == base_test_result.ResultType.CRASH:
+      if r.GetType() == base_test_result.ResultType.CRASH:
+        self._crashes.add(r.GetName())
+        if self._test_instance.store_tombstones:
           if not tombstones_url:
             resolved_tombstones = tombstones.ResolveTombstones(
                 device,
@@ -470,7 +475,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
                 device.serial)
             tombstones_url = logdog_helper.text(
                 stream_name, '\n'.join(resolved_tombstones))
-          result.SetLink('tombstones', tombstones_url)
+          r.SetLink('tombstones', tombstones_url)
 
     tests_stripped_disabled_prefix = set()
     for t in test:

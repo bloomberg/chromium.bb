@@ -22,7 +22,6 @@ from devil.android.tools import system_app
 from devil.utils import reraiser_thread
 from incremental_install import installer
 from pylib import valgrind_tools
-from pylib.android import logdog_logcat_monitor
 from pylib.base import base_test_result
 from pylib.constants import host_paths
 from pylib.instrumentation import instrumentation_test_instance
@@ -440,16 +439,11 @@ class LocalDeviceInstrumentationTestRun(
     time_ms = lambda: int(time.time() * 1e3)
     start_ms = time_ms()
 
-    stream_name = 'logcat_%s_%s_%s' % (
-        test_name.replace('#', '.'),
-        time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
-        device.serial)
-    logmon = logdog_logcat_monitor.LogdogLogcatMonitor(
-        device.adb, stream_name, filter_specs=LOGCAT_FILTERS,
-        deobfuscate_func=self._test_instance.MaybeDeobfuscateLines)
-
-    with contextlib_ext.Optional(
-        logmon, self._test_instance.should_save_logcat):
+    with local_device_environment.OptionalPerTestLogcat(
+        device, test_name.replace('#', '.'),
+        self._test_instance.should_save_logcat,
+        additional_filter_specs=['%s:I' % _TAG],
+        deobfuscate_func=self._test_instance.MaybeDeobfuscateLines) as logmon:
       with _LogTestEndpoints(device, test_name):
         with contextlib_ext.Optional(
             trace_event.trace(test_name),
@@ -871,6 +865,7 @@ class LocalDeviceInstrumentationTestRun(
     timeout *= cls._GetTimeoutScaleFromAnnotations(annotations)
 
     return timeout
+
 
 def _IsRenderTest(test):
   """Determines if a test or list of tests has a RenderTest amongst them."""

@@ -6,6 +6,7 @@
 """Wrapper for adding logdog streaming support to swarming tasks."""
 
 import argparse
+import contextlib
 import logging
 import os
 import signal
@@ -36,9 +37,8 @@ def CommandParser():
                       help='The logdog bin cmd.')
   parser.add_argument('--target-devices-file', required=False,
                       help='The target devices file.')
-  parser.add_argument('--logcat-output-file',
-                      help='The logcat output file.')
   return parser
+
 
 def CreateStopTestsMethod(proc):
   def StopTests(signum, _frame):
@@ -46,48 +46,73 @@ def CreateStopTestsMethod(proc):
     proc.send_signal(signum)
   return StopTests
 
+
+@contextlib.contextmanager
+def NoLeakingProcesses(popen):
+  try:
+    yield popen
+  finally:
+    try:
+      if popen.poll() is None:
+        popen.kill()
+    except OSError:
+      logging.warning('Failed to kill %s. Process may be leaked.',
+                      str(popen.pid))
+
+
 def main():
   parser = CommandParser()
   args, extra_cmd_args = parser.parse_known_args(sys.argv[1:])
 
   logging.basicConfig(level=logging.INFO)
-  with tempfile_ext.NamedTemporaryDirectory() as logcat_output_dir:
-    test_cmd = [
-        os.path.join('bin', 'run_%s' % args.target),
-        '--logcat-output-file',
-        (args.logcat_output_file if args.logcat_output_file
-            else os.path.join(logcat_output_dir, 'logcats')),
-        '--target-devices-file', args.target_devices_file,
-        '-v']
+  test_cmd = [
+      os.path.join('bin', 'run_%s' % args.target),
+      '--target-devices-file', args.target_devices_file,
+      '-v']
+  test_env = dict(os.environ)
+  logdog_cmd = []
 
-    with tempfile_ext.NamedTemporaryDirectory(
-        prefix='tmp_android_logdog_wrapper') as temp_directory:
-      if not os.path.exists(args.logdog_bin_cmd):
-        logging.error(
-            'Logdog binary %s unavailable. Unable to create logdog client',
-            args.logdog_bin_cmd)
-      else:
-        test_cmd += ['--upload-logcats-file']
-        streamserver_uri = 'unix:%s' % os.path.join(temp_directory,
-                                                    'butler.sock')
-        prefix = os.path.join('android', 'swarming', 'logcats',
-                              os.environ.get('SWARMING_TASK_ID'))
+  with tempfile_ext.NamedTemporaryDirectory(
+      prefix='tmp_android_logdog_wrapper') as temp_directory:
+    if not os.path.exists(args.logdog_bin_cmd):
+      logging.error(
+          'Logdog binary %s unavailable. Unable to create logdog client',
+          args.logdog_bin_cmd)
+    else:
+      streamserver_uri = 'unix:%s' % os.path.join(temp_directory,
+                                                  'butler.sock')
+      prefix = os.path.join('android', 'swarming', 'logcats',
+                            os.environ.get('SWARMING_TASK_ID'))
 
-        # Call test_cmdline through logdog butler subcommand.
-        test_cmd = [
-            args.logdog_bin_cmd, '-project', PROJECT,
-            '-output', OUTPUT,
-            '-prefix', prefix,
-            '--service-account-json', SERVICE_ACCOUNT_JSON,
-            '-coordinator-host', COORDINATOR_HOST,
-            'run', '-streamserver-uri', streamserver_uri, '--'] + test_cmd
+      logdog_cmd = [
+          args.logdog_bin_cmd,
+          '-project', PROJECT,
+          '-output', OUTPUT,
+          '-prefix', prefix,
+          '--service-account-json', SERVICE_ACCOUNT_JSON,
+          '-coordinator-host', COORDINATOR_HOST,
+          'serve',
+          '-streamserver-uri', streamserver_uri]
+      test_env.update({
+          'LOGDOG_STREAM_PROJECT': PROJECT,
+          'LOGDOG_STREAM_PREFIX': prefix,
+          'LOGDOG_STREAM_SERVER_PATH': streamserver_uri,
+          'LOGDOG_COORDINATOR_HOST': COORDINATOR_HOST,
+      })
 
-      test_cmd += extra_cmd_args
-      test_proc = subprocess.Popen(test_cmd)
-      with signal_handler.SignalHandler(signal.SIGTERM,
-                                        CreateStopTestsMethod(test_proc)):
-        result = test_proc.wait()
-    return result
+    test_cmd += extra_cmd_args
+
+    with NoLeakingProcesses(subprocess.Popen(logdog_cmd)) as logdog_proc:
+      with NoLeakingProcesses(
+          subprocess.Popen(test_cmd, env=test_env)) as test_proc:
+        with signal_handler.SignalHandler(signal.SIGTERM,
+                                          CreateStopTestsMethod(test_proc)):
+          result = test_proc.wait()
+          logdog_proc.terminate()
+          logdog_proc.wait()
+
+  return result
+
 
 if __name__ == '__main__':
   sys.exit(main())
