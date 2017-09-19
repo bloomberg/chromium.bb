@@ -5884,11 +5884,20 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
   EXPECT_EQ("text=value\n", body);
 }
 
+// This test is flaky on Windows, see https://crbug.com/766378
+#if defined(OS_WIN)
+#define MAYBE_EnsureFrameNavigationEntriesClearedOnMismatch \
+  DISABLED_EnsureFrameNavigationEntriesClearedOnMismatch
+#else
+#define MAYBE_EnsureFrameNavigationEntriesClearedOnMismatch \
+  EnsureFrameNavigationEntriesClearedOnMismatch
+#endif
+
 // Tests that inserting a named subframe into the FrameTree clears any
 // previously existing FrameNavigationEntry objects for the same name.
 // See https://crbug.com/628677.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       EnsureFrameNavigationEntriesClearedOnMismatch) {
+                       MAYBE_EnsureFrameNavigationEntriesClearedOnMismatch) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   NavigationControllerImpl& controller = web_contents->GetController();
