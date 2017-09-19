@@ -884,8 +884,8 @@ ScriptPromise PaymentRequest::abort(ScriptState* script_state) {
 }
 
 ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state) {
-  if (!payment_provider_.is_bound() || can_make_payment_resolver_ ||
-      !script_state->ContextIsValid()) {
+  if (!payment_provider_.is_bound() || show_resolver_ ||
+      can_make_payment_resolver_ || !script_state->ContextIsValid()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kInvalidStateError,
                                            "Cannot query payment request"));
