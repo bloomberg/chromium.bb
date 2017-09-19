@@ -243,6 +243,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   surface_layer_impl->SetDrawsContent(true);
   surface_layer_impl->SetPrimarySurfaceInfo(primary_surface_info);
   surface_layer_impl->SetFallbackSurfaceInfo(fallback_surface_info);
+  surface_layer_impl->SetDefaultBackgroundColor(SK_ColorBLUE);
 
   gfx::Size viewport_size(1000, 1000);
   impl.CalcDrawProps(viewport_size);
@@ -302,9 +303,11 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
             surface_draw_quad1->surface_draw_quad_type);
   EXPECT_EQ(surface_id1, surface_draw_quad1->surface_id);
   EXPECT_EQ(surface_draw_quad2, surface_draw_quad1->fallback_quad);
+  EXPECT_EQ(SK_ColorBLUE, surface_draw_quad1->default_background_color);
   EXPECT_EQ(viz::SurfaceDrawQuadType::FALLBACK,
             surface_draw_quad2->surface_draw_quad_type);
   EXPECT_EQ(surface_id2, surface_draw_quad2->surface_id);
+  EXPECT_EQ(SK_ColorBLUE, surface_draw_quad2->default_background_color);
   // If the device scale factor of the primary and fallback are different then
   // they do not share a SharedQuadState.
   EXPECT_NE(surface_draw_quad1->shared_quad_state,
@@ -314,14 +317,17 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
             surface_draw_quad3->surface_draw_quad_type);
   EXPECT_EQ(surface_id1, surface_draw_quad3->surface_id);
   EXPECT_EQ(nullptr, surface_draw_quad3->fallback_quad);
+  EXPECT_EQ(SK_ColorBLUE, surface_draw_quad3->default_background_color);
 
   EXPECT_EQ(viz::SurfaceDrawQuadType::PRIMARY,
             surface_draw_quad4->surface_draw_quad_type);
   EXPECT_EQ(surface_id1, surface_draw_quad4->surface_id);
+  EXPECT_EQ(SK_ColorBLUE, surface_draw_quad4->default_background_color);
   EXPECT_EQ(surface_draw_quad5, surface_draw_quad4->fallback_quad);
   EXPECT_EQ(viz::SurfaceDrawQuadType::FALLBACK,
             surface_draw_quad5->surface_draw_quad_type);
   EXPECT_EQ(surface_id2, surface_draw_quad5->surface_id);
+  EXPECT_EQ(SK_ColorBLUE, surface_draw_quad5->default_background_color);
   // If the device scale factor of the primary and fallback are the same then
   // they share a SharedQuadState.
   EXPECT_EQ(surface_draw_quad4->shared_quad_state,
@@ -332,7 +338,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
 // SurfaceLayerImpl holds the same surface ID for both the primary
 // and fallback viz::SurfaceInfo.
 TEST(SurfaceLayerImplTest,
-     SurfaceLayerImplEmitsOneDrawQuadsIfPrimaryMatchesFallback) {
+     SurfaceLayerImplEmitsOneDrawQuadIfPrimaryMatchesFallback) {
   LayerTestCommon::LayerImplTest impl;
   SurfaceLayerImpl* surface_layer_impl =
       impl.AddChildToRoot<SurfaceLayerImpl>();
@@ -354,6 +360,7 @@ TEST(SurfaceLayerImplTest,
   surface_layer_impl->SetDrawsContent(true);
   surface_layer_impl->SetPrimarySurfaceInfo(primary_surface_info);
   surface_layer_impl->SetFallbackSurfaceInfo(primary_surface_info);
+  surface_layer_impl->SetDefaultBackgroundColor(SK_ColorBLUE);
 
   gfx::Size viewport_size(1000, 1000);
   impl.CalcDrawProps(viewport_size);
@@ -375,6 +382,7 @@ TEST(SurfaceLayerImplTest,
   EXPECT_EQ(viz::SurfaceDrawQuadType::PRIMARY,
             surface_draw_quad1->surface_draw_quad_type);
   EXPECT_EQ(surface_id1, surface_draw_quad1->surface_id);
+  EXPECT_EQ(SK_ColorBLUE, surface_draw_quad1->default_background_color);
   EXPECT_FALSE(surface_draw_quad1->fallback_quad);
 }
 

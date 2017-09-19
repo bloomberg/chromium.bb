@@ -157,9 +157,9 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   testing::Mock::VerifyAndClearExpectations(ref_factory.get());
 }
 
-// This test verifies that the primary and fallback viz::SurfaceInfo are pushed
-// across from SurfaceLayer to SurfaceLayerImpl.
-TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
+// This test verifies that SurfaceLayer properties are pushed across to
+// SurfaceLayerImpl.
+TEST_F(SurfaceLayerTest, PushProperties) {
   // We use a nice mock here because we are not really interested in calls to
   // MockSurfaceReferenceFactory and we don't want warnings printed.
   scoped_refptr<viz::SurfaceReferenceFactory> ref_factory =
@@ -173,6 +173,8 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
       1.f, gfx::Size(1, 1));
   layer->SetPrimarySurfaceInfo(primary_info);
   layer->SetFallbackSurfaceInfo(primary_info);
+  layer->SetDefaultBackgroundColor(SK_ColorBLUE);
+  layer->SetStretchContentToFillBounds(true);
 
   EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
   EXPECT_EQ(layer_tree_host_->SurfaceLayerIds().size(), 1u);
@@ -196,12 +198,16 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
   // Verify that the primary and fallback SurfaceInfos are pushed through.
   EXPECT_EQ(primary_info, layer_impl->primary_surface_info());
   EXPECT_EQ(primary_info, layer_impl->fallback_surface_info());
+  EXPECT_EQ(SK_ColorBLUE, layer_impl->default_background_color());
+  EXPECT_TRUE(layer_impl->stretch_content_to_fill_bounds());
 
   viz::SurfaceInfo fallback_info(
       viz::SurfaceId(kArbitraryFrameSinkId,
                      viz::LocalSurfaceId(2, base::UnguessableToken::Create())),
       2.f, gfx::Size(10, 10));
   layer->SetFallbackSurfaceInfo(fallback_info);
+  layer->SetDefaultBackgroundColor(SK_ColorGREEN);
+  layer->SetStretchContentToFillBounds(false);
 
   // Verify that fallback surface id is not recorded on the layer tree host as
   // surface synchronization is not enabled.
@@ -216,6 +222,8 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
   // fallback viz::SurfaceInfo is pushed through.
   EXPECT_EQ(primary_info, layer_impl->primary_surface_info());
   EXPECT_EQ(fallback_info, layer_impl->fallback_surface_info());
+  EXPECT_EQ(SK_ColorGREEN, layer_impl->default_background_color());
+  EXPECT_FALSE(layer_impl->stretch_content_to_fill_bounds());
 }
 
 // This test verifies the list of surface ids is correct when there are cloned

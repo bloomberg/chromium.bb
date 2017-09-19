@@ -206,7 +206,8 @@ void FrameGenerator::DrawWindow(viz::RenderPass* pass) {
   quad->SetAll(sqs, bounds_at_origin /* rect */,
                bounds_at_origin /* visible_rect */, true /* needs_blending*/,
                window_manager_surface_info_.id(),
-               viz::SurfaceDrawQuadType::PRIMARY, nullptr);
+               viz::SurfaceDrawQuadType::PRIMARY,
+               SK_ColorWHITE /* default_background_color */, nullptr);
 }
 
 void FrameGenerator::SetNeedsBeginFrame(bool needs_begin_frame) {

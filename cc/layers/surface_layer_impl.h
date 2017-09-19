@@ -34,13 +34,19 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   // display compositor. If surface synchronization is enabled, the display
   // compositor will use the fallback if the primary surface is unavailable
   // at the time of surface aggregation. If surface synchronization is not
-  // enabled, then a fallback surface will not be specified.
+  // enabled, then the primary and fallback surfaces will always match.
   void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info);
   const viz::SurfaceInfo& fallback_surface_info() const {
     return fallback_surface_info_;
   }
 
   void SetStretchContentToFillBounds(bool stretch_content);
+  bool stretch_content_to_fill_bounds() const {
+    return stretch_content_to_fill_bounds_;
+  }
+
+  void SetDefaultBackgroundColor(SkColor background_color);
+  SkColor default_background_color() const { return default_background_color_; }
 
   // LayerImpl overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -67,6 +73,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   viz::SurfaceInfo fallback_surface_info_;
 
   bool stretch_content_to_fill_bounds_ = false;
+  SkColor default_background_color_ = SK_ColorWHITE;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayerImpl);
 };

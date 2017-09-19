@@ -96,6 +96,7 @@ IPC_STRUCT_TRAITS_BEGIN(viz::SurfaceDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(surface_id)
   IPC_STRUCT_TRAITS_MEMBER(surface_draw_quad_type)
+  IPC_STRUCT_TRAITS_MEMBER(default_background_color)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(viz::TextureDrawQuad)

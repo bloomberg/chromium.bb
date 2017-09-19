@@ -10,6 +10,7 @@
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/viz_common_export.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace viz {
 
@@ -24,6 +25,7 @@ class VIZ_COMMON_EXPORT SurfaceDrawQuad : public DrawQuad {
               const gfx::Rect& visible_rect,
               const SurfaceId& surface_id,
               SurfaceDrawQuadType surface_draw_quad_type,
+              SkColor default_background_color,
               SurfaceDrawQuad* fallback_quad);
 
   void SetAll(const SharedQuadState* shared_quad_state,
@@ -32,10 +34,12 @@ class VIZ_COMMON_EXPORT SurfaceDrawQuad : public DrawQuad {
               bool needs_blending,
               const SurfaceId& surface_id,
               SurfaceDrawQuadType surface_draw_quad_type,
+              SkColor default_background_color,
               SurfaceDrawQuad* fallback_quad);
 
   SurfaceId surface_id;
   SurfaceDrawQuadType surface_draw_quad_type;
+  SkColor default_background_color = SK_ColorWHITE;
   const SurfaceDrawQuad* fallback_quad = nullptr;
 
   static const SurfaceDrawQuad* MaterialCast(const DrawQuad* quad);

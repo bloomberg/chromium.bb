@@ -86,6 +86,11 @@ void SurfaceLayer::SetFallbackSurfaceInfo(
   SetNeedsCommit();
 }
 
+void SurfaceLayer::SetDefaultBackgroundColor(SkColor background_color) {
+  default_background_color_ = background_color;
+  SetNeedsPushProperties();
+}
+
 void SurfaceLayer::SetStretchContentToFillBounds(
     bool stretch_content_to_fill_bounds) {
   stretch_content_to_fill_bounds_ = stretch_content_to_fill_bounds;
@@ -126,6 +131,7 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   layer_impl->SetPrimarySurfaceInfo(primary_surface_info_);
   layer_impl->SetFallbackSurfaceInfo(fallback_surface_info_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
+  layer_impl->SetDefaultBackgroundColor(default_background_color_);
 }
 
 void SurfaceLayer::RemoveReference(base::Closure reference_returner) {
