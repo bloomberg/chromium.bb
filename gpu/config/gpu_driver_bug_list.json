@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.30",
+  "version": "10.31",
   "entries": [
     {
       "id": 1,
@@ -786,7 +786,7 @@
       "os": {
         "type": "android"
       },
-      "gl_vendor": "Intel",
+      "gl_vendor": "Intel.*",
       "gl_renderer": "Intel.*BayTrail",
       "features": [
         "disable_chromium_framebuffer_multisample"
@@ -1769,7 +1769,7 @@
       "os": {
         "type": "android"
       },
-      "gl_vendor": "Intel",
+      "gl_vendor": "Intel.*",
       "gl_renderer": ".*Atom.*x5/x7.*",
       "features": [
         "gl_clear_broken"
