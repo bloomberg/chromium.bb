@@ -51,6 +51,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
@@ -1811,6 +1812,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   EXPECT_TRUE(params->GetString("sessionId", &session_id));
   EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
   EXPECT_EQ(attached_id, temp);
+  EXPECT_TRUE(notifications_.empty());
+
+  WebContents::CreateParams create_params(
+      ShellContentBrowserClient::Get()->browser_context(), NULL);
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContents::Create(create_params));
+  EXPECT_TRUE(notifications_.empty());
+
+  web_contents->SetDelegate(this);
+  params = WaitForNotification("Target.targetCreated", true);
+  EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
+  EXPECT_EQ("page", temp);
   EXPECT_TRUE(notifications_.empty());
 
   command_params.reset(new base::DictionaryValue());

@@ -927,6 +927,8 @@ void WebContentsImpl::SetDelegate(WebContentsDelegate* delegate) {
     // Ensure the visible RVH reflects the new delegate's preferences.
     if (view_)
       view_->SetOverscrollControllerEnabled(CanOverscrollContent());
+    if (GetRenderViewHost())
+      RenderFrameDevToolsAgentHost::WebContentsCreated(this);
   }
 }
 
@@ -4854,7 +4856,8 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
 
   for (auto& observer : observers_)
     observer.RenderViewCreated(render_view_host);
-  RenderFrameDevToolsAgentHost::WebContentsCreated(this);
+  if (delegate_)
+    RenderFrameDevToolsAgentHost::WebContentsCreated(this);
 }
 
 void WebContentsImpl::RenderViewReady(RenderViewHost* rvh) {
