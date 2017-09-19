@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/draw_polygon.h"
+#include "components/viz/service/display/draw_polygon.h"
 
 #include <stddef.h>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "cc/base/math_util.h"
 #include "components/viz/common/quads/draw_quad.h"
 
 namespace {
@@ -29,11 +30,11 @@ void PointInterpolate(const gfx::Point3F& from,
 }
 }  // namespace
 
-namespace cc {
+namespace viz {
 
-DrawPolygon::DrawPolygon() {}
+DrawPolygon::DrawPolygon() = default;
 
-DrawPolygon::DrawPolygon(const viz::DrawQuad* original,
+DrawPolygon::DrawPolygon(const DrawQuad* original,
                          const std::vector<gfx::Point3F>& in_points,
                          const gfx::Vector3dF& normal,
                          int draw_order_index)
@@ -53,7 +54,7 @@ DrawPolygon::DrawPolygon(const viz::DrawQuad* original,
 // This takes the original DrawQuad that this polygon should be based on,
 // a visible content rect to make the 4 corner points from, and a transformation
 // to move it and its normal into screen space.
-DrawPolygon::DrawPolygon(const viz::DrawQuad* original_ref,
+DrawPolygon::DrawPolygon(const DrawQuad* original_ref,
                          const gfx::RectF& visible_layer_rect,
                          const gfx::Transform& transform,
                          int draw_order_index)
@@ -70,8 +71,8 @@ DrawPolygon::DrawPolygon(const viz::DrawQuad* original_ref,
   // crossing w = 0. At this point, in the constructor, we know that we're
   // working with a quad, so we can reuse the MathUtil::MapClippedQuad3d
   // function instead of writing a generic polygon version of it.
-  MathUtil::MapClippedQuad3d(transform, send_quad, points,
-                             &num_vertices_in_clipped_quad);
+  cc::MathUtil::MapClippedQuad3d(transform, send_quad, points,
+                                 &num_vertices_in_clipped_quad);
   for (int i = 0; i < num_vertices_in_clipped_quad; i++) {
     points_.push_back(points[i]);
   }
@@ -79,7 +80,7 @@ DrawPolygon::DrawPolygon(const viz::DrawQuad* original_ref,
   ConstructNormal();
 }
 
-DrawPolygon::~DrawPolygon() {}
+DrawPolygon::~DrawPolygon() = default;
 
 std::unique_ptr<DrawPolygon> DrawPolygon::CreateCopy() {
   std::unique_ptr<DrawPolygon> new_polygon(new DrawPolygon());
@@ -345,4 +346,4 @@ void DrawPolygon::ToQuads2D(std::vector<gfx::QuadF>* quads) const {
   }
 }
 
-}  // namespace cc
+}  // namespace viz

@@ -2,31 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/bsp_tree.h"
+#include "components/viz/service/display/bsp_tree.h"
 
 #include <memory>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "cc/base/container_util.h"
-#include "cc/output/bsp_compare_result.h"
-#include "cc/output/draw_polygon.h"
+#include "components/viz/service/display/bsp_compare_result.h"
+#include "components/viz/service/display/draw_polygon.h"
 
-namespace cc {
+namespace viz {
 
 BspNode::BspNode(std::unique_ptr<DrawPolygon> data)
     : node_data(std::move(data)) {}
 
-BspNode::~BspNode() {
-}
+BspNode::~BspNode() = default;
 
 BspTree::BspTree(std::deque<std::unique_ptr<DrawPolygon>>* list) {
   if (list->size() == 0)
     return;
 
-  root_ = std::make_unique<BspNode>(PopFront(list));
+  root_ = std::make_unique<BspNode>(cc::PopFront(list));
   BuildTree(root_.get(), list);
 }
+
+BspTree::~BspTree() = default;
 
 // The idea behind using a deque for BuildTree's input is that we want to be
 // able to place polygons that we've decided aren't splitting plane candidates
@@ -48,7 +49,7 @@ void BspTree::BuildTree(
     std::unique_ptr<DrawPolygon> new_front;
     std::unique_ptr<DrawPolygon> new_back;
     // Time to split this geometry, *it needs to be split by node_data.
-    polygon = PopFront(polygon_list);
+    polygon = cc::PopFront(polygon_list);
     bool is_coplanar;
     node->node_data->SplitPolygon(std::move(polygon), &new_front, &new_back,
                                   &is_coplanar);
@@ -67,13 +68,13 @@ void BspTree::BuildTree(
 
   // Build the back subtree using the front of the back_list as our splitter.
   if (back_list.size() > 0) {
-    node->back_child = std::make_unique<BspNode>(PopFront(&back_list));
+    node->back_child = std::make_unique<BspNode>(cc::PopFront(&back_list));
     BuildTree(node->back_child.get(), &back_list);
   }
 
   // Build the front subtree using the front of the front_list as our splitter.
   if (front_list.size() > 0) {
-    node->front_child = std::make_unique<BspNode>(PopFront(&front_list));
+    node->front_child = std::make_unique<BspNode>(cc::PopFront(&front_list));
     BuildTree(node->front_child.get(), &front_list);
   }
 }
@@ -86,7 +87,4 @@ BspCompareResult BspTree::GetCameraPositionRelative(const DrawPolygon& node) {
   return BSP_BACK;
 }
 
-BspTree::~BspTree() {
-}
-
-}  // namespace cc
+}  // namespace viz

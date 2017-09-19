@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_DIRECT_RENDERER_H_
-#define CC_OUTPUT_DIRECT_RENDERER_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_DIRECT_RENDERER_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_DIRECT_RENDERER_H_
 
 #include <memory>
 #include <vector>
@@ -11,42 +11,42 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "cc/base/filter_operations.h"
-#include "cc/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"
 #include "cc/output/dc_layer_overlay.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/latency/latency_info.h"
+
+namespace cc {
+class FilterOperations;
+class OutputSurface;
+class ScopedResource;
+}  // namespace cc
 
 namespace gfx {
 class ColorSpace;
 }
 
 namespace viz {
+class BspWalkActionDrawPolygon;
+class DrawPolygon;
 class RendererSettings;
 class RenderPass;
-}
-
-namespace cc {
-class DisplayResourceProvider;
-class DrawPolygon;
-class OutputSurface;
-class ScopedResource;
 
 // This is the base class for code shared between the GL and software
 // renderer implementations. "Direct" refers to the fact that it does not
 // delegate rendering to another compositor (see historical DelegatingRenderer
 // for reference).
-class CC_EXPORT DirectRenderer {
+class VIZ_SERVICE_EXPORT DirectRenderer {
  public:
-  DirectRenderer(const viz::RendererSettings* settings,
-                 OutputSurface* output_surface,
-                 DisplayResourceProvider* resource_provider);
+  DirectRenderer(const RendererSettings* settings,
+                 cc::OutputSurface* output_surface,
+                 cc::DisplayResourceProvider* resource_provider);
   virtual ~DirectRenderer();
 
   void Initialize();
@@ -55,9 +55,9 @@ class CC_EXPORT DirectRenderer {
 
   void SetVisible(bool visible);
   void DecideRenderPassAllocationsForFrame(
-      const viz::RenderPassList& render_passes_in_draw_order);
-  bool HasAllocatedResourcesForTesting(viz::RenderPassId render_pass_id) const;
-  void DrawFrame(viz::RenderPassList* render_passes_in_draw_order,
+      const RenderPassList& render_passes_in_draw_order);
+  bool HasAllocatedResourcesForTesting(RenderPassId render_pass_id) const;
+  void DrawFrame(RenderPassList* render_passes_in_draw_order,
                  float device_scale_factor,
                  const gfx::Size& device_viewport_size);
 
@@ -74,15 +74,15 @@ class CC_EXPORT DirectRenderer {
   }
 
   // Public for tests that poke at internals.
-  struct CC_EXPORT DrawingFrame {
+  struct VIZ_SERVICE_EXPORT DrawingFrame {
     DrawingFrame();
     ~DrawingFrame();
     gfx::Rect ComputeScissorRectForRenderPass() const;
 
-    const viz::RenderPassList* render_passes_in_draw_order = nullptr;
-    const viz::RenderPass* root_render_pass = nullptr;
-    const viz::RenderPass* current_render_pass = nullptr;
-    const ScopedResource* current_texture = nullptr;
+    const RenderPassList* render_passes_in_draw_order = nullptr;
+    const RenderPass* root_render_pass = nullptr;
+    const RenderPass* current_render_pass = nullptr;
+    const cc::ScopedResource* current_texture = nullptr;
 
     gfx::Rect root_damage_rect;
     std::vector<gfx::Rect> root_content_bounds;
@@ -91,9 +91,9 @@ class CC_EXPORT DirectRenderer {
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
 
-    OverlayCandidateList overlay_list;
-    CALayerOverlayList ca_layer_overlay_list;
-    DCLayerOverlayList dc_layer_overlay_list;
+    cc::OverlayCandidateList overlay_list;
+    cc::CALayerOverlayList ca_layer_overlay_list;
+    cc::DCLayerOverlayList dc_layer_overlay_list;
   };
 
   void DisableColorChecksForTesting() {
@@ -123,38 +123,37 @@ class CC_EXPORT DirectRenderer {
 
   gfx::Rect DeviceViewportRectInDrawSpace() const;
   gfx::Rect OutputSurfaceRectInDrawSpace() const;
-  void SetScissorStateForQuad(const viz::DrawQuad& quad,
+  void SetScissorStateForQuad(const DrawQuad& quad,
                               const gfx::Rect& render_pass_scissor,
                               bool use_render_pass_scissor);
-  bool ShouldSkipQuad(const viz::DrawQuad& quad,
+  bool ShouldSkipQuad(const DrawQuad& quad,
                       const gfx::Rect& render_pass_scissor);
   void SetScissorTestRectInDrawSpace(const gfx::Rect& draw_space_rect);
 
-  static gfx::Size RenderPassTextureSize(const viz::RenderPass* render_pass);
-  static ResourceProvider::TextureHint RenderPassTextureHint(
-      const viz::RenderPass* render_pass);
+  static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
+  static cc::ResourceProvider::TextureHint RenderPassTextureHint(
+      const RenderPass* render_pass);
 
   void FlushPolygons(std::deque<std::unique_ptr<DrawPolygon>>* poly_list,
                      const gfx::Rect& render_pass_scissor,
                      bool use_render_pass_scissor);
-  void DrawRenderPassAndExecuteCopyRequests(viz::RenderPass* render_pass);
-  void DrawRenderPass(const viz::RenderPass* render_pass);
-  bool UseRenderPass(const viz::RenderPass* render_pass);
+  void DrawRenderPassAndExecuteCopyRequests(RenderPass* render_pass);
+  void DrawRenderPass(const RenderPass* render_pass);
+  bool UseRenderPass(const RenderPass* render_pass);
 
   void DoDrawPolygon(const DrawPolygon& poly,
                      const gfx::Rect& render_pass_scissor,
                      bool use_render_pass_scissor);
 
-  const FilterOperations* FiltersForPass(
-      viz::RenderPassId render_pass_id) const;
-  const FilterOperations* BackgroundFiltersForPass(
-      viz::RenderPassId render_pass_id) const;
+  const cc::FilterOperations* FiltersForPass(RenderPassId render_pass_id) const;
+  const cc::FilterOperations* BackgroundFiltersForPass(
+      RenderPassId render_pass_id) const;
 
   // Private interface implemented by subclasses for use by DirectRenderer.
   virtual bool CanPartialSwap() = 0;
-  virtual viz::ResourceFormat BackbufferFormat() const = 0;
+  virtual ResourceFormat BackbufferFormat() const = 0;
   virtual void BindFramebufferToOutputSurface() = 0;
-  virtual bool BindFramebufferToTexture(const ScopedResource* resource) = 0;
+  virtual bool BindFramebufferToTexture(const cc::ScopedResource* resource) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;
   virtual void PrepareSurfaceForPass(
       SurfaceInitializationMode initialization_mode,
@@ -162,22 +161,21 @@ class CC_EXPORT DirectRenderer {
   // |clip_region| is a (possibly null) pointer to a quad in the same
   // space as the quad. When non-null only the area of the quad that overlaps
   // with clip_region will be drawn.
-  virtual void DoDrawQuad(const viz::DrawQuad* quad,
+  virtual void DoDrawQuad(const DrawQuad* quad,
                           const gfx::QuadF* clip_region) = 0;
   virtual void BeginDrawingFrame() = 0;
   virtual void FinishDrawingFrame() = 0;
   // If a pass contains a single tile draw quad and can be drawn without
   // a render pass (e.g. applying a filter directly to the tile quad)
   // return that quad, otherwise return null.
-  virtual const viz::TileDrawQuad* CanPassBeDrawnDirectly(
-      const viz::RenderPass* pass);
+  virtual const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass);
   virtual void FinishDrawingQuadList() {}
   virtual bool FlippedFramebuffer() const = 0;
   virtual void EnsureScissorTestEnabled() = 0;
   virtual void EnsureScissorTestDisabled() = 0;
   virtual void DidChangeVisibility() = 0;
   virtual void CopyDrawnRenderPass(
-      std::unique_ptr<viz::CopyOutputRequest> request) = 0;
+      std::unique_ptr<CopyOutputRequest> request) = 0;
   virtual void SetEnableDCLayers(bool enable) = 0;
   virtual void GenerateMipmap() = 0;
 
@@ -185,11 +183,11 @@ class CC_EXPORT DirectRenderer {
     return reshape_surface_size_;
   }
 
-  const viz::RendererSettings* const settings_;
-  OutputSurface* const output_surface_;
-  DisplayResourceProvider* const resource_provider_;
+  const RendererSettings* const settings_;
+  cc::OutputSurface* const output_surface_;
+  cc::DisplayResourceProvider* const resource_provider_;
   // This can be replaced by test implementations.
-  std::unique_ptr<OverlayProcessor> overlay_processor_;
+  std::unique_ptr<cc::OverlayProcessor> overlay_processor_;
 
   // Whether it's valid to SwapBuffers with an empty rect. Trivially true when
   // using partial swap.
@@ -208,16 +206,15 @@ class CC_EXPORT DirectRenderer {
   int frames_since_using_dc_layers_ = 0;
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
-  base::flat_map<viz::RenderPassId, std::unique_ptr<ScopedResource>>
+  base::flat_map<RenderPassId, std::unique_ptr<cc::ScopedResource>>
       render_pass_textures_;
   // A map from RenderPass id to the single quad present in and replacing the
   // RenderPass.
-  base::flat_map<viz::RenderPassId, viz::TileDrawQuad>
-      render_pass_bypass_quads_;
+  base::flat_map<RenderPassId, TileDrawQuad> render_pass_bypass_quads_;
 
   // A map from RenderPass id to the filters used when drawing the RenderPass.
-  base::flat_map<viz::RenderPassId, FilterOperations*> render_pass_filters_;
-  base::flat_map<viz::RenderPassId, FilterOperations*>
+  base::flat_map<RenderPassId, cc::FilterOperations*> render_pass_filters_;
+  base::flat_map<RenderPassId, cc::FilterOperations*>
       render_pass_background_filters_;
 
   bool visible_ = false;
@@ -267,6 +264,6 @@ class CC_EXPORT DirectRenderer {
   DISALLOW_COPY_AND_ASSIGN(DirectRenderer);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_DIRECT_RENDERER_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_DIRECT_RENDERER_H_

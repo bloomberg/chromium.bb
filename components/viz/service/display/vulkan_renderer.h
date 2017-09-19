@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_VULKAN_RENDERER_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_VULKAN_RENDERER_H_
 
-#include "cc/output/direct_renderer.h"
+#include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/latency/latency_info.h"
 
@@ -15,7 +15,7 @@ class OutputSurface;
 
 namespace viz {
 
-class VIZ_SERVICE_EXPORT VulkanRenderer : public cc::DirectRenderer {
+class VIZ_SERVICE_EXPORT VulkanRenderer : public DirectRenderer {
  public:
   VulkanRenderer(const RendererSettings* settings,
                  cc::OutputSurface* output_surface,

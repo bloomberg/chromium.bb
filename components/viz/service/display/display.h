@@ -25,7 +25,6 @@
 #include "ui/latency/latency_info.h"
 
 namespace cc {
-class DirectRenderer;
 class DisplayResourceProvider;
 class OutputSurface;
 class RendererSettings;
@@ -40,7 +39,7 @@ class Size;
 }
 
 namespace viz {
-
+class DirectRenderer;
 class DisplayClient;
 class SharedBitmapManager;
 class SoftwareRenderer;
@@ -102,7 +101,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
       const gpu::TextureInUseResponses& responses) override;
 
   bool has_scheduler() const { return !!scheduler_; }
-  cc::DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
+  DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
   size_t stored_latency_info_size_for_testing() const {
     return stored_latency_info_.size();
   }
@@ -136,7 +135,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
   std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
-  std::unique_ptr<cc::DirectRenderer> renderer_;
+  std::unique_ptr<DirectRenderer> renderer_;
   SoftwareRenderer* software_renderer_ = nullptr;
   std::vector<ui::LatencyInfo> stored_latency_info_;
 

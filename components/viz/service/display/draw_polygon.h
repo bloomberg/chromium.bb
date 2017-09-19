@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_DRAW_POLYGON_H_
-#define CC_OUTPUT_DRAW_POLYGON_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_DRAW_POLYGON_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_DRAW_POLYGON_H_
 
+#include <memory>
 #include <vector>
 
-#include "cc/base/math_util.h"
-#include "cc/cc_export.h"
+#include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -17,20 +17,17 @@
 
 namespace viz {
 class DrawQuad;
-}
 
-namespace cc {
-
-class CC_EXPORT DrawPolygon {
+class VIZ_SERVICE_EXPORT DrawPolygon {
  public:
   DrawPolygon();
   ~DrawPolygon();
 
-  DrawPolygon(const viz::DrawQuad* original_ref,
+  DrawPolygon(const DrawQuad* original_ref,
               const std::vector<gfx::Point3F>& in_points,
               const gfx::Vector3dF& normal,
               int draw_order_index = 0);
-  DrawPolygon(const viz::DrawQuad* original_ref,
+  DrawPolygon(const DrawQuad* original_ref,
               const gfx::RectF& visible_layer_rect,
               const gfx::Transform& transform,
               int draw_order_index = 0);
@@ -53,7 +50,7 @@ class CC_EXPORT DrawPolygon {
 
   const std::vector<gfx::Point3F>& points() const { return points_; }
   const gfx::Vector3dF& normal() const { return normal_; }
-  const viz::DrawQuad* original_ref() const { return original_ref_; }
+  const DrawQuad* original_ref() const { return original_ref_; }
   int order_index() const { return order_index_; }
   bool is_split() const { return is_split_; }
   std::unique_ptr<DrawPolygon> CreateCopy();
@@ -80,10 +77,10 @@ class CC_EXPORT DrawPolygon {
   // we need.
   // This DrawQuad is owned by the caller and its lifetime must be preserved
   // as long as this DrawPolygon is alive.
-  const viz::DrawQuad* original_ref_;
+  const DrawQuad* original_ref_;
   bool is_split_;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_DRAW_POLYGON_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_DRAW_POLYGON_H_

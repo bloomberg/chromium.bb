@@ -11,13 +11,21 @@ config("viz_service_implementation") {
 
 viz_component("service") {
   sources = [
+    "display/bsp_tree.cc",
+    "display/bsp_tree.h",
+    "display/bsp_walk_action.cc",
+    "display/bsp_walk_action.h",
     "display/color_lut_cache.cc",
     "display/color_lut_cache.h",
+    "display/direct_renderer.cc",
+    "display/direct_renderer.h",
     "display/display.cc",
     "display/display.h",
     "display/display_client.h",
     "display/display_scheduler.cc",
     "display/display_scheduler.h",
+    "display/draw_polygon.cc",
+    "display/draw_polygon.h",
     "display/dynamic_geometry_binding.cc",
     "display/dynamic_geometry_binding.h",
     "display/geometry_binding.cc",
@@ -183,8 +191,10 @@ viz_component("service") {
 viz_source_set("unit_tests") {
   testonly = true
   sources = [
+    "display/bsp_tree_unittest.cc",
     "display/display_scheduler_unittest.cc",
     "display/display_unittest.cc",
+    "display/draw_polygon_unittest.cc",
     "display/gl_renderer_unittest.cc",
     "display/layer_quad_unittest.cc",
     "display/shader_unittest.cc",
@@ -239,12 +249,14 @@ viz_source_set("unit_tests") {
 viz_source_set("perf_tests") {
   testonly = true
   sources = [
+    "display/bsp_tree_perftest.cc",
     "display/surface_aggregator_perftest.cc",
   ]
 
   deps = [
     ":service",
     "//base",
+    "//cc",
     "//cc:test_support",
     "//cc/base",
     "//components/viz/test:test_support",

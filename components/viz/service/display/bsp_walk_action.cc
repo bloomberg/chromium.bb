@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/bsp_walk_action.h"
+#include "components/viz/service/display/bsp_walk_action.h"
 
 #include <memory>
 #include <vector>
 
-#include "cc/output/direct_renderer.h"
-#include "cc/output/draw_polygon.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/service/display/direct_renderer.h"
+#include "components/viz/service/display/draw_polygon.h"
 
-namespace cc {
+namespace viz {
 
 BspWalkActionDrawPolygon::BspWalkActionDrawPolygon(
     DirectRenderer* renderer,
@@ -19,8 +19,7 @@ BspWalkActionDrawPolygon::BspWalkActionDrawPolygon(
     bool using_scissor_as_optimization)
     : renderer_(renderer),
       render_pass_scissor_(render_pass_scissor),
-      using_scissor_as_optimization_(using_scissor_as_optimization) {
-}
+      using_scissor_as_optimization_(using_scissor_as_optimization) {}
 
 void BspWalkActionDrawPolygon::operator()(DrawPolygon* item) {
   gfx::Transform inverse_transform;
@@ -35,11 +34,10 @@ void BspWalkActionDrawPolygon::operator()(DrawPolygon* item) {
 }
 
 BspWalkActionToVector::BspWalkActionToVector(std::vector<DrawPolygon*>* in_list)
-    : list_(in_list) {
-}
+    : list_(in_list) {}
 
 void BspWalkActionToVector::operator()(DrawPolygon* item) {
   list_->push_back(item);
 }
 
-}  // namespace cc
+}  // namespace viz

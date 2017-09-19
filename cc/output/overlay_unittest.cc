@@ -2629,7 +2629,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   viz::RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
 
-  DirectRenderer::DrawingFrame frame1;
+  viz::DirectRenderer::DrawingFrame frame1;
   frame1.render_passes_in_draw_order = &pass_list;
   frame1.overlay_list.resize(2);
   frame1.overlay_list.front().use_output_surface_for_resource = true;
@@ -2637,7 +2637,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   overlay1.resource_id = resource1;
   overlay1.plane_z_order = 1;
 
-  DirectRenderer::DrawingFrame frame2;
+  viz::DirectRenderer::DrawingFrame frame2;
   frame2.render_passes_in_draw_order = &pass_list;
   frame2.overlay_list.resize(2);
   frame2.overlay_list.front().use_output_surface_for_resource = true;
@@ -2645,7 +2645,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   overlay2.resource_id = resource2;
   overlay2.plane_z_order = 1;
 
-  DirectRenderer::DrawingFrame frame3;
+  viz::DirectRenderer::DrawingFrame frame3;
   frame3.render_passes_in_draw_order = &pass_list;
   frame3.overlay_list.resize(2);
   frame3.overlay_list.front().use_output_surface_for_resource = true;
@@ -2690,7 +2690,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
 
   // No overlays, release the resource.
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
-  DirectRenderer::DrawingFrame frame_no_overlays;
+  viz::DirectRenderer::DrawingFrame frame_no_overlays;
   frame_no_overlays.render_passes_in_draw_order = &pass_list;
   renderer_->set_expect_overlays(false);
   renderer_->SetCurrentFrame(frame_no_overlays);
@@ -2770,7 +2770,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   viz::RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
 
-  DirectRenderer::DrawingFrame frame1;
+  viz::DirectRenderer::DrawingFrame frame1;
   frame1.render_passes_in_draw_order = &pass_list;
   frame1.overlay_list.resize(2);
   frame1.overlay_list.front().use_output_surface_for_resource = true;
@@ -2778,7 +2778,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   overlay1.resource_id = resource1;
   overlay1.plane_z_order = 1;
 
-  DirectRenderer::DrawingFrame frame2;
+  viz::DirectRenderer::DrawingFrame frame2;
   frame2.render_passes_in_draw_order = &pass_list;
   frame2.overlay_list.resize(2);
   frame2.overlay_list.front().use_output_surface_for_resource = true;
@@ -2786,7 +2786,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   overlay2.resource_id = resource2;
   overlay2.plane_z_order = 1;
 
-  DirectRenderer::DrawingFrame frame3;
+  viz::DirectRenderer::DrawingFrame frame3;
   frame3.render_passes_in_draw_order = &pass_list;
   frame3.overlay_list.resize(2);
   frame3.overlay_list.front().use_output_surface_for_resource = true;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/direct_renderer.h"
+#include "components/viz/service/display/direct_renderer.h"
 
 #include <stddef.h>
 
@@ -13,14 +13,15 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/filter_operations.h"
 #include "cc/base/math_util.h"
-#include "cc/output/bsp_tree.h"
-#include "cc/output/bsp_walk_action.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/service/display/bsp_tree.h"
+#include "components/viz/service/display/bsp_walk_action.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -71,18 +72,19 @@ constexpr int kNumberOfFramesBeforeDisablingDCLayers = 60;
 
 }  // namespace
 
-namespace cc {
+namespace viz {
 
 DirectRenderer::DrawingFrame::DrawingFrame() = default;
 DirectRenderer::DrawingFrame::~DrawingFrame() = default;
 
-DirectRenderer::DirectRenderer(const viz::RendererSettings* settings,
-                               OutputSurface* output_surface,
-                               DisplayResourceProvider* resource_provider)
+DirectRenderer::DirectRenderer(const RendererSettings* settings,
+                               cc::OutputSurface* output_surface,
+                               cc::DisplayResourceProvider* resource_provider)
     : settings_(settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),
-      overlay_processor_(new OverlayProcessor(output_surface)) {}
+      overlay_processor_(
+          std::make_unique<cc::OverlayProcessor>(output_surface)) {}
 
 DirectRenderer::~DirectRenderer() = default;
 
@@ -161,8 +163,8 @@ gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
   return window_rect;
 }
 
-const viz::TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
-    const viz::RenderPass* pass) {
+const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
+    const RenderPass* pass) {
   return nullptr;
 }
 
@@ -175,21 +177,19 @@ void DirectRenderer::SetVisible(bool visible) {
 }
 
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
-    const viz::RenderPassList& render_passes_in_draw_order) {
+    const RenderPassList& render_passes_in_draw_order) {
   render_pass_bypass_quads_.clear();
 
   auto& root_render_pass = render_passes_in_draw_order.back();
 
   struct RenderPassRequirements {
     gfx::Size size;
-    ResourceProvider::TextureHint hint;
+    cc::ResourceProvider::TextureHint hint;
   };
-  base::flat_map<viz::RenderPassId, RenderPassRequirements>
-      render_passes_in_frame;
+  base::flat_map<RenderPassId, RenderPassRequirements> render_passes_in_frame;
   for (const auto& pass : render_passes_in_draw_order) {
     if (pass != root_render_pass) {
-      if (const viz::TileDrawQuad* tile_quad =
-              CanPassBeDrawnDirectly(pass.get())) {
+      if (const TileDrawQuad* tile_quad = CanPassBeDrawnDirectly(pass.get())) {
         // If the render pass is drawn directly, it will not be drawn from as
         // a render pass so it's not added to the map.
         render_pass_bypass_quads_[pass->id] = *tile_quad;
@@ -200,7 +200,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
                                         RenderPassTextureHint(pass.get())};
   }
 
-  std::vector<viz::RenderPassId> passes_to_delete;
+  std::vector<RenderPassId> passes_to_delete;
   for (const auto& pair : render_pass_textures_) {
     auto it = render_passes_in_frame.find(pair.first);
     if (it == render_passes_in_frame.end()) {
@@ -209,8 +209,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
     }
 
     gfx::Size required_size = it->second.size;
-    ResourceProvider::TextureHint required_hint = it->second.hint;
-    ScopedResource* texture = pair.second.get();
+    cc::ResourceProvider::TextureHint required_hint = it->second.hint;
+    cc::ScopedResource* texture = pair.second.get();
     DCHECK(texture);
 
     bool size_appropriate = texture->size().width() >= required_size.width() &&
@@ -228,7 +228,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   for (auto& pass : render_passes_in_draw_order) {
     auto& resource = render_pass_textures_[pass->id];
     if (!resource) {
-      resource = std::make_unique<ScopedResource>(resource_provider_);
+      resource = std::make_unique<cc::ScopedResource>(resource_provider_);
 
       // |has_damage_from_contributing_content| is used to determine if previous
       // contents can be reused when caching render pass and as a result needs
@@ -239,7 +239,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   }
 }
 
-void DirectRenderer::DrawFrame(viz::RenderPassList* render_passes_in_draw_order,
+void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                float device_scale_factor,
                                const gfx::Size& device_viewport_size) {
   DCHECK(visible_);
@@ -248,7 +248,7 @@ void DirectRenderer::DrawFrame(viz::RenderPassList* render_passes_in_draw_order,
       "Renderer4.renderPassCount",
       base::saturated_cast<int>(render_passes_in_draw_order->size()));
 
-  viz::RenderPass* root_render_pass = render_passes_in_draw_order->back().get();
+  RenderPass* root_render_pass = render_passes_in_draw_order->back().get();
   DCHECK(root_render_pass);
 
   bool overdraw_tracing_enabled;
@@ -314,7 +314,7 @@ void DirectRenderer::DrawFrame(viz::RenderPassList* render_passes_in_draw_order,
   // Create the overlay candidate for the output surface, and mark it as
   // always handled.
   if (output_surface_->IsDisplayedAsOverlayPlane()) {
-    OverlayCandidate output_surface_plane;
+    cc::OverlayCandidate output_surface_plane;
     output_surface_plane.display_rect =
         gfx::RectF(root_render_pass->output_rect);
     output_surface_plane.format = output_surface_->GetOverlayBufferFormat();
@@ -413,12 +413,12 @@ gfx::Rect DirectRenderer::OutputSurfaceRectInDrawSpace() const {
   }
 }
 
-bool DirectRenderer::ShouldSkipQuad(const viz::DrawQuad& quad,
+bool DirectRenderer::ShouldSkipQuad(const DrawQuad& quad,
                                     const gfx::Rect& render_pass_scissor) {
   if (render_pass_scissor.IsEmpty())
     return true;
 
-  gfx::Rect target_rect = MathUtil::MapEnclosingClippedRect(
+  gfx::Rect target_rect = cc::MathUtil::MapEnclosingClippedRect(
       quad.shared_quad_state->quad_to_target_transform, quad.visible_rect);
   if (quad.shared_quad_state->is_clipped)
     target_rect.Intersect(quad.shared_quad_state->clip_rect);
@@ -428,7 +428,7 @@ bool DirectRenderer::ShouldSkipQuad(const viz::DrawQuad& quad,
 }
 
 void DirectRenderer::SetScissorStateForQuad(
-    const viz::DrawQuad& quad,
+    const DrawQuad& quad,
     const gfx::Rect& render_pass_scissor,
     bool use_render_pass_scissor) {
   if (use_render_pass_scissor) {
@@ -471,14 +471,14 @@ void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
   }
 }
 
-const FilterOperations* DirectRenderer::FiltersForPass(
-    viz::RenderPassId render_pass_id) const {
+const cc::FilterOperations* DirectRenderer::FiltersForPass(
+    RenderPassId render_pass_id) const {
   auto it = render_pass_filters_.find(render_pass_id);
   return it == render_pass_filters_.end() ? nullptr : it->second;
 }
 
-const FilterOperations* DirectRenderer::BackgroundFiltersForPass(
-    viz::RenderPassId render_pass_id) const {
+const cc::FilterOperations* DirectRenderer::BackgroundFiltersForPass(
+    RenderPassId render_pass_id) const {
   auto it = render_pass_background_filters_.find(render_pass_id);
   return it == render_pass_background_filters_.end() ? nullptr : it->second;
 }
@@ -499,7 +499,7 @@ void DirectRenderer::FlushPolygons(
 }
 
 void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
-    viz::RenderPass* render_pass) {
+    RenderPass* render_pass) {
   if (render_pass_bypass_quads_.find(render_pass->id) !=
       render_pass_bypass_quads_.end()) {
     return;
@@ -521,7 +521,7 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
   }
 }
 
-void DirectRenderer::DrawRenderPass(const viz::RenderPass* render_pass) {
+void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawRenderPass");
   if (!UseRenderPass(render_pass))
     return;
@@ -575,14 +575,14 @@ void DirectRenderer::DrawRenderPass(const viz::RenderPass* render_pass) {
   PrepareSurfaceForPass(
       mode, MoveFromDrawToWindowSpace(render_pass_scissor_in_draw_space));
 
-  const viz::QuadList& quad_list = render_pass->quad_list;
+  const QuadList& quad_list = render_pass->quad_list;
   std::deque<std::unique_ptr<DrawPolygon>> poly_list;
 
   int next_polygon_id = 0;
   int last_sorting_context_id = 0;
   for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
        ++it) {
-    const viz::DrawQuad& quad = **it;
+    const DrawQuad& quad = **it;
 
     if (render_pass_is_clipped &&
         ShouldSkipQuad(quad, render_pass_scissor_in_draw_space)) {
@@ -598,9 +598,11 @@ void DirectRenderer::DrawRenderPass(const viz::RenderPass* render_pass) {
     // This layer is in a 3D sorting context so we add it to the list of
     // polygons to go into the BSP tree.
     if (quad.shared_quad_state->sorting_context_id != 0) {
-      std::unique_ptr<DrawPolygon> new_polygon(new DrawPolygon(
+      // TODO(danakj): It's sad to do a malloc here to compare. Maybe construct
+      // this on the stack and move it into the list.
+      auto new_polygon = std::make_unique<DrawPolygon>(
           *it, gfx::RectF(quad.visible_rect),
-          quad.shared_quad_state->quad_to_target_transform, next_polygon_id++));
+          quad.shared_quad_state->quad_to_target_transform, next_polygon_id++);
       if (new_polygon->points().size() > 2u) {
         poly_list.push_back(std::move(new_polygon));
       }
@@ -621,7 +623,7 @@ void DirectRenderer::DrawRenderPass(const viz::RenderPass* render_pass) {
     GenerateMipmap();
 }
 
-bool DirectRenderer::UseRenderPass(const viz::RenderPass* render_pass) {
+bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   current_frame()->current_render_pass = render_pass;
   current_frame()->current_texture = nullptr;
   if (render_pass == current_frame()->root_render_pass) {
@@ -637,7 +639,7 @@ bool DirectRenderer::UseRenderPass(const viz::RenderPass* render_pass) {
     return true;
   }
 
-  ScopedResource* texture = render_pass_textures_[render_pass->id].get();
+  cc::ScopedResource* texture = render_pass_textures_[render_pass->id].get();
   DCHECK(texture);
 
   gfx::Size size = RenderPassTextureSize(render_pass);
@@ -666,23 +668,22 @@ bool DirectRenderer::UseRenderPass(const viz::RenderPass* render_pass) {
 }
 
 bool DirectRenderer::HasAllocatedResourcesForTesting(
-    viz::RenderPassId render_pass_id) const {
+    RenderPassId render_pass_id) const {
   auto iter = render_pass_textures_.find(render_pass_id);
   return iter != render_pass_textures_.end() && iter->second->id();
 }
 
 // static
-gfx::Size DirectRenderer::RenderPassTextureSize(
-    const viz::RenderPass* render_pass) {
+gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
   return render_pass->output_rect.size();
 }
 
 // static
-ResourceProvider::TextureHint DirectRenderer::RenderPassTextureHint(
-    const viz::RenderPass* render_pass) {
+cc::ResourceProvider::TextureHint DirectRenderer::RenderPassTextureHint(
+    const RenderPass* render_pass) {
   return render_pass->generate_mipmap
-             ? ResourceProvider::TEXTURE_HINT_IMMUTABLE_MIPMAP_FRAMEBUFFER
-             : ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER;
+             ? cc::ResourceProvider::TEXTURE_HINT_IMMUTABLE_MIPMAP_FRAMEBUFFER
+             : cc::ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER;
 }
 
 void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
@@ -690,4 +691,4 @@ void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
   current_frame_ = frame;
 }
 
-}  // namespace cc
+}  // namespace viz

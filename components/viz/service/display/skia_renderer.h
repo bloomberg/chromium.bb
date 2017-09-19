@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "cc/cc_export.h"
-#include "cc/output/direct_renderer.h"
+#include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/latency/latency_info.h"
 
@@ -26,7 +26,7 @@ class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
 
-class VIZ_SERVICE_EXPORT SkiaRenderer : public cc::DirectRenderer {
+class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  public:
   SkiaRenderer(const RendererSettings* settings,
                cc::OutputSurface* output_surface,

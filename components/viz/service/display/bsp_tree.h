@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_BSP_TREE_H_
-#define CC_OUTPUT_BSP_TREE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_BSP_TREE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_BSP_TREE_H_
 
 #include <stddef.h>
 
@@ -11,10 +11,11 @@
 #include <memory>
 #include <vector>
 
-#include "cc/output/bsp_compare_result.h"
-#include "cc/output/draw_polygon.h"
+#include "components/viz/service/display/bsp_compare_result.h"
+#include "components/viz/service/display/draw_polygon.h"
+#include "components/viz/service/viz_service_export.h"
 
-namespace cc {
+namespace viz {
 
 struct BspNode {
   // This represents the splitting plane.
@@ -30,7 +31,7 @@ struct BspNode {
   ~BspNode();
 };
 
-class CC_EXPORT BspTree {
+class VIZ_SERVICE_EXPORT BspTree {
  public:
   explicit BspTree(std::deque<std::unique_ptr<DrawPolygon>>* list);
   std::unique_ptr<BspNode>& root() { return root_; }
@@ -85,19 +86,13 @@ class CC_EXPORT BspTree {
     // If our view is in front of the the polygon
     // in this node then walk back then front.
     if (GetCameraPositionRelative(*(node->node_data)) == BSP_FRONT) {
-      WalkInOrderVisitNodes<ActionHandlerType>(action_handler,
-                                               node,
-                                               node->back_child.get(),
-                                               node->front_child.get(),
-                                               node->coplanars_front,
-                                               node->coplanars_back);
+      WalkInOrderVisitNodes<ActionHandlerType>(
+          action_handler, node, node->back_child.get(), node->front_child.get(),
+          node->coplanars_front, node->coplanars_back);
     } else {
-      WalkInOrderVisitNodes<ActionHandlerType>(action_handler,
-                                               node,
-                                               node->front_child.get(),
-                                               node->back_child.get(),
-                                               node->coplanars_back,
-                                               node->coplanars_front);
+      WalkInOrderVisitNodes<ActionHandlerType>(
+          action_handler, node, node->front_child.get(), node->back_child.get(),
+          node->coplanars_back, node->coplanars_front);
     }
   }
 
@@ -106,6 +101,6 @@ class CC_EXPORT BspTree {
   static BspCompareResult GetCameraPositionRelative(const DrawPolygon& node);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_BSP_TREE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_BSP_TREE_H_

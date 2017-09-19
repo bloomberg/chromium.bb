@@ -31,7 +31,6 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/draw_polygon.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/raster/scoped_gpu_raster.h"
@@ -44,6 +43,7 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/service/display/draw_polygon.h"
 #include "components/viz/service/display/dynamic_geometry_binding.h"
 #include "components/viz/service/display/layer_quad.h"
 #include "components/viz/service/display/static_geometry_binding.h"
@@ -399,7 +399,7 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
                        cc::OutputSurface* output_surface,
                        cc::DisplayResourceProvider* resource_provider,
                        TextureMailboxDeleter* texture_mailbox_deleter)
-    : cc::DirectRenderer(settings, output_surface, resource_provider),
+    : DirectRenderer(settings, output_surface, resource_provider),
       shared_geometry_quad_(QuadVertexRect()),
       gl_(output_surface->context_provider()->ContextGL()),
       context_support_(output_surface->context_provider()->ContextSupport()),

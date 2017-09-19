@@ -11,12 +11,12 @@
 #include "base/numerics/math_constants.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "cc/output/bsp_compare_result.h"
-#include "cc/output/draw_polygon.h"
+#include "components/viz/service/display/bsp_compare_result.h"
+#include "components/viz/service/display/draw_polygon.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
-namespace cc {
+namespace viz {
 
 #if !defined(OS_WIN)
 void DrawPolygon::RecomputeNormalForTesting() {
@@ -624,4 +624,4 @@ TEST(DrawPolygonTransformTest, TransformNormal) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz
