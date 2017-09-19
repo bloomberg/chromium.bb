@@ -1390,8 +1390,6 @@ source_set("chromeos") {
     "profiles/avatar_menu_chromeos.cc",
     "profiles/multiprofiles_intro_dialog.cc",
     "profiles/multiprofiles_intro_dialog.h",
-    "profiles/multiprofiles_session_aborted_dialog.cc",
-    "profiles/multiprofiles_session_aborted_dialog.h",
     "profiles/profile_helper.cc",
     "profiles/profile_helper.h",
     "profiles/profile_list_chromeos.cc",

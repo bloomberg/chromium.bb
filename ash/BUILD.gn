@@ -282,6 +282,8 @@ component("ash") {
     "screen_util.cc",
     "screen_util.h",
     "screenshot_delegate.h",
+    "session/session_aborted_dialog.cc",
+    "session/session_aborted_dialog.h",
     "session/session_controller.cc",
     "session/session_controller.h",
     "session/session_observer.cc",

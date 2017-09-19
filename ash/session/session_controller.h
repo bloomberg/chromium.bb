@@ -178,6 +178,8 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   void CanSwitchActiveUser(CanSwitchActiveUserCallback callback) override;
   void ShowTeleportWarningDialog(
       ShowTeleportWarningDialogCallback callback) override;
+  void ShowMultiprofilesSessionAbortedDialog(
+      const std::string& user_email) override;
 
   // Test helpers.
   void ClearUserSessionsForTest();
