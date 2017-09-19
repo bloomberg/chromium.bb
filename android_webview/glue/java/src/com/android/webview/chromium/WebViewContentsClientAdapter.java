@@ -7,6 +7,7 @@ package com.android.webview.chromium;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -1105,7 +1106,8 @@ class WebViewContentsClientAdapter extends AwContentsClient {
 
             // Invoke the new callback introduced in Lollipop. If the app handles
             // it, we're done here.
-            if (mWebChromeClient.onShowFileChooser(mWebView, callbackAdapter, fileChooserParams)) {
+            if (mWebChromeClient.onShowFileChooser(
+                        mWebView, callbackAdapter, fromAwFileChooserParams(fileChooserParams))) {
                 return;
             }
 
@@ -1350,6 +1352,44 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         public void deny() {
             mAwPermissionRequest.deny();
         }
+    }
+
+    public static WebChromeClient.FileChooserParams fromAwFileChooserParams(
+            final AwContentsClient.FileChooserParamsImpl value) {
+        if (value == null) {
+            return null;
+        }
+        return new WebChromeClient.FileChooserParams() {
+            @Override
+            public int getMode() {
+                return value.getMode();
+            }
+
+            @Override
+            public String[] getAcceptTypes() {
+                return value.getAcceptTypes();
+            }
+
+            @Override
+            public boolean isCaptureEnabled() {
+                return value.isCaptureEnabled();
+            }
+
+            @Override
+            public CharSequence getTitle() {
+                return value.getTitle();
+            }
+
+            @Override
+            public String getFilenameHint() {
+                return value.getFilenameHint();
+            }
+
+            @Override
+            public Intent createIntent() {
+                return value.createIntent();
+            }
+        };
     }
 
     private static ConsoleMessage fromAwConsoleMessage(AwConsoleMessage value) {
