@@ -133,6 +133,9 @@ void BundleData::GetOutputsAsSourceFiles(
   if (!assets_catalog_sources_.empty())
     outputs_as_source->push_back(GetCompiledAssetCatalogPath());
 
+  if (!partial_info_plist_.is_null())
+    outputs_as_source->push_back(partial_info_plist_);
+
   if (!code_signing_script_.is_null()) {
     std::vector<SourceFile> code_signing_output_files;
     SubstitutionWriter::GetListAsSourceFiles(code_signing_outputs_,

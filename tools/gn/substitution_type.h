@@ -21,57 +21,58 @@ enum SubstitutionType {
 
   // These map to Ninja's {in} and {out} variables.
   SUBSTITUTION_SOURCE = SUBSTITUTION_FIRST_PATTERN,  // {{source}}
-  SUBSTITUTION_OUTPUT,  // {{output}}
+  SUBSTITUTION_OUTPUT,                               // {{output}}
 
   // Valid for all compiler tools.
-  SUBSTITUTION_SOURCE_NAME_PART,  // {{source_name_part}}
-  SUBSTITUTION_SOURCE_FILE_PART,  // {{source_file_part}}
-  SUBSTITUTION_SOURCE_DIR,  // {{source_dir}}
+  SUBSTITUTION_SOURCE_NAME_PART,          // {{source_name_part}}
+  SUBSTITUTION_SOURCE_FILE_PART,          // {{source_file_part}}
+  SUBSTITUTION_SOURCE_DIR,                // {{source_dir}}
   SUBSTITUTION_SOURCE_ROOT_RELATIVE_DIR,  // {{root_relative_dir}}
-  SUBSTITUTION_SOURCE_GEN_DIR,  // {{source_gen_dir}}
-  SUBSTITUTION_SOURCE_OUT_DIR,  // {{source_out_dir}}
-  SUBSTITUTION_SOURCE_TARGET_RELATIVE,  // {{source_target_relative}}
+  SUBSTITUTION_SOURCE_GEN_DIR,            // {{source_gen_dir}}
+  SUBSTITUTION_SOURCE_OUT_DIR,            // {{source_out_dir}}
+  SUBSTITUTION_SOURCE_TARGET_RELATIVE,    // {{source_target_relative}}
 
   // Valid for all compiler and linker tools. These depend on the target and
   // do not vary on a per-file basis.
-  SUBSTITUTION_LABEL,  // {{label}}
-  SUBSTITUTION_LABEL_NAME,  // {{label_name}}
-  SUBSTITUTION_ROOT_GEN_DIR,  // {{root_gen_dir}}
-  SUBSTITUTION_ROOT_OUT_DIR,  // {{root_out_dir}}
-  SUBSTITUTION_TARGET_GEN_DIR,  // {{target_gen_dir}}
-  SUBSTITUTION_TARGET_OUT_DIR,  // {{target_out_dir}}
+  SUBSTITUTION_LABEL,               // {{label}}
+  SUBSTITUTION_LABEL_NAME,          // {{label_name}}
+  SUBSTITUTION_ROOT_GEN_DIR,        // {{root_gen_dir}}
+  SUBSTITUTION_ROOT_OUT_DIR,        // {{root_out_dir}}
+  SUBSTITUTION_TARGET_GEN_DIR,      // {{target_gen_dir}}
+  SUBSTITUTION_TARGET_OUT_DIR,      // {{target_out_dir}}
   SUBSTITUTION_TARGET_OUTPUT_NAME,  // {{target_output_name}}
 
   // Valid for compiler tools.
-  SUBSTITUTION_ASMFLAGS,  // {{asmflags}}
-  SUBSTITUTION_CFLAGS,  // {{cflags}}
-  SUBSTITUTION_CFLAGS_C,  // {{cflags_c}}
-  SUBSTITUTION_CFLAGS_CC,  // {{cflags_cc}}
-  SUBSTITUTION_CFLAGS_OBJC,  // {{cflags_objc}}
+  SUBSTITUTION_ASMFLAGS,      // {{asmflags}}
+  SUBSTITUTION_CFLAGS,        // {{cflags}}
+  SUBSTITUTION_CFLAGS_C,      // {{cflags_c}}
+  SUBSTITUTION_CFLAGS_CC,     // {{cflags_cc}}
+  SUBSTITUTION_CFLAGS_OBJC,   // {{cflags_objc}}
   SUBSTITUTION_CFLAGS_OBJCC,  // {{cflags_objcc}}
-  SUBSTITUTION_DEFINES,  // {{defines}}
+  SUBSTITUTION_DEFINES,       // {{defines}}
   SUBSTITUTION_INCLUDE_DIRS,  // {{include_dirs}}
 
   // Valid for linker tools.
-  SUBSTITUTION_LINKER_INPUTS,  // {{inputs}}
+  SUBSTITUTION_LINKER_INPUTS,          // {{inputs}}
   SUBSTITUTION_LINKER_INPUTS_NEWLINE,  // {{inputs_newline}}
-  SUBSTITUTION_LDFLAGS,  // {{ldflags}}
-  SUBSTITUTION_LIBS,  // {{libs}}
-  SUBSTITUTION_OUTPUT_DIR,  // {{output_dir}}
-  SUBSTITUTION_OUTPUT_EXTENSION,  // {{output_extension}}
-  SUBSTITUTION_SOLIBS,  // {{solibs}}
+  SUBSTITUTION_LDFLAGS,                // {{ldflags}}
+  SUBSTITUTION_LIBS,                   // {{libs}}
+  SUBSTITUTION_OUTPUT_DIR,             // {{output_dir}}
+  SUBSTITUTION_OUTPUT_EXTENSION,       // {{output_extension}}
+  SUBSTITUTION_SOLIBS,                 // {{solibs}}
 
   // Valid for alink only.
   SUBSTITUTION_ARFLAGS,  // {{arflags}}
 
   // Valid for bundle_data targets.
-  SUBSTITUTION_BUNDLE_ROOT_DIR,  // {{bundle_root_dir}}
-  SUBSTITUTION_BUNDLE_RESOURCES_DIR,  // {{bundle_resources_dir}}
+  SUBSTITUTION_BUNDLE_ROOT_DIR,        // {{bundle_root_dir}}
+  SUBSTITUTION_BUNDLE_RESOURCES_DIR,   // {{bundle_resources_dir}}
   SUBSTITUTION_BUNDLE_EXECUTABLE_DIR,  // {{bundle_executable_dir}}
-  SUBSTITUTION_BUNDLE_PLUGINS_DIR,  // {{bundle_plugins_dir}}
+  SUBSTITUTION_BUNDLE_PLUGINS_DIR,     // {{bundle_plugins_dir}}
 
   // Valid for compile_xcassets tool.
-  SUBSTITUTION_BUNDLE_PRODUCT_TYPE,  // {{bundle_product_type}}
+  SUBSTITUTION_BUNDLE_PRODUCT_TYPE,        // {{bundle_product_type}}
+  SUBSTITUTION_BUNDLE_PARTIAL_INFO_PLIST,  // {{bundle_partial_info_plist}}
 
   // Used only for the args of actions.
   SUBSTITUTION_RSP_FILE_NAME,  // {{response_file_name}}

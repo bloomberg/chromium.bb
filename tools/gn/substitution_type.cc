@@ -10,53 +10,54 @@
 #include "tools/gn/err.h"
 
 const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
-  "<<literal>>",  // SUBSTITUTION_LITERAL
+    "<<literal>>",  // SUBSTITUTION_LITERAL
 
-  "{{source}}",  // SUBSTITUTION_SOURCE
-  "{{output}}",  // SUBSTITUTION_OUTPUT
+    "{{source}}",  // SUBSTITUTION_SOURCE
+    "{{output}}",  // SUBSTITUTION_OUTPUT
 
-  "{{source_name_part}}",  // SUBSTITUTION_NAME_PART
-  "{{source_file_part}}",  // SUBSTITUTION_FILE_PART
-  "{{source_dir}}",  // SUBSTITUTION_SOURCE_DIR
-  "{{source_root_relative_dir}}",  // SUBSTITUTION_SOURCE_ROOT_RELATIVE_DIR
-  "{{source_gen_dir}}",  // SUBSTITUTION_SOURCE_GEN_DIR
-  "{{source_out_dir}}",  // SUBSTITUTION_SOURCE_OUT_DIR
-  "{{source_target_relative}}",  // SUBSTITUTION_SOURCE_TARGET_RELATIVE
+    "{{source_name_part}}",          // SUBSTITUTION_NAME_PART
+    "{{source_file_part}}",          // SUBSTITUTION_FILE_PART
+    "{{source_dir}}",                // SUBSTITUTION_SOURCE_DIR
+    "{{source_root_relative_dir}}",  // SUBSTITUTION_SOURCE_ROOT_RELATIVE_DIR
+    "{{source_gen_dir}}",            // SUBSTITUTION_SOURCE_GEN_DIR
+    "{{source_out_dir}}",            // SUBSTITUTION_SOURCE_OUT_DIR
+    "{{source_target_relative}}",    // SUBSTITUTION_SOURCE_TARGET_RELATIVE
 
-  "{{label}}",  // SUBSTITUTION_LABEL
-  "{{label_name}}",  // SUBSTITUTION_LABEL_NAME
-  "{{root_gen_dir}}",  // SUBSTITUTION_ROOT_GEN_DIR
-  "{{root_out_dir}}",  // SUBSTITUTION_ROOT_OUT_DIR
-  "{{target_gen_dir}}",  // SUBSTITUTION_TARGET_GEN_DIR
-  "{{target_out_dir}}",  // SUBSTITUTION_TARGET_OUT_DIR
-  "{{target_output_name}}",  // SUBSTITUTION_TARGET_OUTPUT_NAME
+    "{{label}}",               // SUBSTITUTION_LABEL
+    "{{label_name}}",          // SUBSTITUTION_LABEL_NAME
+    "{{root_gen_dir}}",        // SUBSTITUTION_ROOT_GEN_DIR
+    "{{root_out_dir}}",        // SUBSTITUTION_ROOT_OUT_DIR
+    "{{target_gen_dir}}",      // SUBSTITUTION_TARGET_GEN_DIR
+    "{{target_out_dir}}",      // SUBSTITUTION_TARGET_OUT_DIR
+    "{{target_output_name}}",  // SUBSTITUTION_TARGET_OUTPUT_NAME
 
-  "{{asmflags}}",  // SUBSTITUTION_ASMFLAGS
-  "{{cflags}}",  // SUBSTITUTION_CFLAGS
-  "{{cflags_c}}",  // SUBSTITUTION_CFLAGS_C
-  "{{cflags_cc}}",  // SUBSTITUTION_CFLAGS_CC
-  "{{cflags_objc}}",  // SUBSTITUTION_CFLAGS_OBJC
-  "{{cflags_objcc}}",  // SUBSTITUTION_CFLAGS_OBJCC
-  "{{defines}}",  // SUBSTITUTION_DEFINES
-  "{{include_dirs}}",  // SUBSTITUTION_INCLUDE_DIRS
+    "{{asmflags}}",      // SUBSTITUTION_ASMFLAGS
+    "{{cflags}}",        // SUBSTITUTION_CFLAGS
+    "{{cflags_c}}",      // SUBSTITUTION_CFLAGS_C
+    "{{cflags_cc}}",     // SUBSTITUTION_CFLAGS_CC
+    "{{cflags_objc}}",   // SUBSTITUTION_CFLAGS_OBJC
+    "{{cflags_objcc}}",  // SUBSTITUTION_CFLAGS_OBJCC
+    "{{defines}}",       // SUBSTITUTION_DEFINES
+    "{{include_dirs}}",  // SUBSTITUTION_INCLUDE_DIRS
 
-  "{{inputs}}",  // SUBSTITUTION_LINKER_INPUTS
-  "{{inputs_newline}}",  // SUBSTITUTION_LINKER_INPUTS_NEWLINE
-  "{{ldflags}}",  // SUBSTITUTION_LDFLAGS
-  "{{libs}}",  // SUBSTITUTION_LIBS
-  "{{output_dir}}",  // SUBSTITUTION_OUTPUT_DIR
-  "{{output_extension}}",  // SUBSTITUTION_OUTPUT_EXTENSION
-  "{{solibs}}",  // SUBSTITUTION_SOLIBS
+    "{{inputs}}",            // SUBSTITUTION_LINKER_INPUTS
+    "{{inputs_newline}}",    // SUBSTITUTION_LINKER_INPUTS_NEWLINE
+    "{{ldflags}}",           // SUBSTITUTION_LDFLAGS
+    "{{libs}}",              // SUBSTITUTION_LIBS
+    "{{output_dir}}",        // SUBSTITUTION_OUTPUT_DIR
+    "{{output_extension}}",  // SUBSTITUTION_OUTPUT_EXTENSION
+    "{{solibs}}",            // SUBSTITUTION_SOLIBS
 
-  "{{arflags}}",  // SUBSTITUTION_ARFLAGS
+    "{{arflags}}",  // SUBSTITUTION_ARFLAGS
 
-  "{{bundle_root_dir}}",  // SUBSTITUTION_BUNDLE_ROOT_DIR
-  "{{bundle_resources_dir}}",  // SUBSTITUTION_BUNDLE_RESOURCES_DIR
-  "{{bundle_executable_dir}}",  // SUBSTITUTION_BUNDLE_EXECUTABLE_DIR
-  "{{bundle_plugins_dir}}",  // SUBSTITUTION_BUNDLE_PLUGINS_DIR
-  "{{bundle_product_type}}",  // SUBSTITUTION_BUNDLE_PRODUCT_TYPE
+    "{{bundle_root_dir}}",            // SUBSTITUTION_BUNDLE_ROOT_DIR
+    "{{bundle_resources_dir}}",       // SUBSTITUTION_BUNDLE_RESOURCES_DIR
+    "{{bundle_executable_dir}}",      // SUBSTITUTION_BUNDLE_EXECUTABLE_DIR
+    "{{bundle_plugins_dir}}",         // SUBSTITUTION_BUNDLE_PLUGINS_DIR
+    "{{bundle_product_type}}",        // SUBSTITUTION_BUNDLE_PRODUCT_TYPE
+    "{{bundle_partial_info_plist}}",  // SUBSTITUTION_BUNDLE_PARTIAL_INFO_PLIST,
 
-  "{{response_file_name}}",  // SUBSTITUTION_RSP_FILE_NAME
+    "{{response_file_name}}",  // SUBSTITUTION_RSP_FILE_NAME
 };
 
 const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
@@ -101,13 +102,14 @@ const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
     "output_extension",  // SUBSTITUTION_OUTPUT_EXTENSION
     "solibs",            // SUBSTITUTION_SOLIBS
 
-    "arflags",           // SUBSTITUTION_ARFLAGS
+    "arflags",  // SUBSTITUTION_ARFLAGS
 
     "bundle_root_dir",        // SUBSTITUTION_BUNDLE_ROOT_DIR
     "bundle_resources_dir",   // SUBSTITUTION_BUNDLE_RESOURCES_DIR
     "bundle_executable_dir",  // SUBSTITUTION_BUNDLE_EXECUTABLE_DIR
     "bundle_plugins_dir",     // SUBSTITUTION_BUNDLE_PLUGINS_DIR
     "product_type",           // SUBSTITUTION_BUNDLE_PRODUCT_TYPE
+    "partial_info_plist",     // SUBSTITUTION_BUNDLE_PARTIAL_INFO_PLIST
 
     "rspfile",  // SUBSTITUTION_RSP_FILE_NAME
 };
@@ -236,9 +238,9 @@ bool IsValidCopySubstitution(SubstitutionType type) {
 }
 
 bool IsValidCompileXCassetsSubstitution(SubstitutionType type) {
-  return IsValidToolSubstitution(type) ||
-         type == SUBSTITUTION_LINKER_INPUTS ||
-         type == SUBSTITUTION_BUNDLE_PRODUCT_TYPE;
+  return IsValidToolSubstitution(type) || type == SUBSTITUTION_LINKER_INPUTS ||
+         type == SUBSTITUTION_BUNDLE_PRODUCT_TYPE ||
+         type == SUBSTITUTION_BUNDLE_PARTIAL_INFO_PLIST;
 }
 
 bool EnsureValidSubstitutions(const std::vector<SubstitutionType>& types,

@@ -65,6 +65,37 @@ TEST(NinjaCreateBundleTargetWriter, Run) {
   EXPECT_EQ(expected, out_str);
 }
 
+// Tests empty asset catalog with partial_info_plist property defined.
+TEST(NinjaCreateBundleTargetWriter, JustPartialInfoPlist) {
+  Err err;
+  TestWithScope setup;
+
+  Target create_bundle(
+      setup.settings(),
+      Label(SourceDir("//baz/"), "bar", setup.toolchain()->label().dir(),
+            setup.toolchain()->label().name()));
+  SetupBundleDataDir(&create_bundle.bundle_data(), "//out/Debug");
+  create_bundle.set_output_type(Target::CREATE_BUNDLE);
+  create_bundle.bundle_data().product_type().assign("com.apple.product-type");
+  create_bundle.bundle_data().set_partial_info_plist(
+      SourceFile("//out/Debug/baz/bar/bar_partial_info.plist"));
+  create_bundle.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(create_bundle.OnResolved(&err));
+
+  std::ostringstream out;
+  NinjaCreateBundleTargetWriter writer(&create_bundle, out);
+  writer.Run();
+
+  const char expected[] =
+      "build baz/bar/bar_partial_info.plist: stamp\n"
+      "build obj/baz/bar.stamp: stamp "
+          "baz/bar/bar_partial_info.plist\n"
+      "build bar.bundle: phony obj/baz/bar.stamp\n";
+  std::string out_str = out.str();
+  EXPECT_EQ(expected, out_str);
+}
+
+
 // Tests multiple files from asset catalog.
 TEST(NinjaCreateBundleTargetWriter, AssetCatalog) {
   Err err;
@@ -213,6 +244,8 @@ TEST(NinjaCreateBundleTargetWriter, Complex) {
   create_bundle.private_deps().push_back(LabelTargetPair(&bundle_data2));
   create_bundle.private_deps().push_back(LabelTargetPair(&bundle_data3));
   create_bundle.bundle_data().product_type().assign("com.apple.product-type");
+  create_bundle.bundle_data().set_partial_info_plist(
+      SourceFile("//out/Debug/baz/bar/bar_partial_info.plist"));
   create_bundle.SetToolchain(setup.toolchain());
   ASSERT_TRUE(create_bundle.OnResolved(&err));
 
@@ -230,15 +263,18 @@ TEST(NinjaCreateBundleTargetWriter, Complex) {
       "build obj/baz/bar.xcassets.inputdeps.stamp: stamp "
           "obj/foo/assets.stamp "
           "obj/quz/assets.stamp\n"
-      "build bar.bundle/Contents/Resources/Assets.car: compile_xcassets "
+      "build bar.bundle/Contents/Resources/Assets.car | "
+        "baz/bar/bar_partial_info.plist: compile_xcassets "
           "../../foo/Foo.xcassets "
           "../../quz/Quz.xcassets | obj/baz/bar.xcassets.inputdeps.stamp\n"
       "  product_type = com.apple.product-type\n"
+      "  partial_info_plist = baz/bar/bar_partial_info.plist\n"
       "build obj/baz/bar.stamp: stamp "
           "bar.bundle/Contents/Info.plist "
           "bar.bundle/Contents/Resources/input1.txt "
           "bar.bundle/Contents/Resources/input2.txt "
-          "bar.bundle/Contents/Resources/Assets.car\n"
+          "bar.bundle/Contents/Resources/Assets.car "
+          "baz/bar/bar_partial_info.plist\n"
       "build bar.bundle: phony obj/baz/bar.stamp\n";
   std::string out_str = out.str();
   EXPECT_EQ(expected, out_str);

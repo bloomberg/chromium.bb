@@ -138,19 +138,56 @@ void NinjaCreateBundleTargetWriter::WriteCopyBundleFileRuleSteps(
 
 void NinjaCreateBundleTargetWriter::WriteCompileAssetsCatalogStep(
     std::vector<OutputFile>* output_files) {
-  if (target_->bundle_data().assets_catalog_sources().empty())
+  if (target_->bundle_data().assets_catalog_sources().empty() &&
+      target_->bundle_data().partial_info_plist().is_null())
     return;
+
+  OutputFile compiled_catalog;
+  if (!target_->bundle_data().assets_catalog_sources().empty()) {
+    compiled_catalog =
+        OutputFile(settings_->build_settings(),
+                   target_->bundle_data().GetCompiledAssetCatalogPath());
+    output_files->push_back(compiled_catalog);
+  }
+
+  OutputFile partial_info_plist;
+  if (!target_->bundle_data().partial_info_plist().is_null()) {
+    partial_info_plist =
+        OutputFile(settings_->build_settings(),
+                   target_->bundle_data().partial_info_plist());
+
+    output_files->push_back(partial_info_plist);
+  }
+
+  // If there are no asset catalog to compile but the "partial_info_plist" is
+  // non-empty, then add a target to generate an empty file (to avoid breaking
+  // code that depends on this file existence).
+  if (target_->bundle_data().assets_catalog_sources().empty()) {
+    DCHECK(!target_->bundle_data().partial_info_plist().is_null());
+
+    out_ << "build ";
+    path_output_.WriteFile(out_, partial_info_plist);
+    out_ << ": " << GetNinjaRulePrefixForToolchain(settings_)
+         << Toolchain::ToolTypeToName(Toolchain::TYPE_STAMP) << std::endl;
+
+    return;
+  }
 
   OutputFile input_dep = WriteCompileAssetsCatalogInputDepsStamp(
       target_->bundle_data().assets_catalog_deps());
   DCHECK(!input_dep.value().empty());
 
-  OutputFile output_file(settings_->build_settings(),
-                         target_->bundle_data().GetCompiledAssetCatalogPath());
-  output_files->push_back(output_file);
-
   out_ << "build ";
-  path_output_.WriteFile(out_, output_file);
+  path_output_.WriteFile(out_, compiled_catalog);
+  if (partial_info_plist != OutputFile()) {
+    // If "partial_info_plist" is non-empty, then add it to list of implicit
+    // outputs of the asset catalog compilation, so that target can use it
+    // without getting the ninja error "'foo', needed by 'bar', missing and
+    // no known rule to make it".
+    out_ << " | ";
+    path_output_.WriteFile(out_, partial_info_plist);
+  }
+
   out_ << ": " << GetNinjaRulePrefixForToolchain(settings_)
        << Toolchain::ToolTypeToName(Toolchain::TYPE_COMPILE_XCASSETS);
 
@@ -167,6 +204,12 @@ void NinjaCreateBundleTargetWriter::WriteCompileAssetsCatalogStep(
 
   out_ << "  product_type = " << target_->bundle_data().product_type()
        << std::endl;
+
+  if (partial_info_plist != OutputFile()) {
+    out_ << "  partial_info_plist = ";
+    path_output_.WriteFile(out_, partial_info_plist);
+    out_ << std::endl;
+  }
 }
 
 OutputFile
