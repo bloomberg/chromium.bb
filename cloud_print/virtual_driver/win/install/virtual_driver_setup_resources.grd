@@ -121,10 +121,6 @@ file.
   </translations>
     <release seq="1">
     <messages>
-      <message name="IDS_GOOGLE"
-               meaning="Google" desc="The name of the company that built this.">
-        Google
-      </message>
       <message name="IDS_DRIVER_NAME"
                meaning="Driver Name" desc="The user visible name of the printer we create and its associated driver.">
         Google Cloud Printer
