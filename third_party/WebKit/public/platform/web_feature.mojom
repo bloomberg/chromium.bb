@@ -1680,7 +1680,6 @@ enum WebFeature {
   kFeaturePolicyAllowAttributeDeprecatedSyntax = 2145,
   kSuppressHistoryEntryWithoutUserGesture = 2146,
   kImageInputTypeFormDataWithNonEmptyValue = 2147,
-
   kWebAudioDezipperGainNodeGain = 2148,
   kWebAudioDezipperStereoPannerNodePan = 2149,
   kWebAudioDezipperDelayNodeDelayTime = 2150,
@@ -1690,6 +1689,7 @@ enum WebFeature {
   kWebAudioDezipperBiquadFilterNodeDetune = 2154,
   kWebAudioDezipperBiquadFilterNodeQ = 2155,
   kWebAudioDezipperBiquadFilterNodeGain = 2156,
+  kPerformanceServerTiming = 2157,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

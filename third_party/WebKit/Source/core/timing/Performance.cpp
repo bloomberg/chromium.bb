@@ -153,6 +153,9 @@ PerformanceNavigationTiming* Performance::CreateNavigationTimingInstance() {
   PerformanceServerTimingVector serverTiming =
       PerformanceServerTiming::ParseServerTiming(
           *info, PerformanceServerTiming::ShouldAllowTimingDetails::Yes);
+  if (serverTiming.size()) {
+    UseCounter::Count(GetFrame(), WebFeature::kPerformanceServerTiming);
+  }
   return new PerformanceNavigationTiming(GetFrame(), info, GetTimeOrigin(),
                                          serverTiming);
 }
