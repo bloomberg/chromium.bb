@@ -5832,7 +5832,7 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 
 #if CONFIG_CFL
 static int64_t cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
-                              const int y_averages_q3[MAX_NUM_TXB],
+                              const int y_averages_q3[MAX_NUM_TXB_SQUARE],
                               const uint8_t *src, int src_stride, int width,
                               int height, TX_SIZE tx_size, int dc_pred,
                               int alpha_q3, int64_t *dist_neg_out) {

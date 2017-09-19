@@ -714,7 +714,7 @@ typedef struct cfl_ctx {
   //   * Max error will be 1/16th.
   // Note: 3 is chosen so that y_averages fits in 15 bits when 12 bit input is
   // used
-  int y_averages_q3[MAX_NUM_TXB];
+  int y_averages_q3[MAX_NUM_TXB_SQUARE];
   int y_averages_stride;
 
   int are_parameters_computed;

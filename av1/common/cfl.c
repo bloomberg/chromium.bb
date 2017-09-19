@@ -214,6 +214,7 @@ static void cfl_compute_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
         }
         t_y_pix += MAX_SB_SIZE;
       }
+      assert(a < MAX_NUM_TXB_SQUARE);
       averages_q3[a++] =
           ((sum << 3) + (1 << (num_pel_log2 - 1))) >> num_pel_log2;
 
@@ -226,7 +227,6 @@ static void cfl_compute_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
   }
 
   cfl->y_averages_stride = stride;
-  assert(a <= MAX_NUM_TXB);
 }
 
 static INLINE int cfl_idx_to_alpha(int alpha_idx, int joint_sign,
