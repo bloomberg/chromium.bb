@@ -362,6 +362,9 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
       self.collectionViewController.collectionViewModel;
   NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
 
+  if (![model hasSectionForSectionIdentifier:sectionIdentifier])
+    return nil;
+
   NSArray<CSCollectionViewItem*>* existingItems =
       [model itemsInSectionWithIdentifier:sectionIdentifier];
   if (existingItems.count == 1 && existingItems[0].type == ItemTypeEmpty) {

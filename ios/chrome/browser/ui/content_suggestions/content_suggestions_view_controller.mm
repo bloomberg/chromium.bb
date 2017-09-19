@@ -137,10 +137,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (void)addSuggestions:(NSArray<CSCollectionViewItem*>*)suggestions
          toSectionInfo:(ContentSuggestionsSectionInformation*)sectionInfo {
-  if (suggestions.count == 0) {
-    return;
-  }
-
   [self.collectionView performBatchUpdates:^{
     NSIndexSet* addedSections = [self.collectionUpdater
         addSectionsForSectionInfoToModel:@[ sectionInfo ]];
