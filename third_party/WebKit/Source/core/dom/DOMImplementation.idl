@@ -26,8 +26,7 @@
     [NewObject, RaisesException] DocumentType createDocumentType(DOMString qualifiedName, DOMString publicId, DOMString systemId);
     [NewObject, RaisesException] XMLDocument createDocument(DOMString? namespaceURI, [TreatNullAs=EmptyString] DOMString qualifiedName, optional DocumentType? doctype = null);
     // FIXME: createHTMLDocument should return a Document. crbug.com/238368
-    // FIXME: The title argument should not have a default value. crbug.com/335871
-    [NewObject] HTMLDocument createHTMLDocument(optional DOMString title = null);
+    [NewObject] HTMLDocument createHTMLDocument(optional DOMString title);
 
     // useless; always returns true
     boolean hasFeature();

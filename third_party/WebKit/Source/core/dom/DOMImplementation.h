@@ -58,7 +58,7 @@ class CORE_EXPORT DOMImplementation final
                               ExceptionState&);
 
   // From the HTMLDOMImplementation interface
-  HTMLDocument* createHTMLDocument(const String& title);
+  HTMLDocument* createHTMLDocument(const String& title = String());
 
   // Other methods (not part of DOM)
   static Document* createDocument(const String& mime_type,
