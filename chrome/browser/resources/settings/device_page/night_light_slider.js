@@ -86,12 +86,6 @@ Polymer({
       markersContainer.appendChild(marker);
       marker.style.left = (i * 100 / HOURS_PER_DAY) + '%';
     }
-
-    this.async(function() {
-      // Refresh the hour format as well as read the initial pref values and
-      // refresh the slider.
-      this.hourFormatChanged_();
-    });
   },
 
   /**
