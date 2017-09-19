@@ -404,6 +404,10 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   return new_child;
 }
 
+Node* ContainerNode::InsertBefore(Node* new_child, Node* ref_child) {
+  return InsertBefore(new_child, ref_child, ASSERT_NO_EXCEPTION);
+}
+
 void ContainerNode::InsertBeforeCommon(Node& next_child, Node& new_child) {
 #if DCHECK_IS_ON()
   DCHECK(EventDispatchForbiddenScope::IsEventDispatchForbidden());
@@ -584,6 +588,10 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
   return old_child;
 }
 
+Node* ContainerNode::ReplaceChild(Node* new_child, Node* old_child) {
+  return ReplaceChild(new_child, old_child, ASSERT_NO_EXCEPTION);
+}
+
 void ContainerNode::WillRemoveChild(Node& child) {
   DCHECK_EQ(child.parentNode(), this);
   ChildListMutationScope(*this).WillRemoveChild(child);
@@ -686,6 +694,10 @@ Node* ContainerNode::RemoveChild(Node* old_child,
   }
   DispatchSubtreeModifiedEvent();
   return child;
+}
+
+Node* ContainerNode::RemoveChild(Node* old_child) {
+  return RemoveChild(old_child, ASSERT_NO_EXCEPTION);
 }
 
 void ContainerNode::RemoveBetween(Node* previous_child,
@@ -816,6 +828,10 @@ Node* ContainerNode::AppendChild(Node* new_child,
   }
   DidInsertNodeVector(targets, nullptr, post_insertion_notification_targets);
   return new_child;
+}
+
+Node* ContainerNode::AppendChild(Node* new_child) {
+  return AppendChild(new_child, ASSERT_NO_EXCEPTION);
 }
 
 void ContainerNode::ParserAppendChild(Node* new_child) {
@@ -1354,6 +1370,10 @@ Element* ContainerNode::QuerySelector(const AtomicString& selectors,
   return selector_query->QueryFirst(*this);
 }
 
+Element* ContainerNode::QuerySelector(const AtomicString& selectors) {
+  return QuerySelector(selectors, ASSERT_NO_EXCEPTION);
+}
+
 StaticElementList* ContainerNode::QuerySelectorAll(
     const AtomicString& selectors,
     ExceptionState& exception_state) {
@@ -1362,6 +1382,11 @@ StaticElementList* ContainerNode::QuerySelectorAll(
   if (!selector_query)
     return nullptr;
   return selector_query->QueryAll(*this);
+}
+
+StaticElementList* ContainerNode::QuerySelectorAll(
+    const AtomicString& selectors) {
+  return QuerySelectorAll(selectors, ASSERT_NO_EXCEPTION);
 }
 
 static void DispatchChildInsertionEvents(Node& child) {
