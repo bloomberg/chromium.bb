@@ -249,6 +249,17 @@ const IDNTestCase idn_cases[] = {
      L"abc.jp",
      false},
 
+    // The following three are detected by |dangerous_pattern| regex, but
+    // can be regarded as an extension of blocking repeated diacritic marks.
+    // i followed by U+0307 (combining dot above)
+    {"xn--pixel-8fd.com", L"pi\x0307xel.com", false},
+    // U+0131 (dotless i) followed by U+0307
+    {"xn--pxel-lza43z.com", L"p\x0131\x0307xel.com", false},
+    // j followed by U+0307 (combining dot above)
+    {"xn--jack-qwc.com", L"j\x0307" L"ack.com", false},
+    // l followed by U+0307
+    {"xn--lace-qwc.com", L"l\x0307" L"ace.com", false},
+
     // Mixed script confusable
     // google with Armenian Small Letter Oh(U+0585)
     {"xn--gogle-lkg.com", L"g\x0585ogle.com", false},
