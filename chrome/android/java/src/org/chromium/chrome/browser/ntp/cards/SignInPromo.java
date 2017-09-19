@@ -153,7 +153,7 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         assert !mWasDismissed;
         if (mArePersonalizedPromosEnabled) {
             return new PersonalizedPromoViewHolder(
-                    parent, contextMenuManager, config, mProfileDataCache, mSigninPromoController);
+                    parent, config, contextMenuManager, mProfileDataCache, mSigninPromoController);
         }
         return new GenericPromoViewHolder(parent, contextMenuManager, config);
     }
@@ -324,13 +324,14 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
     /**
      * View Holder for {@link SignInPromo} if the personalized promo is to be shown.
      */
-    private static class PersonalizedPromoViewHolder extends CardViewHolder {
+    @VisibleForTesting
+    public static class PersonalizedPromoViewHolder extends CardViewHolder {
         private final ProfileDataCache mProfileDataCache;
         private final SigninPromoController mSigninPromoController;
 
-        public PersonalizedPromoViewHolder(SuggestionsRecyclerView parent,
-                ContextMenuManager contextMenuManager, UiConfig config,
-                ProfileDataCache profileDataCache, SigninPromoController signinPromoController) {
+        public PersonalizedPromoViewHolder(SuggestionsRecyclerView parent, UiConfig config,
+                ContextMenuManager contextMenuManager, ProfileDataCache profileDataCache,
+                SigninPromoController signinPromoController) {
             super(FeatureUtilities.isChromeHomeModernEnabled()
                             ? R.layout.personalized_signin_promo_view_modern_content_suggestions
                             : R.layout.personalized_signin_promo_view_ntp_content_suggestions,
@@ -369,6 +370,19 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
             }
             mSigninPromoController.setProfileData(profileData);
 
+            SigninPromoView view = (SigninPromoView) itemView;
+            mSigninPromoController.setupSigninPromoView(view.getContext(), view, null);
+        }
+
+        /**
+         * Binds the view and sets the profile data directly. Used for testing purposes.
+         * @param profileData The profile data which will be used to configure the personalized
+         *         signin promo.
+         */
+        @VisibleForTesting
+        public void bindAndConfigureViewForTests(@Nullable DisplayableProfileData profileData) {
+            super.onBindViewHolder();
+            mSigninPromoController.setProfileData(profileData);
             SigninPromoView view = (SigninPromoView) itemView;
             mSigninPromoController.setupSigninPromoView(view.getContext(), view, null);
         }
