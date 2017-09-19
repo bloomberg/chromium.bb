@@ -197,16 +197,16 @@ class AutofillProfile : public AutofillDataModel {
   void set_has_converted(bool has_converted) { has_converted_ = has_converted; }
 
   // Returns the validity state of the specified autofill type.
-  ValidityState GetValidityState(ServerFieldType type);
+  ValidityState GetValidityState(ServerFieldType type) const;
 
   // Sets the validity state of the specified autofill type.
   void SetValidityState(ServerFieldType type, ValidityState validity);
 
   // Returns whether autofill does the validation of the specified |type|.
-  bool IsValidationSupportedForType(ServerFieldType type);
+  bool IsValidationSupportedForType(ServerFieldType type) const;
 
   // Returns the bitfield value representing the validity state of this profile.
-  int GetValidityBitfieldValue();
+  int GetValidityBitfieldValue() const;
 
   // Sets the validity state of the profile based on the specified
   // |bitfield_value|.

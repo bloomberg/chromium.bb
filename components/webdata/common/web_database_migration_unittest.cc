@@ -130,7 +130,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 74;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 75;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -1406,5 +1406,67 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion73WithTypeColumnToCurrent) {
         connection.GetUniqueStatement("SELECT type FROM masked_credit_cards"));
     ASSERT_TRUE(s_masked_cards.Step());
     EXPECT_EQ(2, s_masked_cards.ColumnInt(0));
+  }
+}
+
+// Tests adding "validity_bitfield" column for the "autofill_profiles" table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion74ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_74.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 74, 74));
+
+    EXPECT_FALSE(
+        connection.DoesColumnExist("autofill_profiles", "validity_bitfield"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    EXPECT_TRUE(
+        connection.DoesColumnExist("autofill_profiles", "validity_bitfield"));
+
+    // Data should have been preserved. Validity bitfield should have been set
+    // to 0.
+    sql::Statement s_profiles(connection.GetUniqueStatement(
+        "SELECT guid, company_name, street_address, dependent_locality,"
+        " city, state, zipcode, sorting_code, country_code, date_modified,"
+        " origin, language_code, validity_bitfield "
+        "FROM autofill_profiles"));
+
+    ASSERT_TRUE(s_profiles.Step());
+    EXPECT_EQ("00000000-0000-0000-0000-000000000001",
+              s_profiles.ColumnString(0));
+    EXPECT_EQ(ASCIIToUTF16("Google Inc"), s_profiles.ColumnString16(1));
+    EXPECT_EQ(ASCIIToUTF16("340 Main St"), s_profiles.ColumnString16(2));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(3));
+    EXPECT_EQ(ASCIIToUTF16("Los Angeles"), s_profiles.ColumnString16(4));
+    EXPECT_EQ(ASCIIToUTF16("CA"), s_profiles.ColumnString16(5));
+    EXPECT_EQ(ASCIIToUTF16("90291"), s_profiles.ColumnString16(6));
+    EXPECT_EQ(base::string16(), s_profiles.ColumnString16(7));
+    EXPECT_EQ(ASCIIToUTF16("US"), s_profiles.ColumnString16(8));
+    EXPECT_EQ(1395948829, s_profiles.ColumnInt(9));
+    EXPECT_EQ(ASCIIToUTF16(autofill::kSettingsOrigin),
+              s_profiles.ColumnString16(10));
+    EXPECT_EQ("en", s_profiles.ColumnString(11));
+    // The new validity bitfield should have the default value of 0.
+    EXPECT_EQ(0, s_profiles.ColumnInt(12));
+
+    // No more entries expected.
+    ASSERT_FALSE(s_profiles.Step());
   }
 }

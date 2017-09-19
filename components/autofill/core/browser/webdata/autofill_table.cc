@@ -92,6 +92,7 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
   s->BindInt64(index++, modification_date.ToTimeT());
   s->BindString(index++, profile.origin());
   s->BindString(index++, profile.language_code());
+  s->BindInt64(index++, profile.GetValidityBitfieldValue());
 }
 
 std::unique_ptr<AutofillProfile> AutofillProfileFromStatement(
@@ -115,6 +116,7 @@ std::unique_ptr<AutofillProfile> AutofillProfileFromStatement(
   profile->set_modification_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
   profile->set_origin(s.ColumnString(index++));
   profile->set_language_code(s.ColumnString(index++));
+  profile->SetValidityFromBitfieldValue(s.ColumnInt64(index++));
 
   return profile;
 }
@@ -473,6 +475,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 74:
       *update_compatible_version = false;
       return MigrateToVersion74AddServerCardTypeColumn();
+    case 75:
+      *update_compatible_version = false;
+      return MigrateToVersion75AddProfileValidityBitfieldColumn();
   }
   return true;
 }
@@ -878,8 +883,8 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
       "INSERT INTO autofill_profiles"
       "(guid, company_name, street_address, dependent_locality, city, state,"
       " zipcode, sorting_code, country_code, use_count, use_date, "
-      " date_modified, origin, language_code)"
-      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+      " date_modified, origin, language_code, validity_bitfield)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
   BindAutofillProfileToStatement(profile, AutofillClock::Now(), &s);
 
   if (!s.Run())
@@ -894,7 +899,7 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, company_name, street_address, dependent_locality, city,"
       " state, zipcode, sorting_code, country_code, use_count, use_date,"
-      " date_modified, origin, language_code "
+      " date_modified, origin, language_code, validity_bitfield "
       "FROM autofill_profiles "
       "WHERE guid=?"));
   s.BindString(0, guid);
@@ -1901,7 +1906,8 @@ bool AutofillTable::InitProfilesTable() {
                       "origin VARCHAR DEFAULT '', "
                       "language_code VARCHAR, "
                       "use_count INTEGER NOT NULL DEFAULT 0, "
-                      "use_date INTEGER NOT NULL DEFAULT 0) ")) {
+                      "use_date INTEGER NOT NULL DEFAULT 0, "
+                      "validity_bitfield UNSIGNED NOT NULL DEFAULT 0) ")) {
       NOTREACHED();
       return false;
     }
@@ -2634,6 +2640,13 @@ bool AutofillTable::MigrateToVersion74AddServerCardTypeColumn() {
                                   : db_->Execute(
                                         "ALTER TABLE masked_credit_cards ADD "
                                         "COLUMN type INTEGER DEFAULT 0");
+}
+
+bool AutofillTable::MigrateToVersion75AddProfileValidityBitfieldColumn() {
+  // Add the new valdity_bitfield column to the autofill_profiles table.
+  return db_->Execute(
+      "ALTER TABLE autofill_profiles ADD COLUMN validity_bitfield UNSIGNED NOT "
+      "NULL DEFAULT 0");
 }
 
 }  // namespace autofill
