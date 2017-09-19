@@ -1061,6 +1061,11 @@ void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds) {
     observer.OnWindowBoundsChanged(this, old_bounds, bounds_);
 }
 
+void Window::OnLayerOpacityChanged(float old_opacity, float new_opacity) {
+  for (WindowObserver& observer : observers_)
+    observer.OnWindowOpacityChanged(this, old_opacity, new_opacity);
+}
+
 bool Window::CanAcceptEvent(const ui::Event& event) {
   // The client may forbid certain windows from receiving events at a given
   // point in time.
