@@ -203,13 +203,29 @@ void SurfaceAggregator::HandleSurfaceQuad(
                         clip_rect, dest_pass, ignore_undamaged,
                         damage_rect_in_quad_space,
                         damage_rect_in_quad_space_valid);
-    } else if (!surface) {
-      DLOG(ERROR) << surface_id << " is missing during aggregation";
-      ++uma_stats_.missing_surface;
+    } else if (surface_quad->surface_draw_quad_type ==
+               SurfaceDrawQuadType::FALLBACK) {
+      if (!surface) {
+        DLOG(ERROR) << surface_id << " is missing during aggregation";
+        ++uma_stats_.missing_surface;
+      } else {
+        DLOG(ERROR) << surface_id << " has no active frame during aggregation";
+        ++uma_stats_.no_active_frame;
+      }
     } else {
-      DLOG(ERROR) << surface_id << " has no active frame during aggregation";
-      ++uma_stats_.no_active_frame;
+      // This is a primary SurfaceDrawQuad and there is no fallback
+      // SurfaceDrawQuad so create a SolidColorDrawQuad with the default
+      // background color.
+      auto* shared_quad_state =
+          CopySharedQuadState(surface_quad->shared_quad_state, target_transform,
+                              clip_rect, dest_pass);
+      auto* solid_color_quad =
+          dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+      solid_color_quad->SetNew(shared_quad_state, surface_quad->rect,
+                               surface_quad->visible_rect,
+                               surface_quad->default_background_color, false);
     }
+
     return;
   }
   ++uma_stats_.valid_surface;
@@ -467,8 +483,11 @@ void SurfaceAggregator::CopyQuadsToPass(
 
       // The primary SurfaceDrawQuad should have already dealt with the fallback
       // DrawQuad.
-      if (surface_quad->surface_draw_quad_type == SurfaceDrawQuadType::FALLBACK)
+      if (!surface_quad->surface_id.is_valid() ||
+          surface_quad->surface_draw_quad_type ==
+              SurfaceDrawQuadType::FALLBACK) {
         continue;
+      }
 
       HandleSurfaceQuad(surface_quad, target_transform, clip_rect, dest_pass,
                         ignore_undamaged, &damage_rect_in_quad_space,

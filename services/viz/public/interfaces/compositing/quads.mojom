@@ -60,6 +60,7 @@ enum SurfaceDrawQuadType {
 struct SurfaceQuadState {
   SurfaceId surface;
   SurfaceDrawQuadType surface_draw_quad_type;
+  uint32 default_background_color;
 };
 
 struct TextureQuadState {

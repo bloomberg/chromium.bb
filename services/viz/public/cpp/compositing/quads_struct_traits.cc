@@ -135,6 +135,7 @@ bool StructTraits<viz::mojom::SurfaceQuadStateDataView, viz::DrawQuad>::Read(
     viz::mojom::SurfaceQuadStateDataView data,
     viz::DrawQuad* out) {
   viz::SurfaceDrawQuad* quad = static_cast<viz::SurfaceDrawQuad*>(out);
+  quad->default_background_color = data.default_background_color();
   return data.ReadSurfaceDrawQuadType(&quad->surface_draw_quad_type) &&
          data.ReadSurface(&quad->surface_id);
 }
