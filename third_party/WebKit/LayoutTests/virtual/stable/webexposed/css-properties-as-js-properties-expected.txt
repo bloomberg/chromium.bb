@@ -241,6 +241,9 @@ right
 rx
 ry
 scrollBehavior
+scrollBoundaryBehavior
+scrollBoundaryBehaviorX
+scrollBoundaryBehaviorY
 setProperty
 shapeImageThreshold
 shapeMargin
