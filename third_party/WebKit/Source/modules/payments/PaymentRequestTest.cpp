@@ -564,7 +564,7 @@ TEST(PaymentRequestTest, NoExceptionWithErrorMessageInUpdate) {
 }
 
 TEST(PaymentRequestTest,
-     ShouldResolveWithEmptyShippingOptionsIfIDsOfShippingOptionsAreDuplicated) {
+     ShouldResolveWithExceptionIfIDsOfShippingOptionsAreDuplicated) {
   V8TestingScope scope;
   PaymentRequestMockFunctionScope funcs(scope.GetScriptState());
   MakePaymentRequestOriginSecure(scope.GetDocument());
@@ -579,29 +579,10 @@ TEST(PaymentRequestTest,
   details.setShippingOptions(shipping_options);
   PaymentOptions options;
   options.setRequestShipping(true);
-  PaymentRequest* request = PaymentRequest::Create(
-      scope.GetExecutionContext(), BuildPaymentMethodDataForTest(), details,
-      options, scope.GetExceptionState());
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_TRUE(request->shippingOption().IsNull());
-  request->show(scope.GetScriptState())
-      .Then(funcs.ExpectNoCall(), funcs.ExpectNoCall());
-  String detail_with_shipping_options =
-      "{\"total\": {\"label\": \"Total\", \"amount\": {\"currency\": \"USD\", "
-      "\"value\": \"5.00\"}},"
-      "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": "
-      "\"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": "
-      "\"5.00\"}, \"selected\": true}, {\"id\": \"standardShippingOption\", "
-      "\"label\": \"Standard shipping\", \"amount\": {\"currency\": \"USD\", "
-      "\"value\": \"5.00\"}, \"selected\": true}]}";
-
-  request->OnUpdatePaymentDetails(ScriptValue::From(
-      scope.GetScriptState(),
-      FromJSONString(scope.GetScriptState()->GetIsolate(),
-                     detail_with_shipping_options, scope.GetExceptionState())));
-
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_TRUE(request->shippingOption().IsNull());
+  PaymentRequest::Create(scope.GetExecutionContext(),
+                         BuildPaymentMethodDataForTest(), details, options,
+                         scope.GetExceptionState());
+  EXPECT_TRUE(scope.GetExceptionState().HadException());
 }
 
 TEST(PaymentRequestTest, DetailsIdIsSet) {
