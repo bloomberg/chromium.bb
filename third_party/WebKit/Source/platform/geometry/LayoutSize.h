@@ -31,6 +31,7 @@
 #ifndef LayoutSize_h
 #define LayoutSize_h
 
+#include <iosfwd>
 #include "platform/LayoutUnit.h"
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatPoint.h"

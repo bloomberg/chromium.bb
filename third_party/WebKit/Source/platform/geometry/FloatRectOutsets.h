@@ -5,7 +5,6 @@
 #ifndef FloatRectOutsets_h
 #define FloatRectOutsets_h
 
-#include <algorithm>
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 
@@ -36,12 +35,7 @@ class PLATFORM_EXPORT FloatRectOutsets {
   void SetLeft(float left) { left_ = left; }
 
   // Change outsets to be at least as large as |other|.
-  void Unite(const FloatRectOutsets& other) {
-    top_ = std::max(top_, other.top_);
-    right_ = std::max(right_, other.right_);
-    bottom_ = std::max(bottom_, other.bottom_);
-    left_ = std::max(left_, other.left_);
-  }
+  void Unite(const FloatRectOutsets& other);
 
  private:
   float top_;

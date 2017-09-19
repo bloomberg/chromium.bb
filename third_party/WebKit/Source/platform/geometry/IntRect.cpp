@@ -27,6 +27,7 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect.h"
@@ -42,6 +43,28 @@ IntRect::IntRect(const FloatRect& r)
 IntRect::IntRect(const LayoutRect& r)
     : location_(r.X().ToInt(), r.Y().ToInt()),
       size_(r.Width().ToInt(), r.Height().ToInt()) {}
+
+void IntRect::ShiftXEdgeTo(int edge) {
+  int delta = edge - X();
+  SetX(edge);
+  SetWidth(std::max(0, Width() - delta));
+}
+
+void IntRect::ShiftMaxXEdgeTo(int edge) {
+  int delta = edge - MaxX();
+  SetWidth(std::max(0, Width() + delta));
+}
+
+void IntRect::ShiftYEdgeTo(int edge) {
+  int delta = edge - Y();
+  SetY(edge);
+  SetHeight(std::max(0, Height() - delta));
+}
+
+void IntRect::ShiftMaxYEdgeTo(int edge) {
+  int delta = edge - MaxY();
+  SetHeight(std::max(0, Height() + delta));
+}
 
 bool IntRect::Intersects(const IntRect& other) const {
   // Checking emptiness handles negative widths as well as zero.

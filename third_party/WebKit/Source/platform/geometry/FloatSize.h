@@ -34,8 +34,6 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/MathExtras.h"
-#include "third_party/skia/include/core/SkSize.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGSize CGSize;
@@ -44,6 +42,8 @@ typedef struct CGSize CGSize;
 #import <Foundation/Foundation.h>
 #endif
 #endif
+
+struct SkSize;
 
 namespace blink {
 
@@ -58,8 +58,7 @@ class PLATFORM_EXPORT FloatSize {
   FloatSize(float width, float height) : width_(width), height_(height) {}
   explicit FloatSize(const IntSize& size)
       : width_(size.Width()), height_(size.Height()) {}
-  FloatSize(const SkSize& size)
-      : width_(size.width()), height_(size.height()) {}
+  FloatSize(const SkSize&);
   explicit FloatSize(const LayoutSize&);
 
   static FloatSize NarrowPrecision(double width, double height);
@@ -122,7 +121,7 @@ class PLATFORM_EXPORT FloatSize {
   operator CGSize() const;
 #endif
 
-  operator SkSize() const { return SkSize::Make(width_, height_); }
+  operator SkSize() const;
 
   String ToString() const;
 

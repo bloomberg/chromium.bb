@@ -5,7 +5,7 @@
 #ifndef DoublePoint_h
 #define DoublePoint_h
 
-#include <algorithm>
+#include <iosfwd>
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
@@ -36,13 +36,8 @@ class PLATFORM_EXPORT DoublePoint {
 
   static DoublePoint Zero() { return DoublePoint(); }
 
-  DoublePoint ExpandedTo(const DoublePoint& other) const {
-    return DoublePoint(std::max(x_, other.x_), std::max(y_, other.y_));
-  }
-
-  DoublePoint ShrunkTo(const DoublePoint& other) const {
-    return DoublePoint(std::min(x_, other.x_), std::min(y_, other.y_));
-  }
+  DoublePoint ExpandedTo(const DoublePoint&) const;
+  DoublePoint ShrunkTo(const DoublePoint&) const;
 
   double X() const { return x_; }
   double Y() const { return y_; }

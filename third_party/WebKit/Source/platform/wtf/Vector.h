@@ -30,6 +30,7 @@
 #include "platform/wtf/Alignment.h"
 #include "platform/wtf/ConditionalDestructor.h"
 #include "platform/wtf/ContainerAnnotations.h"
+#include "platform/wtf/Forward.h"  // For default Vector template parameters.
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/NotFound.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -933,9 +934,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
 // allocate an iterator on stack (as a local variable), and you should not
 // store iterators in another heap object.
 
-template <typename T,
-          size_t inlineCapacity = 0,
-          typename Allocator = PartitionAllocator>
+template <typename T, size_t inlineCapacity, typename Allocator>
 class Vector
     : private VectorBuffer<T, INLINE_CAPACITY, Allocator>,
       // Heap-allocated vectors with no inlineCapacity never need a destructor.
