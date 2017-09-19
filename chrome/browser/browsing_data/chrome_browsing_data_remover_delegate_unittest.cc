@@ -190,10 +190,10 @@ class FakeCryptohomeClient : public chromeos::FakeCryptohomeClient {
       chromeos::attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_prefix,
-      chromeos::DBusMethodCallback<bool> callback) override {
+      const chromeos::BoolDBusMethodCallback& callback) override {
     ++delete_keys_call_count_;
     chromeos::FakeCryptohomeClient::TpmAttestationDeleteKeys(
-        key_type, cryptohome_id, key_prefix, std::move(callback));
+        key_type, cryptohome_id, key_prefix, callback);
   }
 
   int delete_keys_call_count() const { return delete_keys_call_count_; }

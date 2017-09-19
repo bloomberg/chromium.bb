@@ -14,8 +14,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace chromeos {
@@ -184,7 +184,8 @@ class InstallAttributes {
 
   // Helper for ReadImmutableAttributes.
   void ReadAttributesIfReady(const base::Closure& callback,
-                             base::Optional<bool> response);
+                             DBusMethodCallStatus call_status,
+                             bool result);
 
   // Helper for LockDevice(). Handles the result of InstallAttributesIsReady()
   // and continue processing LockDevice if the result is true.
@@ -193,7 +194,8 @@ class InstallAttributes {
                                      const std::string& realm,
                                      const std::string& device_id,
                                      const LockResultCallback& callback,
-                                     base::Optional<bool> response);
+                                     DBusMethodCallStatus call_status,
+                                     bool result);
 
   // Confirms the registered user and invoke the callback.
   void OnReadImmutableAttributes(policy::DeviceMode mode,
@@ -210,7 +212,8 @@ class InstallAttributes {
   // Callback for TpmIsOwned() DBUS call.  Generates UMA or schedules retry in
   // case of DBUS error.
   void OnTpmOwnerCheckCompleted(int dbus_retries_remaining,
-                                base::Optional<bool> response);
+                                DBusMethodCallStatus call_status,
+                                bool result);
 
   CryptohomeClient* cryptohome_client_;
 

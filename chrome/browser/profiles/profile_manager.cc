@@ -269,15 +269,17 @@ void ProfileCleanedUp(const base::Value* profile_path_value) {
 }
 
 #if defined(OS_CHROMEOS)
-void CheckCryptohomeIsMounted(base::Optional<bool> result) {
-  if (!result.has_value()) {
+void CheckCryptohomeIsMounted(chromeos::DBusMethodCallStatus call_status,
+                              bool is_mounted) {
+  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
     LOG(ERROR) << "IsMounted call failed.";
     return;
   }
-
-  LOG_IF(ERROR, !result.value()) << "Cryptohome is not mounted.";
+  if (!is_mounted)
+    LOG(ERROR) << "Cryptohome is not mounted.";
 }
-#endif  // OS_CHROMEOS
+
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -1052,7 +1054,7 @@ void ProfileManager::Observe(
       // our profile directory is the one that's mounted, and that it's mounted
       // as the current user.
       chromeos::DBusThreadManager::Get()->GetCryptohomeClient()->IsMounted(
-          base::BindOnce(&CheckCryptohomeIsMounted));
+          base::Bind(&CheckCryptohomeIsMounted));
 
       // Confirm that we hadn't loaded the new profile previously.
       base::FilePath default_profile_dir = user_data_dir_.Append(

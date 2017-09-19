@@ -202,18 +202,19 @@ void EPKPChallengeKeyBase::PrepareKey(
                                                       require_user_consent,
                                                       callback);
   cryptohome_client_->TpmAttestationIsPrepared(
-      base::BindOnce(&EPKPChallengeKeyBase::IsAttestationPreparedCallback,
-                     base::Unretained(this), context));
+      base::Bind(&EPKPChallengeKeyBase::IsAttestationPreparedCallback,
+                 base::Unretained(this), context));
 }
 
 void EPKPChallengeKeyBase::IsAttestationPreparedCallback(
     const PrepareKeyContext& context,
-    base::Optional<bool> result) {
-  if (!result.has_value()) {
+    chromeos::DBusMethodCallStatus status,
+    bool result) {
+  if (status == chromeos::DBUS_METHOD_CALL_FAILURE) {
     context.callback.Run(PREPARE_KEY_DBUS_ERROR);
     return;
   }
-  if (!result.value()) {
+  if (!result) {
     context.callback.Run(PREPARE_KEY_RESET_REQUIRED);
     return;
   }
@@ -221,19 +222,20 @@ void EPKPChallengeKeyBase::IsAttestationPreparedCallback(
   cryptohome_client_->TpmAttestationDoesKeyExist(
       context.key_type, cryptohome::Identification(context.account_id),
       context.key_name,
-      base::BindOnce(&EPKPChallengeKeyBase::DoesKeyExistCallback,
-                     base::Unretained(this), context));
+      base::Bind(&EPKPChallengeKeyBase::DoesKeyExistCallback,
+                 base::Unretained(this), context));
 }
 
 void EPKPChallengeKeyBase::DoesKeyExistCallback(
     const PrepareKeyContext& context,
-    base::Optional<bool> result) {
-  if (!result.has_value()) {
+    chromeos::DBusMethodCallStatus status,
+    bool result) {
+  if (status == chromeos::DBUS_METHOD_CALL_FAILURE) {
     context.callback.Run(PREPARE_KEY_DBUS_ERROR);
     return;
   }
 
-  if (result.value()) {
+  if (result) {
     // The key exists. Do nothing more.
     context.callback.Run(PREPARE_KEY_OK);
   } else {

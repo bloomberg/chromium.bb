@@ -758,8 +758,9 @@ void CryptohomeAuthenticator::OnOwnershipChecked(bool is_owner) {
   Resolve();
 }
 
-void CryptohomeAuthenticator::OnUnmount(base::Optional<bool> success) {
-  if (!success.has_value() || !success.value()) {
+void CryptohomeAuthenticator::OnUnmount(DBusMethodCallStatus call_status,
+                                        bool success) {
+  if (call_status != DBUS_METHOD_CALL_SUCCESS || !success) {
     // Maybe we should reboot immediately here?
     LOGIN_LOG(ERROR) << "Couldn't unmount users home!";
   }
@@ -887,7 +888,7 @@ void CryptohomeAuthenticator::Resolve() {
     case OWNER_REQUIRED: {
       current_state_->ResetCryptohomeStatus();
       DBusThreadManager::Get()->GetCryptohomeClient()->Unmount(
-          base::BindOnce(&CryptohomeAuthenticator::OnUnmount, this));
+          base::Bind(&CryptohomeAuthenticator::OnUnmount, this));
       break;
     }
     case FAILED_OLD_ENCRYPTION:

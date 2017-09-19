@@ -40,13 +40,15 @@ namespace component_updater {
 
 using ConfigMap = std::map<std::string, std::map<std::string, std::string>>;
 
-void LogRegistrationResult(base::Optional<bool> result) {
+void LogRegistrationResult(const std::string& name,
+                           chromeos::DBusMethodCallStatus call_status,
+                           bool result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!result.has_value()) {
+  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
     DVLOG(1) << "Call to imageloader service failed.";
     return;
   }
-  if (!result.value()) {
+  if (!result) {
     DVLOG(1) << "Component registration failed";
     return;
   }
@@ -58,9 +60,10 @@ void ImageLoaderRegistration(const std::string& version,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   chromeos::ImageLoaderClient* loader =
       chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
+
   if (loader) {
     loader->RegisterComponent(name, version, install_dir.value(),
-                              base::BindOnce(&LogRegistrationResult));
+                              base::Bind(&LogRegistrationResult, name));
   } else {
     DVLOG(1) << "Failed to get ImageLoaderClient object.";
   }

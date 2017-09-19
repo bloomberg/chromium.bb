@@ -33,12 +33,13 @@ void TpmPasswordFetcher::Fetch() {
   // Since this method is also called directly.
   weak_factory_.InvalidateWeakPtrs();
 
-  DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsReady(base::BindOnce(
+  DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsReady(base::Bind(
       &TpmPasswordFetcher::OnTpmIsReady, weak_factory_.GetWeakPtr()));
 }
 
-void TpmPasswordFetcher::OnTpmIsReady(base::Optional<bool> tpm_is_ready) {
-  if (tpm_is_ready.value_or(false)) {
+void TpmPasswordFetcher::OnTpmIsReady(DBusMethodCallStatus call_status,
+                                      bool tpm_is_ready) {
+  if (call_status == DBUS_METHOD_CALL_SUCCESS && tpm_is_ready) {
     DBusThreadManager::Get()->GetCryptohomeClient()->TpmGetPassword(
         base::BindOnce(&TpmPasswordFetcher::OnTpmGetPassword,
                        weak_factory_.GetWeakPtr()));
