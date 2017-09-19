@@ -1644,4 +1644,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityWbr) {
   RunHtmlTest(FILE_PATH_LITERAL("wbr.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityWindowCropsItems) {
+  RunHtmlTest(FILE_PATH_LITERAL("window-crops-items.html"));
+}
+
 }  // namespace content

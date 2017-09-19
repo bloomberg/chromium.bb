@@ -221,6 +221,33 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
       bounds.Offset(-scroll_x, -scroll_y);
     }
 
+    // If this is the root web area, make sure we clip the node to fit.
+    if (container->data().role == ui::AX_ROLE_ROOT_WEB_AREA) {
+      gfx::RectF clipped = bounds;
+      clipped.Intersect(container_bounds);
+      if (!clipped.IsEmpty()) {
+        // We can simply clip it to the container.
+        bounds = clipped;
+      } else {
+        // Totally offscreen. Find the nearest edge or corner.
+        // Make the minimum dimension 1 instead of 0.
+        if (bounds.x() >= container_bounds.width()) {
+          bounds.set_x(container_bounds.width() - 1);
+          bounds.set_width(1);
+        } else if (bounds.x() + bounds.width() <= 0) {
+          bounds.set_x(0);
+          bounds.set_width(1);
+        }
+        if (bounds.y() >= container_bounds.height()) {
+          bounds.set_y(container_bounds.height() - 1);
+          bounds.set_height(1);
+        } else if (bounds.y() + bounds.height() <= 0) {
+          bounds.set_y(0);
+          bounds.set_height(1);
+        }
+      }
+    }
+
     node = container;
   }
 

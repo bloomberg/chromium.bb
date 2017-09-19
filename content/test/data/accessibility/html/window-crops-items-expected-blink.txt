@@ -1,0 +1,9 @@
+rootWebArea location=(0, 0) size=(800, 600) pageLocation=(0, 0) pageSize=(800, 600)
+++button location=(8, 8) size=(300, 150) pageLocation=(8, 8) pageSize=(300, 150) name='Button fits'
+++button offscreen location=(908, 8) size=(300, 150) pageLocation=(799, 8) pageSize=(1, 150) name='Button offscreen X'
+++button offscreen location=(8, 908) size=(300, 150) pageLocation=(8, 599) pageSize=(300, 1) name='Button offscreen Y'
+++button location=(708, 508) size=(300, 150) pageLocation=(708, 508) pageSize=(92, 92) name='Button partially on screen'
+++button offscreen location=(908, 908) size=(300, 150) pageLocation=(799, 599) pageSize=(1, 1) name='Button offscreen'
+++button offscreen location=(-392, -392) size=(300, 150) pageLocation=(0, 0) pageSize=(1, 1) name='Button offscreen top'
+++button location=(-92, -92) size=(300, 150) pageLocation=(0, 0) pageSize=(208, 58) name='Button partially on screen'
+<-- End-of-file -->

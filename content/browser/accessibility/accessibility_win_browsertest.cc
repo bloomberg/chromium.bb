@@ -74,6 +74,11 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
   void SetUpSampleParagraph(
       base::win::ScopedComPtr<IAccessibleText>* accessible_text,
       ui::AXMode accessibility_mode = ui::kAXModeComplete);
+  void SetUpSampleParagraphWithScroll(
+      base::win::ScopedComPtr<IAccessibleText>* accessible_text,
+      ui::AXMode accessibility_mode = ui::kAXModeComplete);
+  void SetUpSampleParagraphHelper(
+      base::win::ScopedComPtr<IAccessibleText>* accessible_text);
 
   static base::win::ScopedComPtr<IAccessible> GetAccessibleFromVariant(
       IAccessible* parent,
@@ -234,7 +239,23 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
 void AccessibilityWinBrowserTest::SetUpSampleParagraph(
     base::win::ScopedComPtr<IAccessibleText>* accessible_text,
     ui::AXMode accessibility_mode) {
-  ASSERT_NE(nullptr, accessible_text);
+  LoadInitialAccessibilityTreeFromHtml(
+      "<!DOCTYPE html><html>"
+      "<body>"
+      "<p><b>Game theory</b> is \"the study of "
+      "<a href=\"#\" title=\"Mathematical model\">mathematical models</a> "
+      "of conflict and<br>cooperation between intelligent rational "
+      "decision-makers.\"</p></body></html>",
+      accessibility_mode);
+
+  SetUpSampleParagraphHelper(accessible_text);
+}
+
+// Loads a page with a paragraph of sample text which is below the
+// bottom of the screen.
+void AccessibilityWinBrowserTest::SetUpSampleParagraphWithScroll(
+    base::win::ScopedComPtr<IAccessibleText>* accessible_text,
+    ui::AXMode accessibility_mode) {
   LoadInitialAccessibilityTreeFromHtml(
       "<!DOCTYPE html><html>"
       "<body style=\"overflow: scroll; margin-top: 100vh\">"
@@ -243,6 +264,13 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraph(
       "of conflict and<br>cooperation between intelligent rational "
       "decision-makers.\"</p></body></html>",
       accessibility_mode);
+
+  SetUpSampleParagraphHelper(accessible_text);
+}
+
+void AccessibilityWinBrowserTest::SetUpSampleParagraphHelper(
+    base::win::ScopedComPtr<IAccessibleText>* accessible_text) {
+  ASSERT_NE(nullptr, accessible_text);
 
   // Retrieve the IAccessible interface for the web page.
   base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
@@ -1113,7 +1141,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollToPoint) {
   base::win::ScopedComPtr<IAccessibleText> accessible_text;
-  SetUpSampleParagraph(&accessible_text);
+  SetUpSampleParagraphWithScroll(&accessible_text);
   base::win::ScopedComPtr<IAccessible2> paragraph;
   ASSERT_HRESULT_SUCCEEDED(
       accessible_text.CopyTo(IID_PPV_ARGS(&paragraph)));

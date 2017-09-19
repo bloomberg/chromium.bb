@@ -13,7 +13,7 @@ var allTests = [
       // returned in global screen coordinates. Just check the width and
       // height.
       assertEq(300, okButton.location.width);
-      assertEq(400, okButton.location.height);
+      assertEq(350, okButton.location.height);
       chrome.test.succeed();
     };
 
@@ -28,8 +28,8 @@ var allTests = [
         EventType.CHILDREN_CHANGED, assertOkButtonLocation);
     chrome.tabs.executeScript({ 'code':
           'document.querySelector("button")' +
-          '.setAttribute("style", "position: absolute; left: 100; top: 200; ' +
-          'width: 300; height: 400;");' });
+          '.setAttribute("style", "position: absolute; left: 100; top: 150; ' +
+          'width: 300; height: 350;");' });
   }
 ];
 

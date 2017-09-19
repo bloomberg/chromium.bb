@@ -916,4 +916,35 @@ TEST(AXTreeTest, GetBoundsEmptyBoundsInheritsFromParent) {
   EXPECT_EQ("(300, 200) size (100 x 100)", GetBoundsAsString(tree, 3));
 }
 
+TEST(AXTreeTest, GetBoundsCropsChildToRoot) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(5);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  tree_update.nodes[0].child_ids.push_back(2);
+  tree_update.nodes[0].child_ids.push_back(3);
+  tree_update.nodes[0].child_ids.push_back(4);
+  tree_update.nodes[0].child_ids.push_back(5);
+  // Cropped in the top left
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].location = gfx::RectF(-100, -100, 150, 150);
+  // Cropped in the bottom right
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].location = gfx::RectF(700, 500, 150, 150);
+  // Offscreen on the top
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].location = gfx::RectF(50, -200, 150, 150);
+  // Offscreen on the bottom
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].location = gfx::RectF(50, 700, 150, 150);
+
+  AXTree tree(tree_update);
+  EXPECT_EQ("(0, 0) size (50 x 50)", GetBoundsAsString(tree, 2));
+  EXPECT_EQ("(700, 500) size (100 x 100)", GetBoundsAsString(tree, 3));
+  EXPECT_EQ("(50, 0) size (150 x 1)", GetBoundsAsString(tree, 4));
+  EXPECT_EQ("(50, 599) size (150 x 1)", GetBoundsAsString(tree, 5));
+}
+
 }  // namespace ui
