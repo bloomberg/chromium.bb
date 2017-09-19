@@ -11,5 +11,3 @@ IMG onunloadEvent
 OBJECT onunloadEvent
 
 IFRAME onunloadEvent
-
-

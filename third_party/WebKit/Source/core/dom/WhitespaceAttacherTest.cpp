@@ -448,4 +448,114 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceInsideDisplayContents) {
   EXPECT_TRUE(text->GetLayoutObject());
 }
 
+TEST_F(WhitespaceAttacherTest, RemoveInlineBeforeSpace) {
+  GetDocument().body()->setInnerHTML("<span id=inline></span> ");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* span = GetDocument().getElementById("inline");
+  ASSERT_TRUE(span);
+  EXPECT_TRUE(span->GetLayoutObject());
+
+  Node* text = span->nextSibling();
+  ASSERT_TRUE(text);
+  EXPECT_TRUE(text->IsTextNode());
+  EXPECT_TRUE(text->GetLayoutObject());
+
+  span->remove();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(text->previousSibling());
+  EXPECT_TRUE(text->IsTextNode());
+  EXPECT_FALSE(text->nextSibling());
+  EXPECT_FALSE(text->GetLayoutObject());
+}
+
+TEST_F(WhitespaceAttacherTest, RemoveInlineBeforeOutOfFlowBeforeSpace) {
+  GetDocument().body()->setInnerHTML(
+      "<span id=inline></span><div id=float style='float:right'></div> ");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* span = GetDocument().getElementById("inline");
+  ASSERT_TRUE(span);
+  EXPECT_TRUE(span->GetLayoutObject());
+
+  Element* floated = GetDocument().getElementById("float");
+  ASSERT_TRUE(floated);
+  EXPECT_TRUE(floated->GetLayoutObject());
+
+  Node* text = floated->nextSibling();
+  ASSERT_TRUE(text);
+  EXPECT_TRUE(text->IsTextNode());
+  EXPECT_TRUE(text->GetLayoutObject());
+
+  span->remove();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(text->IsTextNode());
+  EXPECT_FALSE(text->nextSibling());
+  EXPECT_FALSE(text->GetLayoutObject());
+}
+
+TEST_F(WhitespaceAttacherTest, RemoveSpaceBeforeSpace) {
+  GetDocument().body()->setInnerHTML("<span> <!-- --> </span>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Node* span = GetDocument().body()->firstChild();
+  ASSERT_TRUE(span);
+
+  Node* space1 = span->firstChild();
+  ASSERT_TRUE(space1);
+  EXPECT_TRUE(space1->IsTextNode());
+  EXPECT_TRUE(space1->GetLayoutObject());
+
+  Node* space2 = span->lastChild();
+  ASSERT_TRUE(space2);
+  EXPECT_TRUE(space2->IsTextNode());
+  EXPECT_FALSE(space2->GetLayoutObject());
+
+  space1->remove();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(space2->GetLayoutObject());
+}
+
+TEST_F(WhitespaceAttacherTest, RemoveInlineBeforeDisplayContentsWithSpace) {
+  GetDocument().body()->setInnerHTML(
+      "<style>div { display: contents }</style>"
+      "<div><span id=inline></span></div>"
+      "<div><div><div id=innerdiv> </div></div></div>text");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Node* span = GetDocument().getElementById("inline");
+  ASSERT_TRUE(span);
+
+  Node* space = GetDocument().getElementById("innerdiv")->firstChild();
+  ASSERT_TRUE(space);
+  EXPECT_TRUE(space->IsTextNode());
+  EXPECT_TRUE(space->GetLayoutObject());
+
+  span->remove();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(space->GetLayoutObject());
+}
+
+TEST_F(WhitespaceAttacherTest, RemoveBlockBeforeSpace) {
+  GetDocument().body()->setInnerHTML("A<div id=block></div> <span>B</span>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Node* div = GetDocument().getElementById("block");
+  ASSERT_TRUE(div);
+
+  Node* space = div->nextSibling();
+  ASSERT_TRUE(space);
+  EXPECT_TRUE(space->IsTextNode());
+  EXPECT_FALSE(space->GetLayoutObject());
+
+  div->remove();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(space->GetLayoutObject());
+}
+
 }  // namespace blink

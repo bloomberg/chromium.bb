@@ -259,9 +259,7 @@ class CORE_EXPORT StyleEngine final
   void ScheduleInvalidationsForRuleSets(TreeScope&,
                                         const HeapHashSet<Member<RuleSet>>&);
 
-  void ElementWillBeRemoved(Element& element) {
-    style_invalidator_.RescheduleSiblingInvalidationsAsDescendants(element);
-  }
+  void NodeWillBeRemoved(Node&);
 
   unsigned StyleForElementCount() const { return style_for_element_count_; }
   void IncStyleForElementCount() { style_for_element_count_++; }
@@ -274,6 +272,15 @@ class CORE_EXPORT StyleEngine final
                            const ActiveStyleSheetVector& new_style_sheets);
 
   void CustomPropertyRegistered();
+
+  bool NeedsWhitespaceReattachment() const {
+    return !whitespace_reattach_set_.IsEmpty();
+  }
+  bool NeedsWhitespaceReattachment(Element* element) const {
+    return whitespace_reattach_set_.Contains(element);
+  }
+  void ClearWhitespaceReattachSet() { whitespace_reattach_set_.clear(); }
+  void MarkForWhitespaceReattachment();
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_TRACE_WRAPPERS();
@@ -392,6 +399,12 @@ class CORE_EXPORT StyleEngine final
   Member<MediaQueryEvaluator> media_query_evaluator_;
   Member<CSSGlobalRuleSet> global_rule_set_;
   StyleInvalidator style_invalidator_;
+
+  // This is a set of rendered elements which had one or more of its rendered
+  // children removed since the last lifecycle update. For such elements we need
+  // to re-attach whitespace children. Also see reattach_all_whitespace_nodes_
+  // in the WhitespaceAttacher class.
+  HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   Member<CSSFontSelector> font_selector_;
 

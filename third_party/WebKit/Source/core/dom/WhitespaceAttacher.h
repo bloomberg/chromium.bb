@@ -45,6 +45,12 @@ class CORE_EXPORT WhitespaceAttacher {
   bool LastTextNodeNeedsReattach() const {
     return last_text_node_needs_reattach_;
   }
+  void SetReattachAllWhitespaceNodes() {
+    reattach_all_whitespace_nodes_ = true;
+  }
+  bool TraverseIntoDisplayContents() const {
+    return last_text_node_needs_reattach_ || reattach_all_whitespace_nodes_;
+  }
 
  private:
   void DidReattach(Node*, LayoutObject*);
@@ -81,6 +87,17 @@ class CORE_EXPORT WhitespaceAttacher {
   // 1. We visiting a previous in-flow sibling, or
   // 2. We get to the start of the sibling list during the rebuild.
   bool last_text_node_needs_reattach_ = false;
+
+  // Removing a node from the DOM may cause the need for a whitespace
+  // LayoutObject to be attached or detached. When the display type changes on
+  // an element, the WhitespaceAttacher keeps track of the last text node seen
+  // and re-attaches whitespaces as necessary during the tree walk. When
+  // removing an element from the tree, we can not selectively track which
+  // whitespace nodes which needs to be checked for re-attachment. Thus, we need
+  // to check all LayoutText children of the layout tree parent of the removed
+  // node for re-attachment. Set to true when all whitespace children needs to
+  // be checked for re-attachement.
+  bool reattach_all_whitespace_nodes_ = false;
 };
 
 }  // namespace blink

@@ -84,6 +84,10 @@
       "reason": "disappeared"
     },
     {
+      "object": "LayoutText #text",
+      "reason": "disappeared"
+    },
+    {
       "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
       "reason": "subtree"
     },

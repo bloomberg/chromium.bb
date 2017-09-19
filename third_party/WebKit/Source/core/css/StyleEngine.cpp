@@ -1238,6 +1238,43 @@ void StyleEngine::CustomPropertyRegistered() {
     resolver_->InvalidateMatchedPropertiesCache();
 }
 
+void StyleEngine::MarkForWhitespaceReattachment() {
+  for (auto element : whitespace_reattach_set_) {
+    if (!element->GetLayoutObject())
+      continue;
+    element->SetChildNeedsReattachLayoutTree();
+    element->MarkAncestorsWithChildNeedsReattachLayoutTree();
+  }
+}
+
+void StyleEngine::NodeWillBeRemoved(Node& node) {
+  if (node.IsElementNode()) {
+    style_invalidator_.RescheduleSiblingInvalidationsAsDescendants(
+        ToElement(node));
+  }
+
+  // Mark closest ancestor with with LayoutObject to have all whitespace
+  // children being considered for re-attachment during the layout tree build.
+
+  LayoutObject* layout_object = node.GetLayoutObject();
+  // The removed node does not have a layout object. No sibling whitespace nodes
+  // will change rendering.
+  if (!layout_object)
+    return;
+  // Floating or out-of-flow elements do not affect whitespace siblings.
+  if (layout_object->IsFloatingOrOutOfFlowPositioned())
+    return;
+  layout_object = layout_object->Parent();
+  while (layout_object->IsAnonymous())
+    layout_object = layout_object->Parent();
+  DCHECK(layout_object);
+  DCHECK(layout_object->GetNode());
+  if (layout_object->GetNode()->IsElementNode()) {
+    whitespace_reattach_set_.insert(ToElement(layout_object->GetNode()));
+    GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
+  }
+}
+
 DEFINE_TRACE(StyleEngine) {
   visitor->Trace(document_);
   visitor->Trace(injected_author_style_sheets_);
@@ -1252,6 +1289,7 @@ DEFINE_TRACE(StyleEngine) {
   visitor->Trace(media_query_evaluator_);
   visitor->Trace(global_rule_set_);
   visitor->Trace(style_invalidator_);
+  visitor->Trace(whitespace_reattach_set_);
   visitor->Trace(font_selector_);
   visitor->Trace(text_to_sheet_cache_);
   visitor->Trace(sheet_to_text_cache_);
