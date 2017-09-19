@@ -1116,7 +1116,6 @@ class MetaBuildWrapper(object):
       cmdline = [
           '../../build/android/test_wrapper/logdog_wrapper.py',
           '--target', target,
-          '--target-devices-file', '${SWARMING_BOT_FILE}',
           '--logdog-bin-cmd', '../../bin/logdog_butler',
           '--store-tombstones']
     elif is_fuchsia and test_type != 'script':
