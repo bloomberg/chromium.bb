@@ -978,13 +978,32 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
     mi->mbmi.interinter_compound_type
   };
 
+#if CONFIG_HIGHBITDEPTH
+  DECLARE_ALIGNED(16, uint8_t, tmp_dst_[2 * MAX_SB_SQUARE]);
+  uint8_t *tmp_dst = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+                         ? CONVERT_TO_BYTEPTR(tmp_dst_)
+                         : tmp_dst_;
+  const int bd = xd->bd;
+#else
+  DECLARE_ALIGNED(16, uint8_t, tmp_dst[MAX_SB_SQUARE]);
+  const int bd = 8;
+#endif
+
+#if CONFIG_CONVOLVE_ROUND
+  // tmp_dst2 is the destination for the inter-prediction from the second
+  // reference frame (which is what we're being called with).
+  //
+  // With COMPOUND_SEG, once we've generated that, we'll compute a mask based
+  // on its contents and also those of conv_params->dst, the first reference
+  // frame (which gets locally referred to as org_dst).
+  //
+  // With COMPOUND_WEDGE, the mask is actually fixed, but we still compute both
+  // predictions in advance and blend.
   const int is_conv_no_round = conv_params->round == CONVOLVE_OPT_NO_ROUND;
   DECLARE_ALIGNED(16, CONV_BUF_TYPE, tmp_dst2[MAX_SB_SQUARE]);
   int tmp_dst2_stride = MAX_SB_SIZE;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
-#if CONFIG_HIGHBITDEPTH
-#if CONFIG_CONVOLVE_ROUND
   if (is_conv_no_round) {
     conv_params->dst = tmp_dst2;
     conv_params->dst_stride = tmp_dst2_stride;
@@ -992,10 +1011,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
     conv_params->do_average = 0;
   }
 #endif  // CONFIG_CONVOLVE_ROUND
-  DECLARE_ALIGNED(16, uint8_t, tmp_dst_[2 * MAX_SB_SQUARE]);
-  uint8_t *tmp_dst = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-                         ? CONVERT_TO_BYTEPTR(tmp_dst_)
-                         : tmp_dst_;
+
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE, subpel_x,
                            subpel_y, sf, w, h, conv_params, interp_filter,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -1005,25 +1021,29 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                            mi, 0,
 #endif
                            xs, ys, xd);
+
 #if CONFIG_COMPOUND_SEGMENT
   if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
 #if CONFIG_CONVOLVE_ROUND
     if (is_conv_no_round) {
-      build_compound_seg_mask_d32(comp_data.seg_mask, comp_data.mask_type,
-                                  org_dst, org_dst_stride, tmp_dst2,
-                                  tmp_dst2_stride, mi->mbmi.sb_type, h, w,
-                                  conv_params, xd->bd);
+      build_compound_seg_mask_d32(
+          comp_data.seg_mask, comp_data.mask_type, org_dst, org_dst_stride,
+          tmp_dst2, tmp_dst2_stride, mi->mbmi.sb_type, h, w, conv_params, bd);
     } else {
 #endif  // CONFIG_CONVOLVE_ROUND
+#if CONFIG_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
         build_compound_seg_mask_highbd(comp_data.seg_mask, comp_data.mask_type,
                                        dst, dst_stride, tmp_dst, MAX_SB_SIZE,
-                                       mi->mbmi.sb_type, h, w, xd->bd);
+                                       mi->mbmi.sb_type, h, w, bd);
       } else {
+#endif
         build_compound_seg_mask(comp_data.seg_mask, comp_data.mask_type, dst,
                                 dst_stride, tmp_dst, MAX_SB_SIZE,
                                 mi->mbmi.sb_type, h, w);
+#if CONFIG_HIGHBITDEPTH
       }
+#endif
 #if CONFIG_CONVOLVE_ROUND
     }
 #endif
@@ -1031,11 +1051,13 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #endif  // CONFIG_COMPOUND_SEGMENT
 
 #if CONFIG_SUPERTX
+#if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     build_masked_compound_wedge_extend_highbd(
         dst, dst_stride, dst, dst_stride, tmp_dst, MAX_SB_SIZE, &comp_data,
         mi->mbmi.sb_type, wedge_offset_x, wedge_offset_y, h, w, xd->bd);
   else
+#endif  // CONFIG_HIGHBITDEPTH
     build_masked_compound_wedge_extend(
         dst, dst_stride, dst, dst_stride, tmp_dst, MAX_SB_SIZE, &comp_data,
         mi->mbmi.sb_type, wedge_offset_x, wedge_offset_y, h, w);
@@ -1045,93 +1067,37 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
     build_masked_compound_no_round(org_dst, org_dst_stride, org_dst,
                                    org_dst_stride, tmp_dst2, tmp_dst2_stride,
                                    &comp_data, mi->mbmi.sb_type, h, w);
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+#if CONFIG_HIGHBITDEPTH
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       av1_highbd_convolve_rounding(
           org_dst, org_dst_stride, dst, dst_stride, w, h,
           FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1,
           xd->bd);
-    } else {
+    else
+#endif
       av1_convolve_rounding(
           org_dst, org_dst_stride, dst, dst_stride, w, h,
           FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1);
-    }
+
     conv_params->do_post_rounding = 0;
   } else {
 #endif  // CONFIG_CONVOLVE_ROUND
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+
+#if CONFIG_HIGHBITDEPTH
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       build_masked_compound_highbd(dst, dst_stride, dst, dst_stride, tmp_dst,
                                    MAX_SB_SIZE, &comp_data, mi->mbmi.sb_type, h,
                                    w, xd->bd);
-    } else {
+    else
+#endif  // CONFIG_HIGHBITDEPTH
       build_masked_compound(dst, dst_stride, dst, dst_stride, tmp_dst,
                             MAX_SB_SIZE, &comp_data, mi->mbmi.sb_type, h, w);
-    }
+
 #if CONFIG_CONVOLVE_ROUND
   }
 #endif  // CONFIG_CONVOLVE_ROUND
 #endif  // CONFIG_SUPERTX
 
-#else  // CONFIG_HIGHBITDEPTH
-
-#if CONFIG_CONVOLVE_ROUND
-  if (is_conv_no_round) {
-    memset(tmp_dst2, 0, sizeof(tmp_dst2));
-    conv_params->dst = tmp_dst2;
-    conv_params->dst_stride = tmp_dst2_stride;
-    // mask compound has its own average mechanism
-    conv_params->do_average = 0;
-  }
-#endif
-  DECLARE_ALIGNED(16, uint8_t, tmp_dst[MAX_SB_SQUARE]);
-  av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE, subpel_x,
-                           subpel_y, sf, w, h, conv_params, interp_filter,
-#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-                           warp_types, p_col, p_row, plane, ref,
-#endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
-#if CONFIG_MOTION_VAR
-                           mi, 0,
-#endif
-                           xs, ys, xd);
-#if CONFIG_COMPOUND_SEGMENT
-  if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
-#if CONFIG_CONVOLVE_ROUND
-    if (is_conv_no_round) {
-      build_compound_seg_mask_d32(
-          comp_data.seg_mask, comp_data.mask_type, org_dst, org_dst_stride,
-          tmp_dst2, tmp_dst2_stride, mi->mbmi.sb_type, h, w, conv_params, 8);
-    } else {
-#endif  // CONFIG_CONVOLVE_ROUND
-      build_compound_seg_mask(comp_data.seg_mask, comp_data.mask_type, dst,
-                              dst_stride, tmp_dst, MAX_SB_SIZE,
-                              mi->mbmi.sb_type, h, w);
-#if CONFIG_CONVOLVE_ROUND
-    }
-#endif
-  }
-#endif  // CONFIG_COMPOUND_SEGMENT
-#if CONFIG_SUPERTX
-  build_masked_compound_wedge_extend(dst, dst_stride, dst, dst_stride, tmp_dst,
-                                     MAX_SB_SIZE, &comp_data, mi->mbmi.sb_type,
-                                     wedge_offset_x, wedge_offset_y, h, w);
-#else
-#if CONFIG_CONVOLVE_ROUND
-  if (is_conv_no_round) {
-    build_masked_compound_no_round(org_dst, org_dst_stride, org_dst,
-                                   org_dst_stride, tmp_dst2, tmp_dst2_stride,
-                                   &comp_data, mi->mbmi.sb_type, h, w);
-    av1_convolve_rounding(
-        org_dst, org_dst_stride, dst, dst_stride, w, h,
-        FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1);
-    conv_params->do_post_rounding = 0;
-  } else {
-#endif  // CONFIG_CONVOLVE_ROUND
-    build_masked_compound(dst, dst_stride, dst, dst_stride, tmp_dst,
-                          MAX_SB_SIZE, &comp_data, mi->mbmi.sb_type, h, w);
-#if CONFIG_CONVOLVE_ROUND
-  }
-#endif  // CONFIG_CONVOLVE_ROUND
-#endif  // CONFIG_SUPERTX
-#endif  // CONFIG_HIGHBITDEPTH
 #if CONFIG_COMPOUND_SEGMENT
   (void)plane;
 #endif  // CONFIG_COMPOUND_SEGMENT
