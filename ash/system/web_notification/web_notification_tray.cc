@@ -411,7 +411,13 @@ void WebNotificationTray::AnchorUpdated() {
     UpdateClippingWindowBounds();
     system_tray_->UpdateClippingWindowBounds();
     message_center_bubble()->bubble_view()->UpdateBubble();
-    UpdateBubbleViewArrow(message_center_bubble()->bubble_view());
+    // Should check |message_center_bubble_| again here. Since UpdateBubble
+    // above set the bounds of the bubble which will stop the current
+    // animation. If web notification bubble is during animation to close,
+    // CloseBubbleObserver in TrayBackgroundView will close the bubble if
+    // animation finished.
+    if (message_center_bubble())
+      UpdateBubbleViewArrow(message_center_bubble()->bubble_view());
   }
 }
 
