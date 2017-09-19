@@ -10,7 +10,6 @@
 #include "ash/ash_constants.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/scoped_root_window_for_new_windows.h"
@@ -473,33 +472,19 @@ void ShelfView::ButtonPressed(views::Button* sender,
       break;
   }
 
-  // Notify the item of its selection; handle the result in AfterItemSelected.
-  const ShelfItem& item = model_->items()[last_pressed_index_];
-  const int64_t display_id = GetDisplayIdForView(this);
-
   // Run AfterItemSelected directly if the item has no delegate (ie. in tests).
+  const ShelfItem& item = model_->items()[last_pressed_index_];
   if (!model_->GetShelfItemDelegate(item.id)) {
     AfterItemSelected(item, sender, ui::Event::Clone(event), ink_drop,
                       SHELF_ACTION_NONE, base::nullopt);
     return;
   }
 
-  // Mash requires conversion of mouse and touch events to pointer events.
-  std::unique_ptr<ui::Event> pointer_event;
-  if (Shell::GetAshConfig() == Config::MASH &&
-      ui::PointerEvent::CanConvertFrom(event)) {
-    if (event.IsMouseEvent())
-      pointer_event = base::MakeUnique<ui::PointerEvent>(*event.AsMouseEvent());
-    else if (event.IsTouchEvent())
-      pointer_event = base::MakeUnique<ui::PointerEvent>(*event.AsTouchEvent());
-    else
-      NOTREACHED() << "Need conversion of event to pointer event.";
-  }
-  const ui::Event* event_to_pass = pointer_event ? pointer_event.get() : &event;
+  // Notify the item of its selection; handle the result in AfterItemSelected.
   model_->GetShelfItemDelegate(item.id)->ItemSelected(
-      ui::Event::Clone(*event_to_pass), display_id, LAUNCH_FROM_UNKNOWN,
+      ui::Event::Clone(event), GetDisplayIdForView(this), LAUNCH_FROM_UNKNOWN,
       base::Bind(&ShelfView::AfterItemSelected, weak_factory_.GetWeakPtr(),
-                 item, sender, base::Passed(ui::Event::Clone(*event_to_pass)),
+                 item, sender, base::Passed(ui::Event::Clone(event)),
                  ink_drop));
 }
 

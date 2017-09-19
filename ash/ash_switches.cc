@@ -39,6 +39,10 @@ const char kAshEnableNightLight[] = "ash-enable-night-light";
 const char kAshEnablePaletteOnAllDisplays[] =
     "ash-enable-palette-on-all-displays";
 
+// Enables shelf model synchronization between Ash and Chrome in Classic Ash.
+const char kAshEnableShelfModelSynchronization[] =
+    "ash-enable-shelf-model-synchronization";
+
 // Enables the split view on tablet mode.
 const char kAshEnableTabletSplitView[] = "enable-tablet-splitview";
 

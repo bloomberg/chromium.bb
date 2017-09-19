@@ -25,6 +25,7 @@ ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 ASH_EXPORT extern const char kAshEnableNightLight[];
 ASH_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
 ASH_EXPORT extern const char kAshEnableScaleSettingsTray[];
+ASH_EXPORT extern const char kAshEnableShelfModelSynchronization[];
 ASH_EXPORT extern const char kAshEnableTabletSplitView[];
 ASH_EXPORT extern const char kAshEnableTabletMode[];
 ASH_EXPORT extern const char kAshEnableMirroredScreen[];

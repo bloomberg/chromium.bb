@@ -1678,6 +1678,9 @@ extern const char kAshShelfColorSchemeLightMuted[];
 extern const char kAshShelfColorSchemeNormalMuted[];
 extern const char kAshShelfColorSchemeDarkMuted[];
 
+extern const char kAshEnableShelfModelSynchronization[];
+extern const char kAshEnableShelfModelSynchronizationDescription[];
+
 extern const char kMaterialDesignInkDropAnimationSpeedName[];
 extern const char kMaterialDesignInkDropAnimationSpeedDescription[];
 extern const char kMaterialDesignInkDropAnimationFast[];
