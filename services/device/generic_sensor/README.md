@@ -3,7 +3,7 @@
 `services/device/generic_sensor` contains the platform-specific parts of the Sensor APIs
 implementation.
 
-Sensors Mojo interfaces are defined in the `services/public/interfaces` subdirectory.
+Sensors Mojo interfaces are defined in the `services/device/public/interfaces` subdirectory.
 
 ## Web-exposed Interfaces
 
