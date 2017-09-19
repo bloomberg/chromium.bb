@@ -236,144 +236,18 @@ bool RecursiveMutex::TryLock() {
   return true;
 }
 
-bool PlatformCondition::TimedWait(PlatformMutex& mutex,
-                                  DWORD duration_milliseconds) {
-  // Enter the wait state.
-  DWORD res = WaitForSingleObject(block_lock_, INFINITE);
-  DCHECK_EQ(res, WAIT_OBJECT_0);
-  ++waiters_blocked_;
-  res = ReleaseSemaphore(block_lock_, 1, 0);
-  DCHECK(res);
-
-  --mutex.recursion_count_;
-  LeaveCriticalSection(&mutex.internal_mutex_);
-
-  // Main wait - use timeout.
-  bool timed_out = (WaitForSingleObject(block_queue_, duration_milliseconds) ==
-                    WAIT_TIMEOUT);
-
-  res = WaitForSingleObject(unblock_lock_, INFINITE);
-  DCHECK_EQ(res, WAIT_OBJECT_0);
-
-  int signals_left = waiters_to_unblock_;
-
-  if (waiters_to_unblock_) {
-    --waiters_to_unblock_;
-  } else if (++waiters_gone_ == (INT_MAX / 2)) {
-    // timeout/canceled or spurious semaphore timeout or spurious wakeup
-    // occured, normalize the m_waitersGone count this may occur if many
-    // calls to wait with a timeout are made and no call to notify_* is made
-    res = WaitForSingleObject(block_lock_, INFINITE);
-    DCHECK_EQ(res, WAIT_OBJECT_0);
-    waiters_blocked_ -= waiters_gone_;
-    res = ReleaseSemaphore(block_lock_, 1, 0);
-    DCHECK(res);
-    waiters_gone_ = 0;
-  }
-
-  res = ReleaseMutex(unblock_lock_);
-  DCHECK(res);
-
-  if (signals_left == 1) {
-    res = ReleaseSemaphore(block_lock_, 1, 0);  // Open the gate.
-    DCHECK(res);
-  }
-
-  EnterCriticalSection(&mutex.internal_mutex_);
-  ++mutex.recursion_count_;
-
-  return !timed_out;
-}
-
-void PlatformCondition::Signal(bool unblock_all) {
-  unsigned signals_to_issue = 0;
-
-  DWORD res = WaitForSingleObject(unblock_lock_, INFINITE);
-  DCHECK_EQ(res, WAIT_OBJECT_0);
-
-  if (waiters_to_unblock_) {  // the gate is already closed
-    if (!waiters_blocked_) {  // no-op
-      res = ReleaseMutex(unblock_lock_);
-      DCHECK(res);
-      return;
-    }
-
-    if (unblock_all) {
-      signals_to_issue = waiters_blocked_;
-      waiters_to_unblock_ += waiters_blocked_;
-      waiters_blocked_ = 0;
-    } else {
-      signals_to_issue = 1;
-      ++waiters_to_unblock_;
-      --waiters_blocked_;
-    }
-  } else if (waiters_blocked_ > waiters_gone_) {
-    res = WaitForSingleObject(block_lock_, INFINITE);  // Close the gate.
-    DCHECK_EQ(res, WAIT_OBJECT_0);
-    if (waiters_gone_ != 0) {
-      waiters_blocked_ -= waiters_gone_;
-      waiters_gone_ = 0;
-    }
-    if (unblock_all) {
-      signals_to_issue = waiters_blocked_;
-      waiters_to_unblock_ = waiters_blocked_;
-      waiters_blocked_ = 0;
-    } else {
-      signals_to_issue = 1;
-      waiters_to_unblock_ = 1;
-      --waiters_blocked_;
-    }
-  } else {  // No-op.
-    res = ReleaseMutex(unblock_lock_);
-    DCHECK(res);
-    return;
-  }
-
-  res = ReleaseMutex(unblock_lock_);
-  DCHECK(res);
-
-  if (signals_to_issue) {
-    res = ReleaseSemaphore(block_queue_, signals_to_issue, 0);
-    DCHECK(res);
-  }
-}
-
-static const long kMaxSemaphoreCount = static_cast<long>(~0UL >> 1);
-
 ThreadCondition::ThreadCondition() {
-  condition_.waiters_gone_ = 0;
-  condition_.waiters_blocked_ = 0;
-  condition_.waiters_to_unblock_ = 0;
-  condition_.block_lock_ = CreateSemaphore(0, 1, 1, 0);
-  condition_.block_queue_ = CreateSemaphore(0, 0, kMaxSemaphoreCount, 0);
-  condition_.unblock_lock_ = CreateMutex(0, 0, 0);
-
-  if (!condition_.block_lock_ || !condition_.block_queue_ ||
-      !condition_.unblock_lock_) {
-    if (condition_.block_lock_)
-      CloseHandle(condition_.block_lock_);
-    if (condition_.block_queue_)
-      CloseHandle(condition_.block_queue_);
-    if (condition_.unblock_lock_)
-      CloseHandle(condition_.unblock_lock_);
-
-    condition_.block_lock_ = nullptr;
-    condition_.block_queue_ = nullptr;
-    condition_.unblock_lock_ = nullptr;
-  }
+  InitializeConditionVariable(&condition_);
 }
 
-ThreadCondition::~ThreadCondition() {
-  if (condition_.block_lock_)
-    CloseHandle(condition_.block_lock_);
-  if (condition_.block_queue_)
-    CloseHandle(condition_.block_queue_);
-  if (condition_.unblock_lock_)
-    CloseHandle(condition_.unblock_lock_);
-}
+ThreadCondition::~ThreadCondition() {}
 
 void ThreadCondition::Wait(MutexBase& mutex) {
-  condition_.TimedWait(mutex.Impl(), INFINITE);
+  PlatformMutex& platform_mutex = mutex.Impl();
+  BOOL result = SleepConditionVariableCS(
+      &condition_, &platform_mutex.internal_mutex_, INFINITE);
+  DCHECK_NE(result, 0);
+  ++platform_mutex.recursion_count_;
 }
 
 bool ThreadCondition::TimedWait(MutexBase& mutex, double absolute_time) {
@@ -385,15 +259,20 @@ bool ThreadCondition::TimedWait(MutexBase& mutex, double absolute_time) {
     return false;
   }
 
-  return condition_.TimedWait(mutex.Impl(), interval);
+  PlatformMutex& platform_mutex = mutex.Impl();
+  BOOL result = SleepConditionVariableCS(
+      &condition_, &platform_mutex.internal_mutex_, interval);
+  ++platform_mutex.recursion_count_;
+
+  return result != 0;
 }
 
 void ThreadCondition::Signal() {
-  condition_.Signal(false);  // Unblock only 1 thread.
+  WakeConditionVariable(&condition_);
 }
 
 void ThreadCondition::Broadcast() {
-  condition_.Signal(true);  // Unblock all threads.
+  WakeAllConditionVariable(&condition_);
 }
 
 DWORD AbsoluteTimeToWaitTimeoutInterval(double absolute_time) {

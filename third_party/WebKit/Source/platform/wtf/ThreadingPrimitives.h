@@ -61,17 +61,7 @@ struct PlatformMutex {
   CRITICAL_SECTION internal_mutex_;
   size_t recursion_count_;
 };
-struct PlatformCondition {
-  size_t waiters_gone_;
-  size_t waiters_blocked_;
-  size_t waiters_to_unblock_;
-  HANDLE block_lock_;
-  HANDLE block_queue_;
-  HANDLE unblock_lock_;
-
-  bool TimedWait(PlatformMutex&, DWORD duration_milliseconds);
-  void Signal(bool unblock_all);
-};
+typedef CONDITION_VARIABLE PlatformCondition;
 #else
 typedef void* PlatformMutex;
 typedef void* PlatformCondition;
