@@ -2,7 +2,6 @@
 -CloseOnConnectHttpServerTest.ServerImmediatelyClosesConnection
 -NetworkInterfacesTest.GetNetworkList
 -ProxyScriptFetcherImplTest.Priority
--PythonUtils*
 -UDPSocketTest.PartialRecv
 -URLRequestQuic*
 
