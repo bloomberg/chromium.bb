@@ -48,7 +48,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
 
   // Creates a new VideoFrame backed by |output_buffer| and |surface_texture|.
   // |surface_texture| may be null if the buffer is backed by an overlay
-  // instead. Runs |frame_created_cb| on the current thread to return the frame.
+  // instead. Runs |output_cb| on the current thread to return the frame.
   virtual void CreateVideoFrame(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
       scoped_refptr<SurfaceTextureGLOwner> surface_texture,

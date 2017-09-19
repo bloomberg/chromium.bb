@@ -105,9 +105,6 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     std::unique_ptr<VideoFrameFactory> video_frame_factory,
     std::unique_ptr<service_manager::ServiceContextRef> context_ref)
     : state_(State::kInitializing),
-      lazy_init_pending_(true),
-      waiting_for_key_(false),
-      reset_generation_(0),
       output_cb_(output_cb),
       gpu_task_runner_(gpu_task_runner),
       get_stub_cb_(get_stub_cb),
@@ -134,7 +131,7 @@ void MediaCodecVideoDecoder::Destroy() {
   // Mojo callbacks require that they're run before destruction.
   if (reset_cb_)
     reset_cb_.Run();
-  // Cancel codec creation and release callbacks.
+  // Cancel pending codec creation.
   codec_allocator_weak_factory_.InvalidateWeakPtrs();
   ClearPendingDecodes(DecodeStatus::ABORTED);
   StartDrainingCodec(DrainType::kForDestroy);
@@ -188,7 +185,7 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
 void MediaCodecVideoDecoder::OnKeyAdded() {
   DVLOG(2) << __func__;
   waiting_for_key_ = false;
-  ManageTimer(true);
+  StartTimer();
 }
 
 void MediaCodecVideoDecoder::StartLazyInit() {
@@ -318,8 +315,8 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
   }
   codec_ = base::MakeUnique<CodecWrapper>(
       CodecSurfacePair(std::move(codec), std::move(surface_bundle)),
-      BindToCurrentLoop(base::Bind(&MediaCodecVideoDecoder::ManageTimer,
-                                   weak_factory_.GetWeakPtr(), true)));
+      BindToCurrentLoop(base::Bind(&MediaCodecVideoDecoder::StartTimer,
+                                   weak_factory_.GetWeakPtr())));
 
   // If the target surface changed while codec creation was in progress,
   // transition to it immediately.
@@ -329,7 +326,7 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
   if (SurfaceTransitionPending())
     TransitionToTargetSurface();
 
-  ManageTimer(true);
+  StartTimer();
 }
 
 void MediaCodecVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
@@ -381,30 +378,44 @@ void MediaCodecVideoDecoder::PumpCodec(bool force_start_timer) {
       did_work = true;
   } while (did_input || did_output);
 
-  ManageTimer(did_work || force_start_timer);
+  if (did_work || force_start_timer)
+    StartTimer();
+  else
+    StopTimerIfIdle();
 }
 
-void MediaCodecVideoDecoder::ManageTimer(bool start_timer) {
-  const base::TimeDelta kPollingPeriod = base::TimeDelta::FromMilliseconds(10);
-  const base::TimeDelta kIdleTimeout = base::TimeDelta::FromSeconds(1);
+void MediaCodecVideoDecoder::StartTimer() {
+  DVLOG(4) << __func__;
   if (state_ != State::kRunning)
     return;
 
-  if (!idle_timer_ || start_timer)
-    idle_timer_ = base::ElapsedTimer();
+  idle_timer_ = base::ElapsedTimer();
 
-  if (!start_timer && idle_timer_->Elapsed() > kIdleTimeout) {
-    DVLOG(2) << __func__ << " Stopping timer; idle timeout hit";
+  // Poll at 10ms somewhat arbitrarily.
+  // TODO: Don't poll on new devices; use the callback API.
+  // TODO: Experiment with this number to save power. Since we already pump the
+  // codec in response to receiving a decode and output buffer release, polling
+  // at this frequency is likely overkill in the steady state.
+  const auto kPollingPeriod = base::TimeDelta::FromMilliseconds(10);
+  if (!pump_codec_timer_.IsRunning()) {
+    pump_codec_timer_.Start(FROM_HERE, kPollingPeriod,
+                            base::Bind(&MediaCodecVideoDecoder::PumpCodec,
+                                       base::Unretained(this), false));
+  }
+}
+
+void MediaCodecVideoDecoder::StopTimerIfIdle() {
+  DVLOG(4) << __func__;
+  // Stop the timer if we've been idle for one second. Chosen arbitrarily.
+  const auto kTimeout = base::TimeDelta::FromSeconds(1);
+  if (idle_timer_.Elapsed() > kTimeout) {
+    DVLOG(2) << "Stopping timer; idle timeout hit";
+    pump_codec_timer_.Stop();
     // Draining for destroy can no longer proceed if the timer is stopping,
     // because no more Decode() calls can be made, so complete it now to avoid
     // leaking |this|.
     if (drain_type_ == DrainType::kForDestroy)
       OnCodecDrained();
-    pump_codec_timer_.Stop();
-  } else if (!pump_codec_timer_.IsRunning()) {
-    pump_codec_timer_.Start(FROM_HERE, kPollingPeriod,
-                            base::Bind(&MediaCodecVideoDecoder::PumpCodec,
-                                       base::Unretained(this), false));
   }
 }
 
@@ -430,9 +441,9 @@ bool MediaCodecVideoDecoder::QueueInput() {
   PendingDecode& pending_decode = pending_decodes_.front();
   auto status = codec_->QueueInputBuffer(*pending_decode.buffer,
                                          decoder_config_.encryption_scheme());
-  int lvl = status == CodecWrapper::QueueStatus::kTryAgainLater ? 3 : 2;
-  DVLOG(lvl) << "QueueInput(" << pending_decode.buffer->AsHumanReadableString()
-             << ") status=" << static_cast<int>(status);
+  DVLOG((status == CodecWrapper::QueueStatus::kTryAgainLater ? 3 : 2))
+      << "QueueInput(" << pending_decode.buffer->AsHumanReadableString()
+      << ") status=" << static_cast<int>(status);
 
   switch (status) {
     case CodecWrapper::QueueStatus::kOk:
