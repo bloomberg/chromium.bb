@@ -2033,6 +2033,24 @@
             ]
         }
     ],
+    "OmniboxCombinedSpeculativeServiceWorker": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "PrewarmingWithServiceWorker",
+                    "enable_features": [
+                        "OmniboxSpeculativeServiceWorkerStartOnQueryInput"
+                    ],
+                    "disable_features": [
+                        "OmniboxSpareRenderer"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxPlaceholderExperiment": [
         {
             "platforms": [
@@ -2056,24 +2074,6 @@
                 },
                 {
                     "name": "Default"
-                }
-            ]
-        }
-    ],
-    "OmniboxSpeculativeServiceWorkerStartOnQueryInput": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OmniboxSpeculativeServiceWorkerStartOnQueryInput"
-                    ]
-                },
-                {
-                    "name": "Control"
                 }
             ]
         }
