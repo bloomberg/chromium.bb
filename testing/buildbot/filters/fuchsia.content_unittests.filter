@@ -1,14 +1,5 @@
 # Being ported, https://crbug.com/754861.
 
--LegacyInputRouterImplTest.AckedTouchEventState
--MediaStreamManagerTest.MakeAndCancelMultipleRequests
--MediaStreamManagerTest.MakeMediaAccessRequest
--MediaStreamManagerTest.MakeMultipleRequests
--RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
--RenderWidgetHostViewAuraCopyRequestTest.DestroyedAfterCopyRequest
--RenderWidgetHostViewAuraCopyRequestTest.PresentTime
--ServiceWorkerDatabaseTest.DatabaseVersion_CorruptedSchemaVersion
--ServiceWorkerProviderHostTest.ActiveIsNotController
 -URLLoaderImplTest.Basic
 -URLLoaderImplTest.BasicSSL
 -URLLoaderImplTest.CantSniffEmptyHtml
@@ -17,7 +8,6 @@
 -URLLoaderImplTest.Empty
 -URLLoaderImplTest.SSLSentOnlyWhenRequested
 -URLLoaderImplTest.SniffMimeType
--WebContentsAudioInputStreamTest.MirroringOneStreamAfterTargetChange/0
 
 # Crashes occasionally, possibly related to https://crbug.com/758634.
 -IndexedDBFactoryTest.DataFormatVersion
@@ -50,3 +40,18 @@
 
 # Flaky: https://crbug.com/766223.
 -AppCacheUpdateJobTest.AlreadyChecking/1
+-AppCacheUpdateJobTest.AlreadyDownloading/1
+
+# These expect video capture: https://crbug.com/766356.
+-MediaStreamManagerTest.MakeAndCancelMultipleRequests
+-MediaStreamManagerTest.MakeMediaAccessRequest
+-MediaStreamManagerTest.MakeMultipleRequests
+
+# These expect to be able to compile shader programs but Fuchsia currently uses
+# a stub GPU implementation, so that fails. https://crbug.com/766360.
+-RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
+-RenderWidgetHostViewAuraCopyRequestTest.DestroyedAfterCopyRequest
+-RenderWidgetHostViewAuraCopyRequestTest.PresentTime
+
+# Flaky: https://crbug.com/766362.
+-LegacyInputRouterImplTest.AckedTouchEventState
