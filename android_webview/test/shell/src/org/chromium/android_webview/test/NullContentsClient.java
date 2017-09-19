@@ -12,12 +12,12 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.webkit.GeolocationPermissions;
 import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.AwConsoleMessage;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClientBridge;
+import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwHttpAuthHandler;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
 import org.chromium.android_webview.AwSafeBrowsingResponse;
@@ -119,9 +119,8 @@ public class NullContentsClient extends AwContentsClient {
             Callback<String[]> uploadFilePathsCallback, FileChooserParamsImpl fileChooserParams) {}
 
     @Override
-    public void onGeolocationPermissionsShowPrompt(String origin,
-            GeolocationPermissions.Callback callback) {
-    }
+    public void onGeolocationPermissionsShowPrompt(
+            String origin, AwGeolocationPermissions.Callback callback) {}
 
     @Override
     public void onGeolocationPermissionsHidePrompt() {
