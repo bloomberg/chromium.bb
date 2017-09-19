@@ -314,10 +314,10 @@ void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
     }
 #if CONFIG_DEBUG
     for (int unit_r = 0; unit_r < tx_size_high_unit[tx_size]; unit_r++) {
-      assert(row + unit_r < 2);
-      int row_off = (row + unit_r) * 2;
+      assert(row + unit_r < CFL_SUB8X8_VAL_MI_SIZE);
+      int row_off = (row + unit_r) * CFL_SUB8X8_VAL_MI_SIZE;
       for (int unit_c = 0; unit_c < tx_size_wide_unit[tx_size]; unit_c++) {
-        assert(col + unit_c < 2);
+        assert(col + unit_c < CFL_SUB8X8_VAL_MI_SIZE);
         assert(cfl->sub8x8_val[row_off + col + unit_c] == 0);
         cfl->sub8x8_val[row_off + col + unit_c] = 1;
       }
@@ -371,13 +371,9 @@ void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
       BLOCK_4X4, get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]));
 #if CONFIG_DEBUG
   if (mbmi->sb_type < BLOCK_8X8) {
-    const int val_high =
-        block_size_high[BLOCK_8X8] / block_size_high[BLOCK_4X4];
-    const int val_wide =
-        block_size_wide[BLOCK_8X8] / block_size_wide[BLOCK_4X4];
-    for (int val_r = 0; val_r < val_high; val_r++) {
-      for (int val_c = 0; val_c < val_wide; val_c++) {
-        assert(cfl->sub8x8_val[(val_r * val_wide) + val_c] == 1);
+    for (int val_r = 0; val_r < mi_size_high[mbmi->sb_type]; val_r++) {
+      for (int val_c = 0; val_c < mi_size_wide[mbmi->sb_type]; val_c++) {
+        assert(cfl->sub8x8_val[val_r * CFL_SUB8X8_VAL_MI_SIZE + val_c] == 1);
       }
     }
     cfl_clear_sub8x8_val(cfl);
