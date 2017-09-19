@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#import "ios/chrome/browser/autofill/form_suggestion_provider.h"
+#import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_client.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_driver.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"

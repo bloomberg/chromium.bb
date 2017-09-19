@@ -12,8 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
+#import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
-#import "ios/chrome/browser/autofill/autofill_agent.h"
 #import "ios/chrome/browser/autofill/autofill_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -96,9 +96,9 @@ void FormStructureBrowserTest::SetUp() {
   ChromeWebTest::SetUp();
 
   InfoBarManagerImpl::CreateForWebState(web_state());
-  AutofillAgent* autofillAgent =
-      [[AutofillAgent alloc] initWithBrowserState:chrome_browser_state_.get()
-                                         webState:web_state()];
+  AutofillAgent* autofillAgent = [[AutofillAgent alloc]
+      initWithPrefService:chrome_browser_state_->GetPrefs()
+                 webState:web_state()];
   suggestionController_ =
       [[FormSuggestionController alloc] initWithWebState:web_state()
                                                providers:@[ autofillAgent ]];

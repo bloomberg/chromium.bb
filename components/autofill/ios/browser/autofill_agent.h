@@ -1,15 +1,15 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef IOS_CHROME_BROWSER_AUTOFILL_AUTOFILL_AGENT_H_
-#define IOS_CHROME_BROWSER_AUTOFILL_AUTOFILL_AGENT_H_
+#ifndef COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_AGENT_H
+#define COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_AGENT_H
 
 #import <Foundation/Foundation.h>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#import "ios/chrome/browser/autofill/form_suggestion_provider.h"
+#import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 namespace autofill {
@@ -18,9 +18,7 @@ struct FormData;
 class FormStructure;
 }
 
-namespace ios {
-class ChromeBrowserState;
-}
+class PrefService;
 
 namespace web {
 class WebState;
@@ -32,12 +30,10 @@ class WebState;
 // to the upstream class autofill::AutofillAgent.
 @interface AutofillAgent : NSObject<FormSuggestionProvider>
 
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
-
-// Designated initializer. Arguments |browserState| and |webState| should not be
+// Designated initializer. Arguments |prefService| and |webState| should not be
 // null.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            webState:(web::WebState*)webState
+- (instancetype)initWithPrefService:(PrefService*)prefService
+                           webState:(web::WebState*)webState
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -61,4 +57,4 @@ class WebState;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_AUTOFILL_AUTOFILL_AGENT_H_
+#endif  // COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_AGENT_H

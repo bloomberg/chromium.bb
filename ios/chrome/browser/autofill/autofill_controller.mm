@@ -14,18 +14,18 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
+#import "components/autofill/ios/browser/form_suggestion_provider.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/application_context.h"
-#import "ios/chrome/browser/autofill/autofill_agent.h"
-#import "ios/chrome/browser/autofill/form_suggestion_provider.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -97,8 +97,8 @@ using autofill::AutofillPopupDelegate;
                    passwordGenerationManager
                             webState:(web::WebState*)webState {
   AutofillAgent* autofillAgent =
-      [[AutofillAgent alloc] initWithBrowserState:browserState
-                                         webState:webState];
+      [[AutofillAgent alloc] initWithPrefService:browserState->GetPrefs()
+                                        webState:webState];
   return [self initWithBrowserState:browserState
                            webState:webState
                       autofillAgent:autofillAgent
