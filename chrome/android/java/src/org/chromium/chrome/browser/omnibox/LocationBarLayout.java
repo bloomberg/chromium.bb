@@ -112,10 +112,6 @@ public class LocationBarLayout extends FrameLayout
     // with the new characters.
     private static final long OMNIBOX_SUGGESTION_START_DELAY_MS = 30;
 
-    // Delay showing the geolocation snackbar when the omnibox is focused until the keyboard is
-    // hopefully visible.
-    private static final int GEOLOCATION_SNACKBAR_SHOW_DELAY_MS = 750;
-
     // The minimum confidence threshold that will result in navigating directly to a voice search
     // response (as opposed to treating it like a typed string in the Omnibox).
     private static final float VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD = 0.9f;
@@ -221,13 +217,6 @@ public class LocationBarLayout extends FrameLayout
     private boolean mSuggestionModalShown;
     private boolean mUseDarkColors;
     private boolean mIsEmphasizingHttpsScheme;
-
-    // True if the user has just selected a suggestion from the suggestion list. This suppresses
-    // the recording of the dismissal of the suggestion list. (The list is only considered to have
-    // been dismissed if the user didn't choose one of the suggestions shown.) This signal is used
-    // instead of a parameter to hideSuggestions because that method is often called from multiple
-    // code paths in a not necessarily obvious or even deterministic order.
-    private boolean mSuggestionSelectionInProgress;
 
     private Runnable mShowSuggestions;
 
@@ -339,7 +328,6 @@ public class LocationBarLayout extends FrameLayout
             } else if (KeyNavigationUtil.isEnter(event)
                     && LocationBarLayout.this.getVisibility() == VISIBLE) {
                 UiUtils.hideKeyboard(mUrlBar);
-                mSuggestionSelectionInProgress = true;
                 final String urlText = mUrlBar.getTextWithAutocomplete();
                 if (mNativeInitialized) {
                     findMatchAndLoadUrl(urlText);
@@ -1626,7 +1614,6 @@ public class LocationBarLayout extends FrameLayout
         mSuggestionListAdapter.setSuggestionDelegate(new OmniboxSuggestionDelegate() {
             @Override
             public void onSelection(OmniboxSuggestion suggestion, int position) {
-                mSuggestionSelectionInProgress = true;
                 if (mShowCachedZeroSuggestResults && !mNativeInitialized) {
                     mDeferredOnSelection = new DeferredOnSelectionRunnable(suggestion, position) {
                         @Override
@@ -1828,8 +1815,6 @@ public class LocationBarLayout extends FrameLayout
         setSuggestionsListVisibility(false);
         clearSuggestions(true);
         updateNavigationButton();
-
-        mSuggestionSelectionInProgress = false;
     }
 
     /**
@@ -2470,8 +2455,8 @@ public class LocationBarLayout extends FrameLayout
     }
 
     /**
-     * Checks the current specs and updates {@link LocationBar#mUseDarkColors} if necessary.
-     * @return Whether {@link LocationBar#mUseDarkColors} has been updated.
+     * Checks the current specs and updates {@link LocationBarLayout#mUseDarkColors} if necessary.
+     * @return Whether {@link LocationBarLayout#mUseDarkColors} has been updated.
      */
     private boolean updateUseDarkColors() {
         boolean brandColorNeedsLightText = false;
