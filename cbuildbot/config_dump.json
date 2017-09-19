@@ -3826,6 +3826,24 @@
             "-chrome_internal"
         ]
     },
+    "betty-incremental": {
+        "_template": "incremental",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "betty"
+        ],
+        "buildslave_type": "baremetal",
+        "description": "Incremental Builds (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "vm_tests": [
+            "{\n    \"test_type\": \"vmtest_informational_suite\",\n    \"timeout\": 43200\n}"
+        ],
+        "vm_tests_override": [
+            "{\n    \"test_type\": \"vmtest_informational_suite\",\n    \"timeout\": 43200\n}"
+        ]
+    },
     "betty-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [

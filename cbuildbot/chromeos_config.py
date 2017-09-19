@@ -2677,6 +2677,20 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
+      'betty-incremental',
+      site_config.templates.incremental,
+      site_config.templates.internal_incremental,
+      boards=['betty'],
+      active_waterfall=waterfall.WATERFALL_INTERNAL,
+      vm_tests=[config_lib.VMTestConfig(
+          constants.VMTEST_INFORMATIONAL_TEST_TYPE,
+          timeout=12*60*60)],
+      vm_tests_override=[config_lib.VMTestConfig(
+          constants.VMTEST_INFORMATIONAL_TEST_TYPE,
+          timeout=12*60*60)],
+  )
+
+  site_config.Add(
       'chell-incremental',
       site_config.templates.incremental,
       site_config.templates.internal_incremental,
