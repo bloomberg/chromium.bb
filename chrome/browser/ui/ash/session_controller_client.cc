@@ -219,6 +219,11 @@ void SessionControllerClient::RunUnlockAnimation(
   session_controller_->RunUnlockAnimation(animation_finished_callback);
 }
 
+void SessionControllerClient::ShowTeleportWarningDialog(
+    base::OnceCallback<void(bool, bool)> on_accept) {
+  session_controller_->ShowTeleportWarningDialog(std::move(on_accept));
+}
+
 void SessionControllerClient::RequestLockScreen() {
   DoLockScreen();
 }

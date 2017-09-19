@@ -780,21 +780,6 @@ are declared in build/common.gypi.
         Enable Flash
       </message>
 
-      <!-- Ash multi-user warning dialog -->
-      <if expr="use_ash">
-        <message name="IDS_VISIT_DESKTOP_WARNING_TITLE" desc="The title of the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
-          Careful, this feature may bite
-        </message>
-        <message name="IDS_VISIT_DESKTOP_WARNING_MESSAGE" desc="The message on the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
-          Moving windows to another desktop may result in unexpected behaviour.
-
-Subsequent notifications, windows and dialogs may be split between desktops.
-        </message>
-        <message name="IDS_VISIT_DESKTOP_WARNING_SHOW_DISMISS" desc="Label for checkbox dismissing show of teleportation warning dialog.">
-          Got it, don't show me again.
-        </message>
-      </if>
-
       <!-- Spelling submenu -->
       <if expr="is_macosx">
         <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">

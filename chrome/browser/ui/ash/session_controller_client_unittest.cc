@@ -138,6 +138,10 @@ class TestSessionController : public ash::mojom::SessionController {
   void CanSwitchActiveUser(CanSwitchActiveUserCallback callback) override {
     std::move(callback).Run(true);
   }
+  void ShowTeleportWarningDialog(
+      ShowTeleportWarningDialogCallback callback) override {
+    std::move(callback).Run(true, false);
+  }
 
   base::TimeDelta last_session_length_limit_;
   base::TimeTicks last_session_start_time_;

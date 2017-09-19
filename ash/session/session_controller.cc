@@ -10,6 +10,7 @@
 #include "ash/public/interfaces/pref_connector.mojom.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "ash/session/session_observer.h"
+#include "ash/session/teleport_warning_dialog.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_event_observer.h"
 #include "ash/system/tray/system_tray.h"
@@ -403,6 +404,11 @@ void SessionController::CanSwitchActiveUser(
 
   ash::Shell::Get()->GetPrimarySystemTray()->CanSwitchAwayFromActiveUser(
       std::move(callback));
+}
+
+void SessionController::ShowTeleportWarningDialog(
+    ShowTeleportWarningDialogCallback callback) {
+  TeleportWarningDialog::Show(std::move(callback));
 }
 
 void SessionController::ClearUserSessionsForTest() {

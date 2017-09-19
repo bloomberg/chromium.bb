@@ -73,7 +73,7 @@ void MultiprofilesIntroView::ShowDialog(
       new MultiprofilesIntroView(on_accept);
   dialog_view->InitDialog();
   views::DialogDelegate::CreateDialogWidget(
-      dialog_view, ash::Shell::GetRootWindowForNewWindows(), NULL);
+      dialog_view, ash::Shell::GetRootWindowForNewWindows(), nullptr);
   views::Widget* widget = dialog_view->GetWidget();
   DCHECK(widget);
   widget->Show();
@@ -86,7 +86,7 @@ bool MultiprofilesIntroView::Accept() {
 
 views::View* MultiprofilesIntroView::CreateExtraView() {
   no_show_checkbox_ = new views::Checkbox(
-      l10n_util::GetStringUTF16(IDS_VISIT_DESKTOP_WARNING_SHOW_DISMISS));
+      l10n_util::GetStringUTF16(IDS_MULTIPROFILES_INTRO_NOSHOW_AGAIN));
   no_show_checkbox_->SetChecked(true);
   return no_show_checkbox_;
 }
