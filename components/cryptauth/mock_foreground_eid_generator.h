@@ -39,7 +39,7 @@ class MockForegroundEidGenerator : public ForegroundEidGenerator {
     possible_advertisements_ = std::move(possible_advertisements);
   }
 
-  void set_identified_device(RemoteDevice* identified_device) {
+  void set_identified_device(const RemoteDevice* identified_device) {
     identified_device_ = identified_device;
   }
 
