@@ -81,11 +81,6 @@ class OZONE_EXPORT OzonePlatform : public SystemInputInjectorFactory {
   static OzonePlatform* EnsureInstance();
 
   // Initializes the subsystems/resources necessary for the UI process (e.g.
-  // events, etc.)
-  // TODO(rjkroege): Remove deprecated entry point (http://crbug.com/620934)
-  static void InitializeForUI();
-
-  // Initializes the subsystems/resources necessary for the UI process (e.g.
   // events) with additional properties to customize the ozone platform
   // implementation. Ozone will not retain InitParams after returning from
   // InitalizeForUI.

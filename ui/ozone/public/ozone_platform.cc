@@ -34,12 +34,6 @@ OzonePlatform::~OzonePlatform() {
 }
 
 // static
-void OzonePlatform::InitializeForUI() {
-  const InitParams params;
-  OzonePlatform::InitializeForUI(params);
-}
-
-// static
 void OzonePlatform::InitializeForUI(const InitParams& args) {
   EnsureInstance();
   if (g_platform_initialized_ui)
