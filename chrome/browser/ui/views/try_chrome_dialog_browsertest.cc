@@ -4,6 +4,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -123,6 +124,14 @@ class TryChromeDialogBrowserTestBase : public InProcessBrowserTest {
     RunUntilQuit();
   }
 
+  // Posts a task to the UI thread to simulate a rendezvous from another browser
+  // process.
+  void PostRendezvousTask() {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&TryChromeDialog::OnProcessNotification,
+                              base::Unretained(&dialog_)));
+  }
+
   // Runs a loop until it is quit via either the dialog being shown (by way of
   // the default action on the mock delegate's SetLayoutManager) or the
   // interaction with the dialog completing (by way of the default action on the
@@ -216,6 +225,52 @@ IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTestBase, EarlyEndSession) {
 
   // The dialog is still open, so the result remains in its initial state.
   EXPECT_THAT(result(), Eq(TryChromeDialog::NOT_NOW));
+}
+
+// Showing the dialog then receiving a rendezvous should suppress the initial
+// launch.
+IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTestBase, ShowAndRendezvous) {
+  // Open the toast, expecting that the delegate gets the location.
+  EXPECT_CALL(delegate(), SetToastLocation(_));
+  ShowDialogSync();
+  ::testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  // Expect that the state is moved to OtherLaunch and the interaction
+  // completes with OPEN_CHROME_DEFER.
+  {
+    InSequence delegate_sequence;
+    EXPECT_CALL(delegate(),
+                SetExperimentState(installer::ExperimentMetrics::kOtherLaunch));
+    EXPECT_CALL(delegate(), InteractionComplete());
+  }
+
+  // Queue up the notification from the other browser process.
+  PostRendezvousTask();
+  RunUntilQuit();
+  ::testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  EXPECT_THAT(result(), Eq(TryChromeDialog::OPEN_CHROME_DEFER));
+}
+
+// Receiving a rendezvous before the dialog is even shown should not launch
+// the browser.
+IN_PROC_BROWSER_TEST_F(TryChromeDialogBrowserTestBase, EarlyRendezvous) {
+  // Queue up the notification from the other browser process.
+  PostRendezvousTask();
+
+  // Expect that the state is moved to OtherLaunch and that the interaction
+  // completes without the toast being shown.
+  {
+    InSequence delegate_sequence;
+    EXPECT_CALL(delegate(), SetToastLocation(_)).Times(0);
+    EXPECT_CALL(delegate(),
+                SetExperimentState(installer::ExperimentMetrics::kOtherLaunch));
+    EXPECT_CALL(delegate(), InteractionComplete());
+  }
+  ShowDialogSync();
+  ::testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  EXPECT_THAT(result(), Eq(TryChromeDialog::OPEN_CHROME_DEFER));
 }
 
 // Test harness to display the TryChromeDialog for testing. Template parameter 0
