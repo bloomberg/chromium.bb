@@ -845,6 +845,7 @@ TEST_F(DeviceStatusCollectorTest, VersionInfo) {
   EXPECT_TRUE(device_status_.has_browser_version());
   EXPECT_TRUE(device_status_.has_os_version());
   EXPECT_TRUE(device_status_.has_firmware_version());
+  EXPECT_TRUE(device_status_.has_tpm_version_info());
 
   // When the pref to collect this data is not enabled, expect that none of
   // the fields are present in the protobuf.
@@ -853,12 +854,14 @@ TEST_F(DeviceStatusCollectorTest, VersionInfo) {
   EXPECT_FALSE(device_status_.has_browser_version());
   EXPECT_FALSE(device_status_.has_os_version());
   EXPECT_FALSE(device_status_.has_firmware_version());
+  EXPECT_FALSE(device_status_.has_tpm_version_info());
 
   settings_helper_.SetBoolean(chromeos::kReportDeviceVersionInfo, true);
   GetStatus();
   EXPECT_TRUE(device_status_.has_browser_version());
   EXPECT_TRUE(device_status_.has_os_version());
   EXPECT_TRUE(device_status_.has_firmware_version());
+  EXPECT_TRUE(device_status_.has_tpm_version_info());
 
   // Check that the browser version is not empty. OS version & firmware
   // don't have any reasonable values inside the unit test, so those
