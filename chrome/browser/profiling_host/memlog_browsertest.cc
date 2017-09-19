@@ -39,8 +39,7 @@ class MemlogBrowserTest : public InProcessBrowserTest,
 
 void ValidateDump(base::Value* dump_json,
                   int expected_alloc,
-                  int expected_alloc_count,
-                  int expected_flush_fill_alloc) {
+                  int expected_alloc_count) {
   // Verify allocation is found.
   // See chrome/profiling/json_exporter.cc for file format info.
   base::Value* events = dump_json->FindKey("traceEvents");
@@ -75,20 +74,18 @@ void ValidateDump(base::Value* dump_json,
   // list for them.
   if (expected_alloc) {
     bool found_browser_alloc = false;
-    bool found_browser_fill_alloc = false;
     size_t browser_alloc_index = 0;
     for (size_t i = 0; i < sizes_list.size(); i++) {
       if (sizes_list[i].GetInt() == expected_alloc) {
         browser_alloc_index = i;
         found_browser_alloc = true;
-      } else if (sizes_list[i].GetInt() == expected_flush_fill_alloc) {
-        found_browser_fill_alloc = true;
+        break;
       }
     }
 
-    ASSERT_TRUE(found_browser_fill_alloc)
-        << "Fill alloc not found. Did the send buffer not flush?";
-    ASSERT_TRUE(found_browser_alloc);
+    ASSERT_TRUE(found_browser_alloc) << "Failed to find an allocation of the "
+                                        "appropriate size. Did the send buffer "
+                                        "not flush?";
 
     // This could be EXPECT_EQ, but that's not robust to others making allocs of
     // the given size.
@@ -177,23 +174,9 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   //
   // For the Browser allocations, because the data sending is buffered, it is
   // necessary to generate a large number of allocations to flush the buffer.
-  // This test kludges the flushing by allocating two difference sizes. The
-  // presence of both sizes is a good indicator that the allocations are making
-  // it through.
-  //
-  // Intentionally leak the allocations so that they can be observed in the
-  // dump.
-  char* leak = nullptr;
+  // That's done by creating |kFlushCount| allocations of size 1.
   constexpr int kBrowserAllocSize = 103 * 1024;
   constexpr int kBrowserAllocCount = 2048;
-  constexpr int kBrowserAllocFlushFillSize = 107 * 1024;
-  constexpr int kBrowserAllocFlushFillCount = 2048;
-  for (int i = 0; i < kBrowserAllocCount; ++i) {
-    leak = new char[kBrowserAllocSize];
-  }
-  for (int i = 0; i < kBrowserAllocFlushFillCount; ++i) {
-    leak = new char[kBrowserAllocFlushFillSize];
-  }
 
   // Assuming an average stack size of 20 frames, each alloc packet is ~160
   // bytes in size, and there are 400 packets to fill up a channel. There are 17
@@ -201,8 +184,16 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   // even distribution of allocations across channels. Unfortunately, we're
   // using a fairly dumb hash function. To prevent test flakiness, increase
   // those allocations by an order of magnitude.
-  for (int i = 0; i < 68000; ++i) {
-    leak = new char[1];
+  constexpr int kFlushCount = 68000;
+
+  std::vector<char*> leaks;
+  leaks.reserve(kBrowserAllocCount + kFlushCount);
+  for (int i = 0; i < kBrowserAllocCount; ++i) {
+    leaks.push_back(new char[kBrowserAllocSize]);
+  }
+
+  for (int i = 0; i < kFlushCount; ++i) {
+    leaks.push_back(new char[1]);
   }
 
   // Navigate around to force allocations in the renderer.
@@ -224,10 +215,9 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
     std::unique_ptr<base::Value> dump_json =
         ReadDumpFile(browser_dumpfile_path);
     ASSERT_TRUE(dump_json);
-    // TODO(ajwong): Make these verify allocation amounts in the browser using
-    // kBrowserAllocSize, kBrowserAllocCount, and kBrowserAllocFlushFillSize
-    // after the baseline tests are determined to be stable.
-    ASSERT_NO_FATAL_FAILURE(ValidateDump(dump_json.get(), 0, 0, 0));
+    ASSERT_NO_FATAL_FAILURE(ValidateDump(dump_json.get(),
+                                         kBrowserAllocSize * kBrowserAllocCount,
+                                         kBrowserAllocCount));
   }
 
   {
@@ -250,7 +240,7 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
       // anything to flush allocations, there are very few allocations recorded
       // by the heap profiler. When we do a heap dump, we prune small
       // allocations...and this can cause all allocations to be pruned.
-      // ASSERT_NO_FATAL_FAILURE(ValidateDump(dump_json.get(), 0, 0, 0));
+      // ASSERT_NO_FATAL_FAILURE(ValidateDump(dump_json.get(), 0, 0));
     } else {
       ASSERT_FALSE(dump_json)
           << "Renderer should not be dumpable unless kMemlogModeAll!";

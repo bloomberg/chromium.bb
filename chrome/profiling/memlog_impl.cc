@@ -94,17 +94,13 @@ void MemlogImpl::OnGetVmRegionsCompleteForDumpProcess(
     return;
   }
 
-  if (!connection_manager_.get()->DumpProcess(
-          pid, std::move(metadata),
-          std::move(process_dump->os_dump->memory_maps_for_heap_profiler),
-          std::move(file))) {
-    DLOG(ERROR) << "Can't dump process to file";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  // Signal that the process dump was successful.
-  std::move(callback).Run(true);
+  MemlogConnectionManager::DumpProcessArgs args;
+  args.pid = pid;
+  args.metadata = std::move(metadata);
+  args.maps = std::move(process_dump->os_dump->memory_maps_for_heap_profiler);
+  args.file = std::move(file);
+  args.callback = std::move(callback);
+  connection_manager_.get()->DumpProcess(std::move(args), true);
 }
 
 void MemlogImpl::OnGetVmRegionsCompleteForDumpProcessForTracing(

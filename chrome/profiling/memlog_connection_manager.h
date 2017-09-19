@@ -41,15 +41,30 @@ class MemlogConnectionManager {
   MemlogConnectionManager();
   ~MemlogConnectionManager();
 
-  // Dumps the memory log for the given process into |output_file|.  This must
-  // be provided the memory map for the given process since that is not tracked
-  // as part of the normal allocation process.
-  // Returns true if the dump is successfully produced, false otherwise.
-  bool DumpProcess(
-      base::ProcessId pid,
-      std::unique_ptr<base::DictionaryValue> metadata,
-      const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
-      base::File output_file);
+  // Parameters to DumpProcess().
+  struct DumpProcessArgs {
+    DumpProcessArgs();
+    ~DumpProcessArgs();
+    DumpProcessArgs(DumpProcessArgs&&);
+    base::ProcessId pid;
+    std::unique_ptr<base::DictionaryValue> metadata;
+    std::vector<memory_instrumentation::mojom::VmRegionPtr> maps;
+    base::File file;
+    mojom::Memlog::DumpProcessCallback callback;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DumpProcessArgs);
+  };
+
+  // Dumps the memory log for the given process into |args.output_file|. This
+  // must be provided the memory map for the given process since that is not
+  // tracked as part of the normal allocation process. When
+  // |hop_to_connection_thread| is |true|, the task is posted onto the
+  // connection thread's task runner, and then back onto the current task
+  // runner. This ensures that all queued tasks on the connection's thread are
+  // flushed before the dump is executed.
+  void DumpProcess(DumpProcessArgs args, bool hop_to_connection_thread);
+
   void DumpProcessForTracing(
       base::ProcessId pid,
       mojom::Memlog::DumpProcessForTracingCallback callback,
@@ -59,6 +74,14 @@ class MemlogConnectionManager {
 
  private:
   struct Connection;
+
+  // This method is posted on the connection's thread, and immediately reposts
+  // DumpProcess back to |task_runner|. This ensures that all queued tasks on
+  // the connection's thread are flushed before the dump is executed.
+  static void HopToConnectionThread(
+      base::WeakPtr<MemlogConnectionManager> manager,
+      DumpProcessArgs args,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Notification that a connection is complete. Unlike OnNewConnection which
   // is signaled by the pipe server, this is signaled by the allocation tracker

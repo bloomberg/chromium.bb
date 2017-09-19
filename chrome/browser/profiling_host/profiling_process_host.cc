@@ -170,7 +170,6 @@ void ProfilingProcessHost::BrowserChildProcessLaunchedAndConnected(
       mojo::MakeRequest(&memlog_client);
   BindInterface(host->GetHost(), std::move(request));
   base::ProcessId pid = base::GetProcId(data.handle);
-  LOG(ERROR) << "start profiling: " << pid;
   SendPipeToProfilingService(std::move(memlog_client), pid);
 }
 
