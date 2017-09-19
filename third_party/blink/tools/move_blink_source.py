@@ -109,33 +109,41 @@ class MoveBlinkSource(object):
                                                                  'bindings', 'generators', 'cpp_templates'))
         self._update_cpp_includes_in_directories(dirs)
 
-        # Content update for individual files
-        self._update_single_file_content('third_party/WebKit/Source/BUILD.gn',
-                                         [('$root_gen_dir/third_party/WebKit',
-                                           '$root_gen_dir/third_party/blink/renderer')])
-        self._update_single_file_content('third_party/WebKit/Source/config.gni',
-                                         [('snake_case_source_files = false',
-                                           'snake_case_source_files = true')])
-        self._update_single_file_content('third_party/WebKit/Source/core/css/CSSProperties.json5',
-                                         [self._update_basename])
-        self._update_single_file_content('third_party/WebKit/Source/core/css/ComputedStyleExtraFields.json5',
-                                         [self._update_basename])
-        self._update_single_file_content('third_party/WebKit/Source/core/html/parser/create-html-entity-table',
-                                         [self._update_basename])
-        self._update_single_file_content('third_party/WebKit/Source/core/inspector/inspector_protocol_config.json',
-                                         [self._update_basename])
-        self._update_single_file_content('third_party/WebKit/Source/core/probe/CoreProbes.json5',
-                                         [self._update_basename])
-        self._update_single_file_content('third_party/WebKit/Source/platform/probe/PlatformProbes.json5',
-                                         [self._update_basename])
-        self._update_single_file_content('third_party/WebKit/public/BUILD.gn',
-                                         [('$root_gen_dir/third_party/WebKit',
-                                           '$root_gen_dir/third_party/blink/renderer')])
-        self._update_single_file_content('third_party/WebKit/public/blink_resources.grd',
-                                         [('../Source/', '../')])
-        self._update_single_file_content('tools/gritsettings/resource_ids',
-                                         [('third_party/WebKit/public', 'third_party/blink/renderer/public'),
-                                          ('third_party/WebKit/Source', 'third_party/blink/renderer')])
+        # Content update for individual files.
+        # The following is a list of tuples.
+        #  Tuple: (<file path relative to repo root>, [replacement commands])
+        #  Command: a callable object, or
+        #           a tuple of (<original string>, <new string>).
+        file_replacement_list = [
+            ('third_party/WebKit/Source/BUILD.gn',
+             [('$root_gen_dir/third_party/WebKit',
+               '$root_gen_dir/third_party/blink/renderer')]),
+            ('third_party/WebKit/Source/config.gni',
+             [('snake_case_source_files = false',
+               'snake_case_source_files = true')]),
+            ('third_party/WebKit/Source/core/css/CSSProperties.json5',
+             [self._update_basename]),
+            ('third_party/WebKit/Source/core/css/ComputedStyleExtraFields.json5',
+             [self._update_basename]),
+            ('third_party/WebKit/Source/core/html/parser/create-html-entity-table',
+             [self._update_basename]),
+            ('third_party/WebKit/Source/core/inspector/inspector_protocol_config.json',
+             [self._update_basename]),
+            ('third_party/WebKit/Source/core/probe/CoreProbes.json5',
+             [self._update_basename]),
+            ('third_party/WebKit/Source/platform/probe/PlatformProbes.json5',
+             [self._update_basename]),
+            ('third_party/WebKit/public/BUILD.gn',
+             [('$root_gen_dir/third_party/WebKit',
+               '$root_gen_dir/third_party/blink/renderer')]),
+            ('third_party/WebKit/public/blink_resources.grd',
+             [('../Source/', '../')]),
+            ('tools/gritsettings/resource_ids',
+             [('third_party/WebKit/public', 'third_party/blink/renderer/public'),
+              ('third_party/WebKit/Source', 'third_party/blink/renderer')]),
+        ]
+        for file_path, replacement_list in file_replacement_list:
+            self._update_single_file_content(file_path, replacement_list)
 
     def move(self):
         _log.info('Planning renaming ...')
