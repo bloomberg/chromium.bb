@@ -50,8 +50,8 @@ TransformOperations& TransformOperations::operator=(
 
 gfx::Transform TransformOperations::Apply() const {
   gfx::Transform to_return;
-  for (size_t i = 0; i < operations_.size(); ++i)
-    to_return.PreconcatTransform(operations_[i].matrix);
+  for (auto& operation : operations_)
+    to_return.PreconcatTransform(operation.matrix);
   return to_return;
 }
 
@@ -102,15 +102,15 @@ bool TransformOperations::BlendedBoundsForBox(const gfx::BoxF& box,
 }
 
 bool TransformOperations::PreservesAxisAlignment() const {
-  for (size_t i = 0; i < operations_.size(); ++i) {
-    switch (operations_[i].type) {
+  for (auto& operation : operations_) {
+    switch (operation.type) {
       case TransformOperation::TRANSFORM_OPERATION_IDENTITY:
       case TransformOperation::TRANSFORM_OPERATION_TRANSLATE:
       case TransformOperation::TRANSFORM_OPERATION_SCALE:
         continue;
       case TransformOperation::TRANSFORM_OPERATION_MATRIX:
-        if (!operations_[i].matrix.IsIdentity() &&
-            !operations_[i].matrix.IsScaleOrTranslation())
+        if (!operation.matrix.IsIdentity() &&
+            !operation.matrix.IsScaleOrTranslation())
           return false;
         continue;
       case TransformOperation::TRANSFORM_OPERATION_ROTATE:
@@ -123,13 +123,13 @@ bool TransformOperations::PreservesAxisAlignment() const {
 }
 
 bool TransformOperations::IsTranslation() const {
-  for (size_t i = 0; i < operations_.size(); ++i) {
-    switch (operations_[i].type) {
+  for (auto& operation : operations_) {
+    switch (operation.type) {
       case TransformOperation::TRANSFORM_OPERATION_IDENTITY:
       case TransformOperation::TRANSFORM_OPERATION_TRANSLATE:
         continue;
       case TransformOperation::TRANSFORM_OPERATION_MATRIX:
-        if (!operations_[i].matrix.IsIdentityOrTranslation())
+        if (!operation.matrix.IsIdentityOrTranslation())
           return false;
         continue;
       case TransformOperation::TRANSFORM_OPERATION_ROTATE:
@@ -149,25 +149,24 @@ static SkMScalar TanDegrees(double degrees) {
 
 bool TransformOperations::ScaleComponent(SkMScalar* scale) const {
   SkMScalar operations_scale = 1.f;
-  for (size_t i = 0; i < operations_.size(); ++i) {
-    switch (operations_[i].type) {
+  for (auto& operation : operations_) {
+    switch (operation.type) {
       case TransformOperation::TRANSFORM_OPERATION_IDENTITY:
       case TransformOperation::TRANSFORM_OPERATION_TRANSLATE:
       case TransformOperation::TRANSFORM_OPERATION_ROTATE:
         continue;
       case TransformOperation::TRANSFORM_OPERATION_MATRIX: {
-        if (operations_[i].matrix.HasPerspective())
+        if (operation.matrix.HasPerspective())
           return false;
         gfx::Vector2dF scale_components =
-            MathUtil::ComputeTransform2dScaleComponents(operations_[i].matrix,
-                                                        1.f);
+            MathUtil::ComputeTransform2dScaleComponents(operation.matrix, 1.f);
         operations_scale *=
             std::max(scale_components.x(), scale_components.y());
         break;
       }
       case TransformOperation::TRANSFORM_OPERATION_SKEW: {
-        SkMScalar x_component = TanDegrees(operations_[i].skew.x);
-        SkMScalar y_component = TanDegrees(operations_[i].skew.y);
+        SkMScalar x_component = TanDegrees(operation.skew.x);
+        SkMScalar y_component = TanDegrees(operation.skew.y);
         SkMScalar x_scale = std::sqrt(x_component * x_component + 1);
         SkMScalar y_scale = std::sqrt(y_component * y_component + 1);
         operations_scale *= std::max(x_scale, y_scale);
@@ -176,10 +175,9 @@ bool TransformOperations::ScaleComponent(SkMScalar* scale) const {
       case TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE:
         return false;
       case TransformOperation::TRANSFORM_OPERATION_SCALE:
-        operations_scale *=
-            std::max(std::abs(operations_[i].scale.x),
-                     std::max(std::abs(operations_[i].scale.y),
-                              std::abs(operations_[i].scale.z)));
+        operations_scale *= std::max(
+            std::abs(operation.scale.x),
+            std::max(std::abs(operation.scale.y), std::abs(operation.scale.z)));
     }
   }
   *scale = operations_scale;
@@ -282,8 +280,8 @@ void TransformOperations::Append(const TransformOperation& operation) {
 }
 
 bool TransformOperations::IsIdentity() const {
-  for (size_t i = 0; i < operations_.size(); ++i) {
-    if (!operations_[i].IsIdentity())
+  for (auto& operation : operations_) {
+    if (!operation.IsIdentity())
       return false;
   }
   return true;
