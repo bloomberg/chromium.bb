@@ -60,6 +60,8 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
   ScopedJavaLocalRef<jobject> result =
       Java_SnippetsBridge_createSuggestionList(env);
   for (const ContentSuggestion& suggestion : suggestions) {
+    // image_dominant_color equal to 0 encodes absence of the value. 0 is not a
+    // valid color, because the passed color cannot be fully transparent.
     ScopedJavaLocalRef<jobject> java_suggestion =
         Java_SnippetsBridge_addSuggestion(
             env, result, category.id(),
@@ -70,7 +72,8 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
             ConvertUTF8ToJavaString(env, suggestion.url().spec()),
             suggestion.publish_date().ToJavaTime(), suggestion.score(),
             suggestion.fetch_date().ToJavaTime(),
-            suggestion.is_video_suggestion());
+            suggestion.is_video_suggestion(),
+            suggestion.optional_image_dominant_color().value_or(0));
     if (suggestion.id().category().IsKnownCategory(
             KnownCategories::DOWNLOADS) &&
         suggestion.download_suggestion_extra() != nullptr) {

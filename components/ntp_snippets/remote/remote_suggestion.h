@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTION_H_
 #define COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTION_H_
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "url/gurl.h"
@@ -81,6 +83,10 @@ class RemoteSuggestion {
   // directly.
   const GURL& salient_image_url() const { return salient_image_url_; }
 
+  const base::Optional<uint32_t>& optional_image_dominant_color() const {
+    return image_dominant_color_;
+  }
+
   // When the page pointed by this suggestion was published.
   const base::Time& publish_date() const { return publish_date_; }
 
@@ -137,6 +143,9 @@ class RemoteSuggestion {
   GURL amp_url_;
 
   GURL salient_image_url_;
+  // Encoded as an Android @ColorInt.
+  base::Optional<uint32_t> image_dominant_color_;
+
   std::string snippet_;
   base::Time publish_date_;
   base::Time expiry_date_;

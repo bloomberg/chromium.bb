@@ -72,25 +72,31 @@ public class NtpUiCaptureTestData {
             new SnippetArticle(KnownCategories.ARTICLES, "suggestion0",
                     "James Roderick to step down as conductor for Laville orchestra",
                     "The Morning News", "summary is not used", "http://example.com",
-                    getTimestamp(2017, Calendar.JUNE, 1), 0.0f, 0L, false),
+                    getTimestamp(2017, Calendar.JUNE, 1), 0.0f, 0L, false,
+                    /* thumbnailDominantColor = */ null),
             new SnippetArticle(KnownCategories.ARTICLES, "suggestion1", "Boy raises orphaned goat",
                     "Meme feed", "summary is not used", "http://example.com",
-                    getTimestamp(2017, Calendar.JANUARY, 30), 0.0f, 0L, false),
+                    getTimestamp(2017, Calendar.JANUARY, 30), 0.0f, 0L, false,
+                    /* thumbnailDominantColor = */ null),
             new SnippetArticle(KnownCategories.ARTICLES, "suggestion2", "Top gigs this week",
                     "Now Entertainment", "summary is not used", "http://example.com",
-                    getTimestamp(2017, Calendar.JANUARY, 30), 0.0f, 0L, false)};
+                    getTimestamp(2017, Calendar.JANUARY, 30), 0.0f, 0L, false,
+                    /* thumbnailDominantColor = */ null)};
 
     private static final SnippetArticle[] FAKE_BOOKMARK_SUGGESTIONS = new SnippetArticle[] {
             new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark0",
                     "Light pollution worse than ever", "Facts", "summary is not used",
-                    "http://example.com", getTimestamp(2017, Calendar.MARCH, 10), 0.0f, 0L, false),
+                    "http://example.com", getTimestamp(2017, Calendar.MARCH, 10), 0.0f, 0L, false,
+                    /* thumbnailDominantColor = */ null),
             new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark1",
                     "Emergency services suffering further budget cuts", "The Morning News",
                     "summary is not used", "http://example.com",
-                    getTimestamp(2017, Calendar.FEBRUARY, 20), 0.0f, 0L, false),
+                    getTimestamp(2017, Calendar.FEBRUARY, 20), 0.0f, 0L, false,
+                    /* thumbnailDominantColor = */ null),
             new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark2",
                     "Local election yields surprise winner", "Facts", "summary is not used",
-                    "http://example.com", getTimestamp(2017, Calendar.MARCH, 30), 0.0f, 0L, false),
+                    "http://example.com", getTimestamp(2017, Calendar.MARCH, 30), 0.0f, 0L, false,
+                    /* thumbnailDominantColor = */ null),
     };
 
     public static void registerArticleSamples(FakeSuggestionsSource suggestionsSource) {
