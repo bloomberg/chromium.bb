@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace chromeos {
 
@@ -36,7 +37,7 @@ class CHROMEOS_EXPORT TpmPasswordFetcher {
 
  private:
   // Used to implement Fetch().
-  void OnTpmIsReady(base::Optional<bool> tpm_is_ready);
+  void OnTpmIsReady(DBusMethodCallStatus call_status, bool tpm_is_ready);
 
   // Used to implement Fetch().
   void OnTpmGetPassword(base::Optional<std::string> password);

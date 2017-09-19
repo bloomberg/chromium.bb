@@ -28,16 +28,16 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
   void RegisterComponent(const std::string& name,
                          const std::string& version,
                          const std::string& component_folder_abs_path,
-                         DBusMethodCallback<bool> callback) override {
+                         const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
                                  imageloader::kRegisterComponent);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     writer.AppendString(version);
     writer.AppendString(component_folder_abs_path);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::BindOnce(&ImageLoaderClientImpl::OnBoolMethod,
-                                      std::move(callback)));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ImageLoaderClientImpl::OnBoolMethod, callback));
   }
 
   void LoadComponent(const std::string& name,
@@ -72,20 +72,20 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
   }
 
  private:
-  static void OnBoolMethod(DBusMethodCallback<bool> callback,
+  static void OnBoolMethod(const BoolDBusMethodCallback& callback,
                            dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(base::nullopt);
+      callback.Run(DBUS_METHOD_CALL_FAILURE, false);
       return;
     }
     dbus::MessageReader reader(response);
     bool result = false;
     if (!reader.PopBool(&result)) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE, false);
       LOG(ERROR) << "Invalid response: " << response->ToString();
-      std::move(callback).Run(base::nullopt);
       return;
     }
-    std::move(callback).Run(result);
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
   }
 
   static void OnStringMethod(DBusMethodCallback<std::string> callback,

@@ -85,17 +85,17 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void IsMounted(DBusMethodCallback<bool> callback) override {
+  void IsMounted(const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeIsMounted);
-    CallBoolMethod(&method_call, std::move(callback));
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
-  void Unmount(DBusMethodCallback<bool> callback) override {
+  void Unmount(const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeUnmount);
-    CallBoolMethod(&method_call, std::move(callback));
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -287,17 +287,17 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmIsReady(DBusMethodCallback<bool> callback) override {
+  void TpmIsReady(const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmIsReady);
-    CallBoolMethod(&method_call, std::move(callback));
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
-  void TpmIsEnabled(DBusMethodCallback<bool> callback) override {
+  void TpmIsEnabled(const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmIsEnabled);
-    CallBoolMethod(&method_call, std::move(callback));
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -319,10 +319,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmIsOwned(DBusMethodCallback<bool> callback) override {
+  void TpmIsOwned(const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmIsOwned);
-    CallBoolMethod(&method_call, std::move(callback));
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -334,10 +334,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmIsBeingOwned(DBusMethodCallback<bool> callback) override {
+  void TpmIsBeingOwned(const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmIsBeingOwned);
-    CallBoolMethod(&method_call, std::move(callback));
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -373,10 +373,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void Pkcs11IsTpmTokenReady(DBusMethodCallback<bool> callback) override {
+  void Pkcs11IsTpmTokenReady(const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomePkcs11IsTpmTokenReady);
-    CallBoolMethod(&method_call, std::move(callback));
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -448,11 +448,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void InstallAttributesIsReady(DBusMethodCallback<bool> callback) override {
+  void InstallAttributesIsReady(
+      const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeInstallAttributesIsReady);
-    return CallBoolMethod(&method_call, std::move(callback));
+    return CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -472,19 +473,21 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmAttestationIsPrepared(DBusMethodCallback<bool> callback) override {
+  void TpmAttestationIsPrepared(
+      const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmIsAttestationPrepared);
-    return CallBoolMethod(&method_call, std::move(callback));
+    return CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
-  void TpmAttestationIsEnrolled(DBusMethodCallback<bool> callback) override {
+  void TpmAttestationIsEnrolled(
+      const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmIsAttestationEnrolled);
-    return CallBoolMethod(&method_call, std::move(callback));
+    return CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -570,7 +573,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       attestation::AttestationKeyType key_type,
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
-      DBusMethodCallback<bool> callback) override {
+      const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmAttestationDoesKeyExist);
@@ -579,7 +582,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(key_name);
-    CallBoolMethod(&method_call, std::move(callback));
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -723,7 +726,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const std::string& payload,
-      DBusMethodCallback<bool> callback) override {
+      const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmAttestationSetKeyPayload);
@@ -734,14 +737,15 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(key_name);
     writer.AppendArrayOfBytes(reinterpret_cast<const uint8_t*>(payload.data()),
                               payload.size());
-    CallBoolMethod(&method_call, std::move(callback));
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
-  void TpmAttestationDeleteKeys(attestation::AttestationKeyType key_type,
-                                const cryptohome::Identification& cryptohome_id,
-                                const std::string& key_prefix,
-                                DBusMethodCallback<bool> callback) override {
+  void TpmAttestationDeleteKeys(
+      attestation::AttestationKeyType key_type,
+      const cryptohome::Identification& cryptohome_id,
+      const std::string& key_prefix,
+      const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeTpmAttestationDeleteKeys);
@@ -750,7 +754,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(key_prefix);
-    CallBoolMethod(&method_call, std::move(callback));
+    CallBoolMethod(&method_call, callback);
   }
 
   // CryptohomeClient override.
@@ -949,8 +953,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void NeedsDircryptoMigration(const cryptohome::Identification& cryptohome_id,
-                               DBusMethodCallback<bool> callback) override {
+  void NeedsDircryptoMigration(
+      const cryptohome::Identification& cryptohome_id,
+      const BoolDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
         cryptohome::kCryptohomeNeedsDircryptoMigration);
@@ -964,7 +969,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CryptohomeClientImpl::OnBoolMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  protected:
@@ -1065,28 +1070,28 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // Calls a method with a bool value result.
   void CallBoolMethod(dbus::MethodCall* method_call,
-                      DBusMethodCallback<bool> callback) {
+                      const BoolDBusMethodCallback& callback) {
     proxy_->CallMethod(
         method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnBoolMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // Handles responses for methods with a bool value result.
-  void OnBoolMethod(DBusMethodCallback<bool> callback,
+  void OnBoolMethod(const BoolDBusMethodCallback& callback,
                     dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(base::nullopt);
+      callback.Run(DBUS_METHOD_CALL_FAILURE, false);
       return;
     }
     dbus::MessageReader reader(response);
     bool result = false;
     if (!reader.PopBool(&result)) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE, false);
       LOG(ERROR) << "Invalid response: " << response->ToString();
-      std::move(callback).Run(base::nullopt);
       return;
     }
-    std::move(callback).Run(result);
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
   }
 
   // Handles responses for methods with a string value result.
