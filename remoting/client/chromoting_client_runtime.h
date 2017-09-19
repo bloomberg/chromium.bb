@@ -54,6 +54,10 @@ class ChromotingClientRuntime {
     return network_task_runner_;
   }
 
+  scoped_refptr<AutoThreadTaskRunner> audio_task_runner() {
+    return audio_task_runner_;
+  }
+
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner() {
     return ui_task_runner_;
   }
@@ -93,6 +97,7 @@ class ChromotingClientRuntime {
   // Longer term we should migrate most of these to background tasks except the
   // network thread to TaskScheduler, removing the need for threads.
 
+  scoped_refptr<AutoThreadTaskRunner> audio_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> display_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> file_task_runner_;

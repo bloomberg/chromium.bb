@@ -11,7 +11,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "remoting/client/audio/async_audio_frame_supplier.h"
 #include "remoting/client/audio/audio_stream_consumer.h"
 #include "remoting/proto/audio.pb.h"
@@ -37,7 +38,7 @@ class AudioPlayerBuffer : public AudioStreamConsumer,
 
   // Audio Stream Consumer
   void AddAudioPacket(std::unique_ptr<AudioPacket> packet) override;
-  base::WeakPtr<AudioStreamConsumer> AudioConsumerAsWeakPtr() override;
+  base::WeakPtr<AudioStreamConsumer> AudioStreamConsumerAsWeakPtr() override;
 
   // Async Audio Frame Supplier
   void AsyncGetAudioFrame(uint32_t buffer_size,
@@ -61,11 +62,6 @@ class AudioPlayerBuffer : public AudioStreamConsumer,
   void ResetQueue();
   void ProcessFrameRequestQueue();
 
-  // Protects |queued_packets_|, |queued_requests_|, |queued_samples_ and
-  // |bytes_consumed_|. This is necessary to prevent races, because Audio
-  // Player will call the  callback on a separate thread.
-  base::Lock lock_;
-
   std::list<std::unique_ptr<AudioPacket>> queued_packets_;
   int queued_bytes_;
 
@@ -73,6 +69,8 @@ class AudioPlayerBuffer : public AudioStreamConsumer,
   size_t bytes_consumed_;
 
   std::list<std::unique_ptr<AudioFrameRequest>> queued_requests_;
+
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<AudioPlayerBuffer> weak_factory_;
 

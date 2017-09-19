@@ -46,12 +46,12 @@ class ChromotingClient : public SignalStrategy::Listener,
                          public protocol::ClientStub {
  public:
   // |client_context|, |user_interface| and |video_renderer| must outlive the
-  // client. |audio_consumer| may be null, in which case audio will not be
-  // requested.
+  // client. |audio_stream_consumer| may be null, in which case audio will not
+  // be requested.
   ChromotingClient(ClientContext* client_context,
                    ClientUserInterface* user_interface,
                    protocol::VideoRenderer* video_renderer,
-                   base::WeakPtr<protocol::AudioStub> audio_consumer);
+                   base::WeakPtr<protocol::AudioStub> audio_stream_consumer);
 
   ~ChromotingClient() override;
 
@@ -122,7 +122,7 @@ class ChromotingClient : public SignalStrategy::Listener,
   // The following are not owned by this class.
   ClientUserInterface* user_interface_ = nullptr;
   protocol::VideoRenderer* video_renderer_ = nullptr;
-  base::WeakPtr<protocol::AudioStub> audio_consumer_;
+  base::WeakPtr<protocol::AudioStub> audio_stream_consumer_;
   SignalStrategy* signal_strategy_ = nullptr;
 
   std::string host_jid_;
