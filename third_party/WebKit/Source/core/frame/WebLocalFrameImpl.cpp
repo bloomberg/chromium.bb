@@ -112,6 +112,7 @@
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FindInPageCoordinates.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/ImeTextSpanVectorBuilder.h"

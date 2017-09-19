@@ -28,7 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
-#include "core/editing/EphemeralRange.h"
+#include "core/editing/Forward.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/iterators/TextIteratorBehavior.h"
 #include "platform/heap/Heap.h"

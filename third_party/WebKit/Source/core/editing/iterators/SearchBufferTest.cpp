@@ -31,6 +31,7 @@
 #include "core/editing/iterators/SearchBuffer.h"
 
 #include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/frame/LocalFrameView.h"
 

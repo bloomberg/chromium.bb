@@ -4,6 +4,7 @@
 
 #include "core/frame/WebFrameWidgetBase.h"
 
+#include "core/dom/Element.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/events/WheelEvent.h"

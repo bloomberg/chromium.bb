@@ -4,6 +4,7 @@
 
 #include "core/editing/commands/SplitTextNodeCommand.h"
 
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/commands/EditingState.h"
 #include "core/editing/markers/DocumentMarkerController.h"

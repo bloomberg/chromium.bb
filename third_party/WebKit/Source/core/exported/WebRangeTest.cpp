@@ -30,6 +30,7 @@
 
 #include "public/web/WebRange.h"
 
+#include "core/editing/EphemeralRange.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

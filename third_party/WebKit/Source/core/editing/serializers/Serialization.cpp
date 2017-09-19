@@ -47,6 +47,7 @@
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/serializers/MarkupAccumulator.h"

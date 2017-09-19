@@ -28,8 +28,8 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
-#include "core/editing/EphemeralRange.h"
 #include "core/editing/FindOptions.h"
+#include "core/editing/Forward.h"
 #include "core/editing/iterators/FullyClippedStateStack.h"
 #include "core/editing/iterators/TextIteratorBehavior.h"
 #include "core/editing/iterators/TextIteratorTextNodeHandler.h"

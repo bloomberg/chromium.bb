@@ -31,7 +31,6 @@
 #define DOMSelection_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/editing/EphemeralRange.h"
 #include "core/editing/Forward.h"
 #include "core/editing/Position.h"
 #include "platform/bindings/ScriptWrappable.h"

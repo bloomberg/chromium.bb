@@ -7,6 +7,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/IdleDeadline.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"

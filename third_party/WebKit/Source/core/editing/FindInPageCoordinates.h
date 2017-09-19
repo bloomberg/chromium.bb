@@ -32,7 +32,7 @@
 #define FindInPageCoordinates_h
 
 #include "core/CoreExport.h"
-#include "core/editing/EphemeralRange.h"
+#include "core/editing/Forward.h"
 #include "platform/geometry/FloatRect.h"
 
 namespace blink {

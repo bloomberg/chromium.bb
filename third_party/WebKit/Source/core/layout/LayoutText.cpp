@@ -28,6 +28,7 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/Text.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/iterators/TextIterator.h"

@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/bindings/ScriptState.h"
 
@@ -28,6 +29,16 @@ StaticRange::StaticRange(Document& document,
       start_offset_(start_offset),
       end_container_(end_container),
       end_offset_(end_offset) {}
+
+// static
+StaticRange* StaticRange::Create(const EphemeralRange& range) {
+  DCHECK(!range.IsNull());
+  return new StaticRange(range.GetDocument(),
+                         range.StartPosition().ComputeContainerNode(),
+                         range.StartPosition().ComputeOffsetInContainerNode(),
+                         range.EndPosition().ComputeContainerNode(),
+                         range.EndPosition().ComputeOffsetInContainerNode());
+}
 
 void StaticRange::setStart(Node* container, unsigned offset) {
   start_container_ = container;

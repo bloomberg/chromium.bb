@@ -36,6 +36,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/SelectionTemplate.h"

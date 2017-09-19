@@ -35,6 +35,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/Editor.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FindInPageCoordinates.h"
 #include "core/editing/FindOptions.h"
 #include "core/editing/SelectionTemplate.h"

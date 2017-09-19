@@ -26,7 +26,7 @@
 #ifndef BackwardsCharacterIterator_h
 #define BackwardsCharacterIterator_h
 
-#include "core/editing/EphemeralRange.h"
+#include "core/editing/Forward.h"
 #include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
 #include "platform/heap/Heap.h"
 

@@ -8,7 +8,6 @@
 #include <iosfwd>
 #include "base/macros.h"
 #include "core/CoreExport.h"
-#include "core/editing/EphemeralRange.h"
 #include "core/editing/Forward.h"
 #include "core/editing/Position.h"
 #include "core/editing/SelectionType.h"

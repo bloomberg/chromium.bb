@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionController.h"
 #include "core/editing/SelectionTemplate.h"

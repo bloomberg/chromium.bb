@@ -29,6 +29,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SurroundingText.h"
 #include "core/editing/VisiblePosition.h"

@@ -27,6 +27,8 @@
 
 #include "core/editing/iterators/BackwardsCharacterIterator.h"
 
+#include "core/editing/EphemeralRange.h"
+
 namespace blink {
 
 template <typename Strategy>

@@ -31,6 +31,7 @@
 #include "core/layout/line/AbstractInlineTextBox.h"
 
 #include "core/dom/AXObjectCache.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "platform/text/TextBreakIterator.h"
 
