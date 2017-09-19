@@ -44,10 +44,10 @@ class ASH_EXPORT TrayAction : public mojom::TrayAction {
 
   // If the client is set, sends it a request to handle the lock screen note
   // action.
-  void RequestNewLockScreenNote();
+  void RequestNewLockScreenNote(mojom::LockScreenNoteOrigin origin);
 
   // If the client is set, sends a request to close the lock screen note.
-  void CloseLockScreenNote();
+  void CloseLockScreenNote(mojom::CloseLockScreenNoteReason reason);
 
   // mojom::TrayAction:
   void SetClient(mojom::TrayActionClientPtr action_handler,

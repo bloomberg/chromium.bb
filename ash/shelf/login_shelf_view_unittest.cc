@@ -201,15 +201,19 @@ TEST_F(LoginShelfViewTest, ClickUnlockButton) {
   NotifySessionStateChanged(SessionState::LOCKED);
 
   NotifyLockScreenNoteStateChanged(mojom::TrayActionState::kActive);
-  EXPECT_EQ(tray_action_client_.action_close_count(), 0);
+  EXPECT_TRUE(tray_action_client_.close_note_reasons().empty());
   Click(LoginShelfView::kCloseNote);
-  EXPECT_EQ(tray_action_client_.action_close_count(), 1);
+  EXPECT_EQ(std::vector<mojom::CloseLockScreenNoteReason>(
+                {mojom::CloseLockScreenNoteReason::kUnlockButtonPressed}),
+            tray_action_client_.close_note_reasons());
 
-  tray_action_client_.ClearCounts();
+  tray_action_client_.ClearRecordedRequests();
   NotifyLockScreenNoteStateChanged(mojom::TrayActionState::kLaunching);
-  EXPECT_EQ(tray_action_client_.action_close_count(), 0);
+  EXPECT_TRUE(tray_action_client_.close_note_reasons().empty());
   Click(LoginShelfView::kCloseNote);
-  EXPECT_EQ(tray_action_client_.action_close_count(), 1);
+  EXPECT_EQ(std::vector<mojom::CloseLockScreenNoteReason>(
+                {mojom::CloseLockScreenNoteReason::kUnlockButtonPressed}),
+            tray_action_client_.close_note_reasons());
 }
 
 TEST_F(LoginShelfViewTest, ClickCancelButton) {

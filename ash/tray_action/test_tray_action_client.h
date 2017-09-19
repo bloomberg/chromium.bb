@@ -5,6 +5,8 @@
 #ifndef ASH_TRAY_ACTION_TEST_TRAY_ACTION_CLIENT_H_
 #define ASH_TRAY_ACTION_TEST_TRAY_ACTION_CLIENT_H_
 
+#include <vector>
+
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -19,19 +21,26 @@ class TestTrayActionClient : public mojom::TrayActionClient {
 
   mojom::TrayActionClientPtr CreateInterfacePtrAndBind();
 
-  void ClearCounts();
-  int action_requests_count() const { return action_requests_count_; }
-  int action_close_count() const { return action_close_count_; }
+  void ClearRecordedRequests();
+
+  const std::vector<mojom::LockScreenNoteOrigin>& note_origins() const {
+    return note_origins_;
+  }
+
+  const std::vector<mojom::CloseLockScreenNoteReason>& close_note_reasons()
+      const {
+    return close_note_reasons_;
+  }
 
   // mojom::TrayActionClient:
-  void RequestNewLockScreenNote() override;
-  void CloseLockScreenNote() override;
+  void RequestNewLockScreenNote(mojom::LockScreenNoteOrigin origin) override;
+  void CloseLockScreenNote(mojom::CloseLockScreenNoteReason reason) override;
 
  private:
   mojo::Binding<mojom::TrayActionClient> binding_;
 
-  int action_requests_count_ = 0;
-  int action_close_count_ = 0;
+  std::vector<mojom::LockScreenNoteOrigin> note_origins_;
+  std::vector<mojom::CloseLockScreenNoteReason> close_note_reasons_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTrayActionClient);
 };

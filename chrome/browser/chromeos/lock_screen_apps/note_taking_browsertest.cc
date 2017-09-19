@@ -67,7 +67,8 @@ class LockScreenNoteTakingTest : public ExtensionBrowserTest {
                                                 true /* will_reply */);
 
     extensions::ResultCatcher catcher;
-    lock_screen_apps::StateController::Get()->RequestNewLockScreenNote();
+    lock_screen_apps::StateController::Get()->RequestNewLockScreenNote(
+        ash::mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
 
     if (lock_screen_apps::StateController::Get()->GetLockScreenNoteState() !=
         ash::mojom::TrayActionState::kLaunching) {
@@ -148,7 +149,9 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, LaunchInNonLockScreenContext) {
   // NOTE: This is not mandatory for the test to pass, but without it, app
   //     window creation would fail regardless of the context from which
   //     chrome.app.window.create is called.
-  lock_screen_apps::StateController::Get()->RequestNewLockScreenNote();
+  lock_screen_apps::StateController::Get()->RequestNewLockScreenNote(
+      ash::mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
+
   ASSERT_EQ(ash::mojom::TrayActionState::kLaunching,
             lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
 
@@ -218,7 +221,8 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, AppLaunchActionDataParams) {
 
   extensions::ResultCatcher catcher;
 
-  lock_screen_apps::StateController::Get()->RequestNewLockScreenNote();
+  lock_screen_apps::StateController::Get()->RequestNewLockScreenNote(
+      ash::mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
   ASSERT_EQ(ash::mojom::TrayActionState::kLaunching,
             lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
 
@@ -241,7 +245,8 @@ IN_PROC_BROWSER_TEST_F(LockScreenNoteTakingTest, AppLaunchActionDataParams) {
 
   profile()->GetPrefs()->SetBoolean(prefs::kRestoreLastLockScreenNote, false);
 
-  lock_screen_apps::StateController::Get()->RequestNewLockScreenNote();
+  lock_screen_apps::StateController::Get()->RequestNewLockScreenNote(
+      ash::mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
   ASSERT_EQ(ash::mojom::TrayActionState::kLaunching,
             lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
 

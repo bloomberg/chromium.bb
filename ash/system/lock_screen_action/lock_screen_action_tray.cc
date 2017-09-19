@@ -77,7 +77,8 @@ void LockScreenActionTray::Initialize() {
 }
 
 bool LockScreenActionTray::PerformAction(const ui::Event& event) {
-  Shell::Get()->tray_action()->RequestNewLockScreenNote();
+  Shell::Get()->tray_action()->RequestNewLockScreenNote(
+      mojom::LockScreenNoteOrigin::kTrayAction);
   return true;
 }
 

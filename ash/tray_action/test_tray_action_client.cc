@@ -12,17 +12,19 @@ TestTrayActionClient::TestTrayActionClient() : binding_(this) {}
 
 TestTrayActionClient::~TestTrayActionClient() = default;
 
-void TestTrayActionClient::ClearCounts() {
-  action_requests_count_ = 0;
-  action_close_count_ = 0;
+void TestTrayActionClient::ClearRecordedRequests() {
+  note_origins_.clear();
+  close_note_reasons_.clear();
 }
 
-void TestTrayActionClient::RequestNewLockScreenNote() {
-  action_requests_count_++;
+void TestTrayActionClient::RequestNewLockScreenNote(
+    mojom::LockScreenNoteOrigin origin) {
+  note_origins_.push_back(origin);
 }
 
-void TestTrayActionClient::CloseLockScreenNote() {
-  action_close_count_++;
+void TestTrayActionClient::CloseLockScreenNote(
+    mojom::CloseLockScreenNoteReason reason) {
+  close_note_reasons_.push_back(reason);
 }
 
 mojom::TrayActionClientPtr TestTrayActionClient::CreateInterfacePtrAndBind() {
