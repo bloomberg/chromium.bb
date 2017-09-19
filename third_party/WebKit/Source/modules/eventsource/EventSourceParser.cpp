@@ -102,8 +102,10 @@ void EventSourceParser::ParseLine() {
     return;
   }
   if (field_name == "id") {
-    id_ = AtomicString(
-        FromUTF8(line_.data() + field_value_start, field_value_size));
+    if (!memchr(line_.data() + field_value_start, '\0', field_value_size)) {
+      id_ = AtomicString(
+          FromUTF8(line_.data() + field_value_start, field_value_size));
+    }
     return;
   }
   if (field_name == "retry") {
