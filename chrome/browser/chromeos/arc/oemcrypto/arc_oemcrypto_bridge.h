@@ -11,6 +11,7 @@
 
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/arc/common/oemcrypto.mojom.h"
+#include "components/arc/common/oemcrypto_daemon.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -46,10 +47,11 @@ class ArcOemCryptoBridge
  private:
   void OnBootstrapMojoConnection(mojom::OemCryptoServiceRequest request,
                                  chromeos::DBusMethodCallStatus result);
+  void ConnectToDaemon(mojom::OemCryptoServiceRequest request);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojo::Binding<mojom::OemCryptoHost> binding_;
-  mojom::OemCryptoHostPtr oemcrypto_host_ptr_;
+  arc_oemcrypto::mojom::OemCryptoHostDaemonPtr oemcrypto_host_daemon_ptr_;
 
   // WeakPtrFactory to use for callbacks.
   base::WeakPtrFactory<ArcOemCryptoBridge> weak_factory_;
