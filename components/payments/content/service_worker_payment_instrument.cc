@@ -4,6 +4,7 @@
 
 #include "components/payments/content/service_worker_payment_instrument.h"
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/payment_app_provider.h"
@@ -141,7 +142,12 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
     const std::vector<std::string>& supported_networks,
     const std::set<autofill::CreditCard::CardType>& supported_types,
     bool supported_types_specified) const {
-  NOTIMPLEMENTED();
+  for (const auto& modifier_supported_method : method) {
+    if (base::ContainsValue(stored_payment_app_info_->enabled_methods,
+                            modifier_supported_method)) {
+      return true;
+    }
+  }
   return false;
 }
 
