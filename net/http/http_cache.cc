@@ -839,12 +839,10 @@ int HttpCache::DoneWithResponseHeaders(ActiveEntry* entry,
     // since they may be reader for a particular range and writer for another
     // range.
     if (!is_partial) {
-      // TODO(shivanisha): Convert these to DCHECKs after crbug.com/750725 is
-      // fixed.
-      CHECK(!entry->writer)
+      DCHECK(!entry->writer)
           << "Writer's mode: " << entry->writer->mode() << " entry: " << entry
           << " writer's entry: " << entry->writer->entry();
-      CHECK(entry->done_headers_queue.empty())
+      DCHECK(entry->done_headers_queue.empty())
           << "done_headers_queue size: " << entry->done_headers_queue.size()
           << " first element's mode: "
           << (*(entry->done_headers_queue.begin()))->mode()
