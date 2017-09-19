@@ -5,6 +5,7 @@
 #include "platform/heap/HeapCompact.h"
 
 #include "platform/heap/Handle.h"
+#include "platform/heap/HeapTestUtilities.h"
 #include "platform/heap/SparseHeapBitmap.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashMap.h"
@@ -217,28 +218,10 @@ TEST(HeapCompactTest, SparseBitmapLeftExtension) {
   EXPECT_NE(bitmap->HasRange(base, 1), bitmap->HasRange(base - kChunkRange, 1));
 }
 
-static void PreciselyCollectGarbage() {
-  ThreadState::Current()->CollectGarbage(BlinkGC::kNoHeapPointersOnStack,
-                                         BlinkGC::kGCWithSweep,
-                                         BlinkGC::kForcedGC);
-}
-
 static void PerformHeapCompaction() {
   EXPECT_FALSE(HeapCompact::ScheduleCompactionGCForTesting(true));
   PreciselyCollectGarbage();
   EXPECT_FALSE(HeapCompact::ScheduleCompactionGCForTesting(false));
-}
-
-// Do several GCs to make sure that later GCs don't free up old memory from
-// previously run tests in this process.
-static void ClearOutOldGarbage() {
-  ThreadHeap& heap = ThreadState::Current()->Heap();
-  while (true) {
-    size_t used = heap.ObjectPayloadSizeForTesting();
-    PreciselyCollectGarbage();
-    if (heap.ObjectPayloadSizeForTesting() >= used)
-      break;
-  }
 }
 
 TEST(HeapCompactTest, CompactVector) {
