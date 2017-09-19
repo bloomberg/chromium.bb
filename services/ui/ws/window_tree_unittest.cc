@@ -850,20 +850,21 @@ TEST_F(WindowTreeTest, ExplicitSetCapture) {
   mojom::WindowTree* mojom_window_tree = static_cast<mojom::WindowTree*>(tree);
   uint32_t change_id = 42;
   mojom_window_tree->SetCapture(
-      change_id,
-      tree->ClientWindowIdToTransportId(window->id().ToClientWindowId()));
+      change_id, tree->ClientWindowIdToTransportId(ClientWindowId(
+                     window->id().client_id, window->id().window_id)));
   Display* display = tree->GetDisplay(window);
   EXPECT_EQ(window, GetCaptureWindow(display));
 
   // Only the capture window should be able to release capture
   mojom_window_tree->ReleaseCapture(
       ++change_id,
-      tree->ClientWindowIdToTransportId(root_window->id().ToClientWindowId()));
+      tree->ClientWindowIdToTransportId(ClientWindowId(
+          root_window->id().client_id, root_window->id().window_id)));
   EXPECT_EQ(window, GetCaptureWindow(display));
 
   mojom_window_tree->ReleaseCapture(
-      ++change_id,
-      tree->ClientWindowIdToTransportId(window->id().ToClientWindowId()));
+      ++change_id, tree->ClientWindowIdToTransportId(ClientWindowId(
+                       window->id().client_id, window->id().window_id)));
   EXPECT_EQ(nullptr, GetCaptureWindow(display));
 }
 
@@ -1199,8 +1200,8 @@ TEST_F(WindowTreeTest, SetOpacityFailsOnUnknownWindow) {
   const float new_opacity = 0.5f;
   ASSERT_NE(new_opacity, unknown_window.opacity());
 
-  EXPECT_FALSE(
-      tree->SetWindowOpacity(window_id.ToClientWindowId(), new_opacity));
+  EXPECT_FALSE(tree->SetWindowOpacity(
+      ClientWindowId(window_id.client_id, window_id.window_id), new_opacity));
   EXPECT_NE(new_opacity, unknown_window.opacity());
 }
 

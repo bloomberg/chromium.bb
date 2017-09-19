@@ -63,10 +63,6 @@ struct WindowId {
            std::tie(other.client_id, other.window_id);
   }
 
-  ClientWindowId ToClientWindowId() const {
-    return ClientWindowId(client_id, window_id);
-  }
-
   std::string ToString() const {
     return base::StringPrintf("%u:%u", client_id, window_id);
   }

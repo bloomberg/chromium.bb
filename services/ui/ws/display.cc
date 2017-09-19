@@ -261,7 +261,8 @@ void Display::CreateRootWindow(const gfx::Size& size) {
   DCHECK(!root_);
 
   WindowId id = display_manager()->GetAndAdvanceNextRootId();
-  root_.reset(window_server_->CreateServerWindow(id, id.ToClientWindowId(),
+  ClientWindowId client_window_id(id.client_id, id.window_id);
+  root_.reset(window_server_->CreateServerWindow(id, client_window_id,
                                                  ServerWindow::Properties()));
   root_->set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
