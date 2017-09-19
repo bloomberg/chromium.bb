@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/autofill/autofill_agent.h"
+#import "components/autofill/ios/browser/autofill_agent.h"
 
 #include <memory>
 #include <string>
@@ -35,9 +35,6 @@
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
@@ -150,8 +147,8 @@ void GetFormAndField(autofill::FormData* form,
   // Bridge to observe the web state from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
-  // The browser state for which this agent was created.
-  ios::ChromeBrowserState* browserState_;
+  // The pref service for which this agent was created.
+  PrefService* prefService_;
 
   // Manager for Autofill JavaScripts.
   JsAutofillManager* jsAutofillManager_;
@@ -182,15 +179,13 @@ void GetFormAndField(autofill::FormData* form,
   base::WeakPtr<autofill::AutofillPopupDelegate> popupDelegate_;
 }
 
-@synthesize browserState = browserState_;
-
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            webState:(web::WebState*)webState {
-  DCHECK(browserState);
+- (instancetype)initWithPrefService:(PrefService*)prefService
+                           webState:(web::WebState*)webState {
+  DCHECK(prefService);
   DCHECK(webState);
   self = [super init];
   if (self) {
-    browserState_ = browserState;
+    prefService_ = prefService;
     _webStateObserverBridge.reset(
         new web::WebStateObserverBridge(webState, self));
     jsAutofillManager_ = base::mac::ObjCCastStrict<JsAutofillManager>(
@@ -611,7 +606,7 @@ void GetFormAndField(autofill::FormData* form,
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
                      userInitiated:(BOOL)userInitiated {
-  if (!browserState_->GetPrefs()->GetBoolean(autofill::prefs::kAutofillEnabled))
+  if (!prefService_->GetBoolean(autofill::prefs::kAutofillEnabled))
     return;
 
   web::URLVerificationTrustLevel trustLevel;
@@ -650,8 +645,7 @@ void GetFormAndField(autofill::FormData* form,
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
-  if (!browserState_->GetPrefs()->GetBoolean(
-          autofill::prefs::kAutofillEnabled) ||
+  if (!prefService_->GetBoolean(autofill::prefs::kAutofillEnabled) ||
       !webState->ContentIsHTML()) {
     return;
   }
@@ -708,7 +702,7 @@ void GetFormAndField(autofill::FormData* form,
                                     type:(const std::string&)type
                                    value:(const std::string&)value
                             inputMissing:(BOOL)inputMissing {
-  if (!browserState_->GetPrefs()->GetBoolean(autofill::prefs::kAutofillEnabled))
+  if (!prefService_->GetBoolean(autofill::prefs::kAutofillEnabled))
     return;
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));

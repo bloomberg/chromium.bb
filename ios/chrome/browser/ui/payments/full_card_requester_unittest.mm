@@ -15,10 +15,10 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_request_data_util.h"
-#import "ios/chrome/browser/autofill/autofill_agent.h"
 #import "ios/chrome/browser/autofill/autofill_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -65,9 +65,9 @@ class PaymentRequestFullCardRequesterTest : public ChromeWebTest {
     ChromeWebTest::SetUp();
 
     // Set up what is needed to have an instance of autofill::AutofillManager.
-    AutofillAgent* autofill_agent =
-        [[AutofillAgent alloc] initWithBrowserState:chrome_browser_state_.get()
-                                           webState:web_state()];
+    AutofillAgent* autofill_agent = [[AutofillAgent alloc]
+        initWithPrefService:chrome_browser_state_->GetPrefs()
+                   webState:web_state()];
     InfoBarManagerImpl::CreateForWebState(web_state());
     autofill_controller_ = [[AutofillController alloc]
              initWithBrowserState:chrome_browser_state_.get()

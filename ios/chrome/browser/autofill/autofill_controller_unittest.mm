@@ -16,13 +16,13 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
-#import "ios/chrome/browser/autofill/autofill_agent.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -215,9 +215,9 @@ void AutofillControllerTest::SetUp() {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults setBool:YES forKey:kAutofillVisible];
 
-  AutofillAgent* agent =
-      [[AutofillAgent alloc] initWithBrowserState:chrome_browser_state_.get()
-                                         webState:web_state()];
+  AutofillAgent* agent = [[AutofillAgent alloc]
+      initWithPrefService:chrome_browser_state_->GetPrefs()
+                 webState:web_state()];
   autofill_agent_ = agent;
   InfoBarManagerImpl::CreateForWebState(web_state());
   autofill_controller_ = [[AutofillController alloc]

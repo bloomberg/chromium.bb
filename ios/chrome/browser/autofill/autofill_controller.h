@@ -7,8 +7,6 @@
 #import <UIKit/UIKit.h>
 #include <vector>
 
-#import "ios/chrome/browser/autofill/form_suggestion_provider.h"
-
 @class AutofillAgent;
 @protocol FormSuggestionProvider;
 

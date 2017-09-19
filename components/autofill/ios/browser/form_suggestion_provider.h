@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_AUTOFILL_FORM_SUGGESTION_PROVIDER_H_
-#define IOS_CHROME_BROWSER_AUTOFILL_FORM_SUGGESTION_PROVIDER_H_
+#ifndef COMPONENTS_AUTOFILL_IOS_BROWSER_FORM_SUGGESTION_PROVIDER_H_
+#define COMPONENTS_AUTOFILL_IOS_BROWSER_FORM_SUGGESTION_PROVIDER_H_
 
 #import "components/autofill/ios/browser/form_suggestion.h"
 
@@ -52,4 +52,4 @@ typedef void (^SuggestionHandledCompletion)(void);
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_AUTOFILL_FORM_SUGGESTION_PROVIDER_H_
+#endif  // COMPONENTS_AUTOFILL_IOS_BROWSER_FORM_SUGGESTION_PROVIDER_H_
