@@ -413,6 +413,69 @@ TEST_F(AccountReconcilorTest, DiceReconcileReuseGaiaFirstAccount) {
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 }
 
+// Tests that the first account is kept in cache and reused when cookies are
+// lost.
+TEST_F(AccountReconcilorTest, DiceLastKnownFirstAccount) {
+  // Enable Dice.
+  signin::ScopedAccountConsistencyDice scoped_dice;
+
+  // Add accounts to the token service and the Gaia cookie in a different order.
+  const std::string account_id_1 =
+      PickAccountIdForAccount("12345", "user@gmail.com");
+  const std::string account_id_2 =
+      PickAccountIdForAccount("67890", "other@gmail.com");
+  cookie_manager_service()->SetListAccountsResponseTwoAccounts(
+      "other@gmail.com", "67890", "user@gmail.com", "12345");
+  token_service()->UpdateCredentials(account_id_1, "refresh_token");
+  token_service()->UpdateCredentials(account_id_2, "refresh_token");
+
+  ASSERT_EQ(2u, token_service()->GetAccounts().size());
+  ASSERT_EQ(account_id_1, token_service()->GetAccounts()[0]);
+  ASSERT_EQ(account_id_2, token_service()->GetAccounts()[1]);
+
+  // Do one reconcile. It should do nothing but to populating the last known
+  // account.
+  {
+    EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(testing::_)).Times(0);
+    EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction())
+        .Times(0);
+
+    AccountReconcilor* reconcilor = GetMockReconcilor();
+    reconcilor->StartReconcile();
+    ASSERT_TRUE(reconcilor->is_reconcile_started_);
+    base::RunLoop().RunUntilIdle();
+    ASSERT_FALSE(reconcilor->is_reconcile_started_);
+    ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+  }
+
+  // Delete the cookies.
+  cookie_manager_service()->SetListAccountsResponseNoAccounts();
+  cookie_manager_service()->set_list_accounts_stale_for_testing(true);
+
+  // Reconcile again and check that account_id_2 is added first.
+  {
+    testing::InSequence mock_sequence;
+
+    EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id_2))
+        .Times(1);
+    EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id_1))
+        .Times(1);
+    EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction())
+        .Times(0);
+
+    AccountReconcilor* reconcilor = GetMockReconcilor();
+    reconcilor->StartReconcile();
+    ASSERT_TRUE(reconcilor->is_reconcile_started_);
+    base::RunLoop().RunUntilIdle();
+    SimulateAddAccountToCookieCompleted(
+        reconcilor, account_id_2, GoogleServiceAuthError::AuthErrorNone());
+    SimulateAddAccountToCookieCompleted(
+        reconcilor, account_id_1, GoogleServiceAuthError::AuthErrorNone());
+    ASSERT_FALSE(reconcilor->is_reconcile_started_);
+    ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+  }
+}
+
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
