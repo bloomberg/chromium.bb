@@ -22,6 +22,7 @@ namespace {
 // Returns true if |key_code| is a key usually handled directly by the shell.
 bool IsSystemKey(ui::KeyboardCode key_code) {
   switch (key_code) {
+    case ui::VKEY_ASSISTANT:
     case ui::VKEY_MEDIA_LAUNCH_APP2:  // Fullscreen button.
     case ui::VKEY_MEDIA_LAUNCH_APP1:  // Overview button.
     case ui::VKEY_BRIGHTNESS_DOWN:
