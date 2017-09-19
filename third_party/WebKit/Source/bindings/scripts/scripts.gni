@@ -462,16 +462,22 @@ template("generate_global_constructors") {
     output_dir = invoker.output_dir
     component = invoker.component
 
-    # generate outputs from invoker.interfaces.
+    # generate outputs from invoker.interfaces and invoker.basenames.
     output_idl_files = []
     output_header_files = []
+
+    # Need a variable due to a GN sytax restriction. We can't do "invoker.basenames[i]".
+    basename_list = invoker.basenames
+    i = 0
     foreach(interface, invoker.interfaces) {
+      basename = basename_list[i]
       args += [ interface ]
-      output_idl_file = "$output_dir/${interface}${component}Constructors.idl"
+      output_idl_file = "$output_dir/${basename}_${component}_constructors.idl"
       args += [ rebase_path(output_idl_file, root_build_dir) ]
       output_idl_files += [ output_idl_file ]
       output_header_files +=
-          [ "$output_dir/${interface}${component}Constructors.h" ]
+          [ "$output_dir/${basename}_${component}_constructors.h" ]
+      i += 1
     }
 
     outputs = output_idl_files + output_header_files
