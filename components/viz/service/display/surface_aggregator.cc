@@ -203,16 +203,26 @@ void SurfaceAggregator::HandleSurfaceQuad(
                         clip_rect, dest_pass, ignore_undamaged,
                         damage_rect_in_quad_space,
                         damage_rect_in_quad_space_valid);
-    } else if (surface_quad->surface_draw_quad_type ==
-               SurfaceDrawQuadType::FALLBACK) {
-      if (!surface) {
-        DLOG(ERROR) << surface_id << " is missing during aggregation";
-        ++uma_stats_.missing_surface;
-      } else {
-        DLOG(ERROR) << surface_id << " has no active frame during aggregation";
-        ++uma_stats_.no_active_frame;
-      }
     } else {
+      SkColor background_color = surface_quad->default_background_color;
+      // If this is a fallback SurfaceDrawQuad and it doesn't have a
+      // CompositorFrame then that's an error.
+      if (surface_quad->surface_draw_quad_type ==
+          SurfaceDrawQuadType::FALLBACK) {
+#if DCHECK_IS_ON()
+        // Pick a very bright and obvious color for the SolidColorDrawQuad so
+        // developers notice there's an error when debugging.
+        background_color = SK_ColorMAGENTA;
+#endif
+        if (!surface) {
+          DLOG(ERROR) << surface_id << " is missing during aggregation";
+          ++uma_stats_.missing_surface;
+        } else {
+          DLOG(ERROR) << surface_id
+                      << " has no active frame during aggregation";
+          ++uma_stats_.no_active_frame;
+        }
+      }
       // This is a primary SurfaceDrawQuad and there is no fallback
       // SurfaceDrawQuad so create a SolidColorDrawQuad with the default
       // background color.
@@ -222,8 +232,8 @@ void SurfaceAggregator::HandleSurfaceQuad(
       auto* solid_color_quad =
           dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
       solid_color_quad->SetNew(shared_quad_state, surface_quad->rect,
-                               surface_quad->visible_rect,
-                               surface_quad->default_background_color, false);
+                               surface_quad->visible_rect, background_color,
+                               false);
     }
 
     return;
