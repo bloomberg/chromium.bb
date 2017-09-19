@@ -262,6 +262,9 @@ extern const char kEnableMaterialDesignExtensionsDescription[];
 extern const char kEnableMaterialDesignFeedbackName[];
 extern const char kEnableMaterialDesignFeedbackDescription[];
 
+extern const char kEnablePolicyToolName[];
+extern const char kEnablePolicyToolDescription[];
+
 extern const char kEnableMidiManagerDynamicInstantiationName[];
 extern const char kEnableMidiManagerDynamicInstantiationDescription[];
 

@@ -71,6 +71,7 @@ const char kChromeUIInterventionsInternalsURL[] =
     "chrome://interventions-internals/";
 const char kChromeUIInvalidationsURL[] = "chrome://invalidations/";
 const char kChromeUIMemoryInternalsURL[] = "chrome://memory-internals/";
+const char kChromeUIPolicyToolURL[] = "chrome://policy-tool";
 const char kChromeUINaClURL[] = "chrome://nacl/";
 const char kChromeUINetInternalsURL[] = "chrome://net-internals/";
 const char kChromeUINewProfileURL[] = "chrome://newprofile/";
@@ -220,6 +221,7 @@ const char kChromeUIInvalidationsHost[] = "invalidations";
 const char kChromeUIKillHost[] = "kill";
 const char kChromeUILargeIconHost[] = "large-icon";
 const char kChromeUILocalStateHost[] = "local-state";
+const char kChromeUIPolicyToolHost[] = "policy-tool";
 const char kChromeUIMediaEngagementHost[] = "media-engagement";
 const char kChromeUIMemoryInternalsHost[] = "memory-internals";
 const char kChromeUINaClHost[] = "nacl";

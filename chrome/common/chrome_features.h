@@ -177,6 +177,10 @@ extern const base::Feature kPermissionsBlacklist;
 extern const base::Feature kDisablePostScriptPrinting;
 #endif
 
+#if !defined(OS_ANDROID)
+extern const base::Feature kPolicyTool;
+#endif
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 extern const base::Feature kPreferHtmlOverPlugins;
 #endif

@@ -1,0 +1,25 @@
+/* Copyright (c) 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+@import 'policy_common.css';
+
+.edit-button {
+  float: right;
+  margin: 0;
+  padding: 0;
+}
+
+tbody:not(.value-editing-on) .value-edit-form {
+  display: none;
+}
+
+tbody.value-editing-on .save-button {
+  display: block;
+  float: right;
+}
+
+tbody.value-editing-on .edit-button,
+tbody.value-editing-on .value {
+  display: none;
+}
