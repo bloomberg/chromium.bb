@@ -1350,8 +1350,7 @@ base::trace_event::MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
     leveldb::DB* tracked_db) {
   DCHECK(GetInstance()->IsTrackedDB(tracked_db))
       << std::hex << tracked_db << " is not tracked";
-  return GetOrCreateAllocatorDump(pmd,
-                                  reinterpret_cast<TrackedDB*>(tracked_db));
+  return GetOrCreateAllocatorDump(pmd, static_cast<TrackedDB*>(tracked_db));
 }
 
 // static
