@@ -8,6 +8,16 @@ gaia.chromeOSLogin.parent_webview_signin_url_ = 'chrome://chrome-signin';
 gaia.chromeOSLogin.parent_webview_oob_url_ = 'chrome://oobe';
 gaia.chromeOSLogin.parent_webview_ = undefined;
 gaia.chromeOSLogin.parent_webview_url_ = undefined;
+gaia.chromeOSLogin.initialized_ = false;
+
+
+function goFirstPage() {
+console.error('On first page');
+  document.getElementById('page1').hidden = false;
+  document.getElementById('page2').hidden = true;
+  history.replaceState({}, '', window.location.pathname + '#identifier');
+  gaia.chromeOSLogin.backButton(false);
+}
 
 gaia.chromeOSLogin.registerHtml5Listener = function() {
   var onMessage = function(e) {
@@ -15,7 +25,10 @@ gaia.chromeOSLogin.registerHtml5Listener = function() {
         e.origin == gaia.chromeOSLogin.parent_webview_oob_url_) {
         gaia.chromeOSLogin.parent_webview_ = e.source;
         gaia.chromeOSLogin.parent_webview_url_ = e.origin;
-
+        if (!gaia.chromeOSLogin.initialized_) {
+          gaia.chromeOSLogin.initialized_ = true;
+          goFirstPage();
+        }
         // Repeat clearOldAttempts as soon as we got parent.
         gaia.chromeOSLogin.clearOldAttempts();
     }
@@ -63,12 +76,6 @@ gaia.chromeOSLogin.backButton = function(show) {
       gaia.chromeOSLogin.parent_webview_url_);
 };
 
-function goFirstPage() {
-  document.getElementById('page1').hidden = false;
-  document.getElementById('page2').hidden = true;
-  history.replaceState({}, '', window.location.pathname + '#identifier');
-  gaia.chromeOSLogin.backButton(false);
-}
 
 function goBack() {
   if (!document.getElementById('page2').hidden) {
@@ -114,8 +121,6 @@ function goNext() {
 
 function onLoad() {
   gaia.chromeOSLogin.registerHtml5Listener();
-  goFirstPage();
-  gaia.chromeOSLogin.clearOldAttempts();
 }
 
 </script>
