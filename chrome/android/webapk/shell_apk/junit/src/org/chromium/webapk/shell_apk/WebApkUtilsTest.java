@@ -82,18 +82,20 @@ public class WebApkUtilsTest {
 
     /**
      * Test that MainActivity appends the start URL as a paramater if |loggedIntentUrlParam| in
-     * WebAPK metadata is set to true.
+     * WebAPK metadata is set and {@link intentStartUrl} is outside of the scope specified in the
+     * manifest meta data.
      */
     @Test
     public void testLoggedIntentUrlParamWhenRewrite() {
-        final String intentStartUrl = "https://www.g.com/page?a=A";
+        final String intentStartUrl = "https://maps.google.com/page?a=A";
+        final String manifestStartUrl = "https://www.google.com/maps";
         final String manifestScope = "https://www.google.com";
         final String expectedRewrittenStartUrl =
-                "https://www.google.com/page?a=A&originalUrl=https%253A%252F%252Fwww.g.com%252Fpage%253Fa%253DA";
+                "https://www.google.com/maps?originalUrl=https%253A%252F%252Fmaps.google.com%252Fpage%253Fa%253DA";
         final String browserPackageName = "browser.support.webapks";
 
         Bundle bundle = new Bundle();
-        bundle.putString(WebApkMetaDataKeys.START_URL, intentStartUrl);
+        bundle.putString(WebApkMetaDataKeys.START_URL, manifestStartUrl);
         bundle.putString(WebApkMetaDataKeys.SCOPE, manifestScope);
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, browserPackageName);
         bundle.putString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM, "originalUrl");
