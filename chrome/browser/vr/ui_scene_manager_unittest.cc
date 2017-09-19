@@ -500,11 +500,11 @@ TEST_F(UiSceneManagerTest, UiUpdatesForWebVR) {
   manager_->SetBluetoothConnectedIndicator(true);
 
   auto* web_vr_root = scene_->GetUiElementByName(kWebVrRoot);
-  for (auto* element : web_vr_root->AllElementsInSubtree()) {
-    SCOPED_TRACE(element->name());
-    EXPECT_TRUE(element->draw_phase() == kPhaseNone ||
-                element->draw_phase() == kPhaseOverlayBackground ||
-                element->draw_phase() == kPhaseOverlayForeground);
+  for (auto& element : *web_vr_root) {
+    SCOPED_TRACE(element.name());
+    EXPECT_TRUE(element.draw_phase() == kPhaseNone ||
+                element.draw_phase() == kPhaseOverlayBackground ||
+                element.draw_phase() == kPhaseOverlayForeground);
   }
 
   // All elements should be hidden.

@@ -36,14 +36,6 @@ bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
   return true;
 }
 
-template <typename T>
-void GetAllElementsInSubtree(T* e, std::vector<T*>* elements) {
-  elements->push_back(e);
-  for (auto& child : e->children()) {
-    GetAllElementsInSubtree<T>(child.get(), elements);
-  }
-}
-
 }  // namespace
 
 UiElement::UiElement() : id_(AllocateId()) {
@@ -189,18 +181,6 @@ void UiElement::SetMode(ColorScheme::Mode mode) {
     return;
   mode_ = mode;
   OnSetMode();
-}
-
-std::vector<UiElement*> UiElement::AllElementsInSubtree() {
-  std::vector<UiElement*> elements;
-  GetAllElementsInSubtree(this, &elements);
-  return elements;
-}
-
-std::vector<const UiElement*> UiElement::AllElementsInSubtree() const {
-  std::vector<const UiElement*> elements;
-  GetAllElementsInSubtree(this, &elements);
-  return elements;
 }
 
 void UiElement::OnSetMode() {}

@@ -15,6 +15,7 @@
 #include "chrome/browser/vr/animation_player.h"
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
+#include "chrome/browser/vr/elements/ui_element_iterator.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/target_property.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -191,6 +192,7 @@ class UiElement : public cc::AnimationTarget {
   void AddChild(std::unique_ptr<UiElement> child);
   void RemoveChild(UiElement* child);
   UiElement* parent() { return parent_; }
+  const UiElement* parent() const { return parent_; }
 
   gfx::Point3F GetCenter() const;
   gfx::Vector3dF GetNormal() const;
@@ -249,8 +251,37 @@ class UiElement : public cc::AnimationTarget {
     return children_;
   }
 
-  std::vector<UiElement*> AllElementsInSubtree();
-  std::vector<const UiElement*> AllElementsInSubtree() const;
+  typedef ForwardUiElementIterator iterator;
+  typedef ConstForwardUiElementIterator const_iterator;
+  typedef ReverseUiElementIterator reverse_iterator;
+  typedef ConstReverseUiElementIterator const_reverse_iterator;
+
+  iterator begin() { return iterator(this); }
+  iterator end() { return iterator(nullptr); }
+  const_iterator begin() const { return const_iterator(this); }
+  const_iterator end() const { return const_iterator(nullptr); }
+
+  reverse_iterator rbegin() { return reverse_iterator(this); }
+  reverse_iterator rend() { return reverse_iterator(nullptr); }
+  const_reverse_iterator rbegin() const { return const_reverse_iterator(this); }
+  const_reverse_iterator rend() const {
+    return const_reverse_iterator(nullptr);
+  }
+
+  template <typename T>
+  struct Reversed {
+    explicit Reversed(T* root) : root(root) {}
+    reverse_iterator begin() { return root->rbegin(); }
+    reverse_iterator end() { return root->rend(); }
+    const_reverse_iterator begin() const { return root->rbegin(); }
+    const_reverse_iterator end() const { return root->rend(); }
+    T* root;
+  };
+
+  Reversed<UiElement> reversed() { return Reversed<UiElement>(this); }
+  const Reversed<const UiElement> reversed() const {
+    return Reversed<const UiElement>(this);
+  }
 
  protected:
   virtual void OnSetMode();
