@@ -76,8 +76,9 @@ def AddTestLauncherOptions(parser):
       '--test-launcher-summary-output',
       '--json-results-file',
       dest='json_results_file', type=os.path.realpath,
-      help='If set, will dump results in JSON form '
-           'to specified file.')
+      help='If set, will dump results in JSON form to the specified file. '
+           'Note that this will also trigger saving per-test logcats to '
+           'logdog.')
   parser.add_argument(
       '--test-launcher-shard-index',
       type=int, default=os.environ.get('GTEST_SHARD_INDEX', 0),
