@@ -88,6 +88,10 @@ class AdSamplerTrigger : public content::WebContentsObserver,
   // 1/|sampler_frequency_denominator_|
   size_t sampler_frequency_denominator_;
 
+  // The delay (in milliseconds) to wait before finishing a report. Can be
+  // overwritten for tests.
+  int64_t finish_report_delay_ms_;
+
   // TriggerManager gets called if this trigger detects an ad and wants to
   // collect some data about it. Not owned.
   TriggerManager* trigger_manager_;

@@ -13,6 +13,7 @@
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/safe_browsing/triggers/trigger_throttler.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -98,6 +99,7 @@ AdSamplerTrigger::AdSamplerTrigger(
     history::HistoryService* history_service)
     : content::WebContentsObserver(web_contents),
       sampler_frequency_denominator_(GetSamplerFrequencyDenominator()),
+      finish_report_delay_ms_(kAdSampleCollectionPeriodMilliseconds),
       trigger_manager_(trigger_manager),
       prefs_(prefs),
       request_context_(request_context),
@@ -158,17 +160,19 @@ void AdSamplerTrigger::DidFinishNavigation(
     return;
   }
 
-  // Immediately call FinishCollection but include a short delay to allow data
-  // collection to happen.
-  // TODO(lpz): This is suboptimal because we can send duplicate reports if
-  // there are multiple ads on the page. To improve this, the delay should be
-  // before calling into trigger_manager_, which requires TriggerManager to be
-  // Bind-able.
-  trigger_manager_->FinishCollectingThreatDetails(
-      TriggerType::AD_SAMPLE, web_contents(),
-      base::TimeDelta::FromMilliseconds(kAdSampleCollectionPeriodMilliseconds),
-      /*did_proceed=*/false,
-      /*num_visits=*/0, error_options);
+  // Call into TriggerManager to finish the reports after a short delay. Any
+  // ads that are detected during this delay will be rejected by TriggerManager
+  // because a report is already being collected, so we won't send multiple
+  // reports for the same page.
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          IgnoreResult(&TriggerManager::FinishCollectingThreatDetails),
+          base::Unretained(trigger_manager_), TriggerType::AD_SAMPLE,
+          base::Unretained(web_contents()), base::TimeDelta(),
+          /*did_proceed=*/false, /*num_visits=*/0, error_options),
+      base::TimeDelta::FromMilliseconds(finish_report_delay_ms_));
+
   UMA_HISTOGRAM_ENUMERATION(kAdSamplerTriggerActionMetricName, AD_SAMPLED,
                             MAX_ACTIONS);
 }
