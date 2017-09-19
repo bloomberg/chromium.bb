@@ -17,9 +17,13 @@
 #include "ios/chrome/browser/ui/page_info/page_info_model.h"
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
+#import "ios/chrome/browser/ui/page_info/requirements/page_info_reloading.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/web/public/navigation_item.h"
+#include "ios/web/public/navigation_manager.h"
+#include "ios/web/public/reload_type.h"
 #include "ios/web/public/web_client.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,7 +35,7 @@ NSString* const kPageInfoWillShowNotification =
 NSString* const kPageInfoWillHideNotification =
     @"kPageInfoWillHideNotification";
 
-@interface PageInfoLegacyCoordinator ()<PageInfoCommands>
+@interface PageInfoLegacyCoordinator ()<PageInfoCommands, PageInfoReloading>
 
 // The view controller for the Page Info UI. Nil if not visible.
 @property(nonatomic, strong) PageInfoViewController* pageInfoViewController;
@@ -114,8 +118,7 @@ NSString* const kPageInfoWillHideNotification =
              bridge:bridge
         sourcePoint:[view convertPoint:originPoint fromView:nil]
          parentView:view
-         dispatcher:static_cast<id<BrowserCommands, PageInfoCommands>>(
-                        self.dispatcher)];
+         dispatcher:self];
   bridge->set_controller(self.pageInfoViewController);
 }
 
@@ -138,6 +141,18 @@ NSString* const kPageInfoWillHideNotification =
                      inBackground:NO
                          appendTo:kCurrentTab];
   [self hidePageInfo];
+}
+
+#pragma mark - PageInfoReloading
+
+- (void)reload {
+  web::WebState* webState = self.tabModel.currentTab.webState;
+  if (webState) {
+    // |check_for_repost| is true because the reload is explicitly initiated
+    // by the user.
+    webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
+                                             true /* check_for_repost */);
+  }
 }
 
 @end
