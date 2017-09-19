@@ -182,6 +182,25 @@ cr.define('policy', function() {
       }
     },
 
+    /*
+     * Get value width of the value container.
+     * @param {Object} valueContainer Container for the value.
+     * @private
+     */
+    getValueWidth_: function(valueContainer) {
+      return valueContainer.querySelector('.value').offsetWidth;
+    },
+
+    /*
+     * Update the value width for the value container if necessary.
+     * @param {Object} valueContainer Container for the value.
+     * @private
+     */
+    updateValueWidth_: function(valueContainer) {
+      if (valueContainer.valueWidth == undefined) {
+        valueContainer.valueWidth = this.getValueWidth_(valueContainer);
+      }
+    },
     /**
      * Check the table columns for overflow. Most columns are automatically
      * elided when overflow occurs. The only action required is to add a tooltip
@@ -201,15 +220,12 @@ cr.define('policy', function() {
       // This is required to be able to check whether the contents would still
       // overflow the column once it has been hidden and replaced by a link.
       var valueContainer = this.querySelector('.value-container');
-      if (valueContainer.valueWidth == undefined) {
-        valueContainer.valueWidth =
-            valueContainer.querySelector('.value').offsetWidth;
-      }
+      this.updateValueWidth_(valueContainer);
 
       // Determine whether the contents of the value column overflows. The
       // visibility of the contents, replacement link and additional row
       // containing the complete value that depend on this are handled by CSS.
-      if (valueContainer.offsetWidth < valueContainer.valueWidth)
+      if (valueContainer.offsetWidth <= valueContainer.valueWidth)
         this.classList.add('has-overflowed-value');
       else
         this.classList.remove('has-overflowed-value');
@@ -532,6 +548,8 @@ cr.define('policy', function() {
       return section;
     },
 
+    tableHeadings: ['Scope', 'Level', 'Source', 'Name', 'Value', 'Status'],
+
     /**
      * Creates a new table for displaying policies.
      * @return {Element} The newly created table.
@@ -540,13 +558,12 @@ cr.define('policy', function() {
       var newTable = window.document.createElement('table');
       var tableHead = window.document.createElement('thead');
       var tableRow = window.document.createElement('tr');
-      var tableHeadings =
-          ['Scope', 'Level', 'Source', 'Name', 'Value', 'Status'];
-      for (var i = 0; i < tableHeadings.length; i++) {
+      for (var i = 0; i < this.tableHeadings.length; i++) {
         var tableHeader = window.document.createElement('th');
-        tableHeader.classList.add(tableHeadings[i].toLowerCase() + '-column');
+        tableHeader.classList.add(
+            this.tableHeadings[i].toLowerCase() + '-column');
         tableHeader.textContent =
-            loadTimeData.getString('header' + tableHeadings[i]);
+            loadTimeData.getString('header' + this.tableHeadings[i]);
         tableRow.appendChild(tableHeader);
       }
       tableHead.appendChild(tableRow);
