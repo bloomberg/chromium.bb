@@ -232,10 +232,6 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #endif
 
-#if defined(USE_ASH)
-#include "ash/shell.h"  // nogncheck
-#endif
-
 using base::TimeDelta;
 using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;

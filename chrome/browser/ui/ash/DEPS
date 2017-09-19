@@ -1,13 +1,17 @@
 include_rules = [
-  "+ash/public/interfaces",
+  # TODO(mash): Remove. http://crbug.com/678705
+  "+ash",
+
   # Use //ui/wm/core/window_util.h when manipulating chrome browser windows.
   # Consult mustash-team@ if you need to manipulate non-browser windows because
   # those are owned by the ash process under mash. See //ash/README.md.
   "-ash/wm/window_util.h",
+
   # TODO(ananta): Remove this when we move files which display UI in
   # chrome/browser/ui/ash to chrome/browser/ui/views/ash
   # crbug.com/728877
   "+chrome/browser/ui/views/harmony/chrome_layout_provider.h",
+
   "+components/arc",
   "+components/drive",
   "+components/session_manager/core",

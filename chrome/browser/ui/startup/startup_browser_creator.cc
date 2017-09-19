@@ -68,10 +68,6 @@
 #include "net/base/port_util.h"
 #include "printing/features/features.h"
 
-#if defined(USE_ASH)
-#include "ash/shell.h"  // nogncheck
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/app_launch_utils.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"

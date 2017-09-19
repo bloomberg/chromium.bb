@@ -38,6 +38,11 @@ Out-of-process Ash is referred to as "mash" (mojo ash). In-process ash is
 referred to as "classic ash". Ash can run in either mode depending on the
 --mash command line flag.
 
+In the few cases where chrome code is allowed to call into ash (e.g. code that
+will only ever run in classic ash) the #include lines have "// mash-ok"
+appended. This makes it easier to use grep to determine which parts of chrome
+have not yet been adapted to mash.
+
 Prefs
 -----
 Ash supports both per-user prefs and device-wide prefs. These are called

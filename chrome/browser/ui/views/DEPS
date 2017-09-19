@@ -1,4 +1,6 @@
 include_rules = [
+  # TODO(mash): Remove. http://crbug.com/678705
+ "+ash",
  "+chrome/browser/ui/views",
  "+components/constrained_window",
  "+services/ui/public/cpp",
