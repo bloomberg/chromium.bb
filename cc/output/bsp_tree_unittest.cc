@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "cc/output/bsp_walk_action.h"
-#include "cc/quads/draw_polygon.h"
+#include "cc/output/draw_polygon.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "cc/output/bsp_compare_result.h"
-#include "cc/quads/draw_polygon.h"
+#include "cc/output/draw_polygon.h"
 
 namespace cc {
 

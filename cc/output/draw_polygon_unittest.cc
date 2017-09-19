@@ -10,8 +10,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "cc/output/bsp_compare_result.h"
-#include "cc/quads/draw_polygon.h"
+#include "cc/output/draw_polygon.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/quads/nine_patch_generator.h"
+#include "cc/layers/nine_patch_generator.h"
 
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/quads/render_pass.h"

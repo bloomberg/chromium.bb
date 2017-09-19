@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "cc/output/direct_renderer.h"
-#include "cc/quads/draw_polygon.h"
+#include "cc/output/draw_polygon.h"
 
 namespace cc {
 

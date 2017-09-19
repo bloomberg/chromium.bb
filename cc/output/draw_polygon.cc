@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/quads/draw_polygon.h"
+#include "cc/output/draw_polygon.h"
 
 #include <stddef.h>
-
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "components/viz/common/quads/draw_quad.h"
 
 namespace {
@@ -31,8 +31,7 @@ void PointInterpolate(const gfx::Point3F& from,
 
 namespace cc {
 
-DrawPolygon::DrawPolygon() {
-}
+DrawPolygon::DrawPolygon() {}
 
 DrawPolygon::DrawPolygon(const viz::DrawQuad* original,
                          const std::vector<gfx::Point3F>& in_points,
@@ -71,8 +70,8 @@ DrawPolygon::DrawPolygon(const viz::DrawQuad* original_ref,
   // crossing w = 0. At this point, in the constructor, we know that we're
   // working with a quad, so we can reuse the MathUtil::MapClippedQuad3d
   // function instead of writing a generic polygon version of it.
-  MathUtil::MapClippedQuad3d(
-      transform, send_quad, points, &num_vertices_in_clipped_quad);
+  MathUtil::MapClippedQuad3d(transform, send_quad, points,
+                             &num_vertices_in_clipped_quad);
   for (int i = 0; i < num_vertices_in_clipped_quad; i++) {
     points_.push_back(points[i]);
   }
@@ -80,8 +79,7 @@ DrawPolygon::DrawPolygon(const viz::DrawQuad* original_ref,
   ConstructNormal();
 }
 
-DrawPolygon::~DrawPolygon() {
-}
+DrawPolygon::~DrawPolygon() {}
 
 std::unique_ptr<DrawPolygon> DrawPolygon::CreateCopy() {
   std::unique_ptr<DrawPolygon> new_polygon(new DrawPolygon());
@@ -340,8 +338,7 @@ void DrawPolygon::ToQuads2D(std::vector<gfx::QuadF>* quads) const {
       op2 = op1;
     }
     quads->push_back(
-        gfx::QuadF(first,
-                   gfx::PointF(points_[offset].x(), points_[offset].y()),
+        gfx::QuadF(first, gfx::PointF(points_[offset].x(), points_[offset].y()),
                    gfx::PointF(points_[op1].x(), points_[op1].y()),
                    gfx::PointF(points_[op2].x(), points_[op2].y())));
     offset = op2;
