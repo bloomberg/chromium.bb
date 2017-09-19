@@ -139,7 +139,10 @@ class UiElement : public cc::AnimationTarget {
   void SetRotate(float x, float y, float z, float radians);
   void SetScale(float x, float y, float z);
 
-  AnimationPlayer& animation_player() { return animation_player_; }
+  // Returns the target value of the animation if the corresponding property is
+  // being animated, or the current value otherwise.
+  gfx::SizeF GetTargetSize() const;
+  cc::TransformOperations GetTargetTransform() const;
 
   float opacity() const { return opacity_; }
   virtual void SetOpacity(float opacity);
@@ -252,6 +255,8 @@ class UiElement : public cc::AnimationTarget {
  protected:
   virtual void OnSetMode();
   virtual void OnUpdatedInheritedProperties();
+
+  AnimationPlayer& animation_player() { return animation_player_; }
 
   base::TimeTicks last_frame_time() const { return last_frame_time_; }
 

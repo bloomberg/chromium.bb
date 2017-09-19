@@ -654,36 +654,19 @@ void UiSceneManager::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
   // animation as the basis for the calculation.
   DCHECK(main_content_);
 
-  gfx::SizeF main_content_size;
-  if (main_content_->animation_player().IsAnimatingProperty(
-          TargetProperty::BOUNDS)) {
-    main_content_size = main_content_->animation_player().GetTargetSizeValue(
-        TargetProperty::BOUNDS);
-  } else {
-    main_content_size = main_content_->size();
-  }
-
+  gfx::SizeF main_content_size = main_content_->GetTargetSize();
   // We take the target transform in case the content quad's parent's translate
   // is animated. This approach only works with the current scene hierarchy and
   // set of animated properties.
-  // TODO(tiborg): Find a way to get the target value of the inheritable
-  // transfrom that works with any scene hierarchy and set of animated
-  // properties.
-  gfx::Transform main_content_inheritable_transform;
-  if (scene_->GetUiElementByName(k2dBrowsingContentGroup)
-          ->animation_player()
-          .IsAnimatingProperty(TargetProperty::TRANSFORM)) {
-    main_content_inheritable_transform =
-        scene_->GetUiElementByName(k2dBrowsingContentGroup)
-            ->animation_player()
-            .GetTargetTransformOperationsValue(TargetProperty::TRANSFORM)
-            .Apply();
-  } else {
-    main_content_inheritable_transform = main_content_->inheritable_transform();
-  }
-
+  // TODO(crbug.com/766318): Find a way to get the target value of the
+  // inheritable transfrom that works with any scene hierarchy and set of
+  // animated properties.
+  gfx::Transform main_content_transform =
+      scene_->GetUiElementByName(k2dBrowsingContentGroup)
+          ->GetTargetTransform()
+          .Apply();
   gfx::SizeF screen_size = CalculateScreenSize(
-      proj_matrix, main_content_inheritable_transform, main_content_size);
+      proj_matrix, main_content_transform, main_content_size);
 
   float aspect_ratio = main_content_size.width() / main_content_size.height();
   gfx::SizeF screen_bounds;

@@ -28,6 +28,19 @@ std::unique_ptr<cc::Animation> CreateBoundsAnimation(int id,
                                                      const gfx::SizeF& to,
                                                      base::TimeDelta duration);
 
+std::unique_ptr<cc::Animation> CreateOpacityAnimation(int id,
+                                                      int group,
+                                                      float from,
+                                                      float to,
+                                                      base::TimeDelta duration);
+
+std::unique_ptr<cc::Animation> CreateBackgroundColorAnimation(
+    int id,
+    int group,
+    SkColor from,
+    SkColor to,
+    base::TimeDelta duration);
+
 base::TimeTicks MicrosecondsToTicks(uint64_t us);
 base::TimeDelta MicrosecondsToDelta(uint64_t us);
 

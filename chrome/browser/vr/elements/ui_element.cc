@@ -167,6 +167,15 @@ void UiElement::SetOpacity(float opacity) {
                                       opacity);
 }
 
+cc::TransformOperations UiElement::GetTargetTransform() const {
+  return animation_player_.GetTargetTransformOperationsValue(
+      TargetProperty::TRANSFORM, transform_operations_);
+}
+
+gfx::SizeF UiElement::GetTargetSize() const {
+  return animation_player_.GetTargetSizeValue(TargetProperty::BOUNDS, size_);
+}
+
 bool UiElement::HitTest(const gfx::PointF& point) const {
   return point.x() >= 0.0f && point.x() <= 1.0f && point.y() >= 0.0f &&
          point.y() <= 1.0f;
