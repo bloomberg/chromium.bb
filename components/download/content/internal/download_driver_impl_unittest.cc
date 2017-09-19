@@ -52,6 +52,7 @@ class MockDriverClient : public DownloadDriver::Client {
   MOCK_METHOD2(OnDownloadFailed, void(const DriverEntry&, FailureType));
   MOCK_METHOD1(OnDownloadSucceeded, void(const DriverEntry&));
   MOCK_METHOD1(OnDownloadUpdated, void(const DriverEntry&));
+  MOCK_CONST_METHOD1(IsTrackingDownload, bool(const std::string&));
 };
 
 class DownloadDriverImplTest : public testing::Test {
@@ -62,6 +63,8 @@ class DownloadDriverImplTest : public testing::Test {
   ~DownloadDriverImplTest() override = default;
 
   void SetUp() override {
+    EXPECT_CALL(mock_client_, IsTrackingDownload(_))
+        .WillRepeatedly(Return(true));
     driver_ = base::MakeUnique<DownloadDriverImpl>(&mock_manager_);
   }
 
