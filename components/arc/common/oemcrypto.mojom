@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The original version of this file lives in the Chrome OS repository at:
-// src/platform/arc-oemcrypto/mojo/oemcrypto.mojom
+// The original version of this file lives in the Chromium repository at:
+// src/components/arc/common/oemcrypto.mojom
 
 // This file defines the mojo interface between Android, Chrome and the
 // Chrome OS daemon for the Widevine L1 OEMCrypto implementation used in ARC++.
@@ -56,9 +56,11 @@ enum OemCryptoResult {
 };
 
 struct OemCryptoSecureBuffer {
-  // TODO(jkardatzke): Add a comment which explains what the buffer_handle
-  // means once the specific implementation is determined.
-  uint64 buffer_handle;
+  // buffer_handle should be passed to the ProtectedBufferManager service in
+  // the GPU in order to retrieve the shared memory handle that corresponds
+  // to the actual secure buffer. It should then be mapped and data written at
+  // offset up until offset + max_length.
+  handle buffer_handle;
   uint32 max_length;
   uint32 offset;
 };
@@ -125,6 +127,8 @@ enum OemCryptoHdcpCapability {
   HDCP_NO_DIGITAL_OUTPUT = 0xFF,
 };
 
+// This is the interface that implements all the calls that map to the
+// OEMCrypto API itself.
 // Next method ID: 36
 interface OemCryptoService {
   Initialize@0() => (OemCryptoResult result);
