@@ -490,6 +490,11 @@ void TableView::OnItemsAdded(int start, int length) {
   NumRowsChanged();
 }
 
+void TableView::OnItemsMoved(int old_start, int length, int new_start) {
+  selection_model_.Move(old_start, new_start, length);
+  SortItemsAndUpdateMapping();
+}
+
 void TableView::OnItemsRemoved(int start, int length) {
   // Determine the currently selected index in terms of the view. We inline the
   // implementation here since ViewToModel() has DCHECKs that fail since the
