@@ -6,3 +6,14 @@
   background: rgb(255, 240, 240);
   color: rgb(140, 20, 20);
 }
+
+.settings-box input[type='number'] {
+  -webkit-margin-end: 16px;
+  margin-bottom: 2.5px;
+  margin-top: 2.5px;
+}
+
+.settings-box {
+  align-items: center;
+  display: inline-flex;
+}

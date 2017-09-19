@@ -62,17 +62,6 @@ header {
   width: 99%;
 }
 
-.right-column .checkbox,
-.right-column .radio {
-  margin: 0;
-}
-
-.right-column .checkbox label,
-.right-column .radio label {
-  padding-bottom: 5px;
-  padding-top: 10px;
-}
-
 .right-column .radio input[type='radio'],
 .right-column label input[type='checkbox'] {
   --min-size: 13.19px;
@@ -105,7 +94,7 @@ header {
 }
 
 .two-column.visible .left-column.multirow {
-  padding-top: 16px;
+  padding-top: 13px;
   vertical-align: top;
 }
 
