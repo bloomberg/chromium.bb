@@ -202,14 +202,6 @@ CommandHandler.onCommand = function(command) {
           localStorage[brailleTableType]);
       new Output().format(output).go();
       return false;
-    case 'toggleChromeVoxVersion':
-      if (!ChromeVoxState.instance.toggleNext())
-        return false;
-      if (ChromeVoxState.instance.currentRange) {
-        ChromeVoxState.instance.navigateToRange(
-            ChromeVoxState.instance.currentRange);
-      }
-      break;
     case 'help':
       (new PanelCommand(PanelCommandType.TUTORIAL)).send();
       return false;
