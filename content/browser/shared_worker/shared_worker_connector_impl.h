@@ -38,9 +38,11 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
       const WorkerStoragePartition& worker_storage_partition);
 
   // mojom::SharedWorkerConnector methods:
-  void Connect(mojom::SharedWorkerInfoPtr info,
-               mojom::SharedWorkerClientPtr client,
-               mojo::ScopedMessagePipeHandle message_port) override;
+  void Connect(
+      mojom::SharedWorkerInfoPtr info,
+      mojom::SharedWorkerClientPtr client,
+      blink::mojom::SharedWorkerCreationContextType creation_context_type,
+      mojo::ScopedMessagePipeHandle message_port) override;
 
   const int process_id_;
   const int frame_id_;

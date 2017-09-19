@@ -23,9 +23,9 @@ class CONTENT_EXPORT SharedWorkerInstance {
  public:
   SharedWorkerInstance(
       const GURL& url,
-      const base::string16& name,
-      const base::string16& content_security_policy,
-      blink::WebContentSecurityPolicyType security_policy_type,
+      const std::string& name,
+      const std::string& content_security_policy,
+      blink::WebContentSecurityPolicyType content_security_policy_type,
       blink::WebAddressSpace creation_address_space,
       ResourceContext* resource_context,
       const WorkerStoragePartitionId& partition_id,
@@ -41,19 +41,19 @@ class CONTENT_EXPORT SharedWorkerInstance {
   // -or-
   // b) the names are both empty, and the urls are equal.
   bool Matches(const GURL& url,
-               const base::string16& name,
+               const std::string& name,
                const WorkerStoragePartitionId& partition,
                ResourceContext* resource_context) const;
   bool Matches(const SharedWorkerInstance& other) const;
 
   // Accessors.
   const GURL& url() const { return url_; }
-  const base::string16 name() const { return name_; }
-  const base::string16 content_security_policy() const {
+  const std::string name() const { return name_; }
+  const std::string content_security_policy() const {
     return content_security_policy_;
   }
-  blink::WebContentSecurityPolicyType security_policy_type() const {
-    return security_policy_type_;
+  blink::WebContentSecurityPolicyType content_security_policy_type() const {
+    return content_security_policy_type_;
   }
   blink::WebAddressSpace creation_address_space() const {
     return creation_address_space_;
@@ -69,9 +69,9 @@ class CONTENT_EXPORT SharedWorkerInstance {
 
  private:
   const GURL url_;
-  const base::string16 name_;
-  const base::string16 content_security_policy_;
-  const blink::WebContentSecurityPolicyType security_policy_type_;
+  const std::string name_;
+  const std::string content_security_policy_;
+  const blink::WebContentSecurityPolicyType content_security_policy_type_;
   const blink::WebAddressSpace creation_address_space_;
   ResourceContext* const resource_context_;
   const WorkerStoragePartitionId partition_id_;

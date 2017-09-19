@@ -15,20 +15,19 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "content/common/shared_worker/shared_worker.mojom.h"
 #include "content/common/shared_worker/shared_worker_client.mojom.h"
+#include "content/common/shared_worker/shared_worker_factory.mojom.h"
+#include "content/common/shared_worker/shared_worker_host.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 class GURL;
-
-namespace IPC {
-class Message;
-}
 
 namespace content {
 
 class MessagePort;
 class SharedWorkerContentSettingsProxyImpl;
 class SharedWorkerInstance;
-class SharedWorkerMessageFilter;
 
 // The SharedWorkerHost is the interface that represents the browser side of
 // the browser <-> worker communication channel. This is owned by
@@ -37,23 +36,16 @@ class SharedWorkerMessageFilter;
 //
 // NOTE: This class is intended to only be used on the IO thread.
 //
-class SharedWorkerHost {
+class SharedWorkerHost : public mojom::SharedWorkerHost {
  public:
   SharedWorkerHost(SharedWorkerInstance* instance,
-                   SharedWorkerMessageFilter* filter,
-                   int worker_route_id);
-  ~SharedWorkerHost();
+                   int process_id,
+                   int route_id);
+  ~SharedWorkerHost() override;
 
   // Starts the SharedWorker in the renderer process.
-  void Start(bool pause_on_start);
+  void Start(mojom::SharedWorkerFactoryPtr factory, bool pause_on_start);
 
-  void CountFeature(blink::mojom::WebFeature feature);
-  void WorkerContextClosed();
-  void WorkerContextDestroyed();
-  void WorkerReadyForInspection();
-  void WorkerScriptLoaded();
-  void WorkerScriptLoadFailed();
-  void WorkerConnected(int connection_request_id);
   void AllowFileSystem(const GURL& url,
                        base::OnceCallback<void(bool)> callback);
   bool AllowIndexedDB(const GURL& url, const base::string16& name);
@@ -70,11 +62,8 @@ class SharedWorkerHost {
   bool ServesExternalClient();
 
   SharedWorkerInstance* instance() { return instance_.get(); }
-  SharedWorkerMessageFilter* worker_render_filter() const {
-    return worker_render_filter_;
-  }
-  int process_id() const { return worker_process_id_; }
-  int worker_route_id() const { return worker_route_id_; }
+  int process_id() const { return process_id_; }
+  int route_id() const { return route_id_; }
   bool IsAvailable() const;
 
  private:
@@ -92,26 +81,30 @@ class SharedWorkerHost {
 
   using ClientList = std::list<ClientInfo>;
 
+  // mojom::SharedWorkerHost methods:
+  void OnConnected(int connection_request_id) override;
+  void OnContextClosed() override;
+  void OnReadyForInspection() override;
+  void OnScriptLoaded() override;
+  void OnScriptLoadFailed() override;
+  void OnFeatureUsed(blink::mojom::WebFeature feature) override;
+
   // Return a vector of all the render process/render frame IDs.
   std::vector<std::pair<int, int>> GetRenderFrameIDsForWorker();
 
   void AllowFileSystemResponse(base::OnceCallback<void(bool)> callback,
                                bool allowed);
   void OnClientConnectionLost();
+  void OnWorkerConnectionLost();
 
-  // Sends |message| to the SharedWorker.
-  bool Send(IPC::Message* message);
-
+  mojo::Binding<mojom::SharedWorkerHost> binding_;
   std::unique_ptr<SharedWorkerInstance> instance_;
   ClientList clients_;
 
-  // A message filter for a renderer process that hosts a worker. This is always
-  // valid because this host is destructed immediately after the filter is
-  // closed (see SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing).
-  SharedWorkerMessageFilter* worker_render_filter_;
+  mojom::SharedWorkerPtr worker_;
 
-  const int worker_process_id_;
-  const int worker_route_id_;
+  const int process_id_;
+  const int route_id_;
   int next_connection_request_id_;
   bool termination_message_sent_ = false;
   bool closed_ = false;
@@ -125,6 +118,7 @@ class SharedWorkerHost {
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerHost);
 };
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_HOST_H_

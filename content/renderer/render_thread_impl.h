@@ -63,7 +63,6 @@
 #endif
 
 class SkBitmap;
-struct WorkerProcessMsg_CreateWorker_Params;
 
 namespace blink {
 namespace scheduler {
@@ -580,8 +579,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  void OnCreateNewSharedWorker(
-      const WorkerProcessMsg_CreateWorker_Params& params);
   bool RendererIsHidden() const;
   void OnRendererHidden();
   void OnRendererVisible();
