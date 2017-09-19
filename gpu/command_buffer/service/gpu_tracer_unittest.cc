@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
@@ -33,28 +34,25 @@ int64_t FakeCpuTime() {
 class MockOutputter : public Outputter {
  public:
   MockOutputter() {}
+  ~MockOutputter() override {}
+
   MOCK_METHOD5(TraceDevice,
                void(GpuTracerSource source,
                     const std::string& category,
                     const std::string& name,
                     int64_t start_time,
                     int64_t end_time));
-
   MOCK_METHOD3(TraceServiceBegin,
                void(GpuTracerSource source,
                     const std::string& category, const std::string& name));
-
   MOCK_METHOD3(TraceServiceEnd,
                void(GpuTracerSource source,
                     const std::string& category, const std::string& name));
-
- protected:
-  ~MockOutputter() {}
 };
 
 class GPUTracerTester : public GPUTracer {
  public:
-  explicit GPUTracerTester(gles2::GLES2Decoder* decoder)
+  explicit GPUTracerTester(GLES2Decoder* decoder)
       : GPUTracer(decoder), tracing_enabled_(0) {
     gpu_timing_client_->SetCpuTimeForTesting(base::Bind(&FakeCpuTime));
 
@@ -69,20 +67,8 @@ class GPUTracerTester : public GPUTracer {
     tracing_enabled_ = enabled ? 1 : 0;
   }
 
-  void SetOutputter(scoped_refptr<Outputter> outputter) {
-    set_outputter_ = outputter;
-  }
-
- protected:
-  scoped_refptr<Outputter> CreateOutputter(const std::string& name) override {
-    if (set_outputter_.get()) {
-      return set_outputter_;
-    }
-    return new MockOutputter();
-  }
-
+ private:
   unsigned char tracing_enabled_;
-  scoped_refptr<Outputter> set_outputter_;
 };
 
 class BaseGpuTest : public GpuServiceTest {
@@ -117,14 +103,10 @@ class BaseGpuTest : public GpuServiceTest {
     gpu_timing_client_ = GetGLContext()->CreateGPUTimingClient();
     gpu_timing_client_->SetCpuTimeForTesting(base::Bind(&FakeCpuTime));
     gl_fake_queries_.Reset();
-
-    outputter_ref_ = new MockOutputter();
   }
 
   void TearDown() override {
-    outputter_ref_ = NULL;
     gpu_timing_client_ = NULL;
-
     gl_fake_queries_.Reset();
     GpuServiceTest::TearDown();
   }
@@ -216,7 +198,7 @@ class BaseGpuTest : public GpuServiceTest {
   gl::GPUTimingFake gl_fake_queries_;
 
   scoped_refptr<gl::GPUTimingClient> gpu_timing_client_;
-  scoped_refptr<MockOutputter> outputter_ref_;
+  MockOutputter outputter_;
 };
 
 // Test GPUTrace calls all the correct gl calls.
@@ -239,7 +221,7 @@ class BaseGpuTraceTest : public BaseGpuTest {
     const int64_t expect_end_time =
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
-    ExpectOutputterMocks(outputter_ref_.get(), tracing_service, tracing_device,
+    ExpectOutputterMocks(&outputter_, tracing_service, tracing_device,
                          tracer_source, category_name, trace_name,
                          expect_start_time, expect_end_time);
 
@@ -247,8 +229,8 @@ class BaseGpuTraceTest : public BaseGpuTest {
       ExpectTraceQueryMocks();
 
     scoped_refptr<GPUTrace> trace = new GPUTrace(
-        outputter_ref_, gpu_timing_client_.get(), tracer_source,
-        category_name, trace_name, tracing_service, tracing_device);
+        &outputter_, gpu_timing_client_.get(), tracer_source, category_name,
+        trace_name, tracing_service, tracing_device);
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
     g_fakeCPUTime = expect_start_time;
@@ -279,8 +261,6 @@ class BaseGpuTraceTest : public BaseGpuTest {
 
     // Destroy trace after we are done.
     trace->Destroy(true);
-
-    outputter_ref_ = NULL;
   }
 };
 
@@ -337,17 +317,14 @@ class BaseGpuTracerTest : public BaseGpuTest {
     ExpectTracerOffsetQueryMocks();
 
     FakeCommandBufferServiceBase command_buffer_service;
-    MockGLES2Decoder decoder(&command_buffer_service);
+    MockOutputter outputter;
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(true);
 
-    tracer.SetOutputter(outputter_ref_);
-
     ASSERT_TRUE(tracer.BeginDecoding());
     ASSERT_TRUE(tracer.EndDecoding());
-
-    outputter_ref_ = NULL;
   }
 
   void DoDisabledTracingTest() {
@@ -356,11 +333,11 @@ class BaseGpuTracerTest : public BaseGpuTest {
     const GpuTracerSource source = static_cast<GpuTracerSource>(0);
 
     FakeCommandBufferServiceBase command_buffer_service;
-    MockGLES2Decoder decoder(&command_buffer_service);
+    MockOutputter outputter;
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(false);
-    tracer.SetOutputter(outputter_ref_);
 
     ASSERT_TRUE(tracer.BeginDecoding());
     ASSERT_TRUE(tracer.Begin("disabled_category", "disabled_name", source));
@@ -384,12 +361,11 @@ class BaseGpuTracerTest : public BaseGpuTest {
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     FakeCommandBufferServiceBase command_buffer_service;
-    MockGLES2Decoder decoder(&command_buffer_service);
+    MockOutputter outputter;
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(true);
-
-    tracer.SetOutputter(outputter_ref_);
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
     g_fakeCPUTime = expect_start_time;
@@ -412,8 +388,8 @@ class BaseGpuTracerTest : public BaseGpuTest {
       std::string source_trace_name = trace_name + num_char;
 
       const GpuTracerSource source = static_cast<GpuTracerSource>(i);
-      ExpectOutputterBeginMocks(outputter_ref_.get(), source,
-                                source_category, source_trace_name);
+      ExpectOutputterBeginMocks(&outputter, source, source_category,
+                                source_trace_name);
       ASSERT_TRUE(tracer.Begin(source_category, source_trace_name, source));
     }
     for (int i = 0; i < NUM_TRACER_SOURCES; ++i) {
@@ -430,7 +406,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
       const bool valid_timer = gpu_timing_client_->IsAvailable();
       const GpuTracerSource source = static_cast<GpuTracerSource>(i);
-      ExpectOutputterEndMocks(outputter_ref_.get(), source, source_category,
+      ExpectOutputterEndMocks(&outputter, source, source_category,
                               source_trace_name, expect_start_time + i,
                               expect_end_time + i, true, valid_timer);
       // Check if the current category/name are correct for this source.
@@ -441,7 +417,6 @@ class BaseGpuTracerTest : public BaseGpuTest {
     }
     ASSERT_TRUE(tracer.EndDecoding());
     tracer.ProcessTraces();
-    outputter_ref_ = NULL;
   }
 
   void DoOngoingTracerMarkerTest() {
@@ -459,10 +434,10 @@ class BaseGpuTracerTest : public BaseGpuTest {
     const bool valid_timer = gpu_timing_client_->IsAvailable();
 
     FakeCommandBufferServiceBase command_buffer_service;
-    MockGLES2Decoder decoder(&command_buffer_service);
+    MockOutputter outputter;
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     GPUTracerTester tracer(&decoder);
-    tracer.SetOutputter(outputter_ref_);
 
     // Create trace marker while traces are disabled.
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
@@ -485,9 +460,9 @@ class BaseGpuTracerTest : public BaseGpuTest {
     ASSERT_TRUE(tracer.BeginDecoding());
 
     // End decoding at time start+2.
-    ExpectOutputterEndMocks(outputter_ref_.get(), source, category_name,
-                            trace_name, expect_start_time + 1,
-                            expect_start_time + 2, true, valid_timer);
+    ExpectOutputterEndMocks(&outputter, source, category_name, trace_name,
+                            expect_start_time + 1, expect_start_time + 2, true,
+                            valid_timer);
     gl_fake_queries_.SetCurrentGLTime(
         start_timestamp +
         (2 * base::Time::kNanosecondsPerMicrosecond));
@@ -506,9 +481,9 @@ class BaseGpuTracerTest : public BaseGpuTest {
         start_timestamp +
         (4 * base::Time::kNanosecondsPerMicrosecond));
     g_fakeCPUTime = expect_start_time + 4;
-    ExpectOutputterEndMocks(outputter_ref_.get(), source, category_name,
-                            trace_name, expect_start_time + 3,
-                            expect_start_time + 4, true, valid_timer);
+    ExpectOutputterEndMocks(&outputter, source, category_name, trace_name,
+                            expect_start_time + 3, expect_start_time + 4, true,
+                            valid_timer);
     ASSERT_TRUE(tracer.End(source));
 
     // Increment time before we end decoding to test trace does not stop here.
@@ -538,12 +513,11 @@ class BaseGpuTracerTest : public BaseGpuTest {
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     FakeCommandBufferServiceBase command_buffer_service;
-    MockGLES2Decoder decoder(&command_buffer_service);
+    MockOutputter outputter;
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     GPUTracerTester tracer(&decoder);
     tracer.SetTracingEnabled(true);
-
-    tracer.SetOutputter(outputter_ref_);
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
     g_fakeCPUTime = expect_start_time;
@@ -552,8 +526,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
     ExpectTraceQueryMocks();
 
-    ExpectOutputterBeginMocks(outputter_ref_.get(), source,
-                              category_name, trace_name);
+    ExpectOutputterBeginMocks(&outputter, source, category_name, trace_name);
     ASSERT_TRUE(tracer.Begin(category_name, trace_name, source));
 
     gl_fake_queries_.SetCurrentGLTime(end_timestamp);
@@ -570,18 +543,14 @@ class BaseGpuTracerTest : public BaseGpuTest {
     gl_fake_queries_.SetDisjoint();
     ASSERT_TRUE(disjoint_client->CheckAndResetTimerErrors());
 
-    ExpectDisjointOutputMocks(outputter_ref_.get(),
-                              expect_start_time, expect_end_time);
+    ExpectDisjointOutputMocks(&outputter, expect_start_time, expect_end_time);
 
-    ExpectOutputterEndMocks(outputter_ref_.get(), source,
-                            category_name, trace_name,
+    ExpectOutputterEndMocks(&outputter, source, category_name, trace_name,
                             expect_start_time, expect_end_time, true, false);
 
     ASSERT_TRUE(tracer.End(source));
     ASSERT_TRUE(tracer.EndDecoding());
     tracer.ProcessTraces();
-
-    outputter_ref_ = NULL;
   }
 
   void DoOutsideDisjointTest() {
@@ -601,11 +570,11 @@ class BaseGpuTracerTest : public BaseGpuTest {
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     FakeCommandBufferServiceBase command_buffer_service;
-    MockGLES2Decoder decoder(&command_buffer_service);
+    MockOutputter outputter;
+    MockGLES2Decoder decoder(&command_buffer_service, &outputter);
     EXPECT_CALL(decoder, GetGLContext()).WillOnce(Return(GetGLContext()));
     EXPECT_CALL(decoder, MakeCurrent()).WillRepeatedly(Return(true));
     GPUTracerTester tracer(&decoder);
-    tracer.SetOutputter(outputter_ref_);
 
     // Start a trace before tracing is enabled.
     tracer.SetTracingEnabled(false);
@@ -619,21 +588,19 @@ class BaseGpuTracerTest : public BaseGpuTest {
     g_fakeCPUTime = expect_start_time;
 
     // Disjoints before we start tracing anything should not do anything.
-    ExpectNoDisjointOutputMocks(outputter_ref_.get());
+    ExpectNoDisjointOutputMocks(&outputter);
     gl_fake_queries_.SetDisjoint();
 
     ExpectTraceQueryMocks();
-    ExpectOutputterBeginMocks(outputter_ref_.get(), source,
-                              category_name, trace_name);
+    ExpectOutputterBeginMocks(&outputter, source, category_name, trace_name);
     ASSERT_TRUE(tracer.BeginDecoding());
 
     // Set times so each source has a different time.
     gl_fake_queries_.SetCurrentGLTime(end_timestamp);
     g_fakeCPUTime = expect_end_time;
 
-    ExpectOutputterEndMocks(outputter_ref_.get(), source, category_name,
-                            trace_name, expect_start_time,
-                            expect_end_time, true, true);
+    ExpectOutputterEndMocks(&outputter, source, category_name, trace_name,
+                            expect_start_time, expect_end_time, true, true);
 
     ASSERT_TRUE(tracer.End(source));
     ASSERT_TRUE(tracer.EndDecoding());
@@ -740,7 +707,7 @@ class GPUTracerTest : public GpuServiceTest {
   void SetUp() override {
     g_fakeCPUTime = 0;
     GpuServiceTest::SetUpWithGLVersion("3.2", "");
-    decoder_.reset(new MockGLES2Decoder(&command_buffer_service_));
+    decoder_.reset(new MockGLES2Decoder(&command_buffer_service_, &outputter_));
     EXPECT_CALL(*decoder_, GetGLContext())
         .Times(AtMost(1))
         .WillRepeatedly(Return(GetGLContext()));
@@ -752,7 +719,9 @@ class GPUTracerTest : public GpuServiceTest {
     decoder_ = nullptr;
     GpuServiceTest::TearDown();
   }
+
   FakeCommandBufferServiceBase command_buffer_service_;
+  MockOutputter outputter_;
   std::unique_ptr<MockGLES2Decoder> decoder_;
   std::unique_ptr<GPUTracerTester> tracer_tester_;
 };

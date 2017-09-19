@@ -496,11 +496,11 @@ uint32_t GLES2Decoder::GetAndClearBackbufferClearBitsForTest() {
   return 0;
 }
 
-GLES2Decoder::GLES2Decoder(CommandBufferServiceBase* command_buffer_service)
-    : CommonDecoder(command_buffer_service),
-      initialized_(false),
-      debug_(false),
-      log_commands_(false) {}
+GLES2Decoder::GLES2Decoder(CommandBufferServiceBase* command_buffer_service,
+                           Outputter* outputter)
+    : CommonDecoder(command_buffer_service), outputter_(outputter) {
+  DCHECK(outputter_);
+}
 
 GLES2Decoder::~GLES2Decoder() {
 }
@@ -519,6 +519,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
  public:
   GLES2DecoderImpl(GLES2DecoderClient* client,
                    CommandBufferServiceBase* command_buffer_service,
+                   Outputter* outputter,
                    ContextGroup* group);
   ~GLES2DecoderImpl() override;
 
@@ -3096,19 +3097,21 @@ GLenum BackFramebuffer::CheckStatus() {
 GLES2Decoder* GLES2Decoder::Create(
     GLES2DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
+    Outputter* outputter,
     ContextGroup* group) {
   if (group->use_passthrough_cmd_decoder()) {
     return new GLES2DecoderPassthroughImpl(client, command_buffer_service,
-                                           group);
+                                           outputter, group);
   }
-  return new GLES2DecoderImpl(client, command_buffer_service, group);
+  return new GLES2DecoderImpl(client, command_buffer_service, outputter, group);
 }
 
 GLES2DecoderImpl::GLES2DecoderImpl(
     GLES2DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
+    Outputter* outputter,
     ContextGroup* group)
-    : GLES2Decoder(command_buffer_service),
+    : GLES2Decoder(command_buffer_service, outputter),
       client_(client),
       group_(group),
       logger_(&debug_marker_manager_, client_),

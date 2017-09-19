@@ -588,7 +588,7 @@ bool GpuCommandBufferStub::Initialize(
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo(manager->gpu_driver_bug_workarounds());
     gpu::GpuMemoryBufferFactory* gmb_factory =
-        channel_->gpu_channel_manager()->gpu_memory_buffer_factory();
+        manager->gpu_memory_buffer_factory();
     context_group_ = new gles2::ContextGroup(
         manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
         manager->mailbox_manager(),
@@ -656,8 +656,8 @@ bool GpuCommandBufferStub::Initialize(
 
   command_buffer_.reset(new CommandBufferService(
       this, context_group_->transfer_buffer_manager()));
-  decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
-                                             context_group_.get()));
+  decoder_.reset(gles2::GLES2Decoder::Create(
+      this, command_buffer_.get(), manager->outputter(), context_group_.get()));
 
   sync_point_client_state_ =
       channel_->sync_point_manager()->CreateSyncPointClientState(
