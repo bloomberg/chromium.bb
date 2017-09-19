@@ -59,8 +59,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
         void onDownloadStart();
 
         /** Initializes data needed for testing. */
-        void initialize(BrowserActionsContextMenuItemDelegate delegate,
-                SparseArray<PendingIntent> customActions,
+        void initialize(SparseArray<PendingIntent> customActions,
                 List<Pair<Integer, List<ContextMenuItem>>> items,
                 ProgressDialog progressDialog);
     }
@@ -155,7 +154,7 @@ public class BrowserActionsContextMenuHelper implements OnCreateContextMenuListe
     @VisibleForTesting
     void setTestDelegateForTesting(BrowserActionsTestDelegate testDelegate) {
         mTestDelegate = testDelegate;
-        mTestDelegate.initialize(mMenuItemDelegate, mCustomItemActionMap, mItems, mProgressDialog);
+        mTestDelegate.initialize(mCustomItemActionMap, mItems, mProgressDialog);
     }
 
     /**

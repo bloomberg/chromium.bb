@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -64,7 +65,6 @@ public class BrowserActionActivityTest {
     private final CallbackHelper mOnOpenTabInBackgroundStartCallback = new CallbackHelper();
     private final CallbackHelper mOnDownloadStartCallback = new CallbackHelper();
 
-    private BrowserActionsContextMenuItemDelegate mMenuItemDelegate;
     private SparseArray<PendingIntent> mCustomActions;
     private List<Pair<Integer, List<ContextMenuItem>>> mItems;
     private ProgressDialog mProgressDialog;
@@ -96,11 +96,9 @@ public class BrowserActionActivityTest {
         }
 
         @Override
-        public void initialize(BrowserActionsContextMenuItemDelegate menuItemDelegate,
-                SparseArray<PendingIntent> customActions,
+        public void initialize(SparseArray<PendingIntent> customActions,
                 List<Pair<Integer, List<ContextMenuItem>>> items,
                 ProgressDialog progressDialog) {
-            mMenuItemDelegate = menuItemDelegate;
             mCustomActions = customActions;
             mItems = items;
             mProgressDialog = progressDialog;
@@ -221,7 +219,7 @@ public class BrowserActionActivityTest {
         mOnFinishNativeInitializationCallback.waitForCallback(0);
         Assert.assertEquals(1, mActivityTestRule.getActivity().getCurrentTabModel().getCount());
         // No notification should be shown.
-        Assert.assertFalse(mMenuItemDelegate.hasBrowserActionsNotification());
+        Assert.assertFalse(BrowserActionsService.hasBrowserActionsNotification());
 
         // Open a tab in the background.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -233,7 +231,15 @@ public class BrowserActionActivityTest {
         });
 
         // Notification for single tab should be shown.
-        Assert.assertTrue(mMenuItemDelegate.hasBrowserActionsNotification());
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return BrowserActionsService.hasBrowserActionsNotification();
+            }
+        });
+        Assert.assertEquals(R.string.browser_actions_single_link_open_notification_title,
+                BrowserActionsService.getTitleRestId());
+
         // Tabs should always be added at the end of the model.
         Assert.assertEquals(2, mActivityTestRule.getActivity().getCurrentTabModel().getCount());
         Assert.assertEquals(mTestPage,
@@ -243,7 +249,7 @@ public class BrowserActionActivityTest {
         int prevTabId = mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(0).getId();
         int newTabId = mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(1).getId();
         // TODO(ltian): overwrite delegate prevent creating notifcation for test.
-        Intent notificationIntent = mMenuItemDelegate.getNotificationIntent();
+        Intent notificationIntent = BrowserActionsService.getNotificationIntent();
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // Force ChromeTabbedActivity dismissed to make sure it calls onStop then calls onStart next
@@ -261,7 +267,7 @@ public class BrowserActionActivityTest {
 
     @Test
     @SmallTest
-    public void testOpenMulitpleTabInBackgroundWhenChromeAvailable() throws Exception {
+    public void testOpenMulitpleTabsInBackgroundWhenChromeAvailable() throws Exception {
         // Start ChromeTabbedActivity first.
         mActivityTestRule.startMainActivityWithURL(mTestPage);
 
@@ -270,6 +276,7 @@ public class BrowserActionActivityTest {
         mOnBrowserActionsMenuShownCallback.waitForCallback(0);
         mOnFinishNativeInitializationCallback.waitForCallback(0);
         Assert.assertEquals(1, mActivityTestRule.getActivity().getCurrentTabModel().getCount());
+        Assert.assertFalse(BrowserActionsService.hasBrowserActionsNotification());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -277,19 +284,35 @@ public class BrowserActionActivityTest {
                         R.id.browser_actions_open_in_background);
             }
         });
+        // Preferences should update a Tab is created and notification title should be for single
+        // tab.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return BrowserActionsService.hasBrowserActionsNotification();
+            }
+        });
+        Assert.assertEquals(R.string.browser_actions_single_link_open_notification_title,
+                BrowserActionsService.getTitleRestId());
 
         final BrowserActionActivity activity2 = startBrowserActionActivity(mTestPage3, 1);
         mOnBrowserActionsMenuShownCallback.waitForCallback(1);
         mOnFinishNativeInitializationCallback.waitForCallback(1);
         Assert.assertEquals(2, mActivityTestRule.getActivity().getCurrentTabModel().getCount());
 
-        // Notification for multiple tabs should be shown.
-        Assert.assertTrue(mMenuItemDelegate.hasBrowserActionsNotification());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 activity2.getHelperForTesting().onItemSelected(
                         R.id.browser_actions_open_in_background);
+            }
+        });
+        // Notification title should be shown for multiple tabs.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return R.string.browser_actions_multi_links_open_notification_title
+                        == BrowserActionsService.getTitleRestId();
             }
         });
 
@@ -301,7 +324,7 @@ public class BrowserActionActivityTest {
                 mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(1).getUrl());
         Assert.assertEquals(mTestPage3,
                 mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(2).getUrl());
-        Intent notificationIntent = mMenuItemDelegate.getNotificationIntent();
+        Intent notificationIntent = BrowserActionsService.getNotificationIntent();
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         // Force ChromeTabbedActivity dismissed to make sure it calls onStop then calls onStart next

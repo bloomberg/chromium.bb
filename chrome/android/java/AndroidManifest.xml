@@ -712,6 +712,10 @@ by a child template that "extends" this file.
                 <data android:scheme="https" />
             </intent-filter>
         </activity>
+
+        <service android:name="org.chromium.chrome.browser.browseractions.BrowserActionsService"
+            android:exported="false">
+        </service>
         {% endif %}
 
         <!-- Service for Broadcasting a Physical Web URL -->
