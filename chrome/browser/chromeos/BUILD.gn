@@ -480,6 +480,8 @@ source_set("chromeos") {
     "customization/customization_document.h",
     "customization/customization_wallpaper_downloader.cc",
     "customization/customization_wallpaper_downloader.h",
+    "dbus/chrome_component_updater_service_provider_delegate.cc",
+    "dbus/chrome_component_updater_service_provider_delegate.h",
     "dbus/chrome_console_service_provider_delegate.cc",
     "dbus/chrome_console_service_provider_delegate.h",
     "dbus/chrome_display_power_service_provider_delegate.cc",
