@@ -5,6 +5,7 @@
 #include "content/renderer/service_worker/web_service_worker_installed_scripts_manager_impl.h"
 
 #include "base/barrier_closure.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_checker.h"
@@ -91,8 +92,11 @@ class Receiver {
   void OnCompleted() {
     handle_.reset();
     watcher_.Cancel();
-    if (!has_received_all_data())
+    if (!has_received_all_data()) {
+      // Temporary for debugging https://crbug.com/760427.
+      base::debug::DumpWithoutCrashing();
       chunks_.clear();
+    }
     DCHECK(callback_);
     std::move(callback_).Run();
   }
@@ -163,6 +167,8 @@ class Internal : public mojom::ServiceWorkerInstalledScriptsManager {
     // script_container_->Wait() will return false if the script hasn't been
     // added yet.
     script_container_->OnAllDataAddedOnIOThread();
+    // Temporary for debugging https://crbug.com/760427.
+    CHECK(running_receivers_.empty());
   }
 
   // Implements mojom::ServiceWorkerInstalledScriptsManager.
