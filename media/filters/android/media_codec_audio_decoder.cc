@@ -245,20 +245,20 @@ void MediaCodecAudioDecoder::OnKeyAdded() {
 
 void MediaCodecAudioDecoder::OnMediaCryptoReady(
     const InitCB& init_cb,
-    MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
+    JavaObjectPtr media_crypto,
     bool /*requires_secure_video_codec*/) {
   DVLOG(1) << __func__;
 
   DCHECK(state_ == STATE_WAITING_FOR_MEDIA_CRYPTO);
+  DCHECK(media_crypto);
 
-  if (!media_crypto) {
+  if (media_crypto->is_null()) {
     LOG(ERROR) << "MediaCrypto is not available, can't play encrypted stream.";
     SetState(STATE_UNINITIALIZED);
     init_cb.Run(false);
     return;
   }
 
-  DCHECK(!media_crypto->is_null());
   media_crypto_ = std::move(media_crypto);
 
   // We assume this is a part of the initialization process, thus MediaCodec

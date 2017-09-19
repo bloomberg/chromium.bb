@@ -1061,7 +1061,7 @@ public class MediaDrmBridge {
     private String getSecurityLevel() {
         if (mMediaDrm == null || !isWidevine()) {
             Log.e(TAG, "getSecurityLevel(): MediaDrm is null or security level is not supported.");
-            return null;
+            return "";
         }
         return mMediaDrm.getPropertyString("securityLevel");
     }

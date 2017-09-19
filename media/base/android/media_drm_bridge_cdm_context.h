@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "media/base/android/android_util.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
 #include "media/base/player_tracker.h"
@@ -33,13 +34,14 @@ class MediaDrmBridge;
 class MEDIA_EXPORT MediaDrmBridgeCdmContext : public CdmContext,
                                               public PlayerTracker {
  public:
-  using JavaObjectPtr =
-      std::unique_ptr<base::android::ScopedJavaGlobalRef<jobject>>;
-
   // Notification called when MediaCrypto object is ready.
   // Parameters:
-  // |media_crypto| - reference to MediaCrypto object
-  // |requires_secure_video_codec| - true if secure video decoder is required
+  // |media_crypto| - global reference to MediaCrypto object. |media_crypto| is
+  //                  always a non-null std::unique_ptr, but the JavaRef it
+  //                  contains can point to a null object.
+  // |requires_secure_video_codec| - true if secure video decoder is required.
+  //                                 Should be ignored if |media_crypto|
+  //                                 contains null MediaCrypto object.
   using MediaCryptoReadyCB =
       base::Callback<void(JavaObjectPtr media_crypto,
                           bool requires_secure_video_codec)>;
