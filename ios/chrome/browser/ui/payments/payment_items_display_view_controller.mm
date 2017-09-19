@@ -117,12 +117,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)onReturn {
-  [_payButton setEnabled:NO];
   [_delegate paymentItemsDisplayViewControllerDidReturn:self];
 }
 
 - (void)onConfirm {
-  [_payButton setEnabled:NO];
   [_delegate paymentItemsDisplayViewControllerDidConfirm:self];
 }
 
