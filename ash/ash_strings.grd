@@ -1076,6 +1076,20 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the delete button of the PIN keyboard.">
         Delete
       </message>
+
+      <!-- Window teleportation warning dialog -->
+      <message name="IDS_ASH_TELEPORT_WARNING_TITLE" desc="The title of the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
+        Careful, this feature may bite
+      </message>
+      <message name="IDS_ASH_TELEPORT_WARNING_MESSAGE" desc="The message on the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
+        Moving windows to another desktop may result in unexpected behaviour.
+
+Subsequent notifications, windows and dialogs may be split between desktops.
+      </message>
+      <message name="IDS_ASH_TELEPORT_WARNING_SHOW_DISMISS" desc="Label for checkbox dismissing show of teleportation warning dialog.">
+        Got it, don't show me again.
+      </message>
+
     </messages>
   </release>
 </grit>

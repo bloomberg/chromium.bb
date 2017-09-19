@@ -4270,8 +4270,6 @@ Battery full
 
 Only use this feature with accounts you trust.
   </message>
-  <message name="IDS_MULTIPROFILES_INTRO_EXPLANATION" desc="Content of the multi-profiles intro dialog shown when the user adds another user in multi-profiles mode.">
-  </message>
   <message name="IDS_MULTIPROFILES_INTRO_NOSHOW_AGAIN" desc="In multi-profiles intro dialog, text for no-show-again option.">
     Got it, don't show me this again.
   </message>

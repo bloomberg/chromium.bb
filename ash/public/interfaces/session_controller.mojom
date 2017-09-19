@@ -165,6 +165,10 @@ interface SessionController {
   // or be affected by system state such as window overview mode and screen
   // casting.
   CanSwitchActiveUser() => (bool can_switch);
+
+  // Shows a dialog to confirm that the user wants to teleport a window to
+  // another desktop. If |on_accept| is false, |permanently_accept| is ignored.
+  ShowTeleportWarningDialog() => (bool on_accept, bool permanently_accept);
 };
 
 // Interface for ash to request session service from its client (e.g. Chrome).

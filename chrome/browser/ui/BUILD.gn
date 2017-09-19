@@ -1337,8 +1337,6 @@ split_static_library("ui") {
       "ash/multi_user/multi_user_context_menu_chromeos.cc",
       "ash/multi_user/multi_user_util.cc",
       "ash/multi_user/multi_user_util.h",
-      "ash/multi_user/multi_user_warning_dialog.cc",
-      "ash/multi_user/multi_user_warning_dialog.h",
       "ash/multi_user/multi_user_window_manager.cc",
       "ash/multi_user/multi_user_window_manager.h",
       "ash/multi_user/multi_user_window_manager_chromeos.cc",

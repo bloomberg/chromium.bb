@@ -65,6 +65,10 @@ class SessionControllerClient
   // |animation_finished_callback| will be invoked when the animation finishes.
   void RunUnlockAnimation(base::Closure animation_finished_callback);
 
+  // Asks the session controller to show the window teleportation dialog.
+  void ShowTeleportWarningDialog(
+      base::OnceCallback<void(bool, bool)> on_accept);
+
   // ash::mojom::SessionControllerClient:
   void RequestLockScreen() override;
   void SwitchActiveUser(const AccountId& account_id) override;
