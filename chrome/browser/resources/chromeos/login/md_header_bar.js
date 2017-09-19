@@ -196,11 +196,6 @@ cr.define('login', function() {
      */
     handleSignoutClick_: function(e) {
       this.disabled = true;
-      if (this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.BACKGROUND) {
-        chrome.send(
-            'recordLockScreenAppUnlockAction',
-            [LOCK_SCREEN_APPS_UNLOCK_ACTION.SIGN_OUT]);
-      }
 
       chrome.send('signOutUser');
       e.stopPropagation();
@@ -212,11 +207,6 @@ cr.define('login', function() {
      * @private
      */
     handleShutdownClick_: function(e) {
-      if (this.lockScreenAppsState_ == LOCK_SCREEN_APPS_STATE.BACKGROUND) {
-        chrome.send(
-            'recordLockScreenAppUnlockAction',
-            [LOCK_SCREEN_APPS_UNLOCK_ACTION.SHUTDOWN]);
-      }
       chrome.send('shutdownSystem');
       e.stopPropagation();
     },
@@ -260,8 +250,7 @@ cr.define('login', function() {
      * @private
      */
     handleUnlockUserClick_: function(e) {
-      chrome.send(
-          'setLockScreenAppsState', [LOCK_SCREEN_APPS_STATE.BACKGROUND]);
+      chrome.send('closeLockScreenApp');
       e.preventDefault();
     },
 

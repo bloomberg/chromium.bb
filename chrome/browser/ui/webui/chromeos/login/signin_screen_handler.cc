@@ -139,13 +139,6 @@ const char kNewNoteRequestTap[] = "NEW_NOTE_REQUEST.TAP";
 const char kNewNoteRequestSwipe[] = "NEW_NOTE_REQUEST.SWIPE";
 const char kNewNoteRequestKeyboard[] = "NEW_NOTE_REQUEST.KEYBOARD";
 
-// Constants for reporting action taken on lock screen UI when lock screen app
-// window was in background.
-const char kRequestShutdownFromLockScreenAppUnlockUi[] =
-    "LOCK_SCREEN_APPS_UNLOCK_ACTION.SHUTDOWN";
-const char kRequestSignoutFromLockScreenAppUnlockUi[] =
-    "LOCK_SCREEN_APPS_UNLOCK_ACTION.SIGN_OUT";
-
 class CallOnReturn {
  public:
   explicit CallOnReturn(const base::Closure& callback)
@@ -542,10 +535,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("launchKioskApp", &SigninScreenHandler::HandleLaunchKioskApp);
   AddCallback("launchArcKioskApp",
               &SigninScreenHandler::HandleLaunchArcKioskApp);
-  AddCallback("setLockScreenAppsState",
-              &SigninScreenHandler::HandleSetLockScreenAppsState);
-  AddCallback("recordLockScreenAppUnlockAction",
-              &SigninScreenHandler::HandleRecordLockScreenAppUnlockUIAction);
+  AddCallback("closeLockScreenApp",
+              &SigninScreenHandler::HandleCloseLockScreenApp);
   AddCallback("requestNewLockScreenNote",
               &SigninScreenHandler::HandleRequestNewNoteAction);
 }
@@ -1543,32 +1534,9 @@ void SigninScreenHandler::HandleRequestNewNoteAction(
   }
 }
 
-void SigninScreenHandler::HandleRecordLockScreenAppUnlockUIAction(
-    const std::string& action) {
-  lock_screen_apps::StateController* state_controller =
-      lock_screen_apps::StateController::Get();
-
-  if (action == kRequestShutdownFromLockScreenAppUnlockUi) {
-    state_controller->RecordLockScreenAppUnlockAction(
-        lock_screen_apps::StateController::LockScreenUnlockAction::kShutdown);
-  } else if (action == kRequestSignoutFromLockScreenAppUnlockUi) {
-    state_controller->RecordLockScreenAppUnlockAction(
-        lock_screen_apps::StateController::LockScreenUnlockAction::kSignOut);
-  } else {
-    NOTREACHED() << "Unknown action " << action;
-  }
-}
-
-void SigninScreenHandler::HandleSetLockScreenAppsState(
-    const std::string& state) {
-  lock_screen_apps::StateController* state_controller =
-      lock_screen_apps::StateController::Get();
-
-  if (state == kBackgroundLockScreenApps) {
-    state_controller->MoveToBackground();
-  } else if (state == kForegroundLockScreenApps) {
-    state_controller->MoveToForeground();
-  }
+void SigninScreenHandler::HandleCloseLockScreenApp() {
+  lock_screen_apps::StateController::Get()->CloseLockScreenNote(
+      ash::mojom::CloseLockScreenNoteReason::kUnlockButtonPressed);
 }
 
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {

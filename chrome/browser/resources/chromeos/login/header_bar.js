@@ -237,8 +237,7 @@ cr.define('login', function() {
      * @private
      */
     handleUnlockUserClick_: function(e) {
-      chrome.send(
-          'setLockScreenAppsState', [LOCK_SCREEN_APPS_STATE.BACKGROUND]);
+      chrome.send('closeLockScreenApp');
       e.preventDefault();
     },
 

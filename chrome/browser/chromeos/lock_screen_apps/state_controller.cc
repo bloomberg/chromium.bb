@@ -317,9 +317,6 @@ void StateController::OnSessionStateChanged() {
   if (!session_manager::SessionManager::Get()->IsScreenLocked()) {
     lock_screen_data_->SetSessionLocked(false);
     app_manager_->Stop();
-    if (lock_screen_note_state_ == TrayActionState::kBackground) {
-      RecordLockScreenAppUnlockAction(LockScreenUnlockAction::kSessionUnlocked);
-    }
     ResetNoteTakingWindowAndMoveToNextState(
         true /*close_window*/, CloseLockScreenNoteReason::kSessionUnlock);
     note_app_window_metrics_.reset();
@@ -406,38 +403,13 @@ extensions::AppWindow* StateController::CreateAppWindowForLockScreenAction(
 bool StateController::HandleTakeFocus(content::WebContents* web_contents,
                                       bool reverse) {
   if (!focus_cycler_delegate_ ||
-      (GetLockScreenNoteState() != TrayActionState::kActive &&
-       GetLockScreenNoteState() != TrayActionState::kBackground) ||
+      GetLockScreenNoteState() != TrayActionState::kActive ||
       note_app_window_->web_contents() != web_contents) {
     return false;
   }
 
   focus_cycler_delegate_->HandleLockScreenAppFocusOut(reverse);
   return true;
-}
-
-void StateController::MoveToBackground() {
-  ResetNoteTakingWindowAndMoveToNextState(
-      true /*close_window*/, CloseLockScreenNoteReason::kUnlockButtonPressed);
-}
-
-void StateController::MoveToForeground() {
-  if (GetLockScreenNoteState() != TrayActionState::kBackground)
-    return;
-
-  RecordLockScreenAppUnlockAction(LockScreenUnlockAction::kUnlockCancelled);
-
-  note_app_window_metrics_->MovedToForeground();
-  UpdateLockScreenNoteState(TrayActionState::kActive);
-}
-
-void StateController::RecordLockScreenAppUnlockAction(
-    LockScreenUnlockAction action) {
-  if (lock_screen_note_state_ != TrayActionState::kBackground)
-    return;
-
-  UMA_HISTOGRAM_ENUMERATION("Apps.LockScreen.NoteTakingApp.UnlockUIAction",
-                            action, LockScreenUnlockAction::kCount);
 }
 
 void StateController::OnNoteTakingAvailabilityChanged() {
@@ -455,14 +427,6 @@ void StateController::OnNoteTakingAvailabilityChanged() {
 }
 
 void StateController::FocusAppWindow(bool reverse) {
-  // If the app window is in background, move it to foreground (moving the
-  // window to foreground should also active it).
-  if (GetLockScreenNoteState() == TrayActionState::kBackground) {
-    note_app_window_->web_contents()->FocusThroughTabTraversal(reverse);
-    MoveToForeground();
-    return;
-  }
-
   // If the app window is not active, pass the focus on to the delegate..
   if (GetLockScreenNoteState() != TrayActionState::kActive) {
     focus_cycler_delegate_->HandleLockScreenAppFocusOut(reverse);
