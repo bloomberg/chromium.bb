@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
@@ -915,4 +917,23 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
       }
     }
   }
+}
+
+// Check that it's possible to navigate to a chrome scheme URL from a crashed
+// tab. See https://crbug.com/764641.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, ChromeSchemeNavFromSadTab) {
+  // Kill the renderer process.
+  content::RenderProcessHost* process = browser()
+                                            ->tab_strip_model()
+                                            ->GetActiveWebContents()
+                                            ->GetMainFrame()
+                                            ->GetProcess();
+  content::RenderProcessHostWatcher crash_observer(
+      process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(-1, true);
+  crash_observer.Wait();
+
+  // Attempt to navigate to a chrome://... URL.  This used to hang and never
+  // commit in PlzNavigate mode.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
 }
