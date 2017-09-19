@@ -117,6 +117,11 @@ void ChromeOmniboxNavigationObserver::On404() {
   template_url_service_->Remove(template_url);
 }
 
+void ChromeOmniboxNavigationObserver::CreateAlternateNavInfoBar() {
+  AlternateNavInfoBarDelegate::Create(
+      web_contents(), text_, alternate_nav_match_, match_.destination_url);
+}
+
 bool ChromeOmniboxNavigationObserver::HasSeenPendingLoad() const {
   return load_state_ != LOAD_NOT_SEEN;
 }
@@ -204,6 +209,10 @@ void ChromeOmniboxNavigationObserver::OnURLFetchComplete(
   DCHECK_EQ(fetcher_.get(), source);
   const net::URLRequestStatus& status = source->GetStatus();
   int response_code = source->GetResponseCode();
+  bool valid_redirect =
+      (status.status() == net::URLRequestStatus::CANCELED) &&
+      ((response_code / 100) == 3) &&
+      IsValidNavigation(alternate_nav_match_.destination_url, source->GetURL());
   // If this is a valid redirect (not hijacked), and the redirect is from
   // http->https (no other changes), then follow it instead of assuming the
   // destination is valid.  This fixes several cases when the infobar appears
@@ -218,10 +227,7 @@ void ChromeOmniboxNavigationObserver::OnURLFetchComplete(
   //   valid.
   // * Users on networks that return 3xx redirects to the https version for all
   //   requests for local sites.
-  if ((status.status() == net::URLRequestStatus::CANCELED) &&
-      ((response_code / 100) == 3) &&
-      IsValidNavigation(alternate_nav_match_.destination_url,
-                        source->GetURL()) &&
+  if (valid_redirect &&
       OnlyChangeIsFromHTTPToHTTPS(alternate_nav_match_.destination_url,
                                   source->GetURL())) {
     CreateFetcher(source->GetURL());
@@ -230,7 +236,8 @@ void ChromeOmniboxNavigationObserver::OnURLFetchComplete(
     return;
   }
   fetch_state_ =
-      (status.is_success() && ResponseCodeIndicatesSuccess(response_code))
+      ((status.is_success() && ResponseCodeIndicatesSuccess(response_code)) ||
+       valid_redirect)
           ? FETCH_SUCCEEDED
           : FETCH_FAILED;
   if (load_state_ == LOAD_COMMITTED)
@@ -238,10 +245,8 @@ void ChromeOmniboxNavigationObserver::OnURLFetchComplete(
 }
 
 void ChromeOmniboxNavigationObserver::OnAllLoadingFinished() {
-  if (fetch_state_ == FETCH_SUCCEEDED) {
-    AlternateNavInfoBarDelegate::Create(
-        web_contents(), text_, alternate_nav_match_, match_.destination_url);
-  }
+  if (fetch_state_ == FETCH_SUCCEEDED)
+    CreateAlternateNavInfoBar();
   delete this;
 }
 
