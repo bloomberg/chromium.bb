@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 7
+// Next MinVersion: 8
 
 module arc.mojom;
 
@@ -129,6 +129,38 @@ struct GetNetworksResponseType {
   array<NetworkConfiguration> networks;
 };
 
+struct AndroidVpnConfiguration {
+  // The canonical name of the VPN app (e.g. "com.android.myvpn").
+  string app_name@0;
+
+  // The human-readable name of the VPN app (e.g. "OpenVPN").
+  string app_label@1;
+
+  // The name of the VPN session, as set by the app using setSession().
+  // The app does not need to call setSession() so this may be empty.
+  string session_name@2;
+
+  // True if Chrome browser traffic should be sent through the VPN.
+  bool tunnel_chrome_traffic@3;
+
+  // The next hop for IPv4 traffic originating on the host.  Currently this
+  // will be set to arc0's IP address.
+  string ipv4_gateway@4;
+
+  // A list of IPv4 and IPv6 ranges to route through the VPN.  e.g.
+  // ["0.0.0.0/0"] or ["192.168.1.0/24", "10.1.0.0/16"].
+  array<string> split_include@5;
+
+  // A list of IPv4 and IPv6 ranges to exclude from the VPN.  If specified,
+  // all traffic that does not fall into these ranges will use the VPN.
+  array<string> split_exclude@6;
+
+  // A list of DNS servers.
+  array<string> nameservers@7;
+
+  // A list of search domains for DNS resolution.
+  array<string> domains@8;
+};
 
 interface NetHost {
   // Sends a request to get enabled / disabled status of WiFi.
@@ -170,6 +202,12 @@ interface NetHost {
   // request type.
   [MinVersion=6] GetNetworks@10(GetNetworksRequestType type) =>
       (GetNetworksResponseType response);
+
+  // Inform Chrome OS that a VPN has connected.
+  [MinVersion=7] AndroidVpnConnected@11(AndroidVpnConfiguration cfg);
+
+  // Inform Chrome OS that a VPN is disconnected, reconnecting, or reconnected.
+  [MinVersion=7] AndroidVpnStateChanged@12(ConnectionStateType state);
 };
 
 interface NetInstance {
@@ -184,4 +222,10 @@ interface NetInstance {
       NetworkConfiguration? physical_default);
 
   [MinVersion=3] WifiEnabledStateChanged@3(bool is_enabled);
+
+  // Ask Android to disconnect the VPN, per user request.
+  [MinVersion=7] DisconnectAndroidVpn@4();
+
+  // Ask Android to pop up a VPN configuration dialog, per user request.
+  [MinVersion=7] ConfigureAndroidVpn@5();
 };

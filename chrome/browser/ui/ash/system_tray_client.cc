@@ -40,6 +40,10 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/tether_constants.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/net.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
@@ -411,6 +415,26 @@ void SystemTrayClient::ShowNetworkSettingsHelper(const std::string& network_id,
     chromeos::LoginDisplayHost::default_host()->OpenProxySettings(network_id);
     return;
   }
+
+  // Special case: clicking on a connected ARCVPN will ask Android to
+  // show the settings dialog.
+  const chromeos::NetworkState* network_state =
+      chromeos::NetworkHandler::Get()
+          ->network_state_handler()
+          ->GetNetworkStateFromGuid(network_id);
+  if (network_state && network_state->type() == shill::kTypeVPN &&
+      network_state->vpn_provider_type() == shill::kProviderArcVpn) {
+    auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc::ArcServiceManager::Get()->arc_bridge_service()->net(),
+        ConfigureAndroidVpn);
+    if (!net_instance) {
+      LOG(ERROR) << "User requested VPN configuration but API is unavailable";
+      return;
+    }
+    net_instance->ConfigureAndroidVpn();
+    return;
+  }
+
   std::string page = chrome::kInternetSubPage;
   if (!network_id.empty()) {
     page = chrome::kNetworkDetailSubPage;
