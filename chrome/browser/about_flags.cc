@@ -3490,6 +3490,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kParallelDownloadingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kParallelDownloading)},
 
+    {"enable-password-selection", flag_descriptions::kPasswordSelectionName,
+     flag_descriptions::kPasswordSelectionDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(password_manager::features::kEnablePasswordSelection)},
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -24305,6 +24305,7 @@ from previous Chrome versions.
   <int value="1514119870" label="enable-file-manager-touch-mode"/>
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
+  <int value="1529979182" label="EnablePasswordSelection:enabled"/>
   <int value="1533111748" label="Multidevice:enabled"/>
   <int value="1538690515" label="OneGoogleBarOnLocalNtp:enabled"/>
   <int value="1541723759" label="ServiceWorkerNavigationPreload:disabled"/>
@@ -24351,6 +24352,7 @@ from previous Chrome versions.
   <int value="1713230497" label="ColorCorrectRendering:disabled"/>
   <int value="1716104463" label="enable-fullscreen-app-list"/>
   <int value="1717987538" label="NTPTilesLowerResolutionFavicons:enabled"/>
+  <int value="1719189460" label="EnablePasswordSelection:disabled"/>
   <int value="1723601083" label="enable-app-window-controls"/>
   <int value="1724800383" label="AsmJsToWebAssembly:disabled"/>
   <int value="1730094138" label="enable-md-storage-manager"/>
