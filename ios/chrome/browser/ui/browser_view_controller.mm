@@ -112,15 +112,12 @@
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/captive_portal/captive_portal_login_coordinator.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
-#import "ios/chrome/browser/ui/commands/show_mail_composer_command.h"
 #import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
@@ -182,6 +179,9 @@
 #include "ios/chrome/browser/web/web_state_printer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/webui/net_export_tab_helper.h"
+#import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
+#import "ios/chrome/browser/webui/show_mail_composer_context.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/net/request_tracker.h"
@@ -372,6 +372,7 @@ bool IsURLAllowedInIncognito(const GURL& url) {
                                     IncognitoViewControllerDelegate,
                                     IOSCaptivePortalBlockingPageDelegate,
                                     KeyCommandsPlumbing,
+                                    NetExportTabHelperDelegate,
                                     MFMailComposeViewControllerDelegate,
                                     NewTabPageControllerObserver,
                                     OverscrollActionsControllerDelegate,
@@ -2399,6 +2400,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     SadTabTabHelper::CreateForWebState(tab.webState, _sadTabCoordinator);
   PrintTabHelper::CreateForWebState(tab.webState, self);
   RepostFormTabHelper::CreateForWebState(tab.webState, self);
+  NetExportTabHelper::CreateForWebState(tab.webState, self);
 }
 
 - (void)uninstallDelegatesForTab:(Tab*)tab {
@@ -4402,23 +4404,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - Command Handling
 
-- (IBAction)chromeExecuteCommand:(id)sender {
-  NSInteger command = [sender tag];
-
-  if (!_model || !_browserState)
-    return;
-
-  switch (command) {
-    case IDC_SHOW_MAIL_COMPOSER:
-      [self showMailComposer:sender];
-      break;
-    default:
-      // Unknown commands get sent up the responder chain.
-      [super chromeExecuteCommand:sender];
-      break;
-  }
-}
-
 - (void)closeCurrentTab {
   Tab* currentTab = [_model currentTab];
   NSUInteger tabIndex = [_model indexOfTab:currentTab];
@@ -4951,24 +4936,24 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - Show Mail Composer methods
 
-- (void)showMailComposer:(id)sender {
-  ShowMailComposerCommand* command = (ShowMailComposerCommand*)sender;
+- (void)netExportTabHelper:(NetExportTabHelper*)tabHelper
+    showMailComposerWithContext:(ShowMailComposerContext*)context {
   if (![MFMailComposeViewController canSendMail]) {
     NSString* alertTitle =
-        l10n_util::GetNSString([command emailNotConfiguredAlertTitleId]);
+        l10n_util::GetNSString([context emailNotConfiguredAlertTitleId]);
     NSString* alertMessage =
-        l10n_util::GetNSString([command emailNotConfiguredAlertMessageId]);
+        l10n_util::GetNSString([context emailNotConfiguredAlertMessageId]);
     [self showErrorAlertWithStringTitle:alertTitle message:alertMessage];
     return;
   }
   MFMailComposeViewController* mailViewController =
       [[MFMailComposeViewController alloc] init];
   [mailViewController setModalPresentationStyle:UIModalPresentationFormSheet];
-  [mailViewController setToRecipients:[command toRecipients]];
-  [mailViewController setSubject:[command subject]];
-  [mailViewController setMessageBody:[command body] isHTML:NO];
+  [mailViewController setToRecipients:[context toRecipients]];
+  [mailViewController setSubject:[context subject]];
+  [mailViewController setMessageBody:[context body] isHTML:NO];
 
-  const base::FilePath& textFile = [command textFileToAttach];
+  const base::FilePath& textFile = [context textFileToAttach];
   if (!textFile.empty()) {
     NSString* filename = base::SysUTF8ToNSString(textFile.value());
     NSData* data = [NSData dataWithContentsOfFile:filename];

@@ -2,25 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_COMMANDS_SHOW_MAIL_COMPOSER_COMMAND_H_
-#define IOS_CHROME_BROWSER_UI_COMMANDS_SHOW_MAIL_COMPOSER_COMMAND_H_
+#ifndef IOS_CHROME_BROWSER_WEBUI_SHOW_MAIL_COMPOSER_CONTEXT_H_
+#define IOS_CHROME_BROWSER_WEBUI_SHOW_MAIL_COMPOSER_CONTEXT_H_
 
 #import <Foundation/Foundation.h>
-
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 
 namespace base {
 class FilePath;
 }
 
-@interface ShowMailComposerCommand : GenericChromeCommand
+@interface ShowMailComposerContext : NSObject
 
 // Mark inherited initializer as unavailable to prevent calling it by mistake.
-- (instancetype)initWithTag:(NSInteger)tag NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
-// Initializes a command designed to open the mail composer with pre-filled
+// Initializes a context used to open the mail composer with pre-filled
 // recipients, subject, body.
-- (instancetype)initWithToRecipient:(NSString*)toRecipient
+- (instancetype)initWithToRecipients:(NSArray<NSString*>*)toRecipients
                              subject:(NSString*)subject
                                 body:(NSString*)body
       emailNotConfiguredAlertTitleId:(int)alertTitleId
@@ -28,7 +26,7 @@ class FilePath;
     NS_DESIGNATED_INITIALIZER;
 
 // List of email recipients.
-@property(strong, nonatomic, readonly) NSArray* toRecipients;
+@property(strong, nonatomic, readonly) NSArray<NSString*>* toRecipients;
 
 // Pre-filled default email subject.
 @property(copy, nonatomic, readonly) NSString* subject;
@@ -47,4 +45,4 @@ class FilePath;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_COMMANDS_SHOW_MAIL_COMPOSER_COMMAND_H_
+#endif  // IOS_CHROME_BROWSER_WEBUI_SHOW_MAIL_COMPOSER_CONTEXT_H_

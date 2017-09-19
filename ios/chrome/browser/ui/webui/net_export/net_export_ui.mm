@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/grit/components_resources.h"
 #include "components/net_log/chrome_net_log.h"
@@ -22,15 +21,21 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/ui/show_mail_composer_util.h"
+#import "ios/chrome/browser/webui/net_export_tab_helper.h"
+#import "ios/chrome/browser/webui/show_mail_composer_context.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/url_request/url_request_context_getter.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -69,7 +74,7 @@ class NetExportMessageHandler
 
  private:
   // Send NetLog data via email.
-  static void SendEmail(const base::FilePath& file_to_send);
+  void SendEmail(const base::FilePath& file_to_send);
 
   void NotifyUIWithState(
       std::unique_ptr<base::DictionaryValue> file_writer_state);
@@ -164,29 +169,34 @@ void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
 void NetExportMessageHandler::OnSendNetLog(const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   file_writer_->GetFilePathToCompletedLog(
-      base::Bind(&NetExportMessageHandler::SendEmail));
+      base::Bind(&NetExportMessageHandler::SendEmail, base::Unretained(this)));
 }
 
 void NetExportMessageHandler::OnNewState(const base::DictionaryValue& state) {
   NotifyUIWithState(state.CreateDeepCopy());
 }
 
-// static
 void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
   if (file_to_send.empty())
     return;
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
-  std::string email;
-  std::string subject = "net_internals_log";
-  std::string title = "Issue number: ";
-  std::string body =
-      "Please add some informative text about the network issues.";
-  ShowMailComposer(base::UTF8ToUTF16(email), base::UTF8ToUTF16(subject),
-                   base::UTF8ToUTF16(body), base::UTF8ToUTF16(title),
-                   file_to_send,
-                   IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_TITLE,
-                   IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_MESSAGE);
+  NSString* subject = @"net_internals_log";
+  NSString* body =
+      @"Please add some informative text about the network issues.";
+  int alert_title_id = IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_TITLE;
+  int alert_message_id = IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_MESSAGE;
+
+  ShowMailComposerContext* context =
+      [[ShowMailComposerContext alloc] initWithToRecipients:nil
+                                                    subject:subject
+                                                       body:body
+                             emailNotConfiguredAlertTitleId:alert_title_id
+                           emailNotConfiguredAlertMessageId:alert_message_id];
+  context.textFileToAttach = file_to_send;
+
+  web::WebState* web_state = web_ui()->GetWebState();
+  NetExportTabHelper::FromWebState(web_state)->ShowMailComposer(context);
 }
 
 void NetExportMessageHandler::NotifyUIWithState(

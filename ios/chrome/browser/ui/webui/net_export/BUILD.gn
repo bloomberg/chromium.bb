@@ -3,9 +3,10 @@
 # found in the LICENSE file.
 
 source_set("net_export") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "net_export_ui.cc",
     "net_export_ui.h",
+    "net_export_ui.mm",
   ]
   deps = [
     "//base",
@@ -14,7 +15,7 @@ source_set("net_export") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/webui",
     "//ios/chrome/common:common",
     "//ios/web",
     "//net:net",
