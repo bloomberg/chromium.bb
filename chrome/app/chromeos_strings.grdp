@@ -1530,9 +1530,6 @@ Press any key to continue exploring.
   <message name="IDS_ADD_WI_FI_NETWORK_MENU_NAME" desc="OOBE 'Available Networks' list menu entry that opens 'Add New WiFi Network' dialog">
     Add other WiFi network
   </message>
-  <message name="IDS_ADD_MOBILE_NETWORK_MENU_NAME" desc="OOBE 'Available Networks' list menu entry that opens 'Add New Mobile Network' dialog">
-    Add other mobile network
-  </message>
   <message name="IDS_AUTOSTART_WARNING_TITLE" desc="Title of the kiosk autostart screen">
     Auto-launch permission requested
   </message>

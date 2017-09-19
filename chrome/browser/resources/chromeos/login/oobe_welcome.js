@@ -130,8 +130,6 @@ Polymer({
       vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
 
       // Additional strings for custom items.
-      addMobileNetworkMenuName:
-          loadTimeData.getString('addMobileNetworkMenuName'),
       addWiFiNetworkMenuName: loadTimeData.getString('addWiFiNetworkMenuName'),
       proxySettingsMenuName: loadTimeData.getString('proxySettingsMenuName'),
     };
@@ -210,8 +208,9 @@ Polymer({
    */
   getNetworkCustomItems_: function(isConnected_) {
     var self = this;
-    var items = [
-      {
+    var items = [];
+    if (isConnected_) {
+      items.push({
         customItemName: 'proxySettingsMenuName',
         polymerIcon: 'oobe-welcome-20:add-proxy',
         customData: {
@@ -219,29 +218,18 @@ Polymer({
             self.OpenProxySettingsDialog_();
           },
         },
-      },
-      {
-        customItemName: 'addWiFiNetworkMenuName',
-        polymerIcon: 'oobe-welcome-20:add-wifi',
-        customData: {
-          onTap: function() {
-            self.OpenAddWiFiNetworkDialog_();
-          },
+      });
+    }
+    items.push({
+      customItemName: 'addWiFiNetworkMenuName',
+      polymerIcon: 'oobe-welcome-20:add-wifi',
+      customData: {
+        onTap: function() {
+          self.OpenAddWiFiNetworkDialog_();
         },
       },
-      {
-        customItemName: 'addMobileNetworkMenuName',
-        polymerIcon: 'oobe-welcome-20:add-cellular',
-        customData: {
-          onTap: function() {
-            self.OpenAddMobileNetworkDialog_();
-          },
-        },
-      },
-    ];
-    if (isConnected_)
-      return items;
-    return items.slice(1);
+    });
+    return items;
   },
 
   /**
@@ -316,15 +304,6 @@ Polymer({
   },
 
   /**
-   * Handle Network Setup screen "Add cellular network" button.
-   *
-   * @private
-   */
-  OpenAddMobileNetworkDialog_: function(item) {
-    chrome.send('launchAddMobileNetworkDialog');
-  },
-
-  /**
    * This is called when network setup is done.
    *
    * @private
@@ -376,6 +355,13 @@ Polymer({
 
     var self = this;
     var networkStateCopy = Object.assign({}, state);
+
+    // TODO(stevenjb): Do this when state.Connectable == false once network
+    // configuration is integrated into the Settings UI / details dialog.
+    if (state.Type == chrome.networkingPrivate.NetworkType.CELLULAR) {
+      chrome.send('showNetworkDetails', [state.GUID]);
+      return;
+    }
 
     chrome.networkingPrivate.startConnect(state.GUID, function() {
       var lastError = chrome.runtime.lastError;

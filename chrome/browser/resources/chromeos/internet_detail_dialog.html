@@ -73,6 +73,34 @@
       </paper-button>
     </div>
 
+    <!-- Device properties (Cellular only) -->
+    <div class="section single-column">
+      <network-property-list
+          hidden$="[[!hasDeviceFields_(networkProperties)]]"
+          fields="[[getDeviceFields_(networkProperties)]]"
+          property-dict="[[networkProperties]]">
+      </network-property-list>
+    </div>
+
+    <!-- Choose Mobile Network (Cellular only) -->
+    <template is="dom-if"
+        if="[[showCellularChooseNetwork_(networkProperties)]]">
+      <div class="section single-column">
+        <network-choose-mobile networking-private="[[networkingPrivate]]"
+            network-properties="[[networkProperties]]">
+        </network-choose-mobile>
+      </div>
+    </template>
+
+    <!-- APN (Cellular only) -->
+    <template is="dom-if" if="[[isCellular_(networkProperties)]]">
+      <div class="section single-column">
+        <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
+            network-properties="[[networkProperties]]">
+        </network-apnlist>
+      </div>
+    </template>
+
     <!-- Proxy -->
     <div class="section single-column">
       <network-proxy editable use-shared-proxies
@@ -96,25 +124,6 @@
             on-nameservers-change="onIPConfigChange_"
             network-properties="[[networkProperties]]">
         </network-nameservers>
-      </div>
-    </template>
-
-    <!-- Choose Mobile Network (Cellular only). -->
-    <template is="dom-if"
-        if="[[showCellularChooseNetwork_(networkProperties)]]">
-      <div class="section single-column">
-        <network-choose-mobile networking-private="[[networkingPrivate]]"
-            network-properties="[[networkProperties]]">
-        </network-choose-mobile>
-      </div>
-    </template>
-
-    <!-- APN (Cellular only) -->
-    <template is="dom-if" if="[[isCellular_(networkProperties)]]">
-      <div class="section single-column">
-        <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
-            network-properties="[[networkProperties]]">
-        </network-apnlist>
       </div>
     </template>
 
