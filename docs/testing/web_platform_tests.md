@@ -95,7 +95,7 @@ For maintainers:
 -   The exporter runs continuously under the
     [chromium.infra.cron master](https://build.chromium.org/p/chromium.infra.cron/builders/wpt-exporter).
 -   The source lives in
-    [third_party/WebKit/Tools/Scripts/wpt-exporter](../../third_party/WebKit/Tools/Scripts/wpt-exporter).
+    [third_party/WebKit/Tools/Scripts/wpt-export](../../third_party/WebKit/Tools/Scripts/wpt-export).
 -   If the exporter starts misbehaving
     (for example, creating the same PR over and over again)
     put it in "dry run" mode by landing [this CL](https://crrev.com/c/462381/).
