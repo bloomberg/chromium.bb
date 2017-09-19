@@ -580,6 +580,8 @@ class TargetDescBuilder : public BaseDescBuilder {
     data->SetWithoutPathExpansion("plugins_dir",
                                   RenderValue(bundle_data.plugins_dir()));
     data->SetKey("product_type", base::Value(bundle_data.product_type()));
+    data->SetWithoutPathExpansion(
+        "partial_info_plist", RenderValue(bundle_data.partial_info_plist()));
 
     auto deps = base::MakeUnique<base::ListValue>();
     for (const auto* dep : bundle_data.bundle_deps())

@@ -1404,6 +1404,20 @@ Example
   }
 )";
 
+const char kPartialInfoPlist[] = "partial_info_plist";
+const char kPartialInfoPlist_HelpShort[] =
+    "partial_info_plist: [filename] Path plist from asset catalog compiler.";
+const char kPartialInfoPlist_Help[] =
+    R"(partial_info_plist: [filename] Path plist from asset catalog compiler.
+
+  Valid for create_bundle target, corresponds to the path for the partial
+  Info.plist created by the asset catalog compiler that needs to be merged
+  with the application Info.plist (usually done by the code signing script).
+
+  The file will be generated regardless of whether the asset compiler has
+  been invoked or not. See "gn help create_bundle".
+)";
+
 const char kOutputs[] = "outputs";
 const char kOutputs_HelpShort[] =
     "outputs: [file list] Output files for actions and copy targets.";
@@ -1949,6 +1963,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(OutputName)
     INSERT_VARIABLE(OutputPrefixOverride)
     INSERT_VARIABLE(Outputs)
+    INSERT_VARIABLE(PartialInfoPlist)
     INSERT_VARIABLE(Pool)
     INSERT_VARIABLE(PrecompiledHeader)
     INSERT_VARIABLE(PrecompiledHeaderType)
