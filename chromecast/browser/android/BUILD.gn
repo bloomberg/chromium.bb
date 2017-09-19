@@ -90,7 +90,10 @@ android_library("cast_shell_java") {
 }
 
 junit_binary("cast_shell_junit_tests") {
-  java_files = [ "junit/src/org/chromium/chromecast/shell/CastWebContentsComponentTest.java" ]
+  java_files = [
+    "junit/src/org/chromium/chromecast/shell/CastWebContentsComponentTest.java",
+    "junit/src/org/chromium/chromecast/shell/LogcatExtractorUnitTest.java",
+  ]
 
   srcjar_deps = [ ":cast_shell_build_config_gen" ]
 
