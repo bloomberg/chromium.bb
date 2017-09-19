@@ -124,6 +124,13 @@
     "args": ["--enable-features=UseFeaturePolicyForPermissions"]
   },
   {
+    "prefix": "feature-policy-permissions",
+    "base": "external/wpt/mediacapture-streams",
+    "args": ["--enable-features=UseFeaturePolicyForPermissions",
+             "--use-fake-device-for-media-stream",
+             "--use-fake-ui-for-media-stream"]
+  },
+  {
     "prefix": "origin-trials-runtimeflags-disabled",
     "base": "http/tests/origin_trials/webexposed",
     "args": ["--disable-origin-trial-controlled-blink-features"]
