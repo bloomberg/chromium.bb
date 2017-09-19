@@ -5,6 +5,7 @@
 #include "chrome/browser/profiling_host/background_profiling_triggers.h"
 
 #include "base/task_scheduler/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
@@ -15,9 +16,17 @@ namespace {
 // Check memory usage every hour. Trigger slow report if needed.
 const int kRepeatingCheckMemoryDelayInHours = 1;
 const int kSecondReportRepeatingCheckMemoryDelayInHours = 12;
-const size_t kBrowserProcessMallocTriggerKb = 600 * 1024;    // 600 MB
-const size_t kGPUProcessMallocTriggerKb = 1000 * 1024;       // 1 GB
-const size_t kRendererProcessMallocTriggerKb = 2000 * 1024;  // 2 GB
+
+#if defined(OS_ANDROID)
+const size_t kBrowserProcessMallocTriggerKb = 100 * 1024;    // 100 MB
+const size_t kGPUProcessMallocTriggerKb = 40 * 1024;         // 40 MB
+const size_t kRendererProcessMallocTriggerKb = 125 * 1024;   // 125 MB
+#else
+const size_t kBrowserProcessMallocTriggerKb = 400 * 1024;    // 400 MB
+const size_t kGPUProcessMallocTriggerKb = 400 * 1024;        // 400 MB
+const size_t kRendererProcessMallocTriggerKb = 500 * 1024;   // 500 MB
+#endif  // OS_ANDROID
+
 }  // namespace
 
 BackgroundProfilingTriggers::BackgroundProfilingTriggers(
