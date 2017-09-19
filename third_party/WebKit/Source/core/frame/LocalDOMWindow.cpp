@@ -328,6 +328,8 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
   document_->UpdateViewportDescription();
 
   if (GetFrame()->GetPage() && GetFrame()->View()) {
+    GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
+
     if (ScrollingCoordinator* scrolling_coordinator =
             GetFrame()->GetPage()->GetScrollingCoordinator()) {
       scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
