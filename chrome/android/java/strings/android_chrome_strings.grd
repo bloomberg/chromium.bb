@@ -125,6 +125,9 @@ CHAR-LIMIT guidelines:
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
       <!-- Generic strings -->
+      <message name="IDS_DELETED" desc='Text that announces to the user that something was deleted.'>
+        Deleted
+      </message>
       <message name="IDS_OK" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
         OK
       </message>
