@@ -142,8 +142,33 @@ TEST_F(ListSelectionModelTest, MoveToLeft) {
   model.AddIndexToSelection(10);
   model.set_anchor(4);
   model.set_active(4);
-  model.Move(4, 0);
+  EXPECT_EQ("active=4 anchor=4 selection=0 4 10", StateAsString(model));
+  model.Move(4, 0, 1);
   EXPECT_EQ("active=0 anchor=0 selection=0 1 10", StateAsString(model));
+  model.Move(25, 1, 5);
+  EXPECT_EQ("active=0 anchor=0 selection=0 6 15", StateAsString(model));
+  model.Move(5, 1, 2);
+  EXPECT_EQ("active=0 anchor=0 selection=0 2 15", StateAsString(model));
+  model.Move(2, 0, 4);
+  EXPECT_EQ("active=4 anchor=4 selection=0 4 15", StateAsString(model));
+  model.Move(1, 2, 1);
+  EXPECT_EQ("active=4 anchor=4 selection=0 4 15", StateAsString(model));
+  model.Move(100, 5, 100000);
+  EXPECT_EQ("active=4 anchor=4 selection=0 4 100015", StateAsString(model));
+  model.Move(4, 0, 200000);
+  EXPECT_EQ("active=0 anchor=0 selection=0 100011 200000",
+            StateAsString(model));
+  model.Move(100011, 1, 1);
+  EXPECT_EQ("active=0 anchor=0 selection=0 1 200000", StateAsString(model));
+  model.Move(200000, 1, 1);
+  EXPECT_EQ("active=0 anchor=0 selection=0 1 2", StateAsString(model));
+  model.AddIndexToSelection(4);
+  model.AddIndexToSelection(3);
+  EXPECT_EQ("active=0 anchor=0 selection=0 1 2 3 4", StateAsString(model));
+  model.Move(3, 0, 3);
+  EXPECT_EQ("active=3 anchor=3 selection=0 1 3 4 5", StateAsString(model));
+  model.Move(3, 1, 10);
+  EXPECT_EQ("active=1 anchor=1 selection=0 1 2 3 11", StateAsString(model));
 }
 
 TEST_F(ListSelectionModelTest, MoveToRight) {
@@ -153,8 +178,37 @@ TEST_F(ListSelectionModelTest, MoveToRight) {
   model.AddIndexToSelection(10);
   model.set_anchor(0);
   model.set_active(0);
-  model.Move(0, 3);
+  EXPECT_EQ("active=0 anchor=0 selection=0 4 10", StateAsString(model));
+  model.Move(0, 3, 1);
   EXPECT_EQ("active=3 anchor=3 selection=3 4 10", StateAsString(model));
+  model.Move(2, 4, 4);
+  EXPECT_EQ("active=5 anchor=5 selection=5 6 10", StateAsString(model));
+  model.Move(5, 6, 1);
+  EXPECT_EQ("active=6 anchor=6 selection=5 6 10", StateAsString(model));
+  model.Move(5, 6, 2);
+  EXPECT_EQ("active=7 anchor=7 selection=6 7 10", StateAsString(model));
+  model.Move(1, 2, 3);
+  EXPECT_EQ("active=7 anchor=7 selection=6 7 10", StateAsString(model));
+  model.Move(1, 6, 4);
+  EXPECT_EQ("active=3 anchor=3 selection=2 3 10", StateAsString(model));
+  model.Move(0, 7000000, 3);
+  EXPECT_EQ("active=0 anchor=0 selection=0 7 7000002", StateAsString(model));
+  model.Move(10, 30, 7000000);
+  EXPECT_EQ("active=0 anchor=0 selection=0 7 7000022", StateAsString(model));
+  model.AddIndexToSelection(10);
+  model.AddIndexToSelection(20);
+  model.AddIndexToSelection(21);
+  EXPECT_EQ("active=0 anchor=0 selection=0 7 10 20 21 7000022",
+            StateAsString(model));
+  model.Move(22, 9000000, 7000000);
+  EXPECT_EQ("active=0 anchor=0 selection=0 7 10 20 21 22",
+            StateAsString(model));
+  model.Move(0, 10, 10);
+  EXPECT_EQ("active=10 anchor=10 selection=0 10 17 20 21 22",
+            StateAsString(model));
+  model.Move(1, 10, 10);
+  EXPECT_EQ("active=19 anchor=19 selection=0 7 19 20 21 22",
+            StateAsString(model));
 }
 
 TEST_F(ListSelectionModelTest, Copy) {

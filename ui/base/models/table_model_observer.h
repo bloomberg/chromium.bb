@@ -19,11 +19,14 @@ class UI_BASE_EXPORT TableModelObserver {
   // Invoked when a range of items has changed.
   virtual void OnItemsChanged(int start, int length) = 0;
 
-  // Invoked when new items are added.
+  // Invoked when new items have been added.
   virtual void OnItemsAdded(int start, int length) = 0;
 
   // Invoked when a range of items has been removed.
   virtual void OnItemsRemoved(int start, int length) = 0;
+
+  // Invoked when a range of items has been moved to a different position.
+  virtual void OnItemsMoved(int old_start, int length, int new_start) {}
 
  protected:
   virtual ~TableModelObserver() {}

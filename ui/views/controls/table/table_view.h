@@ -185,6 +185,7 @@ class VIEWS_EXPORT TableView
   void OnItemsChanged(int start, int length) override;
   void OnItemsAdded(int start, int length) override;
   void OnItemsRemoved(int start, int length) override;
+  void OnItemsMoved(int old_start, int length, int new_start) override;
 
  protected:
   // View overrides:

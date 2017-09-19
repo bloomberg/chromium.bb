@@ -81,13 +81,15 @@ class UI_BASE_EXPORT ListSelectionModel {
   // adds to the selection.
   void AddSelectionFromAnchorTo(int index);
 
-  // Invoked when an item moves. |from| is the original index, and |to| the
-  // target index.
+  // Invoked when an item moves. |old_index| is the original index, |new_index|
+  // is the target index, and |length| is the number of items that are moving.
+  //
   // NOTE: this matches the TabStripModel API. If moving to a greater index,
-  // |to| should be the index *after* removing |from|. For example, consider
-  // three tabs 'A B C', to move A to the end of the list, this should be
-  // invoked with '0, 2'.
-  void Move(int from, int to);
+  // |new_index| should be the index *after* removing the elements at the index
+  // range [old_index, old_index + length). For example, consider three tabs 'A
+  // B C', to move A to the end of the list, this should be invoked with '0, 2,
+  // 1'.
+  void Move(int old_index, int new_index, int length);
 
   // Sets the anchor and active to kUnselectedIndex, and removes all the
   // selected indices.
