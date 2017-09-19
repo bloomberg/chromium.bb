@@ -31,7 +31,7 @@ class LimitedOutputStream : public std::ostream {
   class StreamBuf : public std::stringbuf {
    public:
     StreamBuf(std::ostream& os, int limit);
-    ~StreamBuf();
+    ~StreamBuf() override;
 
     int sync() override;
     bool full() const { return counter_ >= limit_; }
