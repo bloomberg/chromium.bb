@@ -27,6 +27,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/user_manager/user_manager.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace {
 
@@ -296,6 +297,15 @@ void DefaultNetworkFailureCallback(
   LOG(ERROR) << "Failed to query default logical network";
 }
 
+void ArcVpnSuccessCallback() {
+  DVLOG(1) << "ArcVpnSuccessCallback";
+}
+
+void ArcVpnErrorCallback(const std::string& error_name,
+                         std::unique_ptr<base::DictionaryValue> error_data) {
+  LOG(ERROR) << "ArcVpnErrorCallback: " << error_name;
+}
+
 }  // namespace
 
 namespace arc {
@@ -336,8 +346,10 @@ ArcNetHostImpl::ArcNetHostImpl(content::BrowserContext* context,
 
 ArcNetHostImpl::~ArcNetHostImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (observing_network_state_)
+  if (observing_network_state_) {
     GetStateHandler()->RemoveObserver(this, FROM_HERE);
+    GetNetworkConnectionHandler()->RemoveObserver(this);
+  }
   arc_bridge_service_->net()->RemoveObserver(this);
 }
 
@@ -353,7 +365,20 @@ void ArcNetHostImpl::OnInstanceReady() {
 
   if (chromeos::NetworkHandler::IsInitialized()) {
     GetStateHandler()->AddObserver(this, FROM_HERE);
+    GetNetworkConnectionHandler()->AddObserver(this);
     observing_network_state_ = true;
+  }
+
+  // If the default network is an ARC VPN, that means Chrome is restarting
+  // after a crash but shill still thinks a VPN is connected. Nuke it.
+  const chromeos::NetworkState* default_network =
+      GetStateHandler()->DefaultNetwork();
+  if (default_network && default_network->type() == shill::kTypeVPN &&
+      default_network->vpn_provider_type() == shill::kProviderArcVpn) {
+    VLOG(0) << "Disconnecting stale ARC VPN " << default_network->path();
+    GetNetworkConnectionHandler()->DisconnectNetwork(
+        default_network->path(), base::Bind(&ArcVpnSuccessCallback),
+        base::Bind(&ArcVpnErrorCallback));
   }
 }
 
@@ -362,6 +387,7 @@ void ArcNetHostImpl::OnInstanceClosed() {
     return;
 
   GetStateHandler()->RemoveObserver(this, FROM_HERE);
+  GetNetworkConnectionHandler()->RemoveObserver(this);
   observing_network_state_ = false;
 }
 
@@ -640,8 +666,17 @@ void ArcNetHostImpl::ScanCompleted(const chromeos::DeviceState* /*unused*/) {
 
 void ArcNetHostImpl::GetDefaultNetwork(
     const GetDefaultNetworkCallback& callback) {
-  const chromeos::NetworkState* default_network =
-      GetStateHandler()->DefaultNetwork();
+  const chromeos::NetworkState* default_network;
+
+  // Expose Chrome OS VPNs to Android, but if ARC VPN is active, only expose
+  // the underlying physical interface.
+  if (arc_vpn_service_path_.empty()) {
+    default_network = GetStateHandler()->DefaultNetwork();
+  } else {
+    default_network = GetStateHandler()->FirstNetworkByType(
+        chromeos::NetworkTypePattern::NonVirtual());
+  }
+
   if (!default_network) {
     VLOG(1) << "GetDefaultNetwork: no default network";
     callback.Run(nullptr, nullptr);
@@ -670,6 +705,14 @@ void ArcNetHostImpl::DefaultNetworkSuccessCallback(
 
 void ArcNetHostImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
+  // If an ARC VPN is connected, the default network will point to the
+  // ARC VPN but we cannot tell ARC about that.  ARC needs to continue
+  // believing that the current physical network is the default network.
+  // The medium term fix for this is go/arc-multinet which will report
+  // status for each interface separately.
+  if (!arc_vpn_service_path_.empty())
+    return;
+
   if (!network) {
     VLOG(1) << "No default network";
     auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
@@ -699,9 +742,187 @@ void ArcNetHostImpl::DeviceListChanged() {
   net_instance->WifiEnabledStateChanged(is_enabled);
 }
 
+std::string ArcNetHostImpl::LookupArcVpnServicePath() {
+  chromeos::NetworkStateHandler::NetworkStateList state_list;
+  GetStateHandler()->GetNetworkListByType(
+      chromeos::NetworkTypePattern::VPN(), true /* configured_only */,
+      false /* visible_only */, kGetNetworksListLimit, &state_list);
+
+  for (const chromeos::NetworkState* state : state_list) {
+    if (state->vpn_provider_type() == shill::kProviderArcVpn) {
+      return state->path();
+    }
+  }
+  return std::string();
+}
+
+void ArcNetHostImpl::ConnectArcVpn(const std::string& service_path,
+                                   const std::string& /* guid */) {
+  DVLOG(1) << "ConnectArcVpn " << service_path;
+  arc_vpn_service_path_ = service_path;
+
+  GetNetworkConnectionHandler()->ConnectToNetwork(
+      service_path, base::Bind(&ArcVpnSuccessCallback),
+      base::Bind(&ArcVpnErrorCallback), false /* check_error_state */);
+}
+
+std::unique_ptr<base::Value> ArcNetHostImpl::TranslateStringListToValue(
+    const std::vector<std::string>& string_list) {
+  std::unique_ptr<base::Value> result =
+      std::make_unique<base::Value>(base::Value::Type::LIST);
+  for (const auto& item : string_list) {
+    result->GetList().emplace_back(item);
+  }
+  return result;
+}
+
+std::unique_ptr<base::DictionaryValue>
+ArcNetHostImpl::TranslateVpnConfigurationToOnc(
+    const mojom::AndroidVpnConfiguration& cfg) {
+  std::unique_ptr<base::DictionaryValue> top_dict =
+      std::make_unique<base::DictionaryValue>();
+
+  // Name, Type
+  top_dict->SetKey(
+      onc::network_config::kName,
+      base::Value(cfg.session_name.empty() ? cfg.app_label : cfg.session_name));
+  top_dict->SetKey(onc::network_config::kType,
+                   base::Value(onc::network_config::kVPN));
+
+  // StaticIPConfig dictionary
+  top_dict->SetKey(onc::network_config::kIPAddressConfigType,
+                   base::Value(onc::network_config::kIPConfigTypeStatic));
+  top_dict->SetKey(onc::network_config::kNameServersConfigType,
+                   base::Value(onc::network_config::kIPConfigTypeStatic));
+
+  std::unique_ptr<base::DictionaryValue> ip_dict =
+      std::make_unique<base::DictionaryValue>();
+  ip_dict->SetKey(onc::ipconfig::kType, base::Value(onc::ipconfig::kIPv4));
+  ip_dict->SetKey(onc::ipconfig::kIPAddress, base::Value(cfg.ipv4_gateway));
+  ip_dict->SetKey(onc::ipconfig::kRoutingPrefix, base::Value(32));
+  ip_dict->SetKey(onc::ipconfig::kGateway, base::Value(cfg.ipv4_gateway));
+
+  ip_dict->SetWithoutPathExpansion(onc::ipconfig::kNameServers,
+                                   TranslateStringListToValue(cfg.nameservers));
+  ip_dict->SetWithoutPathExpansion(onc::ipconfig::kSearchDomains,
+                                   TranslateStringListToValue(cfg.domains));
+  ip_dict->SetWithoutPathExpansion(
+      onc::ipconfig::kIncludedRoutes,
+      TranslateStringListToValue(cfg.split_include));
+  ip_dict->SetWithoutPathExpansion(
+      onc::ipconfig::kExcludedRoutes,
+      TranslateStringListToValue(cfg.split_exclude));
+
+  top_dict->SetWithoutPathExpansion(onc::network_config::kStaticIPConfig,
+                                    std::move(ip_dict));
+
+  // VPN dictionary
+  std::unique_ptr<base::DictionaryValue> vpn_dict =
+      std::make_unique<base::DictionaryValue>();
+  vpn_dict->SetKey(onc::vpn::kHost, base::Value(cfg.app_name));
+  vpn_dict->SetKey(onc::vpn::kType, base::Value(onc::vpn::kArcVpn));
+
+  // ARCVPN dictionary
+  std::unique_ptr<base::DictionaryValue> arcvpn_dict =
+      std::make_unique<base::DictionaryValue>();
+  arcvpn_dict->SetKey(
+      onc::arc_vpn::kTunnelChrome,
+      base::Value(cfg.tunnel_chrome_traffic ? "true" : "false"));
+  vpn_dict->SetWithoutPathExpansion(onc::vpn::kArcVpn, std::move(arcvpn_dict));
+
+  top_dict->SetWithoutPathExpansion(onc::network_config::kVPN,
+                                    std::move(vpn_dict));
+
+  return top_dict;
+}
+
+void ArcNetHostImpl::AndroidVpnConnected(
+    mojom::AndroidVpnConfigurationPtr cfg) {
+  std::unique_ptr<base::DictionaryValue> properties =
+      TranslateVpnConfigurationToOnc(*cfg);
+
+  std::string service_path = LookupArcVpnServicePath();
+  if (!service_path.empty()) {
+    VLOG(1) << "AndroidVpnConnected: reusing " << service_path;
+    GetManagedConfigurationHandler()->SetProperties(
+        service_path, *properties,
+        base::Bind(&ArcNetHostImpl::ConnectArcVpn, weak_factory_.GetWeakPtr(),
+                   service_path, std::string()),
+        base::Bind(&ArcVpnErrorCallback));
+    return;
+  }
+
+  VLOG(1) << "AndroidVpnConnected: creating new ARC VPN";
+  std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
+  GetManagedConfigurationHandler()->CreateConfiguration(
+      user_id_hash, *properties,
+      base::Bind(&ArcNetHostImpl::ConnectArcVpn, weak_factory_.GetWeakPtr()),
+      base::Bind(&ArcVpnErrorCallback));
+}
+
+void ArcNetHostImpl::AndroidVpnStateChanged(mojom::ConnectionStateType state) {
+  VLOG(1) << "AndroidVpnStateChanged: state=" << state
+          << " service=" << arc_vpn_service_path_;
+
+  if (state != arc::mojom::ConnectionStateType::NOT_CONNECTED ||
+      arc_vpn_service_path_.empty()) {
+    return;
+  }
+
+  // DisconnectNetwork() invokes DisconnectRequested() through the
+  // observer interface, so make sure it doesn't generate an unwanted
+  // mojo call to Android.
+  std::string service_path(arc_vpn_service_path_);
+  arc_vpn_service_path_.clear();
+
+  GetNetworkConnectionHandler()->DisconnectNetwork(
+      service_path, base::Bind(&ArcVpnSuccessCallback),
+      base::Bind(&ArcVpnErrorCallback));
+}
+
+void ArcNetHostImpl::DisconnectArcVpn() {
+  arc_vpn_service_path_.clear();
+
+  auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
+                                                   DisconnectAndroidVpn);
+  if (!net_instance) {
+    LOG(ERROR) << "User requested VPN disconnection but API is unavailable";
+    return;
+  }
+  net_instance->DisconnectAndroidVpn();
+}
+
+void ArcNetHostImpl::DisconnectRequested(const std::string& service_path) {
+  if (arc_vpn_service_path_ != service_path) {
+    return;
+  }
+
+  // This code path is taken when a user clicks the blue Disconnect button
+  // in Chrome OS.  Chrome is about to send the Disconnect call to shill,
+  // so update our local state and tell Android to disconnect the VPN.
+  VLOG(1) << "DisconnectRequested " << service_path;
+  DisconnectArcVpn();
+}
+
+void ArcNetHostImpl::NetworkConnectionStateChanged(
+    const chromeos::NetworkState* network) {
+  if (arc_vpn_service_path_ != network->path() ||
+      network->IsConnectingOrConnected()) {
+    return;
+  }
+
+  // This code path is taken when shill disconnects the Android VPN
+  // service.  This can happen if a user tries to connect to a Chrome OS
+  // VPN, and shill's VPNProvider::DisconnectAll() forcibly disconnects
+  // all other VPN services to avoid a conflict.
+  VLOG(1) << "NetworkConnectionStateChanged " << network->path();
+  DisconnectArcVpn();
+}
+
 void ArcNetHostImpl::OnShuttingDown() {
   DCHECK(observing_network_state_);
   GetStateHandler()->RemoveObserver(this, FROM_HERE);
+  GetNetworkConnectionHandler()->RemoveObserver(this);
   observing_network_state_ = false;
 }
 
