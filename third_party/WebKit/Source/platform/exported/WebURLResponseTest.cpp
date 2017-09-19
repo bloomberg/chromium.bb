@@ -38,11 +38,11 @@ namespace blink {
 
 namespace {
 
-class TestExtraData : public WebURLResponse::ExtraData {
+class ResponseTestExtraData : public WebURLResponse::ExtraData {
  public:
-  explicit TestExtraData(bool* alive) : alive_(alive) { *alive = true; }
+  explicit ResponseTestExtraData(bool* alive) : alive_(alive) { *alive = true; }
 
-  ~TestExtraData() override { *alive_ = false; }
+  ~ResponseTestExtraData() override { *alive_ = false; }
 
  private:
   bool* alive_;
@@ -54,7 +54,7 @@ TEST(WebURLResponseTest, ExtraData) {
   bool alive = false;
   {
     WebURLResponse url_response;
-    TestExtraData* extra_data = new TestExtraData(&alive);
+    ResponseTestExtraData* extra_data = new ResponseTestExtraData(&alive);
     EXPECT_TRUE(alive);
 
     url_response.SetExtraData(extra_data);
