@@ -132,6 +132,16 @@ static int rockchip_init(struct driver *drv)
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 
+	/* Camera ISP supports only NV12 output. */
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata,
+			BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	/*
+	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
+	 * from camera.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+
 	items = drv_query_kms(drv, &num_items);
 	if (!items || !num_items)
 		return 0;
@@ -284,6 +294,9 @@ static uint32_t rockchip_resolve_format(uint32_t format, uint64_t usage)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
+		/* Camera subsystem requires NV12. */
+		if (usage & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+			return DRM_FORMAT_NV12;
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
