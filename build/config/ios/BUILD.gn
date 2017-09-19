@@ -64,9 +64,6 @@ config("compiler") {
   # an Objective C struct won't be called, which is very bad.
   cflags_objcc = [ "-fobjc-call-cxx-cdtors" ]
 
-  cflags_c = [ "-std=c99" ]
-  cflags_objc = cflags_c
-
   ldflags = common_ios_flags
 }
 
