@@ -66,6 +66,20 @@ declare_args() {
   use_pic = true
 }
 
+# Exclude unwind tables for official builds as unwinding can be done from stack
+# dumps produced by Crashpad at a later time "offline" in the crash server.
+# For unofficial (e.g. development) builds and non-Chrome branded (e.g. Cronet
+# which doesn't use Crashpad, crbug.com/479283) builds it's useful to be able
+# to unwind at runtime.
+exclude_unwind_tables = (is_chrome_branded && is_official_build) ||
+                        (is_chromecast && !is_cast_desktop_build && !is_debug)
+
+# If true, optimize for size. Does not affect windows builds.
+# Linux & Mac favor speed over size.
+# TODO(brettw) it's weird that Mac and desktop Linux are different. We should
+# explore favoring size over speed in this case as well.
+optimize_for_size = is_android || is_ios
+
 # Determine whether to enable or disable frame pointers, based on the platform
 # and build arguments.
 if (is_mac || is_ios) {
@@ -84,8 +98,14 @@ if (is_mac || is_ios) {
   # there to avoid the unnecessary overhead.
   enable_frame_pointers = current_cpu != "arm"
 } else if (is_android) {
-  # Ensure that stacks from arm64 crash dumps are usable (crbug.com/391706).
-  enable_frame_pointers = current_cpu == "arm64"
+  enable_frame_pointers =
+      # Ensure that stacks from arm64 crash dumps are usable (crbug.com/391706).
+      current_cpu == "arm64" ||
+      # For x86 Android, unwind tables are huge without frame pointers
+      # (crbug.com/762629). Enabling frame pointers grows the code size slightly
+      # but overall shrinks binaries considerably by avoiding huge unwind
+      # tables.
+      (current_cpu == "x86" && !exclude_unwind_tables && optimize_for_size)
 } else {
   # Explicitly ask for frame pointers, otherwise:
   # * Stacks may be missing for sanitizer and profiling builds.
