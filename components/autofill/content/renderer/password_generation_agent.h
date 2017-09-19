@@ -50,6 +50,8 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Sets |generation_element_| to the focused password field and shows a
   // generation popup at this field.
   void UserTriggeredGeneratePassword() override;
+  void UserSelectedManualGenerationOption() override;
+
   // Enables the form classifier.
   void AllowToRunFormClassifier() override;
 
@@ -105,6 +107,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // an account creation form. Sets |generation_element_| to the field that
   // we want to trigger the generation UI on.
   void DetermineGenerationElement();
+
+  // Helper function which takes care of the form processing and collecting the
+  // information which is required to show the generation popup.
+  void SetUpUserTriggeredGeneration();
 
   // Show password generation UI anchored at |generation_element_|.
   void ShowGenerationPopup();

@@ -107,6 +107,10 @@ interface PasswordGenerationAgent {
   // browser with the message |ShowPasswordGenerationPopup|.
   UserTriggeredGeneratePassword();
 
+  // Tells the renderer to populate the correct password fields with this
+  // generated password.
+  UserSelectedManualGenerationOption();
+
   // Tells the renderer that this password form is not blacklisted.  A form can
   // be blacklisted if a user chooses "never save passwords for this site".
   FormNotBlacklisted(PasswordForm form);

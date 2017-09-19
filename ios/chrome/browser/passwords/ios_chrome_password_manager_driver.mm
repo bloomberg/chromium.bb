@@ -100,3 +100,7 @@ bool IOSChromePasswordManagerDriver::IsMainFrame() const {
 void IOSChromePasswordManagerDriver::MatchingBlacklistedFormFound() {
   NOTIMPLEMENTED();
 }
+
+void IOSChromePasswordManagerDriver::UserSelectedManualGenerationOption() {
+  NOTIMPLEMENTED();
+}

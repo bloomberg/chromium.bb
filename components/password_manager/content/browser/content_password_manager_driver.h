@@ -63,6 +63,7 @@ class ContentPasswordManagerDriver
                      autofill::PasswordFormFieldPredictionMap>& predictions)
       override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
+  void UserSelectedManualGenerationOption() override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;
   void PreviewSuggestion(const base::string16& username,
