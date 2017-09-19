@@ -34,8 +34,8 @@ namespace content {
 
 namespace {
 
-void DeferredCallback(const net::CompletionCallback& callback, int rv) {
-  callback.Run(rv);
+void DeferredCallback(OnceCompletionCallback callback, int rv) {
+  std::move(callback).Run(rv);
 }
 
 }  // namespace
@@ -49,9 +49,8 @@ AppCacheInfoCollection::~AppCacheInfoCollection() {}
 class AppCacheServiceImpl::AsyncHelper
     : public AppCacheStorage::Delegate {
  public:
-  AsyncHelper(AppCacheServiceImpl* service,
-              const net::CompletionCallback& callback)
-      : service_(service), callback_(callback) {
+  AsyncHelper(AppCacheServiceImpl* service, OnceCompletionCallback callback)
+      : service_(service), callback_(std::move(callback)) {
     service_->pending_helpers_[this] = base::WrapUnique(this);
   }
 
@@ -70,19 +69,19 @@ class AppCacheServiceImpl::AsyncHelper
     if (!callback_.is_null()) {
       // Defer to guarantee async completion.
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&DeferredCallback, callback_, rv));
+          FROM_HERE,
+          base::BindOnce(&DeferredCallback, std::move(callback_), rv));
     }
     callback_.Reset();
   }
 
   AppCacheServiceImpl* service_;
-  net::CompletionCallback callback_;
+  OnceCompletionCallback callback_;
 };
 
 void AppCacheServiceImpl::AsyncHelper::Cancel() {
   if (!callback_.is_null()) {
-    callback_.Run(net::ERR_ABORTED);
-    callback_.Reset();
+    std::move(callback_).Run(net::ERR_ABORTED);
   }
   service_->storage()->CancelDelegateCallbacks(this);
   service_ = nullptr;
@@ -231,11 +230,10 @@ void AppCacheServiceImpl::DeleteOriginHelper::CacheCompleted(bool success) {
 
 class AppCacheServiceImpl::GetInfoHelper : AsyncHelper {
  public:
-  GetInfoHelper(
-      AppCacheServiceImpl* service, AppCacheInfoCollection* collection,
-      const net::CompletionCallback& callback)
-      : AsyncHelper(service, callback), collection_(collection) {
-  }
+  GetInfoHelper(AppCacheServiceImpl* service,
+                AppCacheInfoCollection* collection,
+                OnceCompletionCallback callback)
+      : AsyncHelper(service, std::move(callback)), collection_(collection) {}
 
   void Start() override { service_->storage()->GetAllInfo(this); }
 
@@ -480,11 +478,11 @@ void AppCacheServiceImpl::Reinitialize() {
   Initialize(cache_directory_);
 }
 
-void AppCacheServiceImpl::GetAllAppCacheInfo(
-    AppCacheInfoCollection* collection,
-    const net::CompletionCallback& callback) {
+void AppCacheServiceImpl::GetAllAppCacheInfo(AppCacheInfoCollection* collection,
+                                             OnceCompletionCallback callback) {
   DCHECK(collection);
-  GetInfoHelper* helper = new GetInfoHelper(this, collection, callback);
+  GetInfoHelper* helper =
+      new GetInfoHelper(this, collection, std::move(callback));
   helper->Start();
 }
 

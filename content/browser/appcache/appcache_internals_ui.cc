@@ -184,7 +184,7 @@ void AppCacheInternalsUI::Proxy::RequestAllAppCacheInfo() {
         new AppCacheInfoCollection());
     appcache_service_->GetAllAppCacheInfo(
         collection.get(),
-        base::Bind(&Proxy::OnAllAppCacheInfoReady, this, collection));
+        base::BindOnce(&Proxy::OnAllAppCacheInfoReady, this, collection));
   }
 }
 
