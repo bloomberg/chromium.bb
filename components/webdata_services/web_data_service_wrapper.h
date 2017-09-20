@@ -23,7 +23,7 @@ class WebDatabaseService;
 class PasswordWebDataService;
 #endif
 
-#if defined(OS_ANDROID)
+#if !defined(OS_IOS)
 namespace payments {
 class PaymentManifestWebDataService;
 }  // namespace payments
@@ -85,7 +85,7 @@ class WebDataServiceWrapper : public KeyedService {
 #if defined(OS_WIN)
   virtual scoped_refptr<PasswordWebDataService> GetPasswordWebData();
 #endif
-#if defined(OS_ANDROID)
+#if !defined(OS_IOS)
   virtual scoped_refptr<payments::PaymentManifestWebDataService>
   GetPaymentManifestWebData();
 #endif
@@ -105,7 +105,7 @@ class WebDataServiceWrapper : public KeyedService {
   scoped_refptr<PasswordWebDataService> password_web_data_;
 #endif
 
-#if defined(OS_ANDROID)
+#if !defined(OS_IOS)
   scoped_refptr<payments::PaymentManifestWebDataService>
       payment_manifest_web_data_;
 #endif

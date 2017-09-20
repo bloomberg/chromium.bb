@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/android/payment_manifest_web_data_service.h"
+#include "components/payments/content/payment_manifest_web_data_service.h"
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "components/payments/content/payment_method_manifest_table.h"
+#include "components/payments/content/web_app_manifest_section_table.h"
+#include "components/webdata/common/web_data_results.h"
+#include "components/webdata/common/web_database_service.h"
 
 namespace payments {
 

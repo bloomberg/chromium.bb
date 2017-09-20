@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/android/payment_method_manifest_table.h"
+#include "components/payments/content/payment_method_manifest_table.h"
 
 #include <time.h>
 
+#include "base/logging.h"
 #include "base/time/time.h"
+#include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
 namespace payments {
 namespace {
+
 // Data valid duration in seconds.
 const time_t DATA_VALID_TIME_IN_SECONDS = 90 * 24 * 60 * 60;
 
@@ -21,7 +24,8 @@ WebDatabaseTable::TypeKey GetKey() {
   static int table_key = 0;
   return reinterpret_cast<void*>(&table_key);
 }
-}
+
+}  // namespace
 
 PaymentMethodManifestTable::PaymentMethodManifestTable() {}
 

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_ANDROID_PAYMENT_METHOD_MANIFEST_TABLE_H_
-#define COMPONENTS_PAYMENTS_ANDROID_PAYMENT_METHOD_MANIFEST_TABLE_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_METHOD_MANIFEST_TABLE_H_
+#define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_METHOD_MANIFEST_TABLE_H_
 
 #include <string>
 #include <vector>
 
-#include "components/webdata/common/web_database.h"
+#include "base/macros.h"
 #include "components/webdata/common/web_database_table.h"
+
+class WebDatabase;
 
 namespace payments {
 
@@ -59,4 +61,4 @@ class PaymentMethodManifestTable : public WebDatabaseTable {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_ANDROID_PAYMENT_METHOD_MANIFEST_TABLE_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_PAYMENT_METHOD_MANIFEST_TABLE_H_
