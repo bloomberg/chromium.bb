@@ -7,8 +7,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/base_ui_manager.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/features.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/http/http_request_headers.h"
 

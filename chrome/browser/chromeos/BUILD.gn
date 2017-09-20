@@ -108,7 +108,7 @@ source_set("chromeos") {
     "//components/rappor",
     "//components/renderer_context_menu",
     "//components/safe_browsing:csd_proto",
-    "//components/safe_browsing_db:metadata_proto",
+    "//components/safe_browsing/db:metadata_proto",
     "//components/safe_json",
     "//components/session_manager/core",
     "//components/signin/core/browser",

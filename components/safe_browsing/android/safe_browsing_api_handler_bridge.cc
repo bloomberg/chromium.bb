@@ -12,7 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/safe_browsing/db/safe_browsing_api_handler_util.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SafeBrowsingApiBridge_jni.h"
 

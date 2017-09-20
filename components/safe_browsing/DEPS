@@ -1,6 +1,5 @@
 include_rules = [
   "+components/data_use_measurement/core",
-  "+components/safe_browsing_db",
   "+components/security_interstitials/content",
   "+components/security_interstitials/core",
   "+content/public/browser",

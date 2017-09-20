@@ -9,7 +9,7 @@
 
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 
 namespace safe_browsing {
 struct SafeBrowsingProtocolConfig;

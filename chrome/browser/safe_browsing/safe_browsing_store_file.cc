@@ -11,7 +11,7 @@
 #include "base/md5.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "components/safe_browsing_db/prefix_set.h"
+#include "components/safe_browsing/db/prefix_set.h"
 
 namespace safe_browsing {
 

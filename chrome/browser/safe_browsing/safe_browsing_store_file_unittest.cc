@@ -16,8 +16,8 @@
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/safe_browsing_db/prefix_set.h"
-#include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing/db/prefix_set.h"
+#include "components/safe_browsing/db/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

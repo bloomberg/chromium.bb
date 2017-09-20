@@ -112,10 +112,10 @@ static_library("safe_browsing") {
       "//components/safe_browsing:safe_browsing",
       "//components/safe_browsing/browser:browser",
       "//components/safe_browsing/common:common",
+      "//components/safe_browsing/db:metadata_proto",
+      "//components/safe_browsing/db:whitelist_checker_client",
       "//components/safe_browsing/password_protection",
       "//components/safe_browsing/triggers:triggers",
-      "//components/safe_browsing_db:metadata_proto",
-      "//components/safe_browsing_db:whitelist_checker_client",
     ]
     if (safe_browsing_mode == 1) {
       # "Safe Browsing Full" files in addition to the "basic" ones to use for
@@ -251,10 +251,10 @@ static_library("safe_browsing") {
         "//components/content_settings/core/browser:browser",
         "//components/prefs:prefs",
         "//components/safe_browsing/common:safe_browsing_prefs",
+        "//components/safe_browsing/db:db",
         "//components/safe_browsing/triggers:ad_sampler_trigger",
         "//components/safe_browsing/triggers:trigger_throttler",
         "//components/safe_browsing/triggers:triggers",
-        "//components/safe_browsing_db:safe_browsing_db",
         "//components/security_interstitials/content:security_interstitial_page",
         "//content/public/browser:browser",
         "//net:net",
