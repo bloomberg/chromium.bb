@@ -5,7 +5,6 @@
 # pylint: disable=relative-import
 
 import argparse
-import os
 import posixpath
 
 from code_generator import initialize_jinja_env
@@ -156,12 +155,12 @@ class ExternalReferenceTableGenerator(object):
     # Creates a Jinja context from an IDL file.
     def process_idl_file(self, idl_filename):
         definitions = self._reader.read_idl_definitions(idl_filename)
-        base_name, _ = os.path.splitext(os.path.basename(idl_filename))
         for component in definitions:
             target_definitions = definitions[component]
             interfaces = target_definitions.interfaces
-            if base_name in interfaces.keys():
-                interface = interfaces[base_name]
+            first_name = target_definitions.first_name
+            if first_name in interfaces.keys():
+                interface = interfaces[first_name]
                 self._process_interface(interface, component, interfaces)
 
     # Creates a Jinja context from an interface. Some interfaces are not used
