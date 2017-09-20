@@ -1677,14 +1677,14 @@ void LayoutTable::UpdateCollapsedOuterBorders() const {
 
   // The table's after outer border width is the maximum after outer border
   // widths of all cells in the last row. See the CSS 2.1 spec, section 17.6.2.
-  if (const auto* bottom_section = BottomNonEmptySection()) {
-    unsigned row = bottom_section->NumRows() - 1;
-    unsigned bottom_cols = bottom_section->NumCols(row);
-    for (unsigned col = 0; col < bottom_cols; ++col) {
-      if (const auto* cell = bottom_section->PrimaryCellAt(row, col)) {
-        collapsed_outer_border_after_ = std::max(
-            collapsed_outer_border_after_, cell->CollapsedOuterBorderAfter());
-      }
+  const auto* bottom_section = BottomNonEmptySection();
+  DCHECK(bottom_section);
+  unsigned row = bottom_section->NumRows() - 1;
+  unsigned bottom_cols = bottom_section->NumCols(row);
+  for (unsigned col = 0; col < bottom_cols; ++col) {
+    if (const auto* cell = bottom_section->PrimaryCellAt(row, col)) {
+      collapsed_outer_border_after_ = std::max(
+          collapsed_outer_border_after_, cell->CollapsedOuterBorderAfter());
     }
   }
 
