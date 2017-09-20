@@ -354,10 +354,12 @@ Polymer({
   /** @private */
   onAddButtonTap_: function() {
     assert(this.deviceState);
+    var type = this.deviceState.Type;
+    assert(type != CrOnc.Type.CELLULAR);
     if (loadTimeData.getBoolean('networkSettingsConfig'))
-      this.fire('show-config', {GUID: '', Type: this.deviceState.Type});
+      this.fire('show-config', {GUID: '', Type: type});
     else
-      chrome.send('addNetwork', [this.deviceState.Type]);
+      chrome.send('addNetwork', [type]);
   },
 
   /**

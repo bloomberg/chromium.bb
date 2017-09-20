@@ -13,10 +13,11 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
-#include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
@@ -337,13 +338,9 @@ ui::MenuModelDelegate* NetworkMenuModel::GetMenuModelDelegate() const {
 // NetworkMenuModel, private methods:
 
 void NetworkMenuModel::ShowOther(const std::string& type) const {
-  if (type == shill::kTypeCellular) {
-    // TODO(jamescook): This should not need a parent.
-    ChooseMobileNetworkDialog::ShowDialog(
-        owner_->delegate()->GetNativeWindow());
-  } else {
-    NetworkConfigView::ShowForType(shill::kTypeWifi);
-  }
+  // Note: this UI is deprecated and generally unused. If |type| is 'cellular'
+  // this will do nothing.
+  NetworkConfigView::ShowForType(type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

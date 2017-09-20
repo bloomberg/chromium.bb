@@ -123,8 +123,6 @@ const char kChromeUIWebApksURL[] = "chrome://webapks/";
 const char kChromeUIBluetoothPairingURL[] = "chrome://bluetooth-pairing/";
 const char kChromeUICertificateManagerDialogURL[] =
     "chrome://certificate-manager/";
-const char kChromeUIChooseMobileNetworkURL[] =
-    "chrome://choose-mobile-network/";
 const char kChromeUIDeviceEmulatorURL[] = "chrome://device-emulator/";
 const char kChromeUIFirstRunURL[] = "chrome://first-run/";
 const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";

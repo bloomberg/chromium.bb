@@ -5,7 +5,6 @@ stevenjb@chromium.org
 xiyuan@chromium.org
 zelidrag@chromium.org
 
-per-file choose_mobile_network_ui.*=armansito@chromium.org
 per-file network*=stevenjb@chromium.org
 per-file sim_unlock_ui.*=armansito@chromium.org
 per-file sim_unlock_ui.*=stevenjb@chromium.org

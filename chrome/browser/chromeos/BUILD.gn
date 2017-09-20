@@ -1497,8 +1497,6 @@ source_set("chromeos") {
     "ui/accessibility_focus_ring_controller.h",
     "ui/accessibility_focus_ring_layer.cc",
     "ui/accessibility_focus_ring_layer.h",
-    "ui/choose_mobile_network_dialog.cc",
-    "ui/choose_mobile_network_dialog.h",
     "ui/echo_dialog_listener.h",
     "ui/echo_dialog_view.cc",
     "ui/echo_dialog_view.h",
