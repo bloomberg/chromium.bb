@@ -2643,12 +2643,12 @@ static void build_intra_predictors_high(
     }
 #if CONFIG_INTRA_EDGE_UPSAMPLE
     const int upsample_above = use_intra_edge_upsample(txwpx, p_angle - 90);
-    if (upsample_above) {
+    if (need_above && upsample_above) {
       const int n_px = txwpx + (need_right ? txhpx : 0);
       av1_upsample_intra_edge_high(above_row, n_px, xd->bd);
     }
     const int upsample_left = use_intra_edge_upsample(txhpx, p_angle - 180);
-    if (upsample_left) {
+    if (need_left && upsample_left) {
       const int n_px = txhpx + (need_bottom ? txwpx : 0);
       av1_upsample_intra_edge_high(left_col, n_px, xd->bd);
     }
@@ -2885,12 +2885,12 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     }
 #if CONFIG_INTRA_EDGE_UPSAMPLE
     const int upsample_above = use_intra_edge_upsample(txwpx, p_angle - 90);
-    if (upsample_above) {
+    if (need_above && upsample_above) {
       const int n_px = txwpx + (need_right ? txhpx : 0);
       av1_upsample_intra_edge(above_row, n_px);
     }
     const int upsample_left = use_intra_edge_upsample(txhpx, p_angle - 180);
-    if (upsample_left) {
+    if (need_left && upsample_left) {
       const int n_px = txhpx + (need_bottom ? txwpx : 0);
       av1_upsample_intra_edge(left_col, n_px);
     }
