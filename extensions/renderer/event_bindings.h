@@ -27,11 +27,6 @@ class EventBindings : public ObjectBackedNativeHandler {
   EventBindings(ScriptContext* context, IPCMessageSender* ipc_message_sender);
   ~EventBindings() override;
 
-  // Returns true if there is a listener for the given |event| in the given
-  // |context|.
-  static bool HasListener(ScriptContext* context,
-                          const std::string& event_name);
-
   // Dispatches the event in the given |context| with the provided
   // |event_args| and |filtering_info|.
   static void DispatchEventInContext(const std::string& event_name,
