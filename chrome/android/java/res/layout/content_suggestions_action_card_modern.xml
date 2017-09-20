@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              style="@style/SuggestionCardModern"
-              android:background="@null"
-              android:foreground="@null"
-              android:padding="8dp">
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
 
     <Button
         style="@style/SuggestionCardActionModern"
@@ -18,4 +15,11 @@
         android:layout_margin="0dp"
         android:text="@string/more"
         tools:text="Action" />
-</LinearLayout>
+
+    <org.chromium.chrome.browser.ntp.cards.ProgressIndicatorView
+        android:id="@+id/progress_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical" />
+
+</FrameLayout>

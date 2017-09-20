@@ -146,16 +146,20 @@ public class NewTabPageAdapterTest {
         }
 
         public SectionDescriptor withViewAllButton() {
+            assertFalse(mProgressItem);
             mViewAllButton = true;
             return this;
         }
 
         public SectionDescriptor withFetchButton() {
+            assertFalse(mProgressItem);
             mFetchButton = true;
             return this;
         }
 
         public SectionDescriptor withProgress() {
+            assertFalse(mViewAllButton);
+            assertFalse(mFetchButton);
             mProgressItem = true;
             return this;
         }
@@ -410,16 +414,16 @@ public class NewTabPageAdapterTest {
     @Feature({"Ntp"})
     public void testProgressIndicatorDisplay() {
         SuggestionsSection section = mAdapter.getSectionListForTesting().getSection(TEST_CATEGORY);
-        ProgressItem progress = section.getProgressItemForTesting();
+        ActionItem item = section.getActionItemForTesting();
 
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.INITIALIZING);
-        assertTrue(progress.isVisible());
+        assertEquals(ActionItem.State.LOADING, item.getState());
 
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
-        assertFalse(progress.isVisible());
+        assertEquals(ActionItem.State.HIDDEN, item.getState());
 
         mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE_LOADING);
-        assertTrue(progress.isVisible());
+        assertEquals(ActionItem.State.LOADING, item.getState());
 
         // After the section gets disabled, it should gone completely, so checking the progress
         // indicator doesn't make sense anymore.
@@ -578,7 +582,7 @@ public class NewTabPageAdapterTest {
         // 1.1 - Initial state.
         when(mUiDelegate.getSuggestionsSource()).thenReturn(suggestionsSource);
         reloadNtp();
-        assertItemsFor(sectionWithStatusCard().withViewAllButton().withProgress());
+        assertItemsFor(sectionWithStatusCard().withProgress());
 
         // 1.2 - With suggestions.
         List<SnippetArticle> suggestions =
@@ -641,7 +645,7 @@ public class NewTabPageAdapterTest {
         // 1.1 - Initial state.
         when(mUiDelegate.getSuggestionsSource()).thenReturn(suggestionsSource);
         reloadNtp();
-        assertItemsFor(sectionWithStatusCard().withFetchButton().withProgress());
+        assertItemsFor(sectionWithStatusCard().withProgress());
 
         // 1.2 - With suggestions.
         List<SnippetArticle> articles =
