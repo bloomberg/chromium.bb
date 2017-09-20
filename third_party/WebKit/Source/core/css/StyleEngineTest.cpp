@@ -14,11 +14,14 @@
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ShadowRootInit.h"
+#include "core/dom/ViewportDescription.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Heap.h"
+#include "public/platform/WebFloatRect.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -668,6 +671,60 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
   GetStyleEngine().MarkAllTreeScopesDirty();
   GetStyleEngine().StyleSheetsForStyleSheetList(*shadow_root);
   EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
+class StyleEngineClient : public FrameTestHelpers::TestWebViewClient {
+ public:
+  StyleEngineClient() : device_scale_factor_(1.f) {}
+  void ConvertWindowToViewport(WebFloatRect* rect) override {
+    rect->x *= device_scale_factor_;
+    rect->y *= device_scale_factor_;
+    rect->width *= device_scale_factor_;
+    rect->height *= device_scale_factor_;
+  }
+  void set_device_scale_factor(float device_scale_factor) {
+    device_scale_factor_ = device_scale_factor;
+  }
+
+ private:
+  float device_scale_factor_;
+};
+
+TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
+  StyleEngineClient client;
+  client.set_device_scale_factor(1.f);
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view_impl =
+      web_view_helper.Initialize(nullptr, &client, nullptr, nullptr);
+  web_view_impl->UpdateAllLifecyclePhases();
+
+  Document* document =
+      ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
+
+  float min_width =
+      document->GetViewportDescription().min_width.GetFloatValue();
+  float max_width =
+      document->GetViewportDescription().max_width.GetFloatValue();
+  float min_height =
+      document->GetViewportDescription().min_height.GetFloatValue();
+  float max_height =
+      document->GetViewportDescription().max_height.GetFloatValue();
+
+  const float device_scale = 3.5f;
+  client.set_device_scale_factor(device_scale);
+  web_view_impl->UpdateAllLifecyclePhases();
+
+  EXPECT_FLOAT_EQ(device_scale * min_width,
+                  document->GetViewportDescription().min_width.GetFloatValue());
+  EXPECT_FLOAT_EQ(device_scale * max_width,
+                  document->GetViewportDescription().max_width.GetFloatValue());
+  EXPECT_FLOAT_EQ(
+      device_scale * min_height,
+      document->GetViewportDescription().min_height.GetFloatValue());
+  EXPECT_FLOAT_EQ(
+      device_scale * max_height,
+      document->GetViewportDescription().max_height.GetFloatValue());
 }
 
 }  // namespace blink

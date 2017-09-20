@@ -48,6 +48,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutViewItem.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/wtf/PtrUtil.h"
 
@@ -592,7 +593,8 @@ void TextAutosizer::UpdatePageInfo() {
              ->GetViewportDescription()
              .IsSpecifiedByAuthor()) {
       page_info_.device_scale_adjustment_ =
-          document_->GetSettings()->GetDeviceScaleAdjustment();
+          document_->GetPage()->GetChromeClient().WindowToViewportScalar(
+              document_->GetSettings()->GetDeviceScaleAdjustment());
     } else {
       page_info_.device_scale_adjustment_ = 1.0f;
     }
