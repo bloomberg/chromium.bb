@@ -85,6 +85,7 @@ class AudioSinkAudioTrackImpl {
     private static final long NO_TIMESTAMP = Long.MIN_VALUE;
 
     private static final long SEC_IN_NSEC = 1000000000L;
+    private static final long SEC_IN_USEC = 1000000L;
     private static final long MSEC_IN_NSEC = 1000000L;
     private static final long TIMESTAMP_UPDATE_PERIOD = 3 * SEC_IN_NSEC;
     private static final long UNDERRUN_LOG_THROTTLE_PERIOD = SEC_IN_NSEC;
@@ -93,6 +94,9 @@ class AudioSinkAudioTrackImpl {
     private static final long MAX_TIMESTAMP_DEVIATION_NSEC = 1 * MSEC_IN_NSEC;
     // Number of consecutive stable timestamps needed to make it a valid reference point.
     private static final int MIN_TIMESTAMP_STABILITY_CNT = 3;
+
+    // Additional padding for minimum buffer time, determined experimentally.
+    private static final long MIN_BUFFERED_TIME_PADDING_US = 20000;
 
     private static AudioManager sAudioManager = null;
 
@@ -139,6 +143,13 @@ class AudioSinkAudioTrackImpl {
                     Context.AUDIO_SERVICE);
         }
         return sAudioManager;
+    }
+
+    @CalledByNative
+    public static long getMinimumBufferedTime(int sampleRateInHz) {
+        int sizeBytes = AudioTrack.getMinBufferSize(sampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT);
+        long sizeUs = SEC_IN_USEC * (long) sizeBytes / (BYTES_PER_FRAME * (long) sampleRateInHz);
+        return sizeUs + MIN_BUFFERED_TIME_PADDING_US;
     }
 
     @CalledByNative

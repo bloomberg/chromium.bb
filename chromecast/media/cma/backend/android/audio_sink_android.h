@@ -65,6 +65,9 @@ class AudioSinkAndroid {
                             int* media_id,
                             int* communication_id);
 
+  static int64_t GetMinimumBufferedTime(SinkType sink_type,
+                                        const AudioConfig& config);
+
   AudioSinkAndroid() {}
   virtual ~AudioSinkAndroid() {}
 
