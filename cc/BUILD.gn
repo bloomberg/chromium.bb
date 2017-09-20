@@ -458,6 +458,8 @@ cc_static_library("test_support") {
     "test/layer_tree_pixel_test.h",
     "test/layer_tree_test.cc",
     "test/layer_tree_test.h",
+    "test/mock_layer_client.cc",
+    "test/mock_layer_client.h",
     "test/mock_occlusion_tracker.h",
     "test/ordered_texture_map.cc",
     "test/ordered_texture_map.h",
