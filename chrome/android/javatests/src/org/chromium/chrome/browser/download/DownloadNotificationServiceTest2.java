@@ -191,12 +191,10 @@ public class DownloadNotificationServiceTest2 {
         assertEquals(ID2.id, mDownloadNotificationService.mResumedDownloads.get(0));
 
         // Resume pending downloads when network is not metered.
-        // TODO(jming): Right now, assuming all downloads are resumed because of the way downloads
-        // in progress are tracked internally.
         mDownloadNotificationService.mResumedDownloads.clear();
         DownloadManagerService.setIsNetworkMeteredForTest(false);
         mDownloadNotificationService.resumeAllPendingDownloads();
-        assertEquals(2, mDownloadNotificationService.mResumedDownloads.size());
+        assertEquals(1, mDownloadNotificationService.mResumedDownloads.size());
 
         mDownloadSharedPreferenceHelper.removeSharedPreferenceEntry(ID1);
         mDownloadSharedPreferenceHelper.removeSharedPreferenceEntry(ID2);

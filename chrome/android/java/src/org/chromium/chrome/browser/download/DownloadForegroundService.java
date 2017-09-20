@@ -59,8 +59,28 @@ public class DownloadForegroundService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        // In the case the service was restarted when the intent is null.
+        if (intent == null) {
+            DownloadForegroundServiceObservers.alertObserversServiceRestarted();
+
+            // Allow observers to restart service on their own, if needed.
+            stopSelf();
+        }
+
         // This should restart service after Chrome gets killed (except for Android 4.4.2).
         return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        DownloadForegroundServiceObservers.alertObserversServiceDestroyed();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        DownloadForegroundServiceObservers.alertObserversTaskRemoved();
+        super.onTaskRemoved(rootIntent);
     }
 
     @Nullable
