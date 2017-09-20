@@ -30,7 +30,7 @@
 
 // https://w3c.github.io/resource-timing/#performanceresourcetiming
 
-// TODO(foolip): This interface should be [Exposed=(Window,Worker)].
+[Exposed=(Window,Worker)]
 interface PerformanceResourceTiming : PerformanceEntry {
     readonly attribute DOMString initiatorType;
     readonly attribute DOMString nextHopProtocol;

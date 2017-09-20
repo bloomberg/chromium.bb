@@ -674,6 +674,26 @@ interface PerformanceObserverEntryList
     method getEntries
     method getEntriesByName
     method getEntriesByType
+interface PerformanceResourceTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter connectEnd
+    getter connectStart
+    getter decodedBodySize
+    getter domainLookupEnd
+    getter domainLookupStart
+    getter encodedBodySize
+    getter fetchStart
+    getter initiatorType
+    getter nextHopProtocol
+    getter redirectEnd
+    getter redirectStart
+    getter requestStart
+    getter responseEnd
+    getter responseStart
+    getter secureConnectionStart
+    getter transferSize
+    getter workerStart
+    method constructor
 interface PermissionStatus : EventTarget
     attribute @@toStringTag
     getter onchange
