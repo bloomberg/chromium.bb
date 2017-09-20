@@ -6,41 +6,30 @@
 #define ModuleTreeLinker_h
 
 #include "core/CoreExport.h"
+#include "core/dom/AncestorList.h"
 #include "core/dom/Modulator.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/KURLHash.h"
-#include "platform/wtf/HashSet.h"
 
 namespace blink {
 
 class ModuleScriptFetchRequest;
 class ModuleTreeLinkerRegistry;
+class ModuleTreeReachedUrlSet;
 
 // A ModuleTreeLinker is responsible for running and keeping intermediate states
-// for a top-level [IMSGF] "internal module script graph fetching procedure" or
-// a top-level [FDaI] "fetch the descendants of and instantiate", and all the
-// invocations of [IMSGF] and [FD] "fetch the descendants" under that.
-//
-// Spec links:
-// [IMSGF]
-// https://html.spec.whatwg.org/#internal-module-script-graph-fetching-procedure
-// [FD]
-// https://html.spec.whatwg.org/#fetch-the-descendants-of-a-module-script
-// [FDaI]
-// https://html.spec.whatwg.org/#fetch-the-descendants-of-and-instantiate-a-module-script
-// [FFPE]
-// https://html.spec.whatwg.org/#finding-the-first-parse-error
+// for "internal module script graph fetching procedure" for a module graph tree
+// node.
+// https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
 class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
  public:
-  // https://html.spec.whatwg.org/#fetch-a-module-script-tree
   static ModuleTreeLinker* Fetch(const ModuleScriptFetchRequest&,
+                                 const AncestorList&,
+                                 ModuleGraphLevel,
                                  Modulator*,
+                                 ModuleTreeReachedUrlSet*,
                                  ModuleTreeLinkerRegistry*,
                                  ModuleTreeClient*);
-
-  // [FDaI] for an inline script.
   static ModuleTreeLinker* FetchDescendantsForInlineScript(
       ModuleScript*,
       Modulator*,
@@ -57,7 +46,12 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   bool HasFinished() const { return state_ == State::kFinished; }
 
  private:
-  ModuleTreeLinker(Modulator*, ModuleTreeLinkerRegistry*, ModuleTreeClient*);
+  ModuleTreeLinker(const AncestorList& ancestor_list_with_url,
+                   ModuleGraphLevel,
+                   Modulator*,
+                   ModuleTreeReachedUrlSet*,
+                   ModuleTreeLinkerRegistry*,
+                   ModuleTreeClient*);
 
   enum class State {
     kInitial,
@@ -74,41 +68,30 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
 #endif
   void AdvanceState(State);
 
-  void FetchRoot(const ModuleScriptFetchRequest&);
-  void FetchRootInline(ModuleScript*);
-
-  // Steps 1--2 of [IMSGF].
-  void InitiateInternalModuleScriptGraphFetching(
-      const ModuleScriptFetchRequest&,
-      ModuleGraphLevel);
-
-  // Steps 3--7 of [IMSGF], and [FD]/[FDaI] called from [IMSGF].
-  // TODO(hiroshige): Currently
+  void FetchSelf(const ModuleScriptFetchRequest&);
+  // Implements SingleModuleClient
   void NotifyModuleLoadFinished(ModuleScript*) override;
-  void FetchDescendants(ModuleScript*);
 
-  // Completion of [FD].
-  void FinalizeFetchDescendantsForOneModuleScript();
+  void FetchDescendants();
+  void NotifyOneDescendantFinished();
 
-  // [FDaI] Steps 4--8.
   void Instantiate();
 
-  // [FFPE]
-  bool FindFirstParseError(ModuleScript*, HeapHashSet<Member<ModuleScript>>*);
+  class DependencyModuleClient;
+  friend class DependencyModuleClient;
 
   const Member<Modulator> modulator_;
-  HashSet<KURL> visited_set_;
+  const Member<ModuleTreeReachedUrlSet> reached_url_set_;
   const Member<ModuleTreeLinkerRegistry> registry_;
   const Member<ModuleTreeClient> client_;
+  const HashSet<KURL> ancestor_list_with_url_;
+  const ModuleGraphLevel level_;
   State state_ = State::kInitial;
-
   // Correspond to _result_ in
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
-  TraceWrapperMember<ModuleScript> result_;
-
-  bool found_error_ = false;
-
-  size_t num_incomplete_fetches_ = 0;
+  TraceWrapperMember<ModuleScript> module_script_;
+  size_t num_incomplete_descendants_ = 0;
+  HeapHashSet<Member<DependencyModuleClient>> dependency_clients_;
 };
 
 }  // namespace blink

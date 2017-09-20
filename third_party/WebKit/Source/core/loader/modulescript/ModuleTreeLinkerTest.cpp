@@ -11,6 +11,7 @@
 #include "core/dom/ModuleScript.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
+#include "core/loader/modulescript/ModuleTreeReachedUrlSet.h"
 #include "core/testing/DummyModulator.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/bindings/ScriptState.h"
@@ -100,24 +101,54 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
           ScriptValue(script_state_.Get(), error));
     }
 
+    EXPECT_EQ(url, pending_request_url_);
     if (state == ScriptModuleState::kErrored) {
       EXPECT_TRUE(module_script->IsErrored());
     }
-    EXPECT_TRUE(pending_clients_.Contains(url));
-    pending_clients_.Take(url)->NotifyModuleLoadFinished(module_script);
+    EXPECT_TRUE(pending_client_);
+    pending_client_->NotifyModuleLoadFinished(module_script);
+    pending_client_.Clear();
 
     return module_script;
   }
 
+  // Get AncestorList specified in |Modulator::FetchTreeInternal()| call for
+  // request matching |url|.
+  AncestorList GetAncestorListForTreeFetch(const KURL& url) const {
+    const auto& it = pending_tree_ancestor_list_.find(url);
+    if (it == pending_tree_ancestor_list_.end())
+      return AncestorList();
+    return it->value;
+  }
+
+  // Resolve |Modulator::FetchTreeInternal()| for given url.
   void ResolveDependentTreeFetch(const KURL& url, ResolveResult result) {
+    const auto& it = pending_tree_client_map_.find(url);
+    EXPECT_NE(pending_tree_client_map_.end(), it);
+    auto pending_client = it->value;
+    EXPECT_TRUE(pending_client);
+    pending_tree_client_map_.erase(it);
+
     if (result == ResolveResult::kFailure) {
-      EXPECT_TRUE(pending_clients_.Contains(url));
-      pending_clients_.Take(url)->NotifyModuleLoadFinished(nullptr);
+      pending_client->NotifyModuleTreeLoadFinished(nullptr);
       return;
     }
     EXPECT_EQ(ResolveResult::kSuccess, result);
-    ResolveSingleModuleScriptFetch(url, Vector<String>(),
-                                   ScriptModuleState::kUninstantiated);
+
+    ScriptState::Scope scope(script_state_.Get());
+
+    ScriptModule script_module = ScriptModule::Compile(
+        script_state_->GetIsolate(), "export default 'pineapples';",
+        url.GetString(), kSharableCrossOrigin,
+        WebURLRequest::kFetchCredentialsModeOmit, "", kParserInserted,
+        TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+    ModuleScript* module_script = ModuleScript::CreateForTest(
+        this, script_module, url, "", kParserInserted,
+        WebURLRequest::kFetchCredentialsModeOmit);
+    auto result_map = module_map_.insert(url, module_script);
+    EXPECT_TRUE(result_map.is_new_entry);
+
+    pending_client->NotifyModuleTreeLoadFinished(module_script);
   }
 
   void SetInstantiateShouldFail(bool b) { instantiate_should_fail_ = b; }
@@ -130,8 +161,26 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   void FetchSingle(const ModuleScriptFetchRequest& request,
                    ModuleGraphLevel,
                    SingleModuleClient* client) override {
-    EXPECT_FALSE(pending_clients_.Contains(request.Url()));
-    pending_clients_.Set(request.Url(), client);
+    pending_request_url_ = request.Url();
+    EXPECT_FALSE(pending_client_);
+    pending_client_ = client;
+  }
+
+  void FetchTreeInternal(const ModuleScriptFetchRequest& request,
+                         const AncestorList& list,
+                         ModuleGraphLevel level,
+                         ModuleTreeReachedUrlSet* reached_url_set,
+                         ModuleTreeClient* client) override {
+    const auto& url = request.Url();
+
+    auto ancestor_result = pending_tree_ancestor_list_.insert(url, list);
+    EXPECT_TRUE(ancestor_result.is_new_entry);
+
+    EXPECT_EQ(ModuleGraphLevel::kDependentModuleFetch, level);
+    EXPECT_TRUE(reached_url_set);
+
+    auto result_map = pending_tree_client_map_.insert(url, client);
+    EXPECT_TRUE(result_map.is_new_entry);
   }
 
   ModuleScript* GetFetchedModuleScript(const KURL& url) override {
@@ -181,17 +230,21 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   }
 
   RefPtr<ScriptState> script_state_;
-  HeapHashMap<KURL, Member<SingleModuleClient>> pending_clients_;
+  KURL pending_request_url_;
+  Member<SingleModuleClient> pending_client_;
   HashMap<ScriptModule, Vector<ModuleRequest>> dependency_module_requests_map_;
   HeapHashMap<KURL, Member<ModuleScript>> module_map_;
+  HeapHashMap<KURL, Member<ModuleTreeClient>> pending_tree_client_map_;
+  HashMap<KURL, AncestorList> pending_tree_ancestor_list_;
   HashSet<ScriptModule> instantiated_records_;
   HashSet<ScriptModule> errored_records_;
   bool instantiate_should_fail_ = false;
 };
 
 DEFINE_TRACE(ModuleTreeLinkerTestModulator) {
-  visitor->Trace(pending_clients_);
+  visitor->Trace(pending_client_);
   visitor->Trace(module_map_);
+  visitor->Trace(pending_tree_client_map_);
   DummyModulator::Trace(visitor);
 }
 
@@ -223,7 +276,9 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(module_request, GetModulator(), client);
+  registry->Fetch(module_request, AncestorList(),
+                  ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
+                  nullptr, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -245,7 +300,9 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(module_request, GetModulator(), client);
+  registry->Fetch(module_request, AncestorList(),
+                  ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
+                  nullptr, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -271,7 +328,9 @@ TEST_F(ModuleTreeLinkerTest, FetchTreePreviousInstantiationFailure) {
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(module_request, GetModulator(), client);
+  registry->Fetch(module_request, AncestorList(),
+                  ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
+                  nullptr, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -293,7 +352,9 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(module_request, GetModulator(), client);
+  registry->Fetch(module_request, AncestorList(),
+                  ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
+                  nullptr, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -304,6 +365,10 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
   EXPECT_FALSE(client->WasNotifyFinished());
 
   KURL url_dep1(kParsedURLString, "http://example.com/dep1.js");
+  auto ancestor_list = GetModulator()->GetAncestorListForTreeFetch(url_dep1);
+  EXPECT_EQ(1u, ancestor_list.size());
+  EXPECT_TRUE(ancestor_list.Contains(
+      KURL(kParsedURLString, "http://example.com/root.js")));
 
   GetModulator()->ResolveDependentTreeFetch(
       url_dep1, ModuleTreeLinkerTestModulator::ResolveResult::kSuccess);
@@ -320,47 +385,9 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(module_request, GetModulator(), client);
-
-  EXPECT_FALSE(client->WasNotifyFinished())
-      << "ModuleTreeLinker should always finish asynchronously.";
-  EXPECT_FALSE(client->GetModuleScript());
-
-  GetModulator()->ResolveSingleModuleScriptFetch(
-      url, {"./dep1.js", "./dep2.js", "./dep3.js"},
-      ScriptModuleState::kUninstantiated);
-  EXPECT_FALSE(client->WasNotifyFinished());
-
-  Vector<KURL> url_deps;
-  for (int i = 1; i <= 3; ++i) {
-    StringBuilder url_dep_str;
-    url_dep_str.Append("http://example.com/dep");
-    url_dep_str.AppendNumber(i);
-    url_dep_str.Append(".js");
-
-    KURL url_dep(kParsedURLString, url_dep_str.ToString());
-    url_deps.push_back(url_dep);
-  }
-
-  for (const auto& url_dep : url_deps) {
-    EXPECT_FALSE(client->WasNotifyFinished());
-    GetModulator()->ResolveDependentTreeFetch(
-        url_dep, ModuleTreeLinkerTestModulator::ResolveResult::kSuccess);
-  }
-
-  EXPECT_TRUE(client->WasNotifyFinished());
-  ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_TRUE(client->GetModuleScript()->HasInstantiated());
-}
-
-TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
-  ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
-
-  KURL url(kParsedURLString, "http://example.com/root.js");
-  ModuleScriptFetchRequest module_request(
-      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
-  TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(module_request, GetModulator(), client);
+  registry->Fetch(module_request, AncestorList(),
+                  ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
+                  nullptr, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -384,6 +411,60 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
 
   for (const auto& url_dep : url_deps) {
     SCOPED_TRACE(url_dep.GetString());
+    auto ancestor_list = GetModulator()->GetAncestorListForTreeFetch(url_dep);
+    EXPECT_EQ(1u, ancestor_list.size());
+    EXPECT_TRUE(ancestor_list.Contains(
+        KURL(kParsedURLString, "http://example.com/root.js")));
+  }
+
+  for (const auto& url_dep : url_deps) {
+    EXPECT_FALSE(client->WasNotifyFinished());
+    GetModulator()->ResolveDependentTreeFetch(
+        url_dep, ModuleTreeLinkerTestModulator::ResolveResult::kSuccess);
+  }
+
+  EXPECT_TRUE(client->WasNotifyFinished());
+  ASSERT_TRUE(client->GetModuleScript());
+  EXPECT_TRUE(client->GetModuleScript()->HasInstantiated());
+}
+
+TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
+  ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
+
+  KURL url(kParsedURLString, "http://example.com/root.js");
+  ModuleScriptFetchRequest module_request(
+      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
+  TestModuleTreeClient* client = new TestModuleTreeClient;
+  registry->Fetch(module_request, AncestorList(),
+                  ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
+                  nullptr, client);
+
+  EXPECT_FALSE(client->WasNotifyFinished())
+      << "ModuleTreeLinker should always finish asynchronously.";
+  EXPECT_FALSE(client->GetModuleScript());
+
+  GetModulator()->ResolveSingleModuleScriptFetch(
+      url, {"./dep1.js", "./dep2.js", "./dep3.js"},
+      ScriptModuleState::kUninstantiated);
+  EXPECT_FALSE(client->WasNotifyFinished());
+
+  Vector<KURL> url_deps;
+  for (int i = 1; i <= 3; ++i) {
+    StringBuilder url_dep_str;
+    url_dep_str.Append("http://example.com/dep");
+    url_dep_str.AppendNumber(i);
+    url_dep_str.Append(".js");
+
+    KURL url_dep(kParsedURLString, url_dep_str.ToString());
+    url_deps.push_back(url_dep);
+  }
+
+  for (const auto& url_dep : url_deps) {
+    SCOPED_TRACE(url_dep.GetString());
+    auto ancestor_list = GetModulator()->GetAncestorListForTreeFetch(url_dep);
+    EXPECT_EQ(1u, ancestor_list.size());
+    EXPECT_TRUE(ancestor_list.Contains(
+        KURL(kParsedURLString, "http://example.com/root.js")));
   }
 
   auto url_dep = url_deps.back();
@@ -416,8 +497,14 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
   KURL url(kParsedURLString, "http://example.com/depth1.js");
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
+  ModuleTreeReachedUrlSet* reached_url_set =
+      ModuleTreeReachedUrlSet::CreateFromTopLevelAncestorList(AncestorList());
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(module_request, GetModulator(), client);
+  registry->Fetch(
+      module_request,
+      AncestorList{KURL(kParsedURLString, "http://example.com/root.js")},
+      ModuleGraphLevel::kDependentModuleFetch, GetModulator(), reached_url_set,
+      client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -427,13 +514,19 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
       url, {"./depth2.js"}, ScriptModuleState::kUninstantiated);
 
   KURL url_dep2(kParsedURLString, "http://example.com/depth2.js");
+  auto ancestor_list = GetModulator()->GetAncestorListForTreeFetch(url_dep2);
+  EXPECT_EQ(2u, ancestor_list.size());
+  EXPECT_TRUE(ancestor_list.Contains(
+      KURL(kParsedURLString, "http://example.com/root.js")));
+  EXPECT_TRUE(ancestor_list.Contains(
+      KURL(kParsedURLString, "http://example.com/depth1.js")));
 
   GetModulator()->ResolveDependentTreeFetch(
       url_dep2, ModuleTreeLinkerTestModulator::ResolveResult::kSuccess);
 
   EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_TRUE(client->GetModuleScript()->HasInstantiated());
+  EXPECT_FALSE(client->GetModuleScript()->HasInstantiated());
 }
 
 TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
@@ -442,8 +535,13 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
   KURL url(kParsedURLString, "http://example.com/a.js");
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
+  AncestorList ancestor_list{KURL(kParsedURLString, "http://example.com/a.js")};
+  ModuleTreeReachedUrlSet* reached_url_set =
+      ModuleTreeReachedUrlSet::CreateFromTopLevelAncestorList(ancestor_list);
   TestModuleTreeClient* client = new TestModuleTreeClient;
-  registry->Fetch(module_request, GetModulator(), client);
+  registry->Fetch(module_request, ancestor_list,
+                  ModuleGraphLevel::kDependentModuleFetch, GetModulator(),
+                  reached_url_set, client);
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleTreeLinker should always finish asynchronously.";
@@ -452,9 +550,12 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
   GetModulator()->ResolveSingleModuleScriptFetch(
       url, {"./a.js"}, ScriptModuleState::kUninstantiated);
 
+  auto ancestor_list2 = GetModulator()->GetAncestorListForTreeFetch(url);
+  EXPECT_EQ(0u, ancestor_list2.size());
+
   EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_TRUE(client->GetModuleScript()->HasInstantiated());
+  EXPECT_FALSE(client->GetModuleScript()->HasInstantiated());
 }
 
 }  // namespace blink
