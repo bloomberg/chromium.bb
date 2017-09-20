@@ -189,16 +189,16 @@ TEST_F(PageInfoBubbleViewTest, MAYBE_SetPermissionInfo) {
   list.back().type = CONTENT_SETTINGS_TYPE_GEOLOCATION;
   list.back().source = content_settings::SETTING_SOURCE_USER;
   list.back().is_incognito = false;
-  list.back().setting = CONTENT_SETTING_DEFAULT;
+  list.back().setting = CONTENT_SETTING_BLOCK;
 
-  const int kExpectedChildren =
-      kViewsPerPermissionRow *
-      (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 11 : 13);
-  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+  // Initially, no permissions are shown because they are all set to default.
+  int num_expected_children = 0;
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
 
+  num_expected_children = kViewsPerPermissionRow * list.size();
   list.back().setting = CONTENT_SETTING_ALLOW;
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
 
   PermissionSelectorRow* selector = api_->GetPermissionSelectorAt(0);
   EXPECT_TRUE(selector);
@@ -207,7 +207,7 @@ TEST_F(PageInfoBubbleViewTest, MAYBE_SetPermissionInfo) {
   EXPECT_EQ(base::ASCIIToUTF16("Location"), api_->GetPermissionLabelTextAt(0));
   EXPECT_EQ(base::ASCIIToUTF16("Allow"), api_->GetPermissionButtonTextAt(0));
 
-  // Verify calling SetPermisisonInfo() directly updates the UI.
+  // Verify calling SetPermissionInfo() directly updates the UI.
   list.back().setting = CONTENT_SETTING_BLOCK;
   api_->SetPermissionInfo(list);
   EXPECT_EQ(base::ASCIIToUTF16("Block"), api_->GetPermissionButtonTextAt(0));
@@ -216,26 +216,24 @@ TEST_F(PageInfoBubbleViewTest, MAYBE_SetPermissionInfo) {
   // PageInfo to update the pref.
   list.back().setting = CONTENT_SETTING_ALLOW;
   api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
-  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
   EXPECT_EQ(base::ASCIIToUTF16("Allow"), api_->GetPermissionButtonTextAt(0));
 
   // Setting to the default via the UI should keep the button around.
   list.back().setting = CONTENT_SETTING_ASK;
   api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
-  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
   EXPECT_EQ(base::ASCIIToUTF16("Ask"), api_->GetPermissionButtonTextAt(0));
 
   // However, since the setting is now default, recreating the dialog with those
   // settings should omit the permission from the UI.
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+  EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
 }
 
 // Test UI construction and reconstruction with USB devices.
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
-  const int kExpectedChildren =
-      kViewsPerPermissionRow *
-      (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 11 : 13);
+  const int kExpectedChildren = 0;
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
 
   const GURL origin = GURL(kUrl).GetOrigin();

@@ -45,6 +45,9 @@ class ContentSettingsInfo {
     return whitelisted_schemes_;
   }
 
+  // Gets the original default setting for a particular content type.
+  ContentSetting GetInitialDefaultSetting() const;
+
   bool IsSettingValid(ContentSetting setting) const;
   bool IsDefaultSettingValid(ContentSetting setting) const;
 
