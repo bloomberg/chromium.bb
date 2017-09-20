@@ -158,7 +158,7 @@ void BrowsingHistoryBridge::HasOtherFormsOfBrowsingHistory(
     bool has_other_forms, bool has_synced_results) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BrowsingHistoryBridge_hasOtherFormsOfBrowsingData(
-      env, j_history_service_obj_, has_other_forms, has_synced_results);
+      env, j_history_service_obj_, has_other_forms);
 }
 
 Profile* BrowsingHistoryBridge::GetProfile() {

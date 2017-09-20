@@ -36,9 +36,8 @@ public interface HistoryProvider {
          * Called after querying history to indicate whether other forms of browsing history were
          * found.
          * @param hasOtherForms Whether other forms of browsing history were found.
-         * @param hasSyncedResults Whether synced results were found.
          */
-        void hasOtherFormsOfBrowsingData(boolean hasOtherForms, boolean hasSyncedResults);
+        void hasOtherFormsOfBrowsingData(boolean hasOtherForms);
     }
 
     /**

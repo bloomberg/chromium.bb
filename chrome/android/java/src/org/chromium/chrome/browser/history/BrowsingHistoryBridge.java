@@ -93,9 +93,9 @@ public class BrowsingHistoryBridge implements HistoryProvider {
     }
 
     @CalledByNative
-    public void hasOtherFormsOfBrowsingData(boolean hasOtherForms, boolean hasSyncedResults) {
+    public void hasOtherFormsOfBrowsingData(boolean hasOtherForms) {
         if (mObserver != null) {
-            mObserver.hasOtherFormsOfBrowsingData(hasOtherForms, hasSyncedResults);
+            mObserver.hasOtherFormsOfBrowsingData(hasOtherForms);
         }
     }
 
