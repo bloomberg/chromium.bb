@@ -1870,10 +1870,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
   RunTestWithPanel("network");
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, CreateTargetType) {
-  RunTest("testCreateTargetType", std::string());
-}
-
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, AutoAttachToWindowOpen) {
   OpenDevToolsWindow(kWindowOpenTestPage, false);
   DispatchOnTestSuite(window_, "enableAutoAttachToCreatedPages");
