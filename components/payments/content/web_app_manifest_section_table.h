@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_ANDROID_WEB_APP_MANIFEST_SECTION_TABLE_H_
-#define COMPONENTS_PAYMENTS_ANDROID_WEB_APP_MANIFEST_SECTION_TABLE_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_WEB_APP_MANIFEST_SECTION_TABLE_H_
+#define COMPONENTS_PAYMENTS_CONTENT_WEB_APP_MANIFEST_SECTION_TABLE_H_
 
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "components/payments/mojom/payment_manifest_parser.mojom.h"
-#include "components/webdata/common/web_database.h"
 #include "components/webdata/common/web_database_table.h"
+
+class WebDatabase;
 
 namespace payments {
 
@@ -61,4 +63,4 @@ class WebAppManifestSectionTable : public WebDatabaseTable {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_ANDROID_WEB_APP_MANIFEST_SECTION_TABLE_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_WEB_APP_MANIFEST_SECTION_TABLE_H_

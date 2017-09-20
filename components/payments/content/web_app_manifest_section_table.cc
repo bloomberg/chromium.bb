@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/android/web_app_manifest_section_table.h"
+#include "components/payments/content/web_app_manifest_section_table.h"
 
 #include <stdint.h>
 #include <time.h>
 #include <memory>
 
+#include "base/logging.h"
 #include "base/time/time.h"
+#include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
 namespace payments {
 namespace {
+
 // Data valid duration in seconds.
 const time_t DATA_VALID_TIME_IN_SECONDS = 90 * 24 * 60 * 60;
 

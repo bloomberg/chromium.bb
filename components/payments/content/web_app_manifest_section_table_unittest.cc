@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/android/web_app_manifest_section_table.h"
+#include "components/payments/content/web_app_manifest_section_table.h"
 
+#include <stdint.h>
+#include <memory>
+
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "components/webdata/common/web_database.h"
+#include "sql/init_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
@@ -20,8 +26,8 @@ class WebAppManifestSectionTableTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.GetPath().AppendASCII("TestWebDatabase");
 
-    table_.reset(new WebAppManifestSectionTable);
-    db_.reset(new WebDatabase);
+    table_ = std::make_unique<WebAppManifestSectionTable>();
+    db_ = std::make_unique<WebDatabase>();
     db_->AddTable(table_.get());
     ASSERT_EQ(sql::INIT_OK, db_->Init(file_));
   }

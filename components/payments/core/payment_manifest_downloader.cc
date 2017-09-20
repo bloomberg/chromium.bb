@@ -4,13 +4,12 @@
 
 #include "components/payments/core/payment_manifest_downloader.h"
 
-#include <algorithm>
 #include <unordered_map>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -21,6 +20,7 @@
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 #include "url/url_constants.h"
 
 namespace payments {
@@ -97,14 +97,14 @@ PaymentManifestDownloader::~PaymentManifestDownloader() {}
 
 void PaymentManifestDownloader::DownloadPaymentMethodManifest(
     const GURL& url,
-    DownloadCallback callback) {
+    PaymentManifestDownloadCallback callback) {
   DCHECK(IsValidManifestUrl(url));
   InitiateDownload(url, net::URLFetcher::HEAD, std::move(callback));
 }
 
 void PaymentManifestDownloader::DownloadWebAppManifest(
     const GURL& url,
-    DownloadCallback callback) {
+    PaymentManifestDownloadCallback callback) {
   DCHECK(IsValidManifestUrl(url));
   InitiateDownload(url, net::URLFetcher::GET, std::move(callback));
 }
@@ -142,7 +142,7 @@ void PaymentManifestDownloader::OnURLFetchComplete(
 void PaymentManifestDownloader::InitiateDownload(
     const GURL& url,
     net::URLFetcher::RequestType request_type,
-    DownloadCallback callback) {
+    PaymentManifestDownloadCallback callback) {
   DCHECK(IsValidManifestUrl(url));
 
   net::NetworkTrafficAnnotationTag traffic_annotation =

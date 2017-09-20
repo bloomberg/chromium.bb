@@ -22,8 +22,8 @@ static_library("webdata_services") {
     "//sql",
   ]
 
-  if (is_android) {
-    deps += [ "//components/payments/android" ]
+  if (!is_ios) {
+    deps += [ "//components/payments/content:utils" ]
   }
 }
 

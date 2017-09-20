@@ -2,16 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_ANDROID_PAYMENT_MANIFEST_WEB_DATA_SERVICE_H_
-#define COMPONENTS_PAYMENTS_ANDROID_PAYMENT_MANIFEST_WEB_DATA_SERVICE_H_
+#ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_MANIFEST_WEB_DATA_SERVICE_H_
+#define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_MANIFEST_WEB_DATA_SERVICE_H_
+
+#include <memory>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "components/payments/android/payment_method_manifest_table.h"
-#include "components/payments/android/web_app_manifest_section_table.h"
-#include "components/webdata/common/web_data_results.h"
+#include "components/payments/mojom/payment_manifest_parser.mojom.h"
 #include "components/webdata/common/web_data_service_base.h"
-#include "components/webdata/common/web_data_service_consumer.h"
-#include "components/webdata/common/web_database_service.h"
+#include "components/webdata/common/web_database.h"
+
+class WDTypedResult;
+class WebDatabaseService;
+class WebDataServiceConsumer;
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace payments {
 
@@ -67,4 +75,4 @@ class PaymentManifestWebDataService : public WebDataServiceBase {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_ANDROID_PAYMENT_MANIFEST_WEB_DATA_SERVICE_H_
+#endif  // COMPONENTS_PAYMENTS_CONTENT_PAYMENT_MANIFEST_WEB_DATA_SERVICE_H_

@@ -7,11 +7,20 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/web_data_service_factory.h"
+#include "components/payments/content/manifest_verifier.h"
+#include "components/payments/content/payment_manifest_parser_host.h"
+#include "components/payments/content/payment_manifest_web_data_service.h"
+#include "components/payments/core/payment_manifest_downloader.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/payment_app_provider.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ServiceWorkerPaymentAppBridge_jni.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 #include "ui/gfx/android/java_bitmap.h"
 
@@ -36,9 +45,45 @@ using ::payments::mojom::PaymentMethodDataPtr;
 using ::payments::mojom::PaymentRequestEventData;
 using ::payments::mojom::PaymentRequestEventDataPtr;
 
-void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
-                         const JavaRef<jobject>& jcallback,
-                         content::PaymentAppProvider::PaymentApps apps) {
+// Owns the payment manifest verifier and deletes it when after the manifest
+// information is saved in cache.
+class SelfDeletingManifestVerifier {
+ public:
+  explicit SelfDeletingManifestVerifier(content::WebContents* web_contents)
+      : verifier_(std::make_unique<payments::PaymentManifestDownloader>(
+                      content::BrowserContext::GetDefaultStoragePartition(
+                          web_contents->GetBrowserContext())
+                          ->GetURLRequestContext()),
+                  std::make_unique<payments::PaymentManifestParserHost>(),
+                  WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
+                      ProfileManager::GetActiveUserProfile(),
+                      ServiceAccessType::EXPLICIT_ACCESS)) {}
+
+  // Verifies that |apps| have valid payment method names and invokes |callback|
+  // with the validated |apps|.
+  void Verify(content::PaymentAppProvider::PaymentApps&& apps,
+              payments::ManifestVerifier::VerifyCallback&& verify_callback) {
+    verifier_.Verify(
+        std::move(apps), std::move(verify_callback),
+        base::BindOnce(&SelfDeletingManifestVerifier::OnFinishedUsingResources,
+                       base::Unretained(this)));
+  }
+
+ private:
+  ~SelfDeletingManifestVerifier() {}
+
+  // Called after the verifier has saved the manifest information in cache.
+  void OnFinishedUsingResources() { delete this; }
+
+  // Performs the actual verification.
+  payments::ManifestVerifier verifier_;
+
+  DISALLOW_COPY_AND_ASSIGN(SelfDeletingManifestVerifier);
+};
+
+void OnPaymentAppsVerified(const JavaRef<jobject>& jweb_contents,
+                           const JavaRef<jobject>& jcallback,
+                           content::PaymentAppProvider::PaymentApps apps) {
   JNIEnv* env = AttachCurrentThread();
 
   for (const auto& app_info : apps) {
@@ -76,6 +121,15 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
         jweb_contents, jcallback);
   }
   Java_ServiceWorkerPaymentAppBridge_onAllPaymentAppsCreated(env, jcallback);
+}
+
+void OnGotAllPaymentApps(const ScopedJavaGlobalRef<jobject>& jweb_contents,
+                         const ScopedJavaGlobalRef<jobject>& jcallback,
+                         content::PaymentAppProvider::PaymentApps apps) {
+  (new SelfDeletingManifestVerifier(
+       content::WebContents::FromJavaWebContents(jweb_contents)))
+      ->Verify(std::move(apps), base::BindOnce(&OnPaymentAppsVerified,
+                                               jweb_contents, jcallback));
 }
 
 void OnCanMakePayment(const JavaRef<jobject>& jweb_contents,
@@ -120,9 +174,9 @@ static void GetAllPaymentApps(JNIEnv* env,
 
   content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
       web_contents->GetBrowserContext(),
-      base::Bind(&OnGotAllPaymentApps,
-                 ScopedJavaGlobalRef<jobject>(env, jweb_contents),
-                 ScopedJavaGlobalRef<jobject>(env, jcallback)));
+      base::BindOnce(&OnGotAllPaymentApps,
+                     ScopedJavaGlobalRef<jobject>(env, jweb_contents),
+                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 static void CanMakePayment(JNIEnv* env,
