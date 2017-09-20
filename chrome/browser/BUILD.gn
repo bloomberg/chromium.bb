@@ -1691,7 +1691,6 @@ split_static_library("browser") {
     "//crypto:platform",
     "//device/base",
     "//device/bluetooth:mojo",
-    "//device/hid",
     "//device/usb/mojo",
     "//device/usb/public/interfaces",
     "//device/vr/features",
