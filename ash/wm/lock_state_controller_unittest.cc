@@ -186,6 +186,8 @@ class LockStateControllerTest : public AshTestBase {
     EXPECT_TRUE(test_animator_->AreContainersAnimated(
         SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN));
+    EXPECT_TRUE(test_animator_->AreContainersAnimated(
+        SessionStateAnimator::SHELF, SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectPostLockAnimationFinished() {

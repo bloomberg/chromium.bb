@@ -202,12 +202,14 @@ TEST_F(PowerEventObserverTest, ImmediateLockAnimations) {
   // Flushes locking screen async request to start post-lock animation.
   EXPECT_TRUE(GetLockedState());
   EXPECT_TRUE(lock_state_test_api.is_animating_lock());
-  // Tests that we have one active animation container for post-lock animation,
-  // which is lock screen containers.
-  EXPECT_EQ(1u, test_animator->GetAnimationCount());
+  // Tests that we have two active animation container for post-lock animation,
+  // which are lock screen containers and shelf container.
+  EXPECT_EQ(2u, test_animator->GetAnimationCount());
   test_animator->AreContainersAnimated(
       SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
       SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN);
+  test_animator->AreContainersAnimated(SessionStateAnimator::SHELF,
+                                       SessionStateAnimator::ANIMATION_FADE_IN);
   // Tests that after finishing immediate animation, we have no active
   // animations left. Also checks that animation ends.
   test_animator->Advance(test_animator->GetDuration(
