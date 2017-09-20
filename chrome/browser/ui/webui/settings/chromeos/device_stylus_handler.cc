@@ -103,12 +103,12 @@ void StylusHandler::UpdateNoteTakingApps() {
     }
   }
 
-  AllowJavascript();
   FireWebUIListener("onNoteTakingAppsUpdated", apps_list,
                     base::Value(waiting_for_android));
 }
 
 void StylusHandler::RequestApps(const base::ListValue* unused_args) {
+  AllowJavascript();
   UpdateNoteTakingApps();
 }
 
@@ -137,13 +137,13 @@ void StylusHandler::SetPreferredNoteTakingAppEnabledOnLockScreen(
 }
 
 void StylusHandler::HandleInitialize(const base::ListValue* args) {
+  AllowJavascript();
   if (ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete())
     SendHasStylus();
 }
 
 void StylusHandler::SendHasStylus() {
   DCHECK(ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete());
-  AllowJavascript();
   FireWebUIListener("has-stylus-changed",
                     base::Value(ash::palette_utils::HasStylusInput()));
 }
