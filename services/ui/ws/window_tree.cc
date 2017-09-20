@@ -685,6 +685,10 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
     return false;
   ServerWindow* window = GetWindowByClientId(window_id);
   PrepareForEmbed(window);
+  // mojom::kEmbedFlagEmbedderInterceptsEvents is inherited, otherwise an
+  // embedder could effectively circumvent it by embedding itself.
+  if (embedder_intercepts_events_)
+    flags = mojom::kEmbedFlagEmbedderInterceptsEvents;
   // When embedding we don't know the user id of where the TreeClient came
   // from. Use an invalid id, which limits what the client is able to do.
   window_server_->EmbedAtWindow(window, InvalidUserId(),
