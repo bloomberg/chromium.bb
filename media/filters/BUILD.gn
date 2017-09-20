@@ -52,6 +52,8 @@ source_set("filters") {
     "source_buffer_parse_warnings.h",
     "source_buffer_range.cc",
     "source_buffer_range.h",
+    "source_buffer_range_by_dts.cc",
+    "source_buffer_range_by_dts.h",
     "source_buffer_state.cc",
     "source_buffer_state.h",
     "source_buffer_stream.cc",
