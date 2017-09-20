@@ -47,12 +47,12 @@ class HitTestingTransformState : public RefCounted<HitTestingTransformState> {
   static RefPtr<HitTestingTransformState> Create(const FloatPoint& p,
                                                  const FloatQuad& quad,
                                                  const FloatQuad& area) {
-    return AdoptRef(new HitTestingTransformState(p, quad, area));
+    return WTF::AdoptRef(new HitTestingTransformState(p, quad, area));
   }
 
   static RefPtr<HitTestingTransformState> Create(
       const HitTestingTransformState& other) {
-    return AdoptRef(new HitTestingTransformState(other));
+    return WTF::AdoptRef(new HitTestingTransformState(other));
   }
 
   enum TransformAccumulation { kFlattenTransform, kAccumulateTransform };

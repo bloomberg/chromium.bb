@@ -31,7 +31,7 @@ namespace blink {
 
 class QuotesData : public RefCounted<QuotesData> {
  public:
-  static RefPtr<QuotesData> Create() { return AdoptRef(new QuotesData()); }
+  static RefPtr<QuotesData> Create() { return WTF::AdoptRef(new QuotesData()); }
   static RefPtr<QuotesData> Create(UChar open1,
                                    UChar close1,
                                    UChar open2,

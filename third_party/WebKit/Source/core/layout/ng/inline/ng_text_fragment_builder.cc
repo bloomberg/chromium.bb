@@ -65,10 +65,12 @@ RefPtr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment(
     unsigned index,
     unsigned start_offset,
     unsigned end_offset) {
-  RefPtr<NGPhysicalTextFragment> fragment = AdoptRef(new NGPhysicalTextFragment(
-      node_.GetLayoutObject(), Style(), node_.Text(), index, start_offset,
-      end_offset, size_.ConvertToPhysical(WritingMode()), expansion_,
-      ToLineOrientation(WritingMode()), end_effect_, std::move(shape_result_)));
+  RefPtr<NGPhysicalTextFragment> fragment =
+      WTF::AdoptRef(new NGPhysicalTextFragment(
+          node_.GetLayoutObject(), Style(), node_.Text(), index, start_offset,
+          end_offset, size_.ConvertToPhysical(WritingMode()), expansion_,
+          ToLineOrientation(WritingMode()), end_effect_,
+          std::move(shape_result_)));
   fragment->UpdateVisualRect();
   return fragment;
 }

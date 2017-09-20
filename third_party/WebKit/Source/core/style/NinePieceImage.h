@@ -47,10 +47,10 @@ class CORE_EXPORT NinePieceImageData
     : public RefCountedCopyable<NinePieceImageData> {
  public:
   static RefPtr<NinePieceImageData> Create() {
-    return AdoptRef(new NinePieceImageData);
+    return WTF::AdoptRef(new NinePieceImageData);
   }
   RefPtr<NinePieceImageData> Copy() const {
-    return AdoptRef(new NinePieceImageData(*this));
+    return WTF::AdoptRef(new NinePieceImageData(*this));
   }
 
   bool operator==(const NinePieceImageData&) const;

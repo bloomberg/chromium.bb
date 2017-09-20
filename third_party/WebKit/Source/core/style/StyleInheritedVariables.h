@@ -17,11 +17,11 @@ namespace blink {
 class StyleInheritedVariables : public RefCounted<StyleInheritedVariables> {
  public:
   static RefPtr<StyleInheritedVariables> Create() {
-    return AdoptRef(new StyleInheritedVariables());
+    return WTF::AdoptRef(new StyleInheritedVariables());
   }
 
   RefPtr<StyleInheritedVariables> Copy() {
-    return AdoptRef(new StyleInheritedVariables(*this));
+    return WTF::AdoptRef(new StyleInheritedVariables(*this));
   }
 
   bool operator==(const StyleInheritedVariables& other) const;

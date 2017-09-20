@@ -89,7 +89,7 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   }
 
   RefPtr<NGPhysicalLineBoxFragment> fragment =
-      AdoptRef(new NGPhysicalLineBoxFragment(
+      WTF::AdoptRef(new NGPhysicalLineBoxFragment(
           Style(), physical_size, children_, metrics_,
           break_token_ ? std::move(break_token_)
                        : NGInlineBreakToken::Create(node_)));

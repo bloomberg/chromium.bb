@@ -224,13 +224,14 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
     }
   }
 
-  RefPtr<NGPhysicalBoxFragment> fragment = AdoptRef(new NGPhysicalBoxFragment(
-      layout_object_, Style(), physical_size,
-      overflow_.ConvertToPhysical(WritingMode()), children_, baselines_,
-      border_edges_.ToPhysical(WritingMode()), std::move(break_token)));
+  RefPtr<NGPhysicalBoxFragment> fragment =
+      WTF::AdoptRef(new NGPhysicalBoxFragment(
+          layout_object_, Style(), physical_size,
+          overflow_.ConvertToPhysical(WritingMode()), children_, baselines_,
+          border_edges_.ToPhysical(WritingMode()), std::move(break_token)));
   fragment->UpdateVisualRect();
 
-  return AdoptRef(new NGLayoutResult(
+  return WTF::AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, unpositioned_floats_,
       std::move(exclusion_space_), bfc_offset_, end_margin_strut_,
       NGLayoutResult::kSuccess));
@@ -238,7 +239,7 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
 RefPtr<NGLayoutResult> NGFragmentBuilder::Abort(
     NGLayoutResult::NGLayoutResultStatus status) {
-  return AdoptRef(new NGLayoutResult(
+  return WTF::AdoptRef(new NGLayoutResult(
       nullptr, Vector<NGOutOfFlowPositionedDescendant>(), unpositioned_floats_,
       nullptr, bfc_offset_, end_margin_strut_, status));
 }
