@@ -515,7 +515,7 @@ source_set("common") {
     sources -= [ "cursors/webcursor_ozone.cc" ]
   }
 
-  if (!use_aura || is_android) {
+  if (!use_aura) {
     sources -= [ "cursors/webcursor_aura.cc" ]
   }
 

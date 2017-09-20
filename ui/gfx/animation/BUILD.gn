@@ -34,12 +34,10 @@ component("animation") {
   ]
 
   if (is_android) {
-    if (!use_aura) {
-      sources -= [
-        "throb_animation.cc",
-        "throb_animation.h",
-      ]
-    }
+    sources -= [
+      "throb_animation.cc",
+      "throb_animation.h",
+    ]
   }
 
   if (is_mac) {

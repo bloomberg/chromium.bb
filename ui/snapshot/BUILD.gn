@@ -35,7 +35,7 @@ component("snapshot") {
     "//ui/gfx/geometry",
   ]
 
-  if (is_android && !use_aura) {
+  if (is_android) {
     deps += [ "//ui/android" ]
   }
 
@@ -49,10 +49,6 @@ component("snapshot") {
       "snapshot_async.cc",
       "snapshot_async.h",
     ]
-  }
-
-  if (is_android && use_aura) {
-    sources -= [ "snapshot_android.cc" ]
   }
 
   if (use_aura) {

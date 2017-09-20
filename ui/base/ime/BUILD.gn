@@ -132,13 +132,6 @@ component("ime") {
     ]
   }
 
-  if (use_aura && is_android) {
-    sources += [
-      "input_method_android.cc",
-      "input_method_android.h",
-    ]
-  }
-
   if (!is_chromeos && is_linux) {
     sources += [
       "linux/text_edit_command_auralinux.cc",
