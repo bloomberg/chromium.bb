@@ -66,8 +66,8 @@ RefPtr<DynamicsCompressorHandler> DynamicsCompressorHandler::Create(
     AudioParamHandler& ratio,
     AudioParamHandler& attack,
     AudioParamHandler& release) {
-  return AdoptRef(new DynamicsCompressorHandler(node, sample_rate, threshold,
-                                                knee, ratio, attack, release));
+  return WTF::AdoptRef(new DynamicsCompressorHandler(
+      node, sample_rate, threshold, knee, ratio, attack, release));
 }
 
 DynamicsCompressorHandler::~DynamicsCompressorHandler() {

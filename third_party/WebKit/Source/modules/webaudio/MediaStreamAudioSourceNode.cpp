@@ -53,7 +53,7 @@ MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(
 RefPtr<MediaStreamAudioSourceHandler> MediaStreamAudioSourceHandler::Create(
     AudioNode& node,
     std::unique_ptr<AudioSourceProvider> audio_source_provider) {
-  return AdoptRef(new MediaStreamAudioSourceHandler(
+  return WTF::AdoptRef(new MediaStreamAudioSourceHandler(
       node, std::move(audio_source_provider)));
 }
 

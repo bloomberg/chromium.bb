@@ -40,14 +40,15 @@ IDBObjectStoreMetadata::IDBObjectStoreMetadata(const String& name,
       max_index_id(max_index_id) {}
 
 RefPtr<IDBObjectStoreMetadata> IDBObjectStoreMetadata::CreateCopy() const {
-  RefPtr<IDBObjectStoreMetadata> copy = AdoptRef(new IDBObjectStoreMetadata(
-      name, id, key_path, auto_increment, max_index_id));
+  RefPtr<IDBObjectStoreMetadata> copy =
+      WTF::AdoptRef(new IDBObjectStoreMetadata(name, id, key_path,
+                                               auto_increment, max_index_id));
 
   for (const auto& it : indexes) {
     IDBIndexMetadata* index = it.value.Get();
-    RefPtr<IDBIndexMetadata> index_copy =
-        AdoptRef(new IDBIndexMetadata(index->name, index->id, index->key_path,
-                                      index->unique, index->multi_entry));
+    RefPtr<IDBIndexMetadata> index_copy = WTF::AdoptRef(
+        new IDBIndexMetadata(index->name, index->id, index->key_path,
+                             index->unique, index->multi_entry));
     copy->indexes.insert(it.key, std::move(index_copy));
   }
   return copy;
@@ -74,14 +75,14 @@ IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& web_metadata)
     const WebIDBMetadata::ObjectStore& web_object_store =
         web_metadata.object_stores[i];
     RefPtr<IDBObjectStoreMetadata> object_store =
-        AdoptRef(new IDBObjectStoreMetadata(
+        WTF::AdoptRef(new IDBObjectStoreMetadata(
             web_object_store.name, web_object_store.id,
             IDBKeyPath(web_object_store.key_path),
             web_object_store.auto_increment, web_object_store.max_index_id));
 
     for (size_t j = 0; j < web_object_store.indexes.size(); ++j) {
       const WebIDBMetadata::Index& web_index = web_object_store.indexes[j];
-      RefPtr<IDBIndexMetadata> index = AdoptRef(new IDBIndexMetadata(
+      RefPtr<IDBIndexMetadata> index = WTF::AdoptRef(new IDBIndexMetadata(
           web_index.name, web_index.id, IDBKeyPath(web_index.key_path),
           web_index.unique, web_index.multi_entry));
       object_store->indexes.Set(web_index.id, std::move(index));

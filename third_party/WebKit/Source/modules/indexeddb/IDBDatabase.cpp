@@ -309,9 +309,9 @@ IDBObjectStore* IDBDatabase::createObjectStore(
                               object_store_id, name, key_path, auto_increment);
 
   RefPtr<IDBObjectStoreMetadata> store_metadata =
-      AdoptRef(new IDBObjectStoreMetadata(name, object_store_id, key_path,
-                                          auto_increment,
-                                          WebIDBDatabase::kMinimumIndexId));
+      WTF::AdoptRef(new IDBObjectStoreMetadata(
+          name, object_store_id, key_path, auto_increment,
+          WebIDBDatabase::kMinimumIndexId));
   IDBObjectStore* object_store =
       IDBObjectStore::Create(store_metadata, version_change_transaction_.Get());
   version_change_transaction_->ObjectStoreCreated(name, object_store);

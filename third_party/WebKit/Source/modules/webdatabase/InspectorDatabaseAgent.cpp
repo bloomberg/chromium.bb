@@ -67,7 +67,7 @@ class ExecuteSQLCallbackWrapper : public RefCounted<ExecuteSQLCallbackWrapper> {
  public:
   static RefPtr<ExecuteSQLCallbackWrapper> Create(
       std::unique_ptr<ExecuteSQLCallback> callback) {
-    return AdoptRef(new ExecuteSQLCallbackWrapper(std::move(callback)));
+    return WTF::AdoptRef(new ExecuteSQLCallbackWrapper(std::move(callback)));
   }
   ~ExecuteSQLCallbackWrapper() {}
   ExecuteSQLCallback* Get() { return callback_.get(); }
