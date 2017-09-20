@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/ScriptModule.h"
 #include "core/CoreExport.h"
-#include "core/dom/AncestorList.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/V8PerContextData.h"
 #include "platform/heap/Handle.h"
@@ -24,7 +23,6 @@ class ModuleScript;
 class ModuleScriptFetcher;
 class ModuleScriptFetchRequest;
 class ModuleScriptLoaderClient;
-class ModuleTreeReachedUrlSet;
 class ScriptModuleResolver;
 class ScriptState;
 class ScriptValue;
@@ -88,13 +86,6 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
   virtual void FetchTree(const ModuleScriptFetchRequest&,
                          ModuleTreeClient*) = 0;
-
-  // https://html.spec.whatwg.org/#internal-module-script-graph-fetching-procedure
-  virtual void FetchTreeInternal(const ModuleScriptFetchRequest&,
-                                 const AncestorList&,
-                                 ModuleGraphLevel,
-                                 ModuleTreeReachedUrlSet*,
-                                 ModuleTreeClient*) = 0;
 
   // Asynchronously retrieve a module script from the module map, or fetch it
   // and put it in the map if it's not there already.
