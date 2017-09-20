@@ -88,12 +88,12 @@ class RegWriter(template_writer.TemplateWriter):
   def WritePolicy(self, policy):
     if self.CanBeMandatory(policy):
       self._WritePolicy(policy,
-                        self.config['win_reg_mandatory_key_name'],
+                        self._winconfig['reg_mandatory_key_name'],
                         self._mandatory)
 
   def WriteRecommendedPolicy(self, policy):
     self._WritePolicy(policy,
-                      self.config['win_reg_recommended_key_name'],
+                      self._winconfig['reg_recommended_key_name'],
                       self._recommended)
 
   def BeginTemplate(self):
@@ -107,6 +107,7 @@ class RegWriter(template_writer.TemplateWriter):
     self._recommended = []
     self._last_key = {}
     self._prefix = []
+    self._winconfig = self.config['win_config']['win']
 
   def GetTemplateText(self):
     self._prefix.append('Windows Registry Editor Version 5.00')

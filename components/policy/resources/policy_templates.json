@@ -10340,7 +10340,11 @@
     },
     'doc_win_reg_loc': {
       'desc': '''Caption text of the field 'windows registry location' in the summary chart of a policy in the generated documentation''',
-      'text': '''Windows registry location:'''
+      'text': '''Windows registry location for Windows clients:'''
+    },
+    'doc_chrome_os_reg_loc': {
+      'desc': '''Caption text of the field '<ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> registry location' in the summary chart of a policy in the generated documentation''',
+      'text': '''Windows registry location for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> clients:'''
     },
     'doc_mac_linux_pref_name': {
       'desc': '''Caption text of the field 'mac/linux preference name' in the summary chart of a policy in the generated documentation''',
@@ -10381,6 +10385,14 @@
     'doc_example_value': {
       'desc': '''Caption text of the field 'example value' in the summary chart of a policy in the generated documentation''',
       'text': '''Example value:'''
+    },
+    'doc_win_example_value': {
+      'desc': '''Caption text of the field 'windows (windows clients)' in the summary chart of a policy in the generated documentation''',
+      'text': '''Windows (Windows clients):'''
+    },
+    'doc_chrome_os_example_value': {
+      'desc': '''Caption text of the field 'windows (Chrome OS clients)' in the summary chart of a policy in the generated documentation''',
+      'text': '''Windows (<ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> clients):'''
     },
     'doc_intro': {
       'desc': '''Introduction text for the generated policy documentation''',

@@ -17,6 +17,7 @@ import writer_configuration
 import policy_template_generator
 
 from writers import adm_writer, adml_writer, admx_writer, \
+                    chromeos_admx_writer, chromeos_adml_writer, \
                     google_admx_writer, google_adml_writer, \
                     android_policy_writer, reg_writer, doc_writer, \
                     json_writer, plist_writer, plist_strings_writer
@@ -50,6 +51,8 @@ _WRITER_DESCS = [
   WriterDesc('admx', False, 'utf-16', None),
   WriterDesc('google_adml', True, 'utf-8', None),
   WriterDesc('google_admx', False, 'utf-8', None),
+  WriterDesc('chromeos_adml', True, 'utf-8', None),
+  WriterDesc('chromeos_admx', False, 'utf-8', None),
   WriterDesc('android_policy', False, 'utf-8', None),
   WriterDesc('reg', False, 'utf-16', None),
   WriterDesc('doc', True, 'utf-8', None),
@@ -117,20 +120,22 @@ def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--translations', dest='translations')
   parser.add_option('--languages', dest='languages')
-  parser.add_option('--adm', dest='adm')
-  parser.add_option('--adml', dest='adml')
-  parser.add_option('--admx', dest='admx')
-  parser.add_option('--google_adml', dest='google_adml')
-  parser.add_option('--google_admx', dest='google_admx')
-  parser.add_option('--reg', dest='reg')
-  parser.add_option('--doc', dest='doc')
-  parser.add_option('--json', dest='json')
-  parser.add_option('--plist', dest='plist')
-  parser.add_option('--plist_strings', dest='plist_strings')
-  parser.add_option('--android_policy', dest='android_policy')
-  parser.add_option('-D', action='append', dest='grit_defines', default=[])
-  parser.add_option('-E', action='append', dest='grit_build_env', default=[])
-  parser.add_option('-t', action='append', dest='grit_target', default=[])
+  parser.add_option('--adm', action='append', dest='adm')
+  parser.add_option('--adml', action='append', dest='adml')
+  parser.add_option('--admx', action='append', dest='admx')
+  parser.add_option('--chromeos_adml', action='append', dest='chromeos_adml')
+  parser.add_option('--chromeos_admx', action='append', dest='chromeos_admx')
+  parser.add_option('--google_adml', action='append', dest='google_adml')
+  parser.add_option('--google_admx', action='append', dest='google_admx')
+  parser.add_option('--reg', action='append', dest='reg')
+  parser.add_option('--doc', action='append', dest='doc')
+  parser.add_option('--json', action='append', dest='json')
+  parser.add_option('--plist', action='append', dest='plist')
+  parser.add_option('--plist_strings', action='append', dest='plist_strings')
+  parser.add_option('--android_policy', action='append', dest='android_policy')
+  parser.add_option('-D', action='append', dest='grit_defines')
+  parser.add_option('-E', action='append', dest='grit_build_env')
+  parser.add_option('-t', action='append', dest='grit_target')
   options, args = parser.parse_args(argv[1:])
 
   _LANG_PLACEHOLDER = "${lang}";
@@ -159,31 +164,32 @@ def main(argv):
         continue
 
       # Was the current writer type passed as argument, e.g. --admx <path>?
-      output_path = getattr(options, writer_desc.type, '')
-      if (not output_path):
+      # Note that all paths are arrays and we loop over all of them.
+      output_paths = getattr(options, writer_desc.type, '')
+      if (not output_paths):
         continue
+      for output_path in output_paths:
+        # Substitute language placeholder in output file.
+        if (writer_desc.is_per_language):
+          assert _LANG_PLACEHOLDER in output_path
+          mapped_lang = writer_desc.language_map(lang) \
+              if writer_desc.language_map else lang
+          output_path = output_path.replace(_LANG_PLACEHOLDER, mapped_lang)
+        else:
+          assert _LANG_PLACEHOLDER not in output_path
 
-      # Substitute language placeholder in output file.
-      if (writer_desc.is_per_language):
-        assert _LANG_PLACEHOLDER in output_path
-        mapped_lang = \
-            writer_desc.language_map(lang) if writer_desc.language_map else lang
-        output_path = output_path.replace(_LANG_PLACEHOLDER, mapped_lang)
-      else:
-        assert _LANG_PLACEHOLDER not in output_path
+        # Run the template writer on th policy data.
+        writer = GetWriter(writer_desc.type, config)
+        output_data = policy_generator.GetTemplateText(writer)
 
-      # Run the template writer on th policy data.
-      writer = GetWriter(writer_desc.type, config)
-      output_data = policy_generator.GetTemplateText(writer)
+        # Make output directory if it doesn't exist yet.
+        output_dir = os.path.split(output_path)[0]
+        if not os.path.exists(output_dir):
+          os.makedirs(output_dir)
 
-      # Make output directory if it doesn't exist yet.
-      output_dir = os.path.split(output_path)[0]
-      if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-      # Write output file.
-      with codecs.open(output_path, 'w', writer_desc.encoding) as output_file:
-        output_file.write(output_data)
+        # Write output file.
+        with codecs.open(output_path, 'w', writer_desc.encoding) as output_file:
+          output_file.write(output_data)
 
 
 if '__main__' == __name__:

@@ -168,12 +168,12 @@ class AdmWriter(template_writer.TemplateWriter):
   def WritePolicy(self, policy):
     if self.CanBeMandatory(policy):
       self._WritePolicy(policy,
-                        self.config['win_reg_mandatory_key_name'],
+                        self.winconfig['reg_mandatory_key_name'],
                         self.policies)
 
   def WriteRecommendedPolicy(self, policy):
     self._WritePolicy(policy,
-                      self.config['win_reg_recommended_key_name'],
+                      self.winconfig['reg_recommended_key_name'],
                       self.recommended_policies)
 
   def BeginPolicyGroup(self, group):
@@ -223,9 +223,9 @@ class AdmWriter(template_writer.TemplateWriter):
           self._GetChromiumVersionString())
     self._AddGuiString(self.config['win_supported_os'],
                        self.messages['win_supported_winxpsp2']['text'])
-    categories = self.config['win_mandatory_category_path'] + \
-                  self.config['win_recommended_category_path']
-    strings = self.config['win_category_path_strings'].copy()
+    categories = self.winconfig['mandatory_category_path'] + \
+                 self.winconfig['recommended_category_path']
+    strings = self.winconfig['category_path_strings'].copy()
     if 'adm_category_path_strings' in self.config:
       strings.update(self.config['adm_category_path_strings'])
     for category in categories:
@@ -241,18 +241,18 @@ class AdmWriter(template_writer.TemplateWriter):
 
   def EndTemplate(self):
     # Copy policies into self.lines.
-    policy_class = self.config['win_group_policy_class'].upper()
+    policy_class = self.GetClass().upper();
     for class_name in ['MACHINE', 'USER']:
       if policy_class != 'BOTH' and policy_class != class_name:
         continue
       self.lines.AddLine('CLASS ' + class_name, 1)
       self.lines.AddLines(self._CreateTemplate(
-          self.config['win_mandatory_category_path'],
-          self.config['win_reg_mandatory_key_name'],
+          self.winconfig['mandatory_category_path'],
+          self.winconfig['reg_mandatory_key_name'],
           self.policies))
       self.lines.AddLines(self._CreateTemplate(
-          self.config['win_recommended_category_path'],
-          self.config['win_reg_recommended_key_name'],
+          self.winconfig['recommended_category_path'],
+          self.winconfig['reg_recommended_key_name'],
           self.recommended_policies))
       self.lines.AddLine('', -1)
     # Copy user strings into self.lines.
@@ -270,6 +270,12 @@ class AdmWriter(template_writer.TemplateWriter):
     self.policies = IndentedStringBuilder()
     # String buffer for building the recommended policies of the ADM file.
     self.recommended_policies = IndentedStringBuilder()
+    # Shortcut to platform-specific ADMX/ADM specific configuration.
+    assert len(self.platforms) == 1
+    self.winconfig = self.config['win_config'][self.platforms[0]]
 
   def GetTemplateText(self):
     return self.lines.ToString()
+
+  def GetClass(self):
+    return 'Both';
