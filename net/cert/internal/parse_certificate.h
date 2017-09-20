@@ -485,7 +485,7 @@ struct NET_EXPORT ParsedDistributionPoint {
   ~ParsedDistributionPoint();
 
   // The possibly-empty list of URIs from distributionPoint.
-  std::vector<der::Input> uris;
+  std::vector<base::StringPiece> uris;
 
   // TODO(eroman): Include the actual cRLIssuer.
   bool has_crl_issuer = false;

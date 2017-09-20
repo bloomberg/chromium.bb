@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "net/cert/internal/cert_error_params.h"
 #include "net/cert/internal/cert_errors.h"
+#include "net/cert/internal/general_names.h"
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
 #include "net/der/parser.h"
@@ -216,11 +217,11 @@ WARN_UNUSED_RESULT bool BitStringIsAllZeros(const der::BitString& bits) {
 //      fullName                [0]     GeneralNames,
 //      nameRelativeToCRLIssuer [1]     RelativeDistinguishedName }
 bool ParseDistributionPointName(const der::Input& dp_name,
-                                std::vector<der::Input>* uris) {
+                                std::vector<base::StringPiece>* uris) {
   bool has_full_name;
-  der::Input full_name;
+  der::Input der_full_name;
   if (!der::Parser(dp_name).ReadOptionalTag(
-          der::kTagContextSpecific | der::kTagConstructed | 0, &full_name,
+          der::kTagContextSpecific | der::kTagConstructed | 0, &der_full_name,
           &has_full_name)) {
     return false;
   }
@@ -229,36 +230,15 @@ bool ParseDistributionPointName(const der::Input& dp_name,
     return true;
   }
 
-  // "fullName" is a GeneralNames. However this code is only interested in
-  // extracting the URIs from it and will skip the rest.
-  //
-  // TODO(eroman): share code with NameConstraint's parsing of GeneralNames.
-  //
-  // GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
-  // GeneralName ::= CHOICE {
-  //   ...
-  //   uniformResourceIdentifier [6]  IA5String,
-  //   ... }
-  der::Parser general_names_parser(full_name);
-  while (general_names_parser.HasMore()) {
-    bool present;
-    der::Input url;
-    if (!general_names_parser.ReadOptionalTag(der::kTagContextSpecific | 6,
-                                              &url, &present)) {
-      return false;
-    }
+  // TODO(mattm): surface the CertErrors.
+  CertErrors errors;
+  std::unique_ptr<GeneralNames> full_name =
+      GeneralNames::CreateFromValue(der_full_name, &errors);
+  if (!full_name)
+    return false;
 
-    if (present) {
-      // This does not validate that |url| is a valid IA5String.
-      uris->push_back(url);
-    } else {
-      der::Tag unused_tag;
-      der::Input unused_value;
-      if (!general_names_parser.ReadTagAndValue(&unused_tag, &unused_value)) {
-        return false;
-      }
-    }
-  }
+  // This code is only interested in extracting the URIs from fullName.
+  *uris = full_name->uniform_resource_identifiers;
   return true;
 }
 

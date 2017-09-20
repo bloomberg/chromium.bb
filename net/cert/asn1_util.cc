@@ -227,8 +227,8 @@ bool ExtractCRLURLsFromDERCert(base::StringPiece cert,
       if (dp.has_crl_issuer)
         continue;
 
-      for (const der::Input& uri : dp.uris)
-        tmp_urls_out.push_back(uri.AsStringPiece());
+      for (const auto& uri : dp.uris)
+        tmp_urls_out.push_back(uri);
     }
   }
 

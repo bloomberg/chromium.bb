@@ -66,6 +66,12 @@ struct NET_EXPORT GeneralNames {
       const der::Input& general_names_tlv,
       CertErrors* errors);
 
+  // As above, but takes the GeneralNames sequence value, without the tag and
+  // length.
+  static std::unique_ptr<GeneralNames> CreateFromValue(
+      const der::Input& general_names_value,
+      CertErrors* errors);
+
   // DER-encoded OtherName values.
   std::vector<der::Input> other_names;
 
