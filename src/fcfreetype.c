@@ -2089,7 +2089,7 @@ FcFreeTypeQueryAll(const FcChar8	*file,
     unsigned int num_faces = 0;
     unsigned int num_instances = 0;
     unsigned int ret = 0;
-    int		err = 0;
+    int err = 0;
 
     if (FT_Init_FreeType (&ftLibrary))
 	return 0;
@@ -2104,16 +2104,47 @@ FcFreeTypeQueryAll(const FcChar8	*file,
 	num_faces = face->num_faces;
 	num_instances = face->style_flags >> 16;
 	pat = FcFreeTypeQueryFace (face, (const FcChar8 *) file, id, blanks);
-	FT_Done_Face (face);
 
 	if (pat)
 	{
-	    ret++;
-	    if (!set || ! FcFontSetAdd (set, pat))
-	      FcPatternDestroy (pat);
+	    /* Skip named-instance that coincides with base instance. */
+	    if (!index_set && instance_num && instance_num != 0x8000)
+	    {
+		unsigned int i;
+		FT_MM_Var *mm_var = NULL;
+		FT_Fixed *coords = NULL;
+
+		if (FT_Get_MM_Var (face, &mm_var) ||
+		    !(coords = (FT_Fixed *) calloc (mm_var->num_axis, sizeof (FT_Fixed))) ||
+		    FT_Get_Var_Blend_Coordinates (face, mm_var->num_axis, coords))
+		{
+		    goto skip;
+		}
+
+		for (i = 0; i < mm_var->num_axis; i++)
+		    if (coords[i])
+			goto good;
+
+skip:
+		free (coords);
+		FcPatternDestroy (pat);
+		pat = NULL;
+good:
+		;
+	    }
+
+	    if (pat)
+	    {
+		ret++;
+		if (!set || ! FcFontSetAdd (set, pat))
+		    FcPatternDestroy (pat);
+	    }
 	}
 	else if (instance_num != 0x8000)
 	    err = 1;
+
+	FT_Done_Face (face);
+	face = NULL;
 
 	if (!set_instance_num && instance_num < num_instances)
 	    instance_num++;
