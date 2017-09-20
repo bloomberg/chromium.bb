@@ -13,7 +13,7 @@
       "backgroundColor": "#ADD8E6"
     },
     {
-      "name": "LayoutFlexibleBox (relative positioned) DIV",
+      "name": "LayoutFlexibleBox (relative positioned) DIV class='phase-pre-ready state-no-source'",
       "bounds": [100, 100]
     },
     {
