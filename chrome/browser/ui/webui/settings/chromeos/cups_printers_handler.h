@@ -62,12 +62,20 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // string. |ipp_everywhere| indicates if configuration using the CUPS IPP
   // Everywhere driver should be attempted. If |success| is false, the values of
   // |make|, |model|, |make_and_model|, and |ipp_everywhere| are not specified.
-  void OnPrinterInfo(const std::string& callback_id,
-                     bool success,
-                     const std::string& make,
-                     const std::string& model,
-                     const std::string& make_and_model,
-                     bool ipp_everywhere);
+  void OnAutoconfQueried(const std::string& callback_id,
+                         bool success,
+                         const std::string& make,
+                         const std::string& model,
+                         const std::string& make_and_model,
+                         bool ipp_everywhere);
+
+  // Handles the callback for HandleGetPrinterInfo for a discovered printer.
+  void OnAutoconfQueriedDiscovered(std::unique_ptr<Printer> printer,
+                                   bool success,
+                                   const std::string& make,
+                                   const std::string& model,
+                                   const std::string& make_and_model,
+                                   bool ipp_everywhere);
 
   void HandleAddCupsPrinter(const base::ListValue* args);
 
