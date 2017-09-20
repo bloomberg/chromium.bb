@@ -32,3 +32,7 @@ void KeywordExtensionsDelegate::EnterExtensionKeywordMode(
 
 void KeywordExtensionsDelegate::MaybeEndExtensionKeywordMode() {
 }
+
+void KeywordExtensionsDelegate::DeleteSuggestion(
+    const TemplateURL* template_url,
+    const base::string16& suggestion_text) {}

@@ -77,7 +77,7 @@ bool SetOmniboxDefaultSuggestion(
   // omnibox::SuggestResult.
   dict->SetWithoutPathExpansion(
       kSuggestionContent,
-      base::MakeUnique<base::Value>(base::Value::Type::STRING));
+      std::make_unique<base::Value>(base::Value::Type::STRING));
   prefs->UpdateExtensionPref(extension_id, kOmniboxDefaultSuggestion,
                              std::move(dict));
 
@@ -96,9 +96,9 @@ std::string GetTemplateURLStringForExtension(const std::string& extension_id) {
 // static
 void ExtensionOmniboxEventRouter::OnInputStarted(
     Profile* profile, const std::string& extension_id) {
-  auto event = base::MakeUnique<Event>(
+  auto event = std::make_unique<Event>(
       events::OMNIBOX_ON_INPUT_STARTED, omnibox::OnInputStarted::kEventName,
-      base::MakeUnique<base::ListValue>(), profile);
+      std::make_unique<base::ListValue>(), profile);
   EventRouter::Get(profile)
       ->DispatchEventToExtension(extension_id, std::move(event));
 }
@@ -112,11 +112,11 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
           extension_id, omnibox::OnInputChanged::kEventName))
     return false;
 
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, base::MakeUnique<base::Value>(input));
-  args->Set(1, base::MakeUnique<base::Value>(suggest_id));
+  auto args(std::make_unique<base::ListValue>());
+  args->Set(0, std::make_unique<base::Value>(input));
+  args->Set(1, std::make_unique<base::Value>(suggest_id));
 
-  auto event = base::MakeUnique<Event>(events::OMNIBOX_ON_INPUT_CHANGED,
+  auto event = std::make_unique<Event>(events::OMNIBOX_ON_INPUT_CHANGED,
                                        omnibox::OnInputChanged::kEventName,
                                        std::move(args), profile);
   event_router->DispatchEventToExtension(extension_id, std::move(event));
@@ -139,16 +139,16 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   extensions::TabHelper::FromWebContents(web_contents)->
       active_tab_permission_granter()->GrantIfRequested(extension);
 
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, base::MakeUnique<base::Value>(input));
+  auto args(std::make_unique<base::ListValue>());
+  args->Set(0, std::make_unique<base::Value>(input));
   if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
-    args->Set(1, base::MakeUnique<base::Value>(kForegroundTabDisposition));
+    args->Set(1, std::make_unique<base::Value>(kForegroundTabDisposition));
   else if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
-    args->Set(1, base::MakeUnique<base::Value>(kBackgroundTabDisposition));
+    args->Set(1, std::make_unique<base::Value>(kBackgroundTabDisposition));
   else
-    args->Set(1, base::MakeUnique<base::Value>(kCurrentTabDisposition));
+    args->Set(1, std::make_unique<base::Value>(kCurrentTabDisposition));
 
-  auto event = base::MakeUnique<Event>(events::OMNIBOX_ON_INPUT_ENTERED,
+  auto event = std::make_unique<Event>(events::OMNIBOX_ON_INPUT_ENTERED,
                                        omnibox::OnInputEntered::kEventName,
                                        std::move(args), profile);
   EventRouter::Get(profile)
@@ -163,11 +163,26 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 // static
 void ExtensionOmniboxEventRouter::OnInputCancelled(
     Profile* profile, const std::string& extension_id) {
-  auto event = base::MakeUnique<Event>(
+  auto event = std::make_unique<Event>(
       events::OMNIBOX_ON_INPUT_CANCELLED, omnibox::OnInputCancelled::kEventName,
-      base::MakeUnique<base::ListValue>(), profile);
+      std::make_unique<base::ListValue>(), profile);
   EventRouter::Get(profile)
       ->DispatchEventToExtension(extension_id, std::move(event));
+}
+
+void ExtensionOmniboxEventRouter::OnDeleteSuggestion(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& suggestion_text) {
+  auto args(std::make_unique<base::ListValue>());
+  args->Set(0, std::make_unique<base::Value>(suggestion_text));
+
+  auto event = std::make_unique<Event>(events::OMNIBOX_ON_DELETE_SUGGESTION,
+                                       omnibox::OnDeleteSuggestion::kEventName,
+                                       std::move(args), profile);
+
+  EventRouter::Get(profile)->DispatchEventToExtension(extension_id,
+                                                      std::move(event));
 }
 
 OmniboxAPI::OmniboxAPI(content::BrowserContext* context)
