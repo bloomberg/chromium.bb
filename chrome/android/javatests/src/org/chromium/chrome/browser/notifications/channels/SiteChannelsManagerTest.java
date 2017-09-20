@@ -129,6 +129,16 @@ public class SiteChannelsManagerTest {
     @Test
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @SmallTest
+    public void testDeleteAllSiteChannels() throws Exception {
+        mSiteChannelsManager.createSiteChannel("https://chromium.org", 0L, true);
+        mSiteChannelsManager.createSiteChannel("https://tests.peter.sh", 0L, true);
+        mSiteChannelsManager.deleteAllSiteChannels();
+        assertThat(Arrays.asList(mSiteChannelsManager.getSiteChannels()), hasSize(0));
+    }
+
+    @Test
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @SmallTest
     public void testDeleteSiteChannel_channelDoesNotExist() throws Exception {
         mSiteChannelsManager.createSiteChannel("https://chromium.org", 0L, true);
         mSiteChannelsManager.deleteSiteChannel("https://some-other-origin.org");
