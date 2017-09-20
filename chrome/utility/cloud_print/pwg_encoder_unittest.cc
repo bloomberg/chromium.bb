@@ -29,16 +29,12 @@ const int kRasterHeight = 792;
 const int kRasterDPI = 72;
 
 std::unique_ptr<BitmapImage> MakeSampleBitmap() {
-  std::unique_ptr<BitmapImage> bitmap_image(new BitmapImage(
-      gfx::Size(kRasterWidth, kRasterHeight), BitmapImage::RGBA));
-
+  auto bitmap_image = std::make_unique<BitmapImage>(
+      gfx::Size(kRasterWidth, kRasterHeight), BitmapImage::RGBA);
   uint32_t* bitmap_data =
       reinterpret_cast<uint32_t*>(bitmap_image->pixel_data());
-
-  for (int i = 0; i < kRasterWidth * kRasterHeight; i++) {
+  for (int i = 0; i < kRasterWidth * kRasterHeight; i++)
     bitmap_data[i] = 0xFFFFFF;
-  }
-
 
   for (int i = 0; i < kRasterWidth; i++) {
     for (int j = 200; j < 300; j++) {
@@ -66,16 +62,13 @@ std::unique_ptr<BitmapImage> MakeSampleBitmap() {
 }  // namespace
 
 TEST(PwgRasterTest, CompareWithMaster) {
-  std::string output;
-  PwgEncoder encoder;
   std::unique_ptr<BitmapImage> image = MakeSampleBitmap();
   PwgHeaderInfo header_info;
   header_info.dpi = kRasterDPI;
   header_info.total_pages = 1;
 
-  encoder.EncodeDocumentHeader(&output);
-  encoder.EncodePage(*image, header_info, &output);
-
+  std::string output = PwgEncoder::GetDocumentHeader();
+  output += PwgEncoder::EncodePage(*image, header_info);
   EXPECT_EQ(kPWGFileSha1, base::SHA1HashString(output));
 }
 
