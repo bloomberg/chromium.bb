@@ -318,7 +318,8 @@ class MoveBlinkSource(object):
             _log.info('Processing #include in %s ...', self._shorten_path(dirname))
             files = self._fs.files_under(
                 dirname, file_filter=lambda fs, _, basename: basename.endswith(
-                    ('.h', '.cc', '.cpp', '.mm', '.cc.tmpl', '.cpp.tmpl', '.h.tmpl', 'XPathGrammar.y')))
+                    ('.h', '.cc', '.cpp', '.mm', '.cc.tmpl', '.cpp.tmpl',
+                     '.h.tmpl', 'XPathGrammar.y', '.gperf')))
             for file_path in files:
                 original_content = self._fs.read_text_file(file_path)
 
