@@ -90,6 +90,7 @@ DevToolsAgent::DevToolsAgent(RenderFrameImpl* frame)
       is_devtools_client_(false),
       paused_(false),
       frame_(frame),
+      cpu_throttler_(new DevToolsCPUThrottler()),
       weak_factory_(this) {
   g_agent_for_routing_id.Get()[routing_id()] = this;
   frame_->GetWebFrame()->SetDevToolsAgentClient(this);
@@ -188,7 +189,7 @@ void DevToolsAgent::DisableTracing() {
 }
 
 void DevToolsAgent::SetCPUThrottlingRate(double rate) {
-  DevToolsCPUThrottler::GetInstance()->SetThrottlingRate(rate);
+  cpu_throttler_->SetThrottlingRate(rate);
 }
 
 // static

@@ -10,26 +10,18 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-};
-
 namespace content {
 
 class CPUThrottlingThread;
 
-// Singleton that manages creation of the throttler thread.
 class CONTENT_EXPORT DevToolsCPUThrottler final {
  public:
-  void SetThrottlingRate(double rate);
-  static DevToolsCPUThrottler* GetInstance();
-
- private:
   DevToolsCPUThrottler();
   ~DevToolsCPUThrottler();
-  friend struct base::DefaultSingletonTraits<DevToolsCPUThrottler>;
 
+  void SetThrottlingRate(double rate);
+
+ private:
   std::unique_ptr<CPUThrottlingThread> throttling_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsCPUThrottler);
