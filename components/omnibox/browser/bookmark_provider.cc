@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <functional>
+#include <iostream>
+#include <iterator>
 #include <vector>
 
 #include "base/macros.h"
@@ -93,11 +95,9 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   }
 
   // Sort and clip the resulting matches.
-  size_t num_matches =
-      std::min(matches_.size(), AutocompleteProvider::kMaxMatches);
-  std::partial_sort(matches_.begin(), matches_.begin() + num_matches,
-                    matches_.end(), AutocompleteMatch::MoreRelevant);
-  matches_.resize(num_matches);
+  matches_.sort(AutocompleteMatch::MoreRelevant);
+  if (matches_.size() > AutocompleteProvider::kMaxMatches)
+    matches_.resize(AutocompleteProvider::kMaxMatches);
 }
 
 namespace {
