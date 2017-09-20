@@ -392,6 +392,8 @@ endif ()
 if (CONFIG_WEBM_IO)
   add_library(webm OBJECT ${AOM_LIBWEBM_SOURCES})
   include_directories("${AOM_ROOT}/third_party/libwebm")
+  target_compile_definitions(webm PRIVATE __STDC_CONSTANT_MACROS)
+  target_compile_definitions(webm PRIVATE __STDC_LIMIT_MACROS)
 
   if (NOT MSVC)
     target_compile_options(webm PRIVATE -Wno-shadow)

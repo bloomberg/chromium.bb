@@ -353,16 +353,24 @@ if (CONFIG_UNIT_TESTS)
     # Force static run time to avoid collisions with googletest.
     include("${AOM_ROOT}/build/cmake/msvc_runtime.cmake")
   endif ()
-  include_directories(
-    "${AOM_ROOT}/third_party/googletest/src/googletest/src"
-    "${AOM_ROOT}/third_party/googletest/src/googletest/include")
 
   if (BUILD_SHARED_LIBS AND APPLE)
     # Silence an RPATH warning.
     set(CMAKE_MACOSX_RPATH 1)
   endif ()
-  add_subdirectory("${AOM_ROOT}/third_party/googletest/src/googletest"
-                   EXCLUDE_FROM_ALL)
+
+  include_directories(
+    "${AOM_ROOT}/third_party/googletest/src/googletest/src"
+    "${AOM_ROOT}/third_party/googletest/src/googletest/include")
+
+  if (AOM_DISABLE_GTEST_CMAKE)
+    include_directories("${AOM_ROOT}/third_party/googletest/src/googletest")
+    add_library(gtest STATIC
+      "${AOM_ROOT}/third_party/googletest/src/googletest/src/gtest-all.cc")
+  else ()
+    add_subdirectory("${AOM_ROOT}/third_party/googletest/src/googletest"
+                     EXCLUDE_FROM_ALL)
+  endif ()
 
   # Generate a stub file containing the C function usage_exit(); this is
   # required because of the test dependency on aom_common_app_util.
