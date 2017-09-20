@@ -64,6 +64,10 @@ class ModulatorImplBase : public Modulator {
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
+  void ResolveDynamically(const String& specifier,
+                          const String& referrer_url,
+                          const ReferrerScriptInfo&,
+                          ScriptPromiseResolver*) override;
   ScriptModule CompileModule(const String& script,
                              const String& url_str,
                              AccessControlStatus,
