@@ -121,7 +121,7 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     }
 
     sk_sp<SkTypeface> sk_variation_font(fm->createFromStream(
-        base_typeface_->openStream(nullptr)->duplicate(),
+        base_typeface_->openStream(nullptr)->duplicate().release(),
         SkFontMgr::FontParameters().setAxes(axes.data(), axes.size())));
 
     if (sk_variation_font) {

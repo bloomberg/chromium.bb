@@ -192,7 +192,7 @@ FontPlatformData::FontPlatformData(NSFont* ns_font,
     // TODO crbug.com/670246: Refactor this to a future Skia API that acccepts
     // axis parameters on system fonts directly.
     typeface_ = sk_sp<SkTypeface>(fm->createFromStream(
-        typeface_->openStream(nullptr)->duplicate(),
+        typeface_->openStream(nullptr)->duplicate().release(),
         SkFontMgr::FontParameters().setAxes(axes, variation_settings->size())));
   }
 }
