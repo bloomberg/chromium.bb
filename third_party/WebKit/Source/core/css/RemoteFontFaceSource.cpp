@@ -75,10 +75,6 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font,
   if (ShouldTriggerWebFontsIntervention()) {
     is_intervention_triggered_ = true;
     period_ = kSwapPeriod;
-    font_selector_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, kInfoMessageLevel,
-        "Slow network is detected. Fallback font will be used while loading: " +
-            font_->Url().ElidedString()));
   }
 
   // Note: this may call notifyFinished() and clear font_.
@@ -273,6 +269,13 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
       if (!font_->IsLoaded())
         font_->StartLoadLimitTimers();
       histograms_.LoadStarted();
+    }
+    if (is_intervention_triggered_) {
+      font_selector_->GetDocument()->AddConsoleMessage(
+          ConsoleMessage::Create(kOtherMessageSource, kInfoMessageLevel,
+                                 "Slow network is detected. Fallback font will "
+                                 "be used while loading: " +
+                                     font_->Url().ElidedString()));
     }
   }
 
