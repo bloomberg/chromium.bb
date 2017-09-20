@@ -4522,11 +4522,6 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     return;
   }
 #endif  // CONFIG_MRC_TX
-#if CONFIG_DIST_8X8
-  int sub8x8tx_in_gte8x8blk_in_plane0 =
-      plane == 0 && plane_bsize >= BLOCK_8X8 &&
-      (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4);
-#endif  // CONFIG_DIST_8X8
   if (
 #if CONFIG_DIST_8X8
       (x->using_dist_8x8 && sub8x8tx_in_gte8x8blk_in_plane0) ||
