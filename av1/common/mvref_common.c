@@ -381,6 +381,18 @@ static int has_top_right(const MACROBLOCKD *xd, int mi_row, int mi_col,
 }
 
 #if CONFIG_MFMV
+static int check_sb_border(const int mi_row, const int mi_col,
+                           const int row_offset, const int col_offset) {
+  const int row = mi_row & MAX_MIB_MASK;
+  const int col = mi_col & MAX_MIB_MASK;
+
+  if (row + row_offset < 0 || row + row_offset >= MAX_MIB_SIZE ||
+      col + col_offset < 0 || col + col_offset >= MAX_MIB_SIZE)
+    return 0;
+
+  return 1;
+}
+
 static int add_tpl_ref_mv(const AV1_COMMON *cm,
                           const MV_REF *prev_frame_mvs_base,
                           const MACROBLOCKD *xd, int mi_row, int mi_col,
@@ -648,6 +660,9 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   for (i = 0; i < 9; ++i) {
     blk_row = tpl_sample_pos[i][0];
     blk_col = tpl_sample_pos[i][1];
+
+    if (!check_sb_border(mi_row, mi_col, blk_row, blk_col)) continue;
+
     coll_blk_count += add_tpl_ref_mv(cm, prev_frame_mvs_base, xd, mi_row,
                                      mi_col, ref_frame, blk_row, blk_col,
                                      refmv_count, ref_mv_stack, mode_context);
