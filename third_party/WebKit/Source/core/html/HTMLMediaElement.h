@@ -28,6 +28,7 @@
 #define HTMLMediaElement_h
 
 #include <memory>
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/CoreExport.h"

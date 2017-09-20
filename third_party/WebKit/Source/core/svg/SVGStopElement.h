@@ -28,6 +28,8 @@
 
 namespace blink {
 
+class Color;
+
 class SVGStopElement final : public SVGElement {
   DEFINE_WRAPPERTYPEINFO();
 

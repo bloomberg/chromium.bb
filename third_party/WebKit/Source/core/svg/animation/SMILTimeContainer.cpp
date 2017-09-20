@@ -28,6 +28,7 @@
 #include <algorithm>
 #include "core/animation/AnimationClock.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"

@@ -7,15 +7,16 @@
 
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
-#include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 
 class CSSStyleSheet;
+class Document;
 class StyleSheetContents;
 
 class CORE_EXPORT CSSParserContext

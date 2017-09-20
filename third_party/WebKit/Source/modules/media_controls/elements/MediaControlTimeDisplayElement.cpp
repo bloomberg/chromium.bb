@@ -4,6 +4,7 @@
 
 #include "modules/media_controls/elements/MediaControlTimeDisplayElement.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 
 namespace blink {

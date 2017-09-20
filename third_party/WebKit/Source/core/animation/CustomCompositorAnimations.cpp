@@ -11,6 +11,7 @@
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/animation/animatable/AnimatableValue.h"
+#include "core/dom/Document.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"

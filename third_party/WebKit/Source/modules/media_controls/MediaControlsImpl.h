@@ -31,6 +31,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/media/MediaControls.h"
 #include "modules/ModulesExport.h"
+#include "platform/Timer.h"
 
 namespace blink {
 

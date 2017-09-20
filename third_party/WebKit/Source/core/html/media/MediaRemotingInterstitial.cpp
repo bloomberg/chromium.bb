@@ -4,6 +4,7 @@
 
 #include "core/html/media/MediaRemotingInterstitial.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"

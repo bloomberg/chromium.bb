@@ -30,6 +30,7 @@
 namespace blink {
 
 struct AttributeTriggers;
+class Color;
 class DocumentFragment;
 class ExceptionState;
 class FormAssociated;

@@ -27,6 +27,7 @@
 #ifndef ShadowRoot_h
 #define ShadowRoot_h
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/CoreExport.h"
 #include "core/css/StyleSheetList.h"
 #include "core/dom/ContainerNode.h"

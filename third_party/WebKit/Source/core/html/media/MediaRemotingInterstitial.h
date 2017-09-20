@@ -6,6 +6,8 @@
 #define MediaRemotingInterstitial_h
 
 #include "core/html/HTMLDivElement.h"
+#include "platform/Timer.h"
+#include "platform/WebTaskRunner.h"
 
 namespace blink {
 
