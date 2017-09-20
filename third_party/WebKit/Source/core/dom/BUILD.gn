@@ -128,7 +128,6 @@ blink_core_sources("dom") {
     "FirstLetterPseudoElement.h",
     "FlatTreeTraversal.cpp",
     "FlatTreeTraversal.h",
-    "FrameRequestCallback.h",
     "FrameRequestCallbackCollection.cpp",
     "FrameRequestCallbackCollection.h",
     "GlobalEventHandlers.h",

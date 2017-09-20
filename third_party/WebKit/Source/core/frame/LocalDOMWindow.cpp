@@ -41,7 +41,7 @@
 #include "core/css/StyleMedia.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMImplementation.h"
-#include "core/dom/FrameRequestCallback.h"
+#include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/Modulator.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/ScriptedIdleTaskController.h"
@@ -1329,18 +1329,22 @@ void LocalDOMWindow::resizeTo(int width, int height) const {
   page->GetChromeClient().SetWindowRectWithAdjustment(update, *GetFrame());
 }
 
-int LocalDOMWindow::requestAnimationFrame(FrameRequestCallback* callback) {
-  callback->use_legacy_time_base_ = false;
+int LocalDOMWindow::requestAnimationFrame(V8FrameRequestCallback* callback) {
+  FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
+      FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
+  frame_callback->SetUseLegacyTimeBase(false);
   if (Document* doc = document())
-    return doc->RequestAnimationFrame(callback);
+    return doc->RequestAnimationFrame(frame_callback);
   return 0;
 }
 
 int LocalDOMWindow::webkitRequestAnimationFrame(
-    FrameRequestCallback* callback) {
-  callback->use_legacy_time_base_ = true;
+    V8FrameRequestCallback* callback) {
+  FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
+      FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
+  frame_callback->SetUseLegacyTimeBase(true);
   if (Document* document = this->document())
-    return document->RequestAnimationFrame(callback);
+    return document->RequestAnimationFrame(frame_callback);
   return 0;
 }
 

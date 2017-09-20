@@ -46,6 +46,7 @@
 #include "core/dom/DocumentShutdownObserver.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/ScriptedIdleTaskController.h"
 #include "core/dom/SynchronousMutationNotifier.h"
@@ -115,7 +116,6 @@ class ExceptionState;
 class FloatQuad;
 class FloatRect;
 class FormController;
-class FrameRequestCallback;
 class HTMLAllCollection;
 class HTMLBodyElement;
 class HTMLCollection;
@@ -1148,7 +1148,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const DocumentTiming& GetTiming() const { return document_timing_; }
 
-  int RequestAnimationFrame(FrameRequestCallback*);
+  int RequestAnimationFrame(FrameRequestCallbackCollection::FrameCallback*);
   void CancelAnimationFrame(int id);
   void ServiceScriptedAnimations(double monotonic_animation_start_time);
 
@@ -1674,7 +1674,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool write_recursion_is_too_deep_;
   unsigned write_recursion_depth_;
 
-  Member<ScriptedAnimationController> scripted_animation_controller_;
+  TraceWrapperMember<ScriptedAnimationController>
+      scripted_animation_controller_;
   TraceWrapperMember<ScriptedIdleTaskController> scripted_idle_task_controller_;
   Member<TextAutosizer> text_autosizer_;
 

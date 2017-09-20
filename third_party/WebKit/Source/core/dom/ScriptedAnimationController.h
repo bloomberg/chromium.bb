@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/Vector.h"
@@ -39,22 +40,24 @@ namespace blink {
 class Document;
 class Event;
 class EventTarget;
-class FrameRequestCallback;
 class MediaQueryListListener;
 
 class CORE_EXPORT ScriptedAnimationController
-    : public GarbageCollectedFinalized<ScriptedAnimationController> {
+    : public GarbageCollectedFinalized<ScriptedAnimationController>,
+      public TraceWrapperBase {
  public:
   static ScriptedAnimationController* Create(Document* document) {
     return new ScriptedAnimationController(document);
   }
+  virtual ~ScriptedAnimationController() = default;
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
   void ClearDocumentPointer() { document_ = nullptr; }
 
   // Animation frame callbacks are used for requestAnimationFrame().
   typedef int CallbackId;
-  CallbackId RegisterCallback(FrameRequestCallback*);
+  CallbackId RegisterCallback(FrameRequestCallbackCollection::FrameCallback*);
   void CancelCallback(CallbackId);
 
   // Animation frame events are used for resize events, scroll events, etc.

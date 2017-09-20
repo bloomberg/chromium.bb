@@ -6,7 +6,7 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/FrameRequestCallback.h"
+#include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/UserGestureIndicator.h"
@@ -51,12 +51,13 @@ VREye StringToVREye(const String& which_eye) {
   return kVREyeNone;
 }
 
-class VRDisplayFrameRequestCallback : public FrameRequestCallback {
+class VRDisplayFrameRequestCallback
+    : public FrameRequestCallbackCollection::FrameCallback {
  public:
   explicit VRDisplayFrameRequestCallback(VRDisplay* vr_display)
       : vr_display_(vr_display) {}
   ~VRDisplayFrameRequestCallback() override {}
-  void handleEvent(double high_res_time_ms) override {
+  void Invoke(double high_res_time_ms) override {
     double monotonic_time;
     if (!vr_display_->GetDocument() || !vr_display_->GetDocument()->Loader()) {
       monotonic_time = WTF::MonotonicallyIncreasingTime();
@@ -74,7 +75,7 @@ class VRDisplayFrameRequestCallback : public FrameRequestCallback {
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(vr_display_);
 
-    FrameRequestCallback::Trace(visitor);
+    FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
   }
 
   Member<VRDisplay> vr_display_;
@@ -236,7 +237,7 @@ void VRDisplay::RequestVSync() {
   DVLOG(2) << __FUNCTION__ << " done: pending_vsync_=" << pending_vsync_;
 }
 
-int VRDisplay::requestAnimationFrame(FrameRequestCallback* callback) {
+int VRDisplay::requestAnimationFrame(V8FrameRequestCallback* callback) {
   DVLOG(2) << __FUNCTION__;
   Document* doc = this->GetDocument();
   if (!doc)
@@ -250,8 +251,11 @@ int VRDisplay::requestAnimationFrame(FrameRequestCallback* callback) {
   if (!in_animation_frame_ || did_submit_this_frame_) {
     RequestVSync();
   }
-  callback->use_legacy_time_base_ = false;
-  return EnsureScriptedAnimationController(doc).RegisterCallback(callback);
+  FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
+      FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
+  frame_callback->SetUseLegacyTimeBase(false);
+  return EnsureScriptedAnimationController(doc).RegisterCallback(
+      frame_callback);
 }
 
 void VRDisplay::cancelAnimationFrame(int id) {
@@ -1023,8 +1027,6 @@ bool VRDisplay::FocusedOrPresenting() {
 }
 
 DEFINE_TRACE(VRDisplay) {
-  EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(navigator_vr_);
   visitor->Trace(capabilities_);
   visitor->Trace(stage_parameters_);
@@ -1034,6 +1036,13 @@ DEFINE_TRACE(VRDisplay) {
   visitor->Trace(rendering_context_);
   visitor->Trace(scripted_animation_controller_);
   visitor->Trace(pending_present_resolvers_);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(VRDisplay) {
+  visitor->TraceWrappers(scripted_animation_controller_);
+  EventTargetWithInlineData::TraceWrappers(visitor);
 }
 
 }  // namespace blink

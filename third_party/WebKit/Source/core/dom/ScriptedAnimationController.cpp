@@ -27,7 +27,6 @@
 
 #include "core/css/MediaQueryListListener.h"
 #include "core/dom/Document.h"
-#include "core/dom/FrameRequestCallback.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrameView.h"
@@ -52,6 +51,10 @@ DEFINE_TRACE(ScriptedAnimationController) {
   visitor->Trace(per_frame_events_);
 }
 
+DEFINE_TRACE_WRAPPERS(ScriptedAnimationController) {
+  visitor->TraceWrappers(callback_collection_);
+}
+
 void ScriptedAnimationController::Suspend() {
   ++suspend_count_;
 }
@@ -71,7 +74,8 @@ void ScriptedAnimationController::DispatchEventsAndCallbacksForPrinting() {
 }
 
 ScriptedAnimationController::CallbackId
-ScriptedAnimationController::RegisterCallback(FrameRequestCallback* callback) {
+ScriptedAnimationController::RegisterCallback(
+    FrameRequestCallbackCollection::FrameCallback* callback) {
   CallbackId id = callback_collection_.RegisterCallback(callback);
   ScheduleAnimationIfNeeded();
   return id;

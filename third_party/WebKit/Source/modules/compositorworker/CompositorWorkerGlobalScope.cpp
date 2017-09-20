@@ -65,6 +65,11 @@ DEFINE_TRACE(CompositorWorkerGlobalScope) {
   WorkerGlobalScope::Trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(CompositorWorkerGlobalScope) {
+  visitor->TraceWrappers(callback_collection_);
+  WorkerGlobalScope::TraceWrappers(visitor);
+}
+
 const AtomicString& CompositorWorkerGlobalScope::InterfaceName() const {
   return EventTargetNames::CompositorWorkerGlobalScope;
 }
@@ -84,12 +89,13 @@ void CompositorWorkerGlobalScope::postMessage(
 }
 
 int CompositorWorkerGlobalScope::requestAnimationFrame(
-    FrameRequestCallback* callback) {
+    V8FrameRequestCallback* callback) {
   const bool should_signal =
       !executing_animation_frame_callbacks_ && callback_collection_.IsEmpty();
   if (should_signal)
     CompositorWorkerProxyClient::From(Clients())->RequestAnimationFrame();
-  return callback_collection_.RegisterCallback(callback);
+  return callback_collection_.RegisterCallback(
+      FrameRequestCallbackCollection::V8FrameCallback::Create(callback));
 }
 
 void CompositorWorkerGlobalScope::cancelAnimationFrame(int id) {
