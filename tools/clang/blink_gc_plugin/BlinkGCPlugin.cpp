@@ -37,8 +37,6 @@ class BlinkGCPluginAction : public PluginASTAction {
         options_.warn_unneeded_finalizer = true;
       } else if (arg == "enable-weak-members-in-unmanaged-classes") {
         options_.enable_weak_members_in_unmanaged_classes = true;
-      } else if (arg == "use-chromium-style-naming") {
-        // TODO(dcheng): Remove this once the build no longer passes this flag.
       } else {
         llvm::errs() << "Unknown blink-gc-plugin argument: " << arg << "\n";
         return false;
