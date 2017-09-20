@@ -18,6 +18,7 @@
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/shared_worker_devtools_agent.h"
 #include "content/child/webmessageportchannel_impl.h"
+#include "content/common/worker_messages.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_features.h"
@@ -126,17 +127,16 @@ class WebServiceWorkerNetworkProviderForSharedWorker
 }  // namespace
 
 EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
-    mojom::SharedWorkerInfoPtr info,
+    const GURL& url,
+    const base::string16& name,
+    const base::string16& content_security_policy,
+    blink::WebContentSecurityPolicyType security_policy_type,
+    blink::WebAddressSpace creation_address_space,
     bool pause_on_start,
     int route_id,
-    blink::mojom::WorkerContentSettingsProxyPtr content_settings,
-    mojom::SharedWorkerHostPtr host,
-    mojom::SharedWorkerRequest request)
-    : binding_(this, std::move(request)),
-      host_(std::move(host)),
-      route_id_(route_id),
-      name_(info->name),
-      url_(info->url) {
+    bool data_saver_enabled,
+    mojo::ScopedMessagePipeHandle content_settings_handle)
+    : route_id_(route_id), name_(name), url_(url) {
   RenderThreadImpl::current()->AddEmbeddedWorkerRoute(route_id_, this);
   impl_ = blink::WebSharedWorker::Create(this);
   if (pause_on_start) {
@@ -147,14 +147,10 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   worker_devtools_agent_.reset(
       new SharedWorkerDevToolsAgent(route_id, impl_));
   impl_->StartWorkerContext(
-      url_, blink::WebString::FromUTF8(name_),
-      blink::WebString::FromUTF8(info->content_security_policy),
-      info->content_security_policy_type, info->creation_address_space,
-      info->data_saver_enabled, content_settings.PassInterface().PassHandle());
-
-  // If the host drops its connection, then self-destruct.
-  binding_.set_connection_error_handler(base::BindOnce(
-      &EmbeddedSharedWorkerStub::Terminate, base::Unretained(this)));
+      url, blink::WebString::FromUTF16(name_),
+      blink::WebString::FromUTF16(content_security_policy),
+      security_policy_type, creation_address_space, data_saver_enabled,
+      std::move(content_settings_handle));
 }
 
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
@@ -162,21 +158,30 @@ EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
   DCHECK(!impl_);
 }
 
-bool EmbeddedSharedWorkerStub::OnMessageReceived(const IPC::Message& message) {
-  // Just a simply pass-through for now until we can rework the DevTools IPC.
-  return worker_devtools_agent_->OnMessageReceived(message);
+bool EmbeddedSharedWorkerStub::OnMessageReceived(
+    const IPC::Message& message) {
+  if (worker_devtools_agent_->OnMessageReceived(message))
+    return true;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(EmbeddedSharedWorkerStub, message)
+    IPC_MESSAGE_HANDLER(WorkerMsg_TerminateWorkerContext,
+                        OnTerminateWorkerContext)
+    IPC_MESSAGE_HANDLER(WorkerMsg_Connect, OnConnect)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void EmbeddedSharedWorkerStub::OnChannelError() {
-  Terminate();
+  OnTerminateWorkerContext();
 }
 
 void EmbeddedSharedWorkerStub::WorkerReadyForInspection() {
-  host_->OnReadyForInspection();
+  Send(new WorkerHostMsg_WorkerReadyForInspection(route_id_));
 }
 
 void EmbeddedSharedWorkerStub::WorkerScriptLoaded() {
-  host_->OnScriptLoaded();
+  Send(new WorkerHostMsg_WorkerScriptLoaded(route_id_));
   running_ = true;
   // Process any pending connections.
   for (auto& item : pending_channels_)
@@ -185,20 +190,21 @@ void EmbeddedSharedWorkerStub::WorkerScriptLoaded() {
 }
 
 void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed() {
-  host_->OnScriptLoadFailed();
+  Send(new WorkerHostMsg_WorkerScriptLoadFailed(route_id_));
   pending_channels_.clear();
   Shutdown();
 }
 
-void EmbeddedSharedWorkerStub::CountFeature(blink::mojom::WebFeature feature) {
-  host_->OnFeatureUsed(feature);
+void EmbeddedSharedWorkerStub::CountFeature(uint32_t feature) {
+  Send(new WorkerHostMsg_CountFeature(route_id_, feature));
 }
 
 void EmbeddedSharedWorkerStub::WorkerContextClosed() {
-  host_->OnContextClosed();
+  Send(new WorkerHostMsg_WorkerContextClosed(route_id_));
 }
 
 void EmbeddedSharedWorkerStub::WorkerContextDestroyed() {
+  Send(new WorkerHostMsg_WorkerContextDestroyed(route_id_));
   Shutdown();
 }
 
@@ -297,35 +303,36 @@ void EmbeddedSharedWorkerStub::Shutdown() {
   // WebSharedWorker must be already deleted in the blink side
   // when this is called.
   impl_ = nullptr;
-
-  // This closes our connection to the host, triggering the host to cleanup and
-  // notify clients of this worker going away.
   delete this;
+}
+
+bool EmbeddedSharedWorkerStub::Send(IPC::Message* message) {
+  return RenderThreadImpl::current()->Send(message);
 }
 
 void EmbeddedSharedWorkerStub::ConnectToChannel(
     int connection_request_id,
     std::unique_ptr<WebMessagePortChannelImpl> channel) {
   impl_->Connect(std::move(channel));
-  host_->OnConnected(connection_request_id);
+  Send(new WorkerHostMsg_WorkerConnected(connection_request_id, route_id_));
 }
 
-void EmbeddedSharedWorkerStub::Connect(int connection_request_id,
-                                       mojo::ScopedMessagePipeHandle port) {
-  auto channel =
-      std::make_unique<WebMessagePortChannelImpl>(MessagePort(std::move(port)));
+void EmbeddedSharedWorkerStub::OnConnect(int connection_request_id,
+                                         const MessagePort& port) {
+  auto channel = base::MakeUnique<WebMessagePortChannelImpl>(port);
   if (running_) {
     ConnectToChannel(connection_request_id, std::move(channel));
   } else {
     // If two documents try to load a SharedWorker at the same time, the
-    // mojom::SharedWorker::Connect() for one of the documents can come in
-    // before the worker is started. Just queue up the connect and deliver it
-    // once the worker starts.
-    pending_channels_.emplace_back(connection_request_id, std::move(channel));
+    // WorkerMsg_Connect for one of the documents can come in before the
+    // worker is started. Just queue up the connect and deliver it once the
+    // worker starts.
+    pending_channels_.emplace_back(
+        std::make_pair(connection_request_id, std::move(channel)));
   }
 }
 
-void EmbeddedSharedWorkerStub::Terminate() {
+void EmbeddedSharedWorkerStub::OnTerminateWorkerContext() {
   // After this we wouldn't get any IPC for this stub.
   running_ = false;
   impl_->TerminateWorkerContext();

@@ -11,9 +11,8 @@
 
 namespace content {
 
-// TODO(darin): Delete this class as it is no longer actually needed to filter
-// messages. It is only used to convey the GetNextRoutingID method and watch
-// for process shutdown, and there are better ways to do those things.
+// Handles SharedWorker related IPC messages for one renderer process by
+// forwarding them to the SharedWorkerServiceImpl singleton.
 class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
  public:
   using NextRoutingIDCallback = base::Callback<int(void)>;
