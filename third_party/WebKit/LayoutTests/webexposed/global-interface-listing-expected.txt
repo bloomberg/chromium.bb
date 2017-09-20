@@ -6996,6 +6996,18 @@ interface TreeWalker
     method previousNode
     method previousSibling
     setter currentNode
+interface TrustedHTML
+    static method escape
+    static method unsafelyCreate
+    attribute @@toStringTag
+    method constructor
+    method toString
+interface TrustedURL
+    static method create
+    static method unsafelyCreate
+    attribute @@toStringTag
+    method constructor
+    method toString
 interface UIEvent : Event
     attribute @@toStringTag
     getter detail

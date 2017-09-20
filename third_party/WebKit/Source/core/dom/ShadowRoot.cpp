@@ -27,6 +27,7 @@
 #include "core/dom/ShadowRoot.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/string_or_trusted_html.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -37,6 +38,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "core/dom/WhitespaceAttacher.h"
+#include "core/dom/trustedtypes/TrustedHTML.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
@@ -126,16 +128,44 @@ Node* ShadowRoot::cloneNode(bool, ExceptionState& exception_state) {
   return nullptr;
 }
 
-String ShadowRoot::innerHTML() const {
+String ShadowRoot::InnerHTMLAsString() const {
   return CreateMarkup(this, kChildrenOnly);
 }
 
-void ShadowRoot::setInnerHTML(const String& markup,
-                              ExceptionState& exception_state) {
+void ShadowRoot::innerHTML(StringOrTrustedHTML& result) const {
+  result.setString(InnerHTMLAsString());
+}
+
+void ShadowRoot::SetInnerHTMLFromString(const String& markup,
+                                        ExceptionState& exception_state) {
   if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
           markup, &host(), kAllowScriptingContent, "innerHTML",
           exception_state))
     ReplaceChildrenWithFragment(this, fragment, exception_state);
+}
+
+void ShadowRoot::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
+                              ExceptionState& exception_state) {
+  DCHECK(stringOrHtml.isString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+
+  if (stringOrHtml.isString() && GetDocument().RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedHTML` assignment.");
+    return;
+  }
+
+  String html = stringOrHtml.isString()
+                    ? stringOrHtml.getAsString()
+                    : stringOrHtml.getAsTrustedHTML()->toString();
+
+  // TODO(mkwst): This is an ugly hack that will be resolved once `TreatNullAs`
+  // is treated as an extended attribute on the `DOMString` type rather than
+  // as an extended attribute on the attribute. https://crbug.com/714866
+  if (html == "null")
+    html = "";
+
+  SetInnerHTMLFromString(html, exception_state);
 }
 
 void ShadowRoot::RecalcStyle(StyleRecalcChange change) {

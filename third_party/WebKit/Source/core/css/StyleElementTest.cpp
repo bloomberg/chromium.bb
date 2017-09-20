@@ -18,7 +18,7 @@ TEST(StyleElementTest, CreateSheetUsesCache) {
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
 
-  document.documentElement()->setInnerHTML(
+  document.documentElement()->SetInnerHTMLFromString(
       "<style id=style>a { top: 0; }</style>");
 
   HTMLStyleElement& style_element =

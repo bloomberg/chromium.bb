@@ -76,7 +76,8 @@ void DocumentTest::SetUp() {
 }
 
 void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
-  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
+  GetDocument().documentElement()->SetInnerHTMLFromString(
+      String::FromUTF8(html_content));
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
@@ -815,7 +816,7 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
   GetDocument().body()->AppendChild(script);
   HTMLInputElement* input =
       toHTMLInputElement(GetDocument().body()->firstChild());
-  DVLOG(0) << GetDocument().body()->outerHTML();
+  DVLOG(0) << GetDocument().body()->OuterHTMLAsString();
 
   // Sanity check.
   input->reportValidity();
@@ -876,7 +877,7 @@ TEST_F(DocumentTest, SuboriginDisablesAppCache) {
 // as it is more expensive than just doing layout.
 TEST_F(DocumentTest,
        EnsurePaintLocationDataValidForNodeCompositingInputsOnlyWhenNecessary) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div id='ancestor'>"
       "  <div id='sticky' style='position:sticky;'>"
       "    <div id='stickyChild'></div>"

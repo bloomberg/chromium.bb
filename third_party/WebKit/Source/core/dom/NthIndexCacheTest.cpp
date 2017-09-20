@@ -28,7 +28,7 @@ void NthIndexCacheTest::SetUp() {
 }
 
 TEST_F(NthIndexCacheTest, NthIndex) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<body>"
       "<span "
       "id=first></span><span></span><span></span><span></span><span></span>"

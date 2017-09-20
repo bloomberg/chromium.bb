@@ -35,7 +35,7 @@ class PasswordCredentialTest : public ::testing::Test {
     b.Append("'>");
     b.Append(html);
     b.Append("</form></body></html>");
-    GetDocument().documentElement()->setInnerHTML(b.ToString());
+    GetDocument().documentElement()->SetInnerHTMLFromString(b.ToString());
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLFormElement* form =
         toHTMLFormElement(GetDocument().getElementById("theForm"));

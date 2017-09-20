@@ -119,7 +119,8 @@ Text* GranularityStrategyTest::AppendTextNode(const String& data) {
 }
 
 void GranularityStrategyTest::SetInnerHTML(const char* html_content) {
-  GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
+  GetDocument().documentElement()->SetInnerHTMLFromString(
+      String::FromUTF8(html_content));
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
@@ -715,13 +716,13 @@ TEST_F(GranularityStrategyTest, DirectionSwitchStartOnBoundary) {
 TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
   GetDummyPageHolder().GetFrame().GetSettings()->SetSelectionStrategy(
       SelectionStrategy::kCharacter);
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div id=host></div><div id=sample>ab</div>");
   // Simulate VIDEO element which has a RANGE as slider of video time.
   Element* const host = GetDocument().getElementById("host");
   ShadowRoot* const shadow_root = host->CreateShadowRootInternal(
       ShadowRootType::kOpen, ASSERT_NO_EXCEPTION);
-  shadow_root->setInnerHTML("<input type=range>");
+  shadow_root->SetInnerHTMLFromString("<input type=range>");
   Element* const sample = GetDocument().getElementById("sample");
   GetDocument().UpdateStyleAndLayout();
   const SelectionInDOMTree& selection_in_dom_tree =
@@ -751,13 +752,13 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
 
 // For http://crbug.com/704529
 TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div id=host></div><div id=sample>ab</div>");
   // Simulate VIDEO element which has a RANGE as slider of video time.
   Element* const host = GetDocument().getElementById("host");
   ShadowRoot* const shadow_root = host->CreateShadowRootInternal(
       ShadowRootType::kOpen, ASSERT_NO_EXCEPTION);
-  shadow_root->setInnerHTML("<input type=range>");
+  shadow_root->SetInnerHTMLFromString("<input type=range>");
   Element* const sample = GetDocument().getElementById("sample");
   GetDocument().UpdateStyleAndLayout();
   const SelectionInDOMTree& selection_in_dom_tree =

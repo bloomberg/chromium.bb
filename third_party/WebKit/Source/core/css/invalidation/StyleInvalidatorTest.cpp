@@ -31,7 +31,7 @@ void StyleInvalidatorTest::SetUp() {
 }
 
 TEST_F(StyleInvalidatorTest, ScheduleOnDocumentNode) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div id='d'></div><i id='i'></i><span></span>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 

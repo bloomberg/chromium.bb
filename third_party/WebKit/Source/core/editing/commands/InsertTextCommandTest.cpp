@@ -27,7 +27,7 @@ TEST_F(InsertTextCommandTest, WithTypingStyle) {
 
   EXPECT_EQ(
       "<div contenteditable=\"true\"><option id=\"sample\">x</option></div>",
-      GetDocument().body()->innerHTML())
+      GetDocument().body()->InnerHTMLAsString())
       << "Content of OPTION is distributed into shadow node as text"
          "without applying typing style.";
 }

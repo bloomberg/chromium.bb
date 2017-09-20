@@ -1040,6 +1040,18 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter encoding
 [Worker]     method constructor
 [Worker]     method encode
+[Worker] interface TrustedHTML
+[Worker]     static method escape
+[Worker]     static method unsafelyCreate
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method toString
+[Worker] interface TrustedURL
+[Worker]     static method create
+[Worker]     static method unsafelyCreate
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method toString
 [Worker] interface URL
 [Worker]     static method createObjectURL
 [Worker]     static method revokeObjectURL

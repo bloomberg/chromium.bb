@@ -165,8 +165,8 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
         scope.getElementById(AtomicString::FromUTF8(host))
             ->CreateShadowRootInternal(shadow_type, ASSERT_NO_EXCEPTION);
     shadow_root->SetDelegatesFocus(delegates_focus);
-    shadow_root->setInnerHTML(String::FromUTF8(shadow_content),
-                              ASSERT_NO_EXCEPTION);
+    shadow_root->SetInnerHTMLFromString(String::FromUTF8(shadow_content),
+                                        ASSERT_NO_EXCEPTION);
     scope.GetDocument().View()->UpdateAllLifecyclePhases();
     return shadow_root;
   }

@@ -95,7 +95,8 @@ class RenderingTest : public ::testing::Test {
 
   // Both sets the inner html and runs the document lifecycle.
   void SetBodyInnerHTML(const String& html_content) {
-    GetDocument().body()->setInnerHTML(html_content, ASSERT_NO_EXCEPTION);
+    GetDocument().body()->SetInnerHTMLFromString(html_content,
+                                                 ASSERT_NO_EXCEPTION);
     GetDocument().View()->UpdateAllLifecyclePhases();
   }
 

@@ -35,7 +35,7 @@ class ExternalPopupMenuDisplayNoneItemsTest : public ::testing::Test {
     HTMLSelectElement* element =
         HTMLSelectElement::Create(dummy_page_holder_->GetDocument());
     // Set the 4th an 5th items to have "display: none" property
-    element->setInnerHTML(
+    element->SetInnerHTMLFromString(
         "<option><option><option><option style='display:none;'><option "
         "style='display:none;'><option><option>");
     dummy_page_holder_->GetDocument().body()->AppendChild(element,

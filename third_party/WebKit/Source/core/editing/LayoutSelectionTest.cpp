@@ -205,7 +205,7 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectCrossingShadowBoundary) {
       GetDocument().QuerySelector("div")->attachShadow(
           ToScriptStateForMainWorld(GetDocument().GetFrame()), shadow_root_init,
           ASSERT_NO_EXCEPTION);
-  shadow_root->setInnerHTML(
+  shadow_root->SetInnerHTMLFromString(
       "Foo<slot name='s2'></slot><slot name='s1'></slot>");
 
   Selection().SetSelection(

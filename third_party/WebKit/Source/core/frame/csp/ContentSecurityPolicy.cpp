@@ -154,6 +154,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
       style_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
       sandbox_mask_(0),
       treat_as_public_address_(false),
+      require_safe_types_(false),
       insecure_request_policy_(kLeaveInsecureRequestsAlone) {}
 
 void ContentSecurityPolicy::BindToExecutionContext(
@@ -190,6 +191,8 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
     execution_context_->GetSecurityContext().SetAddressSpace(
         kWebAddressSpacePublic);
   }
+  if (require_safe_types_)
+    execution_context_->GetSecurityContext().SetRequireTrustedTypes();
 
   if (document) {
     document->EnforceInsecureRequestPolicy(insecure_request_policy_);
@@ -1065,6 +1068,12 @@ void ContentSecurityPolicy::TreatAsPublicAddress() {
   treat_as_public_address_ = true;
 }
 
+void ContentSecurityPolicy::RequireTrustedTypes() {
+  if (!RuntimeEnabledFeatures::TrustedDOMTypesEnabled())
+    return;
+  require_safe_types_ = true;
+}
+
 void ContentSecurityPolicy::EnforceStrictMixedContentChecking() {
   insecure_request_policy_ |= kBlockAllMixedContent;
 }
@@ -1640,6 +1649,8 @@ const char* ContentSecurityPolicy::GetDirectiveName(const DirectiveType& type) {
       return "report-uri";
     case DirectiveType::kRequireSRIFor:
       return "require-sri-for";
+    case DirectiveType::kRequireTrustedTypes:
+      return "require-trusted-types";
     case DirectiveType::kSandbox:
       return "sandbox";
     case DirectiveType::kScriptSrc:
@@ -1697,6 +1708,8 @@ ContentSecurityPolicy::DirectiveType ContentSecurityPolicy::GetDirectiveType(
     return DirectiveType::kReportURI;
   if (name == "require-sri-for")
     return DirectiveType::kRequireSRIFor;
+  if (name == "require-trusted-types")
+    return DirectiveType::kRequireTrustedTypes;
   if (name == "sandbox")
     return DirectiveType::kSandbox;
   if (name == "script-src")

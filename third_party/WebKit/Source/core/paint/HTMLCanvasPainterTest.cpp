@@ -82,7 +82,7 @@ INSTANTIATE_TEST_CASE_P(All, HTMLCanvasPainterTestForSPv2, ::testing::Bool());
 
 TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
   // Insert a <canvas> and force it into accelerated mode.
-  GetDocument().body()->setInnerHTML("<canvas width=300 height=200>");
+  GetDocument().body()->SetInnerHTMLFromString("<canvas width=300 height=200>");
   HTMLCanvasElement* element =
       toHTMLCanvasElement(GetDocument().body()->firstChild());
   CanvasContextCreationAttributes attributes;

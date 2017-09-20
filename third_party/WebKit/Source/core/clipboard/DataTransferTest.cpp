@@ -29,7 +29,8 @@ class DataTransferTest : public ::testing::Test {
   Performance* GetPerformance() const { return performance_; }
 
   void SetBodyContent(const std::string& body_content) {
-    GetDocument().body()->setInnerHTML(String::FromUTF8(body_content.c_str()));
+    GetDocument().body()->SetInnerHTMLFromString(
+        String::FromUTF8(body_content.c_str()));
     UpdateAllLifecyclePhases();
   }
 

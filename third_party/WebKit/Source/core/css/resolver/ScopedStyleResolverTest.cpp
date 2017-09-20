@@ -54,7 +54,7 @@ TEST_F(ScopedStyleResolverTest, HasSameStylesEmptyEmpty) {
 }
 
 TEST_F(ScopedStyleResolverTest, HasSameStylesNonEmpty) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div id=host1></div><div id=host2></div>");
   Element* host1 = GetDocument().getElementById("host1");
   Element* host2 = GetDocument().getElementById("host2");
@@ -62,15 +62,15 @@ TEST_F(ScopedStyleResolverTest, HasSameStylesNonEmpty) {
   ASSERT_TRUE(host2);
   ShadowRoot& root1 = AttachShadow(*host1);
   ShadowRoot& root2 = AttachShadow(*host2);
-  root1.setInnerHTML("<style>::slotted(#dummy){color:pink}</style>");
-  root2.setInnerHTML("<style>::slotted(#dummy){color:pink}</style>");
+  root1.SetInnerHTMLFromString("<style>::slotted(#dummy){color:pink}</style>");
+  root2.SetInnerHTMLFromString("<style>::slotted(#dummy){color:pink}</style>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_TRUE(ScopedStyleResolver::HaveSameStyles(
       &root1.EnsureScopedStyleResolver(), &root2.EnsureScopedStyleResolver()));
 }
 
 TEST_F(ScopedStyleResolverTest, HasSameStylesDifferentSheetCount) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div id=host1></div><div id=host2></div>");
   Element* host1 = GetDocument().getElementById("host1");
   Element* host2 = GetDocument().getElementById("host2");
@@ -78,16 +78,16 @@ TEST_F(ScopedStyleResolverTest, HasSameStylesDifferentSheetCount) {
   ASSERT_TRUE(host2);
   ShadowRoot& root1 = AttachShadow(*host1);
   ShadowRoot& root2 = AttachShadow(*host2);
-  root1.setInnerHTML(
+  root1.SetInnerHTMLFromString(
       "<style>::slotted(#dummy){color:pink}</style><style>div{}</style>");
-  root2.setInnerHTML("<style>::slotted(#dummy){color:pink}</style>");
+  root2.SetInnerHTMLFromString("<style>::slotted(#dummy){color:pink}</style>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FALSE(ScopedStyleResolver::HaveSameStyles(
       &root1.EnsureScopedStyleResolver(), &root2.EnsureScopedStyleResolver()));
 }
 
 TEST_F(ScopedStyleResolverTest, HasSameStylesCacheMiss) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div id=host1></div><div id=host2></div>");
   Element* host1 = GetDocument().getElementById("host1");
   Element* host2 = GetDocument().getElementById("host2");
@@ -98,8 +98,8 @@ TEST_F(ScopedStyleResolverTest, HasSameStylesCacheMiss) {
   // Style equality is detected when StyleSheetContents is shared. That is only
   // the case when the source text is the same. The comparison will fail when
   // adding an extra space to one of the sheets.
-  root1.setInnerHTML("<style>::slotted(#dummy){color:pink}</style>");
-  root2.setInnerHTML("<style>::slotted(#dummy){ color:pink}</style>");
+  root1.SetInnerHTMLFromString("<style>::slotted(#dummy){color:pink}</style>");
+  root2.SetInnerHTMLFromString("<style>::slotted(#dummy){ color:pink}</style>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_FALSE(ScopedStyleResolver::HaveSameStyles(
       &root1.EnsureScopedStyleResolver(), &root2.EnsureScopedStyleResolver()));

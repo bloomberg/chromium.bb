@@ -989,6 +989,10 @@
       name: "TouchpadAndWheelScrollLatching",
     },
     {
+      name: "TrustedDOMTypes",
+      status: "experimental",
+    },
+    {
       name: "TrustedEventsDefaultAction",
       status: "stable",
     },

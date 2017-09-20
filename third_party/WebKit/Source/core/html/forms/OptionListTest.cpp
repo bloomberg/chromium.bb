@@ -40,11 +40,11 @@ TEST_F(OptionListTest, Empty) {
 }
 
 TEST_F(OptionListTest, OptionOnly) {
-  Select().setInnerHTML(
+  Select().SetInnerHTMLFromString(
       "text<input><option id=o1></option><input><option "
       "id=o2></option><input>");
   HTMLElement* div = ToHTMLElement(Select().GetDocument().createElement("div"));
-  div->setInnerHTML("<option id=o3></option>");
+  div->SetInnerHTMLFromString("<option id=o3></option>");
   Select().AppendChild(div);
   OptionList list = Select().GetOptionList();
   OptionList::Iterator iter = list.begin();
@@ -57,7 +57,7 @@ TEST_F(OptionListTest, OptionOnly) {
 }
 
 TEST_F(OptionListTest, Optgroup) {
-  Select().setInnerHTML(
+  Select().SetInnerHTMLFromString(
       "<optgroup><option id=g11></option><option id=g12></option></optgroup>"
       "<optgroup><option id=g21></option></optgroup>"
       "<optgroup></optgroup>"
@@ -78,7 +78,7 @@ TEST_F(OptionListTest, Optgroup) {
   EXPECT_EQ(list.end(), iter);
 
   ToHTMLElement(Select().firstChild())
-      ->setInnerHTML(
+      ->SetInnerHTMLFromString(
           "<optgroup><option id=gg11></option></optgroup>"
           "<option id=g11></option>");
   list = Select().GetOptionList();

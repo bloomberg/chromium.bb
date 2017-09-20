@@ -50,7 +50,8 @@ TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan) {
       ReplaceSelectionCommand::Create(GetDocument(), fragment, options);
 
   EXPECT_TRUE(command->Apply()) << "the replace command should have succeeded";
-  EXPECT_EQ("foo", GetDocument().body()->innerHTML()) << "no DOM tree mutation";
+  EXPECT_EQ("foo", GetDocument().body()->InnerHTMLAsString())
+      << "no DOM tree mutation";
 }
 
 // This is a regression test for https://crbug.com/668808
@@ -73,7 +74,7 @@ TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
       ReplaceSelectionCommand::Create(GetDocument(), fragment, options);
 
   EXPECT_TRUE(command->Apply()) << "the replace command should have succeeded";
-  EXPECT_EQ("<b>t</b>bar<b>ext</b>", GetDocument().body()->innerHTML())
+  EXPECT_EQ("<b>t</b>bar<b>ext</b>", GetDocument().body()->InnerHTMLAsString())
       << "'bar' should have been inserted";
 }
 
@@ -100,7 +101,7 @@ TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent) {
   EXPECT_EQ(
       "<head><style>foo { bar: baz; }</style></head>"
       "<body><p>Text</p></body>",
-      GetDocument().body()->innerHTML())
+      GetDocument().body()->InnerHTMLAsString())
       << "the STYLE and P elements should have been pasted into the body "
       << "of the document";
 }

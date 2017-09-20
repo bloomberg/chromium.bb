@@ -30,7 +30,7 @@ interface ShadowRoot : DocumentFragment {
     readonly attribute ShadowRootMode mode;
     readonly attribute Element host;
     [ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot? olderShadowRoot;
-    [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute HTMLString innerHTML;
     readonly attribute boolean delegatesFocus;
 };
 

@@ -105,7 +105,7 @@ TEST_F(ShadowDOMVTest, FeatureSetMultipleSelectors) {
 TEST_F(ShadowDOMVTest, FeatureSetSubtree) {
   LoadURL("about:blank");
   auto* host = GetDocument().createElement("div");
-  host->createShadowRoot()->setInnerHTML(
+  host->createShadowRoot()->SetInnerHTMLFromString(
       "<div>"
       "  <div></div>"
       "  <content select='*'></content>"
@@ -123,7 +123,7 @@ TEST_F(ShadowDOMVTest, FeatureSetMultipleShadowRoots) {
   LoadURL("about:blank");
   auto* host = GetDocument().createElement("div");
   auto* host_shadow = host->createShadowRoot();
-  host_shadow->setInnerHTML("<content select='#foo'></content>");
+  host_shadow->SetInnerHTMLFromString("<content select='#foo'></content>");
   auto* child = GetDocument().createElement("div");
   auto* child_root = child->createShadowRoot();
   auto* child_content = GetDocument().createElement("content");

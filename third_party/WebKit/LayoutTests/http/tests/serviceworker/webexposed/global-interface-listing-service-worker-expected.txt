@@ -1131,6 +1131,18 @@ interface TextEncoder
     getter encoding
     method constructor
     method encode
+interface TrustedHTML
+    static method escape
+    static method unsafelyCreate
+    attribute @@toStringTag
+    method constructor
+    method toString
+interface TrustedURL
+    static method create
+    static method unsafelyCreate
+    attribute @@toStringTag
+    method constructor
+    method toString
 interface URL
     attribute @@toStringTag
     getter hash

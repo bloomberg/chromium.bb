@@ -110,6 +110,7 @@
 #include "core/dom/events/Event.h"
 #include "core/dom/events/EventListener.h"
 #include "core/dom/events/ScopedEventQueue.h"
+#include "core/dom/trustedtypes/TrustedHTML.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -3604,6 +3605,14 @@ void Document::write(LocalDOMWindow* calling_window,
                      const Vector<String>& text,
                      ExceptionState& exception_state) {
   DCHECK(calling_window);
+
+  if (GetSecurityContext().RequireTrustedTypes()) {
+    DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+    exception_state.ThrowTypeError(
+        "This document can only write `TrustedHTML` objects.");
+    return;
+  }
+
   StringBuilder builder;
   for (const String& string : text)
     builder.Append(string);
@@ -3614,10 +3623,34 @@ void Document::writeln(LocalDOMWindow* calling_window,
                        const Vector<String>& text,
                        ExceptionState& exception_state) {
   DCHECK(calling_window);
+
+  if (GetSecurityContext().RequireTrustedTypes()) {
+    DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+    exception_state.ThrowTypeError(
+        "This document can only write `TrustedHTML` objects.");
+    return;
+  }
+
   StringBuilder builder;
   for (const String& string : text)
     builder.Append(string);
   writeln(builder.ToString(), calling_window->document(), exception_state);
+}
+
+void Document::write(LocalDOMWindow* calling_window,
+                     TrustedHTML* text,
+                     ExceptionState& exception_state) {
+  DCHECK(calling_window);
+  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  write(text->toString(), calling_window->document(), exception_state);
+}
+
+void Document::writeln(LocalDOMWindow* calling_window,
+                       TrustedHTML* text,
+                       ExceptionState& exception_state) {
+  DCHECK(calling_window);
+  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+  writeln(text->toString(), calling_window->document(), exception_state);
 }
 
 const KURL& Document::VirtualURL() const {

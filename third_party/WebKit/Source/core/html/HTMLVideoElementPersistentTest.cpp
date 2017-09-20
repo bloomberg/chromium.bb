@@ -41,7 +41,7 @@ class HTMLVideoElementPersistentTest : public ::testing::Test {
     clients.chrome_client = chrome_client_.Get();
 
     page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients);
-    GetDocument().body()->setInnerHTML(
+    GetDocument().body()->SetInnerHTMLFromString(
         "<body><div><video></video></div></body>");
   }
 

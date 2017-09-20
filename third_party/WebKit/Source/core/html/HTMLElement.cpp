@@ -1341,6 +1341,6 @@ void HTMLElement::OnXMLLangAttrChanged(
 void dumpInnerHTML(blink::HTMLElement*);
 
 void dumpInnerHTML(blink::HTMLElement* element) {
-  printf("%s\n", element->innerHTML().Ascii().data());
+  printf("%s\n", element->InnerHTMLAsString().Ascii().data());
 }
 #endif

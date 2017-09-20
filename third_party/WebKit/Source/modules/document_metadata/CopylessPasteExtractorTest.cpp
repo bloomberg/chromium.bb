@@ -67,7 +67,7 @@ void CopylessPasteExtractorTest::SetUp() {
 }
 
 void CopylessPasteExtractorTest::SetHTMLInnerHTML(const String& html_content) {
-  GetDocument().documentElement()->setInnerHTML((html_content));
+  GetDocument().documentElement()->SetInnerHTMLFromString((html_content));
 }
 
 void CopylessPasteExtractorTest::SetURL(const String& url) {
