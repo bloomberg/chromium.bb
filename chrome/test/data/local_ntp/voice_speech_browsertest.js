@@ -217,7 +217,7 @@ test.speech.testInitWithMissingSpeechRecognitionApiFails = function() {
  */
 test.speech.testFakeboxClickStartsSpeechWithWorkingView = function() {
   test.speech.initSpeech();
-  $(test.speech.FAKEBOX_MICROPHONE_ID).onmouseup(new MouseEvent('test'));
+  $(test.speech.FAKEBOX_MICROPHONE_ID).onclick(new MouseEvent('test'));
 
   assertEquals(speech.State_.STARTED, speech.currentState_);
   assertEquals(1, test.speech.recognitionActiveCount);
@@ -876,7 +876,7 @@ test.speech.unInitSpeech = function(fakeboxMicrophoneElem, searchboxApiHandle) {
   speech.currentState_ = speech.State_.UNINITIALIZED;
   fakeboxMicrophoneElem.hidden = true;
   fakeboxMicrophoneElem.title = '';
-  fakeboxMicrophoneElem.onmouseup = null;
+  fakeboxMicrophoneElem.onclick = null;
   window.removeEventListener('keydown', speech.onKeyDown);
   searchboxApiHandle.onfocuschange = null;
   speech.recognition_ = null;
