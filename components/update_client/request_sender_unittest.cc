@@ -105,6 +105,9 @@ void RequestSenderTest::TearDown() {
 
   interceptor_factory_ = nullptr;
 
+  // Run the threads until they are idle to allow the clean up
+  // of the network interceptors on the IO thread.
+  scoped_task_environment_.RunUntilIdle();
   config_ = nullptr;
 }
 
@@ -112,12 +115,6 @@ void RequestSenderTest::RunThreads() {
   base::RunLoop runloop;
   quit_closure_ = runloop.QuitClosure();
   runloop.Run();
-
-  // Since some tests need to drain currently enqueued tasks such as network
-  // intercepts on the IO thread, run the threads until they are
-  // idle. The component updater service won't loop again until the loop count
-  // is set and the service is started.
-  scoped_task_environment_.RunUntilIdle();
 }
 
 void RequestSenderTest::Quit() {
@@ -166,6 +163,8 @@ TEST_F(RequestSenderTest, RequestSendSuccess) {
                                "<?xml version='1.0' encoding='UTF-8'?>",
                                base::CompareCase::SENSITIVE));
   EXPECT_EQ(505ul, response_.size());
+
+  interceptor_factory_ = nullptr;
 }
 
 // Tests that the request succeeds using the second url after the first url
