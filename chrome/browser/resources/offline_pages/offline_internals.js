@@ -314,6 +314,9 @@ cr.define('offlineInternals', function() {
           .then(setPrefetchResult)
           .catch(prefetchResultError);
     };
+    $('show-notification').onclick = function() {
+      browserProxy.showPrefetchNotification().then(setPrefetchResult);
+    };
     $('generate-page-bundle').onclick = function() {
       browserProxy.generatePageBundle($('generate-urls').value)
           .then(setPrefetchResult)

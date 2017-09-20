@@ -28021,6 +28021,13 @@ from previous Chrome versions.
       label="Account was not seeded before FireRefreshTokenAvailable"/>
 </enum>
 
+<enum name="OfflinePagePrefetchNotificationAction">
+  <int value="0" label="Attempt to show pending content check"/>
+  <int value="1" label="Showed notification"/>
+  <int value="2" label="User clicked notification"/>
+  <int value="3" label="User clicked notification settings (disabled on O+)"/>
+</enum>
+
 <enum name="OfflinePagesAggregatedRequestResult">
   <int value="0" label="Show offline page on disconnected network"/>
   <int value="1" label="Page not found on disconnected network"/>
@@ -37713,6 +37720,7 @@ would be helpful to identify which type is being sent.
   <int value="9" label="WebApk"/>
   <int value="10" label="Browser Actions"/>
   <int value="11" label="Webapp Actions"/>
+  <int value="12" label="Offline Content Suggestion"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">
