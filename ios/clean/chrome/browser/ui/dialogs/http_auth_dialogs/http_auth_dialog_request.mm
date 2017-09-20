@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/shared/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

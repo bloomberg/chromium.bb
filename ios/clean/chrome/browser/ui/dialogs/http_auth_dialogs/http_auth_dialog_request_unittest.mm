@@ -6,6 +6,7 @@
 
 #import "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/clean/chrome/browser/ui/commands/http_auth_dialog_commands.h"
 #import "ios/clean/chrome/browser/ui/dialogs/dialog_button_configuration.h"
@@ -15,7 +16,6 @@
 #import "ios/clean/chrome/browser/ui/dialogs/http_auth_dialogs/http_auth_dialog_request.h"
 #import "ios/clean/chrome/browser/ui/dialogs/test_helpers/dialog_test_util.h"
 #import "ios/clean/chrome/browser/ui/dialogs/test_helpers/test_dialog_view_controller.h"
-#import "ios/shared/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
