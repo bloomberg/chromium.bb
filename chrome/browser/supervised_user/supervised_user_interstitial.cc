@@ -151,9 +151,9 @@ void SupervisedUserInterstitial::Init() {
     // Remove all the infobars which are attached to |web_contents_| and for
     // which ShouldExpire() returns true.
     content::LoadCommittedDetails details;
-    // |details.is_same_page| is default false, and |details.is_main_frame| is
-    // default true. This results in is_navigation_to_different_page() returning
-    // true.
+    // |details.is_same_document| is default false, and |details.is_main_frame|
+    // is default true. This results in is_navigation_to_different_page()
+    // returning true.
     DCHECK(details.is_navigation_to_different_page());
     const content::NavigationController& controller =
         web_contents_->GetController();
