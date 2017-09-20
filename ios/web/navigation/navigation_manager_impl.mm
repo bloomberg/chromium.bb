@@ -161,7 +161,7 @@ NavigationItemImpl* NavigationManagerImpl::GetCurrentItemImpl() const {
 }
 
 void NavigationManagerImpl::GoToIndex(int index) {
-  if (index < 0 || index > GetItemCount()) {
+  if (index < 0 || index >= GetItemCount()) {
     NOTREACHED();
     return;
   }
