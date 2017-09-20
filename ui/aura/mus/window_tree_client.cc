@@ -1779,7 +1779,9 @@ void WindowTreeClient::WmClientJankinessChanged(ClientSpecificId client_id,
                                                 bool janky) {
   if (window_manager_delegate_) {
     auto it = embedded_windows_.find(client_id);
-    CHECK(it != embedded_windows_.end());
+    // TODO(sky): early return necessitated because of http://crbug.com/766890.
+    if (it == embedded_windows_.end())
+      return;
     window_manager_delegate_->OnWmClientJankinessChanged(
         embedded_windows_[client_id], janky);
   }
