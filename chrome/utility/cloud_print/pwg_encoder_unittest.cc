@@ -8,21 +8,14 @@
 
 #include <memory>
 
-#include "base/files/file_util.h"
 #include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/utility/cloud_print/bitmap_image.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cloud_print {
 
 namespace {
-
-// SHA-1 of golden master for this test, plus null terminating character.
-// File is in chrome/test/data/printing/test_pwg_generator.pwg.
-const char kPWGFileSha1[] = {'\x4a', '\xd7', '\x44', '\x29', '\x98', '\xc8',
-                             '\xfe', '\xae', '\x94', '\xbc', '\x9c', '\x8b',
-                             '\x17', '\x7a', '\x7c', '\x94', '\x76', '\x6c',
-                             '\xc9', '\xfb', '\0'};
 
 const int kRasterWidth = 612;
 const int kRasterHeight = 792;
@@ -61,15 +54,30 @@ std::unique_ptr<BitmapImage> MakeSampleBitmap() {
 
 }  // namespace
 
-TEST(PwgRasterTest, CompareWithMaster) {
+TEST(PwgRasterTest, Encode) {
+  // Encode in color by default.
   std::unique_ptr<BitmapImage> image = MakeSampleBitmap();
   PwgHeaderInfo header_info;
   header_info.dpi = kRasterDPI;
-  header_info.total_pages = 1;
 
   std::string output = PwgEncoder::GetDocumentHeader();
   output += PwgEncoder::EncodePage(*image, header_info);
-  EXPECT_EQ(kPWGFileSha1, base::SHA1HashString(output));
+  EXPECT_EQ(2970U, output.size());
+
+  std::string sha1 = base::SHA1HashString(output);
+  EXPECT_EQ("4AD7442998C8FEAE94BC9C8B177A7C94766CC9FB",
+            base::HexEncode(sha1.data(), sha1.size()));
+
+  // Encode again in monochrome.
+  header_info.color_space = PwgHeaderInfo::SGRAY;
+
+  output = PwgEncoder::GetDocumentHeader();
+  output += PwgEncoder::EncodePage(*image, header_info);
+  EXPECT_EQ(2388U, output.size());
+
+  sha1 = base::SHA1HashString(output);
+  EXPECT_EQ("4E718B0A69AC26A366A2E23AE1ECA6055079A1FF",
+            base::HexEncode(sha1.data(), sha1.size()));
 }
 
 }  // namespace cloud_print
