@@ -23,6 +23,10 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 }
 
 @implementation CRWTestWebStateObserver {
+  // Arguments passed to |webStateWasShown:|.
+  std::unique_ptr<web::TestWasShownInfo> _wasShownInfo;
+  // Arguments passed to |webStateWasHidden:|.
+  std::unique_ptr<web::TestWasHiddenInfo> _wasHiddenInfo;
   // Arguments passed to |webState:didPruneNavigationItemsWithCount:|.
   std::unique_ptr<web::TestNavigationItemsPrunedInfo>
       _navigationItemsPrunedInfo;
@@ -63,6 +67,14 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   std::unique_ptr<web::TestStopLoadingInfo> _stopLoadingInfo;
   // Arguments passed to |webStateDidStartLoading:|.
   std::unique_ptr<web::TestStartLoadingInfo> _startLoadingInfo;
+}
+
+- (web::TestWasShownInfo*)wasShownInfo {
+  return _wasShownInfo.get();
+}
+
+- (web::TestWasHiddenInfo*)wasHiddenInfo {
+  return _wasHiddenInfo.get();
 }
 
 - (web::TestNavigationItemsPrunedInfo*)navigationItemsPrunedInfo {
@@ -135,6 +147,16 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 }
 
 #pragma mark CRWWebStateObserver methods -
+
+- (void)webStateWasShown:(web::WebState*)webState {
+  _wasShownInfo = std::make_unique<web::TestWasShownInfo>();
+  _wasShownInfo->web_state = webState;
+}
+
+- (void)webStateWasHidden:(web::WebState*)webState {
+  _wasHiddenInfo = std::make_unique<web::TestWasHiddenInfo>();
+  _wasHiddenInfo->web_state = webState;
+}
 
 - (void)webState:(web::WebState*)webState
     didPruneNavigationItemsWithCount:(size_t)pruned_item_count {

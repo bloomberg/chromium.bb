@@ -41,6 +41,24 @@ class WebStateObserverBridgeTest : public PlatformTest {
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 };
 
+// Tests |webStateWasShown:| forwarding.
+TEST_F(WebStateObserverBridgeTest, WasShown) {
+  ASSERT_FALSE([observer_ wasShownInfo]);
+
+  bridge_->WasShown();
+  ASSERT_TRUE([observer_ wasShownInfo]);
+  EXPECT_EQ(&test_web_state_, [observer_ wasShownInfo]->web_state);
+}
+
+// Tests |webStateWasHidden:| forwarding.
+TEST_F(WebStateObserverBridgeTest, WasHidden) {
+  ASSERT_FALSE([observer_ wasHiddenInfo]);
+
+  bridge_->WasHidden();
+  ASSERT_TRUE([observer_ wasHiddenInfo]);
+  EXPECT_EQ(&test_web_state_, [observer_ wasHiddenInfo]->web_state);
+}
+
 // Tests |webState:didPruneNavigationItemsWithCount:| forwarding.
 TEST_F(WebStateObserverBridgeTest, NavigationItemsPruned) {
   ASSERT_FALSE([observer_ navigationItemsPrunedInfo]);
