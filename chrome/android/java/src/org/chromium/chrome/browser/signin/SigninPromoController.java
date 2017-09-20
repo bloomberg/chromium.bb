@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DimenRes;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,13 +18,12 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-
-import javax.annotation.Nullable;
+import org.chromium.chrome.browser.signin.AccountSigninActivity.AccessPoint;
 
 /**
- * A controller for configuring the sign in promo. It sets up the sign in promo depending on the
- * context: whether there are any Google accounts on the device which have been previously signed in
- * or not.
+ * A controller for configuring the personalized sign in promo. It sets up the sign in promo
+ * depending on the context: whether there are any Google accounts on the device which have been
+ * previously signed in or not.
  */
 public class SigninPromoController {
     /**
@@ -56,15 +56,17 @@ public class SigninPromoController {
     private boolean mWasUsed;
 
     /**
-     * Determines whether the promo should be shown to the user or not.
-     * @param accessPoint The access point where the promo will be shown.
-     * @return true if the promo is to be shown and false otherwise.
+     * @return Whether the personalized promos experiment is enabled or not.
      */
-    public static boolean shouldShowPromo(@AccountSigninActivity.AccessPoint int accessPoint) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SIGNIN_PROMOS)) {
-            return false;
-        }
+    public static boolean arePersonalizedPromosEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SIGNIN_PROMOS);
+    }
 
+    /**
+     * Determines whether the impression limit has been reached for the given access point.
+     * @param accessPoint The access point for which the impression limit is being checked.
+     */
+    public static boolean hasNotReachedImpressionLimit(@AccessPoint int accessPoint) {
         SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
         switch (accessPoint) {
             case SigninAccessPoint.BOOKMARK_MANAGER:
@@ -179,14 +181,14 @@ public class SigninPromoController {
     }
 
     /**
-     * Configures the signin promo view.
+     * Configures the personalized signin promo view.
      * @param view The view in which the promo will be added.
      * @param onDismissListener Listener which handles the action of dismissing the promo. A null
      *         onDismissListener marks that the promo is not dismissible and as a result the close
      *         button is hidden.
      */
-    public void setupSigninPromoView(Context context, SigninPromoView view,
-            @Nullable final OnDismissListener onDismissListener) {
+    public void setupPromoView(Context context, PersonalizedSigninPromoView view,
+            final @Nullable OnDismissListener onDismissListener) {
         mWasDisplayed = true;
         view.getDescription().setText(mDescriptionStringId);
 
@@ -226,7 +228,7 @@ public class SigninPromoController {
         return mDescriptionStringId;
     }
 
-    private void setupColdState(final Context context, SigninPromoView view) {
+    private void setupColdState(final Context context, PersonalizedSigninPromoView view) {
         view.getImage().setImageResource(R.drawable.chrome_sync_logo);
         setImageSize(context, view, R.dimen.signin_promo_cold_state_image_size);
 
@@ -239,7 +241,7 @@ public class SigninPromoController {
         view.getChooseAccountButton().setVisibility(View.GONE);
     }
 
-    private void setupHotState(final Context context, SigninPromoView view) {
+    private void setupHotState(final Context context, PersonalizedSigninPromoView view) {
         Drawable accountImage = mProfileData.getImage();
         view.getImage().setImageDrawable(accountImage);
         setImageSize(context, view, R.dimen.signin_promo_account_image_size);
@@ -276,7 +278,8 @@ public class SigninPromoController {
         }
     }
 
-    private void setImageSize(Context context, SigninPromoView view, @DimenRes int dimenResId) {
+    private void setImageSize(
+            Context context, PersonalizedSigninPromoView view, @DimenRes int dimenResId) {
         ViewGroup.LayoutParams layoutParams = view.getImage().getLayoutParams();
         layoutParams.height = context.getResources().getDimensionPixelSize(dimenResId);
         layoutParams.width = context.getResources().getDimensionPixelSize(dimenResId);

@@ -15,7 +15,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -25,13 +24,13 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
+import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SigninPromoController;
-import org.chromium.chrome.browser.signin.SigninPromoView;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -86,8 +85,7 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
 
     public SignInPromo(SuggestionsUiDelegate uiDelegate) {
         Context context = ContextUtils.getApplicationContext();
-        mArePersonalizedPromosEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SIGNIN_PROMOS);
+        mArePersonalizedPromosEnabled = SigninPromoController.arePersonalizedPromosEnabled();
 
         ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
         if (mArePersonalizedPromosEnabled) {
@@ -260,14 +258,12 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         }
 
         // DestructionObserver implementation.
-
         @Override
         public void onDestroy() {
             unregister();
         }
 
         // SignInAllowedObserver implementation.
-
         @Override
         public void onSignInAllowedChanged() {
             // Listening to onSignInAllowedChanged is important for the FRE. Sign in is not allowed
@@ -278,7 +274,6 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         }
 
         // SignInStateObserver implementation.
-
         @Override
         public void onSignedIn() {
             mCanSignIn = false;
@@ -303,14 +298,12 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         }
 
         // AccountsChangeObserver implementation.
-
         @Override
         public void onAccountsChanged() {
             notifyPersonalizedPromoIfVisible();
         }
 
         // ProfileDataCache.Observer implementation.
-
         @Override
         public void onProfileDataUpdated(String accountId) {
             notifyPersonalizedPromoIfVisible();
@@ -378,8 +371,8 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
             }
             mSigninPromoController.setProfileData(profileData);
 
-            SigninPromoView view = (SigninPromoView) itemView;
-            mSigninPromoController.setupSigninPromoView(view.getContext(), view, null);
+            PersonalizedSigninPromoView view = (PersonalizedSigninPromoView) itemView;
+            mSigninPromoController.setupPromoView(view.getContext(), view, null);
         }
 
         /**
@@ -391,8 +384,8 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         public void bindAndConfigureViewForTests(@Nullable DisplayableProfileData profileData) {
             super.onBindViewHolder();
             mSigninPromoController.setProfileData(profileData);
-            SigninPromoView view = (SigninPromoView) itemView;
-            mSigninPromoController.setupSigninPromoView(view.getContext(), view, null);
+            PersonalizedSigninPromoView view = (PersonalizedSigninPromoView) itemView;
+            mSigninPromoController.setupPromoView(view.getContext(), view, null);
         }
     }
 

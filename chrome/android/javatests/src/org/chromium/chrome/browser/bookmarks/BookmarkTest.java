@@ -215,7 +215,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @MediumTest
     public void testSearchBookmarks() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(
-                BookmarkPromoHeader.PromoState.PROMO_SIGNIN_OLD);
+                BookmarkPromoHeader.PromoState.PROMO_SIGNIN_GENERIC);
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
         openBookmarkManager();

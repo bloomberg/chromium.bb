@@ -16,16 +16,16 @@ import org.chromium.chrome.R;
 import org.chromium.ui.widget.ButtonCompat;
 
 /**
- * Container view for signin promos.
+ * Container view for personalized signin promos.
  */
-public class SigninPromoView extends LinearLayout {
+public class PersonalizedSigninPromoView extends LinearLayout {
     private ImageView mImage;
     private ImageButton mDismissButton;
     private TextView mDescription;
     private ButtonCompat mSigninButton;
     private Button mChooseAccountButton;
 
-    public SigninPromoView(Context context, AttributeSet attrs) {
+    public PersonalizedSigninPromoView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -41,35 +41,35 @@ public class SigninPromoView extends LinearLayout {
     }
 
     /**
-     * Returns a reference to the image of the promo.
+     * @return A reference to the image of the promo.
      */
     public ImageView getImage() {
         return mImage;
     }
 
     /**
-     * Returns a reference to the dismiss button.
+     * @return A reference to the dismiss button.
      */
     public ImageButton getDismissButton() {
         return mDismissButton;
     }
 
     /**
-     * Returns a reference to the description of the promo.
+     * @return A reference to the description of the promo.
      */
     public TextView getDescription() {
         return mDescription;
     }
 
     /**
-     * Returns a reference to the signin button.
+     * @return A reference to the signin button.
      */
     public ButtonCompat getSigninButton() {
         return mSigninButton;
     }
 
     /**
-     * Returns a reference to the choose account button.
+     * @return A reference to the choose account button.
      */
     public Button getChooseAccountButton() {
         return mChooseAccountButton;
