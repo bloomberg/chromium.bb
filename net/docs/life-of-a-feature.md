@@ -179,10 +179,8 @@ may only have a single physical network socket involved.
 #### Making Additional Requests
 
 From time to time, `//net` feature proposals will involve needing to load
-a secondary resource as part of processing. For example, SDCH involves loading
-additional dictionaries that are advertised in a header, and other feature
-proposals have involved fetching a `/.well-known/` URI or reporting errors to
-a particular URL.
+a secondary resource as part of processing. For example, feature proposals have
+involved fetching a `/.well-known/` URI or reporting errors to a particular URL.
 
 This is particularly challenging, because often, these features are implemented
 deeper in the network stack, such as [`//net/cert`](../cert), [`//net/http`](../http),
