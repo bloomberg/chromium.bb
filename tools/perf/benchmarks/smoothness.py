@@ -261,20 +261,7 @@ class SmoothnessKeySilkCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableStory('https://polymer-topeka.appspot.com/',
-                          [story_module.expectations.ALL], 'crbug.com/507865')
-        self.DisableStory('http://plus.google.com/app/basic/stream',
-                          [story_module.expectations.ALL], 'crbug.com/338838')
-        self.DisableStory('inbox_app.html?slide_drawer',
-                          [story_module.expectations.ALL], 'crbug.com/446332')
-        self.DisableStory('inbox_app.html?swipe_to_dismiss',
-                          [story_module.expectations.ALL], 'crbug.com/764825')
-        self.DisableStory('masonry.html',
-                          [story_module.expectations.ALL], 'crbug.com/764825')
-        self.DisableStory('inbox_app.html?stress_hidey_bars',
-                          [story_module.expectations.ALL],
-                          'crbug.com/735679')
-
+        pass  # Nothing
     return StoryExpectations()
 
 
