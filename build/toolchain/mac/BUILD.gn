@@ -437,11 +437,12 @@ template("mac_toolchain") {
         _min_deployment_target = mac_deployment_target
         _compress_pngs = " -c "
       }
-      command = "$env_wrapper rm -f {{output}} && " +
-                "TOOL_VERSION=${tool_versions.compile_xcassets} " +
-                "python $_tool -p $_sdk_name -t $_min_deployment_target " +
-                "$_compress_pngs -T {{bundle_product_type}} -o {{output}} " +
-                "{{inputs}}"
+      command =
+          "$env_wrapper rm -f \"{{output}}\" && " +
+          "TOOL_VERSION=${tool_versions.compile_xcassets} " +
+          "python $_tool$_compress_pngs -p \"$_sdk_name\" " +
+          "-t \"$_min_deployment_target\" -T \"{{bundle_product_type}}\" " +
+          "-P \"{{bundle_partial_info_plist}}\" -o {{output}} {{inputs}}"
 
       description = "COMPILE_XCASSETS {{output}}"
       pool = ":bundle_pool($default_toolchain)"
