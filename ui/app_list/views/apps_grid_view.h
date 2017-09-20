@@ -66,7 +66,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     TOUCH,
   };
 
-  explicit AppsGridView(ContentsView* contents_view);
+  AppsGridView(ContentsView* contents_view,
+               AppsGridViewFolderDelegate* folder_delegate);
   ~AppsGridView() override;
 
   // Sets fixed layout parameters. After setting this, CalculateLayout below

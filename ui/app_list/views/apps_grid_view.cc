@@ -300,8 +300,10 @@ class AppsGridView::FadeoutLayerDelegate : public ui::LayerDelegate {
   DISALLOW_COPY_AND_ASSIGN(FadeoutLayerDelegate);
 };
 
-AppsGridView::AppsGridView(ContentsView* contents_view)
-    : contents_view_(contents_view),
+AppsGridView::AppsGridView(ContentsView* contents_view,
+                           AppsGridViewFolderDelegate* folder_delegate)
+    : folder_delegate_(folder_delegate),
+      contents_view_(contents_view),
       bounds_animator_(this),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       page_flip_delay_in_ms_(is_fullscreen_app_list_enabled_
@@ -314,7 +316,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view)
   layer()->SetMasksToBounds(true);
   layer()->SetFillsBoundsOpaquely(false);
 
-  if (is_fullscreen_app_list_enabled_) {
+  if (is_fullscreen_app_list_enabled_ && !folder_delegate_) {
     suggestions_container_ =
         new SuggestionsContainerView(contents_view_, nullptr);
     AddChildView(suggestions_container_);
@@ -1293,9 +1295,11 @@ void AppsGridView::MoveSelected(int page_delta,
     // the last slot of previous page or last tile of suggested apps.
     if (selected.slot == 0 && slot_x_delta == -1) {
       if (selected.page == 0) {
+        ClearSelectedView(selected_view_);
+        if (!suggestions_container_)
+          return;
         suggestions_container_->SetSelectedIndex(
             suggestions_container_->num_results() - 1);
-        ClearSelectedView(selected_view_);
         return;
       } else {
         page_delta = -1;
@@ -1314,11 +1318,13 @@ void AppsGridView::MoveSelected(int page_delta,
     // last row of previous page or suggested apps.
     if (selected.slot / cols_ == 0 && slot_y_delta == -1) {
       if (selected.page == 0) {
+        ClearSelectedView(selected_view_);
+        if (!suggestions_container_)
+          return;
         const int max_suggestion_index =
             suggestions_container_->num_results() - 1;
         int selected_index = std::min(max_suggestion_index, selected.slot);
         suggestions_container_->SetSelectedIndex(selected_index);
-        ClearSelectedView(selected_view_);
         return;
       } else {
         page_delta = -1;
