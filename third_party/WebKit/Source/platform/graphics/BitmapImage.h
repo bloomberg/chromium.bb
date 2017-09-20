@@ -98,6 +98,10 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
 
   PaintImage PaintImageForCurrentFrame() override;
 
+  void SetDecoderForTesting(std::unique_ptr<DeferredImageDecoder> decoder) {
+    decoder_ = std::move(decoder);
+  }
+
  private:
   enum RepetitionCountStatus : uint8_t {
     kUnknown,    // We haven't checked the source's repetition count.
@@ -149,9 +153,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   // rendered, and automatically stops once no observer wants to render the
   // image.
 
-  // |imageKnownToBeComplete| should be set if the caller knows the entire image
-  // has been decoded.
-  int RepetitionCount(bool image_known_to_be_complete);
+  int RepetitionCount();
 
   bool ShouldAnimate();
   void StartAnimation(CatchUpAnimation = kCatchUp) override;

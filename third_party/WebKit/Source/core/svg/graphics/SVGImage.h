@@ -75,6 +75,12 @@ class CORE_EXPORT SVGImage final : public Image {
   void StartAnimation(CatchUpAnimation = kCatchUp) override;
   void ResetAnimation() override;
 
+  PaintImage::CompletionState completion_state() const {
+    return load_state_ == LoadState::kLoadCompleted
+               ? PaintImage::CompletionState::DONE
+               : PaintImage::CompletionState::PARTIALLY_DONE;
+  }
+
   // Does the SVG image/document contain any animations?
   bool MaybeAnimated() override;
 

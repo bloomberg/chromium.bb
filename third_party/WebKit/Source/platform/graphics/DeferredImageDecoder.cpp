@@ -125,7 +125,7 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
   std::vector<FrameMetadata> frames(frame_data_.size());
   for (size_t i = 0; i < frame_data_.size(); ++i) {
     frames[i].complete = frame_data_[i].is_received_;
-    frames[i].duration = frame_data_[i].duration_;
+    frames[i].duration = FrameDurationAtIndex(i);
   }
 
   auto generator = DecodingImageGenerator::Create(

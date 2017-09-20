@@ -347,12 +347,8 @@ RefPtr<Image> Image::ImageForDefaultFrame() {
 void Image::InitPaintImageBuilder(PaintImageBuilder& builder) {
   auto animation_type = MaybeAnimated() ? PaintImage::AnimationType::ANIMATED
                                         : PaintImage::AnimationType::STATIC;
-  auto completion_state = CurrentFrameIsComplete()
-                              ? PaintImage::CompletionState::DONE
-                              : PaintImage::CompletionState::PARTIALLY_DONE;
   builder.set_id(stable_image_id_)
       .set_animation_type(animation_type)
-      .set_completion_state(completion_state)
       .set_is_multipart(is_multipart_);
 }
 

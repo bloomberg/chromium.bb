@@ -317,6 +317,7 @@ void SVGImage::DrawForContainer(PaintCanvas* canvas,
 PaintImage SVGImage::PaintImageForCurrentFrame() {
   PaintImageBuilder builder;
   InitPaintImageBuilder(builder);
+  builder.set_completion_state(completion_state());
   PopulatePaintRecordForCurrentFrameForContainer(builder, NullURL(), Size());
   return builder.TakePaintImage();
 }

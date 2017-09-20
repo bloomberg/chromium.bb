@@ -27,6 +27,7 @@
 #define MockImageDecoder_h
 
 #include <memory>
+#include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/PtrUtil.h"
 
