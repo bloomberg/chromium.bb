@@ -305,8 +305,7 @@ var swapInNewTiles = function() {
  */
 var addTile = function(args) {
   if (isFinite(args.rid)) {
-    // If a valid number passed in |args.rid|: a local Chrome suggestion. Grab
-    // the data from the embeddedSearch API.
+    // An actual suggestion. Grab the data from the embeddedSearch API.
     var data =
         chrome.embeddedSearch.newTabPage.getMostVisitedItemData(args.rid);
     if (!data)
@@ -318,15 +317,8 @@ var addTile = function(args) {
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
     }
     tiles.appendChild(renderTile(data));
-  } else if (args.url) {
-    // If a URL is passed: a server-side suggestion.
-    args.tileSource = TileSource.SUGGESTIONS_SERVICE;
-    // check sanity of the arguments
-    if (/^javascript:/i.test(args.url) ||
-        /^javascript:/i.test(args.thumbnailUrl))
-      return;
-    tiles.appendChild(renderTile(args));
-  } else {  // an empty tile
+  } else {
+    // An empty tile
     tiles.appendChild(renderTile(null));
   }
 };
@@ -473,21 +465,17 @@ var renderTile = function(data) {
   thumb.appendChild(img);
 
   var favicon = tile.querySelector('.mv-favicon');
-  if (data.faviconUrl) {
-    var fi = document.createElement('img');
-    fi.src = data.faviconUrl;
-    // Set the title to empty so screen readers won't say the image name.
-    fi.title = '';
-    loadedCounter += 1;
-    fi.addEventListener('load', countLoad);
-    fi.addEventListener('error', countLoad);
-    fi.addEventListener('error', function(ev) {
-      favicon.classList.add('failed-favicon');
-    });
-    favicon.appendChild(fi);
-  } else {
+  var fi = document.createElement('img');
+  fi.src = data.faviconUrl;
+  // Set the title to empty so screen readers won't say the image name.
+  fi.title = '';
+  loadedCounter += 1;
+  fi.addEventListener('load', countLoad);
+  fi.addEventListener('error', countLoad);
+  fi.addEventListener('error', function(ev) {
     favicon.classList.add('failed-favicon');
-  }
+  });
+  favicon.appendChild(fi);
 
   var mvx = tile.querySelector('.mv-x');
   mvx.addEventListener('click', function(ev) {
