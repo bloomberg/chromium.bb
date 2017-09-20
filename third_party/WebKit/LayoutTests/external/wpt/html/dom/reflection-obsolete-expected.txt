@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 2809 tests; 2351 PASS, 458 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 2809 tests; 2385 PASS, 424 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS applet.title: 32 tests
 PASS applet.lang: 32 tests
 PASS applet.dir: 62 tests
@@ -443,52 +443,8 @@ PASS marquee.bgColor: 32 tests
 PASS marquee.direction: 32 tests
 PASS marquee.height: 32 tests
 PASS marquee.hspace: 62 tests
-PASS marquee.scrollAmount: 19 tests
-NOTRUN test
-PASS marquee.scrollAmount: 6 tests
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-PASS marquee.scrollAmount: 17 tests
-NOTRUN test
-NOTRUN test
-PASS marquee.scrollDelay: 19 tests
-NOTRUN test
-PASS marquee.scrollDelay: 6 tests
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-NOTRUN test
-PASS marquee.scrollDelay: 17 tests
-NOTRUN test
-NOTRUN test
+PASS marquee.scrollAmount: 62 tests
+PASS marquee.scrollDelay: 62 tests
 PASS marquee.trueSpeed: 33 tests
 PASS marquee.vspace: 62 tests
 PASS marquee.width: 32 tests

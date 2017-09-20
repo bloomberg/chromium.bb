@@ -43,6 +43,7 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/wtf/Noncopyable.h"
 
 namespace blink {
@@ -144,42 +145,32 @@ bool HTMLMarqueeElement::IsHorizontal() const {
   return direction != kUp && direction != kDown;
 }
 
-int HTMLMarqueeElement::scrollAmount() const {
-  bool ok;
-  int scroll_amount = FastGetAttribute(HTMLNames::scrollamountAttr).ToInt(&ok);
-  if (!ok || scroll_amount < 0)
+unsigned HTMLMarqueeElement::scrollAmount() const {
+  unsigned scroll_amount = 0;
+  AtomicString value = FastGetAttribute(HTMLNames::scrollamountAttr);
+  if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, scroll_amount) ||
+      scroll_amount > 0x7fffffffu)
     return kDefaultScrollAmount;
   return scroll_amount;
 }
 
-void HTMLMarqueeElement::setScrollAmount(int value,
-                                         ExceptionState& exception_state) {
-  if (value < 0) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError,
-        "The provided value (" + String::Number(value) + ") is negative.");
-    return;
-  }
-  SetIntegralAttribute(HTMLNames::scrollamountAttr, value);
+void HTMLMarqueeElement::setScrollAmount(unsigned value) {
+  SetUnsignedIntegralAttribute(HTMLNames::scrollamountAttr, value,
+                               kDefaultScrollAmount);
 }
 
-int HTMLMarqueeElement::scrollDelay() const {
-  bool ok;
-  int scroll_delay = FastGetAttribute(HTMLNames::scrolldelayAttr).ToInt(&ok);
-  if (!ok || scroll_delay < 0)
+unsigned HTMLMarqueeElement::scrollDelay() const {
+  unsigned scroll_delay = 0;
+  AtomicString value = FastGetAttribute(HTMLNames::scrolldelayAttr);
+  if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, scroll_delay) ||
+      scroll_delay > 0x7fffffffu)
     return kDefaultScrollDelayMS;
   return scroll_delay;
 }
 
-void HTMLMarqueeElement::setScrollDelay(int value,
-                                        ExceptionState& exception_state) {
-  if (value < 0) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError,
-        "The provided value (" + String::Number(value) + ") is negative.");
-    return;
-  }
-  SetIntegralAttribute(HTMLNames::scrolldelayAttr, value);
+void HTMLMarqueeElement::setScrollDelay(unsigned value) {
+  SetUnsignedIntegralAttribute(HTMLNames::scrolldelayAttr, value,
+                               kDefaultScrollDelayMS);
 }
 
 int HTMLMarqueeElement::loop() const {
