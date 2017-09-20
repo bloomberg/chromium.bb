@@ -2338,7 +2338,12 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int tmp_stride[MAX_MB_PLANE]) {
   if (mi_row <= xd->tile.mi_row_start) return;
 
-  xd->mb_to_bottom_edge += xd->n8_h / 2 * MI_SIZE * 8;
+  // Adjust mb_to_bottom_edge to have the correct value for the OBMC
+  // prediction block. This is half the height of the original block,
+  // except for 128-wide blocks, where we only use a height of 32.
+  int this_height = xd->n8_h * MI_SIZE;
+  int pred_height = AOMMIN(this_height / 2, 32);
+  xd->mb_to_bottom_edge += (this_height - pred_height) * 8;
 
   struct build_prediction_ctxt ctxt = { cm,         mi_row,
                                         mi_col,     tmp_buf,
@@ -2351,7 +2356,7 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
   xd->mb_to_right_edge = ctxt.mb_to_far_edge;
-  xd->mb_to_bottom_edge -= xd->n8_h / 2 * MI_SIZE * 8;
+  xd->mb_to_bottom_edge -= (this_height - pred_height) * 8;
 }
 
 static INLINE void build_prediction_by_left_pred(MACROBLOCKD *xd,
@@ -2433,7 +2438,12 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int tmp_stride[MAX_MB_PLANE]) {
   if (mi_col <= xd->tile.mi_col_start) return;
 
-  xd->mb_to_right_edge += xd->n8_w / 2 * MI_SIZE * 8;
+  // Adjust mb_to_right_edge to have the correct value for the OBMC
+  // prediction block. This is half the width of the original block,
+  // except for 128-wide blocks, where we only use a width of 32.
+  int this_width = xd->n8_w * MI_SIZE;
+  int pred_width = AOMMIN(this_width / 2, 32);
+  xd->mb_to_right_edge += (this_width - pred_width) * 8;
 
   struct build_prediction_ctxt ctxt = { cm,         mi_row,
                                         mi_col,     tmp_buf,
@@ -2445,7 +2455,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                build_prediction_by_left_pred, &ctxt);
 
   xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
-  xd->mb_to_right_edge -= xd->n8_w / 2 * MI_SIZE * 8;
+  xd->mb_to_right_edge -= (this_width - pred_width) * 8;
   xd->mb_to_bottom_edge = ctxt.mb_to_far_edge;
 }
 
