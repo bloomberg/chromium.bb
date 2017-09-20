@@ -1156,9 +1156,6 @@ void NavigatorImpl::RequestNavigation(
   // We don't want to dispatch a beforeunload handler if
   // is_history_navigation_in_new_child is true. This indicates a newly created
   // child frame which does not have a beforunload handler.
-  bool should_dispatch_beforeunload =
-      !is_same_document_history_load && !is_history_navigation_in_new_child &&
-      frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload();
   FrameMsg_Navigate_Type::Value navigation_type = GetNavigationType(
       frame_tree_node->current_url(),  // old_url
       dest_url,                        // new_url
@@ -1166,6 +1163,11 @@ void NavigatorImpl::RequestNavigation(
       entry,                           // entry
       frame_entry,                     // frame_entry
       is_same_document_history_load);  // is_same_document_history_load
+  bool is_same_document =
+      FrameMsg_Navigate_Type::IsSameDocument(navigation_type);
+  bool should_dispatch_beforeunload =
+      !is_same_document && !is_history_navigation_in_new_child &&
+      frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload();
   std::unique_ptr<NavigationRequest> scoped_request =
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, dest_url, dest_referrer, frame_entry, entry,

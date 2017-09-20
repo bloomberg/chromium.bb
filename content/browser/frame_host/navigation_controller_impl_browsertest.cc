@@ -54,7 +54,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/url_request/url_request_failed_job.h"
-#include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
 
@@ -6987,6 +6987,33 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
         controller.GetEntryAtIndex(2)->GetTransitionType(),
         ui::PAGE_TRANSITION_LINK));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       HashNavigationVsBeforeUnloadEvent) {
+  GURL main_url(embedded_test_server()->GetURL("/title1.html"));
+  GURL hash_url(embedded_test_server()->GetURL("/title1.html#hash"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_TRUE(
+      ExecuteScript(shell(),
+                    R"( window.addEventListener("beforeunload", function(e) {
+              domAutomationController.send("beforeunload");
+          });
+          window.addEventListener("unload", function(e) {
+              domAutomationController.send("unload");
+          });
+      )"));
+
+  DOMMessageQueue message_queue;
+  std::vector<std::string> messages;
+  std::string message;
+  EXPECT_TRUE(NavigateToURL(shell(), hash_url));
+  while (message_queue.PopMessage(&message))
+    messages.push_back(message);
+
+  // Verify that none of "beforeunload", "unload" events fired.
+  EXPECT_THAT(messages, testing::IsEmpty());
 }
 
 }  // namespace content
