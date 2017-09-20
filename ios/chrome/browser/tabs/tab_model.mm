@@ -690,11 +690,15 @@ void CleanCertificatePolicyCache(
 
   for (int index = oldCount; index < _webStateList->count(); ++index) {
     web::WebState* webState = _webStateList->GetWebStateAt(index);
-    PagePlaceholderTabHelper::FromWebState(webState)
-        ->AddPlaceholderForNextNavigation();
-
     web::NavigationItem* visible_item =
         webState->GetNavigationManager()->GetVisibleItem();
+
+    if (!(visible_item &&
+          visible_item->GetVirtualURL() == GURL(kChromeUINewTabURL))) {
+      PagePlaceholderTabHelper::FromWebState(webState)
+          ->AddPlaceholderForNextNavigation();
+    }
+
     if (visible_item && visible_item->GetVirtualURL().is_valid()) {
       favicon::WebFaviconDriver::FromWebState(webState)->FetchFavicon(
           visible_item->GetVirtualURL(), /*is_same_document=*/false);
