@@ -78,7 +78,7 @@ RecentTabsUIAdapterDelegateTest::RecentTabsUIAdapterDelegateTest()
   adapter_delegate = delegate.get();
 
   adapter = base::MakeUnique<DownloadUIAdapter>(
-      &model, request_coordinator_taco_->request_coordinator(),
+      nullptr, &model, request_coordinator_taco_->request_coordinator(),
       std::move(delegate));
 }
 

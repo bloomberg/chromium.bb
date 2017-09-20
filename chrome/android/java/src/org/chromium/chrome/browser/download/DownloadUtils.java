@@ -56,8 +56,10 @@ import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content_public.browser.DownloadState;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -340,7 +342,7 @@ public class DownloadUtils {
         for (int i = 0; i < items.size(); i++) {
             DownloadHistoryItemWrapper wrappedItem  = items.get(i);
 
-            if (wrappedItem instanceof DownloadHistoryItemWrapper.OfflinePageItemWrapper) {
+            if (wrappedItem.isOfflinePage()) {
                 if (offlinePagesString.length() != 0) {
                     offlinePagesString.append("\n");
                 }
@@ -697,6 +699,38 @@ public class DownloadUtils {
         } else {
             return context.getString(R.string.remaining_duration_seconds, seconds);
         }
+    }
+
+    /**
+     * Determine what String to show for a given offline page in download home.
+     * @param item The offline item representing the offline page.
+     * @return String representing the current status.
+     */
+    public static String getOfflinePageStatusString(OfflineItem item) {
+        Context context = ContextUtils.getApplicationContext();
+        switch (item.state) {
+            case OfflineItemState.COMPLETE:
+                return context.getString(R.string.download_notification_completed);
+            case OfflineItemState.PENDING:
+                return context.getString(R.string.download_notification_pending);
+            case OfflineItemState.PAUSED:
+                return context.getString(R.string.download_notification_paused);
+            case OfflineItemState.IN_PROGRESS: // intentional fall through
+            case OfflineItemState.CANCELLED: // intentional fall through
+            case OfflineItemState.INTERRUPTED: // intentional fall through
+            case OfflineItemState.FAILED:
+                break;
+            case OfflineItemState.MAX_DOWNLOAD_STATE:
+            default:
+                assert false : "Unexpected OfflineItemState: " + item.state;
+        }
+
+        long bytesReceived = item.receivedBytes;
+        if (bytesReceived == 0) {
+            return context.getString(R.string.download_started);
+        }
+
+        return DownloadUtils.getStringForDownloadedBytes(context, bytesReceived);
     }
 
     /**

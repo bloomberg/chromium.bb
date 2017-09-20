@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/client_policy_controller.h"
-#include "components/offline_pages/core/downloads/download_ui_item.h"
 
 namespace offline_pages {
 

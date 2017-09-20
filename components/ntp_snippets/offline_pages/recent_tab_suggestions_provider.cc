@@ -26,7 +26,6 @@
 
 using offline_pages::ClientId;
 using offline_pages::DownloadUIAdapter;
-using offline_pages::DownloadUIItem;
 
 namespace ntp_snippets {
 
@@ -43,19 +42,17 @@ int GetMaxSuggestionsCount() {
 }
 
 struct OrderUIItemsByMostRecentlyCreatedFirst {
-  bool operator()(const DownloadUIItem* left,
-                  const DownloadUIItem* right) const {
-    return left->start_time > right->start_time;
+  bool operator()(const OfflineItem& left, const OfflineItem& right) const {
+    return left.creation_time > right.creation_time;
   }
 };
 
 struct OrderUIItemsByUrlAndThenMostRecentlyCreatedFirst {
-  bool operator()(const DownloadUIItem* left,
-                  const DownloadUIItem* right) const {
-    if (left->url != right->url) {
-      return left->url < right->url;
+  bool operator()(const OfflineItem& left, const OfflineItem& right) const {
+    if (left.page_url != right.page_url) {
+      return left.page_url < right.page_url;
     }
-    return left->start_time > right->start_time;
+    return left.creation_time > right.creation_time;
   }
 };
 
@@ -147,19 +144,18 @@ void RecentTabSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     DismissedSuggestionsCallback callback) {
   DCHECK_EQ(provided_category_, category);
 
-  std::vector<const DownloadUIItem*> items =
-      recent_tabs_ui_adapter_->GetAllItems();
+  std::vector<OfflineItem> items = recent_tabs_ui_adapter_->GetAllItems();
 
   std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs();
   std::vector<ContentSuggestion> suggestions;
-  for (const DownloadUIItem* item : items) {
+  for (const OfflineItem& item : items) {
     int64_t offline_page_id =
-        recent_tabs_ui_adapter_->GetOfflineIdByGuid(item->guid);
+        recent_tabs_ui_adapter_->GetOfflineIdByGuid(item.id.id);
     if (!dismissed_ids.count(base::IntToString(offline_page_id))) {
       continue;
     }
 
-    suggestions.push_back(ConvertUIItem(*item));
+    suggestions.push_back(ConvertUIItem(item));
   }
   std::move(callback).Run(std::move(suggestions));
 }
@@ -180,39 +176,39 @@ void RecentTabSuggestionsProvider::RegisterProfilePrefs(
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
-void RecentTabSuggestionsProvider::ItemsLoaded() {
+void RecentTabSuggestionsProvider::OnItemsAvailable(
+    OfflineContentProvider* provider) {
   FetchRecentTabs();
 }
 
-void RecentTabSuggestionsProvider::ItemAdded(const DownloadUIItem& ui_item) {
+void RecentTabSuggestionsProvider::OnItemsAdded(
+    const std::vector<OfflineItem>& items) {
   FetchRecentTabs();
 }
 
-void RecentTabSuggestionsProvider::ItemUpdated(const DownloadUIItem& ui_item) {
+void RecentTabSuggestionsProvider::OnItemUpdated(const OfflineItem& item) {
   FetchRecentTabs();
 }
 
-void RecentTabSuggestionsProvider::ItemDeleted(
-    const std::string& ui_item_guid) {
+void RecentTabSuggestionsProvider::OnItemRemoved(const ContentId& id) {
   // Because we never switch to NOT_PROVIDED dynamically, there can be no open
   // UI containing an invalidated suggestion unless the status is something
   // other than NOT_PROVIDED, so only notify invalidation in that case.
   if (category_status_ != CategoryStatus::NOT_PROVIDED) {
-    InvalidateSuggestion(ui_item_guid);
+    InvalidateSuggestion(id.id);
   }
 }
 
 void RecentTabSuggestionsProvider::FetchRecentTabs() {
-  std::vector<const DownloadUIItem*> ui_items =
-      recent_tabs_ui_adapter_->GetAllItems();
+  std::vector<OfflineItem> ui_items = recent_tabs_ui_adapter_->GetAllItems();
   NotifyStatusChanged(CategoryStatus::AVAILABLE);
   std::set<std::string> old_dismissed_ids = ReadDismissedIDsFromPrefs();
   std::set<std::string> new_dismissed_ids;
-  std::vector<const DownloadUIItem*> non_dismissed_items;
+  std::vector<OfflineItem> non_dismissed_items;
 
-  for (const DownloadUIItem* item : ui_items) {
+  for (const OfflineItem& item : ui_items) {
     std::string offline_page_id = base::IntToString(
-        recent_tabs_ui_adapter_->GetOfflineIdByGuid(item->guid));
+        recent_tabs_ui_adapter_->GetOfflineIdByGuid(item.id.id));
     if (old_dismissed_ids.count(offline_page_id)) {
       new_dismissed_ids.insert(offline_page_id);
     } else {
@@ -222,7 +218,7 @@ void RecentTabSuggestionsProvider::FetchRecentTabs() {
 
   observer()->OnNewSuggestions(
       this, provided_category_,
-      GetMostRecentlyCreatedWithoutDuplicates(std::move(non_dismissed_items)));
+      GetMostRecentlyCreatedWithoutDuplicates(non_dismissed_items));
   if (new_dismissed_ids.size() != old_dismissed_ids.size()) {
     StoreDismissedIDsToPrefs(new_dismissed_ids);
   }
@@ -239,19 +235,19 @@ void RecentTabSuggestionsProvider::NotifyStatusChanged(
 }
 
 ContentSuggestion RecentTabSuggestionsProvider::ConvertUIItem(
-    const DownloadUIItem& ui_item) const {
+    const OfflineItem& ui_item) const {
   // UI items have the Tab ID embedded in the GUID and the offline ID is
   // available by querying.
   int64_t offline_page_id =
-      recent_tabs_ui_adapter_->GetOfflineIdByGuid(ui_item.guid);
-  ContentSuggestion suggestion(provided_category_,
-                               base::IntToString(offline_page_id), ui_item.url);
-  suggestion.set_title(ui_item.title);
-  suggestion.set_publish_date(ui_item.start_time);
-  suggestion.set_publisher_name(base::UTF8ToUTF16(ui_item.url.host()));
+      recent_tabs_ui_adapter_->GetOfflineIdByGuid(ui_item.id.id);
+  ContentSuggestion suggestion(
+      provided_category_, base::IntToString(offline_page_id), ui_item.page_url);
+  suggestion.set_title(base::UTF8ToUTF16(ui_item.title));
+  suggestion.set_publish_date(ui_item.creation_time);
+  suggestion.set_publisher_name(base::UTF8ToUTF16(ui_item.page_url.host()));
   auto extra = base::MakeUnique<RecentTabSuggestionExtra>();
   int tab_id;
-  bool success = base::StringToInt(ui_item.guid, &tab_id);
+  bool success = base::StringToInt(ui_item.id.id, &tab_id);
   DCHECK(success);
   extra->tab_id = tab_id;
   extra->offline_page_id = offline_page_id;
@@ -262,23 +258,23 @@ ContentSuggestion RecentTabSuggestionsProvider::ConvertUIItem(
 
 std::vector<ContentSuggestion>
 RecentTabSuggestionsProvider::GetMostRecentlyCreatedWithoutDuplicates(
-    std::vector<const DownloadUIItem*> ui_items) const {
+    std::vector<OfflineItem>& ui_items) const {
   // |std::unique| only removes duplicates that immediately follow each other.
   // Thus, first, we have to sort by URL and creation time and only then remove
   // duplicates and sort the remaining items by creation time.
   std::sort(ui_items.begin(), ui_items.end(),
             OrderUIItemsByUrlAndThenMostRecentlyCreatedFirst());
-  std::vector<const DownloadUIItem*>::iterator new_end =
+  std::vector<OfflineItem>::iterator new_end =
       std::unique(ui_items.begin(), ui_items.end(),
-                  [](const DownloadUIItem* left, const DownloadUIItem* right) {
-                    return left->url == right->url;
+                  [](const OfflineItem& left, const OfflineItem& right) {
+                    return left.page_url == right.page_url;
                   });
   ui_items.erase(new_end, ui_items.end());
   std::sort(ui_items.begin(), ui_items.end(),
             OrderUIItemsByMostRecentlyCreatedFirst());
   std::vector<ContentSuggestion> suggestions;
-  for (const DownloadUIItem* ui_item : ui_items) {
-    suggestions.push_back(ConvertUIItem(*ui_item));
+  for (const OfflineItem& ui_item : ui_items) {
+    suggestions.push_back(ConvertUIItem(ui_item));
     if (static_cast<int>(suggestions.size()) == GetMaxSuggestionsCount()) {
       break;
     }

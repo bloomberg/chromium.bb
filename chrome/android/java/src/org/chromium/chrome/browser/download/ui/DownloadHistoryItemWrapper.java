@@ -17,14 +17,12 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadNotificationService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
-import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.DownloadState;
@@ -434,175 +432,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
     }
 
-    /** Wraps a {@link OfflinePageDownloadItem}. */
-    public static class OfflinePageItemWrapper extends DownloadHistoryItemWrapper {
-        private OfflinePageDownloadItem mItem;
-
-        OfflinePageItemWrapper(OfflinePageDownloadItem item, BackendProvider provider,
-                ComponentName component) {
-            super(provider, component);
-            mItem = item;
-        }
-
-        @Override
-        public OfflinePageDownloadItem getItem() {
-            return mItem;
-        }
-
-        @Override
-        public boolean replaceItem(Object item) {
-            OfflinePageDownloadItem newItem = (OfflinePageDownloadItem) item;
-            assert TextUtils.equals(newItem.getGuid(), mItem.getGuid());
-
-            mItem = newItem;
-            mFile = null;
-            return true;
-        }
-
-        @Override
-        public String getId() {
-            return mItem.getGuid();
-        }
-
-        @Override
-        public long getTimestamp() {
-            return mItem.getStartTimeMs();
-        }
-
-        @Override
-        public String getFilePath() {
-            return mItem.getTargetPath();
-        }
-
-        @Override
-        public String getDisplayFileName() {
-            String title = mItem.getTitle();
-            if (TextUtils.isEmpty(title)) {
-                return getDisplayHostname();
-            } else {
-                return title;
-            }
-        }
-
-        @Override
-        public long getFileSize() {
-            return mItem.getTotalBytes();
-        }
-
-        @Override
-        public String getUrl() {
-            return mItem.getUrl();
-        }
-
-        @Override
-        public int getFilterType() {
-            return DownloadFilter.FILTER_PAGE;
-        }
-
-        @Override
-        public String getMimeType() {
-            return "text/html";
-        }
-
-        @Override
-        public int getFileExtensionType() {
-            return FILE_EXTENSION_OTHER;
-        }
-
-        @Override
-        public Progress getDownloadProgress() {
-            // Only completed offline page downloads are shown.
-            return isComplete() ? new Progress(100, 100L, OfflineItemProgressUnit.PERCENTAGE)
-                    : Progress.createIndeterminateProgress();
-        }
-
-        @Override
-        public String getStatusString() {
-            Context context = ContextUtils.getApplicationContext();
-
-            int state = mItem.getDownloadState();
-
-            if (state == org.chromium.components.offlinepages.downloads.DownloadState.COMPLETE) {
-                return context.getString(R.string.download_notification_completed);
-            }
-
-            if (state == org.chromium.components.offlinepages.downloads.DownloadState.PENDING) {
-                return context.getString(R.string.download_notification_pending);
-            }
-
-            if (state == org.chromium.components.offlinepages.downloads.DownloadState.PAUSED) {
-                return context.getString(R.string.download_notification_paused);
-            }
-
-            long bytesReceived = mItem.getDownloadProgressBytes();
-            if (bytesReceived == 0) {
-                return context.getString(R.string.download_started);
-            } else {
-                return DownloadUtils.getStringForDownloadedBytes(context, bytesReceived);
-            }
-        }
-
-        @Override
-        public void open() {
-            mBackendProvider.getOfflinePageBridge().openItem(getId(), mComponentName);
-            recordOpenSuccess();
-        }
-
-        @Override
-        public void cancel() {
-            mBackendProvider.getOfflinePageBridge().cancelDownload(getId());
-        }
-
-        @Override
-        public void pause() {
-            mBackendProvider.getOfflinePageBridge().pauseDownload(getId());
-        }
-
-        @Override
-        public void resume() {
-            mBackendProvider.getOfflinePageBridge().resumeDownload(getId());
-        }
-
-        @Override
-        public boolean remove() {
-            mBackendProvider.getOfflinePageBridge().deleteItem(getId());
-            return true;
-        }
-
-        @Override
-        boolean hasBeenExternallyRemoved() {
-            // We don't currently detect when offline pages have been removed externally.
-            return false;
-        }
-
-        @Override
-        boolean isOffTheRecord() {
-            return false;
-        }
-
-        @Override
-        public boolean isOfflinePage() {
-            return true;
-        }
-
-        @Override
-        public boolean isSuggested() {
-            return mItem.isSuggested();
-        }
-
-        @Override
-        public boolean isComplete() {
-            return mItem.getDownloadState()
-                    == org.chromium.components.offlinepages.downloads.DownloadState.COMPLETE;
-        }
-
-        @Override
-        public boolean isPaused() {
-            return mItem.getDownloadState()
-                    == org.chromium.components.offlinepages.downloads.DownloadState.PAUSED;
-        }
-    }
-
     /** Wraps a {@link OfflineItem}. */
     public static class OfflineItemWrapper extends DownloadHistoryItemWrapper {
         private OfflineItem mItem;
@@ -619,7 +448,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public boolean replaceItem(Object item) {
-            assert item instanceof OfflineItem;
             OfflineItem newItem = (OfflineItem) item;
             assert mItem.id.equals(newItem.id);
 
@@ -670,6 +498,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
                                    : DownloadFilter.fromMimeType(mItem.mimeType);
         }
 
+        @OfflineItemFilter
+        public int getOfflineItemFilter() {
+            return mItem.filter;
+        }
+
         @Override
         public String getMimeType() {
             return mItem.mimeType;
@@ -688,8 +521,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public String getStatusString() {
-            // TODO(shaktisahu): Extract the status string.
-            return "";
+            return isOfflinePage() ? DownloadUtils.getOfflinePageStatusString(mItem) : "";
         }
 
         private OfflineContentProvider getOfflineContentProvider() {

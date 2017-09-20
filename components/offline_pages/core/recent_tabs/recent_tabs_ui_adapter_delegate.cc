@@ -34,7 +34,7 @@ RecentTabsUIAdapterDelegate::GetOrCreateRecentTabsUIAdapter(
     auto delegate =
         base::MakeUnique<RecentTabsUIAdapterDelegate>(offline_page_model);
     recent_tabs_ui_adapter = new DownloadUIAdapter(
-        offline_page_model, request_coordinator, std::move(delegate));
+        nullptr, offline_page_model, request_coordinator, std::move(delegate));
     offline_page_model->SetUserData(kRecentTabsUIAdapterKey,
                                     base::WrapUnique(recent_tabs_ui_adapter));
   }

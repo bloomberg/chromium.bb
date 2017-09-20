@@ -12,25 +12,32 @@
 
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
+#include "components/offline_items_collection/core/offline_content_aggregator.h"
+#include "components/offline_items_collection/core/offline_content_provider.h"
+#include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
-#include "components/offline_pages/core/downloads/download_ui_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "url/gurl.h"
+
+using ContentId = offline_items_collection::ContentId;
+using OfflineItem = offline_items_collection::OfflineItem;
+using OfflineContentProvider = offline_items_collection::OfflineContentProvider;
+using OfflineContentAggregator =
+    offline_items_collection::OfflineContentAggregator;
 
 namespace offline_pages {
 // C++ side of the UI Adapter. Mimics DownloadManager/Item/History (since we
 // share UI with Downloads).
 // An instance of this class is owned by OfflinePageModel and is shared between
-// UI components if needed. It manages the cache of DownloadUIItems, so after
-// initial load the UI components can synchronously pull the whole list or any
-// item by its guid.
-// The items are exposed to UI layer (consumer of this class) as an observable
-// collection of DownloadUIItems. The consumer is supposed to implement
-// the DownloadUIAdapter::Observer interface. The creator of the adapter
-// also passes in the Delegate that determines which items in the underlying
-// OfflinePage backend are to be included (visible) in the collection.
-class DownloadUIAdapter : public OfflinePageModel::Observer,
+// UI components if needed. It manages the cache of OfflineItems, which are fed
+// to the OfflineContentAggregator which subsequently takes care of notifying
+// observers of items being loaded, added, deleted etc. The creator of the
+// adapter also passes in the Delegate that determines which items in the
+// underlying OfflinePage backend are to be included (visible) in the
+// collection.
+class DownloadUIAdapter : public OfflineContentProvider,
+                          public OfflinePageModel::Observer,
                           public RequestCoordinator::Observer,
                           public base::SupportsUserData::Data {
  public:
@@ -52,32 +59,13 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
     // Delegates need a reference to the UI adapter in order to notify it about
     // visibility changes.
     virtual void SetUIAdapter(DownloadUIAdapter* ui_adapter) = 0;
+
+    // Opens an offline item.
+    virtual void OpenItem(const OfflineItem& item, int64_t offline_id) = 0;
   };
 
-  // Observer, normally implemented by UI or a Bridge.
-  class Observer {
-   public:
-    // Invoked when UI items are loaded. GetAllItems/GetItem can now be used.
-    // Must be listened for in order to start getting the items.
-    // If the items are already loaded by the time observer is added, this
-    // callback will be posted right away.
-    virtual void ItemsLoaded() = 0;
-
-    // Invoked when the UI Item was added, usually as a request to download.
-    virtual void ItemAdded(const DownloadUIItem& item) = 0;
-
-    // Invoked when the UI Item was updated. Only guid of the item is guaranteed
-    // to survive the update, all other fields can change.
-    virtual void ItemUpdated(const DownloadUIItem& item) = 0;
-
-    // Invoked when the UI Item was deleted. At this point, only guid remains.
-    virtual void ItemDeleted(const std::string& guid) = 0;
-
-   protected:
-    virtual ~Observer() = default;
-  };
-
-  DownloadUIAdapter(OfflinePageModel* model,
+  DownloadUIAdapter(OfflineContentAggregator* aggregator,
+                    OfflinePageModel* model,
                     RequestCoordinator* coordinator,
                     std::unique_ptr<Delegate> delegate);
   ~DownloadUIAdapter() override;
@@ -87,23 +75,21 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
       std::unique_ptr<DownloadUIAdapter> adapter,
       OfflinePageModel* model);
 
-  // This adapter is potentially shared by UI elements, each of which adds
-  // itself as an observer.
-  // When the last observer is removed, cached list of items is destroyed and
-  // next time the initial loading will take longer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
-  // Returns all UI items. The list contains references to items in the cache
-  // and has to be used synchronously.
-  std::vector<const DownloadUIItem*> GetAllItems() const;
-  // May return nullptr if item with specified guid does not exist.
-  const DownloadUIItem* GetItem(const std::string& guid) const;
-
-  // Commands from UI. Start async operations, result is observable
-  // via Observer or directly by the user (as in 'open').
-  void DeleteItem(const std::string& guid);
   int64_t GetOfflineIdByGuid(const std::string& guid) const;
+
+  // OfflineContentProvider implmentation.
+  bool AreItemsAvailable() override;
+  void OpenItem(const ContentId& id) override;
+  void RemoveItem(const ContentId& id) override;
+  void CancelDownload(const ContentId& id) override;
+  void PauseDownload(const ContentId& id) override;
+  void ResumeDownload(const ContentId& id, bool has_user_gesture) override;
+  const OfflineItem* GetItemById(const ContentId& id) override;
+  std::vector<OfflineItem> GetAllItems() override;
+  void GetVisualsForItem(const ContentId& id,
+                         const VisualsCallback& callback) override{};
+  void AddObserver(OfflineContentProvider::Observer* observer) override;
+  void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 
   // OfflinePageModel::Observer
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
@@ -134,9 +120,9 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
     ItemInfo(const SavePageRequest& request, bool temporarily_hidden);
     ~ItemInfo();
 
-    std::unique_ptr<DownloadUIItem> ui_item;
+    std::unique_ptr<OfflineItem> ui_item;
 
-    // Additional cached data, not exposed to UI through DownloadUIItem.
+    // Additional cached data, not exposed to UI through OfflineItem.
     // Indicates if this item wraps the completed page or in-progress request.
     bool is_request;
 
@@ -158,16 +144,25 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
     DISALLOW_COPY_AND_ASSIGN(ItemInfo);
   };
 
-  typedef std::map<std::string, std::unique_ptr<ItemInfo>> DownloadUIItems;
+  typedef std::map<std::string, std::unique_ptr<ItemInfo>> OfflineItems;
 
   void LoadCache();
   void ClearCache();
 
   // Task callbacks.
+  void CancelDownloadContinuation(
+      const std::string& guid,
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
+  void PauseDownloadContinuation(
+      const std::string& guid,
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
+  void ResumeDownloadContinuation(
+      const std::string& guid,
+      std::vector<std::unique_ptr<SavePageRequest>> requests);
   void OnOfflinePagesLoaded(const MultipleOfflinePageItemResult& pages);
   void OnRequestsLoaded(std::vector<std::unique_ptr<SavePageRequest>> requests);
 
-  void NotifyItemsLoaded(Observer* observer);
+  void NotifyItemsLoaded(OfflineContentProvider::Observer* observer);
   void OnDeletePagesDone(DeletePageResult result);
 
   void AddItemHelper(std::unique_ptr<ItemInfo> item_info);
@@ -175,6 +170,9 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   // while it runs, so that functions such as |GetOfflineIdByGuid| will work
   // during the |ItemDeleted| callback.
   void DeleteItemHelper(const std::string& guid);
+
+  // A valid offline content aggregator, supplied at construction.
+  OfflineContentAggregator* aggregator_;
 
   // Always valid, this class is a member of the model.
   OfflinePageModel* model_;
@@ -187,13 +185,13 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
 
   State state_;
 
-  // The cache of UI items. The key is DownloadUIItem.guid.
-  DownloadUIItems items_;
+  // The cache of UI items. The key is OfflineItem.guid.
+  OfflineItems items_;
 
   std::unique_ptr<ItemInfo> deleting_item_;
 
   // The observers.
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<OfflineContentProvider::Observer> observers_;
   int observers_count_;
 
   base::WeakPtrFactory<DownloadUIAdapter> weak_ptr_factory_;

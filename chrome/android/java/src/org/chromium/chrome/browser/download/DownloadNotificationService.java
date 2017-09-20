@@ -52,7 +52,6 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -1240,9 +1239,7 @@ public class DownloadNotificationService extends Service {
                     resumeAllPendingDownloads();
                 } else if (ACTION_DOWNLOAD_OPEN.equals(intent.getAction())) {
                     ContentId id = getContentIdFromIntent(intent);
-                    if (LegacyHelpers.isLegacyOfflinePage(id)) {
-                        OfflinePageDownloadBridge.openDownloadedPage(id);
-                    } else if (id != null) {
+                    if (id != null) {
                         OfflineContentAggregatorNotificationBridgeUiFactory.instance().openItem(id);
                     }
                 } else {
@@ -1305,9 +1302,6 @@ public class DownloadNotificationService extends Service {
      * @return delegate for interactions with the entry
      */
     DownloadServiceDelegate getServiceDelegate(ContentId id) {
-        if (LegacyHelpers.isLegacyOfflinePage(id)) {
-            return OfflinePageDownloadBridge.getDownloadServiceDelegate();
-        }
         if (LegacyHelpers.isLegacyDownload(id)) {
             return DownloadManagerService.getDownloadManagerService();
         }

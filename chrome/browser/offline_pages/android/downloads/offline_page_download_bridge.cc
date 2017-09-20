@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_infobar_delegate.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
@@ -22,10 +23,11 @@
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
-#include "components/offline_pages/core/downloads/download_ui_item.h"
+#include "components/offline_pages/core/downloads/download_ui_adapter.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
@@ -62,6 +64,7 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
   bool IsVisibleInUI(const ClientId& client_id) override;
   bool IsTemporarilyHiddenInUI(const ClientId& client_id) override;
   void SetUIAdapter(DownloadUIAdapter* ui_adapter) override;
+  void OpenItem(const OfflineItem& item, int64_t offline_id) override;
 
  private:
   // Not owned, cached service pointer.
@@ -83,6 +86,13 @@ bool DownloadUIAdapterDelegate::IsTemporarilyHiddenInUI(
 }
 
 void DownloadUIAdapterDelegate::SetUIAdapter(DownloadUIAdapter* ui_adapter) {}
+
+void DownloadUIAdapterDelegate::OpenItem(const OfflineItem& item,
+                                         int64_t offline_id) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_OfflinePageDownloadBridge_openItem(
+      env, ConvertUTF8ToJavaString(env, item.page_url.spec()), offline_id);
+}
 
 // TODO(dewittj): Move to Download UI Adapter.
 content::WebContents* GetWebContentsFromJavaTab(
@@ -183,92 +193,6 @@ void DuplicateCheckDone(const GURL& url,
       url, duplicate_request_exists, web_contents);
 }
 
-void ToJavaOfflinePageDownloadItemList(
-    JNIEnv* env,
-    const JavaRef<jobject>& j_result_obj,
-    const std::vector<const DownloadUIItem*>& items) {
-  for (const auto* item : items) {
-    Java_OfflinePageDownloadBridge_createDownloadItemAndAddToList(
-        env, j_result_obj, ConvertUTF8ToJavaString(env, item->guid),
-        ConvertUTF8ToJavaString(env, item->url.spec()), item->download_state,
-        item->download_progress_bytes,
-        ConvertUTF16ToJavaString(env, item->title),
-        ConvertUTF8ToJavaString(env, item->target_path.value()),
-        item->start_time.ToJavaTime(), item->total_bytes);
-  }
-}
-
-ScopedJavaLocalRef<jobject> ToJavaOfflinePageDownloadItem(
-    JNIEnv* env,
-    const DownloadUIItem& item) {
-  return Java_OfflinePageDownloadBridge_createDownloadItem(
-      env, ConvertUTF8ToJavaString(env, item.guid),
-      ConvertUTF8ToJavaString(env, item.url.spec()), item.download_state,
-      item.download_progress_bytes, ConvertUTF16ToJavaString(env, item.title),
-      ConvertUTF8ToJavaString(env, item.target_path.value()),
-      item.start_time.ToJavaTime(), item.total_bytes);
-}
-
-std::vector<int64_t> FilterRequestsByGuid(
-    std::vector<std::unique_ptr<SavePageRequest>> requests,
-    const std::string& guid,
-    ClientPolicyController* policy_controller) {
-  std::vector<int64_t> request_ids;
-  for (const auto& request : requests) {
-    if (request->client_id().id == guid &&
-        policy_controller->IsSupportedByDownload(
-            request->client_id().name_space)) {
-      request_ids.push_back(request->request_id());
-    }
-  }
-  return request_ids;
-}
-
-void CancelRequestCallback(const MultipleItemStatuses&) {
-  // Results ignored here, as UI uses observer to update itself.
-}
-
-void CancelRequestsContinuation(
-    content::BrowserContext* browser_context,
-    const std::string& guid,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  RequestCoordinator* coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(browser_context);
-  if (coordinator) {
-    std::vector<int64_t> request_ids = FilterRequestsByGuid(
-        std::move(requests), guid, coordinator->GetPolicyController());
-    coordinator->RemoveRequests(request_ids,
-                                base::Bind(&CancelRequestCallback));
-  } else {
-    LOG(WARNING) << "CancelRequestsContinuation has no valid coordinator.";
-  }
-}
-
-void PauseRequestsContinuation(
-    content::BrowserContext* browser_context,
-    const std::string& guid,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  RequestCoordinator* coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(browser_context);
-  if (coordinator)
-    coordinator->PauseRequests(FilterRequestsByGuid(
-        std::move(requests), guid, coordinator->GetPolicyController()));
-  else
-    LOG(WARNING) << "PauseRequestsContinuation has no valid coordinator.";
-}
-
-void ResumeRequestsContinuation(
-    content::BrowserContext* browser_context,
-    const std::string& guid,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  RequestCoordinator* coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(browser_context);
-  if (coordinator)
-    coordinator->ResumeRequests(FilterRequestsByGuid(
-        std::move(requests), guid, coordinator->GetPolicyController()));
-  else
-    LOG(WARNING) << "ResumeRequestsContinuation has no valid coordinator.";
-}
 
 content::WebContents* GetWebContentsByFrameID(int render_process_id,
                                               int render_frame_id) {
@@ -333,60 +257,14 @@ void OnAcquireFileAccessPermissionDone(
 
 OfflinePageDownloadBridge::OfflinePageDownloadBridge(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    DownloadUIAdapter* download_ui_adapter,
-    content::BrowserContext* browser_context)
-    : weak_java_ref_(env, obj),
-      download_ui_adapter_(download_ui_adapter),
-      browser_context_(browser_context) {
-  DCHECK(download_ui_adapter_);
-  download_ui_adapter_->AddObserver(this);
-}
+    const JavaParamRef<jobject>& obj)
+    : weak_java_ref_(env, obj) {}
 
 OfflinePageDownloadBridge::~OfflinePageDownloadBridge() {}
 
 void OfflinePageDownloadBridge::Destroy(JNIEnv* env,
                                         const JavaParamRef<jobject>&) {
-  download_ui_adapter_->RemoveObserver(this);
   delete this;
-}
-
-void OfflinePageDownloadBridge::GetAllItems(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& j_result_obj) {
-  DCHECK(j_result_obj);
-
-  std::vector<const DownloadUIItem*> items =
-      download_ui_adapter_->GetAllItems();
-  ToJavaOfflinePageDownloadItemList(env, j_result_obj, items);
-}
-
-ScopedJavaLocalRef<jobject> OfflinePageDownloadBridge::GetItemByGuid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_guid) {
-  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  const DownloadUIItem* item = download_ui_adapter_->GetItem(guid);
-  if (item == nullptr)
-    return ScopedJavaLocalRef<jobject>();
-  return ToJavaOfflinePageDownloadItem(env, *item);
-}
-
-void OfflinePageDownloadBridge::DeleteItemByGuid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_guid) {
-  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  download_ui_adapter_->DeleteItem(guid);
-}
-
-jlong OfflinePageDownloadBridge::GetOfflineIdByGuid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_guid) {
-  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  return download_ui_adapter_->GetOfflineIdByGuid(guid);
 }
 
 void OfflinePageDownloadBridge::StartDownload(
@@ -429,100 +307,6 @@ void OfflinePageDownloadBridge::StartDownload(
       base::Bind(&DuplicateCheckDone, url, original_url, j_tab_ref, origin));
 }
 
-void OfflinePageDownloadBridge::CancelDownload(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_guid) {
-  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  RequestCoordinator* coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(browser_context_);
-
-  if (coordinator) {
-    coordinator->GetAllRequests(
-        base::Bind(&CancelRequestsContinuation, browser_context_, guid));
-  } else {
-    LOG(WARNING) << "CancelDownload has no valid coordinator.";
-  }
-}
-
-void OfflinePageDownloadBridge::PauseDownload(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_guid) {
-  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  RequestCoordinator* coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(browser_context_);
-
-  if (coordinator) {
-    coordinator->GetAllRequests(
-        base::Bind(&PauseRequestsContinuation, browser_context_, guid));
-  } else {
-    LOG(WARNING) << "PauseDownload has no valid coordinator.";
-  }
-}
-
-void OfflinePageDownloadBridge::ResumeDownload(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_guid) {
-  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
-  RequestCoordinator* coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(browser_context_);
-
-  if (coordinator) {
-    coordinator->GetAllRequests(
-        base::Bind(&ResumeRequestsContinuation, browser_context_, guid));
-  } else {
-    LOG(WARNING) << "ResumeDownload has no valid coordinator.";
-  }
-}
-
-void OfflinePageDownloadBridge::ResumePendingRequestImmediately(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  RequestCoordinator* coordinator =
-      RequestCoordinatorFactory::GetForBrowserContext(browser_context_);
-  if (coordinator)
-    coordinator->StartImmediateProcessing(base::Bind([](bool result) {}));
-  else
-    LOG(WARNING) << "ResumePendingRequestImmediately has no valid coordinator.";
-}
-
-void OfflinePageDownloadBridge::ItemsLoaded() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_OfflinePageDownloadBridge_downloadItemsLoaded(env, obj);
-}
-
-void OfflinePageDownloadBridge::ItemAdded(const DownloadUIItem& item) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_OfflinePageDownloadBridge_downloadItemAdded(
-      env, obj, ToJavaOfflinePageDownloadItem(env, item));
-}
-
-void OfflinePageDownloadBridge::ItemDeleted(const std::string& guid) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_OfflinePageDownloadBridge_downloadItemDeleted(
-      env, obj, ConvertUTF8ToJavaString(env, guid));
-}
-
-void OfflinePageDownloadBridge::ItemUpdated(const DownloadUIItem& item) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_OfflinePageDownloadBridge_downloadItemUpdated(
-      env, obj, ToJavaOfflinePageDownloadItem(env, item));
-}
-
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
                   const JavaParamRef<jobject>& j_profile) {
@@ -540,15 +324,18 @@ static jlong Init(JNIEnv* env,
     RequestCoordinator* request_coordinator =
         RequestCoordinatorFactory::GetForBrowserContext(browser_context);
     DCHECK(request_coordinator);
+    offline_items_collection::OfflineContentAggregator* aggregator =
+        offline_items_collection::OfflineContentAggregatorFactory::
+            GetForBrowserContext(browser_context);
+    DCHECK(aggregator);
     adapter = new DownloadUIAdapter(
-        offline_page_model, request_coordinator,
+        aggregator, offline_page_model, request_coordinator,
         base::MakeUnique<DownloadUIAdapterDelegate>(offline_page_model));
     DownloadUIAdapter::AttachToOfflinePageModel(base::WrapUnique(adapter),
                                                 offline_page_model);
   }
 
-  return reinterpret_cast<jlong>(
-      new OfflinePageDownloadBridge(env, obj, adapter, browser_context));
+  return reinterpret_cast<jlong>(new OfflinePageDownloadBridge(env, obj));
 }
 
 }  // namespace android

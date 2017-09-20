@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotifi
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -179,9 +178,7 @@ public class DownloadBroadcastManager extends Service {
                 return;
 
             case ACTION_DOWNLOAD_OPEN:
-                if (LegacyHelpers.isLegacyOfflinePage(id)) {
-                    OfflinePageDownloadBridge.openDownloadedPage(id);
-                } else if (id != null) {
+                if (id != null) {
                     OfflineContentAggregatorNotificationBridgeUiFactory.instance().openItem(id);
                 }
                 return;
@@ -265,9 +262,6 @@ public class DownloadBroadcastManager extends Service {
      * @return delegate for interactions with the entry
      */
     private static DownloadServiceDelegate getServiceDelegate(ContentId id) {
-        if (LegacyHelpers.isLegacyOfflinePage(id)) {
-            return OfflinePageDownloadBridge.getDownloadServiceDelegate();
-        }
         if (LegacyHelpers.isLegacyDownload(id)) {
             return DownloadManagerService.getDownloadManagerService();
         }

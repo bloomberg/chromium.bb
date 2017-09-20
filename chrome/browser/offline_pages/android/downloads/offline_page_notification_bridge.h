@@ -20,12 +20,12 @@ class OfflinePageNotificationBridge : public OfflinePageDownloadNotifier {
  public:
   ~OfflinePageNotificationBridge() override {}
 
-  void NotifyDownloadSuccessful(const DownloadUIItem& item) override;
-  void NotifyDownloadFailed(const DownloadUIItem& item) override;
-  void NotifyDownloadProgress(const DownloadUIItem& item) override;
-  void NotifyDownloadPaused(const DownloadUIItem& item) override;
-  void NotifyDownloadInterrupted(const DownloadUIItem& item) override;
-  void NotifyDownloadCanceled(const DownloadUIItem& item) override;
+  void NotifyDownloadSuccessful(const OfflineItem& item) override;
+  void NotifyDownloadFailed(const OfflineItem& item) override;
+  void NotifyDownloadProgress(const OfflineItem& item) override;
+  void NotifyDownloadPaused(const OfflineItem& item) override;
+  void NotifyDownloadInterrupted(const OfflineItem& item) override;
+  void NotifyDownloadCanceled(const OfflineItem& item) override;
 
   void ShowDownloadingToast();
 };

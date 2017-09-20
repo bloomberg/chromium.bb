@@ -5,7 +5,6 @@
 #include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 
 #include "base/android/jni_string.h"
-#include "chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.h"
 #include "jni/OfflinePageNotificationBridge_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -15,16 +14,16 @@ using base::android::ConvertUTF8ToJavaString;
 namespace {
 
 base::android::ScopedJavaLocalRef<jstring> GetDisplayName(
-    const offline_pages::DownloadUIItem& item) {
+    const OfflineItem& item) {
   JNIEnv* env = AttachCurrentThread();
   if (!item.title.empty())
-    return ConvertUTF16ToJavaString(env, item.title);
+    return ConvertUTF8ToJavaString(env, item.title);
 
-  std::string host = item.url.host();
+  std::string host = item.page_url.host();
   if (!host.empty())
     return ConvertUTF8ToJavaString(env, host);
 
-  return ConvertUTF8ToJavaString(env, item.url.spec());
+  return ConvertUTF8ToJavaString(env, item.page_url.spec());
 }
 
 }  // namespace
@@ -33,50 +32,50 @@ namespace offline_pages {
 namespace android {
 
 void OfflinePageNotificationBridge::NotifyDownloadSuccessful(
-    const DownloadUIItem& item) {
+    const OfflineItem& item) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageNotificationBridge_notifyDownloadSuccessful(
-      env, ConvertUTF8ToJavaString(env, item.guid),
-      ConvertUTF8ToJavaString(env, item.url.spec()), GetDisplayName(item));
+      env, ConvertUTF8ToJavaString(env, item.id.id),
+      ConvertUTF8ToJavaString(env, item.page_url.spec()), GetDisplayName(item));
 }
 
 void OfflinePageNotificationBridge::NotifyDownloadFailed(
-    const DownloadUIItem& item) {
+    const OfflineItem& item) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageNotificationBridge_notifyDownloadFailed(
-      env, ConvertUTF8ToJavaString(env, item.guid),
-      ConvertUTF8ToJavaString(env, item.url.spec()), GetDisplayName(item));
+      env, ConvertUTF8ToJavaString(env, item.id.id),
+      ConvertUTF8ToJavaString(env, item.page_url.spec()), GetDisplayName(item));
 }
 
 void OfflinePageNotificationBridge::NotifyDownloadProgress(
-    const DownloadUIItem& item) {
+    const OfflineItem& item) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageNotificationBridge_notifyDownloadProgress(
-      env, ConvertUTF8ToJavaString(env, item.guid),
-      ConvertUTF8ToJavaString(env, item.url.spec()),
-      item.start_time.ToJavaTime(), item.download_progress_bytes,
+      env, ConvertUTF8ToJavaString(env, item.id.id),
+      ConvertUTF8ToJavaString(env, item.page_url.spec()),
+      item.creation_time.ToJavaTime(), item.received_bytes,
       GetDisplayName(item));
 }
 
 void OfflinePageNotificationBridge::NotifyDownloadPaused(
-    const DownloadUIItem& item) {
+    const OfflineItem& item) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageNotificationBridge_notifyDownloadPaused(
-      env, ConvertUTF8ToJavaString(env, item.guid), GetDisplayName(item));
+      env, ConvertUTF8ToJavaString(env, item.id.id), GetDisplayName(item));
 }
 
 void OfflinePageNotificationBridge::NotifyDownloadInterrupted(
-    const DownloadUIItem& item) {
+    const OfflineItem& item) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageNotificationBridge_notifyDownloadInterrupted(
-      env, ConvertUTF8ToJavaString(env, item.guid), GetDisplayName(item));
+      env, ConvertUTF8ToJavaString(env, item.id.id), GetDisplayName(item));
 }
 
 void OfflinePageNotificationBridge::NotifyDownloadCanceled(
-    const DownloadUIItem& item) {
+    const OfflineItem& item) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageNotificationBridge_notifyDownloadCanceled(
-      env, ConvertUTF8ToJavaString(env, item.guid));
+      env, ConvertUTF8ToJavaString(env, item.id.id));
 }
 
 void OfflinePageNotificationBridge::ShowDownloadingToast() {

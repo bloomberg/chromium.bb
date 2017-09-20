@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -37,6 +38,7 @@ import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.offline_items_collection.OfflineContentProvider;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -68,14 +70,17 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     }
 
     private static class DownloadBackendProvider implements BackendProvider {
-        private OfflinePageDownloadBridge mOfflinePageBridge;
         private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
         private ThumbnailProvider mThumbnailProvider;
 
         DownloadBackendProvider(DiscardableReferencePool referencePool) {
-            mOfflinePageBridge = new OfflinePageDownloadBridge(Profile.getLastUsedProfile());
             mSelectionDelegate = new DownloadItemSelectionDelegate();
             mThumbnailProvider = new ThumbnailProviderImpl(referencePool);
+
+            // Create a OfflinePageDownloadBridge in order to initialize and register the offline
+            // pages backend to the offline content aggregator.
+            // TODO(shaktisahu): Find an explicit way of doing this.
+            new OfflinePageDownloadBridge(Profile.getLastUsedProfile().getOriginalProfile());
         }
 
         @Override
@@ -84,8 +89,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         }
 
         @Override
-        public OfflinePageDownloadBridge getOfflinePageBridge() {
-            return mOfflinePageBridge;
+        public OfflineContentProvider getOfflineContentProvider() {
+            return OfflineContentAggregatorFactory.forProfile(
+                    Profile.getLastUsedProfile().getOriginalProfile());
         }
 
         @Override
@@ -100,8 +106,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         @Override
         public void destroy() {
-            getOfflinePageBridge().destroy();
-
             mThumbnailProvider.destroy();
             mThumbnailProvider = null;
         }

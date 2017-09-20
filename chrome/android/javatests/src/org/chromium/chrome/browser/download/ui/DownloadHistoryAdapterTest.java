@@ -24,12 +24,13 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedDownloadDelegate;
-import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedOfflinePageDelegate;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
+import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedOfflineContentProvider;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.content_public.browser.DownloadState;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 /**
@@ -45,6 +46,8 @@ public class DownloadHistoryAdapterTest {
         public CallbackHelper onChangedCallback = new CallbackHelper();
         public CallbackHelper onDownloadItemCreatedCallback = new CallbackHelper();
         public CallbackHelper onDownloadItemUpdatedCallback = new CallbackHelper();
+        public CallbackHelper onOfflineItemCreatedCallback = new CallbackHelper();
+        public CallbackHelper onOfflineItemUpdatedCallback = new CallbackHelper();
         public CallbackHelper onSpaceDisplayUpdatedCallback = new CallbackHelper();
 
         public DownloadItem createdItem;
@@ -68,10 +71,14 @@ public class DownloadHistoryAdapterTest {
         }
 
         @Override
-        public void onOfflineItemCreated(OfflineItem item) {}
+        public void onOfflineItemCreated(OfflineItem item) {
+            onOfflineItemCreatedCallback.notifyCalled();
+        }
 
         @Override
-        public void onOfflineItemUpdated(OfflineItem item) {}
+        public void onOfflineItemUpdated(OfflineItem item) {
+            onOfflineItemUpdatedCallback.notifyCalled();
+        }
 
         @Override
         public void onSpaceDisplayUpdated(SpaceDisplay spaceDisplay) {
@@ -91,14 +98,14 @@ public class DownloadHistoryAdapterTest {
     private DownloadHistoryAdapter mAdapter;
     private Observer mObserver;
     private StubbedDownloadDelegate mDownloadDelegate;
-    private StubbedOfflinePageDelegate mOfflineDelegate;
+    private StubbedOfflineContentProvider mOfflineContentProvider;
     private StubbedProvider mBackendProvider;
 
     @Before
     public void setUp() throws Exception {
         mBackendProvider = new StubbedProvider();
         mDownloadDelegate = mBackendProvider.getDownloadDelegate();
-        mOfflineDelegate = mBackendProvider.getOfflinePageBridge();
+        mOfflineContentProvider = mBackendProvider.getOfflineContentProvider();
         Editor editor = ContextUtils.getAppSharedPreferences().edit();
         editor.putBoolean(PREF_SHOW_STORAGE_INFO_HEADER, true).apply();
     }
@@ -109,7 +116,7 @@ public class DownloadHistoryAdapterTest {
         mAdapter.registerAdapterDataObserver(mObserver);
         mAdapter.registerObserverForTest(mObserver);
 
-        // Initialize the Adapter with all the DownloadItems and OfflinePageDownloadItems.
+        // Initialize the Adapter with all the DownloadItems and OfflineItems.
         int callCount = mObserver.onChangedCallback.getCallCount();
         int onSpaceDisplayUpdatedCallCount = mObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         Assert.assertEquals(0, callCount);
@@ -175,13 +182,15 @@ public class DownloadHistoryAdapterTest {
         }
     }
 
-    private void onOfflineItemAdded(final OfflinePageDownloadItem item, int numberOfCallsToWaitFor)
+    private void onOfflineItemAdded(final OfflineItem item, int numberOfCallsToWaitFor)
             throws Exception {
         int callCount = mObserver.onChangedCallback.getCallCount();
+        final ArrayList<OfflineItem> items = new ArrayList<>();
+        items.add(item);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mOfflineDelegate.observer.onItemAdded(item);
+                mOfflineContentProvider.observer.onItemsAdded(items);
             }
         });
         if (numberOfCallsToWaitFor > 0) {
@@ -189,13 +198,13 @@ public class DownloadHistoryAdapterTest {
         }
     }
 
-    private void onOfflineItemUpdated(
-            final OfflinePageDownloadItem item, int numberOfCallsToWaitFor) throws Exception {
-        int callCount = mObserver.onChangedCallback.getCallCount();
+    private void onOfflineItemUpdated(final OfflineItem item, int numberOfCallsToWaitFor)
+            throws Exception {
+        int callCount = mObserver.onOfflineItemUpdatedCallback.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mOfflineDelegate.observer.onItemUpdated(item);
+                mOfflineContentProvider.observer.onItemUpdated(item);
             }
         });
         if (numberOfCallsToWaitFor > 0) {
@@ -203,13 +212,12 @@ public class DownloadHistoryAdapterTest {
         }
     }
 
-    private void onOfflineItemDeleted(final String id, int numberOfCallsToWaitFor)
-            throws Exception {
+    private void onOfflineItemDeleted(ContentId id, int numberOfCallsToWaitFor) throws Exception {
         int callCount = mObserver.onChangedCallback.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mOfflineDelegate.observer.onItemDeleted(id);
+                mOfflineContentProvider.observer.onItemRemoved(id);
             }
         });
         if (numberOfCallsToWaitFor > 0) {
@@ -361,10 +369,10 @@ public class DownloadHistoryAdapterTest {
     public void testInitialize_ThreeItemsDifferentKinds() throws Exception {
         DownloadItem item0 = StubbedProvider.createDownloadItem(0, "19840116 18:00");
         DownloadItem item1 = StubbedProvider.createDownloadItem(1, "19840116 12:00");
-        OfflinePageDownloadItem item2 = StubbedProvider.createOfflineItem(2, "19840117 6:00");
+        OfflineItem item2 = StubbedProvider.createOfflineItem(2, "19840117 6:00");
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.offTheRecordItems.add(item1);
-        mOfflineDelegate.items.add(item2);
+        mOfflineContentProvider.items.add(item2);
         initializeAdapter(true, true);
         checkAdapterContents(HEADER, null, item2, null, item0, item1);
         Assert.assertEquals(100011, mAdapter.getTotalDownloadSize());
@@ -412,13 +420,13 @@ public class DownloadHistoryAdapterTest {
         checkAdapterContents(HEADER, null, item3, item1, null, item0);
         Assert.assertEquals(111, mAdapter.getTotalDownloadSize());
 
-        // Throw on a new OfflinePageItem.
-        OfflinePageDownloadItem item4 = StubbedProvider.createOfflineItem(0, "19840117 19:00");
+        // Throw on a new OfflineItem.
+        OfflineItem item4 = StubbedProvider.createOfflineItem(0, "19840117 19:00");
         onOfflineItemAdded(item4, 2);
         checkAdapterContents(HEADER, null, item4, item3, item1, null, item0);
 
-        // Update the existing OfflinePageItem.
-        OfflinePageDownloadItem item5 = StubbedProvider.createOfflineItem(0, "19840117 19:00");
+        // Update the existing OfflineItem.
+        OfflineItem item5 = StubbedProvider.createOfflineItem(0, "19840117 19:00");
         onOfflineItemUpdated(item5, 2);
         checkAdapterContents(HEADER, null, item5, item3, item1, null, item0);
     }
@@ -431,11 +439,10 @@ public class DownloadHistoryAdapterTest {
         DownloadItem regularItem = StubbedProvider.createDownloadItem(0, "19840116 18:00");
         DownloadItem offTheRecordItem = StubbedProvider.createDownloadItem(
                 1, "19840116 12:00", true, DownloadState.COMPLETE, 100);
-        OfflinePageDownloadItem offlineItem =
-                StubbedProvider.createOfflineItem(2, "19840117 12:01");
+        OfflineItem offlineItem = StubbedProvider.createOfflineItem(2, "19840117 12:01");
         mDownloadDelegate.regularItems.add(regularItem);
         mDownloadDelegate.offTheRecordItems.add(offTheRecordItem);
-        mOfflineDelegate.items.add(offlineItem);
+        mOfflineContentProvider.items.add(offlineItem);
         initializeAdapter(true, true);
         checkAdapterContents(HEADER, null, offlineItem, null, regularItem, offTheRecordItem);
         Assert.assertEquals(100011, mAdapter.getTotalDownloadSize());
@@ -450,7 +457,7 @@ public class DownloadHistoryAdapterTest {
 
         // Remove an item from the second bucket, which removes the bucket entirely.
         Assert.assertEquals(4, mObserver.onChangedCallback.getCallCount());
-        onOfflineItemDeleted(offlineItem.getGuid(), 2);
+        onOfflineItemDeleted(offlineItem.id, 2);
         checkAdapterContents(HEADER, null, regularItem);
         Assert.assertEquals(1, mAdapter.getTotalDownloadSize());
 
@@ -471,14 +478,14 @@ public class DownloadHistoryAdapterTest {
         DownloadItem item3 = StubbedProvider.createDownloadItem(3, "19840117 12:01");
         DownloadItem item4 = StubbedProvider.createDownloadItem(4, "19840118 12:00");
         DownloadItem item5 = StubbedProvider.createDownloadItem(5, "19840118 12:01");
-        OfflinePageDownloadItem item6 = StubbedProvider.createOfflineItem(0, "19840118 6:00");
+        OfflineItem item6 = StubbedProvider.createOfflineItem(0, "19840118 6:00");
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.offTheRecordItems.add(item1);
         mDownloadDelegate.regularItems.add(item2);
         mDownloadDelegate.regularItems.add(item3);
         mDownloadDelegate.offTheRecordItems.add(item4);
         mDownloadDelegate.regularItems.add(item5);
-        mOfflineDelegate.items.add(item6);
+        mOfflineContentProvider.items.add(item6);
         initializeAdapter(true, true);
         checkAdapterContents(
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);
@@ -507,30 +514,30 @@ public class DownloadHistoryAdapterTest {
     @Test
     @SmallTest
     public void testFilter_AfterOfflineDeletions() throws Exception {
-        OfflinePageDownloadItem item0 = StubbedProvider.createOfflineItem(0, "19840116 6:00");
-        OfflinePageDownloadItem item1 = StubbedProvider.createOfflineItem(1, "19840116 12:00");
-        OfflinePageDownloadItem item2 = StubbedProvider.createOfflineItem(2, "19840120 6:00");
-        mOfflineDelegate.items.add(item0);
-        mOfflineDelegate.items.add(item1);
-        mOfflineDelegate.items.add(item2);
+        OfflineItem item0 = StubbedProvider.createOfflineItem(0, "19840116 6:00");
+        OfflineItem item1 = StubbedProvider.createOfflineItem(1, "19840116 12:00");
+        OfflineItem item2 = StubbedProvider.createOfflineItem(2, "19840120 6:00");
+        mOfflineContentProvider.items.add(item0);
+        mOfflineContentProvider.items.add(item1);
+        mOfflineContentProvider.items.add(item2);
         initializeAdapter(false, true);
         checkAdapterContents(HEADER, null, item2, null, item1, item0);
         Assert.assertEquals(111000, mAdapter.getTotalDownloadSize());
 
         // Filter shows everything.
-        onOfflineItemDeleted(item1.getGuid(), 2);
+        onOfflineItemDeleted(item1.id, 2);
         checkAdapterContents(HEADER, null, item2, null, item0);
 
         // Filter shows nothing when the item is deleted because it's a different kind of item.
         onFilterChanged(DownloadFilter.FILTER_AUDIO, 1);
         Assert.assertEquals(0, mAdapter.getItemCount());
-        onOfflineItemDeleted(item0.getGuid(), 0);
+        onOfflineItemDeleted(item0.id, 0);
         Assert.assertEquals(0, mAdapter.getItemCount());
 
         // Filter shows just pages.
         onFilterChanged(DownloadFilter.FILTER_PAGE, 2);
         checkAdapterContents(HEADER, null, item2);
-        onOfflineItemDeleted(item2.getGuid(), 1);
+        onOfflineItemDeleted(item2.id, 1);
         Assert.assertEquals(0, mAdapter.getItemCount());
     }
 
@@ -586,14 +593,14 @@ public class DownloadHistoryAdapterTest {
         DownloadItem item3 = StubbedProvider.createDownloadItem(3, "19840117 12:01");
         DownloadItem item4 = StubbedProvider.createDownloadItem(4, "19840118 12:00");
         DownloadItem item5 = StubbedProvider.createDownloadItem(5, "19840118 12:01");
-        OfflinePageDownloadItem item6 = StubbedProvider.createOfflineItem(0, "19840118 6:00");
+        OfflineItem item6 = StubbedProvider.createOfflineItem(0, "19840118 6:00");
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.offTheRecordItems.add(item1);
         mDownloadDelegate.regularItems.add(item2);
         mDownloadDelegate.regularItems.add(item3);
         mDownloadDelegate.offTheRecordItems.add(item4);
         mDownloadDelegate.regularItems.add(item5);
-        mOfflineDelegate.items.add(item6);
+        mOfflineContentProvider.items.add(item6);
         initializeAdapter(true, true);
         checkAdapterContents(
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);
@@ -640,14 +647,14 @@ public class DownloadHistoryAdapterTest {
         DownloadItem item3 = StubbedProvider.createDownloadItem(3, "19840117 12:01");
         DownloadItem item4 = StubbedProvider.createDownloadItem(4, "19840118 12:00");
         DownloadItem item5 = StubbedProvider.createDownloadItem(5, "19840118 12:01");
-        OfflinePageDownloadItem item6 = StubbedProvider.createOfflineItem(0, "19840118 6:00");
+        OfflineItem item6 = StubbedProvider.createOfflineItem(0, "19840118 6:00");
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.offTheRecordItems.add(item1);
         mDownloadDelegate.regularItems.add(item2);
         mDownloadDelegate.regularItems.add(item3);
         mDownloadDelegate.offTheRecordItems.add(item4);
         mDownloadDelegate.regularItems.add(item5);
-        mOfflineDelegate.items.add(item6);
+        mOfflineContentProvider.items.add(item6);
         initializeAdapter(true, true);
         checkAdapterContents(
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);
@@ -686,14 +693,14 @@ public class DownloadHistoryAdapterTest {
         final DownloadItem item3 = StubbedProvider.createDownloadItem(3, "19840117 12:01");
         final DownloadItem item4 = StubbedProvider.createDownloadItem(4, "19840118 12:00");
         final DownloadItem item5 = StubbedProvider.createDownloadItem(5, "19840118 12:01");
-        OfflinePageDownloadItem item6 = StubbedProvider.createOfflineItem(0, "19840118 6:00");
+        OfflineItem item6 = StubbedProvider.createOfflineItem(0, "19840118 6:00");
         mDownloadDelegate.regularItems.add(item0);
         mDownloadDelegate.offTheRecordItems.add(item1);
         mDownloadDelegate.regularItems.add(item2);
         mDownloadDelegate.regularItems.add(item3);
         mDownloadDelegate.offTheRecordItems.add(item4);
         mDownloadDelegate.regularItems.add(item5);
-        mOfflineDelegate.items.add(item6);
+        mOfflineContentProvider.items.add(item6);
         initializeAdapter(true, true);
         checkAdapterContents(
                 HEADER, null, item5, item4, item6, null, item3, item2, null, item1, item0);

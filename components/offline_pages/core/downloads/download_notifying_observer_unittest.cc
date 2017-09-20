@@ -37,12 +37,12 @@ class TestNotifier : public OfflinePageDownloadNotifier {
   ~TestNotifier() override;
 
   // OfflinePageDownloadNotifier implementation:
-  void NotifyDownloadSuccessful(const DownloadUIItem& item) override;
-  void NotifyDownloadFailed(const DownloadUIItem& item) override;
-  void NotifyDownloadProgress(const DownloadUIItem& item) override;
-  void NotifyDownloadPaused(const DownloadUIItem& item) override;
-  void NotifyDownloadInterrupted(const DownloadUIItem& item) override;
-  void NotifyDownloadCanceled(const DownloadUIItem& item) override;
+  void NotifyDownloadSuccessful(const OfflineItem& item) override;
+  void NotifyDownloadFailed(const OfflineItem& item) override;
+  void NotifyDownloadProgress(const OfflineItem& item) override;
+  void NotifyDownloadPaused(const OfflineItem& item) override;
+  void NotifyDownloadInterrupted(const OfflineItem& item) override;
+  void NotifyDownloadCanceled(const OfflineItem& item) override;
 
   void Reset();
 
@@ -50,11 +50,11 @@ class TestNotifier : public OfflinePageDownloadNotifier {
     return last_notification_type_;
   }
 
-  DownloadUIItem* download_item() const { return download_item_.get(); }
+  OfflineItem* offline_item() const { return offline_item_.get(); }
 
  private:
   LastNotificationType last_notification_type_;
-  std::unique_ptr<DownloadUIItem> download_item_;
+  std::unique_ptr<OfflineItem> offline_item_;
 };
 
 TestNotifier::TestNotifier()
@@ -62,39 +62,39 @@ TestNotifier::TestNotifier()
 
 TestNotifier::~TestNotifier() {}
 
-void TestNotifier::NotifyDownloadSuccessful(const DownloadUIItem& item) {
+void TestNotifier::NotifyDownloadSuccessful(const OfflineItem& item) {
   last_notification_type_ = LastNotificationType::DOWNLOAD_SUCCESSFUL;
-  download_item_.reset(new DownloadUIItem(item));
+  offline_item_.reset(new OfflineItem(item));
 }
 
-void TestNotifier::NotifyDownloadFailed(const DownloadUIItem& item) {
+void TestNotifier::NotifyDownloadFailed(const OfflineItem& item) {
   last_notification_type_ = LastNotificationType::DOWNLOAD_FAILED;
-  download_item_.reset(new DownloadUIItem(item));
+  offline_item_.reset(new OfflineItem(item));
 }
 
-void TestNotifier::NotifyDownloadProgress(const DownloadUIItem& item) {
+void TestNotifier::NotifyDownloadProgress(const OfflineItem& item) {
   last_notification_type_ = LastNotificationType::DOWNLOAD_PROGRESS;
-  download_item_.reset(new DownloadUIItem(item));
+  offline_item_.reset(new OfflineItem(item));
 }
 
-void TestNotifier::NotifyDownloadPaused(const DownloadUIItem& item) {
+void TestNotifier::NotifyDownloadPaused(const OfflineItem& item) {
   last_notification_type_ = LastNotificationType::DOWNLOAD_PAUSED;
-  download_item_.reset(new DownloadUIItem(item));
+  offline_item_.reset(new OfflineItem(item));
 }
 
-void TestNotifier::NotifyDownloadInterrupted(const DownloadUIItem& item) {
+void TestNotifier::NotifyDownloadInterrupted(const OfflineItem& item) {
   last_notification_type_ = LastNotificationType::DOWNLOAD_INTERRUPTED;
-  download_item_.reset(new DownloadUIItem(item));
+  offline_item_.reset(new OfflineItem(item));
 }
 
-void TestNotifier::NotifyDownloadCanceled(const DownloadUIItem& item) {
+void TestNotifier::NotifyDownloadCanceled(const OfflineItem& item) {
   last_notification_type_ = LastNotificationType::DOWNLOAD_CANCELED;
-  download_item_.reset(new DownloadUIItem(item));
+  offline_item_.reset(new OfflineItem(item));
 }
 
 void TestNotifier::Reset() {
   last_notification_type_ = LastNotificationType::NONE;
-  download_item_.reset(nullptr);
+  offline_item_.reset(nullptr);
 }
 
 }  // namespace
@@ -135,9 +135,9 @@ TEST_F(DownloadNotifyingObserverTest, OnAddedAsAvailable) {
   observer()->OnAdded(request);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_INTERRUPTED,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 }
 
 TEST_F(DownloadNotifyingObserverTest, OnAddedAsOffling) {
@@ -147,7 +147,7 @@ TEST_F(DownloadNotifyingObserverTest, OnAddedAsOffling) {
   observer()->OnAdded(request);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_PROGRESS,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
 }
 
 TEST_F(DownloadNotifyingObserverTest, OnAddedAsPaused) {
@@ -157,7 +157,7 @@ TEST_F(DownloadNotifyingObserverTest, OnAddedAsPaused) {
   observer()->OnAdded(request);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_PAUSED,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
 }
 
 TEST_F(DownloadNotifyingObserverTest, OnChangedToPaused) {
@@ -167,9 +167,9 @@ TEST_F(DownloadNotifyingObserverTest, OnChangedToPaused) {
   observer()->OnChanged(request);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_PAUSED,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 }
 
 TEST_F(DownloadNotifyingObserverTest, OnChangedToAvailable) {
@@ -179,9 +179,9 @@ TEST_F(DownloadNotifyingObserverTest, OnChangedToAvailable) {
   observer()->OnChanged(request);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_INTERRUPTED,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 }
 
 TEST_F(DownloadNotifyingObserverTest, OnChangedToOfflining) {
@@ -191,9 +191,9 @@ TEST_F(DownloadNotifyingObserverTest, OnChangedToOfflining) {
   observer()->OnChanged(request);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_PROGRESS,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 }
 
 TEST_F(DownloadNotifyingObserverTest, OnCompletedSuccess) {
@@ -203,9 +203,9 @@ TEST_F(DownloadNotifyingObserverTest, OnCompletedSuccess) {
                           RequestNotifier::BackgroundSavePageResult::SUCCESS);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_SUCCESSFUL,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 }
 
 TEST_F(DownloadNotifyingObserverTest, OnCompletedCanceled) {
@@ -215,9 +215,9 @@ TEST_F(DownloadNotifyingObserverTest, OnCompletedCanceled) {
       request, RequestNotifier::BackgroundSavePageResult::USER_CANCELED);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_CANCELED,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 }
 
 TEST_F(DownloadNotifyingObserverTest, OnCompletedFailure) {
@@ -227,45 +227,45 @@ TEST_F(DownloadNotifyingObserverTest, OnCompletedFailure) {
       request, RequestNotifier::BackgroundSavePageResult::LOADING_FAILURE);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_FAILED,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 
   notifier()->Reset();
   observer()->OnCompleted(
       request, RequestNotifier::BackgroundSavePageResult::FOREGROUND_CANCELED);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_FAILED,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 
   notifier()->Reset();
   observer()->OnCompleted(
       request, RequestNotifier::BackgroundSavePageResult::SAVE_FAILED);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_FAILED,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 
   notifier()->Reset();
   observer()->OnCompleted(request,
                           RequestNotifier::BackgroundSavePageResult::EXPIRED);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_FAILED,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 
   notifier()->Reset();
   observer()->OnCompleted(
       request, RequestNotifier::BackgroundSavePageResult::RETRY_COUNT_EXCEEDED);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_FAILED,
             notifier()->last_notification_type());
-  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
-  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
-  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+  EXPECT_EQ(kTestGuid, notifier()->offline_item()->id.id);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->offline_item()->page_url);
+  EXPECT_EQ(kTestCreationTime, notifier()->offline_item()->creation_time);
 }
 
 TEST_F(DownloadNotifyingObserverTest, NamespacesNotVisibleInUI) {

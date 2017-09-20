@@ -18,18 +18,20 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/offline_pages/core/downloads/download_ui_adapter.h"
-#include "components/offline_pages/core/downloads/download_ui_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
 
 class PrefRegistrySimple;
 class PrefService;
 
+using ContentId = offline_items_collection::ContentId;
+using OfflineItem = offline_items_collection::OfflineItem;
+using OfflineContentProvider = offline_items_collection::OfflineContentProvider;
+
 namespace ntp_snippets {
 
 // Provides recent tabs content suggestions from the offline pages model.
-class RecentTabSuggestionsProvider
-    : public ContentSuggestionsProvider,
-      public offline_pages::DownloadUIAdapter::Observer {
+class RecentTabSuggestionsProvider : public ContentSuggestionsProvider,
+                                     public OfflineContentProvider::Observer {
  public:
   RecentTabSuggestionsProvider(ContentSuggestionsProvider::Observer* observer,
                                offline_pages::DownloadUIAdapter* ui_adapter,
@@ -60,11 +62,11 @@ class RecentTabSuggestionsProvider
  private:
   friend class RecentTabSuggestionsProviderTestNoLoad;
 
-  // DownloadUIAdapter::Observer implementation.
-  void ItemsLoaded() override;
-  void ItemAdded(const offline_pages::DownloadUIItem& ui_item) override;
-  void ItemUpdated(const offline_pages::DownloadUIItem& ui_item) override;
-  void ItemDeleted(const std::string& ui_item_guid) override;
+  // OfflineContentProvider::Observer implementation.
+  void OnItemsAvailable(OfflineContentProvider* provider) override;
+  void OnItemsAdded(const std::vector<OfflineItem>& items) override;
+  void OnItemRemoved(const ContentId& id) override;
+  void OnItemUpdated(const OfflineItem& item) override;
 
   // Updates the |category_status_| of the |provided_category_| and notifies the
   // |observer_|, if necessary.
@@ -73,17 +75,16 @@ class RecentTabSuggestionsProvider
   // Manually requests all Recent Tabs UI items and updates the suggestions.
   void FetchRecentTabs();
 
-  // Converts an DownloadUIItem to a ContentSuggestion for the
+  // Converts an OfflineItem to a ContentSuggestion for the
   // |provided_category_|.
-  ContentSuggestion ConvertUIItem(
-      const offline_pages::DownloadUIItem& ui_item) const;
+  ContentSuggestion ConvertUIItem(const OfflineItem& ui_item) const;
 
   // Removes duplicates for the same URL leaving only the most recently created
   // items, returns at most |GetMaxSuggestionsCount()| ContentSuggestions
   // corresponding to the remaining items, sorted by creation time (newer
   // first).
   std::vector<ContentSuggestion> GetMostRecentlyCreatedWithoutDuplicates(
-      std::vector<const offline_pages::DownloadUIItem*> ui_items) const;
+      std::vector<OfflineItem>& ui_items) const;
 
   // Fires the |OnSuggestionInvalidated| event for the suggestion corresponding
   // to the given |offline_id| and deletes it from the dismissed IDs list, if
