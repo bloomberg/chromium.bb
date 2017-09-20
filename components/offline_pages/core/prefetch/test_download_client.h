@@ -6,7 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_TEST_DOWNLOAD_CLIENT_H_
 
 #include "base/macros.h"
-#include "components/download/internal/test/empty_client.h"
+#include "components/download/public/test/empty_client.h"
 
 namespace offline_pages {
 

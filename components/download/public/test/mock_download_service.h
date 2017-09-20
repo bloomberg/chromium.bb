@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_INTERNAL_TEST_MOCK_DOWNLOAD_SERVICE_H_
-#define COMPONENTS_DOWNLOAD_INTERNAL_TEST_MOCK_DOWNLOAD_SERVICE_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_TEST_MOCK_DOWNLOAD_SERVICE_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_TEST_MOCK_DOWNLOAD_SERVICE_H_
 
 #include "base/macros.h"
 #include "components/download/public/download_params.h"
@@ -40,4 +40,4 @@ class MockDownloadService : public DownloadService {
 }  // namespace test
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_INTERNAL_TEST_MOCK_DOWNLOAD_SERVICE_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_TEST_MOCK_DOWNLOAD_SERVICE_H_

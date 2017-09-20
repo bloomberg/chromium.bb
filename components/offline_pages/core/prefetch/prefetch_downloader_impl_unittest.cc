@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "components/download/internal/test/test_download_service.h"
+#include "components/download/public/test/test_download_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
 #include "components/offline_pages/core/prefetch/task_test_base.h"

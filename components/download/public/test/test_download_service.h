@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_INTERNAL_TEST_TEST_DOWNLOAD_SERVICE_H_
-#define COMPONENTS_DOWNLOAD_INTERNAL_TEST_TEST_DOWNLOAD_SERVICE_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_TEST_TEST_DOWNLOAD_SERVICE_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_TEST_TEST_DOWNLOAD_SERVICE_H_
 
 #include <list>
 
@@ -75,4 +75,4 @@ class TestDownloadService : public DownloadService {
 }  // namespace test
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_INTERNAL_TEST_TEST_DOWNLOAD_SERVICE_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_TEST_TEST_DOWNLOAD_SERVICE_H_
