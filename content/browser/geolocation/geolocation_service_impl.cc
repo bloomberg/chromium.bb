@@ -31,7 +31,7 @@ void GeolocationServiceImplContext::RequestPermission(
     const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   request_id_ = permission_manager_->RequestPermission(
       PermissionType::GEOLOCATION, render_frame_host,
-      render_frame_host->GetLastCommittedURL().GetOrigin(), user_gesture,
+      render_frame_host->GetLastCommittedOrigin().GetURL(), user_gesture,
       // NOTE: The permission request is canceled in the destructor, so it is
       // safe to pass |this| as Unretained.
       base::Bind(&GeolocationServiceImplContext::HandlePermissionStatus,
