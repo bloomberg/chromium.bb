@@ -125,7 +125,7 @@ public class AwAutofillTest {
     public void testBasicAutofill() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
-        final String data = "<html><head></head><body><form action='a.html'>"
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<input type='text' id='text1' name='username'"
                 + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
                 + "<input type='checkbox' id='checkbox1' name='showpassword'>"
@@ -149,14 +149,21 @@ public class AwAutofillTest {
             TestViewStructure viewStructure = mHelper.getTestViewStructure();
             assertNotNull(viewStructure);
             assertEquals(totalControls, viewStructure.getChildCount());
+
+            // Verify form filled correctly in ViewStructure.
             URL pageURL = new URL(url);
             String webDomain =
                     new URL(pageURL.getProtocol(), pageURL.getHost(), pageURL.getPort(), "/")
                             .toString();
             assertEquals(webDomain, viewStructure.getWebDomain());
-            TestViewStructure child0 = viewStructure.getChild(0);
+            // WebView shouldn't set class name.
+            assertNull(viewStructure.getClassName());
+            TestViewStructure.AwHtmlInfo htmlInfoForm = viewStructure.getHtmlInfo();
+            assertEquals("form", htmlInfoForm.getTag());
+            assertEquals("formname", htmlInfoForm.getAttribute("name"));
 
             // Verify input text control filled correctly in ViewStructure.
+            TestViewStructure child0 = viewStructure.getChild(0);
             assertEquals(View.AUTOFILL_TYPE_TEXT, child0.getAutofillType());
             assertEquals("placeholder@placeholder.com", child0.getHint());
             assertEquals("username", child0.getAutofillHints()[0]);
