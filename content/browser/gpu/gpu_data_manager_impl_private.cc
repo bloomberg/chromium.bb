@@ -719,9 +719,6 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
   if (!CanUseGpuBrowserCompositor())
     command_line->AppendSwitch(switches::kDisableGpuCompositing);
 #endif
-
-  if (IsGpuSchedulerEnabled())
-    command_line->AppendSwitch(switches::kEnableGpuAsyncWorkerContext);
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
@@ -851,7 +848,7 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
-  if (IsGpuSchedulerEnabled())
+  if (base::FeatureList::IsEnabled(features::kGpuScheduler))
     gpu_preferences->enable_gpu_scheduler = true;
 
   if (ShouldDisableAcceleratedVideoDecode(command_line))
@@ -1008,10 +1005,6 @@ bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
   }
   UpdateGpuInfoHelper();
   return true;
-}
-
-bool GpuDataManagerImplPrivate::IsGpuSchedulerEnabled() const {
-  return base::FeatureList::IsEnabled(features::kGpuScheduler);
 }
 
 bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
