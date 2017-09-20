@@ -80,6 +80,16 @@ class PreMenuEventDispatchHandler : public ui::EventHandler,
 };
 #endif  // OS_MACOSX
 
+void TransferGesture(Widget* source, Widget* target) {
+#if defined(OS_MACOSX)
+  NOTIMPLEMENTED();
+#else   // !defined(OS_MACOSX)
+  ui::GestureRecognizer::Get()->TransferEventsTo(
+      source->GetNativeView(), target->GetNativeView(),
+      ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
+#endif  // defined(OS_MACOSX)
+}
+
 }  // namespace internal
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,6 +103,8 @@ MenuHost::MenuHost(SubmenuView* submenu)
 }
 
 MenuHost::~MenuHost() {
+  if (owner_)
+    owner_->RemoveObserver(this);
 }
 
 void MenuHost::InitMenuHost(Widget* parent,
@@ -127,6 +139,11 @@ void MenuHost::InitMenuHost(Widget* parent,
       menu_controller, submenu_, GetNativeView()));
 #endif
 
+  DCHECK(!owner_);
+  owner_ = parent;
+  if (owner_)
+    owner_->AddObserver(this);
+
   SetContentsView(contents_view);
   ShowMenuHost(do_capture);
 }
@@ -141,14 +158,32 @@ void MenuHost::ShowMenuHost(bool do_capture) {
   base::AutoReset<bool> reseter(&ignore_capture_lost_, true);
   ShowInactive();
   if (do_capture) {
+    MenuController* menu_controller =
+        submenu_->GetMenuItem()->GetMenuController();
+    if (menu_controller && menu_controller->send_gesture_events_to_owner()) {
+      // TransferGesture when owner needs gesture events so that the incoming
+      // touch events after MenuHost is created are properly translated into
+      // gesture events instead of being dropped.
+      internal::TransferGesture(owner_, this);
+    } else {
+      ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
+    }
+#if defined(MACOSX)
     // Cancel existing touches, so we don't miss some touch release/cancel
     // events due to the menu taking capture.
     ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
+#endif  // defined (OS_MACOSX)
     native_widget_private()->SetCapture();
   }
 }
 
 void MenuHost::HideMenuHost() {
+  MenuController* menu_controller =
+      submenu_->GetMenuItem()->GetMenuController();
+  if (owner_ && menu_controller &&
+      menu_controller->send_gesture_events_to_owner()) {
+    internal::TransferGesture(this, owner_);
+  }
   ignore_capture_lost_ = true;
   ReleaseMenuHostCapture();
   Hide();
@@ -175,7 +210,7 @@ void MenuHost::ReleaseMenuHostCapture() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MenuHost, Widget overrides:
+// MenuHost, private:
 
 internal::RootView* MenuHost::CreateRootView() {
   return new MenuHostRootView(this, submenu_);
@@ -243,6 +278,12 @@ void MenuHost::OnDragComplete() {
   // Return capture so we get MouseCaptureLost events.
   if (!should_close)
     native_widget_private()->SetCapture();
+}
+
+void MenuHost::OnWidgetDestroying(Widget* widget) {
+  DCHECK_EQ(owner_, widget);
+  owner_->RemoveObserver(this);
+  owner_ = nullptr;
 }
 
 }  // namespace views

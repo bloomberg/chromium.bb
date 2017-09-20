@@ -154,6 +154,20 @@ class TestEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
+// A test widget that counts gesture events.
+class GestureTestWidget : public Widget {
+ public:
+  GestureTestWidget() {}
+
+  void OnGestureEvent(ui::GestureEvent* event) override { ++gesture_count_; }
+
+  int gesture_count() const { return gesture_count_; }
+
+ private:
+  int gesture_count_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(GestureTestWidget);
+};
+
 #if defined(USE_AURA)
 // A DragDropClient which does not trigger a nested run loop. Instead a
 // callback is triggered during StartDragAndDrop in order to allow testing.
@@ -463,7 +477,7 @@ class MenuControllerTest : public ViewsTestBase {
         menu_item()->GetSubmenu()->GetMenuItemAt(0)->CreateSubmenu(), location);
   }
 
-  Widget* owner() { return owner_.get(); }
+  GestureTestWidget* owner() { return owner_.get(); }
   ui::test::EventGenerator* event_generator() { return event_generator_.get(); }
   TestMenuItemViewShown* menu_item() { return menu_item_.get(); }
   TestMenuDelegate* menu_delegate() { return menu_delegate_.get(); }
@@ -518,9 +532,11 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller_ = nullptr;
   }
 
+  int CountOwnerOnGestureEvent() const { return owner_->gesture_count(); }
+
  private:
   void Init() {
-    owner_.reset(new Widget);
+    owner_ = base::MakeUnique<GestureTestWidget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     owner_->Init(params);
@@ -555,7 +571,7 @@ class MenuControllerTest : public ViewsTestBase {
   // Not owned.
   DestructingTestViewsDelegate* test_views_delegate_;
 
-  std::unique_ptr<Widget> owner_;
+  std::unique_ptr<GestureTestWidget> owner_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
   std::unique_ptr<TestMenuItemViewShown> menu_item_;
   std::unique_ptr<TestMenuControllerDelegate> menu_controller_delegate_;
@@ -1098,6 +1114,42 @@ TEST_F(MenuControllerTest, DoubleAsynchronousNested) {
   controller->CancelAll();
   EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
+}
+
+TEST_F(MenuControllerTest, PreserveGestureForOwner) {
+  MenuController* controller = menu_controller();
+  MenuItemView* item = menu_item();
+  controller->Run(owner(), nullptr, item, gfx::Rect(),
+                  MENU_ANCHOR_FIXED_BOTTOMCENTER, false, false);
+  SubmenuView* sub_menu = item->GetSubmenu();
+  sub_menu->ShowAt(owner(), gfx::Rect(0, 0, 100, 100), true);
+
+  gfx::Point location(sub_menu->bounds().bottom_left().x(),
+                      sub_menu->bounds().bottom_left().y() + 10);
+  ui::GestureEvent event(location.x(), location.y(), 0, ui::EventTimeForNow(),
+                         ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
+
+  // Gesture events should not be forwarded if the flag is not set.
+  EXPECT_EQ(CountOwnerOnGestureEvent(), 0);
+  EXPECT_FALSE(controller->send_gesture_events_to_owner());
+  controller->OnGestureEvent(sub_menu, &event);
+  EXPECT_EQ(CountOwnerOnGestureEvent(), 0);
+
+  // The menu's owner should receive gestures triggered outside the menu.
+  controller->set_send_gesture_events_to_owner(true);
+  controller->OnGestureEvent(sub_menu, &event);
+  EXPECT_EQ(CountOwnerOnGestureEvent(), 1);
+
+  ui::GestureEvent event2(location.x(), location.y(), 0, ui::EventTimeForNow(),
+                          ui::GestureEventDetails(ui::ET_GESTURE_END));
+
+  controller->OnGestureEvent(sub_menu, &event2);
+  EXPECT_EQ(CountOwnerOnGestureEvent(), 2);
+
+  // ET_GESTURE_END resets the |send_gesture_events_to_owner_| flag, so futher
+  // gesture events should not be sent to the owner.
+  controller->OnGestureEvent(sub_menu, &event2);
+  EXPECT_EQ(CountOwnerOnGestureEvent(), 2);
 }
 
 // Tests that a nested menu does not crash when trying to repost events that

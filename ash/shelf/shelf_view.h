@@ -328,6 +328,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // Shows a default shelf context menu with optional extra custom |menu_items|.
   void AfterGetContextMenuItems(const ShelfID& shelf_id,
                                 const gfx::Point& point,
+                                views::View* source,
                                 ui::MenuSourceType source_type,
                                 std::vector<mojom::MenuItemPtr> menu_items);
 

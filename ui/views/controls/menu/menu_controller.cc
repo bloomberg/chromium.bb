@@ -778,6 +778,20 @@ bool MenuController::OnMouseWheel(SubmenuView* source,
 
 void MenuController::OnGestureEvent(SubmenuView* source,
                                     ui::GestureEvent* event) {
+  if (owner_ && send_gesture_events_to_owner()) {
+#if defined(OS_MACOSX)
+    NOTIMPLEMENTED();
+#else   // !defined(OS_MACOSX)
+    event->ConvertLocationToTarget(source->GetWidget()->GetNativeWindow(),
+                                   owner()->GetNativeWindow());
+#endif  // defined(OS_MACOSX)
+    owner()->OnGestureEvent(event);
+    // Reset |send_gesture_events_to_owner_| when the first gesture ends.
+    if (event->type() == ui::ET_GESTURE_END)
+      send_gesture_events_to_owner_ = false;
+    return;
+  }
+
   MenuHostRootView* root_view = GetRootView(source, event->location());
   if (root_view) {
     // Reset hot-tracking if a different view is getting a touch event.
@@ -829,7 +843,7 @@ void MenuController::OnGestureEvent(SubmenuView* source,
   }
 
   if (event->stopped_propagation())
-      return;
+    return;
 
   if (!part.submenu)
     return;
@@ -1386,27 +1400,8 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
 MenuController::MenuController(bool blocking,
                                internal::MenuControllerDelegate* delegate)
     : blocking_run_(blocking),
-      showing_(false),
-      exit_type_(EXIT_NONE),
-      did_capture_(false),
-      result_(NULL),
-      accept_event_flags_(0),
-      drop_target_(NULL),
-      drop_position_(MenuDelegate::DROP_UNKNOWN),
-      owner_(NULL),
-      possible_drag_(false),
-      drag_in_progress_(false),
-      did_initiate_drag_(false),
-      valid_drop_coordinates_(false),
-      last_drop_operation_(MenuDelegate::DROP_UNKNOWN),
-      showing_submenu_(false),
       active_mouse_view_tracker_(base::MakeUnique<ViewTracker>()),
-      hot_button_(nullptr),
-      delegate_(delegate),
-      is_combobox_(false),
-      item_selected_by_touch_(false),
-      current_mouse_event_target_(nullptr),
-      current_mouse_pressed_state_(0) {
+      delegate_(delegate) {
   delegate_stack_.push_back(delegate_);
   active_instance_ = this;
 }
