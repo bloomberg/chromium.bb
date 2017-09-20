@@ -233,6 +233,24 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
   return mojo;
 }
 
+const chromeos::NetworkState* GetShillBackedNetwork(
+    const chromeos::NetworkState* network) {
+  if (!network)
+    return nullptr;
+
+  // Non-Tether networks are already backed by Shill.
+  if (!chromeos::NetworkTypePattern::Tether().MatchesType(network->type()))
+    return network;
+
+  // Tether networks which are not connected are also not backed by Shill.
+  if (!network->IsConnectedState())
+    return nullptr;
+
+  // Connected Tether networks delegate to an underlying Wi-Fi network.
+  DCHECK(!network->tether_guid().empty());
+  return GetStateHandler()->GetNetworkStateFromGuid(network->tether_guid());
+}
+
 void ForgetNetworkSuccessCallback(
     const arc::mojom::NetHost::ForgetNetworkCallback& mojo_callback) {
   mojo_callback.Run(arc::mojom::NetworkResult::SUCCESS);
@@ -372,7 +390,7 @@ void ArcNetHostImpl::OnInstanceReady() {
   // If the default network is an ARC VPN, that means Chrome is restarting
   // after a crash but shill still thinks a VPN is connected. Nuke it.
   const chromeos::NetworkState* default_network =
-      GetStateHandler()->DefaultNetwork();
+      GetShillBackedNetwork(GetStateHandler()->DefaultNetwork());
   if (default_network && default_network->type() == shill::kTypeVPN &&
       default_network->vpn_provider_type() == shill::kProviderArcVpn) {
     VLOG(0) << "Disconnecting stale ARC VPN " << default_network->path();
@@ -564,7 +582,7 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
 bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
                                             std::string* path) {
   const chromeos::NetworkState* network =
-      GetStateHandler()->GetNetworkStateFromGuid(guid);
+      GetShillBackedNetwork(GetStateHandler()->GetNetworkStateFromGuid(guid));
   if (network) {
     *path = network->path();
     return true;
@@ -677,6 +695,10 @@ void ArcNetHostImpl::GetDefaultNetwork(
         chromeos::NetworkTypePattern::NonVirtual());
   }
 
+  // Some network types are not backed by Shill; make sure to pass a Shill-
+  // backed network to ARC to ensure that it can use its network connection.
+  default_network = GetShillBackedNetwork(default_network);
+
   if (!default_network) {
     VLOG(1) << "GetDefaultNetwork: no default network";
     callback.Run(nullptr, nullptr);
@@ -713,7 +735,10 @@ void ArcNetHostImpl::DefaultNetworkChanged(
   if (!arc_vpn_service_path_.empty())
     return;
 
-  if (!network) {
+  const chromeos::NetworkState* shill_backed_network =
+      GetShillBackedNetwork(network);
+
+  if (!shill_backed_network) {
     VLOG(1) << "No default network";
     auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(),
                                                      DefaultNetworkChanged);
@@ -722,10 +747,10 @@ void ArcNetHostImpl::DefaultNetworkChanged(
     return;
   }
 
-  VLOG(1) << "New default network: " << network->path();
+  VLOG(1) << "New default network: " << shill_backed_network->path();
   std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
   GetManagedConfigurationHandler()->GetProperties(
-      user_id_hash, network->path(),
+      user_id_hash, shill_backed_network->path(),
       base::Bind(&ArcNetHostImpl::DefaultNetworkSuccessCallback,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DefaultNetworkFailureCallback));
@@ -749,8 +774,12 @@ std::string ArcNetHostImpl::LookupArcVpnServicePath() {
       false /* visible_only */, kGetNetworksListLimit, &state_list);
 
   for (const chromeos::NetworkState* state : state_list) {
-    if (state->vpn_provider_type() == shill::kProviderArcVpn) {
-      return state->path();
+    const chromeos::NetworkState* shill_backed_network =
+        GetShillBackedNetwork(state);
+    if (!shill_backed_network)
+      continue;
+    if (shill_backed_network->vpn_provider_type() == shill::kProviderArcVpn) {
+      return shill_backed_network->path();
     }
   }
   return std::string();
@@ -906,8 +935,13 @@ void ArcNetHostImpl::DisconnectRequested(const std::string& service_path) {
 
 void ArcNetHostImpl::NetworkConnectionStateChanged(
     const chromeos::NetworkState* network) {
-  if (arc_vpn_service_path_ != network->path() ||
-      network->IsConnectingOrConnected()) {
+  const chromeos::NetworkState* shill_backed_network =
+      GetShillBackedNetwork(network);
+  if (!shill_backed_network)
+    return;
+
+  if (arc_vpn_service_path_ != shill_backed_network->path() ||
+      shill_backed_network->IsConnectingOrConnected()) {
     return;
   }
 
@@ -915,7 +949,7 @@ void ArcNetHostImpl::NetworkConnectionStateChanged(
   // service.  This can happen if a user tries to connect to a Chrome OS
   // VPN, and shill's VPNProvider::DisconnectAll() forcibly disconnects
   // all other VPN services to avoid a conflict.
-  VLOG(1) << "NetworkConnectionStateChanged " << network->path();
+  VLOG(1) << "NetworkConnectionStateChanged " << shill_backed_network->path();
   DisconnectArcVpn();
 }
 
