@@ -31,13 +31,18 @@
 
 namespace media {
 
-class SourceBufferRange;
+class SourceBufferRangeByDts;
 
 // See file-level comment for complete description.
 class MEDIA_EXPORT SourceBufferStream {
  public:
   typedef StreamParser::BufferQueue BufferQueue;
-  typedef std::list<std::unique_ptr<SourceBufferRange>> RangeList;
+  // TODO(wolenetz): Define both a ByDts and ByPts RangeList and use the type
+  // conditioned on which kind of SourceBufferStream. Maybe take a template
+  // parameter to SourceBufferStream class (e.g. SourceBufferRangeBy{Dts,Pts})
+  // to differentiate the behavior while being type-safe and efficient. See
+  // https://crbug.com/718641.
+  typedef std::list<std::unique_ptr<SourceBufferRangeByDts>> RangeList;
 
   // Status returned by GetNextBuffer().
   // kSuccess: Indicates that the next buffer was returned.
@@ -230,7 +235,8 @@ class MEDIA_EXPORT SourceBufferStream {
   // Inserts |new_range| into |ranges_| preserving sorted order. Returns an
   // iterator in |ranges_| that points to |new_range|. |new_range| becomes owned
   // by |ranges_|.
-  RangeList::iterator AddToRanges(std::unique_ptr<SourceBufferRange> new_range);
+  RangeList::iterator AddToRanges(
+      std::unique_ptr<SourceBufferRangeByDts> new_range);
 
   // Returns an iterator that points to the place in |ranges_| where
   // |selected_range_| lives.
@@ -238,11 +244,11 @@ class MEDIA_EXPORT SourceBufferStream {
 
   // Sets the |selected_range_| to |range| and resets the next buffer position
   // for the previous |selected_range_|.
-  void SetSelectedRange(SourceBufferRange* range);
+  void SetSelectedRange(SourceBufferRangeByDts* range);
 
   // Seeks |range| to |seek_timestamp| and then calls SetSelectedRange() with
   // |range|.
-  void SeekAndSetSelectedRange(SourceBufferRange* range,
+  void SeekAndSetSelectedRange(SourceBufferRangeByDts* range,
                                DecodeTimestamp seek_timestamp);
 
   // Resets this stream back to an unseeked state.
@@ -407,7 +413,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // Pointer to the seeked-to Range. This is the range from which
   // GetNextBuffer() calls are fulfilled after the |track_buffer_| has been
   // emptied.
-  SourceBufferRange* selected_range_ = nullptr;
+  SourceBufferRangeByDts* selected_range_ = nullptr;
 
   // Queue of the next buffers to be returned from calls to GetNextBuffer(). If
   // |track_buffer_| is empty, return buffers from |selected_range_|.

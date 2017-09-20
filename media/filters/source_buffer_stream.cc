@@ -17,6 +17,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/filters/source_buffer_platform.h"
 #include "media/filters/source_buffer_range.h"
+#include "media/filters/source_buffer_range_by_dts.h"
 
 namespace media {
 
@@ -78,7 +79,7 @@ base::TimeDelta kSeekToStartFudgeRoom() {
 }
 
 // Helper method for logging, converts a range into a readable string.
-std::string RangeToString(const SourceBufferRange& range) {
+std::string RangeToString(const SourceBufferRangeByDts& range) {
   if (range.size_in_bytes() == 0) {
     return "[]";
   }
@@ -309,11 +310,12 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
           buffers_for_new_range->front()->GetDecodeTimestamp();
     }
 
-    range_for_next_append_ = AddToRanges(base::MakeUnique<SourceBufferRange>(
-        TypeToGapPolicy(GetType()), *buffers_for_new_range,
-        new_range_start_time,
-        base::Bind(&SourceBufferStream::GetMaxInterbufferDistance,
-                   base::Unretained(this))));
+    range_for_next_append_ =
+        AddToRanges(base::MakeUnique<SourceBufferRangeByDts>(
+            TypeToGapPolicy(GetType()), *buffers_for_new_range,
+            new_range_start_time,
+            base::Bind(&SourceBufferStream::GetMaxInterbufferDistance,
+                       base::Unretained(this))));
     last_appended_buffer_timestamp_ =
         buffers_for_new_range->back()->GetDecodeTimestamp();
     last_appended_buffer_duration_ = buffers_for_new_range->back()->duration();
@@ -492,13 +494,13 @@ void SourceBufferStream::RemoveInternal(DecodeTimestamp start,
 
   RangeList::iterator itr = ranges_.begin();
   while (itr != ranges_.end()) {
-    SourceBufferRange* range = itr->get();
+    SourceBufferRangeByDts* range = itr->get();
     if (range->GetStartTimestamp() >= end)
       break;
 
     // Split off any remaining GOPs starting at or after |end| and add it to
     // |ranges_|.
-    std::unique_ptr<SourceBufferRange> new_range = range->SplitRange(end);
+    std::unique_ptr<SourceBufferRangeByDts> new_range = range->SplitRange(end);
     if (new_range) {
       itr = ranges_.insert(++itr, std::move(new_range));
 
@@ -910,7 +912,7 @@ size_t SourceBufferStream::GetRemovalRange(
 
   for (RangeList::iterator itr = ranges_.begin();
        itr != ranges_.end() && bytes_freed < total_bytes_to_free; ++itr) {
-    SourceBufferRange* range = itr->get();
+    SourceBufferRangeByDts* range = itr->get();
     if (range->GetStartTimestamp() >= end_timestamp)
       break;
     if (range->GetEndTimestamp() < start_timestamp)
@@ -936,10 +938,10 @@ size_t SourceBufferStream::FreeBuffers(size_t total_bytes_to_free,
 
   // This range will save the last GOP appended to |range_for_next_append_|
   // if the buffers surrounding it get deleted during garbage collection.
-  std::unique_ptr<SourceBufferRange> new_range_for_append;
+  std::unique_ptr<SourceBufferRangeByDts> new_range_for_append;
 
   while (!ranges_.empty() && bytes_freed < total_bytes_to_free) {
-    SourceBufferRange* current_range = NULL;
+    SourceBufferRangeByDts* current_range = NULL;
     BufferQueue buffers;
     size_t bytes_deleted = 0;
 
@@ -984,7 +986,7 @@ size_t SourceBufferStream::FreeBuffers(size_t total_bytes_to_free,
       DCHECK(!new_range_for_append);
 
       // Create a new range containing these buffers.
-      new_range_for_append = base::MakeUnique<SourceBufferRange>(
+      new_range_for_append = base::MakeUnique<SourceBufferRangeByDts>(
           TypeToGapPolicy(GetType()), buffers, kNoDecodeTimestamp(),
           base::Bind(&SourceBufferStream::GetMaxInterbufferDistance,
                      base::Unretained(this)));
@@ -1222,7 +1224,8 @@ void SourceBufferStream::MergeWithAdjacentRangeIfNecessary(
     const RangeList::iterator& range_with_new_buffers_itr) {
   DCHECK(range_with_new_buffers_itr != ranges_.end());
 
-  SourceBufferRange* range_with_new_buffers = range_with_new_buffers_itr->get();
+  SourceBufferRangeByDts* range_with_new_buffers =
+      range_with_new_buffers_itr->get();
   RangeList::iterator next_range_itr = range_with_new_buffers_itr;
   ++next_range_itr;
 
@@ -1458,7 +1461,7 @@ SourceBufferStream::FindExistingRangeFor(DecodeTimestamp start_timestamp) {
 }
 
 SourceBufferStream::RangeList::iterator SourceBufferStream::AddToRanges(
-    std::unique_ptr<SourceBufferRange> new_range) {
+    std::unique_ptr<SourceBufferRangeByDts> new_range) {
   DecodeTimestamp start_timestamp = new_range->GetStartTimestamp();
   RangeList::iterator itr = ranges_.end();
   for (itr = ranges_.begin(); itr != ranges_.end(); ++itr) {
@@ -1481,13 +1484,14 @@ SourceBufferStream::GetSelectedRangeItr() {
 }
 
 void SourceBufferStream::SeekAndSetSelectedRange(
-    SourceBufferRange* range, DecodeTimestamp seek_timestamp) {
+    SourceBufferRangeByDts* range,
+    DecodeTimestamp seek_timestamp) {
   if (range)
     range->Seek(seek_timestamp);
   SetSelectedRange(range);
 }
 
-void SourceBufferStream::SetSelectedRange(SourceBufferRange* range) {
+void SourceBufferStream::SetSelectedRange(SourceBufferRangeByDts* range) {
   DVLOG(1) << __func__ << " " << GetStreamTypeName() << ": " << selected_range_
            << " " << (selected_range_ ? RangeToString(*selected_range_) : "")
            << " -> " << range << " " << (range ? RangeToString(*range) : "");
