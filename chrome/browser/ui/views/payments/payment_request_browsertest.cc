@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest, Url_Valid) {
   InvokePaymentRequestWithJs(
       "buyHelper([{"
-      "  supportedMethods: ['https://bobpay.xyz', 'http://bobpay.xyz']"
+      "  supportedMethods: ['https://bobpay.xyz']"
       "}, {"
       "  supportedMethods: ['basic-card']"
       "}]);");
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
                        MultiplePaymentMethodIdentifiers) {
   InvokePaymentRequestWithJs(
       "buyHelper([{"
-      "  supportedMethods: ['https://bobpay.xyz', 'http://bobpay.xyz']"
+      "  supportedMethods: ['https://bobpay.xyz', 'https://bobpay.xyz']"
       "}, {"
       "  supportedMethods: ['mastercard', 'visa', 'https://alicepay.com']"
       "}, {"

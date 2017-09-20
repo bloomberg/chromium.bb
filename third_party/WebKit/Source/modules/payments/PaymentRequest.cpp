@@ -8,6 +8,7 @@
 #include <utility>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/ScriptRegexp.h"
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/modules/v8/V8AndroidPayMethodData.h"
 #include "bindings/modules/v8/V8BasicCardRequest.h"
@@ -44,6 +45,7 @@
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/runtime_enabled_features.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/wtf/HashSet.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
@@ -537,6 +539,24 @@ void CountPaymentRequestNetworkNameInSupportedMethods(
   }
 }
 
+// Implements the PMI validation algorithm from:
+// https://www.w3.org/TR/payment-method-id/#dfn-validate-a-payment-method-identifier
+bool IsValidMethodFormat(const String& identifier) {
+  KURL url(NullURL(), identifier);
+  if (url.IsValid()) {
+    // URL PMI validation rules:
+    // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
+    return url.Protocol() == "https" && url.User().IsEmpty() &&
+           url.Pass().IsEmpty();
+  } else {
+    // Syntax for a valid standardized PMI:
+    // https://www.w3.org/TR/payment-method-id/#dfn-syntax-of-a-standardized-payment-method-identifier
+    return ScriptRegexp("^[a-z]+[0-9a-z]*(-[a-z]+[0-9a-z]*)*$",
+                        kTextCaseSensitive)
+               .Match(identifier) == 0;
+  }
+}
+
 void ValidateAndConvertPaymentDetailsModifiers(
     const HeapVector<PaymentDetailsModifier>& input,
     Vector<PaymentDetailsModifierPtr>& output,
@@ -595,6 +615,11 @@ void ValidateAndConvertPaymentDetailsModifiers(
         exception_state.ThrowTypeError(
             "Supported method name for identifier cannot be longer than 1024 "
             "characters");
+        return;
+      }
+      if (!IsValidMethodFormat(method)) {
+        exception_state.ThrowRangeError(
+            "Invalid payment method identifier format");
         return;
       }
     }
@@ -746,6 +771,11 @@ void ValidateAndConvertPaymentMethodData(
         exception_state.ThrowTypeError(
             "A payment method identifier cannot be longer than 1024 "
             "characters");
+        return;
+      }
+      if (!IsValidMethodFormat(identifier)) {
+        exception_state.ThrowRangeError(
+            "Invalid payment method identifier format");
         return;
       }
     }
