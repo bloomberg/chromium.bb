@@ -461,6 +461,10 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
       shelf_view_->PointerReleasedOnButton(this, ShelfView::TOUCH, false);
       event->SetHandled();
       return;
+    case ui::ET_GESTURE_LONG_TAP:
+      // Handle LONG_TAP to avoid opening the context menu twice.
+      event->SetHandled();
+      return;
     default:
       return Button::OnGestureEvent(event);
   }

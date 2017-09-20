@@ -89,6 +89,12 @@ class VIEWS_EXPORT MenuRunner {
     // Menu with fixed anchor position, so |MenuRunner| will not attempt to
     // adjust the anchor point. For example the context menu of shelf item.
     FIXED_ANCHOR = 1 << 6,
+
+    // The menu's owner could be in the middle of a gesture when the menu opens
+    // and can use this flag to continue the gesture. For example, Chrome OS's
+    // shelf uses the flag to continue dragging an item without lifting the
+    // finger after the context menu of the item is opened.
+    SEND_GESTURE_EVENTS_TO_OWNER = 1 << 7,
   };
 
   // Creates a new MenuRunner, which may use a native menu if available.
