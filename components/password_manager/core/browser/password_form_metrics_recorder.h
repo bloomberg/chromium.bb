@@ -158,6 +158,7 @@ class PasswordFormMetricsRecorder
 
     // Interactions with password bubble.
     kEditedUsernameInBubble = 100,
+    kSelectedDifferentPasswordInBubble = 101,
   };
 
   // The maximum number of combinations of the ManagerAction, UserAction and
