@@ -83,36 +83,61 @@ foreach (@tx_sizes) {
   }
 }
 
+specialize qw/aom_dc_top_predictor_4x4 msa neon sse2/;
+specialize qw/aom_dc_top_predictor_4x8 sse2/;
+specialize qw/aom_dc_top_predictor_8x4 sse2/;
+specialize qw/aom_dc_top_predictor_8x8 neon msa sse2/;
+specialize qw/aom_dc_top_predictor_8x16 sse2/;
+specialize qw/aom_dc_top_predictor_16x8 sse2/;
+specialize qw/aom_dc_top_predictor_16x16 neon msa sse2/;
+specialize qw/aom_dc_top_predictor_16x32 sse2/;
+specialize qw/aom_dc_top_predictor_32x16 sse2/;
+specialize qw/aom_dc_top_predictor_32x32 msa neon sse2/;
+specialize qw/aom_dc_left_predictor_4x4 msa neon sse2/;
+specialize qw/aom_dc_left_predictor_4x8 sse2/;
+specialize qw/aom_dc_left_predictor_8x4 sse2/;
+specialize qw/aom_dc_left_predictor_8x8 neon msa sse2/;
+specialize qw/aom_dc_left_predictor_8x16 sse2/;
+specialize qw/aom_dc_left_predictor_16x8 sse2/;
+specialize qw/aom_dc_left_predictor_16x16 neon msa sse2/;
+specialize qw/aom_dc_left_predictor_16x32 sse2/;
+specialize qw/aom_dc_left_predictor_32x16 sse2/;
+specialize qw/aom_dc_left_predictor_32x32 msa neon sse2/;
+specialize qw/aom_dc_128_predictor_4x4 msa neon sse2/;
+specialize qw/aom_dc_128_predictor_4x8 sse2/;
+specialize qw/aom_dc_128_predictor_8x4 sse2/;
+specialize qw/aom_dc_128_predictor_8x8 neon msa sse2/;
+specialize qw/aom_dc_128_predictor_8x16 sse2/;
+specialize qw/aom_dc_128_predictor_16x8 sse2/;
+specialize qw/aom_dc_128_predictor_16x16 neon msa sse2/;
+specialize qw/aom_dc_128_predictor_16x32 sse2/;
+specialize qw/aom_dc_128_predictor_32x16 sse2/;
+specialize qw/aom_dc_128_predictor_32x32 msa neon sse2/;
+
 specialize qw/aom_d63e_predictor_4x4 ssse3/;
 specialize qw/aom_h_predictor_4x4 neon dspr2 msa sse2/;
 specialize qw/aom_d135_predictor_4x4 neon/;
 specialize qw/aom_d153_predictor_4x4 ssse3/;
 specialize qw/aom_v_predictor_4x4 neon msa sse2/;
 specialize qw/aom_dc_predictor_4x4 dspr2 msa neon sse2/;
-specialize qw/aom_dc_top_predictor_4x4 msa neon sse2/;
-specialize qw/aom_dc_left_predictor_4x4 msa neon sse2/;
-specialize qw/aom_dc_128_predictor_4x4 msa neon sse2/;
+specialize qw/aom_dc_predictor_4x8 sse2/;
 specialize qw/aom_h_predictor_8x8 neon dspr2 msa sse2/;
 specialize qw/aom_d153_predictor_8x8 ssse3/;
 specialize qw/aom_v_predictor_8x8 neon msa sse2/;
+specialize qw/aom_dc_predictor_8x4 sse2/;
 specialize qw/aom_dc_predictor_8x8 dspr2 neon msa sse2/;
-specialize qw/aom_dc_top_predictor_8x8 neon msa sse2/;
-specialize qw/aom_dc_left_predictor_8x8 neon msa sse2/;
-specialize qw/aom_dc_128_predictor_8x8 neon msa sse2/;
+specialize qw/aom_dc_predictor_8x16 sse2/;
 specialize qw/aom_h_predictor_16x16 neon dspr2 msa sse2/;
 specialize qw/aom_d153_predictor_16x16 ssse3/;
 specialize qw/aom_v_predictor_16x16 neon msa sse2/;
+specialize qw/aom_dc_predictor_16x8 sse2/;
 specialize qw/aom_dc_predictor_16x16 dspr2 neon msa sse2/;
-specialize qw/aom_dc_top_predictor_16x16 neon msa sse2/;
-specialize qw/aom_dc_left_predictor_16x16 neon msa sse2/;
-specialize qw/aom_dc_128_predictor_16x16 neon msa sse2/;
+specialize qw/aom_dc_predictor_16x32 sse2/;
 specialize qw/aom_h_predictor_32x32 neon msa sse2/;
 specialize qw/aom_d153_predictor_32x32 ssse3/;
 specialize qw/aom_v_predictor_32x32 neon msa sse2/;
+specialize qw/aom_dc_predictor_32x16 sse2/;
 specialize qw/aom_dc_predictor_32x32 msa neon sse2/;
-specialize qw/aom_dc_top_predictor_32x32 msa neon sse2/;
-specialize qw/aom_dc_left_predictor_32x32 msa neon sse2/;
-specialize qw/aom_dc_128_predictor_32x32 msa neon sse2/;
 
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   specialize qw/aom_highbd_v_predictor_4x4 sse2/;
