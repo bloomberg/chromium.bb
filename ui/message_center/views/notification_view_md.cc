@@ -707,7 +707,10 @@ void NotificationViewMD::CreateOrUpdateProgressBarView(
   progress_bar_view_->SetValue(notification.progress() / 100.0);
   progress_bar_view_->SetVisible(notification.items().empty());
 
-  header_row_->SetProgress(notification.progress());
+  if (0 <= notification.progress() && notification.progress() <= 100)
+    header_row_->SetProgress(notification.progress());
+  else
+    header_row_->ClearProgress();
 }
 
 void NotificationViewMD::CreateOrUpdateProgressStatusView(

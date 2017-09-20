@@ -127,6 +127,8 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   std::vector<NotificationItem> items;
 
   // Progress, in range of [0-100], of NOTIFICATION_TYPE_PROGRESS notifications.
+  // Values outside of the range (e.g. -1) will show an infinite loading
+  // progress bar.
   int progress = 0;
 
   // Status text string shown in NOTIFICATION_TYPE_PROGRESS notifications.
@@ -473,7 +475,8 @@ class MESSAGE_CENTER_EXPORT Notification {
   gfx::Image icon_;
 
   // The display string for the source of the notification.  Could be
-  // the same as origin_url_, or the name of an extension.
+  // the same as |origin_url_|, or the name of an extension.
+  // Expected to be a localized user facing string.
   base::string16 display_source_;
 
  private:
