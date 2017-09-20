@@ -220,8 +220,6 @@ split_static_library("ui") {
     # Chrome OS specific files (filtered out by GN on non chromeos platforms)
     "webui/chromeos/bluetooth_dialog_localized_strings_provider.cc",
     "webui/chromeos/bluetooth_dialog_localized_strings_provider.h",
-    "webui/chromeos/choose_mobile_network_ui.cc",
-    "webui/chromeos/choose_mobile_network_ui.h",
     "webui/chromeos/cryptohome_ui.cc",
     "webui/chromeos/cryptohome_ui.h",
     "webui/chromeos/cryptohome_web_ui_handler.cc",

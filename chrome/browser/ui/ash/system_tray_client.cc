@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
-#include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -377,9 +376,13 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
 }
 
 void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
-  int container_id = GetDialogParentContainerId();
   if (type == shill::kTypeCellular) {
-    chromeos::ChooseMobileNetworkDialog::ShowDialogInContainer(container_id);
+    const chromeos::NetworkState* cellular =
+        chromeos::NetworkHandler::Get()
+            ->network_state_handler()
+            ->FirstNetworkByType(chromeos::NetworkTypePattern::Primitive(type));
+    std::string network_id = cellular ? cellular->guid() : "";
+    ShowNetworkSettingsHelper(network_id, false /* show_configure */);
     return;
   }
   chromeos::NetworkConfigView::ShowForType(type);
