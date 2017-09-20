@@ -21,9 +21,30 @@ import java.io.Closeable;
  */
 public final class StrictModeContext implements Closeable {
     private final StrictMode.ThreadPolicy mThreadPolicy;
+    private final StrictMode.VmPolicy mVmPolicy;
+
+    private StrictModeContext(StrictMode.ThreadPolicy threadPolicy, StrictMode.VmPolicy vmPolicy) {
+        mThreadPolicy = threadPolicy;
+        mVmPolicy = vmPolicy;
+    }
 
     private StrictModeContext(StrictMode.ThreadPolicy threadPolicy) {
-        mThreadPolicy = threadPolicy;
+        this(threadPolicy, null);
+    }
+
+    private StrictModeContext(StrictMode.VmPolicy vmPolicy) {
+        this(null, vmPolicy);
+    }
+
+    /**
+     * Convenience method for disabling all VM-level StrictMode checks with try-with-resources.
+     * Includes everything listed here:
+     *     https://developer.android.com/reference/android/os/StrictMode.VmPolicy.Builder.html
+     */
+    public static StrictModeContext allowAllVmPolicies() {
+        StrictMode.VmPolicy oldPolicy = StrictMode.getVmPolicy();
+        StrictMode.setVmPolicy(StrictMode.VmPolicy.LAX);
+        return new StrictModeContext(oldPolicy);
     }
 
     /**
@@ -44,6 +65,11 @@ public final class StrictModeContext implements Closeable {
 
     @Override
     public void close() {
-        StrictMode.setThreadPolicy(mThreadPolicy);
+        if (mThreadPolicy != null) {
+            StrictMode.setThreadPolicy(mThreadPolicy);
+        }
+        if (mVmPolicy != null) {
+            StrictMode.setVmPolicy(mVmPolicy);
+        }
     }
 }
