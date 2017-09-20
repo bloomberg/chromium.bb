@@ -692,6 +692,7 @@ void MemoryDumpManager::InvokeOnMemoryDump(
     // |should_dump| check below susceptible to TOCTTOU bugs (crbug.com/763365).
 
     bool should_dump;
+    bool is_thread_bound;
     {
       // A locked access is required to R/W |disabled| (for the
       // UnregisterAndDeleteDumpProviderSoon() case).
@@ -705,6 +706,7 @@ void MemoryDumpManager::InvokeOnMemoryDump(
                    << "\". Dump failed multiple times consecutively.";
       }
       should_dump = !mdpinfo->disabled;
+      is_thread_bound = mdpinfo->task_runner != nullptr;
     }  // AutoLock lock(lock_);
 
     if (should_dump) {
@@ -723,7 +725,8 @@ void MemoryDumpManager::InvokeOnMemoryDump(
 
       ProcessMemoryDump* pmd = pmd_async_state->process_memory_dump.get();
       ANNOTATE_BENIGN_RACE(&mdpinfo->disabled, "best-effort race detection");
-      CHECK(!*(static_cast<volatile bool*>(&mdpinfo->disabled)));
+      CHECK(!is_thread_bound ||
+            !*(static_cast<volatile bool*>(&mdpinfo->disabled)));
       bool dump_successful =
           mdpinfo->dump_provider->OnMemoryDump(pmd->dump_args(), pmd);
       mdpinfo->consecutive_failures =
