@@ -28,15 +28,9 @@ constexpr char kAppLockScreenSupportKey[] = "lockScreenSupport";
 
 }  // namespace
 
-StylusHandler::StylusHandler() {
-  NoteTakingHelper::Get()->AddObserver(this);
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
-}
+StylusHandler::StylusHandler() : note_observer_(this), input_observer_(this) {}
 
-StylusHandler::~StylusHandler() {
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  NoteTakingHelper::Get()->RemoveObserver(this);
-}
+StylusHandler::~StylusHandler() = default;
 
 void StylusHandler::RegisterMessages() {
   DCHECK(web_ui());
@@ -58,6 +52,16 @@ void StylusHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "showPlayStoreApps",
       base::Bind(&StylusHandler::ShowPlayStoreApps, base::Unretained(this)));
+}
+
+void StylusHandler::OnJavascriptAllowed() {
+  note_observer_.Add(NoteTakingHelper::Get());
+  input_observer_.Add(ui::InputDeviceManager::GetInstance());
+}
+
+void StylusHandler::OnJavascriptDisallowed() {
+  note_observer_.RemoveAll();
+  input_observer_.RemoveAll();
 }
 
 void StylusHandler::OnAvailableNoteTakingAppsUpdated() {
