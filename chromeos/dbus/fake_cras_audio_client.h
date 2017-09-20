@@ -63,6 +63,9 @@ class CHROMEOS_EXPORT FakeCrasAudioClient : public CrasAudioClient {
   // Generates fake signal for OutputNodeVolumeChanged.
   void NotifyOutputNodeVolumeChangedForTesting(uint64_t node_id, int volume);
 
+  // Generates fake hotword signal for HotwordTriggered.
+  void NotifyHotwordTriggeredForTesting(uint64_t tv_sec, uint64_t tv_nsec);
+
   const AudioNodeList& node_list() const { return node_list_; }
   const uint64_t& active_input_node_id() const { return active_input_node_id_; }
   const uint64_t& active_output_node_id() const {

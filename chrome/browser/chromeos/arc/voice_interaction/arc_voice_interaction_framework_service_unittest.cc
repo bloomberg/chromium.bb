@@ -11,6 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cras_audio_client.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/arc/test/fake_voice_interaction_framework_instance.h"
@@ -123,6 +125,13 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, ToggleSession) {
   framework_service()->ToggleSessionFromUserInteraction();
   // The signal to toggle voice interaction session should be sent.
   EXPECT_EQ(1u, framework_instance()->toggle_session_count());
+}
+
+TEST_F(ArcVoiceInteractionFrameworkServiceTest, HotwordTriggered) {
+  auto* audio_client = static_cast<chromeos::FakeCrasAudioClient*>(
+      chromeos::DBusThreadManager::Get()->GetCrasAudioClient());
+  audio_client->NotifyHotwordTriggeredForTesting(0, 0);
+  EXPECT_TRUE(framework_service()->ValidateTimeSinceUserInteraction());
 }
 
 }  // namespace arc
