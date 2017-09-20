@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
 #include "ios/chrome/browser/ui/page_info/page_info_model.h"
+#import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_reloading.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -201,11 +202,11 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 @synthesize dispatcher = dispatcher_;
 
 - (id)initWithModel:(PageInfoModel*)model
-             bridge:(PageInfoModelObserver*)bridge
-        sourcePoint:(CGPoint)sourcePoint
-         parentView:(UIView*)parent
-         dispatcher:(id<PageInfoCommands, PageInfoReloading>)dispatcher {
-  DCHECK(parent);
+                  bridge:(PageInfoModelObserver*)bridge
+             sourcePoint:(CGPoint)sourcePoint
+    presentationProvider:(id<PageInfoPresentation>)provider
+              dispatcher:(id<PageInfoCommands, PageInfoReloading>)dispatcher {
+  DCHECK(provider);
   self = [super init];
   if (self) {
     scrollView_ =
@@ -251,7 +252,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     [touchDownRecognizer setMinimumPressDuration:.001];
     [touchDownRecognizer setDelegate:self];
 
-    containerView_ = [[UIView alloc] initWithFrame:[parent bounds]];
+    containerView_ = [[UIView alloc] init];
     [containerView_ addGestureRecognizer:touchDownRecognizer];
     [containerView_
         setBackgroundColor:[UIColor colorWithWhite:0 alpha:kShieldAlpha]];
@@ -267,7 +268,7 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     [self.popupContainer addSubview:scrollView_];
     [scrollView_ addSubview:innerContainerView_];
     [scrollView_ setAccessibilityIdentifier:@"Page Security Scroll View"];
-    [parent addSubview:self.containerView];
+    [provider presentPageInfoView:self.containerView];
     [self performLayout];
 
     [self animatePageInfoViewIn:sourcePoint];

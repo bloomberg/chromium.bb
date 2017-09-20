@@ -112,13 +112,14 @@ NSString* const kPageInfoWillHideNotification =
   PageInfoModel* pageInfoModel = new PageInfoModel(
       self.browserState, navItem->GetURL(), navItem->GetSSL(), bridge);
 
-  UIView* view = [self.presentationProvider viewForPageInfoPresentation];
+  CGPoint originPresentationCoordinates = [self.presentationProvider
+      convertToPresentationCoordinatesForOrigin:originPoint];
   self.pageInfoViewController = [[PageInfoViewController alloc]
-      initWithModel:pageInfoModel
-             bridge:bridge
-        sourcePoint:[view convertPoint:originPoint fromView:nil]
-         parentView:view
-         dispatcher:self];
+             initWithModel:pageInfoModel
+                    bridge:bridge
+               sourcePoint:originPresentationCoordinates
+      presentationProvider:self.presentationProvider
+                dispatcher:self];
   bridge->set_controller(self.pageInfoViewController);
 }
 

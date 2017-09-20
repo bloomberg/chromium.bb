@@ -5098,13 +5098,18 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - PageInfoPresentation
 
-- (UIView*)viewForPageInfoPresentation {
-  return self.view;
+- (void)presentPageInfoView:(UIView*)pageInfoView {
+  [pageInfoView setFrame:self.view.bounds];
+  [self.view addSubview:pageInfoView];
 }
 
 - (void)prepareForPageInfoPresentation {
   // Dismiss the omnibox (if open).
   [_toolbarController cancelOmniboxEdit];
+}
+
+- (CGPoint)convertToPresentationCoordinatesForOrigin:(CGPoint)origin {
+  return [self.view convertPoint:origin fromView:nil];
 }
 
 #pragma mark - WebStatePrinter

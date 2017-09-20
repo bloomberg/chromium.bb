@@ -15,6 +15,7 @@
 
 @class BidiContainerView;
 @protocol PageInfoCommands;
+@protocol PageInfoPresentation;
 @protocol PageInfoReloading;
 class PageInfoModel;
 
@@ -23,14 +24,14 @@ class PageInfoModel;
 // The view controller for the page info view.
 @interface PageInfoViewController : NSObject
 // Designated initializer.
-// The |source| parameter should be in the coordinate system of the parent.
-// Typically this would be the midpoint of a button that resulted in this popup
-// being displayed.
+// The |sourcePoint| parameter should be in the coordinate system of
+// |provider|'s view. Typically, |sourcePoint| would be the midpoint of a button
+// that resulted in this popup being displayed.
 - (id)initWithModel:(PageInfoModel*)model
-             bridge:(PageInfoModelObserver*)bridge
-        sourcePoint:(CGPoint)sourcePoint
-         parentView:(UIView*)parent
-         dispatcher:(id<PageInfoCommands, PageInfoReloading>)dispatcher;
+                  bridge:(PageInfoModelObserver*)bridge
+             sourcePoint:(CGPoint)sourcePoint
+    presentationProvider:(id<PageInfoPresentation>)provider
+              dispatcher:(id<PageInfoCommands, PageInfoReloading>)dispatcher;
 
 // Dispatcher for this view controller.
 @property(nonatomic, weak) id<PageInfoCommands, PageInfoReloading> dispatcher;
