@@ -61,6 +61,14 @@ const char* BackgroundStateToString(bool is_backgrounded) {
   }
 }
 
+const char* AudioPlayingToString(bool is_audio_playing) {
+  if (is_audio_playing) {
+    return "playing";
+  } else {
+    return "muted";
+  }
+}
+
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
@@ -208,6 +216,8 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       process_type(RendererProcessType::kRenderer),
       use_case_tracer("RendererScheduler.UseCase", renderer_scheduler_impl),
       backgrounding_tracer("RendererScheduler.Backgrounded",
+                           renderer_scheduler_impl),
+      audio_playing_tracer("RendererScheduler.AudioPlaying",
                            renderer_scheduler_impl) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
@@ -577,6 +587,8 @@ void RendererSchedulerImpl::OnAudioStateChanged() {
   main_thread_only().last_audio_state_change =
       helper_.scheduler_tqm_delegate()->NowTicks();
   main_thread_only().is_audio_playing = is_audio_playing;
+  main_thread_only().audio_playing_tracer.SetState(
+      AudioPlayingToString(is_audio_playing));
 
   UpdatePolicy();
 }
@@ -2056,6 +2068,8 @@ void RendererSchedulerImpl::OnTraceLogEnabled() {
       UseCaseToString(main_thread_only().current_use_case));
   main_thread_only().backgrounding_tracer.Start(
       BackgroundStateToString(main_thread_only().renderer_backgrounded));
+  main_thread_only().audio_playing_tracer.Start(
+      AudioPlayingToString(main_thread_only().is_audio_playing));
 }
 
 void RendererSchedulerImpl::OnTraceLogDisabled() {}

@@ -596,6 +596,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     RendererProcessType process_type;
     StateTracer use_case_tracer;
     StateTracer backgrounding_tracer;
+    StateTracer audio_playing_tracer;
   };
 
   struct AnyThread {
