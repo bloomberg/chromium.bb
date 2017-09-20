@@ -34,6 +34,8 @@
 #include "platform/graphics/BitmapImageMetrics.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageObserver.h"
+#include "platform/graphics/test/MockImageDecoder.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -117,7 +119,7 @@ class BitmapImageTest : public ::testing::Test {
 
   void AdvanceAnimation() { image_->AdvanceAnimation(0); }
 
-  int RepetitionCount() { return image_->RepetitionCount(true); }
+  int RepetitionCount() { return image_->RepetitionCount(); }
 
   int AnimationFinished() { return image_->animation_finished_; }
 
@@ -340,6 +342,80 @@ TEST_F(BitmapImageTest, ImageForDefaultFrame_SingleFrame) {
   // Default frame images for single-frame cases is the image itself.
   EXPECT_EQ(image_->ImageForDefaultFrame(), image_);
 }
+
+class BitmapImageTestWithMockDecoder : public BitmapImageTest,
+                                       public MockImageDecoderClient {
+ public:
+  void SetUp() override {
+    BitmapImageTest::SetUp();
+    auto decoder = MockImageDecoder::Create(this);
+    decoder->SetSize(10, 10);
+    image_->SetDecoderForTesting(
+        DeferredImageDecoder::CreateForTesting(std::move(decoder)));
+  }
+
+  void DecoderBeingDestroyed() override {}
+  void DecodeRequested() override {}
+  ImageFrame::Status GetStatus(size_t index) override {
+    if (index < frame_count_ - 1 || last_frame_complete_)
+      return ImageFrame::Status::kFrameComplete;
+    return ImageFrame::Status::kFramePartial;
+  }
+  size_t FrameCount() override { return frame_count_; }
+  int RepetitionCount() const override { return repetition_count_; }
+  TimeDelta FrameDuration() const override { return duration_; }
+
+ protected:
+  TimeDelta duration_;
+  int repetition_count_;
+  size_t frame_count_;
+  ImageFrame::Status status_;
+  bool last_frame_complete_;
+};
+
+TEST_F(BitmapImageTestWithMockDecoder, ImageMetadataTracking) {
+  // For a zero duration, we should make it non-zero when creating a PaintImage.
+  repetition_count_ = kAnimationLoopOnce;
+  frame_count_ = 4u;
+  last_frame_complete_ = false;
+  image_->SetData(SharedBuffer::Create("data", sizeof("data")), false);
+
+  PaintImage image = image_->PaintImageForCurrentFrame();
+  ASSERT_TRUE(image);
+  EXPECT_EQ(image.FrameCount(), frame_count_);
+  EXPECT_EQ(image.completion_state(),
+            PaintImage::CompletionState::PARTIALLY_DONE);
+  EXPECT_EQ(image.repetition_count(), repetition_count_);
+  for (size_t i = 0; i < image.GetFrameMetadata().size(); ++i) {
+    const auto& data = image.GetFrameMetadata()[i];
+    EXPECT_EQ(data.duration, base::TimeDelta::FromMilliseconds(100));
+    if (i == frame_count_ - 1 && !last_frame_complete_)
+      EXPECT_FALSE(data.complete);
+    else
+      EXPECT_TRUE(data.complete);
+  }
+
+  // Now the load is finished.
+  duration_ = TimeDelta::FromSeconds(1);
+  repetition_count_ = kAnimationLoopInfinite;
+  frame_count_ = 6u;
+  last_frame_complete_ = true;
+  image_->SetData(SharedBuffer::Create("data", sizeof("data")), true);
+
+  image = image_->PaintImageForCurrentFrame();
+  ASSERT_TRUE(image);
+  EXPECT_EQ(image.FrameCount(), frame_count_);
+  EXPECT_EQ(image.completion_state(), PaintImage::CompletionState::DONE);
+  EXPECT_EQ(image.repetition_count(), repetition_count_);
+  for (size_t i = 0; i < image.GetFrameMetadata().size(); ++i) {
+    const auto& data = image.GetFrameMetadata()[i];
+    if (i < 4u)
+      EXPECT_EQ(data.duration, base::TimeDelta::FromMilliseconds(100));
+    else
+      EXPECT_EQ(data.duration, base::TimeDelta::FromSeconds(1));
+    EXPECT_TRUE(data.complete);
+  }
+};
 
 template <typename HistogramEnumType>
 struct HistogramTestParams {

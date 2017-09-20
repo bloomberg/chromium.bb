@@ -29,6 +29,7 @@ PlaceholderImage::~PlaceholderImage() {}
 PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
   PaintImageBuilder builder;
   InitPaintImageBuilder(builder);
+  builder.set_completion_state(PaintImage::CompletionState::DONE);
 
   const IntRect dest_rect(0, 0, size_.Width(), size_.Height());
   if (paint_record_for_current_frame_) {

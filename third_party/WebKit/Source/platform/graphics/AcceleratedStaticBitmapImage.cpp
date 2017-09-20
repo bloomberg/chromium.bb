@@ -179,7 +179,8 @@ PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
 
   PaintImageBuilder builder;
   InitPaintImageBuilder(builder);
-  builder.set_image(texture_holder_->GetSkImage());
+  builder.set_image(texture_holder_->GetSkImage())
+      .set_completion_state(PaintImage::CompletionState::DONE);
   return builder.TakePaintImage();
 }
 

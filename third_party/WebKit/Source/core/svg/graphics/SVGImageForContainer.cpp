@@ -64,6 +64,7 @@ bool SVGImageForContainer::ApplyShader(PaintFlags& flags,
 PaintImage SVGImageForContainer::PaintImageForCurrentFrame() {
   PaintImageBuilder builder;
   InitPaintImageBuilder(builder);
+  builder.set_completion_state(image_->completion_state());
   image_->PopulatePaintRecordForCurrentFrameForContainer(builder, url_, Size());
   return builder.TakePaintImage();
 }
