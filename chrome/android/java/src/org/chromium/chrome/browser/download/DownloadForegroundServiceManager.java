@@ -175,6 +175,8 @@ public class DownloadForegroundServiceManager {
                 return;
             }
             mBoundService = ((DownloadForegroundService.LocalBinder) service).getService();
+            DownloadForegroundServiceObservers.addObserver(
+                    DownloadNotificationServiceObserver.class);
             processDownloadUpdateQueue(true /* isProcessingPending */);
         }
 
@@ -235,6 +237,8 @@ public class DownloadForegroundServiceManager {
     void stopAndUnbindServiceInternal(boolean isCancelled) {
         mBoundService.stopDownloadForegroundService(isCancelled);
         ContextUtils.getApplicationContext().unbindService(mConnection);
+        DownloadForegroundServiceObservers.removeObserver(
+                DownloadNotificationServiceObserver.class);
     }
 
     /** Helper code for testing. */

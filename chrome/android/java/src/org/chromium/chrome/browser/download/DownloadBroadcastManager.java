@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.download.DownloadNotificationService2.
 import static org.chromium.chrome.browser.download.DownloadNotificationService2.EXTRA_DOWNLOAD_CONTENTID_ID;
 import static org.chromium.chrome.browser.download.DownloadNotificationService2.EXTRA_DOWNLOAD_CONTENTID_NAMESPACE;
 import static org.chromium.chrome.browser.download.DownloadNotificationService2.EXTRA_IS_OFF_THE_RECORD;
+import static org.chromium.chrome.browser.download.DownloadNotificationService2.clearResumptionAttemptLeft;
 
 import android.app.DownloadManager;
 import android.app.Service;
@@ -93,11 +94,25 @@ public class DownloadBroadcastManager extends Service {
         // Remove delayed stop of service until after native library is loaded.
         mHandler.removeCallbacks(mStopSelfRunnable);
 
+        // Since there is a user interaction, resumption is not needed, so clear any queued.
+        cancelQueuedResumptions();
+
         // Update notification appearance immediately in case it takes a while for native to load.
         updateNotification(intent);
 
         // Handle the intent and propagate it through the native library.
         loadNativeAndPropagateInteraction(intent);
+    }
+
+    /**
+     * Cancel any download resumption tasks and reset the number of resumption attempts available.
+     */
+    void cancelQueuedResumptions() {
+        DownloadResumptionScheduler
+                .getDownloadResumptionScheduler(ContextUtils.getApplicationContext())
+                .cancelTask();
+        // Reset number of attempts left if the action is triggered by user.
+        clearResumptionAttemptLeft();
     }
 
     /**
@@ -261,7 +276,7 @@ public class DownloadBroadcastManager extends Service {
      * @param id The {@link ContentId} to grab the delegate for.
      * @return delegate for interactions with the entry
      */
-    private static DownloadServiceDelegate getServiceDelegate(ContentId id) {
+    static DownloadServiceDelegate getServiceDelegate(ContentId id) {
         if (LegacyHelpers.isLegacyDownload(id)) {
             return DownloadManagerService.getDownloadManagerService();
         }
