@@ -325,31 +325,6 @@ TEST(ProfilingJsonExporterTest, Simple) {
   const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
   ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
 
-  // Validate the allocators summary.
-  const base::Value* malloc_summary =
-      periodic_interval->FindPath({"args", "dumps", "allocators", "malloc"});
-  ASSERT_TRUE(malloc_summary);
-  const base::Value* malloc_size =
-      malloc_summary->FindPath({"attrs", "size", "value"});
-  ASSERT_TRUE(malloc_size);
-  EXPECT_EQ("48", malloc_size->GetString());
-  const base::Value* malloc_virtual_size =
-      malloc_summary->FindPath({"attrs", "virtual_size", "value"});
-  ASSERT_TRUE(malloc_virtual_size);
-  EXPECT_EQ("48", malloc_virtual_size->GetString());
-
-  const base::Value* partition_alloc_summary = periodic_interval->FindPath(
-      {"args", "dumps", "allocators", "partition_alloc"});
-  ASSERT_TRUE(partition_alloc_summary);
-  const base::Value* partition_alloc_size =
-      partition_alloc_summary->FindPath({"attrs", "size", "value"});
-  ASSERT_TRUE(partition_alloc_size);
-  EXPECT_EQ("14", partition_alloc_size->GetString());
-  const base::Value* partition_alloc_virtual_size =
-      partition_alloc_summary->FindPath({"attrs", "virtual_size", "value"});
-  ASSERT_TRUE(partition_alloc_virtual_size);
-  EXPECT_EQ("14", partition_alloc_virtual_size->GetString());
-
   const base::Value* heaps_v2 =
       periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
   ASSERT_TRUE(heaps_v2);
