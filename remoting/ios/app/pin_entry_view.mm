@@ -79,7 +79,7 @@ static const int kMinPinLength = 6;
         initWithString:l10n_util::GetNSString(IDS_ENTER_PIN)
             attributes:@{
               NSForegroundColorAttributeName :
-                  [UIColor colorWithRed:1.f green:1.f blue:1.f alpha:0.5]
+                  [UIColor colorWithWhite:1.f alpha:0.26f]
             }];
     _pinEntry.translatesAutoresizingMaskIntoConstraints = NO;
     _pinEntry.delegate = self;
