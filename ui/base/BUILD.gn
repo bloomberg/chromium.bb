@@ -106,6 +106,8 @@ component("base") {
     "cocoa/controls/hyperlink_button_cell.mm",
     "cocoa/controls/hyperlink_text_view.h",
     "cocoa/controls/hyperlink_text_view.mm",
+    "cocoa/controls/imageview_utils.h",
+    "cocoa/controls/imageview_utils.mm",
     "cocoa/controls/textfield_utils.h",
     "cocoa/controls/textfield_utils.mm",
     "cocoa/defaults_utils.h",
