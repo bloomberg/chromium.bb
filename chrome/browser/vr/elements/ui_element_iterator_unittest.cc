@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/elements/ui_element.h"
 
+#include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/gtest_util.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -92,11 +93,8 @@ TEST_P(UiElementIteratorTest, VerifyTraversal) {
   EXPECT_EQ(elements.size(), i);
   EXPECT_EQ(GetParam().num_elements_in_subtree, i);
 
-  // Since the reversed iteration happens using a different type
-  // (UiElement::Reversed), we'll do that separately here rather than using
-  // conditionals and another test param.
   i = 0;
-  for (auto& e : scene.GetUiElementByName(GetParam().root)->reversed()) {
+  for (auto& e : base::Reversed(*scene.GetUiElementByName(GetParam().root))) {
     EXPECT_GT(elements.size(), i);
     EXPECT_EQ(elements[elements.size() - i++ - 1lu]->id(), e.id());
   }
@@ -104,9 +102,8 @@ TEST_P(UiElementIteratorTest, VerifyTraversal) {
   EXPECT_EQ(GetParam().num_elements_in_subtree, i);
 
   i = 0;
-  for (auto& e :
-       const_cast<const UiElement*>(scene.GetUiElementByName(GetParam().root))
-           ->reversed()) {
+  for (auto& e : base::Reversed(*const_cast<const UiElement*>(
+           scene.GetUiElementByName(GetParam().root)))) {
     EXPECT_GT(elements.size(), i);
     EXPECT_EQ(elements[elements.size() - i++ - 1lu]->id(), e.id());
   }

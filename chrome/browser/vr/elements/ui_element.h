@@ -280,21 +280,6 @@ class UiElement : public cc::AnimationTarget {
     return const_reverse_iterator(nullptr);
   }
 
-  template <typename T>
-  struct Reversed {
-    explicit Reversed(T* root) : root(root) {}
-    reverse_iterator begin() { return root->rbegin(); }
-    reverse_iterator end() { return root->rend(); }
-    const_reverse_iterator begin() const { return root->rbegin(); }
-    const_reverse_iterator end() const { return root->rend(); }
-    T* root;
-  };
-
-  Reversed<UiElement> reversed() { return Reversed<UiElement>(this); }
-  const Reversed<const UiElement> reversed() const {
-    return Reversed<const UiElement>(this);
-  }
-
  protected:
   virtual void OnSetMode();
   virtual void OnUpdatedInheritedProperties();

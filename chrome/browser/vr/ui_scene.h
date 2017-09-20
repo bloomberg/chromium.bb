@@ -88,23 +88,6 @@ class UiScene {
 
   void OnGlInitialized();
 
-  UiElement::iterator begin() { return root_element_->begin(); }
-  UiElement::iterator end() { return root_element_->end(); }
-
-  UiElement::const_iterator begin() const {
-    return const_cast<const UiElement&>(*root_element_).begin();
-  }
-  UiElement::const_iterator end() const {
-    return const_cast<const UiElement&>(*root_element_).end();
-  }
-
-  UiElement::Reversed<UiElement> reversed() {
-    return UiElement::Reversed<UiElement>(root_element_.get());
-  }
-  const UiElement::Reversed<const UiElement> reversed() const {
-    return UiElement::Reversed<const UiElement>(root_element_.get());
-  }
-
  private:
   void Animate(const base::TimeTicks& current_time);
 
