@@ -76,7 +76,6 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
 
     private final @Nullable ProfileDataCache mProfileDataCache;
     private final @Nullable SigninPromoController mSigninPromoController;
-    private boolean mWasPersonalizedSigninPromoDisplayed;
     private @PromoState int mPromoState;
 
     /**
@@ -195,11 +194,6 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
             profileData = mProfileDataCache.getProfileDataOrDefault(defaultAccountName);
         }
         mSigninPromoController.setProfileData(profileData);
-
-        if (!mWasPersonalizedSigninPromoDisplayed) {
-            mWasPersonalizedSigninPromoDisplayed = true;
-            mSigninPromoController.recordSigninPromoImpression();
-        }
 
         SigninPromoController.OnDismissListener listener = this::setPersonalizedSigninPromoDeclined;
         mSigninPromoController.setupPromoView(mContext, view, listener);
