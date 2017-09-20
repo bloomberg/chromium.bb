@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
+#include "components/exo/wayland/clients/simple.h"
+
 #include "base/command_line.h"
-#include "components/exo/wayland/clients/client_base.h"
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -23,33 +23,26 @@ void FrameCallback(void* data, wl_callback* callback, uint32_t time) {
 
 }  // namespace
 
-class SimpleClient : public ClientBase {
- public:
-  SimpleClient() {}
-  void Run(const ClientBase::InitParams& params);
+Simple::Simple() = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(SimpleClient);
-};
-
-void SimpleClient::Run(const ClientBase::InitParams& params) {
-  if (!ClientBase::Init(params))
-    return;
+void Simple::Run(int frames) {
   bool callback_pending = false;
   std::unique_ptr<wl_callback> frame_callback;
   wl_callback_listener frame_listener = {FrameCallback};
-
-  size_t frame_count = 0;
+  int frame_count = 0;
   do {
     if (callback_pending)
       continue;
 
+    if (frame_count == frames)
+      break;
+
+    callback_pending = true;
     Buffer* buffer = buffers_.front().get();
     SkCanvas* canvas = buffer->sk_surface->getCanvas();
 
     static const SkColor kColors[] = {SK_ColorRED, SK_ColorBLACK};
-    canvas->clear(kColors[frame_count % arraysize(kColors)]);
-    ++frame_count;
+    canvas->clear(kColors[++frame_count % arraysize(kColors)]);
 
     if (gr_context_) {
       gr_context_->flush();
@@ -72,17 +65,3 @@ void SimpleClient::Run(const ClientBase::InitParams& params) {
 }  // namespace clients
 }  // namespace wayland
 }  // namespace exo
-
-int main(int argc, char* argv[]) {
-  base::AtExitManager exit_manager;
-  base::CommandLine::Init(argc, argv);
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  exo::wayland::clients::ClientBase::InitParams params;
-  if (!params.FromCommandLine(*command_line))
-    return 1;
-
-  exo::wayland::clients::SimpleClient client;
-  client.Run(params);
-  return 1;
-}
