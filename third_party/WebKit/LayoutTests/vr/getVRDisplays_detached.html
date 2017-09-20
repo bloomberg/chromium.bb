@@ -8,13 +8,15 @@
 <body>
 <iframe sandbox="allow-same-origin" id="subframe"></iframe>
 <script>
-test(() => {
-    var nav = window.frames[0].navigator;
-    document.getElementById("subframe").remove();
-    // A promise won't be rejected when in a detached context,
-    // so the undefined value is returned.
-    assert_equals(nav.getVRDisplays(), undefined);
-});
+promise_test((t) => {
+  var nav = window.frames[0].navigator;
+  document.getElementById("subframe").remove();
+  return promise_rejects(
+      t,
+      new DOMException("The object is no longer associated with a document.",
+                       "InvalidStateError"),
+      nav.getVRDisplays());
+}, "getVRDisplays is rejected in a detached context.");
 </script>
 </body>
 </html>
