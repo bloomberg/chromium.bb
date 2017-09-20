@@ -21,12 +21,10 @@ namespace {
 // updates its status when ConfirmBubbleController calls its methods.
 class TestConfirmBubbleModel : public ConfirmBubbleModel {
  public:
-  TestConfirmBubbleModel(bool* model_deleted,
-                         bool* accept_clicked,
+  TestConfirmBubbleModel(bool* accept_clicked,
                          bool* cancel_clicked,
                          bool* link_clicked);
   TestConfirmBubbleModel();
-  ~TestConfirmBubbleModel() override;
   base::string16 GetTitle() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
@@ -37,25 +35,17 @@ class TestConfirmBubbleModel : public ConfirmBubbleModel {
   void LinkClicked() override;
 
  private:
-  bool* model_deleted_;
   bool* accept_clicked_;
   bool* cancel_clicked_;
   bool* link_clicked_;
 };
 
-TestConfirmBubbleModel::TestConfirmBubbleModel(bool* model_deleted,
-                                               bool* accept_clicked,
+TestConfirmBubbleModel::TestConfirmBubbleModel(bool* accept_clicked,
                                                bool* cancel_clicked,
                                                bool* link_clicked)
-    : model_deleted_(model_deleted),
-      accept_clicked_(accept_clicked),
+    : accept_clicked_(accept_clicked),
       cancel_clicked_(cancel_clicked),
-      link_clicked_(link_clicked) {
-}
-
-TestConfirmBubbleModel::~TestConfirmBubbleModel() {
-  *model_deleted_ = true;
-}
+      link_clicked_(link_clicked) {}
 
 base::string16 TestConfirmBubbleModel::GetTitle() const {
   return base::ASCIIToUTF16("Test");
@@ -96,15 +86,10 @@ void TestConfirmBubbleModel::LinkClicked() {
 class ConfirmBubbleControllerTest : public CocoaTest {
  public:
   ConfirmBubbleControllerTest()
-      : model_deleted_(false),
-        accept_clicked_(false),
-        cancel_clicked_(false),
-        link_clicked_(false) {
+      : accept_clicked_(false), cancel_clicked_(false), link_clicked_(false) {
     NSView* view = [test_window() contentView];
     // This model is owned by the controller created below.
-    model_.reset(new TestConfirmBubbleModel(&model_deleted_,
-                                            &accept_clicked_,
-                                            &cancel_clicked_,
+    model_.reset(new TestConfirmBubbleModel(&accept_clicked_, &cancel_clicked_,
                                             &link_clicked_));
     gfx::Point origin(0, 0);
     controller_ =
@@ -120,7 +105,6 @@ class ConfirmBubbleControllerTest : public CocoaTest {
     return (ConfirmBubbleCocoa*)[controller_ view];
   }
 
-  bool model_deleted() const { return model_deleted_; }
   bool accept_clicked() const { return accept_clicked_; }
   bool cancel_clicked() const { return cancel_clicked_; }
   bool link_clicked() const { return link_clicked_; }
@@ -128,7 +112,6 @@ class ConfirmBubbleControllerTest : public CocoaTest {
  private:
   ConfirmBubbleController* controller_;  // weak; owns self
   std::unique_ptr<TestConfirmBubbleModel> model_;
-  bool model_deleted_;
   bool accept_clicked_;
   bool cancel_clicked_;
   bool link_clicked_;
