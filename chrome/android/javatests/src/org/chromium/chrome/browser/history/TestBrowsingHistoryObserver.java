@@ -31,7 +31,7 @@ public class TestBrowsingHistoryObserver implements BrowsingHistoryObserver {
     public void onHistoryDeleted() {}
 
     @Override
-    public void hasOtherFormsOfBrowsingData(boolean hasOtherForms, boolean hasSyncedResults) {}
+    public void hasOtherFormsOfBrowsingData(boolean hasOtherForms) {}
 
     /**
      * Simple accessor to the internal CallbackHelper.

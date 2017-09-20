@@ -8,7 +8,6 @@ import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,22 +26,17 @@ import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Bridges the user's browsing history and the UI used to display it.
  */
 public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistoryObserver {
     private static final String EMPTY_QUERY = "";
-    private static final String LEARN_MORE_LINK =
-            "https://support.google.com/chrome/?p=sync_history&amp;hl="
-                    + Locale.getDefault().toString();
     private static final String GOOGLE_HISTORY_LINK = "history.google.com";
     private static final String MY_ACTIVITY_LINK = "myactivity.google.com";
 
@@ -51,18 +45,13 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private final HistoryManager mHistoryManager;
     private final ArrayList<HistoryItemView> mItemViews;
     private RecyclerView mRecyclerView;
-    private final SpannableString mSignedInNotSyncedText;
-    private final SpannableString mSignedInSyncedText;
-    private final SpannableString mOtherFormsOfBrowsingHistoryText;
 
-    private TextView mPrivacyDisclaimerTextView;
     private View mPrivacyDisclaimerBottomSpace;
     private Button mClearBrowsingDataButton;
     private HeaderItem mPrivacyDisclaimerHeaderItem;
     private HeaderItem mClearBrowsingDataButtonHeaderItem;
 
     private boolean mHasOtherFormsOfBrowsingData;
-    private boolean mHasSyncedData;
     private boolean mIsDestroyed;
     private boolean mIsInitialized;
     private boolean mIsLoadingItems;
@@ -81,20 +70,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mHistoryProvider.setObserver(this);
         mHistoryManager = manager;
         mItemViews = new ArrayList<>();
-
-        mSignedInNotSyncedText = initializePrivacyDisclaimerText(
-                R.string.android_history_no_synced_results, LEARN_MORE_LINK);
-        mSignedInSyncedText = initializePrivacyDisclaimerText(
-                R.string.android_history_has_synced_results, LEARN_MORE_LINK);
-        // For some test, the native library is not loaded, so ChromeFeatureList#isInitialized is
-        // checked to prevent crashing.
-        boolean flagEnabled = ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TABS_IN_CBD);
-        int disclaimerTextId = flagEnabled ? R.string.android_history_other_forms_of_history_new
-                                           : R.string.android_history_other_forms_of_history;
-        String disclaimerUrl = flagEnabled ? MY_ACTIVITY_LINK : GOOGLE_HISTORY_LINK;
-        mOtherFormsOfBrowsingHistoryText =
-                initializePrivacyDisclaimerText(disclaimerTextId, disclaimerUrl);
     }
 
     /**
@@ -197,7 +172,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         }
         initialize();
         updateClearBrowsingDataButtonVisibility();
-        setPrivacyDisclaimer();
     }
 
     /**
@@ -273,9 +247,8 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     }
 
     @Override
-    public void hasOtherFormsOfBrowsingData(boolean hasOtherForms, boolean hasSyncedResults) {
+    public void hasOtherFormsOfBrowsingData(boolean hasOtherForms) {
         mHasOtherFormsOfBrowsingData = hasOtherForms;
-        mHasSyncedData = hasSyncedResults;
         setPrivacyDisclaimer();
     }
 
@@ -295,9 +268,10 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
                 (ViewGroup) View.inflate(mHistoryManager.getSelectableListLayout().getContext(),
                         R.layout.history_privacy_disclaimer_header, null);
 
-        mPrivacyDisclaimerTextView =
+        TextView privacyDisclaimerTextView =
                 privacyDisclaimerContainer.findViewById(R.id.privacy_disclaimer);
-        mPrivacyDisclaimerTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        privacyDisclaimerTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        privacyDisclaimerTextView.setText(getPrivacyDisclaimerText());
         mPrivacyDisclaimerBottomSpace =
                 privacyDisclaimerContainer.findViewById(R.id.privacy_disclaimer_bottom_space);
 
@@ -332,11 +306,13 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     /**
      * Create a {@SpannableString} for privacy disclaimer.
-     * @param stringId The string resource id.
-     * @param url The url to open when clicked.
-     * @return The {@SpannableString} with the specified string resource and url.
+     * @return The {@SpannableString} with the privacy disclaimer string resource and url.
      */
-    private SpannableString initializePrivacyDisclaimerText(int stringId, final String url) {
+    private SpannableString getPrivacyDisclaimerText() {
+        boolean flagEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.TABS_IN_CBD);
+        int stringId = flagEnabled ? R.string.android_history_other_forms_of_history_new
+                                   : R.string.android_history_other_forms_of_history;
+        final String url = flagEnabled ? MY_ACTIVITY_LINK : GOOGLE_HISTORY_LINK;
         final Resources resources = ContextUtils.getApplicationContext().getResources();
         NoUnderlineClickableSpan link = new NoUnderlineClickableSpan() {
             @Override
@@ -352,29 +328,15 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      * @return True if any privacy disclaimer should be visible, false otherwise.
      */
     boolean hasPrivacyDisclaimers() {
-        boolean isSignedIn = ChromeSigninController.get().isSignedIn();
-        return !mHistoryManager.isIncognito()
-                && (isSignedIn || mHasSyncedData || mHasOtherFormsOfBrowsingData);
+        return !mHistoryManager.isIncognito() && mHasOtherFormsOfBrowsingData;
     }
 
     /**
      * Set text of privacy disclaimer and visibility of its container.
      */
     void setPrivacyDisclaimer() {
-        boolean isSignedIn = ChromeSigninController.get().isSignedIn();
         boolean shouldShowPrivacyDisclaimers =
                 hasPrivacyDisclaimers() && mHistoryManager.shouldShowInfoHeaderIfAvailable();
-
-        SpannableStringBuilder builder = new SpannableStringBuilder();
-        if (!mHasSyncedData && isSignedIn) builder.append(mSignedInNotSyncedText);
-        if (mHasSyncedData) builder.append(mSignedInSyncedText);
-        if (mHasOtherFormsOfBrowsingData) {
-            // If mHasOtherFormsOfBrowsingData is true, one of the other conditions must have
-            // already been met so a space is needed to separate the sentences.
-            builder.append(" ");
-            builder.append(mOtherFormsOfBrowsingHistoryText);
-        }
-        mPrivacyDisclaimerTextView.setText(builder);
 
         // Prevent from refreshing the recycler view if header visibility is not changed.
         if (mPrivacyDisclaimersVisible == shouldShowPrivacyDisclaimers) return;
@@ -391,26 +353,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mClearBrowsingDataButtonVisible = shouldShowButton;
         mPrivacyDisclaimerBottomSpace.setVisibility(shouldShowButton ? View.GONE : View.VISIBLE);
         if (mIsInitialized) setHeaders();
-    }
-
-    @VisibleForTesting
-    String getSignedInNotSyncedTextForTests() {
-        return mSignedInNotSyncedText.toString();
-    }
-
-    @VisibleForTesting
-    String getSignedInSyncedTextForTests() {
-        return mSignedInSyncedText.toString();
-    }
-
-    @VisibleForTesting
-    String getOtherFormsOfBrowsingHistoryTextForTests() {
-        return mOtherFormsOfBrowsingHistoryText.toString();
-    }
-
-    @VisibleForTesting
-    String getPrivacyDisclaimerTextForTests() {
-        return mPrivacyDisclaimerTextView.getText().toString();
     }
 
     @VisibleForTesting
