@@ -7533,17 +7533,24 @@ I don't think this site should be blocked!
       </message>
 
       <!-- Collected cookies window -->
-      <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
-        Cookies set by this page
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
+          Cookies in Use
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
+          Cookies in use
+        </message>
+      </if>
       <message name="IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL" desc="The label used to describe the cookies that were allowed">
-        The following cookies were set when you viewed this page:
+        The following cookies were set when you viewed this page
       </message>
       <message name="IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL" desc="The label used to describe the cookies that were blocked">
-        The following cookies were blocked:
+        The following cookies were blocked
       </message>
       <message name="IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED" desc="The label used to describe the cookies that were blocked include a note that third-party cookies were blocked without exception.">
-        The following cookies were blocked (third-party cookies are being blocked without exception):
+        The following cookies were blocked (third-party cookies are being blocked without exception)
       </message>
       <message name="IDS_COLLECTED_COOKIES_ALLOW_BUTTON" desc="A button that lets the use create a content settings exception to allow certain domains.">
         Allow
@@ -7668,28 +7675,28 @@ I don't think this site should be blocked!
         Remove all shown
       </message>
       <message name="IDS_COOKIES_COOKIE_NAME_LABEL" desc="The Cookie Name label">
-        Name:
+        Name
       </message>
       <message name="IDS_COOKIES_COOKIE_CONTENT_LABEL" desc="The Cookie Content label">
-        Content:
+        Content
       </message>
       <message name="IDS_COOKIES_COOKIE_DOMAIN_LABEL" desc="The Cookie Domain label">
-        Domain:
+        Domain
       </message>
       <message name="IDS_COOKIES_COOKIE_PATH_LABEL" desc="The Cookie Path label">
-        Path:
+        Path
       </message>
       <message name="IDS_COOKIES_COOKIE_SENDFOR_LABEL" desc="The Cookie Send For label">
-        Send for:
+        Send for
       </message>
       <message name="IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_LABEL" desc="The Cookie Accessible to Script label">
-        Accessible to script:
+        Accessible to script
       </message>
       <message name="IDS_COOKIES_COOKIE_CREATED_LABEL" desc="The Cookie Created label">
-        Created:
+        Created
       </message>
       <message name="IDS_COOKIES_COOKIE_EXPIRES_LABEL" desc="The Cookie Expires label">
-        Expires:
+        Expires
       </message>
 
       <message name="IDS_COOKIES_COOKIE_EXPIRES_SESSION" desc="The Cookie Expires field value for a session cookie">
@@ -7715,7 +7722,7 @@ I don't think this site should be blocked!
         No (HttpOnly)
       </message>
       <message name="IDS_COOKIES_COOKIE_NONESELECTED" desc="Field value when no cookie is selected">
-        &lt;no cookie selected&gt;
+        no cookie selected
       </message>
       <message name="IDS_COOKIES_DOMAIN_COLUMN_HEADER" desc="The label of the Domain header in the Cookies table">
         Site
