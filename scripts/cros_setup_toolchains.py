@@ -939,10 +939,12 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
   libdir = os.path.join(output_dir, 'lib')
   osutils.SafeMakedirs(libdir)
   donelibs = set()
+  glibc_re = re.compile(r'/libc-[0-9.]+\.so$')
   for elf in elfs:
     e = lddtree.ParseELF(elf, root=root, ldpaths=ldpaths)
     interp = e['interp']
-    if interp:
+    # Do not create wrapper for libc. crbug.com/766827
+    if interp and not glibc_re.search(elf):
       # Generate a wrapper if it is executable.
       interp = os.path.join('/lib', os.path.basename(interp))
       lddtree.GenerateLdsoWrapper(output_dir, path_rewrite_func(elf), interp,
