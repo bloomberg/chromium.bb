@@ -224,9 +224,6 @@ const CGFloat kHintLabelSidePadding = 12;
                                 forState:UIControlStateNormal];
   }
   [self.fakeOmnibox setAdjustsImageWhenHighlighted:NO];
-  [self.fakeOmnibox addTarget:self
-                       action:@selector(fakeOmniboxTapped:)
-             forControlEvents:UIControlEventTouchUpInside];
 
   // Set isAccessibilityElement to NO so that Voice Search button is accessible.
   [self.fakeOmnibox setIsAccessibilityElement:NO];
@@ -243,18 +240,21 @@ const CGFloat kHintLabelSidePadding = 12;
                      constant:kHintLabelSidePadding];
   [_hintLabelLeadingConstraint setActive:YES];
 
-  // Set a view the same size as the fake omnibox as the accessibility element.
-  // If only the label is accessible, when the fake omnibox is taking the full
-  // width, there are few points that are not accessible and allow to select the
-  // content below it.
+  // Set a button the same size as the fake omnibox as the accessibility
+  // element. If the hint is the only accessible element, when the fake omnibox
+  // is taking the full width, there are few points that are not accessible and
+  // allow to select the content below it.
   searchHintLabel.isAccessibilityElement = NO;
-  UIView* accessibilityView = [[UIView alloc] init];
-  accessibilityView.isAccessibilityElement = YES;
-  accessibilityView.accessibilityLabel =
+  UIButton* accessibilityButton = [[UIButton alloc] init];
+  [accessibilityButton addTarget:self
+                          action:@selector(fakeOmniboxTapped:)
+                forControlEvents:UIControlEventTouchUpInside];
+  accessibilityButton.isAccessibilityElement = YES;
+  accessibilityButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
-  [self.fakeOmnibox addSubview:accessibilityView];
-  accessibilityView.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(self.fakeOmnibox, accessibilityView);
+  [self.fakeOmnibox addSubview:accessibilityButton];
+  accessibilityButton.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(self.fakeOmnibox, accessibilityButton);
 
   // Add a voice search button.
   UIButton* voiceTapTarget = [[UIButton alloc] init];
