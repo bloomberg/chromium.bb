@@ -609,8 +609,6 @@ public class BottomSheet
         // functions properly.
         mGestureDetector.onTouchEvent(createRawMotionEvent(e));
 
-        if (!mIsScrolling && getTouchDelegate() != null) return getTouchDelegate().onTouchEvent(e);
-
         return mIsScrolling;
     }
 
@@ -648,8 +646,6 @@ public class BottomSheet
                 setSheetState(targetState, true, StateChangeReason.SWIPE);
             }
         }
-
-        if (!mIsScrolling && getTouchDelegate() != null) getTouchDelegate().onTouchEvent(e);
 
         return true;
     }

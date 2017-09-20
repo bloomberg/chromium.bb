@@ -6,14 +6,13 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.annotation.SuppressLint;
 import android.content.res.Resources;
-import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.TouchDelegate;
 import android.view.View;
+import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -63,11 +62,19 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     private final BottomSheet mSheet;
     private final LogoView mLogoView;
     private final LogoDelegateImpl mLogoDelegate;
-    private final ViewGroup mToolbarView;
+    private final ViewGroup mControlContainerView;
+    private final View mToolbarPullHandle;
+    private final View mToolbarShadow;
 
     private boolean mNewTabShown;
     private boolean mSearchProviderHasLogo = true;
     private float mLastSheetHeightFraction = 1f;
+
+    /**
+     * Whether {@code mView} is currently attached to the window. This is used in place of
+     * {@link View#isAttachedToWindow()} to support older versions of Android (KitKat & JellyBean).
+     */
+    private boolean mIsAttachedToWindow;
 
     // The sheet height fractions at which the logo transitions start and end.
     private static final float LOGO_TRANSITION_BOTTOM_START = 0.3f;
@@ -203,7 +210,9 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         });
 
         mLogoView = mView.findViewById(R.id.search_provider_logo);
-        mToolbarView = (ViewGroup) activity.findViewById(R.id.toolbar);
+        mControlContainerView = (ViewGroup) activity.findViewById(R.id.control_container);
+        mToolbarPullHandle = activity.findViewById(R.id.toolbar_handle);
+        mToolbarShadow = activity.findViewById(R.id.bottom_toolbar_shadow);
         mLogoDelegate = new LogoDelegateImpl(navigationDelegate, mLogoView, profile);
         updateSearchProviderHasLogo();
         if (mSearchProviderHasLogo) {
@@ -212,6 +221,20 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         }
         TemplateUrlService.getInstance().addObserver(this);
         sheet.getNewTabController().addObserver(this);
+
+        mView.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+                mIsAttachedToWindow = true;
+                updateLogoTransition();
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                mIsAttachedToWindow = false;
+                updateLogoTransition();
+            }
+        });
     }
 
     @Override
@@ -330,20 +353,21 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
     private void updateLogoTransition() {
         boolean showLogo = mSearchProviderHasLogo && mNewTabShown && mSheet.isSheetOpen()
-                && !mActivity.getTabModelSelector().isIncognitoSelected()
+                && !mActivity.getTabModelSelector().isIncognitoSelected() && mIsAttachedToWindow
                 && FeatureUtilities.isChromeHomeDoodleEnabled();
 
         if (!showLogo) {
             mLogoView.setVisibility(View.GONE);
-            mToolbarView.setTranslationY(0);
+            mControlContainerView.setTranslationY(0);
+            mToolbarPullHandle.setTranslationY(0);
+            mToolbarShadow.setTranslationY(0);
             mRecyclerView.setTranslationY(0);
-            mSheet.setTouchDelegate(null);
-            ViewUtils.setAncestorsShouldClipChildren(mToolbarView, true);
+            ViewUtils.setAncestorsShouldClipChildren(mControlContainerView, true);
             return;
         }
 
         mLogoView.setVisibility(View.VISIBLE);
-        ViewUtils.setAncestorsShouldClipChildren(mToolbarView, false);
+        ViewUtils.setAncestorsShouldClipChildren(mControlContainerView, false);
 
         // TODO(mvanouwerkerk): Consider using Material animation curves.
         final float transitionFraction;
@@ -366,80 +390,10 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
         float maxToolbarOffset = logoParams.height + logoParams.topMargin + logoParams.bottomMargin;
         float toolbarOffset = maxToolbarOffset * (1.0f - transitionFraction);
-        mToolbarView.setTranslationY(toolbarOffset);
+        mControlContainerView.setTranslationY(toolbarOffset);
+        mToolbarPullHandle.setTranslationY(-toolbarOffset);
+        mToolbarShadow.setTranslationY(-toolbarOffset);
         mRecyclerView.setTranslationY(toolbarOffset);
-
-        if (transitionFraction == 0.f) {
-            mSheet.setTouchDelegate(new NtpTouchDelegate(mSheet, mToolbarView, mLogoView));
-        } else {
-            mSheet.setTouchDelegate(null);
-        }
-    }
-
-    /**
-     * Routes touch events when the NTP is showing a search provider logo. When Views are translated
-     * outside of their parent's bounds, they typically cannot receive touch input. This class sends
-     * touch events to the search provider logo, toolbar, and menu button.
-     */
-    private static class NtpTouchDelegate extends TouchDelegate {
-        private final TouchDelegate mLogoTouchDelegate;
-        private final TouchDelegate mMenuButtonTouchDelegate;
-        private final TouchDelegate mToolbarTouchDelegate;
-        private final Rect mLogoRect;
-        private final Rect mMenuButtonRect;
-        private final Rect mToolbarRect;
-
-        /**
-         * Creates a new NTP touch delegate.
-         * @param bottomSheet The {@link BottomSheet} that contains the
-         *                    SuggestionBottomSheetContent. Used to determine hit rects for children
-         *                    contained within the BottomSheet.
-         * @param toolbarView The {@link View} containing the toolbar.
-         * @param logoView    The {@link View} containing the search provider logo.
-         */
-        public NtpTouchDelegate(View bottomSheet, View toolbarView, View logoView) {
-            // We don't actually rely on the superclass for anything, so initialize it with dummy
-            // values.
-            super(new Rect(), bottomSheet);
-
-            int[] parentLocationOnScreen = new int[2];
-            bottomSheet.getLocationOnScreen(parentLocationOnScreen);
-
-            mLogoRect = createTouchDelegateRect(logoView, parentLocationOnScreen);
-
-            View menuButton = toolbarView.findViewById(R.id.menu_button);
-            mMenuButtonRect = createTouchDelegateRect(menuButton, parentLocationOnScreen);
-
-            mToolbarRect = createTouchDelegateRect(toolbarView, parentLocationOnScreen);
-
-            mLogoTouchDelegate = new TouchDelegate(mLogoRect, logoView);
-            mMenuButtonTouchDelegate = new TouchDelegate(mMenuButtonRect, menuButton);
-            mToolbarTouchDelegate = new TouchDelegate(mToolbarRect, toolbarView);
-        }
-
-        @Override
-        public boolean onTouchEvent(MotionEvent event) {
-            int x = (int) event.getX();
-            int y = (int) event.getY();
-
-            if (mLogoRect.contains(x, y)) return mLogoTouchDelegate.onTouchEvent(event);
-            if (mMenuButtonRect.contains(x, y)) return mMenuButtonTouchDelegate.onTouchEvent(event);
-            if (mToolbarRect.contains(x, y)) return mToolbarTouchDelegate.onTouchEvent(event);
-
-            return false;
-        }
-
-        private Rect createTouchDelegateRect(View childView, int[] parentLocationOnScreen) {
-            int[] childLocationOnScreen = new int[2];
-            childView.getLocationOnScreen(childLocationOnScreen);
-
-            Rect touchRect = new Rect();
-            touchRect.top = childLocationOnScreen[1] - parentLocationOnScreen[1];
-            touchRect.bottom = touchRect.top + childView.getMeasuredHeight();
-            touchRect.left = childLocationOnScreen[0] - parentLocationOnScreen[0];
-            touchRect.right = touchRect.left + childView.getMeasuredWidth();
-            return touchRect;
-        }
     }
 
     @Override
