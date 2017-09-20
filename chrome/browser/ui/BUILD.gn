@@ -668,7 +668,139 @@ split_static_library("ui") {
     ]
   }
 
-  if (!is_android) {
+  if (is_android) {
+    sources += [
+      "android/autofill/autofill_keyboard_accessory_view.cc",
+      "android/autofill/autofill_keyboard_accessory_view.h",
+      "android/autofill/autofill_logger_android.cc",
+      "android/autofill/autofill_logger_android.h",
+      "android/autofill/autofill_popup_view_android.cc",
+      "android/autofill/autofill_popup_view_android.h",
+      "android/autofill/card_unmask_prompt_view_android.cc",
+      "android/autofill/card_unmask_prompt_view_android.h",
+      "android/autofill/credit_card_scanner_view_android.cc",
+      "android/autofill/credit_card_scanner_view_android.h",
+      "android/autofill/password_generation_popup_view_android.cc",
+      "android/autofill/password_generation_popup_view_android.h",
+      "android/bluetooth_chooser_android.cc",
+      "android/bluetooth_chooser_android.h",
+      "android/chrome_http_auth_handler.cc",
+      "android/chrome_http_auth_handler.h",
+      "android/color_chooser_dialog_android.cc",
+      "android/content_settings/ads_blocked_infobar_delegate.cc",
+      "android/content_settings/ads_blocked_infobar_delegate.h",
+      "android/content_settings/popup_blocked_infobar_delegate.cc",
+      "android/content_settings/popup_blocked_infobar_delegate.h",
+      "android/context_menu_helper.cc",
+      "android/context_menu_helper.h",
+      "android/infobars/ads_blocked_infobar.cc",
+      "android/infobars/ads_blocked_infobar.h",
+      "android/infobars/app_banner_infobar_android.cc",
+      "android/infobars/app_banner_infobar_android.h",
+      "android/infobars/autofill_credit_card_filling_infobar.cc",
+      "android/infobars/autofill_credit_card_filling_infobar.h",
+      "android/infobars/autofill_save_card_infobar.cc",
+      "android/infobars/autofill_save_card_infobar.h",
+      "android/infobars/confirm_infobar.cc",
+      "android/infobars/confirm_infobar.h",
+      "android/infobars/data_reduction_promo_infobar.cc",
+      "android/infobars/data_reduction_promo_infobar.h",
+      "android/infobars/duplicate_download_infobar.cc",
+      "android/infobars/duplicate_download_infobar.h",
+      "android/infobars/framebust_block_infobar.cc",
+      "android/infobars/framebust_block_infobar.h",
+      "android/infobars/generated_password_saved_infobar.cc",
+      "android/infobars/generated_password_saved_infobar.h",
+      "android/infobars/grouped_permission_infobar.cc",
+      "android/infobars/grouped_permission_infobar.h",
+      "android/infobars/infobar_android.cc",
+      "android/infobars/infobar_android.h",
+      "android/infobars/infobar_container_android.cc",
+      "android/infobars/infobar_container_android.h",
+      "android/infobars/instant_apps_infobar.cc",
+      "android/infobars/instant_apps_infobar.h",
+      "android/infobars/permission_infobar.cc",
+      "android/infobars/permission_infobar.h",
+      "android/infobars/previews_infobar.cc",
+      "android/infobars/previews_infobar.h",
+      "android/infobars/reader_mode_infobar.cc",
+      "android/infobars/reader_mode_infobar.h",
+      "android/infobars/search_geolocation_disclosure_infobar.cc",
+      "android/infobars/search_geolocation_disclosure_infobar.h",
+      "android/infobars/simple_confirm_infobar_builder.cc",
+      "android/infobars/translate_compact_infobar.cc",
+      "android/infobars/translate_compact_infobar.h",
+      "android/infobars/translate_infobar.cc",
+      "android/infobars/translate_infobar.h",
+      "android/infobars/update_password_infobar.cc",
+      "android/infobars/update_password_infobar.h",
+      "android/interventions/framebust_block_message_delegate_bridge.cc",
+      "android/interventions/framebust_block_message_delegate_bridge.h",
+      "android/javascript_app_modal_dialog_android.cc",
+      "android/javascript_app_modal_dialog_android.h",
+      "android/login_handler_android.cc",
+      "android/omnibox/omnibox_url_emphasizer.cc",
+      "android/omnibox/omnibox_url_emphasizer.h",
+      "android/omnibox/omnibox_view_util.cc",
+      "android/omnibox/omnibox_view_util.h",
+      "android/page_info/certificate_chain_helper.cc",
+      "android/page_info/certificate_viewer_android.cc",
+      "android/page_info/connection_info_popup_android.cc",
+      "android/page_info/connection_info_popup_android.h",
+      "android/page_info/page_info_popup_android.cc",
+      "android/page_info/page_info_popup_android.h",
+      "android/simple_message_box_android.cc",
+      "android/snackbars/auto_signin_prompt_controller.cc",
+      "android/snackbars/auto_signin_prompt_controller.h",
+      "android/ssl_client_certificate_request.cc",
+      "android/tab_contents/chrome_web_contents_view_delegate_android.cc",
+      "android/tab_contents/chrome_web_contents_view_delegate_android.h",
+      "android/tab_model/android_live_tab_context.cc",
+      "android/tab_model/android_live_tab_context.h",
+      "android/tab_model/single_tab_model.cc",
+      "android/tab_model/tab_model.cc",
+      "android/tab_model/tab_model.h",
+      "android/tab_model/tab_model_jni_bridge.cc",
+      "android/tab_model/tab_model_jni_bridge.h",
+      "android/tab_model/tab_model_list.cc",
+      "android/tab_model/tab_model_list.h",
+      "android/tab_model/tab_model_list_observer.h",
+      "android/toolbar/toolbar_model_android.cc",
+      "android/toolbar/toolbar_model_android.h",
+      "android/usb_chooser_dialog_android.cc",
+      "android/usb_chooser_dialog_android.h",
+      "android/view_android_helper.cc",
+      "android/view_android_helper.h",
+      "browser_otr_state_android.cc",
+      "screen_capture_notification_ui_stub.cc",
+      "webui/offline/offline_internals_ui.cc",
+      "webui/offline/offline_internals_ui.h",
+      "webui/offline/offline_internals_ui_message_handler.cc",
+      "webui/offline/offline_internals_ui_message_handler.h",
+      "webui/snippets_internals_message_handler.cc",
+      "webui/snippets_internals_message_handler.h",
+      "webui/snippets_internals_ui.cc",
+      "webui/snippets_internals_ui.h",
+      "webui/webapks_handler.cc",
+      "webui/webapks_handler.h",
+      "webui/webapks_ui.cc",
+      "webui/webapks_ui.h",
+    ]
+    deps += [
+      "//chrome/browser:jni_headers",
+      "//components/navigation_interception",
+      "//components/subresource_filter/core/browser:browser",
+      "//components/web_contents_delegate_android",
+      "//crypto:platform",
+      "//device/usb/mojo",
+      "//device/usb/public/cpp",
+      "//device/usb/public/interfaces",
+      "//device/vr/features",
+      "//ui/android",
+    ]
+    deps -= [ "//ui/events" ]
+  } else {
+    # !is_android
     sources += [
       "apps/app_info_dialog.h",
       "apps/chrome_app_delegate.cc",
@@ -736,6 +868,7 @@ split_static_library("ui") {
       "browser_toolbar_model_delegate.h",
       "browser_view_prefs.cc",
       "browser_view_prefs.h",
+      "browser_window.h",
       "browser_window_state.cc",
       "browser_window_state.h",
       "chrome_bubble_manager.cc",
@@ -912,6 +1045,13 @@ split_static_library("ui") {
       "toolbar/component_action_delegate.h",
       "toolbar/component_toolbar_actions_factory.cc",
       "toolbar/component_toolbar_actions_factory.h",
+      "toolbar/media_router_action.cc",
+      "toolbar/media_router_action.h",
+      "toolbar/media_router_action_controller.cc",
+      "toolbar/media_router_action_controller.h",
+      "toolbar/media_router_action_platform_delegate.h",
+      "toolbar/media_router_contextual_menu.cc",
+      "toolbar/media_router_contextual_menu.h",
       "toolbar/recent_tabs_sub_menu_model.cc",
       "toolbar/recent_tabs_sub_menu_model.h",
       "toolbar/toolbar_action_view_controller.h",
@@ -931,6 +1071,8 @@ split_static_library("ui") {
       "unload_controller_web_contents_delegate.h",
       "user_manager.cc",
       "user_manager.h",
+      "views/toolbar/media_router_action_platform_delegate_views.cc",
+      "views/toolbar/media_router_action_platform_delegate_views.h",
       "webui/app_launcher_login_handler.cc",
       "webui/app_launcher_login_handler.h",
       "webui/bookmarks_ui.cc",
@@ -984,6 +1126,26 @@ split_static_library("ui") {
       "webui/md_feedback/md_feedback_webui_message_handler.h",
       "webui/md_history_ui.cc",
       "webui/md_history_ui.h",
+      "webui/media_router/cast_modes_with_media_sources.cc",
+      "webui/media_router/cast_modes_with_media_sources.h",
+      "webui/media_router/media_cast_mode.cc",
+      "webui/media_router/media_cast_mode.h",
+      "webui/media_router/media_router_dialog_controller_impl.cc",
+      "webui/media_router/media_router_dialog_controller_impl.h",
+      "webui/media_router/media_router_file_dialog.cc",
+      "webui/media_router/media_router_file_dialog.h",
+      "webui/media_router/media_router_localized_strings_provider.cc",
+      "webui/media_router/media_router_localized_strings_provider.h",
+      "webui/media_router/media_router_resources_provider.cc",
+      "webui/media_router/media_router_resources_provider.h",
+      "webui/media_router/media_router_ui.cc",
+      "webui/media_router/media_router_ui.h",
+      "webui/media_router/media_router_webui_message_handler.cc",
+      "webui/media_router/media_router_webui_message_handler.h",
+      "webui/media_router/media_sink_with_cast_modes.cc",
+      "webui/media_router/media_sink_with_cast_modes.h",
+      "webui/media_router/query_result_manager.cc",
+      "webui/media_router/query_result_manager.h",
       "webui/ntp/app_icon_webui_handler.cc",
       "webui/ntp/app_icon_webui_handler.h",
       "webui/ntp/app_launcher_handler.cc",
@@ -1118,6 +1280,8 @@ split_static_library("ui") {
       "webui/system_info_ui.h",
       "webui/theme_handler.cc",
       "webui/theme_handler.h",
+      "webui/theme_source.cc",
+      "webui/theme_source.h",
       "window_sizer/window_sizer.cc",
       "window_sizer/window_sizer.h",
       "zoom/chrome_zoom_level_otr_delegate.cc",
@@ -1127,6 +1291,8 @@ split_static_library("ui") {
     ]
     deps += [
       "//chrome/app/vector_icons",
+      "//chrome/browser:theme_properties",
+      "//chrome/browser/media/router",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/common:features",
       "//components/feedback/proto",
@@ -1141,6 +1307,8 @@ split_static_library("ui") {
       "//device/bluetooth",
       "//mash/public/interfaces",
       "//services/device/public/interfaces",
+      "//third_party/libaddressinput",
+      "//third_party/libaddressinput:strings",
     ]
 
     if (enable_extensions) {
@@ -1152,6 +1320,24 @@ split_static_library("ui") {
       if (!is_mac) {
         deps += [ "//apps/ui/views" ]
       }
+    }
+
+    if (is_mac && !mac_views_browser) {
+      sources -= [
+        # This file is compiled on GYP but never referenced on Mac. Since it's
+        # in a static library, it never gets pulled in and we never try to link
+        # it (it doesn't link). In GN, source sets force us to get this rule
+        # correct.
+        "views/toolbar/media_router_action_platform_delegate_views.cc",
+        "views/toolbar/media_router_action_platform_delegate_views.h",
+      ]
+    }
+
+    if (is_chromeos || is_mac || is_win) {
+      sources += [
+        "webui/cast/cast_ui.cc",
+        "webui/cast/cast_ui.h",
+      ]
     }
   }
 
@@ -2209,150 +2395,6 @@ split_static_library("ui") {
     } else {
       sources += [ "webui/print_preview/printer_backend_proxy.cc" ]
     }
-  }
-
-  if (is_android) {
-    deps += [
-      "//components/navigation_interception",
-      "//components/subresource_filter/core/browser:browser",
-      "//crypto:platform",
-      "//device/usb/mojo",
-      "//device/usb/public/interfaces",
-      "//device/vr/features",
-      "//ui/android",
-    ]
-
-    sources += [
-      "android/autofill/autofill_keyboard_accessory_view.cc",
-      "android/autofill/autofill_keyboard_accessory_view.h",
-      "android/autofill/autofill_logger_android.cc",
-      "android/autofill/autofill_logger_android.h",
-      "android/autofill/autofill_popup_view_android.cc",
-      "android/autofill/autofill_popup_view_android.h",
-      "android/autofill/card_unmask_prompt_view_android.cc",
-      "android/autofill/card_unmask_prompt_view_android.h",
-      "android/autofill/credit_card_scanner_view_android.cc",
-      "android/autofill/credit_card_scanner_view_android.h",
-      "android/autofill/password_generation_popup_view_android.cc",
-      "android/autofill/password_generation_popup_view_android.h",
-      "android/bluetooth_chooser_android.cc",
-      "android/bluetooth_chooser_android.h",
-      "android/chrome_http_auth_handler.cc",
-      "android/chrome_http_auth_handler.h",
-      "android/color_chooser_dialog_android.cc",
-      "android/content_settings/ads_blocked_infobar_delegate.cc",
-      "android/content_settings/ads_blocked_infobar_delegate.h",
-      "android/content_settings/popup_blocked_infobar_delegate.cc",
-      "android/content_settings/popup_blocked_infobar_delegate.h",
-      "android/context_menu_helper.cc",
-      "android/context_menu_helper.h",
-      "android/infobars/ads_blocked_infobar.cc",
-      "android/infobars/ads_blocked_infobar.h",
-      "android/infobars/app_banner_infobar_android.cc",
-      "android/infobars/app_banner_infobar_android.h",
-      "android/infobars/autofill_credit_card_filling_infobar.cc",
-      "android/infobars/autofill_credit_card_filling_infobar.h",
-      "android/infobars/autofill_save_card_infobar.cc",
-      "android/infobars/autofill_save_card_infobar.h",
-      "android/infobars/confirm_infobar.cc",
-      "android/infobars/confirm_infobar.h",
-      "android/infobars/data_reduction_promo_infobar.cc",
-      "android/infobars/data_reduction_promo_infobar.h",
-      "android/infobars/duplicate_download_infobar.cc",
-      "android/infobars/duplicate_download_infobar.h",
-      "android/infobars/framebust_block_infobar.cc",
-      "android/infobars/framebust_block_infobar.h",
-      "android/infobars/generated_password_saved_infobar.cc",
-      "android/infobars/generated_password_saved_infobar.h",
-      "android/infobars/grouped_permission_infobar.cc",
-      "android/infobars/grouped_permission_infobar.h",
-      "android/infobars/infobar_android.cc",
-      "android/infobars/infobar_android.h",
-      "android/infobars/infobar_container_android.cc",
-      "android/infobars/infobar_container_android.h",
-      "android/infobars/instant_apps_infobar.cc",
-      "android/infobars/instant_apps_infobar.h",
-      "android/infobars/permission_infobar.cc",
-      "android/infobars/permission_infobar.h",
-      "android/infobars/previews_infobar.cc",
-      "android/infobars/previews_infobar.h",
-      "android/infobars/reader_mode_infobar.cc",
-      "android/infobars/reader_mode_infobar.h",
-      "android/infobars/search_geolocation_disclosure_infobar.cc",
-      "android/infobars/search_geolocation_disclosure_infobar.h",
-      "android/infobars/simple_confirm_infobar_builder.cc",
-      "android/infobars/translate_compact_infobar.cc",
-      "android/infobars/translate_compact_infobar.h",
-      "android/infobars/translate_infobar.cc",
-      "android/infobars/translate_infobar.h",
-      "android/infobars/update_password_infobar.cc",
-      "android/infobars/update_password_infobar.h",
-      "android/interventions/framebust_block_message_delegate_bridge.cc",
-      "android/interventions/framebust_block_message_delegate_bridge.h",
-      "android/javascript_app_modal_dialog_android.cc",
-      "android/javascript_app_modal_dialog_android.h",
-      "android/login_handler_android.cc",
-      "android/omnibox/omnibox_url_emphasizer.cc",
-      "android/omnibox/omnibox_url_emphasizer.h",
-      "android/omnibox/omnibox_view_util.cc",
-      "android/omnibox/omnibox_view_util.h",
-      "android/page_info/certificate_chain_helper.cc",
-      "android/page_info/certificate_viewer_android.cc",
-      "android/page_info/connection_info_popup_android.cc",
-      "android/page_info/connection_info_popup_android.h",
-      "android/page_info/page_info_popup_android.cc",
-      "android/page_info/page_info_popup_android.h",
-      "android/simple_message_box_android.cc",
-      "android/snackbars/auto_signin_prompt_controller.cc",
-      "android/snackbars/auto_signin_prompt_controller.h",
-      "android/ssl_client_certificate_request.cc",
-      "android/tab_contents/chrome_web_contents_view_delegate_android.cc",
-      "android/tab_contents/chrome_web_contents_view_delegate_android.h",
-      "android/tab_model/android_live_tab_context.cc",
-      "android/tab_model/android_live_tab_context.h",
-      "android/tab_model/single_tab_model.cc",
-      "android/tab_model/tab_model.cc",
-      "android/tab_model/tab_model.h",
-      "android/tab_model/tab_model_jni_bridge.cc",
-      "android/tab_model/tab_model_jni_bridge.h",
-      "android/tab_model/tab_model_list.cc",
-      "android/tab_model/tab_model_list.h",
-      "android/tab_model/tab_model_list_observer.h",
-      "android/toolbar/toolbar_model_android.cc",
-      "android/toolbar/toolbar_model_android.h",
-      "android/usb_chooser_dialog_android.cc",
-      "android/usb_chooser_dialog_android.h",
-      "android/view_android_helper.cc",
-      "android/view_android_helper.h",
-      "browser_otr_state_android.cc",
-      "screen_capture_notification_ui_stub.cc",
-      "webui/offline/offline_internals_ui.cc",
-      "webui/offline/offline_internals_ui.h",
-      "webui/offline/offline_internals_ui_message_handler.cc",
-      "webui/offline/offline_internals_ui_message_handler.h",
-      "webui/snippets_internals_message_handler.cc",
-      "webui/snippets_internals_message_handler.h",
-      "webui/snippets_internals_ui.cc",
-      "webui/snippets_internals_ui.h",
-      "webui/webapks_handler.cc",
-      "webui/webapks_handler.h",
-      "webui/webapks_ui.cc",
-      "webui/webapks_ui.h",
-    ]
-    deps += [
-      "//chrome/browser:jni_headers",
-      "//components/web_contents_delegate_android",
-      "//device/usb/public/cpp",
-    ]
-    deps -= [ "//ui/events" ]
-  } else {
-    # !is_android
-    sources += [
-      "browser_window.h",
-      "webui/theme_source.cc",
-      "webui/theme_source.h",
-    ]
-    deps += [ "//chrome/browser:theme_properties" ]
   }
 
   if (is_mac) {
@@ -3443,12 +3485,6 @@ split_static_library("ui") {
       "app_list/app_list_service_disabled_mac.mm",
     ]
   }
-  if (!is_android) {
-    deps += [
-      "//third_party/libaddressinput",
-      "//third_party/libaddressinput:strings",
-    ]
-  }
   if (enable_extensions) {
     deps += [
       "//chrome/browser/apps",
@@ -3497,59 +3533,6 @@ split_static_library("ui") {
       "webui/extensions/extension_basic_info.h",
       "webui/extensions/extension_icon_source.cc",
       "webui/extensions/extension_icon_source.h",
-    ]
-  }
-  if (!is_android) {
-    sources += [
-      "toolbar/media_router_action.cc",
-      "toolbar/media_router_action.h",
-      "toolbar/media_router_action_controller.cc",
-      "toolbar/media_router_action_controller.h",
-      "toolbar/media_router_action_platform_delegate.h",
-      "toolbar/media_router_contextual_menu.cc",
-      "toolbar/media_router_contextual_menu.h",
-      "views/toolbar/media_router_action_platform_delegate_views.cc",
-      "views/toolbar/media_router_action_platform_delegate_views.h",
-      "webui/media_router/cast_modes_with_media_sources.cc",
-      "webui/media_router/cast_modes_with_media_sources.h",
-      "webui/media_router/media_cast_mode.cc",
-      "webui/media_router/media_cast_mode.h",
-      "webui/media_router/media_router_dialog_controller_impl.cc",
-      "webui/media_router/media_router_dialog_controller_impl.h",
-      "webui/media_router/media_router_file_dialog.cc",
-      "webui/media_router/media_router_file_dialog.h",
-      "webui/media_router/media_router_localized_strings_provider.cc",
-      "webui/media_router/media_router_localized_strings_provider.h",
-      "webui/media_router/media_router_resources_provider.cc",
-      "webui/media_router/media_router_resources_provider.h",
-      "webui/media_router/media_router_ui.cc",
-      "webui/media_router/media_router_ui.h",
-      "webui/media_router/media_router_webui_message_handler.cc",
-      "webui/media_router/media_router_webui_message_handler.h",
-      "webui/media_router/media_sink_with_cast_modes.cc",
-      "webui/media_router/media_sink_with_cast_modes.h",
-      "webui/media_router/query_result_manager.cc",
-      "webui/media_router/query_result_manager.h",
-    ]
-    if (is_mac && !mac_views_browser) {
-      sources -= [
-        # This file is compiled on GYP but never referenced on Mac. Since it's
-        # in a static library, it never gets pulled in and we never try to link
-        # it (it doesn't link). In GN, source sets force us to get this rule
-        # correct.
-        "views/toolbar/media_router_action_platform_delegate_views.cc",
-        "views/toolbar/media_router_action_platform_delegate_views.h",
-      ]
-    }
-    if (is_chromeos || is_mac || is_win) {
-      sources += [
-        "webui/cast/cast_ui.cc",
-        "webui/cast/cast_ui.h",
-      ]
-    }
-    deps += [
-      "//chrome/browser/media/router",
-      "//components/web_modal",
     ]
   }
   if (enable_webrtc) {
