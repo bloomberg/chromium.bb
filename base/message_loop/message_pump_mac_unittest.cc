@@ -6,6 +6,8 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -105,4 +107,67 @@ TEST(MessagePumpMacTest, TestInvalidatedTimerReuse) {
   CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), test_timer,
                        kMessageLoopExclusiveRunLoopMode);
 }
+
+namespace {
+
+// PostedTasks are only executed while the message pump has a delegate. That is,
+// when a base::RunLoop is running, so in order to test whether posted tasks
+// are run by CFRunLoopRunInMode and *not* by the regular RunLoop, we need to
+// be inside a task that is also calling CFRunLoopRunInMode. This task runs the
+// given |mode| after posting a task to increment a counter, then checks whether
+// the counter incremented after emptying that run loop mode.
+void IncrementInModeAndExpect(CFRunLoopMode mode, int result) {
+  // Since this task is "ours" rather than a system task, allow nesting.
+  MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
+  int counter = 0;
+  auto increment = BindRepeating([](int* i) { ++*i; }, &counter);
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, increment);
+  while (CFRunLoopRunInMode(mode, 0, true) == kCFRunLoopRunHandledSource)
+    ;
+  ASSERT_EQ(result, counter);
+}
+
+}  // namespace
+
+// Tests the correct behavior of ScopedPumpMessagesInPrivateModes.
+TEST(MessagePumpMacTest, ScopedPumpMessagesInPrivateModes) {
+  MessageLoopForUI message_loop;
+
+  CFRunLoopMode kRegular = kCFRunLoopDefaultMode;
+  CFRunLoopMode kPrivate = CFSTR("NSUnhighlightMenuRunLoopMode");
+
+  // Work is seen when running in the default mode.
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindOnce(&IncrementInModeAndExpect, kRegular, 1));
+  EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
+
+  // But not seen when running in a private mode.
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindOnce(&IncrementInModeAndExpect, kPrivate, 0));
+  EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
+
+  {
+    ScopedPumpMessagesInPrivateModes allow_private;
+    // Now the work should be seen.
+    ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, BindOnce(&IncrementInModeAndExpect, kPrivate, 1));
+    EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
+
+    // The regular mode should also work the same.
+    ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, BindOnce(&IncrementInModeAndExpect, kRegular, 1));
+    EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
+  }
+
+  // And now the scoper is out of scope, private modes should no longer see it.
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindOnce(&IncrementInModeAndExpect, kPrivate, 0));
+  EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
+
+  // Only regular modes see it.
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindOnce(&IncrementInModeAndExpect, kRegular, 1));
+  EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
+}
+
 }  // namespace base

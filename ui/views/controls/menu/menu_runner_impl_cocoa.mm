@@ -5,6 +5,7 @@
 #import "ui/views/controls/menu/menu_runner_impl_cocoa.h"
 
 #include "base/mac/sdk_forward_declarations.h"
+#import "base/message_loop/message_pump_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/models/menu_model.h"
@@ -163,6 +164,9 @@ void MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
   DCHECK(parent);
   closing_event_time_ = base::TimeTicks();
   running_ = true;
+
+  // Ensure the UI can update while the menu is fading out.
+  base::ScopedPumpMessagesInPrivateModes pump_private;
 
   NSWindow* window = parent->GetNativeWindow();
   if (run_types & MenuRunner::CONTEXT_MENU) {
