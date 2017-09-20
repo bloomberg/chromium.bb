@@ -3175,6 +3175,8 @@ test("unit_tests") {
     "../browser/installable/installable_task_queue_unittest.cc",
     "../browser/internal_auth_unittest.cc",
     "../browser/io_thread_unittest.cc",
+    "../browser/language/language_model_factory_unittest.cc",
+    "../browser/language/url_language_histogram_factory_unittest.cc",
     "../browser/loader/chrome_navigation_data_unittest.cc",
     "../browser/loader/chrome_resource_dispatcher_host_delegate_unittest.cc",
     "../browser/logging_chrome_unittest.cc",
@@ -3336,7 +3338,6 @@ test("unit_tests") {
 
     # TODO(hashimoto): those tests should be componentized and moved to
     # //components:components_unittests, http://crbug.com/527882.
-    "../browser/language/url_language_histogram_factory_unittest.cc",
     "../browser/search_engines/template_url_fetcher_unittest.cc",
     "../browser/search_engines/template_url_parser_unittest.cc",
     "../browser/search_engines/template_url_service_sync_unittest.cc",
