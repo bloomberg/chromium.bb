@@ -6,10 +6,6 @@ import("//build/symlink.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
-if (is_android) {
-  import("//build/config/android/rules.gni")
-}
-
 if (is_win) {
   import("//build/config/win/visual_studio_version.gni")
 }
@@ -42,7 +38,6 @@ config("internal_config") {
 config("client_config") {
   include_dirs = [ "src" ]
   if (is_android) {
-    defines = [ "ANDROID_NDK_MAJOR_VERSION=${android_ndk_major_version}" ]
     include_dirs += [ "src/common/android/include" ]
   }
   if (is_chromeos) {
