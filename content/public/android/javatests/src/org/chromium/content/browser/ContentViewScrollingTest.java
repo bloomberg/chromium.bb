@@ -6,24 +6,35 @@ package org.chromium.content.browser;
 
 import android.content.res.Configuration;
 import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule.RerunWithUpdatedContainerView;
-import org.chromium.content_shell_apk.ContentShellTestBase;
 
 /**
  * Tests that we can scroll and fling a ContentView running inside ContentShell.
  */
-public class ContentViewScrollingTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class ContentViewScrollingTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
     private static final String LARGE_PAGE = UrlUtils.encodeHtmlDataUri("<html><head>"
             + "<meta name=\"viewport\" content=\"width=device-width, "
@@ -96,11 +107,15 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
                 final int maxThreshold = 100;
 
                 boolean xCorrect = hugLeft
-                        ? getContentViewCore().getNativeScrollXForTest() < minThreshold
-                        : getContentViewCore().getNativeScrollXForTest() > maxThreshold;
+                        ? mActivityTestRule.getContentViewCore().getNativeScrollXForTest()
+                                < minThreshold
+                        : mActivityTestRule.getContentViewCore().getNativeScrollXForTest()
+                                > maxThreshold;
                 boolean yCorrect = hugTop
-                        ? getContentViewCore().getNativeScrollYForTest() < minThreshold
-                        : getContentViewCore().getNativeScrollYForTest() > maxThreshold;
+                        ? mActivityTestRule.getContentViewCore().getNativeScrollYForTest()
+                                < minThreshold
+                        : mActivityTestRule.getContentViewCore().getNativeScrollYForTest()
+                                > maxThreshold;
                 return xCorrect && yCorrect;
             }
         });
@@ -110,41 +125,42 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return getContentViewCore().getLastFrameViewportWidthCss() != 0;
+                return mActivityTestRule.getContentViewCore().getLastFrameViewportWidthCss() != 0;
             }
         });
     }
 
     private void fling(final int vx, final int vy) throws Throwable {
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getContentViewCore().flingViewport(SystemClock.uptimeMillis(), vx, vy, false);
+                mActivityTestRule.getContentViewCore().flingViewport(
+                        SystemClock.uptimeMillis(), vx, vy, false);
             }
         });
     }
 
     private void scrollTo(final int x, final int y) throws Throwable {
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getContentViewCore().getContainerView().scrollTo(x, y);
+                mActivityTestRule.getContentViewCore().getContainerView().scrollTo(x, y);
             }
         });
     }
 
     private void scrollBy(final int dx, final int dy) throws Throwable {
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getContentViewCore().getContainerView().scrollBy(dx, dy);
+                mActivityTestRule.getContentViewCore().getContainerView().scrollBy(dx, dy);
             }
         });
     }
 
     private void scrollWithJoystick(final float deltaAxisX, final float deltaAxisY)
             throws Throwable {
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Synthesize joystick motion event and send to ContentViewCore.
@@ -153,32 +169,34 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
                                 deltaAxisX, deltaAxisY, 0);
                 leftJoystickMotionEvent.setSource(
                         leftJoystickMotionEvent.getSource() | InputDevice.SOURCE_CLASS_JOYSTICK);
-                getContentViewCore().getContainerView().onGenericMotionEvent(
+                mActivityTestRule.getContentViewCore().getContainerView().onGenericMotionEvent(
                         leftJoystickMotionEvent);
             }
         });
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        launchContentShellWithUrl(LARGE_PAGE);
-        waitForActiveShellToBeDoneLoading();
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.launchContentShellWithUrl(LARGE_PAGE);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
         waitForViewportInitialization();
 
-        assertEquals(0, getContentViewCore().getNativeScrollXForTest());
-        assertEquals(0, getContentViewCore().getNativeScrollYForTest());
+        Assert.assertEquals(0, mActivityTestRule.getContentViewCore().getNativeScrollXForTest());
+        Assert.assertEquals(0, mActivityTestRule.getContentViewCore().getNativeScrollYForTest());
     }
 
+    @Test
     @SmallTest
     @Feature({"Main"})
     @RetryOnFailure
     public void testFling() throws Throwable {
         // Scaling the initial velocity by the device scale factor ensures that
         // it's of sufficient magnitude for all displays densities.
-        float deviceScaleFactor =
-                getInstrumentation().getTargetContext().getResources().getDisplayMetrics().density;
+        float deviceScaleFactor = InstrumentationRegistry.getInstrumentation()
+                                          .getTargetContext()
+                                          .getResources()
+                                          .getDisplayMetrics()
+                                          .density;
         int velocity = (int) (1000 * deviceScaleFactor);
 
         // Vertical fling to lower-left.
@@ -202,6 +220,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         waitForScroll(false, false);
     }
 
+    @Test
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
@@ -228,6 +247,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         waitForScroll(false, false);
     }
 
+    @Test
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
@@ -261,6 +281,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         waitForScroll(false, false);
     }
 
+    @Test
     @SmallTest
     @Feature({"Main"})
     public void testJoystickScroll() throws Throwable {
@@ -293,6 +314,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
      * To ensure the device properly responds to bounds-exceeding scrolls, e.g., overscroll
      * effects are properly initialized.
      */
+    @Test
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
@@ -323,18 +345,22 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
      * To ensure the AccessibilityEvent notifications (Eg:TYPE_VIEW_SCROLLED) are being sent
      * properly on scrolling a page.
      */
+    @Test
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
     @RetryOnFailure
     public void testOnScrollChanged() throws Throwable {
-        final int scrollToX = getContentViewCore().getNativeScrollXForTest() + 2500;
-        final int scrollToY = getContentViewCore().getNativeScrollYForTest() + 2500;
+        final int scrollToX =
+                mActivityTestRule.getContentViewCore().getNativeScrollXForTest() + 2500;
+        final int scrollToY =
+                mActivityTestRule.getContentViewCore().getNativeScrollYForTest() + 2500;
         final TestInternalAccessDelegate containerViewInternals = new TestInternalAccessDelegate();
-        runTestOnUiThread(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                getContentViewCore().setContainerViewInternals(containerViewInternals);
+                mActivityTestRule.getContentViewCore().setContainerViewInternals(
+                        containerViewInternals);
             }
         });
         scrollTo(scrollToX, scrollToY);
