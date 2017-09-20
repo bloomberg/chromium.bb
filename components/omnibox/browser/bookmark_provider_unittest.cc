@@ -294,13 +294,15 @@ TEST_F(BookmarkProviderTest, Positions) {
         << MatchesAsString16(matches)
         << "for query '" << query_data[i].query << "'.";
     // Validate positions within each match is as expected.
-    for (size_t j = 0; j < matches.size(); ++j) {
+    size_t j = 0;
+    for (const auto& match : matches) {
       // Collect the expected positions as a vector, collect the match's
       // classifications for match positions as a vector, then compare.
       TestBookmarkPositions expected_positions(
           PositionsFromExpectations(query_data[i].positions[j]));
       TestBookmarkPositions actual_positions(
-          PositionsFromAutocompleteMatch(matches[j]));
+          PositionsFromAutocompleteMatch(match));
+      ASSERT_EQ(expected_positions.size(), actual_positions.size());
       EXPECT_TRUE(std::equal(expected_positions.begin(),
                              expected_positions.end(),
                              actual_positions.begin(),
@@ -308,6 +310,7 @@ TEST_F(BookmarkProviderTest, Positions) {
           << "EXPECTED: " << TestBookmarkPositionsAsString(expected_positions)
           << "ACTUAL:   " << TestBookmarkPositionsAsString(actual_positions)
           << "    for query: '" << query_data[i].query << "'.";
+      ++j;
     }
   }
 }
@@ -366,22 +369,30 @@ TEST_F(BookmarkProviderTest, Rankings) {
     provider_->Start(input, false);
     const ACMatches& matches(provider_->matches());
     // Validate number and content of results is as expected.
+    auto match = matches.begin();
     for (size_t j = 0; j < std::max(query_data[i].match_count, matches.size());
          ++j) {
-      EXPECT_LT(j, query_data[i].match_count) << "    Unexpected match '"
-          << base::UTF16ToUTF8(matches[j].description) << "' for query: '"
-          <<  query_data[i].query << "'.";
-      if (j >= query_data[i].match_count)
+      EXPECT_LT(j, query_data[i].match_count)
+          << "    Unexpected match '" << base::UTF16ToUTF8(match->description)
+          << "' for query: '" << query_data[i].query << "'.";
+      if (j >= query_data[i].match_count) {
+        if (match != matches.end())
+          ++match;
         continue;
+      }
       EXPECT_LT(j, matches.size()) << "    Missing match '"
           << query_data[i].matches[j] << "' for query: '"
           << query_data[i].query << "'.";
-      if (j >= matches.size())
+      if (j >= matches.size()) {
+        if (match != matches.end())
+          ++match;
         continue;
-      EXPECT_EQ(query_data[i].matches[j],
-                base::UTF16ToUTF8(matches[j].description))
+      }
+      EXPECT_EQ(query_data[i].matches[j], base::UTF16ToUTF8(match->description))
           << "    Mismatch at [" << base::SizeTToString(j) << "] for query '"
           << query_data[i].query << "'.";
+      if (match != matches.end())
+        ++match;
     }
   }
 }
@@ -468,7 +479,7 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
     provider_->Start(input, false);
     const ACMatches& matches(provider_->matches());
     ASSERT_EQ(1U, matches.size()) << description;
-    const AutocompleteMatch& match = matches[0];
+    const AutocompleteMatch& match = matches.front();
     EXPECT_EQ(base::ASCIIToUTF16(query_data[i].expected_contents),
               match.contents) << description;
     std::vector<std::string> class_strings = base::SplitString(

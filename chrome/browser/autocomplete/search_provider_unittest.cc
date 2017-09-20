@@ -341,17 +341,16 @@ void SearchProviderTest::RunTest(TestData* cases,
         cases[i].input +
         ASCIIToUTF16("; prefer_keyword was: ") +
         (prefer_keyword ? ASCIIToUTF16("true") : ASCIIToUTF16("false")));
-    EXPECT_EQ(cases[i].num_results, matches.size());
-    if (matches.size() == cases[i].num_results) {
-      for (size_t j = 0; j < cases[i].num_results; ++j) {
-        EXPECT_EQ(cases[i].output[j].gurl, matches[j].destination_url);
-        EXPECT_EQ(cases[i].output[j].result_type, matches[j].type);
-        EXPECT_EQ(cases[i].output[j].fill_into_edit,
-                  matches[j].fill_into_edit);
-        EXPECT_EQ(cases[i].output[j].allowed_to_be_default_match,
-                  matches[j].allowed_to_be_default_match);
-      }
-    }
+    ASSERT_EQ(cases[i].num_results, matches.size());
+    EXPECT_TRUE(std::equal(
+        matches.begin(), matches.end(), &cases[i].output[0],
+        [](const AutocompleteMatch& match, const ResultInfo& testcase) {
+          return match.destination_url == testcase.gurl &&
+                 match.type == testcase.result_type &&
+                 match.fill_into_edit == testcase.fill_into_edit &&
+                 match.allowed_to_be_default_match ==
+                     testcase.allowed_to_be_default_match;
+        }));
   }
 }
 
@@ -489,17 +488,20 @@ void SearchProviderTest::CheckMatches(const std::string& description,
                                       const ACMatches& matches) {
   ASSERT_FALSE(matches.empty());
   ASSERT_LE(matches.size(), num_expected_matches);
-  size_t i = 0;
   SCOPED_TRACE(description);
   // Ensure that the returned matches equal the expectations.
-  for (; i < matches.size(); ++i) {
-    SCOPED_TRACE(" Case # " + base::SizeTToString(i));
-    EXPECT_EQ(ASCIIToUTF16(expected_matches[i].contents), matches[i].contents);
-    EXPECT_EQ(expected_matches[i].allowed_to_be_default_match,
-              matches[i].allowed_to_be_default_match);
-  }
+  EXPECT_TRUE(std::equal(
+      matches.begin(), matches.end(), &expected_matches[0],
+      [&](const AutocompleteMatch& match, const ExpectedMatch& testcase) {
+        std::string index = base::SizeTToString(
+            &testcase - &expected_matches[0]);
+        SCOPED_TRACE(" Case # " + index);
+        return ASCIIToUTF16(testcase.contents) == match.contents &&
+               testcase.allowed_to_be_default_match ==
+                   match.allowed_to_be_default_match;
+      }));
   // Ensure that no expected matches are missing.
-  for (; i < num_expected_matches; ++i) {
+  for (size_t i = matches.size(); i < num_expected_matches; ++i) {
     SCOPED_TRACE(" Case # " + base::SizeTToString(i));
     EXPECT_EQ(kNotApplicable, expected_matches[i].contents);
   }
@@ -628,8 +630,8 @@ TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
 
   ASSERT_FALSE(provider_->matches().empty());
   ASSERT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-            provider_->matches()[0].type);
-  EXPECT_TRUE(provider_->matches()[0].allowed_to_be_default_match);
+            provider_->matches().front().type);
+  EXPECT_TRUE(provider_->matches().front().allowed_to_be_default_match);
 }
 
 // Issues a query that matches the registered keyword and makes sure history
@@ -1269,12 +1271,14 @@ TEST_F(SearchProviderTest, DefaultProviderNoSuggestRelevanceInKeywordMode) {
         cases[i].keyword_provider_json);
     const ACMatches& matches = provider_->matches();
     ASSERT_LE(matches.size(), arraysize(cases[i].matches));
-    size_t j = 0;
     // Ensure that the returned matches equal the expectations.
-    for (; j < matches.size(); ++j)
-      EXPECT_EQ(ASCIIToUTF16(cases[i].matches[j]), matches[j].contents);
+    EXPECT_TRUE(std::equal(
+        matches.begin(), matches.end(), &cases[i].matches[0],
+        [](const AutocompleteMatch& match, const std::string testcase) {
+          return ASCIIToUTF16(testcase) == match.contents;
+        }));
     // Ensure that no expected matches are missing.
-    for (; j < arraysize(cases[i].matches); ++j)
+    for (size_t j = matches.size(); j < arraysize(cases[i].matches); ++j)
       EXPECT_EQ(std::string(), cases[i].matches[j]);
   }
 }
@@ -1969,18 +1973,19 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
               it->inline_autocompletion);
 
     ASSERT_LE(matches.size(), arraysize(cases[i].matches));
-    size_t j = 0;
     // Ensure that the returned matches equal the expectations.
-    for (; j < matches.size(); ++j) {
-      EXPECT_EQ(ASCIIToUTF16(cases[i].matches[j].contents),
-                matches[j].contents);
-      EXPECT_EQ(cases[i].matches[j].from_keyword,
-                matches[j].keyword == ASCIIToUTF16("k"));
-      EXPECT_EQ(cases[i].matches[j].allowed_to_be_default_match,
-                matches[j].allowed_to_be_default_match);
-    }
+    EXPECT_TRUE(std::equal(
+        matches.begin(), matches.end(), &cases[i].matches[0],
+        [](const AutocompleteMatch& match,
+           const KeywordFetcherMatch& testcase) {
+          return ASCIIToUTF16(testcase.contents) == match.contents &&
+                 testcase.from_keyword ==
+                     (match.keyword == ASCIIToUTF16("k")) &&
+                 testcase.allowed_to_be_default_match ==
+                     match.allowed_to_be_default_match;
+        }));
     // Ensure that no expected matches are missing.
-    for (; j < arraysize(cases[i].matches); ++j) {
+    for (size_t j = matches.size(); j < arraysize(cases[i].matches); ++j) {
       SCOPED_TRACE(" Case # " + base::SizeTToString(i));
       EXPECT_EQ(kNotApplicable, cases[i].matches[j].contents);
     }
@@ -2330,13 +2335,15 @@ TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
     // Ensure no extra matches are present.
     ASSERT_LE(matches.size(), arraysize(cases[i].matches));
 
-    size_t j = 0;
     // Ensure that the returned matches equal the expectations.
-    for (; j < matches.size(); ++j)
-      EXPECT_EQ(ASCIIToUTF16(cases[i].matches[j]),
-                matches[j].contents) << description;
+    EXPECT_TRUE(std::equal(
+        matches.begin(), matches.end(), &cases[i].matches[0],
+        [](const AutocompleteMatch& match, const std::string& testcase) {
+          return testcase == base::UTF16ToUTF8(match.contents);
+        })) << description;
+
     // Ensure that no expected matches are missing.
-    for (; j < arraysize(cases[i].matches); ++j)
+    for (size_t j = matches.size(); j < arraysize(cases[i].matches); ++j)
       EXPECT_EQ(kNotApplicable, cases[i].matches[j]) <<
           "Case # " << i << " " << description;
   }
@@ -2454,19 +2461,20 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
     }
 
     SCOPED_TRACE("input=" + cases[i].input + " json=" + cases[i].json);
-    size_t j = 0;
     const ACMatches& matches = provider_->matches();
     ASSERT_LE(matches.size(), arraysize(cases[i].output));
     // Ensure that the returned matches equal the expectations.
-    for (; j < matches.size(); ++j) {
-      EXPECT_EQ(ASCIIToUTF16(cases[i].output[j].match_contents),
-                matches[j].contents);
-      EXPECT_EQ(cases[i].output[j].match_type, matches[j].type);
-      EXPECT_EQ(cases[i].output[j].allowed_to_be_default_match,
-                matches[j].allowed_to_be_default_match);
-    }
+    EXPECT_TRUE(std::equal(
+        matches.begin(), matches.end(), &cases[i].output[0],
+        [](const AutocompleteMatch& match,
+           const DefaultFetcherUrlInputMatch& testcase) {
+          return ASCIIToUTF16(testcase.match_contents) == match.contents &&
+                 testcase.match_type == match.type &&
+                 testcase.allowed_to_be_default_match ==
+                     match.allowed_to_be_default_match;
+        }));
     // Ensure that no expected matches are missing.
-    for (; j < arraysize(cases[i].output); ++j) {
+    for (size_t j = matches.size(); j < arraysize(cases[i].output); ++j) {
       EXPECT_EQ(kNotApplicable, cases[i].output[j].match_contents);
       EXPECT_EQ(AutocompleteMatchType::NUM_TYPES,
                 cases[i].output[j].match_type);
@@ -2880,23 +2888,23 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
     SCOPED_TRACE("for input with json = " + cases[i].response_json);
 
     ASSERT_LE(matches.size(), arraysize(cases[i].matches));
-    size_t j = 0;
     // Ensure that the returned matches equal the expectations.
-    for (; j < matches.size(); ++j) {
-      const Match& match = cases[i].matches[j];
-      SCOPED_TRACE(" and match index: " + base::SizeTToString(j));
-      EXPECT_EQ(match.contents,
-                base::UTF16ToUTF8(matches[j].contents));
-      EXPECT_EQ(match.description,
-                base::UTF16ToUTF8(matches[j].description));
-      EXPECT_EQ(match.query_params,
-                matches[j].search_terms_args->suggest_query_params);
-      EXPECT_EQ(match.fill_into_edit,
-                base::UTF16ToUTF8(matches[j].fill_into_edit));
-      EXPECT_EQ(match.type, matches[j].type);
-    }
+    EXPECT_TRUE(std::equal(
+        matches.begin(), matches.end(), &cases[i].matches[0],
+        [&](const AutocompleteMatch& match, const Match& testcase) {
+          std::string index = base::SizeTToString(
+              &testcase - &cases[i].matches[0]);
+          SCOPED_TRACE(" and match index: " + index);
+          return testcase.contents == base::UTF16ToUTF8(match.contents) &&
+                 testcase.description == base::UTF16ToUTF8(match.description) &&
+                 testcase.query_params ==
+                     match.search_terms_args->suggest_query_params &&
+                 testcase.fill_into_edit ==
+                     base::UTF16ToUTF8(match.fill_into_edit) &&
+                 testcase.type == match.type;
+        }));
     // Ensure that no expected matches are missing.
-    for (; j < arraysize(cases[i].matches); ++j) {
+    for (size_t j = matches.size(); j < arraysize(cases[i].matches); ++j) {
       SCOPED_TRACE(" and match index: " + base::SizeTToString(j));
       EXPECT_EQ(cases[i].matches[j].contents, kNotApplicable);
       EXPECT_EQ(cases[i].matches[j].description, kNotApplicable);
@@ -3007,20 +3015,20 @@ TEST_F(SearchProviderTest, PrefetchMetadataParsing) {
     const ACMatches& matches = provider_->matches();
     // The top match must inline and score as highly as calculated verbatim.
     ASSERT_FALSE(matches.empty());
-    EXPECT_GE(matches[0].relevance, 1300);
+    EXPECT_GE(matches.front().relevance, 1300);
 
     ASSERT_LE(matches.size(), arraysize(cases[i].matches));
     // Ensure that the returned matches equal the expectations.
-    for (size_t j = 0; j < matches.size(); ++j) {
-      SCOPED_TRACE(description);
-      EXPECT_EQ(cases[i].matches[j].contents,
-                base::UTF16ToUTF8(matches[j].contents));
-      EXPECT_EQ(cases[i].matches[j].allowed_to_be_prefetched,
-                SearchProvider::ShouldPrefetch(matches[j]));
-      EXPECT_EQ(cases[i].matches[j].type, matches[j].type);
-      EXPECT_EQ(cases[i].matches[j].from_keyword,
-                matches[j].keyword == ASCIIToUTF16("k"));
-    }
+    EXPECT_TRUE(std::equal(
+        matches.begin(), matches.end(), &cases[i].matches[0],
+        [&](const AutocompleteMatch& match, const Match& testcase) {
+          SCOPED_TRACE(description);
+          return testcase.contents == base::UTF16ToUTF8(match.contents) &&
+                 testcase.allowed_to_be_prefetched ==
+                     SearchProvider::ShouldPrefetch(match) &&
+                 testcase.type == match.type &&
+                 testcase.from_keyword == (match.keyword == ASCIIToUTF16("k"));
+        }));
   }
 }
 
@@ -3036,9 +3044,8 @@ TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_InvalidResponse) {
 
   // Should have exactly one "search what you typed" match
   ASSERT_TRUE(matches.size() == 1);
-  EXPECT_EQ(input_str, base::UTF16ToUTF8(matches[0].contents));
-  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-            matches[0].type);
+  EXPECT_EQ(input_str, base::UTF16ToUTF8(matches.front().contents));
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, matches.front().type);
 }
 
 // A basic test that verifies that the XSSI guarded JSON response is parsed
@@ -3101,19 +3108,20 @@ TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_ValidResponses) {
     const ACMatches& matches = provider_->matches();
     // The top match must inline and score as highly as calculated verbatim.
     ASSERT_FALSE(matches.empty());
-    EXPECT_GE(matches[0].relevance, 1300);
+    EXPECT_GE(matches.front().relevance, 1300);
 
     SCOPED_TRACE("for case: " + base::SizeTToString(i));
     ASSERT_LE(matches.size(), arraysize(cases[i].matches));
-    size_t j = 0;
     // Ensure that the returned matches equal the expectations.
-    for (; j < matches.size(); ++j) {
-      SCOPED_TRACE("and match: " + base::SizeTToString(j));
-      EXPECT_EQ(cases[i].matches[j].contents,
-                base::UTF16ToUTF8(matches[j].contents));
-      EXPECT_EQ(cases[i].matches[j].type, matches[j].type);
-    }
-    for (; j < arraysize(cases[i].matches); ++j) {
+    EXPECT_TRUE(std::equal(
+        matches.begin(), matches.end(), &cases[i].matches[0],
+        [&](const AutocompleteMatch& match, const Match& testcase) {
+          SCOPED_TRACE("and match: " +
+                       base::SizeTToString(&testcase - &cases[i].matches[0]));
+          return testcase.contents == base::UTF16ToUTF8(match.contents) &&
+                 testcase.type == match.type;
+        }));
+    for (size_t j = matches.size(); j < arraysize(cases[i].matches); ++j) {
       SCOPED_TRACE("and match: " + base::SizeTToString(j));
       EXPECT_EQ(cases[i].matches[j].contents, kNotApplicable);
       EXPECT_EQ(cases[i].matches[j].type, AutocompleteMatchType::NUM_TYPES);
@@ -3209,13 +3217,17 @@ TEST_F(SearchProviderTest, ParseDeletionUrl) {
 
        SCOPED_TRACE("for input with json = " + cases[i].response_json);
 
-       for (size_t j = 0; j < matches.size(); ++j) {
-         const Match& match = cases[i].matches[j];
-         SCOPED_TRACE(" and match index: " + base::SizeTToString(j));
-         EXPECT_EQ(match.contents, base::UTF16ToUTF8(matches[j].contents));
-         EXPECT_EQ(match.deletion_url, matches[j].GetAdditionalInfo(
-             "deletion_url"));
-       }
+       ASSERT_LE(matches.size(), arraysize(cases[i].matches));
+       EXPECT_TRUE(std::equal(
+           matches.begin(), matches.end(), &cases[i].matches[0],
+           [&](const AutocompleteMatch& match, const Match& testcase) {
+             std::string index = base::SizeTToString(
+                 &testcase - &cases[i].matches[0]);
+             SCOPED_TRACE(" and match index: " + index);
+             return testcase.contents == base::UTF16ToUTF8(match.contents) &&
+                    testcase.deletion_url ==
+                        match.GetAdditionalInfo("deletion_url");
+           }));
      }
 }
 
@@ -3595,21 +3607,16 @@ TEST_F(SearchProviderTest, RemoveExtraAnswers) {
   matches.push_back(match5);
 
   SearchProvider::RemoveExtraAnswers(&matches);
-  EXPECT_EQ(base::ASCIIToUTF16("the answer"), matches[0].answer_contents);
-  EXPECT_EQ(base::ASCIIToUTF16("42"), matches[0].answer_type);
-  EXPECT_TRUE(answer1.Equals(*matches[0].answer));
-  EXPECT_TRUE(matches[1].answer_contents.empty());
-  EXPECT_TRUE(matches[1].answer_type.empty());
-  EXPECT_FALSE(matches[1].answer);
-  EXPECT_TRUE(matches[2].answer_contents.empty());
-  EXPECT_TRUE(matches[2].answer_type.empty());
-  EXPECT_FALSE(matches[2].answer);
-  EXPECT_TRUE(matches[3].answer_contents.empty());
-  EXPECT_TRUE(matches[3].answer_type.empty());
-  EXPECT_FALSE(matches[3].answer);
-  EXPECT_TRUE(matches[4].answer_contents.empty());
-  EXPECT_TRUE(matches[4].answer_type.empty());
-  EXPECT_FALSE(matches[4].answer);
+  ACMatches::const_iterator match = matches.begin();
+  EXPECT_EQ(base::ASCIIToUTF16("the answer"), match->answer_contents);
+  EXPECT_EQ(base::ASCIIToUTF16("42"), match->answer_type);
+  EXPECT_TRUE(answer1.Equals(*match->answer));
+  for (int i = 0; i < 3; ++i) {
+    ++match;
+    EXPECT_TRUE(match->answer_contents.empty());
+    EXPECT_TRUE(match->answer_type.empty());
+    EXPECT_FALSE(match->answer);
+  }
 }
 
 TEST_F(SearchProviderTest, DoesNotProvideOnFocus) {
