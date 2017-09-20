@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/autofill/android/java",
   "+components/minidump_uploader/android/java",
   "+components/minidump_uploader/android/javatests",
   "+components/policy/android/java",
