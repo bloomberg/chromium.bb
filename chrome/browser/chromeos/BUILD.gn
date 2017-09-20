@@ -486,6 +486,8 @@ source_set("chromeos") {
     "dbus/chrome_display_power_service_provider_delegate.h",
     "dbus/chrome_proxy_resolution_service_provider_delegate.cc",
     "dbus/chrome_proxy_resolution_service_provider_delegate.h",
+    "dbus/chrome_virtual_file_request_service_provider_delegate.cc",
+    "dbus/chrome_virtual_file_request_service_provider_delegate.h",
     "dbus/kiosk_info_service_provider.cc",
     "dbus/kiosk_info_service_provider.h",
     "dbus/screen_lock_service_provider.cc",

@@ -247,6 +247,8 @@ component("chromeos") {
     "dbus/services/liveness_service_provider.h",
     "dbus/services/proxy_resolution_service_provider.cc",
     "dbus/services/proxy_resolution_service_provider.h",
+    "dbus/services/virtual_file_request_service_provider.cc",
+    "dbus/services/virtual_file_request_service_provider.h",
     "dbus/session_manager_client.cc",
     "dbus/session_manager_client.h",
     "dbus/shill_client_helper.cc",
@@ -508,6 +510,7 @@ copy("dbus_service_files") {
     "dbus/services/org.chromium.LibCrosService.conf",
     "dbus/services/org.chromium.LivenessService.conf",
     "dbus/services/org.chromium.NetworkProxyService.conf",
+    "dbus/services/org.chromium.VirtualFileRequestService.conf",
   ]
   outputs = [
     "$root_out_dir/dbus/{{source_file_part}}",

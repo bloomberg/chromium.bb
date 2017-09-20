@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolution_service_provider_delegate.h"
+#include "chrome/browser/chromeos/dbus/chrome_virtual_file_request_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
@@ -128,6 +129,7 @@
 #include "chromeos/dbus/services/display_power_service_provider.h"
 #include "chromeos/dbus/services/liveness_service_provider.h"
 #include "chromeos/dbus/services/proxy_resolution_service_provider.h"
+#include "chromeos/dbus/services/virtual_file_request_service_provider.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/login/login_state.h"
@@ -378,6 +380,14 @@ class DBusServices {
             base::MakeUnique<LivenessServiceProvider>(
                 kLivenessServiceInterface)));
 
+    virtual_file_request_service_ = CrosDBusService::Create(
+        kVirtualFileRequestServiceName,
+        dbus::ObjectPath(kVirtualFileRequestServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            base::MakeUnique<VirtualFileRequestServiceProvider>(
+                base::MakeUnique<
+                    ChromeVirtualFileRequestServiceProviderDelegate>())));
+
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
 
@@ -431,6 +441,7 @@ class DBusServices {
     proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
     liveness_service_.reset();
+    virtual_file_request_service_.reset();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
@@ -457,6 +468,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
   std::unique_ptr<CrosDBusService> liveness_service_;
+  std::unique_ptr<CrosDBusService> virtual_file_request_service_;
 
   std::unique_ptr<NetworkConnectDelegateChromeOS> network_connect_delegate_;
 
