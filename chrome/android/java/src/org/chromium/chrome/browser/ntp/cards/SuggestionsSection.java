@@ -378,6 +378,10 @@ public class SuggestionsSection extends InnerNode {
         return mIsDataStale;
     }
 
+    public boolean isLoading() {
+        return mMoreButton.getState() == ActionItem.State.LOADING;
+    }
+
     /**
      * Returns whether content has been inserted in the section since last time this method was
      * called.
@@ -509,6 +513,15 @@ public class SuggestionsSection extends InnerNode {
     }
     /** Fetches additional suggestions only for this section. */
     public void fetchSuggestions() {
+        assert !isLoading();
+
+        if (getSuggestionsCount() == 0 && getCategoryInfo().isRemote()) {
+            // Trigger a full refresh of the section to ensure we persist content locally.
+            // If a fetch can be made, the status will be synchronously updated from the backend.
+            mSuggestionsSource.fetchRemoteSuggestions();
+            return;
+        }
+
         mMoreButton.updateState(ActionItem.State.LOADING);
         mSuggestionsSource.fetchSuggestions(
                 mCategoryInfo.getCategory(), getDisplayedSuggestionIds(), additionalSuggestions -> {
@@ -517,14 +530,6 @@ public class SuggestionsSection extends InnerNode {
                     appendSuggestions(additionalSuggestions, /* keepSectionSize = */ false);
                     mMoreButton.updateState(ActionItem.State.BUTTON);
                 });
-    }
-
-    /**
-     * Programmatically click the more button. This differs from directly calling
-     * {@link #fetchSuggestions()} in that it disables the button.
-     */
-    public void clickMoreButton(SuggestionsUiDelegate delegate) {
-        mMoreButton.performAction(delegate);
     }
 
     /** Sets the status for the section. Some statuses can cause the suggestions to be cleared. */

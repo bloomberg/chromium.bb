@@ -122,16 +122,12 @@ public class ActionItem extends OptionalLeaf {
 
         switch (mCategoryInfo.getAdditionalAction()) {
             case ContentSuggestionsAdditionalAction.VIEW_ALL:
+                // The action does not reach the backend, so we record it here.
                 SuggestionsMetrics.recordActionViewAll();
                 mCategoryInfo.performViewAllAction(uiDelegate.getNavigationDelegate());
                 return;
             case ContentSuggestionsAdditionalAction.FETCH:
-                if (mParentSection.getSuggestionsCount() == 0
-                        && mParentSection.getCategoryInfo().isRemote()) {
-                    uiDelegate.getSuggestionsSource().fetchRemoteSuggestions();
-                } else {
-                    mParentSection.fetchSuggestions();
-                }
+                mParentSection.fetchSuggestions();
                 return;
             case ContentSuggestionsAdditionalAction.NONE:
             default:
