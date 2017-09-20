@@ -236,16 +236,18 @@ public class SectionList
         }
 
         if (supportingSections.size() > 1) {
-            assert false : "SectionList.fetchMore - Multiple supporting sections"
-                    + getCategoriesForDebugging();
+            assert false : "SectionList.fetchMore - Multiple supporting sections: "
+                           + getCategoriesForDebugging();
         } else if (supportingSections.size() == 0) {
             Log.d(TAG, "SectionList.fetchMore - No supporting sections: %s",
                     getCategoriesForDebugging());
         } else if (getChildren().get(getChildren().size() - 1) != supportingSections.get(0)) {
             Log.d(TAG, "SectionList.fetchMore - Supporting section not at end: %s",
                     getCategoriesForDebugging());
+        } else if (supportingSections.get(0).isLoading()) {
+            Log.d(TAG, "SectionList.fetchMore - Supporting section is already loading.");
         } else {
-            supportingSections.get(0).clickMoreButton(mUiDelegate);
+            supportingSections.get(0).fetchSuggestions();
         }
     }
 
