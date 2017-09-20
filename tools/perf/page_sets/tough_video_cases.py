@@ -26,6 +26,8 @@ _PAGE_TAGS_LIST = [
     'seek',
     'normal_play',
     'background',
+    # Add javascript load
+    'busyjs'
 ]
 
 
@@ -426,6 +428,19 @@ class Page37(ToughVideoCasesPage):
   def RunPageInteractions(self, action_runner):
     self.PlayInBackgroundTab(action_runner)
 
+class Page38(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page38, self).__init__(
+      url='file://tough_video_cases/video.html?src=tulip2.mp4&busyjs',
+      page_set=page_set,
+      tags=['h264', 'aac', 'audio_video', 'normal_play', 'busyjs'])
+
+    self.add_browser_metrics = True
+
+  def RunPageInteractions(self, action_runner):
+    self.PlayAction(action_runner)
+
 
 class ToughVideoCasesPageSet(story.StorySet):
   """
@@ -467,3 +482,6 @@ class ToughVideoCasesPageSet(story.StorySet):
 
     # Background playback tests:
     self.AddStory(Page37(self))
+
+    # Tests with high JS load
+    self.AddStory(Page38(self))
