@@ -1,4 +1,0 @@
-include_rules = [
-  "+components/strings/grit",
-  "+components/url_formatter",
-]
