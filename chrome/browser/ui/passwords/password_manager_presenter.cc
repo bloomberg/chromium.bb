@@ -33,14 +33,12 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
-#include "components/password_manager/core/browser/import/password_importer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
@@ -142,7 +140,8 @@ PasswordManagerPresenter::PasswordManagerPresenter(
     PasswordUIView* password_view)
     : populater_(this),
       exception_populater_(this),
-      password_view_(password_view) {
+      password_view_(password_view),
+      password_manager_porter_(this) {
   DCHECK(password_view_);
 }
 
@@ -365,6 +364,18 @@ bool PasswordManagerPresenter::IsUserAuthenticated() {
                             password_manager::metrics_util::REAUTH_SKIPPED,
                             password_manager::metrics_util::REAUTH_COUNT);
   return true;
+}
+
+void PasswordManagerPresenter::ImportPasswords(
+    content::WebContents* web_contents) {
+  password_manager_porter_.PresentFileSelector(
+      web_contents, PasswordManagerPorter::Type::PASSWORD_IMPORT);
+}
+
+void PasswordManagerPresenter::ExportPasswords(
+    content::WebContents* web_contents) {
+  password_manager_porter_.PresentFileSelector(
+      web_contents, PasswordManagerPorter::Type::PASSWORD_EXPORT);
 }
 
 PasswordManagerPresenter::ListPopulater::ListPopulater(

@@ -55771,6 +55771,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.StorePasswordImportedFromCSVResult"
     enum="BooleanSuccess">
+  <obsolete>
+    Deprecated as of 14 September 2017, due to being no longer useful.
+  </obsolete>
   <owner>xunlu@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>

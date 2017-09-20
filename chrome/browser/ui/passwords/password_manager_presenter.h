@@ -13,10 +13,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/passwords/credential_provider_interface.h"
+#include "chrome/browser/ui/passwords/password_manager_porter.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/prefs/pref_member.h"
-#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -34,7 +35,8 @@ class PasswordUIView;
 // interact with PasswordStore. It provides completion callbacks for
 // PasswordStore operations and updates the view on PasswordStore changes.
 class PasswordManagerPresenter
-    : public password_manager::PasswordStore::Observer {
+    : public password_manager::PasswordStore::Observer,
+      public CredentialProviderInterface {
  public:
   // |password_view| the UI view that owns this presenter, must not be NULL.
   explicit PasswordManagerPresenter(PasswordUIView* password_view);
@@ -52,8 +54,9 @@ class PasswordManagerPresenter
   // Gets the password entry at |index|.
   const autofill::PasswordForm* GetPassword(size_t index);
 
-  // Gets all password entries.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllPasswords();
+  // CredentialProviderInterface:
+  std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllPasswords()
+      override;
 
   // Gets the password exception entry at |index|.
   const autofill::PasswordForm* GetPasswordException(size_t index);
@@ -72,6 +75,14 @@ class PasswordManagerPresenter
 
   // Returns true if the user is authenticated.
   virtual bool IsUserAuthenticated();
+
+  // Trigger the password import procedure, allowing the user to load passwords
+  // from a file.
+  void ImportPasswords(content::WebContents* web_contents);
+
+  // Trigger the password export procedure, allowing the user to save all their
+  // passwords to a file.
+  void ExportPasswords(content::WebContents* web_contents);
 
  private:
   friend class PasswordManagerPresenterTest;
@@ -151,6 +162,8 @@ class PasswordManagerPresenter
 
   // UI view that owns this presenter.
   PasswordUIView* password_view_;
+
+  PasswordManagerPorter password_manager_porter_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerPresenter);
 };
