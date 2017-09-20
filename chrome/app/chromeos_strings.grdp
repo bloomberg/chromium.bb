@@ -4258,29 +4258,6 @@ Battery full
     <ph name="DOMAIN">$1<ex>example.com</ex></ph> wants your device's identity to be verified, by Google, to determine eligibility for enhanced playback of protected content. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>.
   </message>
 
-  <!-- Multi-profiles mode -->
-  <message name="IDS_MULTIPROFILES_INTRO_HEADLINE" desc="Describes which feature multi-profiles intro dialog presents.">
-    Multiple sign-in
-  </message>
-  <message name="IDS_MULTIPROFILES_INTRO_MESSAGE" desc="Content of the multi-profiles intro dialog shown when the user adds another user in multi-profiles mode.">
-    This feature allows you to quickly access any signed-in user without requiring a password.
-
-Only use this feature with accounts you trust.
-  </message>
-  <message name="IDS_MULTIPROFILES_INTRO_NOSHOW_AGAIN" desc="In multi-profiles intro dialog, text for no-show-again option.">
-    Got it, don't show me this again.
-  </message>
-  <message name="IDS_MULTIPROFILES_SESSION_ABORT_HEADLINE" desc="Describes that the current multi profile session ends because one user left.">
-    Multiple sign-in has been disallowed for a user in this session
-  </message>
-  <message name="IDS_MULTIPROFILES_SESSION_ABORT_MESSAGE" desc="Content of the description that the current multi profile session ended because one user left.">
-    An administrator has disallowed multiple sign-in for <ph name="USER_EMAIL">$1<ex>john@google.com</ex></ph>.
-All users must sign out to continue.
-  </message>
-  <message name="IDS_MULTIPROFILES_SESSION_ABORT_BUTTON_LABEL" desc="Button label for the button in the multi profile session ended because one user left dialog.">
-    Sign out
-  </message>
-
   <!-- First-run tutorial -->
   <message name="IDS_FIRST_RUN_GREETING_STEP_HEADER" desc="Greeting message shown as header of the first dialog of first-run tutorial.">
     Howdy, <ph name="USER_GIVEN_NAME">$1<ex>John</ex></ph>.

@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"

@@ -1077,6 +1077,21 @@ This file contains the strings for ash.
         Delete
       </message>
 
+      <!-- Multi-profiles intro dialog -->
+      <message name="IDS_ASH_MULTIPROFILES_INTRO_HEADLINE" desc="Describes which feature multi-profiles intro dialog presents.">
+        Multiple sign-in
+      </message>
+      <message name="IDS_ASH_MULTIPROFILES_INTRO_MESSAGE" desc="Content of the multi-profiles intro dialog shown when the user adds another user in multi-profiles mode.">
+        This feature allows you to quickly access any signed-in user without requiring a password.
+
+Only use this feature with accounts you trust.
+      </message>
+      <message name="IDS_ASH_MULTIPROFILES_INTRO_EXPLANATION" desc="Content of the multi-profiles intro dialog shown when the user adds another user in multi-profiles mode.">
+      </message>
+      <message name="IDS_ASH_MULTIPROFILES_INTRO_NOSHOW_AGAIN" desc="In multi-profiles intro dialog, text for no-show-again option.">
+        Got it, don't show me this again.
+      </message>
+
       <!-- Window teleportation warning dialog -->
       <message name="IDS_ASH_TELEPORT_WARNING_TITLE" desc="The title of the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
         Careful, this feature may bite
