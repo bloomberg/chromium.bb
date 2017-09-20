@@ -20,7 +20,6 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
-from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -45,6 +44,7 @@ from chromite.lib import metadata_lib
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
+from chromite.lib import remote_try
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
 

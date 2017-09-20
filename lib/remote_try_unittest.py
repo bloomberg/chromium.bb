@@ -11,7 +11,7 @@ import os
 from chromite.lib import auth
 from chromite.lib import config_lib
 from chromite.lib import cros_test_lib
-from chromite.cbuildbot import remote_try
+from chromite.lib import remote_try
 from chromite.cbuildbot import repository
 
 

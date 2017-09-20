@@ -13,8 +13,8 @@ from chromite.cli import command
 from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import remote_try
 
-from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import trybot_patch_pool
 
 
