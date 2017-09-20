@@ -12246,6 +12246,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="411" label="WEB_VIEW_INTERNAL_ON_AUDIO_STATE_CHANGED"/>
   <int value="412" label="AUTOMATION_INTERNAL_ON_ACTION_RESULT"/>
   <int value="413" label="OMNIBOX_ON_DELETE_SUGGESTION"/>
+  <int value="414" label="PASSWORDS_PRIVATE_ON_SHOW_IMPORT_EXPORT_BUTTONS"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -13489,6 +13490,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1191" label="AUTOTESTPRIVATE_SETMOUSEREVERSESCROLL"/>
   <int value="1192" label="METRICSPRIVATE_RECORDSPARSEHASHABLE"/>
   <int value="1193" label="NETWORKINGPRIVATE_SELECTCELLULARMOBILENETWORK"/>
+  <int value="1194" label="PASSWORDSPRIVATE_IMPORTPASSWORDS"/>
+  <int value="1195" label="PASSWORDSPRIVATE_EXPORTPASSWORDS"/>
 </enum>
 
 <enum name="ExtensionIconState">
