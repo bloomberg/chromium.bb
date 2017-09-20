@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -98,7 +99,7 @@ const CGFloat kDefaultMinSwipeXThreshold = 4;
   CGPoint currentPoint = [touch locationInView:self.view];
   CGFloat dy = currentPoint.y - _startPoint.y;
   CGFloat dx = std::abs(currentPoint.x - _startPoint.x);
-  CGFloat degrees = std::fabs(std::atan2(dy, dx) * 180 / CGFloat(M_PI));
+  CGFloat degrees = std::fabs(gfx::RadToDeg(std::atan2(dy, dx)));
   if (degrees > kMaxSwipeYAngle) {
     self.state = UIGestureRecognizerStateFailed;
     return;

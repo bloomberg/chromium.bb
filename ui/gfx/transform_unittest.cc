@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include "ui/gfx/transform.h"
 
 #include <stddef.h>
 
-#include <cmath>
 #include <limits>
 #include <ostream>
 
@@ -17,6 +13,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -1040,7 +1037,7 @@ TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutX) {
   to.Blend(from, 0.0);
   EXPECT_EQ(from, to);
 
-  double expectedRotationAngle = 22.5 * M_PI / 180.0;
+  double expectedRotationAngle = gfx::DegToRad(22.5);
   to = Transform();
   to.RotateAbout(Vector3dF(1.0, 0.0, 0.0), 90.0);
   to.Blend(from, 0.25);
@@ -1059,7 +1056,7 @@ TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutX) {
                    ERROR_THRESHOLD);
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 
-  expectedRotationAngle = 45.0 * M_PI / 180.0;
+  expectedRotationAngle = gfx::DegToRad(45.0);
   to = Transform();
   to.RotateAbout(Vector3dF(1.0, 0.0, 0.0), 90.0);
   to.Blend(from, 0.5);
@@ -1103,7 +1100,7 @@ TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutY) {
   to.Blend(from, 0.0);
   EXPECT_EQ(from, to);
 
-  double expectedRotationAngle = 22.5 * M_PI / 180.0;
+  double expectedRotationAngle = gfx::DegToRad(22.5);
   to = Transform();
   to.RotateAbout(Vector3dF(0.0, 1.0, 0.0), 90.0);
   to.Blend(from, 0.25);
@@ -1122,7 +1119,7 @@ TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutY) {
                    ERROR_THRESHOLD);
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 
-  expectedRotationAngle = 45.0 * M_PI / 180.0;
+  expectedRotationAngle = gfx::DegToRad(45.0);
   to = Transform();
   to.RotateAbout(Vector3dF(0.0, 1.0, 0.0), 90.0);
   to.Blend(from, 0.5);
@@ -1166,7 +1163,7 @@ TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutZ) {
   to.Blend(from, 0.0);
   EXPECT_EQ(from, to);
 
-  double expectedRotationAngle = 22.5 * M_PI / 180.0;
+  double expectedRotationAngle = gfx::DegToRad(22.5);
   to = Transform();
   to.RotateAbout(Vector3dF(0.0, 0.0, 1.0), 90.0);
   to.Blend(from, 0.25);
@@ -1185,7 +1182,7 @@ TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutZ) {
   EXPECT_ROW3_NEAR(0.0, 0.0, 1.0, 0.0, to, ERROR_THRESHOLD);
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 
-  expectedRotationAngle = 45.0 * M_PI / 180.0;
+  expectedRotationAngle = gfx::DegToRad(45.0);
   to = Transform();
   to.RotateAbout(Vector3dF(0.0, 0.0, 1.0), 90.0);
   to.Blend(from, 0.5);
@@ -1304,7 +1301,7 @@ TEST(XFormTest, FactorTRS) {
     EXPECT_FLOAT_EQ(decomp.translate[0], degrees * 2);
     EXPECT_FLOAT_EQ(decomp.translate[1], -degrees * 3);
     double rotation =
-        std::acos(SkMScalarToDouble(decomp.quaternion.w())) * 360.0 / M_PI;
+        gfx::RadToDeg(std::acos(SkMScalarToDouble(decomp.quaternion.w())) * 2);
     while (rotation < 0.0)
       rotation += 360.0;
     while (rotation > 360.0)

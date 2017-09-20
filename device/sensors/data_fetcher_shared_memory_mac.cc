@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/sudden_motion_sensor/sudden_motion_sensor_mac.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace device {
 
@@ -65,9 +66,10 @@ void FetchOrientation(SuddenMotionSensor* sensor,
   // This is necessary in order to provide enough information to solve
   // the equations.
   //
-  const double kRad2deg = 180.0 / M_PI;
-  double beta = kRad2deg * atan2(-axis_value[1], axis_value[2]);
-  double gamma = kRad2deg * asin(axis_value[0]);
+  // TODO(timvolodine): crbug.com/765802 Check if cast-to-double is necessary.
+  double beta =
+      gfx::RadToDeg(static_cast<double>(atan2(-axis_value[1], axis_value[2])));
+  double gamma = gfx::RadToDeg(static_cast<double>(asin(axis_value[0])));
 
   // Make sure that the interval boundaries comply with the specification. At
   // this point, beta is [-180, 180] and gamma is [-90, 90], but the spec has

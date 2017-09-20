@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace ui {
 
@@ -54,7 +55,7 @@ void PointerProperties::SetAxesAndOrientation(float radius_x,
                                               float radius_y,
                                               float rotation_angle_degree) {
   DCHECK(!touch_major && !touch_minor && !orientation);
-  float rotation_angle_rad = rotation_angle_degree * base::kPiFloat / 180.f;
+  float rotation_angle_rad = gfx::DegToRad(rotation_angle_degree);
   DCHECK_GE(radius_x, 0) << "Unexpected x-radius < 0 (" << radius_x << ")";
   DCHECK_GE(radius_y, 0) << "Unexpected y-radius < 0 (" << radius_y << ")";
   DCHECK(0 <= rotation_angle_rad && rotation_angle_rad < base::kPiFloat)

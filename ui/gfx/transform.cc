@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include "ui/gfx/transform.h"
-
-#include <cmath>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -28,8 +24,7 @@ namespace {
 const SkMScalar kEpsilon = std::numeric_limits<float>::epsilon();
 
 SkMScalar TanDegrees(double degrees) {
-  double radians = degrees * M_PI / 180;
-  return SkDoubleToMScalar(std::tan(radians));
+  return SkDoubleToMScalar(std::tan(gfx::DegToRad(degrees)));
 }
 
 inline bool ApproximatelyZero(SkMScalar x, SkMScalar tolerance) {
@@ -115,7 +110,7 @@ Transform::Transform(const Quaternion& q)
 }
 
 void Transform::RotateAboutXAxis(double degrees) {
-  double radians = degrees * M_PI / 180;
+  double radians = gfx::DegToRad(degrees);
   SkMScalar cosTheta = SkDoubleToMScalar(std::cos(radians));
   SkMScalar sinTheta = SkDoubleToMScalar(std::sin(radians));
   if (matrix_.isIdentity()) {
@@ -132,7 +127,7 @@ void Transform::RotateAboutXAxis(double degrees) {
 }
 
 void Transform::RotateAboutYAxis(double degrees) {
-  double radians = degrees * M_PI / 180;
+  double radians = gfx::DegToRad(degrees);
   SkMScalar cosTheta = SkDoubleToMScalar(std::cos(radians));
   SkMScalar sinTheta = SkDoubleToMScalar(std::sin(radians));
   if (matrix_.isIdentity()) {
@@ -151,7 +146,7 @@ void Transform::RotateAboutYAxis(double degrees) {
 }
 
 void Transform::RotateAboutZAxis(double degrees) {
-  double radians = degrees * M_PI / 180;
+  double radians = gfx::DegToRad(degrees);
   SkMScalar cosTheta = SkDoubleToMScalar(std::cos(radians));
   SkMScalar sinTheta = SkDoubleToMScalar(std::sin(radians));
   if (matrix_.isIdentity()) {

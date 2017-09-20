@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/numerics/math_constants.h"
 #include "build/build_config.h"
 #include "cc/base/base_export.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -82,12 +81,6 @@ struct HomogeneousCoordinate {
 
 class CC_BASE_EXPORT MathUtil {
  public:
-  static double Deg2Rad(double deg) { return deg * base::kPiDouble / 180.0; }
-  static double Rad2Deg(double rad) { return rad * 180.0 / base::kPiDouble; }
-
-  static float Deg2Rad(float deg) { return deg * base::kPiFloat / 180.0f; }
-  static float Rad2Deg(float rad) { return rad * 180.0f / base::kPiFloat; }
-
   // Returns true if rounded up value does not overflow, false otherwise.
   template <typename T>
   static bool VerifyRoundup(T n, T mul) {

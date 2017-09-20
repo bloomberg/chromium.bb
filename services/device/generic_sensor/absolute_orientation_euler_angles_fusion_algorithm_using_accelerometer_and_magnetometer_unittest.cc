@@ -11,6 +11,7 @@
 #include "services/device/generic_sensor/fake_platform_sensor_fusion.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace device {
 
@@ -191,8 +192,8 @@ TEST_F(
     AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometerTest,
     BetaIs45Degrees) {
   double gravity_x = 0.0;
-  double gravity_y = std::sin(kDegreesToRadians * 45.0);
-  double gravity_z = std::cos(kDegreesToRadians * 45.0);
+  double gravity_y = std::sin(gfx::DegToRad(45.0));
+  double gravity_z = std::cos(gfx::DegToRad(45.0));
   double geomagnetic_x = 0.0;
   double geomagnetic_y = 1.0;
   double geomagnetic_z = 0.0;
@@ -210,9 +211,9 @@ TEST_F(
 TEST_F(
     AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometerTest,
     GammaIs45Degrees) {
-  double gravity_x = -std::sin(kDegreesToRadians * 45.0);
+  double gravity_x = -std::sin(gfx::DegToRad(45.0));
   double gravity_y = 0.0;
-  double gravity_z = std::cos(kDegreesToRadians * 45.0);
+  double gravity_z = std::cos(gfx::DegToRad(45.0));
   double geomagnetic_x = 0.0;
   double geomagnetic_y = 1.0;
   double geomagnetic_z = 0.0;
@@ -233,8 +234,8 @@ TEST_F(
   double gravity_x = 0.0;
   double gravity_y = 0.0;
   double gravity_z = 1.0;
-  double geomagnetic_x = std::sin(kDegreesToRadians * 45.0);
-  double geomagnetic_y = std::cos(kDegreesToRadians * 45.0);
+  double geomagnetic_x = std::sin(gfx::DegToRad(45.0));
+  double geomagnetic_y = std::cos(gfx::DegToRad(45.0));
   double geomagnetic_z = 0.0;
 
   double expected_alpha_in_degrees = 45.0;
@@ -253,9 +254,9 @@ TEST_F(
   double gravity_x = 0.0;
   double gravity_y = 1.0;
   double gravity_z = 0.0;
-  double geomagnetic_x = std::sin(kDegreesToRadians * 45.0);
+  double geomagnetic_x = std::sin(gfx::DegToRad(45.0));
   double geomagnetic_y = 0.0;
-  double geomagnetic_z = -std::cos(kDegreesToRadians * 45.0);
+  double geomagnetic_z = -std::cos(gfx::DegToRad(45.0));
 
   // Favor Alpha instead of Gamma.
   double expected_alpha_in_degrees = 45.0;
@@ -272,8 +273,8 @@ TEST_F(
     AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometerTest,
     BetaIsGreaterThan90Degrees) {
   double gravity_x = 0.0;
-  double gravity_y = std::cos(kDegreesToRadians * 45.0);
-  double gravity_z = -std::sin(kDegreesToRadians * 45.0);
+  double gravity_y = std::cos(gfx::DegToRad(45.0));
+  double gravity_z = -std::sin(gfx::DegToRad(45.0));
   double geomagnetic_x = 0.0;
   double geomagnetic_y = 0.0;
   double geomagnetic_z = -1.0;
