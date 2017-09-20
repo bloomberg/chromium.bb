@@ -195,7 +195,9 @@ void Core::SurfaceCreated(EAGLView* view) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   DCHECK(eagl_context_);
 
-  [view startWithContext:eagl_context_];
+  runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^() {
+                                         [view startWithContext:eagl_context_];
+                                       }));
 
   renderer_->OnSurfaceCreated(
       base::MakeUnique<GlCanvas>(static_cast<int>([eagl_context_ API])));
