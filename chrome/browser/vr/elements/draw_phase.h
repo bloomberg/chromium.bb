@@ -8,16 +8,14 @@
 namespace vr {
 
 // Each draw phase is rendered independently in the order specified below.
-//
-// TODO(vollick): once we've established the element hierarchy, only elements in
-// the 2D browsing foreground need to be depth sorted. We should rewrite our
-// sorting logic at that point to leverage the hierarchy and delete this enum.
 enum DrawPhase : int {
   // kPhaseNone is to be used for elements that do not draw. Eg, layouts.
-  kPhaseBackground = 0,
+  kPhaseNone = 0,
+  kPhaseBackground,
   kPhaseFloorCeiling,
   kPhaseForeground,
-  kPhaseNone,
+  kPhaseOverlayBackground,
+  kPhaseOverlayForeground,
 };
 
 }  // namespace vr
