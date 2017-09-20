@@ -52,8 +52,14 @@ const char kSignalDiff[] = "*";
 // that represents a fully loaded web document with the given url.
 bool AccessibilityTreeContainsLoadedDocWithUrl(BrowserAccessibility* node,
                                                const std::string& url) {
-  if ((node->GetRole() == ui::AX_ROLE_WEB_AREA ||
-       node->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA) &&
+  if (node->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA &&
+      node->GetStringAttribute(ui::AX_ATTR_URL) == url) {
+    // Ensure the doc has finished loading and has a non-zero size.
+    return node->manager()->GetTreeData().loaded &&
+           (node->GetData().location.width() > 0 &&
+            node->GetData().location.height() > 0);
+  }
+  if (node->GetRole() == ui::AX_ROLE_WEB_AREA &&
       node->GetStringAttribute(ui::AX_ATTR_URL) == url) {
     // Ensure the doc has finished loading.
     return node->manager()->GetTreeData().loaded;

@@ -1166,16 +1166,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-transform.html"));
 }
 
-// Flaky on Cast Linux. See crbug.com/767032.
-#ifdef OS_LINUX
-#define MAYBE_AccessibilityIframeTransformCrossProcess \
-  DISABLED_AccessibilityIframeTransformCrossProcess
-#else
-#define MAYBE_AccessibilityIframeTransformCrossProcess \
-  AccessibilityIframeTransformCrossProcess
-#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityIframeTransformCrossProcess) {
+                       AccessibilityIframeTransformCrossProcess) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-transform-cross-process.html"));
 }
 
