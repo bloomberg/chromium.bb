@@ -24,6 +24,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "media/media_features.h"
 #include "ui/gl/gl_switches.h"
@@ -270,14 +271,9 @@ bool IsMainFrameBeforeActivationEnabled() {
   if (base::SysInfo::NumberOfProcessors() < 4)
     return false;
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(cc::switches::kDisableMainFrameBeforeActivation))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kDisableMainFrameBeforeActivation))
     return false;
-
-  if (command_line.HasSwitch(cc::switches::kEnableMainFrameBeforeActivation))
-    return true;
 
   return true;
 }
@@ -295,6 +291,17 @@ bool IsCheckerImagingEnabled() {
     return true;
 
   return false;
+}
+
+bool IsGpuAsyncWorkerContextEnabled() {
+  if (!base::FeatureList::IsEnabled(features::kGpuScheduler))
+    return false;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuAsyncWorkerContext))
+    return false;
+
+  return true;
 }
 
 std::unique_ptr<base::DictionaryValue> GetFeatureStatus() {
