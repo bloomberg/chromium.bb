@@ -121,7 +121,7 @@ MessageCenterSettingsController::MessageCenterSettingsController(
       std::unique_ptr<NotifierSource>(new ApplicationNotifierSource(this))));
   sources_.insert(std::make_pair(
       NotifierId::WEB_PAGE,
-      std::unique_ptr<NotifierSource>(new WebPageNotifiereSource(this))));
+      std::unique_ptr<NotifierSource>(new WebPageNotifierSource(this))));
 
 #if defined(OS_CHROMEOS)
   // UserManager may not exist in some tests.
@@ -212,18 +212,17 @@ void MessageCenterSettingsController::GetNotifierList(
 }
 
 void MessageCenterSettingsController::SetNotifierEnabled(
-    const Notifier& notifier,
+    const NotifierId& notifier_id,
     bool enabled) {
   DCHECK_LT(current_notifier_group_, notifier_groups_.size());
   Profile* profile = notifier_groups_[current_notifier_group_]->profile();
 
-  if (!sources_.count(notifier.notifier_id.type)) {
+  if (!sources_.count(notifier_id.type)) {
     NOTREACHED();
     return;
   }
 
-  sources_[notifier.notifier_id.type]->SetNotifierEnabled(profile, notifier,
-                                                          enabled);
+  sources_[notifier_id.type]->SetNotifierEnabled(profile, notifier_id, enabled);
 }
 
 void MessageCenterSettingsController::OnNotifierSettingsClosing() {

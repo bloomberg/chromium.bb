@@ -36,11 +36,11 @@ class NotifierSource {
   virtual std::vector<std::unique_ptr<message_center::Notifier>>
   GetNotifierList(Profile* profile) = 0;
 
-  // Set notifier enabled. |notifier| must have notifier type that can be
+  // Set notifier enabled. |notifier_id| must have notifier type that can be
   // handled by the source. It has responsibility to invoke
   // Observer::OnNotifierEnabledChanged.
   virtual void SetNotifierEnabled(Profile* profile,
-                                  const message_center::Notifier& notifier,
+                                  const message_center::NotifierId& notifier_id,
                                   bool enabled) = 0;
 
   // Release temporary resouces tagged with notifier list that is returned last

@@ -81,10 +81,10 @@ ArcApplicationNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
 
 void ArcApplicationNotifierSourceChromeOS::SetNotifierEnabled(
     Profile* profile,
-    const message_center::Notifier& notifier,
+    const message_center::NotifierId& notifier_id,
     bool enabled) {
   ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(profile);
-  app_list->SetNotificationsEnabled(notifier.notifier_id.id, enabled);
+  app_list->SetNotificationsEnabled(notifier_id.id, enabled);
   // OnNotifierEnabledChanged will be invoked via ArcAppListPrefs::Observer.
 }
 

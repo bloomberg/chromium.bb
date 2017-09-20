@@ -15,13 +15,13 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/favicon/core/favicon_service.h"
 
-WebPageNotifiereSource::WebPageNotifiereSource(Observer* observer)
+WebPageNotifierSource::WebPageNotifierSource(Observer* observer)
     : observer_(observer) {}
 
-WebPageNotifiereSource::~WebPageNotifiereSource() {}
+WebPageNotifierSource::~WebPageNotifierSource() {}
 
 std::vector<std::unique_ptr<message_center::Notifier>>
-WebPageNotifiereSource::GetNotifierList(Profile* profile) {
+WebPageNotifierSource::GetNotifierList(Profile* profile) {
   std::vector<std::unique_ptr<message_center::Notifier>> notifiers;
 
   ContentSettingsForOneType settings;
@@ -49,22 +49,23 @@ WebPageNotifiereSource::GetNotifierList(Profile* profile) {
     notifiers.emplace_back(new message_center::Notifier(
         notifier_id, name,
         notifier_state_tracker->IsNotifierEnabled(notifier_id)));
-    patterns_[name] = iter->primary_pattern;
+    patterns_[url_pattern] = iter->primary_pattern;
     // Note that favicon service obtains the favicon from history. This means
     // that it will fail to obtain the image if there are no history data for
     // that URL.
     favicon_service->GetFaviconImageForPageURL(
-        url, base::Bind(&WebPageNotifiereSource::OnFaviconLoaded,
-                        base::Unretained(this), url),
+        url,
+        base::Bind(&WebPageNotifierSource::OnFaviconLoaded,
+                   base::Unretained(this), url),
         favicon_tracker_.get());
   }
 
   return notifiers;
 }
 
-void WebPageNotifiereSource::SetNotifierEnabled(
+void WebPageNotifierSource::SetNotifierEnabled(
     Profile* profile,
-    const message_center::Notifier& notifier,
+    const message_center::NotifierId& notifier_id,
     bool enabled) {
   // WEB_PAGE notifier cannot handle in DesktopNotificationService
   // since it has the exact URL pattern.
@@ -85,28 +86,29 @@ void WebPageNotifiereSource::SetNotifierEnabled(
       (default_setting == CONTENT_SETTING_ALLOW && !enabled);
 
   if (differs_from_default_value) {
-    if (notifier.notifier_id.url.is_valid()) {
+    if (notifier_id.url.is_valid()) {
       if (enabled) {
-        DesktopNotificationProfileUtil::GrantPermission(
-            profile, notifier.notifier_id.url);
+        DesktopNotificationProfileUtil::GrantPermission(profile,
+                                                        notifier_id.url);
       } else {
-        DesktopNotificationProfileUtil::DenyPermission(
-            profile, notifier.notifier_id.url);
+        DesktopNotificationProfileUtil::DenyPermission(profile,
+                                                       notifier_id.url);
       }
     } else {
-      LOG(ERROR) << "Invalid url pattern: " << notifier.notifier_id.url.spec();
+      LOG(ERROR) << "Invalid url pattern: "
+                 << notifier_id.url.possibly_invalid_spec();
     }
   } else {
     ContentSettingsPattern pattern;
 
-    const auto& iter = patterns_.find(notifier.name);
+    const auto& iter = patterns_.find(notifier_id.url.possibly_invalid_spec());
     if (iter != patterns_.end()) {
       pattern = iter->second;
-    } else if (notifier.notifier_id.url.is_valid()) {
-      pattern =
-          ContentSettingsPattern::FromURLNoWildcard(notifier.notifier_id.url);
+    } else if (notifier_id.url.is_valid()) {
+      pattern = ContentSettingsPattern::FromURLNoWildcard(notifier_id.url);
     } else {
-      LOG(ERROR) << "Invalid url pattern: " << notifier.notifier_id.url.spec();
+      LOG(ERROR) << "Invalid url pattern: "
+                 << notifier_id.url.possibly_invalid_spec();
     }
 
     if (pattern.IsValid()) {
@@ -122,21 +124,21 @@ void WebPageNotifiereSource::SetNotifierEnabled(
     }
   }
 
-  observer_->OnNotifierEnabledChanged(notifier.notifier_id, enabled);
+  observer_->OnNotifierEnabledChanged(notifier_id, enabled);
 }
 
-void WebPageNotifiereSource::OnNotifierSettingsClosing() {
+void WebPageNotifierSource::OnNotifierSettingsClosing() {
   DCHECK(favicon_tracker_.get());
   favicon_tracker_->TryCancelAll();
   patterns_.clear();
 }
 
 message_center::NotifierId::NotifierType
-WebPageNotifiereSource::GetNotifierType() {
+WebPageNotifierSource::GetNotifierType() {
   return message_center::NotifierId::WEB_PAGE;
 }
 
-void WebPageNotifiereSource::OnFaviconLoaded(
+void WebPageNotifierSource::OnFaviconLoaded(
     const GURL& url,
     const favicon_base::FaviconImageResult& favicon_result) {
   observer_->OnIconImageUpdated(message_center::NotifierId(url),

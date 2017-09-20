@@ -43,11 +43,11 @@ SystemComponentNotifierSourceChromeOS::GetNotifierList(Profile* profile) {
 
 void SystemComponentNotifierSourceChromeOS::SetNotifierEnabled(
     Profile* profile,
-    const message_center::Notifier& notifier,
+    const message_center::NotifierId& notifier_id,
     bool enabled) {
   NotifierStateTrackerFactory::GetForProfile(profile)->SetNotifierEnabled(
-      notifier.notifier_id, enabled);
-  observer_->OnNotifierEnabledChanged(notifier.notifier_id, enabled);
+      notifier_id, enabled);
+  observer_->OnNotifierEnabledChanged(notifier_id, enabled);
 }
 
 message_center::NotifierId::NotifierType
