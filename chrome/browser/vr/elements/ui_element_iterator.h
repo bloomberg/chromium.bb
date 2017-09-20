@@ -12,8 +12,8 @@ namespace vr {
 class UiElement;
 
 // The UiElementIterator traverses a UiElement subtree. Do not use this class
-// directly. You should, instead, use UiElement::end/begin/rend/rbegin (or the
-// convenience functions on UiScene).
+// directly. You should, instead, use UiElement::end/begin/rend/rbegin. NB: you
+// may find base::Reversed handy if you're doing reverse iteration.
 template <typename T, typename U>
 class UiElementIterator {
  public:
