@@ -69837,6 +69837,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.SuspiciousModuleDetectionTime" units="ms">
+  <obsolete>
+    Suspicious Module detection was removed in M63.
+  </obsolete>
   <owner>proberge@google.com</owner>
   <summary>
     The elapsed time to check loaded modules against the module whitelist.
@@ -69844,11 +69847,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBIRS.SuspiciousModuleReportCount" units="modules">
+  <obsolete>
+    Suspicious Module detection reporting removed in M63.
+  </obsolete>
   <owner>proberge@google.com</owner>
   <summary>The number of suspicious modules found.</summary>
 </histogram>
 
 <histogram name="SBIRS.SuspiciousModuleReportingTime" units="ms">
+  <obsolete>
+    Suspicious Module detection reporting removed in M63.
+  </obsolete>
   <owner>proberge@google.com</owner>
   <summary>
     The elapsed time to create incidents for suspicious modules.

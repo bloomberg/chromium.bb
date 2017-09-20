@@ -28,7 +28,7 @@ enum class IncidentType : int32_t {
   OMNIBOX_INTERACTION = 4,
   VARIATIONS_SEED_SIGNATURE = 5,
   RESOURCE_REQUEST = 6,
-  SUSPICIOUS_MODULE = 7,
+  OBSOLETE_SUSPICIOUS_MODULE = 7,
   // Values for new incident types go here.
   NUM_TYPES = 8
 };
