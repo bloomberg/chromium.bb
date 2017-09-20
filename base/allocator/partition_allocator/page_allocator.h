@@ -31,6 +31,8 @@ static const size_t kPageAllocationGranularityBaseMask =
 // permissions and commit / decommit at this granularity.
 static const size_t kSystemPageSize = 4096;
 static const size_t kSystemPageOffsetMask = kSystemPageSize - 1;
+static_assert((kSystemPageSize & (kSystemPageSize - 1)) == 0,
+              "kSystemPageSize must be power of 2");
 static const size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 
 enum PageAccessibilityConfiguration {
