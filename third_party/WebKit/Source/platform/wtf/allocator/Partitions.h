@@ -52,17 +52,17 @@ class WTF_EXPORT Partitions {
   static void Initialize(ReportPartitionAllocSizeFunction);
   ALWAYS_INLINE static base::PartitionRootGeneric* ArrayBufferPartition() {
     DCHECK(initialized_);
-    return array_buffer_allocator_.root();
+    return array_buffer_allocator_->root();
   }
 
   ALWAYS_INLINE static base::PartitionRootGeneric* BufferPartition() {
     DCHECK(initialized_);
-    return buffer_allocator_.root();
+    return buffer_allocator_->root();
   }
 
   ALWAYS_INLINE static base::PartitionRootGeneric* FastMallocPartition() {
     DCHECK(initialized_);
-    return fast_malloc_allocator_.root();
+    return fast_malloc_allocator_->root();
   }
 
   ALWAYS_INLINE static base::PartitionRoot* NodePartition() {
@@ -72,7 +72,7 @@ class WTF_EXPORT Partitions {
 
   ALWAYS_INLINE static base::PartitionRoot* LayoutPartition() {
     DCHECK(initialized_);
-    return layout_allocator_.root();
+    return layout_allocator_->root();
   }
 
   ALWAYS_INLINE static size_t ComputeAllocationSize(size_t count, size_t size) {
@@ -87,11 +87,13 @@ class WTF_EXPORT Partitions {
   }
 
   static size_t TotalSizeOfCommittedPages() {
+    DCHECK(initialized_);
     size_t total_size = 0;
-    total_size += fast_malloc_allocator_.root()->total_size_of_committed_pages;
-    total_size += array_buffer_allocator_.root()->total_size_of_committed_pages;
-    total_size += buffer_allocator_.root()->total_size_of_committed_pages;
-    total_size += layout_allocator_.root()->total_size_of_committed_pages;
+    total_size += fast_malloc_allocator_->root()->total_size_of_committed_pages;
+    total_size +=
+        array_buffer_allocator_->root()->total_size_of_committed_pages;
+    total_size += buffer_allocator_->root()->total_size_of_committed_pages;
+    total_size += layout_allocator_->root()->total_size_of_committed_pages;
     return total_size;
   }
 
@@ -137,14 +139,13 @@ class WTF_EXPORT Partitions {
   static void HandleOutOfMemory();
 
  private:
-  static base::subtle::SpinLock initialization_lock_;
   static bool initialized_;
 
   // See Allocator.md for a description of these partitions.
-  static base::PartitionAllocatorGeneric fast_malloc_allocator_;
-  static base::PartitionAllocatorGeneric array_buffer_allocator_;
-  static base::PartitionAllocatorGeneric buffer_allocator_;
-  static base::SizeSpecificPartitionAllocator<1024> layout_allocator_;
+  static base::PartitionAllocatorGeneric* fast_malloc_allocator_;
+  static base::PartitionAllocatorGeneric* array_buffer_allocator_;
+  static base::PartitionAllocatorGeneric* buffer_allocator_;
+  static base::SizeSpecificPartitionAllocator<1024>* layout_allocator_;
   static ReportPartitionAllocSizeFunction report_size_function_;
 };
 

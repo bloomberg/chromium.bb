@@ -57,6 +57,9 @@
 namespace base {
 namespace subtle {
 
+SpinLock::SpinLock() = default;
+SpinLock::~SpinLock() = default;
+
 void SpinLock::LockSlow() {
   // The value of |kYieldProcessorTries| is cargo culted from TCMalloc, Windows
   // critical section defaults, and various other recommendations.

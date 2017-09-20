@@ -6,6 +6,7 @@
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
+#include "base/lazy_instance.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -80,18 +81,18 @@ uint32_t ranval(ranctx* x) {
   return ret;
 }
 
-static struct ranctx s_ranctx;
+static LazyInstance<ranctx>::Leaky s_ranctx = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 // Calculates a random preferred mapping address. In calculating an address, we
 // balance good ASLR against not fragmenting the address space too badly.
 void* GetRandomPageBase() {
-  uintptr_t random = static_cast<uintptr_t>(ranval(&s_ranctx));
+  uintptr_t random = static_cast<uintptr_t>(ranval(s_ranctx.Pointer()));
 
 #if defined(ARCH_CPU_X86_64)
   random <<= 32UL;
-  random |= static_cast<uintptr_t>(ranval(&s_ranctx));
+  random |= static_cast<uintptr_t>(ranval(s_ranctx.Pointer()));
 
 // This address mask gives a low likelihood of address space collisions. We
 // handle the situation gracefully if there is a collision.
