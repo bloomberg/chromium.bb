@@ -251,6 +251,31 @@ void DrawR1HorizontalFullLeftR2(const gfx::RectF& pinned_rect_f,
                         render_text);
 }
 
+void DrawR1TopFullLeftR2(const gfx::RectF& pinned_rect_f,
+                         const gfx::RectF& hovered_rect_f,
+                         const cc::PaintFlags& flags,
+                         gfx::Canvas* canvas_,
+                         gfx::RenderText* render_text) {
+  float x1 = hovered_rect_f.x() + hovered_rect_f.width();
+  float y1 = hovered_rect_f.y() + hovered_rect_f.height() / 2;
+  float x2 = pinned_rect_f.x();
+  float y2 = hovered_rect_f.y() + hovered_rect_f.height() / 2;
+
+  // Horizontal left dotted line.
+  canvas_->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
+  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas_,
+                        render_text);
+  x1 = hovered_rect_f.x() + hovered_rect_f.width() / 2;
+  y1 = hovered_rect_f.y() + hovered_rect_f.height();
+  x2 = hovered_rect_f.x() + hovered_rect_f.width() / 2;
+  y2 = pinned_rect_f.y();
+
+  // Vertical left dotted line.
+  canvas_->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
+  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::LEFT_SIDE, canvas_,
+                        render_text);
+}
+
 }  // namespace
 
 UIDevToolsDOMAgent::UIDevToolsDOMAgent()
@@ -523,7 +548,31 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
                                  render_text_.get());
       return;
     case HighlightRectsConfiguration::R1_TOP_FULL_LEFT_R2:
-      NOTIMPLEMENTED();
+      DrawR1TopFullLeftR2(pinned_rect_f, hovered_rect_f, flags, canvas,
+                          render_text_.get());
+
+      // Draw 4 guide lines along distance lines.
+      flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
+
+      // Bottom horizontal dotted line from left to right.
+      canvas->DrawLine(
+          gfx::PointF(0.0f, hovered_rect_f.bottom()),
+          gfx::PointF(screen_bounds.right(), hovered_rect_f.bottom()), flags);
+
+      // Right vertical dotted line from top to bottom.
+      canvas->DrawLine(
+          gfx::PointF(hovered_rect_f.right(), 0.0f),
+          gfx::PointF(hovered_rect_f.right(), screen_bounds.bottom()), flags);
+
+      // Top horizontal dotted line from left to right.
+      canvas->DrawLine(gfx::PointF(0.0f, pinned_rect_f.y()),
+                       gfx::PointF(screen_bounds.right(), pinned_rect_f.y()),
+                       flags);
+
+      // Left vertical dotted line from top to bottom.
+      canvas->DrawLine(gfx::PointF(pinned_rect_f.x(), 0.0f),
+                       gfx::PointF(pinned_rect_f.x(), screen_bounds.bottom()),
+                       flags);
       return;
     case HighlightRectsConfiguration::R1_BOTTOM_FULL_LEFT_R2:
       NOTIMPLEMENTED();
