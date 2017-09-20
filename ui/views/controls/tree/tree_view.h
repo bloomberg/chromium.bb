@@ -15,6 +15,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/prefix_delegate.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/controls/tree/tree_view_drawing_provider.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
@@ -119,6 +120,13 @@ class VIEWS_EXPORT TreeView : public View,
   int GetRowForNode(ui::TreeModelNode* node);
 
   views::Textfield* editor() { return editor_; }
+
+  // Replaces this TreeView's TreeViewDrawingProvider with |provider|.
+  void SetDrawingProvider(std::unique_ptr<TreeViewDrawingProvider> provider);
+
+  TreeViewDrawingProvider* drawing_provider() {
+    return drawing_provider_.get();
+  }
 
   // View overrides:
   void Layout() override;
@@ -295,6 +303,11 @@ class VIEWS_EXPORT TreeView : public View,
       ui::TreeModelNode* model_node,
       GetInternalNodeCreateType create_type);
 
+  // Returns the bounds for a node. This rectangle contains the node's icon,
+  // text, arrow, and auxiliary text (if any). All of the other bounding
+  // rectangles computed by the functions below lie inside this rectangle.
+  gfx::Rect GetBoundsForNode(InternalNode* node);
+
   // Returns the bounds for a node's background.
   gfx::Rect GetBackgroundBoundsForNode(InternalNode* node);
 
@@ -304,6 +317,9 @@ class VIEWS_EXPORT TreeView : public View,
 
   // Returns the bounds for a node's text label.
   gfx::Rect GetTextBoundsForNode(InternalNode* node);
+
+  // Returns the bounds of a node's auxiliary text label.
+  gfx::Rect GetAuxiliaryTextBoundsForNode(InternalNode* node);
 
   // Implementation of GetTextBoundsForNode. Separated out as some callers
   // already know the row/depth.
@@ -408,6 +424,9 @@ class VIEWS_EXPORT TreeView : public View,
   int text_offset_;
 
   std::unique_ptr<PrefixSelector> selector_;
+
+  // The current drawing provider for this TreeView.
+  std::unique_ptr<TreeViewDrawingProvider> drawing_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeView);
 };

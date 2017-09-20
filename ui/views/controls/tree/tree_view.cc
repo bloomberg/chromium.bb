@@ -57,25 +57,6 @@ const char TreeView::kViewClassName[] = "TreeView";
 
 namespace {
 
-// Returns the color id for the background of selected text. |has_focus|
-// indicates if the tree has focus.
-ui::NativeTheme::ColorId text_background_color_id(bool has_focus) {
-  return has_focus ?
-      ui::NativeTheme::kColorId_TreeSelectionBackgroundFocused :
-      ui::NativeTheme::kColorId_TreeSelectionBackgroundUnfocused;
-}
-
-// Returns the color id for text. |has_focus| indicates if the tree has focus
-// and |is_selected| is true if the item is selected.
-ui::NativeTheme::ColorId text_color_id(bool has_focus, bool is_selected) {
-  if (is_selected) {
-    if (has_focus)
-      return ui::NativeTheme::kColorId_TreeSelectedText;
-    return ui::NativeTheme::kColorId_TreeSelectedTextUnfocused;
-  }
-  return ui::NativeTheme::kColorId_TreeText;
-}
-
 bool EventIsDoubleTapOrClick(const ui::LocatedEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP)
     return event.AsGestureEvent()->details().tap_count() == 2;
@@ -83,7 +64,6 @@ bool EventIsDoubleTapOrClick(const ui::LocatedEvent& event) {
 }
 
 }  // namespace
-
 TreeView::TreeView()
     : model_(NULL),
       selected_node_(NULL),
@@ -94,7 +74,8 @@ TreeView::TreeView()
       editable_(true),
       controller_(NULL),
       root_shown_(true),
-      row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2) {
+      row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2),
+      drawing_provider_(base::MakeUnique<TreeViewDrawingProvider>()) {
   // Always focusable, even on Mac (consistent with NSOutlineView).
   SetFocusBehavior(FocusBehavior::ALWAYS);
   closed_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -358,6 +339,11 @@ int TreeView::GetRowForNode(ui::TreeModelNode* node) {
     return -1;
   int depth = 0;
   return GetRowForInternalNode(internal_node, &depth);
+}
+
+void TreeView::SetDrawingProvider(
+    std::unique_ptr<TreeViewDrawingProvider> provider) {
+  drawing_provider_ = std::move(provider);
 }
 
 void TreeView::Layout() {
@@ -739,7 +725,7 @@ void TreeView::LayoutEditor() {
 void TreeView::SchedulePaintForNode(InternalNode* node) {
   if (!node)
     return;  // Explicitly allow NULL to be passed in.
-  SchedulePaintInRect(GetBackgroundBoundsForNode(node));
+  SchedulePaintInRect(GetBoundsForNode(node));
 }
 
 void TreeView::PaintRows(gfx::Canvas* canvas,
@@ -766,8 +752,8 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
                         int row,
                         int depth) {
   gfx::Rect bounds(GetForegroundBoundsForNodeImpl(node, row, depth));
-  const SkColor selected_row_bg_color = GetNativeTheme()->GetSystemColor(
-      text_background_color_id(HasFocus() || editing_));
+  const SkColor selected_row_bg_color =
+      drawing_provider()->GetBackgroundColorForNode(this, node->model_node());
 
   // Paint the row background.
   if (PlatformStyle::kTreeViewSelectionPaintsEntireRow &&
@@ -812,17 +798,32 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
     canvas->FillRect(text_bounds, selected_row_bg_color);
   }
 
+  // Paint the auxiliary text.
+  base::string16 aux_text =
+      drawing_provider()->GetAuxiliaryTextForNode(this, node->model_node());
+  if (!aux_text.empty()) {
+    gfx::Rect aux_text_bounds = GetAuxiliaryTextBoundsForNode(node);
+    // Only draw if there's actually some space left for the auxiliary text.
+    if (!aux_text_bounds.IsEmpty()) {
+      int align = base::i18n::IsRTL() ? gfx::Canvas::TEXT_ALIGN_LEFT
+                                      : gfx::Canvas::TEXT_ALIGN_RIGHT;
+      canvas->DrawStringRectWithFlags(
+          aux_text, font_list_,
+          drawing_provider()->GetTextColorForNode(this, node->model_node()),
+          aux_text_bounds, align);
+    }
+  }
+
   // Paint the text.
-  const ui::NativeTheme::ColorId color_id =
-      text_color_id(HasFocus(), node == selected_node_);
   const gfx::Rect internal_bounds(
       text_bounds.x() + kTextHorizontalPadding,
       text_bounds.y() + kTextVerticalPadding,
       text_bounds.width() - kTextHorizontalPadding * 2,
       text_bounds.height() - kTextVerticalPadding * 2);
-  canvas->DrawStringRect(node->model_node()->GetTitle(), font_list_,
-                         GetNativeTheme()->GetSystemColor(color_id),
-                         internal_bounds);
+  canvas->DrawStringRect(
+      node->model_node()->GetTitle(), font_list_,
+      drawing_provider()->GetTextColorForNode(this, node->model_node()),
+      internal_bounds);
 }
 
 void TreeView::PaintExpandControl(gfx::Canvas* canvas,
@@ -831,7 +832,7 @@ void TreeView::PaintExpandControl(gfx::Canvas* canvas,
   gfx::ImageSkia arrow = gfx::CreateVectorIcon(
       kSubmenuArrowIcon,
       color_utils::DeriveDefaultIconColor(
-          GetNativeTheme()->GetSystemColor(text_color_id(false, false))));
+          drawing_provider()->GetTextColorForNode(this, nullptr)));
   if (expanded) {
     arrow = gfx::ImageSkiaOperations::CreateRotatedImage(
         arrow, base::i18n::IsRTL() ? SkBitmapOperations::ROTATION_270_CW
@@ -864,14 +865,17 @@ TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(
       model_->GetIndexOf(parent_internal_node->model_node(), model_node));
 }
 
-gfx::Rect TreeView::GetBackgroundBoundsForNode(InternalNode* node) {
-  if (!PlatformStyle::kTreeViewSelectionPaintsEntireRow)
-    return GetForegroundBoundsForNode(node);
-
+gfx::Rect TreeView::GetBoundsForNode(InternalNode* node) {
   int row, ignored_depth;
   row = GetRowForInternalNode(node, &ignored_depth);
   return gfx::Rect(bounds().x(), row * row_height_ + kVerticalInset,
                    bounds().width(), row_height_);
+}
+
+gfx::Rect TreeView::GetBackgroundBoundsForNode(InternalNode* node) {
+  return PlatformStyle::kTreeViewSelectionPaintsEntireRow
+             ? GetBoundsForNode(node)
+             : GetForegroundBoundsForNode(node);
 }
 
 gfx::Rect TreeView::GetForegroundBoundsForNode(InternalNode* node) {
@@ -884,6 +888,23 @@ gfx::Rect TreeView::GetTextBoundsForNode(InternalNode* node) {
   gfx::Rect bounds(GetForegroundBoundsForNode(node));
   bounds.Inset(text_offset_, 0, 0, 0);
   return bounds;
+}
+
+// The auxiliary text for a node can use all the parts of the row's bounds that
+// are logical-after the row's text, and is aligned opposite to the row's text -
+// that is, in LTR locales it is trailing aligned, and in RTL locales it is
+// leading aligned.
+gfx::Rect TreeView::GetAuxiliaryTextBoundsForNode(InternalNode* node) {
+  gfx::Rect text_bounds = GetTextBoundsForNode(node);
+  int width = base::i18n::IsRTL() ? text_bounds.x() - kTextHorizontalPadding * 2
+                                  : bounds().width() - text_bounds.right() -
+                                        2 * kTextHorizontalPadding;
+  if (width < 0)
+    return gfx::Rect();
+  int x = base::i18n::IsRTL()
+              ? bounds().x() + kTextHorizontalPadding
+              : bounds().right() - width - kTextHorizontalPadding;
+  return gfx::Rect(x, text_bounds.y(), width, text_bounds.height());
 }
 
 gfx::Rect TreeView::GetForegroundBoundsForNodeImpl(InternalNode* node,
