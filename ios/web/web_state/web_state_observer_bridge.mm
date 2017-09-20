@@ -18,6 +18,18 @@ WebStateObserverBridge::WebStateObserverBridge(web::WebState* webState,
 WebStateObserverBridge::~WebStateObserverBridge() {
 }
 
+void WebStateObserverBridge::WasShown() {
+  if ([observer_ respondsToSelector:@selector(webStateWasShown:)]) {
+    [observer_ webStateWasShown:web_state()];
+  }
+}
+
+void WebStateObserverBridge::WasHidden() {
+  if ([observer_ respondsToSelector:@selector(webStateWasHidden:)]) {
+    [observer_ webStateWasHidden:web_state()];
+  }
+}
+
 void WebStateObserverBridge::NavigationItemsPruned(size_t pruned_item_count) {
   SEL selector = @selector(webState:didPruneNavigationItemsWithCount:);
   if ([observer_ respondsToSelector:selector]) {

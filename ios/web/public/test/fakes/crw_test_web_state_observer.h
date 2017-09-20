@@ -11,6 +11,10 @@
 // Test implementation of CRWWebStateObserver protocol.
 @interface CRWTestWebStateObserver : NSObject<CRWWebStateObserver>
 
+// Arguments passed to |webStateWasShown:|.
+@property(nonatomic, readonly) web::TestWasShownInfo* wasShownInfo;
+// Arguments passed to |webStateWasHidden:|.
+@property(nonatomic, readonly) web::TestWasHiddenInfo* wasHiddenInfo;
 // Arguments passed to |webState:didPruneNavigationItemsWithCount:|.
 @property(nonatomic, readonly)
     web::TestNavigationItemsPrunedInfo* navigationItemsPrunedInfo;
