@@ -242,8 +242,10 @@ bool WEBPImageDecoder::UpdateDemuxer() {
       repetition_count_ = WebPDemuxGetI(demux_, WEBP_FF_LOOP_COUNT);
       // Repetition count is always <= 16 bits.
       DCHECK_EQ(repetition_count_, repetition_count_ & 0xffff);
-      if (!repetition_count_)
-        repetition_count_ = kAnimationLoopInfinite;
+      // Repetition count is treated as n + 1 cycles for GIF. WebP defines loop
+      // count as the number of cycles, with 0 meaning infinite.
+      repetition_count_ = repetition_count_ == 0 ? kAnimationLoopInfinite
+                                                 : repetition_count_ - 1;
       // FIXME: Implement ICC profile support for animated images.
       format_flags_ &= ~ICCP_FLAG;
     }
