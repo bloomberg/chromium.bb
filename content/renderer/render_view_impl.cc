@@ -905,6 +905,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   web_view->SetDefaultPageScaleLimits(prefs.default_minimum_page_scale_factor,
                                       prefs.default_maximum_page_scale_factor);
 
+  settings->SetSavePreviousDocumentResources(
+      static_cast<WebSettings::SavePreviousDocumentResources>(
+          prefs.save_previous_document_resources));
+
 #if defined(OS_ANDROID)
   settings->SetAllowCustomScrollbarInMainFrame(false);
   settings->SetTextAutosizingEnabled(prefs.text_autosizing_enabled);

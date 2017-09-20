@@ -158,6 +158,21 @@ ProgressBarCompletion GetProgressBarCompletionPolicy() {
   return ProgressBarCompletion::LOAD_EVENT;
 }
 
+SavePreviousDocumentResources GetSavePreviousDocumentResources() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string save_previous_document_resources =
+      command_line.GetSwitchValueASCII(
+          switches::kSavePreviousDocumentResources);
+  if (save_previous_document_resources == "never")
+    return SavePreviousDocumentResources::NEVER;
+  if (save_previous_document_resources == "onDOMContentLoaded")
+    return SavePreviousDocumentResources::UNTIL_ON_DOM_CONTENT_LOADED;
+  if (save_previous_document_resources == "onload")
+    return SavePreviousDocumentResources::UNTIL_ON_LOAD;
+  return SavePreviousDocumentResources::NEVER;
+}
+
 void WaitForDebugger(const std::string& label) {
 #if defined(OS_WIN)
 #if defined(GOOGLE_CHROME_BUILD)

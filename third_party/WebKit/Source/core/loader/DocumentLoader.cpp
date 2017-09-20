@@ -404,6 +404,8 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
     if (frame_->Owner()->IsLocal())
       frame_->DeprecatedLocalOwner()->RenderFallbackContent();
   }
+  fetcher_->ClearResourcesFromPreviousFetcher();
+
   HistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
   switch (state_) {
     case kNotStarted:

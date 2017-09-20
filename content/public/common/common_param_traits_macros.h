@@ -67,6 +67,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::V8CacheOptions,
 IPC_ENUM_TRAITS_MAX_VALUE(content::ProgressBarCompletion,
                           content::ProgressBarCompletion::LAST)
 #endif
+IPC_ENUM_TRAITS_MAX_VALUE(content::SavePreviousDocumentResources,
+                          content::SavePreviousDocumentResources::LAST)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::PointerType,
                               ui::POINTER_TYPE_FIRST,
                               ui::POINTER_TYPE_LAST)
@@ -215,6 +217,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(animation_policy)
   IPC_STRUCT_TRAITS_MEMBER(user_gesture_required_for_presentation)
   IPC_STRUCT_TRAITS_MEMBER(text_track_margin_percentage)
+  IPC_STRUCT_TRAITS_MEMBER(save_previous_document_resources)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(text_autosizing_enabled)
   IPC_STRUCT_TRAITS_MEMBER(font_scale_factor)
