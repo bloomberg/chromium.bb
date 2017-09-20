@@ -207,10 +207,6 @@ chrome.cast.channel.ChannelInfo.prototype.channelId;
 
 
 /** @type {string} */
-chrome.cast.channel.ChannelInfo.prototype.url;
-
-
-/** @type {string} */
 chrome.cast.channel.ChannelInfo.prototype.readyState;
 
 
