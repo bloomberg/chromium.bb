@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 
 """Wrapper around actool to compile assets catalog.
 
@@ -27,6 +28,13 @@ SECTION_HEADER = re.compile('^/\\* ([^ ]*) \\*/$')
 
 # Name of the section containing informational messages that can be ignored.
 NOTICE_SECTION = 'com.apple.actool.compilation-results'
+
+# Map special type of asset catalog to the corresponding command-line
+# parameter that need to be passed to actool.
+ACTOOL_FLAG_FOR_ASSET_TYPE = {
+  '.appiconset': '--app-icon',
+  '.launchimage': '--launch-image',
+}
 
 
 def FilterCompilerOutput(compiler_output, relative_paths):
@@ -77,7 +85,7 @@ def FilterCompilerOutput(compiler_output, relative_paths):
 
 
 def CompileAssetCatalog(output, platform, product_type, min_deployment_target,
-    inputs, compress_pngs):
+    inputs, compress_pngs, partial_info_plist):
   """Compile the .xcassets bundles to an asset catalog using actool.
 
   Args:
@@ -87,6 +95,7 @@ def CompileAssetCatalog(output, platform, product_type, min_deployment_target,
     min_deployment_target: minimum deployment target
     inputs: list of absolute paths to .xcassets bundles
     compress_pngs: whether to enable compression of pngs
+    partial_info_plist: path to partial Info.plist to generate
   """
   command = [
       'xcrun', 'actool', '--output-format=human-readable-text',
@@ -105,6 +114,34 @@ def CompileAssetCatalog(output, platform, product_type, min_deployment_target,
   else:
     command.extend(['--target-device', 'iphone', '--target-device', 'ipad'])
 
+  # Scan the input directories for the presence of asset catalog types that
+  # require special treatment, and if so, add them to the actool command-line.
+  for relative_path in inputs:
+
+    if not os.path.isdir(relative_path):
+      continue
+
+    for file_or_dir_name in os.listdir(relative_path):
+      if not os.path.isdir(os.path.join(relative_path, file_or_dir_name)):
+        continue
+
+      asset_name, asset_type = os.path.splitext(file_or_dir_name)
+      if asset_type not in ACTOOL_FLAG_FOR_ASSET_TYPE:
+        continue
+
+      command.extend([ACTOOL_FLAG_FOR_ASSET_TYPE[asset_type], asset_name])
+
+  # Always ask actool to generate a partial Info.plist file. If not path
+  # has been given by the caller, use a temporary file name.
+  temporary_file = None
+  if not partial_info_plist:
+    temporary_file = tempfile.NamedTemporaryFile(suffix='.plist')
+    partial_info_plist = temporary_file.name
+
+  command.extend(['--output-partial-info-plist', partial_info_plist])
+
+  # Dictionary used to convert absolute paths back to their relative form
+  # in the output of actool.
   relative_paths = {}
 
   # actool crashes if paths are relative, so convert input and output paths
@@ -120,18 +157,23 @@ def CompileAssetCatalog(output, platform, product_type, min_deployment_target,
     relative_paths[absolute_path] = relative_path
     command.append(absolute_path)
 
-  # Run actool and redirect stdout and stderr to the same pipe (as actool
-  # is confused about what should go to stderr/stdout).
-  process = subprocess.Popen(
-      command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  stdout, _ = process.communicate()
+  try:
+    # Run actool and redirect stdout and stderr to the same pipe (as actool
+    # is confused about what should go to stderr/stdout).
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout, _ = process.communicate()
 
-  # Filter the output to remove all garbarge and to fix the paths.
-  stdout = FilterCompilerOutput(stdout, relative_paths)
+    # Filter the output to remove all garbarge and to fix the paths.
+    stdout = FilterCompilerOutput(stdout, relative_paths)
 
-  if process.returncode or stdout:
-    sys.stderr.write(stdout)
-    sys.exit(1)
+    if process.returncode or stdout:
+      sys.stderr.write(stdout)
+      sys.exit(1)
+
+  finally:
+    if temporary_file:
+      temporary_file.close()
 
 
 def Main():
@@ -154,6 +196,9 @@ def Main():
       '--product-type', '-T',
       help='type of the containing bundle')
   parser.add_argument(
+      '--partial-info-plist', '-P',
+      help='path to partial info plist to create')
+  parser.add_argument(
       'inputs', nargs='+',
       help='path to input assets catalog sources')
   args = parser.parse_args()
@@ -170,7 +215,8 @@ def Main():
       args.product_type,
       args.minimum_deployment_target,
       args.inputs,
-      args.compress_pngs)
+      args.compress_pngs,
+      args.partial_info_plist)
 
 
 if __name__ == '__main__':
