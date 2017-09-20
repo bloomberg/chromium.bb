@@ -125,7 +125,7 @@ class ArcVoiceInteractionFrameworkService
  private:
   void NotifyMetalayerStatusChanged(bool visible);
 
-  bool InitiateUserInteraction();
+  bool InitiateUserInteraction(bool is_toggle);
 
   void SetVoiceInteractionSetupCompletedInternal(bool completed);
 
@@ -133,8 +133,11 @@ class ArcVoiceInteractionFrameworkService
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager
   mojo::Binding<mojom::VoiceInteractionFrameworkHost> binding_;
 
-  // Whether there is a pending request to start voice interaction.
+  // Whether there is a pending request to start/toggle voice interaction.
   bool is_request_pending_ = false;
+
+  // Whether the pending request is toggle the voice interaction.
+  bool is_pending_request_toggle_ = false;
 
   // Whether we should launch runtime setup flow for voice interaction.
   bool should_start_runtime_flow_ = false;

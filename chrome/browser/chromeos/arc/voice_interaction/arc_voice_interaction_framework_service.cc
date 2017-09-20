@@ -227,7 +227,11 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
 
   if (is_request_pending_) {
     is_request_pending_ = false;
-    framework_instance->StartVoiceInteractionSession();
+    if (is_pending_request_toggle_) {
+      framework_instance->ToggleVoiceInteractionSession();
+    } else {
+      framework_instance->StartVoiceInteractionSession();
+    }
   }
 }
 
@@ -385,7 +389,7 @@ void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
 
 void ArcVoiceInteractionFrameworkService::OnHotwordTriggered(uint64_t tv_sec,
                                                              uint64_t tv_nsec) {
-  InitiateUserInteraction();
+  InitiateUserInteraction(false /* is_toggle */);
 }
 
 void ArcVoiceInteractionFrameworkService::StartVoiceInteractionSetupWizard() {
@@ -477,7 +481,7 @@ void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
     const gfx::Rect& rect) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!InitiateUserInteraction())
+  if (!InitiateUserInteraction(false /* is_toggle */))
     return;
 
   if (rect.IsEmpty()) {
@@ -501,7 +505,7 @@ void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
 void ArcVoiceInteractionFrameworkService::ToggleSessionFromUserInteraction() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!InitiateUserInteraction())
+  if (!InitiateUserInteraction(true /* is_toggle */))
     return;
 
   mojom::VoiceInteractionFrameworkInstance* framework_instance =
@@ -552,7 +556,8 @@ void ArcVoiceInteractionFrameworkService::StartVoiceInteractionOobe() {
   display_host->StartVoiceInteractionOobe();
 }
 
-bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction() {
+bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction(
+    bool is_toggle) {
   VLOG(1) << "Start voice interaction.";
   PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
   if (!prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted)) {
@@ -578,6 +583,7 @@ bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction() {
     VLOG(1) << "Instance not ready.";
     SetArcCpuRestriction(false);
     is_request_pending_ = true;
+    is_pending_request_toggle_ = is_toggle;
     return false;
   }
 
