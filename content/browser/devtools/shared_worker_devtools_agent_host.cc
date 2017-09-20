@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
@@ -34,7 +35,7 @@ std::string SharedWorkerDevToolsAgentHost::GetType() {
 }
 
 std::string SharedWorkerDevToolsAgentHost::GetTitle() {
-  return shared_worker_->name();
+  return base::UTF16ToUTF8(shared_worker_->name());
 }
 
 GURL SharedWorkerDevToolsAgentHost::GetURL() {

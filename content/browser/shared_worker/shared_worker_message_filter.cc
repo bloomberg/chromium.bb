@@ -10,13 +10,22 @@
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/worker_messages.h"
 
 namespace content {
+namespace {
+
+const uint32_t kFilteredMessageClasses[] = {
+    WorkerMsgStart,
+};
+
+}  // namespace
 
 SharedWorkerMessageFilter::SharedWorkerMessageFilter(
     int render_process_id,
     const NextRoutingIDCallback& next_routing_id_callback)
-    : BrowserMessageFilter(0 /* none */),
+    : BrowserMessageFilter(kFilteredMessageClasses,
+                           arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
       next_routing_id_callback_(next_routing_id_callback) {}
 
@@ -35,11 +44,38 @@ void SharedWorkerMessageFilter::OnFilterRemoved() {
 }
 
 void SharedWorkerMessageFilter::OnChannelClosing() {
-  SharedWorkerServiceImpl::GetInstance()->OnProcessClosing(render_process_id_);
+  SharedWorkerServiceImpl::GetInstance()->OnSharedWorkerMessageFilterClosing(
+      this);
 }
 
 bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(SharedWorkerMessageFilter, message, this)
+    // Sent from SharedWorker in renderer.
+    IPC_MESSAGE_FORWARD(WorkerHostMsg_CountFeature,
+                        SharedWorkerServiceImpl::GetInstance(),
+                        SharedWorkerServiceImpl::CountFeature)
+    IPC_MESSAGE_FORWARD(WorkerHostMsg_WorkerContextClosed,
+                        SharedWorkerServiceImpl::GetInstance(),
+                        SharedWorkerServiceImpl::WorkerContextClosed)
+    IPC_MESSAGE_FORWARD(WorkerHostMsg_WorkerContextDestroyed,
+                        SharedWorkerServiceImpl::GetInstance(),
+                        SharedWorkerServiceImpl::WorkerContextDestroyed)
+    IPC_MESSAGE_FORWARD(WorkerHostMsg_WorkerReadyForInspection,
+                        SharedWorkerServiceImpl::GetInstance(),
+                        SharedWorkerServiceImpl::WorkerReadyForInspection)
+    IPC_MESSAGE_FORWARD(WorkerHostMsg_WorkerScriptLoaded,
+                        SharedWorkerServiceImpl::GetInstance(),
+                        SharedWorkerServiceImpl::WorkerScriptLoaded)
+    IPC_MESSAGE_FORWARD(WorkerHostMsg_WorkerScriptLoadFailed,
+                        SharedWorkerServiceImpl::GetInstance(),
+                        SharedWorkerServiceImpl::WorkerScriptLoadFailed)
+    IPC_MESSAGE_FORWARD(WorkerHostMsg_WorkerConnected,
+                        SharedWorkerServiceImpl::GetInstance(),
+                        SharedWorkerServiceImpl::WorkerConnected)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 }  // namespace content

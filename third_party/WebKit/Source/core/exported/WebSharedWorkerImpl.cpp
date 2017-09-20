@@ -163,7 +163,7 @@ WebSharedWorkerImpl::CreateClientMessageLoop() {
 
 void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
   DCHECK(IsMainThread());
-  client_->CountFeature(feature);
+  client_->CountFeature(static_cast<uint32_t>(feature));
 }
 
 void WebSharedWorkerImpl::PostMessageToPageInspector(int session_id,
