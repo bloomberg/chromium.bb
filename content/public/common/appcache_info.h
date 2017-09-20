@@ -16,6 +16,8 @@
 
 namespace content {
 
+typedef base::OnceCallback<void(int)> OnceCompletionCallback;
+
 static const int kAppCacheNoHostId =
     blink::WebApplicationCacheHost::kAppCacheNoHostId;
 static const int64_t kAppCacheNoCacheId = 0;

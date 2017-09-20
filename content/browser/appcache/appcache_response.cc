@@ -118,9 +118,9 @@ void AppCacheResponseIO::InvokeUserCompletionCallback(int result) {
   // so the caller can schedule additional operations in the callback.
   buffer_ = NULL;
   info_buffer_ = NULL;
-  net::CompletionCallback cb = callback_;
+  OnceCompletionCallback cb = std::move(callback_);
   callback_.Reset();
-  cb.Run(result);
+  std::move(cb).Run(result);
 }
 
 void AppCacheResponseIO::ReadRaw(int index, int offset,
@@ -326,9 +326,8 @@ AppCacheResponseWriter::AppCacheResponseWriter(
 AppCacheResponseWriter::~AppCacheResponseWriter() {
 }
 
-void AppCacheResponseWriter::WriteInfo(
-    HttpResponseInfoIOBuffer* info_buf,
-    const net::CompletionCallback& callback) {
+void AppCacheResponseWriter::WriteInfo(HttpResponseInfoIOBuffer* info_buf,
+                                       OnceCompletionCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(!IsWritePending());
   DCHECK(info_buf);
@@ -338,7 +337,7 @@ void AppCacheResponseWriter::WriteInfo(
   DCHECK(info_buf->http_info->headers.get());
 
   info_buffer_ = info_buf;
-  callback_ = callback;  // cleared on completion
+  callback_ = std::move(callback);  // cleared on completion
   CreateEntryIfNeededAndContinue();
 }
 
@@ -357,8 +356,9 @@ void AppCacheResponseWriter::ContinueWriteInfo() {
   WriteRaw(kResponseInfoIndex, 0, buffer_.get(), write_amount_);
 }
 
-void AppCacheResponseWriter::WriteData(
-    net::IOBuffer* buf, int buf_len, const net::CompletionCallback& callback) {
+void AppCacheResponseWriter::WriteData(net::IOBuffer* buf,
+                                       int buf_len,
+                                       OnceCompletionCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(!IsWritePending());
   DCHECK(buf);
@@ -368,7 +368,7 @@ void AppCacheResponseWriter::WriteData(
 
   buffer_ = buf;
   write_amount_ = buf_len;
-  callback_ = callback;  // cleared on completion
+  callback_ = std::move(callback);  // cleared on completion
   CreateEntryIfNeededAndContinue();
 }
 
