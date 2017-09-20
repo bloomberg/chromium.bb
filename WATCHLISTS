@@ -630,8 +630,25 @@
                    '|extensions/browser/api/cast_channel'
     },
     'cc': {
-      'filepath': 'cc/|'\
-                  'components/viz/'
+      'filepath': 'cc/'\
+                  '|components/viz/'
+    },
+    'cc-contexts': {
+      'filepath': 'components/viz/common/gpu'
+    },
+    'cc-display': {
+      'filepath': 'components/viz/service/display'\
+                  '|cc/output'
+    },
+    'cc-paint': {
+      'filepath': 'cc/paint'
+    },
+    'cc-quads': {
+      'filepath': 'components/viz/common/quads'
+    },
+    'cc-resources': {
+      'filepath': 'cc/resources'\
+                  '|components/viz/common/resources'
     },
     'certificate_transparency': {
       'filepath': 'components/certificate_transparency/'\
@@ -1896,6 +1913,11 @@
                      'mfoltz+watch@chromium.org',
                      'ryanchung+watch@chromium.org'],
     'cc': ['cc-bugs@chromium.org'],
+    'cc-contexts': ['danakj+watch@chromium.org'],
+    'cc-display': ['danakj+watch@chromium.org'],
+    'cc-paint': ['danakj+watch@chromium.org'],
+    'cc-quads': ['danakj+watch@chromium.org'],
+    'cc-resources': ['danakj+watch@chromium.org'],
     'certificate_transparency': ['certificate-transparency-chrome@googlegroups.com',
                                  'eranm@chromium.org',
                                  'martijn+crwatch@martijnc.be',
