@@ -50965,6 +50965,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Prefetching.NotificationAction"
+    enum="OfflinePagePrefetchNotificationAction">
+  <owner>dewittj@chromium.org</owner>
+  <summary>
+    Actions taken with respect to the offline prefetch notification, includes
+    show attempts to calculate CTR.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Prefetching.OfflinePageImportResult"
     enum="OfflinePrefetchPageImportResult">
   <owner>carlosk@chromium.org</owner>

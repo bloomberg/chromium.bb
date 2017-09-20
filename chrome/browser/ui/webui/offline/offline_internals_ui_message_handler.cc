@@ -19,9 +19,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/offline_pages/android/prefetch_background_task_android.h"
+#include "build/build_config.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
+#include "chrome/browser/offline_pages/prefetch/prefetched_pages_notifier.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
@@ -30,6 +31,8 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
+#include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -283,6 +286,16 @@ void OfflineInternalsUIMessageHandler::HandleCancelNwake(
   }
 }
 
+void OfflineInternalsUIMessageHandler::HandleShowPrefetchNotification(
+    const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  offline_pages::ShowPrefetchedContentNotification(GURL("www.example.com"));
+  ResolveJavascriptCallback(*callback_id, base::Value("Scheduled."));
+}
+
 void OfflineInternalsUIMessageHandler::HandleGeneratePageBundle(
     const base::ListValue* args) {
   AllowJavascript();
@@ -491,6 +504,11 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
       "cancelNwake",
       base::Bind(&OfflineInternalsUIMessageHandler::HandleCancelNwake,
                  weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "showPrefetchNotification",
+      base::Bind(
+          &OfflineInternalsUIMessageHandler::HandleShowPrefetchNotification,
+          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "generatePageBundle",
       base::Bind(&OfflineInternalsUIMessageHandler::HandleGeneratePageBundle,
