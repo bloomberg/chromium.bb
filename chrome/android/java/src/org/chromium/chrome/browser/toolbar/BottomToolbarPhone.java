@@ -27,6 +27,7 @@ import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -222,6 +223,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
      */
     private TabObserver mTopShadowTabObserver;
 
+    /** A handle to the {@link ChromeActivity} this toolbar exists in. */
+    private ChromeActivity mActivity;
+
     /**
      * Constructs a BottomToolbarPhone object.
      * @param context The Context in which this View object is created.
@@ -306,6 +310,10 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mBottomToolbarTopShadowDrawable.getDrawable(1).setAlpha(0);
 
         mBottomToolbarTopShadow.setImageDrawable(mBottomToolbarTopShadowDrawable);
+    }
+
+    public void setActivity(ChromeActivity activity) {
+        mActivity = activity;
     }
 
     /**
@@ -461,11 +469,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
-        Tab currentTab = getToolbarDataProvider().getTab();
-        if (currentTab != null) {
-            currentTab.getActivity().getBottomSheetContentController().onOmniboxFocusChange(
-                    hasFocus);
-        }
+        mActivity.getBottomSheetContentController().onOmniboxFocusChange(hasFocus);
 
         super.onUrlFocusChange(hasFocus);
     }

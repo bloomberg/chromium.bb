@@ -28,7 +28,10 @@ import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.ui.UiUtils;
 
@@ -55,6 +58,7 @@ public class LocationBarPhone extends LocationBarLayout {
     private float mUrlFocusChangePercent;
     private Runnable mKeyboardResizeModeTask;
     private ObjectAnimator mOmniboxBackgroundAnimator;
+    private boolean mCloseSheetOnBackButton;
 
     /**
      * Constructor used to inflate from XML.
@@ -372,6 +376,20 @@ public class LocationBarPhone extends LocationBarLayout {
                                 WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING, false);
                 }
             }
+
+            @Override
+            public void onSheetOpened(@StateChangeReason int reason) {
+                if (reason == StateChangeReason.OMNIBOX_FOCUS) mCloseSheetOnBackButton = true;
+            }
+
+            @Override
+            public void onSheetContentChanged(BottomSheetContent newContent) {
+                @ContentType
+                int type = newContent.getType();
+                if (type != BottomSheetContentController.TYPE_AUXILIARY_CONTENT) {
+                    mCloseSheetOnBackButton = false;
+                }
+            }
         });
 
         mGoogleGWidth = getResources().getDimensionPixelSize(
@@ -383,11 +401,9 @@ public class LocationBarPhone extends LocationBarLayout {
     public void backKeyPressed() {
         super.backKeyPressed();
 
-        // If the back button was pressed while the placeholder content was showing, hide the sheet.
-        if (mBottomSheet != null && mBottomSheet.getCurrentSheetContent() != null
-                && mBottomSheet.getCurrentSheetContent().getType()
-                        == BottomSheetContentController.TYPE_PLACEHOLDER) {
+        if (mCloseSheetOnBackButton) {
             mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
         }
+        mCloseSheetOnBackButton = false;
     }
 }
