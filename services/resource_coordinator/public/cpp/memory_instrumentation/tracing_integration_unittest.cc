@@ -6,10 +6,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/test_io_thread.h"
 #include "base/test/trace_event_analyzer.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_manager_test_utils.h"
 #include "base/trace_event/memory_dump_scheduler.h"
@@ -584,6 +587,60 @@ TEST_F(MemoryTracingIntegrationTest, TestPollingOnDumpThread) {
   run_loop.Run();
   DisableTracing();
   mdm_->UnregisterAndDeleteDumpProviderSoon(std::move(mdp1));
+}
+
+// Regression test for https://crbug.com/766274 .
+TEST_F(MemoryTracingIntegrationTest, GenerationChangeDoesntReenterMDM) {
+  InitializeClientProcess(mojom::ProcessType::RENDERER);
+
+  // We want the ThreadLocalEventBuffer MDPs to auto-register to repro this bug.
+  mdm_->set_dumper_registrations_ignored_for_testing(false);
+
+  // Disable any other tracing category, so we are likely to hit the
+  // ThreadLocalEventBuffer in MemoryDumpManager::InbokeOnMemoryDump() first.
+  const std::string kMemoryInfraTracingOnly =
+      std::string("-*,") + MemoryDumpManager::kTraceCategory;
+
+  auto thread =
+      base::MakeUnique<base::TestIOThread>(base::TestIOThread::kAutoStart);
+
+  TraceLog::GetInstance()->SetEnabled(
+      TraceConfig(kMemoryInfraTracingOnly,
+                  base::trace_event::RECORD_UNTIL_FULL),
+      TraceLog::RECORDING_MODE);
+
+  // Creating a new thread after tracing has started causes the posted
+  // TRACE_EVENT0 to initialize and register a new ThreadLocalEventBuffer.
+  base::RunLoop run_loop;
+  thread->PostTask(
+      FROM_HERE,
+      Bind(
+          [](scoped_refptr<base::SequencedTaskRunner> main_task_runner,
+             base::Closure quit_closure) {
+            TRACE_EVENT0(MemoryDumpManager::kTraceCategory, "foo");
+            main_task_runner->PostTask(FROM_HERE, quit_closure);
+          },
+          base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_TRUE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                       MemoryDumpLevelOfDetail::DETAILED));
+  DisableTracing();
+
+  // Now enable tracing again with a different RECORD_ mode. This will cause
+  // a TraceLog generation change. The generation change will be lazily detected
+  // in the |thread|'s ThreadLocalEventBuffer on its next TRACE_EVENT call (or
+  // whatever ends up calling InitializeThreadLocalEventBufferIfSupported()).
+  // The bug here conisted in MemoryDumpManager::InvokeOnMemoryDump() to hit
+  // that (which in turn causes an invalidation of the ThreadLocalEventBuffer)
+  // after having checked that the MDP is valid and having decided to invoke it.
+  TraceLog::GetInstance()->SetEnabled(
+      TraceConfig(kMemoryInfraTracingOnly,
+                  base::trace_event::RECORD_CONTINUOUSLY),
+      TraceLog::RECORDING_MODE);
+  EXPECT_TRUE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                       MemoryDumpLevelOfDetail::DETAILED));
+  DisableTracing();
 }
 
 }  // namespace memory_instrumentation

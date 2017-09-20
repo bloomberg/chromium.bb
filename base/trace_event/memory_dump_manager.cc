@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/heap_profiler.h"
@@ -678,42 +679,56 @@ void MemoryDumpManager::InvokeOnMemoryDump(
   DCHECK(!mdpinfo->task_runner ||
          mdpinfo->task_runner->RunsTasksInCurrentSequence());
 
-  bool should_dump;
+  // Limit the scope of the TRACE_EVENT1 below to not include the
+  // SetupNextMemoryDump(). Don't replace with a BEGIN/END pair or change the
+  // event name, as the slow-reports pipeline relies on this event.
   {
-    // A locked access is required to R/W |disabled| (for the
-    // UnregisterAndDeleteDumpProviderSoon() case).
-    AutoLock lock(lock_);
-
-    // Unregister the dump provider if it failed too many times consecutively.
-    if (!mdpinfo->disabled &&
-        mdpinfo->consecutive_failures >= kMaxConsecutiveFailuresCount) {
-      mdpinfo->disabled = true;
-      LOG(ERROR) << "Disabling MemoryDumpProvider \"" << mdpinfo->name
-                 << "\". Dump failed multiple times consecutively.";
-    }
-    should_dump = !mdpinfo->disabled;
-  }  // AutoLock lock(lock_);
-
-  if (should_dump) {
-    // Invoke the dump provider.
     TRACE_EVENT1(kTraceCategory, "MemoryDumpManager::InvokeOnMemoryDump",
                  "dump_provider.name", mdpinfo->name);
 
-    // A stack allocated string with dump provider name is useful to debug
-    // crashes while invoking dump after a |dump_provider| is not unregistered
-    // in safe way.
-    // TODO(ssid): Remove this after fixing crbug.com/643438.
-    char provider_name_for_debugging[16];
-    strncpy(provider_name_for_debugging, mdpinfo->name,
-            sizeof(provider_name_for_debugging) - 1);
-    provider_name_for_debugging[sizeof(provider_name_for_debugging) - 1] = '\0';
-    base::debug::Alias(provider_name_for_debugging);
+    // Do not add any other TRACE_EVENT macro (or function that might have them)
+    // below this point. Under some rare circunstances, they can re-initialize
+    // and invalide the current ThreadLocalEventBuffer MDP, making the
+    // |should_dump| check below susceptible to TOCTTOU bugs (crbug.com/763365).
 
-    ProcessMemoryDump* pmd = pmd_async_state->process_memory_dump.get();
-    bool dump_successful =
-        mdpinfo->dump_provider->OnMemoryDump(pmd->dump_args(), pmd);
-    mdpinfo->consecutive_failures =
-        dump_successful ? 0 : mdpinfo->consecutive_failures + 1;
+    bool should_dump;
+    {
+      // A locked access is required to R/W |disabled| (for the
+      // UnregisterAndDeleteDumpProviderSoon() case).
+      AutoLock lock(lock_);
+
+      // Unregister the dump provider if it failed too many times consecutively.
+      if (!mdpinfo->disabled &&
+          mdpinfo->consecutive_failures >= kMaxConsecutiveFailuresCount) {
+        mdpinfo->disabled = true;
+        LOG(ERROR) << "Disabling MemoryDumpProvider \"" << mdpinfo->name
+                   << "\". Dump failed multiple times consecutively.";
+      }
+      should_dump = !mdpinfo->disabled;
+    }  // AutoLock lock(lock_);
+
+    if (should_dump) {
+      // Invoke the dump provider.
+
+      // A stack allocated string with dump provider name is useful to debug
+      // crashes while invoking dump after a |dump_provider| is not unregistered
+      // in safe way.
+      // TODO(ssid): Remove this after fixing crbug.com/643438.
+      char provider_name_for_debugging[16];
+      strncpy(provider_name_for_debugging, mdpinfo->name,
+              sizeof(provider_name_for_debugging) - 1);
+      provider_name_for_debugging[sizeof(provider_name_for_debugging) - 1] =
+          '\0';
+      base::debug::Alias(provider_name_for_debugging);
+
+      ProcessMemoryDump* pmd = pmd_async_state->process_memory_dump.get();
+      ANNOTATE_BENIGN_RACE(&mdpinfo->disabled, "best-effort race detection");
+      CHECK(!*(static_cast<volatile bool*>(&mdpinfo->disabled)));
+      bool dump_successful =
+          mdpinfo->dump_provider->OnMemoryDump(pmd->dump_args(), pmd);
+      mdpinfo->consecutive_failures =
+          dump_successful ? 0 : mdpinfo->consecutive_failures + 1;
+    }
   }
 
   pmd_async_state->pending_dump_providers.pop_back();
