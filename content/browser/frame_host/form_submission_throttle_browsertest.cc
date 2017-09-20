@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
         std::vector<GURL>(),     // redirect chain
         root,                    // frame_tree_node
         true,                    // is_renderer_initiated
-        false,                   // is_same_page
+        false,                   // is_same_document
         base::TimeTicks::Now(),  // navigation_start
         0,                       // pending_nav_entry_id
         false,                   // started_from_context_menu
@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
       std::vector<GURL>(),           // redirect chain
       root,                          // frame_tree_node
       true,                          // is_renderer_initiated
-      false,                         // is_same_page
+      false,                         // is_same_document
       base::TimeTicks::Now(),        // navigation_start
       0,                             // pending_nav_entry_id
       false,                         // started_from_context_menu

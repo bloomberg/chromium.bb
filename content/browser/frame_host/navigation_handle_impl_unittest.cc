@@ -253,7 +253,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     test_handle_ = NavigationHandleImpl::Create(
         GURL(), std::vector<GURL>(), main_test_rfh()->frame_tree_node(),
         true,   // is_renderer_initiated
-        false,  // is_same_page
+        false,  // is_same_document
         base::TimeTicks::Now(), 0,
         false,                  // started_from_context_menu
         CSPDisposition::CHECK,  // should_check_main_world_csp
