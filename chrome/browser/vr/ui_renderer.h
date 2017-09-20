@@ -11,6 +11,7 @@
 
 namespace vr {
 
+class UiElement;
 class UiScene;
 class UiElement;
 class VrShellRenderer;
@@ -53,29 +54,30 @@ class UiRenderer {
 
   void Draw(const RenderInfo& render_info,
             const ControllerInfo& controller_info,
-            bool web_vr_mode);
-  // This is used to draw visible viewport aware elements in the scene, i.e.
-  // the security warning elements on top of WebVR or the exit warning element
-  // in ChromeVR.
-  void DrawViewportAware(const RenderInfo& render_info,
-                         const ControllerInfo& controller_info,
-                         bool web_vr_mode);
+            bool in_web_vr_mode);
+
+  // This is exposed separately because we do a separate pass to render this
+  // content into an optimized viewport.
+  void DrawWebVrOverlayForeground(const RenderInfo& render_info,
+                                  const ControllerInfo& controller_info);
 
  private:
-  void DrawWorldElements(const RenderInfo& render_info,
-                         const ControllerInfo& controller_info,
-                         bool web_vr_mode);
-  void DrawOverlayElements(const RenderInfo& render_info,
-                           const ControllerInfo& controller_info);
+  enum ReticleMode { kReticleVisible, kReticleHidden };
+
+  void Draw2dBrowsing(const RenderInfo& render_info,
+                      const ControllerInfo& controller_info);
+  void DrawWebVrOverlayBackground(const RenderInfo& render_info,
+                                  const ControllerInfo& controller_info);
+
   void DrawUiView(const RenderInfo& render_info,
                   const ControllerInfo& controller_info,
                   const std::vector<const UiElement*>& elements,
-                  bool draw_reticle);
+                  ReticleMode reticle_mode);
   void DrawElements(const gfx::Transform& view_proj_matrix,
                     const std::vector<const UiElement*>& elements,
                     const RenderInfo& render_info,
                     const ControllerInfo& controller_info,
-                    bool draw_reticle);
+                    ReticleMode reticle_mode);
   void DrawElement(const gfx::Transform& view_proj_matrix,
                    const UiElement& element);
   std::vector<const UiElement*> GetElementsInDrawOrder(

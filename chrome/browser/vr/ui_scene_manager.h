@@ -23,7 +23,6 @@ class ExclusiveScreenToast;
 class Grid;
 class LoadingIndicator;
 class Rect;
-class Text;
 class WebVrUrlToast;
 class UiBrowserInterface;
 class UiElement;
@@ -31,6 +30,51 @@ class UiScene;
 class UrlBar;
 class ExitPrompt;
 
+// The scene manager creates and maintains a UiElement hierarchy.
+//
+// kRoot
+//   k2dBrowsingRoot
+//     k2dBrowsingBackground
+//       kBackgroundLeft
+//       kBackgroundRight
+//       kBackgroundTop
+//       kBackgroundBottom
+//       kBackgroundFront
+//       kBackgroundBack
+//       kFloor
+//       kCeiling
+//     k2dBrowsingForeground
+//       k2dBrowsingContentGroup
+//         kBackplane
+//         kContentQuad
+//         kIndicatorLayout
+//           kAudioCaptureIndicator
+//           kVideoCaptureIndicator
+//           kScreenCaptureIndicator
+//           kLocationAccessIndicator
+//           kBluetoothConnectedIndicator
+//           kLoadingIndicator
+//       kExitPrompt
+//         kExitPromptBackplane
+//       kCloseButton
+//       kUrlBar
+//         kLoadingIndicator
+//         kExitButton
+//     kFullscreenToast
+//     kScreenDimmer
+//     k2dBrowsingViewportAwareRoot
+//       kExitWarning
+//   kWebVrRoot
+//     kWebVrViewportAwareRoot
+//       kSplashScreenText
+//         kSplashScreenBackground
+//       kExclusiveScreenToastViewportAware
+//       kWebVrPermanentHttpSecurityWarning
+//       kWebVrTransientHttpSecurityWarning
+//       kWebVrUrlToast
+//
+// TODO(vollick): The above hierarchy is complex, brittle, and would be easier
+// to manage if it were specified in a declarative format.
 class UiSceneManager {
  public:
   UiSceneManager(UiBrowserInterface* browser,
@@ -124,7 +168,7 @@ class UiSceneManager {
   Rect* ceiling_ = nullptr;
   Grid* floor_ = nullptr;
   UiElement* close_button_ = nullptr;
-  Text* splash_screen_text_ = nullptr;
+  UiElement* splash_screen_ = nullptr;
   UrlBar* url_bar_ = nullptr;
   WebVrUrlToast* webvr_url_toast_ = nullptr;
   LoadingIndicator* loading_indicator_ = nullptr;

@@ -14,7 +14,6 @@ namespace vr {
 const float ViewportAwareRoot::kViewportRotationTriggerDegrees = 55.0f;
 
 ViewportAwareRoot::ViewportAwareRoot() {
-  set_viewport_aware(true);
   SetTransitionedProperties({OPACITY});
 }
 
@@ -22,7 +21,6 @@ ViewportAwareRoot::~ViewportAwareRoot() = default;
 
 void ViewportAwareRoot::AdjustRotationForHeadPose(
     const gfx::Vector3dF& look_at) {
-  DCHECK(viewport_aware());
   DCHECK(!look_at.IsZero());
 
   gfx::Vector3dF rotated_center_vector{0.f, 0.f, -1.0f};

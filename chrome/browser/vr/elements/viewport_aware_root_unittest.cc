@@ -124,7 +124,6 @@ class ViewportAwareRootTest : public testing::Test {
     scene_->AddUiElement(kRoot, std::move(viewport_aware_root));
 
     auto element = base::MakeUnique<UiElement>();
-    element->set_viewport_aware(true);
     element->set_draw_phase(kPhaseForeground);
     element->SetTranslate(0.f, 0.f, -1.f);
     viewport_element = element.get();
