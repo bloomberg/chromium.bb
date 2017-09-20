@@ -18,7 +18,9 @@
         android:orientation="horizontal"
         android:background="@color/accessibility_tab_switcher_list_item"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="gone" >
+
         <ImageView
             android:id="@+id/tab_favicon"
             android:layout_width="wrap_content"
@@ -52,6 +54,20 @@
             android:src="@drawable/btn_close"
             chrome:chrometint="@color/light_mode_tint"
             android:gravity="end|center_vertical" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/tab_contents_modern"
+        style="@style/ListItemContainer"
+        android:visibility="gone" >
+
+        <include layout="@layout/modern_list_item_view" />
+
+        <org.chromium.chrome.browser.widget.TintedImageButton
+            android:id="@+id/close_btn_modern"
+            style="@style/ListItemEndIcon"
+            android:src="@drawable/btn_close"
+            chrome:chrometint="@color/dark_mode_tint" />
     </LinearLayout>
 
     <LinearLayout

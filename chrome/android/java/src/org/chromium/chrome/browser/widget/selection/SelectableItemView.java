@@ -52,8 +52,8 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
         super(context, attrs);
         mIconColorList =
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.white_mode_tint);
-        mDefaultLevel = getResources().getInteger(R.integer.selectable_item_level_default);
-        mSelectedLevel = getResources().getInteger(R.integer.selectable_item_level_selected);
+        mDefaultLevel = getResources().getInteger(R.integer.list_item_level_default);
+        mSelectedLevel = getResources().getInteger(R.integer.list_item_level_selected);
     }
 
     /**
@@ -103,7 +103,7 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
         mDescriptionView = findViewById(R.id.description);
 
         if (mIconView != null) {
-            mIconView.setBackgroundResource(R.drawable.selectable_item_icon_modern_bg);
+            mIconView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
             mIconView.setTint(null);
             if (!FeatureUtilities.isChromeHomeModernEnabled()) {
                 mIconView.getBackground().setAlpha(0);

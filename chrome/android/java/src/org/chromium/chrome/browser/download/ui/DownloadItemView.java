@@ -77,7 +77,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
                 getResources().getDimensionPixelSize(R.dimen.list_item_start_icon_corner_radius);
         mCheckedIconForegroundColorList = DownloadUtils.getIconForegroundColorList(context);
 
-        mIconBackgroundResId = R.drawable.selectable_item_icon_modern_bg;
+        mIconBackgroundResId = R.drawable.list_item_icon_modern_bg;
 
         if (FeatureUtilities.isChromeHomeModernEnabled()) {
             mIconForegroundColorList = ApiCompatibilityUtils.getColorStateList(
@@ -253,7 +253,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             if (FeatureUtilities.isChromeHomeModernEnabled()) {
                 mIconView.setBackgroundResource(mIconBackgroundResId);
                 mIconView.getBackground().setLevel(
-                        getResources().getInteger(R.integer.selectable_item_level_selected));
+                        getResources().getInteger(R.integer.list_item_level_selected));
             } else {
                 mIconView.setBackgroundColor(mIconBackgroundColorSelected);
             }
@@ -276,7 +276,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             if (FeatureUtilities.isChromeHomeModernEnabled()) {
                 mIconView.setBackgroundResource(mIconBackgroundResId);
                 mIconView.getBackground().setLevel(
-                        getResources().getInteger(R.integer.selectable_item_level_default));
+                        getResources().getInteger(R.integer.list_item_level_default));
             } else {
                 mIconView.setBackgroundColor(mIconBackgroundColor);
             }

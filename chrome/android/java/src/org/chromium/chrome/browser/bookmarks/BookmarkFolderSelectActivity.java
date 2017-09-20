@@ -351,7 +351,7 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
             }
 
             if (FeatureUtilities.isChromeHomeModernEnabled()) {
-                startIcon.setBackgroundResource(R.drawable.selectable_item_icon_modern_bg);
+                startIcon.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
                 startIcon.setImageDrawable(entry.mIsSelected
                                 ? TintedDrawable.constructTintedDrawable(view.getResources(),
                                           R.drawable.ic_check_googblue_24dp,
@@ -359,10 +359,9 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
                                 : TintedDrawable.constructTintedDrawable(
                                           view.getResources(), iconId));
                 startIcon.getBackground().setLevel(entry.mIsSelected
-                                ? view.getResources().getInteger(
-                                          R.integer.selectable_item_level_selected)
+                                ? view.getResources().getInteger(R.integer.list_item_level_selected)
                                 : view.getResources().getInteger(
-                                          R.integer.selectable_item_level_default));
+                                          R.integer.list_item_level_default));
                 endIcon.setVisibility(View.GONE);
             } else {
                 // Selected entry has an end_icon, a blue check mark.

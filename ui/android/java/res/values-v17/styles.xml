@@ -134,6 +134,14 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
+    <style name="WhiteDenseListText1" tools:ignore="UnusedResources">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">@dimen/text_size_medium_dense</item>
+    </style>
+    <style name="WhiteDenseListText2" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/white_alpha_70</item>
+        <item name="android:textSize">@dimen/text_size_medium_dense</item>
+    </style>
     <style name="WhiteLink" tools:ignore="UnusedResources">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_medium</item>

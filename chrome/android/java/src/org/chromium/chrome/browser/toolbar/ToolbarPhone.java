@@ -2262,8 +2262,10 @@ public class ToolbarPhone extends ToolbarLayout
         getProgressBar().setThemeColor(themeColorForProgressBar, isIncognito());
 
         if (inOrEnteringTabSwitcher) {
+            assert mVisualState == VisualState.TAB_SWITCHER_NORMAL
+                    || mVisualState == VisualState.TAB_SWITCHER_INCOGNITO;
             mUseLightToolbarDrawables = ColorUtils.shouldUseLightForegroundOnBackground(
-                    getToolbarColorForVisualState(VisualState.TAB_SWITCHER_NORMAL));
+                    getToolbarColorForVisualState(mVisualState));
             mLocationBarBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
             getProgressBar().setBackgroundColor(mProgressBackBackgroundColorWhite);
             getProgressBar().setForegroundColor(ApiCompatibilityUtils.getColor(getResources(),
