@@ -57,10 +57,6 @@ class Notification : public message_center::Notification {
   // The service worker scope if the notification was displayed by a service
   // worker. Used by WebAPKs.
   GURL service_worker_scope_;
-
-  // A proxy object that allows access back to the JavaScript object that
-  // represents the notification, for firing events.
-  scoped_refptr<message_center::NotificationDelegate> delegate_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_H_

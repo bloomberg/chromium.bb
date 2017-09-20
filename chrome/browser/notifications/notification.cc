@@ -26,21 +26,18 @@ Notification::Notification(
                                    notifier_id,
                                    rich_notification_data,
                                    delegate),
-      tag_(tag),
-      delegate_(delegate) {}
+      tag_(tag) {}
 
 Notification::Notification(const std::string& id,
                            const Notification& notification)
     : message_center::Notification(id, notification),
       tag_(notification.tag()),
-      service_worker_scope_(notification.service_worker_scope()),
-      delegate_(notification.delegate_) {}
+      service_worker_scope_(notification.service_worker_scope()) {}
 
 Notification::Notification(const Notification& notification)
     : message_center::Notification(notification),
       tag_(notification.tag()),
-      service_worker_scope_(notification.service_worker_scope()),
-      delegate_(notification.delegate_) {}
+      service_worker_scope_(notification.service_worker_scope()) {}
 
 Notification::~Notification() {}
 
@@ -48,6 +45,5 @@ Notification& Notification::operator=(const Notification& notification) {
   message_center::Notification::operator=(notification);
   tag_ = notification.tag();
   service_worker_scope_ = notification.service_worker_scope();
-  delegate_ = notification.delegate_;
   return *this;
 }
