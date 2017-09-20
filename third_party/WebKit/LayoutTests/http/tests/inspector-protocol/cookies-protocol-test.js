@@ -172,11 +172,5 @@
 
     deleteAllCookies,
 
-    async function nonUnicodeCookie() {
-      await setCookies([{name: 'cookie1', value: 'привет', domain: '.chromium.org', path: '/path' }]);
-    },
-
-    deleteAllCookies,
-
   ]);
 })
