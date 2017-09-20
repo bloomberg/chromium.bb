@@ -47,8 +47,8 @@ ModuleScript* ModuleScript::Create(
 
   // Delegate to Modulator::CompileModule to process Steps 3-5.
   ScriptModule result = modulator->CompileModule(
-      source_text, base_url.GetString(), access_control_status, start_position,
-      exception_state);
+      source_text, base_url.GetString(), access_control_status,
+      credentials_mode, nonce, parser_state, start_position, exception_state);
 
   // CreateInternal processes Steps 8-13.
   // [nospec] We initialize the other ModuleScript members anyway by running

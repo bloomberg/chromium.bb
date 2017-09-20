@@ -39,6 +39,11 @@ class CORE_EXPORT ReferrerScriptInfo {
   const String& Nonce() const { return nonce_; }
   ParserDisposition ParserState() const { return parser_state_; }
 
+  bool IsDefaultValue() const {
+    return credentials_mode_ == WebURLRequest::kFetchCredentialsModeOmit &&
+           nonce_.IsEmpty() && parser_state_ == kNotParserInserted;
+  }
+
  private:
   // Spec: "referencing script's credentials mode"
   // The default value is "omit", from Step 5 of [HIMD].

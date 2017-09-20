@@ -56,6 +56,9 @@ class DummyModulator : public Modulator {
   ScriptModule CompileModule(const String& script,
                              const String& url_str,
                              AccessControlStatus,
+                             WebURLRequest::FetchCredentialsMode,
+                             const String& nonce,
+                             ParserDisposition,
                              const TextPosition&,
                              ExceptionState&) override;
   ScriptValue InstantiateModule(ScriptModule) override;

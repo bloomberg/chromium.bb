@@ -26,6 +26,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 
 #include "bindings/core/v8/BindingSecurity.h"
+#include "bindings/core/v8/ReferrerScriptInfo.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -456,7 +457,8 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     ScriptStreamer* streamer,
     CachedMetadataHandler* cache_handler,
     AccessControlStatus access_control_status,
-    V8CacheOptions cache_options) {
+    V8CacheOptions cache_options,
+    const ReferrerScriptInfo& referrer_info) {
   TRACE_EVENT2(
       "v8,devtools.timeline", "v8.compile", "fileName", file_name.Utf8(),
       "data",
@@ -474,13 +476,17 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
   // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
   // 1, whereas v8 starts at 0.
   v8::Isolate* isolate = script_state->GetIsolate();
+
   v8::ScriptOrigin origin(
       V8String(isolate, file_name),
       v8::Integer::New(isolate, script_start_position.line_.ZeroBasedInt()),
       v8::Integer::New(isolate, script_start_position.column_.ZeroBasedInt()),
       v8::Boolean::New(isolate, access_control_status == kSharableCrossOrigin),
       v8::Local<v8::Integer>(), V8String(isolate, source_map_url),
-      v8::Boolean::New(isolate, access_control_status == kOpaqueResource));
+      v8::Boolean::New(isolate, access_control_status == kOpaqueResource),
+      v8::False(isolate),  // is_wasm
+      v8::False(isolate),  // is_module
+      referrer_info.ToV8HostDefinedOptions(isolate));
 
   V8CompileHistogram::Cacheability cacheability_if_no_handler =
       V8CompileHistogram::Cacheability::kNoncacheable;
@@ -506,10 +512,10 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
     const String& source,
     const String& file_name,
     AccessControlStatus access_control_status,
-    const TextPosition& start_position) {
+    const TextPosition& start_position,
+    const ReferrerScriptInfo& referrer_info) {
   TRACE_EVENT1("v8", "v8.compileModule", "fileName", file_name.Utf8());
-  // TODO(adamk): Add Inspector integration?
-  // TODO(adamk): Pass more info into ScriptOrigin.
+
   v8::ScriptOrigin origin(
       V8String(isolate, file_name),
       v8::Integer::New(isolate, start_position.line_.ZeroBasedInt()),
@@ -519,7 +525,8 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
       v8::String::Empty(isolate),  // source_map_url
       v8::Boolean::New(isolate, access_control_status == kOpaqueResource),
       v8::False(isolate),  // is_wasm
-      v8::True(isolate));  // is_module
+      v8::True(isolate),   // is_module
+      referrer_info.ToV8HostDefinedOptions(isolate));
 
   v8::ScriptCompiler::Source script_source(V8String(isolate, source), origin);
   return v8::ScriptCompiler::CompileModule(isolate, &script_source);

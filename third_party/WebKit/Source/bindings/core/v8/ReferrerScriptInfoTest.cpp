@@ -10,8 +10,19 @@
 
 namespace blink {
 
+TEST(ReferrerScriptInfo, IsDefaultValue) {
+  EXPECT_TRUE(ReferrerScriptInfo().IsDefaultValue());
+  EXPECT_FALSE(ReferrerScriptInfo(WebURLRequest::kFetchCredentialsModePassword,
+                                  "", kNotParserInserted)
+                   .IsDefaultValue());
+}
+
 TEST(ReferrerScriptInfo, ToFromV8) {
   V8TestingScope scope;
+
+  EXPECT_TRUE(ReferrerScriptInfo()
+                  .ToV8HostDefinedOptions(scope.GetIsolate())
+                  .IsEmpty());
 
   ReferrerScriptInfo info(WebURLRequest::kFetchCredentialsModePassword,
                           "foobar", kNotParserInserted);
