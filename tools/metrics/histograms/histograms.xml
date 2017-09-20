@@ -99812,6 +99812,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PageLoadMetricsClientsLoadingPredictor" separator="."
+    ordering="prefix">
+  <suffix base="true" name="Clients.LoadingPredictor"
+      label="PageLoadMetrics with enabled LoadingPredictor"/>
+  <affected-histogram
+      name="PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClientsLoadingPredictorPredictionType"
+    separator=".">
+  <suffix name="Preconnectable"
+      label="The predictor database contained origins for preconnecting for a
+             page"/>
+  <affected-histogram
+      name="PageLoad.Clients.LoadingPredictor.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.LoadingPredictor.PaintTiming.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PageLoadMetricsClientsLoFi" separator="."
     ordering="prefix">
   <suffix name="Clients.LoFi"

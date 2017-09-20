@@ -244,6 +244,11 @@ bool ResourcePrefetchPredictor::IsUrlPrefetchable(
   return GetPrefetchData(main_frame_url, nullptr);
 }
 
+bool ResourcePrefetchPredictor::IsUrlPreconnectable(
+    const GURL& main_frame_url) const {
+  return PredictPreconnectOrigins(main_frame_url, nullptr);
+}
+
 bool ResourcePrefetchPredictor::IsResourcePrefetchable(
     const ResourceData& resource) const {
   float confidence = static_cast<float>(resource.number_of_hits()) /
@@ -343,9 +348,8 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
 bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
     const GURL& url,
     PreconnectPrediction* prediction) const {
-  DCHECK(prediction);
-  DCHECK(prediction->preconnect_origins.empty());
-  DCHECK(prediction->preresolve_hosts.empty());
+  DCHECK(!prediction || (prediction->preconnect_origins.empty() &&
+                         prediction->preresolve_hosts.empty()));
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (initialization_state_ != INITIALIZED)
     return false;
@@ -359,20 +363,28 @@ bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
   if (!origin_data_->TryGetData(redirect_endpoint, &data))
     return false;
 
-  prediction->host = redirect_endpoint;
-  prediction->is_redirected = (host != redirect_endpoint);
+  if (prediction) {
+    prediction->host = redirect_endpoint;
+    prediction->is_redirected = (host != redirect_endpoint);
+  }
+
+  bool has_any_prediction = false;
   for (const OriginStat& origin : data.origins()) {
     float confidence = static_cast<float>(origin.number_of_hits()) /
                        (origin.number_of_hits() + origin.number_of_misses());
-    if (confidence > kMinOriginConfidenceToTriggerPreconnect) {
-      prediction->preconnect_origins.emplace_back(origin.origin());
-    } else if (confidence > kMinOriginConfidenceToTriggerPreresolve) {
-      prediction->preresolve_hosts.emplace_back(origin.origin());
+    if (confidence < kMinOriginConfidenceToTriggerPreresolve)
+      continue;
+
+    has_any_prediction = true;
+    if (prediction) {
+      if (confidence > kMinOriginConfidenceToTriggerPreconnect)
+        prediction->preconnect_origins.emplace_back(origin.origin());
+      else
+        prediction->preresolve_hosts.emplace_back(origin.origin());
     }
   }
 
-  return !prediction->preconnect_origins.empty() ||
-         !prediction->preresolve_hosts.empty();
+  return has_any_prediction;
 }
 
 bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(

@@ -22,6 +22,12 @@ const char kHistogramResourcePrefetchPredictorFirstContentfulPaint[] =
 const char kHistogramResourcePrefetchPredictorFirstMeaningfulPaint[] =
     "PageLoad.Clients.ResourcePrefetchPredictor.Experimental.PaintTiming."
     "NavigationToFirstMeaningfulPaint.Prefetchable";
+const char kHistogramLoadingPredictorFirstContentfulPaintPreconnectable[] =
+    "PageLoad.Clients.LoadingPredictor.PaintTiming."
+    "NavigationToFirstContentfulPaint.Preconnectable";
+const char kHistogramLoadingPredictorFirstMeaningfulPaintPreconnectable[] =
+    "PageLoad.Clients.LoadingPredictor.Experimental.PaintTiming."
+    "NavigationToFirstMeaningfulPaint.Preconnectable";
 
 }  // namespace internal
 
@@ -46,7 +52,8 @@ LoadingPredictorPageLoadMetricsObserver::
     : predictor_(predictor),
       collector_(collector),
       web_contents_(web_contents),
-      record_histograms_(false) {
+      record_histogram_prefetchable_(false),
+      record_histogram_preconnectable_(false) {
   DCHECK(predictor_);
   DCHECK(collector_);
 }
@@ -59,9 +66,12 @@ LoadingPredictorPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_commited_url,
     bool started_in_foreground) {
-  record_histograms_ =
+  record_histogram_prefetchable_ =
       started_in_foreground &&
       predictor_->IsUrlPrefetchable(navigation_handle->GetURL());
+  record_histogram_preconnectable_ =
+      started_in_foreground &&
+      predictor_->IsUrlPreconnectable(navigation_handle->GetURL());
 
   return CONTINUE_OBSERVING;
 }
@@ -70,7 +80,8 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 LoadingPredictorPageLoadMetricsObserver::OnHidden(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  record_histograms_ = false;
+  record_histogram_prefetchable_ = false;
+  record_histogram_preconnectable_ = false;
   return CONTINUE_OBSERVING;
 }
 
@@ -82,9 +93,14 @@ void LoadingPredictorPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
   collector_->RecordFirstContentfulPaint(
       navigation_id, extra_info.navigation_start +
                          timing.paint_timing->first_contentful_paint.value());
-  if (record_histograms_) {
+  if (record_histogram_prefetchable_) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramResourcePrefetchPredictorFirstContentfulPaint,
+        timing.paint_timing->first_contentful_paint.value());
+  }
+  if (record_histogram_preconnectable_) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramLoadingPredictorFirstContentfulPaintPreconnectable,
         timing.paint_timing->first_contentful_paint.value());
   }
 }
@@ -93,9 +109,14 @@ void LoadingPredictorPageLoadMetricsObserver::
     OnFirstMeaningfulPaintInMainFrameDocument(
         const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (record_histograms_) {
+  if (record_histogram_prefetchable_) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramResourcePrefetchPredictorFirstMeaningfulPaint,
+        timing.paint_timing->first_meaningful_paint.value());
+  }
+  if (record_histogram_preconnectable_) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramLoadingPredictorFirstMeaningfulPaintPreconnectable,
         timing.paint_timing->first_meaningful_paint.value());
   }
 }
