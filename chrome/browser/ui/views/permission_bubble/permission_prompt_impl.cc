@@ -76,7 +76,6 @@ class PermissionsBubbleDialogDelegateView
   base::string16 GetAccessibleWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
-  void AddedToWidget() override;
   void OnWidgetDestroying(views::Widget* widget) override;
   bool Cancel() override;
   bool Accept() override;
@@ -187,14 +186,6 @@ bool PermissionsBubbleDialogDelegateView::ShouldShowCloseButton() const {
 base::string16 PermissionsBubbleDialogDelegateView::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
                                     display_origin_);
-}
-
-void PermissionsBubbleDialogDelegateView::AddedToWidget() {
-  std::unique_ptr<views::Label> title =
-      views::BubbleFrameView::CreateDefaultTitleLabel(GetWindowTitle());
-  title->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::BaseFont));
-  GetBubbleFrameView()->SetTitleView(std::move(title));
 }
 
 void PermissionsBubbleDialogDelegateView::SizeToContents() {
