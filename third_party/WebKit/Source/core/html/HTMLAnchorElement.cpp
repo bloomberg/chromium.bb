@@ -27,6 +27,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -307,20 +308,31 @@ bool HTMLAnchorElement::IsLiveLink() const {
 void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
   const AtomicString& ping_value = getAttribute(pingAttr);
   if (ping_value.IsNull() || !GetDocument().GetSettings() ||
-      !GetDocument().GetSettings()->GetHyperlinkAuditingEnabled())
+      !GetDocument().GetSettings()->GetHyperlinkAuditingEnabled()) {
     return;
+  }
 
   // Pings should not be sent if MHTML page is loaded.
   if (GetDocument().Fetcher()->Archive())
     return;
 
+  if ((ping_value.Contains('\n') || ping_value.Contains('\r') ||
+       ping_value.Contains('\t')) &&
+      ping_value.Contains('<')) {
+    Deprecation::CountDeprecation(
+        GetDocument(), WebFeature::kCanRequestURLHTTPContainingNewline);
+    if (RuntimeEnabledFeatures::RestrictCanRequestURLCharacterSetEnabled())
+      return;
+  }
+
   UseCounter::Count(GetDocument(), WebFeature::kHTMLAnchorElementPingAttribute);
 
   SpaceSplitString ping_urls(ping_value);
-  for (unsigned i = 0; i < ping_urls.size(); i++)
+  for (unsigned i = 0; i < ping_urls.size(); i++) {
     PingLoader::SendLinkAuditPing(GetDocument().GetFrame(),
                                   GetDocument().CompleteURL(ping_urls[i]),
                                   destination_url);
+  }
 }
 
 void HTMLAnchorElement::HandleClick(Event* event) {
