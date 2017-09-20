@@ -102,6 +102,13 @@ bool DummyModulator::HasValidContext() {
   return true;
 }
 
+void DummyModulator::ResolveDynamically(const String&,
+                                        const String&,
+                                        const ReferrerScriptInfo&,
+                                        ScriptPromiseResolver*) {
+  NOTREACHED();
+}
+
 ScriptModule DummyModulator::CompileModule(const String& script,
                                            const String& url_str,
                                            AccessControlStatus,

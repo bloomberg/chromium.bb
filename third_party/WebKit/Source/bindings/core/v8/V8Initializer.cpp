@@ -28,9 +28,11 @@
 #include <memory>
 
 #include "bindings/core/v8/BindingSecurity.h"
+#include "bindings/core/v8/ReferrerScriptInfo.h"
 #include "bindings/core/v8/RejectedPromises.h"
 #include "bindings/core/v8/RetainedDOMInfo.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/UseCounterCallback.h"
@@ -44,6 +46,7 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/Modulator.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -374,6 +377,35 @@ static bool WasmInstanceOverride(
   return false;
 }
 
+static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::ScriptOrModule> v8_referrer,
+    v8::Local<v8::String> v8_specifier) {
+  CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled() &&
+        RuntimeEnabledFeatures::ModuleScriptsDynamicImportEnabled());
+  ScriptState* script_state = ScriptState::From(context);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  Modulator* modulator = Modulator::From(script_state);
+  if (!modulator) {
+    resolver->Reject();
+    return v8::Local<v8::Promise>::Cast(promise.V8Value());
+  }
+
+  String specifier = ToCoreStringWithNullCheck(v8_specifier);
+  v8::Local<v8::Value> v8_referrer_url = v8_referrer->GetResourceName();
+  String referrer_url;
+  if (v8_referrer_url->IsString())
+    referrer_url = ToCoreString(v8::Local<v8::String>::Cast(v8_referrer_url));
+  ReferrerScriptInfo referrer_info =
+      ReferrerScriptInfo::FromV8HostDefinedOptions(
+          context, v8_referrer->GetHostDefinedOptions());
+  modulator->ResolveDynamically(specifier, referrer_url, referrer_info,
+                                resolver);
+  return v8::Local<v8::Promise>::Cast(promise.V8Value());
+}
+
 static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->AddGCPrologueCallback(V8GCController::GcPrologue);
   isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
@@ -389,6 +421,11 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetUseCounterCallback(&UseCounterCallback);
   isolate->SetWasmModuleCallback(WasmModuleOverride);
   isolate->SetWasmInstanceCallback(WasmInstanceOverride);
+  if (RuntimeEnabledFeatures::ModuleScriptsEnabled() &&
+      RuntimeEnabledFeatures::ModuleScriptsDynamicImportEnabled()) {
+    isolate->SetHostImportModuleDynamicallyCallback(
+        HostImportModuleDynamically);
+  }
 
   V8ContextSnapshot::EnsureInterfaceTemplates(isolate);
 }
