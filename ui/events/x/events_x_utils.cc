@@ -818,6 +818,10 @@ bool GetFlingDataFromXEvent(const XEvent& xev,
   return true;
 }
 
+bool IsAltPressed() {
+  return XModifierStateWatcher::GetInstance()->state() & Mod1Mask;
+}
+
 void ResetTimestampRolloverCountersForTesting(
     std::unique_ptr<base::TickClock> tick_clock) {
   g_last_seen_timestamp_ms = 0;
