@@ -8,11 +8,11 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -545,7 +545,7 @@ class ChannelAssociatedGroupController
     scoped_refptr<base::SequencedTaskRunner> task_runner_;
     std::unique_ptr<mojo::SyncEventWatcher> sync_watcher_;
     std::unique_ptr<base::WaitableEvent> sync_message_event_;
-    std::queue<std::pair<uint32_t, MessageWrapper>> sync_messages_;
+    base::queue<std::pair<uint32_t, MessageWrapper>> sync_messages_;
     uint32_t next_sync_message_id_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Endpoint);

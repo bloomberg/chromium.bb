@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_CONFLICTS_MODULE_INSPECTOR_WIN_H_
 
 #include <memory>
-#include <queue>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -61,7 +61,7 @@ class ModuleInspector {
   OnModuleInspectedCallback on_module_inspected_callback_;
 
   // The modules are put in queue until they are sent for inspection.
-  std::queue<ModuleInfoKey> queue_;
+  base::queue<ModuleInfoKey> queue_;
 
   // The TaskPriority of the task that inspects the modules. It originally
   // starts at BACKGROUND priority, but is changed to USER_VISIBLE when

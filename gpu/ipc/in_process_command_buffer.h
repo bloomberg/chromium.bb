@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -368,7 +369,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     base::Closure callback;
     uint32_t order_number;
   };
-  std::queue<std::unique_ptr<GpuTask>> task_queue_;
+  base::queue<std::unique_ptr<GpuTask>> task_queue_;
 
   SwapBuffersCompletionCallback swap_buffers_completion_callback_;
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;

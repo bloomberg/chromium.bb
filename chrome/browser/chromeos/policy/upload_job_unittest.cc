@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
-#include <queue>
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -87,7 +87,7 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
   void SetTokenInvalid(const std::string& token);
 
  private:
-  std::queue<std::string> token_replies_;
+  base::queue<std::string> token_replies_;
   std::set<std::string> valid_tokens_;
 
   DISALLOW_COPY_AND_ASSIGN(MockOAuth2TokenService);

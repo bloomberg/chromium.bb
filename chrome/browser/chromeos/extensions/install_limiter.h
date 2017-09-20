@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <queue>
 #include <set>
 
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -52,8 +52,8 @@ class InstallLimiter : public KeyedService,
     const base::FilePath path;
   };
 
-  typedef std::queue<DeferredInstall> DeferredInstallList;
-  typedef std::set<scoped_refptr<CrxInstaller> > CrxInstallerSet;
+  using DeferredInstallList = base::queue<DeferredInstall>;
+  using CrxInstallerSet = std::set<scoped_refptr<CrxInstaller>>;
 
   // Adds install info with size. If |size| is greater than a certain threshold,
   // it stores the install info into |deferred_installs_| to run it later.

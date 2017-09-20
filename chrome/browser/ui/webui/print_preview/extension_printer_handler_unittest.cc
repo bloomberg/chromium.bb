@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
@@ -428,12 +428,12 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
   }
 
  private:
-  std::queue<PrinterProviderAPI::GetPrintersCallback>
+  base::queue<PrinterProviderAPI::GetPrintersCallback>
       pending_printers_callbacks_;
-  std::queue<PrinterProviderAPI::GetCapabilityCallback>
+  base::queue<PrinterProviderAPI::GetCapabilityCallback>
       pending_capability_callbacks_;
-  std::queue<PrintRequestInfo> pending_print_requests_;
-  std::queue<PrinterProviderAPI::GetPrinterInfoCallback>
+  base::queue<PrintRequestInfo> pending_print_requests_;
+  base::queue<PrinterProviderAPI::GetPrinterInfoCallback>
       pending_usb_info_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePrinterProviderAPI);

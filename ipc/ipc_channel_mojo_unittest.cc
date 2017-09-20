@@ -13,6 +13,7 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/queue.h"
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -1226,7 +1227,7 @@ TEST_F(IPCChannelProxyMojoTest, Pause) {
 
 class ExpectValueSequenceListener : public IPC::Listener {
  public:
-  explicit ExpectValueSequenceListener(std::queue<int32_t>* expected_values)
+  explicit ExpectValueSequenceListener(base::queue<int32_t>* expected_values)
       : expected_values_(expected_values) {}
   ~ExpectValueSequenceListener() override {}
 
@@ -1244,14 +1245,14 @@ class ExpectValueSequenceListener : public IPC::Listener {
   }
 
  private:
-  std::queue<int32_t>* expected_values_;
+  base::queue<int32_t>* expected_values_;
 
   DISALLOW_COPY_AND_ASSIGN(ExpectValueSequenceListener);
 };
 
 DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(CreatePausedClient,
                                                         ChannelProxyClient) {
-  std::queue<int32_t> expected_values;
+  base::queue<int32_t> expected_values;
   ExpectValueSequenceListener listener(&expected_values);
   CreateProxy(&listener);
   expected_values.push(1);

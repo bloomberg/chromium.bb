@@ -9,12 +9,12 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/object_path.h"
@@ -235,15 +235,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // typedef for callback parameters that are passed to AddDiscoverySession
   // and RemoveDiscoverySession. This is used to queue incoming requests while
   // a call to BlueZ is pending.
-  typedef std::tuple<device::BluetoothDiscoveryFilter*,
-                     base::Closure,
-                     DiscoverySessionErrorCallback>
-      DiscoveryParamTuple;
-  typedef std::queue<DiscoveryParamTuple> DiscoveryCallbackQueue;
+  using DiscoveryParamTuple = std::tuple<device::BluetoothDiscoveryFilter*,
+                                         base::Closure,
+                                         DiscoverySessionErrorCallback>;
+  using DiscoveryCallbackQueue = base::queue<DiscoveryParamTuple>;
 
   // Callback pair for the profile registration queue.
-  typedef std::pair<base::Closure, ErrorCompletionCallback>
-      RegisterProfileCompletionPair;
+  using RegisterProfileCompletionPair =
+      std::pair<base::Closure, ErrorCompletionCallback>;
 
   explicit BluetoothAdapterBlueZ(const InitCallback& init_callback);
   ~BluetoothAdapterBlueZ() override;

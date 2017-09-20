@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/stream_handle.h"
@@ -36,7 +37,7 @@ class TestStreamHandle : public content::StreamHandle {
 
  private:
   GURL url_;
-  std::queue<base::Closure> close_callbacks_;
+  base::queue<base::Closure> close_callbacks_;
 };
 
 class MimeHandlerServiceImplTest : public testing::Test {

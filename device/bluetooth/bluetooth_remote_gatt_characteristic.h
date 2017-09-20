@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
-#include <queue>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -224,7 +224,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
       BluetoothRemoteGattService::GattErrorCode error);
 
   // Pending StartNotifySession / StopNotifySession calls.
-  std::queue<std::unique_ptr<NotifySessionCommand>> pending_notify_commands_;
+  base::queue<std::unique_ptr<NotifySessionCommand>> pending_notify_commands_;
 
   // Set of active notify sessions.
   std::set<BluetoothGattNotifySession*> notify_sessions_;

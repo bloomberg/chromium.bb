@@ -5,10 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_API_SYSTEM_INFO_SYSTEM_INFO_PROVIDER_H_
 #define EXTENSIONS_BROWSER_API_SYSTEM_INFO_SYSTEM_INFO_PROVIDER_H_
 
-#include <queue>
-
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
@@ -39,8 +38,8 @@ class SystemInfoProvider
   // Callback type for completing to get information. The argument indicates
   // whether its contents are valid, for example, no error occurs in querying
   // the information.
-  typedef base::Callback<void(bool)> QueryInfoCompletionCallback;
-  typedef std::queue<QueryInfoCompletionCallback> CallbackQueue;
+  using QueryInfoCompletionCallback = base::Callback<void(bool)>;
+  using CallbackQueue = base::queue<QueryInfoCompletionCallback>;
 
   SystemInfoProvider();
 

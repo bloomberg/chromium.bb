@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <queue>
-
 #import "chrome/browser/ui/cocoa/content_settings/cookies_tree_controller_bridge.h"
+#include "base/containers/queue.h"
 
 CookiesTreeControllerBridge::CookiesTreeControllerBridge(
     CookiesTreeModel* model)
@@ -77,7 +76,7 @@ CocoaCookieTreeNode* CookiesTreeControllerBridge::FindCocoaNode(
   }
 
   // Enqueue the root node of the search (sub-)tree.
-  std::queue<CocoaCookieTreeNode*> horizon;
+  base::queue<CocoaCookieTreeNode*> horizon;
   horizon.push(start);
 
   // Loop until we've looked at every node or we found the target.

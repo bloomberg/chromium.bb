@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FAKE_DISK_MOUNT_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FAKE_DISK_MOUNT_MANAGER_H_
 
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -102,7 +102,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
 
  private:
   base::ObserverList<Observer> observers_;
-  std::queue<UnmountPathCallback> pending_unmount_callbacks_;
+  base::queue<UnmountPathCallback> pending_unmount_callbacks_;
 
   DiskMap disks_;
   MountPointMap mount_points_;

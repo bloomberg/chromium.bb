@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
-#include <queue>
 #include <string>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "extensions/browser/api/api_resource.h"
@@ -148,7 +148,7 @@ class Socket : public ApiResource {
     CompletionCallback callback;
     int bytes_written;
   };
-  std::queue<WriteRequest> write_queue_;
+  base::queue<WriteRequest> write_queue_;
   scoped_refptr<net::IOBuffer> io_buffer_write_;
 
 #if defined(OS_CHROMEOS)

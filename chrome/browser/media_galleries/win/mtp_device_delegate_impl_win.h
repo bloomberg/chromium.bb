@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/files/file.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -254,7 +254,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
 
   // A list of pending tasks that needs to be run when the device is
   // initialized or when the current task in progress is complete.
-  std::queue<PendingTaskInfo> pending_tasks_;
+  base::queue<PendingTaskInfo> pending_tasks_;
 
   // Used to make sure only one task is in progress at any time.
   bool task_in_progress_;

@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/command_line.h"
+#include "base/containers/circular_deque.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -67,7 +67,7 @@ struct SwReporterInvocation {
   bool BehaviourIsSupported(Behaviours intended_behaviour) const;
 };
 
-using SwReporterQueue = std::queue<SwReporterInvocation>;
+using SwReporterQueue = base::circular_deque<SwReporterInvocation>;
 
 // Tries to run the sw_reporter component, and then schedule the next try. If
 // called multiple times, then multiple sequences of trying to run will happen,

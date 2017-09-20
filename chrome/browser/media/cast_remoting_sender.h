@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_CAST_REMOTING_SENDER_H_
 #define CHROME_BROWSER_MEDIA_CAST_REMOTING_SENDER_H_
 
-#include <queue>
-
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
@@ -196,7 +195,7 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   // Queue of pending input operations. |input_queue_discards_remaining_|
   // indicates the number of operations where data should be discarded (due to
   // CancelInFlightData()).
-  std::queue<base::Callback<bool(bool)>> input_queue_;
+  base::queue<base::Callback<bool(bool)>> input_queue_;
   size_t input_queue_discards_remaining_;
 
   // Watches |pipe_| for more data to become available, and then calls

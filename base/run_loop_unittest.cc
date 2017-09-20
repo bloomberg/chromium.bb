@@ -4,11 +4,11 @@
 
 #include "base/run_loop.h"
 
-#include <queue>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -106,7 +106,7 @@ class SimpleSingleThreadTaskRunner : public SingleThreadTaskRunner {
   ~SimpleSingleThreadTaskRunner() override = default;
 
   Lock tasks_lock_;
-  std::queue<OnceClosure> pending_tasks_;
+  base::queue<OnceClosure> pending_tasks_;
 
   // RunLoop relies on RunsTasksInCurrentSequence() signal. Use a
   // ThreadCheckerImpl to be able to reliably provide that signal even in

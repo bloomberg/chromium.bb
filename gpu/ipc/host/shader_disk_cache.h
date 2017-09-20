@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
-#include <queue>
 #include <string>
 #include <unordered_map>
 
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -153,7 +153,7 @@ class ShaderCacheFactory : public base::ThreadChecker {
   using ClientIdToPathMap = std::map<int32_t, base::FilePath>;
   ClientIdToPathMap client_id_to_path_map_;
 
-  using ShaderClearQueue = std::queue<std::unique_ptr<ShaderClearHelper>>;
+  using ShaderClearQueue = base::queue<std::unique_ptr<ShaderClearHelper>>;
   using ShaderClearMap = std::map<base::FilePath, ShaderClearQueue>;
   ShaderClearMap shader_clear_map_;
 

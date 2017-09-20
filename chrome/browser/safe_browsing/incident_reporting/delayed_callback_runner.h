@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_DELAYED_CALLBACK_RUNNER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_DELAYED_CALLBACK_RUNNER_H_
 
-#include <queue>
-
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
@@ -38,7 +37,7 @@ class DelayedCallbackRunner {
   void Start();
 
  private:
-  using CallbackList = std::queue<base::Closure>;
+  using CallbackList = base::queue<base::Closure>;
 
   // A callback invoked by the timer to run the next callback. The timer is
   // restarted to process the next callback if there is one.

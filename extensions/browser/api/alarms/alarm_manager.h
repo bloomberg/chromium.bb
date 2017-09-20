@@ -6,11 +6,11 @@
 #define EXTENSIONS_BROWSER_API_ALARMS_ALARM_MANAGER_H_
 
 #include <map>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -136,11 +136,11 @@ class AlarmManager : public BrowserContextKeyedAPI,
                            PollFrequencyFromStoredAlarm);
   friend class BrowserContextKeyedAPIFactory<AlarmManager>;
 
-  typedef std::map<ExtensionId, AlarmList> AlarmMap;
+  using AlarmMap = std::map<ExtensionId, AlarmList>;
 
-  typedef base::Callback<void(const std::string&)> ReadyAction;
-  typedef std::queue<ReadyAction> ReadyQueue;
-  typedef std::map<ExtensionId, ReadyQueue> ReadyMap;
+  using ReadyAction = base::Callback<void(const std::string&)>;
+  using ReadyQueue = base::queue<ReadyAction>;
+  using ReadyMap = std::map<ExtensionId, ReadyQueue>;
 
   // Iterator used to identify a particular alarm within the Map/List pair.
   // "Not found" is represented by <alarms_.end(), invalid_iterator>.

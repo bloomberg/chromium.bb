@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_MESSAGE_PROCESS_HOST_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -124,7 +124,7 @@ class NativeMessageProcessHost : public NativeMessageHost {
   std::string incoming_data_;
 
   // Queue for outgoing messages.
-  std::queue<scoped_refptr<net::IOBufferWithSize> > write_queue_;
+  base::queue<scoped_refptr<net::IOBufferWithSize>> write_queue_;
 
   // The message that's currently being sent.
   scoped_refptr<net::DrainableIOBuffer> current_write_buffer_;

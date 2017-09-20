@@ -451,11 +451,17 @@ class circular_deque {
   // All of these may invalidate iterators and references.
 
   circular_deque& operator=(const circular_deque& other) {
+    if (&other == this)
+      return *this;
+
     reserve(other.size());
     assign(other.begin(), other.end());
     return *this;
   }
   circular_deque& operator=(circular_deque&& other) noexcept {
+    if (&other == this)
+      return *this;
+
     // We're about to overwrite the buffer, so don't free it in clear to
     // avoid doing it twice.
     ClearRetainCapacity();

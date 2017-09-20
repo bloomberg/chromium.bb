@@ -15,6 +15,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -2103,7 +2104,7 @@ void ArcBluetoothBridge::DequeueLocalPowerChange(
   // Compress the queue for power intent to reduce the amount of intents being
   // sent to Android so that the powered state will be synced between Android
   // and Chrome even if the state is toggled repeatedly on Chrome.
-  std::queue<AdapterPowerState> empty_queue;
+  base::queue<AdapterPowerState> empty_queue;
   std::swap(local_power_changes_, empty_queue);
 
   if (last_change == current_change)

@@ -10,6 +10,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/callback_helpers.h"
+#include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
@@ -1198,7 +1199,7 @@ void VrShellGl::UpdateLayerBounds(int16_t frame_index,
     CreateOrResizeWebVRSurface(source_size);
 
     // clear all pending bounds
-    pending_bounds_ = std::queue<std::pair<uint8_t, WebVrBounds>>();
+    pending_bounds_ = base::queue<std::pair<uint8_t, WebVrBounds>>();
   } else {
     pending_bounds_.emplace(
         frame_index, WebVrBounds(left_bounds, right_bounds, source_size));

@@ -5,10 +5,10 @@
 #include "device/bluetooth/bluetooth_socket_net.h"
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
@@ -148,7 +148,7 @@ void BluetoothSocketNet::DoClose() {
   // Send/Receive operations, so we can no safely release the state associated
   // to those pending operations.
   read_buffer_ = NULL;
-  std::queue<linked_ptr<WriteRequest> > empty;
+  base::queue<linked_ptr<WriteRequest>> empty;
   std::swap(write_queue_, empty);
 
   ResetData();

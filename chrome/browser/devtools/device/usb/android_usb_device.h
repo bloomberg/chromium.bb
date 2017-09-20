@@ -10,9 +10,9 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -152,12 +152,12 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   // Created sockets info
   uint32_t last_socket_id_;
-  typedef std::map<uint32_t, AndroidUsbSocket*> AndroidUsbSockets;
+  using AndroidUsbSockets = std::map<uint32_t, AndroidUsbSocket*>;
   AndroidUsbSockets sockets_;
 
   // Outgoing bulk queue
-  typedef scoped_refptr<net::IOBufferWithSize> BulkMessage;
-  std::queue<BulkMessage> outgoing_queue_;
+  using BulkMessage = scoped_refptr<net::IOBufferWithSize>;
+  base::queue<BulkMessage> outgoing_queue_;
 
   // Outgoing messages pending connect
   using PendingMessages = std::vector<std::unique_ptr<AdbMessage>>;

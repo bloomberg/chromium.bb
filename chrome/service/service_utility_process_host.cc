@@ -6,11 +6,11 @@
 
 #include <stdint.h>
 
-#include <queue>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -162,7 +162,7 @@ class ServiceUtilityProcessHost::PdfToEmfState {
 
   base::ScopedTempDir temp_dir_;
   ServiceUtilityProcessHost* host_;
-  std::queue<base::File> emf_files_;
+  base::queue<base::File> emf_files_;
   int page_count_;
   int current_page_;
   int pages_in_progress_;

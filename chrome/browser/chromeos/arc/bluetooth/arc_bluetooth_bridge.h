@@ -9,13 +9,13 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/timer/timer.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "components/arc/common/intent_helper.mojom.h"
@@ -518,9 +518,9 @@ class ArcBluetoothBridge
   std::unique_ptr<AppInstanceObserver> app_observer_;
   std::unique_ptr<IntentHelperInstanceObserver> intent_helper_observer_;
   // Queue to track the powered state changes initiated by Android.
-  std::queue<AdapterPowerState> remote_power_changes_;
+  base::queue<AdapterPowerState> remote_power_changes_;
   // Queue to track the powered state changes initiated by Chrome.
-  std::queue<AdapterPowerState> local_power_changes_;
+  base::queue<AdapterPowerState> local_power_changes_;
   // Timer to track the completion of power-changed intent sent to Android.
   base::OneShotTimer power_intent_timer_;
 

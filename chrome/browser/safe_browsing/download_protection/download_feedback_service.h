@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_DOWNLOAD_FEEDBACK_SERVICE_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/download/download_commands.h"
@@ -91,7 +91,7 @@ class DownloadFeedbackService {
 
   // Currently active & pending uploads. The first item is active, remaining
   // items are pending.
-  std::queue<std::unique_ptr<DownloadFeedback>> active_feedback_;
+  base::queue<std::unique_ptr<DownloadFeedback>> active_feedback_;
 
   base::WeakPtrFactory<DownloadFeedbackService> weak_ptr_factory_;
 

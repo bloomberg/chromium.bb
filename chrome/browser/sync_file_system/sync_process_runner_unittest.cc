@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -115,7 +115,7 @@ class FakeSyncProcessRunner : public SyncProcessRunner {
 
  private:
   size_t max_parallel_task_;
-  std::queue<SyncStatusCallback> running_tasks_;
+  base::queue<SyncStatusCallback> running_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncProcessRunner);
 };

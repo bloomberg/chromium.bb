@@ -5,10 +5,10 @@
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 
 #include <stddef.h>
-#include <queue>
 #include <utility>
 
 #include "base/containers/circular_deque.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -50,8 +50,7 @@ class LocalFileChangeTracker::TrackerDB {
 
   SyncStatusCode MarkDirty(const std::string& url);
   SyncStatusCode ClearDirty(const std::string& url);
-  SyncStatusCode GetDirtyEntries(
-      std::queue<FileSystemURL>* dirty_files);
+  SyncStatusCode GetDirtyEntries(base::queue<FileSystemURL>* dirty_files);
   SyncStatusCode WriteBatch(std::unique_ptr<leveldb::WriteBatch> batch);
 
  private:
@@ -357,7 +356,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
     FileSystemContext* file_system_context) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
 
-  std::queue<FileSystemURL> dirty_files;
+  base::queue<FileSystemURL> dirty_files;
   const SyncStatusCode status = tracker_db_->GetDirtyEntries(&dirty_files);
   if (status != SYNC_STATUS_OK)
     return status;
@@ -586,7 +585,7 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::ClearDirty(
 }
 
 SyncStatusCode LocalFileChangeTracker::TrackerDB::GetDirtyEntries(
-    std::queue<FileSystemURL>* dirty_files) {
+    base::queue<FileSystemURL>* dirty_files) {
   if (db_status_ != SYNC_STATUS_OK)
     return db_status_;
 

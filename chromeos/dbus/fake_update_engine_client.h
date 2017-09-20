@@ -5,9 +5,9 @@
 #ifndef CHROMEOS_DBUS_FAKE_UPDATE_ENGINE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_UPDATE_ENGINE_CLIENT_H_
 
-#include <queue>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "chromeos/dbus/update_engine_client.h"
 
 namespace chromeos {
@@ -86,7 +86,7 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
 
  private:
   base::ObserverList<Observer> observers_;
-  std::queue<UpdateEngineClient::Status> status_queue_;
+  base::queue<UpdateEngineClient::Status> status_queue_;
   UpdateEngineClient::Status default_status_;
   UpdateEngineClient::UpdateCheckResult update_check_result_;
   bool can_rollback_stub_result_;

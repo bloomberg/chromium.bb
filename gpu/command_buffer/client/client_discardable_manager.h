@@ -6,9 +6,9 @@
 #define GPU_COMMAND_BUFFER_CLIENT_CLIENT_DISCARDABLE_MANAGER_H_
 
 #include <map>
-#include <queue>
 #include <set>
 
+#include "base/containers/queue.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/gpu_export.h"
@@ -62,7 +62,7 @@ class GPU_EXPORT ClientDiscardableManager {
 
   // Handles that are pending service deletion, and can be re-used once
   // ClientDiscardableHandle::CanBeReUsed returns true.
-  std::queue<ClientDiscardableHandle> pending_handles_;
+  base::queue<ClientDiscardableHandle> pending_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientDiscardableManager);
 };

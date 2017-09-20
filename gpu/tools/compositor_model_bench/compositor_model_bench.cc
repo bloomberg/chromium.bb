@@ -17,7 +17,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
@@ -25,6 +24,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -42,7 +42,6 @@
 using base::TimeTicks;
 using base::DirectoryExists;
 using base::PathExists;
-using std::queue;
 using std::string;
 
 struct SimulationSpecification {
@@ -335,8 +334,8 @@ class Simulator {
 
   // Simulation task list for this execution
   std::unique_ptr<RenderModelSimulator> current_sim_;
-  queue<SimulationSpecification> sims_remaining_;
-  queue<SimulationSpecification> sims_completed_;
+  base::queue<SimulationSpecification> sims_remaining_;
+  base::queue<SimulationSpecification> sims_completed_;
   base::FilePath output_path_;
   // Amount of time to run each simulation
   int seconds_per_test_;

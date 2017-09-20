@@ -10,13 +10,13 @@
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 
 #include <algorithm>
-#include <queue>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
@@ -114,7 +114,7 @@ void UpdateNspidToPidMap(
 
   // Enumerate all processes under ARC init and create nspid -> pid map.
   if (arc_init_pid != kNullProcessId) {
-    std::queue<ProcessId> queue;
+    base::queue<ProcessId> queue;
     std::unordered_set<ProcessId> visited;
     queue.push(arc_init_pid);
     while (!queue.empty()) {

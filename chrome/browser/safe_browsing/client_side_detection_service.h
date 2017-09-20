@@ -15,13 +15,13 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -203,7 +203,7 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
 
   // Get the number of reports that we have sent over kReportsInterval, and
   // trims off the old elements.
-  int GetNumReports(std::queue<base::Time>* report_times);
+  int GetNumReports(base::queue<base::Time>* report_times);
 
   // Send the model to the given renderer.
   void SendModelToProcess(content::RenderProcessHost* process);
@@ -242,11 +242,11 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // Timestamp of when we sent a phishing request. Used to limit the number
   // of phishing requests that we send in a day.
   // TODO(gcasto): Serialize this so that it doesn't reset on browser restart.
-  std::queue<base::Time> phishing_report_times_;
+  base::queue<base::Time> phishing_report_times_;
 
   // Timestamp of when we sent a malware request. Used to limit the number
   // of malware requests that we send in a day.
-  std::queue<base::Time> malware_report_times_;
+  base::queue<base::Time> malware_report_times_;
 
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;

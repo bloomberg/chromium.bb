@@ -8,11 +8,11 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -137,15 +137,15 @@ class ClientSideDetectionServiceTest : public testing::Test {
         response_data, response_code, status);
   }
 
-  int GetNumReports(std::queue<base::Time>* report_times) {
+  int GetNumReports(base::queue<base::Time>* report_times) {
     return csd_service_->GetNumReports(report_times);
   }
 
-  std::queue<base::Time>& GetPhishingReportTimes() {
+  base::queue<base::Time>& GetPhishingReportTimes() {
     return csd_service_->phishing_report_times_;
   }
 
-  std::queue<base::Time>& GetMalwareReportTimes() {
+  base::queue<base::Time>& GetMalwareReportTimes() {
     return csd_service_->malware_report_times_;
   }
 
@@ -305,7 +305,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   base::Time after = base::Time::Now();
 
   // Check that we have recorded all 3 requests within the correct time range.
-  std::queue<base::Time>& report_times = GetPhishingReportTimes();
+  base::queue<base::Time>& report_times = GetPhishingReportTimes();
   EXPECT_EQ(3U, report_times.size());
   while (!report_times.empty()) {
     base::Time time = report_times.back();
@@ -364,7 +364,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
 
   // Check that we have recorded all 5 requests within the correct time range.
   base::Time after = base::Time::Now();
-  std::queue<base::Time>& report_times = GetMalwareReportTimes();
+  base::queue<base::Time>& report_times = GetMalwareReportTimes();
   EXPECT_EQ(5U, report_times.size());
 
   // Check that the malware report limit was reached.
@@ -384,7 +384,7 @@ TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
   SetModelFetchResponses();
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
 
-  std::queue<base::Time>& report_times = GetPhishingReportTimes();
+  base::queue<base::Time>& report_times = GetPhishingReportTimes();
   base::Time now = base::Time::Now();
   base::TimeDelta twenty_five_hours = base::TimeDelta::FromHours(25);
   report_times.push(now - twenty_five_hours);

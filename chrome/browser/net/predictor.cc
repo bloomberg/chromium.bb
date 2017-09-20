@@ -1143,8 +1143,8 @@ bool Predictor::HostNameQueue::IsEmpty() const {
 
 GURL Predictor::HostNameQueue::Pop() {
   DCHECK(!IsEmpty());
-  std::queue<GURL> *queue(rush_queue_.empty() ? &background_queue_
-                                              : &rush_queue_);
+  base::queue<GURL>* queue(rush_queue_.empty() ? &background_queue_
+                                               : &rush_queue_);
   GURL url(queue->front());
   queue->pop();
   return url;
