@@ -32,6 +32,7 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
     virtual void OnResponseStarted(
         std::unique_ptr<DownloadCreateInfo> download_create_info,
         mojom::DownloadStreamHandlePtr stream_handle) = 0;
+    virtual void OnReceiveRedirect() = 0;
   };
 
   DownloadResponseHandler(DownloadUrlParameters* params,
@@ -78,6 +79,7 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
   bool is_transient_;
   net::CertStatus cert_status_;
   bool has_strong_validators_;
+  GURL origin_;
 
   // Mojo interface ptr to send the completion status to the download sink.
   mojom::DownloadStreamClientPtr client_ptr_;

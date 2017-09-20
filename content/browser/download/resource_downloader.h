@@ -40,6 +40,7 @@ class ResourceDownloader : public UrlDownloadHandler,
   void OnResponseStarted(
       std::unique_ptr<DownloadCreateInfo> download_create_info,
       mojom::DownloadStreamHandlePtr stream_handle) override;
+  void OnReceiveRedirect() override;
 
  private:
   // Helper method to start the network request.
