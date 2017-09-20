@@ -446,9 +446,7 @@ video::-webkit-media-controls-toggle-closed-captions-button {
 }
 
 video::-internal-media-controls-text-track-list, video::-internal-media-controls-overflow-menu-list, audio::-internal-media-controls-overflow-menu-list {
-    position: absolute;
-    bottom: 4px;
-    right: 4px;
+    position: fixed;
     background-color: #fafafa;
     max-width: 50%;
     max-height: 250px;

@@ -31,6 +31,7 @@
 #ifndef DOMVisualViewport_h
 #define DOMVisualViewport_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/events/EventTarget.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -42,7 +43,7 @@ namespace blink {
 class LocalDOMWindow;
 class ExecutionContext;
 
-class DOMVisualViewport final : public EventTargetWithInlineData {
+class CORE_EXPORT DOMVisualViewport final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -34,6 +34,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/PointerEvent.h"
+#include "core/frame/DOMVisualViewport.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/fullscreen/Fullscreen.h"
@@ -737,6 +738,8 @@ void MediaControlsImpl::ToggleTextTrackList() {
   if (!text_track_list_->IsWanted())
     window_event_listener_->Start();
 
+  PositionPopupMenu(text_track_list_);
+
   text_track_list_->SetVisible(!text_track_list_->IsWanted());
 }
 
@@ -1240,6 +1243,30 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
   }
 }
 
+void MediaControlsImpl::PositionPopupMenu(Element* popup_menu) {
+  // The popup is positioned slightly on the inside of the bottom right corner.
+  static constexpr int kPopupMenuMarginPx = 0;
+  static const char kImportant[] = "important";
+
+  DCHECK(MediaElement().getBoundingClientRect());
+  DCHECK(GetDocument().domWindow());
+  DCHECK(GetDocument().domWindow()->visualViewport());
+
+  DOMRect* bounding_client_rect = MediaElement().getBoundingClientRect();
+  DOMVisualViewport* viewport = GetDocument().domWindow()->visualViewport();
+  ;
+
+  int bottom = viewport->height() - bounding_client_rect->y() -
+               bounding_client_rect->height() + kPopupMenuMarginPx;
+  int right = viewport->width() - bounding_client_rect->x() -
+              bounding_client_rect->width() + kPopupMenuMarginPx;
+
+  popup_menu->style()->setProperty("bottom", WTF::String::Number(bottom),
+                                   kImportant, ASSERT_NO_EXCEPTION);
+  popup_menu->style()->setProperty("right", WTF::String::Number(right),
+                                   kImportant, ASSERT_NO_EXCEPTION);
+}
+
 void MediaControlsImpl::Invalidate(Element* element) {
   if (!element)
     return;
@@ -1276,6 +1303,9 @@ void MediaControlsImpl::ToggleOverflowMenu() {
 
   if (!overflow_list_->IsWanted())
     window_event_listener_->Start();
+
+  PositionPopupMenu(overflow_list_);
+
   overflow_list_->SetIsWanted(!overflow_list_->IsWanted());
 }
 

@@ -216,6 +216,11 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // current.
   void ComputeWhichControlsFit();
 
+  // Takes a popup menu (caption, overflow) and position on the screen. This is
+  // used because these menus use a fixed position in order to appear over all
+  // content.
+  void PositionPopupMenu(Element*);
+
   // Node
   bool IsMediaControls() const override { return true; }
   bool WillRespondToMouseMoveEvents() override { return true; }

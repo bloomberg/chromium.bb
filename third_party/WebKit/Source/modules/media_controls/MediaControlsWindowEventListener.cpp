@@ -55,10 +55,13 @@ void MediaControlsWindowEventListener::Start() {
 
   if (LocalDOMWindow* window = media_controls_->GetDocument().domWindow()) {
     window->addEventListener(EventTypeNames::click, this, true);
+    window->addEventListener(EventTypeNames::scroll, this, true);
 
     if (LocalDOMWindow* outer_window = GetTopLocalDOMWindow(window)) {
-      if (window != outer_window)
+      if (window != outer_window) {
         outer_window->addEventListener(EventTypeNames::click, this, true);
+        outer_window->addEventListener(EventTypeNames::scroll, this, true);
+      }
       outer_window->addEventListener(EventTypeNames::resize, this, true);
     }
   }
@@ -82,10 +85,13 @@ void MediaControlsWindowEventListener::Stop() {
 
   if (LocalDOMWindow* window = media_controls_->GetDocument().domWindow()) {
     window->removeEventListener(EventTypeNames::click, this, true);
+    window->removeEventListener(EventTypeNames::scroll, this, true);
 
     if (LocalDOMWindow* outer_window = GetTopLocalDOMWindow(window)) {
-      if (window != outer_window)
+      if (window != outer_window) {
         outer_window->removeEventListener(EventTypeNames::click, this, true);
+        outer_window->removeEventListener(EventTypeNames::scroll, this, true);
+      }
       outer_window->removeEventListener(EventTypeNames::resize, this, true);
     }
 
@@ -108,6 +114,7 @@ void MediaControlsWindowEventListener::handleEvent(
     ExecutionContext* execution_context,
     Event* event) {
   DCHECK(event->type() == EventTypeNames::click ||
+         event->type() == EventTypeNames::scroll ||
          event->type() == EventTypeNames::resize);
 
   if (!is_active_)
