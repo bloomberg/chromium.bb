@@ -442,7 +442,8 @@ void InterstitialHTMLSource::StartDataRequest(
   std::string html;
   // Using this form of the path so we can do exact matching, while ignoring the
   // query (everything after the ? character).
-  std::string path_without_query = web_contents->GetURL().path();
+  GURL url = web_contents->GetURL().GetWithEmptyPath().Resolve(path);
+  std::string path_without_query = url.path();
   if (path_without_query == "/ssl") {
     interstitial_delegate.reset(
         CreateSSLBlockingPage(web_contents, false /* is superfish */));
