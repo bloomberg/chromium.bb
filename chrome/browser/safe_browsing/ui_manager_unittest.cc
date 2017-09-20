@@ -70,12 +70,14 @@ class SafeBrowsingCallbackWaiter {
 
 class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  SafeBrowsingUIManagerTest() : ui_manager_(new SafeBrowsingUIManager(NULL)) {}
+  SafeBrowsingUIManagerTest()
+      : ChromeRenderViewHostTestHarness(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        ui_manager_(new SafeBrowsingUIManager(NULL)) {}
 
   ~SafeBrowsingUIManagerTest() override {}
 
   void SetUp() override {
-    SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
     ChromeRenderViewHostTestHarness::SetUp();
     SafeBrowsingUIManager::CreateWhitelistForTesting(web_contents());
 

@@ -73,6 +73,7 @@ class DeviceDisablingManagerTestBase : public testing::Test,
  private:
   chromeos::StubInstallAttributes* GetInstallAttributes();
 
+  content::TestBrowserThreadBundle thread_bundle_;
   chromeos::ScopedStubInstallAttributes install_attributes_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
@@ -148,7 +149,6 @@ class DeviceDisablingManagerOOBETest : public DeviceDisablingManagerTestBase {
 
   TestingPrefServiceSimple local_state_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
   base::RunLoop run_loop_;
   bool device_disabled_;
 
@@ -275,7 +275,6 @@ class DeviceDisablingManagerTest : public DeviceDisablingManagerTestBase,
  private:
   void SimulatePolicyFetch();
 
-  content::TestBrowserThreadBundle thread_bundle_;
   chromeos::DeviceSettingsTestHelper device_settings_test_helper_;
   policy::DevicePolicyBuilder device_policy_;
 

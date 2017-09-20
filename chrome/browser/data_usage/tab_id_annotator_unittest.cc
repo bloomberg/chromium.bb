@@ -42,10 +42,9 @@ namespace {
 
 class TabIdAnnotatorTest : public ChromeRenderViewHostTestHarness {
  public:
-  TabIdAnnotatorTest() {
-    // Cannot use IO_MAIN_LOOP with RenderViewHostTestHarness.
-    SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
-  }
+  TabIdAnnotatorTest()
+      : ChromeRenderViewHostTestHarness(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   ~TabIdAnnotatorTest() override {}
 

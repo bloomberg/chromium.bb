@@ -102,6 +102,8 @@ namespace content {
 
 class TestBrowserThread;
 
+// Note: to drive these threads (e.g. run all tasks until idle), see
+// content/public/test/test_utils.h.
 class TestBrowserThreadBundle {
  public:
   // Used to specify the type of MessageLoop that backs the UI thread, and

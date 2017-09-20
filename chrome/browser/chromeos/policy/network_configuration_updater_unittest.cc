@@ -294,6 +294,8 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
             chromeos::CrosSettings::Get());
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
+
   base::ListValue fake_network_configs_;
   base::DictionaryValue fake_global_network_config_;
   base::ListValue fake_certificates_;
@@ -313,9 +315,6 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   StrictMock<MockConfigurationPolicyProvider> provider_;
   std::unique_ptr<PolicyServiceImpl> policy_service_;
   FakeUser fake_user_;
-
-  // Must outlive |profile_|.
-  content::TestBrowserThreadBundle thread_bundle_;
 
   TestingProfile profile_;
 

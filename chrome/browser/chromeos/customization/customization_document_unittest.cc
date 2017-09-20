@@ -293,9 +293,9 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   ScopedCrosSettingsTestHelper scoped_cros_settings_test_helper_;
-  content::TestBrowserThreadBundle thread_bundle_;
   TestingPrefServiceSimple local_state_;
   TestURLFetcherCallback url_callback_;
   net::FakeURLFetcherFactory factory_;

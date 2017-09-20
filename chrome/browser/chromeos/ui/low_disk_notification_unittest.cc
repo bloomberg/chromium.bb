@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/grit/generated_resources.h"
@@ -57,6 +58,7 @@ class LowDiskNotificationTest : public testing::Test,
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<LowDiskNotification> low_disk_notification_;
   std::unique_ptr<message_center::Notification> last_notification_;
   int notification_count_;

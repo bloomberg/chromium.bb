@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -185,7 +184,9 @@ class RenderViewHostTestEnabler {
 // RenderViewHostTestHarness ---------------------------------------------------
 class RenderViewHostTestHarness : public testing::Test {
  public:
-  RenderViewHostTestHarness();
+  // Constructs a RenderViewHostTestHarness which uses |thread_bundle_options|
+  // to initialize its TestBrowserThreadBundle.
+  explicit RenderViewHostTestHarness(int thread_bundle_options = 0);
   ~RenderViewHostTestHarness() override;
 
   NavigationController& controller();
@@ -247,19 +248,6 @@ class RenderViewHostTestHarness : public testing::Test {
   // BrowserContext.
   virtual BrowserContext* CreateBrowserContext();
 
-  // Configures which TestBrowserThreads inside |thread_bundle| are backed by
-  // real threads. Must be called before SetUp().
-  void SetThreadBundleOptions(int options) {
-    DCHECK(!thread_bundle_);
-    thread_bundle_options_ = options;
-  }
-
-  base::test::ScopedTaskEnvironment* scoped_task_environment() {
-    return scoped_task_environment_.get();
-  }
-
-  TestBrowserThreadBundle* thread_bundle() { return thread_bundle_.get(); }
-
 #if defined(USE_AURA)
   aura::Window* root_window() { return aura_test_helper_->root_window(); }
 #endif
@@ -268,20 +256,6 @@ class RenderViewHostTestHarness : public testing::Test {
   void SetRenderProcessHostFactory(RenderProcessHostFactory* factory);
 
  private:
-  friend class AudioRendererHostTest;
-
-  // DEPRECATED: New tests should not use this method.
-  // Multithreaded tests that have been ported to TaskScheduler must use a
-  // scoped task environment. Most legacy tests are compatible with a
-  // TestBrowserThreadBundle inside a scoped task environment. This method is
-  // for tests that specifically rely on TestBrowserThreadBundle in the absence
-  // of a scoped task environment.
-  void DisableScopedTaskEnvironment() { use_scoped_task_environment_ = false; }
-
-  bool use_scoped_task_environment_;
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
-
-  int thread_bundle_options_;
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
 
   std::unique_ptr<ContentBrowserSanityChecker> sanity_checker_;

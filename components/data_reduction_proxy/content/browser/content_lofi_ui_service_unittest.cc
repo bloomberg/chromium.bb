@@ -29,10 +29,10 @@ namespace data_reduction_proxy {
 
 class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
  public:
-  ContentLoFiUIServiceTest() : callback_called_(false) {
-    // Cannot use IO_MAIN_LOOP with RenderViewHostTestHarness.
-    SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
-  }
+  ContentLoFiUIServiceTest()
+      : content::RenderViewHostTestHarness(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        callback_called_(false) {}
 
   void RunTestOnIOThread(base::RunLoop* ui_run_loop) {
     ASSERT_TRUE(ui_run_loop);

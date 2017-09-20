@@ -39,6 +39,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1047,7 +1048,7 @@ TEST_F(ManagePasswordsUIControllerTest,
     // As the timeout is zero, the fallback will be hidden right after show.
     // Visibility update confirms that hiding event happened.
     EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-    scoped_task_environment()->RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
 
     EXPECT_FALSE(controller()->opened_bubble());
     ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
@@ -1081,7 +1082,7 @@ TEST_F(ManagePasswordsUIControllerTest,
 
     // Fallback hiding is triggered by timeout but blocked because of open
     // bubble.
-    scoped_task_environment()->RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
     ExpectIconAndControllerStateIs(
         password_manager::ui::PENDING_PASSWORD_STATE);
 

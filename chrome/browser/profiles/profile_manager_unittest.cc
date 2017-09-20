@@ -204,6 +204,8 @@ class ProfileManagerTest : public testing::Test {
     entry->SetIsEphemeral(true);
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
+
 #if defined(OS_CHROMEOS)
   // Helper function to register an user with id |user_id| and create profile
   // with a correct path.
@@ -225,7 +227,6 @@ class ProfileManagerTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestUserManager test_user_manager_;

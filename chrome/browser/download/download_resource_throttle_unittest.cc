@@ -51,10 +51,10 @@ ACTION_P(QuitLoop, quit_closure) {
 class DownloadResourceThrottleTest : public ChromeRenderViewHostTestHarness {
  public:
   DownloadResourceThrottleTest()
-      : throttle_(nullptr), limiter_(new DownloadRequestLimiter()) {
-    // Cannot use IO_MAIN_LOOP with RenderViewHostTestHarness.
-    SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
-  }
+      : ChromeRenderViewHostTestHarness(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        throttle_(nullptr),
+        limiter_(new DownloadRequestLimiter()) {}
 
   ~DownloadResourceThrottleTest() override {}
 
