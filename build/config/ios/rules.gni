@@ -58,6 +58,9 @@ template("lipo_binary") {
 
     script = "//build/toolchain/mac/linker_driver.py"
 
+    # http://crbug.com/762840. Fix for bots running out of memory.
+    pool = "//build/toolchain:link_pool($default_toolchain)"
+
     outputs = [
       "$target_out_dir/$_output_name",
     ]
