@@ -80,7 +80,6 @@ void ResourceDownloader::Start(std::unique_ptr<ResourceRequest> request) {
       download_url_parameters_->url().SchemeIs(url::kBlobScheme)
           ? url_loader_factory_getter_->GetBlobFactory()
           : url_loader_factory_getter_->GetNetworkFactory();
-
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       factory->get(), std::vector<std::unique_ptr<URLLoaderThrottle>>(),
       0,  // routing_id
@@ -108,6 +107,10 @@ void ResourceDownloader::OnResponseStarted(
                      base::MakeUnique<DownloadManager::InputStream>(
                          std::move(stream_handle)),
                      download_url_parameters_->callback()));
+}
+
+void ResourceDownloader::OnReceiveRedirect() {
+  url_loader_->FollowRedirect();
 }
 
 }  // namespace content

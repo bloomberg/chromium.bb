@@ -59,6 +59,8 @@ DownloadResponseHandler::DownloadResponseHandler(DownloadUrlParameters* params,
       has_strong_validators_(false) {
   if (!is_parallel_request)
     RecordDownloadCount(UNTHROTTLED_COUNT);
+  if (params->initiator().has_value())
+    origin_ = params->initiator().value().GetURL();
 }
 
 DownloadResponseHandler::~DownloadResponseHandler() = default;
@@ -79,6 +81,17 @@ void DownloadResponseHandler::OnReceiveResponse(
     has_strong_validators_ = head.headers->HasStrongValidators();
     RecordDownloadHttpResponseCode(head.headers->response_code());
     RecordDownloadContentDisposition(create_info_->content_disposition);
+  }
+
+  // Blink verifies that the requester of this download is allowed to set a
+  // suggested name for the security origin of the downlaod URL. However, this
+  // assumption doesn't hold if there were cross origin redirects. Therefore,
+  // clear the suggested_name for such requests.
+  if (origin_.is_valid() && !create_info_->url_chain.back().SchemeIsBlob() &&
+      !create_info_->url_chain.back().SchemeIs(url::kAboutScheme) &&
+      !create_info_->url_chain.back().SchemeIs(url::kDataScheme) &&
+      origin_ != create_info_->url_chain.back().GetOrigin()) {
+    create_info_->save_info->suggested_name.clear();
   }
 
   if (create_info_->result != DOWNLOAD_INTERRUPT_REASON_NONE)
@@ -121,6 +134,7 @@ void DownloadResponseHandler::OnReceiveRedirect(
   url_chain_.push_back(redirect_info.new_url);
   method_ = redirect_info.new_method;
   referrer_ = GURL(redirect_info.new_referrer);
+  delegate_->OnReceiveRedirect();
 }
 
 void DownloadResponseHandler::OnDataDownloaded(int64_t data_length,
