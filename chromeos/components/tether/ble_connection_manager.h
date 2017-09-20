@@ -23,7 +23,6 @@
 
 namespace cryptauth {
 class CryptAuthService;
-class LocalDeviceDataProvider;
 }  // namespace cryptauth
 
 namespace chromeos {
@@ -76,8 +75,9 @@ class BleConnectionManager : public BleScanner::Observer {
   BleConnectionManager(
       cryptauth::CryptAuthService* cryptauth_service,
       scoped_refptr<device::BluetoothAdapter> adapter,
-      const cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-      const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
+      BleAdvertisementDeviceQueue* ble_advertisement_device_queue,
+      BleAdvertiser* ble_advertiser,
+      BleScanner* ble_scanner);
   virtual ~BleConnectionManager();
 
   // Registers |remote_device| for |connection_reason|. Once registered, this
@@ -118,14 +118,6 @@ class BleConnectionManager : public BleScanner::Observer {
       const cryptauth::RemoteDevice& remote_device) override;
 
  protected:
-  BleConnectionManager(
-      cryptauth::CryptAuthService* cryptauth_service,
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      std::unique_ptr<BleScanner> ble_scanner,
-      std::unique_ptr<BleAdvertiser> ble_advertiser,
-      std::unique_ptr<BleAdvertisementDeviceQueue> device_queue,
-      std::unique_ptr<TimerFactory> timer_factory);
-
   void SendMessageReceivedEvent(cryptauth::RemoteDevice remote_device,
                                 std::string payload);
   void SendSecureChannelStatusChangeEvent(
@@ -208,7 +200,8 @@ class BleConnectionManager : public BleScanner::Observer {
       const cryptauth::SecureChannel::Status& old_status,
       const cryptauth::SecureChannel::Status& new_status);
 
-  void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
+  void SetTestDoubles(std::unique_ptr<base::Clock> test_clock,
+                      std::unique_ptr<TimerFactory> test_timer_factory);
 
   // Record various operation durations. These need to be separate methods
   // because internally they use a macro which maintains a static state that
@@ -218,9 +211,10 @@ class BleConnectionManager : public BleScanner::Observer {
 
   cryptauth::CryptAuthService* cryptauth_service_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
-  std::unique_ptr<BleScanner> ble_scanner_;
-  std::unique_ptr<BleAdvertiser> ble_advertiser_;
-  std::unique_ptr<BleAdvertisementDeviceQueue> device_queue_;
+  BleAdvertisementDeviceQueue* ble_advertisement_device_queue_;
+  BleAdvertiser* ble_advertiser_;
+  BleScanner* ble_scanner_;
+
   std::unique_ptr<TimerFactory> timer_factory_;
   std::unique_ptr<base::Clock> clock_;
 

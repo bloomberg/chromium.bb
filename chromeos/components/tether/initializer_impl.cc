@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/active_host_network_state_updater.h"
+#include "chromeos/components/tether/ble_advertisement_device_queue.h"
+#include "chromeos/components/tether/ble_advertiser.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/crash_recovery_manager.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
@@ -140,9 +142,8 @@ InitializerImpl::~InitializerImpl() {
 // TODO(khorimoto): Refactor this flow.
 void InitializerImpl::RequestShutdown() {
   // If shutdown has already happened, there is nothing else to do.
-  if (status() != Initializer::Status::ACTIVE) {
+  if (status() != Initializer::Status::ACTIVE)
     return;
-  }
 
   // If there is an active connection, it needs to be disconnected before the
   // Tether component is shut down.
@@ -158,36 +159,22 @@ void InitializerImpl::RequestShutdown() {
         base::Bind(&OnDisconnectErrorDuringShutdown));
   }
 
-  // If the Tether component is not in the process of sending a
-  // DisconnectTetheringRequest, shut down now.
-  if (!disconnect_tethering_request_sender_ ||
-      !disconnect_tethering_request_sender_->HasPendingRequests()) {
+  if (!IsAsyncShutdownRequired()) {
     TransitionToStatus(Initializer::Status::SHUT_DOWN);
     return;
   }
 
-  // If a DisconnectTetheringRequest is currently being sent, the Tether
-  // component must finish sending it before shutting down completely to ensure
-  // that the ex-active host turns off its Wi-Fi hotspot (see crbug.com/754097).
   TransitionToStatus(Initializer::Status::SHUTTING_DOWN);
   StartAsynchronousShutdown();
 }
 
 void InitializerImpl::OnPendingDisconnectRequestsComplete() {
-  DCHECK(status() == Initializer::Status::SHUTTING_DOWN);
-  disconnect_tethering_request_sender_->RemoveObserver(this);
+  FinishAsynchronousShutdownIfPossible();
+}
 
-  // Shutdown has completed. It is now safe to delete the objects that were
-  // shutting down asynchronously.
-  wifi_hotspot_disconnector_.reset();
-  network_configuration_remover_.reset();
-  disconnect_tethering_request_sender_.reset();
-  ble_connection_manager_.reset();
-  remote_beacon_seed_fetcher_.reset();
-  local_device_data_provider_.reset();
-  tether_host_fetcher_.reset();
-
-  TransitionToStatus(Initializer::Status::SHUT_DOWN);
+void InitializerImpl::OnDiscoverySessionStateChanged(
+    bool discovery_session_active) {
+  FinishAsynchronousShutdownIfPossible();
 }
 
 void InitializerImpl::CreateComponent() {
@@ -200,9 +187,16 @@ void InitializerImpl::CreateComponent() {
   remote_beacon_seed_fetcher_ =
       base::MakeUnique<cryptauth::RemoteBeaconSeedFetcher>(
           cryptauth_service_->GetCryptAuthDeviceManager());
-  ble_connection_manager_ = base::MakeUnique<BleConnectionManager>(
-      cryptauth_service_, adapter_, local_device_data_provider_.get(),
+  ble_advertisement_device_queue_ =
+      base::MakeUnique<BleAdvertisementDeviceQueue>();
+  ble_advertiser_ = base::MakeUnique<BleAdvertiser>(
+      adapter_, local_device_data_provider_.get(),
       remote_beacon_seed_fetcher_.get());
+  ble_scanner_ =
+      base::MakeUnique<BleScanner>(adapter_, local_device_data_provider_.get());
+  ble_connection_manager_ = base::MakeUnique<BleConnectionManager>(
+      cryptauth_service_, adapter_, ble_advertisement_device_queue_.get(),
+      ble_advertiser_.get(), ble_scanner_.get());
   disconnect_tethering_request_sender_ =
       base::MakeUnique<DisconnectTetheringRequestSenderImpl>(
           ble_connection_manager_.get(), tether_host_fetcher_.get());
@@ -281,6 +275,23 @@ void InitializerImpl::CreateComponent() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+bool InitializerImpl::IsAsyncShutdownRequired() {
+  // If there are pending disconnection requests, they must be sent before the
+  // component shuts down.
+  if (disconnect_tethering_request_sender_ &&
+      disconnect_tethering_request_sender_->HasPendingRequests()) {
+    return true;
+  }
+
+  // The BLE scanner must shut down completely before the component shuts down.
+  if (ble_scanner_ && ble_scanner_->ShouldDiscoverySessionBeActive() !=
+                          ble_scanner_->IsDiscoverySessionActive()) {
+    return true;
+  }
+
+  return false;
+}
+
 void InitializerImpl::OnPreCrashStateRestored() {
   // |crash_recovery_manager_| is no longer needed since it has completed.
   crash_recovery_manager_.reset();
@@ -293,12 +304,14 @@ void InitializerImpl::StartAsynchronousShutdown() {
   DCHECK(status() == Initializer::Status::SHUTTING_DOWN);
   DCHECK(disconnect_tethering_request_sender_->HasPendingRequests());
 
-  // Currently, the only task which needs to be performed asynchronously during
-  // shutdown is the DisconnectTetheringRequestSender. Observer this class so
-  // that when it finishes sending messages, Initializer can shut down.
+  // |ble_scanner_| and |disconnect_tethering_request_sender_| require
+  // asynchronous shutdowns, so start observering these objects. Once they
+  // notify observers that they are finished shutting down, asynchronous
+  // shutdown will complete.
+  ble_scanner_->AddObserver(this);
   disconnect_tethering_request_sender_->AddObserver(this);
 
-  // All objects which are not dependencies of
+  // All objects which are not dependencies of |ble_scanner_| and
   // |disconnect_tethering_request_sender_| are no longer needed, so delete
   // them.
   crash_recovery_manager_.reset();
@@ -322,6 +335,33 @@ void InitializerImpl::StartAsynchronousShutdown() {
   tether_host_response_recorder_.reset();
   network_state_handler_->set_tether_sort_delegate(nullptr);
   network_list_sorter_.reset();
+}
+
+void InitializerImpl::FinishAsynchronousShutdownIfPossible() {
+  DCHECK(status() == Initializer::Status::SHUTTING_DOWN);
+
+  // If the asynchronous shutdown is not yet complete (i.e., only some of the
+  // shutdown requirements are complete), do not shut down yet.
+  if (IsAsyncShutdownRequired())
+    return;
+
+  ble_scanner_->RemoveObserver(this);
+  disconnect_tethering_request_sender_->RemoveObserver(this);
+
+  // Shutdown has completed. It is now safe to delete the objects that were
+  // shutting down asynchronously.
+  wifi_hotspot_disconnector_.reset();
+  network_configuration_remover_.reset();
+  disconnect_tethering_request_sender_.reset();
+  ble_connection_manager_.reset();
+  ble_scanner_.reset();
+  ble_advertiser_.reset();
+  ble_advertisement_device_queue_.reset();
+  remote_beacon_seed_fetcher_.reset();
+  local_device_data_provider_.reset();
+  tether_host_fetcher_.reset();
+
+  TransitionToStatus(Initializer::Status::SHUT_DOWN);
 }
 
 }  // namespace tether

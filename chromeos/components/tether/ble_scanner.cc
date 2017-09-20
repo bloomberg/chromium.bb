@@ -284,8 +284,11 @@ void BleScanner::CheckForMatchingScanFilters(
   if (!identified_device)
     return;
 
-  NotifyReceivedAdvertisementFromDevice(bluetooth_device->GetAddress(),
-                                        *identified_device);
+  // Make a copy before notifying observers. Since |identified_device| refers
+  // to an instance variable, it is possible that an observer could unregister
+  // that device, which would change the value of that pointer.
+  const cryptauth::RemoteDevice copy = *identified_device;
+  NotifyReceivedAdvertisementFromDevice(bluetooth_device->GetAddress(), copy);
 }
 
 }  // namespace tether

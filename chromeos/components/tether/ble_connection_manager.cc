@@ -181,31 +181,15 @@ void BleConnectionManager::ConnectionMetadata::OnMessageSent(
 BleConnectionManager::BleConnectionManager(
     cryptauth::CryptAuthService* cryptauth_service,
     scoped_refptr<device::BluetoothAdapter> adapter,
-    const cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-    const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher)
-    : BleConnectionManager(
-          cryptauth_service,
-          adapter,
-          base::MakeUnique<BleScanner>(adapter, local_device_data_provider),
-          base::MakeUnique<BleAdvertiser>(adapter,
-                                          local_device_data_provider,
-                                          remote_beacon_seed_fetcher),
-          base::MakeUnique<BleAdvertisementDeviceQueue>(),
-          base::MakeUnique<TimerFactory>()) {}
-
-BleConnectionManager::BleConnectionManager(
-    cryptauth::CryptAuthService* cryptauth_service,
-    scoped_refptr<device::BluetoothAdapter> adapter,
-    std::unique_ptr<BleScanner> ble_scanner,
-    std::unique_ptr<BleAdvertiser> ble_advertiser,
-    std::unique_ptr<BleAdvertisementDeviceQueue> device_queue,
-    std::unique_ptr<TimerFactory> timer_factory)
+    BleAdvertisementDeviceQueue* ble_advertisement_device_queue,
+    BleAdvertiser* ble_advertiser,
+    BleScanner* ble_scanner)
     : cryptauth_service_(cryptauth_service),
       adapter_(adapter),
-      ble_scanner_(std::move(ble_scanner)),
-      ble_advertiser_(std::move(ble_advertiser)),
-      device_queue_(std::move(device_queue)),
-      timer_factory_(std::move(timer_factory)),
+      ble_advertisement_device_queue_(ble_advertisement_device_queue),
+      ble_advertiser_(ble_advertiser),
+      ble_scanner_(ble_scanner),
+      timer_factory_(base::MakeUnique<TimerFactory>()),
       clock_(base::MakeUnique<base::DefaultClock>()),
       has_registered_observer_(false),
       weak_ptr_factory_(this) {}
@@ -399,7 +383,7 @@ void BleConnectionManager::UpdateConnectionAttempts() {
   UpdateAdvertisementQueue();
 
   std::vector<cryptauth::RemoteDevice> should_advertise_to =
-      device_queue_->GetDevicesToWhichToAdvertise();
+      ble_advertisement_device_queue_->GetDevicesToWhichToAdvertise();
   DCHECK(should_advertise_to.size() <=
          static_cast<size_t>(kMaxConcurrentAdvertisements));
 
@@ -426,7 +410,7 @@ void BleConnectionManager::UpdateAdvertisementQueue() {
     devices_for_queue.push_back(map_entry.first);
   }
 
-  device_queue_->SetDevices(devices_for_queue);
+  ble_advertisement_device_queue_->SetDevices(devices_for_queue);
 }
 
 void BleConnectionManager::StartConnectionAttempt(
@@ -462,7 +446,7 @@ void BleConnectionManager::StopConnectionAttemptAndMoveToEndOfQueue(
     const cryptauth::RemoteDevice& remote_device) {
   ble_scanner_->UnregisterScanFilterForDevice(remote_device);
   ble_advertiser_->StopAdvertisingToDevice(remote_device);
-  device_queue_->MoveDeviceToEnd(remote_device.GetDeviceId());
+  ble_advertisement_device_queue_->MoveDeviceToEnd(remote_device.GetDeviceId());
 }
 
 void BleConnectionManager::OnConnectionAttemptTimeout(
@@ -536,9 +520,11 @@ void BleConnectionManager::SendMessageSentEvent(int sequence_number) {
   }
 }
 
-void BleConnectionManager::SetClockForTest(
-    std::unique_ptr<base::Clock> clock_for_test) {
-  clock_ = std::move(clock_for_test);
+void BleConnectionManager::SetTestDoubles(
+    std::unique_ptr<base::Clock> test_clock,
+    std::unique_ptr<TimerFactory> test_timer_factory) {
+  clock_ = std::move(test_clock);
+  timer_factory_ = std::move(test_timer_factory);
 }
 
 void BleConnectionManager::RecordAdvertisementToConnectionDuration(
