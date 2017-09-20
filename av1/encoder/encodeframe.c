@@ -1611,7 +1611,8 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 
 #if CONFIG_DELTA_Q
   // delta quant applies to both intra and inter
-  const int super_block_upper_left = ((mi_row & 7) == 0) && ((mi_col & 7) == 0);
+  int super_block_upper_left =
+      ((mi_row & MAX_MIB_MASK) == 0) && ((mi_col & MAX_MIB_MASK) == 0);
 
   if (cm->delta_q_present_flag && (bsize != BLOCK_64X64 || !mbmi->skip) &&
       super_block_upper_left) {
