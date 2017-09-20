@@ -20,6 +20,7 @@
 class PrefService;
 
 namespace net {
+class FileNetLogObserver;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpAuthPreferences;
@@ -81,6 +82,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::URLRequestJobFactory> job_factory_;
   std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
+  std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
   // http_auth_preferences_ holds the preferences for the negotiate
   // authenticator.
   std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences_;
