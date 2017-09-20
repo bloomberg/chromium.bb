@@ -26,6 +26,7 @@ if (is_linux && !is_chromecast && !use_libfuzzer && !use_afl) {
   static_library("expat") {
     sources = [
       "files/lib/expat.h",
+      "files/lib/loadlibrary.c",
       "files/lib/xmlparse.c",
       "files/lib/xmlrole.c",
       "files/lib/xmltok.c",
