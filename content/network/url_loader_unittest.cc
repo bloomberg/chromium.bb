@@ -21,6 +21,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -472,6 +473,71 @@ TEST_F(URLLoaderImplTest, FirstReadIsEnoughToSniff) {
   std::string first(net::kMaxBytesToSniff + 100, 'a');
   LoadPacketsAndVerifyContents(first, std::string());
   ASSERT_EQ(std::string("text/plain"), mime_type());
+}
+
+class NeverFinishedBodyHttpResponse : public net::test_server::HttpResponse {
+ public:
+  NeverFinishedBodyHttpResponse() = default;
+  ~NeverFinishedBodyHttpResponse() override = default;
+
+ private:
+  // net::test_server::HttpResponse implementation.
+  void SendResponse(
+      const net::test_server::SendBytesCallback& send,
+      const net::test_server::SendCompleteCallback& done) override {
+    send.Run(
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/plain\r\n\r\n"
+        "long long ago..." +
+            std::string(1024 * 1024, 'a'),
+        base::Bind([]() {}));
+
+    // Never call |done|, so the other side will never see the completion of the
+    // response body.
+  }
+};
+
+TEST_F(URLLoaderImplTest, CloseResponseBodyConsumerBeforeProducer) {
+  net::EmbeddedTestServer server;
+  server.RegisterRequestHandler(
+      base::Bind([](const net::test_server::HttpRequest& request) {
+        std::unique_ptr<net::test_server::HttpResponse> response =
+            std::make_unique<NeverFinishedBodyHttpResponse>();
+        return response;
+      }));
+  ASSERT_TRUE(server.Start());
+
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, server.GetURL("/hello.html"));
+
+  mojom::URLLoaderPtr loader;
+  // The loader is implicitly owned by the client and the NetworkContext.
+  new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request, false,
+                    client()->CreateInterfacePtr(),
+                    TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  client()->RunUntilResponseBodyArrived();
+  EXPECT_TRUE(client()->has_received_response());
+  EXPECT_FALSE(client()->has_received_completion());
+
+  // Wait for a little amount of time for the response body pipe to be filled.
+  // (Please note that this doesn't guarantee that the pipe is filled to the
+  // point that it is not writable anymore.)
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(100));
+  run_loop.Run();
+
+  auto response_body = client()->response_body_release();
+  response_body.reset();
+  loader.reset();
+
+  // The client is disconnected only when the other side observes that both the
+  // URLLoaderPtr and the response body pipe are disconnected.
+  client()->RunUntilConnectionError();
+
+  EXPECT_FALSE(client()->has_received_completion());
 }
 
 }  // namespace content
