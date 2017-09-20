@@ -1,7 +1,7 @@
-# Please use the following reviewer(s) for Mac code LGTM
-rsesek@chromium.org
+# Please use Cocoa OWNERS for macOS code LGTM
+file://chrome/browser/ui/cocoa/OWNERS
 
-# Other owners
+# Security team owners
 lgarron@chromium.org
 palmer@chromium.org
 
