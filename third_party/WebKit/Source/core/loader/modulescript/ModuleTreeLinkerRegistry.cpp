@@ -21,13 +21,10 @@ DEFINE_TRACE_WRAPPERS(ModuleTreeLinkerRegistry) {
 
 ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
     const ModuleScriptFetchRequest& request,
-    const AncestorList& ancestor_list,
-    ModuleGraphLevel level,
     Modulator* modulator,
-    ModuleTreeReachedUrlSet* reached_url_set,
     ModuleTreeClient* client) {
-  ModuleTreeLinker* fetcher = ModuleTreeLinker::Fetch(
-      request, ancestor_list, level, modulator, reached_url_set, this, client);
+  ModuleTreeLinker* fetcher =
+      ModuleTreeLinker::Fetch(request, modulator, this, client);
   DCHECK(fetcher->IsFetching());
   active_tree_linkers_.insert(fetcher);
   return fetcher;
