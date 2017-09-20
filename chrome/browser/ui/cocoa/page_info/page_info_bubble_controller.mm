@@ -656,8 +656,10 @@ bool IsInternalURL(const GURL& url) {
   yPos = [self setYPositionOfView:securityDetailsField_
                                to:yPos + kSecurityParagraphSpacing];
 
-  NSPoint helpOrigin =
-      NSMakePoint(kSectionHorizontalPadding - kLinkButtonXAdjustment, yPos);
+  // A common anchor point for link elements
+  CGFloat linkY = kSectionHorizontalPadding - kLinkButtonXAdjustment;
+
+  NSPoint helpOrigin = NSMakePoint(linkY, yPos);
   if (base::i18n::IsRTL()) {
     helpOrigin.x = NSWidth([contentView_ frame]) - helpOrigin.x -
                    NSWidth(connectionHelpButton_.frame);
@@ -669,10 +671,13 @@ bool IsInternalURL(const GURL& url) {
     DCHECK(resetDecisionsField_);
     yPos = [self setYPositionOfView:resetDecisionsField_
                                  to:yPos + kSecurityParagraphSpacing];
-    [resetDecisionsButton_
-        setFrameOrigin:NSMakePoint(NSMinX([resetDecisionsButton_ frame]) -
-                                       kLinkButtonXAdjustment,
-                                   yPos)];
+
+    NSPoint resetOrigin = NSMakePoint(linkY, yPos);
+    if (base::i18n::IsRTL()) {
+      resetOrigin.x = NSWidth([contentView_ frame]) - resetOrigin.x -
+                      NSWidth(resetDecisionsButton_.frame);
+    }
+    [resetDecisionsButton_ setFrameOrigin:resetOrigin];
     yPos = NSMaxY([resetDecisionsButton_ frame]);
   }
 
@@ -910,6 +915,10 @@ bool IsInternalURL(const GURL& url) {
                          toView:securitySectionView_];
       [resetDecisionsButton_ setTarget:self];
       [resetDecisionsButton_ setAction:@selector(resetCertificateDecisions:)];
+
+      if (base::i18n::IsRTL()) {
+        resetDecisionsField_.alignment = NSRightTextAlignment;
+      }
     }
 
     if (PageInfoUI::ShouldShowCertificateLink()) {
