@@ -203,8 +203,14 @@ public class TabPersistentStoreUnitTest {
         TabRestoreDetails emptyNtpDetails =
                 new TabRestoreDetails(1, 0, false, UrlConstants.NTP_URL, true);
         mPersistentStore.restoreTab(emptyNtpDetails, null, false);
-
         verify(mNormalTabCreator)
+                .createNewTab(argThat(new LoadUrlParamsUrlMatcher(UrlConstants.NTP_URL)),
+                        eq(TabLaunchType.FROM_RESTORE), (Tab) isNull());
+
+        TabRestoreDetails emptyIncognitoNtpDetails =
+                new TabRestoreDetails(1, 0, true, UrlConstants.NTP_URL, true);
+        mPersistentStore.restoreTab(emptyIncognitoNtpDetails, null, false);
+        verify(mIncognitoTabCreator)
                 .createNewTab(argThat(new LoadUrlParamsUrlMatcher(UrlConstants.NTP_URL)),
                         eq(TabLaunchType.FROM_RESTORE), (Tab) isNull());
     }
