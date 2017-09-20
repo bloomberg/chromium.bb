@@ -205,12 +205,14 @@ ArcVoiceInteractionFrameworkService::ArcVoiceInteractionFrameworkService(
   arc_bridge_service_->voice_interaction_framework()->AddObserver(this);
   ArcSessionManager::Get()->AddObserver(this);
   session_manager::SessionManager::Get()->AddObserver(this);
+  chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
 }
 
 ArcVoiceInteractionFrameworkService::~ArcVoiceInteractionFrameworkService() {
+  chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
+  session_manager::SessionManager::Get()->RemoveObserver(this);
   ArcSessionManager::Get()->RemoveObserver(this);
   arc_bridge_service_->voice_interaction_framework()->RemoveObserver(this);
-  session_manager::SessionManager::Get()->RemoveObserver(this);
 }
 
 void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
@@ -379,6 +381,11 @@ void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
 
   // We only want notify the status change on first user signed in.
   session_manager::SessionManager::Get()->RemoveObserver(this);
+}
+
+void ArcVoiceInteractionFrameworkService::OnHotwordTriggered(uint64_t tv_sec,
+                                                             uint64_t tv_nsec) {
+  InitiateUserInteraction();
 }
 
 void ArcVoiceInteractionFrameworkService::StartVoiceInteractionSetupWizard() {

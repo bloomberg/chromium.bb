@@ -274,6 +274,14 @@ class CrasAudioClientImpl : public CrasAudioClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&CrasAudioClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for hotword.
+    cras_proxy_->ConnectToSignal(
+        cras::kCrasControlInterface, cras::kHotwordTriggered,
+        base::Bind(&CrasAudioClientImpl::HotwordTriggeredReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CrasAudioClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -357,6 +365,23 @@ class CrasAudioClientImpl : public CrasAudioClient {
     }
     for (auto& observer : observers_)
       observer.OutputNodeVolumeChanged(node_id, volume);
+  }
+
+  void HotwordTriggeredReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    int64_t tv_sec, tv_nsec;
+
+    if (!reader.PopInt64(&tv_sec)) {
+      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
+      return;
+    }
+
+    if (!reader.PopInt64(&tv_nsec)) {
+      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
+      return;
+    }
+    for (auto& observer : observers_)
+      observer.HotwordTriggered(tv_sec, tv_nsec);
   }
 
   void OnGetVolumeState(const GetVolumeStateCallback& callback,
@@ -535,6 +560,9 @@ void CrasAudioClient::Observer::ActiveInputNodeChanged(uint64_t node_id) {}
 void CrasAudioClient::Observer::OutputNodeVolumeChanged(uint64_t node_id,
                                                         int volume) {
 }
+
+void CrasAudioClient::Observer::HotwordTriggered(uint64_t tv_sec,
+                                                 uint64_t tv_nsec) {}
 
 CrasAudioClient::CrasAudioClient() {
 }

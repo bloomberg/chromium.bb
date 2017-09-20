@@ -103,6 +103,7 @@ class MockObserver : public CrasAudioClient::Observer {
   MOCK_METHOD1(ActiveOutputNodeChanged, void(uint64_t node_id));
   MOCK_METHOD1(ActiveInputNodeChanged, void(uint64_t node_id));
   MOCK_METHOD2(OutputNodeVolumeChanged, void(uint64_t node_id, int volume));
+  MOCK_METHOD2(HotwordTriggered, void(uint64_t tv_sec, uint64_t tv_nsec));
 };
 
 // Expect the reader to be empty.
@@ -329,6 +330,14 @@ class CrasAudioClientTest : public testing::Test {
         .WillRepeatedly(Invoke(
             this, &CrasAudioClientTest::OnConnectToOutputNodeVolumeChanged));
 
+    // Set an expectation so mock_cras_proxy's monitoring
+    // HotwordTriggered ConnectToSignal will use OnHotwordTriggered() to
+    // run the callback.
+    EXPECT_CALL(
+        *mock_cras_proxy_.get(),
+        DoConnectToSignal(interface_name_, cras::kHotwordTriggered, _, _))
+        .WillRepeatedly(Invoke(this, &CrasAudioClientTest::OnHotwordTriggered));
+
     // Set an expectation so mock_bus's GetObjectProxy() for the given
     // service name and the object path will return mock_cras_proxy_.
     EXPECT_CALL(*mock_bus_.get(),
@@ -398,6 +407,12 @@ class CrasAudioClientTest : public testing::Test {
     output_node_volume_changed_handler_.Run(signal);
   }
 
+  // Send hotword triggered signal to the tested client.
+  void SendHotwordTriggeredSignal(dbus::Signal* signal) {
+    ASSERT_FALSE(hotword_triggered_handler_.is_null());
+    hotword_triggered_handler_.Run(signal);
+  }
+
   // The interface name.
   const std::string interface_name_;
   // The client to be tested.
@@ -420,6 +435,9 @@ class CrasAudioClientTest : public testing::Test {
   dbus::ObjectProxy::SignalCallback active_input_node_changed_handler_;
   // The OutputNodeVolumeChanged signal handler given by the tested client.
   dbus::ObjectProxy::SignalCallback output_node_volume_changed_handler_;
+
+  // The HotwordTriggered signal handler given by the tested client.
+  dbus::ObjectProxy::SignalCallback hotword_triggered_handler_;
   // The name of the method which is expected to be called.
   std::string expected_method_name_;
   // The response which the mock cras proxy returns.
@@ -512,6 +530,20 @@ class CrasAudioClientTest : public testing::Test {
                                   interface_name, signal_name, success));
   }
 
+  // Checks the requested interface name and signal name.
+  // Used to implement the mock cras proxy.
+  void OnHotwordTriggered(
+      const std::string& interface_name,
+      const std::string& signal_name,
+      const dbus::ObjectProxy::SignalCallback& signal_callback,
+      dbus::ObjectProxy::OnConnectedCallback* on_connected_callback) {
+    hotword_triggered_handler_ = signal_callback;
+    const bool success = true;
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(*on_connected_callback),
+                                  interface_name, signal_name, success));
+  }
+
   // Checks the content of the method call and returns the response.
   // Used to implement the mock cras proxy.
   void OnCallMethod(dbus::MethodCall* method_call,
@@ -592,6 +624,34 @@ TEST_F(CrasAudioClientTest, InputMuteChanged) {
 
   // Run the signal callback again and make sure the observer isn't called.
   SendInputMuteChangedSignal(&signal);
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, HotwordTriggered) {
+  dbus::Signal signal(cras::kCrasControlInterface, cras::kHotwordTriggered);
+  dbus::MessageWriter writer(&signal);
+  writer.AppendInt64(0);
+  writer.AppendInt64(0);
+
+  MockObserver observer;
+
+  // Set expectations.
+  EXPECT_CALL(observer, HotwordTriggered(_, _)).Times(1);
+
+  // Add the observer.
+  client_->AddObserver(&observer);
+
+  // Run the signal callback.
+  SendHotwordTriggeredSignal(&signal);
+
+  // Remove the observer.
+  client_->RemoveObserver(&observer);
+
+  EXPECT_CALL(observer, HotwordTriggered(_, _)).Times(0);
+
+  // Run the signal callback again and make sure the observer isn't called.
+  SendHotwordTriggeredSignal(&signal);
 
   base::RunLoop().RunUntilIdle();
 }

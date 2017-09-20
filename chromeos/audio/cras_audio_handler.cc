@@ -108,6 +108,10 @@ void CrasAudioHandler::AudioObserver::OnOuputChannelRemixingChanged(
     bool /* mono_on */) {
 }
 
+void CrasAudioHandler::AudioObserver::OnHotwordTriggered(
+    uint64_t /* tv_sec */,
+    uint64_t /* tv_nsec */) {}
+
 // static
 void CrasAudioHandler::Initialize(
     scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler) {
@@ -805,6 +809,11 @@ void CrasAudioHandler::ActiveInputNodeChanged(uint64_t node_id) {
         << "Active input node changed unexpectedly by system node_id="
         << "0x" << std::hex << node_id;
   }
+}
+
+void CrasAudioHandler::HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec) {
+  for (auto& observer : observers_)
+    observer.OnHotwordTriggered(tv_sec, tv_nsec);
 }
 
 void CrasAudioHandler::OnAudioPolicyPrefChanged() {

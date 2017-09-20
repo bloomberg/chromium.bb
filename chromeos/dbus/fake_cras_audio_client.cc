@@ -237,6 +237,12 @@ void FakeCrasAudioClient::NotifyOutputNodeVolumeChangedForTesting(
     observer.OutputNodeVolumeChanged(node_id, volume);
 }
 
+void FakeCrasAudioClient::NotifyHotwordTriggeredForTesting(uint64_t tv_sec,
+                                                           uint64_t tv_nsec) {
+  for (auto& observer : observers_)
+    observer.HotwordTriggered(tv_sec, tv_nsec);
+}
+
 AudioNodeList::iterator FakeCrasAudioClient::FindNode(uint64_t node_id) {
   return std::find_if(
       node_list_.begin(), node_list_.end(),

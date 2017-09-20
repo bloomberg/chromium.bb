@@ -79,6 +79,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
     // Called when output channel remixing changed.
     virtual void OnOuputChannelRemixingChanged(bool mono_on);
 
+    // Called when hotword is detected.
+    virtual void OnHotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec);
+
    protected:
     AudioObserver();
     virtual ~AudioObserver();
@@ -294,6 +297,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void ActiveOutputNodeChanged(uint64_t node_id) override;
   void ActiveInputNodeChanged(uint64_t node_id) override;
   void OutputNodeVolumeChanged(uint64_t node_id, int volume) override;
+  void HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec) override;
 
   // AudioPrefObserver overrides.
   void OnAudioPolicyPrefChanged() override;

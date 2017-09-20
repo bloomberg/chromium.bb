@@ -45,6 +45,9 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
     // Called when output node's volume changed.
     virtual void OutputNodeVolumeChanged(uint64_t node_id, int volume);
 
+    // Called when hotword is triggered.
+    virtual void HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec);
+
    protected:
     virtual ~Observer();
   };
