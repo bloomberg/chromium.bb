@@ -2137,9 +2137,30 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     (NTPTabOpeningPostOpeningAction)action {
   switch (action) {
     case START_VOICE_SEARCH:
-      return ^{
-        [self startVoiceSearchInCurrentBVCWithOriginView:nil];
-      };
+      if (@available(iOS 11, *)) {
+        return ^{
+          [self startVoiceSearchInCurrentBVCWithOriginView:nil];
+        };
+      } else {
+        return ^{
+          // On iOS10.3.X, the launching the application using an external URL
+          // sometimes triggers notifications
+          // applicationDidBecomeActive
+          // applicationWillResignActive
+          // applicationDidBecomeActive.
+          // Triggering voiceSearch immediatley will cause its dismiss on
+          // applicationWillResignActive.
+          // Add a timer here and hope this will be enough so that voice search
+          // is triggered after second applicationDidBecomeActive.
+          // TODO(crbug.com/766951): remove this workaround.
+          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC),
+                         dispatch_get_main_queue(), ^{
+                           [self
+                               startVoiceSearchInCurrentBVCWithOriginView:nil];
+                         });
+
+        };
+      }
     case START_QR_CODE_SCANNER:
       return ^{
         [self.currentBVC.dispatcher showQRScanner];
