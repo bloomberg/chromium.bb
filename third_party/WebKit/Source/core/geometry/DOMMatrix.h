@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/string_or_unrestricted_double_sequence.h"
+#include "core/geometry/DOMMatrix2DInit.h"
 #include "core/geometry/DOMMatrixInit.h"
 #include "core/geometry/DOMMatrixReadOnly.h"
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
@@ -32,6 +33,8 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
                                      ExceptionState&);
   static DOMMatrix* fromMatrix(DOMMatrixInit&, ExceptionState&);
   static DOMMatrix* CreateForSerialization(double[], int size);
+  // Used by Canvas2D, not defined on the IDL.
+  static DOMMatrix* fromMatrix2D(DOMMatrix2DInit&, ExceptionState&);
 
   void setA(double value) { matrix_->SetM11(value); }
   void setB(double value) { matrix_->SetM12(value); }
