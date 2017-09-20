@@ -24,7 +24,6 @@ class GURL;
 
 namespace content {
 
-class DevToolsCPUThrottler;
 class RenderFrameImpl;
 struct Manifest;
 struct ManifestDebugInfo;
@@ -106,7 +105,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
   RenderFrameImpl* frame_;
   base::Callback<void(int, int, const std::string&, const std::string&)>
       send_protocol_message_callback_for_test_;
-  std::unique_ptr<DevToolsCPUThrottler> cpu_throttler_;
   base::WeakPtrFactory<DevToolsAgent> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
