@@ -73,9 +73,9 @@ PASS marquee.scrollAmount is 5
 "scrollAmount" can contain trailing non-numeric values:
 PASS marquee.scrollAmount is 5
 Setting "scrollAmount" to a negative value raises an exception:
-PASS document.getElementById("marquee").scrollAmount = -1; threw exception IndexSizeError: Failed to set the 'scrollAmount' property on 'HTMLMarqueeElement': The provided value (-1) is negative..
+PASS marquee.scrollAmount is 6
 Setting "scrollAmount" to a value that is too large raises an exception:
-PASS document.getElementById("marquee").scrollAmount = 2147483648; threw exception IndexSizeError: Failed to set the 'scrollAmount' property on 'HTMLMarqueeElement': The provided value (-2147483648) is negative..
+PASS marquee.scrollAmount is 6
 Default "scrollDelay" value is 85:
 PASS marquee.scrollDelay is 85
 "scrollDelay" uses default value when content attribute is not a number:
@@ -93,9 +93,9 @@ PASS marquee.scrollDelay is 5
 "scrollDelay" can contain trailing non-numeric values:
 PASS marquee.scrollDelay is 5
 Setting "scrollDelay" to a negative value raises an exception:
-PASS document.getElementById("marquee").scrollDelay = -1; threw exception IndexSizeError: Failed to set the 'scrollDelay' property on 'HTMLMarqueeElement': The provided value (-1) is negative..
+PASS marquee.scrollDelay is 85
 Setting "scrollDelay" to a value that is too large raises an exception:
-PASS document.getElementById("marquee").scrollDelay = 2147483648; threw exception IndexSizeError: Failed to set the 'scrollDelay' property on 'HTMLMarqueeElement': The provided value (-2147483648) is negative..
+PASS marquee.scrollDelay is 85
 Default "loop" value is -1:
 PASS marquee.loop is -1
 "loop" uses default value when content attribute is not a number:

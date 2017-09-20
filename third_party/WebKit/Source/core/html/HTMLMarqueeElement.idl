@@ -26,9 +26,8 @@ interface HTMLMarqueeElement : HTMLElement {
     [Reflect] attribute DOMString height;
     [Reflect] attribute unsigned long hspace;
     [RaisesException=Setter] attribute long loop;
-    // FIXME: scrollAmount and scrollDelay should be unsigned long.
-    [RaisesException=Setter] attribute long scrollAmount;
-    [RaisesException=Setter] attribute long scrollDelay;
+    attribute unsigned long scrollAmount;
+    attribute unsigned long scrollDelay;
     [Reflect] attribute boolean trueSpeed;
     [Reflect] attribute unsigned long vspace;
     [Reflect] attribute DOMString width;

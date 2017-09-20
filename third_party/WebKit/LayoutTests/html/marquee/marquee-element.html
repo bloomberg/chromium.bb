@@ -196,11 +196,15 @@ shouldBe('marquee.scrollAmount', '5');
 
 debug('Setting "scrollAmount" to a negative value raises an exception:');
 testParent.innerHTML = '<marquee id="marquee">test</marquee>';
-shouldThrow('document.getElementById("marquee").scrollAmount = -1;');
+marquee = document.getElementById('marquee');
+marquee.scrollAmount = -1;
+shouldBe('marquee.scrollAmount', '6');
 
 debug('Setting "scrollAmount" to a value that is too large raises an exception:');
 testParent.innerHTML = '<marquee id="marquee">test</marquee>';
-shouldThrow('document.getElementById("marquee").scrollAmount = 2147483648;');
+marquee = document.getElementById('marquee');
+marquee.scrollAmount = 2147483648;
+shouldBe('marquee.scrollAmount', '6');
 
 debug('Default "scrollDelay" value is 85:');
 testParent.innerHTML = '<marquee id="marquee">test</marquee>';
@@ -244,11 +248,15 @@ shouldBe('marquee.scrollDelay', '5');
 
 debug('Setting "scrollDelay" to a negative value raises an exception:');
 testParent.innerHTML = '<marquee id="marquee">test</marquee>';
-shouldThrow('document.getElementById("marquee").scrollDelay = -1;');
+marquee = document.getElementById('marquee');
+marquee.scrollDelay = -1;
+shouldBe('marquee.scrollDelay', '85');
 
 debug('Setting "scrollDelay" to a value that is too large raises an exception:');
 testParent.innerHTML = '<marquee id="marquee">test</marquee>';
-shouldThrow('document.getElementById("marquee").scrollDelay = 2147483648;');
+marquee = document.getElementById('marquee');
+marquee.scrollDelay = 2147483648;
+shouldBe('marquee.scrollDelay', '85');
 
 debug('Default "loop" value is -1:');
 testParent.innerHTML = '<marquee id="marquee">test</marquee>';
