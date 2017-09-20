@@ -85,7 +85,6 @@ void MemlogConnectionManager::OnConnectionComplete(base::ProcessId pid) {
   base::AutoLock lock(connections_lock_);
   auto found = connections_.find(pid);
   CHECK(found != connections_.end());
-  found->second.release();
   connections_.erase(found);
 }
 
