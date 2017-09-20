@@ -2287,6 +2287,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBackgroundLoaderForDownloadsName,
      flag_descriptions::kBackgroundLoaderForDownloadsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(offline_pages::kBackgroundLoaderForDownloadsFeature)},
+    {"offline-pages-resource-based-snapshot",
+     flag_descriptions::kOfflinePagesResourceBasedSnapshotName,
+     flag_descriptions::kOfflinePagesResourceBasedSnapshotDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         offline_pages::kOfflinePagesResourceBasedSnapshotFeature)},
     {"offline-pages-renovations",
      flag_descriptions::kOfflinePagesRenovationsName,
      flag_descriptions::kOfflinePagesRenovationsDescription, kOsAndroid,

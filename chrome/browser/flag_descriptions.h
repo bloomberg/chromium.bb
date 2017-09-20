@@ -1161,6 +1161,9 @@ extern const char kOfflinePagesPrefetchingDescription[];
 extern const char kOfflinePagesPrefetchingUIName[];
 extern const char kOfflinePagesPrefetchingUIDescription[];
 
+extern const char kOfflinePagesResourceBasedSnapshotName[];
+extern const char kOfflinePagesResourceBasedSnapshotDescription[];
+
 extern const char kOfflinePagesRenovationsName[];
 extern const char kOfflinePagesRenovationsDescription[];
 
