@@ -94,10 +94,10 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
   void RegisterMediaRouteProvider(
       mojom::MediaRouteProviderPtr media_route_provider);
 
- private:
-  // Called when the connection to |media_route_provider_| is disconnected.
-  void OnConnectionError();
+  // Called when a Mojo connection to the component extension is invalidated.
+  void OnMojoConnectionError();
 
+ private:
   // These methods call the corresponding |media_route_provider_| methods.
   // Passed to |request_manager_| as requests to be run when the Mojo connection
   // to the provider is established.
