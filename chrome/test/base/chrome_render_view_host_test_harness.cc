@@ -49,11 +49,11 @@ std::unique_ptr<KeyedService> BuildSigninManagerFake(
 
 }  // namespace
 
-ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness() {
-}
+ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness(
+    int thread_bundle_options)
+    : content::RenderViewHostTestHarness(thread_bundle_options) {}
 
-ChromeRenderViewHostTestHarness::~ChromeRenderViewHostTestHarness() {
-}
+ChromeRenderViewHostTestHarness::~ChromeRenderViewHostTestHarness() = default;
 
 TestingProfile* ChromeRenderViewHostTestHarness::profile() {
   return static_cast<TestingProfile*>(browser_context());

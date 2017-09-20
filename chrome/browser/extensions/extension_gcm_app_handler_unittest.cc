@@ -220,20 +220,16 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
   ExtensionGCMAppHandlerTest()
-      : extension_service_(NULL),
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        extension_service_(NULL),
         registration_result_(gcm::GCMClient::UNKNOWN_ERROR),
-        unregistration_result_(gcm::GCMClient::UNKNOWN_ERROR) {
-  }
+        unregistration_result_(gcm::GCMClient::UNKNOWN_ERROR) {}
 
   ~ExtensionGCMAppHandlerTest() override {}
 
   // Overridden from test::Test:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    // Make BrowserThread work in unittest.
-    thread_bundle_.reset(new content::TestBrowserThreadBundle(
-        content::TestBrowserThreadBundle::REAL_IO_THREAD));
 
     // Allow extension update to unpack crx in process.
     in_process_utility_thread_helper_.reset(
@@ -387,7 +383,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<content::InProcessUtilityThreadHelper>
       in_process_utility_thread_helper_;
   std::unique_ptr<TestingProfile> profile_;

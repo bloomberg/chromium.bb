@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/bluetooth_policy_handler.h"
 
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -40,6 +41,7 @@ class BluetoothPolicyHandlerTest : public testing::Test {
   void TearDown() override {}
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<TestingBluetoothAdapter> adapter_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
 };

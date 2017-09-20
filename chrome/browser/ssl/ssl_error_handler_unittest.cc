@@ -559,11 +559,12 @@ class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
 class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
  public:
   SSLErrorHandlerDateInvalidTest()
-      : field_trial_test_(new network_time::FieldTrialTest()),
+      : ChromeRenderViewHostTestHarness(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        field_trial_test_(new network_time::FieldTrialTest()),
         clock_(new base::SimpleTestClock),
         tick_clock_(new base::SimpleTestTickClock),
         test_server_(new net::EmbeddedTestServer) {
-    SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
     network_time::NetworkTimeTracker::RegisterPrefs(pref_service_.registry());
   }
 

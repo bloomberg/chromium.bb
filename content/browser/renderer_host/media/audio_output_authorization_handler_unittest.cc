@@ -14,6 +14,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system_impl.h"
@@ -78,12 +79,12 @@ class TestBrowserContextWithRealURLRequestContextGetter
 
 class AudioOutputAuthorizationHandlerTest : public RenderViewHostTestHarness {
  public:
-  AudioOutputAuthorizationHandlerTest() {
+  AudioOutputAuthorizationHandlerTest()
+      : RenderViewHostTestHarness(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD) {
     // Not threadsafe, thus set before threads are started:
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
-
-    SetThreadBundleOptions(TestBrowserThreadBundle::Options::REAL_IO_THREAD);
   }
 
   ~AudioOutputAuthorizationHandlerTest() override {

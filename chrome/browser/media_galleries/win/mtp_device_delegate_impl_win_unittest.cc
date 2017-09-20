@@ -28,6 +28,7 @@
 #include "components/storage_monitor/test_volume_mount_watcher_win.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -170,7 +171,7 @@ TEST_F(MTPDeviceDelegateImplWinTest, GalleryNameMTP) {
   registry->GetMediaFileSystemsForExtension(
       web_contents(), extension_.get(),
       base::Bind(&GetGalleryInfoCallback, base::Unretained(&results)));
-  scoped_task_environment()->RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   ASSERT_EQ(media_directories_.num_galleries() + 1u, results.size());
   bool checked = false;
