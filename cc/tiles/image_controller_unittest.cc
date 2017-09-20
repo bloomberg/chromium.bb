@@ -98,25 +98,22 @@ class TestableCache : public StubDecodeCache {
  public:
   ~TestableCache() override { EXPECT_EQ(number_of_refs_, 0); }
 
-  bool GetTaskForImageAndRef(const DrawImage& image,
-                             const TracingInfo& tracing_info,
-                             scoped_refptr<TileTask>* task) override {
+  TaskResult GetTaskForImageAndRef(const DrawImage& image,
+                                   const TracingInfo& tracing_info) override {
     // Return false for large images to mimic "won't fit in memory"
     // behavior.
     if (image.paint_image() &&
         image.paint_image().width() * image.paint_image().height() >=
             1000 * 1000) {
-      return false;
+      return TaskResult(false);
     }
 
-    *task = task_to_use_;
     ++number_of_refs_;
-    return true;
+    return TaskResult(task_to_use_);
   }
-  bool GetOutOfRasterDecodeTaskForImageAndRef(
-      const DrawImage& image,
-      scoped_refptr<TileTask>* task) override {
-    return GetTaskForImageAndRef(image, TracingInfo(), task);
+  TaskResult GetOutOfRasterDecodeTaskForImageAndRef(
+      const DrawImage& image) override {
+    return GetTaskForImageAndRef(image, TracingInfo());
   }
 
   void UnrefImage(const DrawImage& image) override {

@@ -112,12 +112,10 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Finds the existing uploaded image for the provided DrawImage. Creates an
   // upload task to upload the image if an exsiting image does not exist.
-  bool GetTaskForImageAndRef(const DrawImage& image,
-                             const TracingInfo& tracing_info,
-                             scoped_refptr<TileTask>* task) override;
-  bool GetOutOfRasterDecodeTaskForImageAndRef(
-      const DrawImage& image,
-      scoped_refptr<TileTask>* task) override;
+  TaskResult GetTaskForImageAndRef(const DrawImage& image,
+                                   const TracingInfo& tracing_info) override;
+  TaskResult GetOutOfRasterDecodeTaskForImageAndRef(
+      const DrawImage& image) override;
   void UnrefImage(const DrawImage& image) override;
   DecodedDrawImage GetDecodedImageForDraw(const DrawImage& draw_image) override;
   void DrawWithImageFinished(const DrawImage& image,
@@ -304,10 +302,9 @@ class CC_EXPORT GpuImageDecodeCache
 
   // Note that this function behaves as if it was public (all of the same locks
   // need to be acquired).
-  bool GetTaskForImageAndRefInternal(const DrawImage& image,
-                                     const TracingInfo& tracing_info,
-                                     DecodeTaskType task_type,
-                                     scoped_refptr<TileTask>* task);
+  TaskResult GetTaskForImageAndRefInternal(const DrawImage& image,
+                                           const TracingInfo& tracing_info,
+                                           DecodeTaskType task_type);
 
   void RefImageDecode(const DrawImage& draw_image);
   void UnrefImageDecode(const DrawImage& draw_image);

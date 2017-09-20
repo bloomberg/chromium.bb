@@ -442,33 +442,30 @@ GpuImageDecodeCache::~GpuImageDecodeCache() {
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
-bool GpuImageDecodeCache::GetTaskForImageAndRef(const DrawImage& draw_image,
-                                                const TracingInfo& tracing_info,
-                                                scoped_refptr<TileTask>* task) {
+ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRef(
+    const DrawImage& draw_image,
+    const TracingInfo& tracing_info) {
   DCHECK_EQ(tracing_info.task_type, TaskType::kInRaster);
-  return GetTaskForImageAndRefInternal(
-      draw_image, tracing_info, DecodeTaskType::PART_OF_UPLOAD_TASK, task);
+  return GetTaskForImageAndRefInternal(draw_image, tracing_info,
+                                       DecodeTaskType::PART_OF_UPLOAD_TASK);
 }
 
-bool GpuImageDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
-    const DrawImage& draw_image,
-    scoped_refptr<TileTask>* task) {
+ImageDecodeCache::TaskResult
+GpuImageDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
+    const DrawImage& draw_image) {
   return GetTaskForImageAndRefInternal(
       draw_image, TracingInfo(0, TilePriority::NOW, TaskType::kOutOfRaster),
-      DecodeTaskType::STAND_ALONE_DECODE_TASK, task);
+      DecodeTaskType::STAND_ALONE_DECODE_TASK);
 }
 
-bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
+ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     const DrawImage& draw_image,
     const TracingInfo& tracing_info,
-    DecodeTaskType task_type,
-    scoped_refptr<TileTask>* task) {
+    DecodeTaskType task_type) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::GetTaskForImageAndRef");
-  if (SkipImage(draw_image)) {
-    *task = nullptr;
-    return false;
-  }
+  if (SkipImage(draw_image))
+    return TaskResult(false);
 
   base::AutoLock lock(lock_);
   const PaintImage::FrameKey frame_key = draw_image.frame_key();
@@ -480,36 +477,30 @@ bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     image_data = new_data.get();
   } else if (image_data->is_at_raster) {
     // Image is at-raster, just return, this usage will be at-raster as well.
-    *task = nullptr;
-    return false;
+    return TaskResult(false);
   } else if (image_data->decode.decode_failure) {
     // We have already tried and failed to decode this image, so just return.
-    *task = nullptr;
-    return false;
+    return TaskResult(false);
   } else if (image_data->upload.image()) {
     // The image is already uploaded, ref and return.
     RefImage(draw_image);
-    *task = nullptr;
-    return true;
+    return TaskResult(true);
   } else if (task_type == DecodeTaskType::PART_OF_UPLOAD_TASK &&
              image_data->upload.task) {
     // We had an existing upload task, ref the image and return the task.
     RefImage(draw_image);
-    *task = image_data->upload.task;
-    return true;
+    return TaskResult(image_data->upload.task);
   } else if (task_type == DecodeTaskType::STAND_ALONE_DECODE_TASK &&
              image_data->decode.stand_alone_task) {
     // We had an existing out of raster task, ref the image and return the task.
     RefImage(draw_image);
-    *task = image_data->decode.stand_alone_task;
-    return true;
+    return TaskResult(image_data->decode.stand_alone_task);
   }
 
   // Ensure that the image we're about to decode/upload will fit in memory.
   if (!EnsureCapacity(image_data->size)) {
     // Image will not fit, do an at-raster decode.
-    *task = nullptr;
-    return false;
+    return TaskResult(false);
   }
 
   // If we had to create new image data, add it to our map now that we know it
@@ -521,20 +512,21 @@ bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   // it is their responsibility to release it by calling UnrefImage.
   RefImage(draw_image);
 
+  scoped_refptr<TileTask> task;
   if (task_type == DecodeTaskType::PART_OF_UPLOAD_TASK) {
     // Ref image and create a upload and decode tasks. We will release this ref
     // in UploadTaskCompleted.
     RefImage(draw_image);
-    *task = make_scoped_refptr(new ImageUploadTaskImpl(
+    task = make_scoped_refptr(new ImageUploadTaskImpl(
         this, draw_image,
         GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type),
         tracing_info));
-    image_data->upload.task = *task;
+    image_data->upload.task = task;
   } else {
-    *task = GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type);
+    task = GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type);
   }
 
-  return true;
+  return TaskResult(task);
 }
 
 void GpuImageDecodeCache::UnrefImage(const DrawImage& draw_image) {

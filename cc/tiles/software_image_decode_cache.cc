@@ -217,28 +217,27 @@ SoftwareImageDecodeCache::~SoftwareImageDecodeCache() {
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
-bool SoftwareImageDecodeCache::GetTaskForImageAndRef(
+ImageDecodeCache::TaskResult SoftwareImageDecodeCache::GetTaskForImageAndRef(
     const DrawImage& image,
-    const TracingInfo& tracing_info,
-    scoped_refptr<TileTask>* task) {
+    const TracingInfo& tracing_info) {
   DCHECK_EQ(tracing_info.task_type, TaskType::kInRaster);
-  return GetTaskForImageAndRefInternal(
-      image, tracing_info, DecodeTaskType::USE_IN_RASTER_TASKS, task);
+  return GetTaskForImageAndRefInternal(image, tracing_info,
+                                       DecodeTaskType::USE_IN_RASTER_TASKS);
 }
 
-bool SoftwareImageDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
-    const DrawImage& image,
-    scoped_refptr<TileTask>* task) {
+ImageDecodeCache::TaskResult
+SoftwareImageDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
+    const DrawImage& image) {
   return GetTaskForImageAndRefInternal(
       image, TracingInfo(0, TilePriority::NOW, TaskType::kOutOfRaster),
-      DecodeTaskType::USE_OUT_OF_RASTER_TASKS, task);
+      DecodeTaskType::USE_OUT_OF_RASTER_TASKS);
 }
 
-bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
+ImageDecodeCache::TaskResult
+SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
     const DrawImage& image,
     const TracingInfo& tracing_info,
-    DecodeTaskType task_type,
-    scoped_refptr<TileTask>* task) {
+    DecodeTaskType task_type) {
   // If the image already exists or if we're going to create a task for it, then
   // we'll likely need to ref this image (the exception is if we're prerolling
   // the image only). That means the image is or will be in the cache. When the
@@ -254,8 +253,7 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
   // If the target size is empty, we can skip this image during draw (and thus
   // we don't need to decode it or ref it).
   if (key.target_size().IsEmpty()) {
-    *task = nullptr;
-    return false;
+    return TaskResult(false);
   }
 
   base::AutoLock lock(lock_);
@@ -269,14 +267,13 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
     if (image_was_locked ||
         (new_image_fits_in_memory && decoded_it->second->Lock())) {
       RefImage(key);
-      *task = nullptr;
 
       // If the image wasn't locked, then we just succeeded in locking it.
       if (!image_was_locked) {
         RecordLockExistingCachedImageHistogram(tracing_info.requesting_tile_bin,
                                                true);
       }
-      return true;
+      return TaskResult(true);
     }
 
     // If the image fits in memory, then we at least tried to lock it and
@@ -299,8 +296,7 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
           : pending_out_of_raster_image_tasks_[key];
   if (existing_task) {
     RefImage(key);
-    *task = existing_task;
-    return true;
+    return TaskResult(existing_task);
   }
 
   // At this point, we have to create a new image/task, so we need to abort if
@@ -310,8 +306,7 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
   // ref to the image that is now being reffed for the new schedule.
   if (!new_image_fits_in_memory && (decoded_images_ref_counts_.find(key) ==
                                     decoded_images_ref_counts_.end())) {
-    *task = nullptr;
-    return false;
+    return TaskResult(false);
   }
 
   // Actually create the task. RefImage will account for memory on the first
@@ -319,8 +314,7 @@ bool SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
   RefImage(key);
   existing_task = make_scoped_refptr(
       new ImageDecodeTaskImpl(this, key, image, task_type, tracing_info));
-  *task = existing_task;
-  return true;
+  return TaskResult(existing_task);
 }
 
 void SoftwareImageDecodeCache::RefImage(const ImageKey& key) {
