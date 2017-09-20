@@ -49,7 +49,7 @@ component("shell_dialogs") {
     deps += [ "//ui/aura" ]
   }
 
-  if (is_android && !use_aura) {
+  if (is_android) {
     sources += [
       "select_file_dialog_android.cc",
       "select_file_dialog_android.h",

@@ -174,7 +174,7 @@ component("events") {
     configs += [ "//build/config/linux:glib" ]
   }
 
-  if (use_ozone || (is_android && use_aura)) {
+  if (use_ozone) {
     sources += [ "events_default.cc" ]
   }
 
@@ -198,7 +198,7 @@ component("events") {
     ]
   }
 
-  if (is_win || is_mac || use_x11 || use_ozone || (is_android && use_aura)) {
+  if (is_win || is_mac || use_x11 || use_ozone) {
     sources -= [ "events_stub.cc" ]
   }
 
