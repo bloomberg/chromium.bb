@@ -45,7 +45,7 @@ public class SignInPreference
         extends Preference implements SignInAllowedObserver, ProfileDataCache.Observer,
                                       AndroidSyncSettings.AndroidSyncSettingsObserver,
                                       SyncStateChangedListener, AccountsChangeObserver {
-    private boolean mWasSigninPromoDisplayed;
+    private boolean mWasGenericSigninPromoDisplayed;
     private boolean mViewEnabled;
     private @Nullable SigninPromoController mSigninPromoController;
     private final ProfileDataCache mProfileDataCache;
@@ -136,7 +136,7 @@ public class SignInPreference
         setWidgetLayoutResource(0);
         setViewEnabled(false);
         mSigninPromoController = null;
-        mWasSigninPromoDisplayed = false;
+        mWasGenericSigninPromoDisplayed = false;
     }
 
     private void setupPersonalizedPromo() {
@@ -162,11 +162,7 @@ public class SignInPreference
         }
         mSigninPromoController.setProfileData(profileData);
 
-        if (!mWasSigninPromoDisplayed) {
-            mSigninPromoController.recordSigninPromoImpression();
-        }
-
-        mWasSigninPromoDisplayed = true;
+        mWasGenericSigninPromoDisplayed = false;
         notifyChanged();
     }
 
@@ -180,11 +176,11 @@ public class SignInPreference
         setViewEnabled(true);
         mSigninPromoController = null;
 
-        if (!mWasSigninPromoDisplayed) {
+        if (!mWasGenericSigninPromoDisplayed) {
             RecordUserAction.record("Signin_Impression_FromSettings");
         }
 
-        mWasSigninPromoDisplayed = true;
+        mWasGenericSigninPromoDisplayed = true;
     }
 
     private void setupSignedIn(String accountName) {
@@ -201,7 +197,7 @@ public class SignInPreference
         setViewEnabled(true);
 
         mSigninPromoController = null;
-        mWasSigninPromoDisplayed = false;
+        mWasGenericSigninPromoDisplayed = false;
     }
 
     // This just changes visual representation. Actual enabled flag in preference stays

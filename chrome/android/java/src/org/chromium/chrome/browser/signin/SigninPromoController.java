@@ -18,14 +18,17 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.signin.AccountSigninActivity.AccessPoint;
 
+
 /**
- * A controller for configuring the personalized sign in promo. It sets up the sign in promo
- * depending on the context: whether there are any Google accounts on the device which have been
- * previously signed in or not.
+ * A controller for configuring the sign in promo. It sets up the sign in promo depending on the
+ * context: whether there are any Google accounts on the device which have been previously signed in
+ * or not. The controller also takes care of counting impressions, recording signin related user
+ * actions and histograms.
  */
-public class SigninPromoController {
+public class SigninPromoController implements ImpressionTracker.Listener {
     /**
      * Receives notifications when user clicks close button in the promo.
      */
@@ -43,6 +46,7 @@ public class SigninPromoController {
     private static final int MAX_IMPRESSIONS_BOOKMARKS = 20;
     private static final int MAX_IMPRESSIONS_SETTINGS = 5;
 
+    private final ImpressionTracker mImpressionTracker = new ImpressionTracker(this);
     private @Nullable DisplayableProfileData mProfileData;
     private final @AccountSigninActivity.AccessPoint int mAccessPoint;
     private final @Nullable String mImpressionCountName;
@@ -151,25 +155,6 @@ public class SigninPromoController {
     }
 
     /**
-     * Records user actions for promo impressions.
-     */
-    public void recordSigninPromoImpression() {
-        RecordUserAction.record(mImpressionUserActionName);
-        if (mProfileData == null) {
-            RecordUserAction.record(mImpressionWithNoAccountUserActionName);
-        } else {
-            RecordUserAction.record(mImpressionWithAccountUserActionName);
-        }
-
-        // If mImpressionCountName is not null then we should record impressions.
-        if (mImpressionCountName != null) {
-            SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-            int numImpressions = preferences.getInt(mImpressionCountName, 0) + 1;
-            preferences.edit().putInt(mImpressionCountName, numImpressions).apply();
-        }
-    }
-
-    /**
      * Called when the signin promo is destroyed.
      */
     public void onPromoDestroyed() {
@@ -181,7 +166,7 @@ public class SigninPromoController {
     }
 
     /**
-     * Configures the personalized signin promo view.
+     * Configures the signin promo view and resets the impression tracker.
      * @param view The view in which the promo will be added.
      * @param onDismissListener Listener which handles the action of dismissing the promo. A null
      *         onDismissListener marks that the promo is not dismissible and as a result the close
@@ -190,6 +175,8 @@ public class SigninPromoController {
     public void setupPromoView(Context context, PersonalizedSigninPromoView view,
             final @Nullable OnDismissListener onDismissListener) {
         mWasDisplayed = true;
+        mImpressionTracker.reset(mImpressionTracker.wasTriggered() ? null : view);
+
         view.getDescription().setText(mDescriptionStringId);
 
         if (mProfileData == null) {
@@ -226,6 +213,13 @@ public class SigninPromoController {
     /** @return the resource used for the text displayed as promo description. */
     public @StringRes int getDescriptionStringId() {
         return mDescriptionStringId;
+    }
+
+    // ImpressionTracker.Listener implementation.
+    @Override
+    public void onImpression() {
+        recordSigninPromoImpression();
+        mImpressionTracker.reset(null);
     }
 
     private void setupColdState(final Context context, PersonalizedSigninPromoView view) {
@@ -284,5 +278,21 @@ public class SigninPromoController {
         layoutParams.height = context.getResources().getDimensionPixelSize(dimenResId);
         layoutParams.width = context.getResources().getDimensionPixelSize(dimenResId);
         view.getImage().setLayoutParams(layoutParams);
+    }
+
+    private void recordSigninPromoImpression() {
+        RecordUserAction.record(mImpressionUserActionName);
+        if (mProfileData == null) {
+            RecordUserAction.record(mImpressionWithNoAccountUserActionName);
+        } else {
+            RecordUserAction.record(mImpressionWithAccountUserActionName);
+        }
+
+        // If mImpressionCountName is not null then we should record impressions.
+        if (mImpressionCountName != null) {
+            SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+            int numImpressions = preferences.getInt(mImpressionCountName, 0) + 1;
+            preferences.edit().putInt(mImpressionCountName, numImpressions).apply();
+        }
     }
 }

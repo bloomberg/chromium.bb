@@ -15,6 +15,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -68,7 +69,7 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
      */
     private boolean mCanShowPersonalizedSuggestions;
 
-    private final ImpressionTracker mImpressionTracker = new ImpressionTracker(null, this);
+    private final ImpressionTracker mImpressionTracker = new ImpressionTracker(this);
 
     private final @Nullable SigninObserver mSigninObserver;
 
@@ -161,10 +162,10 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         assert !mWasDismissed;
         if (mArePersonalizedPromosEnabled) {
             ((PersonalizedPromoViewHolder) holder).onBindViewHolder();
-        } else {
-            ((GenericPromoViewHolder) holder).onBindViewHolder(mGenericPromoData);
+            return;
         }
 
+        ((GenericPromoViewHolder) holder).onBindViewHolder(mGenericPromoData);
         mImpressionTracker.reset(mImpressionTracker.wasTriggered() ? null : holder.itemView);
     }
 
@@ -176,11 +177,7 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
     @Override
     public void onImpression() {
         assert !mWasDismissed;
-        if (mArePersonalizedPromosEnabled) {
-            mSigninPromoController.recordSigninPromoImpression();
-        } else {
-            RecordUserAction.record("Signin_Impression_FromNTPContentSuggestions");
-        }
+        RecordUserAction.record("Signin_Impression_FromNTPContentSuggestions");
         mImpressionTracker.reset(null);
     }
 

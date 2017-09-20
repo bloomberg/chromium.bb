@@ -16,8 +16,8 @@ import android.webkit.URLUtil;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NodeVisitor;
@@ -59,7 +59,7 @@ public class SuggestionsCarousel extends OptionalLeaf implements ImpressionTrack
         mUiDelegate = uiDelegate;
 
         // The impression tracker will record metrics only once per bottom sheet opened.
-        mImpressionTracker = new ImpressionTracker(null, this);
+        mImpressionTracker = new ImpressionTracker(this);
 
         setVisibilityInternal(true);
     }
