@@ -76,7 +76,7 @@ class PlaceholderSheetContent implements BottomSheet.BottomSheetContent {
     @Override
     @BottomSheetContentController.ContentType
     public int getType() {
-        return BottomSheetContentController.TYPE_PLACEHOLDER;
+        return BottomSheetContentController.TYPE_AUXILIARY_CONTENT;
     }
 
     @Override

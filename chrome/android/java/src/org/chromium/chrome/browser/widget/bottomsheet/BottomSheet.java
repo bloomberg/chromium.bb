@@ -379,15 +379,6 @@ public class BottomSheet
                 return false;
             }
 
-            // If the suggestions for the omnibox are shown, don't scroll the sheet.
-            // TODO(mdjones): This should probably be treated as BottomSheetContent instead of being
-            // a special case.
-            if (!isTouchEventInToolbar(e2) && mDefaultToolbarView != null
-                    && mDefaultToolbarView.getLocationBar().isSuggestionsListShown()
-                    && mDefaultToolbarView.getLocationBar().isSuggestionsListScrolled()) {
-                return false;
-            }
-
             // If the sheet is in the max position, don't move the sheet if the scroll is upward.
             // Instead, allow the sheet's content to handle it if it needs to.
             if (isSheetInMaxPosition && distanceY > 0) return false;
@@ -828,6 +819,7 @@ public class BottomSheet
 
         mToolbarHolder = (FrameLayout) mControlContainer.findViewById(R.id.toolbar_holder);
         mDefaultToolbarView = (BottomToolbarPhone) mControlContainer.findViewById(R.id.toolbar);
+        mDefaultToolbarView.setActivity(mActivity);
 
         mNtpController = new BottomSheetNewTabController(this, mDefaultToolbarView, mActivity);
 

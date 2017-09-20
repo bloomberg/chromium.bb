@@ -781,10 +781,4 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         // Custom tabs do not support suggestions.
         return false;
     }
-
-    @Override
-    public boolean isSuggestionsListScrolled() {
-        // Custom tabs do not support suggestions.
-        return false;
-    }
 }

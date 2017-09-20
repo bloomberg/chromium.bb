@@ -58,7 +58,7 @@ public class BottomSheetContentController extends BottomNavigationView
         implements OnNavigationItemSelectedListener {
     /** The different types of content that may be displayed in the bottom sheet. */
     @IntDef({TYPE_SUGGESTIONS, TYPE_DOWNLOADS, TYPE_BOOKMARKS, TYPE_HISTORY, TYPE_INCOGNITO_HOME,
-            TYPE_PLACEHOLDER})
+            TYPE_AUXILIARY_CONTENT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ContentType {}
     public static final int TYPE_SUGGESTIONS = 0;
@@ -66,7 +66,9 @@ public class BottomSheetContentController extends BottomNavigationView
     public static final int TYPE_BOOKMARKS = 2;
     public static final int TYPE_HISTORY = 3;
     public static final int TYPE_INCOGNITO_HOME = 4;
-    public static final int TYPE_PLACEHOLDER = 5;
+    // This type should be used for non-primary sheet content. If the sheet is opened because of
+    // content with this type, the back button will close the sheet.
+    public static final int TYPE_AUXILIARY_CONTENT = 5;
 
     // R.id.action_home is overloaded, so an invalid ID is used to reference the incognito version
     // of the home content.
@@ -170,6 +172,7 @@ public class BottomSheetContentController extends BottomNavigationView
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private Integer mHighlightItemId;
     private View mHighlightedView;
+    private boolean mNavItemSelectedWhileOmniboxFocused;
 
     public BottomSheetContentController(Context context, AttributeSet atts) {
         super(context, atts);
@@ -306,10 +309,17 @@ public class BottomSheetContentController extends BottomNavigationView
      */
     public void onOmniboxFocusChange(boolean hasFocus) {
         mOmniboxHasFocus = hasFocus;
+
+        if (!mNavItemSelectedWhileOmniboxFocused && !mOmniboxHasFocus) {
+            showBottomSheetContent(R.id.action_home);
+        }
+        mNavItemSelectedWhileOmniboxFocused = false;
     }
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        if (mOmniboxHasFocus) mNavItemSelectedWhileOmniboxFocused = true;
+
         if (mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK
                 && !mShouldOpenSheetOnNextContentChange) {
             return false;
@@ -319,7 +329,10 @@ public class BottomSheetContentController extends BottomNavigationView
         mHighlightedView = null;
         mHighlightItemId = null;
 
-        if (mSelectedItemId == item.getItemId()) {
+        boolean isShowingAuxContent = mBottomSheet.getCurrentSheetContent() != null
+                && mBottomSheet.getCurrentSheetContent().getType() == TYPE_AUXILIARY_CONTENT;
+
+        if (mSelectedItemId == item.getItemId() && !isShowingAuxContent) {
             getSheetContentForId(mSelectedItemId).scrollToTop();
             return false;
         }
