@@ -924,7 +924,13 @@ content::WebContents* SAMLEnrollmentTest::GetEnrollmentContents() {
   return content::WebContents::FromRenderFrameHost(frame_host);
 }
 
-IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {
+// Flaky. See crbug.com/766953.
+#if defined(ADDRESS_SANITIZER) || defined(OS_CHROMEOS)
+#define MAYBE_WithoutCredentialsPassingAPI DISABLED_WithoutCredentialsPassingAPI
+#else
+#define MAYBE_WithoutCredentialsPassingAPI WithoutCredentialsPassingAPI
+#endif
+IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, MAYBE_WithoutCredentialsPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
@@ -936,7 +942,13 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {
   WaitForEnrollmentSuccess();
 }
 
-IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
+// Flaky. See crbug.com/766953.
+#if defined(ADDRESS_SANITIZER) || defined(OS_CHROMEOS)
+#define MAYBE_WithCredentialsPassingAPI DISABLED_WithCredentialsPassingAPI
+#else
+#define MAYBE_WithCredentialsPassingAPI WithCredentialsPassingAPI
+#endif
+IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, MAYBE_WithCredentialsPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
