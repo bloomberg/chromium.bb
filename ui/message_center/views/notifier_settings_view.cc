@@ -626,7 +626,8 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
 
   (*iter)->SetChecked(!(*iter)->checked());
   if (provider_)
-    provider_->SetNotifierEnabled((*iter)->notifier(), (*iter)->checked());
+    provider_->SetNotifierEnabled((*iter)->notifier().notifier_id,
+                                  (*iter)->checked());
 }
 
 void NotifierSettingsView::OnPerformAction(views::Combobox* combobox) {

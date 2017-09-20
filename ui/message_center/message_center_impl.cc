@@ -386,9 +386,7 @@ void MessageCenterImpl::DisableNotificationsByNotifier(
     const NotifierId& notifier_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (settings_provider_) {
-    // TODO(mukai): SetNotifierEnabled can just accept notifier_id?
-    Notifier notifier(notifier_id, base::string16(), true);
-    settings_provider_->SetNotifierEnabled(notifier, false);
+    settings_provider_->SetNotifierEnabled(notifier_id, false);
     // The settings provider will call back to remove the notifications
     // belonging to the notifier id.
   } else {

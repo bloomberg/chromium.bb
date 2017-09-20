@@ -20,7 +20,7 @@ class ApplicationNotifierSource : public NotifierSource,
       Profile* profile) override;
 
   void SetNotifierEnabled(Profile* profile,
-                          const message_center::Notifier& notifier,
+                          const message_center::NotifierId& notifier_id,
                           bool enabled) override;
 
   message_center::NotifierId::NotifierType GetNotifierType() override;

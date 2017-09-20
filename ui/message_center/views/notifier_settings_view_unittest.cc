@@ -59,7 +59,8 @@ class TestingNotifierSettingsProvider : public NotifierSettingsProvider {
     notifiers->push_back(NewNotifier("id2", "other title", /*enabled=*/false));
   }
 
-  void SetNotifierEnabled(const Notifier& notifier, bool enabled) override {}
+  void SetNotifierEnabled(const NotifierId& notifier_id,
+                          bool enabled) override {}
 
   // Called when the settings window is closed.
   void OnNotifierSettingsClosing() override {}

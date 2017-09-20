@@ -16,16 +16,16 @@ namespace favicon_base {
 struct FaviconImageResult;
 }
 
-class WebPageNotifiereSource : public NotifierSource {
+class WebPageNotifierSource : public NotifierSource {
  public:
-  explicit WebPageNotifiereSource(Observer* observer);
-  ~WebPageNotifiereSource() override;
+  explicit WebPageNotifierSource(Observer* observer);
+  ~WebPageNotifierSource() override;
 
   std::vector<std::unique_ptr<message_center::Notifier>> GetNotifierList(
       Profile* profile) override;
 
   void SetNotifierEnabled(Profile* profile,
-                          const message_center::Notifier& notifier,
+                          const message_center::NotifierId& notifier_id,
                           bool enabled) override;
 
   void OnNotifierSettingsClosing() override;
@@ -36,7 +36,7 @@ class WebPageNotifiereSource : public NotifierSource {
   void OnFaviconLoaded(const GURL& url,
                        const favicon_base::FaviconImageResult& favicon_result);
 
-  std::map<base::string16, ContentSettingsPattern> patterns_;
+  std::map<std::string, ContentSettingsPattern> patterns_;
 
   // The task tracker for loading favicons.
   std::unique_ptr<base::CancelableTaskTracker> favicon_tracker_;

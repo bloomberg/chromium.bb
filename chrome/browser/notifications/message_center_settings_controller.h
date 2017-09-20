@@ -63,7 +63,7 @@ class MessageCenterSettingsController
   const message_center::NotifierGroup& GetActiveNotifierGroup() const override;
   void GetNotifierList(std::vector<std::unique_ptr<message_center::Notifier>>*
                            notifiers) override;
-  void SetNotifierEnabled(const message_center::Notifier& notifier,
+  void SetNotifierEnabled(const message_center::NotifierId& notifier_id,
                           bool enabled) override;
   void OnNotifierSettingsClosing() override;
   bool NotifierHasAdvancedSettings(

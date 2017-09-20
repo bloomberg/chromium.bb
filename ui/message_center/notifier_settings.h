@@ -41,7 +41,9 @@ MESSAGE_CENTER_EXPORT NotifierSettingsDelegate* ShowSettings(
     NotifierSettingsProvider* provider,
     gfx::NativeView context);
 
-// The struct to distinguish the notifiers.
+// A struct that identifies the source of notifications. For example, a web page
+// might send multiple notifications but they'd all have the same NotifierId.
+// TODO(estade): rename to Notifier.
 struct MESSAGE_CENTER_EXPORT NotifierId {
   // This enum is being used for histogram reporting and the elements should not
   // be re-ordered.
@@ -96,8 +98,8 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
   NotifierId();
 };
 
-// The struct to hold the information of notifiers. The information will be
-// used by NotifierSettingsView.
+// A struct to hold UI information about notifiers. The data is used by
+// NotifierSettingsView. TODO(estade): rename to NotifierUiData.
 struct MESSAGE_CENTER_EXPORT Notifier {
   Notifier(const NotifierId& notifier_id,
            const base::string16& name,
@@ -182,9 +184,10 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsProvider {
   virtual void GetNotifierList(
       std::vector<std::unique_ptr<Notifier>>* notifiers) = 0;
 
-  // Called when the |enabled| for the |notifier| has been changed by user
+  // Called when the |enabled| for the given notifier has been changed by user
   // operation.
-  virtual void SetNotifierEnabled(const Notifier& notifier, bool enabled) = 0;
+  virtual void SetNotifierEnabled(const NotifierId& notifier_id,
+                                  bool enabled) = 0;
 
   // Called when the settings window is closed.
   virtual void OnNotifierSettingsClosing() = 0;
