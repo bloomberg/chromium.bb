@@ -44,7 +44,7 @@ mr.Init.providerManager_;
  */
 mr.Init.getProviders_ = function(providerManager) {
   const providers = mr.InitHelper.getProviders(providerManager);
-  if (mr.Config.isDebugChannel) {
+  if (!mr.Config.isPublicChannel) {
     providers.push(new mr.TestProvider(providerManager));
   }
   return providers;
