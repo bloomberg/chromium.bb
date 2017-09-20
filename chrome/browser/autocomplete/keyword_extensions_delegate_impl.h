@@ -33,6 +33,10 @@ class KeywordExtensionsDelegateImpl : public KeywordExtensionsDelegate,
   KeywordExtensionsDelegateImpl(Profile* profile, KeywordProvider* provider);
   ~KeywordExtensionsDelegateImpl() override;
 
+  // KeywordExtensionsDelegate:
+  void DeleteSuggestion(const TemplateURL* template_url,
+                        const base::string16& suggestion_text) override;
+
  private:
   // KeywordExtensionsDelegate:
   void IncrementInputId() override;

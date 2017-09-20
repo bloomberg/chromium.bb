@@ -112,6 +112,7 @@ binding.registerCustomHook(function(bindingsAPI) {
       var parseResult = parseOmniboxDescription(
           userSuggestions[i].description);
       parseResult.content = userSuggestions[i].content;
+      parseResult.deletable = userSuggestions[i].deletable;
       $Array.push(suggestions, parseResult);
     }
     return [requestId, suggestions];

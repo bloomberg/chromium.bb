@@ -65,6 +65,11 @@ class ExtensionOmniboxEventRouter {
   static void OnInputCancelled(
       Profile* profile, const std::string& extension_id);
 
+  // The user has deleted an extension omnibox suggestion result.
+  static void OnDeleteSuggestion(Profile* profile,
+                                 const std::string& extension_id,
+                                 const std::string& suggestion_text);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionOmniboxEventRouter);
 };

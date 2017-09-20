@@ -92,6 +92,7 @@ class KeywordProvider : public AutocompleteProvider {
                                         const AutocompleteInput& input);
 
   // AutocompleteProvider:
+  void DeleteMatch(const AutocompleteMatch& match) override;
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
   void Stop(bool clear_cached_results,
             bool due_to_user_inactivity) override;
@@ -136,7 +137,8 @@ class KeywordProvider : public AutocompleteProvider {
       size_t prefix_length,
       const base::string16& remaining_input,
       bool allowed_to_be_default_match,
-      int relevance);
+      int relevance,
+      bool deletable);
 
   // Fills in the "destination_url" and "contents" fields of |match| with the
   // provided user input and keyword data.
@@ -158,6 +160,9 @@ class KeywordProvider : public AutocompleteProvider {
       const base::string16& keyword);
 
   AutocompleteProviderListener* listener_;
+
+  // Input when searching against the keyword provider.
+  AutocompleteInput keyword_input_;
 
   // Model for the keywords.
   TemplateURLService* model_;

@@ -17,6 +17,11 @@ chrome.omnibox.onInputChanged.addListener(
         {content: text + "n2", description: "description2"},
         {content: text + "n3" + incognitoSuffix, description: "description3"},
       ]);
+    } else if("d") {
+      suggest([
+        {content: "n1", description: "des1", deletable: true},
+        {content: "n2", description: "des2", deletable: false},
+      ]);
     } else {
       // Other tests, just provide a simple suggestion.
       suggest([{content: text + " 1", description: "description"}]);
@@ -32,6 +37,11 @@ chrome.omnibox.onInputEntered.addListener(
       chrome.test.assertEq("command" + incognitoSuffix, text);
       chrome.test.notifyPass();
     }
+  });
+
+chrome.omnibox.onDeleteSuggestion.addListener(
+  function(text) {
+    chrome.test.sendMessage("onDeleteSuggestion: " + text);
   });
 
 // Now we wait for the input events to fire.

@@ -2,12 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api_testbase.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/view_ids.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+
+namespace {
+
+void InputKeys(Browser* browser, const std::vector<ui::KeyboardCode>& keys) {
+  for (auto key : keys) {
+    // Note that sending key presses can be flaky at times.
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser, key, false, false,
+                                                false, false));
+  }
+}
+
+}  // namespace
 
 // Tests that the autocomplete popup doesn't reopen after accepting input for
 // a given query.
@@ -29,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
 
   // Input a keyword query and wait for suggestions from the extension.
   omnibox_view->OnBeforePossibleChange();
-  omnibox_view->SetUserText(base::ASCIIToUTF16("keyword comman"));
+  omnibox_view->SetUserText(base::ASCIIToUTF16("kw comman"));
   omnibox_view->OnAfterPossibleChange(true);
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
@@ -44,10 +62,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   // directly, figure out how to send it via the proper calls to
   // location_bar or location_bar->().
   autocomplete_controller->Start(AutocompleteInput(
-      base::ASCIIToUTF16("keyword command"), base::string16::npos,
-      std::string(), GURL(), base::string16(), metrics::OmniboxEventProto::NTP,
-      true, false, true, true, false,
-      ChromeAutocompleteSchemeClassifier(profile)));
+      base::ASCIIToUTF16("kw command"), base::string16::npos, std::string(),
+      GURL(), base::string16(), metrics::OmniboxEventProto::NTP, true, false,
+      true, true, false, ChromeAutocompleteSchemeClassifier(profile)));
   location_bar->AcceptInput();
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());
@@ -55,4 +72,77 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, PopupStaysClosed) {
   // gets told to navigate to the string "command".
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_FALSE(popup_model->IsOpen());
+}
+
+// Tests deleting a deletable omnibox extension suggestion result.
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DeleteOmniboxSuggestionResult) {
+  ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
+
+  // The results depend on the TemplateURLService being loaded. Make sure it is
+  // loaded so that the autocomplete results are consistent.
+  Profile* profile = browser()->profile();
+  search_test_utils::WaitForTemplateURLServiceToLoad(
+      TemplateURLServiceFactory::GetForProfile(profile));
+
+  AutocompleteController* autocomplete_controller =
+      GetAutocompleteController(browser());
+
+  chrome::FocusLocationBar(browser());
+  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+
+  // Input a keyword query and wait for suggestions from the extension.
+  InputKeys(browser(), {ui::VKEY_K, ui::VKEY_W, ui::VKEY_SPACE, ui::VKEY_D});
+
+  WaitForAutocompleteDone(autocomplete_controller);
+  EXPECT_TRUE(autocomplete_controller->done());
+
+  // Peek into the controller to see if it has the results we expect.
+  const AutocompleteResult& result = autocomplete_controller->result();
+  ASSERT_EQ(4U, result.size()) << AutocompleteResultAsString(result);
+
+  EXPECT_EQ(base::ASCIIToUTF16("kw d"), result.match_at(0).fill_into_edit);
+  EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
+            result.match_at(0).provider->type());
+  EXPECT_FALSE(result.match_at(0).deletable);
+
+  EXPECT_EQ(base::ASCIIToUTF16("kw n1"), result.match_at(1).fill_into_edit);
+  EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
+            result.match_at(1).provider->type());
+  // Verify that the first omnibox extension suggestion is deletable.
+  EXPECT_TRUE(result.match_at(1).deletable);
+
+  EXPECT_EQ(base::ASCIIToUTF16("kw n2"), result.match_at(2).fill_into_edit);
+  EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
+            result.match_at(2).provider->type());
+  // Verify that the second omnibox extension suggestion is not deletable.
+  EXPECT_FALSE(result.match_at(2).deletable);
+
+  EXPECT_EQ(base::ASCIIToUTF16("kw d"), result.match_at(3).fill_into_edit);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+            result.match_at(3).type);
+  EXPECT_FALSE(result.match_at(3).deletable);
+
+// This test portion is excluded from Mac because the Mac key combination
+// FN+SHIFT+DEL used to delete an omnibox suggestion cannot be reproduced.
+// This is because the FN key is not supported in interactive_test_util.h.
+#if !defined(OS_MACOSX)
+  ExtensionTestMessageListener delete_suggestion_listener(
+      "onDeleteSuggestion: des1", false);
+
+  // Skip the first suggestion result.
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_DOWN, false,
+                                              false, false, false));
+  // Delete the second suggestion result. On Linux, this is done via SHIFT+DEL.
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_DELETE, false,
+                                              true, false, false));
+  // Verify that the onDeleteSuggestion event was fired.
+  ASSERT_TRUE(delete_suggestion_listener.WaitUntilSatisfied());
+
+  // Verify that the first suggestion result was deleted. There should be one
+  // less suggestion result, 3 now instead of 4.
+  ASSERT_EQ(3U, result.size());
+  EXPECT_EQ(base::ASCIIToUTF16("kw d"), result.match_at(0).fill_into_edit);
+  EXPECT_EQ(base::ASCIIToUTF16("kw n2"), result.match_at(1).fill_into_edit);
+  EXPECT_EQ(base::ASCIIToUTF16("kw d"), result.match_at(2).fill_into_edit);
+#endif
 }
