@@ -8073,6 +8073,79 @@
             "eve"
         ]
     },
+    "eve-kvm-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "eve-kvm"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "eve-kvm-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "eve-kvm"
+        ]
+    },
+    "eve-kvm-full": {
+        "_template": "full",
+        "boards": [
+            "eve-kvm"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "eve-kvm-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "eve-kvm"
+        ]
+    },
+    "eve-kvm-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "eve-kvm"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "eve-kvm-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "eve-kvm"
+        ]
+    },
+    "eve-kvm-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "eve-kvm"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
+    },
+    "eve-kvm-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "eve-kvm"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "eve-kvm-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "eve-kvm"
+        ]
+    },
     "eve-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
         "boards": [
@@ -10433,9 +10506,10 @@
         "boards": [
             "guado-accelerator"
         ],
-        "buildslave_type": "baremetal",
         "chrome_sdk": false,
-        "sync_chrome": false
+        "chrome_sdk_build_chrome": false,
+        "sync_chrome": false,
+        "vm_tests": []
     },
     "guado-accelerator-release-afdo": {
         "_template": "release_afdo_generate",
@@ -15650,6 +15724,7 @@
             "edgar-release",
             "elm-release",
             "enguarde-release",
+            "eve-kvm-release",
             "eve-release",
             "eve-userdebug-release",
             "expresso-release",
