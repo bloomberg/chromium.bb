@@ -896,6 +896,12 @@ executable("headless_shell") {
     "//build/config:exe_and_shlib_deps",
   ]
 
+  if (!headless_use_embedded_resources) {
+    data = [
+      "$root_out_dir/headless_lib.pak",
+    ]
+  }
+
   if (is_win) {
     deps += [ "//build/win:default_exe_manifest" ]
   }
