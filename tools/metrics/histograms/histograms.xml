@@ -33541,6 +33541,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Various usage counts for media galleries.</summary>
 </histogram>
 
+<histogram name="MediaRouter.Cast.Discovery.CachedSinksAvailableCount"
+    units="devices">
+  <owner>btolsch@chromium.org</owner>
+  <summary>
+    The number of Cast devices available from the device cache at the time of a
+    new network connection.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Cast.Discovery.ConnectedDevicesCount"
     units="devices">
   <owner>zhaobin@chromium.org</owner>
@@ -33556,6 +33565,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The number of known Cast devices. Recorded when browser finishes discovering
     Cast devices. Recording happens roughly once per hour.
   </summary>
+</histogram>
+
+<histogram name="MediaRouter.Cast.Discovery.SinkSource"
+    enum="MediaRouterCastSinkSource">
+  <owner>btolsch@chromium.org</owner>
+  <summary>The source of discovery for a newly-created Cast sink.</summary>
 </histogram>
 
 <histogram name="MediaRouter.Dial.AvailableDevicesCount" units="devices">
@@ -33588,6 +33603,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="MediaRouterDialogOpenOrigin">
   <owner>apacible@chromium.org</owner>
   <summary>Location the user clicked to open the Media Router dialog.</summary>
+</histogram>
+
+<histogram name="MediaRouter.NetworkMonitor.ConnectionType"
+    enum="DiscoveryNetworkMonitorConnectionType">
+  <owner>btolsch@chromium.org</owner>
+  <summary>
+    Network connection type reported by DiscoveryNetworkMonitor whenever it
+    detects a change in the set of networks connected to the host device which
+    may affect local discovery.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.NetworkMonitor.NetworkChangeEventDelta" units="ms">
+  <owner>btolsch@chromium.org</owner>
+  <summary>
+    Time between network change events reported by DiscoveryNetworkMonitor.
+  </summary>
 </histogram>
 
 <histogram name="MediaRouter.Provider.CreateRoute.Result"

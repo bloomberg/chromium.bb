@@ -20,6 +20,8 @@
 
 namespace media_router {
 
+class DiscoveryNetworkMonitorMetricObserver;
+
 // Tracks the set of active network interfaces that can be used for local
 // discovery.  If the list of interfaces changes, then
 // DiscoveryNetworkMonitor::Observer is called with the instance of the monitor.
@@ -101,6 +103,10 @@ class DiscoveryNetworkMonitor
   // Function used to get information about the networks to which we are
   // connected.
   NetworkInfoFunction network_info_function_;
+
+  // Observer which records metrics about the network changes broadcast by the
+  // monitor.
+  std::unique_ptr<DiscoveryNetworkMonitorMetricObserver> metric_observer_;
 
   // SequenceChecker for |task_runner_|.
   SEQUENCE_CHECKER(sequence_checker_);
