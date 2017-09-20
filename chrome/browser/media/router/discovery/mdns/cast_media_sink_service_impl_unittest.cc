@@ -147,7 +147,8 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelOpenSucceeded) {
   cast_channel::MockCastSocket socket;
   socket.set_id(1);
 
-  media_sink_service_impl_.OnChannelOpenSucceeded(cast_sink, &socket);
+  media_sink_service_impl_.OnChannelOpenSucceeded(
+      cast_sink, &socket, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Verify sink content
   EXPECT_CALL(mock_sink_discovered_cb_,
@@ -170,8 +171,10 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOnChannelOpenSucceeded) {
 
   // Current round of Dns discovery finds service1 and service 2.
   // Fail to open channel 1.
-  media_sink_service_impl_.OnChannelOpenSucceeded(cast_sink2, &socket2);
-  media_sink_service_impl_.OnChannelOpenSucceeded(cast_sink3, &socket3);
+  media_sink_service_impl_.OnChannelOpenSucceeded(
+      cast_sink2, &socket2, CastMediaSinkServiceImpl::SinkSource::kMdns);
+  media_sink_service_impl_.OnChannelOpenSucceeded(
+      cast_sink3, &socket3, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Verify sink content
   EXPECT_CALL(mock_sink_discovered_cb_,
@@ -193,7 +196,8 @@ TEST_F(CastMediaSinkServiceImplTest, TestTimer) {
   cast_channel::MockCastSocket socket2;
   socket2.set_id(2);
 
-  media_sink_service_impl_.OnChannelOpenSucceeded(cast_sink2, &socket2);
+  media_sink_service_impl_.OnChannelOpenSucceeded(
+      cast_sink2, &socket2, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   std::vector<MediaSinkInternal> sinks;
   EXPECT_CALL(mock_sink_discovered_cb_, Run(_)).WillOnce(SaveArg<0>(&sinks));
@@ -207,7 +211,8 @@ TEST_F(CastMediaSinkServiceImplTest, TestTimer) {
   cast_channel::MockCastSocket socket1;
   socket1.set_id(1);
 
-  media_sink_service_impl_.OnChannelOpenSucceeded(cast_sink1, &socket1);
+  media_sink_service_impl_.OnChannelOpenSucceeded(
+      cast_sink1, &socket1, CastMediaSinkServiceImpl::SinkSource::kMdns);
   EXPECT_TRUE(mock_timer_->IsRunning());
 }
 
@@ -223,13 +228,17 @@ TEST_F(CastMediaSinkServiceImplTest, TestOpenChannelNoRetry) {
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint, _, _, _))
       .Times(1);
-  media_sink_service_impl_.OpenChannel(ip_endpoint, cast_sink, nullptr);
+  media_sink_service_impl_.OpenChannel(
+      ip_endpoint, cast_sink, nullptr,
+      CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // One pending sink, the same as |cast_sink|
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint, _, _, _))
       .Times(0);
-  media_sink_service_impl_.OpenChannel(ip_endpoint, cast_sink, nullptr);
+  media_sink_service_impl_.OpenChannel(
+      ip_endpoint, cast_sink, nullptr,
+      CastMediaSinkServiceImpl::SinkSource::kMdns);
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestOpenChannelRetryOnce) {
@@ -246,8 +255,9 @@ TEST_F(CastMediaSinkServiceImplTest, TestOpenChannelRetryOnce) {
       new net::BackoffEntry(&CastMediaSinkServiceImpl::kDefaultBackoffPolicy));
   ExpectOpenSocketInternal(&socket);
   media_sink_service_impl_.max_retry_attempts_ = 3;
-  media_sink_service_impl_.OpenChannel(ip_endpoint, cast_sink,
-                                       std::move(backoff_entry));
+  media_sink_service_impl_.OpenChannel(
+      ip_endpoint, cast_sink, std::move(backoff_entry),
+      CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   socket.SetErrorState(cast_channel::ChannelError::NONE);
   ExpectOpenSocketInternal(&socket);
@@ -272,8 +282,9 @@ TEST_F(CastMediaSinkServiceImplTest, TestOpenChannelFails) {
       new net::BackoffEntry(&policy));
   auto* backoff_entry_ptr = backoff_entry.get();
   media_sink_service_impl_.max_retry_attempts_ = 3;
-  media_sink_service_impl_.OpenChannel(ip_endpoint, cast_sink,
-                                       std::move(backoff_entry));
+  media_sink_service_impl_.OpenChannel(
+      ip_endpoint, cast_sink, std::move(backoff_entry),
+      CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // 1st retry attempt
   ExpectOpenSocketInternal(&socket);
@@ -312,13 +323,16 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOpenChannels) {
 
   // 1st round finds service 1 & 2.
   std::vector<MediaSinkInternal> sinks1{cast_sink1, cast_sink2};
-  media_sink_service_impl_.OpenChannels(sinks1);
+  media_sink_service_impl_.OpenChannels(
+      sinks1, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Channel 2 opened.
   cast_channel::MockCastSocket socket2;
   socket2.set_id(2);
   socket2.SetErrorState(cast_channel::ChannelError::NONE);
-  media_sink_service_impl_.OnChannelOpened(cast_sink2, nullptr, &socket2);
+  media_sink_service_impl_.OnChannelOpened(
+      cast_sink2, nullptr, CastMediaSinkServiceImpl::SinkSource::kMdns,
+      &socket2);
 
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint2, _, _, _));
@@ -327,7 +341,8 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOpenChannels) {
 
   // 2nd round finds service 2 & 3.
   std::vector<MediaSinkInternal> sinks2{cast_sink2, cast_sink3};
-  media_sink_service_impl_.OpenChannels(sinks2);
+  media_sink_service_impl_.OpenChannels(
+      sinks2, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Channel 1 and 3 opened.
   cast_channel::MockCastSocket socket1;
@@ -336,8 +351,12 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOpenChannels) {
   socket3.set_id(3);
   socket1.SetErrorState(cast_channel::ChannelError::NONE);
   socket3.SetErrorState(cast_channel::ChannelError::NONE);
-  media_sink_service_impl_.OnChannelOpened(cast_sink1, nullptr, &socket1);
-  media_sink_service_impl_.OnChannelOpened(cast_sink3, nullptr, &socket3);
+  media_sink_service_impl_.OnChannelOpened(
+      cast_sink1, nullptr, CastMediaSinkServiceImpl::SinkSource::kMdns,
+      &socket1);
+  media_sink_service_impl_.OnChannelOpened(
+      cast_sink3, nullptr, CastMediaSinkServiceImpl::SinkSource::kMdns,
+      &socket3);
 
   EXPECT_CALL(mock_sink_discovered_cb_,
               Run(std::vector<MediaSinkInternal>(
@@ -351,7 +370,8 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelOpenFailed) {
   cast_channel::MockCastSocket socket;
   socket.set_id(1);
 
-  media_sink_service_impl_.OnChannelOpenSucceeded(cast_sink, &socket);
+  media_sink_service_impl_.OnChannelOpenSucceeded(
+      cast_sink, &socket, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   EXPECT_EQ(1u, media_sink_service_impl_.current_sinks_map_.size());
 
@@ -538,7 +558,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheSinksForKnownNetwork) {
   socket2.set_id(2);
   ExpectOpenSocketInternal(&socket1);
   ExpectOpenSocketInternal(&socket2);
-  media_sink_service_impl_.OpenChannels(sink_list1);
+  media_sink_service_impl_.OpenChannels(
+      sink_list1, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Connect to a new network with different sinks.
   fake_network_info_.clear();
@@ -561,7 +582,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheSinksForKnownNetwork) {
   socket3.SetIPEndpoint(ip_endpoint3);
   socket3.set_id(3);
   ExpectOpenSocketInternal(&socket3);
-  media_sink_service_impl_.OpenChannels(sink_list2);
+  media_sink_service_impl_.OpenChannels(
+      sink_list2, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Reconnecting to the previous ethernet network should restore the same sinks
   // from the cache and attempt to resolve them.
@@ -602,7 +624,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheContainsOnlyResolvedSinks) {
   socket2.set_id(2);
   ExpectOpenSocketInternal(&socket1);
   ExpectOpenSocketInternal(&socket2);
-  media_sink_service_impl_.OpenChannels(sink_list1);
+  media_sink_service_impl_.OpenChannels(
+      sink_list1, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Connect to a new network with different sinks.
   fake_network_info_.clear();
@@ -624,7 +647,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheContainsOnlyResolvedSinks) {
   socket3.SetIPEndpoint(ip_endpoint3);
   socket3.set_id(3);
   ExpectOpenSocketInternal(&socket3);
-  media_sink_service_impl_.OpenChannels(sink_list2);
+  media_sink_service_impl_.OpenChannels(
+      sink_list2, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Reconnecting to the previous ethernet network should restore only |sink1|,
   // since |sink2| failed to resolve.
@@ -660,7 +684,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedOnChannelOpenFailed) {
   socket1.SetIPEndpoint(ip_endpoint1);
   socket1.set_id(1);
   ExpectOpenSocketInternal(&socket1);
-  media_sink_service_impl_.OpenChannels(sink_list1);
+  media_sink_service_impl_.OpenChannels(
+      sink_list1, CastMediaSinkServiceImpl::SinkSource::kMdns);
   media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint1);
 
   // Connect to a new network with different sinks.
@@ -682,7 +707,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedOnChannelOpenFailed) {
   socket2.SetIPEndpoint(ip_endpoint2);
   socket2.set_id(2);
   ExpectOpenSocketInternal(&socket2);
-  media_sink_service_impl_.OpenChannels(sink_list2);
+  media_sink_service_impl_.OpenChannels(
+      sink_list2, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Reconnecting to the previous ethernet network should not restore any sinks
   // since the only sink to resolve successfully, |sink1|, later had a channel
@@ -718,7 +744,8 @@ TEST_F(CastMediaSinkServiceImplTest, UnknownNetworkNoCache) {
   socket2.set_id(2);
   ExpectOpenSocketInternal(&socket1);
   ExpectOpenSocketInternal(&socket2);
-  media_sink_service_impl_.OpenChannels(sink_list1);
+  media_sink_service_impl_.OpenChannels(
+      sink_list1, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Network is reported as disconnected but discover a new device.
   fake_network_info_.clear();
@@ -736,7 +763,8 @@ TEST_F(CastMediaSinkServiceImplTest, UnknownNetworkNoCache) {
   socket3.SetIPEndpoint(ip_endpoint3);
   socket3.set_id(3);
   ExpectOpenSocketInternal(&socket3);
-  media_sink_service_impl_.OpenChannels(sink_list2);
+  media_sink_service_impl_.OpenChannels(
+      sink_list2, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Connecting to a network whose ID resolves to __unknown__ shouldn't pull any
   // cache items from another unknown network.
@@ -775,7 +803,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedForKnownNetwork) {
   socket2.set_id(2);
   ExpectOpenSocketInternal(&socket1);
   ExpectOpenSocketInternal(&socket2);
-  media_sink_service_impl_.OpenChannels(sink_list1);
+  media_sink_service_impl_.OpenChannels(
+      sink_list1, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Connect to a new network with different sinks.
   fake_network_info_.clear();
@@ -798,7 +827,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedForKnownNetwork) {
   socket3.SetIPEndpoint(ip_endpoint3);
   socket3.set_id(3);
   ExpectOpenSocketInternal(&socket3);
-  media_sink_service_impl_.OpenChannels(sink_list2);
+  media_sink_service_impl_.OpenChannels(
+      sink_list2, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Reconnecting to the previous ethernet network should restore the same sinks
   // from the cache and attempt to resolve them.  |sink3| is also lost.
@@ -828,7 +858,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheUpdatedForKnownNetwork) {
   socket4.SetIPEndpoint(ip_endpoint4);
   socket4.set_id(4);
   ExpectOpenSocketInternal(&socket4);
-  media_sink_service_impl_.OpenChannels(sink_list3);
+  media_sink_service_impl_.OpenChannels(
+      sink_list3, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Disconnect from the network and lose sinks.
   fake_network_info_.clear();
@@ -868,7 +899,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheDialDiscoveredSinks) {
   socket2.set_id(2);
   ExpectOpenSocketInternal(&socket1);
   ExpectOpenSocketInternal(&socket2);
-  media_sink_service_impl_.OpenChannels(sink_list1);
+  media_sink_service_impl_.OpenChannels(
+      sink_list1, CastMediaSinkServiceImpl::SinkSource::kMdns);
   media_sink_service_impl_.OnDialSinkAdded(sink2_dial);
 
   // Connect to a new network with different sinks.
@@ -899,7 +931,8 @@ TEST_F(CastMediaSinkServiceImplTest, CacheDialDiscoveredSinks) {
   socket4.set_id(4);
   ExpectOpenSocketInternal(&socket3);
   ExpectOpenSocketInternal(&socket4);
-  media_sink_service_impl_.OpenChannels(sink_list2);
+  media_sink_service_impl_.OpenChannels(
+      sink_list2, CastMediaSinkServiceImpl::SinkSource::kMdns);
   media_sink_service_impl_.OnDialSinkAdded(sink4_dial);
 
   // Reconnecting to the previous ethernet network should restore the same sinks
@@ -945,7 +978,8 @@ TEST_F(CastMediaSinkServiceImplTest, DualDiscoveryDoesntDuplicateCacheItems) {
   socket1_cast.SetIPEndpoint(ip_endpoint1_cast);
   socket1_cast.set_id(2);
   ExpectOpenSocketInternal(&socket1_cast);
-  media_sink_service_impl_.OpenChannels(sink_list1);
+  media_sink_service_impl_.OpenChannels(
+      sink_list1, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Connect to a new network with different sinks.
   fake_network_info_.clear();
@@ -968,7 +1002,8 @@ TEST_F(CastMediaSinkServiceImplTest, DualDiscoveryDoesntDuplicateCacheItems) {
   socket2.SetIPEndpoint(ip_endpoint2);
   socket2.set_id(3);
   ExpectOpenSocketInternal(&socket2);
-  media_sink_service_impl_.OpenChannels(sink_list2);
+  media_sink_service_impl_.OpenChannels(
+      sink_list2, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   // Reconnecting to the previous ethernet network should restore the same sinks
   // from the cache and attempt to resolve them.

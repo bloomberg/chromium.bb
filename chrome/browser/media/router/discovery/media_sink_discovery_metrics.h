@@ -48,11 +48,27 @@ class DialDeviceCountMetrics : public DeviceCountMetrics {
 // Metrics for Cast device counts.
 class CastDeviceCountMetrics : public DeviceCountMetrics {
  public:
+  // Indicates the discovery source that led to the creation of a cast sink.
+  // This is tied to the UMA histogram MediaRouter.Cast.Discovery.SinkSource, so
+  // new entries should only be added to the end, but before kTotalCount.
+  enum SinkSource {
+    kNetworkCache = 0,
+    kMdns = 1,
+    kDial = 2,
+    kConnectionRetry = 3,
+
+    kTotalCount = 3,
+  };
+
   static const char kHistogramCastKnownDeviceCount[];
   static const char kHistogramCastConnectedDeviceCount[];
+  static const char kHistogramCastCachedSinksAvailableCount[];
+  static const char kHistogramCastCachedSinkResolved[];
 
   void RecordDeviceCounts(size_t available_device_count,
                           size_t known_device_count) override;
+  void RecordCachedSinksAvailableCount(size_t cached_sink_count);
+  void RecordResolvedFromSource(SinkSource sink_source);
 };
 
 }  // namespace media_router

@@ -8306,6 +8306,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="12" label="AddLocalFile: get path failed"/>
 </enum>
 
+<enum name="DiscoveryNetworkMonitorConnectionType">
+  <int value="0" label="Wifi"/>
+  <int value="1" label="Ethernet"/>
+  <int value="2" label="Unknown reported as wifi"/>
+  <int value="3" label="Unknown reported as ethernet"/>
+  <int value="4" label="Unknown reported as other"/>
+  <int value="5" label="Unknown"/>
+  <int value="6" label="Disconnected"/>
+</enum>
+
 <enum name="DisplayLinkInstallationStatus">
   <int value="0" label="DisplayLink not installed"/>
   <int value="1" label="7.1 or earlier"/>
@@ -25804,6 +25814,13 @@ from previous Chrome versions.
   <int value="0" label="Success"/>
   <int value="1" label="ErrorUnknown"/>
   <int value="2" label="ErrorTooManyRetries"/>
+</enum>
+
+<enum name="MediaRouterCastSinkSource">
+  <int value="0" label="NetworkCache"/>
+  <int value="1" label="mDNS"/>
+  <int value="2" label="DIAL"/>
+  <int value="3" label="Connection retry"/>
 </enum>
 
 <enum name="MediaRouterCreateRouteOutcome">

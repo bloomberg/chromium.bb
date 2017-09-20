@@ -65,6 +65,10 @@ static_library("discovery") {
       "discovery_network_list_win.cc",
       "discovery_network_monitor.cc",
       "discovery_network_monitor.h",
+      "discovery_network_monitor_metric_observer.cc",
+      "discovery_network_monitor_metric_observer.h",
+      "discovery_network_monitor_metrics.cc",
+      "discovery_network_monitor_metrics.h",
     ]
   }
 

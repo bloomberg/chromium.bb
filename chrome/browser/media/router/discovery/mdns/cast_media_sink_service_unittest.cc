@@ -67,7 +67,9 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
 
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(Stop, void());
-  MOCK_METHOD1(OpenChannels, void(std::vector<MediaSinkInternal> cast_sinks));
+  MOCK_METHOD2(OpenChannels,
+               void(std::vector<MediaSinkInternal> cast_sinks,
+                    CastMediaSinkServiceImpl::SinkSource sink_source));
 };
 
 class CastMediaSinkServiceTest : public ::testing::Test {
@@ -184,7 +186,7 @@ TEST_F(CastMediaSinkServiceTest, TestOnDnsSdEvent) {
                                     service_list);
 
   std::vector<MediaSinkInternal> sinks;
-  EXPECT_CALL(*mock_media_sink_service_impl_, OpenChannels(_))
+  EXPECT_CALL(*mock_media_sink_service_impl_, OpenChannels(_, _))
       .WillOnce(SaveArg<0>(&sinks));
 
   // Invoke OpenChannels on the IO thread.
