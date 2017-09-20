@@ -4451,11 +4451,6 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   const int16_t *diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   int txb_coeff_cost;
-#if CONFIG_DIST_8X8
-  int sub8x8tx_in_gte8x8blk_in_plane0 =
-      plane == 0 && plane_bsize >= BLOCK_8X8 &&
-      (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4);
-#endif  // CONFIG_DIST_8X8
 
   assert(tx_size < TX_SIZES_ALL);
 
@@ -4505,6 +4500,12 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   const int buffer_length = tx_size_2d[tx_size];
   int64_t tmp_dist, tmp_sse;
+#if CONFIG_DIST_8X8
+  int sub8x8tx_in_gte8x8blk_in_plane0 =
+      plane == 0 && plane_bsize >= BLOCK_8X8 &&
+      (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4);
+#endif  // CONFIG_DIST_8X8
+
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     tmp_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length, &tmp_sse,
