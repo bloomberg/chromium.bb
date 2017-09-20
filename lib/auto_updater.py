@@ -242,6 +242,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     self.stateful_update_bin = None
     # autoupdate_EndToEndTest uses exact payload filename for update
     self.payload_filename = payload_filename
+    self.perf_id = None
 
   @property
   def is_au_endtoendtest(self):
@@ -509,7 +510,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     Returns:
       The payload filename. (update.gz or a custom payload filename).
     """
-    if self.payload_filename:
+    if self.is_au_endtoendtest:
       return self.payload_filename
     else:
       return ds_wrapper.ROOTFS_FILENAME
@@ -545,17 +546,23 @@ class ChromiumOSFlashUpdater(BaseUpdater):
                              log_output=True, **self._cmd_kwargs)
 
     if self.is_au_endtoendtest:
-      # If rootfs was staged by Google Storage URI rather than build_name we
-      # need to strip partial paths and rename it.
-      expected_path = os.path.join(device_payload_dir,
-                                   ds_wrapper.ROOTFS_FILENAME)
+      self.RenameRootfsPayloadForAUTest(device_payload_dir, payload_name)
 
-      # Strip any partial paths from the filename e.g payloads/payload.bin
-      payload_name = payload_name.rpartition('/')[2]
-      current_path = os.path.join(device_payload_dir, payload_name)
-      # Rename the payload on the DUT so we don't break the current
-      # devserver staging. Rename to update.gz so DUTs devserver can respond.
-      self.device.RunCommand(['mv', current_path, expected_path])
+  def RenameRootfsPayloadForAUTest(self, payload_dir, payload_name):
+    """Rename the payload supplied by autoupdate_EndToEndTest on the DUT.
+
+    The au test takes in a payload that we want to update to. In order not
+    to break the devservers update handling we rename this payload to
+    update.gz after we copy it to the DUT.
+    """
+    expected_path = os.path.join(payload_dir, ds_wrapper.ROOTFS_FILENAME)
+
+    # Strip any partial paths from the filename e.g payloads/payload.bin
+    payload_name = payload_name.rpartition('/')[2]
+    current_path = os.path.join(payload_dir, payload_name)
+    # Rename the payload on the DUT so we don't break the current
+    # devserver staging. Rename to update.gz so DUTs devserver can respond.
+    self.device.RunCommand(['mv', current_path, expected_path])
 
   def TransferStatefulUpdate(self):
     """Transfer files for stateful update.
@@ -643,12 +650,10 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     devserver_bin = os.path.join(self.device_dev_dir,
                                  self.REMOTE_DEVSERVER_FILENAME)
     ds = ds_wrapper.RemoteDevServerWrapper(
-        self.device, devserver_bin, static_dir=self.device_static_dir,
+        self.device, devserver_bin, self.is_au_endtoendtest,
+        static_dir=self.device_static_dir,
         log_dir=self.device.work_dir)
-
-    perf_id = None
-    if self.is_au_endtoendtest:
-      perf_id = self._StartPerformanceMonitoring()
+    self._StartPerformanceMonitoringForAUTest()
 
     try:
       ds.Start()
@@ -726,13 +731,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
               self.REMOTE_UPDATE_ENGINE_LOGFILE_PATH)),
           follow_symlinks=True,
           **self._cmd_kwargs_omit_error)
-      self.device.CopyFromDevice(
-          self.REMOTE_HOSTLOG_FILE_PATH,
-          os.path.join(self.tempdir, '_'.join([os.path.basename(
-              self.REMOTE_HOSTLOG_FILE_PATH), 'rootfs'])),
-          **self._cmd_kwargs_omit_error)
-      if perf_id is not None:
-        self._StopPerformanceMonitoring(perf_id)
+      self._CopyHostLogFromDevice('rootfs')
+      self._StopPerformanceMonitoringForAUTest()
 
   def UpdateStateful(self, use_original_build=False):
     """Update the stateful partition of the device.
@@ -855,12 +855,15 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   def _CollectDevServerHostLog(self, devserver):
     """Write the host_log events from the remote DUTs devserver to a file.
 
+    The hostlog is needed for analysis by autoupdate_EndToEndTest only.
     We retry several times as some DUTs are slow immediately after
     starting up a devserver and return no hostlog on the first call(s).
 
     Args:
       devserver: The remote devserver wrapper for the running devserver.
     """
+    if not self.is_au_endtoendtest:
+      return
 
     for _ in range(0, MAX_RETRY):
       try:
@@ -892,30 +895,44 @@ class ChromiumOSFlashUpdater(BaseUpdater):
         logging.debug('Exception raised while trying to write the hostlog: '
                       '%s', e)
 
-  def _StartPerformanceMonitoring(self):
-    """Start update_engine performance monitoring script in rootfs update."""
-    if self._clobber_stateful:
+  def _StartPerformanceMonitoringForAUTest(self):
+    """Start update_engine performance monitoring script in rootfs update.
+
+    This script is used by autoupdate_EndToEndTest.
+    """
+    if self._clobber_stateful or not self.is_au_endtoendtest:
       return None
 
     cmd = ['python', self.REMOTE_UPDATE_ENGINE_PERF_SCRIPT_PATH, '--start-bg']
     try:
       perf_id = self.device.RunCommand(cmd).output.strip()
       logging.info('update_engine_performance_monitors pid is %s.', perf_id)
-      return perf_id
+      self.perf_id = perf_id
     except cros_build_lib.RunCommandError as e:
       logging.debug('Could not start performance monitoring script: %s', e)
-    return None
 
-  def _StopPerformanceMonitoring(self, pid):
+  def _StopPerformanceMonitoringForAUTest(self):
     """Stop the performance monitoring script and save results to file."""
+    if self.perf_id is None:
+      return
     cmd = ['python', self.REMOTE_UPDATE_ENGINE_PERF_SCRIPT_PATH, '--stop-bg',
-           pid]
+           self.perf_id]
     try:
       perf_json_data = self.device.RunCommand(cmd).output.strip()
       self.device.RunCommand(['echo', json.dumps(perf_json_data), '>',
                               self.REMOTE_UPDATE_ENGINE_PERF_RESULTS_PATH])
     except cros_build_lib.RunCommandError as e:
       logging.debug('Could not stop performance monitoring process: %s', e)
+
+  def _CopyHostLogFromDevice(self, partial_filename):
+    """Copy the hostlog file generated by the devserver from the device."""
+    if self.is_au_endtoendtest:
+      self.device.CopyFromDevice(
+          self.REMOTE_HOSTLOG_FILE_PATH,
+          os.path.join(self.tempdir, '_'.join([os.path.basename(
+              self.REMOTE_HOSTLOG_FILE_PATH), partial_filename])),
+          **self._cmd_kwargs_omit_error)
+
 
 class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   """Used to auto-update Cros DUT with image.
@@ -1342,16 +1359,21 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
                           self.update_version,
                           self._GetReleaseVersion()))
 
+    # For autoupdate_EndToEndTest only, we have one extra step to verify.
     if self.is_au_endtoendtest and not self._clobber_stateful:
-      logging.debug('Doing one final update check to get post update hostlog.')
-      self.PostRebootUpdateCheck()
+      self.PostRebootUpdateCheckForAUTest()
 
-  def PostRebootUpdateCheck(self):
-    """Do another update check after reboot to get the post update hostlog."""
+  def PostRebootUpdateCheckForAUTest(self):
+    """Do another update check after reboot to get the post update hostlog.
+
+    This is only done with autoupdate_EndToEndTest.
+    """
+    logging.debug('Doing one final update check to get post update hostlog.')
     devserver_bin = os.path.join(self.device_dev_dir,
                                  self.REMOTE_DEVSERVER_FILENAME)
     ds = ds_wrapper.RemoteDevServerWrapper(
-        self.device, devserver_bin, static_dir=self.device_static_dir,
+        self.device, devserver_bin, self.is_au_endtoendtest,
+        static_dir=self.device_static_dir,
         log_dir=self.device.work_dir)
 
     try:
@@ -1376,8 +1398,4 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       if ds.is_alive():
         self._CollectDevServerHostLog(ds)
       ds.Stop()
-      self.device.CopyFromDevice(
-          self.REMOTE_HOSTLOG_FILE_PATH,
-          os.path.join(self.tempdir, '_'.join([os.path.basename(
-              self.REMOTE_HOSTLOG_FILE_PATH), 'reboot'])),
-          **self._cmd_kwargs_omit_error)
+      self._CopyHostLogFromDevice('reboot')

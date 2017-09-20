@@ -657,18 +657,20 @@ You can fix this with one of the following three options:
     mismatch may cause some problems).
   """
 
-  def __init__(self, remote_device, devserver_bin, **kwargs):
+  def __init__(self, remote_device, devserver_bin, host_log, **kwargs):
     """Initializes a RemoteDevserverPortal object with the remote device.
 
     Args:
       remote_device: A RemoteDevice object.
       devserver_bin: The path to the devserver script on the device.
+      host_log: boolean whether to start the devserver with host_log enabled.
       **kwargs: See DevServerWrapper documentation.
     """
     super(RemoteDevServerWrapper, self).__init__(**kwargs)
     self.device = remote_device
     self.devserver_bin = devserver_bin
     self.hostname = remote_device.hostname
+    self.host_log = host_log
 
   def _GetPID(self):
     """Returns the pid read from pid file."""
@@ -733,14 +735,16 @@ You can fix this with one of the following three options:
            '--logfile=%s' % self.log_file,
            '--pidfile', self._pid_file,
            '--port=%d' % port,
-           '--critical_update',
-           '--host_log']
+           '--critical_update']
 
     if not self.port:
       cmd.append('--portfile=%s' % self.port_file)
 
     if self.static_dir:
       cmd.append('--static_dir=%s' % self.static_dir)
+
+    if self.host_log:
+      cmd.append('--host_log')
 
     logging.info('Starting devserver on %s', self.hostname)
     result = self._RunCommand(cmd, error_code_ok=True, redirect_stdout=True,
