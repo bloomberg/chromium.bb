@@ -113,7 +113,6 @@ component("wtf") {
     "ScopedLogger.h",
     "SizeAssertions.h",
     "SizeLimits.cpp",
-    "SpinLock.h",
     "StackUtil.cpp",
     "StackUtil.h",
     "StaticConstructors.h",

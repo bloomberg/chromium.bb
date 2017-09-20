@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "platform/graphics/BitmapImageMetrics.h"
-#include "platform/wtf/SpinLock.h"
 #include "third_party/skia/include/core/SkICC.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/skia_color_space_util.h"
