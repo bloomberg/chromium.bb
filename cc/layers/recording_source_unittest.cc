@@ -338,5 +338,53 @@ TEST(RecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
   }
 }
 
+TEST(RecordingSourceTest, AnalyzeIsSolid) {
+  gfx::Size layer_bounds(400, 400);
+  const std::vector<float> recording_scales = {1.f,   1.25f, 1.33f, 1.5f, 1.6f,
+                                               1.66f, 2.f,   2.25f, 2.5f};
+  for (float recording_scale : recording_scales) {
+    std::unique_ptr<FakeRecordingSource> recording_source =
+        FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+    recording_source->SetRecordingScaleFactor(recording_scale);
+
+    PaintFlags solid_flags;
+    SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
+    solid_flags.setColor(solid_color);
+
+    SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);
+    PaintFlags non_solid_flags;
+    non_solid_flags.setColor(non_solid_color);
+
+    recording_source->add_draw_rect_with_flags(
+        gfx::ScaleToEnclosingRect(gfx::Rect(layer_bounds), recording_scale),
+        solid_flags);
+    recording_source->Rerecord();
+
+    scoped_refptr<RasterSource> raster = recording_source->CreateRasterSource();
+
+    EXPECT_TRUE(raster->IsSolidColor())
+        << " recording scale: " << recording_scale;
+    EXPECT_EQ(raster->GetSolidColor(), solid_color);
+
+    for (int y = 0; y < layer_bounds.height(); y += 50) {
+      for (int x = 0; x < layer_bounds.width(); x += 50) {
+        recording_source->reset_draws();
+        recording_source->add_draw_rect_with_flags(
+            gfx::ScaleToEnclosingRect(gfx::Rect(layer_bounds), recording_scale),
+            solid_flags);
+        recording_source->add_draw_rect_with_flags(
+            gfx::Rect(std::round(x * recording_scale),
+                      std::round(y * recording_scale), 1, 1),
+            non_solid_flags);
+        recording_source->Rerecord();
+        raster = recording_source->CreateRasterSource();
+        EXPECT_FALSE(raster->IsSolidColor())
+            << " recording scale: " << recording_scale << " pixel at: (" << x
+            << ", " << y << ") was not solid.";
+      }
+    }
+  }
+}
+
 }  // namespace
 }  // namespace cc
