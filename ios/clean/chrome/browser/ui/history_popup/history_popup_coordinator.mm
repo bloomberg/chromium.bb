@@ -22,26 +22,27 @@
 #endif
 
 @interface HistoryPopupCoordinator ()<PopupMenuDelegate>
-
+// Coordinator callableDispatcher.
 @property(nonatomic, readonly) id<TabHistoryPopupCommands> callableDispatcher;
-
 // The TabHistoryPopupController instance that this coordinator will be
 // presenting.
 @property(nonatomic, strong)
     TabHistoryPopupController* tabHistoryPopupController;
-
+// The View Controller managed by this coordinator.
+@property(nonatomic, strong) UIViewController* viewController;
 @end
 
 @implementation HistoryPopupCoordinator
 
+@dynamic callableDispatcher;
 @synthesize navigationItems = _navigationItems;
 @synthesize positionProvider = _positionProvider;
 @synthesize presentationProvider = _presentationProvider;
+@synthesize presentingButton = _presentingButton;
 @synthesize tabHistoryPopupController = _tabHistoryPopupController;
 @synthesize tabHistoryUIUpdater = _tabHistoryUIUpdater;
+@synthesize viewController = _viewController;
 @synthesize webState = _webState;
-@synthesize presentingButton = _presentingButton;
-@dynamic callableDispatcher;
 
 #pragma mark - BrowserCoordinator
 

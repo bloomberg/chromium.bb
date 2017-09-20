@@ -172,13 +172,13 @@
     historyPopupCoordinator.positionProvider = self.viewController;
     historyPopupCoordinator.presentationProvider = self.viewController;
     historyPopupCoordinator.tabHistoryUIUpdater = self.viewController;
-    historyPopupCoordinator.webState = self.webState;
-    historyPopupCoordinator.presentingButton = ToolbarButtonTypeBack;
-    historyPopupCoordinator.navigationItems =
-        self.webState->GetNavigationManager()->GetBackwardItems();
     self.historyPopupCoordinator = historyPopupCoordinator;
     [self addChildCoordinator:self.historyPopupCoordinator];
   }
+  self.historyPopupCoordinator.webState = self.webState;
+  self.historyPopupCoordinator.presentingButton = ToolbarButtonTypeBack;
+  self.historyPopupCoordinator.navigationItems =
+      self.webState->GetNavigationManager()->GetBackwardItems();
   [self.historyPopupCoordinator start];
 }
 
@@ -189,13 +189,13 @@
     historyPopupCoordinator.positionProvider = self.viewController;
     historyPopupCoordinator.presentationProvider = self.viewController;
     historyPopupCoordinator.tabHistoryUIUpdater = self.viewController;
-    historyPopupCoordinator.webState = self.webState;
-    historyPopupCoordinator.presentingButton = ToolbarButtonTypeForward;
-    historyPopupCoordinator.navigationItems =
-        self.webState->GetNavigationManager()->GetForwardItems();
     self.historyPopupCoordinator = historyPopupCoordinator;
     [self addChildCoordinator:self.historyPopupCoordinator];
   }
+  self.historyPopupCoordinator.webState = self.webState;
+  self.historyPopupCoordinator.presentingButton = ToolbarButtonTypeForward;
+  self.historyPopupCoordinator.navigationItems =
+      self.webState->GetNavigationManager()->GetForwardItems();
   [self.historyPopupCoordinator start];
 }
 
