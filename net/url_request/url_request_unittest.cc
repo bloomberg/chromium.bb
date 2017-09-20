@@ -4879,7 +4879,7 @@ TEST_F(URLRequestTestHTTP, GetTest_NoCache) {
 // search is used to estimate that maximum number of cookies that are accepted
 // by the browser. Beyond the maximum number, the request will fail with
 // ERR_RESPONSE_HEADERS_TOO_BIG.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
 // http://crbug.com/177916
 #define MAYBE_GetTest_ManyCookies DISABLED_GetTest_ManyCookies
 #else
