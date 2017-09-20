@@ -15,7 +15,7 @@ import org.chromium.net.ICronetEngineBuilder;
 public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
     /**
      * Builder for Native Cronet Engine.
-     * Default config enables SPDY, disables QUIC, SDCH and HTTP cache.
+     * Default config enables SPDY, disables QUIC and HTTP cache.
      *
      * @param context Android {@link Context} for engine to use.
      */

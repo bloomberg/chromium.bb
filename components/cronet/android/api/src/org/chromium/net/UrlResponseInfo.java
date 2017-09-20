@@ -108,7 +108,7 @@ public abstract class UrlResponseInfo {
      * Returns a minimum count of bytes received from the network to process this
      * request. This count may ignore certain overheads (for example IP and TCP/UDP framing,
      * SSL handshake and framing, proxy handling). This count is taken prior to decompression
-     * (for example GZIP and SDCH) and includes headers and data from all redirects.
+     * (for example GZIP) and includes headers and data from all redirects.
      *
      * This value may change (even for one {@link UrlResponseInfo} instance) as the request
      * progresses until completion, when {@link UrlRequest.Callback#onSucceeded onSucceeded()},

@@ -117,11 +117,11 @@ invoked again. For more details, please see the API reference.
 Various configuration options are available via the `CronetEngine.Builder`
 object.
 
-Enabling HTTP/2, QUIC, or SDCH:
+Enabling HTTP/2 and QUIC:
 
 - For Example:
 
-        engineBuilder.enableHttp2(true).enableQuic(true).enableSdch(true);
+        engineBuilder.enableHttp2(true).enableQuic(true);
 
 Controlling the cache:
 
