@@ -374,6 +374,121 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                   @"Omnibox not at the same position");
 }
 
+// Tests that tapping the fake omnibox focuses the real omnibox.
+- (void)testTapFakeOmnibox {
+  // Setup the server.
+  self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL pageURL = self.testServer->GetURL(kPageURL);
+
+  NSString* URL = base::SysUTF8ToNSString(pageURL.spec());
+  // Type the URL in the fake omnibox and navigate to the page.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      performAction:grey_typeText([URL stringByAppendingString:@"\n"])];
+
+  // Check that the page is loaded.
+  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
+}
+
+// Tests that tapping the fake omnibox moves the collection.
+- (void)testTapFakeOmniboxScroll {
+  // Get the collection and its layout.
+  UIView* collection = ntp_home::CollectionView();
+  GREYAssertTrue([collection isKindOfClass:[UICollectionView class]],
+                 @"The collection has not been correctly selected.");
+  UICollectionView* collectionView = (UICollectionView*)collection;
+  GREYAssertTrue(
+      [collectionView.delegate
+          conformsToProtocol:@protocol(UICollectionViewDelegateFlowLayout)],
+      @"The collection has not the expected delegate.");
+  id<UICollectionViewDelegateFlowLayout> delegate =
+      (id<UICollectionViewDelegateFlowLayout>)(collectionView.delegate);
+  CGFloat headerHeight =
+      [delegate collectionView:collectionView
+                                   layout:collectionView.collectionViewLayout
+          referenceSizeForHeaderInSection:0]
+          .height;
+
+  // Offset before the tap.
+  CGPoint origin = collectionView.contentOffset;
+
+  // Tap the omnibox to focus it.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      performAction:grey_tap()];
+
+  // Offset after the fake omnibox has been tapped.
+  CGPoint offsetAfterTap = collectionView.contentOffset;
+
+  // Make sure the fake omnibox has been hidden and the collection has moved.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  GREYAssertTrue(offsetAfterTap.y >= origin.y + headerHeight - 60,
+                 @"The collection has not moved.");
+
+  // Unfocus the omnibox.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   [ContentSuggestionsViewController
+                                       collectionAccessibilityIdentifier])]
+      performAction:grey_tapAtPoint(CGPointMake(0, offsetAfterTap.y + 100))];
+
+  // Check the fake omnibox is displayed again at the same position.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  GREYAssertEqual(
+      origin.y, collectionView.contentOffset.y,
+      @"The collection is not scrolled back to its previous position");
+}
+
+// Tests that tapping the fake omnibox then unfocusing it moves the collection
+// back to where it was.
+- (void)testTapFakeOmniboxScrollScrolled {
+  // Get the collection and its layout.
+  UIView* collection = ntp_home::CollectionView();
+  GREYAssertTrue([collection isKindOfClass:[UICollectionView class]],
+                 @"The collection has not been correctly selected.");
+  UICollectionView* collectionView = (UICollectionView*)collection;
+
+  // Scroll to have a position different from the default.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   [ContentSuggestionsViewController
+                                       collectionAccessibilityIdentifier])]
+      performAction:grey_scrollInDirection(kGREYDirectionDown, 50)];
+
+  // Offset before the tap.
+  CGPoint origin = collectionView.contentOffset;
+
+  // Tap the omnibox to focus it.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      performAction:grey_tap()];
+
+  // Unfocus the omnibox.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   [ContentSuggestionsViewController
+                                       collectionAccessibilityIdentifier])]
+      performAction:grey_tapAtPoint(
+                        CGPointMake(0, collectionView.contentOffset.y + 100))];
+
+  // Check the fake omnibox is displayed again at the same position.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // The collection might be slightly moved on iPhone.
+  GREYAssertTrue(
+      collectionView.contentOffset.y >= origin.y &&
+          collectionView.contentOffset.y <= origin.y + 6,
+      @"The collection is not scrolled back to its previous position");
+}
+
 #pragma mark - Helpers
 
 - (void)addMostVisitedTile {
