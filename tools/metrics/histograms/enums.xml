@@ -23063,6 +23063,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 
 <enum name="LoginCustomFlags">
   <int value="-2146613579" label="V8Future:disabled"/>
+  <int value="-2145472146" label="OfflinePagesResourceBasedSnapshot:disabled"/>
   <int value="-2143961262" label="D3DVsync:disabled"/>
   <int value="-2143328006"
       label="enable-fill-on-account-select-no-highlighting"/>
@@ -23341,6 +23342,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1411003295" label="disable-encrypted-media"/>
   <int value="-1409643943" label="enable-child-account-detection"/>
   <int value="-1408288176" label="enable-account-consistency"/>
+  <int value="-1405048637" label="OfflinePagesResourceBasedSnapshot:enabled"/>
   <int value="-1399753480" label="disable-harfbuzz-rendertext"/>
   <int value="-1399419572" label="enable-app-list"/>
   <int value="-1396974542" label="UserMediaScreenCapturing:enabled"/>

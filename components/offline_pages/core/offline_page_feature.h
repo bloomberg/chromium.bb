@@ -21,6 +21,7 @@ extern const base::Feature kPrefetchingOfflinePagesFeature;
 extern const base::Feature kOfflinePagesLoadSignalCollectingFeature;
 extern const base::Feature kOfflinePagesCTV2Feature;
 extern const base::Feature kOfflinePagesRenovationsFeature;
+extern const base::Feature kOfflinePagesResourceBasedSnapshotFeature;
 extern const base::Feature kOfflinePagesPrefetchingUIFeature;
 
 // Returns true if saving bookmarked pages for offline viewing is enabled.
@@ -57,6 +58,11 @@ bool IsOfflinePagesLoadSignalCollectingEnabled();
 // Returns true if we should use the "page renovation" framework in
 // the BackgroundLoaderOffliner.
 bool IsOfflinePagesRenovationsEnabled();
+
+// Returns true if we should use the "Resource percentage signal" for taking
+// snapshots instead of a time delay after the document is loaded in the main
+// frame.
+bool IsOfflinePagesResourceBasedSnapshotEnabled();
 
 // Returns true if a command line for test has been set that shortens the
 // snapshot delay.

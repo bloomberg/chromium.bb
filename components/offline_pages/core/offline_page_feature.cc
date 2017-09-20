@@ -42,6 +42,9 @@ const base::Feature kOfflinePagesLoadSignalCollectingFeature{
 const base::Feature kOfflinePagesRenovationsFeature{
     "OfflinePagesRenovations", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOfflinePagesResourceBasedSnapshotFeature{
+    "OfflinePagesResourceBasedSnapshot", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kBackgroundLoaderForDownloadsFeature{
     "BackgroundLoadingForDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -100,6 +103,11 @@ bool IsOfflinePagesLoadSignalCollectingEnabled() {
 
 bool IsOfflinePagesRenovationsEnabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesRenovationsFeature);
+}
+
+bool IsOfflinePagesResourceBasedSnapshotEnabled() {
+  return base::FeatureList::IsEnabled(
+      kOfflinePagesResourceBasedSnapshotFeature);
 }
 
 bool ShouldUseTestingSnapshotDelay() {
