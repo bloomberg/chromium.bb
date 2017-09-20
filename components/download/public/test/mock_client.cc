@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/internal/test/mock_download_service.h"
+#include "components/download/public/test/mock_client.h"
 
 namespace download {
 namespace test {
 
-MockDownloadService::MockDownloadService() = default;
-
-MockDownloadService::~MockDownloadService() = default;
+MockClient::MockClient() = default;
+MockClient::~MockClient() = default;
 
 }  // namespace test
 }  // namespace download
