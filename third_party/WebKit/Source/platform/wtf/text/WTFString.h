@@ -333,6 +333,7 @@ class WTF_EXPORT String {
   String FoldCase() const;
 
   // Takes a printf format and args and prints into a String.
+  // This function supports Latin-1 characters only.
   PRINTF_FORMAT(1, 2) static String Format(const char* format, ...);
 
   // Returns an uninitialized string. The characters needs to be written
