@@ -4,6 +4,7 @@
 
 #include "components/language/core/browser/baseline_language_model.h"
 
+#include "base/feature_list.h"
 #include "base/strings/string_split.h"
 #include "components/prefs/pref_service.h"
 
@@ -12,6 +13,9 @@ namespace language {
 namespace {
 constexpr float kUrlLanguageFreqCutoff = 0.3f;
 }  // namespace
+
+const base::Feature kUseBaselineLanguageModel{
+    "UseBaselineLanguageModel", base::FEATURE_DISABLED_BY_DEFAULT};
 
 BaselineLanguageModel::BaselineLanguageModel(
     PrefService* const pref_service,
