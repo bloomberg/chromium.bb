@@ -33,13 +33,11 @@ using OnWarningDone =
     base::OnceCallback<void(PasswordProtectionService::WarningAction)>;
 using url::Origin;
 
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 // Shows the platform-specific password reuse modal dialog.
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
     OnWarningDone done_callback);
-#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
 
 // ChromePasswordProtectionService extends PasswordProtectionService by adding
 // access to SafeBrowsingNaivigationObserverManager and Profile.

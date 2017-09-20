@@ -172,15 +172,11 @@ void ChromePasswordProtectionService::ShowModalWarning(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(jialiul): Use verdict_token field in post warning report.
   UpdateSecurityState(SB_THREAT_TYPE_PASSWORD_REUSE, web_contents);
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-  // TODO(jialiul): Remove the restriction on Mac when this dialog has a Cocoa
-  // version as well.
   ShowPasswordReuseModalWarningDialog(
       web_contents, this,
       base::BindOnce(&ChromePasswordProtectionService::OnWarningDone,
                      GetWeakPtr(), web_contents,
                      PasswordProtectionService::MODAL_DIALOG));
-#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
   OnWarningShown(web_contents, PasswordProtectionService::MODAL_DIALOG);
   if (web_contents->GetLastCommittedURL().is_valid()) {
     unhandled_password_reuses_[Origin(web_contents->GetLastCommittedURL())] =
