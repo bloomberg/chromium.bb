@@ -70,7 +70,7 @@ def DefaultPages(base_name):
       'pixel_webgl_aa_alpha.html',
       base_name + '_WebGLGreenTriangle_AA_Alpha',
       test_rect=[0, 0, 300, 300],
-      revision=2),
+      revision=3),
 
     PixelTestPage(
       'pixel_webgl_noaa_alpha.html',
@@ -82,7 +82,7 @@ def DefaultPages(base_name):
       'pixel_webgl_aa_noalpha.html',
       base_name + '_WebGLGreenTriangle_AA_NoAlpha',
       test_rect=[0, 0, 300, 300],
-      revision=2),
+      revision=3),
 
     PixelTestPage(
       'pixel_webgl_noaa_noalpha.html',
@@ -129,7 +129,7 @@ def DefaultPages(base_name):
       'pixel_canvas2d_webgl.html',
       base_name + '_2DCanvasWebGL',
       test_rect=[0, 0, 300, 300],
-      revision=4),
+      revision=5),
 
     PixelTestPage(
       'pixel_background.html',
