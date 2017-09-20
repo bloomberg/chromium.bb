@@ -167,7 +167,7 @@ class TestExporterTest(LoggingTestCase):
             data={
                 'change_id': 'I001',
                 'subject': 'subject',
-                '_number': '1234',
+                '_number': 1234,
                 'current_revision': '1',
                 'has_review_started': True,
                 'revisions': {
@@ -187,7 +187,7 @@ class TestExporterTest(LoggingTestCase):
             'add_label "do not merge yet"',
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [
-            ('chromium-export-cl-I001',
+            ('chromium-export-cl-1234',
              'subject',
              'fake body\n\nChange-Id: I001\nReviewed-on: https://chromium-review.googlesource.com/1234\nWPT-Export-Revision: 1'),
         ])
@@ -206,7 +206,7 @@ class TestExporterTest(LoggingTestCase):
             data={
                 'change_id': '1',
                 'subject': 'subject',
-                '_number': '1',
+                '_number': 1,
                 'current_revision': '1',
                 'has_review_started': True,
                 'revisions': {
@@ -239,7 +239,7 @@ class TestExporterTest(LoggingTestCase):
             data={
                 'change_id': '1',
                 'subject': 'subject',
-                '_number': '1',
+                '_number': 1,
                 'current_revision': '2',
                 'has_review_started': True,
                 'revisions': {
@@ -322,7 +322,7 @@ class TestExporterTest(LoggingTestCase):
             data={
                 'change_id': '1',
                 'subject': 'subject',
-                '_number': '1',
+                '_number': 1,
                 'current_revision': '2',
                 'has_review_started': False,
                 'revisions': {

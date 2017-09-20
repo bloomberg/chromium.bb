@@ -15,7 +15,7 @@ class GerritCLTest(unittest.TestCase):
     def test_url(self):
         data = {
             'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
-            '_number': '638250',
+            '_number': 638250,
         }
         gerrit_cl = GerritCL(data, MockGerritAPI())
         self.assertEqual(gerrit_cl.url, 'https://chromium-review.googlesource.com/638250')
@@ -30,7 +30,7 @@ class GerritCLTest(unittest.TestCase):
         data = {
             'change_id': 'Ib58c7125d85d2fd71af711ea8bbd2dc927ed02cb',
             'subject': 'fake subject',
-            '_number': '638250',
+            '_number': 638250,
             'current_revision': '1',
             'revisions': {'1': {
                 'fetch': {'http': {
