@@ -5,11 +5,9 @@
 #include "core/loader/modulescript/ModuleTreeLinker.h"
 
 #include "bindings/core/v8/ScriptModule.h"
-#include "core/dom/AncestorList.h"
 #include "core/dom/ModuleScript.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
-#include "core/loader/modulescript/ModuleTreeReachedUrlSet.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
@@ -18,21 +16,30 @@
 
 namespace blink {
 
+// Note: The current implementation is based on a mixture of the HTML specs
+// of a little different versions, in order to incrementally update the code
+// structure and the behavior.
+//
+// The followings are based on the spec BEFORE
+// https://github.com/whatwg/html/pull/2991:
+// - The cited spec statements of [IMSGF] and [FD].
+// - The behavior (of the whole module script implementation in Blink).
+//
+// The followings are based on the spec AFTER that spec PR:
+// - The cited spec statements of [FDaI] and [FFPE].
+// - The code structure of Instantiate() and FindFirstParseError().
+//   These methods are written based on the structure of the latest spec but
+//   emunates the old behavior.
+//
+// TODO(hiroshige): The things based on the old spec should be updated shortly.
+
 ModuleTreeLinker* ModuleTreeLinker::Fetch(
     const ModuleScriptFetchRequest& request,
-    const AncestorList& ancestor_list,
-    ModuleGraphLevel level,
     Modulator* modulator,
-    ModuleTreeReachedUrlSet* reached_url_set,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
-  AncestorList ancestor_list_with_url = ancestor_list;
-  ancestor_list_with_url.insert(request.Url());
-
-  ModuleTreeLinker* fetcher =
-      new ModuleTreeLinker(ancestor_list_with_url, level, modulator,
-                           reached_url_set, registry, client);
-  fetcher->FetchSelf(request);
+  ModuleTreeLinker* fetcher = new ModuleTreeLinker(modulator, registry, client);
+  fetcher->FetchRoot(request);
   return fetcher;
 }
 
@@ -41,67 +48,31 @@ ModuleTreeLinker* ModuleTreeLinker::FetchDescendantsForInlineScript(
     Modulator* modulator,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
-  AncestorList empty_ancestor_list;
-
-  // Substep 4 in "module" case in Step 22 of "prepare a script":"
-  // https://html.spec.whatwg.org/#prepare-a-script
   DCHECK(module_script);
-
-  // 4. "Fetch the descendants of script (using an empty ancestor list)."
-  ModuleTreeLinker* fetcher = new ModuleTreeLinker(
-      empty_ancestor_list, ModuleGraphLevel::kTopLevelModuleFetch, modulator,
-      nullptr, registry, client);
-  fetcher->module_script_ = module_script;
-  fetcher->AdvanceState(State::kFetchingSelf);
-
-  // "When this asynchronously completes, set the script's script to
-  //  the result. At that time, the script is ready."
-  //
-  // Currently we execute "internal module script graph
-  // fetching procedure" Step 5- in addition to "fetch the descendants",
-  // which is not specced yet. https://github.com/whatwg/html/issues/2544
-  // TODO(hiroshige): Fix the implementation and/or comments once the spec
-  // is updated.
-  modulator->TaskRunner()->PostTask(
-      BLINK_FROM_HERE,
-      WTF::Bind(&ModuleTreeLinker::FetchDescendants, WrapPersistent(fetcher)));
+  ModuleTreeLinker* fetcher = new ModuleTreeLinker(modulator, registry, client);
+  fetcher->FetchRootInline(module_script);
   return fetcher;
 }
 
-ModuleTreeLinker::ModuleTreeLinker(const AncestorList& ancestor_list_with_url,
-                                   ModuleGraphLevel level,
-                                   Modulator* modulator,
-                                   ModuleTreeReachedUrlSet* reached_url_set,
+ModuleTreeLinker::ModuleTreeLinker(Modulator* modulator,
                                    ModuleTreeLinkerRegistry* registry,
                                    ModuleTreeClient* client)
-    : modulator_(modulator),
-      reached_url_set_(
-          level == ModuleGraphLevel::kTopLevelModuleFetch
-              ? ModuleTreeReachedUrlSet::CreateFromTopLevelAncestorList(
-                    ancestor_list_with_url)
-              : reached_url_set),
-      registry_(registry),
-      client_(client),
-      ancestor_list_with_url_(ancestor_list_with_url),
-      level_(level) {
+    : modulator_(modulator), registry_(registry), client_(client) {
   CHECK(modulator);
-  CHECK(reached_url_set_);
   CHECK(registry);
   CHECK(client);
 }
 
 DEFINE_TRACE(ModuleTreeLinker) {
   visitor->Trace(modulator_);
-  visitor->Trace(reached_url_set_);
   visitor->Trace(registry_);
   visitor->Trace(client_);
-  visitor->Trace(module_script_);
-  visitor->Trace(dependency_clients_);
+  visitor->Trace(result_);
   SingleModuleClient::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(ModuleTreeLinker) {
-  visitor->TraceWrappers(module_script_);
+  visitor->TraceWrappers(result_);
 }
 
 #if DCHECK_IS_ON()
@@ -132,11 +103,11 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
 
   switch (state_) {
     case State::kInitial:
-      CHECK_EQ(num_incomplete_descendants_, 0u);
+      CHECK_EQ(num_incomplete_fetches_, 0u);
       CHECK_EQ(new_state, State::kFetchingSelf);
       break;
     case State::kFetchingSelf:
-      CHECK_EQ(num_incomplete_descendants_, 0u);
+      CHECK_EQ(num_incomplete_fetches_, 0u);
       CHECK(new_state == State::kFetchingDependencies ||
             new_state == State::kFinished);
       break;
@@ -155,10 +126,9 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
   state_ = new_state;
 
   if (state_ == State::kFinished) {
-    if (module_script_) {
-      RESOURCE_LOADING_DVLOG(1)
-          << "ModuleTreeLinker[" << this << "] finished with final result "
-          << *module_script_;
+    if (result_) {
+      RESOURCE_LOADING_DVLOG(1) << "ModuleTreeLinker[" << this
+                                << "] finished with final result " << *result_;
     } else {
       RESOURCE_LOADING_DVLOG(1)
           << "ModuleTreeLinker[" << this << "] finished with nullptr.";
@@ -166,319 +136,381 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
 
     registry_->ReleaseFinishedFetcher(this);
 
-    // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
-    // Step 6. When the appropriate algorithm asynchronously completes with
-    // final result, asynchronously complete this algorithm with final result.
-    client_->NotifyModuleTreeLoadFinished(module_script_);
+    // [IMSGF] Step 7. When the appropriate algorithm asynchronously completes
+    // with final result, asynchronously complete this algorithm with final
+    // result.
+    client_->NotifyModuleTreeLoadFinished(result_);
   }
 }
 
-void ModuleTreeLinker::FetchSelf(const ModuleScriptFetchRequest& request) {
-  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
+void ModuleTreeLinker::FetchRoot(const ModuleScriptFetchRequest& request) {
+  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
 
-  // Step 1. Fetch a single module script given url, fetch client settings
-  // object, destination, cryptographic nonce, parser state, credentials mode,
-  // module map settings object, referrer, and the top-level module fetch flag.
-  // If the caller of this algorithm specified custom perform the fetch steps,
-  // pass those along while fetching a single module script.
   AdvanceState(State::kFetchingSelf);
-  modulator_->FetchSingle(request, level_, this);
 
-  // Step 2. Return from this algorithm, and run the following steps when
-  // fetching a single module script asynchronously completes with result.
-  // Note: Modulator::FetchSingle asynchronously notifies result to
-  // ModuleTreeLinker::NotifyModuleLoadFinished().
+  // Step 1 is done in InitiateInternalModuleScriptGraphFetching().
+
+  // Step 2. Perform the internal module script graph fetching procedure given
+  // ... with the top-level module fetch flag set. ...
+  InitiateInternalModuleScriptGraphFetching(
+      request, ModuleGraphLevel::kTopLevelModuleFetch);
 }
 
-void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* result) {
-  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
+void ModuleTreeLinker::FetchRootInline(ModuleScript* module_script) {
+  // Top-level entry point for [FDaI] for an inline module script.
 
-  // Step 3. "If result is null, is errored, or has instantiated, asynchronously
-  // complete this algorithm with result, and abort these steps.
-  if (!result || result->IsErrored() || result->HasInstantiated()) {
-    // "asynchronously complete this algorithm with result, and abort these
-    // steps."
-    module_script_ = result;
-    AdvanceState(State::kFinished);
-    return;
-  }
+  AdvanceState(State::kFetchingSelf);
 
-  // Step 4. Assert: result's state is "uninstantiated".
-  DCHECK_EQ(ScriptModuleState::kUninstantiated, result->RecordStatus());
-
-  // Step 5. If the top-level module fetch flag is set, fetch the descendants of
-  // and instantiate result given destination and an ancestor list obtained by
-  // appending url to ancestor list. Otherwise, fetch the descendants of result
-  // given the same arguments.
-  // Note: top-level module fetch flag is checked at Instantiate(), where
-  //       "fetch the descendants of and instantiate" procedure  and
-  //       "fetch the descendants" procedure actually diverge.
-  module_script_ = result;
-  FetchDescendants();
-}
-
-class ModuleTreeLinker::DependencyModuleClient : public ModuleTreeClient {
- public:
-  static DependencyModuleClient* Create(ModuleTreeLinker* module_tree_linker) {
-    return new DependencyModuleClient(module_tree_linker);
-  }
-  virtual ~DependencyModuleClient() = default;
-
-  DEFINE_INLINE_TRACE() {
-    visitor->Trace(module_tree_linker_);
-    visitor->Trace(result_);
-    ModuleTreeClient::Trace(visitor);
-  }
-
-  ModuleScript* Result() { return result_.Get(); }
-
- private:
-  explicit DependencyModuleClient(ModuleTreeLinker* module_tree_linker)
-      : module_tree_linker_(module_tree_linker) {
-    CHECK(module_tree_linker);
-  }
-
-  // Implements ModuleTreeClient
-  void NotifyModuleTreeLoadFinished(ModuleScript*) override;
-
-  Member<ModuleTreeLinker> module_tree_linker_;
-  Member<ModuleScript> result_;
-};
-
-void ModuleTreeLinker::FetchDescendants() {
-  CHECK(module_script_);
+  // Store the |module_script| here which will be used as result of the
+  // algorithm when success. Also, this ensures that the |module_script| is
+  // TraceWrappers()ed via ModuleTreeLinker.
+  result_ = module_script;
   AdvanceState(State::kFetchingDependencies);
 
-  // [nospec] Abort the steps if the browsing context is discarded.
-  if (!modulator_->HasValidContext()) {
-    module_script_ = nullptr;
-    AdvanceState(State::kFinished);
-    return;
-  }
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-a-module-script
-  // Step 1. If ancestor list was not given, let it be the empty list.
-  // Note: The "ancestor list" in spec corresponds to |ancestor_list_with_url_|.
-
-  // Step 2. If module script is errored or has instantiated,
-  // asynchronously complete this algorithm with module script, and abort these
-  // steps.
-  if (module_script_->IsErrored() || module_script_->HasInstantiated()) {
-    AdvanceState(State::kFinished);
-    return;
-  }
-
-  // Step 3. Let record be module script's module record.
-  ScriptModule record = module_script_->Record();
-  DCHECK(!record.IsNull());
-
-  // Step 4. If record.[[RequestedModules]] is empty, asynchronously complete
-  // this algorithm with module script.
-  // Note: We defer this bail-out until the end of the procedure. The rest of
-  //       the procedure will be no-op anyway if record.[[RequestedModules]]
-  //       is empty.
-
-  // Step 5. Let urls be a new empty list.
-  Vector<KURL> urls;
-  Vector<TextPosition> positions;
-
-  // Step 6. For each string requested of record.[[RequestedModules]],
-  Vector<Modulator::ModuleRequest> module_requests =
-      modulator_->ModuleRequestsFromScriptModule(record);
-  for (const auto& module_request : module_requests) {
-    // Step 6.1. Let url be the result of resolving a module specifier given
-    // module script and requested.
-    KURL url = Modulator::ResolveModuleSpecifier(module_request.specifier,
-                                                 module_script_->BaseURL());
-
-    // Step 6.2. Assert: url is never failure, because resolving a module
-    // specifier must have been previously successful with these same two
-    // arguments.
-    CHECK(url.IsValid()) << "Modulator::resolveModuleSpecifier() impl must "
-                            "return either a valid url or null.";
-
-    // Step 6.3. if ancestor list does not contain url, append url to urls.
-    if (ancestor_list_with_url_.Contains(url))
-      continue;
-
-    // [unspec] If we already have started a sub-graph fetch for the |url| for
-    // this top-level module graph starting from |top_level_linker_|, we can
-    // safely rely on other module graph node ModuleTreeLinker to handle it.
-    if (reached_url_set_->IsAlreadyBeingFetched(url)) {
-      // We can't skip any sub-graph fetches directly made from the top level
-      // module, as we may end up proceeding to ModuleDeclarationInstantiation()
-      // with part of the graph still fetching.
-      CHECK_NE(level_, ModuleGraphLevel::kTopLevelModuleFetch);
-
-      continue;
-    }
-
-    urls.push_back(url);
-    positions.push_back(module_request.position);
-  }
-
-  // Step 7. For each url in urls, perform the internal module script graph
-  // fetching procedure given url, module script's credentials mode, module
-  // script's cryptographic nonce, module script's parser state, destination,
-  // module script's settings object, module script's settings object, ancestor
-  // list, module script's base URL, and with the top-level module fetch flag
-  // unset. If the caller of this algorithm specified custom perform the fetch
-  // steps, pass those along while performing the internal module script graph
-  // fetching procedure.
-
-  if (urls.IsEmpty()) {
-    // Step 4. If record.[[RequestedModules]] is empty, asynchronously
-    // complete this algorithm with module script. [spec text]
-
-    // Also, if record.[[RequestedModules]] is not empty but |urls| is
-    // empty here, we complete this algorithm.
-    Instantiate();
-    return;
-  }
-
-  // Step 7, when "urls" is non-empty.
-  // These invocations of the internal module script graph fetching procedure
-  // should be performed in parallel to each other. [spec text]
-  CHECK_EQ(num_incomplete_descendants_, 0u);
-  num_incomplete_descendants_ = urls.size();
-  for (size_t i = 0; i < urls.size(); ++i) {
-    DependencyModuleClient* dependency_client =
-        DependencyModuleClient::Create(this);
-    reached_url_set_->ObserveModuleTreeLink(urls[i]);
-    dependency_clients_.insert(dependency_client);
-
-    ModuleScriptFetchRequest request(
-        urls[i], module_script_->Nonce(), module_script_->ParserState(),
-        module_script_->CredentialsMode(),
-        module_script_->BaseURL().GetString(), positions[i]);
-    modulator_->FetchTreeInternal(request, ancestor_list_with_url_,
-                                  ModuleGraphLevel::kDependentModuleFetch,
-                                  reached_url_set_.Get(), dependency_client);
-  }
-
-  // Asynchronously continue processing after NotifyOneDescendantFinished() is
-  // called num_incomplete_descendants_ times.
-  CHECK_GT(num_incomplete_descendants_, 0u);
+  modulator_->TaskRunner()->PostTask(
+      BLINK_FROM_HERE,
+      WTF::Bind(&ModuleTreeLinker::FetchDescendants, WrapPersistent(this),
+                WrapPersistent(module_script)));
 }
 
-void ModuleTreeLinker::DependencyModuleClient::NotifyModuleTreeLoadFinished(
-    ModuleScript* module_script) {
-  result_ = module_script;
+void ModuleTreeLinker::InitiateInternalModuleScriptGraphFetching(
+    const ModuleScriptFetchRequest& request,
+    ModuleGraphLevel level) {
+  DCHECK(!visited_set_.Contains(request.Url()));
+
+  // This step originates from the callers of [IMSGF]:
+  //
+  // https://html.spec.whatwg.org/#fetch-a-module-script-tree
+  // https://html.spec.whatwg.org/#fetch-a-module-worker-script-tree
+  // Step 1. Let visited set be << url >>.
+  //
+  // [FD] Step 5.3.2. Append url to visited set.
+  visited_set_.insert(request.Url());
+
+  // [IMSGF] Step 1. Assert: visited set contains url.
+  //
+  // This is ensured by the insert() just above.
+
+  ++num_incomplete_fetches_;
+
+  // [IMSGF] Step 2. Fetch a single module script given ...
+  modulator_->FetchSingle(request, level, this);
+
+  // [IMSGF] Step 3-- are executed when NotifyModuleLoadFinished() is called.
+}
+
+void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
+  // [IMSGF] Step 3. Return from this algorithm, and run the following steps
+  // when fetching a single module script asynchronously completes with result:
+
+  CHECK_GT(num_incomplete_fetches_, 0u);
+  --num_incomplete_fetches_;
+
   if (module_script) {
     RESOURCE_LOADING_DVLOG(1)
-        << "ModuleTreeLinker[" << module_tree_linker_.Get()
-        << "]::DependencyModuleClient::NotifyModuleTreeLoadFinished() with "
+        << "ModuleTreeLinker[" << this << "]::NotifyModuleLoadFinished() with "
         << *module_script;
   } else {
     RESOURCE_LOADING_DVLOG(1)
-        << "ModuleTreeLinker[" << module_tree_linker_.Get()
-        << "]::DependencyModuleClient::NotifyModuleTreeLoadFinished() with "
+        << "ModuleTreeLinker[" << this << "]::NotifyModuleLoadFinished() with "
         << "nullptr.";
   }
-  module_tree_linker_->NotifyOneDescendantFinished();
-}
 
-void ModuleTreeLinker::NotifyOneDescendantFinished() {
+  if (state_ == State::kFetchingSelf) {
+    // Corresponds to top-level calls to
+    // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-and-instantiate-a-module-script
+    // i.e. [IMSGF] with the top-level module fetch flag set (external), or
+    // Step 22 of "prepare a script" (inline).
+    // |module_script| is the top-level module, and will be instantiated
+    // and returned later.
+    result_ = module_script;
+    AdvanceState(State::kFetchingDependencies);
+  }
+
   if (state_ != State::kFetchingDependencies) {
     // We may reach here if one of the descendant failed to load, and the other
     // descendants fetches were in flight.
     return;
   }
-  DCHECK_EQ(state_, State::kFetchingDependencies);
-  DCHECK(module_script_);
 
-  CHECK_GT(num_incomplete_descendants_, 0u);
-  --num_incomplete_descendants_;
+  // Note: top-level module fetch flag is implemented so that Instantiate()
+  // is called once after all descendants are fetched, which corresponds to
+  // the single invocation of "fetch the descendants of and instantiate".
 
-  RESOURCE_LOADING_DVLOG(1)
-      << "ModuleTreeLinker[" << this << "]::NotifyOneDescendantFinished. "
-      << num_incomplete_descendants_ << " remaining descendants.";
+  // [IMSGF] Steps 4 and 5 are merged to FetchDescendants().
 
-  // Step 7 of
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-a-module-script
-  // "Wait for all invocations of the internal module script graph fetching
-  // procedure to asynchronously complete, and ..." [spec text]
-  if (num_incomplete_descendants_)
+  // [IMSGF] Step 6. If the top-level module fetch flag is set, fetch the
+  // descendants of and instantiate result given destination and visited set.
+  // Otherwise, fetch the descendants of result given the same arguments.
+  FetchDescendants(module_script);
+}
+
+void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
+  // [nospec] Abort the steps if the browsing context is discarded.
+  if (!modulator_->HasValidContext()) {
+    result_ = nullptr;
+    AdvanceState(State::kFinished);
     return;
+  }
 
-  // "let results be a list of the results, corresponding to the same order they
-  // appeared in urls. Then, for each result of results:" [spec text]
-  for (const auto& client : dependency_clients_) {
-    ModuleScript* result = client->Result();
+  // [FD] Step 1. If module script is errored or has instantiated,
+  // asynchronously complete this algorithm with module script, and abort these
+  // steps.
+  //
+  // [IMSGF] Step 4. If result is null, is errored, or has instantiated,
+  // asynchronously complete this algorithm with result, and abort these steps.
+  if (!module_script || module_script->IsErrored()) {
+    found_error_ = true;
+    // We don't early-exit here and wait until all module scripts to be
+    // loaded, because we might be not sure which error to be reported.
+    //
+    // It is possible to determine whether the error to be reported can be
+    // determined without waiting for loading module scripts, and thus to
+    // early-exit here if possible. However, the complexity of such early-exit
+    // implementation might be high, and optimizing error cases with the
+    // implementation cost might be not worth doing.
+    FinalizeFetchDescendantsForOneModuleScript();
+    return;
+  }
+  if (module_script->HasInstantiated()) {
+    FinalizeFetchDescendantsForOneModuleScript();
+    return;
+  }
 
-    // Step 7.1: "If result is null, ..." [spec text]
-    if (!result) {
-      // "asynchronously complete this algorithm with null, aborting these
-      // steps." [spec text]
-      module_script_ = nullptr;
-      AdvanceState(State::kFinished);
-      return;
-    }
+  // [IMSGF] Step 5. Assert: result's record's [[Status]] is "uninstantiated".
+  DCHECK_EQ(ScriptModuleState::kUninstantiated, module_script->RecordStatus());
 
-    // Step 7.2: "If result is errored, ..." [spec text]
-    if (result->IsErrored()) {
-      // "then set the pre-instantiation error for module script to result's
-      // error ..." [spec text]
-      ScriptValue error = modulator_->GetError(result);
-      module_script_->SetErrorAndClearRecord(error);
+  // [FD] Step 2. Let record be module script's record.
+  ScriptModule record = module_script->Record();
+  DCHECK(!record.IsNull());
 
-      // "Asynchronously complete this algorithm with module script, aborting
-      // these steps." [spec text]
-      AdvanceState(State::kFinished);
-      return;
+  // [FD] Step 3. If record.[[RequestedModules]] is empty, asynchronously
+  // complete this algorithm with module script.
+  //
+  // Note: We defer this bail-out until the end of the procedure. The rest of
+  // the procedure will be no-op anyway if record.[[RequestedModules]] is empty.
+
+  // [FD] Step 4. Let urls be a new empty list.
+  Vector<KURL> urls;
+  Vector<TextPosition> positions;
+
+  // [FD] Step 5. For each string requested of record.[[RequestedModules]],
+  Vector<Modulator::ModuleRequest> module_requests =
+      modulator_->ModuleRequestsFromScriptModule(record);
+  for (const auto& module_request : module_requests) {
+    // [FD] Step 5.1. Let url be the result of resolving a module specifier
+    // given module script and requested.
+    KURL url = Modulator::ResolveModuleSpecifier(module_request.specifier,
+                                                 module_script->BaseURL());
+
+    // [FD] Step 5.2. Assert: url is never failure, because resolving a module
+    // specifier must have been previously successful with these same two
+    // arguments.
+    CHECK(url.IsValid()) << "Modulator::resolveModuleSpecifier() impl must "
+                            "return either a valid url or null.";
+
+    // [FD] Step 5.3. If visited set does not contain url, then:
+    if (!visited_set_.Contains(url)) {
+      // [FD] Step 5.3.1. Append url to urls.
+      urls.push_back(url);
+
+      // [FD] Step 5.3.2. Append url to visited set.
+      //
+      // This step is deferred to InitiateInternalModuleScriptGraphFetching()
+      // below.
+
+      positions.push_back(module_request.position);
     }
   }
 
-  Instantiate();
+  if (urls.IsEmpty()) {
+    // [FD] Step 3. If record.[[RequestedModules]] is empty, asynchronously
+    // complete this algorithm with module script.
+    //
+    // Also, if record.[[RequestedModules]] is not empty but |urls| is
+    // empty here, we complete this algorithm.
+    FinalizeFetchDescendantsForOneModuleScript();
+    return;
+  }
+
+  // [FD] Step 6. For each url in urls, ...
+  //
+  // [FD] Step 6. These invocations of the internal module script graph fetching
+  // procedure should be performed in parallel to each other.
+  for (size_t i = 0; i < urls.size(); ++i) {
+    // [FD] Step 6. ... perform the internal module script graph fetching
+    // procedure given ... with the top-level module fetch flag unset. ...
+    ModuleScriptFetchRequest request(
+        urls[i], module_script->Nonce(), module_script->ParserState(),
+        module_script->CredentialsMode(), module_script->BaseURL().GetString(),
+        positions[i]);
+    InitiateInternalModuleScriptGraphFetching(
+        request, ModuleGraphLevel::kDependentModuleFetch);
+  }
+
+  // Asynchronously continue processing after NotifyModuleLoadFinished() is
+  // called num_incomplete_fetches_ times.
+  CHECK_GT(num_incomplete_fetches_, 0u);
+}
+
+void ModuleTreeLinker::FinalizeFetchDescendantsForOneModuleScript() {
+  // [FD] of a single module script is completed here:
+  //
+  // [FD] Step 6. Wait for all invocations of the internal module script graph
+  // fetching procedure to asynchronously complete, ...
+
+  // And, if |num_incomplete_fetches_| is 0, all the invocations of [FD]
+  // (called from [FDaI] Step 2) of the root module script is completed here
+  // and thus we proceed to [FDaI] Step 4 implemented by Instantiate().
+  if (num_incomplete_fetches_ == 0)
+    Instantiate();
 }
 
 void ModuleTreeLinker::Instantiate() {
-  CHECK(module_script_);
-  AdvanceState(State::kInstantiating);
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
-  // Step 5. "If the top-level module fetch flag is set, fetch the descendants
-  // of and instantiate result given destination and an ancestor list obtained
-  // by appending url to ancestor list. Otherwise, fetch the descendants of
-  // result given the same arguments." [spec text]
-  if (level_ != ModuleGraphLevel::kTopLevelModuleFetch) {
-    // We don't proceed to instantiate steps if this is descendants module graph
-    // fetch.
-    DCHECK_EQ(level_, ModuleGraphLevel::kDependentModuleFetch);
-    AdvanceState(State::kFinished);
-    return;
-  }
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-and-instantiate-a-module-script
   // [nospec] Abort the steps if the browsing context is discarded.
   if (!modulator_->HasValidContext()) {
-    module_script_ = nullptr;
+    result_ = nullptr;
     AdvanceState(State::kFinished);
     return;
   }
 
-  // Step 1-2 are "fetching the descendants of a module script", which we just
-  // executed.
-
-  // Step 3. "If result is null or is errored, ..." [spec text]
-  if (!module_script_ || module_script_->IsErrored()) {
-    // "then asynchronously complete this algorithm with result." [spec text]
-    module_script_ = nullptr;
+  // [FDaI] Step 4. If result is null, then asynchronously complete this
+  // algorithm with result.
+  if (!result_) {
     AdvanceState(State::kFinished);
     return;
   }
 
-  // Step 4. "Let record be result's module record." [spec text]
-  ScriptModule record = module_script_->Record();
+  // [FDaI] Step 5. Let parse error be the result of finding the first parse
+  // error given result.
+  //
+  // [Optimization] If |found_error_| is false (i.e. no errors were found during
+  // fetching), we are sure that |parse error| is null and thus skip
+  // FindFirstParseError() call.
+  if (found_error_) {
+    // [FFPE] Step 2. If discoveredSet was not given, let it be an empty set.
+    HeapHashSet<Member<ModuleScript>> discovered_set;
+    bool found_first_error = FindFirstParseError(result_, &discovered_set);
+    DCHECK(found_first_error);
+    DCHECK(!result_ || result_->IsErrored());
+  }
 
-  // Step 5. "Perform record.ModuleDeclarationInstantiation()." [spec text]
+  // [FDaI] Step 6. If parse error is null, then:
+  //
+  // [FDaI] Step 7. Otherwise, set result's error to rethrow to parse error.
+  //
+  // [old spec] TODO(hiroshige): Update this.
+  if (!result_ || result_->IsErrored()) {
+    AdvanceState(State::kFinished);
+    return;
+  }
 
-  // "If this throws an exception, ignore it for now; it is stored as result's
-  // error, and will be reported when we run result." [spec text]
+  // In the case of parse error is not null:
+
+  DCHECK(result_);
+  DCHECK(!found_error_);
+  AdvanceState(State::kInstantiating);
+
+  // [FDaI] Step 6.1. Let record be result's record.
+  ScriptModule record = result_->Record();
+
+  // [FDaI] Step 6.2. Perform record.Instantiate(). If this throws an
+  // exception, set result's error to rethrow to that exception.
   modulator_->InstantiateModule(record);
 
-  // Step 6. Asynchronously complete this algorithm with descendants result.
+  // [FDaI] Step 8. Asynchronously complete this algorithm with result.
   AdvanceState(State::kFinished);
+}
+
+// [FFPE] https://html.spec.whatwg.org/#finding-the-first-parse-error
+//
+// TODO(hiroshige): The code structure below aligns the spec after
+// https://github.com/whatwg/html/pull/2991, but the behavior aligns the
+// spec before that PR (that originates from Step 6.1. of [FD]), and thus
+// contains [old spec] statements.
+// Update the behavior according to the PR.
+//
+// This returns true if an error is found, and updates |result_| or
+// |result_|'s error accordingly.
+//
+// TODO(hiroshige): This is also because the behavior is based on the old spec.
+// Make FindFirstParseError to return ScriptValue once the behavior is updated.
+bool ModuleTreeLinker::FindFirstParseError(
+    ModuleScript* module_script,
+    HeapHashSet<Member<ModuleScript>>* discovered_set) {
+  // [FFPE] Step 1. Let moduleMap be moduleScript's settings object's module
+  // map.
+  //
+  // This is accessed via |modulator_|.
+
+  // [FFPE] Step 2 is done before calling this in Instantiate().
+
+  // [old spec] [FD] Step 6.1. If result is null, asynchronously complete this
+  // algorithm with null, aborting these steps.
+  if (!module_script) {
+    result_ = nullptr;
+    return true;
+  }
+
+  // [FFPE] Step 3. Append moduleScript to discoveredSet.
+  discovered_set->insert(module_script);
+
+  // [FFPE] Step 4. If moduleScript's record is null, then return moduleScript's
+  // parse error.
+  //
+  // [old spec] [FD] Step 6.2. If result is errored, then set the
+  // pre-instantiation error for module script to result's error. Asynchronously
+  // complete this algorithm with module script, aborting these steps.
+  if (module_script->IsErrored()) {
+    result_->SetErrorAndClearRecord(modulator_->GetError(module_script));
+    return true;
+  }
+
+  // [FFPE] Step 5. Let childSpecifiers be the value of moduleScript's record's
+  // [[RequestedModules]] internal slot.
+  ScriptModule record = module_script->Record();
+  DCHECK(!record.IsNull());
+  Vector<Modulator::ModuleRequest> child_specifiers =
+      modulator_->ModuleRequestsFromScriptModule(record);
+
+  for (const auto& module_request : child_specifiers) {
+    // [FFPE] Step 6. Let childURLs be the list obtained by calling resolve a
+    // module specifier once for each item of childSpecifiers, given
+    // moduleScript and that item. ...
+    KURL child_url = Modulator::ResolveModuleSpecifier(
+        module_request.specifier, module_script->BaseURL());
+
+    // [FFPE] Step 6. ... (None of these will ever fail, as otherwise
+    // moduleScript would have been marked as itself having a parse error.)
+    CHECK(child_url.IsValid())
+        << "Modulator::ResolveModuleSpecifier() impl must "
+           "return either a valid url or null.";
+
+    // [FFPE] Step 7. Let childModules be the list obtained by getting each
+    // value in moduleMap whose key is given by an item of childURLs.
+    //
+    // [FFPE] Step 8. For each childModule of childModules:
+    ModuleScript* child_module = modulator_->GetFetchedModuleScript(child_url);
+
+    // [FFPE] Step 8.2. If discoveredSet already contains childModule, continue.
+    //
+    // TODO(hiroshige): if |child_module| is null, we skip Contains() call
+    // because HashSet forbids nullptr. Anyway |child_module| can be nullptr
+    // because this is based on the [old spec], so remove this hack once we
+    // update the behavior.
+    if (child_module && discovered_set->Contains(child_module))
+      continue;
+
+    // [FFPE] Step 8.3. Let childParseError be the result of finding the first
+    // parse error given childModule and discoveredSet.
+    //
+    // [FFPE] Step 8.4. If childParseError is not null, return childParseError.
+    if (FindFirstParseError(child_module, discovered_set))
+      return true;
+  }
+
+  // [FFPE] Step 9. Return null.
+  return false;
 }
 
 }  // namespace blink
