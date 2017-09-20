@@ -196,7 +196,8 @@ void* AllocPages(void* address,
   DCHECK(length >= kPageAllocationGranularity);
   DCHECK(!(length & kPageAllocationGranularityOffsetMask));
   DCHECK(align >= kPageAllocationGranularity);
-  DCHECK(!(align & kPageAllocationGranularityOffsetMask));
+  // Alignment must be power of 2 for masking math to work.
+  DCHECK_EQ(align & (align - 1), 0UL);
   DCHECK(!(reinterpret_cast<uintptr_t>(address) &
            kPageAllocationGranularityOffsetMask));
   uintptr_t align_offset_mask = align - 1;
