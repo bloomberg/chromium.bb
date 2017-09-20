@@ -6,14 +6,15 @@
 #define NET_CERT_INTERNAL_OCSP_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/ocsp_revocation_status.h"
+#include "net/cert/ocsp_verify_result.h"
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
 #include "net/der/parser.h"
@@ -265,19 +266,33 @@ NET_EXPORT_PRIVATE bool ParseOCSPResponseData(const der::Input& raw_tlv,
 NET_EXPORT_PRIVATE bool ParseOCSPResponse(const der::Input& raw_tlv,
                                           OCSPResponse* out);
 
-// Checks the certificate status of |cert_tbs_certificate_tlv| based on the
-// OCSPResponseData |response_data| and issuer |issuer_tbs_certificate_tlv| and
-// sets the results in |out|. In the case that there are multiple responses for
-// a given certificate, as a result of caching or performance (RFC 6960,
-// 4.2.2.3), the strictest response is returned (REVOKED > UNKNOWN > GOOD).
+// Checks the revocation status of the certificate |certificate_der| by using
+// the der-encoded |raw_response|.
 //
-// On failure |out| has an undefined state. Some of its fields may have been
-// updated during parsing, whereas others may not have been changed.
-NET_EXPORT_PRIVATE bool GetOCSPCertStatus(
-    const OCSPResponseData& response_data,
-    const der::Input& issuer_tbs_certificate_tlv,
-    const der::Input& cert_tbs_certificate_tlv,
-    OCSPCertStatus* out);
+// TODO(eroman): As the name implies this does not check the authenticity of the
+// OCSP response.
+//
+// Returns GOOD if the OCSP response indicates the certificate is not revoked,
+// REVOKED if it indicates it is revoked, or UNKNOWN for all other cases.
+//
+//  * |raw_response|: A DER encoded OCSPResponse.
+//  * |certificate_der|: The certificate being checked for revocation.
+//  * |issuer_certificate_der|: The certificate that signed |certificate_der|.
+//        The caller must have already performed path verification.
+//  * |verify_time|: The time to use when checking revocation status.
+//  * |skip_time_check|: Temporary parameter to disable time checks.
+//      TODO(eroman): Remove this. It is used as a workaround to interoperate
+//      with some existing test data which fails some of the time checks.
+//  * |response_details|: Additional details about failures.
+//      TODO(eroman): This is only being used for logging of Expect-Staple, can
+//      remove if that gets pulled out.
+NET_EXPORT OCSPRevocationStatus CheckOCSPNoSignatureCheck(
+    base::StringPiece raw_response,
+    base::StringPiece certificate_der,
+    base::StringPiece issuer_certificate_der,
+    const base::Time& verify_time,
+    bool skip_time_check,
+    OCSPVerifyResult::ResponseStatus* response_details) WARN_UNUSED_RESULT;
 
 // Returns true if |response|, a valid OCSP response with a thisUpdate field and
 // potentially a nextUpdate field, is valid at |verify_time| and not older than

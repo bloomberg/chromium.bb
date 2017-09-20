@@ -8,6 +8,8 @@
 
 #include "base/time/time.h"
 #include "net/cert/internal/cert_errors.h"
+#include "net/cert/internal/parsed_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
@@ -438,16 +440,10 @@ bool VerifyHash(const EVP_MD* type,
   return hash == der::Input(value_hash, value_hash_len);
 }
 
-// Checks that the input |id_tlv| parses to a valid CertID and matches the
-// issuer |issuer| name and key, as well as the serial number |serial_number|.
-bool CheckCertID(const der::Input& id_tlv,
-                 const ParsedTbsCertificate& certificate,
-                 const ParsedTbsCertificate& issuer,
-                 const der::Input& serial_number) {
-  OCSPCertID id;
-  if (!ParseOCSPCertID(id_tlv, &id))
-    return false;
-
+// Checks the OCSPCertID |id| identifies |certificate|.
+bool CheckCertIDMatchesCertificate(const OCSPCertID& id,
+                                   ParsedCertificate* certificate,
+                                   ParsedCertificate* issuer_certificate) {
   const EVP_MD* type = nullptr;
   switch (id.hash_algorithm) {
     case DigestAlgorithm::Md2:
@@ -469,14 +465,17 @@ bool CheckCertID(const der::Input& id_tlv,
       break;
   }
 
-  if (!VerifyHash(type, id.issuer_name_hash, certificate.issuer_tlv))
+  if (!VerifyHash(type, id.issuer_name_hash, certificate->tbs().issuer_tlv))
     return false;
 
+  // TODO(eroman): This is largely duplicated with
+  //               asn1::ExtractSubjectPublicKeyFromSPKI().
+  //
   // SubjectPublicKeyInfo  ::=  SEQUENCE  {
   //     algorithm            AlgorithmIdentifier,
   //     subjectPublicKey     BIT STRING
   // }
-  der::Parser outer_parser(issuer.spki_tlv);
+  der::Parser outer_parser(issuer_certificate->tbs().spki_tlv);
   der::Parser spki_parser;
   der::BitString key_bits;
   if (!outer_parser.ReadSequence(&spki_parser))
@@ -491,49 +490,146 @@ bool CheckCertID(const der::Input& id_tlv,
   if (!VerifyHash(type, id.issuer_key_hash, key_tlv))
     return false;
 
-  return id.serial_number == serial_number;
+  return id.serial_number == certificate->tbs().serial_number;
+}
+
+// TODO(eroman): Revisit how certificate parsing is used by this file. Ideally
+// would either pass in the parsed bits, or have a better abstraction for lazily
+// parsing.
+scoped_refptr<ParsedCertificate> ParseCertificate(base::StringPiece der) {
+  ParseCertificateOptions parse_options;
+  parse_options.allow_invalid_serial_numbers = true;
+
+  // TODO(eroman): Swallows the parsing errors. However uses a permissive
+  // parsing model.
+  CertErrors errors;
+  return ParsedCertificate::Create(
+      x509_util::CreateCryptoBuffer(
+          reinterpret_cast<const uint8_t*>(der.data()), der.size()),
+      {}, &errors);
 }
 
 }  // namespace
 
-bool GetOCSPCertStatus(const OCSPResponseData& response_data,
-                       const der::Input& issuer_tbs_certificate_tlv,
-                       const der::Input& cert_tbs_certificate_tlv,
-                       OCSPCertStatus* out) {
-  out->status = OCSPRevocationStatus::GOOD;
+OCSPRevocationStatus CheckOCSPNoSignatureCheck(
+    base::StringPiece raw_response,
+    base::StringPiece certificate_der,
+    base::StringPiece issuer_certificate_der,
+    const base::Time& verify_time,
+    bool skip_time_check,
+    OCSPVerifyResult::ResponseStatus* response_details) {
+  // The maximum age for an OCSP response, implemented as time since the
+  // |this_update| field in OCSPSingleResponse. Responses older than |max_age|
+  // will be considered invalid.
+  base::TimeDelta max_age = base::TimeDelta::FromDays(7);
+  *response_details = OCSPVerifyResult::NOT_CHECKED;
 
-  ParsedTbsCertificate tbs_cert;
-  // TODO(crbug.com/634443): Propagate the errors.
-  CertErrors errors;
-  if (!ParseTbsCertificate(cert_tbs_certificate_tlv, {}, &tbs_cert, &errors))
-    return false;
-  ParsedTbsCertificate issuer_tbs_cert;
-  if (!ParseTbsCertificate(issuer_tbs_certificate_tlv, {}, &issuer_tbs_cert,
-                           &errors))
-    return false;
+  if (raw_response.empty()) {
+    *response_details = OCSPVerifyResult::MISSING;
+    return OCSPRevocationStatus::UNKNOWN;
+  }
 
-  bool found = false;
-  for (const auto& response : response_data.responses) {
-    OCSPSingleResponse single_response;
-    if (!ParseOCSPSingleResponse(response, &single_response))
-      return false;
-    if (CheckCertID(single_response.cert_id_tlv, tbs_cert, issuer_tbs_cert,
-                    tbs_cert.serial_number)) {
-      OCSPCertStatus new_status = single_response.cert_status;
-      found = true;
-      // In the case that we receive multiple responses, we keep only the
-      // strictest status (REVOKED > UNKNOWN > GOOD).
-      if (out->status == OCSPRevocationStatus::GOOD ||
-          new_status.status == OCSPRevocationStatus::REVOKED) {
-        *out = new_status;
-      }
+  der::Input response_der(raw_response);
+  OCSPResponse response;
+  if (!ParseOCSPResponse(response_der, &response)) {
+    *response_details = OCSPVerifyResult::PARSE_RESPONSE_ERROR;
+    return OCSPRevocationStatus::UNKNOWN;
+  }
+
+  // RFC 6960 defines all responses |response_status| != SUCCESSFUL as error
+  // responses. No revocation information is provided on error responses, and
+  // the OCSPResponseData structure is not set.
+  if (response.status != OCSPResponse::ResponseStatus::SUCCESSFUL) {
+    *response_details = OCSPVerifyResult::ERROR_RESPONSE;
+    return OCSPRevocationStatus::UNKNOWN;
+  }
+
+  // Actual revocation information is contained within the BasicOCSPResponse as
+  // a ResponseData structure. The BasicOCSPResponse was parsed above, and
+  // contains an unparsed ResponseData. From RFC 6960:
+  //
+  // BasicOCSPResponse       ::= SEQUENCE {
+  //    tbsResponseData      ResponseData,
+  //    signatureAlgorithm   AlgorithmIdentifier,
+  //    signature            BIT STRING,
+  //    certs            [0] EXPLICIT SEQUENCE OF Certificate OPTIONAL }
+  //
+  // ResponseData ::= SEQUENCE {
+  //     version              [0] EXPLICIT Version DEFAULT v1,
+  //     responderID              ResponderID,
+  //     producedAt               GeneralizedTime,
+  //     responses                SEQUENCE OF SingleResponse,
+  //     responseExtensions   [1] EXPLICIT Extensions OPTIONAL }
+  OCSPResponseData response_data;
+  if (!ParseOCSPResponseData(response.data, &response_data)) {
+    *response_details = OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR;
+    return OCSPRevocationStatus::UNKNOWN;
+  }
+
+  scoped_refptr<ParsedCertificate> certificate =
+      ParseCertificate(certificate_der);
+  scoped_refptr<ParsedCertificate> issuer_certificate =
+      ParseCertificate(issuer_certificate_der);
+
+  if (!certificate || !issuer_certificate) {
+    *response_details = OCSPVerifyResult::NOT_CHECKED;
+    return OCSPRevocationStatus::UNKNOWN;
+  }
+
+  // If producedAt is outside of the certificate validity period, reject the
+  // response.
+  if (!skip_time_check) {
+    if (response_data.produced_at < certificate->tbs().validity_not_before ||
+        response_data.produced_at > certificate->tbs().validity_not_after) {
+      *response_details = OCSPVerifyResult::BAD_PRODUCED_AT;
+      return OCSPRevocationStatus::UNKNOWN;
     }
   }
 
-  if (!found)
-    out->status = OCSPRevocationStatus::UNKNOWN;
+  OCSPRevocationStatus result = OCSPRevocationStatus::UNKNOWN;
+  *response_details = OCSPVerifyResult::NO_MATCHING_RESPONSE;
 
-  return found;
+  for (const auto& single_response_der : response_data.responses) {
+    // In the common case, there should only be one SingleResponse in the
+    // ResponseData (matching the certificate requested and used on this
+    // connection). However, it is possible for the OCSP responder to provide
+    // multiple responses for multiple certificates. Look through all the
+    // provided SingleResponses, and check to see if any match the certificate.
+    // A SingleResponse matches a certificate if it has the same serial number,
+    // issuer name (hash), and issuer public key (hash).
+    OCSPSingleResponse single_response;
+    if (!ParseOCSPSingleResponse(single_response_der, &single_response))
+      return OCSPRevocationStatus::UNKNOWN;
+    OCSPCertID cert_id;
+    if (!ParseOCSPCertID(single_response.cert_id_tlv, &cert_id))
+      return OCSPRevocationStatus::UNKNOWN;
+    if (!CheckCertIDMatchesCertificate(cert_id, certificate.get(),
+                                       issuer_certificate.get()))
+      continue;
+
+    // The SingleResponse matches the certificate, but may be out of date. Out
+    // of date responses are noted seperate from responses with mismatched
+    // serial numbers. If an OCSP responder provides both an up to date response
+    // and an expired response, the up to date response takes precedence
+    // (PROVIDED > INVALID_DATE).
+    if (!skip_time_check &&
+        !CheckOCSPDateValid(single_response, verify_time, max_age)) {
+      if (*response_details != OCSPVerifyResult::PROVIDED)
+        *response_details = OCSPVerifyResult::INVALID_DATE;
+      continue;
+    }
+
+    // In the case with multiple matching and up to date responses, keep only
+    // the strictest status (REVOKED > UNKNOWN > GOOD).
+    if (*response_details != OCSPVerifyResult::PROVIDED ||
+        result == OCSPRevocationStatus::GOOD ||
+        single_response.cert_status.status == OCSPRevocationStatus::REVOKED) {
+      result = single_response.cert_status.status;
+    }
+    *response_details = OCSPVerifyResult::PROVIDED;
+  }
+
+  return result;
 }
 
 bool CheckOCSPDateValid(const OCSPSingleResponse& response,
