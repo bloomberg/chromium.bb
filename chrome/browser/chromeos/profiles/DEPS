@@ -1,0 +1,5 @@
+include_rules = [
+  "-ash",
+  # TODO(crbug.com/766407): remove this exception.
+  "+ash/multi_profile_uma.h",
+]

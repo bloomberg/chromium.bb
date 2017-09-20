@@ -138,6 +138,10 @@ class TestSessionController : public ash::mojom::SessionController {
   void CanSwitchActiveUser(CanSwitchActiveUserCallback callback) override {
     std::move(callback).Run(true);
   }
+  void ShowMultiprofilesIntroDialog(
+      ShowMultiprofilesIntroDialogCallback callback) override {
+    std::move(callback).Run(true, false);
+  }
   void ShowTeleportWarningDialog(
       ShowTeleportWarningDialogCallback callback) override {
     std::move(callback).Run(true, false);

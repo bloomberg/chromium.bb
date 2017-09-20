@@ -166,6 +166,10 @@ interface SessionController {
   // casting.
   CanSwitchActiveUser() => (bool can_switch);
 
+  // Shows a dialog to explain the implications of signing in multiple users.
+  // If |on_accept| is false, |permanently_accept| is ignored.
+  ShowMultiprofilesIntroDialog() => (bool on_accept, bool permanently_accept);
+
   // Shows a dialog to confirm that the user wants to teleport a window to
   // another desktop. If |on_accept| is false, |permanently_accept| is ignored.
   ShowTeleportWarningDialog() => (bool on_accept, bool permanently_accept);

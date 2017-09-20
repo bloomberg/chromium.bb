@@ -176,6 +176,8 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   void SetSessionLengthLimit(base::TimeDelta length_limit,
                              base::TimeTicks start_time) override;
   void CanSwitchActiveUser(CanSwitchActiveUserCallback callback) override;
+  void ShowMultiprofilesIntroDialog(
+      ShowMultiprofilesIntroDialogCallback callback) override;
   void ShowTeleportWarningDialog(
       ShowTeleportWarningDialogCallback callback) override;
   void ShowMultiprofilesSessionAbortedDialog(

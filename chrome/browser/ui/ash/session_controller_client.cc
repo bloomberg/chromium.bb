@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
-#include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -124,7 +124,10 @@ void DoSwitchUser(const AccountId& account_id, bool switch_user) {
 
 // Callback for the dialog that warns the user about multi-profile, which has
 // a "never show again" checkbox.
-void OnAcceptMultiProfileIntro(bool never_show_again) {
+void OnAcceptMultiprofilesIntroDialog(bool accept, bool never_show_again) {
+  if (!accept)
+    return;
+
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   prefs->SetBoolean(prefs::kMultiProfileNeverShowIntro, never_show_again);
   chromeos::UserAddingScreen::Get()->Start();
@@ -268,9 +271,8 @@ void SessionControllerClient::ShowMultiProfileLogin() {
         break;
     }
     if (show_intro) {
-      base::Callback<void(bool)> on_accept =
-          base::Bind(&OnAcceptMultiProfileIntro);
-      chromeos::ShowMultiprofilesIntroDialog(on_accept);
+      session_controller_->ShowMultiprofilesIntroDialog(
+          base::Bind(&OnAcceptMultiprofilesIntroDialog));
     } else {
       chromeos::UserAddingScreen::Get()->Start();
     }
