@@ -252,7 +252,7 @@ void SetFaviconImpl(Profile* profile,
       FaviconServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
   if (favicon_source == bookmarks_helper::FROM_UI) {
-    favicon_service->SetFavicons(node->url(), icon_url, favicon_base::FAVICON,
+    favicon_service->SetFavicons({node->url()}, icon_url, favicon_base::FAVICON,
                                  image);
     } else {
       browser_sync::ProfileSyncService* pss =

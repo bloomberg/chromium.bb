@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -81,7 +81,7 @@ class FaviconServiceImpl : public FaviconService {
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker) override;
   base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
-      const std::set<GURL>& page_urls,
+      const base::flat_set<GURL>& page_urls,
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       int desired_size_in_dip,
@@ -100,7 +100,7 @@ class FaviconServiceImpl : public FaviconService {
                     favicon_base::IconType icon_type,
                     scoped_refptr<base::RefCountedMemory> bitmap_data,
                     const gfx::Size& pixel_size) override;
-  void SetFavicons(const GURL& page_url,
+  void SetFavicons(const base::flat_set<GURL>& page_urls,
                    const GURL& icon_url,
                    favicon_base::IconType icon_type,
                    const gfx::Image& image) override;

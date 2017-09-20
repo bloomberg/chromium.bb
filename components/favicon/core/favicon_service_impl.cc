@@ -175,7 +175,7 @@ base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetFaviconForPageURL(
 
 base::CancelableTaskTracker::TaskId
 FaviconServiceImpl::UpdateFaviconMappingsAndFetch(
-    const std::set<GURL>& page_urls,
+    const base::flat_set<GURL>& page_urls,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     int desired_size_in_dip,
@@ -226,11 +226,11 @@ void FaviconServiceImpl::MergeFavicon(
                                  pixel_size);
 }
 
-void FaviconServiceImpl::SetFavicons(const GURL& page_url,
+void FaviconServiceImpl::SetFavicons(const base::flat_set<GURL>& page_urls,
                                      const GURL& icon_url,
                                      favicon_base::IconType icon_type,
                                      const gfx::Image& image) {
-  history_service_->SetFavicons(page_url, icon_type, icon_url,
+  history_service_->SetFavicons(page_urls, icon_type, icon_url,
                                 ExtractSkBitmapsToStore(image));
 }
 

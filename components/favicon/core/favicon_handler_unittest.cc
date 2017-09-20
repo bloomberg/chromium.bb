@@ -8,7 +8,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -376,7 +375,7 @@ class FakeFaviconService {
   }
 
   base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
-      const std::set<GURL>& page_urls,
+      const base::flat_set<GURL>& page_urls,
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       int desired_size_in_dip,
@@ -564,7 +563,7 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
 // when there is no data in the database for the page URL.
 TEST_F(FaviconHandlerTest, UpdateFaviconMappingsAndFetch) {
   EXPECT_CALL(favicon_service_,
-              UpdateFaviconMappingsAndFetch(std::set<GURL>{kPageURL},
+              UpdateFaviconMappingsAndFetch(base::flat_set<GURL>{kPageURL},
                                             kIconURL16x16, FAVICON,
                                             /*desired_size_in_dip=*/16, _, _));
 
@@ -578,9 +577,10 @@ TEST_F(FaviconHandlerTest, UpdateFaviconMappingsAndFetch) {
 TEST_F(FaviconHandlerTest, UpdateFaviconMappingsAndFetchWithMultipleURLs) {
   const GURL kDifferentPageURL = GURL("http://www.google.com/other");
 
-  EXPECT_CALL(favicon_service_, UpdateFaviconMappingsAndFetch(
-                                    std::set<GURL>{kPageURL, kDifferentPageURL},
-                                    kIconURL16x16, _, _, _, _));
+  EXPECT_CALL(favicon_service_,
+              UpdateFaviconMappingsAndFetch(
+                  base::flat_set<GURL>{kPageURL, kDifferentPageURL},
+                  kIconURL16x16, _, _, _, _));
 
   std::unique_ptr<FaviconHandler> handler = base::MakeUnique<FaviconHandler>(
       &favicon_service_, &delegate_, FaviconDriverObserver::NON_TOUCH_16_DIP);
@@ -619,8 +619,9 @@ TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesSlower) {
   ASSERT_TRUE(favicon_service_.fake()->RunCallbackManually());
   ASSERT_TRUE(VerifyAndClearExpectations());
 
-  EXPECT_CALL(favicon_service_, SetFavicons(kPageURL, kIconURL16x16, FAVICON,
-                                            ImageSizeIs(16, 16)));
+  EXPECT_CALL(favicon_service_,
+              SetFavicons(base::flat_set<GURL>{kPageURL}, kIconURL16x16,
+                          FAVICON, ImageSizeIs(16, 16)));
   EXPECT_CALL(delegate_, OnFaviconUpdated(
                              kPageURL, FaviconDriverObserver::NON_TOUCH_16_DIP,
                              kIconURL16x16, /*icon_url_changed=*/true, _));
@@ -658,8 +659,9 @@ TEST_F(FaviconHandlerTest, DownloadUnknownFaviconIfCandidatesFaster) {
   // Database lookup for |kPageURL| is ongoing.
   ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
 
-  EXPECT_CALL(favicon_service_, SetFavicons(kPageURL, kIconURL16x16, FAVICON,
-                                            ImageSizeIs(16, 16)));
+  EXPECT_CALL(favicon_service_,
+              SetFavicons(base::flat_set<GURL>{kPageURL}, kIconURL16x16,
+                          FAVICON, ImageSizeIs(16, 16)));
   EXPECT_CALL(delegate_, OnFaviconUpdated(_, _, kIconURL16x16, _, _));
 
   // Complete the lookup for |kPageURL|.
@@ -1481,7 +1483,8 @@ TEST_F(FaviconHandlerTest, SetFaviconsForLastPageUrlOnly) {
   const GURL kDifferentPageURL = GURL("http://www.google.com/other");
 
   EXPECT_CALL(favicon_service_,
-              SetFavicons(kDifferentPageURL, kIconURL12x12, _, _));
+              SetFavicons(base::flat_set<GURL>{kDifferentPageURL},
+                          kIconURL12x12, _, _));
   EXPECT_CALL(delegate_,
               OnFaviconUpdated(kDifferentPageURL,
                                FaviconDriverObserver::NON_TOUCH_16_DIP,
@@ -1507,9 +1510,9 @@ TEST_F(FaviconHandlerTest, SetFaviconsForLastPageUrlOnly) {
 TEST_F(FaviconHandlerTest, SetFaviconsForMultipleUrlsWithinDocument) {
   const GURL kDifferentPageURL = GURL("http://www.google.com/other");
 
-  EXPECT_CALL(favicon_service_, SetFavicons(kPageURL, kIconURL12x12, _, _));
   EXPECT_CALL(favicon_service_,
-              SetFavicons(kDifferentPageURL, kIconURL12x12, _, _));
+              SetFavicons(base::flat_set<GURL>{kPageURL, kDifferentPageURL},
+                          kIconURL12x12, _, _));
   EXPECT_CALL(delegate_,
               OnFaviconUpdated(kDifferentPageURL,
                                FaviconDriverObserver::NON_TOUCH_16_DIP,
