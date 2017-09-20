@@ -16,6 +16,7 @@
 
     <!-- Accessibility tab switcher -->
     <dimen name="accessibility_tab_height">65dp</dimen>
+    <dimen name="accessibility_tab_switcher_top_padding">8dp</dimen>
 
     <!-- TabSwitcher - The minimum distance from the edge to commit a side swap. -->
     <dimen name="swipe_commit_distance">120dp</dimen>

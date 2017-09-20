@@ -887,10 +887,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
             mExpandButton.setAlpha(1f - progress);
         }
 
-        int tabSwitcherThemeColor = getToolbarColorForVisualState(VisualState.TAB_SWITCHER_NORMAL);
-
         updateToolbarBackground(ColorUtils.getColorWithOverlay(
-                getTabThemeColor(), tabSwitcherThemeColor, progress));
+                getTabThemeColor(), getToolbarColorForVisualState(mVisualState), progress));
 
         if (mUseModernDesign) {
             mBottomToolbarTopShadow.setAlpha(1f - progress);
@@ -939,6 +937,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
         if (visualState == VisualState.TAB_SWITCHER_NORMAL
                 || visualState == VisualState.TAB_SWITCHER_INCOGNITO) {
             // drawTabSwitcherFadeAnimation will handle the background color transition.
+            if (DeviceClassManager.enableAccessibilityLayout()) {
+                drawTabSwitcherFadeAnimation(true, mTabSwitcherModePercent);
+            }
             return;
         }
 
@@ -1116,9 +1117,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
     @Override
     protected int getToolbarColorForVisualState(final VisualState visualState) {
         if (mUseModernDesign) {
-            if (visualState == VisualState.TAB_SWITCHER_NORMAL) {
-                return Color.WHITE;
-            } else if (visualState == VisualState.NORMAL) {
+            if (visualState == VisualState.TAB_SWITCHER_INCOGNITO
+                    && DeviceClassManager.enableAccessibilityLayout()) {
+                return ApiCompatibilityUtils.getColor(
+                        getResources(), R.color.incognito_primary_color);
+            } else if (visualState == VisualState.NORMAL
+                    || visualState == VisualState.TAB_SWITCHER_NORMAL) {
                 return ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
             }
         }
