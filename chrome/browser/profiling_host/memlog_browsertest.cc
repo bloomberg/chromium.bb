@@ -38,7 +38,7 @@ class MemlogBrowserTest : public InProcessBrowserTest,
 };
 
 void ValidateDump(base::Value* dump_json,
-                  int expected_alloc,
+                  int expected_alloc_size,
                   int expected_alloc_count) {
   // Verify allocation is found.
   // See chrome/profiling/json_exporter.cc for file format info.
@@ -67,30 +67,30 @@ void ValidateDump(base::Value* dump_json,
   base::Value* counts = heaps_v2->FindPath({"allocators", "malloc", "counts"});
   ASSERT_TRUE(counts);
   const base::Value::ListStorage& counts_list = counts->GetList();
-  EXPECT_FALSE(counts_list.empty());
   EXPECT_EQ(sizes_list.size(), counts_list.size());
 
   // If given an expected allocation to look for, search the sizes and counts
   // list for them.
-  if (expected_alloc) {
+  if (expected_alloc_size) {
     bool found_browser_alloc = false;
-    size_t browser_alloc_index = 0;
     for (size_t i = 0; i < sizes_list.size(); i++) {
-      if (sizes_list[i].GetInt() == expected_alloc) {
-        browser_alloc_index = i;
+      if (counts_list[i].GetInt() == expected_alloc_count &&
+          sizes_list[i].GetInt() != expected_alloc_size) {
+        LOG(WARNING) << "Allocation candidate (size:" << sizes_list[i].GetInt()
+                     << " count:" << counts_list[i].GetInt() << ")";
+      }
+      if (sizes_list[i].GetInt() == expected_alloc_size &&
+          counts_list[i].GetInt() == expected_alloc_count) {
         found_browser_alloc = true;
         break;
       }
     }
 
-    ASSERT_TRUE(found_browser_alloc) << "Failed to find an allocation of the "
-                                        "appropriate size. Did the send buffer "
-                                        "not flush?";
-
-    // This could be EXPECT_EQ, but that's not robust to others making allocs of
-    // the given size.
-    EXPECT_GE(counts->GetList()[browser_alloc_index].GetInt(),
-              expected_alloc_count);
+    ASSERT_TRUE(found_browser_alloc)
+        << "Failed to find an allocation of the "
+           "appropriate size. Did the send buffer "
+           "not flush? (size: "
+        << expected_alloc_size << " count:" << expected_alloc_count << ")";
   }
 }
 
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
 
   // Make some specific allocations in Browser to do a deeper test of the
   // allocation tracking. On the renderer side, this is harder so all that's
-  // tested there is the existance of information.
+  // tested there is the existence of information.
   //
   // For the Browser allocations, because the data sending is buffered, it is
   // necessary to generate a large number of allocations to flush the buffer.
@@ -190,6 +190,12 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   leaks.reserve(kBrowserAllocCount + kFlushCount);
   for (int i = 0; i < kBrowserAllocCount; ++i) {
     leaks.push_back(new char[kBrowserAllocSize]);
+  }
+
+  size_t total_variadic_allocations = 0;
+  for (int i = 0; i < kBrowserAllocCount; ++i) {
+    leaks.push_back(new char[i + 1]);  // Variadic allocation.
+    total_variadic_allocations += i + 1;
   }
 
   for (int i = 0; i < kFlushCount; ++i) {
@@ -218,6 +224,8 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
     ASSERT_NO_FATAL_FAILURE(ValidateDump(dump_json.get(),
                                          kBrowserAllocSize * kBrowserAllocCount,
                                          kBrowserAllocCount));
+    ASSERT_NO_FATAL_FAILURE(ValidateDump(
+        dump_json.get(), total_variadic_allocations, kBrowserAllocCount));
   }
 
   {
@@ -248,7 +256,7 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   }
 }
 
-// TODO(ajwong): Test what happens if profiling proccess crashes.
+// TODO(ajwong): Test what happens if profiling process crashes.
 // TODO(ajwong): Test the pure json output path used by tracing.
 
 INSTANTIATE_TEST_CASE_P(NoMemlog,
