@@ -241,3 +241,15 @@ function isVisible(button) {
     return computedStyle.display !== "none" &&
            computedStyle.visibility === "visible";
 }
+
+function checkButtonHasClass(button, className) {
+  assert_true(button.classList.contains(className));
+}
+
+function checkButtonNotHasClass(button, className) {
+  assert_false(button.classList.contains(className));
+}
+
+function checkControlsClassName(videoElement, className) {
+  assert_equals(window.internals.shadowRoot(videoElement).firstChild.className, className);
+}
