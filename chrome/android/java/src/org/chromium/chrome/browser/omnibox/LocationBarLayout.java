@@ -24,12 +24,14 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.speech.RecognizerIntent;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
+import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -120,6 +122,9 @@ public class LocationBarLayout extends FrameLayout
     private static final int OMNIBOX_RESULTS_CHROME_HOME_MODERN_BG_COLOR = 0xFFFFFFFF;
     private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = 0xFF323232;
     private static final int OMNIBOX_INCOGNITO_RESULTS_CHROME_HOME_MODERN_BG_COLOR = 0xFF505050;
+
+    // Unicode "Left-To-Right Mark" (LRM) character.
+    private static final char LRM = '\u200E';
 
     /**
      * URI schemes that ContentView can handle.
@@ -1105,6 +1110,11 @@ public class LocationBarLayout extends FrameLayout
      * - The current tab is not incognito.
      */
     private void startZeroSuggest() {
+        // hasWindowFocus() can return true before onWindowFocusChanged has been called, so this
+        // is an optimization, but not entirely reliable.  The underlying controller needs to also
+        // ensure we do not double trigger zero query.
+        if (!hasWindowFocus()) return;
+
         // Reset "edited" state in the omnibox if zero suggest is triggered -- new edits
         // now count as a new session.
         mHasStartedNewOmniboxEditSession = false;
@@ -2125,28 +2135,40 @@ public class LocationBarLayout extends FrameLayout
             }
         }
 
-        if (!mToolbarDataProvider.hasTab()) {
+        mOriginalUrl = url;
+        String displayText = getDisplayText();
+        if (TextUtils.isEmpty(displayText)) {
             setUrlBarText("", null);
-            return;
+        } else {
+            if (setUrlBarText(url, displayText)) {
+                mUrlBar.deEmphasizeUrl();
+                emphasizeUrl();
+            }
         }
+        if (!mToolbarDataProvider.hasTab()) return;
 
         // Profile may be null if switching to a tab that has not yet been initialized.
         Profile profile = mToolbarDataProvider.getProfile();
         if (profile != null) mOmniboxPrerender.clear(profile);
+    }
 
-        mOriginalUrl = url;
+    private String getDisplayText() {
+        if (!mToolbarDataProvider.hasTab()) return "";
 
+        String url = mToolbarDataProvider.getCurrentUrl();
         if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())
                 || NewTabPage.isNTPUrl(url)) {
-            // Don't show anything for Chrome URLs.
-            setUrlBarText(null, "");
-            return;
+            return "";
         }
 
-        if (setUrlBarText(url, mToolbarDataProvider.getText())) {
-            mUrlBar.deEmphasizeUrl();
-            emphasizeUrl();
+        String displayText = mToolbarDataProvider.getText();
+        // Because Android versions 4.2 and before lack proper RTL support,
+        // force the formatted URL to render as LTR using an LRM character.
+        // See: https://www.ietf.org/rfc/rfc3987.txt and crbug.com/709417
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            displayText = LRM + displayText;
         }
+        return displayText;
     }
 
     /**
@@ -2392,7 +2414,13 @@ public class LocationBarLayout extends FrameLayout
         if (!hasWindowFocus && !mSuggestionModalShown) {
             hideSuggestions();
         } else if (hasWindowFocus && mUrlHasFocus && mNativeInitialized) {
-            onTextChangedForAutocomplete();
+            Editable currentUrlBarText = mUrlBar.getText();
+            if (TextUtils.isEmpty(currentUrlBarText)
+                    || TextUtils.equals(currentUrlBarText, getDisplayText())) {
+                startZeroSuggest();
+            } else {
+                onTextChangedForAutocomplete();
+            }
         }
     }
 

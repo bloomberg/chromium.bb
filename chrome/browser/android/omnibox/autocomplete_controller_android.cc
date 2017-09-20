@@ -182,6 +182,11 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
   if (!autocomplete_controller_)
     return;
 
+  // Prevents double triggering of zero suggest when OnOmniboxFocused is issued
+  // in quick succession (due to odd timing in the Android focus callbacks).
+  if (!autocomplete_controller_->done())
+    return;
+
   base::string16 url = ConvertJavaStringToUTF16(env, j_current_url);
   const GURL current_url = GURL(url);
   base::string16 omnibox_text = ConvertJavaStringToUTF16(env, j_omnibox_text);
