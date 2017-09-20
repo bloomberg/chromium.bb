@@ -158,6 +158,8 @@ constexpr char kVirtualFileRequestServiceInterface[] =
 // Methods
 constexpr char kVirtualFileRequestServiceHandleReadRequestMethod[] =
     "HandleReadRequest";
+constexpr char kVirtualFileRequestServiceHandleIdReleasedMethod[] =
+    "HandleIdReleased";
 
 }  // namespace chromeos
 
