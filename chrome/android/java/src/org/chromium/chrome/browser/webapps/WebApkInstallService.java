@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
@@ -49,10 +50,10 @@ public class WebApkInstallService {
     @CalledByNative
     private static void showInstallInProgressNotification(
             String manifestUrl, String shortName, String url, Bitmap icon) {
-        showNotification(manifestUrl, shortName, url, icon,
-                ContextUtils.getApplicationContext().getResources().getString(
-                        R.string.notification_webapk_install_in_progress, shortName),
-                null);
+        String message = ContextUtils.getApplicationContext().getResources().getString(
+                R.string.notification_webapk_install_in_progress, shortName);
+        showNotification(manifestUrl, shortName, url, icon, message, null);
+        ShortcutHelper.showToast(message);
     }
 
     private static void showNotification(String notificationId, String shortName, String url,

@@ -288,7 +288,7 @@ public class ShortcutHelper {
         showToast(toastText);
     }
 
-    private static void showToast(String text) {
+    public static void showToast(String text) {
         assert ThreadUtils.runningOnUiThread();
         Toast toast =
                 Toast.makeText(ContextUtils.getApplicationContext(), text, Toast.LENGTH_SHORT);
