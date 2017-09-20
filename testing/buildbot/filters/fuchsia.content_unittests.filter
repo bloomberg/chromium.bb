@@ -52,6 +52,3 @@
 -RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
 -RenderWidgetHostViewAuraCopyRequestTest.DestroyedAfterCopyRequest
 -RenderWidgetHostViewAuraCopyRequestTest.PresentTime
-
-# Flaky: https://crbug.com/766362.
--LegacyInputRouterImplTest.AckedTouchEventState
