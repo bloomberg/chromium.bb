@@ -814,6 +814,12 @@
     },
 
     {
+      name: "savePreviousDocumentResources",
+      initial: "SavePreviousDocumentResources::kNever",
+      type: "SavePreviousDocumentResources",
+    },
+
+    {
       name: "progressBarCompletion",
       initial: "ProgressBarCompletion::kLoadEvent",
       type: "ProgressBarCompletion",

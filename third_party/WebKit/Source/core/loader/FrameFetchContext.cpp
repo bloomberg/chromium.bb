@@ -224,6 +224,24 @@ struct FrameFetchContext::FrozenState final
   DEFINE_INLINE_TRACE() { visitor->Trace(content_security_policy); }
 };
 
+ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
+                                                  Document* document) {
+  FrameFetchContext* context = new FrameFetchContext(loader, document);
+  ResourceFetcher* fetcher =
+      ResourceFetcher::Create(context, context->GetTaskRunner());
+
+  if (context->GetSettings()->GetSavePreviousDocumentResources() !=
+      SavePreviousDocumentResources::kNever) {
+    if (DocumentLoader* previous_document_loader =
+            context->GetFrame()->Loader().GetDocumentLoader()) {
+      fetcher->HoldResourcesFromPreviousFetcher(
+          previous_document_loader->Fetcher());
+    }
+  }
+
+  return fetcher;
+}
+
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
     : document_loader_(loader), document_(document) {
   DCHECK(GetFrame());
