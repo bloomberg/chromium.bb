@@ -124,6 +124,13 @@
         constraintEqualToConstant:kProgressBarHeight],
   ];
 
+  // Constraint so Toolbar stackview never overlaps with the Status Bar.
+  NSLayoutConstraint* constraintTop = [self.stackView.topAnchor
+      constraintGreaterThanOrEqualToAnchor:self.topLayoutGuide.bottomAnchor
+                                  constant:kVerticalMargin];
+  constraintTop.priority = UILayoutPriorityRequired;
+  constraintTop.active = YES;
+
   // Set the constraints priority to UILayoutPriorityDefaultHigh so these are
   // not broken when the views are hidden or the VC's view size is 0.
   [self activateConstraints:constraints
