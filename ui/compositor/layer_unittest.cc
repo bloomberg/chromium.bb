@@ -23,6 +23,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/animation/animation_events.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/animation_player.h"
 #include "cc/layers/layer.h"
 #include "cc/test/pixel_test_utils.h"
@@ -47,6 +49,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
+#include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/compositor/test/test_compositor_host.h"
 #include "ui/compositor/test/test_layers.h"
 #include "ui/gfx/canvas.h"
@@ -2231,6 +2234,52 @@ TEST(LayerDelegateTest, OnLayerOpacityDidNotChange) {
   // Since |delegate| is a StrictMock, the test will fail if the observer is
   // notified.
   layer->SetOpacity(1.0f);
+}
+
+// Verify that LayerDelegate::OnLayerOpacityChanged() is called everytime the
+// opacity of a Layer is changed by an animation.
+TEST(LayerDelegateTest, OnLayerOpacityChangedAnimation) {
+  bool enable_pixel_output = false;
+  ContextFactory* context_factory = nullptr;
+  ContextFactoryPrivate* context_factory_private = nullptr;
+  InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                   &context_factory_private);
+  std::unique_ptr<TestCompositorHost> host(TestCompositorHost::Create(
+      gfx::Rect(), context_factory, context_factory_private));
+
+  ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  LayerAnimatorTestController test_controller(
+      LayerAnimator::CreateImplicitAnimator());
+  LayerAnimator* const animator = test_controller.animator();
+
+  auto layer = std::make_unique<Layer>(LAYER_TEXTURED);
+  testing::StrictMock<TestLayerDelegate> delegate;
+  host->GetCompositor()->SetRootLayer(layer.get());
+  layer->set_delegate(&delegate);
+  layer->SetAnimator(animator);
+  animator->AttachLayerAndTimeline(host->GetCompositor());
+
+  // Start the animation.
+  layer->SetOpacity(0.5f);
+  const base::TimeTicks start_time = animator->last_step_time();
+  const base::TimeDelta duration = animator->GetTransitionDuration();
+  animator->GetAnimationPlayerForTesting()->NotifyAnimationStarted(
+      {cc::AnimationEvent::STARTED, cc::ElementId(),
+       test_controller.GetRunningSequence(ui::LayerAnimationElement::OPACITY)
+           ->animation_group_id(),
+       cc::TargetProperty::OPACITY, start_time});
+
+  // Play the animation.
+  EXPECT_CALL(delegate, OnLayerOpacityChanged(1.0f, 0.75f));
+  animator->GetAnimationPlayerForTesting()->Tick(start_time + duration / 2);
+  testing::Mock::VerifyAndClear(&delegate);
+
+  EXPECT_CALL(delegate, OnLayerOpacityChanged(0.75f, 0.5f));
+  animator->GetAnimationPlayerForTesting()->Tick(start_time + duration);
+  testing::Mock::VerifyAndClear(&delegate);
+
+  animator->DetachLayerAndTimeline(host->GetCompositor());
 }
 
 TEST_F(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
