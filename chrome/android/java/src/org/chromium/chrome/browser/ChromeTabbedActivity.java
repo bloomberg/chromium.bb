@@ -828,6 +828,7 @@ public class ChromeTabbedActivity
 
     private void turnOffHighlightForDownloadHomeTextBubble() {
         if (FeatureUtilities.isChromeHomeEnabled()) {
+            if (getBottomSheetContentController() == null) return;
             getBottomSheetContentController().setHighlightItemId(null);
             if (FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
                 ViewHighlighter.turnOffHighlight(findViewById(R.id.expand_sheet_button));
