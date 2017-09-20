@@ -317,9 +317,7 @@ void aom_calc_highbd_psnr(const YV12_BUFFER_CONFIG *a,
   const int widths[3] = { a->y_crop_width, a->uv_crop_width, a->uv_crop_width };
   const int heights[3] = { a->y_crop_height, a->uv_crop_height,
                            a->uv_crop_height };
-  const uint8_t *a_planes[3] = { a->y_buffer, a->u_buffer, a->v_buffer };
   const int a_strides[3] = { a->y_stride, a->uv_stride, a->uv_stride };
-  const uint8_t *b_planes[3] = { b->y_buffer, b->u_buffer, b->v_buffer };
   const int b_strides[3] = { b->y_stride, b->uv_stride, b->uv_stride };
   int i;
   uint64_t total_sse = 0;
@@ -334,14 +332,15 @@ void aom_calc_highbd_psnr(const YV12_BUFFER_CONFIG *a,
     uint64_t sse;
     if (a->flags & YV12_FLAG_HIGHBITDEPTH) {
       if (input_shift) {
-        sse = highbd_get_sse_shift(a_planes[i], a_strides[i], b_planes[i],
+        sse = highbd_get_sse_shift(a->buffers[i], a_strides[i], b->buffers[i],
                                    b_strides[i], w, h, input_shift);
       } else {
-        sse = highbd_get_sse(a_planes[i], a_strides[i], b_planes[i],
+        sse = highbd_get_sse(a->buffers[i], a_strides[i], b->buffers[i],
                              b_strides[i], w, h);
       }
     } else {
-      sse = get_sse(a_planes[i], a_strides[i], b_planes[i], b_strides[i], w, h);
+      sse = get_sse(a->buffers[i], a_strides[i], b->buffers[i], b_strides[i], w,
+                    h);
     }
     psnr->sse[1 + i] = sse;
     psnr->samples[1 + i] = samples;
@@ -365,9 +364,7 @@ void aom_calc_psnr(const YV12_BUFFER_CONFIG *a, const YV12_BUFFER_CONFIG *b,
   const int widths[3] = { a->y_crop_width, a->uv_crop_width, a->uv_crop_width };
   const int heights[3] = { a->y_crop_height, a->uv_crop_height,
                            a->uv_crop_height };
-  const uint8_t *a_planes[3] = { a->y_buffer, a->u_buffer, a->v_buffer };
   const int a_strides[3] = { a->y_stride, a->uv_stride, a->uv_stride };
-  const uint8_t *b_planes[3] = { b->y_buffer, b->u_buffer, b->v_buffer };
   const int b_strides[3] = { b->y_stride, b->uv_stride, b->uv_stride };
   int i;
   uint64_t total_sse = 0;
@@ -378,7 +375,7 @@ void aom_calc_psnr(const YV12_BUFFER_CONFIG *a, const YV12_BUFFER_CONFIG *b,
     const int h = heights[i];
     const uint32_t samples = w * h;
     const uint64_t sse =
-        get_sse(a_planes[i], a_strides[i], b_planes[i], b_strides[i], w, h);
+        get_sse(a->buffers[i], a_strides[i], b->buffers[i], b_strides[i], w, h);
     psnr->sse[1 + i] = sse;
     psnr->samples[1 + i] = samples;
     psnr->psnr[1 + i] = aom_sse_to_psnr(samples, peak, (double)sse);
