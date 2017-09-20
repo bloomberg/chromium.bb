@@ -173,6 +173,10 @@ void SelectFileDialogImplGTK::SelectFileImpl(
   if (owning_window) {
     aura::WindowTreeHost* host = owning_window->GetHost();
     if (host) {
+      // In some circumstances (e.g. dialog from flash plugin) the mouse has
+      // been captured and by turning off event listening, it is never
+      // released. So we manually ensure there is no current capture.
+      host->ReleaseCapture();
       std::unique_ptr<base::Closure> callback =
           views::DesktopWindowTreeHostX11::GetHostForXID(
               host->GetAcceleratedWidget())
