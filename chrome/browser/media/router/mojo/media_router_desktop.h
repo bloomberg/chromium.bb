@@ -100,6 +100,8 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
 
   // Request manager responsible for waking the component extension and calling
   // the requests to it.
+  // TODO(takumif): Remove this. Delegate calls to |extension_provider_|
+  // instead.
   EventPageRequestManager* const request_manager_;
 
   // MediaRouteProvider proxy that forwards calls to the MRPM in the component

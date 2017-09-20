@@ -43,7 +43,7 @@ void MediaRouterDesktop::OnUserGesture() {
 }
 
 void MediaRouterDesktop::OnConnectionError() {
-  request_manager_->OnMojoConnectionError();
+  extension_provider_.OnMojoConnectionError();
   binding_.Close();
   MediaRouterMojoImpl::OnConnectionError();
 }

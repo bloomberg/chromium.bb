@@ -78,6 +78,8 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
   std::unique_ptr<ExtensionMediaRouteProviderProxy> provider_proxy_;
   mojom::MediaRouteProviderPtr provider_proxy_ptr_;
   StrictMock<MockMediaRouteProvider> mock_provider_;
+  MockEventPageRequestManager* request_manager_ = nullptr;
+  std::unique_ptr<mojo::Binding<mojom::MediaRouteProvider>> binding_;
 
  private:
   void RegisterMockMediaRouteProvider() {
@@ -90,8 +92,6 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  MockEventPageRequestManager* request_manager_ = nullptr;
-  std::unique_ptr<mojo::Binding<mojom::MediaRouteProvider>> binding_;
   TestingProfile profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMediaRouteProviderProxyTest);
@@ -274,6 +274,14 @@ TEST_F(ExtensionMediaRouteProviderProxyTest, CreateMediaRouteController) {
   provider_proxy_->CreateMediaRouteController(
       kRouteId, std::move(controller_request), std::move(observer_ptr),
       base::BindOnce(&MockBoolCallback::Run, base::Unretained(&callback)));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ExtensionMediaRouteProviderProxyTest, NotifyRequestManagerOnError) {
+  // Invalidating the Mojo pointer to the MRP held by the proxy should make it
+  // notify request manager.
+  EXPECT_CALL(*request_manager_, OnMojoConnectionError());
+  binding_.reset();
   base::RunLoop().RunUntilIdle();
 }
 

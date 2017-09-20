@@ -223,11 +223,12 @@ void ExtensionMediaRouteProviderProxy::RegisterMediaRouteProvider(
     mojom::MediaRouteProviderPtr media_route_provider) {
   media_route_provider_ = std::move(media_route_provider);
   media_route_provider_.set_connection_error_handler(
-      base::BindOnce(&ExtensionMediaRouteProviderProxy::OnConnectionError,
+      base::BindOnce(&ExtensionMediaRouteProviderProxy::OnMojoConnectionError,
                      base::Unretained(this)));
 }
 
-void ExtensionMediaRouteProviderProxy::OnConnectionError() {
+void ExtensionMediaRouteProviderProxy::OnMojoConnectionError() {
+  request_manager_->OnMojoConnectionError();
   media_route_provider_.reset();
 }
 
