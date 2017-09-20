@@ -116,6 +116,7 @@
         removeObserver:self.mediator
            forSelector:@selector(broadcastTabStripVisible:)];
   }
+  [self.mediator disconnect];
   [self.dispatcher stopDispatchingToTarget:self];
 }
 

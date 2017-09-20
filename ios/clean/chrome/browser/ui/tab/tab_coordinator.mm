@@ -128,9 +128,10 @@
 
 - (void)stop {
   [super stop];
-  for (BrowserCoordinator* child in self.children) {
+  for (BrowserCoordinator* child in self.children)
     [self removeChildCoordinator:child];
-  }
+  _scopedWebStateListObserver.reset();
+  _webStateListObserver.reset();
   _webStateObserver.reset();
   [self.dispatcher stopDispatchingToTarget:self];
   [self.navigationController stop];

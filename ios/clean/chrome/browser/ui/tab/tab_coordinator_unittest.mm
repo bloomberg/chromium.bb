@@ -63,31 +63,27 @@ class TabCoordinatorTest : public BrowserCoordinatorTest {
 
 }  // namespace
 
-// TODO(crbug.com/759761): Disabled due to threading issues.
-TEST_F(TabCoordinatorTest, DISABLED_DefaultTabContainer) {
+TEST_F(TabCoordinatorTest, DefaultTabContainer) {
   SetUpDefaultCoordinator();
   [coordinator_ start];
   EXPECT_EQ([TabContainerViewController class],
             [coordinator_.viewController class]);
 }
 
-// TODO(crbug.com/759761): Disabled due to threading issues.
-TEST_F(TabCoordinatorTest, DISABLED_TabStripTabContainer) {
+TEST_F(TabCoordinatorTest, TabStripTabContainer) {
   SetUpTabStripCoordinator();
   [coordinator_ start];
   EXPECT_EQ([TabStripTabContainerViewController class],
             [coordinator_.viewController class]);
 }
 
-// TODO(crbug.com/759761): Disabled due to threading issues.
-TEST_F(TabCoordinatorTest, DISABLED_TopToolbar) {
+TEST_F(TabCoordinatorTest, TopToolbar) {
   SetUpDefaultCoordinator();
   [coordinator_ start];
   EXPECT_EQ(NO, TabViewController().usesBottomToolbar);
 }
 
-// TODO(crbug.com/759761): Disabled due to threading issues.
-TEST_F(TabCoordinatorTest, DISABLED_EnableBottomToolbar) {
+TEST_F(TabCoordinatorTest, EnableBottomToolbar) {
   EnableBottomToolbar();
   SetUpDefaultCoordinator();
   [coordinator_ start];
