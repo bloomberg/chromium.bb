@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
-#include <set>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/cancelable_callback.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -296,7 +296,7 @@ class FaviconHandler {
 
   // URL of the page(s) we're requesting the favicon for. They can be multiple
   // in case of in-page navigations (e.g. fragment navigations).
-  std::set<GURL> page_urls_;
+  base::flat_set<GURL> page_urls_;
   // The last page URL reported via FetchFavicon().
   GURL last_page_url_;
 

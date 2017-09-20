@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <set>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_types.h"
@@ -121,7 +121,7 @@ class FaviconService : public KeyedService {
   // were just mapped to |page_urls| are returned. If |desired_size_in_dip| has
   // a '0' entry, the largest favicon bitmap is returned.
   virtual base::CancelableTaskTracker::TaskId UpdateFaviconMappingsAndFetch(
-      const std::set<GURL>& page_urls,
+      const base::flat_set<GURL>& page_urls,
       const GURL& icon_url,
       favicon_base::IconType icon_type,
       int desired_size_in_dip,
@@ -166,9 +166,9 @@ class FaviconService : public KeyedService {
                             scoped_refptr<base::RefCountedMemory> bitmap_data,
                             const gfx::Size& pixel_size) = 0;
 
-  // Set the favicon for |page_url| for |icon_type| in the thumbnail database.
-  // |icon_url| is the single favicon to map to |page_url|. Mappings from
-  // |page_url| to favicons at different icon URLs will be deleted.
+  // Set the favicon for all URLs in |page_urls| for |icon_type| in the
+  // thumbnail database. |icon_url| is the single favicon to map to. Mappings
+  // from page URLs to favicons at different icon URLs will be deleted.
   // A favicon bitmap is added for each image rep in |image|. Any preexisting
   // bitmap data for |icon_url| is deleted. It is important that |image|
   // contains image reps for all of ui::GetSupportedScaleFactors(). Use
@@ -176,7 +176,7 @@ class FaviconService : public KeyedService {
   // TODO(pkotwicz): Save unresized favicon bitmaps to the database.
   // TODO(pkotwicz): Support adding favicons for multiple icon URLs to the
   // thumbnail database.
-  virtual void SetFavicons(const GURL& page_url,
+  virtual void SetFavicons(const base::flat_set<GURL>& page_urls,
                            const GURL& icon_url,
                            favicon_base::IconType icon_type,
                            const gfx::Image& image) = 0;

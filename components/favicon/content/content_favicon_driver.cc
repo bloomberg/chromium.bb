@@ -71,7 +71,7 @@ void ContentFaviconDriver::SaveFaviconEvenIfInIncognito() {
     return;
   }
 
-  favicon_service()->SetFavicons(page_url, favicon_status.url,
+  favicon_service()->SetFavicons({page_url}, favicon_status.url,
                                  favicon_base::FAVICON, favicon_status.image);
 }
 

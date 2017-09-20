@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -400,7 +401,7 @@ class RemoveFaviconTester {
     SkBitmap bitmap;
     bitmap.allocN32Pixels(gfx::kFaviconSize, gfx::kFaviconSize);
     bitmap.eraseColor(SK_ColorBLUE);
-    favicon_service_->SetFavicons(page_url, page_url, favicon_base::FAVICON,
+    favicon_service_->SetFavicons({page_url}, page_url, favicon_base::FAVICON,
                                   gfx::Image::CreateFrom1xBitmap(bitmap));
   }
 

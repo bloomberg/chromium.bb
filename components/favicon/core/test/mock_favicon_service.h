@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_FAVICON_CORE_TEST_MOCK_FAVICON_SERVICE_H_
 #define COMPONENTS_FAVICON_CORE_TEST_MOCK_FAVICON_SERVICE_H_
 
-#include <set>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_service.h"
@@ -78,7 +78,7 @@ class MockFaviconService : public FaviconService {
                    base::CancelableTaskTracker* tracker));
   MOCK_METHOD6(UpdateFaviconMappingsAndFetch,
                base::CancelableTaskTracker::TaskId(
-                   const std::set<GURL>& page_urls,
+                   const base::flat_set<GURL>& page_urls,
                    const GURL& icon_url,
                    favicon_base::IconType icon_type,
                    int desired_size_in_dip,
@@ -100,7 +100,7 @@ class MockFaviconService : public FaviconService {
                     scoped_refptr<base::RefCountedMemory> bitmap_data,
                     const gfx::Size& pixel_size));
   MOCK_METHOD4(SetFavicons,
-               void(const GURL& page_url,
+               void(const base::flat_set<GURL>& page_urls,
                     const GURL& icon_url,
                     favicon_base::IconType icon_type,
                     const gfx::Image& image));
