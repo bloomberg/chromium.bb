@@ -438,16 +438,16 @@ public class SuggestionsSectionTest {
         SuggestionsSection section = createSection(info);
         section.setStatus(CategoryStatus.AVAILABLE);
         section.appendSuggestions(createDummySuggestions(suggestionCount, TEST_CATEGORY_ID), true);
-        assertFalse(section.getProgressItemForTesting().isVisible());
+        assertEquals(ActionItem.State.BUTTON, section.getActionItemForTesting().getState());
 
         // Tap the button
         verifyAction(section, ContentSuggestionsAdditionalAction.FETCH);
-        assertTrue(section.getProgressItemForTesting().isVisible());
+        assertEquals(ActionItem.State.LOADING, section.getActionItemForTesting().getState());
 
         // Simulate receiving suggestions.
         section.setStatus(CategoryStatus.AVAILABLE);
         section.appendSuggestions(createDummySuggestions(suggestionCount, TEST_CATEGORY_ID), false);
-        assertFalse(section.getProgressItemForTesting().isVisible());
+        assertEquals(ActionItem.State.BUTTON, section.getActionItemForTesting().getState());
     }
 
     /**
@@ -468,7 +468,7 @@ public class SuggestionsSectionTest {
         section.setStatus(CategoryStatus.AVAILABLE);
         section.appendSuggestions(createDummySuggestions(suggestionCount, REMOTE_TEST_CATEGORY),
                 /*keepSectionSize=*/true);
-        assertFalse(section.getProgressItemForTesting().isVisible());
+        assertEquals(ActionItem.State.BUTTON, section.getActionItemForTesting().getState());
         assertEquals(10, section.getSuggestionsCount());
         assertTrue(section.getCategoryInfo().isRemote());
 
