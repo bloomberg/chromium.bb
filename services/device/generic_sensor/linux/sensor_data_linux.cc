@@ -9,6 +9,7 @@
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace device {
 
@@ -115,7 +116,7 @@ void InitGyroscopeSensorData(SensorPathsLinux* data) {
   data->sensor_frequency_file_name = "in_anglvel_base_frequency";
   data->apply_scaling_func = base::Bind(
       [](double scaling_value, double offset, SensorReading& reading) {
-        double scaling = kMeanGravity * kDegreesToRadians / scaling_value;
+        double scaling = gfx::DegToRad(kMeanGravity) / scaling_value;
         // Adapt CrOS reading values to generic sensor api specs.
         reading.gyro.x = -scaling * (reading.gyro.x + offset);
         reading.gyro.y = -scaling * (reading.gyro.y + offset);

@@ -21,7 +21,6 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/histograms.h"
-#include "cc/base/math_util.h"
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/page_scale_animation.h"
@@ -76,6 +75,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -6568,8 +6568,8 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
     // The child layer should have scrolled down in its local coordinates an
     // amount proportional to the angle between it and the input scroll delta.
     gfx::Vector2d expected_scroll_delta(
-        0, gesture_scroll_delta.y() *
-               std::cos(MathUtil::Deg2Rad(child_layer_angle)));
+        0,
+        gesture_scroll_delta.y() * std::cos(gfx::DegToRad(child_layer_angle)));
     std::unique_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child_scroll_id,
@@ -6594,8 +6594,8 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
     // The child layer should have scrolled down in its local coordinates an
     // amount proportional to the angle between it and the input scroll delta.
     gfx::Vector2d expected_scroll_delta(
-        0, -gesture_scroll_delta.x() *
-               std::sin(MathUtil::Deg2Rad(child_layer_angle)));
+        0,
+        -gesture_scroll_delta.x() * std::sin(gfx::DegToRad(child_layer_angle)));
     std::unique_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child_scroll_id,

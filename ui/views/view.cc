@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define _USE_MATH_DEFINES // For VC++ to get M_PI. This has to be first.
-
 #include "ui/views/view.h"
 
 #include <algorithm>
-#include <cmath>
 #include <memory>
 #include <utility>
 
@@ -40,6 +37,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/interpolated_transform.h"
@@ -1911,7 +1909,7 @@ std::string View::DoPrintViewGraph(bool first, View* view_with_children) {
 
     base::snprintf(bounds_buffer, arraysize(bounds_buffer),
                    "\\n rotation: %3.2f",
-                   std::acos(decomp.quaternion.w()) * 360.0 / M_PI);
+                   gfx::RadToDeg(std::acos(decomp.quaternion.w()) * 2));
     result.append(bounds_buffer);
 
     base::snprintf(bounds_buffer,

@@ -11,13 +11,14 @@
 #import "chrome/browser/ui/cocoa/md_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/native_theme/native_theme.h"
 
 namespace {
-const CGFloat kDegrees90               = (M_PI / 2);
-const CGFloat kDegrees180              = (M_PI);
-const CGFloat kDegrees270              = (3 * M_PI / 2);
-const CGFloat kDegrees360              = (2 * M_PI);
+const CGFloat kDegrees90 = gfx::DegToRad(90.0f);
+const CGFloat kDegrees180 = gfx::DegToRad(180.0f);
+const CGFloat kDegrees270 = gfx::DegToRad(270.0f);
+const CGFloat kDegrees360 = gfx::DegToRad(360.0f);
 const CGFloat kDesignWidth             = 28.0;
 const CGFloat kArcRadius               = 12.5;
 const CGFloat kArcDiameter             = kArcRadius * 2.0;

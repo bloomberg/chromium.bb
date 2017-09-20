@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "cc/base/math_util.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace vr {
 
@@ -34,8 +34,7 @@ void ViewportAwareRoot::AdjustRotationForHeadPose(
   }
   viewport_aware_total_rotation_ += degrees;
   viewport_aware_total_rotation_ = fmod(viewport_aware_total_rotation_, 360.0f);
-  SetRotate(0.f, 1.f, 0.f,
-            cc::MathUtil::Deg2Rad(viewport_aware_total_rotation_));
+  SetRotate(0.f, 1.f, 0.f, gfx::DegToRad(viewport_aware_total_rotation_));
 
   // Immediately hide the element.
   SetVisibleImmediately(false);

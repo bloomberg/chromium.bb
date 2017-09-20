@@ -11,8 +11,6 @@
 
 #define BUILD_PRECOMPILE_H_
 
-#define _USE_MATH_DEFINES
-
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>

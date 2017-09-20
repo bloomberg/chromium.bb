@@ -8,6 +8,7 @@
 #include "base/numerics/math_constants.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 using blink::WebInputEvent;
 using blink::WebPointerProperties;
@@ -129,7 +130,7 @@ float MotionEventWeb::GetOrientation(size_t pointer_index) const {
   DCHECK_LT(pointer_index, GetPointerCount());
 
   float orientation_rad =
-      event_.touches[pointer_index].rotation_angle * base::kPiFloat / 180.f;
+      gfx::DegToRad(event_.touches[pointer_index].rotation_angle);
   DCHECK(0 <= orientation_rad && orientation_rad <= base::kPiFloat / 2)
       << "Unexpected touch rotation angle";
 

@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
-#include <cmath>
+#include "ui/events/gestures/motion_event_aura.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
-#include "ui/events/gestures/motion_event_aura.h"
 #include "ui/events/test/motion_event_test_utils.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace {
 
@@ -258,7 +255,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_EQ(1U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(radius_x, event.GetTouchMajor(0) / 2);
   EXPECT_FLOAT_EQ(radius_y, event.GetTouchMinor(0) / 2);
-  EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(0) * 180 / M_PI + 90);
+  EXPECT_FLOAT_EQ(rotation_angle, gfx::RadToDeg(event.GetOrientation(0)) + 90);
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(0));
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(0));
 
@@ -274,7 +271,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_EQ(2U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(radius_y, event.GetTouchMajor(1) / 2);
   EXPECT_FLOAT_EQ(radius_x, event.GetTouchMinor(1) / 2);
-  EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(1) * 180 / M_PI);
+  EXPECT_FLOAT_EQ(rotation_angle, gfx::RadToDeg(event.GetOrientation(1)));
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(1));
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(1));
 
@@ -286,7 +283,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_EQ(2U, clone->GetPointerCount());
   EXPECT_FLOAT_EQ(radius_y, clone->GetTouchMajor(1) / 2);
   EXPECT_FLOAT_EQ(radius_x, clone->GetTouchMinor(1) / 2);
-  EXPECT_FLOAT_EQ(rotation_angle, clone->GetOrientation(1) * 180 / M_PI);
+  EXPECT_FLOAT_EQ(rotation_angle, gfx::RadToDeg(clone->GetOrientation(1)));
   EXPECT_FLOAT_EQ(pressure, clone->GetPressure(1));
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, clone->GetToolType(1));
 
@@ -303,7 +300,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_EQ(2U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(radius_y, event.GetTouchMajor(1) / 2);
   EXPECT_FLOAT_EQ(radius_x, event.GetTouchMinor(1) / 2);
-  EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(1) * 180 / M_PI);
+  EXPECT_FLOAT_EQ(rotation_angle, gfx::RadToDeg(event.GetOrientation(1)));
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(1));
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(1));
 
@@ -319,7 +316,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_EQ(3U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(radius_x, event.GetTouchMajor(2) / 2);
   EXPECT_FLOAT_EQ(radius_y, event.GetTouchMinor(2) / 2);
-  EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(2) * 180 / M_PI + 90);
+  EXPECT_FLOAT_EQ(rotation_angle, gfx::RadToDeg(event.GetOrientation(2)) + 90);
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(2));
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(2));
 
@@ -335,7 +332,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_EQ(4U, event.GetPointerCount());
   EXPECT_FLOAT_EQ(radius_y, event.GetTouchMajor(3) / 2);
   EXPECT_FLOAT_EQ(radius_x, event.GetTouchMinor(3) / 2);
-  EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(3) * 180 / M_PI + 180);
+  EXPECT_FLOAT_EQ(rotation_angle, gfx::RadToDeg(event.GetOrientation(3)) + 180);
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(3));
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(3));
 }

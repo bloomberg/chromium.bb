@@ -7,9 +7,9 @@
 #include <cmath>
 
 #include "base/strings/stringprintf.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace {
-const float kRadiansToDegrees = 180.0f / 3.14159265f;
 const double kEpsilon = 1.0e-6;
 }
 
@@ -86,8 +86,8 @@ Vector3dF ScaleVector3d(const Vector3dF& v,
 
 float AngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,
                                    const gfx::Vector3dF& other) {
-  return acos(gfx::DotProduct(base, other) / base.Length() / other.Length()) *
-         kRadiansToDegrees;
+  return gfx::RadToDeg(
+      std::acos(gfx::DotProduct(base, other) / base.Length() / other.Length()));
 }
 
 float ClockwiseAngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,

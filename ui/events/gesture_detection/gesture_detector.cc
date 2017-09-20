@@ -2,20 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include "ui/events/gesture_detection/gesture_detector.h"
 
 #include <stddef.h>
 
 #include <algorithm>
-#include <cmath>
 
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "ui/events/gesture_detection/gesture_listeners.h"
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace ui {
 namespace {
@@ -28,8 +25,6 @@ const float kSlopEpsilon = .05f;
 // Minimum distance a scroll must have traveled from the last scroll/focal point
 // to trigger an |OnScroll| callback.
 const float kScrollEpsilon = .1f;
-
-const float kDegreesToRadians = static_cast<float>(M_PI) / 180.0f;
 
 // Constants used by TimeoutGestureHandler.
 enum TimeoutEvent {
@@ -451,7 +446,7 @@ void GestureDetector::Init(const Config& config) {
   const float maximum_swipe_deviation_angle =
       std::min(45.f, std::max(0.001f, config.maximum_swipe_deviation_angle));
   min_swipe_direction_component_ratio_ =
-      1.f / tan(maximum_swipe_deviation_angle * kDegreesToRadians);
+      1.f / tan(gfx::DegToRad(maximum_swipe_deviation_angle));
 
   two_finger_tap_enabled_ = config.two_finger_tap_enabled;
   two_finger_tap_distance_square_ = config.two_finger_tap_max_separation *

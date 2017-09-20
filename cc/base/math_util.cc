@@ -13,6 +13,7 @@
 
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -596,7 +597,7 @@ float MathUtil::SmallestAngleBetweenVectors(const gfx::Vector2dF& v1,
   double dot_product = gfx::DotProduct(v1, v2) / v1.Length() / v2.Length();
   // Clamp to compensate for rounding errors.
   dot_product = std::max(-1.0, std::min(1.0, dot_product));
-  return static_cast<float>(Rad2Deg(std::acos(dot_product)));
+  return static_cast<float>(gfx::RadToDeg(std::acos(dot_product)));
 }
 
 gfx::Vector2dF MathUtil::ProjectVector(const gfx::Vector2dF& source,

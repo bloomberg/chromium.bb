@@ -36,6 +36,7 @@ component("sensors") {
     "//base",
     "//device/sensors/public/cpp:full",
     "//mojo/public/cpp/bindings",
+    "//ui/gfx/geometry:geometry",
   ]
 
   public_deps = [

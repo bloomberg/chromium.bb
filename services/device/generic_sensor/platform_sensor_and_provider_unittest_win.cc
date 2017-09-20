@@ -18,6 +18,7 @@
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -625,9 +626,9 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckGyroscopeReadingConversion) {
   base::RunLoop().RunUntilIdle();
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
-  EXPECT_THAT(buffer->reading.gyro.x, -x_ang_accel * kDegreesToRadians);
-  EXPECT_THAT(buffer->reading.gyro.y, -y_ang_accel * kDegreesToRadians);
-  EXPECT_THAT(buffer->reading.gyro.z, -z_ang_accel * kDegreesToRadians);
+  EXPECT_THAT(buffer->reading.gyro.x, gfx::DegToRad(-x_ang_accel));
+  EXPECT_THAT(buffer->reading.gyro.y, gfx::DegToRad(-y_ang_accel));
+  EXPECT_THAT(buffer->reading.gyro.z, gfx::DegToRad(-z_ang_accel));
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 

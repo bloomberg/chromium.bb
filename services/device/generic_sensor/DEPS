@@ -3,4 +3,5 @@ include_rules = [
   "+jni",
   "+services/device/public/cpp/device_features.h",
   "+third_party/sudden_motion_sensor",
+  "+ui/gfx/geometry"
 ]

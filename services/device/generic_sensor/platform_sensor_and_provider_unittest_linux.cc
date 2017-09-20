@@ -15,9 +15,9 @@
 #include "services/device/generic_sensor/linux/sensor_device_manager.h"
 #include "services/device/generic_sensor/platform_sensor_provider_linux.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -638,7 +638,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
 #if defined(OS_CHROMEOS)
-  double scaling = kMeanGravity * kDegreesToRadians / kGyroscopeScalingValue;
+  double scaling = gfx::DegToRad(kMeanGravity) / kGyroscopeScalingValue;
   EXPECT_THAT(buffer->reading.gyro.x, -scaling * sensor_values[0]);
   EXPECT_THAT(buffer->reading.gyro.y, -scaling * sensor_values[1]);
   EXPECT_THAT(buffer->reading.gyro.z, -scaling * sensor_values[2]);

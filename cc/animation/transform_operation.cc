@@ -10,6 +10,7 @@
 #include "cc/animation/transform_operation.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/math_util.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform_util.h"
@@ -295,14 +296,6 @@ static void FindCandidatesInPlane(float px,
   }
 }
 
-static float RadiansToDegrees(float radians) {
-  return (180.f * radians) / base::kPiFloat;
-}
-
-static float DegreesToRadians(float degrees) {
-  return (base::kPiFloat * degrees) / 180.f;
-}
-
 static void BoundingBoxForArc(const gfx::Point3F& point,
                               const TransformOperation* from,
                               const TransformOperation* to,
@@ -415,8 +408,8 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
     candidates[5] = candidates[4] + base::kPiDouble;
   }
 
-  double min_radians = DegreesToRadians(min_degrees);
-  double max_radians = DegreesToRadians(max_degrees);
+  double min_radians = gfx::DegToRad(min_degrees);
+  double max_radians = gfx::DegToRad(max_degrees);
 
   for (int i = 0; i < num_candidates; ++i) {
     double radians = candidates[i];
@@ -428,7 +421,7 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
       continue;
 
     gfx::Transform rotation;
-    rotation.RotateAbout(axis, RadiansToDegrees(radians));
+    rotation.RotateAbout(axis, gfx::RadToDeg(radians));
     gfx::Point3F rotated = point;
     rotation.TransformPoint(&rotated);
 

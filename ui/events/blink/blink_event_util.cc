@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include "ui/events/blink/blink_event_util.h"
 
 #include <stddef.h>
 
 #include <algorithm>
 #include <bitset>
-#include <cmath>
 #include <limits>
 
 #include "base/time/time.h"
@@ -24,6 +20,7 @@
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/transform.h"
@@ -188,7 +185,7 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
 
   float major_radius = event.GetTouchMajor(pointer_index) / 2.f;
   float minor_radius = event.GetTouchMinor(pointer_index) / 2.f;
-  float orientation_deg = event.GetOrientation(pointer_index) * 180.f / M_PI;
+  float orientation_deg = gfx::RadToDeg(event.GetOrientation(pointer_index));
 
   DCHECK_GE(major_radius, 0);
   DCHECK_GE(minor_radius, 0);

@@ -15,6 +15,7 @@
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace device {
 
@@ -121,9 +122,9 @@ std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
     // Windows uses coordinate system where Z axis points down from device
     // screen, therefore, using right hand notation, we have to reverse
     // sign for each axis. Values are converted from deg to rad.
-    reading->gyro.x = -x * kDegreesToRadians;
-    reading->gyro.y = -y * kDegreesToRadians;
-    reading->gyro.z = -z * kDegreesToRadians;
+    reading->gyro.x = gfx::DegToRad(-x);
+    reading->gyro.y = gfx::DegToRad(-y);
+    reading->gyro.z = gfx::DegToRad(-z);
     return S_OK;
   };
   return params;

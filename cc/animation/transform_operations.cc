@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Needed on Windows to get |M_PI| from <cmath>
-#ifdef _WIN32
-#define _USE_MATH_DEFINES
-#endif
-
 #include "cc/animation/transform_operations.h"
 
 #include <stddef.h>
@@ -15,6 +10,7 @@
 
 #include "cc/base/math_util.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform_util.h"
@@ -143,8 +139,7 @@ bool TransformOperations::IsTranslation() const {
 }
 
 static SkMScalar TanDegrees(double degrees) {
-  double radians = degrees * M_PI / 180;
-  return SkDoubleToMScalar(std::tan(radians));
+  return SkDoubleToMScalar(std::tan(gfx::DegToRad(degrees)));
 }
 
 bool TransformOperations::ScaleComponent(SkMScalar* scale) const {

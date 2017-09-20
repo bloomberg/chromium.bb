@@ -10,8 +10,8 @@
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "cc/base/math_util.h"
 #include "chrome/browser/vr/elements/ui_element_transform_operations.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace vr {
 
@@ -139,7 +139,7 @@ void UiElement::SetRotate(float x, float y, float z, float radians) {
   cc::TransformOperations operations = transform_operations_;
   cc::TransformOperation& op = operations.at(kRotateIndex);
   op.rotate.axis = {x, y, z};
-  op.rotate.angle = cc::MathUtil::Rad2Deg(radians);
+  op.rotate.angle = gfx::RadToDeg(radians);
   op.Bake();
   animation_player_.TransitionTransformOperationsTo(
       last_frame_time_, TRANSFORM, transform_operations_, operations);
