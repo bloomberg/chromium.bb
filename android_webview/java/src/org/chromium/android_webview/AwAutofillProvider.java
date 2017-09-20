@@ -67,8 +67,10 @@ public class AwAutofillProvider extends AutofillProvider {
         }
 
         public void fillViewStructure(ViewStructure structure) {
-            structure.setClassName(mFormData.mName);
             structure.setWebDomain(mFormData.mHost);
+            structure.setHtmlInfo(structure.newHtmlInfoBuilder("form")
+                                          .addAttribute("name", mFormData.mName)
+                                          .build());
             int index = structure.addChildCount(mFormData.mFields.size());
             short fieldIndex = 0;
             for (FormFieldData field : mFormData.mFields) {
