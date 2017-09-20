@@ -14,12 +14,10 @@ class StubDecodeCache : public ImageDecodeCache {
   StubDecodeCache() = default;
   ~StubDecodeCache() override = default;
 
-  bool GetTaskForImageAndRef(const DrawImage& image,
-                             const TracingInfo& tracing_info,
-                             scoped_refptr<TileTask>* task) override;
-  bool GetOutOfRasterDecodeTaskForImageAndRef(
-      const DrawImage& image,
-      scoped_refptr<TileTask>* task) override;
+  TaskResult GetTaskForImageAndRef(const DrawImage& image,
+                                   const TracingInfo& tracing_info) override;
+  TaskResult GetOutOfRasterDecodeTaskForImageAndRef(
+      const DrawImage& image) override;
   void UnrefImage(const DrawImage& image) override {}
   DecodedDrawImage GetDecodedImageForDraw(const DrawImage& image) override;
   void DrawWithImageFinished(const DrawImage& image,

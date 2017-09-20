@@ -6,16 +6,16 @@
 
 namespace cc {
 
-bool StubDecodeCache::GetTaskForImageAndRef(const DrawImage& image,
-                                            const TracingInfo& tracing_info,
-                                            scoped_refptr<TileTask>* task) {
-  return true;
+ImageDecodeCache::TaskResult StubDecodeCache::GetTaskForImageAndRef(
+    const DrawImage& image,
+    const TracingInfo& tracing_info) {
+  return TaskResult(true);
 }
 
-bool StubDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
-    const DrawImage& image,
-    scoped_refptr<TileTask>* task) {
-  return true;
+ImageDecodeCache::TaskResult
+StubDecodeCache::GetOutOfRasterDecodeTaskForImageAndRef(
+    const DrawImage& image) {
+  return TaskResult(true);
 }
 
 DecodedDrawImage StubDecodeCache::GetDecodedImageForDraw(

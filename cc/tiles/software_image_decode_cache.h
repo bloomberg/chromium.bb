@@ -124,12 +124,10 @@ class CC_EXPORT SoftwareImageDecodeCache
   ~SoftwareImageDecodeCache() override;
 
   // ImageDecodeCache overrides.
-  bool GetTaskForImageAndRef(const DrawImage& image,
-                             const TracingInfo& tracing_info,
-                             scoped_refptr<TileTask>* task) override;
-  bool GetOutOfRasterDecodeTaskForImageAndRef(
-      const DrawImage& image,
-      scoped_refptr<TileTask>* task) override;
+  TaskResult GetTaskForImageAndRef(const DrawImage& image,
+                                   const TracingInfo& tracing_info) override;
+  TaskResult GetOutOfRasterDecodeTaskForImageAndRef(
+      const DrawImage& image) override;
   void UnrefImage(const DrawImage& image) override;
   DecodedDrawImage GetDecodedImageForDraw(const DrawImage& image) override;
   void DrawWithImageFinished(const DrawImage& image,
@@ -295,10 +293,9 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   // Helper method to get the different tasks. Note that this should be used as
   // if it was public (ie, all of the locks need to be properly acquired).
-  bool GetTaskForImageAndRefInternal(const DrawImage& image,
-                                     const TracingInfo& tracing_info,
-                                     DecodeTaskType type,
-                                     scoped_refptr<TileTask>* task);
+  TaskResult GetTaskForImageAndRefInternal(const DrawImage& image,
+                                           const TracingInfo& tracing_info,
+                                           DecodeTaskType type);
 
   void CacheDecodedImages(const ImageKey& key,
                           std::unique_ptr<DecodedImage> decoded_image);
