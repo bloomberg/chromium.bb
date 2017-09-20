@@ -1084,6 +1084,12 @@ def _ProcessSysrootWrappers(_target, output_dir, srcpath):
     os.chmod(sysroot_wrapper, 0o755)
 
 
+def _CreateMainLibDir(target, output_dir):
+  """Create some lib dirs so that compiler can get the right Gcc paths"""
+  osutils.SafeMakedirs(os.path.join(output_dir, 'usr', target, 'lib'))
+  osutils.SafeMakedirs(os.path.join(output_dir, 'usr', target, 'usr/lib'))
+
+
 def _ProcessDistroCleanups(target, output_dir):
   """Clean up the tree and remove all distro-specific requirements
 
@@ -1094,6 +1100,7 @@ def _ProcessDistroCleanups(target, output_dir):
   _ProcessBinutilsConfig(target, output_dir)
   gcc_path = _ProcessGccConfig(target, output_dir)
   _ProcessSysrootWrappers(target, output_dir, gcc_path)
+  _CreateMainLibDir(target, output_dir)
 
   osutils.RmDir(os.path.join(output_dir, 'etc'))
 
