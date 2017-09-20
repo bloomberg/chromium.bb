@@ -120,6 +120,9 @@ ScriptModule ModulatorImplBase::CompileModule(
     const String& provided_source,
     const String& url_str,
     AccessControlStatus access_control_status,
+    WebURLRequest::FetchCredentialsMode credentials_mode,
+    const String& nonce,
+    ParserDisposition parser_state,
     const TextPosition& position,
     ExceptionState& exception_state) {
   // Implements Steps 3-5 of
@@ -138,8 +141,8 @@ ScriptModule ModulatorImplBase::CompileModule(
   // Step 5. Let result be ParseModule(script source, realm, script).
   ScriptState::Scope scope(script_state_.Get());
   return ScriptModule::Compile(script_state_->GetIsolate(), script_source,
-                               url_str, access_control_status, position,
-                               exception_state);
+                               url_str, access_control_status, credentials_mode,
+                               nonce, parser_state, position, exception_state);
 }
 
 ScriptValue ModulatorImplBase::InstantiateModule(ScriptModule script_module) {

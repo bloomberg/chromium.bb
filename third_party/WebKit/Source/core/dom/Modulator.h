@@ -121,6 +121,9 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual ScriptModule CompileModule(const String& script,
                                      const String& url_str,
                                      AccessControlStatus,
+                                     WebURLRequest::FetchCredentialsMode,
+                                     const String& nonce,
+                                     ParserDisposition,
                                      const TextPosition&,
                                      ExceptionState&) = 0;
 

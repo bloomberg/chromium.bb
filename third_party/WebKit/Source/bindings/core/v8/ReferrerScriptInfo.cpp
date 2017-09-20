@@ -24,9 +24,7 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
     v8::Local<v8::Context> context,
     v8::Local<v8::PrimitiveArray> host_defined_options) {
   if (host_defined_options.IsEmpty() || !host_defined_options->Length()) {
-    String empty_nonce;
-    return ReferrerScriptInfo(WebURLRequest::kFetchCredentialsModeOmit,
-                              empty_nonce, kNotParserInserted);
+    return ReferrerScriptInfo();
   }
 
   v8::Local<v8::Primitive> credentials_mode_value =
@@ -49,6 +47,9 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
 
 v8::Local<v8::PrimitiveArray> ReferrerScriptInfo::ToV8HostDefinedOptions(
     v8::Isolate* isolate) const {
+  if (IsDefaultValue())
+    return v8::Local<v8::PrimitiveArray>();
+
   v8::Local<v8::PrimitiveArray> host_defined_options =
       v8::PrimitiveArray::New(isolate, HostDefinedOptionsIndex::kLength);
 

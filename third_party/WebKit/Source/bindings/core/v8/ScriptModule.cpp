@@ -57,20 +57,26 @@ ScriptModule::ScriptModule(v8::Isolate* isolate, v8::Local<v8::Module> module)
 
 ScriptModule::~ScriptModule() {}
 
-ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
-                                   const String& source,
-                                   const String& file_name,
-                                   AccessControlStatus access_control_status,
-                                   const TextPosition& start_position,
-                                   ExceptionState& exception_state) {
+ScriptModule ScriptModule::Compile(
+    v8::Isolate* isolate,
+    const String& source,
+    const String& file_name,
+    AccessControlStatus access_control_status,
+    WebURLRequest::FetchCredentialsMode credentials_mode,
+    const String& nonce,
+    ParserDisposition parser_state,
+    const TextPosition& text_position,
+    ExceptionState& exception_state) {
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
   CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
 
   v8::TryCatch try_catch(isolate);
   v8::Local<v8::Module> module;
-  if (!V8ScriptRunner::CompileModule(isolate, source, file_name,
-                                     access_control_status, start_position)
+
+  if (!V8ScriptRunner::CompileModule(
+           isolate, source, file_name, access_control_status, text_position,
+           ReferrerScriptInfo(credentials_mode, nonce, parser_state))
            .ToLocal(&module)) {
     DCHECK(try_catch.HasCaught());
     exception_state.RethrowV8Exception(try_catch.Exception());

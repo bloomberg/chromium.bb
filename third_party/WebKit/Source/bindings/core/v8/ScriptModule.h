@@ -9,10 +9,12 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/SharedPersistent.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebURLRequest.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -40,7 +42,10 @@ class CORE_EXPORT ScriptModule final {
                               const String& source,
                               const String& file_name,
                               AccessControlStatus,
-                              const TextPosition& start_position,
+                              WebURLRequest::FetchCredentialsMode,
+                              const String& nonce,
+                              ParserDisposition,
+                              const TextPosition&,
                               ExceptionState&);
 
   // TODO(kouhei): Remove copy ctor

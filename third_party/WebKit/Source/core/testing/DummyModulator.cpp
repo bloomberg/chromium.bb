@@ -105,6 +105,9 @@ bool DummyModulator::HasValidContext() {
 ScriptModule DummyModulator::CompileModule(const String& script,
                                            const String& url_str,
                                            AccessControlStatus,
+                                           WebURLRequest::FetchCredentialsMode,
+                                           const String& nonce,
+                                           ParserDisposition,
                                            const TextPosition&,
                                            ExceptionState&) {
   NOTREACHED();
