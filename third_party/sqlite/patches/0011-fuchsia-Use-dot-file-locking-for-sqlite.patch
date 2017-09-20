@@ -1,14 +1,14 @@
-From 17e2cdeea7c69da846ca987070eb83a3f5f46172 Mon Sep 17 00:00:00 2001
+From 55e992087d05b7cfd0bfcfc278e6344c2f36b90b Mon Sep 17 00:00:00 2001
 From: Scott Graham <scottmg@chromium.org>
 Date: Mon, 11 Sep 2017 13:37:46 -0700
-Subject: [PATCH] fuchsia: Use dot-file locking for sqlite
+Subject: [PATCH 11/11] fuchsia: Use dot-file locking for sqlite
 
 ---
- third_party/sqlite/src/src/os_unix.c      | 4 ++++
- 1 files changed, 4 insertions(+)
+ third_party/sqlite/src/src/os_unix.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/third_party/sqlite/src/src/os_unix.c b/third_party/sqlite/src/src/os_unix.c
-index 44f6d67..cf009da 100644
+index 44f6d67ee07f..cf009da8f3e8 100644
 --- a/third_party/sqlite/src/src/os_unix.c
 +++ b/third_party/sqlite/src/src/os_unix.c
 @@ -7622,6 +7622,10 @@ int sqlite3_os_init(void){
@@ -23,5 +23,5 @@ index 44f6d67..cf009da 100644
      UNIXVFS("unix",          posixIoFinder ),
  #endif
 -- 
-2.7.4
+2.13.5
 

@@ -1,6 +1,6 @@
 Name: sqlite
 URL: https://sqlite.org/
-Version: 3.20.patched
+Version: 3.20.1
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain
@@ -176,7 +176,7 @@ git commit -m "Squash: Reset SQLite src/ to sqlite-src-${OLD}."
 #### Create a branch for our old SQLite code, with patches mapped to commits.
 git new-branch --upstream-current sqlite-old
 git am --keep-non-patch --ignore-space-change patches/*.patch
-git diff --ignore-space-change origin/master
+git diff --ignore-space-change origin/master src/
 # This branch should be identical to master.
 
 #### Create a branch for the new SQLite release's upstream version.

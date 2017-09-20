@@ -1,7 +1,7 @@
-From a9d3b5dc29050f562174939d7154a26ea66ac779 Mon Sep 17 00:00:00 2001
+From 7a3deabc19ed4ab0da08fc70b856304df70e0771 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Fri, 16 Jan 2015 10:24:30 -0800
-Subject: [PATCH 01/10] [test] SQLite tests compiling on Linux.
+Subject: [PATCH 01/11] [test] SQLite tests compiling on Linux.
 
 ---
  third_party/sqlite/src/Makefile.linux-gcc | 41 ++++++++++++++++++++++---------
@@ -116,5 +116,5 @@ index 62ba293d5b9d..32c394e7812d 100644
  dbdump$(EXE):	$(TOP)/ext/misc/dbdump.c sqlite3.o
  	$(TCCX) -DDBDUMP_STANDALONE -o dbdump$(EXE) \
 -- 
-2.13.1.518.g3df882009-goog
+2.13.5
 

@@ -1,7 +1,7 @@
-From 718473c4f2c41afdd60132f3cf97d0567e8a3aa4 Mon Sep 17 00:00:00 2001
+From 65d2934485139bf8ca6fd42405f7a8fd4145481c Mon Sep 17 00:00:00 2001
 From: dumi <dumi@chromium.org>
 Date: Mon, 20 Jul 2009 23:40:51 +0000
-Subject: [PATCH 03/10] Modify default VFS to support WebDatabase.
+Subject: [PATCH 03/11] Modify default VFS to support WebDatabase.
 
 The renderer WebDatabase implementation needs to broker certain requests
 to the browser.  This modifies SQLite to allow monkey-patching the VFS
@@ -39,11 +39,10 @@ index 8ab779a35288..44f6d67ee07f 100644
    return pFile->pInode!=0 &&
        (osStat(pFile->zPath, &buf)!=0
           || (u64)buf.st_ino!=pFile->pInode->fileId.ino);
-@@ -5639,6 +5645,44 @@ static int findCreateFileMode(
-   return rc;
+@@ -5640,6 +5646,44 @@ static int findCreateFileMode(
  }
  
-+/*
+ /*
 +** Initialize |unixFile| internals of |file| on behalf of chromiumOpen() in
 +** WebDatabase SQLiteFileSystemPosix.cpp.  Function is a subset of unixOpen(),
 +** each duplicated piece is marked by "Duplicated in" comment in unixOpen().
@@ -81,9 +80,10 @@ index 8ab779a35288..44f6d67ee07f 100644
 +  return rc;
 +}
 +
- /*
++/*
  ** Open the file zPath.
  **
+ ** Previously, the SQLite OS layer used three functions in place of this
 @@ -5740,6 +5784,7 @@ static int unixOpen(
      sqlite3_randomness(0,0);
    }
@@ -139,10 +139,10 @@ index a87d7d09256d..1d9abf0a8f35 100644
 +
  #endif /* SQLITE_OS_WIN */
 diff --git a/third_party/sqlite/src/src/sqlite.h.in b/third_party/sqlite/src/src/sqlite.h.in
-index 025fa5dadc40..2503d76c8f27 100644
+index 9175dde682e9..c65406abe596 100644
 --- a/third_party/sqlite/src/src/sqlite.h.in
 +++ b/third_party/sqlite/src/src/sqlite.h.in
-@@ -7918,6 +7918,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
+@@ -7921,6 +7921,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
  */
  int sqlite3_strglob(const char *zGlob, const char *zStr);
  
@@ -173,5 +173,5 @@ index 025fa5dadc40..2503d76c8f27 100644
  ** CAPI3REF: String LIKE Matching
  *
 -- 
-2.13.1.518.g3df882009-goog
+2.13.5
 
