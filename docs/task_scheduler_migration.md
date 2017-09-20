@@ -106,7 +106,7 @@ assigned files by:
 * base::ThreadLocalStorage::Slot -> base::SequenceLocalStorageSlot
 * BrowserThread::PostTaskAndReplyWithResult() -> base::PostTaskAndReplyWithResult()
   (from post_task.h or from task_runner_util.h (if you need to feed a TaskRunner))
-* BrowserThread::DeleteOnThread -> base::DeleteOnTaskRunner / base::RefCountedDeleteOnSequence
+* BrowserThread::DeleteOnThread -> base::OnTaskRunnerDeleter / base::RefCountedDeleteOnSequence
 * BrowserMessageFilter::OverrideThreadForMessage() -> BrowserMessageFilter::OverrideTaskRunnerForMessage()
 * CreateSingleThreadTaskRunnerWithTraits() -> CreateSequencedTaskRunnerWithTraits()
    * Every CreateSingleThreadTaskRunnerWithTraits() usage should be accompanied
