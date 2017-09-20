@@ -249,6 +249,11 @@ class MediaCodecUtil {
         MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
         for (MediaCodecInfo info : codecListHelper) {
             for (String mime : info.getSupportedTypes()) {
+                if (!isDecoderSupportedForDevice(mime)) {
+                    Log.w(TAG, "Decoder for type %s disabled on this device", mime);
+                    continue;
+                }
+
                 // On versions L and M, VP9 codecCapabilities do not advertise profile level
                 // support. In this case, estimate the level from MediaCodecInfo.VideoCapabilities
                 // instead. Assume VP9 is not supported before L. For more information, consult
@@ -408,6 +413,11 @@ class MediaCodecUtil {
             // http://crbug.com/597836.
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
                     && Build.HARDWARE.startsWith("mt")) {
+                return false;
+            }
+
+            // Nexus Player VP9 decoder performs poorly at >= 1080p resolution.
+            if (Build.MODEL.equals("Nexus Player")) {
                 return false;
             }
         } else if (mime.equals("audio/opus")
