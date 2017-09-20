@@ -3731,3 +3731,5 @@ crbug.com/766983 [ Linux Debug ] virtual/outofblink-cors/external/wpt/fetch/api/
 crbug.com/767012 [ Win7 Win10 ] virtual/mojo-loading/http/tests/devtools/startup/console-log-before-frame-navigation.html [ Pass Timeout ]
 # Fails flakily on chromium.mac/Mac10.12 Tests and WebKit Mac10.12.
 crbug.com/767040 [ Mac10.12 ] external/wpt/clear-site-data/storage.https.html [ Pass Failure ]
+# Fails reliably on last 3 builds of this bot.
+crbug.com/767091 [ Mac10.12 ] http/tests/security/link-crossorigin-preload-use-credentials.html [ Failure ]
