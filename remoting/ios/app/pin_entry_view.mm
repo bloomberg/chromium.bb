@@ -54,6 +54,15 @@ static const int kMinPinLength = 6;
     _pairingLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_pairingLabel];
 
+    // Allow toggling the switch by tapping the label.
+    UITapGestureRecognizer* tapGestureRecognizer =
+        [[UITapGestureRecognizer alloc]
+            initWithTarget:self
+                    action:@selector(didTapPairingLabel)];
+    tapGestureRecognizer.numberOfTapsRequired = 1;
+    [_pairingLabel addGestureRecognizer:tapGestureRecognizer];
+    _pairingLabel.userInteractionEnabled = YES;
+
     _pinButton =
         [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeMini];
     [_pinButton
@@ -184,6 +193,10 @@ static const int kMinPinLength = 6;
 - (void)didTapPinEntry:(id)sender {
   [_delegate didProvidePin:_pinEntry.text createPairing:_pairingSwitch.isOn];
   [_pinEntry endEditing:YES];
+}
+
+- (void)didTapPairingLabel {
+  [_pairingSwitch setOn:!_pairingSwitch.isOn animated:YES];
 }
 
 @end
