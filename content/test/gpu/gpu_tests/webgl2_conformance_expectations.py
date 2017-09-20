@@ -297,6 +297,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['passthrough', 'opengl', 'intel'], bug=602688)
 
+    # Passthrough command decoder / Linux / OpenGL / NVIDIA
+    self.Fail('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['linux', 'passthrough', 'opengl', 'nvidia'], bug=766918)
+
     # Regressions in 10.12.4.
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['sierra'], bug=705865)
@@ -788,6 +793,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
+    self.Fail('conformance2/attribs/gl-vertex-attrib-normalized-int.html',
+        ['linux', 'amd'], bug=766776)
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
