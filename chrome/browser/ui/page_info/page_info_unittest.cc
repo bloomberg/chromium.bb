@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -198,7 +199,80 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   PermissionInfoList last_permission_info_list_;
 };
 
+bool PermissionInfoListContainsPermission(const PermissionInfoList& permissions,
+                                          ContentSettingsType content_type) {
+  for (const auto& permission : permissions) {
+    if (permission.type == content_type)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
+
+TEST_F(PageInfoTest, NonFactoryDefaultPermissionsShown) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kSiteDetails);
+
+  page_info()->PresentSitePermissions();
+  // By default, the number of permissions shown should be 0.
+  EXPECT_EQ(0uL, last_permission_info_list().size());
+
+  std::vector<ContentSettingsType> non_default_permissions = {
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+  };
+  // Change some default-ask settings away from the default.
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                       CONTENT_SETTING_ALLOW);
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                       CONTENT_SETTING_ALLOW);
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                                       CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(non_default_permissions.size(), last_permission_info_list().size());
+
+  non_default_permissions.push_back(CONTENT_SETTINGS_TYPE_POPUPS);
+  // Change a default-block setting to a user-preference block instead.
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_POPUPS,
+                                       CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(non_default_permissions.size(), last_permission_info_list().size());
+
+  non_default_permissions.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+  // Change a default-allow setting away from the default.
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                                       CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(non_default_permissions.size(), last_permission_info_list().size());
+
+  // Make sure setting a default setting to the default doesn't do anything.
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                                       CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(non_default_permissions.size(), last_permission_info_list().size());
+
+  non_default_permissions.pop_back();
+  // Clear the Javascript setting.
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                                       CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(non_default_permissions.size(), last_permission_info_list().size());
+
+  non_default_permissions.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+  // Change the default setting for Javascript away from the factory default.
+  page_info()->content_settings_->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+  page_info()->PresentSitePermissions();
+  EXPECT_EQ(non_default_permissions.size(), last_permission_info_list().size());
+
+  // Change it back to ALLOW, which is its factory default, but has a source
+  // from the user preference (i.e. it counts as non-factory default).
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                                       CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(non_default_permissions.size(), last_permission_info_list().size());
+
+  // Sanity check the correct permissions are being shown.
+  for (ContentSettingsType type : non_default_permissions) {
+    EXPECT_TRUE(PermissionInfoListContainsPermission(
+        last_permission_info_list(), type));
+  }
+}
 
 TEST_F(PageInfoTest, OnPermissionsChanged) {
   // Setup site permissions.
@@ -706,7 +780,7 @@ TEST_F(PageInfoTest, ShowInfoBar) {
 #endif
 
 TEST_F(PageInfoTest, AboutBlankPage) {
-  SetURL("about:blank");
+  SetURL(url::kAboutBlankURL);
   SetDefaultUIExpectations(mock_ui());
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
@@ -789,11 +863,8 @@ TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
   feature_list.InitAndEnableFeature(
       subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI);
   auto showing_setting = [](const PermissionInfoList& permissions) {
-    for (const auto& permission : permissions) {
-      if (permission.type == CONTENT_SETTINGS_TYPE_ADS)
-        return true;
-    }
-    return false;
+    return PermissionInfoListContainsPermission(permissions,
+                                                CONTENT_SETTINGS_TYPE_ADS);
   };
 
   // By default, the setting should not appear at all.

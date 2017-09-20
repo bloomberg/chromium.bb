@@ -47,6 +47,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -120,18 +121,32 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
 };
 
+// Checks whether this permission is currently the factory default, as set by
+// Chrome. Specifically, that the following three conditions are true:
+//   - The current active setting comes from the default or pref provider.
+//   - The setting is the factory default setting (as opposed to a global
+//     default setting set by the user).
+//   - The setting is a wildcard setting applying to all origins (which can only
+//     be set from the default provider).
+bool IsPermissionFactoryDefault(HostContentSettingsMap* content_settings,
+                                const PageInfoUI::PermissionInfo& info) {
+  const ContentSetting factory_default_setting =
+      content_settings::ContentSettingsRegistry::GetInstance()
+          ->Get(info.type)
+          ->GetInitialDefaultSetting();
+  return (info.source == content_settings::SETTING_SOURCE_USER &&
+          factory_default_setting == info.default_setting &&
+          info.setting == CONTENT_SETTING_DEFAULT);
+}
+
 // Determines whether to show permission |type| in the Page Info UI. Only
 // applies to permissions listed in |kPermissionType|.
-bool ShouldShowPermission(ContentSettingsType type,
+bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
                           const GURL& site_url,
                           HostContentSettingsMap* content_settings) {
-#if !defined(OS_ANDROID)
-  // Autoplay is Android-only at the moment.
-  if (type == CONTENT_SETTINGS_TYPE_AUTOPLAY)
-    return false;
-#endif
-
-  if (type == CONTENT_SETTINGS_TYPE_ADS) {
+  // Note |CONTENT_SETTINGS_TYPE_ADS| will show up regardless of its default
+  // value when it has been activated on the current origin.
+  if (info.type == CONTENT_SETTINGS_TYPE_ADS) {
     if (!base::FeatureList::IsEnabled(
             subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)) {
       return false;
@@ -144,7 +159,21 @@ bool ShouldShowPermission(ContentSettingsType type,
                nullptr) != nullptr;
   }
 
-  if (type == CONTENT_SETTINGS_TYPE_SOUND)
+  // All other content settings only show when they are non-factory-default.
+  if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kEnableSiteSettings) ||
+       base::FeatureList::IsEnabled(features::kSiteDetails)) &&
+      IsPermissionFactoryDefault(content_settings, info)) {
+    return false;
+  }
+
+#if !defined(OS_ANDROID)
+  // Autoplay is Android-only at the moment.
+  if (info.type == CONTENT_SETTINGS_TYPE_AUTOPLAY)
+    return false;
+#endif
+
+  if (info.type == CONTENT_SETTINGS_TYPE_SOUND)
     return base::FeatureList::IsEnabled(features::kSoundContentSetting);
 
   return true;
@@ -745,11 +774,6 @@ void PageInfo::PresentSitePermissions() {
   for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
     permission_info.type = kPermissionType[i];
 
-    if (!ShouldShowPermission(permission_info.type, site_url_,
-                              content_settings_)) {
-      continue;
-    }
-
     content_settings::SettingInfo info;
     std::unique_ptr<base::Value> value = content_settings_->GetWebsiteSetting(
         site_url_, site_url_, permission_info.type, std::string(), &info);
@@ -796,7 +820,8 @@ void PageInfo::PresentSitePermissions() {
         permission_info.setting = permission_result.content_setting;
     }
 
-    permission_info_list.push_back(permission_info);
+    if (ShouldShowPermission(permission_info, site_url_, content_settings_))
+      permission_info_list.push_back(permission_info);
   }
 
   for (const ChooserUIInfo& ui_info : kChooserUIInfo) {

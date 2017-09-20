@@ -7,6 +7,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
@@ -141,6 +142,26 @@ TEST_F(ContentSettingsRegistryTest, IsDefaultSettingValid) {
   info = registry()->Get(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
   EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
 #endif
+}
+
+// Check the correct factory default setting is retrieved. Note the factory
+// default settings are hard coded, so changing them in ContentSettingsRegistry
+// would require this test to be updated.
+TEST_F(ContentSettingsRegistryTest, GetInitialDefaultSetting) {
+// There is no default-ask content setting on iOS, so skip testing it there.
+#if !defined(OS_IOS)
+  const ContentSettingsInfo* notifications =
+      registry()->Get(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  EXPECT_EQ(CONTENT_SETTING_ASK, notifications->GetInitialDefaultSetting());
+#endif
+
+  const ContentSettingsInfo* cookies =
+      registry()->Get(CONTENT_SETTINGS_TYPE_COOKIES);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, cookies->GetInitialDefaultSetting());
+
+  const ContentSettingsInfo* popups =
+      registry()->Get(CONTENT_SETTINGS_TYPE_POPUPS);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, popups->GetInitialDefaultSetting());
 }
 
 }  // namespace content_settings
