@@ -6,7 +6,6 @@
 
 #include "base/atomicops.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -187,8 +186,9 @@ void CPUThrottlingThread::Stop() {
 #endif
 }
 
-DevToolsCPUThrottler::DevToolsCPUThrottler() = default;
-DevToolsCPUThrottler::~DevToolsCPUThrottler() = default;
+DevToolsCPUThrottler::DevToolsCPUThrottler() {}
+
+DevToolsCPUThrottler::~DevToolsCPUThrottler() {}
 
 void DevToolsCPUThrottler::SetThrottlingRate(double rate) {
   if (rate <= 1) {
@@ -202,11 +202,6 @@ void DevToolsCPUThrottler::SetThrottlingRate(double rate) {
   } else {
     throttling_thread_.reset(new CPUThrottlingThread(rate));
   }
-}
-
-// static
-DevToolsCPUThrottler* DevToolsCPUThrottler::GetInstance() {
-  return base::Singleton<DevToolsCPUThrottler>::get();
 }
 
 }  // namespace content
