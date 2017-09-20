@@ -5,6 +5,7 @@
 module payments.mojom;
 
 import "mojo/common/time.mojom";
+import "third_party/WebKit/public/platform/modules/manifest/manifest.mojom";
 import "third_party/WebKit/public/platform/modules/payments/payment_request.mojom";
 import "url/mojo/url.mojom";
 
@@ -18,17 +19,11 @@ enum PaymentHandlerStatus {
   FETCH_PAYMENT_APP_INFO_FAILED,
 };
 
-// This struct is provided to hold an image object from render side
-// (ImageObject.idl).
-struct ImageObject {
-  url.mojom.Url src;
-};
-
 // This struct is provided to hold a payment instrument from render
 // side (PaymentInstrument.idl).
 struct PaymentInstrument {
   string name;
-  array<ImageObject> icons;
+  array<blink.mojom.ManifestIcon> icons;
   array<string> enabled_methods;
   string stringified_capabilities;
 };
