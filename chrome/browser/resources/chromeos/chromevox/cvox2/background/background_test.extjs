@@ -1275,7 +1275,7 @@ TEST_F('BackgroundTest', 'ListItem', function() {
   */}, function(root) {
     mockFeedback.call(doCmd('nextLine'))
         .expectSpeech('\u2022 ', 'apple', 'List item')
-        .expectBraille('\u2022 apple lstitm list +3')
+        .expectBraille('\u2022 apple lstitm lst +3')
         .call(doCmd('nextLine'))
         .expectSpeech('\u2022 ', 'grape', 'List item')
         .expectBraille('\u2022 grape lstitm')
@@ -1285,7 +1285,7 @@ TEST_F('BackgroundTest', 'ListItem', function() {
 
         .call(doCmd('nextLine'))
         .expectSpeech('1. ', 'pork', 'List item')
-        .expectBraille('1. pork lstitm list +3')
+        .expectBraille('1. pork lstitm lst +3')
         .call(doCmd('nextLine'))
         .expectSpeech('2. ', 'beef', 'List item')
         .expectBraille('2. beef lstitm')

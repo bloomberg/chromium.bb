@@ -149,6 +149,7 @@ Output.ROLE_INFO_ = {
   },
   inputTime: {msgId: 'input_type_time', inherits: 'abstractContainer'},
   link: {msgId: 'role_link', earconId: 'LINK'},
+  list: {msgId: 'role_list'},
   listBox: {msgId: 'role_listbox', earconId: 'LISTBOX'},
   listBoxOption: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
   listItem: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
@@ -385,11 +386,7 @@ Output.RULES = {
       speak: `$name $role @describe_index($indexInParent, $parentChildCount)
           $description $state $restriction`
     },
-    listItem: {
-      enter: `$name= $role $state $description`,
-      speak: `$nameOrDescendants $earcon(LIST_ITEM) $role $state
-          $restriction $description`
-    },
+    listItem: {enter: `$name= $role $state $description`},
     listMarker: {speak: `$name`},
     menu: {
       enter: `$name $role`,
