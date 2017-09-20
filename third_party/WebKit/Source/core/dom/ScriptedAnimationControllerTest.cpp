@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "core/dom/Document.h"
-#include "core/dom/FrameRequestCallback.h"
+#include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/events/Event.h"
 #include "core/dom/events/EventListener.h"
 #include "core/dom/events/EventTarget.h"
@@ -152,10 +152,11 @@ TEST_F(ScriptedAnimationControllerTest, EnqueueTaskAndEvent) {
 
 namespace {
 
-class RunTaskCallback final : public FrameRequestCallback {
+class RunTaskCallback final
+    : public FrameRequestCallbackCollection::FrameCallback {
  public:
   RunTaskCallback(WTF::Closure task) : task_(std::move(task)) {}
-  void handleEvent(double) override { task_(); }
+  void Invoke(double) override { task_(); }
 
  private:
   WTF::Closure task_;

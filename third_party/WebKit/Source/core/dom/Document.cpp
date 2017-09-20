@@ -85,7 +85,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FlatTreeTraversal.h"
-#include "core/dom/FrameRequestCallback.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/LiveNodeList.h"
 #include "core/dom/MutationObserver.h"
@@ -6456,7 +6455,8 @@ ScriptedAnimationController& Document::EnsureScriptedAnimationController() {
   return *scripted_animation_controller_;
 }
 
-int Document::RequestAnimationFrame(FrameRequestCallback* callback) {
+int Document::RequestAnimationFrame(
+    FrameRequestCallbackCollection::FrameCallback* callback) {
   return EnsureScriptedAnimationController().RegisterCallback(callback);
 }
 
@@ -7116,6 +7116,7 @@ DEFINE_TRACE_WRAPPERS(Document) {
   visitor->TraceWrappers(style_sheet_list_);
   visitor->TraceWrappers(style_engine_);
   visitor->TraceWrappers(script_runner_);
+  visitor->TraceWrappers(scripted_animation_controller_);
   visitor->TraceWrappers(scripted_idle_task_controller_);
   // Cannot trace in Supplementable<Document> as it is part of platform/ and
   // thus cannot refer to ScriptWrappableVisitor.

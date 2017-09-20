@@ -36,7 +36,7 @@
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
-#include "core/dom/FrameRequestCallback.h"
+#include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
@@ -76,21 +76,21 @@ void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {
 }
 
 class HTMLMarqueeElement::RequestAnimationFrameCallback final
-    : public FrameRequestCallback {
+    : public FrameRequestCallbackCollection::FrameCallback {
   WTF_MAKE_NONCOPYABLE(RequestAnimationFrameCallback);
 
  public:
   explicit RequestAnimationFrameCallback(HTMLMarqueeElement* marquee)
       : marquee_(marquee) {}
 
-  void handleEvent(double) override {
+  void Invoke(double) override {
     marquee_->continue_callback_request_id_ = 0;
     marquee_->ContinueAnimation();
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(marquee_);
-    FrameRequestCallback::Trace(visitor);
+    FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
   }
 
  private:

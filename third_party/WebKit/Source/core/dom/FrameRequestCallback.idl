@@ -28,10 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// TODO(foolip): FrameRequestCallback should not be a callback interface.
-// https://www.w3.org/Bugs/Public/show_bug.cgi?id=28152
-callback interface FrameRequestCallback {
-    // highResTime is passed as high resolution timestamp, see
-    // https://w3c.github.io/hr-time/ for details.
-    void handleEvent(double highResTime);
-};
+// https://html.spec.whatwg.org/multipage/window-object.html#framerequestcallback
+
+callback FrameRequestCallback = void(DOMHighResTimeStamp highResTime);

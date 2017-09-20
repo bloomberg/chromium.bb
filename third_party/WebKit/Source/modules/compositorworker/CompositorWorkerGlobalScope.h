@@ -5,11 +5,12 @@
 #ifndef CompositorWorkerGlobalScope_h
 #define CompositorWorkerGlobalScope_h
 
+#include <memory>
+#include "bindings/core/v8/v8_frame_request_callback.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/ModulesExport.h"
-#include <memory>
 
 namespace blink {
 
@@ -40,7 +41,7 @@ class MODULES_EXPORT CompositorWorkerGlobalScope final
   static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
-  int requestAnimationFrame(FrameRequestCallback*);
+  int requestAnimationFrame(V8FrameRequestCallback*);
   void cancelAnimationFrame(int id);
   bool ExecuteAnimationFrameCallbacks(double high_res_time_ms);
 
@@ -48,6 +49,7 @@ class MODULES_EXPORT CompositorWorkerGlobalScope final
   bool IsCompositorWorkerGlobalScope() const override { return true; }
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   CompositorWorkerGlobalScope(const KURL&,
