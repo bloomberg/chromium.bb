@@ -3134,6 +3134,18 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   DCHECK(!_isBeingDismissed);
   DCHECK(_isActive);
   DCHECK(scrollView == _scrollView);
+
+  // During rotation on iPhone X, UIScrollView's internal handling of the status
+  // bar triggers a |-scrollViewDidScroll:| callback before any rotation-
+  // related callbacks have been received.  When this occurs, the bounds of the
+  // UIScrollView have been updated to its new rotated value, but the content
+  // size has not yet been updated via |-updateScrollViewContentSize|.  When
+  // this occurs, early return before peforming subsequent scrolling
+  // calculations.  The layout logic will eventually be triggered when the
+  // UIScrollView's contentSize is reset.
+  if (_lastInterfaceOrientation != GetInterfaceOrientation())
+    return;
+
   // Whether this callback will trigger a scroll or not, have to ensure that
   // the display views' positions are updated after any change in the scroll
   // view's content offset.
