@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/timer/timer.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -356,14 +357,36 @@ void ManagePasswordsUIController::NeverSavePassword() {
 void ManagePasswordsUIController::SavePassword(const base::string16& username,
                                                const base::string16& password) {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
-  if (passwords_data_.form_manager()->pending_credentials().username_value !=
-      username) {
+  const auto& pending_credentials =
+      passwords_data_.form_manager()->pending_credentials();
+  bool username_edited = pending_credentials.username_value != username;
+  bool password_changed = pending_credentials.password_value != password;
+  if (username_edited) {
     passwords_data_.form_manager()->UpdateUsername(username);
+    if (GetPasswordFormMetricsRecorder()) {
+      GetPasswordFormMetricsRecorder()->RecordDetailedUserAction(
+          password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
+              kEditedUsernameInBubble);
+    }
   }
-  if (passwords_data_.form_manager()->pending_credentials().password_value !=
-      password) {
+  if (password_changed) {
     passwords_data_.form_manager()->UpdatePasswordValue(password);
+    if (GetPasswordFormMetricsRecorder()) {
+      GetPasswordFormMetricsRecorder()->RecordDetailedUserAction(
+          password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
+              kSelectedDifferentPasswordInBubble);
+    }
   }
+
+  // Values of this histogram are a bit mask. Only the lower two bits are used:
+  // 0001 to indicate that the user has edited the username in the password
+  //      save bubble.
+  // 0010 to indicate that the user has changed the password in the password
+  //      save bubble.
+  // The maximum possible value is defined by OR-ing these values.
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.EditsInSaveBubble",
+                            username_edited + 2 * password_changed, 4);
+
   save_fallback_timer_.Stop();
   SavePasswordInternal();
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);

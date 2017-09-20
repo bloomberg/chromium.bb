@@ -29819,6 +29819,13 @@ from previous Chrome versions.
   <int value="0" label="Copied"/>
 </enum>
 
+<enum name="PasswordManagerEditsInSaveBubbleEnum">
+  <int value="0" label="Username unchanged, password unchanged"/>
+  <int value="1" label="Username changed, password unchanged"/>
+  <int value="2" label="Username unchanged, password changed"/>
+  <int value="3" label="Username changed, password changed"/>
+</enum>
+
 <enum name="PasswordManagerEmptyUsernameField">
   <int value="0" label="Has username field"/>
   <int value="1" label="No username field"/>
