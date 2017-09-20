@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/test/scoped_task_environment.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
 
 class Browser;
@@ -22,7 +22,7 @@ class BrowserCoordinatorTest : public PlatformTest {
   Browser* GetBrowser() { return browser_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<WebStateListDelegate> delegate_;
   std::unique_ptr<Browser> browser_;
