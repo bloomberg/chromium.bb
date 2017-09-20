@@ -25,14 +25,27 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
       'app_name': 'test',
       'build': 'test',
       'win_supported_os': 'SUPPORTED_TESTOS',
-      'win_mandatory_category_path': ['test_category'],
-      'win_recommended_category_path': ['test_recommended_category'],
-      'win_category_path_strings': {
-        'test_category': 'TestCategory',
-        'test_recommended_category': 'TestCategory - recommended'
+
+      'win_config' : {
+        'win' : {
+          'mandatory_category_path': ['test_category'],
+          'recommended_category_path': ['test_category_recommended'],
+          'category_path_strings': {
+            'test_category': 'TestCategory',
+            'test_category_recommended': 'TestCategory - recommended',
+          },
+        },
+        'chrome_os' : {
+          'mandatory_category_path': ['cros_test_category'],
+          'recommended_category_path': ['cros_test_category_recommended'],
+          'category_path_strings': {
+            'cros_test_category': 'CrOSTestCategory',
+            'cros_test_category_recommended': 'CrOSTestCategory - recommended',
+          },
+        },
       },
     }
-    self.writer = adml_writer.GetWriter(config)
+    self.writer = self._GetWriter(config)
     self.writer.messages = {
       'win_supported_winxpsp2': {
         'text': 'Supported on Test OS or higher',
@@ -44,6 +57,15 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
       },
     }
     self.writer.Init()
+
+  def _GetWriter(self, config):
+    return adml_writer.GetWriter(config)
+
+  def GetCategory(self):
+    return "test_category";
+
+  def GetCategoryString(self):
+    return "TestCategory";
 
   def _InitWriterForAddingPolicyGroups(self, writer):
     '''Initialize the writer for adding policy groups. This method must be
@@ -79,9 +101,12 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '<?xml version="1.0" ?><policyDefinitionResources'
         ' revision="1.0" schemaVersion="1.0"><displayName/><description/>'
         '<resources><stringTable><string id="SUPPORTED_TESTOS">Supported on'
-        ' Test OS or higher</string><string id="test_category">TestCategory'
-        '</string><string id="test_recommended_category">'
-        'TestCategory - recommended</string></stringTable><presentationTable/>'
+        ' Test OS or higher</string>'
+        '<string id="' + self.GetCategory() + '">' + \
+          self.GetCategoryString() + '</string>'
+        '<string id="' + self.GetCategory() + '_recommended">' + \
+          self.GetCategoryString() + ' - recommended</string>'
+        '</stringTable><presentationTable/>'
         '</resources></policyDefinitionResources>')
     self.AssertXMLEquals(output, expected_output)
 
@@ -95,9 +120,12 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         ' revision="1.0" schemaVersion="1.0"><!--test version: 39.0.0.0-->'
         '<displayName/><description/><resources><stringTable>'
         '<string id="SUPPORTED_TESTOS">Supported on'
-        ' Test OS or higher</string><string id="test_category">TestCategory'
-        '</string><string id="test_recommended_category">'
-        'TestCategory - recommended</string></stringTable><presentationTable/>'
+        ' Test OS or higher</string>'
+        '<string id="' + self.GetCategory() + '">' + \
+          self.GetCategoryString() + '</string>'
+        '<string id="' + self.GetCategory() + '_recommended">' + \
+          self.GetCategoryString() + ' - recommended</string>'
+        '</stringTable><presentationTable/>'
         '</resources></policyDefinitionResources>')
     self.AssertXMLEquals(output, expected_output)
 
@@ -121,9 +149,10 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     expected_output = (
         '<string id="SUPPORTED_TESTOS">'
         'Supported on Test OS or higher</string>\n'
-        '<string id="test_category">TestCategory</string>\n'
-        '<string id="test_recommended_category">'
-        'TestCategory - recommended</string>\n'
+        '<string id="' + self.GetCategory() + '">' + \
+          self.GetCategoryString() + '</string>\n'
+        '<string id="' + self.GetCategory() + '_recommended">' + \
+          self.GetCategoryString() + ' - recommended</string>\n'
         '<string id="PolicyGroup_group">Test Group Caption</string>')
     self.AssertXMLEquals(output, expected_output)
     # Assert generated presentation elements.
@@ -233,8 +262,8 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '<string id="EnumPolicyStub">Enum policy caption</string>\n'
         '<string id="EnumPolicyStub_Explain">'
         'This is a test description.</string>\n'
-        '<string id="item 1">Caption Item 1</string>\n'
-        '<string id="item 2">Caption Item 2</string>')
+        '<string id="EnumPolicyStub_item 1">Caption Item 1</string>\n'
+        '<string id="EnumPolicyStub_item 2">Caption Item 2</string>')
     self.AssertXMLEquals(output, expected_output)
     # Assert generated presentation elements.
     output = self.GetXMLOfChildren(self.writer._presentation_table_elem)
@@ -273,8 +302,8 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '<string id="EnumPolicyStub">Enum policy caption</string>\n'
         '<string id="EnumPolicyStub_Explain">'
         'This is a test description.</string>\n'
-        '<string id="item 1">Caption Item 1</string>\n'
-        '<string id="item 2">Caption Item 2</string>')
+        '<string id="EnumPolicyStub_item 1">Caption Item 1</string>\n'
+        '<string id="EnumPolicyStub_item 2">Caption Item 2</string>')
     self.AssertXMLEquals(output, expected_output)
     # Assert generated presentation elements.
     output = self.GetXMLOfChildren(self.writer._presentation_table_elem)
@@ -398,9 +427,9 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
       'desc': 'This is a test description.',
       'items': [
           {
-           'name': 'tls1.2',
-           'value': 'tls1.2',
-           'caption': 'tls1.2',
+           'name': 'same_item',
+           'value': '1',
+           'caption': 'caption_a',
           }
       ],
     }
@@ -412,9 +441,9 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
       'desc': 'This is a test description.',
       'items': [
           {
-           'name': 'tls1.2',
-           'value': 'tls1.2',
-           'caption': 'tls1.2',
+           'name': 'same_item',
+           'value': '2',
+           'caption': 'caption_b',
           }
       ],
     }
@@ -427,10 +456,11 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '<string id="EnumPolicy_A">Enum policy A caption</string>\n'
         '<string id="EnumPolicy_A_Explain">'
         'This is a test description.</string>\n'
-        '<string id="tls1_2">tls1.2</string>\n'
+        '<string id="EnumPolicy_A_same_item">caption_a</string>\n'
         '<string id="EnumPolicy_B">Enum policy B caption</string>\n'
         '<string id="EnumPolicy_B_Explain">'
-        'This is a test description.</string>\n')
+        'This is a test description.</string>\n'
+        '<string id="EnumPolicy_B_same_item">caption_b</string>\n')
     self.AssertXMLEquals(output, expected_output)
     # Assert generated presentation elements.
     output = self.GetXMLOfChildren(self.writer._presentation_table_elem)

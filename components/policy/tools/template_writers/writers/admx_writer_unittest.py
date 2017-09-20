@@ -21,26 +21,61 @@ from xml.dom import minidom
 
 class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
+  def _CreateDocumentElement(self):
+    dom_impl = minidom.getDOMImplementation('')
+    doc = dom_impl.createDocument(None, 'root', None)
+    return doc.documentElement
+
   def setUp(self):
     # Writer configuration. This dictionary contains parameter used by the ADMX
     # Writer
     config = {
-      'win_group_policy_class': 'TestClass',
       'win_supported_os': 'SUPPORTED_TESTOS',
-      'win_reg_mandatory_key_name': 'Software\\Policies\\Test',
-      'win_reg_recommended_key_name': 'Software\\Policies\\Test\\Recommended',
-      'win_mandatory_category_path': ['test_category'],
-      'win_recommended_category_path': ['test_recommended_category'],
-      'win_category_path_strings': {
-        'test_category': 'TestCategory',
-        'test_recommended_category': 'TestCategory - recommended'
+      'win_config' : {
+        'win' : {
+          'reg_mandatory_key_name': 'Software\\Policies\\Test',
+          'reg_recommended_key_name': 'Software\\Policies\\Test\\Recommended',
+          'mandatory_category_path': ['test_category'],
+          'recommended_category_path': ['test_recommended_category'],
+          'category_path_strings': {
+            'test_category': 'TestCategory',
+            'test_recommended_category': 'TestCategory - recommended',
+          },
+          'namespace': 'ADMXWriter.Test.Namespace',
+        },
+        'chrome_os' : {
+          'reg_mandatory_key_name': 'Software\\Policies\\CrOSTest',
+          'reg_recommended_key_name':
+            'Software\\Policies\\CrOSTest\\Recommended',
+          'mandatory_category_path': ['cros_test_category'],
+          'recommended_category_path': ['cros_test_recommended_category'],
+          'category_path_strings': {
+            'cros_test_category': 'CrOSTestCategory',
+            'cros_test_recommended_category': 'CrOSTestCategory - recommended',
+          },
+          'namespace': 'ADMXWriter.Test.Namespace.ChromeOS',
+        },
       },
-      'admx_namespace': 'ADMXWriter.Test.Namespace',
       'admx_prefix': 'test_prefix',
       'build': 'test_product',
     }
-    self.writer = admx_writer.GetWriter(config)
+    self.writer = self._GetWriter(config)
     self.writer.Init()
+
+  def _GetWriter(self, config):
+    return admx_writer.GetWriter(config)
+
+  def _GetKey(self):
+    return "Test";
+
+  def _GetCategory(self):
+    return "test_category";
+
+  def _GetCategoryRec(self):
+    return "test_recommended_category";
+
+  def _GetNamespace(self):
+    return "ADMXWriter.Test.Namespace";
 
   def _GetPoliciesElement(self, doc):
     node_list = doc.getElementsByTagName('policies')
@@ -61,7 +96,7 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '<?xml version="1.0" ?>\n'
         '<policyDefinitions revision="1.0" schemaVersion="1.0">\n'
         '  <policyNamespaces>\n'
-        '    <target namespace="ADMXWriter.Test.Namespace"'
+        '    <target namespace="' + self._GetNamespace() + '"'
         ' prefix="test_prefix"/>\n'
         '    <using namespace="Microsoft.Policies.Windows" prefix="windows"/>\n'
         '  </policyNamespaces>\n'
@@ -73,10 +108,10 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '    </definitions>\n'
         '  </supportedOn>\n'
         '  <categories>\n'
-        '    <category displayName="$(string.test_category)"'
-        ' name="test_category"/>\n'
-        '    <category displayName="$(string.test_recommended_category)"'
-        ' name="test_recommended_category"/>\n'
+        '    <category displayName="$(string.' + self._GetCategory() + ')"'
+        ' name="' + self._GetCategory() + '"/>\n'
+        '    <category displayName="$(string.' + self._GetCategoryRec() + ')"'
+        ' name="' + self._GetCategoryRec() + '"/>\n'
         '  </categories>\n'
         '  <policies/>\n'
         '</policyDefinitions>')
@@ -93,7 +128,7 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '<policyDefinitions revision="1.0" schemaVersion="1.0">\n'
         '  <!--test_product version: 39.0.0.0-->\n'
         '  <policyNamespaces>\n'
-        '    <target namespace="ADMXWriter.Test.Namespace"'
+        '    <target namespace="' + self._GetNamespace() + '"'
         ' prefix="test_prefix"/>\n'
         '    <using namespace="Microsoft.Policies.Windows" prefix="windows"/>\n'
         '  </policyNamespaces>\n'
@@ -105,10 +140,10 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '    </definitions>\n'
         '  </supportedOn>\n'
         '  <categories>\n'
-        '    <category displayName="$(string.test_category)"'
-        ' name="test_category"/>\n'
-        '    <category displayName="$(string.test_recommended_category)"'
-        ' name="test_recommended_category"/>\n'
+        '    <category displayName="$(string.' + self._GetCategory() + ')"'
+        ' name="' + self._GetCategory() + '"/>\n'
+        '    <category displayName="$(string.' + self._GetCategoryRec() + ')"'
+        ' name="' + self._GetCategoryRec() + '"/>\n'
         '  </categories>\n'
         '  <policies/>\n'
         '</policyDefinitions>')
@@ -132,13 +167,13 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     output = self.GetXMLOfChildren(
         self._GetCategoriesElement(self.writer._doc))
     expected_output = (
-        '<category displayName="$(string.test_category)"'
-        ' name="test_category"/>\n'
-        '<category displayName="$(string.test_recommended_category)"'
-        ' name="test_recommended_category"/>\n'
+        '<category displayName="$(string.' + self._GetCategory() + ')"'
+        ' name="' + self._GetCategory() + '"/>\n'
+        '<category displayName="$(string.' + self._GetCategoryRec() + ')"'
+        ' name="' + self._GetCategoryRec() + '"/>\n'
         '<category displayName="$(string.PolicyGroup_group)"'
         ' name="PolicyGroup">\n'
-        '  <parentCategory ref="test_category"/>\n'
+        '  <parentCategory ref="' + self._GetCategory() + '"/>\n'
         '</category>')
 
     self.AssertXMLEquals(output, expected_output)
@@ -166,13 +201,13 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     output = self.GetXMLOfChildren(
         self._GetCategoriesElement(self.writer._doc))
     expected_output = (
-        '<category displayName="$(string.test_category)"'
-        ' name="test_category"/>\n'
-        '<category displayName="$(string.test_recommended_category)"'
-        ' name="test_recommended_category"/>\n'
+        '<category displayName="$(string.' + self._GetCategory() + ')"'
+        ' name="' + self._GetCategory() + '"/>\n'
+        '<category displayName="$(string.' + self._GetCategoryRec() + ')"'
+        ' name="' + self._GetCategoryRec() + '"/>\n'
         '<category displayName="$(string.PolicyGroup_group)"'
         ' name="PolicyGroup">\n'
-        '  <parentCategory ref="test_category"/>\n'
+        '  <parentCategory ref="' + self._GetCategory() + '"/>\n'
         '</category>')
     self.AssertXMLEquals(output, expected_output)
 
@@ -199,9 +234,11 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
     output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<policy class="TestClass" displayName="$(string.DummyMainPolicy)"'
+        '<policy class="' + self.writer.GetClass(main_policy) + '"'
+        ' displayName="$(string.DummyMainPolicy)"'
         ' explainText="$(string.DummyMainPolicy_Explain)"'
-        ' key="Software\\Policies\\Test" name="DummyMainPolicy"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="DummyMainPolicy"'
         ' presentation="$(presentation.DummyMainPolicy)"'
         ' valueName="DummyMainPolicy">\n'
         '  <parentCategory ref="PolicyGroup"/>\n'
@@ -233,9 +270,10 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
     output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<policy class="TestClass" displayName="$(string.DummyMainPolicy)"'
+        '<policy class="' + self.writer.GetClass(main_policy) + '"'
+        ' displayName="$(string.DummyMainPolicy)"'
         ' explainText="$(string.DummyMainPolicy_Explain)"'
-        ' key="Software\\Policies\\Test\\Recommended"'
+        ' key="Software\\Policies\\' + self._GetKey() + '\\Recommended"'
         ' name="DummyMainPolicy_recommended"'
         ' presentation="$(presentation.DummyMainPolicy)"'
         ' valueName="DummyMainPolicy">\n'
@@ -273,9 +311,10 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
     output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<policy class="TestClass" displayName="$(string.DummyMainPolicy)"'
+        '<policy class="' + self.writer.GetClass(main_policy) + '"'
+        ' displayName="$(string.DummyMainPolicy)"'
         ' explainText="$(string.DummyMainPolicy_Explain)"'
-        ' key="Software\\Policies\\Test\\Recommended"'
+        ' key="Software\\Policies\\' + self._GetKey() + '\\Recommended"'
         ' name="DummyMainPolicy_recommended"'
         ' presentation="$(presentation.DummyMainPolicy)"'
         ' valueName="DummyMainPolicy">\n'
@@ -301,9 +340,11 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     self.writer.WritePolicy(string_policy)
     output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<policy class="TestClass" displayName="$(string.SampleStringPolicy)"'
+        '<policy class="' + self.writer.GetClass(string_policy) + '"'
+        ' displayName="$(string.SampleStringPolicy)"'
         ' explainText="$(string.SampleStringPolicy_Explain)"'
-        ' key="Software\\Policies\\Test" name="SampleStringPolicy"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="SampleStringPolicy"'
         ' presentation="$(presentation.SampleStringPolicy)">\n'
         '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
@@ -324,9 +365,11 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     self.writer.WritePolicy(int_policy)
     output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<policy class="TestClass" displayName="$(string.SampleIntPolicy)"'
+        '<policy class="' + self.writer.GetClass(int_policy) + '"'
+        ' displayName="$(string.SampleIntPolicy)"'
         ' explainText="$(string.SampleIntPolicy_Explain)"'
-        ' key="Software\\Policies\\Test" name="SampleIntPolicy"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="SampleIntPolicy"'
         ' presentation="$(presentation.SampleIntPolicy)">\n'
         '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
@@ -351,20 +394,22 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     self.writer.WritePolicy(enum_policy)
     output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<policy class="TestClass" displayName="$(string.SampleEnumPolicy)"'
+        '<policy class="' + self.writer.GetClass(enum_policy) + '"'
+        ' displayName="$(string.SampleEnumPolicy)"'
         ' explainText="$(string.SampleEnumPolicy_Explain)"'
-        ' key="Software\\Policies\\Test" name="SampleEnumPolicy"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="SampleEnumPolicy"'
         ' presentation="$(presentation.SampleEnumPolicy)">\n'
         '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
         '    <enum id="SampleEnumPolicy" valueName="SampleEnumPolicy">\n'
-        '      <item displayName="$(string.item_1)">\n'
+        '      <item displayName="$(string.SampleEnumPolicy_item_1)">\n'
         '        <value>\n'
         '          <decimal value="0"/>\n'
         '        </value>\n'
         '      </item>\n'
-        '      <item displayName="$(string.item_2)">\n'
+        '      <item displayName="$(string.SampleEnumPolicy_item_2)">\n'
         '        <value>\n'
         '          <decimal value="1"/>\n'
         '        </value>\n'
@@ -395,20 +440,22 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     expected_output = (
         '<?xml version="1.0" ?>\n'
         '<policyDefinitions>\n'
-        '  <policy class="TestClass" displayName="$(string.SampleEnumPolicy)"'
+        '  <policy class="' + self.writer.GetClass(enum_policy) + '"'
+          ' displayName="$(string.SampleEnumPolicy)"'
           ' explainText="$(string.SampleEnumPolicy_Explain)"'
-          ' key="Software\\Policies\\Test" name="SampleEnumPolicy"'
+          ' key="Software\\Policies\\' + self._GetKey() + '"'
+          ' name="SampleEnumPolicy"'
           ' presentation="$(presentation.SampleEnumPolicy)">\n'
         '    <parentCategory ref="PolicyGroup"/>\n'
         '    <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '    <elements>\n'
         '      <enum id="SampleEnumPolicy" valueName="SampleEnumPolicy">\n'
-        '        <item displayName="$(string.item_1)">\n'
+        '        <item displayName="$(string.SampleEnumPolicy_item_1)">\n'
         '          <value>\n'
         '            <string>one</string>\n'
         '          </value>\n'
         '        </item>\n'
-        '        <item displayName="$(string.item_2)">\n'
+        '        <item displayName="$(string.SampleEnumPolicy_item_2)">\n'
         '          <value>\n'
         '            <string>two</string>\n'
         '          </value>\n'
@@ -428,15 +475,18 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     self.writer.WritePolicy(list_policy)
     output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<policy class="TestClass" displayName="$(string.SampleListPolicy)"'
+        '<policy class="' + self.writer.GetClass(list_policy) + '"'
+        ' displayName="$(string.SampleListPolicy)"'
         ' explainText="$(string.SampleListPolicy_Explain)"'
-        ' key="Software\\Policies\\Test" name="SampleListPolicy"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="SampleListPolicy"'
         ' presentation="$(presentation.SampleListPolicy)">\n'
         '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
         '    <list id="SampleListPolicyDesc"'
-        ' key="Software\Policies\Test\SampleListPolicy" valuePrefix=""/>\n'
+        ' key="Software\Policies\\' + self._GetKey() + '\SampleListPolicy"'
+        ' valuePrefix=""/>\n'
         '  </elements>\n'
         '</policy>')
 
@@ -455,15 +505,18 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     self.writer.WritePolicy(list_policy)
     output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<policy class="TestClass" displayName="$(string.SampleListPolicy)"'
+        '<policy class="' + self.writer.GetClass(list_policy) + '"'
+        ' displayName="$(string.SampleListPolicy)"'
         ' explainText="$(string.SampleListPolicy_Explain)"'
-        ' key="Software\\Policies\\Test" name="SampleListPolicy"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="SampleListPolicy"'
         ' presentation="$(presentation.SampleListPolicy)">\n'
         '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
         '    <list id="SampleListPolicyDesc"'
-        ' key="Software\Policies\Test\SampleListPolicy" valuePrefix=""/>\n'
+        ' key="Software\Policies\\' + self._GetKey() + '\SampleListPolicy"'
+        ' valuePrefix=""/>\n'
         '  </elements>\n'
         '</policy>')
 
@@ -479,10 +532,11 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     self.writer.WritePolicy(dict_policy)
     output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<policy class="TestClass" displayName="$(string.'
-            'SampleDictionaryPolicy)"'
+        '<policy class="' + self.writer.GetClass(dict_policy) + '"'
+        ' displayName="$(string.SampleDictionaryPolicy)"'
         ' explainText="$(string.SampleDictionaryPolicy_Explain)"'
-        ' key="Software\\Policies\\Test" name="SampleDictionaryPolicy"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="SampleDictionaryPolicy"'
         ' presentation="$(presentation.SampleDictionaryPolicy)">\n'
         '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
@@ -532,15 +586,17 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     expected_output = (
         '<?xml version="1.0" ?>\n'
         '<policyDefinitions>\n'
-        '  <policy class="TestClass" displayName="$(string.SampleEnumPolicy_A)"'
+        '  <policy class="' + self.writer.GetClass(enum_policy_a) + '"'
+          ' displayName="$(string.SampleEnumPolicy_A)"'
           ' explainText="$(string.SampleEnumPolicy_A_Explain)"'
-          ' key="Software\\Policies\\Test" name="SampleEnumPolicy.A"'
+          ' key="Software\\Policies\\' + self._GetKey() + '"'
+          ' name="SampleEnumPolicy.A"'
           ' presentation="$(presentation.SampleEnumPolicy.A)">\n'
         '    <parentCategory ref="PolicyGroup"/>\n'
         '    <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '    <elements>\n'
         '      <enum id="SampleEnumPolicy.A" valueName="SampleEnumPolicy.A">\n'
-        '        <item displayName="$(string.tls1_2)">\n'
+        '        <item displayName="$(string.SampleEnumPolicy_A_tls1_2)">\n'
         '          <value>\n'
         '            <string>tls1.2</string>\n'
         '          </value>\n'
@@ -548,15 +604,17 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '      </enum>\n'
         '    </elements>\n'
         '  </policy>\n'
-        '  <policy class="TestClass" displayName="$(string.SampleEnumPolicy_B)"'
+        '  <policy class="' + self.writer.GetClass(enum_policy_b) + '"'
+          ' displayName="$(string.SampleEnumPolicy_B)"'
           ' explainText="$(string.SampleEnumPolicy_B_Explain)"'
-          ' key="Software\\Policies\\Test" name="SampleEnumPolicy.B"'
+          ' key="Software\\Policies\\' + self._GetKey() + '"'
+          ' name="SampleEnumPolicy.B"'
           ' presentation="$(presentation.SampleEnumPolicy.B)">\n'
         '    <parentCategory ref="PolicyGroup"/>\n'
         '    <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '    <elements>\n'
         '      <enum id="SampleEnumPolicy.B" valueName="SampleEnumPolicy.B">\n'
-        '        <item displayName="$(string.tls1_2)">\n'
+        '        <item displayName="$(string.SampleEnumPolicy_B_tls1_2)">\n'
         '          <value>\n'
         '            <string>tls1.2</string>\n'
         '          </value>\n'

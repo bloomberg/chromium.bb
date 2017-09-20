@@ -100,7 +100,7 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
       textbox_elem.appendChild(self._doc.createTextNode(policy_label + ':'))
     elif policy_type in ('int-enum', 'string-enum'):
       for item in policy['items']:
-        self._AddString(item['name'], item['caption'])
+        self._AddString(policy_name + "_" + item['name'], item['caption'])
       dropdownlist_elem = self.AddElement(presentation_elem, 'dropdownList',
                                           {'refId': policy_name})
       dropdownlist_elem.appendChild(self._doc.createTextNode(policy_label))
@@ -139,9 +139,9 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     '''
     self._AddString(self.config['win_supported_os'],
                     self.messages['win_supported_winxpsp2']['text'])
-    categories = self.config['win_mandatory_category_path'] + \
-                  self.config['win_recommended_category_path']
-    strings = self.config['win_category_path_strings']
+    categories = self.winconfig['mandatory_category_path'] + \
+                  self.winconfig['recommended_category_path']
+    strings = self.winconfig['category_path_strings']
     for category in categories:
       if (category in strings):
         # Replace {...} by localized messages.
@@ -173,6 +173,9 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
   def Init(self):
     # Map of all strings seen.
     self.strings_seen = {}
+    # Shortcut to platform-specific ADMX/ADM specific configuration.
+    assert len(self.platforms) == 1
+    self.winconfig = self.config['win_config'][self.platforms[0]]
 
   def GetTemplateText(self):
     # Using "toprettyxml()" confuses the Windows Group Policy Editor

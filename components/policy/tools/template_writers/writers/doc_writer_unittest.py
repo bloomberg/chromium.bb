@@ -39,8 +39,16 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'os_name': 'Chrome OS',
         'webview_name': 'WebView',
         'android_webview_restriction_prefix': 'mock.prefix:',
-        'win_reg_mandatory_key_name': 'MockKey',
-        'win_reg_recommended_key_name': 'MockKeyRec',
+        'win_config' : {
+          'win' : {
+            'reg_mandatory_key_name': 'MockKey',
+            'reg_recommended_key_name': 'MockKeyRec',
+          },
+          'chrome_os' : {
+            'reg_mandatory_key_name': 'MockKeyCrOS',
+            'reg_recommended_key_name': 'MockKeyCrOSRec',
+          },
+        },
         'build': 'test_product',
       })
     self.writer.messages = {
@@ -53,6 +61,8 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'text': '_test_description_column_title'
       },
       'doc_example_value': {'text': '_test_example_value'},
+      'doc_win_example_value': {'text': '_test_example_value_win'},
+      'doc_chrome_os_example_value': {'text': '_test_example_value_chrome_os'},
       'doc_feature_dynamic_refresh': {'text': '_test_feature_dynamic_refresh'},
       'doc_feature_can_be_recommended': {'text': '_test_feature_recommended'},
       'doc_feature_can_be_mandatory': {'text': '_test_feature_mandatory'},
@@ -72,6 +82,7 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
       'doc_supported_features': {'text': '_test_supported_features'},
       'doc_supported_on': {'text': '_test_supported_on'},
       'doc_win_reg_loc': {'text': '_test_win_reg_loc'},
+      'doc_chrome_os_reg_loc': {'text': '_test_chrome_os_reg_loc'},
 
       'doc_bla': {'text': '_test_bla'},
     }
@@ -255,17 +266,22 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     policy = {
       'name': 'PolicyName',
       'example_value': ['Foo', 'Bar'],
-      'supported_on': [ { 'platforms': ['win', 'mac', 'linux'] } ]
+      'supported_on': [ { 'platforms': ['win', 'mac', 'linux', 'chrome_os'] } ]
     }
     self.writer._AddListExample(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
       '<root>'
         '<dl style="style_dd dl;">'
-          '<dt>Windows:</dt>'
+          '<dt>_test_example_value_win</dt>'
           '<dd style="style_.monospace;style_.pre;">'
             'MockKey\\PolicyName\\1 = &quot;Foo&quot;\n'
             'MockKey\\PolicyName\\2 = &quot;Bar&quot;'
+          '</dd>'
+          '<dt>_test_example_value_chrome_os</dt>'
+          '<dd style="style_.monospace;style_.pre;">'
+            'MockKeyCrOS\\PolicyName\\1 = &quot;Foo&quot;\n'
+            'MockKeyCrOS\\PolicyName\\2 = &quot;Bar&quot;'
           '</dd>'
           '<dt>Android/Linux:</dt>'
           '<dd style="style_.monospace;">'
@@ -428,6 +444,11 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         'platforms': ['android'],
         'since_version': '47',
         'until_version': '',
+      }, {
+        'product': 'chrome',
+        'platforms': ['chrome_os'],
+        'since_version': '55',
+        'until_version': '',
       }],
       'features': {'dynamic_refresh': False},
       'example_value': False,
@@ -441,7 +462,9 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       '<dt style="style_dt;">_test_data_type</dt>'
         '<dd>Boolean [Windows:REG_DWORD]</dd>'
       '<dt style="style_dt;">_test_win_reg_loc</dt>'
-      '<dd style="style_.monospace;">MockKey\TestPolicyName</dd>'
+        '<dd style="style_.monospace;">MockKey\TestPolicyName</dd>'
+      '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
+        '<dd style="style_.monospace;">MockKeyCrOS\TestPolicyName</dd>'
       '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
         '<dd style="style_.monospace;">TestPolicyName</dd>'
       '<dt style="style_dt;">_test_android_restriction_name</dt>'
@@ -454,6 +477,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
           '<li>Chrome (Windows, Mac, Linux) ...8...</li>'
           '<li>Chrome (Android) ...30...</li>'
           '<li>WebView (Android) ...47...</li>'
+          '<li>Chrome (Chrome OS) ...55...</li>'
         '</ul>'
       '</dd>'
       '<dt style="style_dt;">_test_supported_features</dt>'
@@ -516,7 +540,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       'desc': 'TestPolicyDesc',
       'supported_on': [{
         'product': 'chrome',
-        'platforms': ['win', 'mac', 'linux'],
+        'platforms': ['win', 'mac', 'linux', 'chrome_os'],
         'since_version': '8',
         'until_version': '',
       }],
@@ -531,13 +555,15 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       '<dt style="style_dt;">_test_data_type</dt>'
         '<dd>Dictionary [Windows:REG_SZ] (_test_complex_policies_win)</dd>'
       '<dt style="style_dt;">_test_win_reg_loc</dt>'
-      '<dd style="style_.monospace;">MockKey\TestPolicyName</dd>'
+        '<dd style="style_.monospace;">MockKey\TestPolicyName</dd>'
+      '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
+        '<dd style="style_.monospace;">MockKeyCrOS\TestPolicyName</dd>'
       '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
         '<dd style="style_.monospace;">TestPolicyName</dd>'
       '<dt style="style_dt;">_test_supported_on</dt>'
       '<dd>'
         '<ul style="style_ul;">'
-          '<li>Chrome (Windows, Mac, Linux) ...8...</li>'
+          '<li>Chrome (Windows, Mac, Linux, Chrome OS) ...8...</li>'
         '</ul>'
       '</dd>'
       '<dt style="style_dt;">_test_supported_features</dt>'
@@ -546,10 +572,15 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       '<dt style="style_dt;">_test_example_value</dt>'
         '<dd>'
           '<dl style="style_dd dl;">'
-            '<dt>Windows:</dt>'
-            '<dd style="style_.monospace;style_.pre;">MockKey\TestPolicyName = {&quot;foo&quot;: 123}</dd>'
+            '<dt>_test_example_value_win</dt>'
+              '<dd style="style_.monospace;style_.pre;">'
+                'MockKey\TestPolicyName = {&quot;foo&quot;: 123}</dd>'
+            '<dt>_test_example_value_chrome_os</dt>'
+              '<dd style="style_.monospace;style_.pre;">'
+                'MockKeyCrOS\TestPolicyName = {&quot;foo&quot;: 123}</dd>'
             '<dt>Android/Linux:</dt>'
-            '<dd style="style_.monospace;">TestPolicyName: {&quot;foo&quot;: 123}</dd>'
+              '<dd style="style_.monospace;">'
+                'TestPolicyName: {&quot;foo&quot;: 123}</dd>'
             '<dt>Mac:</dt>'
             '<dd style="style_.monospace;style_.pre;">'
               '&lt;key&gt;TestPolicyName&lt;/key&gt;\n'
@@ -578,6 +609,11 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         'platforms': ['android'],
         'since_version': '30',
         'until_version': '',
+      }, {
+        'product': 'chrome',
+        'platforms': ['chrome_os'],
+        'since_version': '53',
+        'until_version': '',
       }],
       'features': {
         'dynamic_refresh': False,
@@ -594,7 +630,9 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       '<dt style="style_dt;">_test_data_type</dt>'
         '<dd>Boolean [Windows:REG_DWORD]</dd>'
       '<dt style="style_dt;">_test_win_reg_loc</dt>'
-      '<dd style="style_.monospace;">MockKeyRec\TestPolicyName</dd>'
+        '<dd style="style_.monospace;">MockKeyRec\TestPolicyName</dd>'
+      '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
+        '<dd style="style_.monospace;">MockKeyCrOSRec\TestPolicyName</dd>'
       '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
         '<dd style="style_.monospace;">TestPolicyName</dd>'
       '<dt style="style_dt;">_test_android_restriction_name</dt>'
@@ -604,6 +642,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '<ul style="style_ul;">'
           '<li>Chrome (Windows, Mac, Linux) ...8...</li>'
           '<li>Chrome (Android) ...30...</li>'
+          '<li>Chrome (Chrome OS) ...53...</li>'
         '</ul>'
       '</dd>'
       '<dt style="style_dt;">_test_supported_features</dt>'
@@ -673,7 +712,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       'type': 'string',
       'supported_on': [{
         'product': 'chrome',
-        'platforms': ['win', 'mac'],
+        'platforms': ['win', 'mac', 'chrome_os'],
         'since_version': '7',
         'until_version': '',
       }],
@@ -693,12 +732,14 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
             '<dd>String [Windows:REG_SZ]</dd>'
             '<dt style="style_dt;">_test_win_reg_loc</dt>'
             '<dd style="style_.monospace;">MockKey\\PolicyName</dd>'
+            '<dt style="style_dt;">_test_chrome_os_reg_loc</dt>'
+            '<dd style="style_.monospace;">MockKeyCrOS\\PolicyName</dd>'
             '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
             '<dd style="style_.monospace;">PolicyName</dd>'
             '<dt style="style_dt;">_test_supported_on</dt>'
             '<dd>'
               '<ul style="style_ul;">'
-                '<li>Chrome (Windows, Mac) ..7..</li>'
+                '<li>Chrome (Windows, Mac, Chrome OS) ..7..</li>'
               '</ul>'
             '</dd>'
             '<dt style="style_dt;">_test_supported_features</dt>'
@@ -941,7 +982,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
       self.doc_root.toxml(),
       '<root>'
         '<dl style="style_dd dl;">'
-          '<dt>Windows:</dt>'
+          '<dt>_test_example_value_win</dt>'
           '<dd style="style_.monospace;style_.pre;">MockKey\PolicyName = '
               + value +
           '</dd>'
