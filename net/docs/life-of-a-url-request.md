@@ -380,7 +380,7 @@ the socket for reuse, just as in the cancellation case. If the redirect is
 followed, the URLRequest calls into the URLRequestJobFactory to create a new
 URLRequestJob, and then starts it.
 
-## Filters (gzip, SDCH, etc)
+## Filters (gzip, deflate, brotli, etc)
 
 When the URLRequestHttpJob receives headers, it sends a list of all
 Content-Encoding values to Filter::Factory, which creates a (possibly empty)
@@ -390,9 +390,7 @@ URLRequest::Delegate.
 
 Since this is done above the cache layer, the cache stores the responses prior
 to decompression. As a result, if files aren't compressed over the wire, they
-aren't compressed in the cache, either. This behavior can create problems when
-responses are SDCH compressed, as a dictionary and a cached file encoded using
-it may have different lifetimes.
+aren't compressed in the cache, either.
 
 ## Socket Pools
 

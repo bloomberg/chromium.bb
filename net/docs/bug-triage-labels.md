@@ -43,9 +43,9 @@
 
 * **Internals>Network>Filters**
 
-    Covers SDCH and gzip issues.  `ERR_CONTENT_DECODING_FAILED` indicates a
-    problem at this layer, and bugs here can also cause response body
-    corruption.
+    Covers gzip, deflate and brotli issues.  `ERR_CONTENT_DECODING_FAILED`
+    indicates a problem at this layer, and bugs here can also cause response
+    body corruption.
 
 ## Common non-network components
 
