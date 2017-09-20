@@ -6,8 +6,15 @@ package org.chromium.content.browser.input;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
@@ -17,15 +24,19 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
+import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule.RerunWithUpdatedContainerView;
-import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.concurrent.TimeUnit;
 
 /**
  * Integration Tests for SelectPopup.
  */
-public class SelectPopupTest extends ContentShellTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class SelectPopupTest {
+    @Rule
+    public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
+
     private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(2);
     private static final String SELECT_URL = UrlUtils.encodeHtmlDataUri(
             "<html><head><meta name=\"viewport\""
@@ -49,7 +60,7 @@ public class SelectPopupTest extends ContentShellTestBase {
 
         @Override
         public boolean isSatisfied() {
-            return getContentViewCore().getSelectPopupForTest() != null;
+            return mActivityTestRule.getContentViewCore().getSelectPopupForTest() != null;
         }
     }
 
@@ -60,21 +71,21 @@ public class SelectPopupTest extends ContentShellTestBase {
 
         @Override
         public boolean isSatisfied() {
-            return getContentViewCore().getSelectPopupForTest() == null;
+            return mActivityTestRule.getContentViewCore().getSelectPopupForTest() == null;
         }
     }
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        launchContentShellWithUrl(SELECT_URL);
-        waitForActiveShellToBeDoneLoading();
+        mActivityTestRule.launchContentShellWithUrl(SELECT_URL);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
     }
 
     /**
      * Tests that showing a select popup and having the page reload while the popup is showing does
      * not assert.
      */
+    @Test
     @LargeTest
     @Feature({"Browser"})
     @RerunWithUpdatedContainerView
@@ -83,7 +94,7 @@ public class SelectPopupTest extends ContentShellTestBase {
         // The popup should be hidden before the click.
         CriteriaHelper.pollInstrumentationThread(new PopupHiddenCriteria());
 
-        final ContentViewCore viewCore = getContentViewCore();
+        final ContentViewCore viewCore = mActivityTestRule.getContentViewCore();
         final TestCallbackHelperContainer viewClient = new TestCallbackHelperContainer(viewCore);
         final OnPageFinishedHelper onPageFinishedHelper = viewClient.getOnPageFinishedHelper();
 
@@ -93,11 +104,14 @@ public class SelectPopupTest extends ContentShellTestBase {
 
         // Reload the test page.
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
                 // Now reload the page while the popup is showing, it gets hidden.
-                getContentViewCore().getWebContents().getNavigationController().reload(true);
+                mActivityTestRule.getContentViewCore()
+                        .getWebContents()
+                        .getNavigationController()
+                        .reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount, 1,
