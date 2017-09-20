@@ -230,7 +230,7 @@ TestRunner.Session = class {
     }
     var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true});
     if (response.error) {
-      this._testRunner.log(`Error while evaluating '${code}': ${response.error}`);
+      this._testRunner.log(`Error while evaluating '${code}': ${JSON.stringify(response.error)}`);
       this._testRunner.completeTest();
     } else {
       return response.result.result.value;
