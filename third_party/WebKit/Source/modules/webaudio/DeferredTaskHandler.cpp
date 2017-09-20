@@ -214,7 +214,7 @@ DeferredTaskHandler::DeferredTaskHandler()
     : automatic_pull_nodes_need_updating_(false), audio_thread_(0) {}
 
 RefPtr<DeferredTaskHandler> DeferredTaskHandler::Create() {
-  return AdoptRef(new DeferredTaskHandler());
+  return WTF::AdoptRef(new DeferredTaskHandler());
 }
 
 DeferredTaskHandler::~DeferredTaskHandler() {

@@ -65,7 +65,7 @@ RefPtr<OfflineAudioDestinationHandler> OfflineAudioDestinationHandler::Create(
     unsigned number_of_channels,
     size_t frames_to_process,
     float sample_rate) {
-  return AdoptRef(new OfflineAudioDestinationHandler(
+  return WTF::AdoptRef(new OfflineAudioDestinationHandler(
       node, number_of_channels, frames_to_process, sample_rate));
 }
 

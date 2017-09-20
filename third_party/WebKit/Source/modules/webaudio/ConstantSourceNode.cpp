@@ -32,7 +32,7 @@ RefPtr<ConstantSourceHandler> ConstantSourceHandler::Create(
     AudioNode& node,
     float sample_rate,
     AudioParamHandler& offset) {
-  return AdoptRef(new ConstantSourceHandler(node, sample_rate, offset));
+  return WTF::AdoptRef(new ConstantSourceHandler(node, sample_rate, offset));
 }
 
 ConstantSourceHandler::~ConstantSourceHandler() {

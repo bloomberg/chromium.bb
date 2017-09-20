@@ -86,7 +86,7 @@ RefPtr<AudioBufferSourceHandler> AudioBufferSourceHandler::Create(
     float sample_rate,
     AudioParamHandler& playback_rate,
     AudioParamHandler& detune) {
-  return AdoptRef(
+  return WTF::AdoptRef(
       new AudioBufferSourceHandler(node, sample_rate, playback_rate, detune));
 }
 

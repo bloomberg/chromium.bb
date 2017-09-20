@@ -60,7 +60,7 @@ RefPtr<ChannelMergerHandler> ChannelMergerHandler::Create(
     AudioNode& node,
     float sample_rate,
     unsigned number_of_inputs) {
-  return AdoptRef(
+  return WTF::AdoptRef(
       new ChannelMergerHandler(node, sample_rate, number_of_inputs));
 }
 

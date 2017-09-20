@@ -90,9 +90,9 @@ RefPtr<PannerHandler> PannerHandler::Create(AudioNode& node,
                                             AudioParamHandler& orientation_x,
                                             AudioParamHandler& orientation_y,
                                             AudioParamHandler& orientation_z) {
-  return AdoptRef(new PannerHandler(node, sample_rate, position_x, position_y,
-                                    position_z, orientation_x, orientation_y,
-                                    orientation_z));
+  return WTF::AdoptRef(new PannerHandler(node, sample_rate, position_x,
+                                         position_y, position_z, orientation_x,
+                                         orientation_y, orientation_z));
 }
 
 PannerHandler::~PannerHandler() {

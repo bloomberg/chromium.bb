@@ -38,7 +38,7 @@ RefPtr<StereoPannerHandler> StereoPannerHandler::Create(
     AudioNode& node,
     float sample_rate,
     AudioParamHandler& pan) {
-  return AdoptRef(new StereoPannerHandler(node, sample_rate, pan));
+  return WTF::AdoptRef(new StereoPannerHandler(node, sample_rate, pan));
 }
 
 StereoPannerHandler::~StereoPannerHandler() {

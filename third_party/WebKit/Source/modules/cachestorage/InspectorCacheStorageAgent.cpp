@@ -346,8 +346,8 @@ class GetCacheKeysForRequestData
       return;
     }
     RefPtr<ResponsesAccumulator> accumulator =
-        AdoptRef(new ResponsesAccumulator(requests.size(), params_,
-                                          std::move(callback_)));
+        WTF::AdoptRef(new ResponsesAccumulator(requests.size(), params_,
+                                               std::move(callback_)));
 
     for (size_t i = 0; i < requests.size(); i++) {
       const auto& request = requests[i];

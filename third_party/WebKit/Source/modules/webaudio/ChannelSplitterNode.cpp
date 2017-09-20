@@ -55,7 +55,7 @@ RefPtr<ChannelSplitterHandler> ChannelSplitterHandler::Create(
     AudioNode& node,
     float sample_rate,
     unsigned number_of_outputs) {
-  return AdoptRef(
+  return WTF::AdoptRef(
       new ChannelSplitterHandler(node, sample_rate, number_of_outputs));
 }
 

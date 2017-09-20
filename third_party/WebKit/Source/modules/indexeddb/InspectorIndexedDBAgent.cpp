@@ -384,7 +384,7 @@ class DatabaseLoader final
   static RefPtr<DatabaseLoader> Create(
       ScriptState* script_state,
       std::unique_ptr<RequestDatabaseCallback> request_callback) {
-    return AdoptRef(
+    return WTF::AdoptRef(
         new DatabaseLoader(script_state, std::move(request_callback)));
   }
 
@@ -637,7 +637,7 @@ class DataLoader final : public ExecutableWithDatabase<RequestDataCallback> {
       IDBKeyRange* idb_key_range,
       int skip_count,
       unsigned page_size) {
-    return AdoptRef(new DataLoader(
+    return WTF::AdoptRef(new DataLoader(
         v8_session, script_state, std::move(request_callback),
         object_store_name, index_name, idb_key_range, skip_count, page_size));
   }
@@ -914,8 +914,8 @@ class ClearObjectStore final
       ScriptState* script_state,
       const String& object_store_name,
       std::unique_ptr<ClearObjectStoreCallback> request_callback) {
-    return AdoptRef(new ClearObjectStore(script_state, object_store_name,
-                                         std::move(request_callback)));
+    return WTF::AdoptRef(new ClearObjectStore(script_state, object_store_name,
+                                              std::move(request_callback)));
   }
 
   ClearObjectStore(ScriptState* script_state,
