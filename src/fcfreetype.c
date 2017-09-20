@@ -1207,8 +1207,6 @@ FcFreeTypeQueryFace (const FT_Face  face,
 
     FcChar8	    *style = 0;
     int		    st;
-    char	    psname[256];
-    const char	    *tmp;
 
     FcBool	    symbol = FcFalse;
 
@@ -1595,52 +1593,57 @@ FcFreeTypeQueryFace (const FT_Face  face,
     }
 
     /* Add the PostScript name into the cache */
-    tmp = FT_Get_Postscript_Name (face);
-    if (!tmp)
+    if (!variable)
     {
-	unsigned int i;
-	FcChar8 *family, *familylang = NULL;
-	size_t len;
-	int n = 0;
-
-	/* Workaround when FT_Get_Postscript_Name didn't give any name.
-	 * try to find out the English family name and convert.
-	 */
-	while (FcPatternObjectGetString (pat, FC_FAMILYLANG_OBJECT, n, &familylang) == FcResultMatch)
+	char	    psname[256];
+	const char	    *tmp;
+	tmp = FT_Get_Postscript_Name (face);
+	if (!tmp)
 	{
-	    if (FcStrCmp (familylang, (const FcChar8 *)"en") == 0)
-		break;
-	    n++;
-	    familylang = NULL;
-	}
-	if (!familylang)
-	    n = 0;
+	    unsigned int i;
+	    FcChar8 *family, *familylang = NULL;
+	    size_t len;
+	    int n = 0;
 
-	if (FcPatternObjectGetString (pat, FC_FAMILY_OBJECT, n, &family) != FcResultMatch)
+	    /* Workaround when FT_Get_Postscript_Name didn't give any name.
+	     * try to find out the English family name and convert.
+	     */
+	    while (FcPatternObjectGetString (pat, FC_FAMILYLANG_OBJECT, n, &familylang) == FcResultMatch)
+	    {
+		if (FcStrCmp (familylang, (const FcChar8 *)"en") == 0)
+		    break;
+		n++;
+		familylang = NULL;
+	    }
+	    if (!familylang)
+		n = 0;
+
+	    if (FcPatternObjectGetString (pat, FC_FAMILY_OBJECT, n, &family) != FcResultMatch)
+		goto bail1;
+	    len = strlen ((const char *)family);
+	    /* the literal name in PostScript Language is limited to 127 characters though,
+	     * It is the architectural limit. so assuming 255 characters may works enough.
+	     */
+	    for (i = 0; i < len && i < 255; i++)
+	    {
+		/* those characters are not allowed to be the literal name in PostScript */
+		static const char exclusive_chars[] = "\x04()/<>[]{}\t\f\r\n ";
+
+		if (strchr(exclusive_chars, family[i]) != NULL)
+		    psname[i] = '-';
+		else
+		    psname[i] = family[i];
+	    }
+	    psname[i] = 0;
+	}
+	else
+	{
+	    strncpy (psname, tmp, 255);
+	    psname[255] = 0;
+	}
+	if (!FcPatternAddString (pat, FC_POSTSCRIPT_NAME, (const FcChar8 *)psname))
 	    goto bail1;
-	len = strlen ((const char *)family);
-	/* the literal name in PostScript Language is limited to 127 characters though,
-	 * It is the architectural limit. so assuming 255 characters may works enough.
-	 */
-	for (i = 0; i < len && i < 255; i++)
-	{
-	    /* those characters are not allowed to be the literal name in PostScript */
-	    static const char exclusive_chars[] = "\x04()/<>[]{}\t\f\r\n ";
-
-	    if (strchr(exclusive_chars, family[i]) != NULL)
-		psname[i] = '-';
-	    else
-		psname[i] = family[i];
-	}
-	psname[i] = 0;
     }
-    else
-    {
-	strncpy (psname, tmp, 255);
-	psname[255] = 0;
-    }
-    if (!FcPatternAddString (pat, FC_POSTSCRIPT_NAME, (const FcChar8 *)psname))
-	goto bail1;
 
     if (file && *file && !FcPatternAddString (pat, FC_FILE, file))
 	goto bail1;
