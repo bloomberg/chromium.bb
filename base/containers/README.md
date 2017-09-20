@@ -218,15 +218,16 @@ Chromium code should always use `base::circular_deque` or `base::queue` in
 preference to `std::deque` or `std::queue` due to memory usage and platform
 variation.
 
-The `base::deque` implementation (and the `base::queue` which uses it)
+The `base::circular_deque` implementation (and the `base::queue` which uses it)
 provide performance consistent across platforms that better matches most
 programmer's expectations on performance (it doesn't waste as much space as
-libc++ and doesn't do as many heap allocations as MSVC).
+libc++ and doesn't do as many heap allocations as MSVC). It also generates less
+code tham `std::queue`: using it across the code base saves several hundred
+kilobytes.
 
-Since `base::deque` does not have stable iterators and it does not support
-random-access insert and erase, it may not be appropriate for all uses. If
-you need these, consider using a `std::list` which will provide constant
-time insert and erase.
+Since `base::deque` does not have stable iterators and it will move the objects
+it contains, it may not be appropriate for all uses. If you need these,
+consider using a `std::list` which will provide constant time insert and erase.
 
 ### std::deque and std::queue
 
@@ -235,11 +236,11 @@ reason about. All implementations use a sequence of data blocks referenced by
 an array of pointers. The standard guarantees random access, amortized
 constant operations at the ends, and linear mutations in the middle.
 
-In Microsoft's implementation, each block is 16 bytes or the size of the
-contained element. This means in practice that every expansion of the deque
-of non-trivial classes requires a heap allocation. libc++ (on Android and Mac)
-uses 4K blocks which elimiates the problem of many heap allocations, but
-generally wastes a large amount of space (an Android analysis revealed more
+In Microsoft's implementation, each block is the smaller of 16 bytes or the
+size of the contained element. This means in practice that every expansion of
+the deque of non-trivial classes requires a heap allocation. libc++ (on Android
+and Mac) uses 4K blocks which elimiates the problem of many heap allocations,
+but generally wastes a large amount of space (an Android analysis revealed more
 than 2.5MB wasted space from deque alone, resulting in some optimizations).
 libstdc++ uses an intermediate-size 512 byte buffer.
 
@@ -255,9 +256,9 @@ around. The items will wrap around the underlying buffer so the storage will
 not be contiguous, but fast random access iterators are still possible.
 
 When the underlying buffer is filled, it will be reallocated and the constents
-moved (like a `std::vector`). The underlying buffer will also be shrunk if
-there is too much wasted space. As a result, iterators are not stable across
-mutations.
+moved (like a `std::vector`). The underlying buffer will be shrunk if there is
+too much wasted space (_unlike_ a `std::vector`). As a result, iterators are
+not stable across mutations.
 
 ## Appendix
 
