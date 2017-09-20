@@ -285,20 +285,19 @@ class BleConnectionManagerTest : public testing::Test {
     mock_adapter_ =
         make_scoped_refptr(new NiceMock<device::MockBluetoothAdapter>());
 
-    mock_ble_scanner_ = new MockBleScanner(mock_adapter_);
-    ON_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(_))
-        .WillByDefault(Return(true));
-    ON_CALL(*mock_ble_scanner_, UnregisterScanFilterForDevice(_))
-        .WillByDefault(Return(true));
+    device_queue_ = base::MakeUnique<BleAdvertisementDeviceQueue>();
 
-    mock_ble_advertiser_ = new MockBleAdvertiser();
+    mock_ble_advertiser_ = base::WrapUnique(new MockBleAdvertiser());
     ON_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(_))
         .WillByDefault(Return(true));
     ON_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(_))
         .WillByDefault(Return(true));
 
-    device_queue_ = new BleAdvertisementDeviceQueue();
-    mock_timer_factory_ = new MockTimerFactory();
+    mock_ble_scanner_ = base::WrapUnique(new MockBleScanner(mock_adapter_));
+    ON_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(_))
+        .WillByDefault(Return(true));
+    ON_CALL(*mock_ble_scanner_, UnregisterScanFilterForDevice(_))
+        .WillByDefault(Return(true));
 
     fake_connection_factory_ = base::WrapUnique(new FakeConnectionFactory(
         mock_adapter_, device::BluetoothUUID(kGattServerUuid)));
@@ -311,16 +310,16 @@ class BleConnectionManagerTest : public testing::Test {
         fake_secure_channel_factory_.get());
 
     manager_ = base::WrapUnique(new BleConnectionManager(
-        fake_cryptauth_service_.get(), mock_adapter_,
-        base::WrapUnique(mock_ble_scanner_),
-        base::WrapUnique(mock_ble_advertiser_), base::WrapUnique(device_queue_),
-        base::WrapUnique(mock_timer_factory_)));
+        fake_cryptauth_service_.get(), mock_adapter_, device_queue_.get(),
+        mock_ble_advertiser_.get(), mock_ble_scanner_.get()));
     test_observer_ = base::WrapUnique(new TestObserver());
     manager_->AddObserver(test_observer_.get());
 
     test_clock_ = new base::SimpleTestClock();
     test_clock_->SetNow(base::Time::UnixEpoch());
-    manager_->SetClockForTest(base::WrapUnique(test_clock_));
+    mock_timer_factory_ = new MockTimerFactory();
+    manager_->SetTestDoubles(base::WrapUnique(test_clock_),
+                             base::WrapUnique(mock_timer_factory_));
   }
 
   void TearDown() override {
@@ -536,9 +535,9 @@ class BleConnectionManagerTest : public testing::Test {
 
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
-  MockBleScanner* mock_ble_scanner_;
-  MockBleAdvertiser* mock_ble_advertiser_;
-  BleAdvertisementDeviceQueue* device_queue_;
+  std::unique_ptr<MockBleScanner> mock_ble_scanner_;
+  std::unique_ptr<MockBleAdvertiser> mock_ble_advertiser_;
+  std::unique_ptr<BleAdvertisementDeviceQueue> device_queue_;
   MockTimerFactory* mock_timer_factory_;
   base::SimpleTestClock* test_clock_;
   std::unique_ptr<FakeConnectionFactory> fake_connection_factory_;

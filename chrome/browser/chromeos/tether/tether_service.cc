@@ -212,6 +212,15 @@ void TetherService::SuspendImminent() {
 
 void TetherService::SuspendDone(const base::TimeDelta& sleep_duration) {
   suspended_ = false;
+
+  // If there was a previous Initializer instance in the process of an
+  // asynchronous shutdown, that session is stale by this point. Kill it now, so
+  // that the next session can start up immediately.
+  if (initializer_) {
+    initializer_->RemoveObserver(this);
+    initializer_.reset();
+  }
+
   UpdateTetherTechnologyState();
 }
 

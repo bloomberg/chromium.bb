@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_clock.h"
+#include "chromeos/components/tether/ble_scanner.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/initializer.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -37,6 +38,8 @@ namespace tether {
 
 class ActiveHost;
 class ActiveHostNetworkStateUpdater;
+class BleAdvertiser;
+class BleAdvertisementDeviceQueue;
 class BleConnectionManager;
 class CrashRecoveryManager;
 class NetworkConnectionHandlerTetherDelegate;
@@ -63,6 +66,7 @@ class WifiHotspotDisconnector;
 
 // Initializes the Tether Chrome OS component.
 class InitializerImpl : public Initializer,
+                        public BleScanner::Observer,
                         public DisconnectTetheringRequestSender::Observer {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -113,6 +117,9 @@ class InitializerImpl : public Initializer,
   // Initializer:
   void RequestShutdown() override;
 
+  // BleScanner::Observer:
+  void OnDiscoverySessionStateChanged(bool discovery_session_active) override;
+
   // DisconnectTetheringRequestSender::Observer:
   void OnPendingDisconnectRequestsComplete() override;
 
@@ -120,8 +127,10 @@ class InitializerImpl : public Initializer,
   friend class InitializerImplTest;
 
   void CreateComponent();
+  bool IsAsyncShutdownRequired();
   void OnPreCrashStateRestored();
   void StartAsynchronousShutdown();
+  void FinishAsynchronousShutdownIfPossible();
 
   cryptauth::CryptAuthService* cryptauth_service_;
   NotificationPresenter* notification_presenter_;
@@ -141,6 +150,9 @@ class InitializerImpl : public Initializer,
       local_device_data_provider_;
   std::unique_ptr<cryptauth::RemoteBeaconSeedFetcher>
       remote_beacon_seed_fetcher_;
+  std::unique_ptr<BleAdvertisementDeviceQueue> ble_advertisement_device_queue_;
+  std::unique_ptr<BleAdvertiser> ble_advertiser_;
+  std::unique_ptr<BleScanner> ble_scanner_;
   std::unique_ptr<BleConnectionManager> ble_connection_manager_;
   std::unique_ptr<DisconnectTetheringRequestSender>
       disconnect_tethering_request_sender_;
