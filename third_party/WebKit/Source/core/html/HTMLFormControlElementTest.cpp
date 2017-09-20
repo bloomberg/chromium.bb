@@ -82,7 +82,7 @@ void HTMLFormControlElementTest::SetUp() {
 }
 
 TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<body><input pattern='abc' value='def' id=input></body>",
       ASSERT_NO_EXCEPTION);
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -129,7 +129,7 @@ TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection) {
 }
 
 TEST_F(HTMLFormControlElementTest, UpdateValidationMessageSkippedIfPrinting) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<body><input required id=input></body>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   ValidationMessageClient* validation_message_client =
@@ -149,7 +149,7 @@ TEST_F(HTMLFormControlElementTest, DoNotUpdateLayoutDuringDOMMutation) {
   // ShowValidationMessage(). So calling it during DOM mutation is
   // dangerous. This test ensures ShowValidationMessage() is NOT called in
   // appendChild(). crbug.com/756408
-  GetDocument().documentElement()->setInnerHTML("<select></select>");
+  GetDocument().documentElement()->SetInnerHTMLFromString("<select></select>");
   HTMLFormControlElement* const select =
       ToHTMLFormControlElement(GetDocument().QuerySelector("select"));
   Element* const optgroup = GetDocument().createElement("optgroup");

@@ -275,7 +275,7 @@ TEST_F(NodeTest, AttachContext_PreviousInFlow_Slotted) {
   SetBodyContent("<div id=host><span id=inline></span></div>");
   ShadowRoot* shadow_root =
       AttachShadowTo(GetDocument().getElementById("host"));
-  shadow_root->setInnerHTML(
+  shadow_root->SetInnerHTMLFromString(
       "<div id=root style='display:contents'><span></span><slot></slot></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 

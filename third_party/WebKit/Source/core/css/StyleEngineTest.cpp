@@ -80,7 +80,7 @@ TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
 }
 
 TEST_F(StyleEngineTest, AnalyzedInject) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<style>div { color: red }</style><div id='t1'>Green</div><div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -177,7 +177,7 @@ TEST_F(StyleEngineTest, TextToSheetCache) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div>"
       "  <span></span>"
       "  <div></div>"
@@ -222,7 +222,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationCustomPseudo) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<style>progress { -webkit-appearance:none }</style>"
       "<progress></progress>"
       "<div></div><div></div><div></div><div></div><div></div><div></div>");
@@ -239,7 +239,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationCustomPseudo) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div id=nohost></div><div id=host></div>");
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
@@ -251,7 +251,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
                          init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadow_root);
 
-  shadow_root->setInnerHTML("<div></div><div></div><div></div>");
+  shadow_root->SetInnerHTMLFromString("<div></div><div></div><div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
@@ -282,7 +282,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div id=host>"
       "  <span slot=other class=s1></span>"
       "  <span class=s2></span>"
@@ -300,7 +300,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
                          init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadow_root);
 
-  shadow_root->setInnerHTML("<slot name=other></slot><slot></slot>");
+  shadow_root->SetInnerHTMLFromString("<slot name=other></slot><slot></slot>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
@@ -321,7 +321,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
-  GetDocument().body()->setInnerHTML("<div id=host></div>");
+  GetDocument().body()->SetInnerHTMLFromString("<div id=host></div>");
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
@@ -332,7 +332,8 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
                          init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadow_root);
 
-  shadow_root->setInnerHTML("<div></div><div class=a></div><div></div>");
+  shadow_root->SetInnerHTMLFromString(
+      "<div></div><div class=a></div><div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
@@ -353,7 +354,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
-  GetDocument().body()->setInnerHTML("<div id=host></div>");
+  GetDocument().body()->SetInnerHTMLFromString("<div id=host></div>");
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
@@ -364,7 +365,8 @@ TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
                          init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadow_root);
 
-  shadow_root->setInnerHTML("<div></div><div class=a></div><div></div>");
+  shadow_root->SetInnerHTMLFromString(
+      "<div></div><div class=a></div><div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(ScheduleInvalidationsForRules(
@@ -381,7 +383,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
 }
 
 TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<style>div {}</style>"
       "<style id='sheet' media='(min-width: 200px)'>"
       "  div {}"
@@ -407,7 +409,7 @@ TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {
 }
 
 TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<style id='s1' media='(max-width: 1px)'>#t1 { color: green }</style>"
       "<div id='t1'>Green</div><div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -433,7 +435,7 @@ TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
 }
 
 TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<style id='s1' media='(max-width: 1000px)'>#t1 { color: green }</style>"
       "<div id='t1'>Green</div><div></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -464,7 +466,7 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   // StylePropertySet pointers. When a mutable StylePropertySet is modified,
   // the pointer doesn't change, yet the declarations do.
 
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<style id='s1'>#t1 { color: blue }</style>"
       "<div id='t1'>Green</div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -501,7 +503,7 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
 }
 
 TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<style id='s1'>"
       "  .t1 span { color: green }"
       "  .t2 span { color: green }"
@@ -573,7 +575,7 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
 }
 
 TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
-  GetDocument().body()->setInnerHTML("<div id='host'></div>");
+  GetDocument().body()->SetInnerHTMLFromString("<div id='host'></div>");
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
@@ -585,7 +587,7 @@ TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
                          init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadow_root);
 
-  shadow_root->setInnerHTML(
+  shadow_root->SetInnerHTMLFromString(
       "<style>"
       "  span { color: green }"
       "  t1 { color: green }"
@@ -599,7 +601,7 @@ TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
 }
 
 TEST_F(StyleEngineTest, EmptyHttpEquivDefaultStyle) {
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<style>div { color:pink }</style><div id=container></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -607,16 +609,18 @@ TEST_F(StyleEngineTest, EmptyHttpEquivDefaultStyle) {
 
   Element* container = GetDocument().getElementById("container");
   ASSERT_TRUE(container);
-  container->setInnerHTML("<meta http-equiv='default-style' content=''>");
+  container->SetInnerHTMLFromString(
+      "<meta http-equiv='default-style' content=''>");
   EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 
-  container->setInnerHTML(
+  container->SetInnerHTMLFromString(
       "<meta http-equiv='default-style' content='preferred'>");
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
 TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_Document) {
-  GetDocument().body()->setInnerHTML("<style>span { color: green }</style>");
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<style>span { color: green }</style>");
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 
   const auto& sheet_list =
@@ -624,7 +628,7 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_Document) {
   EXPECT_EQ(1u, sheet_list.size());
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<style>span { color: green }</style><style>div { color: pink }</style>");
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 
@@ -639,7 +643,7 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_Document) {
 }
 
 TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
-  GetDocument().body()->setInnerHTML("<div id='host'></div>");
+  GetDocument().body()->SetInnerHTMLFromString("<div id='host'></div>");
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
@@ -651,7 +655,7 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
                          init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadow_root);
 
-  shadow_root->setInnerHTML("<style>span { color: green }</style>");
+  shadow_root->SetInnerHTMLFromString("<style>span { color: green }</style>");
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 
   const auto& sheet_list =
@@ -659,7 +663,7 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
   EXPECT_EQ(1u, sheet_list.size());
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 
-  shadow_root->setInnerHTML(
+  shadow_root->SetInnerHTMLFromString(
       "<style>span { color: green }</style><style>div { color: pink }</style>");
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 

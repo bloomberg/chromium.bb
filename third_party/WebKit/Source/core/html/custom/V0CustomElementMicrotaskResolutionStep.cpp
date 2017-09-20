@@ -68,7 +68,7 @@ DEFINE_TRACE(V0CustomElementMicrotaskResolutionStep) {
 #if !defined(NDEBUG)
 void V0CustomElementMicrotaskResolutionStep::Show(unsigned indent) {
   fprintf(stderr, "%*sResolution: ", indent, "");
-  element_->outerHTML().Show();
+  element_->OuterHTMLAsString().Show();
 }
 #endif
 

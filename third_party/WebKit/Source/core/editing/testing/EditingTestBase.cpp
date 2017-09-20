@@ -99,15 +99,15 @@ ShadowRoot* EditingTestBase::CreateShadowRootForElementWithIDAndSetInnerHTML(
   ShadowRoot* shadow_root =
       scope.getElementById(AtomicString::FromUTF8(host_element_id))
           ->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  shadow_root->setInnerHTML(String::FromUTF8(shadow_root_content),
-                            ASSERT_NO_EXCEPTION);
+  shadow_root->SetInnerHTMLFromString(String::FromUTF8(shadow_root_content),
+                                      ASSERT_NO_EXCEPTION);
   scope.GetDocument().View()->UpdateAllLifecyclePhases();
   return shadow_root;
 }
 
 void EditingTestBase::SetBodyContent(const std::string& body_content) {
-  GetDocument().body()->setInnerHTML(String::FromUTF8(body_content.c_str()),
-                                     ASSERT_NO_EXCEPTION);
+  GetDocument().body()->SetInnerHTMLFromString(
+      String::FromUTF8(body_content.c_str()), ASSERT_NO_EXCEPTION);
   UpdateAllLifecyclePhases();
 }
 

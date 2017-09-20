@@ -856,7 +856,7 @@ TEST_P(RootScrollerTest, RemoveRootScrollerFromDom) {
     ASSERT_EQ(inner_container,
               EffectiveRootScroller(iframe->contentDocument()));
 
-    iframe->contentDocument()->body()->setInnerHTML("");
+    iframe->contentDocument()->body()->SetInnerHTMLFromString("");
 
     // If the root scroller wasn't updated by the DOM removal above, this
     // will touch the disposed root scroller's ScrollableArea.

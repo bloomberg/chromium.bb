@@ -438,7 +438,7 @@ TEST_P(BoxPaintInvalidatorTest, ResizeRotatedChild) {
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr,
                        "transform: rotate(45deg); width: 200px");
-  target->setInnerHTML(
+  target->SetInnerHTMLFromString(
       "<div id=child style='width: 50px; height: 50px; background: "
       "red'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -641,7 +641,7 @@ TEST_P(BoxPaintInvalidatorTest, CompositedBackgroundAttachmentLocalResize) {
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "border local-background");
   target->setAttribute(HTMLNames::styleAttr, "will-change: transform");
-  target->setInnerHTML(
+  target->SetInnerHTMLFromString(
       "<div id=child style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);
   Element* child = GetDocument().getElementById("child");
@@ -696,7 +696,7 @@ TEST_P(BoxPaintInvalidatorTest,
   target->setAttribute(HTMLNames::classAttr,
                        "border local-background gradient");
   target->setAttribute(HTMLNames::styleAttr, "will-change: transform");
-  target->setInnerHTML(
+  target->SetInnerHTMLFromString(
       "<div id='child' style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);
   Element* child = GetDocument().getElementById("child");
@@ -746,7 +746,7 @@ TEST_P(BoxPaintInvalidatorTest,
 TEST_P(BoxPaintInvalidatorTest, NonCompositedBackgroundAttachmentLocalResize) {
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "border local-background");
-  target->setInnerHTML(
+  target->SetInnerHTMLFromString(
       "<div id=child style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);
   Element* child = GetDocument().getElementById("child");
@@ -780,8 +780,8 @@ TEST_P(BoxPaintInvalidatorTest, CompositedSolidBackgroundResize) {
   EnableCompositing();
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "solid-composited-scroller");
-  target->setInnerHTML("<div style='height: 500px'></div>",
-                       ASSERT_NO_EXCEPTION);
+  target->SetInnerHTMLFromString("<div style='height: 500px'></div>",
+                                 ASSERT_NO_EXCEPTION);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Resize the scroller.

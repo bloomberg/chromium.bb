@@ -22,7 +22,7 @@ class SelectionSampleTest : public EditingTestBase {
 TEST_F(SelectionSampleTest, SetEmpty1) {
   const SelectionInDOMTree& selection =
       SelectionSample::SetSelectionText(GetDocument().body(), "|");
-  EXPECT_EQ("", GetDocument().body()->innerHTML());
+  EXPECT_EQ("", GetDocument().body()->InnerHTMLAsString());
   EXPECT_EQ(0u, GetDocument().body()->CountChildren());
   EXPECT_EQ(SelectionInDOMTree::Builder()
                 .Collapse(Position(GetDocument().body(), 0))
@@ -33,7 +33,7 @@ TEST_F(SelectionSampleTest, SetEmpty1) {
 TEST_F(SelectionSampleTest, SetEmpty2) {
   const SelectionInDOMTree& selection =
       SelectionSample::SetSelectionText(GetDocument().body(), "^|");
-  EXPECT_EQ("", GetDocument().body()->innerHTML());
+  EXPECT_EQ("", GetDocument().body()->InnerHTMLAsString());
   EXPECT_EQ(0u, GetDocument().body()->CountChildren());
   EXPECT_EQ(SelectionInDOMTree::Builder()
                 .Collapse(Position(GetDocument().body(), 0))
@@ -58,7 +58,7 @@ TEST_F(SelectionSampleTest, SetText) {
   {
     const auto& selection =
         SelectionSample::SetSelectionText(GetDocument().body(), "^ab|c");
-    EXPECT_EQ("abc", GetDocument().body()->innerHTML());
+    EXPECT_EQ("abc", GetDocument().body()->InnerHTMLAsString());
     EXPECT_EQ(SelectionInDOMTree::Builder()
                   .Collapse(Position(GetDocument().body()->firstChild(), 0))
                   .Extend(Position(GetDocument().body()->firstChild(), 2))
@@ -68,7 +68,7 @@ TEST_F(SelectionSampleTest, SetText) {
   {
     const auto& selection =
         SelectionSample::SetSelectionText(GetDocument().body(), "a^b|c");
-    EXPECT_EQ("abc", GetDocument().body()->innerHTML());
+    EXPECT_EQ("abc", GetDocument().body()->InnerHTMLAsString());
     EXPECT_EQ(SelectionInDOMTree::Builder()
                   .Collapse(Position(GetDocument().body()->firstChild(), 1))
                   .Extend(Position(GetDocument().body()->firstChild(), 2))
@@ -78,7 +78,7 @@ TEST_F(SelectionSampleTest, SetText) {
   {
     const auto& selection =
         SelectionSample::SetSelectionText(GetDocument().body(), "ab^|c");
-    EXPECT_EQ("abc", GetDocument().body()->innerHTML());
+    EXPECT_EQ("abc", GetDocument().body()->InnerHTMLAsString());
     EXPECT_EQ(SelectionInDOMTree::Builder()
                   .Collapse(Position(GetDocument().body()->firstChild(), 2))
                   .Build(),
@@ -87,7 +87,7 @@ TEST_F(SelectionSampleTest, SetText) {
   {
     const auto& selection =
         SelectionSample::SetSelectionText(GetDocument().body(), "ab|c^");
-    EXPECT_EQ("abc", GetDocument().body()->innerHTML());
+    EXPECT_EQ("abc", GetDocument().body()->InnerHTMLAsString());
     EXPECT_EQ(SelectionInDOMTree::Builder()
                   .Collapse(Position(GetDocument().body()->firstChild(), 3))
                   .Extend(Position(GetDocument().body()->firstChild(), 2))

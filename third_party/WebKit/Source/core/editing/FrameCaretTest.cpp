@@ -46,7 +46,7 @@ TEST_F(FrameCaretTest, BlinkAfterTyping) {
   LayoutTheme::GetTheme().SetCaretBlinkInterval(kInterval);
   GetDocument().GetPage()->GetFocusController().SetActive(true);
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
-  GetDocument().body()->setInnerHTML("<textarea>");
+  GetDocument().body()->SetInnerHTMLFromString("<textarea>");
   Element* editor = ToElement(GetDocument().body()->firstChild());
   editor->focus();
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -80,7 +80,7 @@ TEST_F(FrameCaretTest, ShouldNotBlinkWhenSelectionLooseFocus) {
   FrameCaret& caret = Selection().FrameCaretForTesting();
   GetDocument().GetPage()->GetFocusController().SetActive(true);
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<div id='outer' tabindex='-1'>"
       "<div id='input' contenteditable>foo</div>"
       "</div>");

@@ -29,7 +29,7 @@ void HTMLLinkElementTest::SetUp() {
 // This tests that we should ignore empty string value
 // in href attribute value of the link element.
 TEST_F(HTMLLinkElementTest, EmptyHrefAttribute) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<head>"
       "<link rel=\"icon\" type=\"image/ico\" href=\"\" />"
       "</head>");

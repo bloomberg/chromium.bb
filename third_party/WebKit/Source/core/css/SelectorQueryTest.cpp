@@ -64,7 +64,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   Document* document = Document::CreateForTest();
   HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
   document->AppendChild(html);
-  document->documentElement()->setInnerHTML(
+  document->documentElement()->SetInnerHTMLFromString(
       "<body><style>span::before { content: 'X' }</style><span></span></body>");
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
@@ -91,7 +91,7 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
   Document* document = HTMLDocument::CreateForTest();
   HTMLHtmlElement* html = HTMLHtmlElement::Create(*document);
   document->AppendChild(html);
-  document->documentElement()->setInnerHTML(
+  document->documentElement()->SetInnerHTMLFromString(
       "<body><p></p><p id=last></p></body>", ASSERT_NO_EXCEPTION);
 
   document->body()->BeginParsingChildren();
@@ -326,7 +326,7 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
 TEST(SelectorQueryTest, DisconnectedSubtree) {
   Document* document = HTMLDocument::CreateForTest();
   Element* scope = document->createElement("div");
-  scope->setInnerHTML(
+  scope->SetInnerHTMLFromString(
       "<section>"
       "  <span id=first>"
       "    <span id=A class=A></span>"
@@ -357,7 +357,7 @@ TEST(SelectorQueryTest, DisconnectedTreeScope) {
   // C++.
   ShadowRoot& shadowRoot =
       host->EnsureShadow().AddShadowRoot(*host, ShadowRootType::kOpen);
-  shadowRoot.setInnerHTML(
+  shadowRoot.SetInnerHTMLFromString(
       "<section>"
       "  <span id=first>"
       "    <span id=A class=A></span>"

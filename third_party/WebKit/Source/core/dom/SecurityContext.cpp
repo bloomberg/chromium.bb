@@ -36,7 +36,8 @@ namespace blink {
 SecurityContext::SecurityContext()
     : sandbox_flags_(kSandboxNone),
       address_space_(kWebAddressSpacePublic),
-      insecure_request_policy_(kLeaveInsecureRequestsAlone) {}
+      insecure_request_policy_(kLeaveInsecureRequestsAlone),
+      require_safe_types_(false) {}
 
 SecurityContext::~SecurityContext() {}
 

@@ -43,7 +43,7 @@ void TextControlElementTest::SetUp() {
       DummyPageHolder::Create(IntSize(800, 600), &page_clients);
 
   document_ = &dummy_page_holder_->GetDocument();
-  document_->documentElement()->setInnerHTML(
+  document_->documentElement()->SetInnerHTMLFromString(
       "<body><textarea id=textarea></textarea><input id=input /></body>");
   document_->View()->UpdateAllLifecyclePhases();
   text_control_ = ToTextControlElement(document_->getElementById("textarea"));

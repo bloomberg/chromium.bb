@@ -73,7 +73,7 @@ class WebElementTest : public ::testing::Test {
 };
 
 void WebElementTest::InsertHTML(String html) {
-  GetDocument().documentElement()->setInnerHTML(html);
+  GetDocument().documentElement()->SetInnerHTMLFromString(html);
 }
 
 WebElement WebElementTest::TestElement() {
@@ -116,7 +116,7 @@ TEST_F(WebElementTest, HasNonEmptyLayoutSize) {
       GetDocument()
           .getElementById("testElement")
           ->CreateShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
-  root->setInnerHTML("<div>Hello World</div>");
+  root->SetInnerHTMLFromString("<div>Hello World</div>");
   EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());
 }
 

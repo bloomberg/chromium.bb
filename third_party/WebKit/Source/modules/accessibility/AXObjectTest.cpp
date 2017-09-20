@@ -45,7 +45,7 @@ TEST_F(AXObjectTest, IsARIAWidget) {
       "id=\"focusable-parent\">focusable-parent</div></div><br>"
       "</body>";
 
-  GetDocument().documentElement()->setInnerHTML(test_content);
+  GetDocument().documentElement()->SetInnerHTMLFromString(test_content);
   GetDocument().UpdateStyleAndLayout();
   Element* root(GetDocument().documentElement());
   EXPECT_FALSE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(

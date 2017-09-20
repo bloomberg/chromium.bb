@@ -71,7 +71,7 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
   pasteboard->WriteHTML(html_to_paste, BlankURL(), "", false);
   EXPECT_TRUE(frame.GetEditor().ExecuteCommand("Paste"));
 
-  return body->innerHTML();
+  return body->InnerHTMLAsString();
 }
 
 // Integration tests.

@@ -33,7 +33,7 @@ class Parser final {
   SelectionTemplate<Strategy> SetSelectionText(
       HTMLElement* element,
       const std::string& selection_text) {
-    element->setInnerHTML(String::FromUTF8(selection_text.c_str()));
+    element->SetInnerHTMLFromString(String::FromUTF8(selection_text.c_str()));
     Traverse(element);
     if (anchor_node_ && focus_node_) {
       return typename SelectionTemplate<Strategy>::Builder()

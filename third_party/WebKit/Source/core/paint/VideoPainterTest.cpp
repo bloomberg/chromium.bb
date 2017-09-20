@@ -96,7 +96,7 @@ class VideoPainterTestForSPv2 : public ::testing::Test,
 
 TEST_F(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree) {
   // Insert a <video> and allow it to begin loading.
-  GetDocument().body()->setInnerHTML(
+  GetDocument().body()->SetInnerHTMLFromString(
       "<video width=300 height=200 src=test.ogv>");
   testing::RunPendingTasks();
 

@@ -1654,12 +1654,12 @@ TEST_F(VisibleUnitsTest, startOfParagraph) {
   // crbug.com/563777. startOfParagraph() unexpectedly returned a null
   // position with nested editable <BODY>s.
   Element* root = GetDocument().documentElement();
-  root->setInnerHTML(
+  root->SetInnerHTMLFromString(
       "<style>* { display:inline-table; }</style><body "
       "contenteditable=true><svg><svg><foreignObject>abc<svg></svg></"
       "foreignObject></svg></svg></body>");
   Element* old_body = GetDocument().body();
-  root->setInnerHTML(
+  root->SetInnerHTMLFromString(
       "<body contenteditable=true><svg><foreignObject><style>def</style>");
   DCHECK_NE(old_body, GetDocument().body());
   Node* foreign_object = GetDocument().body()->firstChild()->firstChild();

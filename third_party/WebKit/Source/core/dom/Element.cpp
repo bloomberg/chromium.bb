@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "bindings/core/v8/scroll_into_view_options_or_boolean.h"
+#include "bindings/core/v8/string_or_trusted_html.h"
 #include "core/CSSValueKeywords.h"
 #include "core/SVGNames.h"
 #include "core/XMLNames.h"
@@ -77,6 +78,7 @@
 #include "core/dom/V0InsertionPoint.h"
 #include "core/dom/WhitespaceAttacher.h"
 #include "core/dom/events/EventDispatcher.h"
+#include "core/dom/trustedtypes/TrustedHTML.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
@@ -3001,16 +3003,24 @@ void Element::DispatchFocusOutEvent(
                          new_focused_element, source_capabilities));
 }
 
-String Element::innerHTML() const {
+String Element::InnerHTMLAsString() const {
   return CreateMarkup(this, kChildrenOnly);
 }
 
-String Element::outerHTML() const {
+String Element::OuterHTMLAsString() const {
   return CreateMarkup(this);
 }
 
-void Element::setInnerHTML(const String& html,
-                           ExceptionState& exception_state) {
+void Element::innerHTML(StringOrTrustedHTML& result) const {
+  result.setString(InnerHTMLAsString());
+}
+
+void Element::outerHTML(StringOrTrustedHTML& result) const {
+  result.setString(OuterHTMLAsString());
+}
+
+void Element::SetInnerHTMLFromString(const String& html,
+                                     ExceptionState& exception_state) {
   probe::breakableLocation(&GetDocument(), "Element.setInnerHTML");
   if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
           html, this, kAllowScriptingContent, "innerHTML", exception_state)) {
@@ -3021,8 +3031,32 @@ void Element::setInnerHTML(const String& html,
   }
 }
 
-void Element::setOuterHTML(const String& html,
+void Element::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
                            ExceptionState& exception_state) {
+  DCHECK(stringOrHtml.isString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+
+  if (stringOrHtml.isString() && GetDocument().RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedHTML` assignment.");
+    return;
+  }
+
+  String html = stringOrHtml.isString()
+                    ? stringOrHtml.getAsString()
+                    : stringOrHtml.getAsTrustedHTML()->toString();
+
+  // TODO(mkwst): This is an ugly hack that will be resolved once `TreatNullAs`
+  // is treated as an extended attribute on the `DOMString` type rather than
+  // as an extended attribute on the attribute. https://crbug.com/714866
+  if (html == "null")
+    html = "";
+
+  SetInnerHTMLFromString(html, exception_state);
+}
+
+void Element::SetOuterHTMLFromString(const String& html,
+                                     ExceptionState& exception_state) {
   Node* p = parentNode();
   if (!p) {
     exception_state.ThrowDOMException(kNoModificationAllowedError,
@@ -3053,6 +3087,30 @@ void Element::setOuterHTML(const String& html,
 
   if (!exception_state.HadException() && prev && prev->IsTextNode())
     MergeWithNextTextNode(ToText(prev), exception_state);
+}
+
+void Element::setOuterHTML(const StringOrTrustedHTML& stringOrHtml,
+                           ExceptionState& exception_state) {
+  DCHECK(stringOrHtml.isString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+
+  if (stringOrHtml.isString() && GetDocument().RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedHTML` assignment.");
+    return;
+  }
+
+  String html = stringOrHtml.isString()
+                    ? stringOrHtml.getAsString()
+                    : stringOrHtml.getAsTrustedHTML()->toString();
+
+  // TODO(mkwst): This is an ugly hack that will be resolved once `TreatNullAs`
+  // is treated as an extended attribute on the `DOMString` type rather than
+  // as an extended attribute on the attribute. https://crbug.com/714866
+  if (html == "null")
+    html = "";
+
+  SetOuterHTMLFromString(html, exception_state);
 }
 
 Node* Element::InsertAdjacent(const String& where,
@@ -3173,6 +3231,25 @@ void Element::insertAdjacentHTML(const String& where,
   if (!fragment)
     return;
   InsertAdjacent(where, fragment, exception_state);
+}
+
+void Element::insertAdjacentHTML(const String& where,
+                                 const StringOrTrustedHTML& stringOrHtml,
+                                 ExceptionState& exception_state) {
+  DCHECK(stringOrHtml.isString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+
+  if (stringOrHtml.isString() && GetDocument().RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedHTML` assignment.");
+    return;
+  }
+
+  String markup = stringOrHtml.isString()
+                      ? stringOrHtml.getAsString()
+                      : stringOrHtml.getAsTrustedHTML()->toString();
+
+  insertAdjacentHTML(where, markup, exception_state);
 }
 
 void Element::setPointerCapture(int pointer_id,

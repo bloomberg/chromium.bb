@@ -209,6 +209,7 @@ class CORE_EXPORT CSPDirectiveList
                                          const String& value);
   void EnableInsecureRequestsUpgrade(const String& name, const String& value);
   void TreatAsPublicAddress(const String& name, const String& value);
+  void RequireTrustedTypes(const String& name, const String& value);
 
   template <class CSPDirectiveType>
   void SetCSPDirective(const String& name,
@@ -320,6 +321,7 @@ class CORE_EXPORT CSPDirectiveList
 
   bool upgrade_insecure_requests_;
   bool treat_as_public_address_;
+  bool require_safe_types_;
 
   Member<MediaListDirective> plugin_types_;
   Member<SourceListDirective> base_uri_;

@@ -77,7 +77,7 @@ class PrintContextTest : public RenderingTest {
 
   void SetBodyInnerHTML(String body_content) {
     GetDocument().body()->setAttribute(HTMLNames::styleAttr, "margin: 0");
-    GetDocument().body()->setInnerHTML(body_content);
+    GetDocument().body()->SetInnerHTMLFromString(body_content);
   }
 
   void PrintSinglePage(MockPageContextCanvas& canvas) {

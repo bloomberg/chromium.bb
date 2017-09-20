@@ -123,7 +123,7 @@ WebString WebElement::TextContent() const {
 }
 
 WebString WebElement::InnerHTML() const {
-  return ConstUnwrap<Element>()->innerHTML();
+  return ConstUnwrap<Element>()->InnerHTMLAsString();
 }
 
 bool WebElement::HasNonEmptyLayoutSize() const {

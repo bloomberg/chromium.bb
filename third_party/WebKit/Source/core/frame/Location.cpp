@@ -31,8 +31,10 @@
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
+#include "bindings/core/v8/string_or_trusted_url.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/trustedtypes/TrustedURL.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -60,8 +62,8 @@ inline const KURL& Location::Url() const {
   return url;
 }
 
-String Location::href() const {
-  return Url().StrippedForUseAsHref();
+void Location::href(StringOrTrustedURL& result) const {
+  result.setString(Url().StrippedForUseAsHref());
 }
 
 String Location::protocol() const {
@@ -104,14 +106,34 @@ DOMStringList* Location::ancestorOrigins() const {
   return origins;
 }
 
+String Location::toString() const {
+  StringOrTrustedURL result;
+  href(result);
+  DCHECK(result.isString());
+  return result.getAsString();
+}
+
 String Location::hash() const {
   return DOMURLUtilsReadOnly::hash(Url());
 }
 
 void Location::setHref(LocalDOMWindow* current_window,
                        LocalDOMWindow* entered_window,
-                       const String& url,
+                       const StringOrTrustedURL& stringOrUrl,
                        ExceptionState& exception_state) {
+  DCHECK(stringOrUrl.isString() ||
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled());
+
+  if (stringOrUrl.isString() &&
+      current_window->document()->RequireTrustedTypes()) {
+    exception_state.ThrowTypeError(
+        "This document requires `TrustedURL` assignment.");
+    return;
+  }
+
+  String url = stringOrUrl.isString()
+                   ? stringOrUrl.getAsString()
+                   : stringOrUrl.getAsTrustedURL()->toString();
   SetLocation(url, current_window, entered_window, &exception_state);
 }
 

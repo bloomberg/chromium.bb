@@ -24,7 +24,7 @@ class HTMLCanvasElementModuleTest : public ::testing::Test {
     std::unique_ptr<DummyPageHolder> dummy_page_holder =
         DummyPageHolder::Create(IntSize(800, 600), &page_clients);
     Persistent<Document> document = &dummy_page_holder->GetDocument();
-    document->documentElement()->setInnerHTML(
+    document->documentElement()->SetInnerHTMLFromString(
         "<body><canvas id='c'></canvas></body>");
     document->View()->UpdateAllLifecyclePhases();
     canvas_element_ = toHTMLCanvasElement(document->getElementById("c"));

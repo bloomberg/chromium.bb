@@ -73,7 +73,7 @@ String PerformanceMonitorTest::FrameContextURL() {
   if (monitor_->task_has_multiple_contexts_)
     return "";
   Frame* frame = ToDocument(monitor_->task_execution_context_)->GetFrame();
-  return ToLocalFrame(frame)->GetDocument()->location()->href();
+  return ToLocalFrame(frame)->GetDocument()->location()->toString();
 }
 
 int PerformanceMonitorTest::NumUniqueFrameContextsSeen() {

@@ -36,7 +36,7 @@ void HTMLSelectElementTest::SetUp() {
 }
 
 TEST_F(HTMLSelectElementTest, SaveRestoreSelectSingleFormControlState) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       String("<!DOCTYPE HTML><select id='sel'>"
              "<option value='111' id='0'>111</option>"
              "<option value='222'>222</option>"
@@ -70,7 +70,7 @@ TEST_F(HTMLSelectElementTest, SaveRestoreSelectSingleFormControlState) {
 }
 
 TEST_F(HTMLSelectElementTest, SaveRestoreSelectMultipleFormControlState) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       String("<!DOCTYPE HTML><select id='sel' multiple>"
              "<option value='111' id='0'>111</option>"
              "<option value='222'>222</option>"
@@ -114,7 +114,7 @@ TEST_F(HTMLSelectElementTest, RestoreUnmatchedFormControlState) {
   // restoreFormControlState() couldn't find matched OPTIONs.
   // crbug.com/627833.
 
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<select id='sel'>"
       "<option selected>Default</option>"
       "<option id='2'>222</option>"
@@ -142,7 +142,7 @@ TEST_F(HTMLSelectElementTest, RestoreUnmatchedFormControlState) {
 }
 
 TEST_F(HTMLSelectElementTest, VisibleBoundsInVisualViewport) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<select style='position:fixed; top:12.3px; height:24px; "
       "-webkit-appearance:none;'><option>o1</select>");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -154,7 +154,7 @@ TEST_F(HTMLSelectElementTest, VisibleBoundsInVisualViewport) {
 }
 
 TEST_F(HTMLSelectElementTest, PopupIsVisible) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<select><option>o1</option></select>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   HTMLSelectElement* select =
@@ -169,14 +169,15 @@ TEST_F(HTMLSelectElementTest, PopupIsVisible) {
 
 TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
   {
-    GetDocument().documentElement()->setInnerHTML("<select></select>");
+    GetDocument().documentElement()->SetInnerHTMLFromString(
+        "<select></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ(nullptr, select->FirstSelectableOption());
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><option id=o2></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLSelectElement* select =
@@ -185,7 +186,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1 disabled></option><option "
         "id=o2></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -195,7 +196,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1 style='display:none'></option><option "
         "id=o2></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -205,7 +206,7 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><optgroup><option id=o1></option><option "
         "id=o2></option></optgroup></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -218,14 +219,15 @@ TEST_F(HTMLSelectElementTest, FirstSelectableOption) {
 
 TEST_F(HTMLSelectElementTest, LastSelectableOption) {
   {
-    GetDocument().documentElement()->setInnerHTML("<select></select>");
+    GetDocument().documentElement()->SetInnerHTMLFromString(
+        "<select></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ(nullptr, select->LastSelectableOption());
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><option id=o2></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLSelectElement* select =
@@ -234,7 +236,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><option id=o2 "
         "disabled></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -244,7 +246,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><option id=o2 "
         "style='display:none'></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -254,7 +256,7 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><optgroup><option id=o1></option><option "
         "id=o2></option></optgroup></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -267,14 +269,15 @@ TEST_F(HTMLSelectElementTest, LastSelectableOption) {
 
 TEST_F(HTMLSelectElementTest, NextSelectableOption) {
   {
-    GetDocument().documentElement()->setInnerHTML("<select></select>");
+    GetDocument().documentElement()->SetInnerHTMLFromString(
+        "<select></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ(nullptr, select->NextSelectableOption(nullptr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><option id=o2></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLSelectElement* select =
@@ -283,7 +286,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1 disabled></option><option "
         "id=o2></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -293,7 +296,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1 style='display:none'></option><option "
         "id=o2></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -303,7 +306,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><optgroup><option id=o1></option><option "
         "id=o2></option></optgroup></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -313,7 +316,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><option id=o2></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLSelectElement* select =
@@ -327,7 +330,7 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
                            GetDocument().getElementById("o2"))));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><optgroup><option "
         "id=o2></option></optgroup></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -342,14 +345,15 @@ TEST_F(HTMLSelectElementTest, NextSelectableOption) {
 
 TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
   {
-    GetDocument().documentElement()->setInnerHTML("<select></select>");
+    GetDocument().documentElement()->SetInnerHTMLFromString(
+        "<select></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLSelectElement* select =
         toHTMLSelectElement(GetDocument().body()->firstChild());
     EXPECT_EQ(nullptr, select->PreviousSelectableOption(nullptr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><option id=o2></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLSelectElement* select =
@@ -358,7 +362,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><option id=o2 "
         "disabled></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -368,7 +372,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><option id=o2 "
         "style='display:none'></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -378,7 +382,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><optgroup><option id=o1></option><option "
         "id=o2></option></optgroup></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -388,7 +392,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
                         HTMLNames::idAttr));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><option id=o2></option></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
     HTMLSelectElement* select =
@@ -402,7 +406,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
                            GetDocument().getElementById("o1"))));
   }
   {
-    GetDocument().documentElement()->setInnerHTML(
+    GetDocument().documentElement()->SetInnerHTMLFromString(
         "<select><option id=o1></option><optgroup><option "
         "id=o2></option></optgroup></select>");
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -416,7 +420,7 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
 }
 
 TEST_F(HTMLSelectElementTest, ActiveSelectionEndAfterOptionRemoval) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<select><optgroup><option selected>o1</option></optgroup></select>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   HTMLSelectElement* select =
@@ -431,7 +435,7 @@ TEST_F(HTMLSelectElementTest, ActiveSelectionEndAfterOptionRemoval) {
 }
 
 TEST_F(HTMLSelectElementTest, DefaultToolTip) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<select size=4><option value="
       ">Placeholder</option><optgroup><option>o2</option></optgroup></select>");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -476,20 +480,20 @@ TEST_F(HTMLSelectElementTest, DefaultToolTip) {
 }
 
 TEST_F(HTMLSelectElementTest, SetRecalcListItemsByOptgroupRemoval) {
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<select><optgroup><option>sub1</option><option>sub2</option></"
       "optgroup></select>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   HTMLSelectElement* select =
       toHTMLSelectElement(GetDocument().body()->firstChild());
-  select->setInnerHTML("");
+  select->SetInnerHTMLFromString("");
   // PASS if setInnerHTML didn't have a check failure.
 }
 
 TEST_F(HTMLSelectElementTest, ScrollToOptionAfterLayoutCrash) {
   // crbug.com/737447
   // This test passes if no crash.
-  GetDocument().documentElement()->setInnerHTML(
+  GetDocument().documentElement()->SetInnerHTMLFromString(
       "<style>*:checked { position:fixed; }</style>"
       "<select multiple><<option>o1</option><option "
       "selected>o2</option></select>");

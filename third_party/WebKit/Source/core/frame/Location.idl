@@ -59,8 +59,8 @@
     // TODO(foolip): Per spec, Location implements URLUtils. The below is
     // mostly like the URLUtils interface, but with some members missing and
     // using DOMString instead of USVString.
-    [SetterCallWith=(CurrentWindow,EnteredWindow), CrossOrigin=Setter, RaisesException=Setter] attribute DOMString href;
-    [NotEnumerable, ImplementedAs=href] DOMString toString();
+    [SetterCallWith=(CurrentWindow,EnteredWindow), CrossOrigin=Setter, RaisesException=Setter] attribute URLString href;
+    [NotEnumerable] DOMString toString();
     [MeasureAs=LocationOrigin] readonly attribute DOMString origin;
 
     [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString protocol;

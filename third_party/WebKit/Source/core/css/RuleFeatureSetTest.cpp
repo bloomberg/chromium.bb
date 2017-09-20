@@ -29,7 +29,7 @@ class RuleFeatureSetTest : public ::testing::Test {
     html->AppendChild(HTMLBodyElement::Create(*document_));
     document_->AppendChild(html);
 
-    document_->body()->setInnerHTML("<b><i></i></b>");
+    document_->body()->SetInnerHTMLFromString("<b><i></i></b>");
   }
 
   RuleFeatureSet::SelectorPreMatch CollectFeatures(

@@ -212,7 +212,8 @@ TEST_F(MHTMLTest, CheckDomain) {
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
 
-  EXPECT_STREQ(kFileURL, frame->DomWindow()->location()->href().Ascii().data());
+  EXPECT_STREQ(kFileURL,
+               frame->DomWindow()->location()->toString().Ascii().data());
 
   SecurityOrigin* origin = document->GetSecurityOrigin();
   EXPECT_STRNE("localhost", origin->Domain().Ascii().data());

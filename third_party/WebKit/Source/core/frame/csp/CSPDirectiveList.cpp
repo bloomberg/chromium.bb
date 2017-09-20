@@ -81,6 +81,7 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy,
       strict_mixed_content_checking_enforced_(false),
       upgrade_insecure_requests_(false),
       treat_as_public_address_(false),
+      require_safe_types_(false),
       require_sri_for_(RequireSRIForToken::kNone),
       use_reporting_api_(false) {}
 
@@ -1211,6 +1212,22 @@ void CSPDirectiveList::TreatAsPublicAddress(const String& name,
     policy_->ReportValueForEmptyDirective(name, value);
 }
 
+void CSPDirectiveList::RequireTrustedTypes(const String& name,
+                                           const String& value) {
+  if (IsReportOnly()) {
+    policy_->ReportInvalidInReportOnly(name);
+    return;
+  }
+  if (require_safe_types_) {
+    policy_->ReportDuplicateDirective(name);
+    return;
+  }
+  require_safe_types_ = true;
+  policy_->RequireTrustedTypes();
+  if (!value.IsEmpty())
+    policy_->ReportValueForEmptyDirective(name, value);
+}
+
 void CSPDirectiveList::EnforceStrictMixedContentChecking(const String& name,
                                                          const String& value) {
   if (strict_mixed_content_checking_enforced_) {
@@ -1306,6 +1323,11 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
   } else if (type == ContentSecurityPolicy::DirectiveType::kReportTo &&
              policy_->ExperimentalFeaturesEnabled()) {
     ParseReportTo(name, value);
+  } else if (type ==
+                 ContentSecurityPolicy::DirectiveType::kRequireTrustedTypes &&
+             policy_->ExperimentalFeaturesEnabled() &&
+             RuntimeEnabledFeatures::TrustedDOMTypesEnabled()) {
+    RequireTrustedTypes(name, value);
   } else {
     policy_->ReportUnsupportedDirective(name);
   }

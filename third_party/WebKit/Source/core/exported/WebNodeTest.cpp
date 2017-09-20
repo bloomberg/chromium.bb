@@ -19,7 +19,7 @@ class WebNodeTest : public ::testing::Test {
   Document& GetDocument() { return page_holder_->GetDocument(); }
 
   void SetInnerHTML(const String& html) {
-    GetDocument().documentElement()->setInnerHTML(html);
+    GetDocument().documentElement()->SetInnerHTMLFromString(html);
   }
 
   WebNode Root() { return WebNode(GetDocument().documentElement()); }
