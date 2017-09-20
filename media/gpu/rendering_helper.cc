@@ -30,9 +30,9 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(USE_OZONE)
 
 // Helper for Shader creation.
 static void CreateShader(GLuint program,
@@ -90,7 +90,7 @@ void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   cmd_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationEGLName);
 
-#if defined(OS_CHROMEOS)
+#if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
   ui::OzonePlatform::InitializeForGPU(params);

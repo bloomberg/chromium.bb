@@ -408,7 +408,7 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
 
     configs += [ "//third_party/khronos:khronos_headers" ]
 
-    if (is_win || is_chromeos) {
+    if (is_win || is_chromeos || use_v4l2_codec) {
       sources += [
         "rendering_helper.cc",
         "rendering_helper.h",
