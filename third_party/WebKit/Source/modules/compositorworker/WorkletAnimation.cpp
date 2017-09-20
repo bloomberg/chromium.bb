@@ -77,7 +77,9 @@ WorkletAnimation* WorkletAnimation::Create(
   Document& document = effects.at(0)->Target()->GetDocument();
   WorkletAnimation* animation = new WorkletAnimation(
       animator_name, document, effects, timelines, std::move(options));
-  document.Timeline().CompositorTimeline()->PlayerAttached(*animation);
+  if (CompositorAnimationTimeline* compositor_timeline =
+          document.Timeline().CompositorTimeline())
+    compositor_timeline->PlayerAttached(*animation);
 
   return animation;
 }
@@ -143,7 +145,10 @@ bool WorkletAnimation::StartOnCompositor() {
 
 void WorkletAnimation::Dispose() {
   DCHECK(IsMainThread());
-  document_->Timeline().CompositorTimeline()->PlayerDestroyed(*this);
+
+  if (CompositorAnimationTimeline* compositor_timeline =
+          document_->Timeline().CompositorTimeline())
+    compositor_timeline->PlayerDestroyed(*this);
   compositor_player_->SetAnimationDelegate(nullptr);
   compositor_player_ = nullptr;
 }
