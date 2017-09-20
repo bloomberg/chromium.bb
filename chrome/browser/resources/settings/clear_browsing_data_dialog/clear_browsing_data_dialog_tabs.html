@@ -21,14 +21,22 @@
 <dom-module id="settings-clear-browsing-data-dialog-tabs">
   <template>
     <style include="settings-shared">
+      :host {
+        /* Fixed height to allow multiple tabs with different height.
+         * The last entry in the advanced tab should show half an entry.
+         * crbug.com/652027 */
+        --body-container-height: 322px;
+      }
+
       #clearBrowsingDataDialog {
         --cr-dialog-top-container-min-height: 42px;
         --cr-dialog-title: {
           padding-bottom: 8px;
-        }
+        };
         --cr-dialog-body-container: {
-         flex-grow: 1;
-        }
+          border-top: 1px solid var(--paper-grey-300);
+          height: var(--body-container-height);
+        };
       }
 
       #clearBrowsingDataDialog:not(.fully-rendered) {
@@ -39,13 +47,9 @@
         color: var(--paper-grey-600);
       }
 
-      #clearBrowsingDataDialog,
       #importantSitesDialog {
-        /* Fixed height to allow multiple tabs with different height.
-         * The last entry in the advanced tab should show half an entry.
-         * crbug.com/652027 */
         --cr-dialog-body-container: {
-          height: 322px;
+          height: var(--body-container-height);
         };
       }
 
@@ -67,6 +71,10 @@
         --settings-checkbox-label: {
           line-height: 1.25rem;
         }
+      }
+
+      #basic-tab settings-checkbox + settings-checkbox {
+        --settings-checkbox-margin-top: 12px;
       }
 
       paper-tabs {
