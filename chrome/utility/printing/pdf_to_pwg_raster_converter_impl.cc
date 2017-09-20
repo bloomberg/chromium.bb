@@ -34,9 +34,7 @@ bool RenderPDFPagesToPWGRaster(base::File pdf_file,
     return false;
   }
 
-  cloud_print::PwgEncoder encoder;
-  std::string pwg_header;
-  encoder.EncodeDocumentHeader(&pwg_header);
+  std::string pwg_header = cloud_print::PwgEncoder::GetDocumentHeader();
   int bytes_written =
       bitmap_file.WriteAtCurrentPos(pwg_header.data(), pwg_header.size());
   if (bytes_written != static_cast<int>(pwg_header.size()))
@@ -47,9 +45,8 @@ bool RenderPDFPagesToPWGRaster(base::File pdf_file,
   for (int i = 0; i < total_page_count; ++i) {
     int page_number = i;
 
-    if (bitmap_settings.reverse_page_order) {
+    if (bitmap_settings.reverse_page_order)
       page_number = total_page_count - 1 - page_number;
-    }
 
     if (!chrome_pdf::RenderPDFPageToBitmap(
             data.data(), data_size, page_number, image.pixel_data(),
@@ -85,8 +82,9 @@ bool RenderPDFPagesToPWGRaster(base::File pdf_file,
       header_info.flipy = !header_info.flipy;
     }
 
-    std::string pwg_page;
-    if (!encoder.EncodePage(image, header_info, &pwg_page))
+    std::string pwg_page =
+        cloud_print::PwgEncoder::EncodePage(image, header_info);
+    if (pwg_page.empty())
       return false;
     bytes_written =
         bitmap_file.WriteAtCurrentPos(pwg_page.data(), pwg_page.size());
