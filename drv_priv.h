@@ -31,15 +31,6 @@ struct bo {
 	void *priv;
 };
 
-struct driver {
-	int fd;
-	struct backend *backend;
-	void *priv;
-	void *buffer_table;
-	void *map_table;
-	pthread_mutex_t driver_lock;
-};
-
 struct kms_item {
 	uint32_t format;
 	uint64_t modifier;
@@ -64,6 +55,16 @@ struct combinations {
 	uint32_t allocations;
 };
 
+struct driver {
+	int fd;
+	struct backend *backend;
+	void *priv;
+	void *buffer_table;
+	void *map_table;
+	struct combinations combos;
+	pthread_mutex_t driver_lock;
+};
+
 struct backend {
 	char *name;
 	int (*init)(struct driver *drv);
@@ -77,7 +78,6 @@ struct backend {
 	void *(*bo_map)(struct bo *bo, struct map_info *data, size_t plane, int prot);
 	int (*bo_unmap)(struct bo *bo, struct map_info *data);
 	uint32_t (*resolve_format)(uint32_t format, uint64_t usage);
-	struct combinations combos;
 };
 
 // clang-format off

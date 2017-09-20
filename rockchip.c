@@ -82,8 +82,8 @@ static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item
 	struct combination *combo;
 	struct format_metadata metadata;
 
-	for (i = 0; i < drv->backend->combos.size; i++) {
-		combo = &drv->backend->combos.data[i];
+	for (i = 0; i < drv->combos.size; i++) {
+		combo = &drv->combos.data[i];
 		if (combo->format == item->format) {
 			if (item->modifier == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
 				flags = BO_USE_RENDERING | BO_USE_SCANOUT | BO_USE_TEXTURE;

@@ -356,7 +356,7 @@ uint32_t drv_log_base2(uint32_t value)
 int drv_add_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
 			uint64_t usage)
 {
-	struct combinations *combos = &drv->backend->combos;
+	struct combinations *combos = &drv->combos;
 	if (combos->size >= combos->allocations) {
 		struct combination *new_data;
 		combos->allocations *= 2;
@@ -396,8 +396,8 @@ void drv_modify_combination(struct driver *drv, uint32_t format, struct format_m
 	uint32_t i;
 	struct combination *combo;
 	/* Attempts to add the specified usage to an existing combination. */
-	for (i = 0; i < drv->backend->combos.size; i++) {
-		combo = &drv->backend->combos.data[i];
+	for (i = 0; i < drv->combos.size; i++) {
+		combo = &drv->combos.data[i];
 		if (combo->format == format && combo->metadata.tiling == metadata->tiling &&
 		    combo->metadata.modifier == metadata->modifier)
 			combo->usage |= usage;
@@ -537,8 +537,8 @@ int drv_modify_linear_combinations(struct driver *drv)
 		return 0;
 
 	for (i = 0; i < num_items; i++) {
-		for (j = 0; j < drv->backend->combos.size; j++) {
-			combo = &drv->backend->combos.data[j];
+		for (j = 0; j < drv->combos.size; j++) {
+			combo = &drv->combos.data[j];
 			if (items[i].format == combo->format)
 				combo->usage |= BO_USE_SCANOUT;
 		}

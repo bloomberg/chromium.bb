@@ -57,8 +57,8 @@ static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
 	 * Older hardware can't scanout Y-tiled formats. Newer devices can, and
 	 * report this functionality via format modifiers.
 	 */
-	for (i = 0; i < drv->backend->combos.size; i++) {
-		combo = &drv->backend->combos.data[i];
+	for (i = 0; i < drv->combos.size; i++) {
+		combo = &drv->combos.data[i];
 		if (combo->format != item->format)
 			continue;
 
