@@ -59,7 +59,7 @@ public abstract class CronetEngine {
         /**
          * Constructs a {@link Builder} object that facilitates creating a
          * {@link CronetEngine}. The default configuration enables HTTP/2 and
-         * disables QUIC, SDCH and the HTTP cache.
+         * disables QUIC and the HTTP cache.
          *
          * @param context Android {@link Context}, which is used by
          *                {@link Builder} to retrieve the application
