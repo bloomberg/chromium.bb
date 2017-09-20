@@ -287,6 +287,34 @@ TEST_F(ProcessTest, SetProcessBackgroundedSelf) {
   EXPECT_EQ(old_priority, new_priority);
 }
 
+// Consumers can use WaitForExitWithTimeout(base::TimeDelta(), nullptr) to check
+// whether the process is still running. This may not be safe because of the
+// potential reusing of the process id. So we won't export Process::IsRunning()
+// on all platforms. But for the controllable scenario in the test cases, the
+// behavior should be guaranteed.
+TEST_F(ProcessTest, CurrentProcessIsRunning) {
+  EXPECT_FALSE(Process::Current().WaitForExitWithTimeout(
+      base::TimeDelta(), nullptr));
+}
+
+#if defined(OS_MACOSX)
+// On Mac OSX, we can detect whether a non-child process is running.
+TEST_F(ProcessTest, PredefinedProcessIsRunning) {
+  // Process 1 is the /sbin/launchd, it should be always running.
+  EXPECT_FALSE(Process::Open(1).WaitForExitWithTimeout(
+      base::TimeDelta(), nullptr));
+}
+#endif
+
+TEST_F(ProcessTest, ChildProcessIsRunning) {
+  Process process(SpawnChild("SleepyChildProcess"));
+  EXPECT_FALSE(process.WaitForExitWithTimeout(
+      base::TimeDelta(), nullptr));
+  process.Terminate(0, true);
+  EXPECT_TRUE(process.WaitForExitWithTimeout(
+      base::TimeDelta(), nullptr));
+}
+
 #if defined(OS_CHROMEOS)
 
 // Tests that the function IsProcessBackgroundedCGroup() can parse the contents
