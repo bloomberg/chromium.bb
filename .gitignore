@@ -267,7 +267,6 @@ vs-chromium-project.txt
 /remoting/tools/internal/
 /remoting/webapp/app_remoting/internal/
 /sandbox/linux/seccomp-legacy/
-/sdch/open-vcdiff
 /seccompsandbox
 /signing_keys
 /skia/tools/clusterfuzz-data/

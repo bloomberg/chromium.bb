@@ -128,7 +128,6 @@ check_targets = [
   "//rlz/*",
 
   #"//sandbox/*",  # Medium-hard.
-  "//sdch/*",
   "//services/*",
   "//skia/*",
   "//sql/*",

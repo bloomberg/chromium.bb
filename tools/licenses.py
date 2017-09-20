@@ -107,7 +107,6 @@ ADDITIONAL_PATHS = (
     os.path.join('chrome', 'test', 'chromeos', 'autotest'),
     os.path.join('chrome', 'test', 'data'),
     os.path.join('native_client'),
-    os.path.join('sdch', 'open-vcdiff'),
     os.path.join('testing', 'gmock'),
     os.path.join('testing', 'gtest'),
     os.path.join('tools', 'gyp'),
@@ -128,12 +127,6 @@ SPECIAL_CASES = {
         "Name": "native client",
         "URL": "http://code.google.com/p/nativeclient",
         "License": "BSD",
-    },
-    os.path.join('sdch', 'open-vcdiff'): {
-        "Name": "open-vcdiff",
-        "URL": "https://github.com/google/open-vcdiff",
-        "License": "Apache 2.0, MIT, GPL v2 and custom licenses",
-        "License Android Compatible": "yes",
     },
     os.path.join('testing', 'gmock'): {
         "Name": "gmock",
