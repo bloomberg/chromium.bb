@@ -27,9 +27,6 @@ AshTouchExplorationManager::AshTouchExplorationManager(
     RootWindowController* root_window_controller)
     : root_window_controller_(root_window_controller),
       audio_handler_(chromeos::CrasAudioHandler::Get()),
-      enable_chromevox_arc_support_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              chromeos::switches::kEnableChromeVoxArcSupport)),
       keyboard_observer_(this) {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(this);
@@ -175,9 +172,8 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
   // See crbug.com/603745 for more details.
   const bool pass_through_surface =
       wm::GetActiveWindow() &&
-      wm::GetActiveWindow()->GetProperty(aura::client::kAppType) ==
-          static_cast<int>(ash::AppType::ARC_APP) &&
-      !enable_chromevox_arc_support_;
+      wm::GetActiveWindow()->GetProperty(
+          aura::client::kAccessibilityTouchExplorationPassThrough);
 
   const bool spoken_feedback_enabled =
       Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();

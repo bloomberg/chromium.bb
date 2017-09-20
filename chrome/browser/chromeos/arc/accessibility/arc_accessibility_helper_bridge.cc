@@ -339,7 +339,8 @@ void ArcAccessibilityHelperBridge::OnWindowActivated(
   if (!GetArcSurface(gained_active))
     return;
 
-  // Grab the tree source associated with this app.
+  // First, do a lookup for the task id associated with this app. There should
+  // always be a valid entry.
   int32_t task_id = GetTaskId(gained_active);
   const std::pair<const std::string, std::set<int32_t>>* found_entry = nullptr;
   for (const auto& task_ids_entry : package_name_to_task_ids_) {
@@ -349,15 +350,32 @@ void ArcAccessibilityHelperBridge::OnWindowActivated(
     }
   }
 
-  if (!found_entry && GetFilterTypeForProfile(profile_) ==
-                          arc::mojom::AccessibilityFilterType::ALL) {
-    fallback_tree_->Focus(gained_active);
+  // No valid entry found; this can happen if |OnTaskCreated| never got called
+  // for a task. Use the fallback tree if native ARC++ access is on for all
+  // apps.
+  if (!found_entry) {
+    bool should_pass_through = GetFilterTypeForProfile(profile_) !=
+                               arc::mojom::AccessibilityFilterType::ALL;
+    gained_active->SetProperty(
+        aura::client::kAccessibilityTouchExplorationPassThrough,
+        should_pass_through);
+    if (!should_pass_through)
+      fallback_tree_->Focus(gained_active);
     return;
   }
 
+  // Finally, do a lookup for the tree source. A tree source may not exist
+  // because the app isn't whitelisted Android side or no data has been received
+  // for the app.
   auto it = package_name_to_tree_.find(found_entry->first);
-  if (it != package_name_to_tree_.end())
+  if (it != package_name_to_tree_.end()) {
+    gained_active->SetProperty(
+        aura::client::kAccessibilityTouchExplorationPassThrough, false);
     it->second->Focus(gained_active);
+  } else {
+    gained_active->SetProperty(
+        aura::client::kAccessibilityTouchExplorationPassThrough, true);
+  }
 }
 
 void ArcAccessibilityHelperBridge::OnTaskCreated(
