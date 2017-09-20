@@ -3722,3 +3722,7 @@ crbug.com/749965 [ Mac ] media/controls/controls-video-keynav.html [ Failure Pas
 crbug.com/749965 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/controls-video-keynav.html [ Failure Pass ]
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/controls-video-keynav.html [ Failure ]
 crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Failure ]
+
+# Sheriff failures 2017-09-20
+# Flaky on chromium.webkit/WebKit Linux Trusty Leak
+crbug.com/766952 [ Linux ] http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
