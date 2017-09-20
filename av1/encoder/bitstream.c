@@ -533,7 +533,7 @@ static void write_delta_qindex(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (!smallval) {
     rem_bits = OD_ILOG_NZ(abs - 1) - 1;
     thr = (1 << rem_bits) + 1;
-    aom_write_literal(w, rem_bits, 3);
+    aom_write_literal(w, rem_bits - 1, 3);
     aom_write_literal(w, abs - thr, rem_bits);
   }
   if (abs > 0) {
@@ -557,7 +557,7 @@ static void write_delta_lflevel(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (!smallval) {
     rem_bits = OD_ILOG_NZ(abs - 1) - 1;
     thr = (1 << rem_bits) + 1;
-    aom_write_literal(w, rem_bits, 3);
+    aom_write_literal(w, rem_bits - 1, 3);
     aom_write_literal(w, abs - thr, rem_bits);
   }
   if (abs > 0) {

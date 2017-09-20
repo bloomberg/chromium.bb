@@ -63,7 +63,7 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
     }
 
     if (!smallval) {
-      rem_bits = aom_read_literal(r, 3, ACCT_STR);
+      rem_bits = aom_read_literal(r, 3, ACCT_STR) + 1;
       thr = (1 << rem_bits) + 1;
       abs = aom_read_literal(r, rem_bits, ACCT_STR) + thr;
     }
@@ -102,7 +102,7 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
       if (smallval) counts->delta_lf[abs][0]++;
     }
     if (!smallval) {
-      rem_bits = aom_read_literal(r, 3, ACCT_STR);
+      rem_bits = aom_read_literal(r, 3, ACCT_STR) + 1;
       thr = (1 << rem_bits) + 1;
       abs = aom_read_literal(r, rem_bits, ACCT_STR) + thr;
     }
