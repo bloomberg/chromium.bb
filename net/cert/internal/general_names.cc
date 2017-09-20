@@ -65,10 +65,9 @@ std::unique_ptr<GeneralNames> GeneralNames::Create(
 
   // RFC 5280 section 4.2.1.6:
   // GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
-  std::unique_ptr<GeneralNames> general_names(new GeneralNames());
   der::Parser parser(general_names_tlv);
-  der::Parser sequence_parser;
-  if (!parser.ReadSequence(&sequence_parser)) {
+  der::Input sequence_value;
+  if (!parser.ReadTag(der::kSequence, &sequence_value)) {
     errors->AddError(kFailedReadingGeneralNames);
     return nullptr;
   }
@@ -77,6 +76,18 @@ std::unique_ptr<GeneralNames> GeneralNames::Create(
     errors->AddError(kGeneralNamesTrailingData);
     return nullptr;
   }
+  return CreateFromValue(sequence_value, errors);
+}
+
+// static
+std::unique_ptr<GeneralNames> GeneralNames::CreateFromValue(
+    const der::Input& general_names_value,
+    CertErrors* errors) {
+  DCHECK(errors);
+
+  std::unique_ptr<GeneralNames> general_names(new GeneralNames());
+
+  der::Parser sequence_parser(general_names_value);
   // The GeneralNames sequence should have at least 1 element.
   if (!sequence_parser.HasMore()) {
     errors->AddError(kGeneralNamesEmpty);

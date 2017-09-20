@@ -465,8 +465,7 @@ TEST_F(ParseCrlDistributionPointsTest, OneUriNoIssuer) {
   const ParsedDistributionPoint& dp1 = dps.front();
   EXPECT_FALSE(dp1.has_crl_issuer);
   ASSERT_EQ(1u, dp1.uris.size());
-  EXPECT_EQ(dp1.uris.front().AsString(),
-            std::string("http://www.example.com/foo.crl"));
+  EXPECT_EQ(dp1.uris.front(), std::string("http://www.example.com/foo.crl"));
 }
 
 TEST_F(ParseCrlDistributionPointsTest, ThreeUrisNoIssuer) {
@@ -477,11 +476,9 @@ TEST_F(ParseCrlDistributionPointsTest, ThreeUrisNoIssuer) {
   const ParsedDistributionPoint& dp1 = dps.front();
   EXPECT_FALSE(dp1.has_crl_issuer);
   ASSERT_EQ(3u, dp1.uris.size());
-  EXPECT_EQ(dp1.uris[0].AsString(),
-            std::string("http://www.example.com/foo1.crl"));
-  EXPECT_EQ(dp1.uris[1].AsString(),
-            std::string("http://www.example.com/blah.crl"));
-  EXPECT_EQ(dp1.uris[2].AsString(), std::string("not-even-a-url"));
+  EXPECT_EQ(dp1.uris[0], std::string("http://www.example.com/foo1.crl"));
+  EXPECT_EQ(dp1.uris[1], std::string("http://www.example.com/blah.crl"));
+  EXPECT_EQ(dp1.uris[2], std::string("not-even-a-url"));
 }
 
 TEST_F(ParseCrlDistributionPointsTest, CrlIssuerAsDirname) {
