@@ -161,7 +161,7 @@ static int get_freq(RangeCoder *rc, unsigned total_freq, unsigned *freq)
 
 static int decode0(GetByteContext *gb, RangeCoder *rc, unsigned cumFreq, unsigned freq, unsigned total_freq)
 {
-    int t;
+    unsigned t;
 
     if (total_freq == 0)
         return AVERROR_INVALIDDATA;
@@ -261,6 +261,9 @@ static int decode_unit(SCPRContext *s, PixelModel *pixel, unsigned step, unsigne
             break;
         c++;
     }
+    if (x >= 16 || c >= 256) {
+        return AVERROR_INVALIDDATA;
+    }
 
     if ((ret = s->decode(gb, rc, cumfr, cnt_c, totfr)) < 0)
         return ret;
@@ -331,6 +334,9 @@ static int decompress_i(AVCodecContext *avctx, uint32_t *dst, int linesize)
         clr = (b << 16) + (g << 8) + r;
         k += run;
         while (run-- > 0) {
+            if (y >= avctx->height)
+                return AVERROR_INVALIDDATA;
+
             dst[y * linesize + x] = clr;
             lx = x;
             ly = y;
@@ -482,7 +488,7 @@ static int decompress_i(AVCodecContext *avctx, uint32_t *dst, int linesize)
 
         if (avctx->bits_per_coded_sample == 16) {
             cx1 = (clr & 0x3F00) >> 2;
-            cx = (clr & 0xFFFFFF) >> 16;
+            cx = (clr & 0x3FFFFF) >> 16;
         } else {
             cx1 = (clr & 0xFC00) >> 4;
             cx = (clr & 0xFFFFFF) >> 18;
@@ -576,6 +582,8 @@ static int decompress_p(AVCodecContext *avctx,
 
                 for (; by < y * 16 + sy2 && by < avctx->height;) {
                     ret = decode_value(s, s->op_model[ptype], 6, 1000, &ptype);
+                    if (ret < 0)
+                        return ret;
                     if (ptype == 0) {
                         ret = decode_unit(s, &s->pixel_model[0][cx + cx1], 400, &r);
                         if (ret < 0)
@@ -720,7 +728,7 @@ static int decompress_p(AVCodecContext *avctx,
 
                     if (avctx->bits_per_coded_sample == 16) {
                         cx1 = (clr & 0x3F00) >> 2;
-                        cx = (clr & 0xFFFFFF) >> 16;
+                        cx = (clr & 0x3FFFFF) >> 16;
                     } else {
                         cx1 = (clr & 0xFC00) >> 4;
                         cx = (clr & 0xFFFFFF) >> 18;
@@ -818,8 +826,19 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         if (ret < 0)
             return ret;
 
+        // scale up each sample by 8
         for (y = 0; y < avctx->height; y++) {
-            for (x = 0; x < avctx->width * 4; x++) {
+            // If the image is sufficiently aligned, compute 8 samples at once
+            if (!(((uintptr_t)dst) & 7)) {
+                uint64_t *dst64 = (uint64_t *)dst;
+                int w = avctx->width>>1;
+                for (x = 0; x < w; x++) {
+                    dst64[x] = (dst64[x] << 3) & 0xFCFCFCFCFCFCFCFCULL;
+                }
+                x *= 8;
+            } else
+                x = 0;
+            for (; x < avctx->width * 4; x++) {
                 dst[x] = dst[x] << 3;
             }
             dst += frame->linesize[0];

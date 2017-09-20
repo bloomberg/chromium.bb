@@ -45,7 +45,8 @@ static inline av_flatten int get_symbol_inline(RangeCoder *c, uint8_t *state,
     if (get_rac(c, state + 0))
         return 0;
     else {
-        int i, e, a;
+        int i, e;
+        unsigned a;
         e = 0;
         while (get_rac(c, state + 1 + FFMIN(e, 9))) { // 1..10
             e++;
@@ -92,6 +93,19 @@ static inline int get_vlc_symbol(GetBitContext *gb, VlcState *const state,
     return ret;
 }
 
+static int is_input_end(FFV1Context *s)
+{
+    if (s->ac != AC_GOLOMB_RICE) {
+        RangeCoder *const c = &s->c;
+        if (c->overread > MAX_OVERREAD)
+            return AVERROR_INVALIDDATA;
+    } else {
+        if (get_bits_left(&s->gb) < 1)
+            return AVERROR_INVALIDDATA;
+    }
+    return 0;
+}
+
 #define TYPE int16_t
 #define RENAME(name) name
 #include "ffv1dec_template.c"
@@ -102,7 +116,7 @@ static inline int get_vlc_symbol(GetBitContext *gb, VlcState *const state,
 #define RENAME(name) name ## 32
 #include "ffv1dec_template.c"
 
-static void decode_plane(FFV1Context *s, uint8_t *src,
+static int decode_plane(FFV1Context *s, uint8_t *src,
                          int w, int h, int stride, int plane_index,
                          int pixel_stride)
 {
@@ -126,11 +140,15 @@ static void decode_plane(FFV1Context *s, uint8_t *src,
 
 // { START_TIMER
         if (s->avctx->bits_per_raw_sample <= 8) {
-            decode_line(s, w, sample, plane_index, 8);
+            int ret = decode_line(s, w, sample, plane_index, 8);
+            if (ret < 0)
+                return ret;
             for (x = 0; x < w; x++)
                 src[x*pixel_stride + stride * y] = sample[1][x];
         } else {
-            decode_line(s, w, sample, plane_index, s->avctx->bits_per_raw_sample);
+            int ret = decode_line(s, w, sample, plane_index, s->avctx->bits_per_raw_sample);
+            if (ret < 0)
+                return ret;
             if (s->packed_at_lsb) {
                 for (x = 0; x < w; x++) {
                     ((uint16_t*)(src + stride*y))[x*pixel_stride] = sample[1][x];
@@ -143,6 +161,7 @@ static void decode_plane(FFV1Context *s, uint8_t *src,
         }
 // STOP_TIMER("decode-line") }
     }
+    return 0;
 }
 
 static int decode_slice_header(FFV1Context *f, FFV1Context *fs)

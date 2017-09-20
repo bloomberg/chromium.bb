@@ -25,7 +25,7 @@
      svn co http://llvm.org/svn/llvm-project/llvm/trunk/lib/Fuzzer
      ./Fuzzer/build.sh
   * build ffmpeg for fuzzing:
-    FLAGS="-fsanitize=address -fsanitize-coverage=trace-pc-guard,trace-cmp -g" CC="clang $FLAGS" CXX="clang++ $FLAGS" ./configure  --disable-yasm
+    FLAGS="-fsanitize=address -fsanitize-coverage=trace-pc-guard,trace-cmp -g" CC="clang $FLAGS" CXX="clang++ $FLAGS" ./configure  --disable-x86asm
     make clean && make -j
   * build the fuzz target.
     Choose the value of FFMPEG_CODEC (e.g. AV_CODEC_ID_DVD_SUBTITLE) and
@@ -147,16 +147,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         avcodec_register(&DECODER_SYMBOL(FFMPEG_DECODER));
 
         c = &DECODER_SYMBOL(FFMPEG_DECODER);
-
-        // Unsupported
-        if (c->capabilities & AV_CODEC_CAP_HWACCEL_VDPAU)
-            return 0;
 #else
         avcodec_register_all();
         c = AVCodecInitialize(FFMPEG_CODEC);  // Done once.
 #endif
         av_log_set_level(AV_LOG_PANIC);
     }
+
+    // Unsupported
+    if (c->capabilities & AV_CODEC_CAP_HWACCEL_VDPAU)
+        return 0;
 
     switch (c->type) {
     case AVMEDIA_TYPE_AUDIO   : decode_handler = avcodec_decode_audio4; break;

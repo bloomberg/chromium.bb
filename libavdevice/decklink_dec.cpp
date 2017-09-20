@@ -1,6 +1,7 @@
 /*
  * Blackmagic DeckLink input
  * Copyright (c) 2013-2014 Luca Barbato, Deti Fliegl
+ * Copyright (c) 2017 Akamai Technologies, Inc.
  *
  * This file is part of FFmpeg.
  *
@@ -19,17 +20,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/* Include internal.h first to avoid conflict between winsock.h (used by
+ * DeckLink headers) and winsock2.h (used by libavformat) in MSVC++ builds */
+extern "C" {
+#include "libavformat/internal.h"
+}
+
 #include <DeckLinkAPI.h>
 
 extern "C" {
 #include "config.h"
 #include "libavformat/avformat.h"
-#include "libavformat/internal.h"
+#include "libavutil/avassert.h"
 #include "libavutil/avutil.h"
 #include "libavutil/common.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/time.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/reverse.h"
 #if CONFIG_LIBZVBI
 #include <libzvbi.h>
 #endif
@@ -38,7 +46,6 @@ extern "C" {
 #include "decklink_common.h"
 #include "decklink_dec.h"
 
-#if CONFIG_LIBZVBI
 static uint8_t calc_parity_and_line_offset(int line)
 {
     uint8_t ret = (line < 313) << 5;
@@ -49,30 +56,144 @@ static uint8_t calc_parity_and_line_offset(int line)
     return ret;
 }
 
-int teletext_data_unit_from_vbi_data(int line, uint8_t *src, uint8_t *tgt)
+static void fill_data_unit_head(int line, uint8_t *tgt)
 {
-    vbi_bit_slicer slicer;
-
-    vbi_bit_slicer_init(&slicer, 720, 13500000, 6937500, 6937500, 0x00aaaae4, 0xffff, 18, 6, 42 * 8, VBI_MODULATION_NRZ_MSB, VBI_PIXFMT_UYVY);
-
-    if (vbi_bit_slice(&slicer, src, tgt + 4) == FALSE)
-        return -1;
-
     tgt[0] = 0x02; // data_unit_id
     tgt[1] = 0x2c; // data_unit_length
     tgt[2] = calc_parity_and_line_offset(line); // field_parity, line_offset
     tgt[3] = 0xe4; // framing code
+}
 
-    return 0;
+#if CONFIG_LIBZVBI
+static uint8_t* teletext_data_unit_from_vbi_data(int line, uint8_t *src, uint8_t *tgt, vbi_pixfmt fmt)
+{
+    vbi_bit_slicer slicer;
+
+    vbi_bit_slicer_init(&slicer, 720, 13500000, 6937500, 6937500, 0x00aaaae4, 0xffff, 18, 6, 42 * 8, VBI_MODULATION_NRZ_MSB, fmt);
+
+    if (vbi_bit_slice(&slicer, src, tgt + 4) == FALSE)
+        return tgt;
+
+    fill_data_unit_head(line, tgt);
+
+    return tgt + 46;
+}
+
+static uint8_t* teletext_data_unit_from_vbi_data_10bit(int line, uint8_t *src, uint8_t *tgt)
+{
+    uint8_t y[720];
+    uint8_t *py = y;
+    uint8_t *pend = y + 720;
+    /* The 10-bit VBI data is packed in V210, but libzvbi only supports 8-bit,
+     * so we extract the 8 MSBs of the luma component, that is enough for
+     * teletext bit slicing. */
+    while (py < pend) {
+        *py++ = (src[1] >> 4) + ((src[2] & 15) << 4);
+        *py++ = (src[4] >> 2) + ((src[5] & 3 ) << 6);
+        *py++ = (src[6] >> 6) + ((src[7] & 63) << 2);
+        src += 8;
+    }
+    return teletext_data_unit_from_vbi_data(line, y, tgt, VBI_PIXFMT_YUV420);
 }
 #endif
 
+static uint8_t* teletext_data_unit_from_op47_vbi_packet(int line, uint16_t *py, uint8_t *tgt)
+{
+    int i;
+
+    if (py[0] != 0x255 || py[1] != 0x255 || py[2] != 0x227)
+        return tgt;
+
+    fill_data_unit_head(line, tgt);
+
+    py += 3;
+    tgt += 4;
+
+    for (i = 0; i < 42; i++)
+       *tgt++ = ff_reverse[py[i] & 255];
+
+    return tgt;
+}
+
+static int linemask_matches(int line, int64_t mask)
+{
+    int shift = -1;
+    if (line >= 6 && line <= 22)
+        shift = line - 6;
+    if (line >= 318 && line <= 335)
+        shift = line - 318 + 17;
+    return shift >= 0 && ((1ULL << shift) & mask);
+}
+
+static uint8_t* teletext_data_unit_from_op47_data(uint16_t *py, uint16_t *pend, uint8_t *tgt, int64_t wanted_lines)
+{
+    if (py < pend - 9) {
+        if (py[0] == 0x151 && py[1] == 0x115 && py[3] == 0x102) {       // identifier, identifier, format code for WST teletext
+            uint16_t *descriptors = py + 4;
+            int i;
+            py += 9;
+            for (i = 0; i < 5 && py < pend - 45; i++, py += 45) {
+                int line = (descriptors[i] & 31) + (!(descriptors[i] & 128)) * 313;
+                if (line && linemask_matches(line, wanted_lines))
+                    tgt = teletext_data_unit_from_op47_vbi_packet(line, py, tgt);
+            }
+        }
+    }
+    return tgt;
+}
+
+static uint8_t* teletext_data_unit_from_ancillary_packet(uint16_t *py, uint16_t *pend, uint8_t *tgt, int64_t wanted_lines, int allow_multipacket)
+{
+    uint16_t did = py[0];                                               // data id
+    uint16_t sdid = py[1];                                              // secondary data id
+    uint16_t dc = py[2] & 255;                                          // data count
+    py += 3;
+    pend = FFMIN(pend, py + dc);
+    if (did == 0x143 && sdid == 0x102) {                                // subtitle distribution packet
+        tgt = teletext_data_unit_from_op47_data(py, pend, tgt, wanted_lines);
+    } else if (allow_multipacket && did == 0x143 && sdid == 0x203) {    // VANC multipacket
+        py += 2;                                                        // priority, line/field
+        while (py < pend - 3) {
+            tgt = teletext_data_unit_from_ancillary_packet(py, pend, tgt, wanted_lines, 0);
+            py += 4 + (py[2] & 255);                                    // ndid, nsdid, ndc, line/field
+        }
+    }
+    return tgt;
+}
+
+static uint8_t* teletext_data_unit_from_vanc_data(uint8_t *src, uint8_t *tgt, int64_t wanted_lines)
+{
+    uint16_t y[1920];
+    uint16_t *py = y;
+    uint16_t *pend = y + 1920;
+    /* The 10-bit VANC data is packed in V210, we only need the luma component. */
+    while (py < pend) {
+        *py++ = (src[1] >> 2) + ((src[2] & 15) << 6);
+        *py++ =  src[4]       + ((src[5] &  3) << 8);
+        *py++ = (src[6] >> 4) + ((src[7] & 63) << 4);
+        src += 8;
+    }
+    py = y;
+    while (py < pend - 6) {
+        if (py[0] == 0 && py[1] == 0x3ff && py[2] == 0x3ff) {           // ancillary data flag
+            py += 3;
+            tgt = teletext_data_unit_from_ancillary_packet(py, pend, tgt, wanted_lines, 0);
+            py += py[2] & 255;
+        } else {
+            py++;
+        }
+    }
+    return tgt;
+}
+
 static void avpacket_queue_init(AVFormatContext *avctx, AVPacketQueue *q)
 {
+    struct decklink_cctx *ctx = (struct decklink_cctx *)avctx->priv_data;
     memset(q, 0, sizeof(AVPacketQueue));
     pthread_mutex_init(&q->mutex, NULL);
     pthread_cond_init(&q->cond, NULL);
     q->avctx = avctx;
+    q->max_q_size = ctx->queue_size;
 }
 
 static void avpacket_queue_flush(AVPacketQueue *q)
@@ -112,8 +233,8 @@ static int avpacket_queue_put(AVPacketQueue *q, AVPacket *pkt)
 {
     AVPacketList *pkt1;
 
-    // Drop Packet if queue size is > 1GB
-    if (avpacket_queue_size(q) >  1024 * 1024 * 1024 ) {
+    // Drop Packet if queue size is > maximum queue size
+    if (avpacket_queue_size(q) > (uint64_t)q->max_q_size) {
         av_log(q->avctx, AV_LOG_WARNING,  "Decklink input buffer overrun!\n");
         return -1;
     }
@@ -262,8 +383,15 @@ static int64_t get_pkt_pts(IDeckLinkVideoInputFrame *videoFrame,
                 res = videoFrame->GetHardwareReferenceTimestamp(time_base.den, &bmd_pts, &bmd_duration);
             break;
         case PTS_SRC_WALLCLOCK:
-            pts = av_rescale_q(wallclock, AV_TIME_BASE_Q, time_base);
+        {
+            /* MSVC does not support compound literals like AV_TIME_BASE_Q
+             * in C++ code (compiler error C4576) */
+            AVRational timebase;
+            timebase.num = 1;
+            timebase.den = AV_TIME_BASE;
+            pts = av_rescale_q(wallclock, timebase, time_base);
             break;
+        }
     }
     if (res == S_OK)
         pts = bmd_pts / time_base.num;
@@ -346,26 +474,47 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
                            videoFrame->GetHeight();
         //fprintf(stderr,"Video Frame size %d ts %d\n", pkt.size, pkt.pts);
 
-#if CONFIG_LIBZVBI
-        if (!no_video && ctx->teletext_lines && videoFrame->GetPixelFormat() == bmdFormat8BitYUV && videoFrame->GetWidth() == 720) {
+        if (!no_video && ctx->teletext_lines) {
             IDeckLinkVideoFrameAncillary *vanc;
             AVPacket txt_pkt;
-            uint8_t txt_buf0[1611]; // max 35 * 46 bytes decoded teletext lines + 1 byte data_identifier
+            uint8_t txt_buf0[3531]; // 35 * 46 bytes decoded teletext lines + 1 byte data_identifier + 1920 bytes OP47 decode buffer
             uint8_t *txt_buf = txt_buf0;
 
             if (videoFrame->GetAncillaryData(&vanc) == S_OK) {
                 int i;
                 int64_t line_mask = 1;
+                BMDPixelFormat vanc_format = vanc->GetPixelFormat();
                 txt_buf[0] = 0x10;    // data_identifier - EBU_data
                 txt_buf++;
-                for (i = 6; i < 336; i++, line_mask <<= 1) {
-                    uint8_t *buf;
-                    if ((ctx->teletext_lines & line_mask) && vanc->GetBufferForVerticalBlankingLine(i, (void**)&buf) == S_OK) {
-                        if (teletext_data_unit_from_vbi_data(i, buf, txt_buf) >= 0)
-                            txt_buf += 46;
+#if CONFIG_LIBZVBI
+                if (ctx->bmd_mode == bmdModePAL && (vanc_format == bmdFormat8BitYUV || vanc_format == bmdFormat10BitYUV)) {
+                    av_assert0(videoFrame->GetWidth() == 720);
+                    for (i = 6; i < 336; i++, line_mask <<= 1) {
+                        uint8_t *buf;
+                        if ((ctx->teletext_lines & line_mask) && vanc->GetBufferForVerticalBlankingLine(i, (void**)&buf) == S_OK) {
+                            if (vanc_format == bmdFormat8BitYUV)
+                                txt_buf = teletext_data_unit_from_vbi_data(i, buf, txt_buf, VBI_PIXFMT_UYVY);
+                            else
+                                txt_buf = teletext_data_unit_from_vbi_data_10bit(i, buf, txt_buf);
+                        }
+                        if (i == 22)
+                            i = 317;
                     }
-                    if (i == 22)
-                        i = 317;
+                }
+#endif
+                if (videoFrame->GetWidth() == 1920 && vanc_format == bmdFormat10BitYUV) {
+                    int first_active_line = ctx->bmd_field_dominance == bmdProgressiveFrame ? 42 : 584;
+                    for (i = 8; i < first_active_line; i++) {
+                        uint8_t *buf;
+                        if (vanc->GetBufferForVerticalBlankingLine(i, (void**)&buf) == S_OK)
+                            txt_buf = teletext_data_unit_from_vanc_data(buf, txt_buf, ctx->teletext_lines);
+                        if (ctx->bmd_field_dominance != bmdProgressiveFrame && i == 20)     // skip field1 active lines
+                            i = 569;
+                        if (txt_buf - txt_buf0 > 1611) {   // ensure we still have at least 1920 bytes free in the buffer
+                            av_log(avctx, AV_LOG_ERROR, "Too many OP47 teletext packets.\n");
+                            break;
+                        }
+                    }
                 }
                 vanc->Release();
                 if (txt_buf - txt_buf0 > 1) {
@@ -387,7 +536,6 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
                 }
             }
         }
-#endif
 
         if (avpacket_queue_put(&ctx->queue, &pkt) < 0) {
             ++ctx->dropped;
@@ -486,13 +634,6 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
     ctx->draw_bars = cctx->draw_bars;
     cctx->ctx = ctx;
 
-#if !CONFIG_LIBZVBI
-    if (ctx->teletext_lines) {
-        av_log(avctx, AV_LOG_ERROR, "Libzvbi support is needed for capturing teletext, please recompile FFmpeg.\n");
-        return AVERROR(ENOSYS);
-    }
-#endif
-
     /* Check audio channel option for valid values: 2, 8 or 16 */
     switch (cctx->audio_channels) {
         case 2:
@@ -546,6 +687,14 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
         }
     }
 
+#if !CONFIG_LIBZVBI
+    if (ctx->teletext_lines && ctx->bmd_mode == bmdModePAL) {
+        av_log(avctx, AV_LOG_ERROR, "Libzvbi support is needed for capturing SD PAL teletext, please recompile FFmpeg.\n");
+        ret = AVERROR(ENOSYS);
+        goto error;
+    }
+#endif
+
     /* Setup streams. */
     st = avformat_new_stream(avctx, NULL);
     if (!st) {
@@ -583,6 +732,19 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
         st->codecpar->format      = AV_PIX_FMT_UYVY422;
         st->codecpar->codec_tag   = MKTAG('U', 'Y', 'V', 'Y');
         st->codecpar->bit_rate    = av_rescale(ctx->bmd_width * ctx->bmd_height * 16, st->time_base.den, st->time_base.num);
+    }
+
+    switch (ctx->bmd_field_dominance) {
+    case bmdUpperFieldFirst:
+        st->codecpar->field_order = AV_FIELD_TT;
+        break;
+    case bmdLowerFieldFirst:
+        st->codecpar->field_order = AV_FIELD_BB;
+        break;
+    case bmdProgressiveFrame:
+    case bmdProgressiveSegmentedFrame:
+        st->codecpar->field_order = AV_FIELD_PROGRESSIVE;
+        break;
     }
 
     avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
@@ -642,15 +804,8 @@ int ff_decklink_read_packet(AVFormatContext *avctx, AVPacket *pkt)
 {
     struct decklink_cctx *cctx = (struct decklink_cctx *)avctx->priv_data;
     struct decklink_ctx *ctx = (struct decklink_ctx *)cctx->ctx;
-    AVFrame *frame = ctx->video_st->codec->coded_frame;
 
     avpacket_queue_get(&ctx->queue, pkt, 1);
-    if (frame && (ctx->bmd_field_dominance == bmdUpperFieldFirst || ctx->bmd_field_dominance == bmdLowerFieldFirst)) {
-        frame->interlaced_frame = 1;
-        if (ctx->bmd_field_dominance == bmdUpperFieldFirst) {
-            frame->top_field_first = 1;
-        }
-    }
 
     return 0;
 }

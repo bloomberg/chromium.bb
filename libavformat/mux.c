@@ -468,6 +468,16 @@ static int init_pts(AVFormatContext *s)
     return 0;
 }
 
+static void flush_if_needed(AVFormatContext *s)
+{
+    if (s->pb && s->pb->error >= 0) {
+        if (s->flush_packets == 1 || s->flags & AVFMT_FLAG_FLUSH_PACKETS)
+            avio_flush(s->pb);
+        else if (s->flush_packets && !(s->oformat->flags & AVFMT_NOFILE))
+            avio_write_marker(s->pb, AV_NOPTS_VALUE, AVIO_DATA_MARKER_FLUSH_POINT);
+    }
+}
+
 static int write_header_internal(AVFormatContext *s)
 {
     if (!(s->oformat->flags & AVFMT_NOFILE) && s->pb)
@@ -479,8 +489,7 @@ static int write_header_internal(AVFormatContext *s)
         s->internal->write_header_ret = ret;
         if (ret < 0)
             return ret;
-        if (s->flush_packets && s->pb && s->pb->error >= 0 && s->flags & AVFMT_FLAG_FLUSH_PACKETS)
-            avio_flush(s->pb);
+        flush_if_needed(s);
     }
     s->internal->header_written = 1;
     if (!(s->oformat->flags & AVFMT_NOFILE) && s->pb)
@@ -732,7 +741,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
                 av_log(s, AV_LOG_WARNING, "failed to avoid negative "
                     "pts %s in stream %d.\n"
                     "Try -avoid_negative_ts 1 as a possible workaround.\n",
-                    av_ts2str(pkt->dts),
+                    av_ts2str(pkt->pts),
                     pkt->stream_index
                 );
             }
@@ -772,8 +781,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     }
 
     if (s->pb && ret >= 0) {
-        if (s->flush_packets && s->flags & AVFMT_FLAG_FLUSH_PACKETS)
-            avio_flush(s->pb);
+        flush_if_needed(s);
         if (s->pb->error < 0)
             ret = s->pb->error;
     }
@@ -893,13 +901,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     for (i = 0; i < st->internal->nb_bsfcs; i++) {
         AVBSFContext *ctx = st->internal->bsfcs[i];
-        if (i > 0) {
-            AVBSFContext* prev_ctx = st->internal->bsfcs[i - 1];
-            if (prev_ctx->par_out->extradata_size != ctx->par_in->extradata_size) {
-                if ((ret = avcodec_parameters_copy(ctx->par_in, prev_ctx->par_out)) < 0)
-                    return ret;
-            }
-        }
         // TODO: when any bitstream filter requires flushing at EOF, we'll need to
         // flush each stream's BSF chain on write_trailer.
         if ((ret = av_bsf_send_packet(ctx, pkt)) < 0) {
@@ -918,12 +919,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
                     "Failed to send packet to filter %s for stream %d\n",
                     ctx->filter->name, pkt->stream_index);
             return ret;
-        }
-        if (i == st->internal->nb_bsfcs - 1) {
-            if (ctx->par_out->extradata_size != st->codecpar->extradata_size) {
-                if ((ret = avcodec_parameters_copy(st->codecpar, ctx->par_out)) < 0)
-                    return ret;
-            }
         }
     }
     return 1;
@@ -945,8 +940,7 @@ int av_write_frame(AVFormatContext *s, AVPacket *pkt)
                     return ret;
             }
             ret = s->oformat->write_packet(s, NULL);
-            if (s->flush_packets && s->pb && s->pb->error >= 0 && s->flags & AVFMT_FLAG_FLUSH_PACKETS)
-                avio_flush(s->pb);
+            flush_if_needed(s);
             if (ret >= 0 && s->pb && s->pb->error < 0)
                 ret = s->pb->error;
             return ret;

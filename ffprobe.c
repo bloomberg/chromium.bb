@@ -35,6 +35,7 @@
 #include "libavutil/bprint.h"
 #include "libavutil/display.h"
 #include "libavutil/hash.h"
+#include "libavutil/mastering_display_metadata.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/spherical.h"
@@ -128,6 +129,8 @@ typedef struct ReadInterval {
 
 static ReadInterval *read_intervals;
 static int read_intervals_nb = 0;
+
+static int find_stream_info  = 1;
 
 /* section structure definition */
 
@@ -1893,11 +1896,85 @@ static void print_pkt_side_data(WriterContext *w,
             print_int("discard_padding", AV_RL32(sd->data + 4));
             print_int("skip_reason",     AV_RL8(sd->data + 8));
             print_int("discard_reason",  AV_RL8(sd->data + 9));
+        } else if (sd->type == AV_PKT_DATA_MASTERING_DISPLAY_METADATA) {
+            AVMasteringDisplayMetadata *metadata = (AVMasteringDisplayMetadata *)sd->data;
+
+            if (metadata->has_primaries) {
+                print_q("red_x", metadata->display_primaries[0][0], '/');
+                print_q("red_y", metadata->display_primaries[0][1], '/');
+                print_q("green_x", metadata->display_primaries[1][0], '/');
+                print_q("green_y", metadata->display_primaries[1][1], '/');
+                print_q("blue_x", metadata->display_primaries[2][0], '/');
+                print_q("blue_y", metadata->display_primaries[2][1], '/');
+
+                print_q("white_point_x", metadata->white_point[0], '/');
+                print_q("white_point_y", metadata->white_point[1], '/');
+            }
+
+            if (metadata->has_luminance) {
+                print_q("min_luminance", metadata->min_luminance, '/');
+                print_q("max_luminance", metadata->max_luminance, '/');
+            }
+        } else if (sd->type == AV_PKT_DATA_CONTENT_LIGHT_LEVEL) {
+            AVContentLightMetadata *metadata = (AVContentLightMetadata *)sd->data;
+            print_int("max_content", metadata->MaxCLL);
+            print_int("max_average", metadata->MaxFALL);
         }
         writer_print_section_footer(w);
     }
     writer_print_section_footer(w);
 }
+
+static void print_color_range(WriterContext *w, enum AVColorRange color_range)
+{
+    const char *val = av_color_range_name(color_range);
+    if (!val || color_range == AVCOL_RANGE_UNSPECIFIED) {
+        print_str_opt("color_range", "unknown");
+    } else {
+        print_str("color_range", val);
+    }
+}
+
+static void print_color_space(WriterContext *w, enum AVColorSpace color_space)
+{
+    const char *val = av_color_space_name(color_space);
+    if (!val || color_space == AVCOL_SPC_UNSPECIFIED) {
+        print_str_opt("color_space", "unknown");
+    } else {
+        print_str("color_space", val);
+    }
+}
+
+static void print_primaries(WriterContext *w, enum AVColorPrimaries color_primaries)
+{
+    const char *val = av_color_primaries_name(color_primaries);
+    if (!val || color_primaries == AVCOL_PRI_UNSPECIFIED) {
+        print_str_opt("color_primaries", "unknown");
+    } else {
+        print_str("color_primaries", val);
+    }
+}
+
+static void print_color_trc(WriterContext *w, enum AVColorTransferCharacteristic color_trc)
+{
+    const char *val = av_color_transfer_name(color_trc);
+    if (!val || color_trc == AVCOL_TRC_UNSPECIFIED) {
+        print_str_opt("color_transfer", "unknown");
+    } else {
+        print_str("color_transfer", val);
+    }
+}
+
+static void print_chroma_location(WriterContext *w, enum AVChromaLocation chroma_location)
+{
+    const char *val = av_chroma_location_name(chroma_location);
+    if (!val || chroma_location == AVCHROMA_LOC_UNSPECIFIED) {
+        print_str_opt("chroma_location", "unspecified");
+    } else {
+        print_str("chroma_location", val);
+    }
+}
+
 
 static void clear_log(int need_lock)
 {
@@ -2079,6 +2156,12 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
         print_int("interlaced_frame",       frame->interlaced_frame);
         print_int("top_field_first",        frame->top_field_first);
         print_int("repeat_pict",            frame->repeat_pict);
+
+        print_color_range(w, frame->color_range);
+        print_color_space(w, frame->colorspace);
+        print_primaries(w, frame->color_primaries);
+        print_color_trc(w, frame->color_trc);
+        print_chroma_location(w, frame->chroma_location);
         break;
 
     case AVMEDIA_TYPE_AUDIO:
@@ -2116,6 +2199,34 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
                 char tcbuf[AV_TIMECODE_STR_SIZE];
                 av_timecode_make_mpeg_tc_string(tcbuf, *(int64_t *)(sd->data));
                 print_str("timecode", tcbuf);
+            } else if (sd->type == AV_FRAME_DATA_MASTERING_DISPLAY_METADATA) {
+                AVMasteringDisplayMetadata *metadata = (AVMasteringDisplayMetadata *)sd->data;
+
+                if (metadata->has_primaries) {
+                    print_q("red_x", metadata->display_primaries[0][0], '/');
+                    print_q("red_y", metadata->display_primaries[0][1], '/');
+                    print_q("green_x", metadata->display_primaries[1][0], '/');
+                    print_q("green_y", metadata->display_primaries[1][1], '/');
+                    print_q("blue_x", metadata->display_primaries[2][0], '/');
+                    print_q("blue_y", metadata->display_primaries[2][1], '/');
+
+                    print_q("white_point_x", metadata->white_point[0], '/');
+                    print_q("white_point_y", metadata->white_point[1], '/');
+                }
+
+                if (metadata->has_luminance) {
+                    print_q("min_luminance", metadata->min_luminance, '/');
+                    print_q("max_luminance", metadata->max_luminance, '/');
+                }
+            } else if (sd->type == AV_FRAME_DATA_CONTENT_LIGHT_LEVEL) {
+                AVContentLightMetadata *metadata = (AVContentLightMetadata *)sd->data;
+                print_int("max_content", metadata->MaxCLL);
+                print_int("max_average", metadata->MaxFALL);
+            } else if (sd->type == AV_FRAME_DATA_ICC_PROFILE) {
+                AVDictionaryEntry *tag = av_dict_get(sd->metadata, "name", NULL, AV_DICT_MATCH_CASE);
+                if (tag)
+                    print_str(tag->key, tag->value);
+                print_int("size", sd->size);
             }
             writer_print_section_footer(w);
         }
@@ -2422,29 +2533,12 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
         if (s) print_str    ("pix_fmt", s);
         else   print_str_opt("pix_fmt", "unknown");
         print_int("level",   par->level);
-        if (par->color_range != AVCOL_RANGE_UNSPECIFIED)
-            print_str    ("color_range", av_color_range_name(par->color_range));
-        else
-            print_str_opt("color_range", "N/A");
 
-        s = av_get_colorspace_name(par->color_space);
-        if (s) print_str    ("color_space", s);
-        else   print_str_opt("color_space", "unknown");
-
-        if (par->color_trc != AVCOL_TRC_UNSPECIFIED)
-            print_str("color_transfer", av_color_transfer_name(par->color_trc));
-        else
-            print_str_opt("color_transfer", av_color_transfer_name(par->color_trc));
-
-        if (par->color_primaries != AVCOL_PRI_UNSPECIFIED)
-            print_str("color_primaries", av_color_primaries_name(par->color_primaries));
-        else
-            print_str_opt("color_primaries", av_color_primaries_name(par->color_primaries));
-
-        if (par->chroma_location != AVCHROMA_LOC_UNSPECIFIED)
-            print_str("chroma_location", av_chroma_location_name(par->chroma_location));
-        else
-            print_str_opt("chroma_location", av_chroma_location_name(par->chroma_location));
+        print_color_range(w, par->color_range);
+        print_color_space(w, par->color_space);
+        print_color_trc(w, par->color_trc);
+        print_primaries(w, par->color_primaries);
+        print_chroma_location(w, par->chroma_location);
 
         if (par->field_order == AV_FIELD_PROGRESSIVE)
             print_str("field_order", "progressive");
@@ -2723,10 +2817,9 @@ static void show_error(WriterContext *w, int err)
 
 static int open_input_file(InputFile *ifile, const char *filename)
 {
-    int err, i, orig_nb_streams;
+    int err, i;
     AVFormatContext *fmt_ctx = NULL;
     AVDictionaryEntry *t;
-    AVDictionary **opts;
     int scan_all_pmts_set = 0;
 
     fmt_ctx = avformat_alloc_context();
@@ -2754,19 +2847,20 @@ static int open_input_file(InputFile *ifile, const char *filename)
         return AVERROR_OPTION_NOT_FOUND;
     }
 
-    /* fill the streams in the format context */
-    opts = setup_find_stream_info_opts(fmt_ctx, codec_opts);
-    orig_nb_streams = fmt_ctx->nb_streams;
+    if (find_stream_info) {
+        AVDictionary **opts = setup_find_stream_info_opts(fmt_ctx, codec_opts);
+        int orig_nb_streams = fmt_ctx->nb_streams;
 
-    err = avformat_find_stream_info(fmt_ctx, opts);
+        err = avformat_find_stream_info(fmt_ctx, opts);
 
-    for (i = 0; i < orig_nb_streams; i++)
-        av_dict_free(&opts[i]);
-    av_freep(&opts);
+        for (i = 0; i < orig_nb_streams; i++)
+            av_dict_free(&opts[i]);
+        av_freep(&opts);
 
-    if (err < 0) {
-        print_error(filename, err);
-        return err;
+        if (err < 0) {
+            print_error(filename, err);
+            return err;
+        }
     }
 
     av_dump_format(fmt_ctx, 0, filename, 0);
@@ -2886,6 +2980,8 @@ static int probe_file(WriterContext *wctx, const char *filename)
         } else {
             selected_streams[i] = 1;
         }
+        if (!selected_streams[i])
+            ifile.fmt_ctx->streams[i]->discard = AVDISCARD_ALL;
     }
 
     if (do_read_frames || do_read_packets) {
@@ -3246,6 +3342,7 @@ static int parse_read_interval(const char *interval_spec,
             }
             interval->end = lli;
         } else {
+            interval->duration_frames = 0;
             ret = av_parse_time(&us, p, 1);
             if (ret < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Invalid interval end/duration specification '%s'\n", p);
@@ -3422,6 +3519,8 @@ static const OptionDef real_options[] = {
     { "read_intervals", HAS_ARG, {.func_arg = opt_read_intervals}, "set read intervals", "read_intervals" },
     { "default", HAS_ARG | OPT_AUDIO | OPT_VIDEO | OPT_EXPERT, {.func_arg = opt_default}, "generic catch all option", "" },
     { "i", HAS_ARG, {.func_arg = opt_input_file_i}, "read specified file", "input_file"},
+    { "find_stream_info", OPT_BOOL | OPT_INPUT | OPT_EXPERT, { &find_stream_info },
+        "read and decode the streams to fill missing information with heuristics" },
     { NULL, },
 };
 
