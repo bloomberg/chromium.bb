@@ -36,6 +36,7 @@ class Element;
 class Event;
 class ExecutionContext;
 struct FetchInitiatorInfo;
+class FloatRect;
 class GraphicsLayer;
 class HitTestLocation;
 class HitTestRequest;

@@ -58,6 +58,7 @@ class DOMTokenList;
 class ElementRareData;
 class ElementShadow;
 class ExceptionState;
+class FloatQuad;
 class Image;
 class InputDeviceCapabilities;
 class Locale;

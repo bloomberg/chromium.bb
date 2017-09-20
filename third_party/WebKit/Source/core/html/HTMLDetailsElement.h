@@ -22,6 +22,7 @@
 #define HTMLDetailsElement_h
 
 #include "core/html/HTMLElement.h"
+#include "platform/WebTaskRunner.h"
 
 namespace blink {
 

@@ -4,6 +4,7 @@
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/csp/CSPDirectiveList.h"
 #include "core/html/HTMLScriptElement.h"
 #include "core/testing/NullExecutionContext.h"

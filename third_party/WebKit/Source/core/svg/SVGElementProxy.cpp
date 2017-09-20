@@ -4,6 +4,7 @@
 
 #include "core/svg/SVGElementProxy.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/IdTargetObserver.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGResourceClient.h"

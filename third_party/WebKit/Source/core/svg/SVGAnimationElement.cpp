@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/SVGNames.h"
+#include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGAnimateElement.h"
 #include "core/svg/SVGParserUtilities.h"
