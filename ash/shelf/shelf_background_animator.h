@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/macros.h"
@@ -42,7 +43,8 @@ class WallpaperController;
 //       states.
 class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
                                            public gfx::AnimationDelegate,
-                                           public WallpaperControllerObserver {
+                                           public WallpaperControllerObserver,
+                                           public SessionObserver {
  public:
   // The maximum alpha value that can be used.
   static const int kMaxAlpha = SK_AlphaOPAQUE;
@@ -91,6 +93,9 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   // WallpaperControllerObserver:
   void OnWallpaperDataChanged() override;
   void OnWallpaperColorsChanged() override;
+
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
 
  private:
   friend class ShelfBackgroundAnimatorTestApi;
