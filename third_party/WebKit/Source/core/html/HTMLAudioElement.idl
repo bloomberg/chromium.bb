@@ -26,8 +26,7 @@
 // https://html.spec.whatwg.org/#the-audio-element
 
 [
-    // FIXME: The src argument should have no default value.
-    NamedConstructor=Audio(optional DOMString src = null),
+    NamedConstructor=Audio(optional DOMString src),
     ConstructorCallWith=Document
 ] interface HTMLAudioElement : HTMLMediaElement {
 };
