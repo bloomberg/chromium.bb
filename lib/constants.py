@@ -1084,7 +1084,6 @@ PFQ_MASTER = 'master-chromium-pfq'
 BINHOST_PRE_CQ = 'binhost-pre-cq'
 WIFICELL_PRE_CQ = 'wificell-pre-cq'
 BLUESTREAK_PRE_CQ = 'bluestreak-pre-cq'
-MNC_ANDROID_PFQ_MASTER = 'master-android-pfq'
 NYC_ANDROID_PFQ_MASTER = 'master-nyc-android-pfq'
 TOOLCHAIN_MASTTER = 'master-toolchain'
 

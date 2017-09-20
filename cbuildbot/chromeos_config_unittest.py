@@ -652,7 +652,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
       paladin_boards.update(slave_config.boards)
 
     for pfq_master in (constants.PFQ_MASTER,
-                       constants.MNC_ANDROID_PFQ_MASTER,
                        constants.NYC_ANDROID_PFQ_MASTER):
       pfq_configs = self._getSlaveConfigsForMaster(pfq_master)
 

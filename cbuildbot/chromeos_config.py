@@ -2126,13 +2126,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   # Any additions of Android PFQ masters should be reflected by a
   # change in lib/constants.py SOM_BUILDS to add Sheriff-o-Matic coverage.
 
-  # Android MNC master.
-  mnc_master_config = site_config.Add(
-      constants.MNC_ANDROID_PFQ_MASTER,
-      site_config.templates.android_pfq,
-      site_config.templates.master_android_pfq_mixin,
-  )
-
   # Android NYC master.
   nyc_master_config = site_config.Add(
       constants.NYC_ANDROID_PFQ_MASTER,
@@ -2140,11 +2133,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.master_android_pfq_mixin,
   )
 
-  _mnc_hwtest_boards = frozenset([
-  ])
-  _mnc_no_hwtest_boards = frozenset([
-      'veyron_tiger',
-  ])
   _nyc_hwtest_boards = frozenset([
       'caroline',
       'cyan',
@@ -2160,24 +2148,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _nyc_vmtest_boards = frozenset([
       'betty',
   ])
-
-  # Android MNC slaves.
-  # For historical reason, slave names do not contain "mnc".
-  mnc_master_config.AddSlaves(
-      site_config.AddForBoards(
-          'android-pfq',
-          _mnc_hwtest_boards,
-          board_configs,
-          site_config.templates.android_pfq,
-          hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
-      ) +
-      site_config.AddForBoards(
-          'android-pfq',
-          _mnc_no_hwtest_boards,
-          board_configs,
-          site_config.templates.android_pfq,
-      )
-  )
 
   # Android NYC slaves.
   nyc_master_config.AddSlaves(
