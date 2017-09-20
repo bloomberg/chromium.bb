@@ -29,8 +29,8 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
 
   RefPtr<NGPhysicalFragment> CloneWithoutOffset() const {
     Vector<RefPtr<NGPhysicalFragment>> children_copy(children_);
-    return AdoptRef(new NGPhysicalLineBoxFragment(Style(), size_, children_copy,
-                                                  metrics_, break_token_));
+    return WTF::AdoptRef(new NGPhysicalLineBoxFragment(
+        Style(), size_, children_copy, metrics_, break_token_));
   }
 
  private:

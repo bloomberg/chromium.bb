@@ -7,7 +7,7 @@
 namespace blink {
 
 RefPtr<StyleRay> StyleRay::Create(float angle, RaySize size, bool contain) {
-  return AdoptRef(new StyleRay(angle, size, contain));
+  return WTF::AdoptRef(new StyleRay(angle, size, contain));
 }
 
 StyleRay::StyleRay(float angle, RaySize size, bool contain)

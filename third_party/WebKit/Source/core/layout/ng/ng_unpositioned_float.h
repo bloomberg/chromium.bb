@@ -26,7 +26,7 @@ struct CORE_EXPORT NGUnpositionedFloat
                                             NGBoxStrut margins,
                                             NGBlockNode node,
                                             NGBlockBreakToken* token) {
-    return AdoptRef(new NGUnpositionedFloat(
+    return WTF::AdoptRef(new NGUnpositionedFloat(
         margins, available_size, percentage_size, origin_bfc_line_offset,
         bfc_line_offset, node, token));
   }

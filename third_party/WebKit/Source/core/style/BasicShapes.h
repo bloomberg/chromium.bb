@@ -159,7 +159,7 @@ class BasicShapeRadius {
 class CORE_EXPORT BasicShapeCircle final : public BasicShape {
  public:
   static RefPtr<BasicShapeCircle> Create() {
-    return AdoptRef(new BasicShapeCircle);
+    return WTF::AdoptRef(new BasicShapeCircle);
   }
 
   const BasicShapeCenterCoordinate& CenterX() const { return center_x_; }
@@ -190,7 +190,7 @@ DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeCircle);
 class BasicShapeEllipse final : public BasicShape {
  public:
   static RefPtr<BasicShapeEllipse> Create() {
-    return AdoptRef(new BasicShapeEllipse);
+    return WTF::AdoptRef(new BasicShapeEllipse);
   }
 
   const BasicShapeCenterCoordinate& CenterX() const { return center_x_; }
@@ -226,7 +226,7 @@ DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeEllipse);
 class BasicShapePolygon final : public BasicShape {
  public:
   static RefPtr<BasicShapePolygon> Create() {
-    return AdoptRef(new BasicShapePolygon);
+    return WTF::AdoptRef(new BasicShapePolygon);
   }
 
   const Vector<Length>& Values() const { return values_; }
@@ -259,7 +259,7 @@ DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapePolygon);
 class BasicShapeInset : public BasicShape {
  public:
   static RefPtr<BasicShapeInset> Create() {
-    return AdoptRef(new BasicShapeInset);
+    return WTF::AdoptRef(new BasicShapeInset);
   }
 
   const Length& Top() const { return top_; }

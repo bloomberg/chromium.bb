@@ -92,11 +92,11 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
 ASSERT_SIZE(ComputedStyle, SameSizeAsComputedStyle);
 
 RefPtr<ComputedStyle> ComputedStyle::Create() {
-  return AdoptRef(new ComputedStyle(InitialStyle()));
+  return WTF::AdoptRef(new ComputedStyle(InitialStyle()));
 }
 
 RefPtr<ComputedStyle> ComputedStyle::CreateInitialStyle() {
-  return AdoptRef(new ComputedStyle());
+  return WTF::AdoptRef(new ComputedStyle());
 }
 
 ComputedStyle& ComputedStyle::MutableInitialStyle() {
@@ -121,7 +121,7 @@ RefPtr<ComputedStyle> ComputedStyle::CreateAnonymousStyleWithDisplay(
 }
 
 RefPtr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
-  return AdoptRef(new ComputedStyle(other));
+  return WTF::AdoptRef(new ComputedStyle(other));
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
