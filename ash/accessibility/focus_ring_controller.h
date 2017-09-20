@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_CONTROLLER_H_
-#define CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_CONTROLLER_H_
+#ifndef ASH_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_
+#define ASH_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_
 
 #include <memory>
 
+#include "ash/accessibility/focus_ring_layer.h"
+#include "ash/ash_export.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/widget/widget_observer.h"
@@ -16,17 +17,17 @@
 namespace views {
 class View;
 class Widget;
-}
+}  // namespace views
 
-namespace chromeos {
+namespace ash {
 
 // FocusRingController manages the focus ring around the focused view. It
 // follows widget focus change and update the focus ring layer when the focused
 // view of the widget changes.
-class FocusRingController : public FocusRingLayerDelegate,
-                            public views::WidgetObserver,
-                            public views::WidgetFocusChangeListener,
-                            public views::FocusChangeListener {
+class ASH_EXPORT FocusRingController : public FocusRingLayerDelegate,
+                                       public views::WidgetObserver,
+                                       public views::WidgetFocusChangeListener,
+                                       public views::FocusChangeListener {
  public:
   FocusRingController();
   ~FocusRingController() override;
@@ -68,6 +69,6 @@ class FocusRingController : public FocusRingLayerDelegate,
   DISALLOW_COPY_AND_ASSIGN(FocusRingController);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_CONTROLLER_H_
+#endif  // ASH_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_

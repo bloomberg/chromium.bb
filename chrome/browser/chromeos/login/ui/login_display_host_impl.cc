@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accessibility/focus_ring_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -56,7 +57,6 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
-#include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -1153,7 +1153,7 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation()) {
     views::FocusManager::set_arrow_key_traversal_enabled(true);
     // crbug.com/405859
-    focus_ring_controller_.reset(new FocusRingController);
+    focus_ring_controller_ = std::make_unique<ash::FocusRingController>();
     focus_ring_controller_->SetVisible(true);
 
     keyboard_driven_oobe_key_handler_.reset(new KeyboardDrivenOobeKeyHandler);

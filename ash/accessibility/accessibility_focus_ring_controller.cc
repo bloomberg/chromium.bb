@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
+#include "ash/accessibility/accessibility_focus_ring_controller.h"
 
 #include <stddef.h>
 
 #include <algorithm>
 
+#include "ash/accessibility/focus_ring_layer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -58,7 +58,7 @@ struct Region {
 
 // static
 AccessibilityFocusRingController*
-    AccessibilityFocusRingController::GetInstance() {
+AccessibilityFocusRingController::GetInstance() {
   return base::Singleton<AccessibilityFocusRingController>::get();
 }
 
@@ -77,8 +77,7 @@ AccessibilityFocusRingController::AccessibilityFocusRingController() {
       base::TimeDelta::FromMilliseconds(kCaretFadeOutTimeMilliseconds);
 }
 
-AccessibilityFocusRingController::~AccessibilityFocusRingController() {
-}
+AccessibilityFocusRingController::~AccessibilityFocusRingController() {}
 
 void AccessibilityFocusRingController::SetFocusRingColor(SkColor color) {
   focus_ring_color_ = color;
@@ -188,7 +187,7 @@ void AccessibilityFocusRingController::SetNoFadeForTesting() {
 
 void AccessibilityFocusRingController::RectsToRings(
     const std::vector<gfx::Rect>& src_rects,
-    std::vector<AccessibilityFocusRing>* rings) const {
+    std::vector<ash::AccessibilityFocusRing>* rings) const {
   if (src_rects.empty())
     return;
 
@@ -330,17 +329,16 @@ void AccessibilityFocusRingController::SplitIntoParagraphShape(
   } else {
     int middle_top = (top_rect.y() * 2 + top_rect.bottom()) / 3;
     int middle_bottom = (top_rect.y() + top_rect.bottom() * 2) / 3;
-    middle_rect = gfx::Rect(top_rect.x(), middle_top,
-                            top_rect.width(), middle_bottom - middle_top);
-    bottom_rect = gfx::Rect(
-        top_rect.x(), middle_bottom,
-        top_rect.width(), top_rect.bottom() - middle_bottom);
+    middle_rect = gfx::Rect(top_rect.x(), middle_top, top_rect.width(),
+                            middle_bottom - middle_top);
+    bottom_rect = gfx::Rect(top_rect.x(), middle_bottom, top_rect.width(),
+                            top_rect.bottom() - middle_bottom);
     top_rect.set_height(middle_top - top_rect.y());
   }
 
   if (middle_rect.y() > top_rect.bottom()) {
-    middle_rect.set_height(
-        middle_rect.height() + middle_rect.y() - top_rect.bottom());
+    middle_rect.set_height(middle_rect.height() + middle_rect.y() -
+                           top_rect.bottom());
     middle_rect.set_y(top_rect.bottom());
   }
 
@@ -363,17 +361,15 @@ AccessibilityFocusRing AccessibilityFocusRingController::RingFromSortedRects(
   gfx::Rect bottom;
   SplitIntoParagraphShape(rects, &top, &middle, &bottom);
 
-  return AccessibilityFocusRing::CreateWithParagraphShape(
-      top, middle, bottom, GetMargin());
+  return AccessibilityFocusRing::CreateWithParagraphShape(top, middle, bottom,
+                                                          GetMargin());
 }
 
-bool AccessibilityFocusRingController::Intersects(
-  const gfx::Rect& r1, const gfx::Rect& r2) const {
+bool AccessibilityFocusRingController::Intersects(const gfx::Rect& r1,
+                                                  const gfx::Rect& r2) const {
   int slop = GetMargin();
-  return (r2.x() <= r1.right() + slop &&
-          r2.right() >= r1.x() - slop &&
-          r2.y() <= r1.bottom() + slop &&
-          r2.bottom() >= r1.y() - slop);
+  return (r2.x() <= r1.right() + slop && r2.right() >= r1.x() - slop &&
+          r2.y() <= r1.bottom() + slop && r2.bottom() >= r1.y() - slop);
 }
 
 void AccessibilityFocusRingController::OnDeviceScaleFactorChanged() {
@@ -489,4 +485,4 @@ void AccessibilityFocusRingController::AnimateCaretRing(
   caret_layer_->SetOpacity(caret_animation_info_.opacity);
 }
 
-}  // namespace chromeos
+}  // namespace ash

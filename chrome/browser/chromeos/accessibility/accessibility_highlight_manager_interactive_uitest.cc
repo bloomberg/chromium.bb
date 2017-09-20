@@ -4,11 +4,13 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
 
+#include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,12 +21,20 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/snapshot/snapshot.h"
 
 namespace chromeos {
 namespace {
+
+// Update the display configuration as given in |display_specs|.  See
+// display::test::DisplayManagerTestApi::UpdateDisplay for more details.
+void UpdateDisplay(const std::string& display_specs) {
+  display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
+      .UpdateDisplay(display_specs);
+}
 
 class MockTextInputClient : public ui::DummyTextInputClient {
  public:
@@ -70,7 +80,7 @@ class AccessibilityHighlightManagerTest : public InProcessBrowserTest {
   ~AccessibilityHighlightManagerTest() override {}
 
   void SetUp() override {
-    AccessibilityFocusRingController::GetInstance()->SetNoFadeForTesting();
+    ash::AccessibilityFocusRingController::GetInstance()->SetNoFadeForTesting();
     InProcessBrowserTest::SetUp();
   }
 
@@ -235,6 +245,79 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
   EXPECT_NEAR(255, SkColorGetR(average_diff_color()), 5);
   EXPECT_NEAR(201, SkColorGetG(average_diff_color()), 5);
   EXPECT_NEAR(152, SkColorGetB(average_diff_color()), 5);
+}
+
+// Integration test of cursor handling between AccessibilityHighlightManager and
+// AccessibilityFocusRingController.
+IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
+                       CursorWorksOnMultipleDisplays) {
+  UpdateDisplay("400x400,500x500");
+  aura::Window::Windows root_windows = ash::Shell::Get()->GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+
+  TestAccessibilityHighlightManager highlight_manager;
+  highlight_manager.HighlightCursor(true);
+  gfx::Point location(90, 90);
+  ui::MouseEvent event0(ui::ET_MOUSE_MOVED, location, location,
+                        ui::EventTimeForNow(), 0, 0);
+  ui::Event::DispatcherApi event_mod(&event0);
+  event_mod.set_target(root_windows[0]);
+  highlight_manager.OnMouseEvent(&event0);
+
+  ash::AccessibilityFocusRingController* controller =
+      ash::AccessibilityFocusRingController::GetInstance();
+  ash::AccessibilityCursorRingLayer* cursor_layer =
+      controller->cursor_layer_for_testing();
+  EXPECT_EQ(root_windows[0], cursor_layer->root_window());
+  EXPECT_LT(abs(cursor_layer->layer()->GetTargetBounds().x() - location.x()),
+            50);
+  EXPECT_LT(abs(cursor_layer->layer()->GetTargetBounds().y() - location.y()),
+            50);
+
+  ui::MouseEvent event1(ui::ET_MOUSE_MOVED, location, location,
+                        ui::EventTimeForNow(), 0, 0);
+  ui::Event::DispatcherApi event_mod1(&event1);
+  event_mod1.set_target(root_windows[1]);
+  highlight_manager.OnMouseEvent(&event1);
+
+  cursor_layer = controller->cursor_layer_for_testing();
+  EXPECT_EQ(root_windows[1], cursor_layer->root_window());
+  EXPECT_LT(abs(cursor_layer->layer()->GetTargetBounds().x() - location.x()),
+            50);
+  EXPECT_LT(abs(cursor_layer->layer()->GetTargetBounds().y() - location.y()),
+            50);
+}
+
+// Integration test of caret handling between AccessibilityHighlightManager and
+// AccessibilityFocusRingController.
+IN_PROC_BROWSER_TEST_F(AccessibilityHighlightManagerTest,
+                       CaretRingDrawnOnlyWithinBounds) {
+  // Given caret bounds that are not within the active window, expect that
+  // the caret ring highlight is not drawn.
+  browser()->window()->SetBounds(gfx::Rect(5, 5, 300, 300));
+  browser()->window()->Activate();
+
+  TestAccessibilityHighlightManager highlight_manager;
+  MockTextInputClient text_input_client;
+  highlight_manager.HighlightCaret(true);
+  gfx::Rect caret_bounds(10, 10, 40, 40);
+  text_input_client.SetCaretBounds(caret_bounds);
+  highlight_manager.OnCaretBoundsChanged(&text_input_client);
+
+  ash::AccessibilityFocusRingController* controller =
+      ash::AccessibilityFocusRingController::GetInstance();
+  ash::AccessibilityCursorRingLayer* caret_layer =
+      controller->caret_layer_for_testing();
+  EXPECT_EQ(abs(caret_layer->layer()->GetTargetBounds().x() - caret_bounds.x()),
+            20);
+  EXPECT_EQ(abs(caret_layer->layer()->GetTargetBounds().y() - caret_bounds.y()),
+            20);
+
+  gfx::Rect not_visible_bounds(301, 301, 10, 10);
+  text_input_client.SetCaretBounds(not_visible_bounds);
+  highlight_manager.OnCaretBoundsChanged(&text_input_client);
+
+  EXPECT_FALSE(controller->caret_layer_for_testing());
 }
 
 }  // namespace chromeos

@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/ui/accessibility_focus_ring.h"
+#include "ash/accessibility/accessibility_focus_ring.h"
 
 #include <stddef.h>
 
 #include "base/logging.h"
 
-namespace chromeos {
+namespace ash {
 
 // static
 AccessibilityFocusRing AccessibilityFocusRing::CreateWithRect(
-    const gfx::Rect& bounds, int margin) {
+    const gfx::Rect& bounds,
+    int margin) {
   // Compute the height of the top and bottom cap.
   int cap_height = std::min(bounds.height() / 2, margin * 2);
 
-  gfx::Rect top(bounds.x(), bounds.y(),
-                bounds.width(), cap_height);
-  gfx::Rect bottom(bounds.x(), bounds.bottom() - cap_height,
-                   bounds.width(), cap_height);
-  gfx::Rect body(bounds.x(), top.bottom(),
-                 bounds.width(), bottom.y() - top.bottom());
+  gfx::Rect top(bounds.x(), bounds.y(), bounds.width(), cap_height);
+  gfx::Rect bottom(bounds.x(), bounds.bottom() - cap_height, bounds.width(),
+                   cap_height);
+  gfx::Rect body(bounds.x(), top.bottom(), bounds.width(),
+                 bottom.y() - top.bottom());
 
   return CreateWithParagraphShape(top, body, bottom, margin);
 }
@@ -141,4 +141,4 @@ gfx::Rect AccessibilityFocusRing::GetBounds() const {
                                        bottom_right.y() - top_left.y()));
 }
 
-}  // namespace chromeos
+}  // namespace ash

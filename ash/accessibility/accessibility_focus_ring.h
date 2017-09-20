@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_H_
-#define CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_H_
+#ifndef ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_H_
+#define ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_H_
 
+#include "ash/ash_export.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace chromeos {
+namespace ash {
 
 // An AccessibilityFocusRing is a special type of shape designed to
 // outline the focused object on the screen for users with visual
@@ -66,18 +67,18 @@ namespace chromeos {
 //                  24                             19
 //                    |                           |
 //                  23 22-----------------------21 20
-
-struct AccessibilityFocusRing {
+//
+// Exported for tests.
+struct ASH_EXPORT AccessibilityFocusRing {
   // Construct an AccessibilityFocusRing that outlines a rectangular object.
-  static AccessibilityFocusRing CreateWithRect(
-      const gfx::Rect& bounds, int margin);
+  static AccessibilityFocusRing CreateWithRect(const gfx::Rect& bounds,
+                                               int margin);
 
   // Returns a ring where 0.0 returns r1, 1.0 returns r2, and any number
   // in-between interpolates linearly between them.
-  static AccessibilityFocusRing Interpolate(
-      const AccessibilityFocusRing& r1,
-      const AccessibilityFocusRing& r2,
-      double fraction);
+  static AccessibilityFocusRing Interpolate(const AccessibilityFocusRing& r1,
+                                            const AccessibilityFocusRing& r2,
+                                            double fraction);
 
   // Construct an AccessibilityFocusRing that outlines a paragraph-shaped
   // object.
@@ -92,6 +93,6 @@ struct AccessibilityFocusRing {
   gfx::Point points[36];
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_H_
+#endif  // ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_H_

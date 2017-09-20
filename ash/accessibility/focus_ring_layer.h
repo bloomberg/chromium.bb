@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_LAYER_H_
-#define CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_LAYER_H_
+#ifndef ASH_ACCESSIBILITY_FOCUS_RING_LAYER_H_
+#define ASH_ACCESSIBILITY_FOCUS_RING_LAYER_H_
 
 #include <memory>
 
@@ -22,9 +22,9 @@ class Window;
 namespace ui {
 class Compositor;
 class Layer;
-}
+}  // namespace ui
 
-namespace chromeos {
+namespace ash {
 
 // A delegate interface implemented by the object that owns a FocusRingLayer.
 class FocusRingLayerDelegate {
@@ -104,6 +104,6 @@ class FocusRingLayer : public ui::LayerDelegate,
   DISALLOW_COPY_AND_ASSIGN(FocusRingLayer);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_UI_FOCUS_RING_LAYER_H_
+#endif  // ASH_ACCESSIBILITY_FOCUS_RING_LAYER_H_

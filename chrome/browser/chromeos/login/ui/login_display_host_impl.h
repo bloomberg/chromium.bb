@@ -36,11 +36,14 @@
 class AccountId;
 class ScopedKeepAlive;
 
+namespace ash {
+class FocusRingController;
+}
+
 namespace chromeos {
 
 class ArcKioskController;
 class DemoAppLauncher;
-class FocusRingController;
 class WebUILoginDisplay;
 class WebUILoginView;
 
@@ -284,7 +287,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.
-  std::unique_ptr<FocusRingController> focus_ring_controller_;
+  std::unique_ptr<ash::FocusRingController> focus_ring_controller_;
 
   // Handles special keys for keyboard driven oobe.
   std::unique_ptr<KeyboardDrivenOobeKeyHandler>

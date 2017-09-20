@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/ui/focus_ring_layer.h"
+#include "ash/accessibility/focus_ring_layer.h"
 
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor_animation_observer.h"
@@ -16,7 +16,7 @@ namespace ui {
 class Compositor;
 }
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -118,8 +118,7 @@ void FocusRingLayer::OnPaintLayer(const ui::PaintContext& context) {
 }
 
 void FocusRingLayer::OnDelegatedFrameDamage(
-    const gfx::Rect& damage_rect_in_dip) {
-}
+    const gfx::Rect& damage_rect_in_dip) {}
 
 void FocusRingLayer::OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                                 float new_device_scale_factor) {
@@ -138,4 +137,4 @@ void FocusRingLayer::OnCompositingShuttingDown(ui::Compositor* compositor) {
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash
