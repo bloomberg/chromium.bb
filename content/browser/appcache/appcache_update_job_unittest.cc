@@ -1171,10 +1171,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     scoped_refptr<net::StringIOBuffer> io_buffer(
         new net::StringIOBuffer(seed_data));
     response_writer_->WriteData(
-        io_buffer.get(),
-        seed_data.length(),
-        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
-                   base::Unretained(this)));
+        io_buffer.get(), seed_data.length(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -1337,10 +1337,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     scoped_refptr<net::StringIOBuffer> io_buffer(
         new net::StringIOBuffer(seed_data));
     response_writer_->WriteData(
-        io_buffer.get(),
-        seed_data.length(),
-        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
-                   base::Unretained(this)));
+        io_buffer.get(), seed_data.length(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -1400,8 +1400,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     response_writer_->WriteInfo(
         io_buffer.get(),
-        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -1459,8 +1460,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     response_writer_->WriteInfo(
         io_buffer.get(),
-        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -1518,8 +1520,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     response_writer_->WriteInfo(
         io_buffer.get(),
-        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -3046,8 +3049,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     response_writer_->WriteInfo(
         io_buffer.get(),
-        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
@@ -3112,8 +3116,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     response_writer_->WriteInfo(
         io_buffer.get(),
-        base::Bind(&AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
 
     // Start update after data write completes asynchronously.
   }
