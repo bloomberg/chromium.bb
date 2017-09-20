@@ -490,6 +490,37 @@
         },
         "test": "wm_unittests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--browser=exact",
+          "--browser-executable=./test_chrome",
+          "--xvfb",
+          "--skip=scripts_smoke_unittest.ScriptsSmokeTest.testRunTelemetryBenchmarkAsGoogletest"
+        ],
+        "isolate_name": "telemetry_perf_unittests",
+        "name": "telemetry_perf_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 960,
+          "shards": 12
+        }
+      },
+      {
+        "args": [
+          "--browser=exact",
+          "--browser-executable=./test_chrome",
+          "--jobs=1",
+          "--skip=telemetry.page.page_run_end_to_end_unittest.ActualPageRunEndToEndTests.testTrafficSettings"
+        ],
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 4
+        }
+      }
     ]
   },
   "Linux ChromiumOS Tests (dbg)(1)": {
