@@ -215,8 +215,9 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showAssistantSection_: function(featureAvailable, arcEnabled) {
-    return featureAvailable && arcEnabled;
+  showAssistantSection_: function(
+      featureAvailable, arcEnabled, valuePropAccepted) {
+    return featureAvailable && arcEnabled && valuePropAccepted;
   },
   // </if>
 
