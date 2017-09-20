@@ -1,14 +1,14 @@
 # TODO(fuchsia): Fix these tests and remove the filter. https://crbug.com/731302 .
--CloseOnConnectHttpServerTest.ServerImmediatelyClosesConnection
--NetworkInterfacesTest.GetNetworkList
--ProxyScriptFetcherImplTest.Priority
--UDPSocketTest.PartialRecv
--URLRequestQuic*
 
-# Following tests pass locally, but flake on bots.
+# Timeout on the bots exceeding 45s on the bots (apperently due to slow IO).
 -DiskCacheTest.BlockFiles_Grow
 -DiskCacheBackendTest.SimpleCacheDeleteQuickly
--URLRequestTestHTTP.GetTest_ManyCookies
+
+# getifaddrs() not implemented, ZX-766.
+-NetworkInterfacesTest.GetNetworkList
+
+# Exceeds FD limit, ZX-1127.
+-ProxyScriptFetcherImplTest.Priority
 
 # base::MakeFileUnreadable() doesn't work. https://crbug.com/759853
 -HttpNetworkTransactionTest.UploadUnreadableFile
