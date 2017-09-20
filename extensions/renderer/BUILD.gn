@@ -94,6 +94,8 @@ source_set("renderer") {
     "easy_unlock_proximity_required_stub.h",
     "event_bindings.cc",
     "event_bindings.h",
+    "event_bookkeeper.cc",
+    "event_bookkeeper.h",
     "extension_bindings_system.cc",
     "extension_bindings_system.h",
     "extension_frame_helper.cc",

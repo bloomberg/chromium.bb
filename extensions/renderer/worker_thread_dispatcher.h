@@ -9,6 +9,7 @@
 #include "base/threading/platform_thread.h"
 #include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_thread_observer.h"
+#include "extensions/renderer/event_bookkeeper.h"
 #include "ipc/ipc_sync_message_filter.h"
 
 namespace base {
@@ -54,6 +55,8 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
                      ResourceBundleSourceMap* source_map);
   void RemoveWorkerData(int64_t service_worker_version_id);
 
+  EventBookkeeper* event_bookkeeper() { return &event_bookkeeper_; }
+
   // content::RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
@@ -81,6 +84,8 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   using IDToTaskRunnerMap = std::map<base::PlatformThreadId, base::TaskRunner*>;
   IDToTaskRunnerMap task_runner_map_;
   base::Lock task_runner_map_lock_;
+
+  EventBookkeeper event_bookkeeper_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadDispatcher);
 };
