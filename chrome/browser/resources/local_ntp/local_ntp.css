@@ -70,15 +70,34 @@ body.hide-fakebox-logo #fakebox {
   display: none;
 }
 
+#logo-default,
+#logo-doodle {
+  bottom: 0;
+  position: absolute;
+  transition: opacity 130ms;
+}
+
 #logo-default {
   background-image: url(../../../../ui/webui/resources/images/google_logo.svg);
   background-repeat: no-repeat;
-  bottom: 0;
   height: 92px;
   left: calc(50% - 272px/2);
-  position: absolute;
-  transition: opacity 130ms;
   width: 272px;
+}
+
+#logo-doodle {
+  /* Normally, logos are aligned with tiles and bounded to their left and right
+   * edges. Doodles may be larger than this. In order that they are centered and
+   * cropped, instead of left-aligned, give them 100px of extra space on the
+   * left and the right side.
+   */
+  left: -100px;
+  opacity: 0;
+  right: -100px;
+}
+
+#logo-doodle-link {
+  margin: 0 auto;
 }
 
 body.alternate-logo #logo-default {

@@ -84,6 +84,10 @@ var IDS = {
   FAKEBOX_TEXT: 'fakebox-text',
   FAKEBOX_MICROPHONE: 'fakebox-microphone',
   LOGO: 'logo',
+  LOGO_DEFAULT: 'logo-default',
+  LOGO_DOODLE: 'logo-doodle',
+  LOGO_DOODLE_IMAGE: 'logo-doodle-image',
+  LOGO_DOODLE_LINK: 'logo-doodle-link',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
@@ -569,6 +573,30 @@ function init() {
     ogScript.onload = function() {
       injectOneGoogleBar(og);
     };
+
+    // Initialize opacity and install transitionend handlers. It's necessary to
+    // explicitly initialize opacity here because isFadedOut() below uses the
+    // difference between .style and getComputedStyle() to detect fades in
+    // progress.
+    var logoDefault = $(IDS.LOGO_DEFAULT);
+    var logoDoodle = $(IDS.LOGO_DOODLE);
+    logoDefault.style.opacity = 1;
+    logoDoodle.style.opacity = 0;
+    logoDefault.addEventListener('transitionend', onDoodleTransitionEnd);
+    logoDoodle.addEventListener('transitionend', onDoodleTransitionEnd);
+
+    // Load the Doodle. After the first request completes (getting cached
+    // data), issue a second request for fresh Doodle data.
+    loadDoodle(null, function(ddl) {
+      if (ddl.usable) {
+        injectDoodle(ddl.image, ddl.metadata);
+      }
+      loadDoodle(ddl.v, function(ddl) {
+        if (ddl.usable) {
+          injectDoodle(ddl.image, ddl.metadata);
+        }
+      });
+    });
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
@@ -649,6 +677,118 @@ function injectOneGoogleBar(ogb) {
   endOfBodyScript.appendChild(document.createTextNode(ogb.endOfBodyScript));
   document.body.appendChild(endOfBodyScript);
 }
+
+
+/** Loads the Doodle. The loaded script declares a global variable ddl, which
+ * onload() receives as its single argument. If v is null, then the call
+ * requests a cached logo. If non-null, it must be the ddl.v of a previous
+ * request for a cached logo, and the corresponding fresh logo is returned.
+ * @param {?number} v
+ * @param {function({v, image, metadata})} onload
+ */
+var loadDoodle = function(v, onload) {
+  var ddlScript = document.createElement('script');
+  ddlScript.src = 'chrome-search://local-ntp/doodle.js';
+  if (v !== null)
+    ddlScript.src += '?v=' + v;
+  ddlScript.onload = function() {
+    onload(ddl);
+  };
+  document.body.appendChild(ddlScript);
+};
+
+
+/** Returns true if |element| is fully hidden. Returns false if fully visible,
+ * fading in, or fading out.
+ * @param {HTMLElement} element
+ */
+var isFadedOut = function(element) {
+  return (element.style.opacity == 0) &&
+      (window.getComputedStyle(element).opacity == 0);
+};
+
+
+/** Returns the currently visible doodle image. The doodle may be fully-visible
+ * or fading in. If the default logo is visible or the doodle is fading out,
+ * returns null.
+ * @returns {?string}
+ */
+var getCurrentDoodleImageUrl = function() {
+  if ($(IDS.LOGO_DOODLE).style.opacity != 0) {
+    return $(IDS.LOGO_DOODLE_IMAGE).src;
+  }
+  return null;
+};
+
+
+/** The image and metadata that should be shown, according to the latest fetch.
+ * After a logo fades out, onDoodleTransitionEnd fades in a logo according to
+ * targetDoodle. After a logo fades in, onDoodleTransitionEnd fades out again if
+ * targetDoodle has change since the fade-in started.
+ */
+var targetDoodle = {
+  image: null,
+  metadata: null,
+};
+
+
+/**
+ * Injects the Doodle into the page. Called asynchronously, so that it doesn't
+ * block the main page load.
+ */
+var injectDoodle = function(image, metadata) {
+  var logoDoodle = $(IDS.LOGO_DOODLE);
+  var logoDoodleLink = $(IDS.LOGO_DOODLE_LINK);
+  var logoDefault = $(IDS.LOGO_DEFAULT);
+
+  // If the image is already visible, or a transition to it is in progress,
+  // there's no need to start a fade-out. However, metadata may have changed, so
+  // update the doodle's alt text and href, if applicable.
+  if (image === targetDoodle.image) {
+    if (metadata !== null) {
+      logoDoodleLink.title = targetDoodle.metadata.altText;
+      logoDoodleLink.href = targetDoodle.metadata.onClickUrl;
+      targetDoodle.metadata = metadata;
+    }
+    return;
+  }
+
+  targetDoodle.image = image;
+  targetDoodle.metadata = metadata;
+
+  // If either element is visible, start fading it out. onDoodleTransitionEnd
+  // will apply the change when the fade-out finishes.
+  logoDoodle.style.opacity = 0;
+  logoDefault.style.opacity = 0;
+};
+
+
+var onDoodleTransitionEnd = function(e) {
+  var logoDoodle = $(IDS.LOGO_DOODLE);
+  var logoDoodleLink = $(IDS.LOGO_DOODLE_LINK);
+  var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
+  var logoDefault = $(IDS.LOGO_DEFAULT);
+
+  if (isFadedOut(logoDoodle) && isFadedOut(logoDefault)) {
+    // Fade-out finished. Start fading in the appropriate logo.
+    if (targetDoodle.image === null) {
+      logoDefault.style.opacity = 1;
+    } else {
+      logoDoodleLink.title = targetDoodle.metadata.altText;
+      logoDoodleLink.href = targetDoodle.metadata.onClickUrl;
+      logoDoodleImage.src = targetDoodle.image;
+      logoDoodle.style.opacity = 1;
+    }
+    return;
+  }
+
+  // Fade-in finished. It's possible that the wrong image is now faded in, if
+  // the logo updated during a fade-in. In this case, restart the fade-out.
+  if (targetDoodle.image !== getCurrentDoodleImageUrl()) {
+    logoDoodle.style.opacity = 0;
+    logoDefault.style.opacity = 0;
+  }
+};
 
 
 return {
