@@ -325,10 +325,10 @@ speech.init = function(
   // Initialize event handlers.
   fakeboxMicrophoneElem.hidden = false;
   fakeboxMicrophoneElem.title = translatedStrings.fakeboxMicrophoneTooltip;
-  fakeboxMicrophoneElem.onmouseup = function(event) {
+  fakeboxMicrophoneElem.onclick = function(event) {
     // If propagated, closes the overlay (click on the background).
-    speech.logEvent(LOG_TYPE.ACTION_ACTIVATE_FAKEBOX);
     event.stopPropagation();
+    speech.logEvent(LOG_TYPE.ACTION_ACTIVATE_FAKEBOX);
     speech.start();
   };
   fakeboxMicrophoneElem.onkeydown = function(event) {
@@ -1508,7 +1508,7 @@ view.show = function() {
   if (!view.isVisible_) {
     text.showInitializingMessage();
     view.showView_();
-    window.addEventListener('mouseup', view.onWindowClick_, false);
+    window.addEventListener('click', view.onWindowClick_, false);
   }
 };
 
@@ -1561,7 +1561,7 @@ view.updateSpeechResult = function(interimResultText, finalResultText) {
  * Hides the UI and stops animations.
  */
 view.hide = function() {
-  window.removeEventListener('mouseup', view.onWindowClick_, false);
+  window.removeEventListener('click', view.onWindowClick_, false);
   view.stopMicrophoneAnimations_();
   view.hideView_();
   view.isNoMatchShown_ = false;
