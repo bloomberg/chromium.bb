@@ -162,6 +162,15 @@ TEST(CircularDeque, EqualsMove) {
     EXPECT_EQ(i + 1, move[i]);
 }
 
+// Tests that self-assignment is a no-op.
+TEST(CircularDeque, EqualsSelf) {
+  circular_deque<int> q = {1, 2, 3, 4, 5, 6};
+  q = q;
+  EXPECT_EQ(6u, q.size());
+  for (int i = 0; i < 6; i++)
+    EXPECT_EQ(i + 1, q[i]);
+}
+
 TEST(CircularDeque, EqualsInitializerList) {
   circular_deque<int> q;
   EXPECT_TRUE(q.empty());

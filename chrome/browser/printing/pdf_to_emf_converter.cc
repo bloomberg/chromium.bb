@@ -8,10 +8,10 @@
 #include <windows.h>
 
 #include <memory>
-#include <queue>
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -250,7 +250,7 @@ class PdfConverterUtilityProcessHostClient
   // Queue of callbacks for GetPage() requests. Utility process should reply
   // with PageDone in the same order as requests were received.
   // Use containers that keeps element pointers valid after push() and pop().
-  using GetPageCallbacks = std::queue<GetPageCallbackData>;
+  using GetPageCallbacks = base::queue<GetPageCallbackData>;
   GetPageCallbacks get_page_callbacks_;
 
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

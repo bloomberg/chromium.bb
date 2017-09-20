@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <queue>
 #include <set>
 #include <utility>
 
@@ -15,6 +14,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -482,7 +482,7 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   context_group_ = nullptr;
 
   base::AutoLock lock(task_queue_lock_);
-  std::queue<std::unique_ptr<GpuTask>> empty;
+  base::queue<std::unique_ptr<GpuTask>> empty;
   task_queue_.swap(empty);
 
   return true;

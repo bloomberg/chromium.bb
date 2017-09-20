@@ -698,7 +698,9 @@ class ReporterRunner : public chrome::BrowserListObserver {
     // There's nothing to do if the invocation parameters and version of the
     // reporter have not changed, we just keep running the tasks that are
     // running now.
-    if (instance_->pending_invocations_ == invocations &&
+    if (std::equal(instance_->pending_invocations_.begin(),
+                   instance_->pending_invocations_.end(), invocations.begin(),
+                   invocations.end()) &&
         instance_->version_.IsValid() && instance_->version_ == version)
       return;
 
@@ -728,7 +730,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
   void ScheduleNextInvocation() {
     DCHECK(!current_invocations_.empty());
     auto next_invocation = current_invocations_.front();
-    current_invocations_.pop();
+    current_invocations_.pop_front();
 
     AppendInvocationSpecificSwitches(&next_invocation);
 

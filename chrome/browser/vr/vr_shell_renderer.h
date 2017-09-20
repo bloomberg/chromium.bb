@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_VR_VR_SHELL_RENDERER_H_
 
 #include <memory>
-#include <queue>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/vr_controller_model.h"
@@ -176,7 +176,7 @@ class TexturedQuadRenderer : public BaseRenderer {
   GLuint corner_position_handle_;
   GLuint offset_scale_handle_;
 
-  std::queue<QuadData> quad_queue_;
+  base::queue<QuadData> quad_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TexturedQuadRenderer);
 };

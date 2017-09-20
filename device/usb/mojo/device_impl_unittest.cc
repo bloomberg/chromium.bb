@@ -10,13 +10,13 @@
 #include <map>
 #include <memory>
 #include <numeric>
-#include <queue>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -415,11 +415,11 @@ class USBDeviceImplTest : public testing::Test {
 
   std::map<uint8_t, UsbConfigDescriptor> mock_configs_;
 
-  std::queue<std::vector<uint8_t>> mock_inbound_data_;
-  std::queue<std::vector<uint8_t>> mock_outbound_data_;
-  std::queue<std::vector<UsbDeviceHandle::IsochronousPacket>>
+  base::queue<std::vector<uint8_t>> mock_inbound_data_;
+  base::queue<std::vector<uint8_t>> mock_outbound_data_;
+  base::queue<std::vector<UsbDeviceHandle::IsochronousPacket>>
       mock_inbound_packets_;
-  std::queue<std::vector<UsbDeviceHandle::IsochronousPacket>>
+  base::queue<std::vector<UsbDeviceHandle::IsochronousPacket>>
       mock_outbound_packets_;
 
   std::set<uint8_t> claimed_interfaces_;

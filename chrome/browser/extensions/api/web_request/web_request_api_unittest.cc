@@ -7,12 +7,12 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
@@ -173,7 +173,7 @@ class TestIPCSender : public IPC::Sender {
     return true;
   }
 
-  std::queue<base::Closure> task_queue_;
+  base::queue<base::Closure> task_queue_;
   SentMessages sent_messages_;
 };
 

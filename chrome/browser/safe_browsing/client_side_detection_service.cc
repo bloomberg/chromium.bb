@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -566,7 +567,7 @@ int ClientSideDetectionService::GetPhishingNumReports() {
 }
 
 int ClientSideDetectionService::GetNumReports(
-    std::queue<base::Time>* report_times) {
+    base::queue<base::Time>* report_times) {
   base::Time cutoff =
       base::Time::Now() - base::TimeDelta::FromDays(kReportsIntervalDays);
 

@@ -148,7 +148,7 @@ class ReporterRunnerTest : public InProcessBrowserTest,
         SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS;
 
     SwReporterQueue invocations;
-    invocations.push(invocation);
+    invocations.push_back(invocation);
     RunSwReporters(invocations, base::Version("1.2.3"));
   }
 
@@ -518,8 +518,8 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, MultipleLaunches) {
   const base::FilePath path3(L"path3");
 
   SwReporterQueue invocations;
-  invocations.push(SwReporterInvocation::FromFilePath(path1));
-  invocations.push(SwReporterInvocation::FromFilePath(path2));
+  invocations.push_back(SwReporterInvocation::FromFilePath(path1));
+  invocations.push_back(SwReporterInvocation::FromFilePath(path2));
 
   {
     SCOPED_TRACE("Launch 2 times");
@@ -544,7 +544,7 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, MultipleLaunches) {
   // queue is running.
   {
     SCOPED_TRACE("Add third launch while running");
-    invocations.push(SwReporterInvocation::FromFilePath(path3));
+    invocations.push_back(SwReporterInvocation::FromFilePath(path3));
     first_launch_callback_ = base::BindOnce(
         &ReporterRunnerTest::RunReporterQueue, base::Unretained(this),
         chrome_cleaner::kSwReporterNothingFound, invocations);
@@ -640,7 +640,7 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_MultipleLaunches) {
     auto invocation = SwReporterInvocation::FromFilePath(path);
     invocation.supported_behaviours =
         SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS;
-    invocations.push(invocation);
+    invocations.push_back(invocation);
   }
   RunReporterQueue(chrome_cleaner::kSwReporterNothingFound, invocations);
 

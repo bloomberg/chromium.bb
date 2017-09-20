@@ -9,10 +9,10 @@
 #include <atlcom.h>
 
 #include <memory>
-#include <queue>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -318,7 +318,7 @@ class MockApp : public CComObjectRootEx<CComSingleThreadModel>, public IAppWeb {
   }
 
   // The states returned by the MockApp when probed.
-  std::queue<CComObject<MockCurrentState>*> states_;
+  base::queue<CComObject<MockCurrentState>*> states_;
 
   // A gmock sequence under which a series of get_CurrentState expectations are
   // evaluated.

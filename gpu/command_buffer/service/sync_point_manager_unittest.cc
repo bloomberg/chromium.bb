@@ -5,9 +5,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +29,7 @@ class SyncPointManagerTest : public testing::Test {
 struct SyncPointStream {
   scoped_refptr<SyncPointOrderData> order_data;
   scoped_refptr<SyncPointClientState> client_state;
-  std::queue<uint32_t> order_numbers;
+  base::queue<uint32_t> order_numbers;
 
   SyncPointStream(SyncPointManager* sync_point_manager,
                   CommandBufferNamespace namespace_id,

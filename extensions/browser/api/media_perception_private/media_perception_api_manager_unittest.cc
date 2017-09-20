@@ -4,9 +4,8 @@
 
 #include "extensions/browser/api/media_perception_private/media_perception_api_manager.h"
 
-#include <queue>
-
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -68,7 +67,7 @@ class TestUpstartClient : public FakeUpstartClient {
     }
   }
 
-  std::queue<UpstartCallback> pending_upstart_request_callbacks_;
+  base::queue<UpstartCallback> pending_upstart_request_callbacks_;
 
   bool enqueue_requests_;
 

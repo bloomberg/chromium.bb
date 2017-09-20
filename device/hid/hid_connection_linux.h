@@ -8,8 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -57,8 +56,8 @@ class HidConnectionLinux : public HidConnection {
 
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  std::queue<PendingHidReport> pending_reports_;
-  std::queue<PendingHidRead> pending_reads_;
+  base::queue<PendingHidReport> pending_reports_;
+  base::queue<PendingHidRead> pending_reads_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_SPEECH_TTS_CONTROLLER_IMPL_H_
 
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -88,7 +88,7 @@ class TtsControllerImpl : public TtsController {
   bool paused_;
 
   // A queue of utterances to speak after the current one finishes.
-  std::queue<Utterance*> utterance_queue_;
+  base::queue<Utterance*> utterance_queue_;
 
   // A set of delegates that want to be notified when the voices change.
   std::set<VoicesChangedDelegate*> voices_changed_delegates_;

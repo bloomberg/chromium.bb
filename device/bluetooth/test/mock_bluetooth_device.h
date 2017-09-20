@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -138,7 +139,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   bool connected_;
 
   // Used by tests to save callbacks that will be run in the future.
-  std::queue<base::Closure> pending_callbacks_;
+  base::queue<base::Closure> pending_callbacks_;
 
   std::vector<std::unique_ptr<MockBluetoothGattService>> mock_services_;
 };

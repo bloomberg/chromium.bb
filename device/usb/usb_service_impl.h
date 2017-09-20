@@ -10,9 +10,9 @@
 #include <stddef.h>
 
 #include <map>
-#include <queue>
 #include <set>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -97,7 +97,7 @@ class UsbServiceImpl :
   // Enumeration callbacks are queued until an enumeration completes.
   bool enumeration_ready_ = false;
   bool enumeration_in_progress_ = false;
-  std::queue<std::string> pending_path_enumerations_;
+  base::queue<std::string> pending_path_enumerations_;
   std::vector<GetDevicesCallback> pending_enumeration_callbacks_;
 
   // The map from PlatformUsbDevices to UsbDevices.

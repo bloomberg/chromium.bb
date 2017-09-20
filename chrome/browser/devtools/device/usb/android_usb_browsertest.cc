@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -393,7 +394,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   uint32_t remaining_body_length_;
   std::unique_ptr<AdbMessage> current_message_;
   std::vector<char> output_buffer_;
-  std::queue<Query> queries_;
+  base::queue<Query> queries_;
   std::unordered_map<int, std::unique_ptr<MockLocalSocket>> local_sockets_;
   int last_local_socket_;
   bool broken_;

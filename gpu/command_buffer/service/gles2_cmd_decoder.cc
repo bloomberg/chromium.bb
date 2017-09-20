@@ -14,10 +14,10 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <queue>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -2471,7 +2471,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool gpu_trace_commands_;
   bool gpu_debug_commands_;
 
-  std::queue<FenceCallback> pending_readpixel_fences_;
+  base::queue<FenceCallback> pending_readpixel_fences_;
 
   // After a second fence is inserted, both the GpuChannelMessageQueue and
   // CommandExecutor are descheduled. Once the first fence has completed, both
@@ -4976,7 +4976,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 
   // Release all fences now, because some fence types need the context to be
   // current on destruction.
-  pending_readpixel_fences_ = std::queue<FenceCallback>();
+  pending_readpixel_fences_ = base::queue<FenceCallback>();
 
   // Need to release these before releasing |group_| which may own the
   // ShaderTranslatorCache.

@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_INSTALL_VERIFIER_H_
 
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -165,7 +165,7 @@ class InstallVerifier : public KeyedService,
   std::unique_ptr<InstallSigner> signer_;
 
   // A queue of operations to apply to the current set of allowed ids.
-  std::queue<std::unique_ptr<PendingOperation>> operation_queue_;
+  base::queue<std::unique_ptr<PendingOperation>> operation_queue_;
 
   // A set of ids that have been provisionally added, which we're willing to
   // consider allowed until we hear back from the server signature request.

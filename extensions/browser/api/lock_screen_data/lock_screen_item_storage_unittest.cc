@@ -6,12 +6,12 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -333,7 +333,7 @@ class OperationQueue {
  private:
   std::string id_;
   ItemRegistry* item_registry_;
-  std::queue<PendingOperation> pending_operations_;
+  base::queue<PendingOperation> pending_operations_;
   std::vector<char> content_;
   bool deleted_ = false;
 

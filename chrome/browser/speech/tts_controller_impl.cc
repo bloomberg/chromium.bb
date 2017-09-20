@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/values.h"
@@ -557,8 +558,8 @@ void TtsControllerImpl::RemoveVoicesChangedDelegate(
 void TtsControllerImpl::RemoveUtteranceEventDelegate(
     UtteranceEventDelegate* delegate) {
   // First clear any pending utterances with this delegate.
-  std::queue<Utterance*> old_queue = utterance_queue_;
-  utterance_queue_ = std::queue<Utterance*>();
+  base::queue<Utterance*> old_queue = utterance_queue_;
+  utterance_queue_ = base::queue<Utterance*>();
   while (!old_queue.empty()) {
     Utterance* utterance = old_queue.front();
     old_queue.pop();

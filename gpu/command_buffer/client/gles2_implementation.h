@@ -11,13 +11,13 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -693,8 +693,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   DebugMarkerManager debug_marker_manager_;
   std::string this_in_hex_;
 
-  std::queue<int32_t> swap_buffers_tokens_;
-  std::queue<int32_t> rate_limit_tokens_;
+  base::queue<int32_t> swap_buffers_tokens_;
+  base::queue<int32_t> rate_limit_tokens_;
 
   ExtensionStatus chromium_framebuffer_multisample_;
 

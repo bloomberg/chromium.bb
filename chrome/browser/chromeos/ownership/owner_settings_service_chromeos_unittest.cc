@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 
 #include <memory>
-#include <queue>
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/run_loop.h"
@@ -73,8 +73,8 @@ class PrefsChecker : public ownership::OwnerSettingsService::Observer {
   DeviceSettingsProvider* provider_;
   base::RunLoop loop_;
 
-  typedef std::pair<std::string, linked_ptr<base::Value>> SetRequest;
-  std::queue<SetRequest> set_requests_;
+  using SetRequest = std::pair<std::string, linked_ptr<base::Value>>;
+  base::queue<SetRequest> set_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefsChecker);
 };

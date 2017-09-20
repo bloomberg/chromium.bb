@@ -10,8 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "device/hid/hid_connection.h"
@@ -67,8 +66,8 @@ class HidConnectionMac : public HidConnection {
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::vector<uint8_t> inbound_buffer_;
 
-  std::queue<PendingHidReport> pending_reports_;
-  std::queue<PendingHidRead> pending_reads_;
+  base::queue<PendingHidReport> pending_reports_;
+  base::queue<PendingHidRead> pending_reads_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectionMac);
 };

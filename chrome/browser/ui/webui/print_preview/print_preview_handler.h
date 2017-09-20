@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_HANDLER_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -361,7 +361,7 @@ class PrintPreviewHandler
   // GetPrinterHandler().
   std::unique_ptr<PrinterHandler> pdf_printer_handler_;
 
-  std::queue<std::string> preview_callbacks_;
+  base::queue<std::string> preview_callbacks_;
 
   // Print settings to use in the local print request to send when
   // HandleHidePreview() is called.

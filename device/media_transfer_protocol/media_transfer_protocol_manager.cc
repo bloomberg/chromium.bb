@@ -7,12 +7,12 @@
 #include <algorithm>
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -321,22 +321,22 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
  private:
   // Map of storage names to storage info.
-  typedef std::map<std::string, MtpStorageInfo> StorageInfoMap;
-  typedef std::queue<GetStorageInfoFromDeviceCallback>
-      GetStorageInfoFromDeviceCallbackQueue;
+  using StorageInfoMap = std::map<std::string, MtpStorageInfo>;
+  using GetStorageInfoFromDeviceCallbackQueue =
+      base::queue<GetStorageInfoFromDeviceCallback>;
   // Callback queues - DBus communication is in-order, thus callbacks are
   // received in the same order as the requests.
-  typedef std::queue<OpenStorageCallback> OpenStorageCallbackQueue;
+  using OpenStorageCallbackQueue = base::queue<OpenStorageCallback>;
   // (callback, handle)
-  typedef std::queue<std::pair<CloseStorageCallback, std::string>
-                    > CloseStorageCallbackQueue;
-  typedef std::queue<CreateDirectoryCallback> CreateDirectoryCallbackQueue;
-  typedef std::queue<ReadDirectoryCallback> ReadDirectoryCallbackQueue;
-  typedef std::queue<ReadFileCallback> ReadFileCallbackQueue;
-  typedef std::queue<GetFileInfoCallback> GetFileInfoCallbackQueue;
-  typedef std::queue<RenameObjectCallback> RenameObjectCallbackQueue;
-  typedef std::queue<CopyFileFromLocalCallback> CopyFileFromLocalCallbackQueue;
-  typedef std::queue<DeleteObjectCallback> DeleteObjectCallbackQueue;
+  using CloseStorageCallbackQueue =
+      base::queue<std::pair<CloseStorageCallback, std::string>>;
+  using CreateDirectoryCallbackQueue = base::queue<CreateDirectoryCallback>;
+  using ReadDirectoryCallbackQueue = base::queue<ReadDirectoryCallback>;
+  using ReadFileCallbackQueue = base::queue<ReadFileCallback>;
+  using GetFileInfoCallbackQueue = base::queue<GetFileInfoCallback>;
+  using RenameObjectCallbackQueue = base::queue<RenameObjectCallback>;
+  using CopyFileFromLocalCallbackQueue = base::queue<CopyFileFromLocalCallback>;
+  using DeleteObjectCallbackQueue = base::queue<DeleteObjectCallback>;
 
   void OnStorageAttached(const std::string& storage_name) {
     DCHECK(thread_checker_.CalledOnValidThread());

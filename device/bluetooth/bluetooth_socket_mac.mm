@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/queue.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
@@ -232,8 +233,8 @@ const char kSocketNotConnected[] = "The socket is not connected";
 const char kReceivePending[] = "A Receive operation is pending";
 
 template <class T>
-void empty_queue(std::queue<T>& queue) {
-  std::queue<T> empty;
+void empty_queue(base::queue<T>& queue) {
+  base::queue<T> empty;
   std::swap(queue, empty);
 }
 

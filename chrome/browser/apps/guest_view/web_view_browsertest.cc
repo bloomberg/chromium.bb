@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <queue>
 #include <set>
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
@@ -226,7 +226,7 @@ void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
 
 #if defined (USE_AURA)
 views::View* FindWebView(views::View* view) {
-  std::queue<views::View*> queue;
+  base::queue<views::View*> queue;
   queue.push(view);
   while (!queue.empty()) {
     views::View* current = queue.front();
@@ -2638,7 +2638,7 @@ const char kDownloadPathPrefix[] = "/download_cookie_isolation_test";
 // the request with an HTTP 403. The body of the response is the value of the
 // Cookie header.
 std::unique_ptr<net::test_server::HttpResponse> HandleDownloadRequestWithCookie(
-    std::queue<net::HttpStatusCode>* status_codes,
+    base::queue<net::HttpStatusCode>* status_codes,
     const net::test_server::HttpRequest& request) {
   if (!base::StartsWith(request.relative_url, kDownloadPathPrefix,
                         base::CompareCase::SENSITIVE)) {
@@ -2732,7 +2732,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
   // These are the status codes to be returned by
   // HandleDownloadRequestWithCookie. The first two requests are going to result
   // in interrupted downloads. The next two requests are going to succeed.
-  std::queue<net::HttpStatusCode> status_codes;
+  base::queue<net::HttpStatusCode> status_codes;
   status_codes.push(net::HTTP_INTERNAL_SERVER_ERROR);
   status_codes.push(net::HTTP_INTERNAL_SERVER_ERROR);
   status_codes.push(net::HTTP_OK);
@@ -2820,7 +2820,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   // These are the status codes to be returned by
   // HandleDownloadRequestWithCookie. The first two requests are going to result
   // in interrupted downloads. The next two requests are going to succeed.
-  std::queue<net::HttpStatusCode> status_codes;
+  base::queue<net::HttpStatusCode> status_codes;
   status_codes.push(net::HTTP_INTERNAL_SERVER_ERROR);
   status_codes.push(net::HTTP_INTERNAL_SERVER_ERROR);
 
@@ -2877,7 +2877,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
-  std::queue<net::HttpStatusCode> status_codes;
+  base::queue<net::HttpStatusCode> status_codes;
   status_codes.push(net::HTTP_OK);
   status_codes.push(net::HTTP_OK);
 

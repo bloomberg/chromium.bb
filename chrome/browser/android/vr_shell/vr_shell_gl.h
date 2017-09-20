@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_GL_H_
 
 #include <memory>
-#include <queue>
 #include <utility>
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -208,9 +208,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   std::unique_ptr<gvr::BufferViewport> webvr_left_viewport_;
   std::unique_ptr<gvr::BufferViewport> webvr_right_viewport_;
   std::unique_ptr<gvr::SwapChain> swap_chain_;
-  std::queue<std::pair<uint8_t, WebVrBounds>> pending_bounds_;
+  base::queue<std::pair<uint8_t, WebVrBounds>> pending_bounds_;
   int premature_received_frames_ = 0;
-  std::queue<uint16_t> pending_frames_;
+  base::queue<uint16_t> pending_frames_;
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
 
   // The default size for the render buffers.

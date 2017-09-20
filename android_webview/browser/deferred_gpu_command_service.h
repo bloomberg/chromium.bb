@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include <memory>
-#include <queue>
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -79,8 +79,8 @@ class DeferredGpuCommandService
   size_t IdleQueueSize();
 
   base::Lock tasks_lock_;
-  std::queue<base::Closure> tasks_;
-  std::queue<std::pair<base::Time, base::Closure> > idle_tasks_;
+  base::queue<base::Closure> tasks_;
+  base::queue<std::pair<base::Time, base::Closure>> idle_tasks_;
 
   std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;
   gpu::GPUInfo gpu_info_;

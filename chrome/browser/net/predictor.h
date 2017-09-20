@@ -24,11 +24,11 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/containers/mru_cache.h"
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -341,12 +341,12 @@ class Predictor {
 
    private:
     // The names in the queue that should be serviced (popped) ASAP.
-    std::queue<GURL> rush_queue_;
+    base::queue<GURL> rush_queue_;
     // The names in the queue that should only be serviced when rush_queue is
     // empty.
-    std::queue<GURL> background_queue_;
+    base::queue<GURL> background_queue_;
 
-  DISALLOW_COPY_AND_ASSIGN(HostNameQueue);
+    DISALLOW_COPY_AND_ASSIGN(HostNameQueue);
   };
 
   // A map that is keyed with the host/port that we've learned were the cause

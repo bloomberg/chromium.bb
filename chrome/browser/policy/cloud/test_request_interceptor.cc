@@ -6,12 +6,12 @@
 
 #include <limits>
 #include <memory>
-#include <queue>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -187,7 +187,7 @@ class TestRequestInterceptor::Delegate : public net::URLRequestInterceptor {
   // The queue of pending callbacks. 'mutable' because MaybeCreateJob() is a
   // const method; it can't reenter though, because it runs exclusively on
   // the IO thread.
-  mutable std::queue<JobCallback> pending_job_callbacks_;
+  mutable base::queue<JobCallback> pending_job_callbacks_;
 
   // Queue of pending request serviced callbacks. Mutable for the same reason
   // as |pending_job_callbacks_|.
