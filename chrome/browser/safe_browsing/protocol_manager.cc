@@ -19,7 +19,7 @@
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/common/env_vars.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing/db/util.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"

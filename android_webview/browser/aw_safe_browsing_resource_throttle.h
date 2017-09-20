@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "components/safe_browsing/base_resource_throttle.h"
 #include "components/safe_browsing/browser/base_parallel_resource_throttle.h"
-#include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing/db/database_manager.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/common/resource_type.h"
 

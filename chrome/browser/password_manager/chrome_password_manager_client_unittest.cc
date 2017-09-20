@@ -52,8 +52,8 @@
 #endif
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
+#include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
-#include "components/safe_browsing_db/database_manager.h"
 #endif
 
 using browser_sync::ProfileSyncServiceMock;

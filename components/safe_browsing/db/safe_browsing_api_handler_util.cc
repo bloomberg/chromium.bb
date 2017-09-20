@@ -13,8 +13,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "components/safe_browsing_db/metadata.pb.h"
-#include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing/db/metadata.pb.h"
+#include "components/safe_browsing/db/util.h"
 
 namespace safe_browsing {
 namespace {

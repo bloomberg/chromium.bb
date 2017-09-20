@@ -8,8 +8,8 @@
 
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/features.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "net/url_request/url_request.h"
 
 namespace android_webview {

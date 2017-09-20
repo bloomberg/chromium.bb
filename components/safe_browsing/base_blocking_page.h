@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "components/safe_browsing/base_ui_manager.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "components/security_interstitials/core/metrics_helper.h"

@@ -11,7 +11,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing/db/database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
