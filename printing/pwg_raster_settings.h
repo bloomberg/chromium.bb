@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_BITMAP_TRANSFORM_SETTINGS_H_
-#define PRINTING_BITMAP_TRANSFORM_SETTINGS_H_
+#ifndef PRINTING_PWG_RASTER_SETTINGS_H_
+#define PRINTING_PWG_RASTER_SETTINGS_H_
 
 namespace printing {
 
@@ -26,4 +26,4 @@ struct PwgRasterSettings {
 
 }  // namespace printing
 
-#endif  // PRINTING_BITMAP_TRANSFORM_SETTINGS_H_
+#endif  // PRINTING_PWG_RASTER_SETTINGS_H_
