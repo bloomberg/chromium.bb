@@ -29,6 +29,7 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
       : ResourcePrefetchPredictor(config, profile) {}
 
   MOCK_CONST_METHOD1(IsUrlPrefetchable, bool(const GURL& main_frame_url));
+  MOCK_CONST_METHOD1(IsUrlPreconnectable, bool(const GURL& main_frame_url));
 
   ~MockResourcePrefetchPredictor() override {}
 };
@@ -65,6 +66,30 @@ class LoadingPredictorPageLoadMetricsObserverTest
             predictor_.get(), collector_.get(), web_contents()));
   }
 
+  void TestHistogramsRecorded(bool is_prefetchable, bool is_preconnectable) {
+    const GURL main_frame_url("https://www.google.com");
+    EXPECT_CALL(*predictor_.get(), IsUrlPrefetchable(main_frame_url))
+        .WillOnce(testing::Return(is_prefetchable));
+    EXPECT_CALL(*predictor_.get(), IsUrlPreconnectable(main_frame_url))
+        .WillOnce(testing::Return(is_preconnectable));
+
+    NavigateAndCommit(main_frame_url);
+    SimulateTimingUpdate(timing_);
+
+    histogram_tester().ExpectTotalCount(
+        internal::kHistogramResourcePrefetchPredictorFirstContentfulPaint,
+        is_prefetchable ? 1 : 0);
+    histogram_tester().ExpectTotalCount(
+        internal::kHistogramResourcePrefetchPredictorFirstMeaningfulPaint,
+        is_prefetchable ? 1 : 0);
+    histogram_tester().ExpectTotalCount(
+        internal::kHistogramLoadingPredictorFirstContentfulPaintPreconnectable,
+        is_preconnectable ? 1 : 0);
+    histogram_tester().ExpectTotalCount(
+        internal::kHistogramLoadingPredictorFirstMeaningfulPaintPreconnectable,
+        is_preconnectable ? 1 : 0);
+  }
+
   std::unique_ptr<testing::StrictMock<MockResourcePrefetchPredictor>>
       predictor_;
   page_load_metrics::mojom::PageLoadTiming timing_;
@@ -72,30 +97,19 @@ class LoadingPredictorPageLoadMetricsObserverTest
 };
 
 TEST_F(LoadingPredictorPageLoadMetricsObserverTest, PrefetchableIsRecorded) {
-  const GURL main_frame_url("https://www.google.com");
-  EXPECT_CALL(*predictor_.get(), IsUrlPrefetchable(main_frame_url))
-      .WillOnce(testing::Return(true));
+  TestHistogramsRecorded(true, false);
+}
 
-  NavigateAndCommit(main_frame_url);
-  SimulateTimingUpdate(timing_);
-
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramResourcePrefetchPredictorFirstContentfulPaint, 1);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramResourcePrefetchPredictorFirstMeaningfulPaint, 1);
+TEST_F(LoadingPredictorPageLoadMetricsObserverTest, PreconnectableIsRecorded) {
+  TestHistogramsRecorded(false, true);
 }
 
 TEST_F(LoadingPredictorPageLoadMetricsObserverTest,
-       NotPrefetchableIsNotRecorded) {
-  const GURL main_frame_url("https://www.google.com");
-  EXPECT_CALL(*predictor_.get(), IsUrlPrefetchable(main_frame_url))
-      .WillOnce(testing::Return(false));
+       NotPrefetchableAndNotPreconnectableAreNotRecorded) {
+  TestHistogramsRecorded(false, false);
+}
 
-  NavigateAndCommit(main_frame_url);
-  SimulateTimingUpdate(timing_);
-
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramResourcePrefetchPredictorFirstContentfulPaint, 0);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramResourcePrefetchPredictorFirstMeaningfulPaint, 0);
+TEST_F(LoadingPredictorPageLoadMetricsObserverTest,
+       BothPrefetchableAndPreconnectableAreRecorded) {
+  TestHistogramsRecorded(true, true);
 }
