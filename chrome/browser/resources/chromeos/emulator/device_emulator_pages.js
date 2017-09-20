@@ -18,10 +18,16 @@ Polymer({
     },
   },
 
+  /** @override */
   ready: function() {
     for (var page of Polymer.dom(this.$$('neon-animated-pages')).children)
       device_emulator[page.id] = page;
 
     chrome.send('initializeDeviceEmulator');
+  },
+
+  /** @private */
+  onMenuButtonTap_: function() {
+    this.$.drawer.toggle();
   },
 });
