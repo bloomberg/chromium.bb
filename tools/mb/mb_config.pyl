@@ -1561,6 +1561,10 @@
 
     'syzyasan_no_pch_release_x86': [
       'syzyasan', 'no_pch', 'release', 'x86',
+      # The SyzyASAN build may default dcheck_always_on to true to produce
+      # official builds with DCHECK on. To counter this, the flag is fixed
+      # here. For details see https://crbug.com/596231#c71.
+      'disable_dcheck_always_on',
     ],
 
     'thin_lto_clang_tot_full_symbols_release_static_use_lld': [
@@ -1753,6 +1757,10 @@
 
     'dcheck_always_on': {
       'gn_args': 'dcheck_always_on=true',
+    },
+
+    'disable_dcheck_always_on': {
+      'gn_args': 'dcheck_always_on=false',
     },
 
     'debug': {
