@@ -405,7 +405,7 @@ public class AndroidPaymentApp
 
         extras.putParcelable(EXTRA_DEPRECATED_DATA_MAP, methodDataBundle);
 
-        String details = serializeDetails(total, displayItems);
+        String details = deprecatedSerializeDetails(total, displayItems);
         extras.putString(EXTRA_DEPRECATED_DETAILS, details == null ? EMPTY_JSON_DATA : details);
 
         return extras;
@@ -425,7 +425,7 @@ public class AndroidPaymentApp
         mHandler.post(() -> mInstrumentDetailsCallback.onInstrumentDetailsError());
     }
 
-    private static String serializeDetails(
+    private static String deprecatedSerializeDetails(
             @Nullable PaymentItem total, @Nullable List<PaymentItem> displayItems) {
         StringWriter stringWriter = new StringWriter();
         JsonWriter json = new JsonWriter(stringWriter);
@@ -436,16 +436,14 @@ public class AndroidPaymentApp
             if (total != null) {
                 // total {{{
                 json.name("total");
-                serializePaymentItem(total, json);
+                serializeTotal(total, json);
                 // }}} total
             }
 
             // displayitems {{{
             if (displayItems != null) {
                 json.name("displayItems").beginArray();
-                for (int i = 0; i < displayItems.size(); i++) {
-                    serializePaymentItem(displayItems.get(i), json);
-                }
+                // Do not pass any display items to the payment app.
                 json.endArray();
             }
             // }}} displayItems
@@ -475,10 +473,14 @@ public class AndroidPaymentApp
         return stringWriter.toString();
     }
 
-    private static void serializePaymentItem(PaymentItem item, JsonWriter json) throws IOException {
+    private static void serializeTotal(PaymentItem item, JsonWriter json)
+            throws IOException {
         // item {{{
         json.beginObject();
-        json.name("label").value(item.label);
+        // Sanitize the total name, because the payment app does not need it to complete the
+        // transaction. Matches the behavior of:
+        // https://w3c.github.io/payment-handler/#total-attribute
+        json.name("label").value("");
 
         // amount {{{
         json.name("amount").beginObject();
@@ -514,7 +516,7 @@ public class AndroidPaymentApp
         // total {{{
         if (modifier.total != null) {
             json.name("total");
-            serializePaymentItem(modifier.total, json);
+            serializeTotal(modifier.total, json);
         } else {
             json.name("total").nullValue();
         }
