@@ -63,6 +63,13 @@ bool AudioSinkAndroidAudioTrackImpl::GetSessionIds(int* media_id,
   return is_valid;
 }
 
+// static
+int64_t AudioSinkAndroidAudioTrackImpl::GetMinimumBufferedTime(
+    int samples_per_second) {
+  return Java_AudioSinkAudioTrackImpl_getMinimumBufferedTime(
+      base::android::AttachCurrentThread(), samples_per_second);
+}
+
 AudioSinkAndroidAudioTrackImpl::AudioSinkAndroidAudioTrackImpl(
     AudioSinkAndroid::Delegate* delegate,
     int input_samples_per_second,

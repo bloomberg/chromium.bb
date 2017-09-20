@@ -59,6 +59,13 @@ const int64_t kNoPendingOutput = -1;
 AudioDecoderAndroid::RateShifterInfo::RateShifterInfo(float playback_rate)
     : rate(playback_rate), input_frames(0), output_frames(0) {}
 
+// static
+int64_t MediaPipelineBackend::AudioDecoder::GetMinimumBufferedTime(
+    const AudioConfig& config) {
+  return AudioSinkAndroid::GetMinimumBufferedTime(
+      AudioSinkManager::GetDefaultSinkType(), config);
+}
+
 AudioDecoderAndroid::AudioDecoderAndroid(MediaPipelineBackendAndroid* backend)
     : backend_(backend),
       task_runner_(backend->GetTaskRunner()),

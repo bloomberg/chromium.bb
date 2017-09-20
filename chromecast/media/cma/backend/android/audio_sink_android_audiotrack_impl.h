@@ -47,6 +47,8 @@ class AudioSinkAndroidAudioTrackImpl : public AudioSinkAndroid {
   // Returns true if the ids populated are valid.
   static bool GetSessionIds(int* media_id, int* communication_id);
 
+  static int64_t GetMinimumBufferedTime(int samples_per_second);
+
   // Called from Java so that we can cache the addresses of the Java-managed
   // byte_buffers.
   void CacheDirectBufferAddress(
