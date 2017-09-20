@@ -239,16 +239,11 @@ void RecordPrinterInfo(size_t* call_count,
 // On failure, returns NULL and fills |*error| string.
 std::unique_ptr<base::ListValue> GetJSONAsListValue(const std::string& json,
                                                     std::string* error) {
-  std::unique_ptr<base::Value> deserialized(
-      JSONStringValueDeserializer(json).Deserialize(NULL, error));
-  if (!deserialized)
-    return std::unique_ptr<base::ListValue>();
-  base::ListValue* list = nullptr;
-  if (!deserialized->GetAsList(&list)) {
+  auto ret = base::ListValue::From(
+      JSONStringValueDeserializer(json).Deserialize(nullptr, error));
+  if (!ret)
     *error = "Value is not a list.";
-    return std::unique_ptr<base::ListValue>();
-  }
-  return std::unique_ptr<base::ListValue>(list->DeepCopy());
+  return ret;
 }
 
 // Converts JSON string to base::DictionaryValue object.
@@ -256,16 +251,11 @@ std::unique_ptr<base::ListValue> GetJSONAsListValue(const std::string& json,
 std::unique_ptr<base::DictionaryValue> GetJSONAsDictionaryValue(
     const std::string& json,
     std::string* error) {
-  std::unique_ptr<base::Value> deserialized(
-      JSONStringValueDeserializer(json).Deserialize(NULL, error));
-  if (!deserialized)
-    return std::unique_ptr<base::DictionaryValue>();
-  base::DictionaryValue* dictionary;
-  if (!deserialized->GetAsDictionary(&dictionary)) {
+  auto ret = base::DictionaryValue::From(
+      JSONStringValueDeserializer(json).Deserialize(nullptr, error));
+  if (!ret)
     *error = "Value is not a dictionary.";
-    return std::unique_ptr<base::DictionaryValue>();
-  }
-  return std::unique_ptr<base::DictionaryValue>(dictionary->DeepCopy());
+  return ret;
 }
 
 std::string RefCountedMemoryToString(

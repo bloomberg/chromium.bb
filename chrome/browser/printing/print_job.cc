@@ -222,7 +222,7 @@ PrintedDocument* PrintJob::document() const {
 #if defined(OS_WIN)
 class PrintJob::PdfConversionState {
  public:
-  PdfConversionState(gfx::Size page_size, gfx::Rect content_area)
+  PdfConversionState(const gfx::Size& page_size, const gfx::Rect& content_area)
       : page_count_(0),
         current_page_(0),
         pages_in_progress_(0),
@@ -254,8 +254,8 @@ class PrintJob::PdfConversionState {
   }
 
   void set_page_count(int page_count) { page_count_ = page_count; }
-  gfx::Size page_size() const { return page_size_; }
-  gfx::Rect content_area() const { return content_area_; }
+  const gfx::Size& page_size() const { return page_size_; }
+  const gfx::Rect& content_area() const { return content_area_; }
 
  private:
   int page_count_;

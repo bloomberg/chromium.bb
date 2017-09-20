@@ -28,7 +28,7 @@
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/pwg_raster_converter.h"
 #include "printing/pwg_raster_settings.h"
-#endif  // ENABLE_PRINT_PREVIEW
+#endif
 
 namespace cloud_print {
 
@@ -228,7 +228,7 @@ const char kSampleCJTDuplex[] =
     "\"version\" : \"1.0\","
     "\"print\": { \"duplex\": {\"type\": \"SHORT_EDGE\"} }"
     "}";
-#endif  // ENABLE_PRINT_PREVIEW
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 const char* const kTestParams[] = {"8.8.4.4", "2001:4860:4860::8888"};
 
@@ -262,12 +262,12 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
   PrivetHTTPTest() {
     PrivetURLFetcher::ResetTokenMapForTests();
 
-    request_context_ = new net::TestURLRequestContextGetter(
+    request_context_ = base::MakeRefCounted<net::TestURLRequestContextGetter>(
         base::ThreadTaskRunnerHandle::Get());
     privet_client_ = PrivetV1HTTPClient::CreateDefault(
-        base::WrapUnique<PrivetHTTPClient>(new PrivetHTTPClientImpl(
+        std::make_unique<PrivetHTTPClientImpl>(
             "sampleDevice._privet._tcp.local",
-            net::HostPortPair(GetParam(), 6006), request_context_.get())));
+            net::HostPortPair(GetParam(), 6006), request_context_.get()));
     fetcher_factory_.SetDelegateForTests(&fetcher_delegate_);
   }
 
@@ -302,10 +302,12 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
     EXPECT_TRUE(fetcher);
     EXPECT_EQ(url, fetcher->GetOriginalURL());
 
-    if (!fetcher) return false;
+    if (!fetcher)
+      return false;
 
     EXPECT_EQ(data, fetcher->upload_data());
-    if (data != fetcher->upload_data()) return false;
+    if (data != fetcher->upload_data())
+      return false;
 
     return SuccessfulResponseToURL(url, response);
   }
@@ -336,10 +338,12 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
     EXPECT_TRUE(fetcher);
     EXPECT_EQ(url, fetcher->GetOriginalURL());
 
-    if (!fetcher) return false;
+    if (!fetcher)
+      return false;
 
     EXPECT_EQ(file_path, fetcher->upload_file_path());
-    if (file_path != fetcher->upload_file_path()) return false;
+    if (file_path != fetcher->upload_file_path())
+      return false;
 
     return SuccessfulResponseToURL(url, response);
   }
@@ -368,12 +372,7 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
 class MockJSONCallback{
  public:
   void OnPrivetJSONDone(const base::DictionaryValue* value) {
-    if (!value) {
-      value_.reset();
-    } else {
-      value_.reset(value->DeepCopy());
-    }
-
+    value_.reset(value ? value->DeepCopy() : nullptr);
     OnPrivetJSONDoneInternal();
   }
 
@@ -461,7 +460,7 @@ TEST_P(PrivetInfoTest, SuccessfulInfo) {
   info_operation_->Start();
 
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   EXPECT_EQ(GetUrl("/privet/info"), fetcher->GetOriginalURL());
 
   fetcher->SetResponseString(kSampleInfoResponse);
@@ -477,7 +476,7 @@ TEST_P(PrivetInfoTest, InfoFailureHTTP) {
   info_operation_->Start();
 
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                             net::OK));
   fetcher->set_response_code(404);
@@ -767,8 +766,7 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
     local_print_operation_ = privet_client_->CreateLocalPrintOperation(
         &local_print_delegate_);
 
-    std::unique_ptr<FakePWGRasterConverter> pwg_converter(
-        new FakePWGRasterConverter);
+    auto pwg_converter = std::make_unique<FakePWGRasterConverter>();
     pwg_converter_ = pwg_converter.get();
     local_print_operation_->SetPWGRasterConverterForTesting(
         std::move(pwg_converter));
@@ -1031,7 +1029,7 @@ TEST_P(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
   EXPECT_TRUE(SuccessfulResponseToURL(GetUrl("/privet/printer/createjob"),
                                       kSampleCreatejobResponse));
 }
-#endif  // ENABLE_PRINT_PREVIEW
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 class PrivetHttpWithServerTest : public ::testing::Test,
                                  public PrivetURLFetcher::Delegate {
@@ -1040,10 +1038,11 @@ class PrivetHttpWithServerTest : public ::testing::Test,
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   void SetUp() override {
-    context_getter_ = new net::TestURLRequestContextGetter(
+    context_getter_ = base::MakeRefCounted<net::TestURLRequestContextGetter>(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
-    server_.reset(new EmbeddedTestServer(EmbeddedTestServer::TYPE_HTTP));
+    server_ =
+        std::make_unique<EmbeddedTestServer>(EmbeddedTestServer::TYPE_HTTP);
 
     base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
@@ -1051,8 +1050,8 @@ class PrivetHttpWithServerTest : public ::testing::Test,
         test_data_dir.Append(FILE_PATH_LITERAL("chrome/test/data")));
     ASSERT_TRUE(server_->Start());
 
-    client_.reset(new PrivetHTTPClientImpl("test", server_->host_port_pair(),
-                                           context_getter_));
+    client_ = std::make_unique<PrivetHTTPClientImpl>(
+        "test", server_->host_port_pair(), context_getter_);
   }
 
   void OnNeedPrivetToken(

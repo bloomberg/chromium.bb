@@ -678,11 +678,8 @@ class DpiTraits : public ItemsTraits<kOptionDpi> {
   static bool IsValid(const Dpi& option) { return option.IsValid(); }
 
   static bool Load(const base::DictionaryValue& dict, Dpi* option) {
-    if (!dict.GetInteger(kDpiHorizontal, &option->horizontal) ||
-        !dict.GetInteger(kDpiVertical, &option->vertical)) {
-      return false;
-    }
-    return true;
+    return dict.GetInteger(kDpiHorizontal, &option->horizontal) &&
+           dict.GetInteger(kDpiVertical, &option->vertical);
   }
 
   static void Save(const Dpi& option, base::DictionaryValue* dict) {
