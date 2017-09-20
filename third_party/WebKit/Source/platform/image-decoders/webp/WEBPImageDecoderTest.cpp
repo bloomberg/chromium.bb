@@ -243,7 +243,7 @@ TEST(AnimatedWebPTests, parseAndDecodeByteByByte) {
                        kAnimationLoopInfinite);
   TestByteByByteDecode(
       &CreateWEBPDecoder,
-      "/LayoutTests/images/resources/webp-animated-icc-xmp.webp", 13u, 32000);
+      "/LayoutTests/images/resources/webp-animated-icc-xmp.webp", 13u, 31999);
 }
 
 TEST(AnimatedWebPTests, invalidImages) {
@@ -442,7 +442,7 @@ TEST(AnimatedWebPTests, isSizeAvailable) {
   TestByteByByteSizeAvailable(
       &CreateWEBPDecoder,
       "/LayoutTests/images/resources/webp-animated-icc-xmp.webp", 1404u, false,
-      32000);
+      31999);
 }
 
 TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
