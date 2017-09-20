@@ -41,6 +41,7 @@ public abstract class BackendItems extends ArrayList<DownloadHistoryItemWrapper>
     }
 
     /**
+     * TODO(shaktisahu) : Remove this when not needed.
      * Filters out items that match the query and are displayed in this list for the current filter.
      * @param filterType    Filter to use.
      * @param query         The text to match.

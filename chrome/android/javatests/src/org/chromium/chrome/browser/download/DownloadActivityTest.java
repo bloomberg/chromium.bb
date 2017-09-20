@@ -38,11 +38,11 @@ import org.chromium.chrome.browser.download.ui.DownloadManagerToolbar;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.download.ui.SpaceDisplay;
 import org.chromium.chrome.browser.download.ui.StubbedProvider;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
@@ -171,11 +171,11 @@ public class DownloadActivityTest {
         // Say that the offline page has been deleted.
         callCount = mAdapterObserver.onChangedCallback.getCallCount();
         spaceDisplayCallCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
-        final OfflinePageDownloadItem deletedPage =
-                StubbedProvider.createOfflineItem(3, "20151021 07:28");
+        final OfflineItem deletedPage = StubbedProvider.createOfflineItem(3, "20151021 07:28");
         ThreadUtils.runOnUiThread(
-                () -> mStubbedProvider.getOfflinePageBridge().observer.onItemDeleted(
-                        deletedPage.getGuid()));
+                ()
+                        -> mStubbedProvider.getOfflineContentProvider().observer.onItemRemoved(
+                                deletedPage.id));
         mAdapterObserver.onChangedCallback.waitForCallback(callCount, 2);
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(spaceDisplayCallCount);
         Assert.assertEquals("512.00 MB downloaded", mSpaceUsedDisplay.getText());
@@ -239,14 +239,14 @@ public class DownloadActivityTest {
         Assert.assertEquals(
                 0, mStubbedProvider.getDownloadDelegate().removeDownloadCallback.getCallCount());
         Assert.assertEquals(
-                0, mStubbedProvider.getOfflinePageBridge().deleteItemCallback.getCallCount());
+                0, mStubbedProvider.getOfflineContentProvider().deleteItemCallback.getCallCount());
+        int callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
         ThreadUtils.runOnUiThread(() -> Assert.assertTrue(mUi.getDownloadManagerToolbarForTests()
                     .getMenu().performIdentifierAction(R.id.selection_mode_delete_menu_id, 0)));
 
-        mStubbedProvider.getDownloadDelegate().removeDownloadCallback.waitForCallback(0);
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
         Assert.assertEquals(
                 1, mStubbedProvider.getDownloadDelegate().checkExternalCallback.getCallCount());
-        mStubbedProvider.getOfflinePageBridge().deleteItemCallback.waitForCallback(0);
         Assert.assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
         Assert.assertEquals(9, mAdapter.getItemCount());
         Assert.assertEquals("0.65 KB downloaded", mSpaceUsedDisplay.getText());
@@ -316,7 +316,7 @@ public class DownloadActivityTest {
         Assert.assertEquals(
                 0, mStubbedProvider.getDownloadDelegate().removeDownloadCallback.getCallCount());
         Assert.assertEquals(
-                0, mStubbedProvider.getOfflinePageBridge().deleteItemCallback.getCallCount());
+                0, mStubbedProvider.getOfflineContentProvider().deleteItemCallback.getCallCount());
         Assert.assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
         Assert.assertEquals(15, mAdapter.getItemCount());
         Assert.assertEquals("6.50 GB downloaded", mSpaceUsedDisplay.getText());
@@ -551,7 +551,7 @@ public class DownloadActivityTest {
         DownloadItem item4 = StubbedProvider.createDownloadItem(4, "19851026 09:00");
         DownloadItem item5 = StubbedProvider.createDownloadItem(5, "19851026 09:00");
         DownloadItem item6 = StubbedProvider.createDownloadItem(6, "20151021 07:28");
-        OfflinePageDownloadItem item7 = StubbedProvider.createOfflineItem(3, "20151021 07:28");
+        OfflineItem item7 = StubbedProvider.createOfflineItem(3, "20151021 07:28");
         mStubbedProvider.getDownloadDelegate().regularItems.add(item0);
         mStubbedProvider.getDownloadDelegate().regularItems.add(item1);
         mStubbedProvider.getDownloadDelegate().regularItems.add(item2);
@@ -559,7 +559,7 @@ public class DownloadActivityTest {
         mStubbedProvider.getDownloadDelegate().regularItems.add(item4);
         mStubbedProvider.getDownloadDelegate().regularItems.add(item5);
         mStubbedProvider.getDownloadDelegate().regularItems.add(item6);
-        mStubbedProvider.getOfflinePageBridge().items.add(item7);
+        mStubbedProvider.getOfflineContentProvider().items.add(item7);
 
         // Start the activity up.
         Intent intent = new Intent();

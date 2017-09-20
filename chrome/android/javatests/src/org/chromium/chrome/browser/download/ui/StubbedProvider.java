@@ -7,20 +7,23 @@ package org.chromium.chrome.browser.download.ui;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 
-import android.content.ComponentName;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OfflineContentProvider;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
+import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
+import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.offline_items_collection.VisualsCallback;
 import org.chromium.content_public.browser.DownloadState;
 
 import java.text.SimpleDateFormat;
@@ -94,16 +97,16 @@ public class StubbedProvider implements BackendProvider {
         public void updateLastAccessTime(String downloadGuid, boolean isOffTheRecord) {}
     }
 
-    /** Stubs out the OfflinePageDownloadBridge. */
-    public class StubbedOfflinePageDelegate implements OfflinePageDelegate {
+    /** Stubs out the OfflineContentProvider. */
+    public class StubbedOfflineContentProvider implements OfflineContentProvider {
         public final CallbackHelper addCallback = new CallbackHelper();
         public final CallbackHelper removeCallback = new CallbackHelper();
         public final CallbackHelper deleteItemCallback = new CallbackHelper();
-        public final List<OfflinePageDownloadItem> items = new ArrayList<>();
-        public OfflinePageDownloadBridge.Observer observer;
+        public final ArrayList<OfflineItem> items = new ArrayList<>();
+        public OfflineContentProvider.Observer observer;
 
         @Override
-        public void addObserver(OfflinePageDownloadBridge.Observer addedObserver) {
+        public void addObserver(OfflineContentProvider.Observer addedObserver) {
             // Immediately indicate that the delegate has loaded.
             observer = addedObserver;
             addCallback.notifyCalled();
@@ -111,27 +114,27 @@ public class StubbedProvider implements BackendProvider {
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onItemsLoaded();
+                    observer.onItemsAvailable();
                 }
             });
         }
 
         @Override
-        public void removeObserver(OfflinePageDownloadBridge.Observer removedObserver) {
+        public void removeObserver(OfflineContentProvider.Observer removedObserver) {
             assertEquals(observer, removedObserver);
             observer = null;
             removeCallback.notifyCalled();
         }
 
         @Override
-        public List<OfflinePageDownloadItem> getAllItems() {
+        public ArrayList<OfflineItem> getAllItems() {
             return items;
         }
 
         @Override
-        public void deleteItem(final String guid) {
-            for (OfflinePageDownloadItem item : items) {
-                if (TextUtils.equals(item.getGuid(), guid)) {
+        public void removeItem(ContentId id) {
+            for (OfflineItem item : items) {
+                if (item.id.equals(id)) {
                     items.remove(item);
                     break;
                 }
@@ -140,22 +143,33 @@ public class StubbedProvider implements BackendProvider {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    observer.onItemDeleted(guid);
+                    observer.onItemRemoved(id);
                     deleteItemCallback.notifyCalled();
                 }
             });
         }
 
         @Override
-        public void openItem(String guid, ComponentName componentName) {}
+        public void openItem(ContentId id) {}
         @Override
-        public void pauseDownload(String guid) {}
+        public void pauseDownload(ContentId id) {}
         @Override
-        public void resumeDownload(String guid) {}
+        public void resumeDownload(ContentId id, boolean hasUserGesture) {}
         @Override
-        public void cancelDownload(String guid) {}
+        public void cancelDownload(ContentId id) {}
+
         @Override
-        public void destroy() {}
+        public boolean areItemsAvailable() {
+            return true;
+        }
+
+        @Override
+        public OfflineItem getItemById(ContentId id) {
+            return null;
+        }
+
+        @Override
+        public void getVisualsForItem(ContentId id, VisualsCallback callback) {}
     }
 
     /** Stubs out all attempts to get thumbnails for files. */
@@ -174,14 +188,14 @@ public class StubbedProvider implements BackendProvider {
 
     private final Handler mHandler;
     private final StubbedDownloadDelegate mDownloadDelegate;
-    private final StubbedOfflinePageDelegate mOfflineDelegate;
+    private final StubbedOfflineContentProvider mOfflineContentProvider;
     private final SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
     private final StubbedThumbnailProvider mStubbedThumbnailProvider;
 
     public StubbedProvider() {
         mHandler = new Handler(Looper.getMainLooper());
         mDownloadDelegate = new StubbedDownloadDelegate();
-        mOfflineDelegate = new StubbedOfflinePageDelegate();
+        mOfflineContentProvider = new StubbedOfflineContentProvider();
         mSelectionDelegate = new DownloadItemSelectionDelegate();
         mStubbedThumbnailProvider = new StubbedThumbnailProvider();
     }
@@ -192,8 +206,8 @@ public class StubbedProvider implements BackendProvider {
     }
 
     @Override
-    public StubbedOfflinePageDelegate getOfflinePageBridge() {
-        return mOfflineDelegate;
+    public StubbedOfflineContentProvider getOfflineContentProvider() {
+        return mOfflineContentProvider;
     }
 
     @Override
@@ -321,30 +335,41 @@ public class StubbedProvider implements BackendProvider {
         return item;
     }
 
-    /** Creates a new OfflinePageDownloadItem with pre-defined values. */
-    public static OfflinePageDownloadItem createOfflineItem(int which, String date)
-            throws Exception {
+    /** Creates a new OfflineItem with pre-defined values. */
+    public static OfflineItem createOfflineItem(int which, String date) throws Exception {
         long startTime = dateToEpoch(date);
-        int downloadState = org.chromium.components.offlinepages.downloads.DownloadState.COMPLETE;
+        int downloadState = OfflineItemState.COMPLETE;
         if (which == 0) {
-            return new OfflinePageDownloadItem("offline_guid_1", "https://url.com",
-                    downloadState, 0, "page 1",
-                    "/data/fake_path/Downloads/first_file", startTime, 1000);
+            return createOfflineItem("offline_guid_1", "https://url.com", downloadState, 0,
+                    "page 1", "/data/fake_path/Downloads/first_file", startTime, 1000);
         } else if (which == 1) {
-            return new OfflinePageDownloadItem("offline_guid_2", "http://stuff_and_things.com",
-                    downloadState, 0, "page 2",
-                    "/data/fake_path/Downloads/file_two", startTime, 10000);
+            return createOfflineItem("offline_guid_2", "http://stuff_and_things.com", downloadState,
+                    0, "page 2", "/data/fake_path/Downloads/file_two", startTime, 10000);
         } else if (which == 2) {
-            return new OfflinePageDownloadItem("offline_guid_3", "https://url.com",
-                    downloadState, 100, "page 3",
-                    "/data/fake_path/Downloads/3_file", startTime, 100000);
+            return createOfflineItem("offline_guid_3", "https://url.com", downloadState, 100,
+                    "page 3", "/data/fake_path/Downloads/3_file", startTime, 100000);
         } else if (which == 3) {
-            return new OfflinePageDownloadItem("offline_guid_4", "https://thangs.com",
-                    downloadState, 1024, "page 4",
-                    "/data/fake_path/Downloads/4", startTime, ONE_GIGABYTE * 5L);
+            return createOfflineItem("offline_guid_4", "https://thangs.com", downloadState, 1024,
+                    "page 4", "/data/fake_path/Downloads/4", startTime, ONE_GIGABYTE * 5L);
         } else {
             return null;
         }
+    }
+
+    private static OfflineItem createOfflineItem(String guid, String url, int state,
+            long downloadProgressBytes, String title, String targetPath, long startTime,
+            long totalSize) {
+        OfflineItem offlineItem = new OfflineItem();
+        offlineItem.id = new ContentId(LegacyHelpers.LEGACY_OFFLINE_PAGE_NAMESPACE, guid);
+        offlineItem.pageUrl = url;
+        offlineItem.state = state;
+        offlineItem.receivedBytes = downloadProgressBytes;
+        offlineItem.title = title;
+        offlineItem.filePath = targetPath;
+        offlineItem.creationTimeMs = startTime;
+        offlineItem.totalSizeBytes = totalSize;
+        offlineItem.filter = OfflineItemFilter.FILTER_PAGE;
+        return offlineItem;
     }
 
     /** Converts a date string to a timestamp. */

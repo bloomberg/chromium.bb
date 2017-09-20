@@ -48,6 +48,7 @@ class RecentTabsUIAdapterDelegate : public DownloadUIAdapter::Delegate {
   // Sets our reference to the UI adapter so we can notify it of visibility
   // changes.
   void SetUIAdapter(DownloadUIAdapter* ui_adapter) override;
+  void OpenItem(const OfflineItem& item, int64_t offline_id) override {}
 
   // Register/UnregisterTab add and remove tab IDs from the list.  These
   // functions can be called before a page actually exists with the given tab
