@@ -103,9 +103,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Cancel all current and queued speech immediately.
   virtual void SilenceSpokenFeedback() const = 0;
 
-  // Clear the focus highlight
-  virtual void ClearFocusHighlight() const = 0;
-
   // Saves the zoom scale of the full screen magnifier.
   virtual void SaveScreenMagnifierScale(double scale) = 0;
 

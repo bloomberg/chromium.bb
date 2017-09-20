@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
 
+#include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/shell.h"
-#include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -13,6 +13,8 @@
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/public/activation_client.h"
+
+using ash::AccessibilityFocusRingController;
 
 namespace chromeos {
 

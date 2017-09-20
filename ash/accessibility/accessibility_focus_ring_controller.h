@@ -2,27 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_
-#define CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_
+#ifndef ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_
+#define ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_
 
 #include <memory>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
+#include "ash/accessibility/accessibility_cursor_ring_layer.h"
+#include "ash/accessibility/accessibility_focus_ring_layer.h"
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/ui/accessibility_cursor_ring_layer.h"
-#include "chrome/browser/chromeos/ui/accessibility_focus_ring_layer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace chromeos {
+namespace ash {
 
 // AccessibilityFocusRingController handles drawing custom rings around
 // the focused object, cursor, and/or caret for accessibility.
-class AccessibilityFocusRingController : public FocusRingLayerDelegate {
+// TODO(mash): Provide mojo API for access from chrome.
+class ASH_EXPORT AccessibilityFocusRingController
+    : public FocusRingLayerDelegate {
  public:
   // Get the single instance of this class.
   static AccessibilityFocusRingController* GetInstance();
@@ -51,6 +53,13 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   // Don't fade in / out, for testing.
   void SetNoFadeForTesting();
 
+  AccessibilityCursorRingLayer* cursor_layer_for_testing() {
+    return cursor_layer_.get();
+  }
+  AccessibilityCursorRingLayer* caret_layer_for_testing() {
+    return caret_layer_.get();
+  }
+
  protected:
   AccessibilityFocusRingController();
   ~AccessibilityFocusRingController() override;
@@ -66,11 +75,6 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   virtual int GetMargin() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(AccessibilityFocusRingControllerTest,
-                           CursorWorksOnMultipleDisplays);
-  FRIEND_TEST_ALL_PREFIXES(AccessibilityFocusRingControllerTest,
-                           CaretRingDrawnOnlyWithinBounds);
-
   // FocusRingLayerDelegate overrides.
   void OnDeviceScaleFactorChanged() override;
   void OnAnimationStep(base::TimeTicks timestamp) override;
@@ -122,6 +126,6 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingController);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_
+#endif  // ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_CONTROLLER_H_

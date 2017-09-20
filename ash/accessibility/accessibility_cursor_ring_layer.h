@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_CURSOR_RING_LAYER_H_
-#define CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_CURSOR_RING_LAYER_H_
+#ifndef ASH_ACCESSIBILITY_ACCESSIBILITY_CURSOR_RING_LAYER_H_
+#define ASH_ACCESSIBILITY_ACCESSIBILITY_CURSOR_RING_LAYER_H_
 
-#include "chrome/browser/chromeos/ui/accessibility_focus_ring.h"
-#include "chrome/browser/chromeos/ui/focus_ring_layer.h"
+#include "ash/accessibility/accessibility_focus_ring.h"
+#include "ash/accessibility/focus_ring_layer.h"
+#include "ash/ash_export.h"
 
-namespace chromeos {
+namespace ash {
 
 // A subclass of FocusRingLayer that highlights the mouse cursor while it's
 // moving, to make it easier to find visually.
-class AccessibilityCursorRingLayer : public FocusRingLayer {
+class ASH_EXPORT AccessibilityCursorRingLayer : public FocusRingLayer {
  public:
   AccessibilityCursorRingLayer(FocusRingLayerDelegate* delegate,
                                int red,
@@ -37,6 +38,6 @@ class AccessibilityCursorRingLayer : public FocusRingLayer {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityCursorRingLayer);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_CURSOR_RING_LAYER_H_
+#endif  // ASH_ACCESSIBILITY_ACCESSIBILITY_CURSOR_RING_LAYER_H_

@@ -2,24 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/ui/focus_ring_controller.h"
+#include "ash/accessibility/focus_ring_controller.h"
 
+#include "ash/accessibility/focus_ring_layer.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/wm/window_util.h"
-#include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-namespace chromeos {
+namespace ash {
 
-FocusRingController::FocusRingController()
-    : visible_(false),
-      widget_(NULL) {
-}
+FocusRingController::FocusRingController() : visible_(false), widget_(NULL) {}
 
 FocusRingController::~FocusRingController() {
   SetVisible(false);
@@ -33,7 +30,7 @@ void FocusRingController::SetVisible(bool visible) {
 
   if (visible_) {
     views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
-    aura::Window* active_window = ash::wm::GetActiveWindow();
+    aura::Window* active_window = wm::GetActiveWindow();
     if (active_window)
       SetWidget(views::Widget::GetWidgetForNativeWindow(active_window));
   } else {
@@ -49,9 +46,8 @@ void FocusRingController::UpdateFocusRing() {
 
   // No focus ring if no focused view or the focused view covers the whole
   // widget content area (such as RenderWidgetHostWidgetAura).
-  if (!view ||
-      view->ConvertRectToWidget(view->bounds()) ==
-          widget_->GetContentsView()->bounds()) {
+  if (!view || view->ConvertRectToWidget(view->bounds()) ==
+                   widget_->GetContentsView()->bounds()) {
     focus_ring_layer_.reset();
     return;
   }
@@ -66,13 +62,12 @@ void FocusRingController::UpdateFocusRing() {
 
   // Workarounds for system tray items that have customized focus borders.  The
   // insets here must be consistent with the ones used by those classes.
-  if (view->GetClassName() == ash::ActionableView::kViewClassName) {
+  if (view->GetClassName() == ActionableView::kViewClassName) {
     view_bounds = view->GetLocalBounds();
     view_bounds.Inset(1, 1, 3, 3);
-  } else if (view->GetClassName() == ash::TrayBackgroundView::kViewClassName) {
+  } else if (view->GetClassName() == TrayBackgroundView::kViewClassName) {
     view_bounds.Inset(1, 1, 3, 3);
-  } else if (view->GetClassName() ==
-             ash::TrayPopupHeaderButton::kViewClassName) {
+  } else if (view->GetClassName() == TrayPopupHeaderButton::kViewClassName) {
     view_bounds = view->GetLocalBounds();
     view_bounds.Inset(2, 1, 2, 2);
   }
@@ -136,8 +131,7 @@ void FocusRingController::OnNativeFocusChanged(gfx::NativeView focused_now) {
 }
 
 void FocusRingController::OnWillChangeFocus(views::View* focused_before,
-                                            views::View* focused_now) {
-}
+                                            views::View* focused_now) {}
 
 void FocusRingController::OnDidChangeFocus(views::View* focused_before,
                                            views::View* focused_now) {
@@ -145,4 +139,4 @@ void FocusRingController::OnDidChangeFocus(views::View* focused_before,
   UpdateFocusRing();
 }
 
-}  // namespace chromeos
+}  // namespace ash

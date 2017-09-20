@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/ui/accessibility_cursor_ring_layer.h"
+#include "ash/accessibility/accessibility_cursor_ring_layer.h"
 
 #include "ash/shell.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -15,7 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -48,8 +48,7 @@ void AccessibilityCursorRingLayer::Set(const gfx::Point& location) {
 
   display::Display display =
       display::Screen::GetScreen()->GetDisplayMatching(bounds);
-  aura::Window* root_window =
-      ash::Shell::GetRootWindowForDisplayId(display.id());
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
   ::wm::ConvertRectFromScreen(root_window, &bounds);
   CreateOrUpdateLayer(root_window, "AccessibilityCursorRing", bounds);
 }
@@ -69,7 +68,7 @@ void AccessibilityCursorRingLayer::OnPaintLayer(
   const int w = kGradientWidth;
   for (int i = 0; i < w; ++i) {
     flags.setColor(
-        SkColorSetARGBMacro(255 * (i) * (i) / (w * w), red_, green_, blue_));
+        SkColorSetARGBMacro(255 * i * i / (w * w), red_, green_, blue_));
     SkPath path;
     path.addOval(SkRect::MakeXYWH(r.x(), r.y(), r.width(), r.height()));
     r.Inset(1, 1, 1, 1);
@@ -77,4 +76,4 @@ void AccessibilityCursorRingLayer::OnPaintLayer(
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

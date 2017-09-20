@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/ui/accessibility_focus_ring_layer.h"
+#include "ash/accessibility/accessibility_focus_ring_layer.h"
 
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -13,7 +13,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -51,15 +51,15 @@ SkPath MakePath(const AccessibilityFocusRing& input_ring,
       next = input_ring.points[next_index];
     } while (next.x() == p.x() && next.y() == p.y() && next_index != i);
 
-    gfx::Point delta0 = gfx::Point(sign(p.x() - prev.x()),
-                                   sign(p.y() - prev.y()));
-    gfx::Point delta1 = gfx::Point(sign(next.x() - p.x()),
-                                   sign(next.y() - p.y()));
+    gfx::Point delta0 =
+        gfx::Point(sign(p.x() - prev.x()), sign(p.y() - prev.y()));
+    gfx::Point delta1 =
+        gfx::Point(sign(next.x() - p.x()), sign(next.y() - p.y()));
 
     if (delta0.x() == delta1.x() && delta0.y() == delta1.y()) {
-      ring.points[i] = gfx::Point(
-          input_ring.points[i].x() + outset * delta0.y(),
-          input_ring.points[i].y() - outset * delta0.x());
+      ring.points[i] =
+          gfx::Point(input_ring.points[i].x() + outset * delta0.y(),
+                     input_ring.points[i].y() - outset * delta0.x());
     } else {
       ring.points[i] = gfx::Point(
           input_ring.points[i].x() + ((i + 13) % 36 >= 18 ? outset : -outset),
@@ -89,8 +89,7 @@ SkPath MakePath(const AccessibilityFocusRing& input_ring,
 
 AccessibilityFocusRingLayer::AccessibilityFocusRingLayer(
     FocusRingLayerDelegate* delegate)
-    : FocusRingLayer(delegate) {
-}
+    : FocusRingLayer(delegate) {}
 
 AccessibilityFocusRingLayer::~AccessibilityFocusRingLayer() {}
 
@@ -103,8 +102,7 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
 
   display::Display display =
       display::Screen::GetScreen()->GetDisplayMatching(bounds);
-  aura::Window* root_window =
-      ash::Shell::GetRootWindowForDisplayId(display.id());
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display.id());
   CreateOrUpdateLayer(root_window, "AccessibilityFocusRing", bounds);
 }
 
@@ -133,4 +131,4 @@ void AccessibilityFocusRingLayer::OnPaintLayer(
   }
 }
 
-}  // namespace chromeos
+}  // namespace ash

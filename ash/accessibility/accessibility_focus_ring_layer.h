@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_LAYER_H_
-#define CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_LAYER_H_
+#ifndef ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_LAYER_H_
+#define ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_LAYER_H_
 
+#include "ash/accessibility/accessibility_focus_ring.h"
+#include "ash/accessibility/focus_ring_layer.h"
+#include "ash/ash_export.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/ui/accessibility_focus_ring.h"
-#include "chrome/browser/chromeos/ui/focus_ring_layer.h"
 
-namespace chromeos {
+namespace ash {
 
 // A subclass of FocusRingLayer intended for use by ChromeVox; it supports
 // nonrectangular focus rings in order to highlight groups of elements or
 // a range of text on a page.
-class AccessibilityFocusRingLayer : public FocusRingLayer {
+class ASH_EXPORT AccessibilityFocusRingLayer : public FocusRingLayer {
  public:
   explicit AccessibilityFocusRingLayer(FocusRingLayerDelegate* delegate);
   ~AccessibilityFocusRingLayer() override;
@@ -32,6 +33,6 @@ class AccessibilityFocusRingLayer : public FocusRingLayer {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityFocusRingLayer);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_UI_ACCESSIBILITY_FOCUS_RING_LAYER_H_
+#endif  // ASH_ACCESSIBILITY_ACCESSIBILITY_FOCUS_RING_LAYER_H_
