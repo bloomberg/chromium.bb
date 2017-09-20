@@ -76,6 +76,11 @@ bool IsValidFeatureOrFieldTrialName(const std::string& name) {
 
 }  // namespace
 
+#if DCHECK_IS_ON() && defined(SYZYASAN)
+const Feature kSyzyAsanDCheckIsFatalFeature{"DcheckIsFatal",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(SYZYASAN)
+
 FeatureList::FeatureList() {}
 
 FeatureList::~FeatureList() {}
