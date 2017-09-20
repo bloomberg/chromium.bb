@@ -8406,4 +8406,3 @@ int SQLITE_CDECL wmain(int argc, wchar_t **wargv){
 #endif
   return rc;
 }
-

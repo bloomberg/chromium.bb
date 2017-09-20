@@ -1,7 +1,7 @@
-From e26dff5d8ad6e582d18bdd7dbc233e0cdd4b1034 Mon Sep 17 00:00:00 2001
+From 80e34536de5b560659d711b8da4409a614a61120 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Thu, 26 May 2011 18:44:46 +0000
-Subject: [PATCH 07/10] [fts3] Interior node corruption detection.
+Subject: [PATCH 07/11] [fts3] Interior node corruption detection.
 
 In auditing as part of a previous import, I noticed this case which
 seemed to allow for buffer overrun.  The nPrefix check was commented out
@@ -21,7 +21,7 @@ http://codereview.chromium.org/6990047 (3.7.6.3 SQLite import)
  1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/third_party/sqlite/src/ext/fts3/fts3.c b/third_party/sqlite/src/ext/fts3/fts3.c
-index 06c20756c85a..2d21c4fd6844 100644
+index 215278a823bb..4fbbf4f1580e 100644
 --- a/third_party/sqlite/src/ext/fts3/fts3.c
 +++ b/third_party/sqlite/src/ext/fts3/fts3.c
 @@ -1859,8 +1859,13 @@ static int fts3ScanInteriorNode(
@@ -41,5 +41,5 @@ index 06c20756c85a..2d21c4fd6844 100644
        goto finish_scan;
      }
 -- 
-2.13.1.518.g3df882009-goog
+2.13.5
 

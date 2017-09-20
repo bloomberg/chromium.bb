@@ -1,7 +1,7 @@
-From d0ecdf49d28069fa070ce3fa653a0f1e2b03b3a8 Mon Sep 17 00:00:00 2001
+From 5c382f64d8ce5d9a722ece9be674918d2b84a330 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Thu, 2 Mar 2017 15:23:09 -0800
-Subject: [PATCH 10/10] Allow auto-vacuum to work with chunks.
+Subject: [PATCH 10/11] Allow auto-vacuum to work with chunks.
 
 SQLITE_FCNTL_CHUNK_SIZE can advise the VFS to resize files in quantum
 amounts, to reduce fragmentation from tiny appends.  This change allows
@@ -29,11 +29,10 @@ diff --git a/third_party/sqlite/src/src/btree.c b/third_party/sqlite/src/src/btr
 index 53e467cf91f1..26c2d762e2e0 100644
 --- a/third_party/sqlite/src/src/btree.c
 +++ b/third_party/sqlite/src/src/btree.c
-@@ -2909,6 +2909,46 @@ static void setDefaultSyncFlag(BtShared *pBt, u8 safety_level){
- # define setDefaultSyncFlag(pBt,safety_level)
+@@ -2910,6 +2910,46 @@ static void setDefaultSyncFlag(BtShared *pBt, u8 safety_level){
  #endif
  
-+/*
+ /*
 +** Change the 'auto-vacuum-slack-pages' property of the database. If auto vacuum
 +** is enabled, this is the number of chunks of slack to allow before
 +** automatically running an incremental vacuum.
@@ -73,9 +72,10 @@ index 53e467cf91f1..26c2d762e2e0 100644
 +#endif
 +}
 +
- /*
++/*
  ** Get a reference to pPage1 of the database file.  This will
  ** also acquire a readlock on that file.
+ **
 @@ -3738,13 +3778,27 @@ int sqlite3BtreeIncrVacuum(Btree *p){
  */
  static int autoVacuumCommit(BtShared *pBt){
@@ -131,7 +131,7 @@ index 9281f1640bd6..139a0abb7bfb 100644
    u8 bDoTruncate;       /* True to truncate db on commit */
  #endif
 diff --git a/third_party/sqlite/src/src/pragma.c b/third_party/sqlite/src/src/pragma.c
-index 8ca64b2a04ec..fc73852c3930 100644
+index 2c0a71e9cad8..cc4a5eeb3c35 100644
 --- a/third_party/sqlite/src/src/pragma.c
 +++ b/third_party/sqlite/src/src/pragma.c
 @@ -756,6 +756,27 @@ void sqlite3Pragma(
@@ -298,5 +298,5 @@ index f788eef425fc..0565c6699c20 100644
  
  # Open the output file
 -- 
-2.13.1.518.g3df882009-goog
+2.13.5
 
