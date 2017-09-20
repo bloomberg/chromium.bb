@@ -332,7 +332,8 @@ def _main(argv):
 
     # Preliminary set, mostly command line parsing.
     with metrics.SuccessCounter(METRIC_INVOKED, metrics_fields):
-      logging.EnableBuildbotMarkers()
+      if options.enable_buildbot_tags:
+        logging.EnableBuildbotMarkers()
       ConfigureGlobalEnvironment()
 
     # Prepare the buildroot with source for the build.
