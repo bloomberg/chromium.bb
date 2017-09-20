@@ -39,7 +39,8 @@ constexpr int kSearchBoxMinimumTopPadding = 24;
 AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
                                      AppListModel* model)
     : is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
-  apps_grid_view_ = new AppsGridView(app_list_main_view->contents_view());
+  apps_grid_view_ =
+      new AppsGridView(app_list_main_view->contents_view(), nullptr);
   if (is_fullscreen_app_list_enabled_) {
     apps_grid_view_->SetLayout(kPreferredColsFullscreen,
                                kPreferredRowsFullscreen);
