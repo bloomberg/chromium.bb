@@ -261,7 +261,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     }
     if (updated) {
       for (auto& observer : observer_list_) {
-        observer.OnPrintersChanged(kAutomatic, printers_[kConfigured]);
+        observer.OnPrintersChanged(kConfigured, printers_[kConfigured]);
       }
     }
   }
