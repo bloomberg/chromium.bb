@@ -328,13 +328,20 @@ class LocalNtpSource::DesktopLogoObserver {
   void OnLogoAvailable(const content::URLDataSource::GotDataCallback& callback,
                        LogoCallbackReason type,
                        const base::Optional<EncodedLogo>& logo) {
-    DCHECK(observing());
     scoped_refptr<base::RefCountedString> response;
     auto ddl = base::MakeUnique<base::DictionaryValue>();
     ddl->SetInteger("v", version_started_);
-    if (logo.has_value()) {
-      ddl->SetString("image", ConvertLogoImageToBase64(logo.value()));
-      ddl->Set("metadata", ConvertLogoMetadataToDict(logo->metadata));
+    if (type == LogoCallbackReason::DETERMINED) {
+      ddl->SetBoolean("usable", true);
+      if (logo.has_value()) {
+        ddl->SetString("image", ConvertLogoImageToBase64(logo.value()));
+        ddl->Set("metadata", ConvertLogoMetadataToDict(logo->metadata));
+      } else {
+        ddl->SetKey("image", base::Value());
+        ddl->SetKey("metadata", base::Value());
+      }
+    } else {
+      ddl->SetBoolean("usable", false);
     }
 
     std::string js;
@@ -348,7 +355,6 @@ class LocalNtpSource::DesktopLogoObserver {
       const content::URLDataSource::GotDataCallback& callback,
       LogoCallbackReason type,
       const base::Optional<EncodedLogo>& logo) {
-    DCHECK(observing());
     OnLogoAvailable(callback, type, logo);
   }
 
@@ -356,14 +362,12 @@ class LocalNtpSource::DesktopLogoObserver {
       const content::URLDataSource::GotDataCallback& callback,
       LogoCallbackReason type,
       const base::Optional<EncodedLogo>& logo) {
-    DCHECK(observing());
     OnLogoAvailable(callback, type, logo);
     OnRequestCompleted(type, logo);
   }
 
   void OnRequestCompleted(LogoCallbackReason type,
                           const base::Optional<EncodedLogo>& logo) {
-    DCHECK(observing());
     version_finished_ = version_started_;
   }
 
