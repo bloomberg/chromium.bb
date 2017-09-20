@@ -17,18 +17,14 @@
 // intended only for very short duration locks and assume a system with multiple
 // cores. For any potentially longer wait you should use a real lock, such as
 // |base::Lock|.
-//
-// In order for |lock_| to be correctly initialized to 0, instances of
-// |SpinLock| must either be global, or the Init() method must be called.
-
 namespace base {
 namespace subtle {
 
-class SpinLock {
+class BASE_EXPORT SpinLock {
  public:
+  SpinLock();
+  ~SpinLock();
   using Guard = std::lock_guard<SpinLock>;
-
-  void init() { lock_ = 0; }
 
   ALWAYS_INLINE void lock() {
     static_assert(sizeof(lock_) == sizeof(int),
@@ -43,9 +39,9 @@ class SpinLock {
  private:
   // This is called if the initial attempt to acquire the lock fails. It's
   // slower, but has a much better scheduling and power consumption behavior.
-  BASE_EXPORT void LockSlow();
+  void LockSlow();
 
-  std::atomic_int lock_;
+  std::atomic_int lock_{0};
 };
 
 }  // namespace subtle
