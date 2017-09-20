@@ -15,6 +15,8 @@
 #include "modules/payments/PaymentInstrument.h"
 #include "modules/payments/PaymentManager.h"
 #include "platform/wtf/Vector.h"
+#include "public/platform/WebIconSizesParser.h"
+#include "public/platform/modules/manifest/manifest.mojom-blink.h"
 
 namespace blink {
 namespace {
@@ -171,8 +173,16 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
         return promise;
       }
 
-      instrument->icons.push_back(payments::mojom::blink::ImageObject::New());
-      instrument->icons.back()->src = parsed_url;
+      mojom::blink::ManifestIconPtr icon = mojom::blink::ManifestIcon::New();
+      icon->src = parsed_url;
+      icon->type = image_object.type();
+      icon->purpose.push_back(blink::mojom::ManifestIcon_Purpose::ANY);
+      WebVector<WebSize> web_sizes =
+          WebIconSizesParser::ParseIconSizes(image_object.sizes());
+      for (const auto& web_size : web_sizes) {
+        icon->sizes.push_back(web_size);
+      }
+      instrument->icons.push_back(std::move(icon));
     }
   }
 
@@ -242,6 +252,12 @@ void PaymentInstruments::onGetPaymentInstrument(
   for (const auto& icon : stored_instrument->icons) {
     ImageObject image_object;
     image_object.setSrc(icon->src.GetString());
+    image_object.setType(icon->type);
+    String sizes = WTF::g_empty_string;
+    for (const auto& size : icon->sizes) {
+      sizes = sizes + String::Format("%dx%d ", size.width, size.height);
+    }
+    image_object.setSizes(sizes.StripWhiteSpace());
     icons.emplace_back(image_object);
   }
   instrument.setIcons(icons);

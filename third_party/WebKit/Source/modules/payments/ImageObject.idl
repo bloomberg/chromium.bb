@@ -8,9 +8,6 @@ dictionary ImageObject {
     // Note that the src could be relative path to the service worker
     // scope.
     required USVString src;
-
-    // TODO(gogerald): Below two attributes have not been used for now.
-    // Enable them when necessary.
-    // DOMString sizes;
-    // DOMString type;
+    DOMString sizes;
+    DOMString type;
 };

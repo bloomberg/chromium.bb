@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/payments/payment_app.pb.h"
 #include "content/browser/payments/payment_app_context_impl.h"
@@ -70,9 +71,14 @@ PaymentInstrumentPtr ToPaymentInstrumentForMojo(const std::string& input) {
 
   PaymentInstrumentPtr instrument = PaymentInstrument::New();
   instrument->name = instrument_proto.name();
-  for (const auto& icon : instrument_proto.icons()) {
-    instrument->icons.emplace_back(
-        payments::mojom::ImageObject::New(GURL(icon.src())));
+  for (const auto& icon_proto : instrument_proto.icons()) {
+    Manifest::Icon icon;
+    icon.src = GURL(icon_proto.src());
+    icon.type = base::UTF8ToUTF16(icon_proto.type());
+    for (const auto& size_proto : icon_proto.sizes()) {
+      icon.sizes.emplace_back(size_proto.width(), size_proto.height());
+    }
+    instrument->icons.emplace_back(icon);
   }
   for (const auto& method : instrument_proto.enabled_methods())
     instrument->enabled_methods.push_back(method);
@@ -195,22 +201,10 @@ void PaymentAppDatabase::WritePaymentInstrument(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (instrument->icons.size() > 0) {
-    std::vector<Manifest::Icon> icons;
-    for (const auto& image_object : instrument->icons) {
-      Manifest::Icon icon;
-      icon.src = image_object->src;
-      // TODO(zino): We should pass an actual image size comes from the
-      // renderer, but we just use gfx::Size(0, 0) for now until the feature
-      // is implemented. It means "any" size.
-      // Please see https://crbug.com/763886
-      icon.sizes.emplace_back(gfx::Size());
-      icon.purpose.emplace_back(Manifest::Icon::IconPurpose::ANY);
-      icons.emplace_back(icon);
-    }
-
+    std::vector<Manifest::Icon> icons(instrument->icons);
     PaymentInstrumentIconFetcher::Start(
         scope, service_worker_context_->GetProviderHostIds(scope.GetOrigin()),
-        std::move(icons),
+        icons,
         base::BindOnce(&PaymentAppDatabase::DidFetchedPaymentInstrumentIcon,
                        weak_ptr_factory_.GetWeakPtr(), scope, instrument_key,
                        base::Passed(std::move(instrument)),
@@ -648,10 +642,16 @@ void PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument(
   for (const auto& method : instrument->enabled_methods) {
     instrument_proto.add_enabled_methods(method);
   }
-  for (const auto& image_object : instrument->icons) {
+  for (const auto& icon : instrument->icons) {
     StoredPaymentInstrumentImageObject* image_object_proto =
         instrument_proto.add_icons();
-    image_object_proto->set_src(image_object->src.spec());
+    image_object_proto->set_src(icon.src.spec());
+    image_object_proto->set_type(base::UTF16ToUTF8(icon.type));
+    for (const auto& size : icon.sizes) {
+      ImageSizeProto* size_proto = image_object_proto->add_sizes();
+      size_proto->set_width(size.width());
+      size_proto->set_height(size.height());
+    }
   }
   instrument_proto.set_stringified_capabilities(
       instrument->stringified_capabilities);

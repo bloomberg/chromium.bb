@@ -13,8 +13,15 @@ message StoredPaymentInstrumentKeyInfoProto {
   optional string key = 2;
 }
 
+message ImageSizeProto {
+  optional uint64 width = 1;
+  optional uint64 height = 2;
+}
+
 message StoredPaymentInstrumentImageObject {
   optional string src = 1;
+  optional string type = 2;
+  repeated ImageSizeProto sizes = 3;
 }
 
 message StoredPaymentInstrumentProto {
