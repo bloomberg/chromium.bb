@@ -102,6 +102,7 @@ bool UiSceneManagerTest::VerifyRequiresLayout(
 }
 
 void UiSceneManagerTest::CheckRendererOpacityRecursive(
+    const std::set<UiElementName>& exceptions,
     UiElement* element) {
   // Disable all opacity animation for testing.
   element->SetTransitionedProperties({});
@@ -113,19 +114,23 @@ void UiSceneManagerTest::CheckRendererOpacityRecursive(
   OnBeginFrame();
 
   FakeUiElementRenderer renderer;
-  if (element->draw_phase() != kPhaseNone) {
-    element->Render(&renderer, kProjMatrix);
-  }
+  element->Render(&renderer, kProjMatrix);
 
+  // We only do opacity verification when |renderer| is called and the element
+  // is not an element in |exceptions| that we explicitly want to exclude.
   // It is expected that some elements doesn't render anything (such as root
   // elements). So skipping verify these elements should be fine.
-  if (renderer.called()) {
+  // There are also elements that has special rules for opacity, such as
+  // ScreenDimmer which uses a constant opacity when rendering. We need to
+  // make exception for these elements too.
+  if (renderer.called() &&
+      exceptions.find(element->name()) == exceptions.end()) {
     EXPECT_FLOAT_EQ(renderer.opacity(), element->computed_opacity())
         << "element name: " << element->name();
   }
 
   for (auto& child : element->children()) {
-    CheckRendererOpacityRecursive(child.get());
+    CheckRendererOpacityRecursive(exceptions, child.get());
   }
 }
 
