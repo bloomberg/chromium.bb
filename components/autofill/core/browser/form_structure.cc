@@ -552,6 +552,7 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
     form.data.origin = form_structure->source_url_;
     form.data.action = form_structure->target_url_;
     form.data.is_form_tag = form_structure->is_form_tag_;
+    form.data.is_formless_checkout = form_structure->is_formless_checkout_;
     form.signature = form_structure->FormSignatureAsStr();
 
     for (const auto& field : form_structure->fields_) {
