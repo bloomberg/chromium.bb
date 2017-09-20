@@ -96,11 +96,14 @@ class ProcessPoolTaskManager(TaskManager):
     self._max_tasks = max_tasks
     self._pending_results = {}
 
+  def __len__(self):
+    return len(self._pending_results)
+
   def StartTick(self):
     pass
 
   def HasCapacity(self):
-    return len(self._pending_results) < self._max_tasks
+    return len(self) < self._max_tasks
 
   def StartTask(self, request_id, request_data):
     self._pending_results[request_id] = (

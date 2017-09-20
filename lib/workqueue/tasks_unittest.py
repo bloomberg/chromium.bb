@@ -69,7 +69,10 @@ class ProcessPoolTaskManagerTests(cros_test_lib.TempDirTestCase):
     """Call the task manager's `StartTask()` method."""
     rqfile = os.path.join(self.tempdir, rqid)
     self._pending_tasks[rqid] = rqfile
+    prior_len = len(self._task_manager)
     self._task_manager.StartTask(rqid, rqfile)
+    after_len = len(self._task_manager)
+    self.assertEqual(prior_len + 1, after_len)
     # Wait to confirm that the task we started is actually running.
     # This code is complicated because it has to pass on release
     # builders that can be heavily loaded when we do this.  The
@@ -90,22 +93,31 @@ class ProcessPoolTaskManagerTests(cros_test_lib.TempDirTestCase):
 
   def _TerminateTask(self, rqid):
     """Call the task manager's `TerminateTask()` method."""
+    prior_len = len(self._task_manager)
     self._task_manager.TerminateTask(rqid)
+    after_len = len(self._task_manager)
     self._StopTask(rqid)
+    self.assertEqual(prior_len, after_len + 1)
     self.assertTrue(self._task_manager.HasCapacity())
 
   def _EndTask(self, rqid):
     """Stop a task and remember its expected return value."""
     has_capacity = self._task_manager.HasCapacity()
+    prior_len = len(self._task_manager)
     self._expected.add((rqid, self._StopTask(rqid)))
+    after_len = len(self._task_manager)
+    self.assertEqual(prior_len, after_len)
     self.assertEqual(has_capacity, self._task_manager.HasCapacity())
 
   def _CheckReap(self):
     """Call `Reap()` and check the return conditions."""
     prior_capacity = self._task_manager.HasCapacity()
+    prior_size = len(self._task_manager)
     time.sleep(_REAP_LATENCY)
     actual = set(self._task_manager.Reap())
     self.assertEqual(actual, self._expected)
+    self.assertEqual(prior_size,
+                     len(self._task_manager) + len(actual))
     if self._expected or prior_capacity:
       self.assertTrue(self._task_manager.HasCapacity())
     else:
@@ -114,8 +126,11 @@ class ProcessPoolTaskManagerTests(cros_test_lib.TempDirTestCase):
 
   def _StartAll(self):
     """Start one task for every entry in `self._REQUEST_IDS`."""
+    self.assertEqual(len(self._task_manager), 0)
     for rqid in self._REQUEST_IDS:
       self._StartTask(rqid)
+    self.assertEqual(len(self._task_manager),
+                     len(self._REQUEST_IDS))
     self.assertFalse(self._task_manager.HasCapacity())
     self._CheckReap()
 
@@ -149,6 +164,7 @@ class ProcessPoolTaskManagerTests(cros_test_lib.TempDirTestCase):
 
   def testEmpty(self):
     self.assertTrue(self._task_manager.HasCapacity())
+    self.assertEqual(len(self._task_manager), 0)
     self._CheckReap()
 
   def testTasksInSequence(self):

@@ -436,7 +436,6 @@ class WorkQueueServer(_BaseWorkQueue):
     timestamps = {}
     tick_count = 0
     next_heartbeat = time.time()
-    num_running = 0
     while True:
       tick_count += 1
       if time.time() >= next_heartbeat:
@@ -478,12 +477,12 @@ class WorkQueueServer(_BaseWorkQueue):
         timestamps[request_id] = time_now
         self._StartRequest(request_id, manager)
 
-      num_running += num_started - num_completed
       if num_completed or num_added or num_aborted or num_started:
         logging.info('new: %d, started: %d, aborted: %d, completed: %d',
                      num_added, num_started, num_aborted, num_completed)
         num_pending = len(pending_requests)
-        logging.info('pending: %d, running %d', num_pending, num_running)
+        num_running = len(manager)
+        logging.info('pending: %d, running: %d', num_pending, num_running)
         metrics_set.task_count.set(num_pending,
                                    fields={'state': 'pending'})
         metrics_set.task_count.set(num_running,
