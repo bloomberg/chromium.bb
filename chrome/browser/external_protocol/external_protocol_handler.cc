@@ -31,12 +31,29 @@
 
 using content::BrowserThread;
 
+namespace {
+
 // Whether we accept requests for launching external protocols. This is set to
 // false every time an external protocol is requested, and set back to true on
 // each user gesture. This variable should only be accessed from the UI thread.
 static bool g_accept_requests = true;
 
-namespace {
+static const char* const kDeniedSchemes[] = {
+    "afp", "data", "disk", "disks",
+    // ShellExecuting file:///C:/WINDOWS/system32/notepad.exe will simply
+    // execute the file specified!  Hopefully we won't see any "file" schemes
+    // because we think of file:// URLs as handled URLs, but better to be safe
+    // than to let an attacker format the user's hard drive.
+    "file", "hcp", "javascript", "ms-help", "nntp", "shell", "vbscript",
+    // view-source is a special case in chrome. When it comes through an
+    // iframe or a redirect, it looks like an external protocol, but we don't
+    // want to shellexecute it.
+    "view-source", "vnd.ms.radio",
+};
+
+static const char* const kAllowedSchemes[] = {
+    "mailto", "news", "snews",
+};
 
 // Functions enabling unit testing. Using a NULL delegate will use the default
 // behavior; if a delegate is provided it will be used instead.
@@ -152,37 +169,30 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
     return BLOCK;
   }
 
-  // Check if there are any prefs in the local state. If there are, wipe them,
-  // and migrate the prefs to the profile.
-  // TODO(ramyasharma) remove the migration in M61.
-  PrefService* local_prefs = g_browser_process->local_state();
+  // Always block the hard-coded denied schemes.
+  for (size_t i = 0; i < arraysize(kDeniedSchemes); ++i) {
+    if (kDeniedSchemes[i] == scheme)
+      return BLOCK;
+  }
+
+  // Always allow the hard-coded allowed schemes.
+  for (size_t i = 0; i < arraysize(kAllowedSchemes); ++i) {
+    if (kAllowedSchemes[i] == scheme)
+      return DONT_BLOCK;
+  }
+
   PrefService* profile_prefs = profile->GetPrefs();
-  if (local_prefs && profile_prefs) {  // May be NULL during testing.
-    DictionaryPrefUpdate local_state_schemas(local_prefs,
-                                             prefs::kExcludedSchemes);
+  if (profile_prefs) {  // May be NULL during testing.
     DictionaryPrefUpdate update_excluded_schemas_profile(
         profile_prefs, prefs::kExcludedSchemes);
-    if (update_excluded_schemas_profile->empty()) {
-      // Copy local state to profile state.
-      for (base::DictionaryValue::Iterator it(*local_state_schemas);
-           !it.IsAtEnd(); it.Advance()) {
-        bool is_blocked;
-        // Discard local state if set to blocked, to reset all users
-        // stuck in 'Do Nothing' + 'Do Not Open' state back to the default
-        // prompt state.
-        if (it.value().GetAsBoolean(&is_blocked) && !is_blocked)
-          update_excluded_schemas_profile->SetBoolean(it.key(), is_blocked);
-      }
-      // TODO(ramyasharma): Clear only if required.
-      local_prefs->ClearPref(prefs::kExcludedSchemes);
-    }
-
-    // Prepopulate the default states each time.
-    PrepopulateDictionary(update_excluded_schemas_profile.Get());
-
     bool should_block;
-    if (update_excluded_schemas_profile->GetBoolean(scheme, &should_block))
-      return should_block ? BLOCK : DONT_BLOCK;
+    // Ignore stored block decisions. These are now not possible through the UI,
+    // and previous block decisions should be ignored to allow users to recover
+    // from accidental blocks.
+    if (update_excluded_schemas_profile->GetBoolean(scheme, &should_block) &&
+        !should_block) {
+      return DONT_BLOCK;
+    }
   }
 
   return UNKNOWN;
@@ -192,16 +202,19 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
 void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
                                             BlockState state,
                                             Profile* profile) {
+  // Setting the state to BLOCK is no longer supported through the UI.
+  DCHECK_NE(state, BLOCK);
+
   // Set in the stored prefs.
   PrefService* profile_prefs = profile->GetPrefs();
   if (profile_prefs) {  // May be NULL during testing.
     DictionaryPrefUpdate update_excluded_schemas_profile(
         profile_prefs, prefs::kExcludedSchemes);
     if (!update_excluded_schemas_profile->empty()) {
-      if (state == UNKNOWN)
-        update_excluded_schemas_profile->Remove(scheme, nullptr);
+      if (state == DONT_BLOCK)
+        update_excluded_schemas_profile->SetBoolean(scheme, false);
       else
-        update_excluded_schemas_profile->SetBoolean(scheme, (state == BLOCK));
+        update_excluded_schemas_profile->Remove(scheme, nullptr);
     }
   }
 }
@@ -267,52 +280,6 @@ void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
 void ExternalProtocolHandler::PermitLaunchUrl() {
   DCHECK(base::MessageLoopForUI::IsCurrent());
   g_accept_requests = true;
-}
-
-// static
-void ExternalProtocolHandler::PrepopulateDictionary(
-    base::DictionaryValue* win_pref) {
-  static const char* const denied_schemes[] = {
-    "afp",
-    "data",
-    "disk",
-    "disks",
-    // ShellExecuting file:///C:/WINDOWS/system32/notepad.exe will simply
-    // execute the file specified!  Hopefully we won't see any "file" schemes
-    // because we think of file:// URLs as handled URLs, but better to be safe
-    // than to let an attacker format the user's hard drive.
-    "file",
-    "hcp",
-    "javascript",
-    "ms-help",
-    "nntp",
-    "shell",
-    "vbscript",
-    // view-source is a special case in chrome. When it comes through an
-    // iframe or a redirect, it looks like an external protocol, but we don't
-    // want to shellexecute it.
-    "view-source",
-    "vnd.ms.radio",
-  };
-
-  static const char* const allowed_schemes[] = {
-    "mailto",
-    "news",
-    "snews",
-  };
-
-  bool should_block;
-  for (size_t i = 0; i < arraysize(denied_schemes); ++i) {
-    if (!win_pref->GetBoolean(denied_schemes[i], &should_block)) {
-      win_pref->SetBoolean(denied_schemes[i], true);
-    }
-  }
-
-  for (size_t i = 0; i < arraysize(allowed_schemes); ++i) {
-    if (!win_pref->GetBoolean(allowed_schemes[i], &should_block)) {
-      win_pref->SetBoolean(allowed_schemes[i], false);
-    }
-  }
 }
 
 // static

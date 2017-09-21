@@ -284,11 +284,11 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        ExternalProtocolHandlerPrefs) {
   Profile* profile = browser()->profile();
   base::DictionaryValue prefs;
-  prefs.SetBoolean("tel", true);
+  prefs.SetBoolean("tel", false);
   profile->GetPrefs()->Set(prefs::kExcludedSchemes, prefs);
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("tel", profile);
-  ASSERT_EQ(ExternalProtocolHandler::BLOCK, block_state);
+  ASSERT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
   RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA);
   block_state = ExternalProtocolHandler::GetBlockState("tel", profile);
   ASSERT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
