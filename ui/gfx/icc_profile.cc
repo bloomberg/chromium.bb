@@ -23,9 +23,6 @@ const uint64_t ICCProfile::test_id_adobe_rgb_ = 1;
 const uint64_t ICCProfile::test_id_color_spin_ = 2;
 const uint64_t ICCProfile::test_id_generic_rgb_ = 3;
 const uint64_t ICCProfile::test_id_srgb_ = 4;
-const uint64_t ICCProfile::test_id_no_analytic_tr_fn_ = 5;
-const uint64_t ICCProfile::test_id_a2b_only_ = 6;
-const uint64_t ICCProfile::test_id_overshoot_ = 7;
 
 // A MRU cache of ICC profiles. The cache key is a uin64_t which a
 // gfx::ColorSpace may use to refer back to an ICC profile in the cache. The
@@ -57,6 +54,17 @@ class ICCProfileCache {
 
     if (!icc_profile->id_)
       icc_profile->id_ = next_unused_id_++;
+
+    // Ensure that GetColorSpace() point back to this ICCProfile.
+    gfx::ColorSpace& color_space = icc_profile->color_space_;
+    color_space.icc_profile_id_ = icc_profile->id_;
+
+    // Ensure that the GetParametricColorSpace() point back to this ICCProfile
+    // only if the parametric version is accurate.
+    if (color_space.primaries_ != ColorSpace::PrimaryID::ICC_BASED &&
+        color_space.transfer_ != ColorSpace::TransferID::ICC_BASED) {
+      icc_profile->parametric_color_space_.icc_profile_id_ = icc_profile->id_;
+    }
 
     Entry entry;
     entry.icc_profile = *icc_profile;
@@ -101,6 +109,13 @@ class ICCProfileCache {
     auto found = id_to_icc_profile_mru_.Get(icc_profile.id_);
     if (found != id_to_icc_profile_mru_.end())
       return;
+
+    // Look up the profile by its data. If there is a new entry for the same
+    // data, don't add a duplicate.
+    if (FindByDataUnderLock(icc_profile.data_.data(), icc_profile.data_.size(),
+                            nullptr)) {
+      return;
+    }
 
     // If the entry was not found, insert it.
     Entry entry;
@@ -162,8 +177,10 @@ class ICCProfileCache {
       if (iter_data.size() != size || memcmp(data, iter_data.data(), size))
         continue;
 
-      *icc_profile = cached_profile;
-      id_to_icc_profile_mru_.Get(cached_profile.id_);
+      if (icc_profile) {
+        *icc_profile = cached_profile;
+        id_to_icc_profile_mru_.Get(cached_profile.id_);
+      }
       return true;
     }
     return false;
@@ -377,7 +394,6 @@ void ICCProfile::ComputeColorSpaceAndCache() {
     case kICCExtractedMatrixAndAnalyticTrFn:
     case kICCExtractedMatrixAndApproximatedTrFn:
       // Successfully and accurately extracted color space.
-      parametric_color_space_.icc_profile_id_ = id_;
       color_space_ = parametric_color_space_;
       break;
     case kICCFailedToExtractRawTrFn:
@@ -387,7 +403,6 @@ void ICCProfile::ComputeColorSpaceAndCache() {
       // Successfully but extracted a color space, but it isn't accurate enough.
       color_space_ = ColorSpace(ColorSpace::PrimaryID::ICC_BASED,
                                 ColorSpace::TransferID::ICC_BASED);
-      color_space_.icc_profile_id_ = id_;
       color_space_.icc_profile_sk_color_space_ = useable_sk_color_space;
       break;
     case kICCFailedToParse:

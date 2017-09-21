@@ -15,9 +15,10 @@ ColorSpaceGamut GetColorSpaceGamut(const WebScreenInfo& screen_info) {
   const gfx::ColorSpace& color_space = screen_info.color_space;
   if (!color_space.IsValid())
     return ColorSpaceGamut::kUnknown;
-
+  // Return the gamut of the color space used for raster (this will return a
+  // wide gamut for HDR profiles).
   return ColorSpaceUtilities::GetColorSpaceGamut(
-      color_space.ToSkColorSpace().get());
+      color_space.GetRasterColorSpace().ToSkColorSpace().get());
 }
 
 ColorSpaceGamut GetColorSpaceGamut(SkColorSpace* color_space) {
