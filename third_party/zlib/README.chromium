@@ -22,11 +22,4 @@ Local Modifications:
    imported.
  - The contents of the google directory are original Chromium-specific
    additions.
- - 0000-build.patch: changes from the upstream version, mostly related to the
-   build.
- - 0001-simd.patch: integrate Intel SIMD optimisations from
-   https://github.com/jtkukunas/zlib/
- - 0002-uninitializedcheck.patch: default-initialize state->check, see
-   crbug.com/697481
- - 0003-arm-inffast.patch: ARM optimized inflate using NEON.
- - 0003-use-defines-for-inffast.patch: replace magic numbers with defines
+ - Plus the changes in 'patches' folder.
