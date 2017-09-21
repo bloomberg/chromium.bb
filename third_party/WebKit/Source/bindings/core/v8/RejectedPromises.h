@@ -26,7 +26,7 @@ class RejectedPromises final : public RefCounted<RejectedPromises> {
 
  public:
   static RefPtr<RejectedPromises> Create() {
-    return AdoptRef(new RejectedPromises());
+    return WTF::AdoptRef(new RejectedPromises());
   }
 
   ~RejectedPromises();
