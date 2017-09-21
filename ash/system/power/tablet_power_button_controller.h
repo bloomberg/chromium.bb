@@ -73,10 +73,16 @@ class ASH_EXPORT TabletPowerButtonController
   // Public for tests.
   static constexpr float kGravity = 9.80665f;
 
+  // Amount of time since last screen state change that power button event needs
+  // to be ignored.
+  static constexpr base::TimeDelta kScreenStateChangeDelay =
+      base::TimeDelta::FromMilliseconds(500);
+
   // Ignore button-up events occurring within this many milliseconds of the
   // previous button-up event. This prevents us from falling behind if the power
   // button is pressed repeatedly.
-  static constexpr int kIgnoreRepeatedButtonUpMs = 500;
+  static constexpr base::TimeDelta kIgnoreRepeatedButtonUpDelay =
+      base::TimeDelta::FromMilliseconds(500);
 
   TabletPowerButtonController(PowerButtonDisplayController* display_controller,
                               base::TickClock* tick_clock);

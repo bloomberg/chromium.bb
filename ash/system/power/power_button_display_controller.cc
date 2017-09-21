@@ -10,6 +10,7 @@
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
+#include "base/time/tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/stylus_state.h"
@@ -36,8 +37,9 @@ bool IsTabletModeActive() {
 
 }  // namespace
 
-PowerButtonDisplayController::PowerButtonDisplayController()
-    : weak_ptr_factory_(this) {
+PowerButtonDisplayController::PowerButtonDisplayController(
+    base::TickClock* tick_clock)
+    : tick_clock_(tick_clock), weak_ptr_factory_(this) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   // TODO(mash): Provide a way for this class to observe stylus events:
@@ -89,6 +91,9 @@ void PowerButtonDisplayController::BrightnessChanged(int level,
     screen_state_ = ScreenState::ON;
   else
     screen_state_ = user_initiated ? ScreenState::OFF : ScreenState::OFF_AUTO;
+
+  if (screen_state_ != old_state)
+    screen_state_last_changed_ = tick_clock_->NowTicks();
 
   // Disable the touchscreen when the screen is turned off due to inactivity:
   // https://crbug.com/743291

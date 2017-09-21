@@ -30,7 +30,6 @@ class ASH_EXPORT PowerEventObserver
   void OnLockAnimationsComplete();
 
   // chromeos::PowerManagerClient::Observer overrides:
-  void BrightnessChanged(int level, bool user_initiated) override;
   void SuspendImminent() override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 

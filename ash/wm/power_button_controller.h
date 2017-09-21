@@ -40,9 +40,6 @@ class ASH_EXPORT PowerButtonController
     has_legacy_power_button_ = legacy;
   }
 
-  // Called when the current screen brightness changes.
-  void OnScreenBrightnessChanged(double percent);
-
   // Called when the power or lock buttons are pressed or released.
   void OnPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
   void OnLockButtonEvent(bool down, const base::TimeTicks& timestamp);
@@ -57,6 +54,7 @@ class ASH_EXPORT PowerButtonController
       const display::DisplayConfigurator::DisplayStateList& outputs) override;
 
   // Overridden from chromeos::PowerManagerClient::Observer:
+  void BrightnessChanged(int level, bool user_initiated) override;
   void PowerButtonEventReceived(bool down,
                                 const base::TimeTicks& timestamp) override;
 
