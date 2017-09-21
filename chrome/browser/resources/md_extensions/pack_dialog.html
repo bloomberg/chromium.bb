@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_input_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -12,13 +13,10 @@
 
 <dom-module id="extensions-pack-dialog">
   <template>
-    <style include="cr-shared-style paper-button-style">
+    <style include="cr-shared-style paper-button-style paper-input-style">
       .file-input {
         align-items: center;
         display: flex;
-        --paper-input-container-input: {
-          font-size: inherit;
-        };
       }
 
       .file-input paper-input {
