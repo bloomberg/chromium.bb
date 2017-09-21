@@ -196,7 +196,7 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
   EXPECT_EQ(entity->metadata().specifics_hash(), request.specifics_hash);
 
   // Ack the commit.
-  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 1));
+  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 1), false);
 
   EXPECT_EQ(kId, entity->metadata().server_id());
   EXPECT_FALSE(entity->metadata().is_deleted());
@@ -345,7 +345,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalChange) {
   EXPECT_FALSE(entity->RequiresCommitRequest());
 
   // Ack the commit.
-  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 2));
+  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 2), false);
 
   EXPECT_EQ(1, entity->metadata().sequence_number());
   EXPECT_EQ(1, entity->metadata().acked_sequence_number());
@@ -410,7 +410,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
   EXPECT_EQ(entity->metadata().specifics_hash(), request.specifics_hash);
 
   // Ack the deletion.
-  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 2));
+  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 2), false);
 
   EXPECT_TRUE(entity->metadata().is_deleted());
   EXPECT_EQ(1, entity->metadata().sequence_number());
@@ -467,7 +467,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
   EXPECT_TRUE(entity->HasCommitData());
 
   // Ack the first commit.
-  entity->ReceiveCommitResponse(GenerateAckData(request_v1, kId, 2));
+  entity->ReceiveCommitResponse(GenerateAckData(request_v1, kId, 2), false);
 
   EXPECT_EQ(2, entity->metadata().sequence_number());
   EXPECT_EQ(1, entity->metadata().acked_sequence_number());
@@ -482,7 +482,7 @@ TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
   EXPECT_TRUE(entity->HasCommitData());
 
   // Ack the second commit.
-  entity->ReceiveCommitResponse(GenerateAckData(request_v2, kId, 3));
+  entity->ReceiveCommitResponse(GenerateAckData(request_v2, kId, 3), false);
 
   EXPECT_EQ(2, entity->metadata().sequence_number());
   EXPECT_EQ(2, entity->metadata().acked_sequence_number());
