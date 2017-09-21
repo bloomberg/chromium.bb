@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.TileView.Style;
+import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -392,7 +393,7 @@ public class TileGroupUnitTest {
 
     private TileGridViewHolder setupView(TileGroup tileGroup) {
         TileGridLayout layout = new TileGridLayout(RuntimeEnvironment.application, null);
-        TileGridViewHolder tileGrid = new TileGridViewHolder(layout, 4, 2);
+        TileGridViewHolder tileGrid = new TileGridViewHolder(layout, 4, 2, mock(UiConfig.class));
         tileGrid.bindDataSource(tileGroup, mTileRenderer);
         return tileGrid;
     }
