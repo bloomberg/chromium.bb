@@ -1409,7 +1409,9 @@ float AppListView::GetAppListBackgroundOpacityDuringDragging() {
       std::min(dragging_height / (kNumOfShelfSize * kShelfSize), 1.0f);
   float shield_opacity =
       is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity;
-  return coefficient * shield_opacity;
+  // Assume shelf is opaque when start to drag down the launcher.
+  const float shelf_opacity = 1.0f;
+  return coefficient * shield_opacity + (1 - coefficient) * shelf_opacity;
 }
 
 void AppListView::GetWallpaperProminentColors(std::vector<SkColor>* colors) {
