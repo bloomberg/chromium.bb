@@ -611,10 +611,6 @@ extern const char kMediaAccessLearnMoreUrl[];
 // TODO(michaelpg): Compile on Chrome OS only when Options is removed.
 extern const char kLanguageSettingsLearnMoreUrl[];
 
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-extern const char kLinuxWheezyPreciseDeprecationURL[];
-#endif
-
 #if defined(OS_MACOSX)
 // The URL for the Mac OS X 10.6/10.7/10.8 deprecation help center article.
 extern const char kMac10_678_DeprecationURL[];
