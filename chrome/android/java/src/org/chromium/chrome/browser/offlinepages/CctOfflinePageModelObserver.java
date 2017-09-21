@@ -20,7 +20,8 @@ import org.chromium.chrome.browser.AppHooks;
  */
 public class CctOfflinePageModelObserver {
     private static final String TAG = "CctModelObserver";
-    private static final String ACTION_OFFLINE_PAGES_UPDATED_SUFFIX = ".OFFLINE_PAGES_CHANGED";
+    private static final String ACTION_OFFLINE_PAGES_UPDATED =
+            "org.chromium.chrome.browser.offlinepages.OFFLINE_PAGES_CHANGED";
 
     @CalledByNative
     private static void onPageChanged(String originString) {
@@ -40,7 +41,7 @@ public class CctOfflinePageModelObserver {
         }
         // Create broadcast if signatures match.
         Intent intent = new Intent();
-        intent.setAction(ACTION_OFFLINE_PAGES_UPDATED_SUFFIX);
+        intent.setAction(ACTION_OFFLINE_PAGES_UPDATED);
         intent.setPackage(origin.getAppName());
         context.sendBroadcast(intent);
     }
