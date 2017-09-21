@@ -541,10 +541,13 @@ void IOThread::Init() {
 #endif
 
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-  // Record how common CPUs with broken NEON units are. See
-  // https://crbug.com/341598.
   crypto::EnsureOpenSSLInit();
+  // Measure CPUs with broken NEON units. See https://crbug.com/341598.
   UMA_HISTOGRAM_BOOLEAN("Net.HasBrokenNEON", CRYPTO_has_broken_NEON());
+  // Measure Android kernels with missing AT_HWCAP2 auxv fields. See
+  // https://crbug.com/boringssl/46.
+  UMA_HISTOGRAM_BOOLEAN("Net.NeedsHWCAP2Workaround",
+                        CRYPTO_needs_hwcap2_workaround());
 #endif
 
   ConstructSystemRequestContext();
