@@ -7001,6 +7001,9 @@ I don't think this site should be blocked!
       <message name="IDS_MEDIA_SCREEN_AND_AUDIO_CAPTURE_CONFIRMATION_TEXT" desc="Text for the prompt shown when screen and audio capturing is requrested by an app.">
         Do you want <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> to share your screen and audio output?
       </message>
+      <message name="IDS_MEDIA_SYSTEM_AUDIO_CAPTURE_CONFIRMATION_TEXT" desc="Text for the prompt shown when system audio capturing is requrested by an app.">
+        Do you want <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> to share your audio output?
+      </message>
       <message name="IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT" desc="label used in screen capture notification UI to show the screen sharing status when the stream is consumed by the same app initiating the window picker">
         <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> is sharing your screen.
       </message>
@@ -7012,6 +7015,12 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_MEDIA_SCREEN_CAPTURE_WITH_AUDIO_NOTIFICATION_TEXT_DELEGATED" desc="label used in screen capture notification UI to show the screen sharing status when the stream is consumed by a tab instead of the app initiating the window picker">
         <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> is sharing your screen and audio with <ph name="TAB_NAME">$2<ex>https://google.com</ex></ph>.
+      </message>
+      <message name="IDS_MEDIA_SYSTEM_AUDIO_CAPTURE_NOTIFICATION_TEXT" desc="label used in screen capture notification UI to show the system audio sharing status when the stream is consumed by the same app initiating the window picker.">
+        <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> is sharing your audio.
+      </message>
+      <message name="IDS_MEDIA_SYSTEM_AUDIO_CAPTURE_NOTIFICATION_TEXT_DELEGATED" desc="label used in screen capture notification UI to show the system audio sharing status when the stream is consumed by tab instead of the app initiating the window picker">
+        <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> is sharing your audio with <ph name="TAB_NAME">$2<ex>https://google.com</ex></ph>.
       </message>
       <message name="IDS_MEDIA_WINDOW_CAPTURE_NOTIFICATION_TEXT" desc="label used in screen capture notification UI to show the screen sharing status when the stream is consumed by the same app initiating the window picker">
         <ph name="APP_NAME">$1<ex>html5rocks.com</ex></ph> is sharing a window.
