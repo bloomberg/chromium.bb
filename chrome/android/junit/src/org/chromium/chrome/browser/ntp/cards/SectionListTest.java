@@ -61,10 +61,7 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features({
-        @Features.Register(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT),
-        @Features.Register(ChromeFeatureList.CHROME_HOME)
-})
+@Features({ @Features.Register(ChromeFeatureList.CHROME_HOME) })
 public class SectionListTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();

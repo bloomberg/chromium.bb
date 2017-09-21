@@ -204,7 +204,7 @@ public class SelectableListLayout<E>
         mToolbarShadow.init(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.toolbar_shadow_color),
                 FadingShadow.POSITION_TOP);
-        if (FeatureUtilities.isChromeHomeModernEnabled()) mToolbarShadow.setAlpha(0);
+        if (FeatureUtilities.isChromeHomeEnabled()) mToolbarShadow.setAlpha(0);
 
         mShowShadowOnSelection = showShadowOnSelection;
         delegate.addObserver(this);

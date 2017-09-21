@@ -505,8 +505,7 @@ public class Tab
         mLaunchType = type;
         if (mLaunchType == TabLaunchType.FROM_DETACHED) mIsDetached = true;
 
-        boolean useModernDesign = getActivity() != null && getActivity().getBottomSheet() != null
-                && FeatureUtilities.isChromeHomeModernEnabled();
+        boolean useModernDesign = getActivity() != null && getActivity().getBottomSheet() != null;
 
         Resources resources = mThemedApplicationContext.getResources();
         mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);

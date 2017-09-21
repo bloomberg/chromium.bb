@@ -57,7 +57,7 @@ public class AllDismissedItem extends OptionalLeaf {
 
             Button refreshButton = itemView.findViewById(R.id.action_button);
             ImageView backgroundView = itemView.findViewById(R.id.image);
-            if (FeatureUtilities.isChromeHomeModernEnabled()) {
+            if (FeatureUtilities.isChromeHomeEnabled()) {
                 ((ViewGroup) itemView).removeView(refreshButton);
 
                 // Hide the view instead of removing it, because it is used to layout subsequent
@@ -77,7 +77,7 @@ public class AllDismissedItem extends OptionalLeaf {
             int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
             @StringRes
             final int messageId;
-            if (FeatureUtilities.isChromeHomeModernEnabled()) {
+            if (FeatureUtilities.isChromeHomeEnabled()) {
                 messageId = R.string.ntp_all_dismissed_body_text_modern;
             } else if (hour >= 0 && hour < 12) {
                 messageId = R.string.ntp_all_dismissed_body_text_morning;

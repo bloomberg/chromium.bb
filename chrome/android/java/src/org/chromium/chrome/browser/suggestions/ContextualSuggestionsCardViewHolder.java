@@ -77,9 +77,8 @@ public class ContextualSuggestionsCardViewHolder extends NewTabPageViewHolder {
     }
 
     private static View getCardView(ViewGroup recyclerView) {
-        int res = FeatureUtilities.isChromeHomeModernEnabled()
-                ? R.layout.content_suggestions_card_modern
-                : R.layout.contextual_suggestions_card;
+        int res = FeatureUtilities.isChromeHomeEnabled() ? R.layout.content_suggestions_card_modern
+                                                         : R.layout.contextual_suggestions_card;
 
         return LayoutInflater.from(recyclerView.getContext()).inflate(res, recyclerView, false);
     }

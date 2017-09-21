@@ -439,7 +439,7 @@ public abstract class StackAnimation {
         float yPos = -mBorderTopHeight;
         if (!FeatureUtilities.isChromeHomeEnabled()) {
             yPos += mHeight - mHeightMinusBrowserControls;
-        } else if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        } else {
             yPos -= StackLayout.MODERN_TOP_MARGIN_DP;
         }
         return yPos;

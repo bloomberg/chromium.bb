@@ -60,7 +60,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeHomeFeature,
     &kChromeHomeDoodle,
     &kChromeHomeExpandButton,
-    &kChromeHomeModernLayout,
     &kChromeHomeSwipeLogic,
     &kContentSuggestionsLargeThumbnail,
     &kContentSuggestionsScrollToLoad,
@@ -167,9 +166,6 @@ const base::Feature kChromeHomeDoodle{"ChromeHomeDoodle",
 
 const base::Feature kChromeHomeExpandButton{"ChromeHomeExpandButton",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeHomeModernLayout{"ChromeHomeModernLayout",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeHomeSwipeLogic{"ChromeHomeSwipeLogic",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

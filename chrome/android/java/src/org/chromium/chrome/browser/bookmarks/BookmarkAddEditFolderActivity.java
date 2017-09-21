@@ -159,7 +159,7 @@ public class BookmarkAddEditFolderActivity extends SynchronousInitializationActi
 
         mParentTextView.setText(mModel.getBookmarkTitle(mParentId));
 
-        if (!FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (!FeatureUtilities.isChromeHomeEnabled()) {
             findViewById(R.id.shadow).setVisibility(View.VISIBLE);
             toolbar.setTitleTextAppearance(toolbar.getContext(), R.style.BlackHeadline2);
             toolbar.setBackgroundColor(

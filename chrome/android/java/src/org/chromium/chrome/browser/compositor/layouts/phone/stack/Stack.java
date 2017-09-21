@@ -2275,7 +2275,6 @@ public class Stack {
      */
     public float getMaxTabHeight() {
         if (FeatureUtilities.isChromeHomeEnabled() && mCurrentMode == Orientation.PORTRAIT) {
-            if (!FeatureUtilities.isChromeHomeModernEnabled()) return mLayout.getHeight();
             return mLayout.getHeightMinusBrowserControls() - StackLayout.MODERN_TOP_MARGIN_DP;
         }
         return mLayout.getHeightMinusBrowserControls();

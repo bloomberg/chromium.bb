@@ -229,7 +229,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             mTabContents = findViewById(R.id.tab_contents_modern);
             mTitleView = mTabContents.findViewById(R.id.title);
             mDescriptionView = mTabContents.findViewById(R.id.description);
@@ -314,7 +314,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
                     getContext().getString(R.string.accessibility_tabstrip_btn_close_tab, title));
         }
 
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             if (mTab.isIncognito()) {
                 setBackgroundResource(R.color.incognito_primary_color);
                 mFaviconView.getBackground().setLevel(mIncognitoLevel);
@@ -349,7 +349,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
                 mFaviconView.setImageResource(R.drawable.globe_incognito_favicon);
             }
 
-            if (FeatureUtilities.isChromeHomeModernEnabled()) {
+            if (FeatureUtilities.isChromeHomeEnabled()) {
                 ((TintedImageView) mFaviconView).setTint(bitmap != null ? null : mDarkIconColor);
             }
         }

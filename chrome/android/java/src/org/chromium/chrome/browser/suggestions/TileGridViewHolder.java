@@ -29,7 +29,7 @@ public class TileGridViewHolder extends SiteSectionViewHolder {
         mSectionView.setMaxRows(maxRows);
         mSectionView.setMaxColumns(maxColumns);
 
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             Resources res = itemView.getResources();
             int defaultLateralMargin =
                     res.getDimensionPixelSize(R.dimen.tile_grid_layout_padding_start);

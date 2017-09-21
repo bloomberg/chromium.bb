@@ -130,7 +130,7 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
         if (SuggestionsConfig.useSitesExplorationUi()) {
             return R.layout.suggestions_site_explore;
         }
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             return R.layout.suggestions_site_tile_grid_modern;
         }
         return R.layout.suggestions_site_tile_grid;

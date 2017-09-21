@@ -38,7 +38,7 @@ public final class SuggestionsConfig {
         // The scroll to load feature does not work well for users who require accessibility mode.
         if (AccessibilityUtil.isAccessibilityEnabled()) return false;
 
-        return FeatureUtilities.isChromeHomeModernEnabled()
+        return FeatureUtilities.isChromeHomeEnabled()
                 && ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD);
     }
@@ -55,7 +55,7 @@ public final class SuggestionsConfig {
      * @return The background color for the suggestions sheet content.
      */
     public static int getBackgroundColor(Resources resources) {
-        return FeatureUtilities.isChromeHomeModernEnabled()
+        return FeatureUtilities.isChromeHomeEnabled()
                 ? ApiCompatibilityUtils.getColor(resources, R.color.suggestions_modern_bg)
                 : ApiCompatibilityUtils.getColor(resources, R.color.ntp_bg);
     }
@@ -66,7 +66,7 @@ public final class SuggestionsConfig {
     @TileView.Style
     public static int getTileStyle(UiConfig uiConfig) {
         boolean small = uiConfig.getCurrentDisplayStyle().isSmall();
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             return small ? TileView.Style.MODERN_CONDENSED : TileView.Style.MODERN;
         }
         if (FeatureUtilities.isChromeHomeEnabled()) return TileView.Style.CLASSIC;

@@ -402,7 +402,7 @@ class SuggestionView extends ViewGroup {
     }
 
     private int getStandardUrlColor() {
-        if (!FeatureUtilities.isChromeHomeModernEnabled()) return mLightUrlStandardColor;
+        if (!FeatureUtilities.isChromeHomeEnabled()) return mLightUrlStandardColor;
         return (mUseDarkColors == null || mUseDarkColors) ? mDarkUrlStandardColor
                                                           : mLightUrlStandardColor;
     }
