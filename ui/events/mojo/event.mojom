@@ -108,6 +108,12 @@ struct BrushData {
   float tilt_y;
 };
 
+// Data to support gesture events.
+// TODO(crbug.com/767087): Expand GestureEvent and GestureEventDetails support.
+struct GestureData {
+  LocationData location;
+};
+
 struct Event {
   // TODO(sky): rename to type.
   EventType action;
@@ -123,4 +129,5 @@ struct Event {
   LatencyInfo latency;
   KeyData? key_data;
   PointerData? pointer_data;
+  GestureData? gesture_data;
 };
