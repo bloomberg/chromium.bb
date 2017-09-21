@@ -383,7 +383,7 @@ Output.RULES = {
           $restriction $description`
     },
     listBoxOption: {
-      speak: `$name $role @describe_index($indexInParent, $parentChildCount)
+      speak: `$name $role @describe_index($posInSet, $setSize)
           $description $state $restriction`
     },
     listItem: {enter: `$name= $role $state $description`},
@@ -395,23 +395,23 @@ Output.RULES = {
     },
     menuItem: {
       speak: `$name $role $if($haspopup, @has_submenu)
-          @describe_index($indexInParent, $parentChildCount)
+          @describe_index($posInSet, $setSize)
           $description $state $restriction`
     },
     menuItemCheckBox: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
           $name $role $checked $state $restriction $description
-          @describe_index($indexInParent, $parentChildCount)`
+          @describe_index($posInSet, $setSize)`
     },
     menuItemRadio: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
           $if($checked, @describe_radio_selected($name),
           @describe_radio_unselected($name)) $state $restriction
-          $description @describe_index($indexInParent, $parentChildCount) `
+          $description @describe_index($posInSet, $setSize) `
     },
     menuListOption: {
       speak: `$name @role_menuitem
-          @describe_index($indexInParent, $parentChildCount) $state
+          @describe_index($posInSet, $setSize) $state
           $restriction $description`
     },
     paragraph: {speak: `$descendants`},
@@ -468,11 +468,11 @@ Output.RULES = {
     },
     treeItem: {
       enter: `$role $expanded $collapsed $restriction
-          @describe_index($indexInParent, $parentChildCount)
+          @describe_index($posInSet, $setSize)
           @describe_depth($hierarchicalLevel)`,
       speak: `$name
           $role $description $state $restriction
-          @describe_index($indexInParent, $parentChildCount)
+          @describe_index($posInSet, $setSize)
           @describe_depth($hierarchicalLevel)`
     },
     window: {
@@ -487,7 +487,7 @@ Output.RULES = {
     'default': {
       speak: `$value $name
           $find({"state": {"selected": true, "invisible": false}},
-          @describe_index($indexInParent, $parentChildCount)) `
+          @describe_index($posInSet, $setSize)) `
     }
   },
   alert: {
@@ -1217,6 +1217,16 @@ Output.prototype = {
             options.annotation.push(new Output.SelectionSpan(
                 buff.length, buff.length + msg.length));
           this.append_(buff, msg, options);
+        } else if (token == 'posInSet') {
+          if (node.posInSet !== undefined)
+            this.append_(buff, String(node.posInSet));
+          else
+            this.format_(node, '$indexInParent', buff);
+        } else if (token == 'setSize') {
+          if (node.setSize !== undefined)
+            this.append_(buff, String(node.setSize));
+          else
+            this.format_(node, '$parentChildCount', buff);
         } else if (tree.firstChild) {
           // Custom functions.
           if (token == 'if') {
