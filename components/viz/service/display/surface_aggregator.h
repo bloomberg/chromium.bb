@@ -102,6 +102,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                            const SurfaceId& surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
+                         const gfx::Rect& primary_rect,
                          const gfx::Transform& target_transform,
                          const ClipData& clip_rect,
                          RenderPass* dest_pass,

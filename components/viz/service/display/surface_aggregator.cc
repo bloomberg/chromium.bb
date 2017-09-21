@@ -185,6 +185,7 @@ void SurfaceAggregator::UnrefResources(
 
 void SurfaceAggregator::HandleSurfaceQuad(
     const SurfaceDrawQuad* surface_quad,
+    const gfx::Rect& primary_rect,
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
     RenderPass* dest_pass,
@@ -199,9 +200,9 @@ void SurfaceAggregator::HandleSurfaceQuad(
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   if (!surface || !surface->HasActiveFrame()) {
     if (surface_quad->fallback_quad) {
-      HandleSurfaceQuad(surface_quad->fallback_quad, target_transform,
-                        clip_rect, dest_pass, ignore_undamaged,
-                        damage_rect_in_quad_space,
+      HandleSurfaceQuad(surface_quad->fallback_quad, primary_rect,
+                        target_transform, clip_rect, dest_pass,
+                        ignore_undamaged, damage_rect_in_quad_space,
                         damage_rect_in_quad_space_valid);
     } else {
       SkColor background_color = surface_quad->default_background_color;
@@ -248,6 +249,54 @@ void SurfaceAggregator::HandleSurfaceQuad(
   }
   ++uma_stats_.valid_surface;
 
+  const cc::CompositorFrame& frame = surface->GetActiveFrame();
+  bool has_transparent_background =
+      frame.metadata.root_background_color == SK_ColorTRANSPARENT;
+
+  // If the fallback Surface's active CompositorFrame has a non-transparent
+  // background then compute gutter.
+  // TODO(fsamuel): Note that the fallback SurfaceDrawQuad is assumed to be
+  // positioned to at the same top left corner as the primary SurfaceDrawQuad
+  // but this isn't enforced anywhere. We should eliminate the fallback
+  // SurfaceDrawQuad entirely.
+  if (!has_transparent_background &&
+      surface_quad->surface_draw_quad_type == SurfaceDrawQuadType::FALLBACK) {
+    gfx::Rect fallback_rect(surface_quad->rect);
+    SharedQuadState* shared_quad_state = nullptr;
+    if (fallback_rect.width() < primary_rect.width()) {
+      shared_quad_state =
+          CopySharedQuadState(surface_quad->shared_quad_state, target_transform,
+                              clip_rect, dest_pass);
+
+      // The right gutter also includes the bottom-right corner, if necessary.
+      gfx::Rect right_gutter_rect(fallback_rect.right(), primary_rect.y(),
+                                  primary_rect.width() - fallback_rect.width(),
+                                  primary_rect.height());
+      auto* right_gutter =
+          dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+      right_gutter->SetNew(shared_quad_state, right_gutter_rect,
+                           right_gutter_rect,
+                           frame.metadata.root_background_color, false);
+    }
+
+    if (fallback_rect.height() < primary_rect.height()) {
+      if (!shared_quad_state) {
+        shared_quad_state =
+            CopySharedQuadState(surface_quad->shared_quad_state,
+                                target_transform, clip_rect, dest_pass);
+      }
+
+      gfx::Rect bottom_gutter_rect(
+          primary_rect.x(), fallback_rect.bottom(), fallback_rect.width(),
+          primary_rect.height() - fallback_rect.height());
+      auto* bottom_gutter =
+          dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+      bottom_gutter->SetNew(shared_quad_state, bottom_gutter_rect,
+                            bottom_gutter_rect,
+                            frame.metadata.root_background_color, false);
+    }
+  }
+
   if (ignore_undamaged) {
     gfx::Transform quad_to_target_transform(
         target_transform,
@@ -260,8 +309,6 @@ void SurfaceAggregator::HandleSurfaceQuad(
       return;
     }
   }
-
-  const cc::CompositorFrame& frame = surface->GetActiveFrame();
 
   // A map keyed by RenderPass id.
   Surface::CopyRequestsMap copy_requests;
@@ -507,8 +554,9 @@ void SurfaceAggregator::CopyQuadsToPass(
         continue;
       }
 
-      HandleSurfaceQuad(surface_quad, target_transform, clip_rect, dest_pass,
-                        ignore_undamaged, &damage_rect_in_quad_space,
+      HandleSurfaceQuad(surface_quad, surface_quad->rect, target_transform,
+                        clip_rect, dest_pass, ignore_undamaged,
+                        &damage_rect_in_quad_space,
                         &damage_rect_in_quad_space_valid);
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
