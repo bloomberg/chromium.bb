@@ -127,6 +127,11 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
     EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
   }
 
+  [[EarlGrey selectElementWithMatcher:
+                 grey_accessibilityID(
+                     kPaymentRequestPickerViewControllerAccessibilityID)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
+
   // Type 'c' in the search bar.
   [[EarlGrey
       selectElementWithMatcher:
