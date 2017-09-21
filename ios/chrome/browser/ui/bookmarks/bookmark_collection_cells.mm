@@ -133,11 +133,25 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
     AddSameCenterYConstraint(self.contentView, self.imageView);
     AddSameCenterYConstraint(self.contentView, self.button);
 
+    self.contentView.layoutMargins = UIEdgeInsetsZero;
+    UILayoutGuide* guide = self.contentView.layoutMarginsGuide;
+    if (@available(iOS 11, *)) {
+      guide = self.contentView.safeAreaLayoutGuide;
+    }
+
+    [NSLayoutConstraint activateConstraints:@[
+      [self.imageView.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor
+                                                   constant:16.0],
+      [self.titleLabel.leadingAnchor constraintEqualToAnchor:guide.leadingAnchor
+                                                    constant:64],
+      [self.button.trailingAnchor constraintEqualToAnchor:guide.trailingAnchor],
+    ]];
+
     // clang-format off
     ApplyVisualConstraintsWithMetrics(
         @[
-          @"H:|-leadingImageMargin-[image(imageSize)]",
-          @"H:|-leadingMargin-[title]-[button(buttonSize)]|",
+          @"H:[image(imageSize)]",
+          @"H:[title]-[button(buttonSize)]",
           @"V:[image(imageSize)]",
           @"V:[button(buttonSize)]",
           @"H:|[highlight]|",
@@ -151,8 +165,6 @@ const CGFloat kBookmarkFolderCellDefaultImageSize = 24.0;
         },
         @{
           @"buttonSize" :@32.0,
-          @"leadingImageMargin" : @16.0,
-          @"leadingMargin" : @64.0,
           @"imageSize" : @(self.imageSize),
         },
         self.contentView);

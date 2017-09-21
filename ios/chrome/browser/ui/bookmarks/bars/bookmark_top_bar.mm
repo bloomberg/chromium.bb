@@ -41,6 +41,16 @@
       0,
       CGRectGetHeight(self.bounds) - [[self class] expectedContentViewHeight],
       CGRectGetWidth(self.bounds), [[self class] expectedContentViewHeight]);
+
+  // Update |self.contentView|'s frame to respect the safe area insets on the
+  // left and right sides.
+  if (@available(iOS 11, *)) {
+    CGRect contentFrame = self.contentView.frame;
+    contentFrame.origin.x = self.safeAreaInsets.left;
+    contentFrame.size.width = self.frame.size.width - self.safeAreaInsets.left -
+                              self.safeAreaInsets.right;
+    self.contentView.frame = contentFrame;
+  }
 }
 
 @end
