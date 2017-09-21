@@ -43,7 +43,7 @@ ios_eg_test("ios_clean_skeleton_perf_egtests") {
   info_plist_target = ":info_plist"
 
   sources = [
-    "startup_egtests.mm",
+    "startup_egtest.mm",
   ]
 
   deps = [
