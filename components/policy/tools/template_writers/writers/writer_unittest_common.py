@@ -5,7 +5,6 @@
 
 '''Common tools for unit-testing writers.'''
 
-import os
 import unittest
 import policy_template_generator
 import template_formatter
@@ -15,13 +14,16 @@ import writer_configuration
 class WriterUnittestCommon(unittest.TestCase):
   '''Common class for unittesting writers.'''
 
-  # TODO(crbug.com/165412): Combine PrepareTest and GetOutput. In the first step
-  # of this bug, the structure was preserved to keep the CL size down.
-  def PrepareTest(self, policy_json):
-    '''Prepares the data structure of policies.
+  def GetOutput(self, policy_json, definitions, writer_type):
+    '''Generates an output of a writer.
 
     Args:
-      policy_json: The policy data structure in JSON format.
+      policy_json: Raw policy JSON string.
+      definitions: Definitions to create writer configurations.
+      writer_type: Writer type (e.g. 'admx'), see template_formatter.py.
+
+    Returns:
+      The string of the template created by the writer.
     '''
 
     # Evaluate policy_json. For convenience, fix indentation in statements like
@@ -30,22 +32,10 @@ class WriterUnittestCommon(unittest.TestCase):
     #     ...
     #   }''')
     start_idx = 1 if policy_json[0] == '\n' else 0
-    return eval(textwrap.dedent(policy_json[start_idx:]))
+    policy_data = eval(textwrap.dedent(policy_json[start_idx:]))
 
-  def GetOutput(self, policy_data, env_lang, env_defs, out_type, out_lang):
-    '''Generates an output of a writer.
-
-    Args:
-      policy_data: The data returned from PrepareTest().
-      env_lang: The environment language.
-      env_defs: Environment definitions.
-      out_type: Type of the output node for which output will be generated.
-        This selects the writer.
-      out_lang: Language of the output node for which output will be generated.
-    '''
-
-    config = writer_configuration.GetConfigurationForBuild(env_defs)
+    config = writer_configuration.GetConfigurationForBuild(definitions)
     policy_generator = \
         policy_template_generator.PolicyTemplateGenerator(config, policy_data)
-    writer = template_formatter.GetWriter(out_type, config)
+    writer = template_formatter.GetWriter(writer_type, config)
     return policy_generator.GetTemplateText(writer)

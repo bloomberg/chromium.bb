@@ -43,7 +43,7 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testEmpty(self):
     # Test PListWriter in case of empty polices.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [],
         'placeholders': [],
@@ -55,8 +55,8 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_chromium': '1',}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_chromium': '1',}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
@@ -78,7 +78,7 @@ chromium_recommended="Chromium - Recommended"''')
 
   def testVersionAnnotation(self):
     # Test PListWriter in case of empty polices.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [],
         'placeholders': [],
@@ -90,9 +90,9 @@ chromium_recommended="Chromium - Recommended"''')
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
+      }'''
     output = self.GetOutput(
-        grd, 'fr', {'_chromium': '1', 'version':'39.0.0.0'}, 'adm', 'en')
+        policy_json, {'_chromium': '1', 'version':'39.0.0.0'}, 'adm')
     expected_output = '; chromium version: 39.0.0.0\n' + \
         self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
@@ -114,7 +114,7 @@ chromium_recommended="Chromium - Recommended"''')
 
   def testMainPolicy(self):
     # Tests a policy group with a single policy of type 'main'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -135,8 +135,8 @@ chromium_recommended="Chromium - Recommended"''')
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_google_chrome' : '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_google_chrome' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
@@ -185,7 +185,7 @@ MainPolicy_Explain="Description of main."''')
 
   def testMainPolicyRecommendedOnly(self):
     # Tests a policy group with a single policy of type 'main'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -209,8 +209,8 @@ MainPolicy_Explain="Description of main."''')
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_google_chrome' : '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_google_chrome' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
@@ -249,7 +249,7 @@ MainPolicy_Explain="Description of main."''')
 
   def testStringPolicy(self):
     # Tests a policy group with a single policy of type 'string'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -271,8 +271,8 @@ With a newline.""",
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
@@ -322,7 +322,7 @@ StringPolicy_Part="Caption of policy."
 
   def testIntPolicy(self):
     # Tests a policy group with a single policy of type 'string'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -343,8 +343,8 @@ StringPolicy_Part="Caption of policy."
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
@@ -394,7 +394,7 @@ IntPolicy_Part="Caption of policy."
 
   def testIntEnumPolicy(self):
     # Tests a policy group with a single policy of type 'int-enum'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -427,8 +427,8 @@ IntPolicy_Part="Caption of policy."
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
@@ -491,7 +491,7 @@ ProxyServerAutoDetect_DropDown="Option2"
 
   def testStringEnumPolicy(self):
     # Tests a policy group with a single policy of type 'int-enum'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -518,8 +518,8 @@ ProxyServerAutoDetect_DropDown="Option2"
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
@@ -582,7 +582,7 @@ ProxyServerAutoDetect_DropDown="Option2"
 
   def testListPolicy(self):
     # Tests a policy group with a single policy of type 'list'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -605,8 +605,8 @@ With a newline.""",
             'text': 'Recommended', 'desc': 'bleh'
           }
         },
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
@@ -656,7 +656,7 @@ ListPolicy_Part="Label of list policy."
 
   def testStringEnumListPolicy(self):
     # Tests a policy group with a single policy of type 'string-enum-list'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -685,8 +685,8 @@ With a newline.""",
             'text': 'Recommended', 'desc': 'bleh'
           }
         },
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
@@ -736,7 +736,7 @@ ListPolicy_Part="Label of list policy."
 
   def testDictionaryPolicy(self):
     # Tests a policy group with a single policy of type 'dict'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -757,8 +757,8 @@ ListPolicy_Part="Label of list policy."
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
@@ -809,7 +809,7 @@ DictionaryPolicy_Part="Caption of policy."
   def testNonSupportedPolicy(self):
     # Tests a policy that is not supported on Windows, so it shouldn't
     # be included in the ADM file.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -835,8 +835,8 @@ DictionaryPolicy_Part="Caption of policy."
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
@@ -859,7 +859,7 @@ chromium_recommended="Chromium - Recommended"
 
   def testNonRecommendedPolicy(self):
     # Tests a policy that is not recommended, so it should be included.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -879,8 +879,8 @@ chromium_recommended="Chromium - Recommended"
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_google_chrome' : '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_google_chrome' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
@@ -919,7 +919,7 @@ MainPolicy_Explain="Description of main."''')
 
   def testPolicyGroup(self):
     # Tests a policy group that has more than one policies.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -954,8 +954,8 @@ With a newline."""
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!chromium
@@ -1028,7 +1028,7 @@ Policy2_Part="Caption of policy2."
   def testDuplicatedStringEnumPolicy(self):
     # Verifies that duplicated enum constants get merged, and that
     # string constants get escaped.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -1061,8 +1061,8 @@ Policy2_Part="Caption of policy2."
             'text': 'Recommended', 'desc': 'bleh'
           }
         }
-      }''')
-    output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'adm', 'en')
+      }'''
+    output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
