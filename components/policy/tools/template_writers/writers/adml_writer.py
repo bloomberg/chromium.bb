@@ -88,8 +88,9 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
 
     if policy_type == 'main':
       pass
-    elif policy_type in ('string', 'dict'):
-      # 'dict' policies are configured as JSON-encoded strings on Windows.
+    elif policy_type in ('string', 'dict', 'external'):
+      # 'dict' and 'external' policies are configured as JSON-encoded strings on
+      # Windows.
       textbox_elem = self.AddElement(presentation_elem, 'textBox',
                                      {'refId': policy_name})
       label_elem = self.AddElement(textbox_elem, 'label')
@@ -110,9 +111,6 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
                                      {'refId': policy_name + 'Desc'})
       listbox_elem.appendChild(self._doc.createTextNode(policy_label))
     elif policy_type == 'group':
-      pass
-    elif policy_type == 'external':
-      # This type can only be set through cloud policy.
       pass
     else:
       raise Exception('Unknown policy type %s.' % policy_type)

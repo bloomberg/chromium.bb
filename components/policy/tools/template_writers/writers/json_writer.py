@@ -43,9 +43,6 @@ class JsonWriter(template_writer.TemplateWriter):
     self._out.append('// ' + comment)
 
   def WritePolicy(self, policy):
-    if policy['type'] == 'external':
-      # This type can only be set through cloud policy.
-      return
     example_value_str = json.dumps(policy['example_value'], sort_keys=True)
 
     # Add comma to the end of the previous line.

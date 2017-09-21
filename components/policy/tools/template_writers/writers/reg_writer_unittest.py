@@ -318,6 +318,35 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '"b": 2}, "int": 10, "list": [1, 2, 3], "string": "abc"}"'])
     self.CompareOutputs(output, expected_output)
 
+  def testExternalPolicy(self):
+    # Tests a policy group with a single policy of type 'external'.
+    example = {
+      'url': "https://example.com/avatar.jpg",
+      'hash': "deadbeef",
+    }
+    policy_json = '''
+        {
+          "policy_definitions": [
+            {
+              "name": "ExternalPolicy",
+              "type": "external",
+              "caption": "",
+              "desc": "",
+              "supported_on": ["chrome.win:8-"],
+              "example_value": %s
+            },
+          ],
+          "placeholders": [],
+          "messages": {},
+        }''' % str(example)
+    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'reg')
+    expected_output = self.NEWLINE.join([
+        'Windows Registry Editor Version 5.00',
+        '',
+        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium]',
+        '"ExternalPolicy"="{"hash": "deadbeef", "url": "https://example.com/avatar.jpg"}"'])
+    self.CompareOutputs(output, expected_output)
+
   def testNonSupportedPolicy(self):
     # Tests a policy that is not supported on Windows, so it shouldn't
     # be included in the .REG file.

@@ -593,6 +593,75 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         '</dd>'
       '</dl></root>')
 
+  def testAddExternalPolicyDetails(self):
+    # Test if the definition list (<dl>) of policy details is created correctly
+    # for 'external' policies.
+    policy = {
+      'type': 'external',
+      'name': 'TestPolicyName',
+      'caption': 'TestPolicyCaption',
+      'desc': 'TestPolicyDesc',
+      'supported_on': [{
+        'product': 'chrome',
+        'platforms': ['win', 'mac', 'linux'],
+        'since_version': '8',
+        'until_version': '',
+      }],
+      'features': {'dynamic_refresh': False},
+      'example_value': {
+        "url": "https://example.com/avatar.jpg",
+        "hash": "deadbeef",
+      },
+    }
+    self.writer.messages['doc_since_version'] = {'text': '...$6...'}
+    self.writer._AddPolicyDetails(self.doc_root, policy)
+    self.assertEquals(
+      self.doc_root.toxml(),
+      '<root><dl>'
+      '<dt style="style_dt;">_test_data_type</dt>'
+        '<dd>External data reference [Windows:REG_SZ] (_test_complex_policies_win)</dd>'
+      '<dt style="style_dt;">_test_win_reg_loc</dt>'
+      '<dd style="style_.monospace;">MockKey\TestPolicyName</dd>'
+      '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
+        '<dd style="style_.monospace;">TestPolicyName</dd>'
+      '<dt style="style_dt;">_test_supported_on</dt>'
+      '<dd>'
+        '<ul style="style_ul;">'
+          '<li>Chrome (Windows, Mac, Linux) ...8...</li>'
+        '</ul>'
+      '</dd>'
+      '<dt style="style_dt;">_test_supported_features</dt>'
+        '<dd>_test_feature_dynamic_refresh: _test_not_supported</dd>'
+      '<dt style="style_dt;">_test_description</dt><dd><p>TestPolicyDesc</p></dd>'
+      '<dt style="style_dt;">_test_example_value</dt>'
+        '<dd>'
+          '<dl style="style_dd dl;">'
+            '<dt>_test_example_value_win</dt>'
+            '<dd style="style_.monospace;style_.pre;">'
+              'MockKey\TestPolicyName = {'
+                '&quot;url&quot;: &quot;https://example.com/avatar.jpg&quot;, '
+                '&quot;hash&quot;: &quot;deadbeef&quot;}'
+            '</dd>'
+            '<dt>Android/Linux:</dt>'
+            '<dd style="style_.monospace;">'
+              'TestPolicyName: {'
+                '&quot;url&quot;: &quot;https://example.com/avatar.jpg&quot;, '
+                '&quot;hash&quot;: &quot;deadbeef&quot;}'
+            '</dd>'
+            '<dt>Mac:</dt>'
+            '<dd style="style_.monospace;style_.pre;">'
+              '&lt;key&gt;TestPolicyName&lt;/key&gt;\n'
+              '&lt;dict&gt;\n'
+              '  &lt;key&gt;hash&lt;/key&gt;\n'
+              '  &lt;string&gt;deadbeef&lt;/string&gt;\n'
+              '  &lt;key&gt;url&lt;/key&gt;\n'
+              '  &lt;string&gt;https://example.com/avatar.jpg&lt;/string&gt;\n&lt;'
+              '/dict&gt;'
+            '</dd>'
+          '</dl>'
+        '</dd>'
+      '</dl></root>')
+
   def testAddPolicyDetailsRecommendedOnly(self):
     policy = {
       'type': 'main',
@@ -1021,6 +1090,49 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
             '  &lt;string&gt;direct&lt;/string&gt;\n'
             '  &lt;key&gt;True&lt;/key&gt;\n'
             '  &lt;true/&gt;\n'
+            '&lt;/dict&gt;'
+          '</dd>'
+        '</dl>'
+      '</root>')
+
+  def testAddExternalExample(self):
+    policy = {
+      'name': 'PolicyName',
+      'caption': 'PolicyCaption',
+      'desc': 'PolicyDesc',
+      'type': 'external',
+      'supported_on': [{
+        'product': 'chrome',
+        'platforms': ['win', 'mac', 'linux'],
+        'since_version': '7',
+        'until_version': '',
+      }],
+      'features': {'dynamic_refresh': False},
+      'example_value': {
+        "url": "https://example.com/avatar.jpg",
+        "hash": "deadbeef",
+      },
+    }
+    self.writer._AddDictionaryExample(self.doc_root, policy)
+    value = json.dumps(policy['example_value']).replace('"', '&quot;')
+    self.assertEquals(
+      self.doc_root.toxml(),
+      '<root>'
+        '<dl style="style_dd dl;">'
+          '<dt>_test_example_value_win</dt>'
+          '<dd style="style_.monospace;style_.pre;">MockKey\PolicyName = '
+              + value +
+          '</dd>'
+          '<dt>Android/Linux:</dt>'
+          '<dd style="style_.monospace;">PolicyName: ' + value + '</dd>'
+          '<dt>Mac:</dt>'
+          '<dd style="style_.monospace;style_.pre;">'
+            '&lt;key&gt;PolicyName&lt;/key&gt;\n'
+            '&lt;dict&gt;\n'
+            '  &lt;key&gt;hash&lt;/key&gt;\n'
+            '  &lt;string&gt;deadbeef&lt;/string&gt;\n'
+            '  &lt;key&gt;url&lt;/key&gt;\n'
+            '  &lt;string&gt;https://example.com/avatar.jpg&lt;/string&gt;\n'
             '&lt;/dict&gt;'
           '</dd>'
         '</dl>'

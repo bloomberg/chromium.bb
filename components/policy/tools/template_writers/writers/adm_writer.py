@@ -72,7 +72,8 @@ class AdmWriter(template_writer.TemplateWriter):
     'int-enum': 'DROPDOWNLIST',
     'list': 'LISTBOX',
     'string-enum-list': 'LISTBOX',
-    'dict': 'EDITTEXT'
+    'dict': 'EDITTEXT',
+    'external': 'EDITTEXT'
   }
 
   def _Escape(self, string):
@@ -122,7 +123,7 @@ class AdmWriter(template_writer.TemplateWriter):
     if policy['type'] == 'int':
       # The default max for NUMERIC values is 9999 which is too small for us.
       builder.AddLine('MIN 0 MAX 2000000000')
-    if policy['type'] in ('string', 'dict'):
+    if policy['type'] in ('string', 'dict', 'external'):
       # The default max for EDITTEXT values is 1023, which is too small for
       # big JSON blobs and other string policies.
       builder.AddLine('MAXLEN 1000000')
@@ -140,10 +141,6 @@ class AdmWriter(template_writer.TemplateWriter):
     builder.AddLine('END PART', -1)
 
   def _WritePolicy(self, policy, key_name, builder):
-    if policy['type'] == 'external':
-      # This type can only be set through cloud policy.
-      return
-
     policy_name = self._Escape(policy['name'] + '_Policy')
     self._AddGuiString(policy_name, policy['caption'])
     builder.AddLine('POLICY !!%s' % policy_name, 1)

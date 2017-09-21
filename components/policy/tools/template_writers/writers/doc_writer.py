@@ -299,7 +299,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       raise Exception('Invalid object to convert: %s' % obj)
 
   def _AddDictionaryExampleMac(self, parent, policy):
-    '''Adds an example value for Mac of a 'dict' policy to a DOM node.
+    '''Adds an example value for Mac of a 'dict' or 'external' policy to a DOM
+    node.
 
     Args:
       parent: The DOM node for which the example will be added.
@@ -314,7 +315,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self.AddText(mac, '\n'.join(mac_text))
 
   def _AddDictionaryExampleWindowsChromeOS(self, parent, policy, is_win):
-    '''Adds an example value for Windows of a 'dict' policy to a DOM node.
+    '''Adds an example value for Windows of a 'dict' or 'external' policy to a
+    DOM node.
 
     Args:
       parent: The DOM node for which the example will be added.
@@ -330,7 +332,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self.AddText(element, '%s\\%s = %s' % (key_name, policy['name'], example))
 
   def _AddDictionaryExampleAndroidLinux(self, parent, policy):
-    '''Adds an example value for Android/Linux of a 'dict' policy to a DOM node.
+    '''Adds an example value for Android/Linux of a 'dict' or 'external' policy
+    to a DOM node.
 
     Args:
       parent: The DOM node for which the example will be added.
@@ -343,7 +346,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self.AddText(element, '%s: %s' % (policy['name'], example))
 
   def _AddDictionaryExample(self, parent, policy):
-    '''Adds the example value of a 'dict' policy to a DOM node. Example output:
+    '''Adds the example value of a 'dict' or 'external' policy to a DOM node.
+
+    Example output:
     <dl>
       <dt>Windows (Windows clients):</dt>
       <dd>
@@ -434,7 +439,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       self.AddText(parent, '"%s"' % (example_value))
     elif policy_type in ('list', 'string-enum-list'):
       self._AddListExample(parent, policy)
-    elif policy_type == 'dict':
+    elif policy_type in ('dict', 'external'):
       self._AddDictionaryExample(parent, policy)
     else:
       raise Exception('Unknown policy type: ' + policy_type)
@@ -510,13 +515,13 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         self._RESTRICTION_TYPE_MAP.get(policy['type'], None)):
       qualified_types.append('Android:%s' %
                             self._RESTRICTION_TYPE_MAP[policy['type']])
-      if policy['type'] in ('dict', 'list'):
+      if policy['type'] in ('dict', 'external', 'list'):
         is_complex_policy = True
     if ((self.IsPolicySupportedOnPlatform(policy, 'win') or
          self.IsPolicySupportedOnPlatform(policy, 'chrome_os')) and
         self._REG_TYPE_MAP.get(policy['type'], None)):
       qualified_types.append('Windows:%s' % self._REG_TYPE_MAP[policy['type']])
-      if policy['type'] == 'dict':
+      if policy['type'] in ('dict', 'external'):
         is_complex_policy = True
     if qualified_types:
       data_type.append('[%s]' % ', '.join(qualified_types))
@@ -524,42 +529,40 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         data_type.append('(%s)' %
             self._GetLocalizedMessage('complex_policies_on_windows'))
     self._AddPolicyAttribute(dl, 'data_type', ' '.join(data_type))
-    if policy['type'] != 'external':
-      # All types except 'external' can be set through platform policy.
-      if self.IsPolicySupportedOnPlatform(policy, 'win'):
-        key_name = self._GetRegistryKeyName(policy, True)
-        self._AddPolicyAttribute(
-            dl,
-            'win_reg_loc',
-            key_name + '\\' + policy['name'],
-            ['.monospace'])
-      if self.IsPolicySupportedOnPlatform(policy, 'chrome_os'):
-        key_name = self._GetRegistryKeyName(policy, False)
-        self._AddPolicyAttribute(
-            dl,
-            'chrome_os_reg_loc',
-            key_name + '\\' + policy['name'],
-            ['.monospace'])
-      if (self.IsPolicySupportedOnPlatform(policy, 'linux') or
-          self.IsPolicySupportedOnPlatform(policy, 'mac')):
-        self._AddPolicyAttribute(
-            dl,
-            'mac_linux_pref_name',
-            policy['name'],
-            ['.monospace'])
-      if self.IsPolicySupportedOnPlatform(policy, 'android', 'chrome'):
-        self._AddPolicyAttribute(
-            dl,
-            'android_restriction_name',
-            policy['name'],
-            ['.monospace'])
-      if self.IsPolicySupportedOnPlatform(policy, 'android', 'webview'):
-        restriction_prefix = self.config['android_webview_restriction_prefix']
-        self._AddPolicyAttribute(
-            dl,
-            'android_webview_restriction_name',
-            restriction_prefix + policy['name'],
-            ['.monospace'])
+    if self.IsPolicySupportedOnPlatform(policy, 'win'):
+      key_name = self._GetRegistryKeyName(policy, True)
+      self._AddPolicyAttribute(
+          dl,
+          'win_reg_loc',
+          key_name + '\\' + policy['name'],
+          ['.monospace'])
+    if self.IsPolicySupportedOnPlatform(policy, 'chrome_os'):
+      key_name = self._GetRegistryKeyName(policy, False)
+      self._AddPolicyAttribute(
+          dl,
+          'chrome_os_reg_loc',
+          key_name + '\\' + policy['name'],
+          ['.monospace'])
+    if (self.IsPolicySupportedOnPlatform(policy, 'linux') or
+        self.IsPolicySupportedOnPlatform(policy, 'mac')):
+      self._AddPolicyAttribute(
+          dl,
+          'mac_linux_pref_name',
+          policy['name'],
+          ['.monospace'])
+    if self.IsPolicySupportedOnPlatform(policy, 'android', 'chrome'):
+      self._AddPolicyAttribute(
+          dl,
+          'android_restriction_name',
+          policy['name'],
+          ['.monospace'])
+    if self.IsPolicySupportedOnPlatform(policy, 'android', 'webview'):
+      restriction_prefix = self.config['android_webview_restriction_prefix']
+      self._AddPolicyAttribute(
+          dl,
+          'android_webview_restriction_name',
+          restriction_prefix + policy['name'],
+          ['.monospace'])
     dd = self._AddPolicyAttribute(dl, 'supported_on')
     self._AddSupportedOnList(dd, policy['supported_on'])
     dd = self._AddPolicyAttribute(dl, 'supported_features')
@@ -574,10 +577,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         self.IsPolicySupportedOnPlatform(policy, 'android') or
         self.IsPolicySupportedOnPlatform(policy, 'mac')):
       # Don't add an example for ChromeOS-only policies.
-      if policy['type'] != 'external':
-        # All types except 'external' can be set through platform policy.
-        dd = self._AddPolicyAttribute(dl, 'example_value')
-        self._AddExample(dd, policy)
+      dd = self._AddPolicyAttribute(dl, 'example_value')
+      self._AddExample(dd, policy)
 
   def _AddPolicyNote(self, parent, policy):
     '''If a policy has an additional web page assigned with it, then add
@@ -749,6 +750,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       'int-enum': 'REG_DWORD',
       'string-enum': 'REG_SZ',
       'dict': 'REG_SZ',
+      'external': 'REG_SZ',
     }
     self._RESTRICTION_TYPE_MAP = {
       'int-enum': 'choice',
@@ -756,6 +758,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       'list': 'string',
       'string-enum-list': 'multi-select',
       'dict': 'string',
+      'external': 'string',
     }
     # The CSS style-sheet used for the document. It will be used in Google
     # Sites, which strips class attributes from HTML tags. To work around this,
