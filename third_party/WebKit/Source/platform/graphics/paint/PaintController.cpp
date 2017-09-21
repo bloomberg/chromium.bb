@@ -304,10 +304,10 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
   if (index != kNotFound) {
 #ifndef NDEBUG
     ShowDebugData();
-    WTFLogAlways(
-        "DisplayItem %s has duplicated id with previous %s (index=%zu)\n",
-        display_item.AsDebugString().Utf8().data(),
-        new_display_item_list_[index].AsDebugString().Utf8().data(), index);
+    DLOG(INFO) << "DisplayItem " << display_item.AsDebugString()
+               << " has duplicated id with previous "
+               << new_display_item_list_[index].AsDebugString()
+               << " (index=" << index << ")";
 #endif
     NOTREACHED();
   }

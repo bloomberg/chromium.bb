@@ -165,25 +165,22 @@ void PaintController::ShowDebugDataInternal(bool show_paint_records) const {
       show_paint_records ? DisplayItemList::JsonOptions::kShowPaintRecords
                          : DisplayItemList::JsonOptions::kDefault;
 
-  WTFLogAlways(
-      "current display item list: %s\n",
-      DisplayItemListAsJSON(current_paint_artifact_.GetDisplayItemList(),
-                            current_cached_subsequences_,
-                            current_paint_artifact_.PaintChunks(), flags)
-          .ToString()
-          .Utf8()
-          .data());
+  DLOG(INFO) << "current display item list: "
+             << DisplayItemListAsJSON(
+                    current_paint_artifact_.GetDisplayItemList(),
+                    current_cached_subsequences_,
+                    current_paint_artifact_.PaintChunks(), flags)
+                    .ToString();
+
   // DebugName() and ClientCacheIsValid() can only be called on a live client,
   // so only output it for new_display_item_list_, in which we are sure the
   // clients are all alive.
-  WTFLogAlways(
-      "new display item list: %s\n",
-      DisplayItemListAsJSON(new_display_item_list_, new_cached_subsequences_,
-                            new_paint_chunks_.PaintChunks(),
-                            flags | DisplayItemList::kShowClientDebugName)
-          .ToString()
-          .Utf8()
-          .data());
+  DLOG(INFO) << "new display item list: "
+             << DisplayItemListAsJSON(
+                    new_display_item_list_, new_cached_subsequences_,
+                    new_paint_chunks_.PaintChunks(),
+                    flags | DisplayItemList::kShowClientDebugName)
+                    .ToString();
 }
 
 void PaintController::ShowDebugData() const {

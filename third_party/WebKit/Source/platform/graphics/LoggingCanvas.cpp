@@ -925,7 +925,7 @@ String RecordAsDebugString(const PaintRecord* record, const SkRect& bounds) {
 }
 
 void ShowPaintRecord(const PaintRecord* record, const SkRect& bounds) {
-  WTFLogAlways("%s\n", RecordAsDebugString(record, bounds).Utf8().data());
+  DLOG(INFO) << RecordAsDebugString(record, bounds);
 }
 #endif
 
