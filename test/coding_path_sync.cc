@@ -93,16 +93,14 @@ class CompressedSource {
 
 // lowers an aom_image_t to a easily comparable/printable form
 std::vector<int16_t> Serialize(const aom_image_t *img) {
-  const int w_uv = ROUND_POWER_OF_TWO(img->d_w, img->x_chroma_shift);
-  const int h_uv = ROUND_POWER_OF_TWO(img->d_h, img->y_chroma_shift);
-  const int w[] = { static_cast<int>(img->d_w), w_uv, w_uv };
-  const int h[] = { static_cast<int>(img->d_h), h_uv, h_uv };
-
   std::vector<int16_t> bytes;
   bytes.reserve(img->d_w * img->d_h * 3);
   for (int plane = 0; plane < 3; ++plane) {
-    for (int r = 0; r < h[plane]; ++r) {
-      for (int c = 0; c < w[plane]; ++c) {
+    const int w = aom_img_plane_width(img, plane);
+    const int h = aom_img_plane_height(img, plane);
+
+    for (int r = 0; r < h; ++r) {
+      for (int c = 0; c < w; ++c) {
         const int offset = r * img->stride[plane] + c;
         if (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH)
           bytes.push_back(img->planes[plane][offset * 2]);
