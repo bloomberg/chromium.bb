@@ -125,6 +125,8 @@ class MoveBlinkSource(object):
              [self._update_basename]),
             ('third_party/WebKit/Source/core/css/ComputedStyleExtraFields.json5',
              [self._update_basename]),
+            ('third_party/WebKit/Source/core/css/ComputedStyleFieldAliases.json5',
+             [self._update_basename]),
             ('third_party/WebKit/Source/core/html/parser/create-html-entity-table',
              [self._update_basename]),
             ('third_party/WebKit/Source/core/inspector/inspector_protocol_config.json',
