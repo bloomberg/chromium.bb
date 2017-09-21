@@ -870,7 +870,7 @@ void CheckClientDownloadRequest::SendRequest() {
   request.mutable_signature()->CopyFrom(signature_info_);
   if (image_headers_)
     request.set_allocated_image_headers(image_headers_.release());
-  if (archived_executable_)
+  if (!archived_binary_.empty())
     request.mutable_archived_binary()->Swap(&archived_binary_);
   if (!request.SerializeToString(&client_download_request_data_)) {
     FinishRequest(DownloadCheckResult::UNKNOWN, REASON_INVALID_REQUEST_PROTO);
