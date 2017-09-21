@@ -194,6 +194,14 @@ void MimeHandlerStreamManager::EmbedderObserver::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   if (!IsTrackedRenderFrameHost(render_frame_host))
     return;
+
+  // PlzNavigate: the MimeHandlerStreamManager::EmbedderObserver is initialized
+  // before the final RenderFrameHost for the navigation has been chosen. When
+  // it is later picked, a specualtive RenderFrameHost might be deleted. Do not
+  // abort the stream in that case.
+  if (frame_tree_node_id_ != -1 && !render_frame_host->IsCurrent())
+    return;
+
   AbortStream();
 }
 
@@ -210,9 +218,13 @@ void MimeHandlerStreamManager::EmbedderObserver::ReadyToCommitNavigation(
   }
 
   // We get an initial load notification for the URL we are serving. We don't
-  // want to clean up the stream here.
+  // want to clean up the stream here. Update the RenderFrameHost tracking.
   if (initial_load_for_frame_) {
     initial_load_for_frame_ = false;
+    frame_tree_node_id_ = -1;
+    render_frame_id_ = navigation_handle->GetRenderFrameHost()->GetRoutingID();
+    render_process_id_ =
+        navigation_handle->GetRenderFrameHost()->GetProcess()->GetID();
     return;
   }
   AbortStream();

@@ -937,3 +937,23 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, ChromeSchemeNavFromSadTab) {
   // commit in PlzNavigate mode.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
 }
+
+// Check that a browser-initiated navigation to a cross-site URL that then
+// redirects to a pdf hosted on another site works.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, CrossSiteRedirectionToPDF) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  GURL pdf_url = embedded_test_server()->GetURL("/pdf/test.pdf");
+  GURL cross_site_redirecting_url =
+      https_server.GetURL("/server-redirect?" + pdf_url.spec());
+  ui_test_utils::NavigateToURL(browser(), initial_url);
+  ui_test_utils::NavigateToURL(browser(), cross_site_redirecting_url);
+  EXPECT_EQ(pdf_url, browser()
+                         ->tab_strip_model()
+                         ->GetActiveWebContents()
+                         ->GetLastCommittedURL());
+}
