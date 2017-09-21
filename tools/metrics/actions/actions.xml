@@ -17439,6 +17439,21 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Tablet_BackButton">
+  <owner>sammiequon@chromium.org</owner>
+  <description>
+    User tapped the shelf back button in tablet mode on Chrome OS.
+  </description>
+</action>
+
+<action name="Tablet_QuickSwitch">
+  <owner>sammiequon@chromium.org</owner>
+  <description>
+    User double tapped the overview button in tablet mode on Chrome OS, which
+    quick switches the current application.
+  </description>
+</action>
+
 <action name="Tablet_WindowCloseFromCaptionButton">
   <owner>xdai@chromium.org</owner>
   <description>

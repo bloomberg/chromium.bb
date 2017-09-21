@@ -583,6 +583,7 @@ void AppListButton::GenerateAndSendBackEvent(
     case ui::ET_MOUSE_RELEASED:
     case ui::ET_GESTURE_TAP:
       event_type = ui::ET_KEY_RELEASED;
+      base::RecordAction(base::UserMetricsAction("Tablet_BackButton"));
       break;
     default:
       return;
