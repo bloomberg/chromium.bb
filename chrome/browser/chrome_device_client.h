@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 
 // Implementation of device::DeviceClient that returns //device service
 // singletons appropriate for use within the Chrome application.
@@ -23,7 +24,10 @@ class ChromeDeviceClient : device::DeviceClient {
   device::HidService* GetHidService() override;
 
  private:
+#if !defined(OS_ANDROID)
   std::unique_ptr<device::HidService> hid_service_;
+#endif  // !defined(OS_ANDROID)
+
   std::unique_ptr<device::UsbService> usb_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDeviceClient);
