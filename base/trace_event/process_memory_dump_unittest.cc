@@ -35,7 +35,7 @@ namespace {
 const MemoryDumpArgs kDetailedDumpArgs = {MemoryDumpLevelOfDetail::DETAILED};
 const char* const kTestDumpNameWhitelist[] = {
     "Whitelisted/TestName", "Whitelisted/TestName_0x?",
-    "Whitelisted/0x?/TestName", nullptr};
+    "Whitelisted/0x?/TestName", "Whitelisted/0x?", nullptr};
 
 TracedValue* GetHeapDump(const ProcessMemoryDump& pmd, const char* name) {
   auto it = pmd.heap_dumps().find(name);
@@ -429,16 +429,16 @@ TEST(ProcessMemoryDumpTest, BackgroundModeTest) {
   EXPECT_EQ(black_hole_mad,
             pmd->CreateAllocatorDump("Whitelisted/TestName/__12/Google"));
 
-  // Global dumps.
-  MemoryAllocatorDumpGuid guid(1);
-  EXPECT_EQ(black_hole_mad, pmd->CreateSharedGlobalAllocatorDump(guid));
-  EXPECT_EQ(black_hole_mad, pmd->CreateWeakSharedGlobalAllocatorDump(guid));
-  EXPECT_EQ(black_hole_mad, pmd->GetSharedGlobalAllocatorDump(guid));
-
   // Suballocations.
+  MemoryAllocatorDumpGuid guid(1);
   pmd->AddSuballocation(guid, "malloc/allocated_objects");
   EXPECT_EQ(0u, pmd->allocator_dumps_edges_.size());
   EXPECT_EQ(0u, pmd->allocator_dumps_.size());
+
+  // Global dumps.
+  EXPECT_NE(black_hole_mad, pmd->CreateSharedGlobalAllocatorDump(guid));
+  EXPECT_NE(black_hole_mad, pmd->CreateWeakSharedGlobalAllocatorDump(guid));
+  EXPECT_NE(black_hole_mad, pmd->GetSharedGlobalAllocatorDump(guid));
 
   // Valid dump names.
   EXPECT_NE(black_hole_mad, pmd->CreateAllocatorDump("Whitelisted/TestName"));
@@ -450,6 +450,21 @@ TEST(ProcessMemoryDumpTest, BackgroundModeTest) {
   // GetAllocatorDump is consistent.
   EXPECT_EQ(black_hole_mad, pmd->GetAllocatorDump("NotWhitelisted/TestName"));
   EXPECT_NE(black_hole_mad, pmd->GetAllocatorDump("Whitelisted/TestName"));
+
+  // Test whitelisted entries.
+  ASSERT_TRUE(IsMemoryAllocatorDumpNameWhitelisted("Whitelisted/TestName"));
+
+  // Global dumps should be whitelisted.
+  ASSERT_TRUE(IsMemoryAllocatorDumpNameWhitelisted("global/13456"));
+
+  // Global dumps with non-guids should not be.
+  ASSERT_FALSE(IsMemoryAllocatorDumpNameWhitelisted("global/random"));
+
+  // Random names should not.
+  ASSERT_FALSE(IsMemoryAllocatorDumpNameWhitelisted("NotWhitelisted/TestName"));
+
+  // Check hex processing.
+  ASSERT_TRUE(IsMemoryAllocatorDumpNameWhitelisted("Whitelisted/0xA1b2"));
 }
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)

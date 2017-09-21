@@ -63,6 +63,7 @@ const char* const kTestMDPWhitelist[] = {
     kWhitelistedMDPName, kBackgroundButNotSummaryWhitelistedMDPName, nullptr};
 const char* const kTestMDPWhitelistForSummary[] = {kWhitelistedMDPName,
                                                    nullptr};
+
 void RegisterDumpProvider(
     MemoryDumpProvider* mdp,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,

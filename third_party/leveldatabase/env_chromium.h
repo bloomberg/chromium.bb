@@ -289,6 +289,7 @@ class DBTracker {
 
   friend class ChromiumEnvDBTrackerTest;
   FRIEND_TEST_ALL_PREFIXES(ChromiumEnvDBTrackerTest, IsTrackedDB);
+  FRIEND_TEST_ALL_PREFIXES(ChromiumEnvDBTrackerTest, GetOrCreateAllocatorDump);
 
   DBTracker();
   ~DBTracker();

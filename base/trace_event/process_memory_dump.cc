@@ -244,14 +244,10 @@ MemoryAllocatorDump* ProcessMemoryDump::GetOrCreateAllocatorDump(
 
 MemoryAllocatorDump* ProcessMemoryDump::CreateSharedGlobalAllocatorDump(
     const MemoryAllocatorDumpGuid& guid) {
-  // Global dumps are disabled in background mode.
-  if (dump_args_.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND)
-    return GetBlackHoleMad();
-
   // A shared allocator dump can be shared within a process and the guid could
   // have been created already.
   MemoryAllocatorDump* mad = GetSharedGlobalAllocatorDump(guid);
-  if (mad) {
+  if (mad && mad != black_hole_mad_.get()) {
     // The weak flag is cleared because this method should create a non-weak
     // dump.
     mad->clear_flags(MemoryAllocatorDump::Flags::WEAK);
@@ -262,12 +258,8 @@ MemoryAllocatorDump* ProcessMemoryDump::CreateSharedGlobalAllocatorDump(
 
 MemoryAllocatorDump* ProcessMemoryDump::CreateWeakSharedGlobalAllocatorDump(
     const MemoryAllocatorDumpGuid& guid) {
-  // Global dumps are disabled in background mode.
-  if (dump_args_.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND)
-    return GetBlackHoleMad();
-
   MemoryAllocatorDump* mad = GetSharedGlobalAllocatorDump(guid);
-  if (mad)
+  if (mad && mad != black_hole_mad_.get())
     return mad;
   mad = CreateAllocatorDump(GetSharedGlobalAllocatorDumpName(guid), guid);
   mad->set_flags(MemoryAllocatorDump::Flags::WEAK);
