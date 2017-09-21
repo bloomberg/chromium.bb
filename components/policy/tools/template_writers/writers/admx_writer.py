@@ -126,7 +126,7 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     '''Generates the ADMX "categories" element and adds it to the categories
     main node. The "categories" element defines the category for the policies
     defined in this ADMX document. Here is an example of an ADMX "categories"
-    element on Windows:
+    element:
 
     <categories>
       <category displayName="$(string.googlechrome)" name="googlechrome">
@@ -271,9 +271,6 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     policies_elem = self._active_policies_elem
     policy_type = policy['type']
     policy_name = policy['name']
-    if policy_type == 'external':
-      # This type can only be set through cloud policy.
-      return
 
     attributes = {
       'name': name,
@@ -294,8 +291,9 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     if policy_type == 'main':
       self.AddAttribute(policy_elem, 'valueName', policy_name)
       self._AddMainPolicy(policy_elem)
-    elif policy_type in ('string', 'dict'):
-      # 'dict' policies are configured as JSON-encoded strings on Windows.
+    elif policy_type in ('string', 'dict', 'external'):
+      # 'dict' and 'external' policies are configured as JSON-encoded strings on
+      # Windows.
       parent = self._GetElements(policy_elem)
       self._AddStringPolicy(parent, policy_name)
     elif policy_type == 'int':

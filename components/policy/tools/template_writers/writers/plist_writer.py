@@ -36,6 +36,7 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
     'main': 'boolean',
     'list': 'array',
     'dict': 'dictionary',
+    'external': 'dictionary',
   }
 
   def _AddKeyValuePair(self, parent, key_string, value_tag):
@@ -101,9 +102,6 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
   def WritePolicy(self, policy):
     policy_name = policy['name']
     policy_type = policy['type']
-    if policy_type == 'external':
-      # This type can only be set through cloud policy.
-      return
 
     dict = self.AddElement(self._array, 'dict')
     self._AddStringKeyValuePair(dict, 'pfm_name', policy_name)

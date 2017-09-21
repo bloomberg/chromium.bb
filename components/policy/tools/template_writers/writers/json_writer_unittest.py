@@ -358,6 +358,37 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '}')
     self.CompareOutputs(output, expected_output)
 
+  def testExternalPolicy(self):
+    # Tests a policy group with a single policy of type 'external'.
+    example = {
+      "url": "https://example.com/avatar.jpg",
+      "hash": "deadbeef",
+    }
+    policy_json = '''
+        {
+          "policy_definitions": [
+            {
+              "name": "ExternalPolicy",
+              "type": "external",
+              "caption": "Example External Policy",
+              "desc": "Example External Policy",
+              "supported_on": ["chrome.linux:8-"],
+              "example_value": %s
+            },
+          ],
+          "placeholders": [],
+          "messages": {},
+        }''' % str(example)
+    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'json')
+    expected_output = (
+        TEMPLATE_HEADER +
+        '  // Example External Policy\n' +
+        HEADER_DELIMETER +
+        '  // Example External Policy\n\n'
+        '  //"ExternalPolicy": {"hash": "deadbeef", "url": "https://example.com/avatar.jpg"}\n\n'
+        '}')
+    self.CompareOutputs(output, expected_output)
+
   def testNonSupportedPolicy(self):
     # Tests a policy that is not supported on Linux, so it shouldn't
     # be included in the JSON file.

@@ -806,6 +806,78 @@ DictionaryPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
 
+  def testExternalPolicy(self):
+    # Tests a policy group with a single policy of type 'external'.
+    policy_json = '''
+      {
+        'policy_definitions': [
+          {
+            'name': 'ExternalPolicy',
+            'type': 'external',
+            'supported_on': ['chrome.win:8-'],
+            'features': { 'can_be_recommended': True },
+            'desc': 'Description of group.',
+            'caption': 'Caption of policy.',
+          },
+        ],
+        'placeholders': [],
+        'messages': {
+          'win_supported_winxpsp2': {
+            'text': 'At least Windows 3.13', 'desc': 'blah'
+          },
+          'doc_recommended': {
+            'text': 'Recommended', 'desc': 'bleh'
+          }
+        }
+      }'''
+    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
+    expected_output = self.ConstructOutput(
+        ['MACHINE', 'USER'], '''
+  CATEGORY !!chromium
+    KEYNAME "Software\\Policies\\Chromium"
+
+    POLICY !!ExternalPolicy_Policy
+      #if version >= 4
+        SUPPORTED !!SUPPORTED_WINXPSP2
+      #endif
+      EXPLAIN !!ExternalPolicy_Explain
+
+      PART !!ExternalPolicy_Part  EDITTEXT
+        VALUENAME "ExternalPolicy"
+        MAXLEN 1000000
+      END PART
+    END POLICY
+
+  END CATEGORY
+
+  CATEGORY !!chromium_recommended
+    KEYNAME "Software\\Policies\\Chromium\\Recommended"
+
+    POLICY !!ExternalPolicy_Policy
+      #if version >= 4
+        SUPPORTED !!SUPPORTED_WINXPSP2
+      #endif
+      EXPLAIN !!ExternalPolicy_Explain
+
+      PART !!ExternalPolicy_Part  EDITTEXT
+        VALUENAME "ExternalPolicy"
+        MAXLEN 1000000
+      END PART
+    END POLICY
+
+  END CATEGORY
+
+
+''', '''[Strings]
+SUPPORTED_WINXPSP2="At least Windows 3.13"
+chromium="Chromium"
+chromium_recommended="Chromium - Recommended"
+ExternalPolicy_Policy="Caption of policy."
+ExternalPolicy_Explain="Description of group."
+ExternalPolicy_Part="Caption of policy."
+''')
+    self.CompareOutputs(output, expected_output)
+
   def testNonSupportedPolicy(self):
     # Tests a policy that is not supported on Windows, so it shouldn't
     # be included in the ADM file.

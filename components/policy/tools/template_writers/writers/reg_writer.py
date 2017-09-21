@@ -54,10 +54,7 @@ class RegWriter(template_writer.TemplateWriter):
   def _WritePolicy(self, policy, key, list):
     example_value = policy['example_value']
 
-    if policy['type'] == 'external':
-      # This type can only be set through cloud policy.
-      return
-    elif policy['type'] in ('list', 'string-enum-list'):
+    if policy['type'] in ('list', 'string-enum-list'):
       self._StartBlock(key, policy['name'], list)
       i = 1
       for item in example_value:
@@ -66,9 +63,9 @@ class RegWriter(template_writer.TemplateWriter):
         i = i + 1
     else:
       self._StartBlock(key, None, list)
-      if policy['type'] in ('string', 'string-enum', 'dict'):
+      if policy['type'] in ('string', 'string-enum', 'dict', 'external'):
         example_value_str = json.dumps(example_value, sort_keys=True)
-        if policy['type'] == 'dict':
+        if policy['type'] in ('dict', 'external'):
           example_value_str = '"%s"' % example_value_str
       elif policy['type'] == 'main':
         if example_value == True:
