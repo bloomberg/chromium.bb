@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
@@ -313,8 +314,7 @@ TEST_F(LocalStorageContextMojoTest, OpeningWrappersPurgesInactiveWrappers) {
   // Now open many new wrappers (for different origins) to trigger clean up.
   for (int i = 1; i <= 100; ++i) {
     context()->OpenLocalStorage(
-        url::Origin::UnsafelyCreateOriginWithoutNormalization(
-            "http", "example.com", i, ""),
+        url::Origin(GURL(base::StringPrintf("http://example.com:%d", i))),
         MakeRequest(&wrapper));
     wrapper.reset();
   }
