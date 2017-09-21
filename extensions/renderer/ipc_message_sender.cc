@@ -94,7 +94,7 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
 
     render_thread_->Send(new ExtensionHostMsg_AddFilteredListener(
-        context->GetExtensionID(), event_name, base::nullopt, filter, is_lazy));
+        context->GetExtensionID(), event_name, filter, is_lazy));
   }
 
   void SendRemoveFilteredEventListenerIPC(ScriptContext* context,
@@ -105,8 +105,7 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
 
     render_thread_->Send(new ExtensionHostMsg_RemoveFilteredListener(
-        context->GetExtensionID(), event_name, base::nullopt, filter,
-        remove_lazy_listener));
+        context->GetExtensionID(), event_name, filter, remove_lazy_listener));
   }
 
  private:
@@ -205,11 +204,7 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
                                        bool is_lazy) override {
     DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
-    ServiceWorkerIdentifier sw_identifier;
-    sw_identifier.scope = context->service_worker_scope();
-    sw_identifier.thread_id = content::WorkerThread::GetCurrentId(),
-    dispatcher_->Send(new ExtensionHostMsg_AddFilteredListener(
-        context->GetExtensionID(), event_name, sw_identifier, filter, is_lazy));
+    NOTIMPLEMENTED();
   }
 
   void SendRemoveFilteredEventListenerIPC(ScriptContext* context,
@@ -218,12 +213,7 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
                                           bool remove_lazy_listener) override {
     DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
-    ServiceWorkerIdentifier sw_identifier;
-    sw_identifier.scope = context->service_worker_scope();
-    sw_identifier.thread_id = content::WorkerThread::GetCurrentId(),
-    dispatcher_->Send(new ExtensionHostMsg_RemoveFilteredListener(
-        context->GetExtensionID(), event_name, sw_identifier, filter,
-        remove_lazy_listener));
+    NOTIMPLEMENTED();
   }
 
  private:
