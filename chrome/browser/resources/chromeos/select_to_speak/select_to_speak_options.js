@@ -17,9 +17,9 @@ SelectToSpeakOptionsPage.prototype = {
   init_: function() {
     this.addTranslatedMessagesToDom_();
     this.populateVoiceList_('voice');
-    window.speechSynthesis.onvoiceschanged = function() {
+    window.speechSynthesis.onvoiceschanged = (function() {
       this.populateVoiceList_('voice');
-    };
+    }.bind(this));
     this.syncSelectControlToPref_('voice', 'voice');
     this.syncSelectControlToPref_('rate', 'rate');
   },
