@@ -491,7 +491,7 @@ void PageInfo::OnChangePasswordButtonPressed(
     content::WebContents* web_contents) {
 #if defined(SAFE_BROWSING_DB_LOCAL)
   DCHECK(password_protection_service_);
-  password_protection_service_->OnWarningDone(
+  password_protection_service_->OnUserAction(
       web_contents, safe_browsing::PasswordProtectionService::PAGE_INFO,
       safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);
 #endif
@@ -501,7 +501,7 @@ void PageInfo::OnWhitelistPasswordReuseButtonPressed(
     content::WebContents* web_contents) {
 #if defined(SAFE_BROWSING_DB_LOCAL)
   DCHECK(password_protection_service_);
-  password_protection_service_->OnWarningDone(
+  password_protection_service_->OnUserAction(
       web_contents, safe_browsing::PasswordProtectionService::PAGE_INFO,
       safe_browsing::PasswordProtectionService::MARK_AS_LEGITIMATE);
 #endif

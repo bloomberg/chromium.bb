@@ -183,10 +183,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Records user action to corresponding UMA histograms.
   void RecordWarningAction(WarningUIType ui_type, WarningAction action);
 
-  // Called when user close warning UI or navigate away.
-  void OnWarningDone(content::WebContents* web_contents,
-                     WarningUIType ui_type,
-                     WarningAction action);
+  // If we want to show password reuse modal warning.
+  static bool ShouldShowModalWarning(
+      const LoginReputationClientRequest* request,
+      const LoginReputationClientResponse* response);
 
   // Shows modal warning dialog on the current |web_contents| and pass the
   // |verdict_token| to callback of this dialog.
@@ -196,6 +196,11 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Record UMA stats and trigger event logger when warning UI is shown.
   virtual void OnWarningShown(content::WebContents* web_contents,
                               WarningUIType ui_type);
+
+  // Called when user interacts with warning UIs.
+  virtual void OnUserAction(content::WebContents* web_contents,
+                            WarningUIType ui_type,
+                            WarningAction action) {}
 
   // If we want to show softer warnings based on Finch parameters.
   static bool ShouldShowSofterWarning();
