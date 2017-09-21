@@ -19,6 +19,7 @@ from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import test_stages
+from chromite.cbuildbot.stages import vm_test_stages
 
 
 class SuccessStage(generic_stages.BuilderStage):
@@ -121,6 +122,6 @@ class VMInformationalBuilder(simple_builders.SimpleBuilder):
     self._RunStage(build_stages.BuildImageStage, board)
 
     parallel.RunParallelSteps([
-        lambda: self._RunStage(test_stages.VMTestStage, board),
+        lambda: self._RunStage(vm_test_stages.VMTestStage, board),
         lambda: self._RunDebugSymbolStages(self._run, board),
     ])

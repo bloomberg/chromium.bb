@@ -116,49 +116,6 @@ class RunBuildScriptTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self._assertRunBuildScript(in_chroot=True, sudo=True)
 
 
-class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
-  """Test RunTestSuite functionality."""
-
-  TEST_BOARD = 'amd64-generic'
-  BUILD_ROOT = '/fake/root'
-
-  def _RunTestSuite(self, test_type):
-    commands.RunTestSuite(self.BUILD_ROOT, self.TEST_BOARD, self.tempdir,
-                          '/tmp/taco', archive_dir='/fake/root',
-                          whitelist_chrome_crashes=False,
-                          test_type=test_type)
-    self.assertCommandContains(['--no_graphics', '--verbose'])
-
-  def testFull(self):
-    """Test running FULL config."""
-    self._RunTestSuite(constants.FULL_AU_TEST_TYPE)
-    self.assertCommandContains(['--quick'], expected=False)
-    self.assertCommandContains(['--only_verify'], expected=False)
-
-  def testSimple(self):
-    """Test SIMPLE config."""
-    self._RunTestSuite(constants.SIMPLE_AU_TEST_TYPE)
-    self.assertCommandContains(['--quick_update'])
-
-  def testSmoke(self):
-    """Test SMOKE config."""
-    self._RunTestSuite(constants.SMOKE_SUITE_TEST_TYPE)
-    self.assertCommandContains(['--only_verify'])
-
-  def testGceSmokeTestType(self):
-    """Test GCE_SMOKE_TEST_TYPE."""
-    self._RunTestSuite(constants.GCE_SMOKE_TEST_TYPE)
-    self.assertCommandContains(['--only_verify'])
-    self.assertCommandContains(['--type=gce'])
-    self.assertCommandContains(['--suite=gce-smoke'])
-
-  def testGceSanityTestType(self):
-    """Test GCE_SANITY_TEST_TYPE."""
-    self._RunTestSuite(constants.GCE_SANITY_TEST_TYPE)
-    self.assertCommandContains(['--only_verify'])
-    self.assertCommandContains(['--type=gce'])
-    self.assertCommandContains(['--suite=gce-sanity'])
-
 class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Basic tests for ChromeSDK commands with RunCommand mocked out."""
   BOARD = 'daisy_foo'
@@ -1170,58 +1127,6 @@ class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
 class UnmockedTests(cros_test_lib.TempDirTestCase):
   """Test cases which really run tests, instead of using mocks."""
 
-  def testListFaliedTests(self):
-    """Tests if we can list failed tests."""
-    test_report_1 = """
-/tmp/taco/taste_tests/all/results-01-has_salsa              [  PASSED  ]
-/tmp/taco/taste_tests/all/results-01-has_salsa/has_salsa    [  PASSED  ]
-/tmp/taco/taste_tests/all/results-02-has_cheese             [  FAILED  ]
-/tmp/taco/taste_tests/all/results-02-has_cheese/has_cheese  [  FAILED  ]
-/tmp/taco/taste_tests/all/results-02-has_cheese/has_cheese   FAIL: No cheese.
-"""
-    test_report_2 = """
-/tmp/taco/verify_tests/all/results-01-has_salsa              [  PASSED  ]
-/tmp/taco/verify_tests/all/results-01-has_salsa/has_salsa    [  PASSED  ]
-/tmp/taco/verify_tests/all/results-02-has_cheese             [  PASSED  ]
-/tmp/taco/verify_tests/all/results-02-has_cheese/has_cheese  [  PASSED  ]
-"""
-    results_path = os.path.join(self.tempdir, 'tmp/taco')
-    os.makedirs(results_path)
-    # Create two reports with the same content to test that we don't
-    # list the same test twice.
-    osutils.WriteFile(
-        os.path.join(results_path, 'taste_tests', 'all', 'test_report.log'),
-        test_report_1, makedirs=True)
-    osutils.WriteFile(
-        os.path.join(results_path, 'taste_tests', 'failed', 'test_report.log'),
-        test_report_1, makedirs=True)
-    osutils.WriteFile(
-        os.path.join(results_path, 'verify_tests', 'all', 'test_report.log'),
-        test_report_2, makedirs=True)
-
-    self.assertEquals(
-        commands.ListFailedTests(results_path),
-        [('has_cheese', 'taste_tests/all/results-02-has_cheese')])
-
-  def testArchiveTestResults(self):
-    """Test if we can archive a test results dir."""
-    test_results_dir = 'tmp/taco'
-    results_path = os.path.join(self.tempdir, 'chroot', test_results_dir)
-    archive_dir = os.path.join(self.tempdir, 'archived_taco')
-    os.makedirs(results_path)
-    os.makedirs(archive_dir)
-    # File that should be archived.
-    osutils.Touch(os.path.join(results_path, 'foo.txt'))
-    # Flies that should be ignored.
-    osutils.Touch(os.path.join(results_path,
-                               'chromiumos_qemu_disk.bin.foo'))
-    os.symlink('/src/foo', os.path.join(results_path, 'taco_link'))
-    commands.ArchiveTestResults(results_path, archive_dir)
-    self.assertExists(os.path.join(archive_dir, 'foo.txt'))
-    self.assertNotExists(
-        os.path.join(archive_dir, 'chromiumos_qemu_disk.bin.foo'))
-    self.assertNotExists(os.path.join(archive_dir, 'taco_link'))
-
   def testBuildFirmwareArchive(self):
     """Verifies that firmware archiver includes proper files"""
     # Assorted set of file names, some of which are supposed to be included in
@@ -1464,7 +1369,6 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     tarball_rel_path = commands.BuildEbuildLogsTarball(self.tempdir,
                                                        board, self.tempdir)
     self.assertEquals(tarball_rel_path, None)
-
 
 
 class ImageTestCommandsTest(cros_build_lib_unittest.RunCommandTestCase):

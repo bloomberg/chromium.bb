@@ -15,141 +15,16 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib.const import waterfall
-from chromite.lib import cgroups
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import fake_cidb
-from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import timeout_util
 
 
 # pylint: disable=too-many-ancestors
-
-class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
-                       cbuildbot_unittest.SimpleBuilderTestCase):
-  """Tests for the GCETest stage."""
-
-  BOT_ID = 'amd64-generic-full'
-  RELEASE_TAG = ''
-
-  def setUp(self):
-    for cmd in ('RunTestSuite', 'CreateTestRoot', 'GenerateStackTraces',
-                'ArchiveFile', 'ArchiveTestResults', 'ArchiveVMFiles',
-                'UploadArchivedFile', 'RunDevModeTest', 'RunCrosVMTest',
-                'ListFailedTests', 'GetTestResultsDir',
-                'BuildAndArchiveTestResultsTarball'):
-      self.PatchObject(commands, cmd, autospec=True)
-    self.PatchObject(test_stages.VMTestStage, '_NoTestResults',
-                     autospec=True, return_value=False)
-    self.PatchObject(osutils, 'RmDir', autospec=True)
-    self.PatchObject(cgroups, 'SimpleContainChildren', autospec=True)
-    self._Prepare()
-
-    # Simulate breakpad symbols being ready.
-    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
-    board_runattrs.SetParallel('breakpad_symbols_generated', True)
-
-  def ConstructStage(self):
-    # pylint: disable=W0212
-    self._run.GetArchive().SetupArchivePath()
-    stage = test_stages.GCETestStage(self._run, self._current_board)
-    image_dir = stage.GetImageDirSymlink()
-    osutils.Touch(os.path.join(image_dir, constants.TEST_KEY_PRIVATE),
-                  makedirs=True)
-    return stage
-
-  def testGceTests(self):
-    """Verifies that GCE_SMOKE_TEST_TYPE tests are run on GCE."""
-    self._run.config['gce_tests'] = [
-        config_lib.GCETestConfig(constants.GCE_SMOKE_TEST_TYPE)
-    ]
-    gce_tarball = constants.TEST_IMAGE_GCE_TAR
-
-    # pylint: disable=unused-argument
-    def _MockRunTestSuite(buildroot, board, image_path, results_dir, test_type,
-                          *args, **kwargs):
-      self.assertEndsWith(image_path, gce_tarball)
-      self.assertEqual(test_type, constants.GCE_SMOKE_TEST_TYPE)
-    # pylint: enable=unused-argument
-
-    commands.RunTestSuite.side_effect = _MockRunTestSuite
-
-    self.RunStage()
-
-    self.assertTrue(commands.RunTestSuite.called and
-                    commands.RunTestSuite.call_count == 1)
-
-
-class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
-                      cbuildbot_unittest.SimpleBuilderTestCase):
-  """Tests for the VMTest stage."""
-
-  BOT_ID = 'amd64-generic-full'
-  RELEASE_TAG = ''
-
-  def setUp(self):
-    for cmd in ('RunTestSuite', 'CreateTestRoot', 'GenerateStackTraces',
-                'ArchiveFile', 'ArchiveTestResults', 'ArchiveVMFiles',
-                'UploadArchivedFile', 'RunDevModeTest', 'RunCrosVMTest',
-                'ListFailedTests', 'GetTestResultsDir',
-                'BuildAndArchiveTestResultsTarball'):
-      self.PatchObject(commands, cmd, autospec=True)
-    self.PatchObject(test_stages.VMTestStage, '_NoTestResults',
-                     autospec=True, return_value=False)
-    self.PatchObject(osutils, 'RmDir', autospec=True)
-    self.PatchObject(cgroups, 'SimpleContainChildren', autospec=True)
-    self._Prepare()
-
-    # Simulate breakpad symbols being ready.
-    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
-    board_runattrs.SetParallel('breakpad_symbols_generated', True)
-
-  def ConstructStage(self):
-    # pylint: disable=W0212
-    self._run.GetArchive().SetupArchivePath()
-    stage = test_stages.VMTestStage(self._run, self._current_board)
-    image_dir = stage.GetImageDirSymlink()
-    osutils.Touch(os.path.join(image_dir, constants.TEST_KEY_PRIVATE),
-                  makedirs=True)
-    return stage
-
-  def testFullTests(self):
-    """Tests if full unit and cros_au_test_harness tests are run correctly."""
-    self._run.config['vm_tests'] = [
-        config_lib.VMTestConfig(constants.FULL_AU_TEST_TYPE)
-    ]
-    self.RunStage()
-
-  def testQuickTests(self):
-    """Tests if quick unit and cros_au_test_harness tests are run correctly."""
-    self._run.config['vm_tests'] = [
-        config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)
-    ]
-    self.RunStage()
-
-  def testFailedTest(self):
-    """Tests if quick unit and cros_au_test_harness tests are run correctly."""
-    self.PatchObject(test_stages.VMTestStage, '_RunTest',
-                     autospec=True, side_effect=Exception())
-    self.assertRaises(failures_lib.StepFailure, self.RunStage)
-
-  def testRaisesInfraFail(self):
-    """Tests that a infra failures has been raised."""
-    commands.BuildAndArchiveTestResultsTarball.side_effect = (
-        OSError('Cannot archive'))
-    stage = self.ConstructStage()
-    self.assertRaises(failures_lib.InfrastructureFailure, stage.PerformStage)
-
-  def testSkipVMTest(self):
-    """Tests trybot with no vm test."""
-    extra_cmd_args = ['--novmtests']
-    self._Prepare(extra_cmd_args=extra_cmd_args)
-    self.RunStage()
-
 
 class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for the UnitTest stage."""
