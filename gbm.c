@@ -170,7 +170,7 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 	size_t num_planes, i;
 
 	memset(&drv_data, 0, sizeof(drv_data));
-
+	drv_data.flags = gbm_convert_flags(usage);
 	switch (type) {
 	case GBM_BO_IMPORT_FD:
 		gbm_format = fd_data->format;
