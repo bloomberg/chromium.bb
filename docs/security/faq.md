@@ -259,12 +259,12 @@ mislead the user. For instance, navigating to
 
 As discussed in [Issue 49075](https://crbug.com/49075), we currently do not
 attempt to defeat "passive fingerprinting" or
-"[evercookies](http://en.wikipedia.org/wiki/Evercookie)" or [ETag
-cookies](http://en.wikipedia.org/wiki/HTTP_ETag#Tracking_using_ETags), because
+"[evercookies](https://en.wikipedia.org/wiki/Evercookie)" or [ETag
+cookies](https://en.wikipedia.org/wiki/HTTP_ETag#Tracking_using_ETags), because
 defeating such fingerprinting is likely not practical without fundamental
 changes to how the Web works. One needs roughly 33 bits of non-correlated,
 distinguishing information to have a good chance of telling apart most user
-agents on the planet (see [Arvind Narayanan's site](http://33bits.org/about/)
+agents on the planet (see [Arvind Narayanan's site](https://33bits.org/about/)
 and [Peter Eckersley's discussion of the information theory behind
 Panopticlick](https://www.eff.org/deeplinks/2010/01/primer-information-theory-and-privacy).)
 
@@ -276,7 +276,7 @@ breaking many (or even most) useful web features; and (c) so few people would
 tolerate the breakage that it would likely be easier to distinguish people who
 use the fingerprint-defense configuration. (See "[Anonymity Loves Company:
 Usability and the Network
-Effect](http://freehaven.net/anonbib/cache/usability:weis2006.pdf)" by
+Effect](https://freehaven.net/anonbib/cache/usability:weis2006.pdf)" by
 Dingledine and Mathewson for more information.)
 
 There is a pretty good analysis of in-browser fingerprinting vectors on [this
@@ -349,7 +349,7 @@ A key guarantee of HTTPS is that Chrome can be relatively certain that it is
 connecting to the true web server and not an impostor. Some sites request an
 even higher degree of protection for their users (i.e. you): they assert to
 Chrome (via Strict Transport Security —
-[HSTS](http://tools.ietf.org/html/rfc6797) — or by other means) that any
+[HSTS](https://tools.ietf.org/html/rfc6797) — or by other means) that any
 server authentication error should be fatal, and that Chrome must close the
 connection. If you encounter such a fatal error, it is likely that your network
 is under attack, or that there is a network misconfiguration that is
@@ -387,7 +387,7 @@ expectations.
 Chrome does not perform pin validation when the certificate chain chains up to a
 private trust anchor. A key result of this policy is that private trust anchors
 can be used to proxy (or
-[MITM](http://en.wikipedia.org/wiki/Man-in-the-middle_attack)) connections, even
+[MITM](https://en.wikipedia.org/wiki/Man-in-the-middle_attack)) connections, even
 to pinned sites. “Data loss prevention” appliances, firewalls, content filters,
 and malware can use this feature to defeat the protections of key pinning.
 
@@ -466,7 +466,7 @@ for more details.
 
 Chrome's primary mechanism for checking the revocation status of HTTPS
 certificates is
-[CRLsets](http://dev.chromium.org/Home/chromium-security/crlsets).
+[CRLsets](https://dev.chromium.org/Home/chromium-security/crlsets).
 
 Chrome also supports Online Certificate Status Protocol (OCSP). However, the
 effectiveness of OCSP is is essentially 0 unless the client fails hard (refuses
@@ -479,7 +479,7 @@ Stapled OCSP with the Must Staple option (hard-fail if a valid OCSP response is
 not stapled to the certificate) is a much better solution to the revocation
 problem than non-stapled OCSP. CAs and browsers are working toward that solution
 (see the
-[Internet-Draft](http://tools.ietf.org/html/draft-hallambaker-tlssecuritypolicy-03)).
+[Internet-Draft](https://tools.ietf.org/html/draft-hallambaker-tlssecuritypolicy-03)).
 
 Additionally, non-stapled OCSP poses a privacy problem: in order to check the
 status of a certificate, the client must query an OCSP responder for the status
