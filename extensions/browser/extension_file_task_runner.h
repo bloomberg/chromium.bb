@@ -17,8 +17,6 @@ namespace extensions {
 // extension-related tasks that read, modify, or delete files. All these tasks
 // must be posted to this task runner, even if it is only reading the file,
 // since other tasks may be modifying it.
-// TODO(devlin): We need to pull in all extension-related file tasks to use this
-// task runner.
 scoped_refptr<base::SequencedTaskRunner> GetExtensionFileTaskRunner();
 
 }  // namespace extensions
