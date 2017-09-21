@@ -23,6 +23,8 @@ class MockDevToolsAgentHost : public content::DevToolsAgentHost {
   MOCK_METHOD2(DispatchProtocolMessage,
                bool(content::DevToolsAgentHostClient* client,
                     const std::string& message));
+  MOCK_METHOD2(SendProtocolMessageToClient,
+               bool(int session_id, const std::string& message));
   MOCK_METHOD0(IsAttached, bool());
   MOCK_METHOD3(InspectElement,
                void(content::DevToolsAgentHostClient* client, int x, int y));

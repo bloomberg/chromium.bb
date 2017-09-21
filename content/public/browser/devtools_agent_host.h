@@ -143,6 +143,11 @@ class CONTENT_EXPORT DevToolsAgentHost
   virtual bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
                                        const std::string& message) = 0;
 
+  // Sends |message| to the client of the specified session. Returns |true| if
+  // the session exists and the message was sent.
+  virtual bool SendProtocolMessageToClient(int session_id,
+                                           const std::string& message) = 0;
+
   // Starts inspecting element at position (|x|, |y|).
   virtual void InspectElement(DevToolsAgentHostClient* client,
                               int x,

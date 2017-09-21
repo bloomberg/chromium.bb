@@ -36,6 +36,7 @@ class ChromeDevToolsManagerDelegate :
   void Inspect(content::DevToolsAgentHost* agent_host) override;
   base::DictionaryValue* HandleCommand(
       content::DevToolsAgentHost* agent_host,
+      int session_id,
       base::DictionaryValue* command_dict) override;
   std::string GetTargetType(content::WebContents* web_contents) override;
   std::string GetTargetTitle(content::WebContents* web_contents) override;

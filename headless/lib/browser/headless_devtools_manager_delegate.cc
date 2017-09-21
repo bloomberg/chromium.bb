@@ -201,6 +201,7 @@ HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() {}
 
 base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHost* agent_host,
+    int session_id,
     base::DictionaryValue* command) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -229,6 +230,7 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
 
 bool HeadlessDevToolsManagerDelegate::HandleAsyncCommand(
     content::DevToolsAgentHost* agent_host,
+    int session_id,
     base::DictionaryValue* command,
     const CommandCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

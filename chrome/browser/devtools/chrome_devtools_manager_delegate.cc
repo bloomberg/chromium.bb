@@ -349,8 +349,8 @@ void ChromeDevToolsManagerDelegate::Inspect(
 
 base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHost* agent_host,
+    int session_id,
     base::DictionaryValue* command_dict) {
-
   int id = 0;
   std::string method;
   base::DictionaryValue* params = nullptr;

@@ -42,14 +42,21 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   // Creates new inspectable target given the |url|.
   virtual scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url);
 
+  virtual void SessionCreated(content::DevToolsAgentHost* agent_host,
+                              int session_id);
+
+  virtual void SessionDestroyed(content::DevToolsAgentHost* agent_host,
+                                int session_id);
+
   // Result ownership is passed to the caller.
-  virtual base::DictionaryValue* HandleCommand(
-      DevToolsAgentHost* agent_host,
-      base::DictionaryValue* command);
+  virtual base::DictionaryValue* HandleCommand(DevToolsAgentHost* agent_host,
+                                               int session_id,
+                                               base::DictionaryValue* command);
 
   using CommandCallback =
       base::Callback<void(std::unique_ptr<base::DictionaryValue> response)>;
   virtual bool HandleAsyncCommand(DevToolsAgentHost* agent_host,
+                                  int session_id,
                                   base::DictionaryValue* command,
                                   const CommandCallback& callback);
   // Should return discovery page HTML that should list available tabs

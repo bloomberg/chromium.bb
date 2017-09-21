@@ -162,12 +162,16 @@ void DevToolsAgentHostImpl::InnerAttachClient(DevToolsAgentHostClient* client) {
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   DevToolsSession* session =
       new DevToolsSession(this, client, ++last_session_id_);
+  int session_id = session->session_id();
   sessions_.insert(session);
-  session_by_id_[session->session_id()] = session;
+  session_by_id_[session_id] = session;
   session_by_client_[client].reset(session);
   AttachSession(session);
   if (sessions_.size() == 1)
     NotifyAttached();
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (manager->delegate())
+    manager->delegate()->SessionCreated(this, session_id);
 }
 
 void DevToolsAgentHostImpl::AttachClient(DevToolsAgentHostClient* client) {
@@ -200,6 +204,16 @@ bool DevToolsAgentHostImpl::DispatchProtocolMessage(
   return DispatchProtocolMessage(session, message);
 }
 
+bool DevToolsAgentHostImpl::SendProtocolMessageToClient(
+    int session_id,
+    const std::string& message) {
+  DevToolsSession* session = SessionById(session_id);
+  if (!session)
+    return false;
+  session->SendMessageToClient(message);
+  return true;
+}
+
 void DevToolsAgentHostImpl::InnerDetachClient(DevToolsAgentHostClient* client) {
   DevToolsSession* session = SessionByClient(client);
   int session_id = session->session_id();
@@ -207,6 +221,9 @@ void DevToolsAgentHostImpl::InnerDetachClient(DevToolsAgentHostClient* client) {
   session_by_id_.erase(session_id);
   session_by_client_.erase(client);
   DetachSession(session_id);
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (manager->delegate())
+    manager->delegate()->SessionDestroyed(this, session_id);
   if (sessions_.empty()) {
     io_context_.DiscardAllStreams();
     NotifyDetached();

@@ -81,12 +81,12 @@ protocol::Response::Status DevToolsSession::Dispatch(
     base::DictionaryValue* dict_value =
         static_cast<base::DictionaryValue*>(value.get());
     std::unique_ptr<base::DictionaryValue> response(
-        delegate->HandleCommand(agent_host_, dict_value));
+        delegate->HandleCommand(agent_host_, session_id_, dict_value));
     if (response) {
       SendResponse(std::move(response));
       return protocol::Response::kSuccess;
     }
-    if (delegate->HandleAsyncCommand(agent_host_, dict_value,
+    if (delegate->HandleAsyncCommand(agent_host_, session_id_, dict_value,
                                      base::Bind(&DevToolsSession::SendResponse,
                                                 weak_factory_.GetWeakPtr()))) {
       return protocol::Response::kAsync;
