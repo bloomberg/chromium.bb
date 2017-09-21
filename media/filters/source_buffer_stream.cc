@@ -17,6 +17,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/filters/source_buffer_platform.h"
 #include "media/filters/source_buffer_range_by_dts.h"
+#include "media/filters/source_buffer_range_by_pts.h"
 
 namespace media {
 
@@ -1910,5 +1911,6 @@ bool SourceBufferStream<RangeClass>::SetPendingBuffer(
 }
 
 template class SourceBufferStream<SourceBufferRangeByDts>;
+template class SourceBufferStream<SourceBufferRangeByPts>;
 
 }  // namespace media

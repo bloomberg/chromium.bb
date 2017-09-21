@@ -29,6 +29,7 @@
 #include "media/base/webvtt_util.h"
 #include "media/filters/source_buffer_range.h"
 #include "media/filters/source_buffer_range_by_dts.h"
+#include "media/filters/source_buffer_range_by_pts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::HasSubstr;
@@ -74,21 +75,44 @@ MATCHER_P(ContainsTrackBufferExhaustionSkipLog, skip_milliseconds, "") {
                              "appear temporarily frozen.");
 }
 
+// Based on runtime SourceBufferStreamTest parameter, picks the associated
+// stream member pointer and performs |operation| on it through the pointer.
+#define STREAM_OP(operation)                                             \
+  (buffering_api_ == BufferingApi::kLegacyByDts ? stream_dts_->operation \
+                                                : stream_pts_->operation)
+
+#define STREAM_RESET(config)                                            \
+  {                                                                     \
+    if (buffering_api_ == BufferingApi::kLegacyByDts) {                 \
+      stream_dts_.reset(new SourceBufferStream<SourceBufferRangeByDts>( \
+          config, &media_log_));                                        \
+    } else {                                                            \
+      stream_pts_.reset(new SourceBufferStream<SourceBufferRangeByPts>( \
+          config, &media_log_));                                        \
+    }                                                                   \
+  }
+
+#define EXPECT_STATUS_FOR_STREAM_OP(status_suffix, operation)              \
+  {                                                                        \
+    if (buffering_api_ == BufferingApi::kLegacyByDts) {                    \
+      EXPECT_EQ(SourceBufferStream<SourceBufferRangeByDts>::status_suffix, \
+                stream_dts_->operation);                                   \
+    } else {                                                               \
+      EXPECT_EQ(SourceBufferStream<SourceBufferRangeByPts>::status_suffix, \
+                stream_pts_->operation);                                   \
+    }                                                                      \
+  }
+
 // Test parameter determines if media::kMseBufferByPts feature should be forced
-// on or off for the test.
-// TODO(wolenetz): Add ByPts support by switching from TEST_P to TYPED_TEST with
-// template parameter to match the various SourceBufferStream<RangeClass>
-// type(s) used in production code. See https://crbug.com/718641. In that test
-// style, fixture template parameter determines which kind of buffering API
-// would be unit tested. Note that SBS and SBR internally ignore
-// media::kMseBufferByPts feature setting; the subclass of SBR controls the
-// behavior type, fixed at construction time.  For now, this "using" begins the
-// transition:
-using RangeApi = SourceBufferRangeByDts;
+// on or off for the test, and more importantly, which kind of SourceBufferRange
+// we use in the test instance's SourceBufferStream<>, since the feature status
+// is ignored inside SourceBufferStream<> and SourceBufferRangeBy{Pts,Dts}
+// (whomever constructs them will do so conditioned on the feature). An attempt
+// to used TYPED_TEST instead of TEST_P led to most lines in test cases needing
+// prefix "this->", so we instead use TestWithParam, conditional fixture logic
+// and helper macros.
 class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
  protected:
-  using StreamType = SourceBufferStream<RangeApi>;
-
   SourceBufferStreamTest() {
     buffering_api_ = GetParam();
     switch (buffering_api_) {
@@ -101,11 +125,11 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     }
     video_config_ = TestVideoConfig::Normal();
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
-    stream_.reset(new StreamType(video_config_, &media_log_));
+    STREAM_RESET(video_config_);
   }
 
   void SetMemoryLimit(size_t buffers_of_data) {
-    stream_->set_memory_limit(buffers_of_data * kDataSize);
+    STREAM_OP(set_memory_limit(buffers_of_data * kDataSize));
   }
 
   void SetStreamInfo(int frames_per_second, int keyframes_per_second) {
@@ -117,7 +141,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
   void SetTextStream() {
     video_config_ = TestVideoConfig::Invalid();
     TextTrackConfig config(kTextSubtitles, "", "", "");
-    stream_.reset(new StreamType(config, &media_log_));
+    STREAM_RESET(config);
     SetStreamInfo(2, 2);
   }
 
@@ -126,7 +150,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                              CHANNEL_LAYOUT_STEREO, 1000, EmptyExtraData(),
                              Unencrypted(), base::TimeDelta(), 0);
-    stream_.reset(new StreamType(audio_config_, &media_log_));
+    STREAM_RESET(audio_config_);
 
     // Equivalent to 2ms per frame.
     SetStreamInfo(500, 500);
@@ -200,23 +224,21 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     AppendBuffers(buffers_to_append, false, kNoTimestamp, false, false);
   }
 
-  void Seek(int position) {
-    stream_->Seek(position * frame_duration_);
-  }
+  void Seek(int position) { STREAM_OP(Seek(position * frame_duration_)); }
 
   void SeekToTimestampMs(int64_t timestamp_ms) {
-    stream_->Seek(base::TimeDelta::FromMilliseconds(timestamp_ms));
+    STREAM_OP(Seek(base::TimeDelta::FromMilliseconds(timestamp_ms)));
   }
 
   bool GarbageCollect(base::TimeDelta media_time, int new_data_size) {
-    return stream_->GarbageCollectIfNeeded(
-        DecodeTimestamp::FromPresentationTime(media_time), new_data_size);
+    return STREAM_OP(GarbageCollectIfNeeded(
+        DecodeTimestamp::FromPresentationTime(media_time), new_data_size));
   }
 
   bool GarbageCollectWithPlaybackAtBuffer(int position, int newDataBuffers) {
-    return stream_->GarbageCollectIfNeeded(
+    return STREAM_OP(GarbageCollectIfNeeded(
         DecodeTimestamp::FromPresentationTime(position * frame_duration_),
-        newDataBuffers * kDataSize);
+        newDataBuffers * kDataSize));
   }
 
   void RemoveInMs(int start, int end, int duration) {
@@ -227,28 +249,28 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
 
   void Remove(base::TimeDelta start, base::TimeDelta end,
               base::TimeDelta duration) {
-    stream_->Remove(start, end, duration);
+    STREAM_OP(Remove(start, end, duration));
   }
 
   void SignalStartOfCodedFrameGroup(base::TimeDelta start_timestamp) {
-    stream_->OnStartOfCodedFrameGroup(
-        DecodeTimestamp::FromPresentationTime(start_timestamp));
+    STREAM_OP(OnStartOfCodedFrameGroup(
+        DecodeTimestamp::FromPresentationTime(start_timestamp)));
   }
 
   int GetRemovalRangeInMs(int start, int end, int bytes_to_free,
                           int* removal_end) {
     DecodeTimestamp removal_end_timestamp =
         DecodeTimestamp::FromMilliseconds(*removal_end);
-    int bytes_removed = stream_->GetRemovalRange(
-        DecodeTimestamp::FromMilliseconds(start),
-        DecodeTimestamp::FromMilliseconds(end), bytes_to_free,
-        &removal_end_timestamp);
+    int bytes_removed =
+        STREAM_OP(GetRemovalRange(DecodeTimestamp::FromMilliseconds(start),
+                                  DecodeTimestamp::FromMilliseconds(end),
+                                  bytes_to_free, &removal_end_timestamp));
     *removal_end = removal_end_timestamp.InMilliseconds();
     return bytes_removed;
   }
 
   void CheckExpectedRanges(const std::string& expected) {
-    Ranges<base::TimeDelta> r = stream_->GetBufferedTime();
+    Ranges<base::TimeDelta> r = STREAM_OP(GetBufferedTime());
 
     std::stringstream ss;
     ss << "{ ";
@@ -269,7 +291,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
   void CheckExpectedRangesByTimestamp(
       const std::string& expected,
       TimeGranularity granularity = TimeGranularity::kMillisecond) {
-    Ranges<base::TimeDelta> r = stream_->GetBufferedTime();
+    Ranges<base::TimeDelta> r = STREAM_OP(GetBufferedTime());
 
     std::stringstream ss;
     ss << "{ ";
@@ -294,12 +316,25 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
   void CheckExpectedRangeEndTimes(const std::string& expected) {
     std::stringstream ss;
     ss << "{ ";
-    for (const auto& r : stream_->ranges_) {
-      base::TimeDelta highest_pts;
-      base::TimeDelta end_time;
-      r->GetRangeEndTimesForTesting(&highest_pts, &end_time);
-      ss << "<" << highest_pts.InMilliseconds() << ","
-         << end_time.InMilliseconds() << "> ";
+    switch (buffering_api_) {
+      case BufferingApi::kLegacyByDts:
+        for (const auto& r : stream_dts_->ranges_) {
+          base::TimeDelta highest_pts;
+          base::TimeDelta end_time;
+          r->GetRangeEndTimesForTesting(&highest_pts, &end_time);
+          ss << "<" << highest_pts.InMilliseconds() << ","
+             << end_time.InMilliseconds() << "> ";
+        }
+        break;
+      case BufferingApi::kNewByPts:
+        for (const auto& r : stream_pts_->ranges_) {
+          base::TimeDelta highest_pts;
+          base::TimeDelta end_time;
+          r->GetRangeEndTimesForTesting(&highest_pts, &end_time);
+          ss << "<" << highest_pts.InMilliseconds() << ","
+             << end_time.InMilliseconds() << "> ";
+        }
+        break;
     }
     ss << "}";
     EXPECT_EQ(expected, ss.str());
@@ -307,10 +342,23 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
 
   void CheckIsNextInPTSSequenceWithFirstRange(int64_t pts_in_ms,
                                               bool expectation) {
-    ASSERT_GE(stream_->ranges_.size(), 1u);
-    const auto& range_ptr = *(stream_->ranges_.begin());
-    EXPECT_EQ(expectation, range_ptr->IsNextInPresentationSequence(
-                               base::TimeDelta::FromMilliseconds(pts_in_ms)));
+    ASSERT_GE(STREAM_OP(ranges_.size()), 1u);
+    switch (buffering_api_) {
+      case BufferingApi::kLegacyByDts: {
+        const auto& range_ptr = *(stream_dts_->ranges_.begin());
+        EXPECT_EQ(expectation,
+                  range_ptr->IsNextInPresentationSequence(
+                      base::TimeDelta::FromMilliseconds(pts_in_ms)));
+        break;
+      }
+      case BufferingApi::kNewByPts: {
+        const auto& range_ptr = *(stream_pts_->ranges_.begin());
+        EXPECT_EQ(expectation,
+                  range_ptr->IsNextInPresentationSequence(
+                      base::TimeDelta::FromMilliseconds(pts_in_ms)));
+        break;
+      }
+    }
   }
 
   void CheckExpectedBuffers(
@@ -347,11 +395,20 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     int current_position = starting_position;
     for (; current_position <= ending_position; current_position++) {
       scoped_refptr<StreamParserBuffer> buffer;
-      StreamType::Status status = stream_->GetNextBuffer(&buffer);
-
-      EXPECT_NE(status, StreamType::kConfigChange);
-      if (status != StreamType::kSuccess)
-        break;
+      if (buffering_api_ == BufferingApi::kLegacyByDts) {
+        auto status = stream_dts_->GetNextBuffer(&buffer);
+        EXPECT_NE(status,
+                  SourceBufferStream<SourceBufferRangeByDts>::kConfigChange);
+        if (status != SourceBufferStream<SourceBufferRangeByDts>::kSuccess)
+          break;
+      } else {
+        ASSERT_EQ(buffering_api_, BufferingApi::kNewByPts);
+        auto status = stream_pts_->GetNextBuffer(&buffer);
+        EXPECT_NE(status,
+                  SourceBufferStream<SourceBufferRangeByPts>::kConfigChange);
+        if (status != SourceBufferStream<SourceBufferRangeByPts>::kSuccess)
+          break;
+      }
 
       if (expect_keyframe && current_position == starting_position)
         EXPECT_TRUE(buffer->is_key_frame());
@@ -378,36 +435,65 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     std::vector<std::string> timestamps = base::SplitString(
         expected, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::stringstream ss;
-    const StreamType::Type type = stream_->GetType();
     for (size_t i = 0; i < timestamps.size(); i++) {
       scoped_refptr<StreamParserBuffer> buffer;
-      StreamType::Status status = stream_->GetNextBuffer(&buffer);
+      bool configChanged = false;
 
       if (i > 0)
         ss << " ";
 
-      if (status == StreamType::kConfigChange) {
-        switch (type) {
-          case StreamType::kVideo:
-            stream_->GetCurrentVideoDecoderConfig();
-            break;
-          case StreamType::kAudio:
-            stream_->GetCurrentAudioDecoderConfig();
-            break;
-          case StreamType::kText:
-            stream_->GetCurrentTextTrackConfig();
+      if (buffering_api_ == BufferingApi::kLegacyByDts) {
+        auto status = stream_dts_->GetNextBuffer(&buffer);
+        if (status ==
+            SourceBufferStream<SourceBufferRangeByDts>::kConfigChange) {
+          configChanged = true;
+          switch (stream_dts_->GetType()) {
+            case SourceBufferStream<SourceBufferRangeByDts>::kVideo:
+              stream_dts_->GetCurrentVideoDecoderConfig();
+              break;
+            case SourceBufferStream<SourceBufferRangeByDts>::kAudio:
+              stream_dts_->GetCurrentAudioDecoderConfig();
+              break;
+            case SourceBufferStream<SourceBufferRangeByDts>::kText:
+              stream_dts_->GetCurrentTextTrackConfig();
+              break;
+          }
+        } else {
+          EXPECT_EQ(SourceBufferStream<SourceBufferRangeByDts>::kSuccess,
+                    status);
+          if (status != SourceBufferStream<SourceBufferRangeByDts>::kSuccess)
             break;
         }
+      } else {
+        ASSERT_EQ(buffering_api_, BufferingApi::kNewByPts);
+        auto status = stream_pts_->GetNextBuffer(&buffer);
+        if (status ==
+            SourceBufferStream<SourceBufferRangeByPts>::kConfigChange) {
+          configChanged = true;
+          switch (stream_pts_->GetType()) {
+            case SourceBufferStream<SourceBufferRangeByPts>::kVideo:
+              stream_pts_->GetCurrentVideoDecoderConfig();
+              break;
+            case SourceBufferStream<SourceBufferRangeByPts>::kAudio:
+              stream_pts_->GetCurrentAudioDecoderConfig();
+              break;
+            case SourceBufferStream<SourceBufferRangeByPts>::kText:
+              stream_pts_->GetCurrentTextTrackConfig();
+              break;
+          }
+        } else {
+          EXPECT_EQ(SourceBufferStream<SourceBufferRangeByPts>::kSuccess,
+                    status);
+          if (status != SourceBufferStream<SourceBufferRangeByPts>::kSuccess)
+            break;
+        }
+      }
 
+      if (configChanged) {
         EXPECT_EQ("C", timestamps[i]);
-
         ss << "C";
         continue;
       }
-
-      EXPECT_EQ(StreamType::kSuccess, status);
-      if (status != StreamType::kSuccess)
-        break;
 
       if (granularity == TimeGranularity::kMillisecond)
         ss << buffer->timestamp().InMilliseconds();
@@ -443,7 +529,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
         // more buffer.  The first buffer should match the timestamp and config
         // of the second buffer, except that its discard_padding() should be its
         // duration.
-        ASSERT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&buffer));
+        EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&buffer));
         ASSERT_EQ(buffer->GetConfigId(), preroll_buffer->GetConfigId());
         ASSERT_EQ(buffer->track_id(), preroll_buffer->track_id());
         ASSERT_EQ(buffer->timestamp(), preroll_buffer->timestamp());
@@ -463,23 +549,25 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
 
   void CheckNoNextBuffer() {
     scoped_refptr<StreamParserBuffer> buffer;
-    EXPECT_EQ(StreamType::kNeedBuffer, stream_->GetNextBuffer(&buffer));
+    EXPECT_STATUS_FOR_STREAM_OP(kNeedBuffer, GetNextBuffer(&buffer));
   }
 
   void CheckEOSReached() {
     scoped_refptr<StreamParserBuffer> buffer;
-    EXPECT_EQ(StreamType::kEndOfStream, stream_->GetNextBuffer(&buffer));
+    EXPECT_STATUS_FOR_STREAM_OP(kEndOfStream, GetNextBuffer(&buffer));
   }
 
   void CheckVideoConfig(const VideoDecoderConfig& config) {
-    const VideoDecoderConfig& actual = stream_->GetCurrentVideoDecoderConfig();
+    const VideoDecoderConfig& actual =
+        STREAM_OP(GetCurrentVideoDecoderConfig());
     EXPECT_TRUE(actual.Matches(config))
         << "Expected: " << config.AsHumanReadableString()
         << "\nActual: " << actual.AsHumanReadableString();
   }
 
   void CheckAudioConfig(const AudioDecoderConfig& config) {
-    const AudioDecoderConfig& actual = stream_->GetCurrentAudioDecoderConfig();
+    const AudioDecoderConfig& actual =
+        STREAM_OP(GetCurrentAudioDecoderConfig());
     EXPECT_TRUE(actual.Matches(config))
         << "Expected: " << config.AsHumanReadableString()
         << "\nActual: " << actual.AsHumanReadableString();
@@ -488,7 +576,9 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
   base::TimeDelta frame_duration() const { return frame_duration_; }
 
   StrictMock<MockMediaLog> media_log_;
-  std::unique_ptr<StreamType> stream_;
+  std::unique_ptr<SourceBufferStream<SourceBufferRangeByDts>> stream_dts_;
+  std::unique_ptr<SourceBufferStream<SourceBufferRangeByPts>> stream_pts_;
+
   VideoDecoderConfig video_config_;
   AudioDecoderConfig audio_config_;
   BufferingApi buffering_api_;
@@ -507,9 +597,10 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
                      bool expect_success,
                      const uint8_t* data,
                      int size) {
-    if (begin_coded_frame_group)
-      stream_->OnStartOfCodedFrameGroup(DecodeTimestamp::FromPresentationTime(
-          starting_position * frame_duration_));
+    if (begin_coded_frame_group) {
+      STREAM_OP(OnStartOfCodedFrameGroup(DecodeTimestamp::FromPresentationTime(
+          starting_position * frame_duration_)));
+    }
 
     int keyframe_interval = frames_per_second_ / keyframes_per_second_;
 
@@ -547,7 +638,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
       queue.push_back(buffer);
     }
     if (!queue.empty())
-      EXPECT_EQ(expect_success, stream_->Append(queue));
+      EXPECT_EQ(expect_success, STREAM_OP(Append(queue)));
   }
 
   void UpdateLastBufferDuration(DecodeTimestamp current_dts,
@@ -729,11 +820,11 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
 
       ASSERT_TRUE(start_timestamp <= buffers[0]->GetDecodeTimestamp());
 
-      stream_->OnStartOfCodedFrameGroup(start_timestamp);
+      STREAM_OP(OnStartOfCodedFrameGroup(start_timestamp));
     }
 
     if (!one_by_one) {
-      EXPECT_EQ(expect_success, stream_->Append(buffers));
+      EXPECT_EQ(expect_success, STREAM_OP(Append(buffers)));
       return;
     }
 
@@ -741,7 +832,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     for (size_t i = 0; i < buffers.size(); i++) {
       BufferQueue wrapper;
       wrapper.push_back(buffers[i]);
-      EXPECT_TRUE(stream_->Append(wrapper));
+      EXPECT_TRUE(STREAM_OP(Append(wrapper)));
     }
   }
 
@@ -1972,11 +2063,11 @@ TEST_P(SourceBufferStreamTest, Seek_InBetweenTimestamps) {
   CHECK(bump > base::TimeDelta());
 
   // Seek to buffer a little after position 5.
-  stream_->Seek(5 * frame_duration() + bump);
+  STREAM_OP(Seek(5 * frame_duration() + bump));
   CheckExpectedBuffers(5, 5, true);
 
   // Seek to buffer a little before position 5.
-  stream_->Seek(5 * frame_duration() - bump);
+  STREAM_OP(Seek(5 * frame_duration() - bump));
   CheckExpectedBuffers(0, 0, true);
 }
 
@@ -2017,7 +2108,7 @@ TEST_P(SourceBufferStreamTest, Seek_StartOfGroup) {
   scoped_refptr<StreamParserBuffer> buffer;
 
   // GetNextBuffer() should return the next buffer at position (5 + |bump|).
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kSuccess);
+  EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&buffer));
   EXPECT_EQ(buffer->GetDecodeTimestamp(),
             DecodeTimestamp::FromPresentationTime(5 * frame_duration() + bump));
 
@@ -2032,7 +2123,7 @@ TEST_P(SourceBufferStreamTest, Seek_StartOfGroup) {
   NewCodedFrameGroupAppend_OffsetFirstBuffer(15, 5, bump);
 
   // GetNextBuffer() should return the next buffer at position (15 + |bump|).
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kSuccess);
+  EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&buffer));
   EXPECT_EQ(buffer->GetDecodeTimestamp(), DecodeTimestamp::FromPresentationTime(
       15 * frame_duration() + bump));
 
@@ -2391,7 +2482,7 @@ TEST_P(SourceBufferStreamTest, PresentationTimestampIndependence) {
   // Check for IBB...BBP pattern.
   for (int i = 0; i < 20; i++) {
     scoped_refptr<StreamParserBuffer> buffer;
-    ASSERT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kSuccess);
+    EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&buffer));
 
     if (buffer->is_key_frame()) {
       EXPECT_EQ(DecodeTimestamp::FromPresentationTime(buffer->timestamp()),
@@ -2453,7 +2544,7 @@ TEST_P(SourceBufferStreamTest,
   NewCodedFrameGroupAppend("1000K 1010 1020 1030 1040");
 
   // GC should be a no-op, since we are just under memory limit.
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(DecodeTimestamp(), 0));
+  EXPECT_TRUE(STREAM_OP(GarbageCollectIfNeeded(DecodeTimestamp(), 0)));
   CheckExpectedRangesByTimestamp("{ [0,100) [1000,1050) }");
 
   // Seek to the near the end of the first range
@@ -2465,8 +2556,8 @@ TEST_P(SourceBufferStreamTest,
   // GOP in that first range. Neither can it collect the last appended GOP
   // (which is the entire second range), so GC should return false since it
   // couldn't collect enough.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(95), 7));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(95), 7)));
   CheckExpectedRangesByTimestamp("{ [50,100) [1000,1050) }");
 }
 
@@ -2616,8 +2707,8 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppend) {
   // So the ranges before GC are "{ [100,280) [310,400) [490,670) }".
   NewCodedFrameGroupAppend("100K 130 160 190K 220 250K");
 
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(580), 0));
+  EXPECT_TRUE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(580), 0)));
 
   // Should save the newly appended GOPs.
   CheckExpectedRangesByTimestamp("{ [100,280) [580,670) }");
@@ -2637,8 +2728,8 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_DeleteAfterLastAppendMerged) {
   // range.  So the range before GC is "{ [220,670) }".
   NewCodedFrameGroupAppend("220K 250 280 310K 340 370");
 
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(580), 0));
+  EXPECT_TRUE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(580), 0)));
 
   // Should save the newly appended GOPs.
   CheckExpectedRangesByTimestamp("{ [220,400) [580,670) }");
@@ -2790,52 +2881,52 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_SaveDataAtPlaybackPosition) {
   CheckExpectedRanges("{ [0,299) }");
 
   // Playback position at 0, all data must be preserved.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(0), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(0), 0)));
   CheckExpectedRanges("{ [0,299) }");
 
   // Playback position at 1 sec, the first second of data [0,29) should be
   // collected, since we are way over memory limit.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(1000), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(1000), 0)));
   CheckExpectedRanges("{ [30,299) }");
 
   // Playback position at 1.1 sec, no new data can be collected, since the
   // playback position is still in the first GOP of buffered data.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(1100), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(1100), 0)));
   CheckExpectedRanges("{ [30,299) }");
 
   // Playback position at 5.166 sec, just at the very end of GOP corresponding
   // to buffer range 150-155, which should be preserved.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(5166), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(5166), 0)));
   CheckExpectedRanges("{ [150,299) }");
 
   // Playback position at 5.167 sec, just past the end of GOP corresponding to
   // buffer range 150-155, it should be garbage collected now.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(5167), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(5167), 0)));
   CheckExpectedRanges("{ [155,299) }");
 
   // Playback at 9.0 sec, we can now successfully collect all data except the
   // last second and we are back under memory limit of 30 buffers, so GCIfNeeded
   // should return true.
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(9000), 0));
+  EXPECT_TRUE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(9000), 0)));
   CheckExpectedRanges("{ [270,299) }");
 
   // Playback at 9.999 sec, GC succeeds, since we are under memory limit even
   // without removing any data.
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(9999), 0));
+  EXPECT_TRUE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(9999), 0)));
   CheckExpectedRanges("{ [270,299) }");
 
   // Playback at 15 sec, this should never happen during regular playback in
   // browser, since this position has no data buffered, but it should still
   // cause no problems to GC algorithm, so test it just in case.
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(15000), 0));
+  EXPECT_TRUE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(15000), 0)));
   CheckExpectedRanges("{ [270,299) }");
 }
 
@@ -2865,16 +2956,16 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP) {
   // GC. Because it is after 290ms, this tests that the GOP is saved when
   // deleting from the back.
   NewCodedFrameGroupAppend("500K 530 560 590");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(290), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(290), 0)));
 
   // Should save GOPs between 290ms and the last GOP appended.
   CheckExpectedRangesByTimestamp("{ [290,380) [500,620) }");
 
   // Continue appending to this GOP after GC.
   AppendBuffers("620D30");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(290), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(290), 0)));
   CheckExpectedRangesByTimestamp("{ [290,380) [500,650) }");
 }
 
@@ -2892,13 +2983,13 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Middle) {
 
   // This whole GOP should be saved after GC, which will fail due to GOP being
   // larger than 1 buffer
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(80), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(80), 0)));
   CheckExpectedRangesByTimestamp("{ [80,170) }");
   // We should still be able to continue appending data to GOP
   AppendBuffers("170D30");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(80), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(80), 0)));
   CheckExpectedRangesByTimestamp("{ [80,200) }");
 
   // Append a 2nd range after this range, without triggering GC.
@@ -2912,16 +3003,16 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Middle) {
   // it is after the selected range, this tests that the GOP is saved when
   // deleting from the back.
   NewCodedFrameGroupAppend("500K 530 560 590");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(80), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(80), 0)));
 
   // Should save the GOPs between the seek point and GOP that was last appended
   CheckExpectedRangesByTimestamp("{ [80,200) [400,620) }");
 
   // Continue appending to this GOP after GC.
   AppendBuffers("620D30");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(80), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(80), 0)));
   CheckExpectedRangesByTimestamp("{ [80,200) [400,650) }");
 }
 
@@ -2941,8 +3032,8 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected1) {
 
   // GC should save the GOP at 0ms and 90ms, and will fail since GOP larger
   // than 1 buffer
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(90), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(90), 0)));
   CheckExpectedRangesByTimestamp("{ [0,180) }");
 
   // Seek to 0 and check all buffers.
@@ -2955,8 +3046,8 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected1) {
   NewCodedFrameGroupAppend("180K 210 240");
 
   // Should save the GOP at 90ms and the GOP at 180ms.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(90), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(90), 0)));
   CheckExpectedRangesByTimestamp("{ [90,270) }");
   CheckExpectedBuffers("90K 120 150 180K 210 240");
   CheckNoNextBuffer();
@@ -2979,8 +3070,8 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected2) {
 
   // GC will save data in the range where the most recent append has happened
   // [0; 180) and the range where the next read position is [270;360)
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(270), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(270), 0)));
   CheckExpectedRangesByTimestamp("{ [0,180) [270,360) }");
 
   // Add 3 GOPs to the end of the selected range at 360ms, 450ms, and 540ms.
@@ -2990,8 +3081,8 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected2) {
   // Overlap the GOP at 450ms and garbage collect to test deleting from the
   // back.
   NewCodedFrameGroupAppend("450K 480 510");
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(270), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(270), 0)));
 
   // Should save GOPs from GOP at 270ms to GOP at 450ms.
   CheckExpectedRangesByTimestamp("{ [270,540) }");
@@ -3014,8 +3105,8 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected3) {
 
   // GC should save the newly appended GOP, which is also the next GOP that
   // will be returned from the seek request.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(0), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(0), 0)));
   CheckExpectedRangesByTimestamp("{ [0,60) }");
 
   // Check the buffers in the range.
@@ -3027,8 +3118,8 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Selected3) {
 
   // GC should still save the rest of this GOP and should be able to fulfill
   // the read.
-  EXPECT_FALSE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(0), 0));
+  EXPECT_FALSE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(0), 0)));
   CheckExpectedRangesByTimestamp("{ [0,120) }");
   CheckExpectedBuffers("60 90");
   CheckNoNextBuffer();
@@ -3067,8 +3158,8 @@ TEST_P(SourceBufferStreamTest, GarbageCollection_MediaTimeAfterLastAppendTime) {
   // the last appended buffer (330), but still within buffered ranges, taking
   // into account the duration of the last frame (timestamp of the last frame is
   // 330, duration is 30, so the latest valid buffered position is 330+30=360).
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(360), 0));
+  EXPECT_TRUE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(360), 0)));
 
   // GC should collect one GOP from the front to bring us back under memory
   // limit of 10 buffers.
@@ -3095,8 +3186,8 @@ TEST_P(SourceBufferStreamTest,
   // return a media_time that is slightly outside of video buffered range). In
   // those cases the GC algorithm should clamp the media_time value to the
   // buffered ranges to work correctly (see crbug.com/563292).
-  EXPECT_TRUE(stream_->GarbageCollectIfNeeded(
-      DecodeTimestamp::FromMilliseconds(361), 0));
+  EXPECT_TRUE(STREAM_OP(
+      GarbageCollectIfNeeded(DecodeTimestamp::FromMilliseconds(361), 0)));
 
   // GC should collect one GOP from the front to bring us back under memory
   // limit of 10 buffers.
@@ -3244,7 +3335,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Basic) {
   CheckVideoConfig(video_config_);
 
   // Signal a config change.
-  stream_->UpdateVideoConfig(new_config);
+  STREAM_OP(UpdateVideoConfig(new_config));
 
   // Make sure updating the config doesn't change anything since new_config
   // should not be associated with the buffer GetNextBuffer() will return.
@@ -3256,13 +3347,13 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Basic) {
   // Consume the buffers associated with the initial config.
   scoped_refptr<StreamParserBuffer> buffer;
   for (int i = 0; i < 5; i++) {
-    EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kSuccess);
+    EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&buffer));
     CheckVideoConfig(video_config_);
   }
 
   // Verify the next attempt to get a buffer will signal that a config change
   // has happened.
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
+  EXPECT_STATUS_FOR_STREAM_OP(kConfigChange, GetNextBuffer(&buffer));
 
   // Verify that the new config is now returned.
   CheckVideoConfig(new_config);
@@ -3270,7 +3361,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Basic) {
   // Consume the remaining buffers associated with the new config.
   for (int i = 0; i < 5; i++) {
     CheckVideoConfig(new_config);
-    EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kSuccess);
+    EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&buffer));
   }
 }
 
@@ -3280,7 +3371,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Seek) {
 
   Seek(0);
   NewCodedFrameGroupAppend(0, 5, &kDataA);
-  stream_->UpdateVideoConfig(new_config);
+  STREAM_OP(UpdateVideoConfig(new_config));
   NewCodedFrameGroupAppend(5, 5, &kDataB);
 
   // Seek to the start of the buffers with the new config and make sure a
@@ -3288,7 +3379,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Seek) {
   CheckVideoConfig(video_config_);
   Seek(5);
   CheckVideoConfig(video_config_);
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
+  EXPECT_STATUS_FOR_STREAM_OP(kConfigChange, GetNextBuffer(&buffer));
   CheckVideoConfig(new_config);
   CheckExpectedBuffers(5, 9, &kDataB);
 
@@ -3306,7 +3397,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Seek) {
   CheckVideoConfig(new_config);
   Seek(0);
   CheckVideoConfig(new_config);
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
+  EXPECT_STATUS_FOR_STREAM_OP(kConfigChange, GetNextBuffer(&buffer));
   CheckVideoConfig(video_config_);
   CheckExpectedBuffers(0, 4, &kDataA);
 }
@@ -3325,7 +3416,7 @@ TEST_P(SourceBufferStreamTest, SetExplicitDuration) {
   CheckExpectedRanges("{ [5,6) [10,11) [15,16) }");
 
   // Set duration to be between buffers 6 and 10.
-  stream_->OnSetDuration(frame_duration() * 8);
+  STREAM_OP(OnSetDuration(frame_duration() * 8));
 
   // Should truncate the data after 6.
   CheckExpectedRanges("{ [5,6) }");
@@ -3346,7 +3437,7 @@ TEST_P(SourceBufferStreamTest, SetExplicitDuration_EdgeCase) {
   CheckExpectedRanges("{ [10,19) [25,29) }");
 
   // Set duration to be right before buffer 25.
-  stream_->OnSetDuration(frame_duration() * 25);
+  STREAM_OP(OnSetDuration(frame_duration() * 25));
 
   // Should truncate the last range.
   CheckExpectedRanges("{ [10,19) }");
@@ -3365,7 +3456,7 @@ TEST_P(SourceBufferStreamTest, SetExplicitDuration_EdgeCase2) {
 
   // Trim off last 2 buffers, totaling 8 ms. Notably less than the current fudge
   // room of 10 ms.
-  stream_->OnSetDuration(base::TimeDelta::FromMilliseconds(5));
+  STREAM_OP(OnSetDuration(base::TimeDelta::FromMilliseconds(5)));
 
   // Verify truncation.
   CheckExpectedRangesByTimestamp("{ [0,5) }");
@@ -3416,7 +3507,7 @@ TEST_P(SourceBufferStreamTest, SetExplicitDuration_DeletePartialRange) {
   CheckExpectedRanges("{ [0,4) [10,19) [25,29) }");
 
   // Set duration to be between buffers 13 and 14.
-  stream_->OnSetDuration(frame_duration() * 14);
+  STREAM_OP(OnSetDuration(frame_duration() * 14));
 
   // Should truncate the data after 13.
   CheckExpectedRanges("{ [0,4) [10,13) }");
@@ -3439,7 +3530,7 @@ TEST_P(SourceBufferStreamTest, SetExplicitDuration_DeleteSelectedRange) {
   Seek(10);
 
   // Set duration to be after position 3.
-  stream_->OnSetDuration(frame_duration() * 4);
+  STREAM_OP(OnSetDuration(frame_duration() * 4));
 
   // Expect everything to be deleted, and should not have next buffer anymore.
   CheckNoNextBuffer();
@@ -3469,7 +3560,7 @@ TEST_P(SourceBufferStreamTest, SetExplicitDuration_DeletePartialSelectedRange) {
   Seek(10);
 
   // Set duration to be between buffers 24 and 25.
-  stream_->OnSetDuration(frame_duration() * 25);
+  STREAM_OP(OnSetDuration(frame_duration() * 25));
 
   // Should truncate the data after 24.
   CheckExpectedRanges("{ [0,4) [10,24) }");
@@ -3478,7 +3569,7 @@ TEST_P(SourceBufferStreamTest, SetExplicitDuration_DeletePartialSelectedRange) {
   CheckExpectedBuffers(10, 10);
 
   // Now set the duration immediately after buffer 10.
-  stream_->OnSetDuration(frame_duration() * 11);
+  STREAM_OP(OnSetDuration(frame_duration() * 11));
 
   // Seek position should be reset.
   CheckNoNextBuffer();
@@ -3499,7 +3590,7 @@ TEST_P(SourceBufferStreamTest, SetExplicitDuration_UpdateSelectedRange) {
   CheckExpectedBuffers("0K 30");
 
   // Set duration to be right before buffer 1.
-  stream_->OnSetDuration(base::TimeDelta::FromMilliseconds(60));
+  STREAM_OP(OnSetDuration(base::TimeDelta::FromMilliseconds(60)));
 
   // Verify that there is no next buffer.
   CheckNoNextBuffer();
@@ -3524,7 +3615,7 @@ TEST_P(SourceBufferStreamTest,
 
   CheckExpectedRangesByTimestamp("{ [0,90) [200,350) [400,490) }");
 
-  stream_->OnSetDuration(base::TimeDelta::FromMilliseconds(120));
+  STREAM_OP(OnSetDuration(base::TimeDelta::FromMilliseconds(120)));
 
   // Verify that the buffered ranges are updated properly and we don't crash.
   CheckExpectedRangesByTimestamp("{ [0,90) }");
@@ -3543,13 +3634,13 @@ TEST_P(SourceBufferStreamTest, SetExplicitDuration_MarkEOS) {
   // Set duration to be before the seeked to position.
   // This will result in truncation of the selected range and a reset
   // of NextBufferPosition.
-  stream_->OnSetDuration(frame_duration() * 4);
+  STREAM_OP(OnSetDuration(frame_duration() * 4));
 
   // Check the expected ranges.
   CheckExpectedRanges("{ [0,3) }");
 
   // Mark EOS reached.
-  stream_->MarkEndOfStream();
+  STREAM_OP(MarkEndOfStream());
 
   // Expect EOS to be reached.
   CheckEOSReached();
@@ -3568,15 +3659,15 @@ TEST_P(SourceBufferStreamTest, SetExplicitDuration_MarkEOS_IsSeekPending) {
   // Set duration to be before the seeked to position.
   // This will result in truncation of the selected range and a reset
   // of NextBufferPosition.
-  stream_->OnSetDuration(frame_duration() * 4);
+  STREAM_OP(OnSetDuration(frame_duration() * 4));
 
   // Check the expected ranges.
   CheckExpectedRanges("{ [0,3) }");
 
-  EXPECT_TRUE(stream_->IsSeekPending());
+  EXPECT_TRUE(STREAM_OP(IsSeekPending()));
   // Mark EOS reached.
-  stream_->MarkEndOfStream();
-  EXPECT_FALSE(stream_->IsSeekPending());
+  STREAM_OP(MarkEndOfStream());
+  EXPECT_FALSE(STREAM_OP(IsSeekPending()));
 }
 
 // Test the case were the current playback position is at the end of the
@@ -3768,7 +3859,7 @@ TEST_P(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 TEST_P(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, EmptyExtraData(), Unencrypted());
-  stream_.reset(new StreamType(config, &media_log_));
+  STREAM_RESET(config);
   Seek(0);
   NewCodedFrameGroupAppend("0K 0K 30K 30 60 60");
   CheckExpectedBuffers("0K 0K 30K 30 60 60");
@@ -3779,7 +3870,7 @@ TEST_P(SourceBufferStreamTest, SameTimestamp_Audio_SingleAppend_Warning) {
 
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, EmptyExtraData(), Unencrypted());
-  stream_.reset(new StreamType(config, &media_log_));
+  STREAM_RESET(config);
   Seek(0);
 
   // Note, in reality, a non-keyframe audio frame is rare or perhaps not
@@ -3796,9 +3887,9 @@ TEST_P(SourceBufferStreamTest, EndSelected_During_PendingSeek) {
   NewCodedFrameGroupAppend(0, 15);
 
   Seek(20);
-  EXPECT_TRUE(stream_->IsSeekPending());
-  stream_->MarkEndOfStream();
-  EXPECT_FALSE(stream_->IsSeekPending());
+  EXPECT_TRUE(STREAM_OP(IsSeekPending()));
+  STREAM_OP(MarkEndOfStream());
+  EXPECT_FALSE(STREAM_OP(IsSeekPending()));
 }
 
 // If there is a pending seek between 2 existing ranges,
@@ -3811,9 +3902,9 @@ TEST_P(SourceBufferStreamTest, EndNotSelected_During_PendingSeek) {
   NewCodedFrameGroupAppend(30, 10);
 
   Seek(20);
-  EXPECT_TRUE(stream_->IsSeekPending());
-  stream_->MarkEndOfStream();
-  EXPECT_TRUE(stream_->IsSeekPending());
+  EXPECT_TRUE(STREAM_OP(IsSeekPending()));
+  STREAM_OP(MarkEndOfStream());
+  EXPECT_TRUE(STREAM_OP(IsSeekPending()));
 }
 
 
@@ -4256,7 +4347,7 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceFrame_NoSplice) {
   for (int i = 0; i < 10; i++) {
     // Verify buffer timestamps and durations are preserved and no buffers have
     // discard padding (indicating no splice trimming).
-    EXPECT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&buffer));
+    EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&buffer));
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(i * 2), buffer->timestamp());
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(2), buffer->duration());
     EXPECT_EQ(kEmptyDiscardPadding, buffer->discard_padding());
@@ -4343,16 +4434,16 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
   B_buffers.push_back(bufferB2);
 
   // Append buffers, trigger splice trimming.
-  stream_->OnStartOfCodedFrameGroup(bufferA1->GetDecodeTimestamp());
-  stream_->Append(A_buffers);
+  STREAM_OP(OnStartOfCodedFrameGroup(bufferA1->GetDecodeTimestamp()));
+  STREAM_OP(Append(A_buffers));
   EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(3000, 2000, 1000));
-  stream_->Append(B_buffers);
+  STREAM_OP(Append(B_buffers));
 
   // Verify buffers.
   scoped_refptr<StreamParserBuffer> read_buffer;
 
   // Buffer A1 was not spliced, should be unchanged.
-  EXPECT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&read_buffer));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(0), read_buffer->timestamp());
   EXPECT_EQ(kDuration / 2, read_buffer->duration());
   EXPECT_EQ(discardA1, read_buffer->discard_padding());
@@ -4360,7 +4451,7 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
   // Buffer A2 was overlapped by buffer B1 1ms. Splice trimming should trim A2's
   // duration and increase its discard padding by 1ms.
   const base::TimeDelta overlap = base::TimeDelta::FromMilliseconds(1);
-  EXPECT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&read_buffer));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(2), read_buffer->timestamp());
   EXPECT_EQ((kDuration / 2) - overlap, read_buffer->duration());
   const DecoderBuffer::DiscardPadding overlap_discard =
@@ -4369,13 +4460,13 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
 
   // Buffer B1 is overlapping A2, but B1 should be unchanged - splice trimming
   // only modifies the earlier buffer (A1).
-  EXPECT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&read_buffer));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(3), read_buffer->timestamp());
   EXPECT_EQ(kDuration / 2, read_buffer->duration());
   EXPECT_EQ(discardB1, read_buffer->discard_padding());
 
   // Buffer B2 is not spliced, should be unchanged.
-  EXPECT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_STATUS_FOR_STREAM_OP(kSuccess, GetNextBuffer(&read_buffer));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(5), read_buffer->timestamp());
   EXPECT_EQ(kDuration, read_buffer->duration());
   EXPECT_EQ(std::make_pair(kNoDiscard, kNoDiscard),
@@ -4393,7 +4484,7 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
   audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                            CHANNEL_LAYOUT_STEREO, 4000, EmptyExtraData(),
                            Unencrypted(), base::TimeDelta(), 0);
-  stream_.reset(new StreamType(audio_config_, &media_log_));
+  STREAM_RESET(audio_config_);
   // Equivalent to 0.5ms per frame.
   SetStreamInfo(2000, 2000);
   Seek(0);
@@ -4434,7 +4525,7 @@ TEST_P(SourceBufferStreamTest, Audio_ConfigChangeWithPreroll) {
   NewCodedFrameGroupAppend("0K 3K 6K");
 
   // Update the configuration.
-  stream_->UpdateAudioConfig(new_config);
+  STREAM_OP(UpdateAudioConfig(new_config));
 
   // We haven't read any buffers at this point, so the config for the next
   // buffer at time 0 should still be the original config.
@@ -4450,7 +4541,7 @@ TEST_P(SourceBufferStreamTest, Audio_ConfigChangeWithPreroll) {
   // Verify the next attempt to get a buffer will signal that a config change
   // has happened.
   scoped_refptr<StreamParserBuffer> buffer;
-  EXPECT_EQ(StreamType::kConfigChange, stream_->GetNextBuffer(&buffer));
+  EXPECT_STATUS_FOR_STREAM_OP(kConfigChange, GetNextBuffer(&buffer));
 
   // Verify upcoming buffers will use the new config.
   CheckAudioConfig(new_config);
@@ -4668,7 +4759,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_ReSeek) {
   // Append a few buffers, with a config change in the middle.
   VideoDecoderConfig new_config = TestVideoConfig::Large();
   NewCodedFrameGroupAppend("2000K 2010 2020D10");
-  stream_->UpdateVideoConfig(new_config);
+  STREAM_OP(UpdateVideoConfig(new_config));
   NewCodedFrameGroupAppend("2030K 2040 2050D10");
   CheckExpectedRangesByTimestamp("{ [2000,2060) }");
 
@@ -4678,7 +4769,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_ReSeek) {
   CheckVideoConfig(video_config_);
   SeekToTimestampMs(2030);
   CheckVideoConfig(video_config_);
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
+  EXPECT_STATUS_FOR_STREAM_OP(kConfigChange, GetNextBuffer(&buffer));
   CheckVideoConfig(new_config);
 
   // Trigger the re-seek.
@@ -4699,11 +4790,11 @@ TEST_P(SourceBufferStreamTest, ConfigChange_ReSeek) {
   SeekToTimestampMs(2000);
   CheckVideoConfig(new_config);
   ASSERT_FALSE(new_config.Matches(video_config_));
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
+  EXPECT_STATUS_FOR_STREAM_OP(kConfigChange, GetNextBuffer(&buffer));
   CheckVideoConfig(video_config_);
   CheckExpectedBuffers("2000K 2010 2020D10");
   CheckVideoConfig(video_config_);
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
+  EXPECT_STATUS_FOR_STREAM_OP(kConfigChange, GetNextBuffer(&buffer));
   CheckVideoConfig(new_config);
   CheckExpectedBuffers("2030K 2040 2050D10");
   CheckNoNextBuffer();
@@ -4917,25 +5008,25 @@ TEST_P(SourceBufferStreamTest, GetHighestPresentationTimestamp) {
   // TODO(wolenetz): Add coverage for when DTS != PTS once
   // https://crbug.com/398130 is fixed.
 
-  EXPECT_EQ(base::TimeDelta(), stream_->GetHighestPresentationTimestamp());
+  EXPECT_EQ(base::TimeDelta(), STREAM_OP(GetHighestPresentationTimestamp()));
 
   NewCodedFrameGroupAppend("0K 10K");
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(10),
-            stream_->GetHighestPresentationTimestamp());
+            STREAM_OP(GetHighestPresentationTimestamp()));
 
   RemoveInMs(0, 10, 20);
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(10),
-            stream_->GetHighestPresentationTimestamp());
+            STREAM_OP(GetHighestPresentationTimestamp()));
 
   RemoveInMs(10, 20, 20);
-  EXPECT_EQ(base::TimeDelta(), stream_->GetHighestPresentationTimestamp());
+  EXPECT_EQ(base::TimeDelta(), STREAM_OP(GetHighestPresentationTimestamp()));
 
   NewCodedFrameGroupAppend("0K 10K");
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(10),
-            stream_->GetHighestPresentationTimestamp());
+            STREAM_OP(GetHighestPresentationTimestamp()));
 
   RemoveInMs(10, 20, 20);
-  EXPECT_EQ(base::TimeDelta(), stream_->GetHighestPresentationTimestamp());
+  EXPECT_EQ(base::TimeDelta(), STREAM_OP(GetHighestPresentationTimestamp()));
 }
 
 TEST_P(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
@@ -4946,9 +5037,9 @@ TEST_P(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
   // This feature is disabled by default, so by default memory pressure
   // notification takes no effect and the memory limits and won't remove
   // anything from buffered ranges, since we are under the limit of 20 bytes.
-  stream_->OnMemoryPressure(
+  STREAM_OP(OnMemoryPressure(
       DecodeTimestamp::FromMilliseconds(0),
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE, false);
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE, false));
   EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(8), 0));
   CheckExpectedRangesByTimestamp("{ [0,16) }");
 
@@ -4958,9 +5049,9 @@ TEST_P(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
   scoped_feature_list.InitAndEnableFeature(kMemoryPressureBasedSourceBufferGC);
 
   // Verify that effective MSE memory limit is reduced under memory pressure.
-  stream_->OnMemoryPressure(
+  STREAM_OP(OnMemoryPressure(
       DecodeTimestamp::FromMilliseconds(0),
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE, false);
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE, false));
 
   // Effective memory limit is now 8 buffers, but we still will not collect any
   // data between the current playback position 3 and last append position 15.
@@ -4975,9 +5066,9 @@ TEST_P(SourceBufferStreamTest, GarbageCollectionUnderMemoryPressure) {
   // If memory pressure becomes critical, the garbage collection algorithm
   // becomes even more aggressive and collects everything up to the current
   // playback position.
-  stream_->OnMemoryPressure(
+  STREAM_OP(OnMemoryPressure(
       DecodeTimestamp::FromMilliseconds(0),
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, false);
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, false));
   EXPECT_TRUE(GarbageCollect(base::TimeDelta::FromMilliseconds(13), 0));
   CheckExpectedRangesByTimestamp("{ [12,16) }");
 
@@ -5002,13 +5093,13 @@ TEST_P(SourceBufferStreamTest, InstantGarbageCollectionUnderMemoryPressure) {
   // |scoped_feature_list_|.)
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kMemoryPressureBasedSourceBufferGC);
-  stream_->OnMemoryPressure(
+  STREAM_OP(OnMemoryPressure(
       DecodeTimestamp::FromMilliseconds(7),
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, true);
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, true));
   CheckExpectedRangesByTimestamp("{ [6,16) }");
-  stream_->OnMemoryPressure(
+  STREAM_OP(OnMemoryPressure(
       DecodeTimestamp::FromMilliseconds(9),
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, true);
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL, true));
   CheckExpectedRangesByTimestamp("{ [9,16) }");
 }
 
@@ -5166,6 +5257,9 @@ TEST_P(SourceBufferStreamTest, RangeIsNextInPTS_OutOfOrder) {
 INSTANTIATE_TEST_CASE_P(LegacyByDts,
                         SourceBufferStreamTest,
                         Values(BufferingApi::kLegacyByDts));
+INSTANTIATE_TEST_CASE_P(NewByPts,
+                        SourceBufferStreamTest,
+                        Values(BufferingApi::kNewByPts));
 
 // TODO(wolenetz): Update impl and tests to verify both ByDts and ByPts. See
 // https://crbug.com/718641.
