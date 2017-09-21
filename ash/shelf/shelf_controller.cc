@@ -297,16 +297,19 @@ void ShelfController::OnActiveUserPrefServiceChanged(
 }
 
 void ShelfController::OnTabletModeStarted() {
-  // Force the shelf to be visible in tablet mode; the pref is restored on exit.
+  // Force the shelf to be visible and to be bottom aligned in tablet mode; the
+  // prefs are restored on exit.
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     Shelf* shelf = GetShelfForDisplay(display.id());
-    if (shelf)
+    if (shelf) {
       shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+      shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+    }
   }
 }
 
 void ShelfController::OnTabletModeEnded() {
-  SetShelfAutoHideFromPrefs();
+  SetShelfBehaviorsFromPrefs();
 }
 
 void ShelfController::OnDisplayConfigurationChanged() {

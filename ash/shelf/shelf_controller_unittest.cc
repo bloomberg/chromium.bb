@@ -20,6 +20,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -282,6 +283,29 @@ TEST_F(ShelfControllerPrefsTest, ShelfSettingsValidAfterDisplaySwap) {
             GetShelfForDisplay(internal_display_id)->auto_hide_behavior());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
             GetShelfForDisplay(external_display_id)->auto_hide_behavior());
+}
+
+TEST_F(ShelfControllerPrefsTest, ShelfSettingsInTabletMode) {
+  Shelf* shelf = GetPrimaryShelf();
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  SetShelfAlignmentPref(prefs, GetPrimaryDisplay().id(), SHELF_ALIGNMENT_LEFT);
+  SetShelfAutoHideBehaviorPref(prefs, GetPrimaryDisplay().id(),
+                               SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ASSERT_EQ(SHELF_ALIGNMENT_LEFT, shelf->alignment());
+  ASSERT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+
+  // Verify after entering tablet mode, the shelf alignment is bottom and the
+  // auto hide behavior is never.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
+  // Verify after exiting tablet mode, the shelf alignment and auto hide
+  // behavior get their stored pref values.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, shelf->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
 }
 
 }  // namespace

@@ -84,6 +84,9 @@ void AddLocalMenuItems(MenuItemList* menu, int64_t display_id) {
   if (!prefs)  // Null during startup.
     return;
 
+  const bool is_tablet_mode = Shell::Get()
+                                  ->tablet_mode_controller()
+                                  ->IsTabletModeWindowManagerEnabled();
   // In fullscreen, the shelf is either hidden or auto-hidden, depending on
   // the type of fullscreen. Do not show the auto-hide menu item while in
   // fullscreen because it is confusing when the preference appears not to
@@ -95,9 +98,6 @@ void AddLocalMenuItems(MenuItemList* menu, int64_t display_id) {
     auto_hide->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
     auto_hide->checked = GetShelfAutoHideBehaviorPref(prefs, display_id) ==
                          SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-    const bool is_tablet_mode = Shell::Get()
-                                    ->tablet_mode_controller()
-                                    ->IsTabletModeWindowManagerEnabled();
     auto_hide->enabled = !is_tablet_mode;
     menu->push_back(std::move(auto_hide));
   }
@@ -113,7 +113,7 @@ void AddLocalMenuItems(MenuItemList* menu, int64_t display_id) {
   alignment_menu->command_id = ShelfContextMenuModel::MENU_ALIGNMENT_MENU;
   alignment_menu->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_POSITION);
   alignment_menu->submenu = MenuItemList();
-  alignment_menu->enabled = true;
+  alignment_menu->enabled = !is_tablet_mode;
 
   mojom::MenuItemPtr left(mojom::MenuItem::New());
   left->type = ui::MenuModel::TYPE_RADIO;
