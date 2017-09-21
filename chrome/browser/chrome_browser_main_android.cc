@@ -21,6 +21,7 @@
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
+#include "components/metrics/stability_metrics_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,6 +41,15 @@ ChromeBrowserMainPartsAndroid::~ChromeBrowserMainPartsAndroid() {
 
 int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
   TRACE_EVENT0("startup", "ChromeBrowserMainPartsAndroid::PreCreateThreads")
+
+  // Auto-detect based on en-US whether secondary locale .pak files exist.
+  ui::SetLoadSecondaryLocalePaks(
+      !ui::GetPathForAndroidLocalePakWithinApk("en-US").empty());
+
+  // |g_browser_process| is created in PreCreateThreads(), this has to be done
+  // before accessing |g_browser_process| below when creating
+  // ChildProcessCrashObserver.
+  int result_code = ChromeBrowserMainParts::PreCreateThreads();
 
   // The ChildProcessCrashObserver must be registered before any child
   // process is created (as it needs to be notified during child
@@ -67,14 +77,13 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
     PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
     breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
         base::MakeUnique<breakpad::ChildProcessCrashObserver>(
-            crash_dump_dir, kAndroidMinidumpDescriptor));
+            crash_dump_dir, kAndroidMinidumpDescriptor,
+            base::Bind(
+                &metrics::StabilityMetricsHelper::IncreaseRendererCrashCount,
+                g_browser_process->local_state())));
   }
 
-  // Auto-detect based on en-US whether secondary locale .pak files exist.
-  ui::SetLoadSecondaryLocalePaks(
-      !ui::GetPathForAndroidLocalePakWithinApk("en-US").empty());
-
-  return ChromeBrowserMainParts::PreCreateThreads();
+  return result_code;
 }
 
 void ChromeBrowserMainPartsAndroid::PostProfileInit() {

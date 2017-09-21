@@ -6,10 +6,12 @@
 
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
+#include "build/build_config.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
+#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -90,7 +92,29 @@ TEST_F(StabilityMetricsHelperTest, LogRendererCrash) {
   EXPECT_EQ(1, system_profile.stability().renderer_failed_launch_count());
   EXPECT_EQ(0, system_profile.stability().extension_renderer_crash_count());
 
-  helper.ClearSavedStabilityMetrics();
+  histogram_tester.ExpectUniqueSample("CrashExitCodes.Renderer", 1, 3);
+  histogram_tester.ExpectBucketCount("BrowserRenderProcessHost.ChildCrashes",
+                                     RENDERER_TYPE_RENDERER, 3);
+
+  // One launch failure each.
+  histogram_tester.ExpectBucketCount(
+      "BrowserRenderProcessHost.ChildLaunchFailures", RENDERER_TYPE_RENDERER,
+      1);
+
+  // TERMINATION_STATUS_PROCESS_WAS_KILLED for a renderer.
+  histogram_tester.ExpectBucketCount("BrowserRenderProcessHost.ChildKills",
+                                     RENDERER_TYPE_RENDERER, 1);
+  histogram_tester.ExpectBucketCount("BrowserRenderProcessHost.ChildKills",
+                                     RENDERER_TYPE_EXTENSION, 0);
+  histogram_tester.ExpectBucketCount(
+      "BrowserRenderProcessHost.ChildLaunchFailureCodes", 1, 1);
+}
+
+// Note: ENABLE_EXTENSIONS is set to false in Android
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+TEST_F(StabilityMetricsHelperTest, LogRendererCrashEnableExtensions) {
+  StabilityMetricsHelper helper(prefs());
+  base::HistogramTester histogram_tester;
 
   // Crash and abnormal termination should increment extension crash count.
   helper.LogRendererCrash(true, base::TERMINATION_STATUS_PROCESS_CRASHED, 1);
@@ -101,7 +125,7 @@ TEST_F(StabilityMetricsHelperTest, LogRendererCrash) {
   // Failed launch increments extension failed launch count.
   helper.LogRendererCrash(true, base::TERMINATION_STATUS_LAUNCH_FAILED, 1);
 
-  system_profile.Clear();
+  metrics::SystemProfileProto system_profile;
   helper.ProvideStabilityMetrics(&system_profile);
 
   EXPECT_EQ(0, system_profile.stability().renderer_crash_count());
@@ -109,32 +133,15 @@ TEST_F(StabilityMetricsHelperTest, LogRendererCrash) {
   EXPECT_EQ(
       1, system_profile.stability().extension_renderer_failed_launch_count());
 
-  // TERMINATION_STATUS_PROCESS_CRASHED, TERMINATION_STATUS_ABNORMAL_TERMINATION
-  // and TERMINATION_STATUS_OOM = 3.
-  histogram_tester.ExpectUniqueSample("CrashExitCodes.Renderer", 1, 3);
-  histogram_tester.ExpectBucketCount("BrowserRenderProcessHost.ChildCrashes",
-                                     RENDERER_TYPE_RENDERER, 3);
-
-  // TERMINATION_STATUS_PROCESS_CRASHED and TERMINATION_STATUS_OOM = 2.
+  histogram_tester.ExpectBucketCount(
+      "BrowserRenderProcessHost.ChildLaunchFailureCodes", 1, 1);
   histogram_tester.ExpectUniqueSample("CrashExitCodes.Extension", 1, 2);
   histogram_tester.ExpectBucketCount("BrowserRenderProcessHost.ChildCrashes",
                                      RENDERER_TYPE_EXTENSION, 2);
-
-  // One launch failure each.
-  histogram_tester.ExpectBucketCount(
-      "BrowserRenderProcessHost.ChildLaunchFailures", RENDERER_TYPE_RENDERER,
-      1);
   histogram_tester.ExpectBucketCount(
       "BrowserRenderProcessHost.ChildLaunchFailures", RENDERER_TYPE_EXTENSION,
       1);
-  histogram_tester.ExpectBucketCount(
-      "BrowserRenderProcessHost.ChildLaunchFailureCodes", 1, 2);
-
-  // TERMINATION_STATUS_PROCESS_WAS_KILLED for a renderer.
-  histogram_tester.ExpectBucketCount("BrowserRenderProcessHost.ChildKills",
-                                     RENDERER_TYPE_RENDERER, 1);
-  histogram_tester.ExpectBucketCount("BrowserRenderProcessHost.ChildKills",
-                                     RENDERER_TYPE_EXTENSION, 0);
 }
+#endif
 
 }  // namespace metrics
