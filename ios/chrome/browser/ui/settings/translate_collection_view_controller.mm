@@ -82,6 +82,8 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
         [[PrefBackedBoolean alloc] initWithPrefService:_prefs
                                               prefName:prefs::kEnableTranslate];
     [_translationEnabled setObserver:self];
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
   }
   return self;

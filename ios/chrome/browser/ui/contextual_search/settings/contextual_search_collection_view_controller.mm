@@ -66,6 +66,8 @@ typedef NS_ENUM(NSUInteger, ItemType) {
     self.title = l10n_util::GetNSString(IDS_IOS_CONTEXTUAL_SEARCH_TITLE);
     _touchToSearchPermissions = touchToSearchPermissions;
     self.collectionViewAccessibilityIdentifier = @"Contextual Search";
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
   }
   return self;

@@ -293,6 +293,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     _settingsMainPageDispatcher = self;
     _dispatcher = dispatcher;
 
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
   }
   return self;

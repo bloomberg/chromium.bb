@@ -173,6 +173,9 @@ const CGFloat kSeparatorInset = 10;
     _browserState = browserState;
     _delegate = delegate;
     _URLLoader = loader;
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
+    // Consider moving the other complex code out of the initializer as well.
     [self loadModel];
     // Add initial info section as header.
     [self.collectionViewModel

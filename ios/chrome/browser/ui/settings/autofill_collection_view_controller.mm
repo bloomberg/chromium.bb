@@ -86,6 +86,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _observer.reset(new autofill::PersonalDataManagerObserverBridge(self));
     _personalDataManager->AddObserver(_observer.get());
 
+    // TODO(crbug.com/764578): -updateEditButton and -loadModel should not be
+    // called from initializer.
     [self updateEditButton];
     [self loadModel];
   }

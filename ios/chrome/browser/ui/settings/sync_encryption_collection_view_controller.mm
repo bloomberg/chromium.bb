@@ -76,6 +76,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _isUsingSecondaryPassphrase = syncService->IsEngineInitialized() &&
                                   syncService->IsUsingSecondaryPassphrase();
     _syncObserver = base::MakeUnique<SyncObserverBridge>(self, syncService);
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
   }
   return self;

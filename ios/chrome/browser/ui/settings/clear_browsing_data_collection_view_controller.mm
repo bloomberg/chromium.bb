@@ -226,6 +226,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
               base::BindBlockArc(dataClearedCallback));
     }
 
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
     [self restartCounters:IOSChromeBrowsingDataRemover::REMOVE_ALL];
   }

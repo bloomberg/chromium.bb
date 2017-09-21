@@ -173,6 +173,8 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     [passwordManagerEnabled_ setObserver:self];
     [self getLoginsFromPasswordStore];
     [self updateEditButton];
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. Consider moving the other calls on instance methods as well.
     [self loadModel];
   }
   return self;
