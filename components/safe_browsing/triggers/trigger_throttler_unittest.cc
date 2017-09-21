@@ -58,6 +58,25 @@ TEST_F(TriggerThrottlerTest, SecurityInterstitialQuotaCanNotBeOverwritten) {
   }
 }
 
+TEST_F(TriggerThrottlerTest, TriggerQuotaSetToOne) {
+  // This is a corner case where we can exceed array bounds for triggers that
+  // have quota set to 1 report per day. This can happen when quota is 1 and
+  // exactly one event has fired. When deciding whether another event can fire,
+  // we look at the Nth-from-last event to check if it was recent or not - in
+  // this scenario, Nth-from-last is 1st-from-last (because quota is 1). An
+  // off-by-one error in this calculation can cause us to look at position 1
+  // instead of position 0 in the even list.
+  SetQuotaForTriggerType(TriggerType::AD_SAMPLE, 1);
+
+  // Fire the trigger, first event will be allowed.
+  EXPECT_TRUE(throttler()->TriggerCanFire(TriggerType::AD_SAMPLE));
+  throttler()->TriggerFired(TriggerType::AD_SAMPLE);
+
+  // Ensure that checking whether this trigger can fire again does not cause
+  // an error and also returns the expected result.
+  EXPECT_FALSE(throttler()->TriggerCanFire(TriggerType::AD_SAMPLE));
+}
+
 TEST_F(TriggerThrottlerTest, TriggerExceedsQuota) {
   // Ensure that a trigger can't fire more than its quota allows.
   SetQuotaForTriggerType(TriggerType::AD_SAMPLE, 2);
