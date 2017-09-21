@@ -5647,7 +5647,6 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, Empty) {
   expected_settings[SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   expected_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
-  expected_settings[SETTINGS_MAX_HEADER_LIST_SIZE] = kSpdyMaxHeaderListSize;
   RunInitialSettingsTest(expected_settings);
 }
 
@@ -5662,7 +5661,6 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, ProtocolDefault) {
   SettingsMap expected_settings;
   expected_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
-  expected_settings[SETTINGS_MAX_HEADER_LIST_SIZE] = kSpdyMaxHeaderListSize;
   RunInitialSettingsTest(expected_settings);
 }
 
@@ -5693,7 +5691,6 @@ TEST_F(SendInitialSettingsOnNewSpdySessionTest, UnknownSettings) {
   expected_settings[SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
   expected_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       kSpdyMaxConcurrentPushedStreams;
-  expected_settings[SETTINGS_MAX_HEADER_LIST_SIZE] = kSpdyMaxHeaderListSize;
   expected_settings[static_cast<SpdySettingsIds>(7)] = 1234;
   expected_settings[static_cast<SpdySettingsIds>(25)] = 5678;
   RunInitialSettingsTest(expected_settings);

@@ -75,6 +75,9 @@ const uint32_t kDefaultInitialEnablePush = 1;
 const uint32_t kDefaultInitialInitialWindowSize = 65535;
 const uint32_t kDefaultInitialMaxFrameSize = 16384;
 
+// The maximum size of header list that the server is allowed to send.
+const uint32_t kSpdyMaxHeaderListSize = 256 * 1024;
+
 bool IsSpdySettingAtDefaultInitialValue(SpdySettingsIds setting_id,
                                         uint32_t value) {
   switch (setting_id) {
@@ -792,7 +795,6 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
   DCHECK(base::ContainsKey(initial_settings_, SETTINGS_HEADER_TABLE_SIZE));
   DCHECK(base::ContainsKey(initial_settings_, SETTINGS_MAX_CONCURRENT_STREAMS));
   DCHECK(base::ContainsKey(initial_settings_, SETTINGS_INITIAL_WINDOW_SIZE));
-  DCHECK(base::ContainsKey(initial_settings_, SETTINGS_MAX_HEADER_LIST_SIZE));
 
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 }
@@ -883,8 +885,12 @@ void SpdySession::InitializeWithSocket(
   session_send_window_size_ = kDefaultInitialWindowSize;
   session_recv_window_size_ = kDefaultInitialWindowSize;
 
-  buffered_spdy_framer_ = std::make_unique<BufferedSpdyFramer>(
-      initial_settings_.find(SETTINGS_MAX_HEADER_LIST_SIZE)->second, net_log_);
+  SettingsMap::const_iterator it =
+      initial_settings_.find(SETTINGS_MAX_HEADER_LIST_SIZE);
+  uint32_t spdy_max_header_list_size =
+      (it == initial_settings_.end()) ? kSpdyMaxHeaderListSize : it->second;
+  buffered_spdy_framer_ =
+      std::make_unique<BufferedSpdyFramer>(spdy_max_header_list_size, net_log_);
   buffered_spdy_framer_->set_visitor(this);
   buffered_spdy_framer_->set_debug_visitor(this);
   buffered_spdy_framer_->UpdateHeaderDecoderTableSize(max_header_table_size_);
