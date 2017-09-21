@@ -27,6 +27,8 @@
  */
 
 #include "modules/accessibility/AXRelationCache.h"
+#include "core/html/HTMLLabelElement.h"
+#include "core/html/LabelableElement.h"
 
 namespace blink {
 
@@ -44,47 +46,20 @@ AXObject* AXRelationCache::GetAriaOwnedParent(const AXObject* child) const {
       aria_owned_child_to_owner_mapping_.at(child->AxObjectID()));
 }
 
-// relation_source is related to add_ids, and no longer related to remove_ids
-static void UpdateReverseRelationMap(
-    HashMap<String, std::unique_ptr<HashSet<AXID>>>& reverse_map,
-    AXID relation_source,
-    HashSet<String>& add_ids,
-    HashSet<String>& remove_ids) {
+// Update reverse relation map, where relation_source is related to target_ids.
+void AXRelationCache::UpdateReverseRelations(const AXObject* relation_source,
+                                             const Vector<String>& target_ids) {
+  AXID relation_source_axid = relation_source->AxObjectID();
+
   // Add entries to reverse map.
-  // Vector<String> id_vector;
-  // CopyToVector(add_ids, id_vector);
-  for (const String& id : add_ids) {
-    HashSet<AXID>* axids = reverse_map.at(id);
-    if (!axids) {
-      axids = new HashSet<AXID>();
-      reverse_map.Set(id, WTF::WrapUnique(axids));
+  for (const String& target_id : target_ids) {
+    HashSet<AXID>* source_axids = id_attr_to_related_mapping_.at(target_id);
+    if (!source_axids) {
+      source_axids = new HashSet<AXID>();
+      id_attr_to_related_mapping_.Set(target_id, WTF::WrapUnique(source_axids));
     }
-    axids->insert(relation_source);
+    source_axids->insert(relation_source_axid);
   }
-
-  // Remove entries from reverse map that are no longer needed.
-  for (const String& id : remove_ids) {
-    HashSet<AXID>* axids = reverse_map.at(id);
-    if (axids) {
-      axids->erase(relation_source);
-      if (axids->IsEmpty())
-        reverse_map.erase(id);
-    }
-  }
-}
-
-static HashSet<String> CopyToSet(const Vector<String>& source) {
-  HashSet<String> dest;
-  for (const String& entry : source)
-    dest.insert(entry);
-  return dest;
-}
-
-static HashSet<String> SubtractSet(const HashSet<String>& set1,
-                                   const HashSet<String>& set2) {
-  HashSet<String> dest(set1);
-  dest.RemoveAll(set2);
-  return dest;
 }
 
 static bool ContainsCycle(AXObject* owner, AXObject* child) {
@@ -179,28 +154,11 @@ void AXRelationCache::UpdateAriaOwns(
     const AXObject* owner,
     const Vector<String>& owned_id_vector,
     HeapVector<Member<AXObject>>& validated_owned_children_result) {
-  //
-  // Update the map from the AXID of this element to the ids of the owned
-  // children, and the reverse map from ids to possible AXID owners.
-  //
-
-  HashSet<String> current_owned_ids(
-      aria_owner_to_ids_mapping_.at(owner->AxObjectID()));
-  HashSet<String> all_new_owned_ids(CopyToSet(owned_id_vector));
-  HashSet<String> add_ids(SubtractSet(all_new_owned_ids, current_owned_ids));
-  HashSet<String> remove_ids(SubtractSet(current_owned_ids, all_new_owned_ids));
-
-  // Update the maps if necessary (aria_owner_to_ids_mapping_).
-  if (!add_ids.IsEmpty() || !remove_ids.IsEmpty()) {
-    // Update reverse map.
-    UpdateReverseRelationMap(id_to_aria_owners_mapping_, owner->AxObjectID(),
-                             add_ids, remove_ids);
-    // Update forward map.
-    aria_owner_to_ids_mapping_.Set(owner->AxObjectID(), all_new_owned_ids);
-  }
+  // Track reverse relations for future tree updates.
+  UpdateReverseRelations(owner, owned_id_vector);
 
   //
-  // Now figure out the ids that actually correspond to children that exist
+  // Figure out the ids that actually correspond to children that exist
   // and that we can legally own (not cyclical, not already owned, etc.) and
   // update the maps and |validated_owned_children_result| based on that.
   //
@@ -235,35 +193,73 @@ void AXRelationCache::UpdateAriaOwns(
                                       validated_owned_child_axids);
 }
 
-void AXRelationCache::UpdateTreeIfElementIdIsAriaOwned(Element* element) {
+// Return target AXObject and fill source_objects with AXObjects for
+// relations pointing to target.
+AXObject* AXRelationCache::GetReverseRelated(
+    Node* target,
+    HeapVector<Member<AXObject>>& source_objects) {
+  if (!target || !target->IsElementNode())
+    return nullptr;
+
+  Element* element = ToElement(target);
   if (!element->HasID())
-    return;
+    return nullptr;
 
   String id = element->GetIdAttribute();
-  HashSet<AXID>* owners = id_to_aria_owners_mapping_.at(id);
-  if (!owners)
-    return;
+  HashSet<AXID>* source_axids = id_attr_to_related_mapping_.at(id);
+  if (!source_axids)
+    return nullptr;
 
-  AXObject* ax_element = GetOrCreate(element);
-  if (!ax_element)
-    return;
-
-  // If it's already owned, call childrenChanged on the owner to make sure
-  // it's still an owner.
-  if (IsAriaOwned(ax_element)) {
-    AXObject* owned_parent = GetAriaOwnedParent(ax_element);
-    DCHECK(owned_parent);
-    ChildrenChanged(owned_parent);
-    return;
+  // Not safe to call GetOrCreate() as this method is called during layout
+  // changes such as AttributeChanged().
+  AXObject* ax_element = Get(element);
+  for (const auto& source_axid : *source_axids) {
+    AXObject* source_object = ObjectFromAXID(source_axid);
+    if (source_object)
+      source_objects.push_back(source_object);
   }
 
-  // If it's not already owned, check the possible owners based on our mapping
-  // from ids to elements that have that id listed in their aria-owns
-  // attribute.
-  for (const auto& ax_id : *owners) {
-    AXObject* owner = ObjectFromAXID(ax_id);
-    if (owner)
-      ChildrenChanged(owner);
+  return ax_element;
+}
+
+void AXRelationCache::UpdateRelatedTree(Node* node) {
+  HeapVector<Member<AXObject>> related_sources;
+  AXObject* related_target = GetReverseRelated(node, related_sources);
+  // If it's already owned, call childrenChanged on the owner to make sure
+  // it's still an owner.
+  if (related_target && IsAriaOwned(related_target)) {
+    AXObject* owned_parent = GetAriaOwnedParent(related_target);
+    DCHECK(owned_parent);
+    ChildrenChanged(owned_parent);
+  }
+
+  // Ensure children are updated if there is a change.
+  for (AXObject* related : related_sources) {
+    if (related) {
+      ChildrenChanged(related);
+    }
+  }
+
+  UpdateRelatedText(node);
+}
+
+void AXRelationCache::UpdateRelatedText(Node* node) {
+  // Walk up ancestor chain from node and refresh text of any related content.
+  while (node) {
+    // Reverse relations via aria-labelledby, aria-describedby, aria-owns.
+    HeapVector<Member<AXObject>> related_sources;
+    if (GetReverseRelated(node, related_sources)) {
+      for (AXObject* related : related_sources) {
+        if (related)
+          TextChanged(related);
+      }
+    }
+
+    // Forward relation via <label for="[id]">.
+    if (isHTMLLabelElement(*node))
+      LabelChanged(node);
+
+    node = node->parentNode();
   }
 }
 
@@ -276,11 +272,14 @@ void AXRelationCache::RemoveAXID(AXID obj_id) {
   }
   aria_owned_child_to_owner_mapping_.erase(obj_id);
   aria_owned_child_to_real_parent_mapping_.erase(obj_id);
-  aria_owner_to_ids_mapping_.erase(obj_id);
 }
 
 AXObject* AXRelationCache::ObjectFromAXID(AXID axid) const {
   return object_cache_->ObjectFromAXID(axid);
+}
+
+AXObject* AXRelationCache::Get(Node* node) {
+  return object_cache_->Get(node);
 }
 
 AXObject* AXRelationCache::GetOrCreate(Node* node) {
@@ -289,6 +288,17 @@ AXObject* AXRelationCache::GetOrCreate(Node* node) {
 
 void AXRelationCache::ChildrenChanged(AXObject* object) {
   object_cache_->ChildrenChanged(object);
+}
+
+void AXRelationCache::TextChanged(AXObject* object) {
+  object_cache_->TextChanged(object);
+}
+
+void AXRelationCache::LabelChanged(Node* node) {
+  DCHECK(isHTMLLabelElement(node));
+  LabelableElement* control = toHTMLLabelElement(node)->control();
+  if (control)
+    TextChanged(Get(control));
 }
 
 }  // namespace blink

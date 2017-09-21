@@ -369,6 +369,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool HasAOMPropertyOrARIAAttribute(AOMStringProperty,
                                      AtomicString& result) const;
 
+  void TokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
+
   virtual void GetSparseAXAttributes(AXSparseAttributeClient&) const {}
 
   // Determine subclass type.
@@ -863,13 +865,16 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
                           AXObjectSet& visited,
                           HeapVector<Member<Element>>& elements,
                           AXRelatedObjectVector* related_objects) const;
-  void TokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
   void ElementsFromAttribute(HeapVector<Member<Element>>& elements,
-                             const QualifiedName&) const;
-  void AriaLabelledbyElementVector(HeapVector<Member<Element>>& elements) const;
+                             const QualifiedName&,
+                             Vector<String>& ids) const;
+  void AriaLabelledbyElementVector(HeapVector<Member<Element>>& elements,
+                                   Vector<String>& ids) const;
   String TextFromAriaLabelledby(AXObjectSet& visited,
-                                AXRelatedObjectVector* related_objects) const;
-  String TextFromAriaDescribedby(AXRelatedObjectVector* related_objects) const;
+                                AXRelatedObjectVector* related_objects,
+                                Vector<String>& ids) const;
+  String TextFromAriaDescribedby(AXRelatedObjectVector* related_objects,
+                                 Vector<String>& ids) const;
   virtual const AXObject* InheritsPresentationalRoleFrom() const { return 0; }
 
   bool CanReceiveAccessibilityFocus() const;

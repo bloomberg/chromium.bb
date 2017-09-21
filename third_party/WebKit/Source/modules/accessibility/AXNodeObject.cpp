@@ -2144,8 +2144,9 @@ bool AXNodeObject::NameFromLabelElement() const {
 
   // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
   HeapVector<Member<Element>> elements;
-  AriaLabelledbyElementVector(elements);
-  if (elements.size() > 0)
+  Vector<String> ids;
+  AriaLabelledbyElementVector(elements, ids);
+  if (ids.size() > 0)
     return false;
 
   // Step 2C from: http://www.w3.org/TR/accname-aam-1.1
@@ -3248,7 +3249,9 @@ String AXNodeObject::Description(AXNameFrom name_from,
     if (description_sources)
       description_sources->back().attribute_value = aria_describedby;
 
-    description = TextFromAriaDescribedby(related_objects);
+    Vector<String> ids;
+    description = TextFromAriaDescribedby(related_objects, ids);
+    AxObjectCache().UpdateReverseRelations(this, ids);
 
     if (!description.IsNull()) {
       if (description_sources) {

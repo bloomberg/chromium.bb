@@ -57,10 +57,6 @@ class AXRelationCache {
   // set of children owned by this object, returning the result in
   // |ownedChildren|. The result is validated - illegal, duplicate, or cyclical
   // references have been removed.
-  //
-  // If one or more ids aren't found, they're added to a lookup table so that if
-  // an element with that id appears later, it can be added when you call
-  // updateTreeIfElementIdIsAriaOwned.
   void UpdateAriaOwns(const AXObject* owner,
                       const Vector<String>& id_vector,
                       HeapVector<Member<AXObject>>& owned_children);
@@ -69,15 +65,28 @@ class AXRelationCache {
   // just changed, check to see if another object wants to be its parent due to
   // aria-owns. If so, update the tree by calling childrenChanged() on the
   // potential owner, possibly reparenting this element.
-  void UpdateTreeIfElementIdIsAriaOwned(Element*);
+  void UpdateRelatedTree(Node*);
 
   // Remove given AXID from cache.
   void RemoveAXID(AXID);
 
+  // Update map of ids to related objects.
+  // If one or more ids aren't found, they're added to a lookup table so that if
+  // an element with that id appears later, it can be added when you call
+  // UpdateRelatedTree.
+  void UpdateReverseRelations(const AXObject* relation_source,
+                              const Vector<String>& target_ids);
+
  private:
+  // If any object is related to this object via <label for>, aria-owns,
+  // aria-describedby or aria-labeledby, update the text for the related object.
+  void UpdateRelatedText(Node*);
+
   bool IsValidOwnsRelation(AXObject* owner, AXObject* child) const;
   void UnmapOwnedChildren(const AXObject* owner, Vector<AXID>);
   void MapOwnedChildren(const AXObject* owner, Vector<AXID>);
+  // Get reverse relations, returns target AXObject* and filling sources&.
+  AXObject* GetReverseRelated(Node*, HeapVector<Member<AXObject>>& sources);
 
   WeakPersistent<AXObjectCacheImpl> object_cache_;
 
@@ -94,22 +103,24 @@ class AXRelationCache {
   // own it.
   HashMap<AXID, AXID> aria_owned_child_to_real_parent_mapping_;
 
-  // Map from the AXID of any object with an aria-owns attribute to the set of
-  // ids of its children. This is *unvalidated*, it includes ids that may not
-  // currently exist in the tree.
-  HashMap<AXID, HashSet<String>> aria_owner_to_ids_mapping_;
-
-  // Map from an ID (the ID attribute of a DOM element) to the set of elements
-  // that want to own that ID. This is *unvalidated*, it includes possible
-  // duplicates.  This is used so that when an element with an ID is added to
-  // the tree or changes its ID, we can quickly determine if it affects an
-  // aria-owns relationship.
-  HashMap<String, std::unique_ptr<HashSet<AXID>>> id_to_aria_owners_mapping_;
+  // Reverse relation map from an ID (the ID attribute of a DOM element) to the
+  // set of elements that at some time pointed to that ID via aria-owns,
+  // aria-labelledby, aria-desribedby. This is *unvalidated*, it includes
+  // possible extras and duplicates.
+  // This is used so that:
+  // - When an element with an ID is added to the tree or changes its ID, we can
+  //   quickly determine if it affects an aria-owns relationship.
+  // - When text changes, we can recompute any label or description based on it
+  //   and fire the appropriate change events.
+  HashMap<String, std::unique_ptr<HashSet<AXID>>> id_attr_to_related_mapping_;
 
   // Helpers that call back into object cache
   AXObject* ObjectFromAXID(AXID) const;
   AXObject* GetOrCreate(Node*);
+  AXObject* Get(Node*);
   void ChildrenChanged(AXObject*);
+  void TextChanged(AXObject*);
+  void LabelChanged(Node*);
 };
 
 }  // namespace blink
