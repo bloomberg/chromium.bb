@@ -57,6 +57,8 @@
     { "name": "preloaded-expect-staple.badssl.com", "expect_staple": true, "expect_staple_report_uri": "https://report.badssl.com/expect-staple" },
     { "name": "preloaded-expect-staple-include-subdomains.badssl.com", "expect_staple": true, "expect_staple_report_uri": "https://report.badssl.com/expect-staple", "include_subdomains_for_expect_staple": true },
     { "name": "google", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "dev", "include_subdomains": true, "mode": "force-https" },
+    { "name": "foo", "include_subdomains": true, "mode": "force-https" },
     { "name": "mail.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google", "expect_ct": true, "expect_ct_report_uri": "https://clients3.google.com/ct_upload" },
     { "name": "accounts.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "appengine.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
