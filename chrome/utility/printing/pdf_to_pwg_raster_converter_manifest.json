@@ -1,0 +1,14 @@
+{
+  "name": "pdf_to_pwg_raster_converter",
+  "display_name": "PDF to PWG Raster Converter",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "converter": [ "printing::mojom::PDFToPWGRasterConverter" ]
+       },
+       "requires": {
+         "service_manager": [ "service_manager:all_users" ]
+       }
+     }
+  }
+}

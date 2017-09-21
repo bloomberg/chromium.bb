@@ -10,15 +10,15 @@
 #include "base/macros.h"
 #include "chrome/common/printing/pdf_to_pwg_raster_converter.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace printing {
 
 class PDFToPWGRasterConverterImpl
     : public printing::mojom::PDFToPWGRasterConverter {
  public:
-  static void Create(mojom::PDFToPWGRasterConverterRequest request);
-
-  PDFToPWGRasterConverterImpl();
+  explicit PDFToPWGRasterConverterImpl(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~PDFToPWGRasterConverterImpl() override;
 
  private:
@@ -28,6 +28,8 @@ class PDFToPWGRasterConverterImpl
                const PwgRasterSettings& pwg_raster_settings,
                mojo::ScopedHandle pwg_raster_file_out,
                ConvertCallback callback) override;
+
+  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFToPWGRasterConverterImpl);
 };
