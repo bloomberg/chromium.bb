@@ -269,9 +269,6 @@ NET_EXPORT_PRIVATE bool ParseOCSPResponse(const der::Input& raw_tlv,
 // Checks the revocation status of the certificate |certificate_der| by using
 // the der-encoded |raw_response|.
 //
-// TODO(eroman): As the name implies this does not check the authenticity of the
-// OCSP response.
-//
 // Returns GOOD if the OCSP response indicates the certificate is not revoked,
 // REVOKED if it indicates it is revoked, or UNKNOWN for all other cases.
 //
@@ -286,7 +283,7 @@ NET_EXPORT_PRIVATE bool ParseOCSPResponse(const der::Input& raw_tlv,
 //  * |response_details|: Additional details about failures.
 //      TODO(eroman): This is only being used for logging of Expect-Staple, can
 //      remove if that gets pulled out.
-NET_EXPORT OCSPRevocationStatus CheckOCSPNoSignatureCheck(
+NET_EXPORT OCSPRevocationStatus CheckOCSP(
     base::StringPiece raw_response,
     base::StringPiece certificate_der,
     base::StringPiece issuer_certificate_der,

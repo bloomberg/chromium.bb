@@ -44,8 +44,7 @@ const TestParams kTestParams[] = {
     {"bad_ocsp_type.pem", OCSPRevocationStatus::UNKNOWN,
      OCSPVerifyResult::PARSE_RESPONSE_ERROR},
 
-    // TODO(eroman): This should fail.
-    {"bad_signature.pem", OCSPRevocationStatus::GOOD,
+    {"bad_signature.pem", OCSPRevocationStatus::UNKNOWN,
      OCSPVerifyResult::PROVIDED},
 
     {"ocsp_sign_direct.pem", OCSPRevocationStatus::GOOD,
@@ -54,12 +53,10 @@ const TestParams kTestParams[] = {
     {"ocsp_sign_indirect.pem", OCSPRevocationStatus::GOOD,
      OCSPVerifyResult::PROVIDED},
 
-    // TODO(eroman): This should fail.
-    {"ocsp_sign_indirect_missing.pem", OCSPRevocationStatus::GOOD,
+    {"ocsp_sign_indirect_missing.pem", OCSPRevocationStatus::UNKNOWN,
      OCSPVerifyResult::PROVIDED},
 
-    // TODO(eroman): This should fail.
-    {"ocsp_sign_bad_indirect.pem", OCSPRevocationStatus::GOOD,
+    {"ocsp_sign_bad_indirect.pem", OCSPRevocationStatus::UNKNOWN,
      OCSPVerifyResult::PROVIDED},
 
     {"ocsp_extra_certs.pem", OCSPRevocationStatus::GOOD,
@@ -139,8 +136,8 @@ TEST_P(CheckOCSPTest, FromFile) {
 
   OCSPVerifyResult::ResponseStatus response_status;
   OCSPRevocationStatus revocation_status =
-      CheckOCSPNoSignatureCheck(ocsp_data, cert_data, ca_data, kVerifyTime,
-                                skip_time_checks, &response_status);
+      CheckOCSP(ocsp_data, cert_data, ca_data, kVerifyTime, skip_time_checks,
+                &response_status);
 
   EXPECT_EQ(params.expected_revocation_status, revocation_status);
   EXPECT_EQ(params.expected_response_status, response_status);
