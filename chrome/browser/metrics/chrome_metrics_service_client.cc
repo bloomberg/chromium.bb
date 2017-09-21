@@ -138,6 +138,10 @@
 #include "components/signin/core/browser/signin_status_metrics_provider.h"
 #endif  // !defined(OS_CHROMEOS)
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#include "chrome/browser/metrics/upgrade_metrics_provider.h"
+#endif  //  !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
 namespace {
 
 // This specifies the amount of time to wait for all renderers to send their
@@ -650,6 +654,11 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new CertificateReportingMetricsProvider()));
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  metrics_service_->RegisterMetricsProvider(
+      std::unique_ptr<metrics::MetricsProvider>(new UpgradeMetricsProvider()));
+#endif  //! defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 }
 
 void ChromeMetricsServiceClient::RegisterUKMProviders() {

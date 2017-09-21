@@ -4857,6 +4857,7 @@ test("unit_tests") {
     sources += [
       "../browser/media/webrtc/native_desktop_media_list_unittest.cc",
       "../browser/metrics/desktop_session_duration/desktop_session_duration_tracker_unittest.cc",
+      "../browser/metrics/upgrade_metrics_provider_unittest.cc",
       "../browser/signin/force_signin_verifier_unittest.cc",
       "../browser/signin/signin_global_error_unittest.cc",
       "../browser/signin/signin_util_unittest.cc",

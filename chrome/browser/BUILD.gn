@@ -2604,6 +2604,8 @@ split_static_library("browser") {
       "metrics/desktop_session_duration/desktop_session_duration_observer.h",
       "metrics/desktop_session_duration/desktop_session_duration_tracker.cc",
       "metrics/desktop_session_duration/desktop_session_duration_tracker.h",
+      "metrics/upgrade_metrics_provider.cc",
+      "metrics/upgrade_metrics_provider.h",
       "net/disk_cache_dir_policy_handler.cc",
       "net/disk_cache_dir_policy_handler.h",
       "notifications/fullscreen_notification_blocker.cc",

@@ -86440,6 +86440,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UpgradeDetector.NotificationStage"
+    enum="UpgradeNotificationStage">
+  <owner>spqchan@chromium.com</owner>
+  <summary>
+    Tracks the upgrade notification stage. This is recorded with every UMA log.
+  </summary>
+</histogram>
+
 <histogram name="Uptime.ChromeExecToLoginPromptVisibleAfterLogout" units="ms">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
