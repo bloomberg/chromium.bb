@@ -40,6 +40,9 @@ ASH_EXPORT bool HasInternalStylus();
 // Forcibly say the device is has stylus input for testing purposes.
 ASH_EXPORT void SetHasStylusInputForTesting();
 
+// Returns true if we are in a user session that can show the stylus tools.
+ASH_EXPORT bool IsInUserSession();
+
 }  // namespace palette_utils
 }  // namespace ash
 

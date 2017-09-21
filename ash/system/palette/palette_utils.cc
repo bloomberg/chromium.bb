@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/palette_delegate.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/palette/palette_tray.h"
@@ -82,6 +83,14 @@ bool HasInternalStylus() {
 
 void SetHasStylusInputForTesting() {
   g_has_stylus_input_for_testing = true;
+}
+
+bool IsInUserSession() {
+  SessionController* session_controller = Shell::Get()->session_controller();
+  return !session_controller->IsUserSessionBlocked() &&
+         session_controller->GetSessionState() ==
+             session_manager::SessionState::ACTIVE &&
+         !session_controller->IsKioskSession();
 }
 
 }  // namespace palette_utils
