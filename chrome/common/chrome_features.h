@@ -65,8 +65,6 @@ extern const base::Feature kTabStripKeyboardFocus;
 
 extern const base::Feature kCaptureThumbnailDependingOnTransitionType;
 
-extern const base::Feature kCaptureThumbnailOnLoadFinished;
-
 extern const base::Feature kCaptureThumbnailOnNavigatingAway;
 
 extern const base::Feature kCheckInstallabilityForBannerOnLoad;

@@ -45,7 +45,6 @@ class ThumbnailTabHelper
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidStartLoading() override;
-  void DidStopLoading() override;
   void NavigationStopped() override;
 
   // Update the thumbnail of the given tab contents if necessary.
@@ -72,7 +71,6 @@ class ThumbnailTabHelper
   // Indicates that the given widget has changed is visibility.
   void WidgetHidden(content::RenderWidgetHost* widget);
 
-  const bool capture_on_load_finished_;
   const bool capture_on_navigating_away_;
 
   content::NotificationRegistrar registrar_;

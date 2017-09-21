@@ -78,9 +78,6 @@ extern const char kBrowserTaskSchedulerDescription[];
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
-extern const char kCaptureThumbnailOnLoadFinishedName[];
-extern const char kCaptureThumbnailOnLoadFinishedDescription[];
-
 extern const char kCaptureThumbnailOnNavigatingAwayName[];
 extern const char kCaptureThumbnailOnNavigatingAwayDescription[];
 

@@ -62,15 +62,11 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThumbnailTabHelper);
 // There are several triggers that can start the process:
 // - When a renderer is about to be hidden (this usually occurs when the current
 //   tab is closed or another tab is clicked).
-// - If features::kCaptureThumbnailOnLoadFinished is enabled: When a page load
-//   finishes.
 // - If features::kCaptureThumbnailOnNavigatingAway is enabled: Just before
 //   navigating away from the current page.
 
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
-      capture_on_load_finished_(base::FeatureList::IsEnabled(
-          features::kCaptureThumbnailOnLoadFinished)),
       capture_on_navigating_away_(base::FeatureList::IsEnabled(
           features::kCaptureThumbnailOnNavigatingAway)),
       page_transition_(ui::PAGE_TRANSITION_LINK),
@@ -152,12 +148,6 @@ void ThumbnailTabHelper::DidStartLoading() {
   // TODO(treib): We should probably track whether the load *finished* - as it
   // is, an in-progress load will count as not interrupted.
   load_interrupted_ = false;
-}
-
-void ThumbnailTabHelper::DidStopLoading() {
-  if (capture_on_load_finished_) {
-    UpdateThumbnailIfNecessary();
-  }
 }
 
 void ThumbnailTabHelper::NavigationStopped() {
