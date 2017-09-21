@@ -329,7 +329,7 @@ void UiElement::UpdateInheritedProperties() {
 
   if (parent_) {
     inheritable.ConcatTransform(parent_->inheritable_transform());
-    set_computed_opacity(computed_opacity() * parent_->opacity());
+    set_computed_opacity(computed_opacity() * parent_->computed_opacity());
   }
 
   transform.ConcatTransform(inheritable);

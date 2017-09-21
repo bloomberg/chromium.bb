@@ -28,9 +28,6 @@ using TargetProperty::TRANSFORM;
 using TargetProperty::OPACITY;
 
 namespace {
-std::set<UiElementName> kBackgroundElements = {
-    kBackgroundFront, kBackgroundLeft, kBackgroundBack,
-    kBackgroundRight, kBackgroundTop,  kBackgroundBottom};
 std::set<UiElementName> kFloorCeilingBackgroundElements = {
     kBackgroundFront, kBackgroundLeft,   kBackgroundBack, kBackgroundRight,
     kBackgroundTop,   kBackgroundBottom, kCeiling,        kFloor};
@@ -263,7 +260,7 @@ TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
   manager_->SetWebVrMode(true, false);
   // Initially, the security warnings should not be visible since the first
   // WebVR frame is not received.
-  auto initial_elements = kBackgroundElements;
+  auto initial_elements = std::set<UiElementName>();
   initial_elements.insert(kSplashScreenText);
   initial_elements.insert(kSplashScreenBackground);
   VerifyElementsVisible("Initial", initial_elements);
@@ -294,7 +291,7 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   manager_->SetWebVrSecureOrigin(true);
 
   // Initially, we should only show the splash screen.
-  auto initial_elements = kBackgroundElements;
+  auto initial_elements = std::set<UiElementName>();
   initial_elements.insert(kSplashScreenText);
   initial_elements.insert(kSplashScreenBackground);
   VerifyElementsVisible("Initial", initial_elements);
