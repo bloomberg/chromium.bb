@@ -200,7 +200,7 @@ AppCacheResponseReader::~AppCacheResponseReader() {
 }
 
 void AppCacheResponseReader::ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                                      const net::CompletionCallback& callback) {
+                                      OnceCompletionCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(!IsReadPending());
   DCHECK(info_buf);
@@ -209,7 +209,7 @@ void AppCacheResponseReader::ReadInfo(HttpResponseInfoIOBuffer* info_buf,
   DCHECK(!info_buffer_.get());
 
   info_buffer_ = info_buf;
-  callback_ = callback;  // cleared on completion
+  callback_ = std::move(callback);  // cleared on completion
   OpenEntryIfNeeded();
 }
 
@@ -224,8 +224,9 @@ void AppCacheResponseReader::ContinueReadInfo() {
   ReadRaw(kResponseInfoIndex, 0, buffer_.get(), size);
 }
 
-void AppCacheResponseReader::ReadData(net::IOBuffer* buf, int buf_len,
-                                      const net::CompletionCallback& callback) {
+void AppCacheResponseReader::ReadData(net::IOBuffer* buf,
+                                      int buf_len,
+                                      OnceCompletionCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(!IsReadPending());
   DCHECK(buf);
@@ -235,7 +236,7 @@ void AppCacheResponseReader::ReadData(net::IOBuffer* buf, int buf_len,
 
   buffer_ = buf;
   buffer_len_ = buf_len;
-  callback_ = callback;  // cleared on completion
+  callback_ = std::move(callback);  // cleared on completion
   OpenEntryIfNeeded();
 }
 

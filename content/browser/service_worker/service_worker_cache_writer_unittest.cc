@@ -47,10 +47,10 @@ class MockServiceWorkerResponseReader : public ServiceWorkerResponseReader {
 
   // ServiceWorkerResponseReader overrides
   void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                const net::CompletionCallback& callback) override;
+                OnceCompletionCallback callback) override;
   void ReadData(net::IOBuffer* buf,
                 int buf_len,
-                const net::CompletionCallback& callback) override;
+                OnceCompletionCallback callback) override;
 
   // Test helpers. ExpectReadInfo() and ExpectReadData() give precise control
   // over both the data to be written and the result to return.
@@ -100,29 +100,29 @@ class MockServiceWorkerResponseReader : public ServiceWorkerResponseReader {
 
 void MockServiceWorkerResponseReader::ReadInfo(
     HttpResponseInfoIOBuffer* info_buf,
-    const net::CompletionCallback& callback) {
+    OnceCompletionCallback callback) {
   DCHECK(!expected_reads_.empty());
   ExpectedRead expected = expected_reads_.front();
   EXPECT_TRUE(expected.info);
   if (expected.async) {
     pending_info_ = info_buf;
-    pending_callback_ = callback;
+    pending_callback_ = std::move(callback);
   } else {
     expected_reads_.pop();
     info_buf->response_data_size = expected.len;
-    callback.Run(expected.result);
+    std::move(callback).Run(expected.result);
   }
 }
 
 void MockServiceWorkerResponseReader::ReadData(
     net::IOBuffer* buf,
     int buf_len,
-    const net::CompletionCallback& callback) {
+    OnceCompletionCallback callback) {
   DCHECK(!expected_reads_.empty());
   ExpectedRead expected = expected_reads_.front();
   EXPECT_FALSE(expected.info);
   if (expected.async) {
-    pending_callback_ = callback;
+    pending_callback_ = std::move(callback);
     pending_buffer_ = buf;
     pending_buffer_len_ = static_cast<size_t>(buf_len);
   } else {
@@ -131,7 +131,7 @@ void MockServiceWorkerResponseReader::ReadData(
       size_t to_read = std::min(static_cast<size_t>(buf_len), expected.len);
       memcpy(buf->data(), expected.data, to_read);
     }
-    callback.Run(expected.result);
+    std::move(callback).Run(expected.result);
   }
 }
 

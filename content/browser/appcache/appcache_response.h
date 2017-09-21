@@ -174,7 +174,7 @@ class CONTENT_EXPORT AppCacheResponseReader
   // Should only be called where there is no Read operation in progress.
   // (virtual for testing)
   virtual void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
-                        const net::CompletionCallback& callback);
+                        OnceCompletionCallback callback);
 
   // Reads data from storage. Always returns the result of the read
   // asynchronously through the 'callback'. Returns the number of bytes read
@@ -184,8 +184,9 @@ class CONTENT_EXPORT AppCacheResponseReader
   // or the number of bytes read. The 'callback' is a required parameter.
   // Should only be called where there is no Read operation in progress.
   // (virtual for testing)
-  virtual void ReadData(net::IOBuffer* buf, int buf_len,
-                        const net::CompletionCallback& callback);
+  virtual void ReadData(net::IOBuffer* buf,
+                        int buf_len,
+                        OnceCompletionCallback callback);
 
   // Returns true if there is a read operation, for data or info, pending.
   bool IsReadPending() { return IsIOPending(); }
