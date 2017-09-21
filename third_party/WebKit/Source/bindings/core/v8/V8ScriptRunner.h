@@ -65,23 +65,23 @@ class CORE_EXPORT V8ScriptRunner final {
                                                   const TextPosition&,
                                                   CachedMetadataHandler*,
                                                   AccessControlStatus,
-                                                  V8CacheOptions);
+                                                  V8CacheOptions,
+                                                  const ReferrerScriptInfo&);
   // CachedMetadataHandler is set when metadata caching is supported. For
   // normal scripe resources, CachedMetadataHandler is from ScriptResource.
   // For worker script, ScriptResource is null but CachedMetadataHandler may be
   // set. When ScriptStreamer is set, ScriptResource must be set.
-  static v8::MaybeLocal<v8::Script> CompileScript(
-      ScriptState*,
-      v8::Local<v8::String>,
-      const String& file_name,
-      const String& source_map_url,
-      const TextPosition&,
-      ScriptResource*,
-      ScriptStreamer*,
-      CachedMetadataHandler*,
-      AccessControlStatus,
-      V8CacheOptions,
-      const ReferrerScriptInfo& = ReferrerScriptInfo());
+  static v8::MaybeLocal<v8::Script> CompileScript(ScriptState*,
+                                                  v8::Local<v8::String>,
+                                                  const String& file_name,
+                                                  const String& source_map_url,
+                                                  const TextPosition&,
+                                                  ScriptResource*,
+                                                  ScriptStreamer*,
+                                                  CachedMetadataHandler*,
+                                                  AccessControlStatus,
+                                                  V8CacheOptions,
+                                                  const ReferrerScriptInfo&);
   static v8::MaybeLocal<v8::Module> CompileModule(v8::Isolate*,
                                                   const String& source,
                                                   const String& file_name,

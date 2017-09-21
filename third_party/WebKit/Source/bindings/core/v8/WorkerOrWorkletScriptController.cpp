@@ -268,10 +268,14 @@ ScriptValue WorkerOrWorkletScriptController::Evaluate(
 
   v8::Local<v8::Script> compiled_script;
   v8::MaybeLocal<v8::Value> maybe_result;
+  // Use default ReferrerScriptInfo here, as
+  // - A work{er,let} script doesn't have a nonce, and
+  // - a work{er,let} script is always "not parser inserted".
+  ReferrerScriptInfo referrer_info;
   if (V8ScriptRunner::CompileScript(script_state_.Get(), script, file_name,
                                     String(), script_start_position,
                                     cache_handler, kSharableCrossOrigin,
-                                    v8_cache_options)
+                                    v8_cache_options, referrer_info)
           .ToLocal(&compiled_script))
     maybe_result = V8ScriptRunner::RunCompiledScript(isolate_, compiled_script,
                                                      global_scope_);
