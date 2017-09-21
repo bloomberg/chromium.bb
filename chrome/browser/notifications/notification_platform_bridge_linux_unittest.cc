@@ -300,9 +300,9 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
       .WillOnce(OnCloseNotification());
 
   CreateNotificationBridgeLinux();
-  notification_bridge_linux_->Display(NotificationCommon::PERSISTENT, "", "",
-                                      false,
-                                      NotificationBuilder("").GetResult());
+  notification_bridge_linux_->Display(
+      NotificationCommon::PERSISTENT, "", "", false,
+      NotificationBuilder("").GetResult(), nullptr);
   notification_bridge_linux_->Close("", "");
 }
 
@@ -324,7 +324,8 @@ TEST_F(NotificationPlatformBridgeLinuxTest, ProgressPercentageAddedToSummary) {
           .SetType(message_center::NOTIFICATION_TYPE_PROGRESS)
           .SetProgress(42)
           .SetTitle(base::UTF8ToUTF16("The Title"))
-          .GetResult());
+          .GetResult(),
+      nullptr);
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, NotificationListItemsInBody) {
@@ -344,7 +345,8 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationListItemsInBody) {
           .SetItems(std::vector<message_center::NotificationItem>{
               {base::UTF8ToUTF16("abc"), base::UTF8ToUTF16("123")},
               {base::UTF8ToUTF16("def"), base::UTF8ToUTF16("456")}})
-          .GetResult());
+          .GetResult(),
+      nullptr);
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, NotificationTimeouts) {
@@ -366,10 +368,10 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationTimeouts) {
   CreateNotificationBridgeLinux();
   notification_bridge_linux_->Display(
       NotificationCommon::PERSISTENT, "", "", false,
-      NotificationBuilder("1").SetNeverTimeout(false).GetResult());
+      NotificationBuilder("1").SetNeverTimeout(false).GetResult(), nullptr);
   notification_bridge_linux_->Display(
       NotificationCommon::PERSISTENT, "", "", false,
-      NotificationBuilder("2").SetNeverTimeout(true).GetResult());
+      NotificationBuilder("2").SetNeverTimeout(true).GetResult(), nullptr);
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, NotificationImages) {
@@ -409,7 +411,8 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationImages) {
       NotificationBuilder("")
           .SetType(message_center::NOTIFICATION_TYPE_IMAGE)
           .SetImage(original_image)
-          .GetResult());
+          .GetResult(),
+      nullptr);
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
@@ -430,7 +433,8 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
       NotificationBuilder("")
           .SetMessage(base::ASCIIToUTF16("Body text"))
           .SetOriginUrl(GURL("https://google.com/search?q=test&ie=UTF8"))
-          .GetResult());
+          .GetResult(),
+      nullptr);
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, MissingActionsCapability) {

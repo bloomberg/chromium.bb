@@ -121,7 +121,6 @@ class PlatformNotificationServiceImpl
   // through requires changing a whole lot of Notification constructor calls.
   Notification CreateNotificationFromData(
       Profile* profile,
-      const GURL& service_worker_scope,
       const GURL& origin,
       const std::string& notification_id,
       const content::PlatformNotificationData& notification_data,

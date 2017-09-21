@@ -36,9 +36,11 @@ class NotificationDisplayService : public KeyedService {
   ~NotificationDisplayService() override;
 
   // Displays the |notification| identified by |notification_id|.
-  virtual void Display(NotificationCommon::Type notification_type,
-                       const std::string& notification_id,
-                       const Notification& notification) = 0;
+  virtual void Display(
+      NotificationCommon::Type notification_type,
+      const std::string& notification_id,
+      const Notification& notification,
+      std::unique_ptr<NotificationCommon::Metadata> metadata = nullptr) = 0;
 
   // Closes the notification identified by |notification_id|.
   virtual void Close(NotificationCommon::Type notification_type,

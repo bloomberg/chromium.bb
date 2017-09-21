@@ -31,19 +31,15 @@ Notification::Notification(
 Notification::Notification(const std::string& id,
                            const Notification& notification)
     : message_center::Notification(id, notification),
-      tag_(notification.tag()),
-      service_worker_scope_(notification.service_worker_scope()) {}
+      tag_(notification.tag()) {}
 
 Notification::Notification(const Notification& notification)
-    : message_center::Notification(notification),
-      tag_(notification.tag()),
-      service_worker_scope_(notification.service_worker_scope()) {}
+    : message_center::Notification(notification), tag_(notification.tag()) {}
 
 Notification::~Notification() {}
 
 Notification& Notification::operator=(const Notification& notification) {
   message_center::Notification::operator=(notification);
   tag_ = notification.tag();
-  service_worker_scope_ = notification.service_worker_scope();
   return *this;
 }

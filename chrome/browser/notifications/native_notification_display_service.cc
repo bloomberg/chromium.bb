@@ -71,20 +71,21 @@ void NativeNotificationDisplayService::OnNotificationPlatformBridgeReady(
 void NativeNotificationDisplayService::Display(
     NotificationCommon::Type notification_type,
     const std::string& notification_id,
-    const Notification& notification) {
+    const Notification& notification,
+    std::unique_ptr<NotificationCommon::Metadata> metadata) {
   if (notification_bridge_ready_) {
-    notification_bridge_->Display(notification_type, notification_id,
-                                  GetProfileId(profile_),
-                                  profile_->IsOffTheRecord(), notification);
+    notification_bridge_->Display(
+        notification_type, notification_id, GetProfileId(profile_),
+        profile_->IsOffTheRecord(), notification, std::move(metadata));
     NotificationHandler* handler = GetNotificationHandler(notification_type);
     handler->OnShow(profile_, notification_id);
   } else if (message_center_display_service_) {
     message_center_display_service_->Display(notification_type, notification_id,
-                                             notification);
+                                             notification, std::move(metadata));
   } else {
-    actions_.push(base::BindOnce(&NativeNotificationDisplayService::Display,
-                                 weak_factory_.GetWeakPtr(), notification_type,
-                                 notification_id, notification));
+    actions_.push(base::BindOnce(
+        &NativeNotificationDisplayService::Display, weak_factory_.GetWeakPtr(),
+        notification_type, notification_id, notification, std::move(metadata)));
   }
 }
 

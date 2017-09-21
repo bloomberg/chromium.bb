@@ -32,6 +32,9 @@ class NotificationDisplayServiceTester {
   std::vector<Notification> GetDisplayedNotificationsForType(
       NotificationCommon::Type type);
 
+  const NotificationCommon::Metadata* GetMetadataForNotification(
+      const Notification& notification);
+
   // Simulates the notification identified by |notification_id| being closed due
   // to external events, such as the user dismissing it when |by_user| is set.
   // When |silent| is set, the notification handlers won't be informed of the

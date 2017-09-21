@@ -223,7 +223,8 @@ void NotificationPlatformBridgeMac::Display(
     const std::string& notification_id,
     const std::string& profile_id,
     bool incognito,
-    const Notification& notification) {
+    const Notification& notification,
+    std::unique_ptr<NotificationCommon::Metadata> metadata) {
   base::scoped_nsobject<NotificationBuilder> builder(
       [[NotificationBuilder alloc]
       initWithCloseLabel:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_CLOSE)

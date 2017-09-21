@@ -240,18 +240,21 @@ void NotificationPlatformBridgeAndroid::Display(
     const std::string& notification_id,
     const std::string& profile_id,
     bool incognito,
-    const Notification& notification) {
+    const Notification& notification,
+    std::unique_ptr<NotificationCommon::Metadata> metadata) {
   JNIEnv* env = AttachCurrentThread();
+
+  GURL origin_url(notification.origin_url().GetOrigin());
+
   // TODO(miguelg): Store the notification type in java instead of assuming it's
   // persistent once/if non persistent notifications are ever implemented on
   // Android.
   DCHECK_EQ(notification_type, NotificationCommon::PERSISTENT);
-
-  GURL origin_url(notification.origin_url().GetOrigin());
-
-  GURL scope_url(notification.service_worker_scope());
+  GURL scope_url(PersistentNotificationMetadata::From(metadata.get())
+                     ->service_worker_scope);
   if (!scope_url.is_valid())
     scope_url = origin_url;
+
   ScopedJavaLocalRef<jstring> j_scope_url =
         ConvertUTF8ToJavaString(env, scope_url.spec());
 

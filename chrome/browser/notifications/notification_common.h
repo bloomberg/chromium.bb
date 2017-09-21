@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_COMMON_H_
 
 #include "base/feature_list.h"
+#include "url/gurl.h"
 
 namespace features {
 
@@ -42,6 +43,14 @@ class NotificationCommon {
     TYPE_MAX = EXTENSION
   };
 
+  // A struct that contains extra data about a notification specific to one of
+  // the above types.
+  struct Metadata {
+    virtual ~Metadata();
+
+    Type type;
+  };
+
   // Open the Notification settings screen when clicking the right button.
   // TODO(miguelg) have it take a Profile instead once NotificationObjectProxy
   // is updated.
@@ -51,6 +60,16 @@ class NotificationCommon {
   // Whether a web notification should be displayed when chrome is in full
   // screen mode.
   static bool ShouldDisplayOnFullScreen(Profile* profile, const GURL& origin);
+};
+
+// Metadata for PERSISTENT notifications.
+struct PersistentNotificationMetadata : public NotificationCommon::Metadata {
+  PersistentNotificationMetadata();
+  ~PersistentNotificationMetadata() override;
+
+  static const PersistentNotificationMetadata* From(const Metadata* metadata);
+
+  GURL service_worker_scope;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_COMMON_H_

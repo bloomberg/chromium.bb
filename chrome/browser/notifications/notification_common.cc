@@ -24,6 +24,23 @@ const base::Feature kAllowFullscreenWebNotificationsFeature{
 
 }  // namespace features
 
+NotificationCommon::Metadata::~Metadata() = default;
+
+PersistentNotificationMetadata::PersistentNotificationMetadata() {
+  type = NotificationCommon::PERSISTENT;
+}
+
+PersistentNotificationMetadata::~PersistentNotificationMetadata() = default;
+
+// static
+const PersistentNotificationMetadata* PersistentNotificationMetadata::From(
+    const Metadata* metadata) {
+  if (!metadata || metadata->type != NotificationCommon::PERSISTENT)
+    return nullptr;
+
+  return static_cast<const PersistentNotificationMetadata*>(metadata);
+}
+
 // static
 void NotificationCommon::OpenNotificationSettings(
     content::BrowserContext* browser_context) {

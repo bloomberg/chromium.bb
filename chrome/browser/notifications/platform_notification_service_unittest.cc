@@ -313,8 +313,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   GURL origin("https://chrome.com/");
 
   Notification notification = service()->CreateNotificationFromData(
-      profile_, GURL() /* service_worker_scope */, origin, "id",
-      notification_data, NotificationResources(),
+      profile_, origin, "id", notification_data, NotificationResources(),
       new WebNotificationDelegate(NotificationCommon::PERSISTENT, profile_,
                                   "id", origin));
   EXPECT_TRUE(notification.context_message().empty());
@@ -336,7 +335,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   EXPECT_TRUE(registry->AddEnabled(extension));
 
   notification = service()->CreateNotificationFromData(
-      profile_, GURL() /* service_worker_scope */,
+      profile_,
       GURL("chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"),
       "id", notification_data, NotificationResources(),
       new WebNotificationDelegate(NotificationCommon::EXTENSION, profile_, "id",

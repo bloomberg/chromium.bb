@@ -262,11 +262,13 @@ class NotificationPlatformBridgeLinuxImpl
         &NotificationPlatformBridgeLinuxImpl::InitOnTaskRunner, this));
   }
 
-  void Display(NotificationCommon::Type notification_type,
-               const std::string& notification_id,
-               const std::string& profile_id,
-               bool is_incognito,
-               const Notification& notification) override {
+  void Display(
+      NotificationCommon::Type notification_type,
+      const std::string& notification_id,
+      const std::string& profile_id,
+      bool is_incognito,
+      const Notification& notification,
+      std::unique_ptr<NotificationCommon::Metadata> metadata) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // Notifications contain gfx::Image's which have reference counts
     // that are not thread safe.  Because of this, we duplicate the
@@ -901,9 +903,10 @@ void NotificationPlatformBridgeLinux::Display(
     const std::string& notification_id,
     const std::string& profile_id,
     bool is_incognito,
-    const Notification& notification) {
+    const Notification& notification,
+    std::unique_ptr<NotificationCommon::Metadata> metadata) {
   impl_->Display(notification_type, notification_id, profile_id, is_incognito,
-                 notification);
+                 notification, std::move(metadata));
 }
 
 void NotificationPlatformBridgeLinux::Close(

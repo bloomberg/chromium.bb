@@ -34,7 +34,8 @@ class NativeNotificationDisplayService : public NotificationDisplayService {
   // NotificationDisplayService implementation.
   void Display(NotificationCommon::Type notification_type,
                const std::string& notification_id,
-               const Notification& notification) override;
+               const Notification& notification,
+               std::unique_ptr<NotificationCommon::Metadata> metadata) override;
   void Close(NotificationCommon::Type notification_type,
              const std::string& notification_id) override;
   void GetDisplayed(const DisplayedNotificationsCallback& callback) override;

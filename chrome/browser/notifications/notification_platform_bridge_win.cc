@@ -260,7 +260,8 @@ void NotificationPlatformBridgeWin::Display(
     const std::string& notification_id,
     const std::string& profile_id,
     bool incognito,
-    const Notification& notification) {
+    const Notification& notification,
+    std::unique_ptr<NotificationCommon::Metadata> metadata) {
   // TODO(finnur): Move this to a RoInitialized thread, as per crbug.com/761039.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
