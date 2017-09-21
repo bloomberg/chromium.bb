@@ -327,7 +327,9 @@ ANDROID_MASTER_ARC_DEV_BUILD_BRANCH = 'git_master-arc-dev'
 ANDROID_MNC_BUILD_BRANCH = 'git_mnc-dr-arc-dev'
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
 ANDROID_MASTER_ARC_DEV_BUILD_TARGETS = {
+    'AOSP_ARM_USERDEBUG': ('linux-aosp_bertha_arm-userdebug', r'\.zip$'),
     'AOSP_X86_USERDEBUG': ('linux-aosp_bertha_x86-userdebug', r'\.zip$'),
+    'AOSP_X86_64_USERDEBUG': ('linux-aosp_bertha_x86_64-userdebug', r'\.zip$'),
 }
 ANDROID_MNC_BUILD_TARGETS = {
     # TODO(b/29509721): Workaround to roll adb with system image. We want to
@@ -369,7 +371,9 @@ ARC_BUCKET_ACLS = {
     'X86_64': 'googlestorage_acl_x86.txt',
     'X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
+    'AOSP_ARM_USERDEBUG': 'googlestorage_acl_arm.txt',
     'AOSP_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
+    'AOSP_X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
     'SDK_GOOGLE_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'SDK_GOOGLE_X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
     'X86_INTERNAL': 'googlestorage_acl_internal.txt',
@@ -394,7 +398,9 @@ ANDROID_SYMBOLS_FILE = 'android-symbols.zip'
 ARC_BUILDS_NEED_ARTIFACTS_RENAMED = {
     'X86_USERDEBUG',
     'X86_64_USERDEBUG',
+    'AOSP_ARM_USERDEBUG',
     'AOSP_X86_USERDEBUG',
+    'AOSP_X86_64_USERDEBUG',
     'SDK_GOOGLE_X86_USERDEBUG',
     'SDK_GOOGLE_X86_64_USERDEBUG',
 }
