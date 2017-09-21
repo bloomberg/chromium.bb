@@ -221,4 +221,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return YES;
 }
 
+#pragma mark - UIAccessibilityAction
+
+- (BOOL)accessibilityPerformEscape {
+  [self onReturn];
+  return YES;
+}
+
 @end

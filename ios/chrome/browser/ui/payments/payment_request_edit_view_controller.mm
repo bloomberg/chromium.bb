@@ -787,4 +787,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
                            didFinishEditingFields:self.fields];
 }
 
+#pragma mark - UIAccessibilityAction
+
+- (BOOL)accessibilityPerformEscape {
+  [self onCancel];
+  return YES;
+}
+
 @end
