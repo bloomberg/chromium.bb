@@ -57,6 +57,9 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     active_touches_ = 0;
   }
 
+  if (view == wheel_target_.target)
+    wheel_target_.target = nullptr;
+
   // If the target that's being destroyed is in the gesture target map, we
   // replace it with nullptr so that we maintain the 1:1 correspondence between
   // map entries and the touch sequences that underly them.
