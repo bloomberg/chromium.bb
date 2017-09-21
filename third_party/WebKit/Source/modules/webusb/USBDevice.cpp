@@ -785,7 +785,7 @@ void USBDevice::AsyncSelectAlternateInterface(size_t interface_index,
 
 void USBDevice::AsyncControlTransferIn(ScriptPromiseResolver* resolver,
                                        UsbTransferStatus status,
-                                       const Optional<Vector<uint8_t>>& data) {
+                                       const Vector<uint8_t>& data) {
   if (!MarkRequestComplete(resolver))
     return;
 
@@ -826,7 +826,7 @@ void USBDevice::AsyncClearHalt(ScriptPromiseResolver* resolver, bool success) {
 
 void USBDevice::AsyncTransferIn(ScriptPromiseResolver* resolver,
                                 UsbTransferStatus status,
-                                const Optional<Vector<uint8_t>>& data) {
+                                const Vector<uint8_t>& data) {
   if (!MarkRequestComplete(resolver))
     return;
 
@@ -856,13 +856,12 @@ void USBDevice::AsyncTransferOut(unsigned transfer_length,
 
 void USBDevice::AsyncIsochronousTransferIn(
     ScriptPromiseResolver* resolver,
-    const Optional<Vector<uint8_t>>& data,
+    const Vector<uint8_t>& data,
     Vector<UsbIsochronousPacketPtr> mojo_packets) {
   if (!MarkRequestComplete(resolver))
     return;
 
-  DOMArrayBuffer* buffer =
-      data ? DOMArrayBuffer::Create(data->data(), data->size()) : nullptr;
+  DOMArrayBuffer* buffer = DOMArrayBuffer::Create(data.data(), data.size());
   HeapVector<Member<USBIsochronousInTransferPacket>> packets;
   packets.ReserveCapacity(mojo_packets.size());
   size_t byte_offset = 0;

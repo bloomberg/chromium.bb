@@ -300,8 +300,7 @@ void DeviceImpl::ControlTransferIn(UsbControlTransferParamsPtr params,
                                    uint32_t timeout,
                                    ControlTransferInCallback callback) {
   if (!device_handle_) {
-    std::move(callback).Run(mojom::UsbTransferStatus::TRANSFER_ERROR,
-                            base::nullopt);
+    std::move(callback).Run(mojom::UsbTransferStatus::TRANSFER_ERROR, {});
     return;
   }
 
@@ -312,8 +311,7 @@ void DeviceImpl::ControlTransferIn(UsbControlTransferParamsPtr params,
         params->request, params->value, params->index, buffer, length, timeout,
         base::BindOnce(&OnTransferIn, std::move(callback)));
   } else {
-    std::move(callback).Run(mojom::UsbTransferStatus::PERMISSION_DENIED,
-                            base::nullopt);
+    std::move(callback).Run(mojom::UsbTransferStatus::PERMISSION_DENIED, {});
   }
 }
 
@@ -343,8 +341,7 @@ void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
                                    uint32_t timeout,
                                    GenericTransferInCallback callback) {
   if (!device_handle_) {
-    std::move(callback).Run(mojom::UsbTransferStatus::TRANSFER_ERROR,
-                            base::nullopt);
+    std::move(callback).Run(mojom::UsbTransferStatus::TRANSFER_ERROR, {});
     return;
   }
 
@@ -379,9 +376,8 @@ void DeviceImpl::IsochronousTransferIn(
     IsochronousTransferInCallback callback) {
   if (!device_handle_) {
     std::move(callback).Run(
-        base::nullopt,
-        BuildIsochronousPacketArray(packet_lengths,
-                                    mojom::UsbTransferStatus::TRANSFER_ERROR));
+        {}, BuildIsochronousPacketArray(
+                packet_lengths, mojom::UsbTransferStatus::TRANSFER_ERROR));
     return;
   }
 
