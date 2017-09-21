@@ -224,9 +224,9 @@ void BestEffortCheckOCSP(const std::string& raw_response,
     return;
   }
 
-  verify_result->revocation_status = CheckOCSPNoSignatureCheck(
-      raw_response, cert_der, issuer_der, base::Time::Now(),
-      /*skip_time_check=*/false, &verify_result->response_status);
+  verify_result->revocation_status =
+      CheckOCSP(raw_response, cert_der, issuer_der, base::Time::Now(),
+                /*skip_time_check=*/false, &verify_result->response_status);
 }
 
 // Records histograms indicating whether the certificate |cert|, which
