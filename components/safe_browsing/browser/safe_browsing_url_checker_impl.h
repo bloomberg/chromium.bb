@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing/db/database_manager.h"
 #include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"

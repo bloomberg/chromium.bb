@@ -13,7 +13,7 @@ static_library("security_interstitial_page") {
   ]
 
   public_deps = [
-    "//components/safe_browsing_db:hit_report",
+    "//components/safe_browsing/db:hit_report",
   ]
 
   deps = [
@@ -21,8 +21,8 @@ static_library("security_interstitial_page") {
     "//components/prefs:prefs",
     "//components/resources",
     "//components/safe_browsing/common:safe_browsing_prefs",
-    "//components/safe_browsing_db:hit_report",
-    "//components/safe_browsing_db:util",
+    "//components/safe_browsing/db:hit_report",
+    "//components/safe_browsing/db:util",
     "//components/security_interstitials/core:core",
     "//content/public/browser",
     "//content/public/common",

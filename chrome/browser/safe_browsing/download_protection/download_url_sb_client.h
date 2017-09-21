@@ -10,7 +10,7 @@
 
 #include "base/scoped_observer.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
-#include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing/db/database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 

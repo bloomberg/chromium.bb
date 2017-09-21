@@ -20,7 +20,7 @@
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/safe_browsing_db/metadata.pb.h"
+#include "components/safe_browsing/db/metadata.pb.h"
 
 namespace safe_browsing {
 

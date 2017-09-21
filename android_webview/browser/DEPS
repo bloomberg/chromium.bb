@@ -22,7 +22,6 @@ include_rules = [
   "+components/printing/browser",
   "+components/printing/common",
   "+components/safe_browsing",
-  "+components/safe_browsing_db",
   "+components/security_interstitials",
   "+components/spellcheck/browser",
   "+components/spellcheck/common",

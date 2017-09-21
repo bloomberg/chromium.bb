@@ -37,8 +37,8 @@ source_set("safe_browsing") {
     "//base:i18n",
     "//components/safe_browsing/common:common",
     "//components/safe_browsing/common:safe_browsing_prefs",
+    "//components/safe_browsing/db:database_manager",
     "//components/safe_browsing/web_ui:constants",
-    "//components/safe_browsing_db:database_manager",
     "//components/security_interstitials/core:core",
     "//content/public/browser:browser",
     "//content/public/common:common",
@@ -59,8 +59,8 @@ static_library("base_ping_manager") {
   deps = [
     "//base:base",
     "//components/data_use_measurement/core:core",
-    "//components/safe_browsing_db:hit_report",
-    "//components/safe_browsing_db:util",
+    "//components/safe_browsing/db:hit_report",
+    "//components/safe_browsing/db:util",
     "//content/public/browser:browser",
     "//net:net",
   ]

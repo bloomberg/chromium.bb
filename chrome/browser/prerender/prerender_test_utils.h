@@ -21,7 +21,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/safe_browsing_db/test_database_manager.h"
+#include "components/safe_browsing/db/test_database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_interceptor.h"

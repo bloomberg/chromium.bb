@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
-#include "components/safe_browsing_db/metadata.pb.h"
-#include "components/safe_browsing_db/util.h"
-#include "components/safe_browsing_db/v4_test_util.h"
+#include "components/safe_browsing/db/metadata.pb.h"
+#include "components/safe_browsing/db/util.h"
+#include "components/safe_browsing/db/v4_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
