@@ -58,6 +58,10 @@ class BASE_EXPORT ShardedAllocationRegister {
   // this with a null pointer.
   void Remove(const void* address);
 
+  // Finds allocation for the address and fills |out_allocation|.
+  bool Get(const void* address,
+           AllocationRegister::Allocation* out_allocation) const;
+
   // Estimates memory overhead including |sizeof(AllocationRegister)|.
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead) const;
 

@@ -54,6 +54,16 @@ void ShardedAllocationRegister::Remove(const void* address) {
   return ral.allocation_register.Remove(address);
 }
 
+bool ShardedAllocationRegister::Get(
+    const void* address,
+    AllocationRegister::Allocation* out_allocation) const {
+  AllocationRegister::AddressHasher hasher;
+  size_t index = hasher(address) % ShardCount;
+  RegisterAndLock& ral = allocation_registers_[index];
+  AutoLock lock(ral.lock);
+  return ral.allocation_register.Get(address, out_allocation);
+}
+
 void ShardedAllocationRegister::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) const {
   size_t allocated = 0;
