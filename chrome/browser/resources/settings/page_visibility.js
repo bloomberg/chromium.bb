@@ -56,7 +56,8 @@ var PrivacyPageVisibility;
 cr.define('settings', function() {
   /**
    * Dictionary defining page visibility.
-   * This is only set when in guest mode. All pages are visible when not set
+   * Sets all the pages' visibility when in guest mode, otherwise only sets the
+   * appearance page's visibility. All the other pages are visible when not set
    * because polymer only notifies after a property is set.
    * @type {!GuestModePageVisibility}
    */
@@ -98,6 +99,18 @@ cr.define('settings', function() {
         googleDrive: false,
       },
       multidevice: false,
+    };
+    // </if>
+  } else {
+    // <if expr="chromeos">
+    pageVisibility = {
+      appearance: {
+        setWallpaper: true,
+        setTheme: true,
+        homeButton: true,
+        bookmarksBar: true,
+        pageZoom: true,
+      },
     };
     // </if>
   }
