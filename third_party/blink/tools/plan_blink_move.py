@@ -40,7 +40,7 @@ def relative_dest(fs, filename):
             return dest
         # Skip CSSProperty*. Some files are generated, and some files are
         # checked-in. It's hard to handle them automatically.
-        if re.search(r'css[\/]properties$', dirname):
+        if re.search(r'css[\\/]properties$', dirname):
             return dest
         if filename.endswith('.cpp'):
             ext = '.cc'

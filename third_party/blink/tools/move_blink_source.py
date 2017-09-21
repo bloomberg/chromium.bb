@@ -326,7 +326,7 @@ class MoveBlinkSource(object):
                 original_content = self._fs.read_text_file(file_path)
 
                 content = self._update_cpp_includes(original_content)
-                if file_path.endswith('.h') and '/third_party/WebKit/public/' in file_path:
+                if file_path.endswith('.h') and '/third_party/WebKit/public/' in file_path.replace('\\', '/'):
                     content = self._update_basename_only_includes(content, file_path)
 
                 if original_content == content:
@@ -385,7 +385,7 @@ class MoveBlinkSource(object):
         return match.group(0)
 
     def _update_basename_only_includes(self, content, source_path):
-        if not source_path.endswith('.h') or '/third_party/WebKit/public/' not in source_path:
+        if not source_path.endswith('.h') or '/third_party/WebKit/public/' not in source_path.replace('\\', '/'):
             return
         # In public/ header files, we should replace |#include "WebFoo.h"|
         # with |#include "third_party/blink/renderer/public/platform-or-web/web_foo.h"|
