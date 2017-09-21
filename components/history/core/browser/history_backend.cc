@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <list>
 #include <map>
 #include <memory>
@@ -976,9 +977,20 @@ void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
 }
 
 bool HistoryBackend::GetAllTypedURLs(URLRows* urls) {
-  if (db_)
-    return db_->GetAllTypedUrls(urls);
-  return false;
+  DCHECK(urls);
+  if (!db_)
+    return false;
+  std::vector<URLID> url_ids;
+  if (!db_->GetAllURLIDsForTransition(ui::PAGE_TRANSITION_TYPED, &url_ids))
+    return false;
+  urls->reserve(url_ids.size());
+  for (const auto& url_id : url_ids) {
+    URLRow url;
+    if (!db_->GetURLRow(url_id, &url))
+      return false;
+    urls->push_back(url);
+  }
+  return true;
 }
 
 bool HistoryBackend::GetVisitsForURL(URLID id, VisitVector* visits) {
@@ -1325,7 +1337,7 @@ void HistoryBackend::QueryHistoryText(const base::string16& text_query,
   }
   result->SetURLResults(std::move(matching_visits));
 
-  if(!has_more_results && options.begin_time <= first_recorded_time_)
+  if (!has_more_results && options.begin_time <= first_recorded_time_)
     result->set_reached_beginning(true);
 }
 

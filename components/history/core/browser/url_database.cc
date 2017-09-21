@@ -60,7 +60,7 @@ std::string URLDatabase::GURLToDatabaseURL(const GURL& gurl) {
 
 // Convenience to fill a URLRow. Must be in sync with the fields in
 // kURLRowFields.
-void URLDatabase::FillURLRow(sql::Statement& s, URLRow* i) {
+void URLDatabase::FillURLRow(const sql::Statement& s, URLRow* i) {
   DCHECK(i);
   i->set_id(s.ColumnInt64(0));
   i->set_url(GURL(s.ColumnString(1)));
@@ -85,18 +85,6 @@ bool URLDatabase::GetURLRow(URLID url_id, URLRow* info) {
     return true;
   }
   return false;
-}
-
-bool URLDatabase::GetAllTypedUrls(URLRows* urls) {
-  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE typed_count > 0"));
-
-  while (statement.Step()) {
-    URLRow info;
-    FillURLRow(statement, &info);
-    urls->push_back(info);
-  }
-  return true;
 }
 
 URLID URLDatabase::GetRowForURL(const GURL& url, URLRow* info) {

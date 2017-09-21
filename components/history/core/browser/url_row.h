@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/query_parser/snippet.h"
