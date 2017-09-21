@@ -276,5 +276,25 @@ TEST_F(ShelfContextMenuModelTest, DisableAutoHideOptionOnTabletMode) {
   EXPECT_TRUE(menu2.IsVisibleAt(0));
 }
 
+TEST_F(ShelfContextMenuModelTest, DisableAlignmentMenuOnTabletMode) {
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+  int64_t primary_id = GetPrimaryDisplay().id();
+
+  // Tests that in tablet mode, shelf alignment menu is disabled.
+  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  ShelfContextMenuModel menu1(MenuItemList(), nullptr, primary_id);
+  ASSERT_EQ(CommandId::MENU_ALIGNMENT_MENU, menu1.GetCommandIdAt(1));
+  EXPECT_FALSE(menu1.IsEnabledAt(1));
+  EXPECT_TRUE(menu1.IsVisibleAt(1));
+
+  // Tests that exiting tablet mode reenables the shelf alignment menu.
+  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  ShelfContextMenuModel menu2(MenuItemList(), nullptr, primary_id);
+  ASSERT_EQ(CommandId::MENU_ALIGNMENT_MENU, menu2.GetCommandIdAt(1));
+  EXPECT_TRUE(menu2.IsEnabledAt(1));
+  EXPECT_TRUE(menu2.IsVisibleAt(1));
+}
+
 }  // namespace
 }  // namespace ash
