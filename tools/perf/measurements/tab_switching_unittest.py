@@ -6,7 +6,7 @@ import contextlib
 from measurements import tab_switching
 import mock
 from page_sets.system_health import multi_tab_stories
-from telemetry import benchmark
+from telemetry import decorators
 from telemetry import story as story_module
 from telemetry.internal.results import page_test_results
 from telemetry.testing import page_test_test_case
@@ -95,9 +95,9 @@ class TabSwitchingUnittest(page_test_test_case.PageTestTestCase):
                         [browser.tabs[-1]] * 2]
       self.assertEqual(expected_calls, mock_get_histogram.mock_calls)
 
-  @benchmark.Enabled('has tabs')
-  @benchmark.Disabled('mac')
-  @benchmark.Disabled('android')
+  @decorators.Enabled('has tabs')
+  @decorators.Disabled('mac')
+  @decorators.Disabled('android')
   def testTabSwitching(self):
     """IT of TabSwitching measurement and multi-tab story"""
     ps = story_module.StorySet()

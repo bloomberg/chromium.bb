@@ -15,7 +15,6 @@ from telemetry import story
 
 @benchmark.Owner(emails=['vovoy@chromium.org'],
                  component='OS>Performance')
-@benchmark.Enabled('chromeos')
 class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
   """Measures tab switching performance with 24 tabs.
 
@@ -31,6 +30,8 @@ class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
   cros_tab_switching.typical_24 --tabset-repeat=5
   """
   test = tab_switching_measure.CrosTabSwitchingMeasurement
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_CHROMEOS]
+
 
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
@@ -56,5 +57,5 @@ class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # No tests disabled.
+        pass  # Nothing disabled.
     return StoryExpectations()

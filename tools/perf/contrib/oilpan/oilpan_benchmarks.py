@@ -16,7 +16,7 @@ import page_sets
 
 from contrib.oilpan import oilpan_gc_times
 
-@benchmark.Enabled('content-shell')
+
 class OilpanGCTimesBlinkPerfStress(perf_benchmark.PerfBenchmark):
   tag = 'blink_perf_stress'
   test = oilpan_gc_times.OilpanGCTimesForInternals
@@ -52,10 +52,10 @@ class OilpanGCTimesSmoothnessAnimation(perf_benchmark.PerfBenchmark):
     return StoryExpectations()
 
 
-@benchmark.Enabled('android')
 class OilpanGCTimesKeySilkCases(perf_benchmark.PerfBenchmark):
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
   page_set = page_sets.KeySilkCasesPageSet
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
 
   @classmethod
   def Name(cls):
@@ -73,11 +73,11 @@ class OilpanGCTimesKeySilkCases(perf_benchmark.PerfBenchmark):
     return StoryExpectations()
 
 
-@benchmark.Enabled('android')
 class OilpanGCTimesSyncScrollKeyMobileSites(perf_benchmark.PerfBenchmark):
   tag = 'sync_scroll'
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
 
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
