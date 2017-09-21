@@ -265,8 +265,8 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
   DCHECK_EQ(KeyPair::ECDH_P256, pair.type());
 
   std::string shared_secret;
-  if (!ComputeSharedP256Secret(pair.private_key(), pair.public_key_x509(),
-                               public_key, &shared_secret)) {
+  if (!ComputeSharedP256Secret(pair.private_key(), public_key,
+                               &shared_secret)) {
     DLOG(ERROR) << "Unable to calculate the shared secret.";
     callback.Run(GCMDecryptionResult::INVALID_SHARED_SECRET, IncomingMessage());
     return;

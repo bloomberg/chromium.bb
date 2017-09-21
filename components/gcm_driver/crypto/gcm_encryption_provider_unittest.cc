@@ -489,8 +489,7 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
 
   std::string shared_secret;
   ASSERT_TRUE(ComputeSharedP256Secret(
-      pair.private_key(), pair.public_key_x509(), server_pair.public_key(),
-      &shared_secret));
+      pair.private_key(), server_pair.public_key(), &shared_secret));
 
   IncomingMessage message;
   size_t record_size;
