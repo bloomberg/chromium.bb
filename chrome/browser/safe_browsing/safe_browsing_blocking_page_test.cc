@@ -1177,10 +1177,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   // Checkbox should be showing.
   EXPECT_EQ(VISIBLE, GetVisibility("extended-reporting-opt-in"));
 
-  // TODO(crbug.com/666172): Security indicator should be showing.
-  // Call |ExpectSecurityIndicatorDowngrade(tab, 0u);| here once the bug is
-  // fixed.
-
+  // Security indicator should be showing.
+  ExpectSecurityIndicatorDowngrade(tab, 0u);
   // Check navigation entry state.
   ASSERT_TRUE(controller.GetVisibleEntry());
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
