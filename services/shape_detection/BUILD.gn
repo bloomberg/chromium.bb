@@ -120,5 +120,8 @@ source_set("tests") {
       "//ui/gfx",
       "//ui/gl",
     ]
+    data = [
+      "//services/test/data/mona_lisa.jpg",
+    ]
   }
 }
