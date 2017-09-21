@@ -28,8 +28,16 @@ void TopContainerView::PaintChildren(const views::PaintInfo& paint_info) {
     // invalidation info, as we're painting something outside of the normal
     // parent-child relationship, so invalidations are no longer in the correct
     // space to compare.
+    ui::PaintContext context(paint_info.context(),
+                             ui::PaintContext::CLONE_WITHOUT_INVALIDATION);
+
+    // Since TopContainerView is not an ancestor of BrowserFrameView, it is not
+    // responsible for its painting. To call paint on BrowserFrameView, we need
+    // to generate a new PaintInfo that shares a DisplayItemList with
+    // TopContainerView.
     browser_view_->frame()->GetFrameView()->Paint(
-        views::PaintInfo::ClonePaintInfo(paint_info));
+        views::PaintInfo::CreateRootPaintInfo(
+            context, browser_view_->frame()->GetFrameView()->size()));
   }
   View::PaintChildren(paint_info);
 }
