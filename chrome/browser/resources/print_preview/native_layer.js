@@ -86,6 +86,7 @@ print_preview.PrinterType = {
   PRIVET_PRINTER: 0,
   EXTENSION_PRINTER: 1,
   PDF_PRINTER: 2,
+  LOCAL_PRINTER: 3,
 };
 
 cr.define('print_preview', function() {
@@ -158,36 +159,15 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * Requests the system's local print destinations. The promise will be
-     * resolved with a list of the local destinations.
-     * @return {!Promise<!Array<print_preview.LocalDestinationInfo>>}
+     * Requests the system's print destinations. The promise will be resolved
+     * when all destinations of that type have been retrieved. One or more
+     * 'printers-added' events may be fired in response before resolution.
+     * @param {!print_preview.PrinterType} type The type of destinations to
+     *     request.
+     * @return {!Promise}
      */
-    getPrinters() {
-      return cr.sendWithPromise('getPrinters');
-    }
-
-    /**
-     * Requests the network's privet print destinations. After this is called,
-     * a number of privet-printer-changed events may be fired.
-     * @return {!Promise} Resolves when privet printer search is completed.
-     *     Rejected if privet printers are not enabled.
-     */
-    getPrivetPrinters() {
-      return cr.sendWithPromise(
-          'getExtensionOrPrivetPrinters',
-          print_preview.PrinterType.PRIVET_PRINTER);
-    }
-
-    /**
-     * Request a list of extension printers. Printers are reported as they are
-     * found by a series of 'extension-printers-added' events.
-     * @return {!Promise} Will be resolved when all extension managed printers
-     *     have been sent.
-     */
-    getExtensionPrinters() {
-      return cr.sendWithPromise(
-          'getExtensionOrPrivetPrinters',
-          print_preview.PrinterType.EXTENSION_PRINTER);
+    getPrinters(type) {
+      return cr.sendWithPromise('getPrinters', type);
     }
 
     /**
@@ -197,7 +177,12 @@ cr.define('print_preview', function() {
      * @return {!Promise<!print_preview.PrinterCapabilitiesResponse>}
      */
     getPrinterCapabilities(destinationId) {
-      return cr.sendWithPromise('getPrinterCapabilities', destinationId);
+      return cr.sendWithPromise(
+          'getPrinterCapabilities', destinationId,
+          destinationId ==
+                  print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
+              print_preview.PrinterType.PDF_PRINTER :
+              print_preview.PrinterType.LOCAL_PRINTER);
     }
 
     /**

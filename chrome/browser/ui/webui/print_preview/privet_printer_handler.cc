@@ -51,14 +51,22 @@ PrivetPrinterHandler::~PrivetPrinterHandler() {}
 
 void PrivetPrinterHandler::Reset() {
   weak_ptr_factory_.InvalidateWeakPtrs();
+  added_printers_callback_.Reset();
+  if (done_callback_)
+    done_callback_.Run();
+  done_callback_.Reset();
 }
 
 void PrivetPrinterHandler::StartGetPrinters(
-    const PrinterHandler::GetPrintersCallback& callback) {
+    const PrinterHandler::AddedPrintersCallback& added_printers_callback,
+    const PrinterHandler::GetPrintersDoneCallback& done_callback) {
   using local_discovery::ServiceDiscoverySharedClient;
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery =
       ServiceDiscoverySharedClient::GetInstance();
-  get_printers_callback_ = callback;
+  DCHECK(!added_printers_callback_);
+  DCHECK(!done_callback_);
+  added_printers_callback_ = added_printers_callback;
+  done_callback_ = done_callback;
   StartLister(service_discovery);
 }
 
@@ -89,12 +97,6 @@ void PrivetPrinterHandler::StartPrint(
   }
 }
 
-void PrivetPrinterHandler::StartGrantPrinterAccess(
-    const std::string& printer_id,
-    const PrinterHandler::GetPrinterInfoCallback& callback) {
-  NOTREACHED();
-}
-
 void PrivetPrinterHandler::LocalPrinterChanged(
     const std::string& name,
     bool has_local_printing,
@@ -107,7 +109,7 @@ void PrivetPrinterHandler::LocalPrinterChanged(
                            printer_info.get());
     base::ListValue printers;
     printers.Set(0, std::move(printer_info));
-    get_printers_callback_.Run(printers, false);
+    added_printers_callback_.Run(printers);
   }
 }
 
@@ -147,7 +149,9 @@ void PrivetPrinterHandler::StopLister() {
   privet_lister_timer_.reset();
   if (printer_lister_)
     printer_lister_->Stop();
-  get_printers_callback_.Run(base::ListValue(), true);
+  done_callback_.Run();
+  added_printers_callback_.Reset();
+  done_callback_.Reset();
 }
 
 void PrivetPrinterHandler::CapabilitiesUpdateClient(

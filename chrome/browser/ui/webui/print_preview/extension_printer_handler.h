@@ -53,8 +53,8 @@ class ExtensionPrinterHandler : public PrinterHandler {
 
   // PrinterHandler implementation:
   void Reset() override;
-  void StartGetPrinters(
-      const PrinterHandler::GetPrintersCallback& callback) override;
+  void StartGetPrinters(const AddedPrintersCallback& added_printers_callback,
+                        const GetPrintersDoneCallback& done_callback) override;
   void StartGetCapability(
       const std::string& destination_id,
       const PrinterHandler::GetCapabilityCallback& callback) override;
@@ -96,7 +96,8 @@ class ExtensionPrinterHandler : public PrinterHandler {
   // methods, primarily so the callbacks can be bound to this class' weak ptr.
   // They just propagate results to callbacks passed to them.
   void WrapGetPrintersCallback(
-      const PrinterHandler::GetPrintersCallback& callback,
+      const PrinterHandler::AddedPrintersCallback& callback,
+      const PrinterHandler::GetPrintersDoneCallback& done_callback,
       const base::ListValue& printers,
       bool done);
   void WrapGetCapabilityCallback(
@@ -109,7 +110,8 @@ class ExtensionPrinterHandler : public PrinterHandler {
                                   const base::DictionaryValue& printer_info);
 
   void OnUsbDevicesEnumerated(
-      const PrinterHandler::GetPrintersCallback& callback,
+      const PrinterHandler::AddedPrintersCallback& callback,
+      const PrinterHandler::GetPrintersDoneCallback& done_callback,
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);
 
   Profile* profile_;

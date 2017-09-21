@@ -15,6 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
 #include "chrome/common/crash_keys.h"
 #include "printing/backend/print_backend.h"
@@ -86,6 +87,38 @@ std::string GetUserFriendlyName(const std::string& printer_name) {
 }
 #endif
 
+void PrintersToValues(const printing::PrinterList& printer_list,
+                      base::ListValue* printers) {
+  for (const printing::PrinterBasicInfo& printer : printer_list) {
+    auto printer_info = base::MakeUnique<base::DictionaryValue>();
+    printer_info->SetString(printing::kSettingDeviceName, printer.printer_name);
+
+    const auto printer_name_description =
+        printing::GetPrinterNameAndDescription(printer);
+    const std::string& printer_name = printer_name_description.first;
+    const std::string& printer_description = printer_name_description.second;
+    printer_info->SetString(printing::kSettingPrinterName, printer_name);
+    printer_info->SetString(printing::kSettingPrinterDescription,
+                            printer_description);
+
+    auto options = base::MakeUnique<base::DictionaryValue>();
+    for (const auto opt_it : printer.options)
+      options->SetString(opt_it.first, opt_it.second);
+
+    printer_info->SetBoolean(
+        kCUPSEnterprisePrinter,
+        base::ContainsKey(printer.options, kCUPSEnterprisePrinter) &&
+            printer.options.at(kCUPSEnterprisePrinter) == kValueTrue);
+
+    printer_info->Set(printing::kSettingPrinterOptions, std::move(options));
+
+    printers->Append(std::move(printer_info));
+
+    VLOG(1) << "Found printer " << printer_name << " with device name "
+            << printer.printer_name;
+  }
+}
+
 }  // namespace
 
 std::pair<std::string, std::string> GetPrinterNameAndDescription(
@@ -133,4 +166,17 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
   return printer_info;
 }
 
+void ConvertPrinterListForCallback(
+    const PrinterHandler::AddedPrintersCallback& callback,
+    const PrinterHandler::GetPrintersDoneCallback& done_callback,
+    const printing::PrinterList& printer_list) {
+  base::ListValue printers;
+  PrintersToValues(printer_list, &printers);
+
+  VLOG(1) << "Enumerate printers finished, found " << printers.GetSize()
+          << " printers";
+  if (!printers.empty())
+    callback.Run(printers);
+  done_callback.Run();
+}
 }  // namespace printing
