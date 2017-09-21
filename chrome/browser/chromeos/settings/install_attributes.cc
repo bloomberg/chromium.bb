@@ -158,9 +158,8 @@ void InstallAttributes::ReadImmutableAttributes(const base::Closure& callback) {
 }
 
 void InstallAttributes::ReadAttributesIfReady(const base::Closure& callback,
-                                              DBusMethodCallStatus call_status,
-                                              bool result) {
-  if (call_status == DBUS_METHOD_CALL_SUCCESS && result) {
+                                              base::Optional<bool> is_ready) {
+  if (is_ready.value_or(false)) {
     registration_mode_ = policy::DEVICE_MODE_NOT_SET;
     if (!cu::InstallAttributesIsInvalid() &&
         !cu::InstallAttributesIsFirstInstall()) {
@@ -258,13 +257,9 @@ void InstallAttributes::LockDevice(policy::DeviceMode device_mode,
 
   device_lock_running_ = true;
   cryptohome_client_->InstallAttributesIsReady(
-      base::Bind(&InstallAttributes::LockDeviceIfAttributesIsReady,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 device_mode,
-                 domain,
-                 realm,
-                 device_id,
-                 callback));
+      base::BindOnce(&InstallAttributes::LockDeviceIfAttributesIsReady,
+                     weak_ptr_factory_.GetWeakPtr(), device_mode, domain, realm,
+                     device_id, callback));
 }
 
 void InstallAttributes::LockDeviceIfAttributesIsReady(
@@ -273,9 +268,8 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
     const std::string& realm,
     const std::string& device_id,
     const LockResultCallback& callback,
-    DBusMethodCallStatus call_status,
-    bool result) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS || !result) {
+    base::Optional<bool> is_ready) {
+  if (!is_ready.has_value() || !is_ready.value()) {
     device_lock_running_ = false;
     callback.Run(LOCK_NOT_READY);
     return;
@@ -393,11 +387,9 @@ void InstallAttributes::TriggerConsistencyCheck(int dbus_retries) {
                  dbus_retries));
 }
 
-void InstallAttributes::OnTpmOwnerCheckCompleted(
-    int dbus_retries_remaining,
-    DBusMethodCallStatus call_status,
-    bool result) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS && dbus_retries_remaining) {
+void InstallAttributes::OnTpmOwnerCheckCompleted(int dbus_retries_remaining,
+                                                 base::Optional<bool> result) {
+  if (!result.has_value() && dbus_retries_remaining) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&InstallAttributes::TriggerConsistencyCheck,
@@ -408,8 +400,8 @@ void InstallAttributes::OnTpmOwnerCheckCompleted(
 
   base::HistogramBase::Sample state = device_locked_;
   state |= 0x2 * (registration_mode_ == policy::DEVICE_MODE_ENTERPRISE);
-  if (call_status == DBUS_METHOD_CALL_SUCCESS)
-    state |= 0x4 * result;
+  if (!result.has_value())
+    state |= 0x4 * result.value();
   else
     state = 0x8;  // This case is not a bit mask.
   UMA_HISTOGRAM_ENUMERATION("Enterprise.AttributesTPMConsistency", state, 9);

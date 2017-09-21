@@ -24,6 +24,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -516,8 +517,8 @@ class SystemTokenCertDBInitializer {
   // This is a callback for the cryptohome TpmIsReady query. Note that this is
   // not a listener which would be called once TPM becomes ready if it was not
   // ready on startup (e.g. after device enrollment), see crbug.com/725500.
-  void OnGotTpmIsReady(DBusMethodCallStatus call_status, bool tpm_is_ready) {
-    if (!tpm_is_ready) {
+  void OnGotTpmIsReady(base::Optional<bool> tpm_is_ready) {
+    if (!tpm_is_ready.has_value() || !tpm_is_ready.value()) {
       VLOG(1) << "SystemTokenCertDBInitializer: TPM is not ready - not loading "
                  "system token.";
       return;

@@ -88,16 +88,14 @@ void FakeCryptohomeClient::WaitForServiceToBeAvailable(
   }
 }
 
-void FakeCryptohomeClient::IsMounted(
-    const BoolDBusMethodCallback& callback) {
+void FakeCryptohomeClient::IsMounted(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
-void FakeCryptohomeClient::Unmount(const BoolDBusMethodCallback& callback) {
+void FakeCryptohomeClient::Unmount(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, unmount_result_));
+      FROM_HERE, base::BindOnce(std::move(callback), unmount_result_));
 }
 
 void FakeCryptohomeClient::AsyncCheckKey(
@@ -192,16 +190,14 @@ void FakeCryptohomeClient::AsyncMountPublic(
   ReturnAsyncMethodResult(callback);
 }
 
-void FakeCryptohomeClient::TpmIsReady(
-    const BoolDBusMethodCallback& callback) {
+void FakeCryptohomeClient::TpmIsReady(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
-void FakeCryptohomeClient::TpmIsEnabled(
-    const BoolDBusMethodCallback& callback) {
+void FakeCryptohomeClient::TpmIsEnabled(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 bool FakeCryptohomeClient::CallTpmIsEnabledAndBlock(bool* enabled) {
@@ -217,10 +213,9 @@ void FakeCryptohomeClient::TpmGetPassword(
       base::BindOnce(std::move(callback), std::string(kStubTpmPassword)));
 }
 
-void FakeCryptohomeClient::TpmIsOwned(
-    const BoolDBusMethodCallback& callback) {
+void FakeCryptohomeClient::TpmIsOwned(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 bool FakeCryptohomeClient::CallTpmIsOwnedAndBlock(bool* owned) {
@@ -228,10 +223,9 @@ bool FakeCryptohomeClient::CallTpmIsOwnedAndBlock(bool* owned) {
   return true;
 }
 
-void FakeCryptohomeClient::TpmIsBeingOwned(
-    const BoolDBusMethodCallback& callback) {
+void FakeCryptohomeClient::TpmIsBeingOwned(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 bool FakeCryptohomeClient::CallTpmIsBeingOwnedAndBlock(bool* owning) {
@@ -256,9 +250,9 @@ bool FakeCryptohomeClient::CallTpmClearStoredPasswordAndBlock() {
 }
 
 void FakeCryptohomeClient::Pkcs11IsTpmTokenReady(
-    const BoolDBusMethodCallback& callback) {
+    DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 void FakeCryptohomeClient::Pkcs11GetTpmTokenInfo(
@@ -361,9 +355,9 @@ bool FakeCryptohomeClient::InstallAttributesFinalize(bool* successful) {
 }
 
 void FakeCryptohomeClient::InstallAttributesIsReady(
-    const BoolDBusMethodCallback& callback) {
+    DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 bool FakeCryptohomeClient::InstallAttributesIsInvalid(bool* is_invalid) {
@@ -378,21 +372,21 @@ bool FakeCryptohomeClient::InstallAttributesIsFirstInstall(
 }
 
 void FakeCryptohomeClient::TpmAttestationIsPrepared(
-    const BoolDBusMethodCallback& callback) {
-  auto task = service_is_available_
-                  ? base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS,
-                                   tpm_attestation_is_prepared_)
-                  : base::BindOnce(callback, DBUS_METHOD_CALL_FAILURE, false);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
+    DBusMethodCallback<bool> callback) {
+  auto result = service_is_available_
+                    ? base::make_optional(tpm_attestation_is_prepared_)
+                    : base::nullopt;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void FakeCryptohomeClient::TpmAttestationIsEnrolled(
-    const BoolDBusMethodCallback& callback) {
-  auto task = service_is_available_
-                  ? base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS,
-                                   tpm_attestation_is_enrolled_)
-                  : base::BindOnce(callback, DBUS_METHOD_CALL_FAILURE, false);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
+    DBusMethodCallback<bool> callback) {
+  auto result = service_is_available_
+                    ? base::make_optional(tpm_attestation_is_enrolled_)
+                    : base::nullopt;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void FakeCryptohomeClient::AsyncTpmAttestationCreateEnrollRequest(
@@ -430,11 +424,11 @@ void FakeCryptohomeClient::TpmAttestationDoesKeyExist(
     attestation::AttestationKeyType key_type,
     const cryptohome::Identification& cryptohome_id,
     const std::string& key_name,
-    const BoolDBusMethodCallback& callback) {
+    DBusMethodCallback<bool> callback) {
   if (!service_is_available_ ||
       !tpm_attestation_does_key_exist_should_succeed_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, DBUS_METHOD_CALL_FAILURE, false));
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
   }
 
@@ -450,7 +444,7 @@ void FakeCryptohomeClient::TpmAttestationDoesKeyExist(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS, result));
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void FakeCryptohomeClient::TpmAttestationGetCertificate(
@@ -551,7 +545,7 @@ void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
     const cryptohome::Identification& cryptohome_id,
     const std::string& key_name,
     const std::string& payload,
-    const BoolDBusMethodCallback& callback) {
+    DBusMethodCallback<bool> callback) {
   bool result = false;
   // Currently only KEY_DEVICE case is supported just because there's no user
   // for KEY_USER.
@@ -560,16 +554,16 @@ void FakeCryptohomeClient::TpmAttestationSetKeyPayload(
     result = true;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS, result));
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void FakeCryptohomeClient::TpmAttestationDeleteKeys(
     attestation::AttestationKeyType key_type,
     const cryptohome::Identification& cryptohome_id,
     const std::string& key_prefix,
-    const BoolDBusMethodCallback& callback) {
+    DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 void FakeCryptohomeClient::TpmGetVersion(
@@ -700,10 +694,10 @@ void FakeCryptohomeClient::SetFirmwareManagementParametersInTpm(
 
 void FakeCryptohomeClient::NeedsDircryptoMigration(
     const cryptohome::Identification& cryptohome_id,
-    const BoolDBusMethodCallback& callback) {
+    DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS,
-                            needs_dircrypto_migration_));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), needs_dircrypto_migration_));
 }
 
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {

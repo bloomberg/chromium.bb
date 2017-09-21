@@ -154,9 +154,9 @@ TEST_F(AttestationFlowTest, GetCertificate_Attestation_Not_Prepared) {
   // for attestation to be prepared.
   class FakeCryptohomeClient : public chromeos::FakeCryptohomeClient {
    public:
-    void TpmAttestationIsPrepared(
-        const BoolDBusMethodCallback& callback) override {
-      chromeos::FakeCryptohomeClient::TpmAttestationIsPrepared(callback);
+    void TpmAttestationIsPrepared(DBusMethodCallback<bool> callback) override {
+      chromeos::FakeCryptohomeClient::TpmAttestationIsPrepared(
+          std::move(callback));
       // Second call (and later), returns true.
       set_tpm_attestation_is_prepared(true);
     }
