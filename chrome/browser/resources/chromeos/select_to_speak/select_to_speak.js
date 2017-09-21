@@ -312,7 +312,7 @@ SelectToSpeak.prototype = {
       var isLast = (i == nodes.length - 1);
 
       var options = {
-        rate: this.rate_,
+        rate: this.speechRate_,
         'enqueue': true,
         onEvent:
             (function(node, isLast, event) {
@@ -371,9 +371,10 @@ SelectToSpeak.prototype = {
                                 this.voiceNameFromPrefs_ = prefs['voice'];
                               }
                               if (prefs['rate']) {
-                                this.rate_ = parseFloat(prefs['rate']);
+                                this.speechRate_ = parseFloat(prefs['rate']);
                               } else {
-                                chrome.storage.sync.set({'rate': this.rate_});
+                                chrome.storage.sync.set(
+                                    {'rate': this.speechRate_});
                               }
                             }).bind(this));
                       }).bind(this);
