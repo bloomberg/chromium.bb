@@ -20,6 +20,7 @@ sys.path.append(os.path.join(_SRC_PATH, 'third_party', 'catapult', 'common',
                              'py_utils'))
 
 from devil.utils import signal_handler
+from devil.utils import timeout_retry
 from py_utils import tempfile_ext
 
 PROJECT = 'chromium'
@@ -27,6 +28,8 @@ OUTPUT = 'logdog'
 COORDINATOR_HOST = 'luci-logdog.appspot.com'
 SERVICE_ACCOUNT_JSON = ('/creds/service_accounts'
                         '/service-account-luci-logdog-publisher.json')
+LOGDOG_TERMINATION_TIMEOUT = 30
+
 
 def CommandParser():
   # Parses the command line arguments being passed in
@@ -116,8 +119,16 @@ def main():
                                           CreateStopTestsMethod(test_proc)):
           result = test_proc.wait()
           if logdog_proc:
+            def logdog_stopped():
+              return logdog_proc.poll() is not None
+
             logdog_proc.terminate()
-            logdog_proc.wait()
+            timeout_retry.WaitFor(logdog_stopped, wait_period=1,
+                                  max_tries=LOGDOG_TERMINATION_TIMEOUT)
+
+            # If logdog_proc hasn't finished by this point, allow
+            # NoLeakingProcesses to kill it.
+
 
   return result
 
