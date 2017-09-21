@@ -58,8 +58,9 @@ void RunBenchmark(RasterSource* raster_source,
                                                     content_rect.height()));
       SkCanvas canvas(bitmap);
 
-      PlaybackImageProvider image_provider(
-          false, PaintImageIdFlatSet(), image_decode_cache, gfx::ColorSpace());
+      PlaybackImageProvider image_provider(false, PaintImageIdFlatSet(), {},
+                                           image_decode_cache,
+                                           gfx::ColorSpace());
       RasterSource::PlaybackSettings settings;
       settings.image_provider = &image_provider;
 

@@ -80,6 +80,8 @@ class CC_EXPORT ImageDecodeCache {
     TaskResult(const TaskResult& result);
     ~TaskResult();
 
+    bool IsAtRaster() const { return !task && !need_unref; }
+
     scoped_refptr<TileTask> task;
     bool need_unref = false;
   };
