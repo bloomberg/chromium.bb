@@ -10,6 +10,27 @@
 
 namespace vr {
 
+namespace {
+
+bool ElementHasVisibleChildren(UiElement* element) {
+  for (auto& child : element->children()) {
+    // Note that we do NOT use IsVisible here. IsVisible takes inherited opacity
+    // into consideration. However, the parent element (the viewport aware root
+    // element) might be invisible at first due to opacity animation, which
+    // makes all children becomes invisible even if it has children that become
+    // visible immediately when animation starts.
+    if (child->opacity() > 0.f) {
+      if (child->draw_phase() != kPhaseNone)
+        return true;
+      if (ElementHasVisibleChildren(child.get()))
+        return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
 // static
 const float ViewportAwareRoot::kViewportRotationTriggerDegrees = 55.0f;
 
@@ -22,6 +43,14 @@ ViewportAwareRoot::~ViewportAwareRoot() = default;
 void ViewportAwareRoot::AdjustRotationForHeadPose(
     const gfx::Vector3dF& look_at) {
   DCHECK(!look_at.IsZero());
+
+  bool has_visible_children = HasVisibleChildren();
+  if (has_visible_children && !children_visible_)
+    Reset();
+  children_visible_ = has_visible_children;
+
+  if (!children_visible_)
+    return;
 
   gfx::Vector3dF rotated_center_vector{0.f, 0.f, -1.0f};
   LocalTransform().TransformVector(&rotated_center_vector);
@@ -41,6 +70,15 @@ void ViewportAwareRoot::AdjustRotationForHeadPose(
 
   // Fade it back in.
   SetVisible(true);
+}
+
+void ViewportAwareRoot::Reset() {
+  viewport_aware_total_rotation_ = 0.f;
+  SetRotate(0.f, 1.f, 0.f, gfx::DegToRad(viewport_aware_total_rotation_));
+}
+
+bool ViewportAwareRoot::HasVisibleChildren() {
+  return ElementHasVisibleChildren(this);
 }
 
 void ViewportAwareRoot::OnUpdatedInheritedProperties() {
