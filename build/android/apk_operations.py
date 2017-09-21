@@ -363,7 +363,7 @@ def _RunDiskUsage(devices, package_name, verbose):
 class _LogcatProcessor(object):
   ParsedLine = collections.namedtuple(
       'ParsedLine',
-      ['date', 'invokation_time', 'pid', 'tid', 'priority', 'tag', 'messages'])
+      ['date', 'invokation_time', 'pid', 'tid', 'priority', 'tag', 'message'])
 
   def __init__(self, device, package_name, deobfuscate=None, verbose=False):
     self._device = device
@@ -427,11 +427,8 @@ class _LogcatProcessor(object):
       tag = tag[:-1]
     else:
       original_message = original_message[2:]
-    messages = [original_message]
-    if self._deobfuscator:
-      messages = self._deobfuscator.TransformLines(messages)
     return self.ParsedLine(
-        date, invokation_time, pid, tid, priority, tag, messages)
+        date, invokation_time, pid, tid, priority, tag, original_message)
 
   def _PrintParsedLine(self, parsed_line, dim=False):
     pid_style = self._GetPidStyle(parsed_line.pid, dim)
@@ -440,7 +437,10 @@ class _LogcatProcessor(object):
                     pid_style + ('' if dim else colorama.Style.BRIGHT))
     priority = _Colorize(parsed_line.priority,
                          self._GetPriorityStyle(parsed_line.priority))
-    for message in parsed_line.messages:
+    messages = [parsed_line.message]
+    if self._deobfuscator:
+      messages = self._deobfuscator.TransformLines(messages)
+    for message in messages:
       message = _Colorize(message, pid_style)
       sys.stdout.write('{} {} {:5} {:5} {} {}: {}\n'.format(
           parsed_line.date, parsed_line.invokation_time, parsed_line.pid,
