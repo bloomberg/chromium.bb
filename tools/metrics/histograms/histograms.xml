@@ -29347,7 +29347,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="LevelDBEnv.MaxFDs" units="files">
-  <owner>dgrogan@chromium.org</owner>
+  <obsolete>
+    Deprecated as of September 20, 2017.
+  </obsolete>
+  <owner>cmumford@chromium.org</owner>
   <summary>
     File descriptor limit recorded every time LevelDB calls NewRandomAccessFile
     for clients other than IndexedDB.
@@ -96706,6 +96709,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="LevelDBEnvMaxFDs" separator=".">
+  <obsolete>
+    Deprecated as of September 20, 2017.
+  </obsolete>
   <suffix name="Success"
       label="This histogram shows the limit when open succeeded."/>
   <suffix name="TooManyOpened"

@@ -19,7 +19,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -980,13 +979,6 @@ Status ChromiumEnv::NewSequentialFile(const std::string& fname,
   }
 }
 
-void ChromiumEnv::RecordOpenFilesLimit(const std::string& type) {
-#if defined(OS_POSIX)
-  GetMaxFDHistogram(type)->Add(base::GetMaxFds());
-#endif
-  // Don't log on Windows - only limited by physical memory.
-}
-
 Status ChromiumEnv::NewRandomAccessFile(const std::string& fname,
                                         leveldb::RandomAccessFile** result) {
   int flags = base::File::FLAG_READ | base::File::FLAG_OPEN;
@@ -995,14 +987,9 @@ Status ChromiumEnv::NewRandomAccessFile(const std::string& fname,
   if (file.IsValid()) {
     *result = new ChromiumRandomAccessFile(
         std::move(file_path), std::move(file), this, file_semaphore_.get());
-    RecordOpenFilesLimit("Success");
     return Status::OK();
   }
   base::File::Error error_code = file.error_details();
-  if (error_code == base::File::FILE_ERROR_TOO_MANY_OPENED)
-    RecordOpenFilesLimit("TooManyOpened");
-  else
-    RecordOpenFilesLimit("OtherError");
   *result = NULL;
   RecordOSError(kNewRandomAccessFile, error_code);
   return MakeIOError(fname, FileErrorString(error_code), kNewRandomAccessFile,
@@ -1084,19 +1071,6 @@ base::HistogramBase* ChromiumEnv::GetMethodIOErrorHistogram() const {
   uma_name.append(".IOError");
   return base::LinearHistogram::FactoryGet(uma_name, 1, kNumEntries,
       kNumEntries + 1, base::Histogram::kUmaTargetedHistogramFlag);
-}
-
-base::HistogramBase* ChromiumEnv::GetMaxFDHistogram(
-    const std::string& type) const {
-  std::string uma_name(name_);
-  uma_name.append(".MaxFDs.").append(type);
-  // These numbers make each bucket twice as large as the previous bucket.
-  const int kFirstEntry = 1;
-  const int kLastEntry = 65536;
-  const int kNumBuckets = 18;
-  return base::Histogram::FactoryGet(
-      uma_name, kFirstEntry, kLastEntry, kNumBuckets,
-      base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 base::HistogramBase* ChromiumEnv::GetLockFileAncestorHistogram() const {
