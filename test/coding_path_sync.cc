@@ -101,11 +101,11 @@ std::vector<int16_t> Serialize(const aom_image_t *img) {
 
     for (int r = 0; r < h; ++r) {
       for (int c = 0; c < w; ++c) {
-        const int offset = r * img->stride[plane] + c;
+        unsigned char *row = img->planes[plane] + r * img->stride[plane];
         if (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH)
-          bytes.push_back(img->planes[plane][offset * 2]);
+          bytes.push_back(row[c * 2]);
         else
-          bytes.push_back(img->planes[plane][offset]);
+          bytes.push_back(row[c]);
       }
     }
   }
