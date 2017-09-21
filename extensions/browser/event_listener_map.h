@@ -121,7 +121,7 @@ class EventListener {
   // is_for_service_worker_ = true) and the worker is in running state, then
   // this is the worker's thread id in the worker |process_|. For lazy service
   // worker events, this will be kMainThreadId.
-  const int worker_thread_id_;
+  int worker_thread_id_;
 
   std::unique_ptr<base::DictionaryValue> filter_;
   EventFilter::MatcherID matcher_id_;  // -1 if unset.

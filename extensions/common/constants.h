@@ -122,6 +122,10 @@ extern const size_t kWebstoreSignaturesPublicKeySize;
 // from a non-service worker context
 extern const int kMainThreadId;
 
+// A routing ID that is used in some contexts to specify that those contexts
+// do not care about a specific routing id.
+extern const int kIgnoreRoutingId;
+
 // Enumeration of possible app launch sources.
 // This should be kept in sync with LaunchSource in
 // extensions/common/api/app_runtime.idl, and GetLaunchSourceEnum() in

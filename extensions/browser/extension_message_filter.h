@@ -17,6 +17,7 @@
 class GURL;
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_TabTargetConnectionInfo;
+struct ServiceWorkerIdentifier;
 
 namespace content {
 class BrowserContext;
@@ -76,14 +77,18 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
       const std::string& extension_id,
       const std::string& event_name,
       const GURL& worker_scope_url);
-  void OnExtensionAddFilteredListener(const std::string& extension_id,
-                                      const std::string& event_name,
-                                      const base::DictionaryValue& filter,
-                                      bool lazy);
-  void OnExtensionRemoveFilteredListener(const std::string& extension_id,
-                                         const std::string& event_name,
-                                         const base::DictionaryValue& filter,
-                                         bool lazy);
+  void OnExtensionAddFilteredListener(
+      const std::string& extension_id,
+      const std::string& event_name,
+      base::Optional<ServiceWorkerIdentifier> sw_identifier,
+      const base::DictionaryValue& filter,
+      bool lazy);
+  void OnExtensionRemoveFilteredListener(
+      const std::string& extension_id,
+      const std::string& event_name,
+      base::Optional<ServiceWorkerIdentifier> sw_identifier,
+      const base::DictionaryValue& filter,
+      bool lazy);
   void OnExtensionShouldSuspendAck(const std::string& extension_id,
                                    int sequence_id);
   void OnExtensionSuspendAck(const std::string& extension_id);
