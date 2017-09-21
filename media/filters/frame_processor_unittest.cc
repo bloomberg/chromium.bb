@@ -17,10 +17,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "media/base/media_log.h"
-#include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/mock_media_log.h"
@@ -90,15 +88,6 @@ class FrameProcessorTest
     const FrameProcessorTestParams& params = GetParam();
     use_sequence_mode_ = params.use_sequence_mode;
     range_api_ = params.range_api;
-
-    switch (range_api_) {
-      case ChunkDemuxerStream::RangeApi::kLegacyByDts:
-        scoped_feature_list_.InitAndDisableFeature(media::kMseBufferByPts);
-        break;
-      case ChunkDemuxerStream::RangeApi::kNewByPts:
-        scoped_feature_list_.InitAndEnableFeature(media::kMseBufferByPts);
-        break;
-    }
 
     frame_processor_ = base::MakeUnique<FrameProcessor>(
         base::Bind(
@@ -307,7 +296,6 @@ class FrameProcessorTest
 
   bool use_sequence_mode_;
   ChunkDemuxerStream::RangeApi range_api_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<FrameProcessor> frame_processor_;
   base::TimeDelta append_window_start_;

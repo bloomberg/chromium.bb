@@ -9,9 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "media/base/gmock_callback_support.h"
-#include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/mock_media_log.h"
@@ -62,14 +60,6 @@ class SourceBufferStateTest
  public:
   SourceBufferStateTest() : mock_stream_parser_(nullptr) {
     range_api_ = GetParam();
-    switch (range_api_) {
-      case ChunkDemuxerStream::RangeApi::kLegacyByDts:
-        scoped_feature_list_.InitAndDisableFeature(media::kMseBufferByPts);
-        break;
-      case ChunkDemuxerStream::RangeApi::kNewByPts:
-        scoped_feature_list_.InitAndEnableFeature(media::kMseBufferByPts);
-        break;
-    }
   }
 
   std::unique_ptr<SourceBufferState> CreateSourceBufferState() {
@@ -158,7 +148,6 @@ class SourceBufferStateTest
   MockStreamParser* mock_stream_parser_;
   StreamParser::NewConfigCB new_config_cb_;
   ChunkDemuxerStream::RangeApi range_api_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_P(SourceBufferStateTest, InitSingleAudioTrack) {

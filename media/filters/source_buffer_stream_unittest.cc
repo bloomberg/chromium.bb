@@ -103,26 +103,14 @@ MATCHER_P(ContainsTrackBufferExhaustionSkipLog, skip_milliseconds, "") {
     }                                                         \
   }
 
-// Test parameter determines if media::kMseBufferByPts feature should be forced
-// on or off for the test, and more importantly, which kind of SourceBufferRange
-// we use in the test instance's SourceBufferStream<>, since the feature status
-// is ignored inside SourceBufferStream<> and SourceBufferRangeBy{Pts,Dts}
-// (whomever constructs them will do so conditioned on the feature). An attempt
-// to used TYPED_TEST instead of TEST_P led to most lines in test cases needing
-// prefix "this->", so we instead use TestWithParam, conditional fixture logic
-// and helper macros.
+// Test parameter determines which kind of SourceBufferRange we use in the test
+// instance's SourceBufferStream<>.  An attempt to used TYPED_TEST instead of
+// TEST_P led to most lines in test cases needing prefix "this->", so we instead
+// use TestWithParam, conditional fixture logic and helper macros.
 class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
  protected:
   SourceBufferStreamTest() {
     buffering_api_ = GetParam();
-    switch (buffering_api_) {
-      case BufferingApi::kLegacyByDts:
-        scoped_feature_list_.InitAndDisableFeature(media::kMseBufferByPts);
-        break;
-      case BufferingApi::kNewByPts:
-        scoped_feature_list_.InitAndEnableFeature(media::kMseBufferByPts);
-        break;
-    }
     video_config_ = TestVideoConfig::Normal();
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
     STREAM_RESET(video_config_);
@@ -542,7 +530,6 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
   VideoDecoderConfig video_config_;
   AudioDecoderConfig audio_config_;
   BufferingApi buffering_api_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   base::TimeDelta ConvertToFrameDuration(int frames_per_second) {
