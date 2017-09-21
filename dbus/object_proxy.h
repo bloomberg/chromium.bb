@@ -239,7 +239,8 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // Runs the CallMethodInternalCallback with the given response object.
   void RunCallMethodInternalCallback(CallMethodInternalCallback callback,
                                      base::TimeTicks start_time,
-                                     DBusMessage* response_message);
+                                     Response* response,
+                                     ErrorResponse* error_response);
 
   // Redirects the function call to OnPendingCallIsComplete().
   static void OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
