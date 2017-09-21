@@ -30,7 +30,11 @@ class HTTP2_EXPORT_PRIVATE DecodeBuffer {
   DecodeBuffer(const char* buffer, size_t len)
       : buffer_(buffer), cursor_(buffer), beyond_(buffer + len) {
     DCHECK(buffer != nullptr);
-    DCHECK_LE(len, MaxDecodeBufferLength());
+    // We assume the decode buffers will typically be modest in size (i.e. often
+    // a few KB, perhaps as high as 100KB). Let's make sure during testing that
+    // we don't go very high, with 32MB selected rather arbitrarily.
+    const size_t kMaxDecodeBufferLength = 1 << 25;
+    DCHECK_LE(len, kMaxDecodeBufferLength);
   }
   explicit DecodeBuffer(Http2StringPiece s)
       : DecodeBuffer(s.data(), s.size()) {}
@@ -72,52 +76,17 @@ class HTTP2_EXPORT_PRIVATE DecodeBuffer {
     return *cursor_++;
   }
 
-  uint8_t DecodeUInt8() { return static_cast<uint8_t>(DecodeChar()); }
-
-  uint16_t DecodeUInt16() {
-    DCHECK_LE(2u, Remaining());
-    const uint8_t b1 = DecodeUInt8();
-    const uint8_t b2 = DecodeUInt8();
-    // Note that chars are automatically promoted to ints during arithmetic,
-    // so the b1 << 8 doesn't end up as zero before being or-ed with b2.
-    // And the left-shift operator has higher precedence than the or operator.
-    return b1 << 8 | b2;
-  }
-
-  uint32_t DecodeUInt24() {
-    DCHECK_LE(3u, Remaining());
-    const uint8_t b1 = DecodeUInt8();
-    const uint8_t b2 = DecodeUInt8();
-    const uint8_t b3 = DecodeUInt8();
-    return b1 << 16 | b2 << 8 | b3;
-  }
+  uint8_t DecodeUInt8();
+  uint16_t DecodeUInt16();
+  uint32_t DecodeUInt24();
 
   // For 31-bit unsigned integers, where the 32nd bit is reserved for future
   // use (i.e. the high-bit of the first byte of the encoding); examples:
   // the Stream Id in a frame header or the Window Size Increment in a
   // WINDOW_UPDATE frame.
-  uint32_t DecodeUInt31() {
-    DCHECK_LE(4u, Remaining());
-    const uint8_t b1 = DecodeUInt8() & 0x7f;  // Mask out the high order bit.
-    const uint8_t b2 = DecodeUInt8();
-    const uint8_t b3 = DecodeUInt8();
-    const uint8_t b4 = DecodeUInt8();
-    return b1 << 24 | b2 << 16 | b3 << 8 | b4;
-  }
+  uint32_t DecodeUInt31();
 
-  uint32_t DecodeUInt32() {
-    DCHECK_LE(4u, Remaining());
-    const uint8_t b1 = DecodeUInt8();
-    const uint8_t b2 = DecodeUInt8();
-    const uint8_t b3 = DecodeUInt8();
-    const uint8_t b4 = DecodeUInt8();
-    return b1 << 24 | b2 << 16 | b3 << 8 | b4;
-  }
-
-  // We assume the decode buffers will typically be modest in size (i.e. often a
-  // few KB, perhaps as high as 100KB). Let's make sure during testing that we
-  // don't go very high, with 32MB selected rather arbitrarily.
-  static constexpr size_t MaxDecodeBufferLength() { return 1 << 25; }
+  uint32_t DecodeUInt32();
 
  protected:
 #ifndef NDEBUG

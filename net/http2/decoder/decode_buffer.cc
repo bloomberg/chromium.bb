@@ -6,9 +6,47 @@
 
 namespace net {
 
+uint8_t DecodeBuffer::DecodeUInt8() {
+  return static_cast<uint8_t>(DecodeChar());
+}
+
+uint16_t DecodeBuffer::DecodeUInt16() {
+  DCHECK_LE(2u, Remaining());
+  const uint8_t b1 = DecodeUInt8();
+  const uint8_t b2 = DecodeUInt8();
+  // Note that chars are automatically promoted to ints during arithmetic,
+  // so the b1 << 8 doesn't end up as zero before being or-ed with b2.
+  // And the left-shift operator has higher precedence than the or operator.
+  return b1 << 8 | b2;
+}
+
+uint32_t DecodeBuffer::DecodeUInt24() {
+  DCHECK_LE(3u, Remaining());
+  const uint8_t b1 = DecodeUInt8();
+  const uint8_t b2 = DecodeUInt8();
+  const uint8_t b3 = DecodeUInt8();
+  return b1 << 16 | b2 << 8 | b3;
+}
+
+uint32_t DecodeBuffer::DecodeUInt31() {
+  DCHECK_LE(4u, Remaining());
+  const uint8_t b1 = DecodeUInt8() & 0x7f;  // Mask out the high order bit.
+  const uint8_t b2 = DecodeUInt8();
+  const uint8_t b3 = DecodeUInt8();
+  const uint8_t b4 = DecodeUInt8();
+  return b1 << 24 | b2 << 16 | b3 << 8 | b4;
+}
+
+uint32_t DecodeBuffer::DecodeUInt32() {
+  DCHECK_LE(4u, Remaining());
+  const uint8_t b1 = DecodeUInt8();
+  const uint8_t b2 = DecodeUInt8();
+  const uint8_t b3 = DecodeUInt8();
+  const uint8_t b4 = DecodeUInt8();
+  return b1 << 24 | b2 << 16 | b3 << 8 | b4;
+}
+
 #ifndef NDEBUG
-// These are part of validating during tests that there is at most one
-// DecodeBufferSubset instance at a time for any DecodeBuffer instance.
 void DecodeBuffer::set_subset_of_base(DecodeBuffer* base,
                                       const DecodeBufferSubset* subset) {
   DCHECK_EQ(this, subset);

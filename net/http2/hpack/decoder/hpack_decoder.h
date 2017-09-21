@@ -42,9 +42,6 @@ class HTTP2_EXPORT_PRIVATE HpackDecoder {
   HpackDecoder(HpackDecoderListener* listener, size_t max_string_size);
   virtual ~HpackDecoder();
 
-  void set_listener(HpackDecoderListener* listener);
-  HpackDecoderListener* listener() const;
-
   // Set listener to be notified of insertions into the HPACK dynamic table,
   // and uses of those entries.
   void set_tables_debug_listener(

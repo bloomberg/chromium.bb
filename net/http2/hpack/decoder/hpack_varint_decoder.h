@@ -52,74 +52,23 @@ class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
   // contiguous sequence of set bits, starting with the low-order bits.
   DecodeStatus Start(uint8_t prefix_value,
                      uint8_t prefix_mask,
-                     DecodeBuffer* db) {
-    DCHECK_LE(15, prefix_mask) << std::hex << prefix_mask;
-    DCHECK_LE(prefix_mask, 127) << std::hex << prefix_mask;
-    // Confirm that |prefix_mask| is a contiguous sequence of bits.
-    DCHECK_EQ(0, (prefix_mask + 1) & prefix_mask) << std::hex << prefix_mask;
-
-    // Ignore the bits that aren't a part of the prefix of the varint.
-    value_ = prefix_value & prefix_mask;
-
-    if (value_ < prefix_mask) {
-      MarkDone();
-      return DecodeStatus::kDecodeDone;
-    }
-
-    offset_ = 0;
-    return Resume(db);
-  }
+                     DecodeBuffer* db);
 
   // The caller has already determined that the encoding requires multiple
   // bytes, i.e. that the 4 to 7 low-order bits (the number determined by the
   // prefix length, a value not passed into this function) of the first byte are
   // are all 1. The caller passes in |prefix_mask|, which is 2^prefix_length-1.
-  DecodeStatus StartExtended(uint8_t prefix_mask, DecodeBuffer* db) {
-    DCHECK_LE(15, prefix_mask) << std::hex << prefix_mask;
-    DCHECK_LE(prefix_mask, 127) << std::hex << prefix_mask;
-    // Confirm that |prefix_mask| is a contiguous sequence of bits.
-    DCHECK_EQ(0, prefix_mask & (prefix_mask + 1)) << std::hex << prefix_mask;
-
-    value_ = prefix_mask;
-    offset_ = 0;
-    return Resume(db);
-  }
+  DecodeStatus StartExtended(uint8_t prefix_mask, DecodeBuffer* db);
 
   // Resume decoding a variable length integer after an earlier
   // call to Start or StartExtended returned kDecodeInProgress.
-  DecodeStatus Resume(DecodeBuffer* db) {
-    CheckNotDone();
-    do {
-      if (db->Empty()) {
-        return DecodeStatus::kDecodeInProgress;
-      }
-      uint8_t byte = db->DecodeUInt8();
-      if (offset_ == MaxOffset() && byte != 0)
-        break;
-      value_ += (byte & 0x7f) << offset_;
-      if ((byte & 0x80) == 0) {
-        MarkDone();
-        return DecodeStatus::kDecodeDone;
-      }
-      offset_ += 7;
-    } while (offset_ <= MaxOffset());
-    DLOG(WARNING) << "Variable length int encoding is too large or too long. "
-                  << DebugString();
-    MarkDone();
-    return DecodeStatus::kDecodeError;
-  }
+  DecodeStatus Resume(DecodeBuffer* db);
 
-  uint32_t value() const {
-    CheckDone();
-    return value_;
-  }
+  uint32_t value() const;
 
   // This supports optimizations for the case of a varint with zero extension
   // bytes, where the handling of the prefix is done by the caller.
-  void set_value(uint32_t v) {
-    MarkDone();
-    value_ = v;
-  }
+  void set_value(uint32_t v);
 
   // All the public methods below are for supporting assertions and tests.
 
@@ -134,14 +83,6 @@ class HTTP2_EXPORT_PRIVATE HpackVarintDecoder {
   DecodeStatus ResumeForTest(DecodeBuffer* db);
 
   static constexpr uint32_t MaxExtensionBytes() { return 5; }
-
-  // Returns the highest value with the specified number of extension bytes and
-  // the specified prefix length (bits).
-  static uint64_t constexpr HiValueOfExtensionBytes(uint32_t extension_bytes,
-                                                    uint32_t prefix_length) {
-    return (1 << prefix_length) - 2 +
-           (extension_bytes == 0 ? 0 : (1LLU << (extension_bytes * 7)));
-  }
 
  private:
   // Protection in case Resume is called when it shouldn't be.

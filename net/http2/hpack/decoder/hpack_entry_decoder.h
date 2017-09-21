@@ -55,38 +55,7 @@ class HTTP2_EXPORT_PRIVATE HpackEntryDecoder {
 
   // Only call when the decode buffer has data (i.e. HpackBlockDecoder must
   // not call until there is data).
-  DecodeStatus Start(DecodeBuffer* db, HpackEntryDecoderListener* listener) {
-    DCHECK(db != nullptr);
-    DCHECK(listener != nullptr);
-    DCHECK(db->HasData());
-    DecodeStatus status = entry_type_decoder_.Start(db);
-    switch (status) {
-      case DecodeStatus::kDecodeDone:
-        // The type of the entry and its varint fit into the current decode
-        // buffer.
-        if (entry_type_decoder_.entry_type() ==
-            HpackEntryType::kIndexedHeader) {
-          // The entry consists solely of the entry type and varint. This
-          // is by far the most common case in practice.
-          listener->OnIndexedHeader(entry_type_decoder_.varint());
-          return DecodeStatus::kDecodeDone;
-        }
-        state_ = EntryDecoderState::kDecodedType;
-        return Resume(db, listener);
-      case DecodeStatus::kDecodeInProgress:
-        // Hit the end of the decode buffer before fully decoding the entry
-        // type and varint.
-        DCHECK_EQ(0u, db->Remaining());
-        state_ = EntryDecoderState::kResumeDecodingType;
-        return status;
-      case DecodeStatus::kDecodeError:
-        // The varint must have been invalid (too long).
-        return status;
-    }
-
-    NOTREACHED();
-    return DecodeStatus::kDecodeError;
-  }
+  DecodeStatus Start(DecodeBuffer* db, HpackEntryDecoderListener* listener);
 
   // Only call Resume if the previous call (Start or Resume) returned
   // kDecodeInProgress; Resume is also called from Start when it has succeeded

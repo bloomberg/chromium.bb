@@ -40,6 +40,10 @@ class HpackDecoderStatePeer {
   static HpackDecoderTables* GetDecoderTables(HpackDecoderState* state) {
     return &state->decoder_tables_;
   }
+  static void set_listener(HpackDecoderState* state,
+                           HpackDecoderListener* listener) {
+    state->listener_ = listener;
+  }
 };
 class HpackDecoderPeer {
  public:
@@ -121,7 +125,8 @@ class HpackDecoderTest : public ::testing::TestWithParam<bool>,
     // No further callbacks should be made at this point, so replace 'this' as
     // the listener with mock_listener_, which is a strict mock, so will
     // generate an error for any calls.
-    decoder_.set_listener(&mock_listener_);
+    HpackDecoderStatePeer::set_listener(
+        HpackDecoderPeer::GetDecoderState(&decoder_), &mock_listener_);
   }
 
   AssertionResult DecodeBlock(Http2StringPiece block) {

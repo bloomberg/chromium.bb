@@ -32,6 +32,14 @@ namespace net {
 namespace test {
 namespace {
 
+// Returns the highest value with the specified number of extension bytes
+// and the specified prefix length (bits).
+uint64_t HiValueOfExtensionBytes(uint32_t extension_bytes,
+                                 uint32_t prefix_length) {
+  return (1 << prefix_length) - 2 +
+         (extension_bytes == 0 ? 0 : (1LLU << (extension_bytes * 7)));
+}
+
 class HpackVarintDecoderTest : public RandomDecoderTest {
  protected:
   DecodeStatus StartDecoding(DecodeBuffer* b) override {
@@ -244,16 +252,11 @@ TEST_F(HpackVarintDecoderTest, Encode) {
     LOG(INFO) << "prefix_length=" << prefix_length << "   a=" << a
               << "   b=" << b << "   c=" << c;
 
-    EXPECT_EQ(a - 1,
-              HpackVarintDecoder::HiValueOfExtensionBytes(0, prefix_length));
-    EXPECT_EQ(b - 1,
-              HpackVarintDecoder::HiValueOfExtensionBytes(1, prefix_length));
-    EXPECT_EQ(c - 1,
-              HpackVarintDecoder::HiValueOfExtensionBytes(2, prefix_length));
-    EXPECT_EQ(d - 1,
-              HpackVarintDecoder::HiValueOfExtensionBytes(3, prefix_length));
-    EXPECT_EQ(e - 1,
-              HpackVarintDecoder::HiValueOfExtensionBytes(4, prefix_length));
+    EXPECT_EQ(a - 1, HiValueOfExtensionBytes(0, prefix_length));
+    EXPECT_EQ(b - 1, HiValueOfExtensionBytes(1, prefix_length));
+    EXPECT_EQ(c - 1, HiValueOfExtensionBytes(2, prefix_length));
+    EXPECT_EQ(d - 1, HiValueOfExtensionBytes(3, prefix_length));
+    EXPECT_EQ(e - 1, HiValueOfExtensionBytes(4, prefix_length));
 
     std::vector<uint32_t> values = {
         0,     1,                       // Force line break.
@@ -344,7 +347,7 @@ TEST_F(HpackVarintDecoderTest, ValueTooLarge) {
   const uint32_t expected_offset = HpackVarintDecoder::MaxExtensionBytes() + 1;
   for (prefix_length_ = 4; prefix_length_ <= 7; ++prefix_length_) {
     prefix_mask_ = (1 << prefix_length_) - 1;
-    uint64_t too_large = HpackVarintDecoder::HiValueOfExtensionBytes(
+    uint64_t too_large = HiValueOfExtensionBytes(
         HpackVarintDecoder::MaxExtensionBytes() + 3, prefix_length_);
     HpackBlockBuilder bb;
     bb.AppendHighBitsAndVarint(0, prefix_length_, too_large);

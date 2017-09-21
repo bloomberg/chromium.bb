@@ -29,14 +29,6 @@ class HTTP2_EXPORT_PRIVATE HpackBlockDecoder {
   }
   ~HpackBlockDecoder() {}
 
-  // The listener may be changed at any time. The change takes effect on the
-  // next entry into the decode loop of the Decode() method below.
-  void set_listener(HpackEntryDecoderListener* listener) {
-    DCHECK_NE(nullptr, listener);
-    listener_ = listener;
-  }
-  HpackEntryDecoderListener* listener() { return listener_; }
-
   // Prepares the decoder to start decoding a new HPACK block. Expected
   // to be called from an implementation of Http2FrameDecoderListener's
   // OnHeadersStart or OnPushPromiseStart methods.
@@ -58,7 +50,7 @@ class HTTP2_EXPORT_PRIVATE HpackBlockDecoder {
 
  private:
   HpackEntryDecoder entry_decoder_;
-  HpackEntryDecoderListener* listener_;
+  HpackEntryDecoderListener* const listener_;
   bool before_entry_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(HpackBlockDecoder);
