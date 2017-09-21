@@ -302,23 +302,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_characterExtents(
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_nSelections(LONG* n_selections) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTIONS);
-  AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!owner())
-    return E_FAIL;
-
-  if (!n_selections)
-    return E_INVALIDARG;
-
-  *n_selections = 0;
-  int selection_start, selection_end;
-  GetSelectionOffsets(&selection_start, &selection_end);
-  if (selection_start >= 0 && selection_end >= 0 &&
-      selection_start != selection_end) {
-    *n_selections = 1;
-  }
-
-  return S_OK;
+  return AXPlatformNodeWin::get_nSelections(n_selections);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_selection(LONG selection_index,
