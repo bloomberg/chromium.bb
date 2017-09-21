@@ -852,6 +852,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 
 void PrintPreviewHandler::HandleHidePreview(const base::ListValue* /*args*/) {
   print_preview_ui()->OnHidePreviewDialog();
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   if (settings_) {
     // Print preview is responding to a resolution of "print" promise. Send the
     // print message to the renderer.
@@ -872,6 +873,7 @@ void PrintPreviewHandler::HandleHidePreview(const base::ListValue* /*args*/) {
       print_view_manager->PrintPreviewDone();
     }
   }
+#endif
 }
 
 void PrintPreviewHandler::HandleCancelPendingPrintRequest(

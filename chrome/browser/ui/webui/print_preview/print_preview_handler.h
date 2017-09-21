@@ -363,9 +363,11 @@ class PrintPreviewHandler
 
   base::queue<std::string> preview_callbacks_;
 
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   // Print settings to use in the local print request to send when
   // HandleHidePreview() is called.
   std::unique_ptr<base::DictionaryValue> settings_;
+#endif
 
   // Proxy for calls to the print backend.  Lazily initialized since web_ui() is
   // not available at construction time.
