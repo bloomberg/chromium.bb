@@ -25,6 +25,8 @@ try:
   import grpc # for error codes
   from utils import grpc_proxy
   from proto import bytestream_pb2
+  # If not present, grpc crashes later.
+  import pyasn1_modules
 except ImportError as err:
   grpc = None
   grpc_proxy = None
