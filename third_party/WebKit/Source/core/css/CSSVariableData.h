@@ -25,15 +25,15 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   static RefPtr<CSSVariableData> Create(const CSSParserTokenRange& range,
                                         bool is_animation_tainted,
                                         bool needs_variable_resolution) {
-    return AdoptRef(new CSSVariableData(range, is_animation_tainted,
-                                        needs_variable_resolution));
+    return WTF::AdoptRef(new CSSVariableData(range, is_animation_tainted,
+                                             needs_variable_resolution));
   }
 
   static RefPtr<CSSVariableData> CreateResolved(
       const Vector<CSSParserToken>& resolved_tokens,
       Vector<String> backing_strings,
       bool is_animation_tainted) {
-    return AdoptRef(new CSSVariableData(
+    return WTF::AdoptRef(new CSSVariableData(
         resolved_tokens, std::move(backing_strings), is_animation_tainted));
   }
 

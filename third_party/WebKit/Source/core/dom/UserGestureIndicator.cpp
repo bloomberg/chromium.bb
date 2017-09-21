@@ -106,7 +106,7 @@ UserGestureIndicator::UserGestureIndicator(RefPtr<UserGestureToken> token) {
 UserGestureIndicator::UserGestureIndicator(UserGestureToken::Status status) {
   if (!IsMainThread())
     return;
-  token_ = AdoptRef(new UserGestureToken(status));
+  token_ = WTF::AdoptRef(new UserGestureToken(status));
   UpdateRootToken();
 }
 

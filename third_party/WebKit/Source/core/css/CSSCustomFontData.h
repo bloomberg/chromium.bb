@@ -33,7 +33,7 @@ class CSSCustomFontData final : public CustomFontData {
 
   static RefPtr<CSSCustomFontData> Create(RemoteFontFaceSource* source,
                                           FallbackVisibility visibility) {
-    return AdoptRef(new CSSCustomFontData(source, visibility));
+    return WTF::AdoptRef(new CSSCustomFontData(source, visibility));
   }
 
   ~CSSCustomFontData() override {}

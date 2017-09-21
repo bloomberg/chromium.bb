@@ -383,7 +383,7 @@ class CORE_EXPORT CSSSelector {
 
   struct RareData : public RefCounted<RareData> {
     static RefPtr<RareData> Create(const AtomicString& value) {
-      return AdoptRef(new RareData(value));
+      return WTF::AdoptRef(new RareData(value));
     }
     ~RareData();
 

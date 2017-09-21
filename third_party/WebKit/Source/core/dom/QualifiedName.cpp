@@ -81,7 +81,7 @@ QualifiedName::QualifiedName(const AtomicString& p,
   QualifiedNameCache::AddResult add_result =
       GetQualifiedNameCache().AddWithTranslator<QNameComponentsTranslator>(
           data);
-  impl_ = add_result.is_new_entry ? AdoptRef(*add_result.stored_value)
+  impl_ = add_result.is_new_entry ? WTF::AdoptRef(*add_result.stored_value)
                                   : *add_result.stored_value;
 }
 
@@ -93,7 +93,7 @@ QualifiedName::QualifiedName(const AtomicString& p,
   QualifiedNameCache::AddResult add_result =
       GetQualifiedNameCache().AddWithTranslator<QNameComponentsTranslator>(
           data);
-  impl_ = add_result.is_new_entry ? AdoptRef(*add_result.stored_value)
+  impl_ = add_result.is_new_entry ? WTF::AdoptRef(*add_result.stored_value)
                                   : *add_result.stored_value;
 }
 

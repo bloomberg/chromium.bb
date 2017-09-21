@@ -692,7 +692,7 @@ RefPtr<XMLParserContext> XMLParserContext::CreateStringParser(
   xmlCtxtUseOptions(parser, XML_PARSE_HUGE);
   parser->_private = user_data;
   parser->replaceEntities = true;
-  return AdoptRef(new XMLParserContext(parser));
+  return WTF::AdoptRef(new XMLParserContext(parser));
 }
 
 // Chunk should be encoded in UTF-8
@@ -728,7 +728,7 @@ RefPtr<XMLParserContext> XMLParserContext::CreateMemoryParser(
   parser->str_xml_ns = xmlDictLookup(parser->dict, XML_XML_NAMESPACE, 36);
   parser->_private = user_data;
 
-  return AdoptRef(new XMLParserContext(parser));
+  return WTF::AdoptRef(new XMLParserContext(parser));
 }
 
 // --------------------------------

@@ -223,7 +223,7 @@ class CORE_EXPORT InvalidationSet {
 class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {
  public:
   static RefPtr<DescendantInvalidationSet> Create() {
-    return AdoptRef(new DescendantInvalidationSet);
+    return WTF::AdoptRef(new DescendantInvalidationSet);
   }
 
  private:
@@ -234,7 +234,7 @@ class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
  public:
   static RefPtr<SiblingInvalidationSet> Create(
       RefPtr<DescendantInvalidationSet> descendants) {
-    return AdoptRef(new SiblingInvalidationSet(std::move(descendants)));
+    return WTF::AdoptRef(new SiblingInvalidationSet(std::move(descendants)));
   }
 
   unsigned MaxDirectAdjacentSelectors() const {

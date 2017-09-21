@@ -57,7 +57,7 @@ class CORE_EXPORT WorkerScriptLoader final
 
  public:
   static RefPtr<WorkerScriptLoader> Create() {
-    return AdoptRef(new WorkerScriptLoader());
+    return WTF::AdoptRef(new WorkerScriptLoader());
   }
 
   void LoadSynchronously(ExecutionContext&,
