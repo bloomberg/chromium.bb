@@ -358,11 +358,11 @@ Code signing
 
 Variables
 
-  bundle_root_dir*, bundle_resources_dir*, bundle_executable_dir*,
-  bundle_plugins_dir*, bundle_deps_filter, deps, data_deps, public_deps,
-  visibility, product_type, code_signing_args, code_signing_script,
-  code_signing_sources, code_signing_outputs, xcode_extra_attributes,
-  xcode_test_application_name, partial_info_plist
+  bundle_root_dir*, bundle_contents_dir*, bundle_resources_dir*,
+  bundle_executable_dir*, bundle_plugins_dir*, bundle_deps_filter, deps,
+  data_deps, public_deps, visibility, product_type, code_signing_args,
+  code_signing_script, code_signing_sources, code_signing_outputs,
+  xcode_extra_attributes, xcode_test_application_name, partial_info_plist
   * = required
 
 Example
@@ -390,7 +390,7 @@ Example
       bundle_data("${app_name}_bundle_info_plist") {
         deps = [ ":${app_name}_generate_info_plist" ]
         sources = [ "$gen_path/Info.plist" ]
-        outputs = [ "{{bundle_root_dir}}/Info.plist" ]
+        outputs = [ "{{bundle_contents_dir}}/Info.plist" ]
       }
 
       executable("${app_name}_generate_executable") {
@@ -418,19 +418,21 @@ Example
 
         if (is_ios) {
           bundle_root_dir = "${root_build_dir}/$target_name"
-          bundle_resources_dir = bundle_root_dir
-          bundle_executable_dir = bundle_root_dir
-          bundle_plugins_dir = bundle_root_dir + "/Plugins"
+          bundle_contents_dir = bundle_root_dir
+          bundle_resources_dir = bundle_contents_dir
+          bundle_executable_dir = bundle_contents_dir
+          bundle_plugins_dir = "${bundle_contents_dir}/Plugins"
 
           extra_attributes = {
             ONLY_ACTIVE_ARCH = "YES"
             DEBUG_INFORMATION_FORMAT = "dwarf"
           }
         } else {
-          bundle_root_dir = "${root_build_dir}/target_name/Contents"
-          bundle_resources_dir = bundle_root_dir + "/Resources"
-          bundle_executable_dir = bundle_root_dir + "/MacOS"
-          bundle_plugins_dir = bundle_root_dir + "/Plugins"
+          bundle_root_dir = "${root_build_dir}/target_name"
+          bundle_contents_dir  = "${bundle_root_dir}/Contents"
+          bundle_resources_dir = "${bundle_contents_dir}/Resources"
+          bundle_executable_dir = "${bundle_contents_dir}/MacOS"
+          bundle_plugins_dir = "${bundle_contents_dir}/Plugins"
         }
         deps = [ ":${app_name}_bundle_info_plist" ]
         if (is_ios && code_signing) {

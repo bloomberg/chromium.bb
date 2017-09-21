@@ -33,6 +33,9 @@ void CreateBundleTargetGenerator::DoRun() {
   if (!FillBundleDir(SourceDir(), variables::kBundleRootDir,
                      &bundle_data.root_dir()))
     return;
+  if (!FillBundleDir(bundle_data.root_dir(), variables::kBundleContentsDir,
+                     &bundle_data.contents_dir()))
+    return;
   if (!FillBundleDir(bundle_data.root_dir(), variables::kBundleResourcesDir,
                      &bundle_data.resources_dir()))
     return;

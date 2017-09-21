@@ -66,6 +66,7 @@ enum SubstitutionType {
 
   // Valid for bundle_data targets.
   SUBSTITUTION_BUNDLE_ROOT_DIR,        // {{bundle_root_dir}}
+  SUBSTITUTION_BUNDLE_CONTENTS_DIR,    // {{bundle_contents_dir}}
   SUBSTITUTION_BUNDLE_RESOURCES_DIR,   // {{bundle_resources_dir}}
   SUBSTITUTION_BUNDLE_EXECUTABLE_DIR,  // {{bundle_executable_dir}}
   SUBSTITUTION_BUNDLE_PLUGINS_DIR,     // {{bundle_plugins_dir}}

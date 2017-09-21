@@ -92,7 +92,7 @@ variable name or the '{{' and '}}' which surround it."
     "output_prefix_override" "outputs" "pool" "precompiled_header"
     "precompiled_header_type" "precompiled_source" "product_type" "public"
     "public_configs" "public_deps" "response_file_contents" "script" "sources"
-    "testonly" "visibility" "write_runtime_deps"))
+    "testonly" "visibility" "write_runtime_deps" "bundle_contents_dir"))
 
 (defconst gn-font-lock-keywords
   `((,(regexp-opt gn-font-lock-reserved-keywords 'words) .

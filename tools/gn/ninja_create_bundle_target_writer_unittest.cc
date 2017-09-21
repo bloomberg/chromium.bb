@@ -14,11 +14,15 @@
 namespace {
 
 void SetupBundleDataDir(BundleData* bundle_data, const std::string& root_dir) {
-  std::string bundle_root_dir = root_dir + "/bar.bundle/Contents";
+  std::string bundle_root_dir = root_dir + "/bar.bundle";
   bundle_data->root_dir() = SourceDir(bundle_root_dir);
-  bundle_data->resources_dir() = SourceDir(bundle_root_dir + "/Resources");
-  bundle_data->executable_dir() = SourceDir(bundle_root_dir + "/MacOS");
-  bundle_data->plugins_dir() = SourceDir(bundle_root_dir + "/Plug Ins");
+  bundle_data->contents_dir() = SourceDir(bundle_root_dir + "/Contents");
+  bundle_data->resources_dir() =
+      SourceDir(bundle_data->contents_dir().value() + "/Resources");
+  bundle_data->executable_dir() =
+      SourceDir(bundle_data->contents_dir().value() + "/MacOS");
+  bundle_data->plugins_dir() =
+      SourceDir(bundle_data->contents_dir().value() + "/Plug Ins");
 }
 
 }  // namespace
@@ -61,6 +65,48 @@ TEST(NinjaCreateBundleTargetWriter, Run) {
           "bar.bundle/Contents/Resources/input1.txt "
           "bar.bundle/Contents/Resources/input2.txt\n"
       "build bar.bundle: phony obj/baz/bar.stamp\n";
+  std::string out_str = out.str();
+  EXPECT_EQ(expected, out_str);
+}
+
+// Tests creating a bundle in a sub-directory of $root_out_dir.
+TEST(NinjaCreateBundleTargetWriter, InSubDirectory) {
+  Err err;
+  TestWithScope setup;
+
+  Target bundle_data(setup.settings(), Label(SourceDir("//foo/"), "data"));
+  bundle_data.set_output_type(Target::BUNDLE_DATA);
+  bundle_data.sources().push_back(SourceFile("//foo/input1.txt"));
+  bundle_data.sources().push_back(SourceFile("//foo/input2.txt"));
+  bundle_data.action_values().outputs() = SubstitutionList::MakeForTest(
+      "{{bundle_resources_dir}}/{{source_file_part}}");
+  bundle_data.SetToolchain(setup.toolchain());
+  bundle_data.visibility().SetPublic();
+  ASSERT_TRUE(bundle_data.OnResolved(&err));
+
+  Target create_bundle(
+      setup.settings(),
+      Label(SourceDir("//baz/"), "bar", setup.toolchain()->label().dir(),
+            setup.toolchain()->label().name()));
+  SetupBundleDataDir(&create_bundle.bundle_data(), "//out/Debug/gen");
+  create_bundle.set_output_type(Target::CREATE_BUNDLE);
+  create_bundle.private_deps().push_back(LabelTargetPair(&bundle_data));
+  create_bundle.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(create_bundle.OnResolved(&err));
+
+  std::ostringstream out;
+  NinjaCreateBundleTargetWriter writer(&create_bundle, out);
+  writer.Run();
+
+  const char expected[] =
+      "build gen/bar.bundle/Contents/Resources/input1.txt: copy_bundle_data "
+          "../../foo/input1.txt\n"
+      "build gen/bar.bundle/Contents/Resources/input2.txt: copy_bundle_data "
+          "../../foo/input2.txt\n"
+      "build obj/baz/bar.stamp: stamp "
+          "gen/bar.bundle/Contents/Resources/input1.txt "
+          "gen/bar.bundle/Contents/Resources/input2.txt\n"
+      "build gen/bar.bundle: phony obj/baz/bar.stamp\n";
   std::string out_str = out.str();
   EXPECT_EQ(expected, out_str);
 }
@@ -182,7 +228,7 @@ TEST(NinjaCreateBundleTargetWriter, Complex) {
   bundle_data0.set_output_type(Target::BUNDLE_DATA);
   bundle_data0.sources().push_back(SourceFile("//qux/qux-Info.plist"));
   bundle_data0.action_values().outputs() =
-      SubstitutionList::MakeForTest("{{bundle_root_dir}}/Info.plist");
+      SubstitutionList::MakeForTest("{{bundle_contents_dir}}/Info.plist");
   bundle_data0.SetToolchain(setup.toolchain());
   bundle_data0.visibility().SetPublic();
   ASSERT_TRUE(bundle_data0.OnResolved(&err));
