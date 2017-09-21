@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -24,11 +25,22 @@
 #include "ui/aura/window.h"
 #include "ui/views/test/views_test_base.h"
 
+namespace {
+
+enum class AnswerCardState {
+  ANSWER_CARD_OFF,
+  ANSWER_CARD_ON_WITH_RESULT,
+  ANSWER_CARD_ON_WITHOUT_RESULT,
+};
+
+}  // namespace
+
 namespace app_list {
 namespace test {
 
 class SearchResultPageViewTest : public views::ViewsTestBase,
-                                 public testing::WithParamInterface<bool> {
+                                 public testing::WithParamInterface<
+                                     ::testing::tuple<bool, AnswerCardState>> {
  public:
   SearchResultPageViewTest() = default;
   ~SearchResultPageViewTest() override = default;
@@ -37,13 +49,44 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
   void SetUp() override {
     views::ViewsTestBase::SetUp();
 
-    if (testing::UnitTest::GetInstance()->current_test_info()->value_param())
-      test_with_fullscreen_ = GetParam();
-    if (!test_with_fullscreen_) {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kEnableFullscreenAppList);
+    // Reading test parameters.
+    bool test_with_answer_card = true;
+    if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
+      test_with_fullscreen_ = testing::get<0>(GetParam());
+      const AnswerCardState answer_card_state = testing::get<1>(GetParam());
+      test_with_answer_card =
+          answer_card_state != AnswerCardState::ANSWER_CARD_OFF;
+      test_with_answer_card_result_ =
+          answer_card_state == AnswerCardState::ANSWER_CARD_ON_WITH_RESULT;
     }
 
+    // Setting up the feature set.
+    if (test_with_fullscreen_) {
+      if (test_with_answer_card) {
+        scoped_feature_list_.InitWithFeatures(
+            {features::kEnableFullscreenAppList,
+             features::kEnableAnswerCardDefaultOff},
+            {});
+      } else {
+        scoped_feature_list_.InitWithFeatures(
+            {features::kEnableFullscreenAppList},
+            {features::kEnableAnswerCardDefaultOff});
+      }
+    } else {
+      if (test_with_answer_card) {
+        scoped_feature_list_.InitWithFeatures(
+            {features::kEnableAnswerCardDefaultOff},
+            {features::kEnableFullscreenAppList});
+      } else {
+        scoped_feature_list_.InitWithFeatures(
+            {}, {features::kEnableFullscreenAppList,
+                 features::kEnableAnswerCardDefaultOff});
+      }
+    }
+    ASSERT_EQ(test_with_fullscreen_, features::IsFullscreenAppListEnabled());
+    ASSERT_EQ(test_with_answer_card, features::IsAnswerCardEnabled());
+
+    // Setting up views.
     delegate_.reset(new AppListTestViewDelegate);
     app_list_view_ = new AppListView(delegate_.get());
     gfx::NativeView parent = GetContext();
@@ -130,6 +173,9 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
   }
 
   bool test_with_fullscreen() const { return test_with_fullscreen_; }
+  bool test_with_answer_card_result() const {
+    return test_with_answer_card_result_;
+  }
 
  private:
   AppListView* app_list_view_ = nullptr;  // Owned by native widget.
@@ -139,6 +185,7 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
   SearchResultListView* list_view_ = nullptr;  // Owned by views hierarchy.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
   bool test_with_fullscreen_ = true;
+  bool test_with_answer_card_result_ = true;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageViewTest);
@@ -146,7 +193,14 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
 
 // Instantiate the Boolean which is used to toggle the Fullscreen app list in
 // the parameterized tests.
-INSTANTIATE_TEST_CASE_P(, SearchResultPageViewTest, testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    ,
+    SearchResultPageViewTest,
+    ::testing::Combine(
+        ::testing::Bool(),
+        ::testing::Values(AnswerCardState::ANSWER_CARD_OFF,
+                          AnswerCardState::ANSWER_CARD_ON_WITHOUT_RESULT,
+                          AnswerCardState::ANSWER_CARD_ON_WITH_RESULT)));
 
 // TODO(warx): This test applies to bubble launcher only. Remove this test once
 // bubble launcher is removed from code base.
@@ -295,10 +349,13 @@ TEST_P(SearchResultPageViewTest, ResultsSorted) {
 }
 
 TEST_P(SearchResultPageViewTest, UpdateWithSelection) {
+  const int kCardResultNum = test_with_answer_card_result() ? 1 : 0;
   {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
     result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
     result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 2));
+    result_types.push_back(
+        std::make_pair(SearchResult::DISPLAY_CARD, kCardResultNum));
 
     SetUpSearchResults(result_types);
   }
@@ -322,6 +379,8 @@ TEST_P(SearchResultPageViewTest, UpdateWithSelection) {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
     result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
     result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 3));
+    result_types.push_back(
+        std::make_pair(SearchResult::DISPLAY_CARD, kCardResultNum));
 
     SetUpSearchResults(result_types);
   }
@@ -335,6 +394,8 @@ TEST_P(SearchResultPageViewTest, UpdateWithSelection) {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
     result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
     result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 1));
+    result_types.push_back(
+        std::make_pair(SearchResult::DISPLAY_CARD, kCardResultNum));
 
     SetUpSearchResults(result_types);
   }
@@ -349,6 +410,8 @@ TEST_P(SearchResultPageViewTest, UpdateWithSelection) {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
     result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 1));
     result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
+    result_types.push_back(
+        std::make_pair(SearchResult::DISPLAY_CARD, kCardResultNum));
 
     SetUpSearchResults(result_types);
   }
@@ -362,6 +425,8 @@ TEST_P(SearchResultPageViewTest, UpdateWithSelection) {
   {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
     result_types.push_back(std::make_pair(SearchResult::DISPLAY_LIST, 3));
+    result_types.push_back(
+        std::make_pair(SearchResult::DISPLAY_CARD, kCardResultNum));
 
     SetUpSearchResults(result_types);
   }
