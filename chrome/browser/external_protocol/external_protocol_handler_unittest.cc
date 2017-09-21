@@ -140,8 +140,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
     delegate_.set_os_state(os_state);
     ExternalProtocolHandler::LaunchUrlWithDelegate(
         url, 0, 0, ui::PAGE_TRANSITION_LINK, true, &delegate_);
-    if (block_state != ExternalProtocolHandler::BLOCK)
-      content::RunAllBlockingPoolTasksUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
 
     EXPECT_EQ(expected_action == Action::PROMPT, delegate_.has_prompted());
     EXPECT_EQ(expected_action == Action::LAUNCH, delegate_.has_launched());
@@ -231,7 +230,7 @@ TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateUnknown) {
       ExternalProtocolHandler::GetBlockState("tel", profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
   EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
 
@@ -240,7 +239,7 @@ TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateDefaultBlock) {
       ExternalProtocolHandler::GetBlockState("afp", profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::BLOCK, block_state);
   EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
 
@@ -249,43 +248,6 @@ TEST_F(ExternalProtocolHandlerTest, TestGetBlockStateDefaultDontBlock) {
       ExternalProtocolHandler::GetBlockState("mailto", profile_.get());
   EXPECT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
   EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
-  EXPECT_FALSE(
-      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
-}
-
-TEST_F(ExternalProtocolHandlerTest,
-       TestGetBlockStateLocalBlockStateCopiedAndResetOnProfilePref) {
-  base::DictionaryValue prefs_local;
-  prefs_local.SetBoolean("tel", true);
-  local_state_->Set(prefs::kExcludedSchemes, prefs_local);
-  ExternalProtocolHandler::BlockState block_state =
-      ExternalProtocolHandler::GetBlockState("tel", profile_.get());
-  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
-  EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
-  EXPECT_FALSE(
-      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
-}
-
-TEST_F(ExternalProtocolHandlerTest,
-       TestGetBlockStateLocalDontBlockCopiedAsIsToProfilePref) {
-  base::DictionaryValue prefs_local;
-  prefs_local.SetBoolean("tel", false);
-  local_state_->Set(prefs::kExcludedSchemes, prefs_local);
-  ExternalProtocolHandler::BlockState block_state =
-      ExternalProtocolHandler::GetBlockState("tel", profile_.get());
-  EXPECT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
-  EXPECT_TRUE(local_state_->GetDictionary(prefs::kExcludedSchemes)->empty());
-  EXPECT_FALSE(
-      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
-}
-
-TEST_F(ExternalProtocolHandlerTest, TestClearProfileState) {
-  base::DictionaryValue prefs;
-  prefs.SetBoolean("tel", true);
-  profile_->GetPrefs()->Set(prefs::kExcludedSchemes, prefs);
-  EXPECT_FALSE(
-      profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
-  ExternalProtocolHandler::ClearData(profile_.get());
   EXPECT_TRUE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
 }
