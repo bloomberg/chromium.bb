@@ -117,8 +117,6 @@ class TestingBrowserProcess : public BrowserProcess {
   net_log::ChromeNetLog* net_log() override;
   component_updater::ComponentUpdateService* component_updater() override;
   CRLSetFetcher* crl_set_fetcher() override;
-  component_updater::PnaclComponentInstaller* pnacl_component_installer()
-      override;
   component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() override;
   MediaFileSystemRegistry* media_file_system_registry() override;
