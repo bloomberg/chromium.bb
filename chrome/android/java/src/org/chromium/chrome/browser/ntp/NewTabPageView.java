@@ -262,7 +262,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
                 /* observer = */ this, offlinePageBridge);
 
         mSiteSectionViewHolder =
-                SiteSection.createViewHolder(mNewTabPageLayout.getSiteSectionView());
+                SiteSection.createViewHolder(mNewTabPageLayout.getSiteSectionView(), mUiConfig);
         mSiteSectionViewHolder.bindDataSource(mTileGroup, tileRenderer);
 
         mSearchProviderLogoView = mNewTabPageLayout.findViewById(R.id.search_provider_logo);

@@ -48,10 +48,10 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
                 .inflate(getLayout(), parent, false);
     }
 
-    public static SiteSectionViewHolder createViewHolder(ViewGroup view) {
+    public static SiteSectionViewHolder createViewHolder(ViewGroup view, UiConfig uiConfig) {
         return SuggestionsConfig.useSitesExplorationUi()
                 ? new SiteExploreViewHolder(view, MAX_TILE_COLUMNS)
-                : new TileGridViewHolder(view, getMaxTileRows(), MAX_TILE_COLUMNS);
+                : new TileGridViewHolder(view, getMaxTileRows(), MAX_TILE_COLUMNS, uiConfig);
     }
 
     public SiteSection(SuggestionsUiDelegate uiDelegate, ContextMenuManager contextMenuManager,
@@ -62,7 +62,7 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
                 uiDelegate.getImageFetcher());
         mTileGroup = new TileGroup(mTileRenderer, uiDelegate, contextMenuManager, tileGroupDelegate,
                 /* observer = */ this, offlinePageBridge);
-        mTileGroup.startObserving(getMaxTileRows() * MAX_TILE_COLUMNS);
+        mTileGroup.startObserving(MAX_TILE_COLUMNS * getMaxTileRows());
     }
 
     @Override

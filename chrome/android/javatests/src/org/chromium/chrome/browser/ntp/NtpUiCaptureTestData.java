@@ -44,13 +44,16 @@ public class NtpUiCaptureTestData {
             createSiteSuggestion("Shop.rr", "shop"),
             createSiteSuggestion("Now Entertainment", "movies")};
 
+    /** Grey, the default fallback color as defined in fallback_icon_style.cc. */
+    private static final int DEFAULT_ICON_COLOR = 0xff787878;
+
     private static final int[] FALLBACK_COLORS = {
             0xff306090, // Muted blue.
             0xff903060, // Muted purplish red.
             0xff309060, // Muted green.
             0xff603090, // Muted purple.
             0xff906030, // Muted brown.
-            0xff787878, // Grey, the default fallback color as defined in fallback_icon_style.cc.
+            DEFAULT_ICON_COLOR,
             0xff609060, // Muted brownish green.
             0xff903030 // Muted red.
     };
@@ -159,7 +162,9 @@ public class NtpUiCaptureTestData {
             public boolean getLargeIconForUrl(
                     String url, int desiredSizePx, LargeIconCallback callback) {
                 ThreadUtils.postOnUiThread(() -> {
-                    callback.onLargeIconAvailable(iconMap.get(url), colorMap.get(url), true);
+                    int fallbackColor =
+                            colorMap.containsKey(url) ? colorMap.get(url) : DEFAULT_ICON_COLOR;
+                    callback.onLargeIconAvailable(iconMap.get(url), fallbackColor, true);
                 });
                 return true;
             }

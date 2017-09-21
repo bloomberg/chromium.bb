@@ -105,6 +105,13 @@ public class RenderTestRule extends TestWatcher {
         }
     }
 
+    /**
+     * Constructor using {@code "chrome/test/data/android/render_tests"} as default golden folder.
+     */
+    public RenderTestRule() {
+        this("chrome/test/data/android/render_tests");
+    }
+
     public RenderTestRule(String goldenFolder) {
         // |goldenFolder| is relative to the src directory in the repository. |mGoldenFolder| will
         // be the folder on the test device.
