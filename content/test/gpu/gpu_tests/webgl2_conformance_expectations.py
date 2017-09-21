@@ -318,9 +318,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'nvidia', 'intel'], bug=630800)
 
     # Mac Retina NVIDIA
-    self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
+    self.Fail('deqp/functional/gles3/shaderindexing/mat_01.html',
         ['mac', ('nvidia', 0xfe9)], bug=728271)
-    self.Flaky('deqp/functional/gles3/shaderindexing/tmp.html',
+    self.Fail('deqp/functional/gles3/shaderindexing/tmp.html',
         ['mac', ('nvidia', 0xfe9)], bug=728271)
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac', ('nvidia', 0xfe9)], bug=641209)
