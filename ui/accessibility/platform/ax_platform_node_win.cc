@@ -2275,13 +2275,17 @@ STDMETHODIMP AXPlatformNodeWin::get_caretOffset(LONG* offset) {
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_nSelections(LONG* n_selections) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTIONS);
   COM_OBJECT_VALIDATE_1_ARG(n_selections);
-  int sel_start = GetIntAttribute(AX_ATTR_TEXT_SEL_START);
-  int sel_end = GetIntAttribute(AX_ATTR_TEXT_SEL_END);
-  if (sel_start != sel_end)
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  *n_selections = 0;
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  if (selection_start >= 0 && selection_end >= 0 &&
+      selection_start != selection_end) {
     *n_selections = 1;
-  else
-    *n_selections = 0;
+  }
   return S_OK;
 }
 
