@@ -7,7 +7,6 @@
 
   The generated code coverage report excludes test files, and test files are
   identified by postfixes: ['unittest.cc', 'unittest.mm', 'egtest.mm'].
-  TODO(crbug.com/763957): Make test file identifiers configurable.
 
   NOTE: This script must be called from the root of checkout. It may take up to
         a few minutes to generate a report for targets that depend on Chrome,
@@ -59,6 +58,7 @@ EARL_GREY_TEST_TARGET_POSTFIX = 'egtests'
 
 # Used to determine if a file is a test file. The coverage of test files should
 # be excluded from code coverage report.
+# TODO(crbug.com/763957): Make test file identifiers configurable.
 TEST_FILES_POSTFIXES = ['unittest.mm', 'unittest.cc', 'egtest.mm']
 
 
