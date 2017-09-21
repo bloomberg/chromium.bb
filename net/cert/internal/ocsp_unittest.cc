@@ -32,6 +32,9 @@ const TestParams kTestParams[] = {
     {"good_response.pem", OCSPRevocationStatus::GOOD,
      OCSPVerifyResult::PROVIDED},
 
+    {"good_response_sha256.pem", OCSPRevocationStatus::GOOD,
+     OCSPVerifyResult::PROVIDED},
+
     {"no_response.pem", OCSPRevocationStatus::UNKNOWN,
      OCSPVerifyResult::NO_MATCHING_RESPONSE},
 
@@ -127,17 +130,13 @@ TEST_P(CheckOCSPTest, FromFile) {
 
   ASSERT_TRUE(ReadTestDataFromPemFile(GetFilePath(params.file_name), mappings));
 
-  // TODO(eroman): Not all of the test data passes the time checks. Need to
-  // either change policy or regenerate the test data.
-  bool skip_time_checks = true;
-  // Mar 6 21:40:02 2016 GMT
+  // Mar 5 00:00:00 2017 GMT
   base::Time kVerifyTime =
-      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1457300402);
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1488672000);
 
   OCSPVerifyResult::ResponseStatus response_status;
   OCSPRevocationStatus revocation_status =
-      CheckOCSP(ocsp_data, cert_data, ca_data, kVerifyTime, skip_time_checks,
-                &response_status);
+      CheckOCSP(ocsp_data, cert_data, ca_data, kVerifyTime, &response_status);
 
   EXPECT_EQ(params.expected_revocation_status, revocation_status);
   EXPECT_EQ(params.expected_response_status, response_status);

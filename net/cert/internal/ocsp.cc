@@ -658,7 +658,6 @@ OCSPRevocationStatus GetRevocationStatusForCert(
     const ParsedCertificate* cert,
     const ParsedCertificate* issuer_certificate,
     const base::Time& verify_time,
-    bool skip_time_check,
     OCSPVerifyResult::ResponseStatus* response_details) {
   // The maximum age for an OCSP response, implemented as time since the
   // |this_update| field in OCSPSingleResponse. Responses older than |max_age|
@@ -689,8 +688,7 @@ OCSPRevocationStatus GetRevocationStatusForCert(
     // serial numbers. If an OCSP responder provides both an up to date
     // response and an expired response, the up to date response takes
     // precedence (PROVIDED > INVALID_DATE).
-    if (!skip_time_check &&
-        !CheckOCSPDateValid(single_response, verify_time, max_age)) {
+    if (!CheckOCSPDateValid(single_response, verify_time, max_age)) {
       if (*response_details != OCSPVerifyResult::PROVIDED)
         *response_details = OCSPVerifyResult::INVALID_DATE;
       continue;
@@ -716,7 +714,6 @@ OCSPRevocationStatus CheckOCSP(
     base::StringPiece certificate_der,
     base::StringPiece issuer_certificate_der,
     const base::Time& verify_time,
-    bool skip_time_check,
     OCSPVerifyResult::ResponseStatus* response_details) {
   *response_details = OCSPVerifyResult::NOT_CHECKED;
 
@@ -774,19 +771,17 @@ OCSPRevocationStatus CheckOCSP(
 
   // If producedAt is outside of the certificate validity period, reject the
   // response.
-  if (!skip_time_check) {
-    if (response_data.produced_at < certificate->tbs().validity_not_before ||
-        response_data.produced_at > certificate->tbs().validity_not_after) {
-      *response_details = OCSPVerifyResult::BAD_PRODUCED_AT;
-      return OCSPRevocationStatus::UNKNOWN;
-    }
+  if (response_data.produced_at < certificate->tbs().validity_not_before ||
+      response_data.produced_at > certificate->tbs().validity_not_after) {
+    *response_details = OCSPVerifyResult::BAD_PRODUCED_AT;
+    return OCSPRevocationStatus::UNKNOWN;
   }
 
   // Look through all of the OCSPSingleResponses for a match (based on CertID
   // and time).
   OCSPRevocationStatus status = GetRevocationStatusForCert(
       response_data, certificate.get(), issuer_certificate.get(), verify_time,
-      skip_time_check, response_details);
+      response_details);
 
   // Check that the OCSP response has a valid signature. It must either be
   // signed directly by the issuing certificate, or a valid authorized

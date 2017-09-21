@@ -277,9 +277,6 @@ NET_EXPORT_PRIVATE bool ParseOCSPResponse(const der::Input& raw_tlv,
 //  * |issuer_certificate_der|: The certificate that signed |certificate_der|.
 //        The caller must have already performed path verification.
 //  * |verify_time|: The time to use when checking revocation status.
-//  * |skip_time_check|: Temporary parameter to disable time checks.
-//      TODO(eroman): Remove this. It is used as a workaround to interoperate
-//      with some existing test data which fails some of the time checks.
 //  * |response_details|: Additional details about failures.
 //      TODO(eroman): This is only being used for logging of Expect-Staple, can
 //      remove if that gets pulled out.
@@ -288,7 +285,6 @@ NET_EXPORT OCSPRevocationStatus CheckOCSP(
     base::StringPiece certificate_der,
     base::StringPiece issuer_certificate_der,
     const base::Time& verify_time,
-    bool skip_time_check,
     OCSPVerifyResult::ResponseStatus* response_details) WARN_UNUSED_RESULT;
 
 // Returns true if |response|, a valid OCSP response with a thisUpdate field and
