@@ -109,7 +109,8 @@ base::string16 GetStopSharingUIString(
           NOTREACHED();
       }
     }
-  } else {  // The case with audio
+  } else if (capture_type != content::DesktopMediaID::TYPE_NONE) {
+    // Audio and screen capture
     if (application_title == registered_extension_name) {
       switch (capture_type) {
         case content::DesktopMediaID::TYPE_SCREEN:
@@ -139,9 +140,38 @@ base::string16 GetStopSharingUIString(
           NOTREACHED();
       }
     }
+  } else {
+    // Audio-only capture.
+    return application_title == registered_extension_name
+               ? l10n_util::GetStringFUTF16(
+                     IDS_MEDIA_SYSTEM_AUDIO_CAPTURE_NOTIFICATION_TEXT,
+                     application_title)
+               : l10n_util::GetStringFUTF16(
+                     IDS_MEDIA_SYSTEM_AUDIO_CAPTURE_NOTIFICATION_TEXT_DELEGATED,
+                     registered_extension_name, application_title);
   }
   return base::string16();
 }
+
+base::string16 GetConfirmationUIString(
+    const content::MediaStreamRequest& request,
+    const base::string16& application_name) {
+  if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE &&
+      request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE) {
+    return l10n_util::GetStringFUTF16(
+        IDS_MEDIA_SCREEN_AND_AUDIO_CAPTURE_CONFIRMATION_TEXT, application_name);
+  } else if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE &&
+             request.audio_type == content::MEDIA_NO_SERVICE) {
+    return l10n_util::GetStringFUTF16(
+        IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT, application_name);
+  } else if (request.video_type == content::MEDIA_NO_SERVICE &&
+             request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE) {
+    return l10n_util::GetStringFUTF16(
+        IDS_MEDIA_SYSTEM_AUDIO_CAPTURE_CONFIRMATION_TEXT, application_name);
+  }
+  return base::string16();
+}
+
 // Helper to get list of media stream devices for desktop capture in |devices|.
 // Registers to display notification if |display_notification| is true.
 // Returns an instance of MediaStreamUI to be passed to content layer.
@@ -164,9 +194,12 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
            << registered_extension_name;
 
   // Add selected desktop source to the list.
-  devices->push_back(
-      content::MediaStreamDevice(content::MEDIA_DESKTOP_VIDEO_CAPTURE,
-                                 media_id.ToString(), media_id.ToString()));
+  if (media_id.type == content::DesktopMediaID::TYPE_SCREEN) {
+    devices->push_back(
+        content::MediaStreamDevice(content::MEDIA_DESKTOP_VIDEO_CAPTURE,
+                                   media_id.ToString(), media_id.ToString()));
+  }
+
   if (capture_audio) {
     if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
       content::WebContentsMediaCaptureId web_id = media_id.web_contents_id;
@@ -239,7 +272,12 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   content::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
 
-  DCHECK_EQ(request.video_type, content::MEDIA_DESKTOP_VIDEO_CAPTURE);
+  DCHECK(request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE ||
+         request.video_type == content::MEDIA_NO_SERVICE);
+  DCHECK(request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE ||
+         request.audio_type == content::MEDIA_NO_SERVICE);
+  DCHECK(request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE ||
+         request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE);
 
   UpdateExtensionTrusted(request, extension);
 
@@ -297,29 +335,26 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
           base::UTF8ToUTF16(request.security_origin.spec());
       if (extension)
         application_name = base::UTF8ToUTF16(extension->name());
-      base::string16 confirmation_text = l10n_util::GetStringFUTF16(
-          request.audio_type == content::MEDIA_NO_SERVICE
-              ? IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT
-              : IDS_MEDIA_SCREEN_AND_AUDIO_CAPTURE_CONFIRMATION_TEXT,
-          application_name);
       chrome::MessageBoxResult result = chrome::ShowQuestionMessageBox(
           parent_window,
           l10n_util::GetStringFUTF16(
               IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE, application_name),
-          confirmation_text);
+          GetConfirmationUIString(request, application_name));
       is_approved = (result == chrome::MESSAGE_BOX_RESULT_YES);
     }
 
     if (is_approved) {
       content::DesktopMediaID screen_id;
+      if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
 #if defined(OS_CHROMEOS)
-      screen_id = content::DesktopMediaID::RegisterAuraWindow(
-          content::DesktopMediaID::TYPE_SCREEN,
-          ash::Shell::Get()->GetPrimaryRootWindow());
+        screen_id = content::DesktopMediaID::RegisterAuraWindow(
+            content::DesktopMediaID::TYPE_SCREEN,
+            ash::Shell::Get()->GetPrimaryRootWindow());
 #else   // defined(OS_CHROMEOS)
-      screen_id = content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
-                                          webrtc::kFullDesktopScreenId);
+        screen_id = content::DesktopMediaID(
+            content::DesktopMediaID::TYPE_SCREEN, webrtc::kFullDesktopScreenId);
 #endif  // !defined(OS_CHROMEOS)
+      }
 
       bool capture_audio =
           (request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE &&
@@ -375,7 +410,8 @@ void DesktopCaptureAccessHandler::HandleRequest(
   content::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
 
-  if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
+  if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE &&
+      request.audio_type != content::MEDIA_DESKTOP_AUDIO_CAPTURE) {
     callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
     return;
   }
@@ -386,6 +422,11 @@ void DesktopCaptureAccessHandler::HandleRequest(
     ProcessScreenCaptureAccessRequest(web_contents, request, callback,
                                       extension);
     return;
+  }
+
+  if (!request.requested_audio_device_id.empty()) {
+    LOG(WARNING)
+        << "Setting a device id for system audio capture is not supported.";
   }
 
   // The extension name that the stream is registered with.
@@ -411,7 +452,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
                                              &original_extension_name);
   }
 
-  // Received invalid device id.
+  // Received invalid video device id.
   if (media_id.type == content::DesktopMediaID::TYPE_NONE) {
     callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
     return;
