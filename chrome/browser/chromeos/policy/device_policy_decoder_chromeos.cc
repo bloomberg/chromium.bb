@@ -878,7 +878,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
 
   if (policy.has_device_off_hours()) {
     auto off_hours_policy =
-        off_hours::ConvertPolicyProtoToValue(policy.device_off_hours());
+        ConvertOffHoursProtoToValue(policy.device_off_hours());
     if (off_hours_policy)
       policies->Set(key::kDeviceOffHours, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,

@@ -574,7 +574,7 @@ void DecodeGenericPolicies(
 
   if (policy.has_device_off_hours()) {
     auto off_hours_policy =
-        policy::off_hours::ConvertPolicyProtoToValue(policy.device_off_hours());
+        policy::ConvertOffHoursProtoToValue(policy.device_off_hours());
     if (off_hours_policy)
       new_values_cache->SetValue(kDeviceOffHours, std::move(off_hours_policy));
   }
