@@ -261,7 +261,10 @@ class SmoothnessKeySilkCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass  # Nothing
+        self.DisableStory(
+            'inbox_app.html?slide_drawer', [story_module.expectations.ALL],
+            'Story contains multiple interaction records. Not supported in '
+            'smoothness benchmarks.')
     return StoryExpectations()
 
 
