@@ -95,6 +95,10 @@ class Category {
   // |CategoryFactory::FromIDValue(id)|.
   int id() const { return id_; }
 
+  // Returns a remote category identifier. Do not call for non-remote
+  // categories.
+  int remote_id() const;
+
   // Returns whether this category matches the given |known_category|.
   bool IsKnownCategory(KnownCategories known_category) const;
 

@@ -606,6 +606,17 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         {kNotificationsFeature.name});
   }
 
+  void SetFetchMoreSuggestionsCount(int count) {
+    // VariationParamsManager supports only one
+    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
+    // previous settings first to make this explicit.
+    params_manager_.ClearAllVariationParams();
+    params_manager_.SetVariationParamsWithFeatureAssociations(
+        /*trial_name=*/kArticleSuggestionsFeature.name,
+        {{"fetch_more_suggestions_count", base::IntToString(count)}},
+        {kArticleSuggestionsFeature.name});
+  }
+
  private:
   variations::testing::VariationParamsManager params_manager_;
   test::RemoteSuggestionsTestUtils utils_;
@@ -2169,7 +2180,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   std::vector<FetchedCategory> fetched_categories;
   FetchedCategoryBuilder category_builder;
   category_builder.SetCategory(articles_category());
-  for (int i = 0; i < provider->GetMaxSuggestionCountForTesting() + 1; ++i) {
+  for (int i = 0;
+       i < provider->GetMaxNormalFetchSuggestionCountForTesting() + 1; ++i) {
     category_builder.AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId(
         base::StringPrintf("http://localhost/suggestion-id-%d", i)));
   }
@@ -2178,8 +2190,9 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                         Status::Success(), std::move(fetched_categories));
   // TODO(tschumann): We should probably trim out any additional results and
   // only serve the MaxSuggestionCount items.
-  EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
-              SizeIs(provider->GetMaxSuggestionCountForTesting() + 1));
+  EXPECT_THAT(
+      provider->GetSuggestionsForTesting(articles_category()),
+      SizeIs(provider->GetMaxNormalFetchSuggestionCountForTesting() + 1));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
@@ -4047,6 +4060,50 @@ TEST_F(RemoteSuggestionsProviderImplTest,
               SizeIs(1));
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category())[0].url(),
               GURL("http://articles.com"));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldNotSetExclusiveCategoryWhenFetchingSuggestions) {
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+
+  RequestParams params;
+  EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _))
+      .WillOnce(SaveArg<0>(&params));
+  provider->FetchSuggestions(
+      /*interactive_request=*/true,
+      RemoteSuggestionsProvider::FetchStatusCallback());
+
+  EXPECT_FALSE(params.exclusive_category.has_value());
+  EXPECT_EQ(params.count_to_fetch, 10);
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldSetExclusiveCategoryAndCountToFetchWhenFetchingMoreSuggestions) {
+  SetFetchMoreSuggestionsCount(35);
+
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+
+  RequestParams params;
+  EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _))
+      .WillOnce(SaveArg<0>(&params));
+  EXPECT_CALL(*scheduler(), AcquireQuotaForInteractiveFetch())
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  provider->Fetch(
+      articles_category(), /*known_suggestion_ids=*/std::set<std::string>(),
+      /*fetch_done_callback=*/
+      base::Bind([](Status status_code,
+                    std::vector<ContentSuggestion> suggestions) -> void {}));
+
+  ASSERT_TRUE(params.exclusive_category.has_value());
+  EXPECT_EQ(*params.exclusive_category, articles_category());
+  EXPECT_EQ(params.count_to_fetch, 35);
 }
 
 }  // namespace ntp_snippets

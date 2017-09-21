@@ -38,6 +38,11 @@ bool Category::IsValidIDValue(int id) {
 
 Category::Category(int id) : id_(id) {}
 
+int Category::remote_id() const {
+  DCHECK_GT(id_, static_cast<int>(KnownCategories::REMOTE_CATEGORIES_OFFSET));
+  return id_ - static_cast<int>(KnownCategories::REMOTE_CATEGORIES_OFFSET);
+}
+
 bool Category::IsKnownCategory(KnownCategories known_category) const {
   DCHECK_NE(known_category, KnownCategories::LOCAL_CATEGORIES_COUNT);
   DCHECK_NE(known_category, KnownCategories::REMOTE_CATEGORIES_OFFSET);

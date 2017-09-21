@@ -268,6 +268,50 @@ TEST_F(JsonRequestTest, BuildRequestWithUILanguageOnly) {
                          "}"));
 }
 
+TEST_F(JsonRequestTest,
+       ShouldPropagateCountToFetchWhenExclusiveCategoryPresent) {
+  JsonRequest::Builder builder;
+  RequestParams params;
+  params.interactive_request = true;
+  params.language_code = "en";
+  params.exclusive_category =
+      Category::FromKnownCategory(KnownCategories::ARTICLES);
+  params.count_to_fetch = 25;
+  builder.SetParams(params);
+
+  EXPECT_THAT(builder.PreviewRequestBodyForTesting(), EqualsJSON(R"(
+                              {
+                                "priority": "USER_ACTION",
+                                "uiLanguage": "en",
+                                "excludedSuggestionIds": [],
+                                "categoryParameters": [{
+                                  "id": 1,
+                                  "numSuggestions": 25
+                                }]
+                              }
+                            )"));
+}
+
+// TODO(vitaliii): Propagate count to fetch in this case as well and delete this
+// test. Currently the server does not support this.
+TEST_F(JsonRequestTest,
+       ShouldNotPropagateCountToFetchWhenExclusiveCategoryNotPresent) {
+  JsonRequest::Builder builder;
+  RequestParams params;
+  params.interactive_request = true;
+  params.language_code = "en";
+  params.count_to_fetch = 10;
+  builder.SetParams(params);
+
+  EXPECT_THAT(builder.PreviewRequestBodyForTesting(), EqualsJSON(R"(
+                              {
+                                "priority": "USER_ACTION",
+                                "uiLanguage": "en",
+                                "excludedSuggestionIds": []
+                              }
+                            )"));
+}
+
 }  // namespace internal
 
 }  // namespace ntp_snippets

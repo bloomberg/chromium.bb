@@ -121,8 +121,9 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       DismissedSuggestionsCallback callback) override;
   void ClearDismissedSuggestionsForDebugging(Category category) override;
 
-  // Returns the maximum number of suggestions that will be shown at once.
-  static int GetMaxSuggestionCountForTesting();
+  // Returns the maximum number of suggestions we expect to receive from the
+  // server during a normal (not fetch-more) fetch..
+  static int GetMaxNormalFetchSuggestionCountForTesting();
 
   // Available suggestions, only for unit tests.
   // TODO(treib): Get rid of this. Tests should use a fake observer instead.
@@ -166,6 +167,9 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
                            CallsSchedulerWhenSignedIn);
   FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsProviderImplTest,
                            CallsSchedulerWhenSignedOut);
+  FRIEND_TEST_ALL_PREFIXES(
+      RemoteSuggestionsProviderImplTest,
+      ShouldNotSetExclusiveCategoryWhenFetchingSuggestions);
 
   // Possible state transitions:
   //       NOT_INITED --------+
@@ -380,9 +384,12 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   void RestoreCategoriesFromPrefs();
   void StoreCategoriesToPrefs();
 
-  // Absence of fetched category corresponds to fetching all categories.
-  RequestParams BuildFetchParams(
-      base::Optional<Category> fetched_category) const;
+  // If |fetched_category| is nullopt, fetches all categories. Otherwise,
+  // fetches at most |count_to_fetch| suggestions only from |fetched_category|.
+  // TODO(vitaliii): Also support |count_to_fetch| when |fetched_category| is
+  // nullopt.
+  RequestParams BuildFetchParams(base::Optional<Category> fetched_category,
+                                 int count_to_fetch) const;
 
   void MarkEmptyCategoriesAsLoading();
 
