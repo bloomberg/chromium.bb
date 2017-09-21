@@ -38874,6 +38874,15 @@ would be helpful to identify which type is being sent.
   <int value="3" label="AUTO_UPDATES_ONLY"/>
 </enum>
 
+<enum name="UpgradeNotificationStage">
+  <int value="0" label="None"/>
+  <int value="1" label="Low"/>
+  <int value="2" label="Elevated"/>
+  <int value="3" label="High"/>
+  <int value="4" label="Severe"/>
+  <int value="5" label="Critical"/>
+</enum>
+
 <enum name="URLRequestAnnotationType">
 <!-- Generated from tools/traffic_annotation/summary/annotations.xml.
 Called by update_traffic_annotation_histograms.py.-->
