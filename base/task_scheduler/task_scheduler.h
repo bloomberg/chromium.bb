@@ -165,6 +165,10 @@ class BASE_EXPORT TaskScheduler {
   // afterwards. CHECKs on failure. For tests, prefer
   // base::test::ScopedTaskEnvironment (ensures isolation).
   static void CreateAndStartWithDefaultParams(StringPiece name);
+
+  // Same as CreateAndStartWithDefaultParams() but allows callers to split the
+  // Create() and StartWithDefaultParams() calls.
+  void StartWithDefaultParams();
 #endif  // !defined(OS_NACL)
 
   // Creates a ready to start task scheduler. |name| is used to label threads

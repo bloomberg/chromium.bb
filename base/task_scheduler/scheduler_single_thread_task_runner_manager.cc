@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -35,6 +34,22 @@ namespace base {
 namespace internal {
 
 namespace {
+
+// Boolean indicating whether there's a SchedulerSingleThreadTaskRunnerManager
+// instance alive in this process. This variable should only be set when the
+// SchedulerSingleThreadTaskRunnerManager instance is brought up (on the main
+// thread; before any tasks are posted) and decremented when the instance is
+// brought down (i.e., only when unit tests tear down the task environment and
+// never in production). This makes the variable const while worker threads are
+// up and as such it doesn't need to be atomic. It is used to tell when a task
+// is posted from the main thread after the task environment was brought down in
+// unit tests so that SchedulerSingleThreadTaskRunnerManager bound TaskRunners
+// can return false on PostTask, letting such callers know they should complete
+// necessary work synchronously. Note: |!g_manager_is_alive| is generally
+// equivalent to |!TaskScheduler::GetInstance()| but has the advantage of being
+// valid in task_scheduler unit tests that don't instantiate a full
+// TaskScheduler.
+bool g_manager_is_alive = false;
 
 // Allows for checking the PlatformThread::CurrentRef() against a set
 // PlatformThreadRef atomically without using locks.
@@ -258,6 +273,9 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
   bool PostDelayedTask(const Location& from_here,
                        OnceClosure closure,
                        TimeDelta delay) override {
+    if (!g_manager_is_alive)
+      return false;
+
     auto task =
         std::make_unique<Task>(from_here, std::move(closure), traits_, delay);
     task->single_thread_task_runner_ref = this;
@@ -284,6 +302,8 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
   }
 
   bool RunsTasksInCurrentSequence() const override {
+    if (!g_manager_is_alive)
+      return false;
     return GetDelegate()->RunsTasksInCurrentSequence();
   }
 
@@ -291,12 +311,24 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
   ~SchedulerSingleThreadTaskRunner() override {
     // Only unregister if this is a DEDICATED SingleThreadTaskRunner. SHARED
     // task runner SchedulerWorkers are managed separately as they are reused.
-    if (thread_mode_ == SingleThreadTaskRunnerThreadMode::DEDICATED) {
-      // Note: This will crash if SchedulerSingleThreadTaskRunnerManager is
-      // incorrectly destroyed first in tests (in production the TaskScheduler
-      // and all of its state are intentionally leaked after
-      // TaskScheduler::Shutdown(). See
-      // ~SchedulerSingleThreadTaskRunnerManager() for more details.
+    // |g_manager_is_alive| avoids a use-after-free should this
+    // SchedulerSingleThreadTaskRunner outlive its manager. It is safe to access
+    // |g_manager_is_alive| without synchronization primitives as it is const
+    // for the lifetime of the manager and ~SchedulerSingleThreadTaskRunner()
+    // either happens prior to the end of JoinForTesting() (which happens-before
+    // manager's destruction) or on main thread after the task environment's
+    // entire destruction (which happens-after the manager's destruction). Yes,
+    // there's a theoretical use case where the last ref to this
+    // SchedulerSingleThreadTaskRunner is handed to a thread not controlled by
+    // task_scheduler and that this ends up causing
+    // ~SchedulerSingleThreadTaskRunner() to race with
+    // ~SchedulerSingleThreadTaskRunnerManager() but this is intentionally not
+    // supported (and it doesn't matter in production where we leak the task
+    // environment for such reasons). TSan should catch this weird paradigm
+    // should anyone elect to use it in a unit test and the error would point
+    // here.
+    if (g_manager_is_alive &&
+        thread_mode_ == SingleThreadTaskRunnerThreadMode::DEDICATED) {
       outer_->UnregisterSchedulerWorker(worker_);
     }
   }
@@ -339,36 +371,14 @@ SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunnerManager(
                 "The size of |shared_com_scheduler_workers_| must match "
                 "|shared_scheduler_workers_|");
 #endif  // defined(OS_WIN)
+  DCHECK(!g_manager_is_alive);
+  g_manager_is_alive = true;
 }
 
 SchedulerSingleThreadTaskRunnerManager::
     ~SchedulerSingleThreadTaskRunnerManager() {
-#if DCHECK_IS_ON()
-  size_t workers_unregistered_during_join =
-      subtle::NoBarrier_Load(&workers_unregistered_during_join_);
-  // Log an ERROR instead of DCHECK'ing as it's often useful to have both the
-  // stack trace of this call and the crash stack trace of the upcoming
-  // out-of-order ~SchedulerSingleThreadTaskRunner() call to know what to flip.
-  DLOG_IF(ERROR, workers_unregistered_during_join != workers_.size())
-      << "Expect incoming crash in ~SchedulerSingleThreadTaskRunner()!!! There "
-         "cannot be outstanding SingleThreadTaskRunners upon destruction "
-         "of SchedulerSingleThreadTaskRunnerManager in tests "
-      << workers_.size() - workers_unregistered_during_join << " outstanding). "
-      << "Hint 1: If you're hitting this it's most likely because your test "
-         "fixture is destroying its TaskScheduler too early (e.g. via "
-         "base::test::~ScopedTaskEnvironment() or "
-         "content::~TestBrowserThreadBundle()). Refer to the following stack "
-         "trace to know what caused this destruction as well as to the "
-         "upcoming crash in ~SchedulerSingleThreadTaskRunner() to know what "
-         "should have happened before. "
-         "Hint 2: base::test::ScopedTaskEnvironment et al. should typically "
-         "be the first member in a test fixture to ensure it's initialized "
-         "first and destroyed last.\n"
-#if !defined(OS_NACL)  // We don't build base/debug/stack_trace.cc for NaCl.
-      << base::debug::StackTrace().ToString()
-#endif  // !defined(OS_NACL)
-      ;
-#endif  // DCHECK_IS_ON()
+  DCHECK(g_manager_is_alive);
+  g_manager_is_alive = false;
 }
 
 void SchedulerSingleThreadTaskRunnerManager::Start() {
@@ -534,14 +544,9 @@ void SchedulerSingleThreadTaskRunnerManager::UnregisterSchedulerWorker(
   {
     AutoSchedulerLock auto_lock(lock_);
 
-    // We might be joining, so record that a worker was unregistered for
-    // verification at destruction.
-    if (workers_.empty()) {
-#if DCHECK_IS_ON()
-      subtle::NoBarrier_AtomicIncrement(&workers_unregistered_during_join_, 1);
-#endif
+    // Skip when joining (the join logic takes care of the rest).
+    if (workers_.empty())
       return;
-    }
 
     auto worker_iter =
         std::find_if(workers_.begin(), workers_.end(),

@@ -16,6 +16,21 @@ namespace internal {
 
 namespace {
 
+// The number of SchedulerWorkerPool that are alive in this process. This
+// variable should only be incremented when the SchedulerWorkerPool instances
+// are brought up (on the main thread; before any tasks are posted) and
+// decremented when the same instances are brought down (i.e., only when unit
+// tests tear down the task environment and never in production). This makes the
+// variable const while worker threads are up and as such it doesn't need to be
+// atomic. It is used to tell when a task is posted from the main thread after
+// the task environment was brought down in unit tests so that
+// SchedulerWorkerPool bound TaskRunners can return false on PostTask, letting
+// such callers know they should complete necessary work synchronously. Note:
+// |!g_active_pools_count| is generally equivalent to
+// |!TaskScheduler::GetInstance()| but has the advantage of being valid in
+// task_scheduler unit tests that don't instantiate a full TaskScheduler.
+int g_active_pools_count = 0;
+
 // SchedulerWorkerPool that owns the current thread, if any.
 LazyInstance<ThreadLocalPointer<const SchedulerWorkerPool>>::Leaky
     tls_current_worker_pool = LAZY_INSTANCE_INITIALIZER;
@@ -42,6 +57,9 @@ class SchedulerParallelTaskRunner : public TaskRunner {
   bool PostDelayedTask(const Location& from_here,
                        OnceClosure closure,
                        TimeDelta delay) override {
+    if (!g_active_pools_count)
+      return false;
+
     // Post the task as part of a one-off single-task Sequence.
     return worker_pool_->PostTaskWithSequence(
         std::make_unique<Task>(from_here, std::move(closure), traits_, delay),
@@ -77,6 +95,9 @@ class SchedulerSequencedTaskRunner : public SequencedTaskRunner {
   bool PostDelayedTask(const Location& from_here,
                        OnceClosure closure,
                        TimeDelta delay) override {
+    if (!g_active_pools_count)
+      return false;
+
     std::unique_ptr<Task> task =
         std::make_unique<Task>(from_here, std::move(closure), traits_, delay);
     task->sequenced_task_runner_ref = this;
@@ -154,6 +175,12 @@ SchedulerWorkerPool::SchedulerWorkerPool(
     : task_tracker_(task_tracker), delayed_task_manager_(delayed_task_manager) {
   DCHECK(task_tracker_);
   DCHECK(delayed_task_manager_);
+  ++g_active_pools_count;
+}
+
+SchedulerWorkerPool::~SchedulerWorkerPool() {
+  --g_active_pools_count;
+  DCHECK_GE(g_active_pools_count, 0);
 }
 
 void SchedulerWorkerPool::BindToCurrentThread() {

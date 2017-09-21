@@ -24,7 +24,7 @@ class TaskTracker;
 // Interface for a worker pool.
 class BASE_EXPORT SchedulerWorkerPool {
  public:
-  virtual ~SchedulerWorkerPool() = default;
+  virtual ~SchedulerWorkerPool();
 
   // Returns a TaskRunner whose PostTask invocations result in scheduling tasks
   // in this SchedulerWorkerPool using |traits|. Tasks may run in any order and
