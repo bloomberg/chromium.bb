@@ -108,7 +108,7 @@ class MockBluetoothLowEnergyConnectionFinder
 
  protected:
   std::unique_ptr<cryptauth::Connection> CreateConnection(
-      const std::string& device_address) override {
+      device::BluetoothDevice* bluetooth_device) override {
     return base::WrapUnique(CreateConnectionProxy());
   }
 

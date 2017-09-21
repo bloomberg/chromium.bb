@@ -303,16 +303,16 @@ void BleConnectionManager::RemoveObserver(Observer* observer) {
 }
 
 void BleConnectionManager::OnReceivedAdvertisementFromDevice(
-    const std::string& device_address,
-    const cryptauth::RemoteDevice& remote_device) {
+    const cryptauth::RemoteDevice& remote_device,
+    device::BluetoothDevice* bluetooth_device) {
   ConnectionMetadata* connection_metadata =
       GetConnectionMetadata(remote_device);
   if (!connection_metadata) {
     // If an advertisement  is received from a device that is not registered,
     // ignore it.
     PA_LOG(WARNING) << "Received an advertisement from a device which is not "
-                    << "registered. Bluetooth address: " << device_address
-                    << ", Remote Device ID: "
+                    << "registered. Bluetooth address: "
+                    << bluetooth_device->GetAddress() << ", Remote Device ID: "
                     << remote_device.GetTruncatedDeviceIdForLogs();
     return;
   }
@@ -320,8 +320,8 @@ void BleConnectionManager::OnReceivedAdvertisementFromDevice(
   if (connection_metadata->HasSecureChannel()) {
     PA_LOG(WARNING) << "Received another advertisement from a registered "
                     << "device which is already being actively communicated "
-                    << "with. Bluetooth address: " << device_address
-                    << ", Remote Device ID: "
+                    << "with. Bluetooth address: "
+                    << bluetooth_device->GetAddress() << ", Remote Device ID: "
                     << remote_device.GetTruncatedDeviceIdForLogs();
     return;
   }
@@ -330,18 +330,19 @@ void BleConnectionManager::OnReceivedAdvertisementFromDevice(
                << remote_device.GetTruncatedDeviceIdForLogs() << "\". "
                << "Starting authentication handshake.";
 
+  // Stop trying to connect to that device, since it has been found.
+  StopConnectionAttemptAndMoveToEndOfQueue(remote_device);
+
   // Create a connection to that device.
-  std::unique_ptr<cryptauth::Connection> connection =
-      cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
-          NewInstance(remote_device, device_address, adapter_,
-                      device::BluetoothUUID(std::string(kGattServerUuid)));
+  std::unique_ptr<cryptauth::Connection> connection = cryptauth::weave::
+      BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
+          remote_device, adapter_, device::BluetoothUUID(kGattServerUuid),
+          bluetooth_device, false /* should_set_low_connection_latency */);
   std::unique_ptr<cryptauth::SecureChannel> secure_channel =
       cryptauth::SecureChannel::Factory::NewInstance(std::move(connection),
                                                      cryptauth_service_);
   connection_metadata->SetSecureChannel(std::move(secure_channel));
 
-  // Stop trying to connect to that device, since a connection already exists.
-  StopConnectionAttemptAndMoveToEndOfQueue(remote_device);
   UpdateConnectionAttempts();
 }
 

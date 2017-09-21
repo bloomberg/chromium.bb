@@ -25,6 +25,10 @@ namespace cryptauth {
 class CryptAuthService;
 }  // namespace cryptauth
 
+namespace device {
+class BluetoothDevice;
+}  // namespace device
+
 namespace chromeos {
 
 namespace tether {
@@ -114,8 +118,8 @@ class BleConnectionManager : public BleScanner::Observer {
 
   // BleScanner::Observer:
   void OnReceivedAdvertisementFromDevice(
-      const std::string& device_address,
-      const cryptauth::RemoteDevice& remote_device) override;
+      const cryptauth::RemoteDevice& remote_device,
+      device::BluetoothDevice* bluetooth_device) override;
 
  protected:
   void SendMessageReceivedEvent(cryptauth::RemoteDevice remote_device,

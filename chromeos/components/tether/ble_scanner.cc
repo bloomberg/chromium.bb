@@ -158,10 +158,10 @@ void BleScanner::DeviceChanged(device::BluetoothAdapter* adapter,
 }
 
 void BleScanner::NotifyReceivedAdvertisementFromDevice(
-    const std::string& device_address,
-    const cryptauth::RemoteDevice& remote_device) {
+    const cryptauth::RemoteDevice& remote_device,
+    device::BluetoothDevice* bluetooth_device) {
   for (auto& observer : observer_list_)
-    observer.OnReceivedAdvertisementFromDevice(device_address, remote_device);
+    observer.OnReceivedAdvertisementFromDevice(remote_device, bluetooth_device);
 }
 
 void BleScanner::NotifyDiscoverySessionStateChanged(
@@ -288,7 +288,7 @@ void BleScanner::CheckForMatchingScanFilters(
   // to an instance variable, it is possible that an observer could unregister
   // that device, which would change the value of that pointer.
   const cryptauth::RemoteDevice copy = *identified_device;
-  NotifyReceivedAdvertisementFromDevice(bluetooth_device->GetAddress(), copy);
+  NotifyReceivedAdvertisementFromDevice(copy, bluetooth_device);
 }
 
 }  // namespace tether
