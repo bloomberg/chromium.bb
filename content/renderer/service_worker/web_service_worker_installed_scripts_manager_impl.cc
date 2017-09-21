@@ -163,8 +163,6 @@ class Internal : public mojom::ServiceWorkerInstalledScriptsManager {
     // script_container_->Wait() will return false if the script hasn't been
     // added yet.
     script_container_->OnAllDataAddedOnIOThread();
-    // Temporary for debugging https://crbug.com/760427.
-    CHECK(running_receivers_.empty());
   }
 
   // Implements mojom::ServiceWorkerInstalledScriptsManager.

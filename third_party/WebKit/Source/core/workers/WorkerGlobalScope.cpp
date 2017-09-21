@@ -206,8 +206,6 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled()) {
       result = LoadingScriptFromInstalledScriptsManager(
           complete_url, &response_url, &source_code, &cached_meta_data);
-      // Temporary for debugging https://crbug.com/760427.
-      CHECK_NE(LoadResult::kFailed, result);
     }
 
     // If the script wasn't provided by the InstalledScriptsManager, load from
