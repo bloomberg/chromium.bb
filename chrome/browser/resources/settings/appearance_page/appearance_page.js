@@ -104,8 +104,7 @@ Polymer({
         var map = new Map();
         if (settings.routes.FONTS) {
           map.set(
-              settings.routes.FONTS.path,
-              '#customize-fonts-subpage-trigger .subpage-arrow');
+              settings.routes.FONTS.path, '#customize-fonts-subpage-trigger');
         }
         return map;
       },
