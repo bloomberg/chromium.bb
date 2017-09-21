@@ -84,7 +84,7 @@ TEST_F(TouchEventTest, PreventDefaultUncancelable) {
               ElementsAre("Ignored attempt to cancel a touchstart event with "
                           "cancelable=false, for example because scrolling is "
                           "in progress and cannot be interrupted."));
-  EXPECT_THAT(MessageSources(), ElementsAre(kJSMessageSource));
+  EXPECT_THAT(MessageSources(), ElementsAre(kInterventionMessageSource));
 
   EXPECT_TRUE(UseCounter::IsCounted(
       GetDocument(), WebFeature::kUncancelableTouchEventPreventDefaulted));

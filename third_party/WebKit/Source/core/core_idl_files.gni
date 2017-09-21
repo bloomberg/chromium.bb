@@ -167,6 +167,7 @@ core_idl_files =
                     "frame/DeprecationReport.idl",
                     "frame/External.idl",
                     "frame/History.idl",
+                    "frame/InterventionReport.idl",
                     "frame/Location.idl",
                     "frame/Report.idl",
                     "frame/ReportBody.idl",
