@@ -76,8 +76,19 @@ MATCHER_P(ContainsTrackBufferExhaustionSkipLog, skip_milliseconds, "") {
 
 // Test parameter determines if media::kMseBufferByPts feature should be forced
 // on or off for the test.
+// TODO(wolenetz): Add ByPts support by switching from TEST_P to TYPED_TEST with
+// template parameter to match the various SourceBufferStream<RangeClass>
+// type(s) used in production code. See https://crbug.com/718641. In that test
+// style, fixture template parameter determines which kind of buffering API
+// would be unit tested. Note that SBS and SBR internally ignore
+// media::kMseBufferByPts feature setting; the subclass of SBR controls the
+// behavior type, fixed at construction time.  For now, this "using" begins the
+// transition:
+using RangeApi = SourceBufferRangeByDts;
 class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
  protected:
+  using StreamType = SourceBufferStream<RangeApi>;
+
   SourceBufferStreamTest() {
     buffering_api_ = GetParam();
     switch (buffering_api_) {
@@ -90,7 +101,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     }
     video_config_ = TestVideoConfig::Normal();
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
-    stream_.reset(new SourceBufferStream(video_config_, &media_log_));
+    stream_.reset(new StreamType(video_config_, &media_log_));
   }
 
   void SetMemoryLimit(size_t buffers_of_data) {
@@ -106,7 +117,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
   void SetTextStream() {
     video_config_ = TestVideoConfig::Invalid();
     TextTrackConfig config(kTextSubtitles, "", "", "");
-    stream_.reset(new SourceBufferStream(config, &media_log_));
+    stream_.reset(new StreamType(config, &media_log_));
     SetStreamInfo(2, 2);
   }
 
@@ -115,7 +126,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                              CHANNEL_LAYOUT_STEREO, 1000, EmptyExtraData(),
                              Unencrypted(), base::TimeDelta(), 0);
-    stream_.reset(new SourceBufferStream(audio_config_, &media_log_));
+    stream_.reset(new StreamType(audio_config_, &media_log_));
 
     // Equivalent to 2ms per frame.
     SetStreamInfo(500, 500);
@@ -336,10 +347,10 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     int current_position = starting_position;
     for (; current_position <= ending_position; current_position++) {
       scoped_refptr<StreamParserBuffer> buffer;
-      SourceBufferStream::Status status = stream_->GetNextBuffer(&buffer);
+      StreamType::Status status = stream_->GetNextBuffer(&buffer);
 
-      EXPECT_NE(status, SourceBufferStream::kConfigChange);
-      if (status != SourceBufferStream::kSuccess)
+      EXPECT_NE(status, StreamType::kConfigChange);
+      if (status != StreamType::kSuccess)
         break;
 
       if (expect_keyframe && current_position == starting_position)
@@ -367,23 +378,23 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     std::vector<std::string> timestamps = base::SplitString(
         expected, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::stringstream ss;
-    const SourceBufferStream::Type type = stream_->GetType();
+    const StreamType::Type type = stream_->GetType();
     for (size_t i = 0; i < timestamps.size(); i++) {
       scoped_refptr<StreamParserBuffer> buffer;
-      SourceBufferStream::Status status = stream_->GetNextBuffer(&buffer);
+      StreamType::Status status = stream_->GetNextBuffer(&buffer);
 
       if (i > 0)
         ss << " ";
 
-      if (status == SourceBufferStream::kConfigChange) {
+      if (status == StreamType::kConfigChange) {
         switch (type) {
-          case SourceBufferStream::kVideo:
+          case StreamType::kVideo:
             stream_->GetCurrentVideoDecoderConfig();
             break;
-          case SourceBufferStream::kAudio:
+          case StreamType::kAudio:
             stream_->GetCurrentAudioDecoderConfig();
             break;
-          case SourceBufferStream::kText:
+          case StreamType::kText:
             stream_->GetCurrentTextTrackConfig();
             break;
         }
@@ -394,8 +405,8 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
         continue;
       }
 
-      EXPECT_EQ(SourceBufferStream::kSuccess, status);
-      if (status != SourceBufferStream::kSuccess)
+      EXPECT_EQ(StreamType::kSuccess, status);
+      if (status != StreamType::kSuccess)
         break;
 
       if (granularity == TimeGranularity::kMillisecond)
@@ -432,8 +443,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
         // more buffer.  The first buffer should match the timestamp and config
         // of the second buffer, except that its discard_padding() should be its
         // duration.
-        ASSERT_EQ(SourceBufferStream::kSuccess,
-                  stream_->GetNextBuffer(&buffer));
+        ASSERT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&buffer));
         ASSERT_EQ(buffer->GetConfigId(), preroll_buffer->GetConfigId());
         ASSERT_EQ(buffer->track_id(), preroll_buffer->track_id());
         ASSERT_EQ(buffer->timestamp(), preroll_buffer->timestamp());
@@ -453,13 +463,12 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
 
   void CheckNoNextBuffer() {
     scoped_refptr<StreamParserBuffer> buffer;
-    EXPECT_EQ(SourceBufferStream::kNeedBuffer, stream_->GetNextBuffer(&buffer));
+    EXPECT_EQ(StreamType::kNeedBuffer, stream_->GetNextBuffer(&buffer));
   }
 
   void CheckEOSReached() {
     scoped_refptr<StreamParserBuffer> buffer;
-    EXPECT_EQ(SourceBufferStream::kEndOfStream,
-              stream_->GetNextBuffer(&buffer));
+    EXPECT_EQ(StreamType::kEndOfStream, stream_->GetNextBuffer(&buffer));
   }
 
   void CheckVideoConfig(const VideoDecoderConfig& config) {
@@ -479,7 +488,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
   base::TimeDelta frame_duration() const { return frame_duration_; }
 
   StrictMock<MockMediaLog> media_log_;
-  std::unique_ptr<SourceBufferStream> stream_;
+  std::unique_ptr<StreamType> stream_;
   VideoDecoderConfig video_config_;
   AudioDecoderConfig audio_config_;
   BufferingApi buffering_api_;
@@ -2008,7 +2017,7 @@ TEST_P(SourceBufferStreamTest, Seek_StartOfGroup) {
   scoped_refptr<StreamParserBuffer> buffer;
 
   // GetNextBuffer() should return the next buffer at position (5 + |bump|).
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kSuccess);
   EXPECT_EQ(buffer->GetDecodeTimestamp(),
             DecodeTimestamp::FromPresentationTime(5 * frame_duration() + bump));
 
@@ -2023,7 +2032,7 @@ TEST_P(SourceBufferStreamTest, Seek_StartOfGroup) {
   NewCodedFrameGroupAppend_OffsetFirstBuffer(15, 5, bump);
 
   // GetNextBuffer() should return the next buffer at position (15 + |bump|).
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kSuccess);
   EXPECT_EQ(buffer->GetDecodeTimestamp(), DecodeTimestamp::FromPresentationTime(
       15 * frame_duration() + bump));
 
@@ -2382,7 +2391,7 @@ TEST_P(SourceBufferStreamTest, PresentationTimestampIndependence) {
   // Check for IBB...BBP pattern.
   for (int i = 0; i < 20; i++) {
     scoped_refptr<StreamParserBuffer> buffer;
-    ASSERT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
+    ASSERT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kSuccess);
 
     if (buffer->is_key_frame()) {
       EXPECT_EQ(DecodeTimestamp::FromPresentationTime(buffer->timestamp()),
@@ -3247,13 +3256,13 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Basic) {
   // Consume the buffers associated with the initial config.
   scoped_refptr<StreamParserBuffer> buffer;
   for (int i = 0; i < 5; i++) {
-    EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
+    EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kSuccess);
     CheckVideoConfig(video_config_);
   }
 
   // Verify the next attempt to get a buffer will signal that a config change
   // has happened.
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
 
   // Verify that the new config is now returned.
   CheckVideoConfig(new_config);
@@ -3261,7 +3270,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Basic) {
   // Consume the remaining buffers associated with the new config.
   for (int i = 0; i < 5; i++) {
     CheckVideoConfig(new_config);
-    EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
+    EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kSuccess);
   }
 }
 
@@ -3279,7 +3288,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Seek) {
   CheckVideoConfig(video_config_);
   Seek(5);
   CheckVideoConfig(video_config_);
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
   CheckVideoConfig(new_config);
   CheckExpectedBuffers(5, 9, &kDataB);
 
@@ -3297,7 +3306,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_Seek) {
   CheckVideoConfig(new_config);
   Seek(0);
   CheckVideoConfig(new_config);
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
   CheckVideoConfig(video_config_);
   CheckExpectedBuffers(0, 4, &kDataA);
 }
@@ -3759,7 +3768,7 @@ TEST_P(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 TEST_P(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, EmptyExtraData(), Unencrypted());
-  stream_.reset(new SourceBufferStream(config, &media_log_));
+  stream_.reset(new StreamType(config, &media_log_));
   Seek(0);
   NewCodedFrameGroupAppend("0K 0K 30K 30 60 60");
   CheckExpectedBuffers("0K 0K 30K 30 60 60");
@@ -3770,7 +3779,7 @@ TEST_P(SourceBufferStreamTest, SameTimestamp_Audio_SingleAppend_Warning) {
 
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
                             44100, EmptyExtraData(), Unencrypted());
-  stream_.reset(new SourceBufferStream(config, &media_log_));
+  stream_.reset(new StreamType(config, &media_log_));
   Seek(0);
 
   // Note, in reality, a non-keyframe audio frame is rare or perhaps not
@@ -4247,7 +4256,7 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceFrame_NoSplice) {
   for (int i = 0; i < 10; i++) {
     // Verify buffer timestamps and durations are preserved and no buffers have
     // discard padding (indicating no splice trimming).
-    EXPECT_EQ(SourceBufferStream::kSuccess, stream_->GetNextBuffer(&buffer));
+    EXPECT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&buffer));
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(i * 2), buffer->timestamp());
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(2), buffer->duration());
     EXPECT_EQ(kEmptyDiscardPadding, buffer->discard_padding());
@@ -4343,7 +4352,7 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
   scoped_refptr<StreamParserBuffer> read_buffer;
 
   // Buffer A1 was not spliced, should be unchanged.
-  EXPECT_EQ(SourceBufferStream::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&read_buffer));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(0), read_buffer->timestamp());
   EXPECT_EQ(kDuration / 2, read_buffer->duration());
   EXPECT_EQ(discardA1, read_buffer->discard_padding());
@@ -4351,7 +4360,7 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
   // Buffer A2 was overlapped by buffer B1 1ms. Splice trimming should trim A2's
   // duration and increase its discard padding by 1ms.
   const base::TimeDelta overlap = base::TimeDelta::FromMilliseconds(1);
-  EXPECT_EQ(SourceBufferStream::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&read_buffer));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(2), read_buffer->timestamp());
   EXPECT_EQ((kDuration / 2) - overlap, read_buffer->duration());
   const DecoderBuffer::DiscardPadding overlap_discard =
@@ -4360,13 +4369,13 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
 
   // Buffer B1 is overlapping A2, but B1 should be unchanged - splice trimming
   // only modifies the earlier buffer (A1).
-  EXPECT_EQ(SourceBufferStream::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&read_buffer));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(3), read_buffer->timestamp());
   EXPECT_EQ(kDuration / 2, read_buffer->duration());
   EXPECT_EQ(discardB1, read_buffer->discard_padding());
 
   // Buffer B2 is not spliced, should be unchanged.
-  EXPECT_EQ(SourceBufferStream::kSuccess, stream_->GetNextBuffer(&read_buffer));
+  EXPECT_EQ(StreamType::kSuccess, stream_->GetNextBuffer(&read_buffer));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(5), read_buffer->timestamp());
   EXPECT_EQ(kDuration, read_buffer->duration());
   EXPECT_EQ(std::make_pair(kNoDiscard, kNoDiscard),
@@ -4384,7 +4393,7 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
   audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                            CHANNEL_LAYOUT_STEREO, 4000, EmptyExtraData(),
                            Unencrypted(), base::TimeDelta(), 0);
-  stream_.reset(new SourceBufferStream(audio_config_, &media_log_));
+  stream_.reset(new StreamType(audio_config_, &media_log_));
   // Equivalent to 0.5ms per frame.
   SetStreamInfo(2000, 2000);
   Seek(0);
@@ -4441,7 +4450,7 @@ TEST_P(SourceBufferStreamTest, Audio_ConfigChangeWithPreroll) {
   // Verify the next attempt to get a buffer will signal that a config change
   // has happened.
   scoped_refptr<StreamParserBuffer> buffer;
-  EXPECT_EQ(SourceBufferStream::kConfigChange, stream_->GetNextBuffer(&buffer));
+  EXPECT_EQ(StreamType::kConfigChange, stream_->GetNextBuffer(&buffer));
 
   // Verify upcoming buffers will use the new config.
   CheckAudioConfig(new_config);
@@ -4669,7 +4678,7 @@ TEST_P(SourceBufferStreamTest, ConfigChange_ReSeek) {
   CheckVideoConfig(video_config_);
   SeekToTimestampMs(2030);
   CheckVideoConfig(video_config_);
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
   CheckVideoConfig(new_config);
 
   // Trigger the re-seek.
@@ -4690,11 +4699,11 @@ TEST_P(SourceBufferStreamTest, ConfigChange_ReSeek) {
   SeekToTimestampMs(2000);
   CheckVideoConfig(new_config);
   ASSERT_FALSE(new_config.Matches(video_config_));
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
   CheckVideoConfig(video_config_);
   CheckExpectedBuffers("2000K 2010 2020D10");
   CheckVideoConfig(video_config_);
-  EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
+  EXPECT_EQ(stream_->GetNextBuffer(&buffer), StreamType::kConfigChange);
   CheckVideoConfig(new_config);
   CheckExpectedBuffers("2030K 2040 2050D10");
   CheckNoNextBuffer();
@@ -5158,8 +5167,7 @@ INSTANTIATE_TEST_CASE_P(LegacyByDts,
                         SourceBufferStreamTest,
                         Values(BufferingApi::kLegacyByDts));
 
-// TODO(wolenetz): Update impl and tests to verify when kMseBufferByPts is
-// enabled. See https://crbug.com/718641. INSTANTIATE_TEST_CASE_P(NewByPts,
-// SourceBufferStreamTest, Values(BufferingApi::kNewByPts));
+// TODO(wolenetz): Update impl and tests to verify both ByDts and ByPts. See
+// https://crbug.com/718641.
 
 }  // namespace media

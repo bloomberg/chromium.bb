@@ -222,7 +222,7 @@ bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
         config.codec() == kCodecMP3 || config.codec() == kCodecAAC ||
         config.codec() == kCodecVorbis || config.codec() == kCodecFLAC;
 
-    stream_.reset(new SourceBufferStream(config, media_log));
+    stream_.reset(new StreamType(config, media_log));
     return true;
   }
 
@@ -237,7 +237,7 @@ bool ChunkDemuxerStream::UpdateVideoConfig(const VideoDecoderConfig& config,
 
   if (!stream_) {
     DCHECK_EQ(state_, UNINITIALIZED);
-    stream_.reset(new SourceBufferStream(config, media_log));
+    stream_.reset(new StreamType(config, media_log));
     return true;
   }
 
@@ -250,7 +250,7 @@ void ChunkDemuxerStream::UpdateTextConfig(const TextTrackConfig& config,
   base::AutoLock auto_lock(lock_);
   DCHECK(!stream_);
   DCHECK_EQ(state_, UNINITIALIZED);
-  stream_.reset(new SourceBufferStream(config, media_log));
+  stream_.reset(new StreamType(config, media_log));
 }
 
 void ChunkDemuxerStream::MarkEndOfStream() {
@@ -378,7 +378,7 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
       return;
     case RETURNING_DATA_FOR_READS:
       switch (stream_->GetNextBuffer(&buffer)) {
-        case SourceBufferStream::kSuccess:
+        case StreamType::kSuccess:
           status = DemuxerStream::kOk;
           DVLOG(2) << __func__ << ": returning kOk, type " << type_ << ", dts "
                    << buffer->GetDecodeTimestamp().InSecondsF() << ", pts "
@@ -386,18 +386,18 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
                    << buffer->duration().InSecondsF() << ", key "
                    << buffer->is_key_frame();
           break;
-        case SourceBufferStream::kNeedBuffer:
+        case StreamType::kNeedBuffer:
           // Return early without calling |read_cb_| since we don't have
           // any data to return yet.
           DVLOG(2) << __func__ << ": returning kNeedBuffer, type " << type_;
           return;
-        case SourceBufferStream::kEndOfStream:
+        case StreamType::kEndOfStream:
           status = DemuxerStream::kOk;
           buffer = StreamParserBuffer::CreateEOSBuffer();
           DVLOG(2) << __func__ << ": returning kOk with EOS buffer, type "
                    << type_;
           break;
-        case SourceBufferStream::kConfigChange:
+        case StreamType::kConfigChange:
           status = kConfigChanged;
           buffer = NULL;
           DVLOG(2) << __func__ << ": returning kConfigChange, type " << type_;
