@@ -912,14 +912,14 @@ TEST_F(LockStateControllerTest, IgnorePowerButtonIfScreenIsOff) {
 
   // When the screen brightness is at 0%, we shouldn't do anything in response
   // to power button presses.
-  power_button_controller_->OnScreenBrightnessChanged(0.0);
+  power_manager_client_->SendBrightnessChanged(0, true);
   PressPowerButton();
   EXPECT_FALSE(test_api_->is_animating_lock());
   ReleasePowerButton();
 
   // After increasing the brightness to 10%, we should start the timer like
   // usual.
-  power_button_controller_->OnScreenBrightnessChanged(10.0);
+  power_manager_client_->SendBrightnessChanged(10, true);
   PressPowerButton();
   EXPECT_TRUE(test_api_->is_animating_lock());
   ReleasePowerButton();
@@ -947,7 +947,7 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
 
   // When all of the displays are turned off (e.g. due to user inactivity), the
   // power button should be ignored.
-  power_button_controller_->OnScreenBrightnessChanged(0.0);
+  power_manager_client_->SendBrightnessChanged(0, true);
   internal_display->set_current_mode(nullptr);
   external_display->set_current_mode(nullptr);
   power_button_controller_->OnDisplayModeChanged(outputs);

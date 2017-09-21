@@ -8,9 +8,14 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/event_handler.h"
+
+namespace base {
+class TickClock;
+}  // namespace base
 
 namespace ash {
 
@@ -34,10 +39,13 @@ class ASH_EXPORT PowerButtonDisplayController
     OFF_AUTO,
   };
 
-  PowerButtonDisplayController();
+  explicit PowerButtonDisplayController(base::TickClock* tick_clock);
   ~PowerButtonDisplayController() override;
 
   ScreenState screen_state() const { return screen_state_; }
+  base::TimeTicks screen_state_last_changed() const {
+    return screen_state_last_changed_;
+  }
 
   // Updates the power manager's backlights-forced-off state and enables or
   // disables the touchscreen. No-op if |backlights_forced_off_| already equals
@@ -76,6 +84,12 @@ class ASH_EXPORT PowerButtonDisplayController
 
   // Current forced-off state of backlights.
   bool backlights_forced_off_ = false;
+
+  // Saves the most recent timestamp that screen state changed.
+  base::TimeTicks screen_state_last_changed_;
+
+  // Time source for performed action times.
+  base::TickClock* tick_clock_;  // Not owned.
 
   base::WeakPtrFactory<PowerButtonDisplayController> weak_ptr_factory_;
 

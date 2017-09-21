@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/lock_state_controller.h"
-#include "ash/wm/power_button_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -69,11 +68,6 @@ void PowerEventObserver::OnLockAnimationsComplete() {
     screen_lock_callback_.Run();
     screen_lock_callback_.Reset();
   }
-}
-
-void PowerEventObserver::BrightnessChanged(int level, bool user_initiated) {
-  Shell::Get()->power_button_controller()->OnScreenBrightnessChanged(
-      static_cast<double>(level));
 }
 
 void PowerEventObserver::SuspendImminent() {
