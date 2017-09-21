@@ -6097,6 +6097,60 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
   RunTest(pos);
 }
 
+IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
+                       InputEventRouterWheelTargetTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_nested_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  auto* rwhv_root = static_cast<RenderWidgetHostViewAura*>(
+      web_contents()->GetRenderWidgetHostView());
+  set_rwhv_root(rwhv_root);
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  GURL frame_url(embedded_test_server()->GetURL(
+      "b.com", "/page_with_scrollable_div.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+
+  // Synchronize with the child and parent renderers to guarantee that the
+  // surface information required for event hit testing is ready.
+  RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
+      root->child_at(0)->current_frame_host()->GetView());
+  WaitForChildFrameSurfaceReady(root->child_at(0)->current_frame_host());
+
+  RenderWidgetHostInputEventRouter* router =
+      web_contents()->GetInputEventRouter();
+
+  // Send a mouse wheel event to child.
+  gfx::Rect bounds = child_rwhv->GetViewBounds();
+  gfx::Point pos(bounds.x() + 10, bounds.y() + 10);
+  SendMouseWheel(pos);
+
+  if (child_rwhv->wheel_scroll_latching_enabled())
+    EXPECT_EQ(child_rwhv, router->wheel_target_.target);
+  else
+    EXPECT_EQ(nullptr, router->wheel_target_.target);
+
+  // Send a mouse wheel event to the main frame. If wheel scroll latching is
+  // enabled it will be still routed to child till the end of current scrolling
+  // sequence.
+  SendMouseWheel(gfx::Point(10, 10));
+  if (child_rwhv->wheel_scroll_latching_enabled())
+    EXPECT_EQ(child_rwhv, router->wheel_target_.target);
+  else
+    EXPECT_EQ(nullptr, router->wheel_target_.target);
+
+  // Kill the wheel target view process. This must reset the wheel_target_.
+  RenderProcessHost* child_process =
+      root->child_at(0)->current_frame_host()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  child_process->Shutdown(0, false);
+  crash_observer.Wait();
+  EXPECT_EQ(nullptr, router->wheel_target_.target);
+}
+
 // Ensure that a cross-process subframe with a touch-handler can receive touch
 // events.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
