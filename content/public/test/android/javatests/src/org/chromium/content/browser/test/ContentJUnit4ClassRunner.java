@@ -9,6 +9,7 @@ import android.support.test.InstrumentationRegistry;
 import org.junit.runners.model.InitializationError;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -33,6 +34,7 @@ public class ContentJUnit4ClassRunner extends BaseJUnit4ClassRunner {
     }
 
     private static List<SkipCheck> defaultSkipChecks() {
+        CommandLine.init(null);
         return CollectionUtil.newArrayList(
                 new UiRestrictionSkipCheck(InstrumentationRegistry.getTargetContext()),
                 new UiDisableIfSkipCheck(InstrumentationRegistry.getTargetContext()));
