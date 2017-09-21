@@ -6,9 +6,6 @@ import("//build/config/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("hid") {
-  # HID support is not implemented on Android.
-  assert(!is_android)
-
   sources = [
     "hid_collection_info.cc",
     "hid_collection_info.h",
