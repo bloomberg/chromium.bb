@@ -15,7 +15,7 @@ namespace {
 
 // The names of dump providers whitelisted for background tracing. Dump
 // providers can be added here only if the background mode dump has very
-// less performance and memory overhead.
+// little processor and memory overhead.
 const char* const kDumpProviderWhitelist[] = {
     "android::ResourceManagerImpl",
     "BlinkGC",
@@ -77,6 +77,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "gpu/gl/textures/share_group_0x?",
     "java_heap",
     "java_heap/allocated_objects",
+    "leveldatabase/0x?",
     "leveldb/leveldb_proto/0x?",
     "leveldb/mojo/0x?",
     "leveldb/mojo/0x?/block_cache",
