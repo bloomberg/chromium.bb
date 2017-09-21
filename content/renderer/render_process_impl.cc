@@ -97,6 +97,14 @@ GetDefaultTaskSchedulerInitParams() {
                                       kSuggestedReclaimTime));
 }
 
+#if DCHECK_IS_ON() && defined(SYZYASAN)
+void V8DcheckCallbackHandler(const char* file, int line, const char* message) {
+  // TODO(siggi): Set a crash key or a breadcrumb so the fact that we hit a
+  //     V8 DCHECK gets out in the crash report.
+  ::logging::LogMessage(file, line, logging::LOG_DCHECK).stream() << message;
+}
+#endif  // DCHECK_IS_ON() && defined(SYZYASAN)
+
 }  // namespace
 
 namespace content {
@@ -121,6 +129,28 @@ RenderProcessImpl::RenderProcessImpl(
     }
   }
 #endif
+
+#if DCHECK_IS_ON() && defined(SYZYASAN)
+  // SyzyASAN official builds can ship with DCHECKs compiled in. Failing DCHECKs
+  // then are either fatal or simply log the error, based on a feature flag.
+  // Make sure V8 follows suit by setting a Dcheck handler that forwards to
+  // the Chrome base logging implementation.
+  v8::V8::SetDcheckErrorHandler(&V8DcheckCallbackHandler);
+
+  if (!base::FeatureList::IsEnabled(base::kSyzyAsanDCheckIsFatalFeature)) {
+    // These V8 flags default on in this build configuration. This triggers
+    // additional verification and code generation, which both slows down V8,
+    // and can lead to fatal CHECKs. Turn these flags down to get something
+    // closer to V8s normal performance and behavior.
+    constexpr char kDisabledFlags[] =
+        "--noturbo_verify "
+        "--noverify_csa "
+        "--noturbo_verify_allocation "
+        "--nodebug_code";
+
+    v8::V8::SetFlagsFromString(kDisabledFlags, sizeof(kDisabledFlags));
+  }
+#endif  // DCHECK_IS_ON() && defined(SYZYASAN)
 
   if (base::SysInfo::IsLowEndDevice()) {
     std::string optimize_flag("--optimize-for-size");
