@@ -6,23 +6,50 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/sys_info.h"
 
 namespace app_list {
 namespace features {
 
-const base::Feature kEnableAnswerCard{"EnableAnswerCard",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAnswerCardDefaultOff{
+    "EnableAnswerCard", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAnswerCardDefaultOn{
+    "EnableAnswerCard", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAnswerCardDarkRun{"EnableAnswerCardDarkRun",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableFullscreenAppList{"EnableFullscreenAppList",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnablePlayStoreAppSearch{
+const base::Feature kEnablePlayStoreAppSearchDefaultOff{
     "EnablePlayStoreAppSearch", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnablePlayStoreAppSearchDefaultOn{
+    "EnablePlayStoreAppSearch", base::FEATURE_ENABLED_BY_DEFAULT};
+
+namespace {
+
+bool IsDeviceEve() {
+  static size_t position = base::SysInfo::GetLsbReleaseBoard().find("eve");
+  static bool is_device_eve = position != std::string::npos;
+
+  return is_device_eve;
+}
+
+const base::Feature& GetAnswerCardFeature() {
+  return IsDeviceEve() ? kEnableAnswerCardDefaultOn
+                       : kEnableAnswerCardDefaultOff;
+}
+
+const base::Feature& GetPlaystoreAppSearchFeature() {
+  return IsDeviceEve() ? kEnablePlayStoreAppSearchDefaultOn
+                       : kEnablePlayStoreAppSearchDefaultOff;
+}
+
+}  // namespace
 
 bool IsAnswerCardEnabled() {
-  static const bool enabled = base::FeatureList::IsEnabled(kEnableAnswerCard);
+  static const bool enabled =
+      base::FeatureList::IsEnabled(GetAnswerCardFeature());
   return enabled;
 }
 
@@ -50,15 +77,20 @@ bool IsTouchFriendlySearchResultsPageEnabled() {
 
 bool IsPlayStoreAppSearchEnabled() {
   // Not using local static variable to allow tests to change this value.
-  return base::FeatureList::IsEnabled(kEnablePlayStoreAppSearch);
+  return base::FeatureList::IsEnabled(GetPlaystoreAppSearchFeature());
 }
 
 std::string AnswerServerUrl() {
-  return base::GetFieldTrialParamValueByFeature(kEnableAnswerCard, "ServerUrl");
+  const std::string experiment_url = base::GetFieldTrialParamValueByFeature(
+      GetAnswerCardFeature(), "ServerUrl");
+  if (!experiment_url.empty())
+    return experiment_url;
+
+  return "https://www.google.com/coac";
 }
 
 std::string AnswerServerQuerySuffix() {
-  return base::GetFieldTrialParamValueByFeature(kEnableAnswerCard,
+  return base::GetFieldTrialParamValueByFeature(GetAnswerCardFeature(),
                                                 "QuerySuffix");
 }
 

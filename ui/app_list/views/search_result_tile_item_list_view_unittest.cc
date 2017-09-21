@@ -44,12 +44,12 @@ class SearchResultTileItemListViewTest
     if (IsPlayStoreAppSearchEnabled()) {
       scoped_feature_list_.InitWithFeatures(
           {features::kEnableFullscreenAppList,
-           features::kEnablePlayStoreAppSearch},
+           features::kEnablePlayStoreAppSearchDefaultOff},
           {});
     } else {
       scoped_feature_list_.InitWithFeatures(
           {features::kEnableFullscreenAppList},
-          {features::kEnablePlayStoreAppSearch});
+          {features::kEnablePlayStoreAppSearchDefaultOff});
     }
     ASSERT_EQ(IsPlayStoreAppSearchEnabled(),
               features::IsPlayStoreAppSearchEnabled());
