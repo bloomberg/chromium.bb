@@ -395,14 +395,11 @@ void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
   delegate_->NeverSavePassword();
 }
 
-void ManagePasswordsBubbleModel::OnUsernameEdited(base::string16 new_username) {
-  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
-  pending_password_.username_value = std::move(new_username);
-}
-
-void ManagePasswordsBubbleModel::OnPasswordSelected(
+void ManagePasswordsBubbleModel::OnCredentialEdited(
+    base::string16 new_username,
     base::string16 new_password) {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
+  pending_password_.username_value = std::move(new_username);
   pending_password_.password_value = std::move(new_password);
 }
 

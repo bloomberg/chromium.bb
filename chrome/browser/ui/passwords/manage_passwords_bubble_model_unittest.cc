@@ -329,6 +329,23 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {
   DestroyModel();
 }
 
+TEST_F(ManagePasswordsBubbleModelTest, EditCredential) {
+  PretendPasswordWaiting();
+  EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
+
+  const base::string16 kExpectedUsername = base::UTF8ToUTF16("new_username");
+  const base::string16 kExpectedPassword = base::UTF8ToUTF16("new_password");
+
+  model()->OnCredentialEdited(kExpectedUsername, kExpectedPassword);
+  EXPECT_EQ(kExpectedUsername, model()->pending_password().username_value);
+  EXPECT_EQ(kExpectedPassword, model()->pending_password().password_value);
+  EXPECT_CALL(*controller(),
+              SavePassword(kExpectedUsername, kExpectedPassword));
+  EXPECT_CALL(*controller(), NeverSavePassword()).Times(0);
+  model()->OnSaveClicked();
+  DestroyModel();
+}
+
 TEST_F(ManagePasswordsBubbleModelTest, OnBrandLinkClicked) {
   PretendPasswordWaiting();
 
