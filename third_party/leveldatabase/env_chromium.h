@@ -190,8 +190,6 @@ class ChromiumEnv : public leveldb::Env,
   void RecordOSError(MethodID method, base::File::Error error) const override;
   void RecordBytesRead(int amount) const override;
   void RecordBytesWritten(int amount) const override;
-  void RecordOpenFilesLimit(const std::string& type);
-  base::HistogramBase* GetMaxFDHistogram(const std::string& type) const;
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
   void DeleteBackupFiles(const base::FilePath& dir);
 
