@@ -708,16 +708,24 @@ var isFadedOut = function(element) {
 };
 
 
-/** Returns the currently visible doodle image. The doodle may be fully-visible
- * or fading in. If the default logo is visible or the doodle is fading out,
- * returns null.
- * @returns {?string}
+/** Returns true if |doodle| is currently visible. If doodle.image is null,
+ * returns true when the default logo is visible; if non-null, checks that it
+ * matches the doodle that is currently visible. Here, "visible" means
+ * fully-visible or fading in.
+ *
+ * @param {{image, metadata}} doodle
+ * @returns {boolean}
  */
-var getCurrentDoodleImageUrl = function() {
-  if ($(IDS.LOGO_DOODLE).style.opacity != 0) {
-    return $(IDS.LOGO_DOODLE_IMAGE).src;
-  }
-  return null;
+var isDoodleCurrentlyVisible = function(doodle) {
+  var haveDoodle = ($(IDS.LOGO_DOODLE).style.opacity != 0);
+  var wantDoodle = (doodle.image !== null);
+  if (!haveDoodle || !wantDoodle)
+    return haveDoodle === wantDoodle;
+
+  // Have a visible doodle and a query doodle. Test that they match.
+  var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
+  return (logoDoodleImage.src === doodle.image) ||
+      (logoDoodleImage.src === doodle.metadata.animatedUrl);
 };
 
 
@@ -746,8 +754,7 @@ var injectDoodle = function(image, metadata) {
   // update the doodle's alt text and href, if applicable.
   if (image === targetDoodle.image) {
     if (metadata !== null) {
-      logoDoodleLink.title = targetDoodle.metadata.altText;
-      logoDoodleLink.href = targetDoodle.metadata.onClickUrl;
+      applyDoodleMetadata(metadata);
       targetDoodle.metadata = metadata;
     }
     return;
@@ -774,8 +781,7 @@ var onDoodleTransitionEnd = function(e) {
     if (targetDoodle.image === null) {
       logoDefault.style.opacity = 1;
     } else {
-      logoDoodleLink.title = targetDoodle.metadata.altText;
-      logoDoodleLink.href = targetDoodle.metadata.onClickUrl;
+      applyDoodleMetadata(targetDoodle.metadata);
       logoDoodleImage.src = targetDoodle.image;
       logoDoodle.style.opacity = 1;
     }
@@ -784,9 +790,30 @@ var onDoodleTransitionEnd = function(e) {
 
   // Fade-in finished. It's possible that the wrong image is now faded in, if
   // the logo updated during a fade-in. In this case, restart the fade-out.
-  if (targetDoodle.image !== getCurrentDoodleImageUrl()) {
+  if (!isDoodleCurrentlyVisible(targetDoodle)) {
     logoDoodle.style.opacity = 0;
     logoDefault.style.opacity = 0;
+  }
+};
+
+
+var applyDoodleMetadata = function(metadata) {
+  var logoDoodleLink = $(IDS.LOGO_DOODLE_LINK);
+  var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
+
+  logoDoodleImage.title = metadata.altText;
+
+  if (metadata.animatedUrl) {
+    logoDoodleLink.removeAttribute('href');
+    logoDoodleLink.onclick = function(e) {
+      e.preventDefault();
+      logoDoodleImage.src = metadata.animatedUrl;
+      logoDoodleLink.href = metadata.onClickUrl;
+      logoDoodleLink.onclick = null;
+    };
+  } else {
+    logoDoodleLink.href = metadata.onClickUrl;
+    logoDoodleLink.onclick = null;
   }
 };
 

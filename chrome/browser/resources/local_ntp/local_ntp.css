@@ -97,6 +97,7 @@ body.hide-fakebox-logo #fakebox {
 }
 
 #logo-doodle-link {
+  cursor: pointer;
   margin: 0 auto;
 }
 
