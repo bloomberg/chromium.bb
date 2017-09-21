@@ -84,7 +84,8 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
 
     // TODO(yoshiki): Use a better tigger (eg. focusing EditText on
     // notification) than clicking (crbug.com/697379).
-    if (event->type() == ui::ET_MOUSE_PRESSED)
+    if (event->type() == ui::ET_MOUSE_PRESSED ||
+        event->type() == ui::ET_GESTURE_TAP)
       owner_->Activate();
 
     views::Widget* widget = owner_->GetWidget();
