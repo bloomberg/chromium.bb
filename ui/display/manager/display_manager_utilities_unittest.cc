@@ -110,4 +110,53 @@ TEST(DisplayUtilitiesTest, DisplayIdListToString) {
   }
 }
 
+TEST(DisplayUtilitiesTest, ComputeBoundary) {
+  // Two displays with their top and bottom align but share no edges.
+  // +----+
+  // |    |
+  // +----+  +----+
+  //         |    |
+  //         +----+
+  Display display_1(1, gfx::Rect(0, 0, 500, 300));
+  Display display_2(2, gfx::Rect(759, 300, 133, 182));
+  gfx::Rect edge_1;
+  gfx::Rect edge_2;
+  EXPECT_FALSE(ComputeBoundary(display_1, display_2, &edge_1, &edge_2));
+
+  // Two displays with their left and right align but share no edges.
+  // +----+
+  // |    |
+  // +----+
+  //
+  //      +----+
+  //      |    |
+  //      +----+
+  display_1.set_bounds(gfx::Rect(0, 0, 500, 300));
+  display_2.set_bounds(gfx::Rect(500, 500, 240, 300));
+  EXPECT_FALSE(ComputeBoundary(display_1, display_2, &edge_1, &edge_2));
+
+  // Special case: all edges align but no edges are shared.
+  // +----+
+  // |    |
+  // +----+----+
+  //      |    |
+  //      +----+
+  display_1.set_bounds(gfx::Rect(0, 0, 500, 300));
+  display_2.set_bounds(gfx::Rect(500, 300, 500, 300));
+  EXPECT_FALSE(ComputeBoundary(display_1, display_2, &edge_1, &edge_2));
+
+  // Test normal cases.
+  display_1.set_bounds(gfx::Rect(740, 0, 150, 300));
+  display_2.set_bounds(gfx::Rect(759, 300, 133, 182));
+  EXPECT_TRUE(ComputeBoundary(display_1, display_2, &edge_1, &edge_2));
+  EXPECT_EQ("759,299 131x1", edge_1.ToString());
+  EXPECT_EQ("759,300 131x1", edge_2.ToString());
+
+  display_1.set_bounds(gfx::Rect(0, 0, 400, 400));
+  display_2.set_bounds(gfx::Rect(400, 150, 400, 400));
+  EXPECT_TRUE(ComputeBoundary(display_1, display_2, &edge_1, &edge_2));
+  EXPECT_EQ("399,150 1x250", edge_1.ToString());
+  EXPECT_EQ("400,150 1x250", edge_2.ToString());
+}
+
 }  // namespace display
