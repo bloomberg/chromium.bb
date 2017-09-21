@@ -79,6 +79,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   FontBaseline baseline_type_ = FontBaseline::kAlphabeticBaseline;
 
   unsigned is_horizontal_writing_mode_ : 1;
+  unsigned quirks_mode_ : 1;
 
   std::unique_ptr<NGExclusionSpace> exclusion_space_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;

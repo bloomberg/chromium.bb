@@ -16,11 +16,14 @@
 namespace blink {
 
 void NGInlineBoxState::ComputeTextMetrics(const ComputedStyle& style,
-                                          FontBaseline baseline_type) {
+                                          FontBaseline baseline_type,
+                                          bool line_height_quirk) {
   text_metrics = NGLineHeightMetrics(style, baseline_type);
   text_top = -text_metrics.ascent;
   text_metrics.AddLeading(style.ComputedLineHeightAsFixed());
-  metrics.Unite(text_metrics);
+
+  if (!line_height_quirk)
+    metrics.Unite(text_metrics);
 
   include_used_fonts = style.LineHeight().IsNegative();
 }
@@ -40,7 +43,8 @@ void NGInlineBoxState::AccumulateUsedFonts(const ShapeResult* shape_result,
 
 NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     const ComputedStyle* line_style,
-    FontBaseline baseline_type) {
+    FontBaseline baseline_type,
+    bool line_height_quirk) {
   if (stack_.IsEmpty()) {
     // For the first line, push a box state for the line itself.
     stack_.resize(1);
@@ -50,7 +54,10 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     // For the following lines, clear states that are not shared across lines.
     for (auto& box : stack_) {
       box.fragment_start = 0;
-      box.metrics = box.text_metrics;
+      if (!line_height_quirk)
+        box.metrics = box.text_metrics;
+      else
+        box.metrics = NGLineHeightMetrics();
       if (box.needs_box_fragment) {
         box.line_left_position = LayoutUnit();
         // Existing box states are wrapped boxes, and hence no left edges.
@@ -67,7 +74,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
   // Use a "strut" (a zero-width inline box with the element's font and
   // line height properties) as the initial metrics for the line box.
   // https://drafts.csswg.org/css2/visudet.html#strut
-  line_box.ComputeTextMetrics(*line_style, baseline_type);
+  line_box.ComputeTextMetrics(*line_style, baseline_type, line_height_quirk);
 
   return &stack_.back();
 }
@@ -276,13 +283,20 @@ NGInlineLayoutStateStack::ApplyBaselineShift(NGInlineBoxState* box,
   LayoutUnit baseline_shift;
   if (!box->pending_descendants.IsEmpty()) {
     for (auto& child : box->pending_descendants) {
+      if (child.metrics.IsEmpty()) {
+        // This can happen with boxes with no content in quirks mode
+        child.metrics = NGLineHeightMetrics(LayoutUnit(), LayoutUnit());
+      }
       switch (child.vertical_align) {
         case EVerticalAlign::kTextTop:
           DCHECK(!box->text_metrics.IsEmpty());
           baseline_shift = child.metrics.ascent + box->text_top;
           break;
         case EVerticalAlign::kTop:
-          baseline_shift = child.metrics.ascent - box->metrics.ascent;
+          if (box->metrics.IsEmpty())
+            baseline_shift = child.metrics.ascent;
+          else
+            baseline_shift = child.metrics.ascent - box->metrics.ascent;
           break;
         case EVerticalAlign::kTextBottom:
           if (const SimpleFontData* font_data =
@@ -295,7 +309,10 @@ NGInlineLayoutStateStack::ApplyBaselineShift(NGInlineBoxState* box,
           NOTREACHED();
         // Fall through.
         case EVerticalAlign::kBottom:
-          baseline_shift = box->metrics.descent - child.metrics.descent;
+          if (box->metrics.IsEmpty())
+            baseline_shift = -child.metrics.descent;
+          else
+            baseline_shift = box->metrics.descent - child.metrics.descent;
           break;
         default:
           NOTREACHED();
