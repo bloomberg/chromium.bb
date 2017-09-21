@@ -11,11 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "cc/output/software_output_device.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
@@ -52,8 +52,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // Constructor for GL-based compositing.
   explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
   // Constructor for software compositing.
-  explicit OutputSurface(
-      std::unique_ptr<cc::SoftwareOutputDevice> software_device);
+  explicit OutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device);
   // Constructor for Vulkan-based compositing.
   explicit OutputSurface(
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
@@ -70,7 +69,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   VulkanContextProvider* vulkan_context_provider() const {
     return vulkan_context_provider_.get();
   }
-  cc::SoftwareOutputDevice* software_device() const {
+  SoftwareOutputDevice* software_device() const {
     return software_device_.get();
   }
 
@@ -125,7 +124,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   struct OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
-  std::unique_ptr<cc::SoftwareOutputDevice> software_device_;
+  std::unique_ptr<SoftwareOutputDevice> software_device_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);

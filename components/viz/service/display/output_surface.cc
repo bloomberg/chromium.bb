@@ -25,7 +25,7 @@ OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
 }
 
 OutputSurface::OutputSurface(
-    std::unique_ptr<cc::SoftwareOutputDevice> software_device)
+    std::unique_ptr<SoftwareOutputDevice> software_device)
     : software_device_(std::move(software_device)) {
   DCHECK(software_device_);
 }

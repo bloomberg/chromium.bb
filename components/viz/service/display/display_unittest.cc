@@ -38,7 +38,7 @@ namespace {
 static constexpr FrameSinkId kArbitraryFrameSinkId(3, 3);
 static constexpr FrameSinkId kAnotherFrameSinkId(4, 4);
 
-class TestSoftwareOutputDevice : public cc::SoftwareOutputDevice {
+class TestSoftwareOutputDevice : public SoftwareOutputDevice {
  public:
   TestSoftwareOutputDevice() {}
 

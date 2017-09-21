@@ -13,13 +13,13 @@
 namespace cc {
 class OutputSurface;
 class DisplayResourceProvider;
-class SoftwareOutputDevice;
 }  // namespace cc
 
 namespace viz {
 class DebugBorderDrawQuad;
 class PictureDrawQuad;
 class RenderPassDrawQuad;
+class SoftwareOutputDevice;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
@@ -92,7 +92,7 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   bool is_scissor_enabled_ = false;
   gfx::Rect scissor_rect_;
 
-  cc::SoftwareOutputDevice* output_device_;
+  SoftwareOutputDevice* output_device_;
   SkCanvas* root_canvas_ = nullptr;
   SkCanvas* current_canvas_ = nullptr;
   SkPaint current_paint_;

@@ -8,7 +8,7 @@
 #include <X11/Xlib.h>
 
 #include "base/macros.h"
-#include "cc/output/software_output_device.h"
+#include "components/viz/service/display/software_output_device.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -17,7 +17,7 @@ class Compositor;
 
 namespace content {
 
-class SoftwareOutputDeviceX11 : public cc::SoftwareOutputDevice {
+class SoftwareOutputDeviceX11 : public viz::SoftwareOutputDevice {
  public:
   explicit SoftwareOutputDeviceX11(ui::Compositor* compositor);
 

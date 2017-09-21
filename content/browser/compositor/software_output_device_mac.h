@@ -10,7 +10,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "cc/output/software_output_device.h"
+#include "components/viz/service/display/software_output_device.h"
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -24,13 +24,13 @@ class Compositor;
 
 namespace content {
 
-class CONTENT_EXPORT SoftwareOutputDeviceMac : public cc::SoftwareOutputDevice,
+class CONTENT_EXPORT SoftwareOutputDeviceMac : public viz::SoftwareOutputDevice,
                                                public gfx::VSyncProvider {
  public:
   explicit SoftwareOutputDeviceMac(ui::Compositor* compositor);
   ~SoftwareOutputDeviceMac() override;
 
-  // cc::SoftwareOutputDevice implementation.
+  // viz::SoftwareOutputDevice implementation.
   void Resize(const gfx::Size& pixel_size, float scale_factor) override;
   SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
   void EndPaint() override;

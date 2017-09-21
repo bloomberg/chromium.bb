@@ -11,13 +11,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
-#include "cc/output/software_output_device.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display/software_output_device.h"
 
 namespace cc {
 
@@ -37,7 +37,7 @@ class FakeOutputSurface : public viz::OutputSurface {
   }
 
   static std::unique_ptr<FakeOutputSurface> CreateSoftware(
-      std::unique_ptr<SoftwareOutputDevice> software_device) {
+      std::unique_ptr<viz::SoftwareOutputDevice> software_device) {
     return base::WrapUnique(new FakeOutputSurface(std::move(software_device)));
   }
 
@@ -107,7 +107,7 @@ class FakeOutputSurface : public viz::OutputSurface {
   explicit FakeOutputSurface(
       scoped_refptr<viz::ContextProvider> context_provider);
   explicit FakeOutputSurface(
-      std::unique_ptr<SoftwareOutputDevice> software_device);
+      std::unique_ptr<viz::SoftwareOutputDevice> software_device);
 
   viz::OutputSurfaceClient* client_ = nullptr;
   std::unique_ptr<viz::OutputSurfaceFrame> last_sent_frame_;

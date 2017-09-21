@@ -140,8 +140,6 @@ cc_component("cc") {
     "output/compositor_frame_metadata.h",
     "output/overlay_candidate.cc",
     "output/overlay_candidate.h",
-    "output/software_output_device.cc",
-    "output/software_output_device.h",
     "raster/bitmap_raster_buffer_provider.cc",
     "raster/bitmap_raster_buffer_provider.h",
     "raster/gpu_raster_buffer_provider.cc",

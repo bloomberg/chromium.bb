@@ -12,9 +12,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "cc/output/software_output_device.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display/software_output_device.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/latency/latency_info.h"
@@ -22,7 +22,7 @@
 namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
-    std::unique_ptr<cc::SoftwareOutputDevice> software_device,
+    std::unique_ptr<viz::SoftwareOutputDevice> software_device,
     const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : BrowserCompositorOutputSurface(std::move(software_device),

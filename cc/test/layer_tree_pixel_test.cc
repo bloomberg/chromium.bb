@@ -13,7 +13,6 @@
 #include "cc/base/switches.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
-#include "cc/output/software_output_device.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
@@ -22,6 +21,7 @@
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/service/display/software_output_device.h"
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -83,7 +83,7 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
         std::move(display_context_provider), flipped_output_surface);
   } else {
     display_output_surface = std::make_unique<PixelTestOutputSurface>(
-        std::make_unique<SoftwareOutputDevice>());
+        std::make_unique<viz::SoftwareOutputDevice>());
   }
   return std::move(display_output_surface);
 }

@@ -45,7 +45,7 @@ class FakeVSyncProvider : public gfx::VSyncProvider {
   DISALLOW_COPY_AND_ASSIGN(FakeVSyncProvider);
 };
 
-class FakeSoftwareOutputDevice : public cc::SoftwareOutputDevice {
+class FakeSoftwareOutputDevice : public viz::SoftwareOutputDevice {
  public:
   FakeSoftwareOutputDevice() : vsync_provider_(new FakeVSyncProvider()) {}
   ~FakeSoftwareOutputDevice() override {}
@@ -76,7 +76,7 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
                              base::TimeDelta interval);
 
   std::unique_ptr<content::BrowserCompositorOutputSurface> CreateSurface(
-      std::unique_ptr<cc::SoftwareOutputDevice> device);
+      std::unique_ptr<viz::SoftwareOutputDevice> device);
 
  protected:
   std::unique_ptr<content::BrowserCompositorOutputSurface> output_surface_;
@@ -117,7 +117,7 @@ void SoftwareBrowserCompositorOutputSurfaceTest::TearDown() {
 
 std::unique_ptr<content::BrowserCompositorOutputSurface>
 SoftwareBrowserCompositorOutputSurfaceTest::CreateSurface(
-    std::unique_ptr<cc::SoftwareOutputDevice> device) {
+    std::unique_ptr<viz::SoftwareOutputDevice> device) {
   return base::MakeUnique<content::SoftwareBrowserCompositorOutputSurface>(
       std::move(device),
       base::Bind(
@@ -134,8 +134,8 @@ void SoftwareBrowserCompositorOutputSurfaceTest::UpdateVSyncParameters(
 
 TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::SoftwareOutputDevice> software_device(
-      new cc::SoftwareOutputDevice());
+  std::unique_ptr<viz::SoftwareOutputDevice> software_device(
+      new viz::SoftwareOutputDevice());
   output_surface_ = CreateSurface(std::move(software_device));
   output_surface_->BindToClient(&output_surface_client);
 
@@ -146,7 +146,7 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {
 
 TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, VSyncProviderUpdates) {
   cc::FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<cc::SoftwareOutputDevice> software_device(
+  std::unique_ptr<viz::SoftwareOutputDevice> software_device(
       new FakeSoftwareOutputDevice());
   output_surface_ = CreateSurface(std::move(software_device));
   output_surface_->BindToClient(&output_surface_client);

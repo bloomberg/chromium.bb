@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/software_output_device.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -24,6 +23,7 @@
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/service/display/software_output_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -36,7 +36,7 @@ namespace {
 class SoftwareRendererTest : public testing::Test {
  public:
   void InitializeRenderer(
-      std::unique_ptr<cc::SoftwareOutputDevice> software_output_device) {
+      std::unique_ptr<SoftwareOutputDevice> software_output_device) {
     output_surface_ = cc::FakeOutputSurface::CreateSoftware(
         std::move(software_output_device));
     output_surface_->BindToClient(&output_surface_client_);
@@ -99,7 +99,7 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   gfx::Rect inner_rect(gfx::Point(1, 1), inner_size);
   gfx::Rect visible_rect(gfx::Point(1, 2), gfx::Size(98, 97));
 
-  InitializeRenderer(std::make_unique<cc::SoftwareOutputDevice>());
+  InitializeRenderer(std::make_unique<SoftwareOutputDevice>());
 
   int root_render_pass_id = 1;
   std::unique_ptr<RenderPass> root_render_pass = RenderPass::Create();
@@ -144,7 +144,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   gfx::Rect outer_rect(outer_size);
   gfx::Rect inner_rect(gfx::Point(1, 1), inner_size);
   bool needs_blending = false;
-  InitializeRenderer(std::make_unique<cc::SoftwareOutputDevice>());
+  InitializeRenderer(std::make_unique<SoftwareOutputDevice>());
 
   ResourceId resource_yellow = resource_provider()->CreateResource(
       outer_size, cc::ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
@@ -210,7 +210,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   gfx::Rect visible_rect = tile_rect;
   bool needs_blending = false;
   visible_rect.Inset(1, 2, 3, 4);
-  InitializeRenderer(std::make_unique<cc::SoftwareOutputDevice>());
+  InitializeRenderer(std::make_unique<SoftwareOutputDevice>());
 
   ResourceId resource_cyan = resource_provider()->CreateResource(
       tile_size, cc::ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888,
@@ -274,7 +274,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   gfx::Size viewport_size(100, 100);
 
   settings_.should_clear_root_render_pass = false;
-  InitializeRenderer(std::make_unique<cc::SoftwareOutputDevice>());
+  InitializeRenderer(std::make_unique<SoftwareOutputDevice>());
 
   RenderPassList list;
 
@@ -328,7 +328,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
 TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
   float device_scale_factor = 1.f;
   gfx::Size viewport_size(100, 100);
-  InitializeRenderer(std::make_unique<cc::SoftwareOutputDevice>());
+  InitializeRenderer(std::make_unique<SoftwareOutputDevice>());
 
   RenderPassList list;
 
@@ -392,20 +392,20 @@ class ClipTrackingCanvas : public SkNWayCanvas {
   SkRect last_clip_rect_;
 };
 
-class PartialSwapSoftwareOutputDevice : public cc::SoftwareOutputDevice {
+class PartialSwapSoftwareOutputDevice : public SoftwareOutputDevice {
  public:
   // SoftwareOutputDevice overrides.
   SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override {
     damage_rect_at_start_ = damage_rect;
     canvas_.reset(new ClipTrackingCanvas(viewport_pixel_size_.width(),
                                          viewport_pixel_size_.height()));
-    canvas_->addCanvas(cc::SoftwareOutputDevice::BeginPaint(damage_rect));
+    canvas_->addCanvas(SoftwareOutputDevice::BeginPaint(damage_rect));
     return canvas_.get();
   }
 
   void EndPaint() override {
     clip_rect_at_end_ = gfx::SkRectToRectF(canvas_->last_clip_rect());
-    cc::SoftwareOutputDevice::EndPaint();
+    SoftwareOutputDevice::EndPaint();
   }
 
   gfx::Rect damage_rect_at_start() const { return damage_rect_at_start_; }

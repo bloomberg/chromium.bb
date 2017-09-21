@@ -16,7 +16,7 @@ class PixelTestOutputSurface : public viz::OutputSurface {
       scoped_refptr<viz::ContextProvider> context_provider,
       bool flipped_output_surface);
   explicit PixelTestOutputSurface(
-      std::unique_ptr<SoftwareOutputDevice> software_device);
+      std::unique_ptr<viz::SoftwareOutputDevice> software_device);
   ~PixelTestOutputSurface() override;
 
   // OutputSurface implementation.

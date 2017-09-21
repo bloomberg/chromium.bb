@@ -62,6 +62,8 @@ viz_component("service") {
     "display/shader.h",
     "display/skia_renderer.cc",
     "display/skia_renderer.h",
+    "display/software_output_device.cc",
+    "display/software_output_device.h",
     "display/software_renderer.cc",
     "display/software_renderer.h",
     "display/static_geometry_binding.cc",

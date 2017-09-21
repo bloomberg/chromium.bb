@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/output/software_output_device.h"
+#include "components/viz/service/display/software_output_device.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -23,7 +23,7 @@ namespace content {
 // an accelerated widget as a SkCanvas. SoftwareOutputDevice will then use the
 // Ozone provided canvas to draw.
 class CONTENT_EXPORT SoftwareOutputDeviceOzone
-    : public cc::SoftwareOutputDevice {
+    : public viz::SoftwareOutputDevice {
  public:
   static std::unique_ptr<SoftwareOutputDeviceOzone> Create(
       ui::Compositor* compositor);

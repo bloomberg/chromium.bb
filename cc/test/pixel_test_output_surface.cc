@@ -26,7 +26,7 @@ PixelTestOutputSurface::PixelTestOutputSurface(
 }
 
 PixelTestOutputSurface::PixelTestOutputSurface(
-    std::unique_ptr<SoftwareOutputDevice> software_device)
+    std::unique_ptr<viz::SoftwareOutputDevice> software_device)
     : OutputSurface(std::move(software_device)), weak_ptr_factory_(this) {
   capabilities_.supports_stencil = true;
 }

@@ -30,7 +30,6 @@ class SingleThreadTaskRunner;
 namespace cc {
 class ResourceSettings;
 class SingleThreadTaskGraphRunner;
-class SoftwareOutputDevice;
 class SurfaceManager;
 }
 
@@ -39,6 +38,7 @@ class ContextProviderCommandBuffer;
 }
 
 namespace viz {
+class SoftwareOutputDevice;
 class VulkanInProcessContextProvider;
 }
 
@@ -104,7 +104,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   struct PerCompositorData;
 
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor);
-  std::unique_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
+  std::unique_ptr<viz::SoftwareOutputDevice> CreateSoftwareOutputDevice(
       ui::Compositor* compositor);
   void EstablishedGpuChannel(
       base::WeakPtr<ui::Compositor> compositor,

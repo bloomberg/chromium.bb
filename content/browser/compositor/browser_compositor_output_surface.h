@@ -57,7 +57,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
   // Constructor used by the software implementation.
   BrowserCompositorOutputSurface(
-      std::unique_ptr<cc::SoftwareOutputDevice> software_device,
+      std::unique_ptr<viz::SoftwareOutputDevice> software_device,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback);
 
   // Constructor used by the Vulkan implementation.

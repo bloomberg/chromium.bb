@@ -22,7 +22,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   SoftwareBrowserCompositorOutputSurface(
-      std::unique_ptr<cc::SoftwareOutputDevice> software_device,
+      std::unique_ptr<viz::SoftwareOutputDevice> software_device,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/software_output_device.h"
+#include "components/viz/service/display/software_output_device.h"
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/vsync_provider.h"
 
-namespace cc {
+namespace viz {
 
 SoftwareOutputDevice::SoftwareOutputDevice() = default;
 SoftwareOutputDevice::~SoftwareOutputDevice() = default;
@@ -18,9 +18,9 @@ void SoftwareOutputDevice::Resize(const gfx::Size& viewport_pixel_size,
   if (viewport_pixel_size_ == viewport_pixel_size)
     return;
 
-  SkImageInfo info = SkImageInfo::MakeN32(viewport_pixel_size.width(),
-                                          viewport_pixel_size.height(),
-                                          kOpaque_SkAlphaType);
+  SkImageInfo info =
+      SkImageInfo::MakeN32(viewport_pixel_size.width(),
+                           viewport_pixel_size.height(), kOpaque_SkAlphaType);
   viewport_pixel_size_ = viewport_pixel_size;
   surface_ = SkSurface::MakeRaster(info);
 }
@@ -36,4 +36,4 @@ gfx::VSyncProvider* SoftwareOutputDevice::GetVSyncProvider() {
   return vsync_provider_.get();
 }
 
-}  // namespace cc
+}  // namespace viz

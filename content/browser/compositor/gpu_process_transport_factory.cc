@@ -269,12 +269,12 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
   task_graph_runner_->Shutdown();
 }
 
-std::unique_ptr<cc::SoftwareOutputDevice>
+std::unique_ptr<viz::SoftwareOutputDevice>
 GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kHeadless))
-    return base::WrapUnique(new cc::SoftwareOutputDevice);
+    return base::WrapUnique(new viz::SoftwareOutputDevice);
 
 #if defined(USE_AURA)
   if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
@@ -284,19 +284,19 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 #endif
 
 #if defined(OS_WIN)
-  return std::unique_ptr<cc::SoftwareOutputDevice>(
+  return std::unique_ptr<viz::SoftwareOutputDevice>(
       new SoftwareOutputDeviceWin(software_backing_.get(), compositor));
 #elif defined(USE_OZONE)
   return SoftwareOutputDeviceOzone::Create(compositor);
 #elif defined(USE_X11)
-  return std::unique_ptr<cc::SoftwareOutputDevice>(
+  return std::unique_ptr<viz::SoftwareOutputDevice>(
       new SoftwareOutputDeviceX11(compositor));
 #elif defined(OS_MACOSX)
-  return std::unique_ptr<cc::SoftwareOutputDevice>(
+  return std::unique_ptr<viz::SoftwareOutputDevice>(
       new SoftwareOutputDeviceMac(compositor));
 #else
   NOTREACHED();
-  return std::unique_ptr<cc::SoftwareOutputDevice>();
+  return std::unique_ptr<viz::SoftwareOutputDevice>();
 #endif
 }
 
