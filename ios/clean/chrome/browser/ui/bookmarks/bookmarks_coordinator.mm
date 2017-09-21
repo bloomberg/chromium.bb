@@ -94,9 +94,21 @@
 - (void)
 bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
                         navigationToUrls:(const std::vector<GURL>&)urls {
-  // TODO(crbug.com/695749): Test if the following works when adding bookmark
-  // becomes available in chrome_clean_skeleton.
-  // TODO(crbug.com/695749): See if we can share the code below from
+  // TODO(crbug.com/695749):  Rewrite this function when adding bookmark becomes
+  // available in chrome_clean_skeleton.  See if we can share the code from
+  // bookmark_home_view_controller.  Also see if we can add _currentBrowserState
+  // to ths class which can store user's tab mode before Bookmarks is open.
+  [self bookmarkHomeViewControllerWantsDismissal:controller
+                                navigationToUrls:urls
+                                     inIncognito:NO];
+}
+
+- (void)bookmarkHomeViewControllerWantsDismissal:
+            (BookmarkHomeViewController*)controller
+                                navigationToUrls:(const std::vector<GURL>&)urls
+                                     inIncognito:(BOOL)inIncognito {
+  // TODO(crbug.com/695749): Rewrite this function when adding bookmark becomes
+  // available in chrome_clean_skeleton.  See if we can share the code from
   // bookmark_home_view_controller.
 
   [self dismissBookmarkBrowser];
