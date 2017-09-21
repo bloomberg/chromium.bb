@@ -232,8 +232,12 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       }
 
       const gfx::Size ya_tex_size = coded_size;
-      gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
-          frame_->format(), media::VideoFrame::kUPlane, coded_size);
+
+      int u_width = media::VideoFrame::Columns(
+          media::VideoFrame::kUPlane, frame_->format(), coded_size.width());
+      int u_height = media::VideoFrame::Rows(
+          media::VideoFrame::kUPlane, frame_->format(), coded_size.height());
+      gfx::Size uv_tex_size(u_width, u_height);
 
       if (frame_->HasTextures()) {
         if (frame_->format() == media::PIXEL_FORMAT_NV12) {
@@ -244,9 +248,6 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                     frame_resources_.size());  // Alpha is not supported yet.
         }
       } else {
-        DCHECK(uv_tex_size ==
-               media::VideoFrame::PlaneSize(
-                   frame_->format(), media::VideoFrame::kVPlane, coded_size));
         DCHECK_GE(frame_resources_.size(), 3u);
         DCHECK(frame_resources_.size() <= 3 ||
                ya_tex_size == media::VideoFrame::PlaneSize(
