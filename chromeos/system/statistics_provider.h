@@ -24,22 +24,8 @@ CHROMEOS_EXPORT extern const char kCustomizationIdKey[];
 
 // Developer switch value.
 CHROMEOS_EXPORT extern const char kDevSwitchBootKey[];
-CHROMEOS_EXPORT extern const char kDevSwitchBootValueVerified[];
 CHROMEOS_EXPORT extern const char kDevSwitchBootValueDev[];
-
-// Firmware type and associated values. The values are from crossystem output
-// for the mainfw_type key. Normal and developer correspond to Chrome OS
-// firmware with MP and developer keys respectively, nonchrome indicates the
-// machine doesn't run on Chrome OS firmware. See crossystem source for more
-// details.
-CHROMEOS_EXPORT extern const char kFirmwareTypeKey[];
-CHROMEOS_EXPORT extern const char kFirmwareTypeValueDeveloper[];
-CHROMEOS_EXPORT extern const char kFirmwareTypeValueNonchrome[];
-CHROMEOS_EXPORT extern const char kFirmwareTypeValueNormal[];
-
-// Serial number key (only VPD v2+ devices). Use GetEnterpriseMachineID() to
-// cover legacy devices.
-CHROMEOS_EXPORT extern const char kSerialNumberKey[];
+CHROMEOS_EXPORT extern const char kDevSwitchBootValueVerified[];
 
 // HWID key.
 CHROMEOS_EXPORT extern const char kHardwareClassKey[];
@@ -47,8 +33,8 @@ CHROMEOS_EXPORT extern const char kHardwareClassKey[];
 // Key/values reporting if Chrome OS is running in a VM or not. These values are
 // read from crossystem output. See crossystem source for VM detection logic.
 CHROMEOS_EXPORT extern const char kIsVmKey[];
-CHROMEOS_EXPORT extern const char kIsVmValueTrue[];
 CHROMEOS_EXPORT extern const char kIsVmValueFalse[];
+CHROMEOS_EXPORT extern const char kIsVmValueTrue[];
 
 // OEM customization flag that permits exiting enterprise enrollment flow in
 // OOBE when 'oem_enterprise_managed' flag is set.
@@ -73,16 +59,15 @@ CHROMEOS_EXPORT extern const char kOffersGroupCodeKey[];
 // Release Brand Code key.
 CHROMEOS_EXPORT extern const char kRlzBrandCodeKey[];
 
-// Write protect switch value.
-CHROMEOS_EXPORT extern const char kWriteProtectSwitchBootKey[];
-CHROMEOS_EXPORT extern const char kWriteProtectSwitchBootValueOff[];
-CHROMEOS_EXPORT extern const char kWriteProtectSwitchBootValueOn[];
-
 // Regional data
 CHROMEOS_EXPORT extern const char kRegionKey[];
 CHROMEOS_EXPORT extern const char kInitialLocaleKey[];
 CHROMEOS_EXPORT extern const char kInitialTimezoneKey[];
 CHROMEOS_EXPORT extern const char kKeyboardLayoutKey[];
+
+// Serial number key (only VPD v2+ devices). Use GetEnterpriseMachineID() to
+// cover legacy devices.
+CHROMEOS_EXPORT extern const char kSerialNumberKey[];
 
 // This interface provides access to Chrome OS statistics.
 class CHROMEOS_EXPORT StatisticsProvider {
