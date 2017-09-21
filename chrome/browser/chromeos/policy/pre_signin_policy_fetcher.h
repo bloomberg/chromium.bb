@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/cached_policy_key_loader_chromeos.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
@@ -102,8 +102,7 @@ class PreSigninPolicyFetcher : public CloudPolicyClient::Observer {
   void OnUnmountTemporaryUserHome(
       const std::string& policy_blob,
       RetrievePolicyResponseType retrieve_policy_response,
-      chromeos::DBusMethodCallStatus unmount_call_status,
-      bool unmount_success);
+      base::Optional<bool> unmount_success);
 
   void OnCachedPolicyValidated(UserCloudPolicyValidator* validator);
 

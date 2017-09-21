@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
@@ -27,10 +28,6 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/pepper_flash_settings_manager.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_method_call_status.h"
 #endif
 
 class BrowsingDataFlashLSOHelper;
@@ -216,8 +213,7 @@ class ChromeBrowsingDataRemoverDelegate
   void OnKeywordsLoaded(base::Callback<bool(const GURL&)> url_filter);
 
 #if defined (OS_CHROMEOS)
-  void OnClearPlatformKeys(chromeos::DBusMethodCallStatus call_status,
-                           bool result);
+  void OnClearPlatformKeys(base::Optional<bool> result);
 #endif
 
   // Callback for when cookies have been deleted. Invokes NotifyIfDone.

@@ -80,14 +80,13 @@ const uint8_t kSha2Hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
-void LogRegistrationResult(chromeos::DBusMethodCallStatus call_status,
-                           bool result) {
+void LogRegistrationResult(base::Optional<bool> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+  if (!result.has_value()) {
     LOG(ERROR) << "Call to imageloader service failed.";
     return;
   }
-  if (!result) {
+  if (!result.value()) {
     LOG(ERROR) << "Component flash registration failed";
     return;
   }
@@ -105,7 +104,7 @@ void ImageLoaderRegistration(const std::string& version,
 
   if (loader) {
     loader->RegisterComponent("PepperFlashPlayer", version, install_dir.value(),
-                              base::Bind(&LogRegistrationResult));
+                              base::BindOnce(&LogRegistrationResult));
   } else {
     LOG(ERROR) << "Failed to get ImageLoaderClient object.";
   }
