@@ -135,6 +135,8 @@ namespace internal {
 const base::Feature kClearOldOnDemandFavicons{
     "ClearOldOnDemandFavicons", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const int kOnDemandFaviconIsOldAfterDays = 30;
+
 }  // namespace internal
 
 // ExpireHistoryBackend::DeleteEffects ----------------------------------------
@@ -499,7 +501,9 @@ void ExpireHistoryBackend::DoExpireIteration() {
     work_queue_.push(reader);
   } else {
     // Otherwise do a final clean-up - remove old favicons not bound to visits.
-    ClearOldOnDemandFavicons(GetCurrentExpirationTime());
+    ClearOldOnDemandFavicons(
+        base::Time::Now() -
+        base::TimeDelta::FromDays(internal::kOnDemandFaviconIsOldAfterDays));
   }
 
   ScheduleExpire();
