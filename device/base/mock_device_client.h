@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "device/base/device_client.h"
 
 namespace device {
@@ -30,7 +31,9 @@ class MockDeviceClient : device::DeviceClient {
   MockUsbService* usb_service();
 
  private:
+#if !defined(OS_ANDROID)
   std::unique_ptr<MockHidService> hid_service_;
+#endif
   std::unique_ptr<MockUsbService> usb_service_;
 };
 
