@@ -36,7 +36,7 @@ const char kPrinterCapabilities[] = "capabilities";
 namespace {
 
 // Returns a dictionary representing printer capabilities as CDD.  Returns
-// nullptr if a dictionary could not be generated.
+// an empty dictionary if a dictionary could not be generated.
 std::unique_ptr<base::DictionaryValue>
 GetPrinterCapabilitiesOnBlockingPoolThread(const std::string& device_name) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -49,26 +49,20 @@ GetPrinterCapabilitiesOnBlockingPoolThread(const std::string& device_name) {
   crash_keys::ScopedPrinterInfo crash_key(
       print_backend->GetPrinterDriverInfo(device_name));
 
+  auto empty_capabilities = std::make_unique<base::DictionaryValue>();
   std::unique_ptr<base::DictionaryValue> printer_info;
   if (!print_backend->IsValidPrinter(device_name)) {
     LOG(WARNING) << "Invalid printer " << device_name;
-    return nullptr;
+    return empty_capabilities;
   }
 
   PrinterSemanticCapsAndDefaults info;
   if (!print_backend->GetPrinterSemanticCapsAndDefaults(device_name, &info)) {
     LOG(WARNING) << "Failed to get capabilities for " << device_name;
-    return nullptr;
+    return empty_capabilities;
   }
 
-  std::unique_ptr<base::DictionaryValue> printer_capabilities =
-      cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);
-  if (!printer_capabilities) {
-    LOG(WARNING) << "Failed to convert capabilities for " << device_name;
-    return nullptr;
-  }
-
-  return printer_capabilities;
+  return cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);
 }
 
 #if defined(OS_WIN)
@@ -133,10 +127,8 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
       base::ContainsKey(basic_info.options, kCUPSEnterprisePrinter) &&
           basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue);
 
-  auto capabilities = GetPrinterCapabilitiesOnBlockingPoolThread(device_name);
-  if (!capabilities)
-    capabilities = base::MakeUnique<base::DictionaryValue>();
-  printer_info->Set(kPrinterCapabilities, std::move(capabilities));
+  printer_info->Set(kPrinterCapabilities,
+                    GetPrinterCapabilitiesOnBlockingPoolThread(device_name));
 
   return printer_info;
 }

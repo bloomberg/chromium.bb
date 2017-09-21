@@ -562,13 +562,11 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
     printing::PrinterCapsAndDefaults printer_info;
     if (succeeded) {
       printer_info.caps_mime_type = kContentTypeJSON;
-      std::unique_ptr<base::DictionaryValue> description(
-          PrinterSemanticCapsAndDefaultsToCdd(semantic_info));
-      if (description) {
-        base::JSONWriter::WriteWithOptions(
-            *description, base::JSONWriter::OPTIONS_PRETTY_PRINT,
-            &printer_info.printer_capabilities);
-      }
+      std::unique_ptr<base::DictionaryValue> description =
+          PrinterSemanticCapsAndDefaultsToCdd(semantic_info);
+      base::JSONWriter::WriteWithOptions(*description,
+                                         base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                         &printer_info.printer_capabilities);
     }
     callback_.Run(succeeded, printer_name, printer_info);
     callback_.Reset();
