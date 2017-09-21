@@ -57,7 +57,8 @@ void AddAmdGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
       "/dev/dri/renderD128",
       "/sys/class/drm/card0/device/config",
       "/sys/class/drm/controlD64/device/config",
-      "/sys/class/drm/renderD128/device/config"};
+      "/sys/class/drm/renderD128/device/config",
+      "/usr/share/libdrm/amdgpu.ids"};
 
   listSize = arraysize(kReadWriteList);
 
