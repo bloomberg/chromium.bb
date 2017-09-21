@@ -261,6 +261,15 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
       web_contents(), false, &current_threat_type));
   EXPECT_EQ(SB_THREAT_TYPE_UNUSED, current_threat_type);
 
+  // Cache a verdict for this URL.
+  LoginReputationClientResponse verdict_proto;
+  verdict_proto.set_verdict_type(LoginReputationClientResponse::PHISHING);
+  verdict_proto.set_cache_duration_sec(600);
+  verdict_proto.set_cache_expression("password_reuse_url.com/");
+  service_->CacheVerdict(url,
+                         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                         &verdict_proto, base::Time::Now());
+
   service_->UpdateSecurityState(SB_THREAT_TYPE_PASSWORD_REUSE, web_contents());
   ASSERT_TRUE(service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
       url, false, web_contents()->GetController().GetLastCommittedEntry(),
