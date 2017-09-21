@@ -11,6 +11,8 @@
 #include <limits>
 #include <map>
 #include <set>
+#include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -30,16 +32,17 @@ VisitDatabase::~VisitDatabase() {
 
 bool VisitDatabase::InitVisitTable() {
   if (!GetDB().DoesTableExist("visits")) {
-    if (!GetDB().Execute("CREATE TABLE visits("
-        "id INTEGER PRIMARY KEY,"
-        "url INTEGER NOT NULL," // key of the URL this corresponds to
-        "visit_time INTEGER NOT NULL,"
-        "from_visit INTEGER,"
-        "transition INTEGER DEFAULT 0 NOT NULL,"
-        "segment_id INTEGER,"
-        // Some old DBs may have an "is_indexed" field here, but this is no
-        // longer used and should NOT be read or written from any longer.
-        "visit_duration INTEGER DEFAULT 0 NOT NULL)"))
+    if (!GetDB().Execute(
+            "CREATE TABLE visits("
+            "id INTEGER PRIMARY KEY,"
+            "url INTEGER NOT NULL,"  // key of the URL this corresponds to
+            "visit_time INTEGER NOT NULL,"
+            "from_visit INTEGER,"
+            "transition INTEGER DEFAULT 0 NOT NULL,"
+            "segment_id INTEGER,"
+            // Some old DBs may have an "is_indexed" field here, but this is no
+            // longer used and should NOT be read or written from any longer.
+            "visit_duration INTEGER DEFAULT 0 NOT NULL)"))
       return false;
   }
 
@@ -85,7 +88,8 @@ bool VisitDatabase::DropVisitTable() {
 
 // Must be in sync with HISTORY_VISIT_ROW_FIELDS.
 // static
-void VisitDatabase::FillVisitRow(sql::Statement& statement, VisitRow* visit) {
+void VisitDatabase::FillVisitRow(const sql::Statement& statement,
+                                 VisitRow* visit) {
   visit->visit_id = statement.ColumnInt64(0);
   visit->url_id = statement.ColumnInt64(1);
   visit->visit_time = base::Time::FromInternalValue(statement.ColumnInt64(2));
@@ -347,6 +351,22 @@ bool VisitDatabase::GetVisitsInRangeForTransition(
       4, max_results ? max_results : std::numeric_limits<int64_t>::max());
 
   return FillVisitVector(statement, visits);
+}
+
+bool VisitDatabase::GetAllURLIDsForTransition(ui::PageTransition transition,
+                                              std::vector<URLID>* urls) {
+  DCHECK(urls);
+  urls->clear();
+  sql::Statement statement(
+      GetDB().GetUniqueStatement("SELECT DISTINCT url FROM visits "
+                                 "WHERE (transition & ?) == ?"));
+  statement.BindInt(0, ui::PAGE_TRANSITION_CORE_MASK);
+  statement.BindInt(1, transition);
+
+  while (statement.Step()) {
+    urls->push_back(statement.ColumnInt64(0));
+  }
+  return statement.Succeeded();
 }
 
 bool VisitDatabase::GetVisibleVisitsInRange(const QueryOptions& options,

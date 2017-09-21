@@ -102,6 +102,11 @@ class VisitDatabase {
                                      ui::PageTransition transition,
                                      VisitVector* visits);
 
+  // Looks up URLIDs for all visits with specified transition. Returns true on
+  // success and false otherwise.
+  bool GetAllURLIDsForTransition(ui::PageTransition transition,
+                                 std::vector<URLID>* urls);
+
   // Fills all visits in the given time range into the given vector that should
   // be user-visible, which excludes things like redirects and subframes. The
   // begin time is inclusive, the end time is exclusive. Either time can be
@@ -193,7 +198,7 @@ class VisitDatabase {
 
   // Convenience to fill a VisitRow. Assumes the visit values are bound starting
   // at index 0.
-  static void FillVisitRow(sql::Statement& statement, VisitRow* visit);
+  static void FillVisitRow(const sql::Statement& statement, VisitRow* visit);
 
   // Convenience to fill a VisitVector. Assumes that statement.step()
   // hasn't happened yet.
