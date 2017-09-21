@@ -310,7 +310,8 @@ class HitTestNativeWidgetMac : public NativeWidgetMac {
   DISALLOW_COPY_AND_ASSIGN(HitTestNativeWidgetMac);
 };
 
-TEST_F(BridgedNativeWidgetUITest, HitTest) {
+// Flaky on macOS 10.12. See http://crbug.com/767299.
+TEST_F(BridgedNativeWidgetUITest, DISABLED_HitTest) {
   Widget widget;
   HitTestNonClientFrameView* frame_view =
       new HitTestNonClientFrameView(&widget);
