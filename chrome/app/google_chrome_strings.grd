@@ -223,20 +223,6 @@ chromium_strings.grd. -->
           Google Chrome <ph name="TERMS_OF_SERVICE_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK">&lt;/a&gt;</ph>
         </message>
       </if>
-      <if expr="is_linux and not chromeos">
-        <message name="IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is about to become unsupported.">
-          This computer will soon stop receiving Google Chrome updates because this Linux system will no longer be supported.
-        </message>
-        <message name="IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_NOW" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is no longer supported.">
-          This computer will no longer receive Google Chrome updates because this Linux system is no longer supported.
-        </message>
-        <message name="IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_SOON_CAN_UPGRADE" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is about to become unsupported, unless they upgrade to the 64-bit version.">
-          This computer will soon stop receiving 32-bit Google Chrome updates. Please upgrade to 64-bit Google Chrome.
-        </message>
-        <message name="IDS_LINUX_WHEEZY_PRECISE_OBSOLETE_NOW_CAN_UPGRADE" desc="A message displayed on an at-launch infobar and about:help warning the user that the computer they are using is no longer supported, unless they upgrade to the 64-bit version.">
-          This computer will no longer receive 32-bit Google Chrome updates. Please upgrade to 64-bit Google Chrome.
-        </message>
-      </if>
       <if expr="is_macosx">
         <message name="IDS_MAC_10_678_OBSOLETE_SOON" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the OS version they are using is about to become unsupported.">
           This computer will soon stop receiving Google Chrome updates because Mac OS X 10.6, 10.7, and 10.8 will no longer be supported.

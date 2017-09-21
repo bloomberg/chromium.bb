@@ -205,14 +205,6 @@ const base::Feature kImportantSitesInCbd{"ImportantSitesInCBD",
 const base::Feature kImprovedRecoveryComponent{
     "ImprovedRecoveryComponent", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// Enables showing the "This computer will no longer receive Google Chrome
-// updates" infobar instead of the "will soon stop receiving" infobar on
-// deprecated systems.
-const base::Feature kLinuxObsoleteSystemIsEndOfTheLine{
-    "LinuxObsoleteSystemIsEndOfTheLine", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // Enables or disables the Location Settings Dialog (LSD). The LSD is an Android
 // system-level geolocation permission prompt.
 const base::Feature kLsdPermissionPrompt{"LsdPermissionPrompt",
