@@ -186,6 +186,16 @@ const CGFloat kInterButtonMargin = 24;
 - (void)layoutSubviews {
   [super layoutSubviews];
 
+  // Update |self.contentView|'s frame to respect the safe area insets on the
+  // left and right sides.
+  if (@available(iOS 11, *)) {
+    CGRect contentFrame = self.contentView.frame;
+    contentFrame.origin.x = self.safeAreaInsets.left;
+    contentFrame.size.width = self.frame.size.width - self.safeAreaInsets.left -
+                              self.safeAreaInsets.right;
+    self.contentView.frame = contentFrame;
+  }
+
   // When the alpha of the button is less than this amount, the title is
   // allowed to overrun the button. Generally, layoutSubviews should only be
   // called with buttons having an alpha of 0.0 or 1.0, so the value of this
