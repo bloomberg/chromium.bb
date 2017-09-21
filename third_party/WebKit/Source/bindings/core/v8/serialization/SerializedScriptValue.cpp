@@ -89,7 +89,7 @@ SerializedScriptValue::SerializeAndSwallowExceptions(
 }
 
 RefPtr<SerializedScriptValue> SerializedScriptValue::Create() {
-  return AdoptRef(new SerializedScriptValue);
+  return WTF::AdoptRef(new SerializedScriptValue);
 }
 
 RefPtr<SerializedScriptValue> SerializedScriptValue::Create(
@@ -102,8 +102,8 @@ RefPtr<SerializedScriptValue> SerializedScriptValue::Create(
   DataBufferPtr data_buffer = AllocateBuffer(data_buffer_size.ValueOrDie());
   data.CopyTo(reinterpret_cast<UChar*>(data_buffer.get()), 0, data.length());
 
-  return AdoptRef(new SerializedScriptValue(std::move(data_buffer),
-                                            data_buffer_size.ValueOrDie()));
+  return WTF::AdoptRef(new SerializedScriptValue(
+      std::move(data_buffer), data_buffer_size.ValueOrDie()));
 }
 
 // Versions 16 and below (prior to April 2017) used ntohs() to byte-swap SSV
@@ -226,7 +226,8 @@ RefPtr<SerializedScriptValue> SerializedScriptValue::Create(const char* data,
   std::copy(data, data + length, data_buffer.get());
   SwapWiredDataIfNeeded(data_buffer.get(), length);
 
-  return AdoptRef(new SerializedScriptValue(std::move(data_buffer), length));
+  return WTF::AdoptRef(
+      new SerializedScriptValue(std::move(data_buffer), length));
 }
 
 RefPtr<SerializedScriptValue> SerializedScriptValue::Create(
@@ -244,7 +245,7 @@ RefPtr<SerializedScriptValue> SerializedScriptValue::Create(
   });
   SwapWiredDataIfNeeded(data_buffer.get(), buffer->size());
 
-  return AdoptRef(
+  return WTF::AdoptRef(
       new SerializedScriptValue(std::move(data_buffer), buffer->size()));
 }
 
