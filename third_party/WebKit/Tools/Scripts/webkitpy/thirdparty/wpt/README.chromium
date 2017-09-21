@@ -9,10 +9,6 @@ of Blink's test infrastructure and some maintenance/configuration code.
 The third party code lives entirely in the wpt subdirectory:
 Tools/Scripts/webkitpy/thirdparty/wpt/wpt
 
-Besides the reduced web-platform-tests repository, the wpt subdirectory also
-contains wpt/tools submodule (https://github.com/w3c/wpt-tools) and
-wpt/tools/wptserve (https://github.com/w3c/wptserve) directories.
-
 For licensing, see README.chromium in parent directory
 (Tools/Scripts/webkitpy/thirdparty/README.chromium).
 
@@ -103,13 +99,11 @@ TODO(tkent): Make a script to re-generate keys and certificates.
 
 Rolling in WPT
 
-When rolling in new versions of WPT support, use WPTHeads to adjust the HEAD
-positions. You can then call "./checkout.sh clone" which will pull in all the
-code and required submodules.
+When rolling in new versions of WPT support, modify WPT_HEAD in checkout.sh to
+the desired HEAD position. You can then call "./checkout.sh clone" which will
+pull in all the code.
 
-You can check in the latest code by setting the HEAD commit-ish to "master" on
-each line, afterwards make sure to use the actual SHA1s to lock down the HEAD
-positions. It is also important to update the hashes in the 'Version:' fields of
+It is also important to update the hashes in the 'Version:' fields of
 Tools/Scripts/webkitpy/thirdparty/README.chromium.
 
 You can examine what's pulled in and update WPTWhiteList if some new files are
@@ -138,8 +132,8 @@ content_shell is invoked with flags to map all *.test domains to 127.0.0.1.
 
 Running web-platform-tests with enabled WPTServe on a local machine
 
-Starting run-webkit-tests with the --enable-wptserve flag will start WPTServe
-for tests which live in LayoutTests/external/wpt.
+WPTServe is now enabled by default in run-webkit-tests for tests that live in
+LayoutTests/external/wpt.
 
 WPTServe starts HTTP/S and WS/S servers as separate processes.
 
@@ -149,4 +143,4 @@ LayoutTests/external/wpt. HTTPS tests are enabled by default.
 
 Example run:
 
-./Tools/Scripts/run-webkit-tests --enable-wptserve external/wpt
+./Tools/Scripts/run-webkit-tests external/wpt

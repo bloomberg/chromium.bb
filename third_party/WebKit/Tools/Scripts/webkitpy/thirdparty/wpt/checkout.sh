@@ -12,9 +12,6 @@ REMOTE_REPO="https://chromium.googlesource.com/external/w3c/web-platform-tests.g
 WPT_HEAD=32aa301b33136f71b1e15594f07ea5345a6305db
 
 function clone {
-  # First line is the main repo HEAD.
-  WPT_HEAD=$(head -n 1 $DIR/WPTHeads)
-
   # Remove existing repo if already exists.
   [ -d "$TARGET_DIR" ] && rm -rf $TARGET_DIR
 
@@ -42,6 +39,7 @@ for action in $actions; do
   $action
 done
 
+# Chromium presubmit requires scripts with shebang to be executable.
 chmod 755 $TARGET_DIR/tools/manifest/update.py
 
 # TODO(burnik): Handle the SSL certs and other configuration.
