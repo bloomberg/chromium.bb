@@ -19,6 +19,7 @@ namespace gfx {
 class Point;
 class Rect;
 class Size;
+class Vector2d;
 }  // namespace gfx
 
 namespace gpu {
@@ -167,19 +168,17 @@ class VIZ_COMMON_EXPORT GLHelper {
   void CropScaleReadbackAndCleanTexture(
       GLuint src_texture,
       const gfx::Size& src_size,
-      const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       unsigned char* out,
       const SkColorType out_color_type,
       const base::Callback<void(bool)>& callback,
       GLHelper::ScalerQuality quality);
 
-  // Copies the block of pixels specified with |src_subrect| from |src_mailbox|,
-  // scales it to |dst_size|, and writes it into |out|.
-  // |src_size| is the size of |src_mailbox|. The result is in |out_color_type|
-  // format and is potentially flipped vertically to make it a correct image
-  // representation.  |callback| is invoked with the copy result when the copy
-  // operation has completed.
+  // Copies the all pixels from the texture in |src_mailbox| of |src_size|,
+  // scales it to |dst_size|, and writes it into |out|. The result is in
+  // |out_color_type| format and is potentially flipped vertically to make it a
+  // correct image representation. |callback| is invoked with the copy result
+  // when the copy operation has completed.
   // Note that the texture bound to src_mailbox will have the min/mag filter set
   // to GL_LINEAR and wrap_s/t set to CLAMP_TO_EDGE in this call. src_mailbox is
   // assumed to be GL_TEXTURE_2D.
@@ -187,7 +186,6 @@ class VIZ_COMMON_EXPORT GLHelper {
       const gpu::Mailbox& src_mailbox,
       const gpu::SyncToken& sync_token,
       const gfx::Size& src_size,
-      const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       unsigned char* out,
       const SkColorType out_color_type,
@@ -210,15 +208,11 @@ class VIZ_COMMON_EXPORT GLHelper {
                             SkColorType color_type,
                             const base::Callback<void(bool)>& callback);
 
-  // Creates a copy of the specified texture. |size| is the size of the texture.
-  // Note that the src_texture will have the min/mag filter set to GL_LINEAR
-  // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-  GLuint CopyTexture(GLuint texture, const gfx::Size& size);
-
   // Creates a scaled copy of the specified texture. |src_size| is the size of
   // the texture and |dst_size| is the size of the resulting copy.
-  // Note that the src_texture will have the min/mag filter set to GL_LINEAR
-  // and wrap_s/t set to CLAMP_TO_EDGE in this call.
+  // Note that the |texture| will have the min/mag filter set to GL_LINEAR
+  // and wrap_s/t set to CLAMP_TO_EDGE in this call. Returns 0 on invalid
+  // arguments.
   GLuint CopyAndScaleTexture(GLuint texture,
                              const gfx::Size& src_size,
                              const gfx::Size& dst_size,
@@ -276,48 +270,82 @@ class VIZ_COMMON_EXPORT GLHelper {
   // process).
   void InsertOrderingBarrier();
 
-  // A scaler will cache all intermediate textures and programs
-  // needed to scale from a specified size to a destination size.
-  // If the source or destination sizes changes, you must create
-  // a new scaler.
+  // Caches all intermediate textures and programs needed to scale any subset of
+  // a source texture at a fixed scaling ratio.
   class ScalerInterface {
    public:
-    ScalerInterface() {}
     virtual ~ScalerInterface() {}
 
+    // Scales a portion of |src_texture| and draws the result into
+    // |dest_texture| at offset (0, 0).
+    //
+    // |src_texture_size| is the full, allocated size of the |src_texture|. This
+    // is required for computing texture coordinate transforms (and only because
+    // the OpenGL ES 2.0 API lacks the ability to query this info).
+    //
+    // |output_rect| selects the region to draw (in the scaled, not the source,
+    // coordinate space). This is used to save work in cases where only a
+    // portion needs to be re-scaled. The implementation will back-compute,
+    // internally, to determine the region of the |src_texture| to sample.
+    //
+    // WARNING: The output will always be placed at (0, 0) in the
+    // |dest_texture|, and not at |output_rect.origin()|.
+    //
     // Note that the src_texture will have the min/mag filter set to GL_LINEAR
     // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-    virtual void Scale(GLuint source_texture, GLuint dest_texture) = 0;
-    virtual const gfx::Size& SrcSize() = 0;
-    virtual const gfx::Rect& SrcSubrect() = 0;
-    virtual const gfx::Size& DstSize() = 0;
+    void Scale(GLuint src_texture,
+               const gfx::Size& src_texture_size,
+               GLuint dest_texture,
+               const gfx::Rect& output_rect) {
+      ScaleToMultipleOutputs(src_texture, src_texture_size, dest_texture, 0,
+                             output_rect);
+    }
+
+    // Same as above, but for shaders that output to two textures at once.
+    virtual void ScaleToMultipleOutputs(GLuint src_texture,
+                                        const gfx::Size& src_texture_size,
+                                        GLuint dest_texture_0,
+                                        GLuint dest_texture_1,
+                                        const gfx::Rect& output_rect) = 0;
+
+    // Returns true if from:to represent the same scale ratio as that provided
+    // by this scaler.
+    virtual bool IsSameScaleRatio(const gfx::Vector2d& from,
+                                  const gfx::Vector2d& to) const = 0;
+
+   protected:
+    ScalerInterface() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScalerInterface);
   };
 
-  // Note that the quality may be adjusted down if texture
-  // allocations fail or hardware doesn't support the requtested
-  // quality. Note that ScalerQuality enum is arranged in
-  // numerical order for simplicity.
-  ScalerInterface* CreateScaler(ScalerQuality quality,
-                                const gfx::Size& src_size,
-                                const gfx::Rect& src_subrect,
-                                const gfx::Size& dst_size,
-                                bool vertically_flip_texture,
-                                bool swizzle);
+  // Create a scaler that upscales or downscales at the given ratio
+  // (scale_from:scale_to). Returns null on invalid arguments.
+  //
+  // WARNING: The returned scaler assumes both this GLHelper and its
+  // GLES2Interface/ContextSupport will outlive it!
+  std::unique_ptr<ScalerInterface> CreateScaler(ScalerQuality quality,
+                                                const gfx::Vector2d& scale_from,
+                                                const gfx::Vector2d& scale_to,
+                                                bool vertically_flip_texture,
+                                                bool swizzle);
 
-  // Create a readback pipeline that will scale a subsection of the source
-  // texture, then convert it to YUV422 planar form and then read back that.
-  // This reduces the amount of memory read from GPU to CPU memory by a factor
-  // 2.6, which can be quite handy since readbacks have very limited speed
-  // on some platforms. All values in |dst_size| must be a multiple of two. If
-  // |use_mrt| is true, the pipeline will try to optimize the YUV conversion
-  // using the multi-render-target extension. |use_mrt| should only be set to
-  // false for testing.
-  ReadbackYUVInterface* CreateReadbackPipelineYUV(ScalerQuality quality,
-                                                  const gfx::Size& src_size,
-                                                  const gfx::Rect& src_subrect,
-                                                  const gfx::Size& dst_size,
-                                                  bool flip_vertically,
-                                                  bool use_mrt);
+  // Create a readback pipeline that will (optionally) scale a source texture,
+  // then convert it to YUV420 planar form, and finally read back that. This
+  // reduces the amount of memory read from GPU to CPU memory by a factor of 2.6
+  // (32bpp → 12bpp), which can be quite handy since readbacks have very limited
+  // speed on some platforms.
+  //
+  // If |use_mrt| is true, the pipeline will try to optimize the YUV conversion
+  // using the multi-render-target extension, if the platform is capable.
+  // |use_mrt| should only be set to false for testing.
+  //
+  // WARNING: The returned ReadbackYUVInterface instance assumes both this
+  // GLHelper and its GLES2Interface/ContextSupport will outlive it!
+  std::unique_ptr<ReadbackYUVInterface> CreateReadbackPipelineYUV(
+      bool vertically_flip_texture,
+      bool use_mrt);
 
   // Returns the maximum number of draw buffers available,
   // 0 if GL_EXT_draw_buffers is not available.
@@ -349,26 +377,40 @@ class VIZ_COMMON_EXPORT GLHelper {
   DISALLOW_COPY_AND_ASSIGN(GLHelper);
 };
 
-// Similar to a ScalerInterface, a yuv readback pipeline will
-// cache a scaler and all intermediate textures and frame buffers
-// needed to scale, crop, letterbox and read back a texture from
-// the GPU into CPU-accessible RAM. A single readback pipeline
-// can handle multiple outstanding readbacks at the same time, but
-// if the source or destination sizes change, you'll need to create
-// a new readback pipeline.
+// Similar to a ScalerInterface, a YUV readback pipeline will cache a scaler and
+// all intermediate textures and frame buffers needed to scale, crop, letterbox
+// and read back a texture from the GPU into CPU-accessible RAM. A single
+// readback pipeline can handle multiple outstanding readbacks at the same time.
 class ReadbackYUVInterface {
  public:
   ReadbackYUVInterface() {}
   virtual ~ReadbackYUVInterface() {}
 
-  // Note that |target| must use YV12 format.  |paste_location| specifies where
-  // the captured pixels that are read back will be placed in the video frame.
-  // The region defined by the |paste_location| and the |dst_size| specified in
-  // the call to CreateReadbackPipelineYUV() must be fully contained within
-  // |target->visible_rect()|.
+  // Optional behavior: This sets a scaler to use to scale the inputs before
+  // planarizing. If null (or never called), then no scaling is performed.
+  virtual void SetScaler(std::unique_ptr<GLHelper::ScalerInterface> scaler) = 0;
+
+  // Returns the currently-set scaler, or null.
+  virtual GLHelper::ScalerInterface* scaler() const = 0;
+
+  // Transforms a RGBA texture into I420 planar form, and then reads it back
+  // from the GPU into system memory. See the GLHelper::ScalerInterface::Scale()
+  // method comments for the meaning/semantics of |src_texture_size| and
+  // |output_rect|. The process is:
+  //
+  //   1. Sync-wait and then consume and take ownership of the source texture
+  //      provided by |mailbox|.
+  //   2. Scale the source texture to an intermediate texture.
+  //   3. Planarize, producing textures containing the Y, U, and V planes.
+  //   4. Read-back the planar data, copying it into the given output
+  //      destination. |paste_location| specifies the where to place the output
+  //      pixels: Rect(paste_location.origin(), output_rect.size()).
+  //   5. Run callback with true on success, false on failure (with no output
+  //      modified).
   virtual void ReadbackYUV(const gpu::Mailbox& mailbox,
                            const gpu::SyncToken& sync_token,
-                           const gfx::Rect& target_visible_rect,
+                           const gfx::Size& src_texture_size,
+                           const gfx::Rect& output_rect,
                            int y_plane_row_stride_bytes,
                            unsigned char* y_plane_data,
                            int u_plane_row_stride_bytes,
@@ -377,7 +419,6 @@ class ReadbackYUVInterface {
                            unsigned char* v_plane_data,
                            const gfx::Point& paste_location,
                            const base::Callback<void(bool)>& callback) = 0;
-  virtual GLHelper::ScalerInterface* scaler() = 0;
 };
 
 }  // namespace viz

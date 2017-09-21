@@ -664,14 +664,22 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
   if (!texture_mailbox.IsTexture())
     return;
 
-  gfx::Rect result_rect(result->size());
-
+  if (!dfh->yuv_readback_pipeline_) {
+    dfh->yuv_readback_pipeline_ =
+        gl_helper->CreateReadbackPipelineYUV(true, true);
+  }
   viz::ReadbackYUVInterface* yuv_readback_pipeline =
       dfh->yuv_readback_pipeline_.get();
-  if (yuv_readback_pipeline == NULL ||
-      yuv_readback_pipeline->scaler()->SrcSize() != result_rect.size() ||
-      yuv_readback_pipeline->scaler()->SrcSubrect() != result_rect ||
-      yuv_readback_pipeline->scaler()->DstSize() != region_in_frame.size()) {
+  viz::GLHelper::ScalerInterface* const scaler =
+      yuv_readback_pipeline->scaler();
+  const gfx::Vector2d scale_from(result->size().width(),
+                                 result->size().height());
+  const gfx::Vector2d scale_to(region_in_frame.width(),
+                               region_in_frame.height());
+  if (scale_from == scale_to) {
+    if (scaler)
+      yuv_readback_pipeline->SetScaler(nullptr);
+  } else if (!scaler || !scaler->IsSameScaleRatio(scale_from, scale_to)) {
     // The scaler chosen here is based on performance measurements of full
     // end-to-end systems.  When down-scaling, always use the "fast" scaler
     // because it performs well on both low- and high- end machines, provides
@@ -681,19 +689,19 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
     // huge with insignificant performance penalty.  Note that this strategy
     // differs from single-frame snapshot capture.
     viz::GLHelper::ScalerQuality quality =
-        ((result_rect.size().width() < region_in_frame.size().width()) &&
-         (result_rect.size().height() < region_in_frame.size().height()))
+        ((result->size().width() < region_in_frame.size().width()) &&
+         (result->size().height() < region_in_frame.size().height()))
             ? viz::GLHelper::SCALER_QUALITY_BEST
             : viz::GLHelper::SCALER_QUALITY_FAST;
 
-    DVLOG(1) << "Re-creating YUV readback pipeline for source rect "
-             << result_rect.ToString() << " and destination size "
+    DVLOG(1) << "Re-creating YUV readback pipeline scaler for source rect "
+             << result->rect().ToString() << " and destination size "
              << region_in_frame.size().ToString();
 
-    dfh->yuv_readback_pipeline_.reset(gl_helper->CreateReadbackPipelineYUV(
-        quality, result_rect.size(), result_rect, region_in_frame.size(), true,
-        true));
-    yuv_readback_pipeline = dfh->yuv_readback_pipeline_.get();
+    std::unique_ptr<viz::GLHelper::ScalerInterface> scaler =
+        gl_helper->CreateScaler(quality, scale_from, scale_to, false, false);
+    DCHECK(scaler);  // Arguments to CreateScaler() should never be invalid.
+    yuv_readback_pipeline->SetScaler(std::move(scaler));
   }
 
   ignore_result(scoped_callback_runner.Release());
@@ -704,8 +712,8 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
       video_frame, dfh->AsWeakPtr(), base::Bind(callback, region_in_frame),
       subscriber_texture, base::Passed(&release_callback));
   yuv_readback_pipeline->ReadbackYUV(
-      texture_mailbox.mailbox(), texture_mailbox.sync_token(),
-      video_frame->visible_rect(),
+      texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
+      gfx::Rect(region_in_frame.size()),
       video_frame->stride(media::VideoFrame::kYPlane),
       video_frame->data(media::VideoFrame::kYPlane),
       video_frame->stride(media::VideoFrame::kUPlane),

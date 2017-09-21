@@ -156,11 +156,15 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
                         src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                         input.getPixels());
 
-        gfx::Rect src_subrect(0, 0, src_size.width(), src_size.height());
-        std::unique_ptr<GLHelper::ScalerInterface> scaler(helper_->CreateScaler(
-            kQualities[q], src_size, src_subrect, dst_size, false, false));
+        std::unique_ptr<GLHelper::ScalerInterface> scaler =
+            helper_->CreateScaler(
+                kQualities[q],
+                gfx::Vector2d(src_size.width(), src_size.height()),
+                gfx::Vector2d(dst_size.width(), dst_size.height()), false,
+                false);
         // Scale once beforehand before we start measuring.
-        scaler->Scale(src_texture, dst_texture);
+        const gfx::Rect output_rect(dst_size);
+        scaler->Scale(src_texture, src_size, dst_texture, output_rect);
         gl_->Finish();
 
         base::TimeTicks start_time = base::TimeTicks::Now();
@@ -169,7 +173,7 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
         while (true) {
           for (int i = 0; i < 50; i++) {
             iterations++;
-            scaler->Scale(src_texture, dst_texture);
+            scaler->Scale(src_texture, src_size, dst_texture, output_rect);
             gl_->Flush();
           }
           gl_->Finish();

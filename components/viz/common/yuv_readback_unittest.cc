@@ -259,12 +259,12 @@ class YUVReadbackTest : public testing::Test {
   }
 
   void PrintPlane(unsigned char* plane, int xsize, int stride, int ysize) {
-    for (int y = 0; y < ysize; y++) {
+    for (int y = 0; y < std::min(24, ysize); y++) {
       std::string formatted;
-      for (int x = 0; x < xsize; x++) {
+      for (int x = 0; x < std::min(24, xsize); x++) {
         formatted.append(base::StringPrintf("%3d, ", plane[y * stride + x]));
       }
-      LOG(ERROR) << formatted << "   (" << (plane + y * stride) << ")";
+      LOG(ERROR) << formatted;
     }
   }
 
@@ -367,11 +367,9 @@ class YUVReadbackTest : public testing::Test {
         "margin: %dx%d "
         "pattern: %d %s %s",
         xsize, ysize, output_xsize, output_ysize, xmargin, ymargin,
-        test_pattern, flip ? "flip" : "noflip", flip ? "mrt" : "nomrt");
-    std::unique_ptr<ReadbackYUVInterface> yuv_reader(
-        helper_->CreateReadbackPipelineYUV(
-            quality, gfx::Size(xsize, ysize), gfx::Rect(0, 0, xsize, ysize),
-            gfx::Size(xsize, ysize), flip, use_mrt));
+        test_pattern, flip ? "flip" : "noflip", use_mrt ? "mrt" : "nomrt");
+    std::unique_ptr<ReadbackYUVInterface> yuv_reader =
+        helper_->CreateReadbackPipelineYUV(flip, use_mrt);
 
     scoped_refptr<media::VideoFrame> output_frame =
         media::VideoFrame::CreateFrame(
@@ -392,7 +390,8 @@ class YUVReadbackTest : public testing::Test {
             base::TimeDelta::FromSeconds(0));
 
     base::RunLoop run_loop;
-    yuv_reader->ReadbackYUV(mailbox, sync_token, output_frame->visible_rect(),
+    yuv_reader->ReadbackYUV(mailbox, sync_token, gfx::Size(xsize, ysize),
+                            gfx::Rect(0, 0, xsize, ysize),
                             output_frame->stride(media::VideoFrame::kYPlane),
                             output_frame->data(media::VideoFrame::kYPlane),
                             output_frame->stride(media::VideoFrame::kUPlane),
@@ -479,31 +478,37 @@ class YUVReadbackTest : public testing::Test {
 };
 
 TEST_F(YUVReadbackTest, YUVReadbackOptTest) {
-  // This test uses the gpu.service/gpu_decoder tracing events to detect how
-  // many scaling passes are actually performed by the YUV readback pipeline.
-  StartTracing(TRACE_DISABLED_BY_DEFAULT(
-      "gpu.service") "," TRACE_DISABLED_BY_DEFAULT("gpu_decoder"));
+  for (int use_mrt = 0; use_mrt <= 1; ++use_mrt) {
+    // This test uses the gpu.service/gpu_decoder tracing events to detect how
+    // many scaling passes are actually performed by the YUV readback pipeline.
+    StartTracing(TRACE_DISABLED_BY_DEFAULT(
+        "gpu.service") "," TRACE_DISABLED_BY_DEFAULT("gpu_decoder"));
 
-  TestYUVReadback(800, 400, 800, 400, 0, 0, 1, false, true,
-                  GLHelper::SCALER_QUALITY_FAST);
+    // Run a test with no size scaling, just planerization.
+    TestYUVReadback(800, 400, 800, 400, 0, 0, 1, false, use_mrt == 1,
+                    GLHelper::SCALER_QUALITY_FAST);
 
-  std::map<std::string, int> event_counts;
-  EndTracing(&event_counts);
-  int draw_buffer_calls = event_counts["kDrawBuffersEXTImmediate"];
-  int draw_arrays_calls = event_counts["kDrawArrays"];
-  VLOG(1) << "Draw buffer calls: " << draw_buffer_calls;
-  VLOG(1) << "DrawArrays calls: " << draw_arrays_calls;
+    std::map<std::string, int> event_counts;
+    EndTracing(&event_counts);
+    int draw_buffer_calls = event_counts["kDrawBuffersEXTImmediate"];
+    int draw_arrays_calls = event_counts["kDrawArrays"];
+    VLOG(1) << "Draw buffer calls: " << draw_buffer_calls;
+    VLOG(1) << "DrawArrays calls: " << draw_arrays_calls;
 
-  if (draw_buffer_calls) {
-    // When using MRT, the YUV readback code should only
-    // execute two draw arrays, and scaling should be integrated
-    // into those two calls since we are using the FAST scalign
-    // quality.
-    EXPECT_EQ(2, draw_arrays_calls);
-  } else {
-    // When not using MRT, there are three passes for the YUV,
-    // and one for the scaling.
-    EXPECT_EQ(4, draw_arrays_calls);
+    if (use_mrt) {
+      // When using MRT, the YUV readback code should only execute two
+      // glDrawArrays(). It will call glDrawBuffersEXT() twice for each pass
+      // (once to draw to multiple outputs, and once to restore back to a single
+      // output).
+      EXPECT_EQ(2, draw_arrays_calls);
+      EXPECT_EQ(4, draw_buffer_calls);
+    } else {
+      // When not using MRT, there are three passes for the YUV.
+      // glDrawBuffersEXT() should never be called because none of the
+      // planerizers should draw multiple outputs.
+      EXPECT_EQ(3, draw_arrays_calls);
+      EXPECT_EQ(0, draw_buffer_calls);
+    }
   }
 }
 

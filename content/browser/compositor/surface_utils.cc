@@ -101,7 +101,7 @@ void PrepareTextureCopyOutputResult(
 
   gl_helper->CropScaleReadbackAndCleanMailbox(
       texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
-      gfx::Rect(result->size()), dst_size_in_pixel, pixels, color_type,
+      dst_size_in_pixel, pixels, color_type,
       base::Bind(&CopyFromCompositingSurfaceFinished, callback,
                  base::Passed(&release_callback), base::Passed(&bitmap)),
       viz::GLHelper::SCALER_QUALITY_GOOD);

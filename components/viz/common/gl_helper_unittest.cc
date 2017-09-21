@@ -152,9 +152,9 @@ class GLHelperTest : public testing::Test {
     std::string ret;
     for (size_t i = 0; i < scaler_stages.size(); i++) {
       ret.append(base::StringPrintf(
-          "%dx%d -> %dx%d ", scaler_stages[i].src_size.width(),
-          scaler_stages[i].src_size.height(), scaler_stages[i].dst_size.width(),
-          scaler_stages[i].dst_size.height()));
+          "%dx%d -> %dx%d ", scaler_stages[i].scale_from.x(),
+          scaler_stages[i].scale_from.y(), scaler_stages[i].scale_to.x(),
+          scaler_stages[i].scale_to.y()));
       bool xy_matters = false;
       switch (scaler_stages[i].shader) {
         case GLHelperScaling::SHADER_BILINEAR:
@@ -233,41 +233,26 @@ class GLHelperTest : public testing::Test {
   void ValidateScalerStages(
       GLHelper::ScalerQuality quality,
       const std::vector<GLHelperScaling::ScalerStage>& scaler_stages,
-      const gfx::Size& dst_size,
+      const gfx::Vector2d& overall_scale_from,
+      const gfx::Vector2d& overall_scale_to,
       const std::string& message) {
     bool previous_error = HasFailure();
-    // First, check that the input size for each stage is equal to
-    // the output size of the previous stage.
-    for (size_t i = 1; i < scaler_stages.size(); i++) {
-      EXPECT_EQ(scaler_stages[i - 1].dst_size.width(),
-                scaler_stages[i].src_size.width());
-      EXPECT_EQ(scaler_stages[i - 1].dst_size.height(),
-                scaler_stages[i].src_size.height());
-      EXPECT_EQ(scaler_stages[i].src_subrect.x(), 0);
-      EXPECT_EQ(scaler_stages[i].src_subrect.y(), 0);
-      EXPECT_EQ(scaler_stages[i].src_subrect.width(),
-                scaler_stages[i].src_size.width());
-      EXPECT_EQ(scaler_stages[i].src_subrect.height(),
-                scaler_stages[i].src_size.height());
-    }
-
-    // Check the output size matches the destination of the last stage
-    EXPECT_EQ(scaler_stages.back().dst_size.width(), dst_size.width());
-    EXPECT_EQ(scaler_stages.back().dst_size.height(), dst_size.height());
 
     // Used to verify that up-scales are not attempted after some
     // other scale.
     bool scaled_x = false;
     bool scaled_y = false;
 
+    double combined_x_scale = 1.0;
+    double combined_y_scale = 1.0;
     for (size_t i = 0; i < scaler_stages.size(); i++) {
       // Note: 2.0 means scaling down by 50%
-      double x_scale =
-          static_cast<double>(scaler_stages[i].src_subrect.width()) /
-          static_cast<double>(scaler_stages[i].dst_size.width());
-      double y_scale =
-          static_cast<double>(scaler_stages[i].src_subrect.height()) /
-          static_cast<double>(scaler_stages[i].dst_size.height());
+      double x_scale = static_cast<double>(scaler_stages[i].scale_from.x()) /
+                       static_cast<double>(scaler_stages[i].scale_to.x());
+      combined_x_scale *= x_scale;
+      double y_scale = static_cast<double>(scaler_stages[i].scale_from.y()) /
+                       static_cast<double>(scaler_stages[i].scale_to.y());
+      combined_y_scale *= y_scale;
 
       int x_samples = 0;
       int y_samples = 0;
@@ -342,6 +327,15 @@ class GLHelperTest : public testing::Test {
         scaled_y = true;
       }
     }
+
+    const double expected_x_scale =
+        static_cast<double>(overall_scale_from.x()) /
+        static_cast<double>(overall_scale_to.x());
+    const double expected_y_scale =
+        static_cast<double>(overall_scale_from.y()) /
+        static_cast<double>(overall_scale_to.y());
+    EXPECT_NEAR(expected_x_scale, combined_x_scale, 1e-9);
+    EXPECT_NEAR(expected_y_scale, combined_y_scale, 1e-9);
 
     if (HasFailure() && !previous_error) {
       LOG(ERROR) << "Invalid scaler stages: " << message;
@@ -691,7 +685,7 @@ class GLHelperTest : public testing::Test {
     base::RunLoop run_loop;
     gfx::Size encoded_texture_size;
     helper_->CropScaleReadbackAndCleanTexture(
-        src_texture, gfx::Size(xsize, ysize), gfx::Rect(xsize, ysize),
+        src_texture, gfx::Size(xsize, ysize),
         gfx::Size(scaled_xsize, scaled_ysize),
         static_cast<unsigned char*>(output_pixels.getPixels()), out_color_type,
         base::Bind(&callcallback, run_loop.QuitClosure()),
@@ -757,17 +751,17 @@ class GLHelperTest : public testing::Test {
     std::string message = base::StringPrintf(
         "input size: %dx%d "
         "output size: %dx%d "
-        "pattern: %d quality: %s",
+        "pattern: %d quality: %s %s",
         xsize, ysize, scaled_xsize, scaled_ysize, test_pattern,
-        kQualityNames[quality_index]);
+        kQualityNames[quality_index], flip ? "flip" : "noflip");
 
     std::vector<GLHelperScaling::ScalerStage> stages;
     helper_scaling_->ComputeScalerStages(
-        kQualities[quality_index], gfx::Size(xsize, ysize),
-        gfx::Rect(0, 0, xsize, ysize), gfx::Size(scaled_xsize, scaled_ysize),
-        flip, false, &stages);
+        kQualities[quality_index], gfx::Vector2d(xsize, ysize),
+        gfx::Vector2d(scaled_xsize, scaled_ysize), flip, false, &stages);
     ValidateScalerStages(kQualities[quality_index], stages,
-                         gfx::Size(scaled_xsize, scaled_ysize), message);
+                         gfx::Vector2d(xsize, ysize),
+                         gfx::Vector2d(scaled_xsize, scaled_ysize), message);
 
     GLuint dst_texture = helper_->CopyAndScaleTexture(
         src_texture, gfx::Size(xsize, ysize),
@@ -818,11 +812,11 @@ class GLHelperTest : public testing::Test {
                           int dst_ysize) {
     std::vector<GLHelperScaling::ScalerStage> stages;
     helper_scaling_->ComputeScalerStages(
-        kQualities[quality], gfx::Size(xsize, ysize),
-        gfx::Rect(0, 0, xsize, ysize), gfx::Size(dst_xsize, dst_ysize), false,
-        false, &stages);
+        kQualities[quality], gfx::Vector2d(xsize, ysize),
+        gfx::Vector2d(dst_xsize, dst_ysize), false, false, &stages);
     ValidateScalerStages(kQualities[quality], stages,
-                         gfx::Size(dst_xsize, dst_ysize),
+                         gfx::Vector2d(xsize, ysize),
+                         gfx::Vector2d(dst_xsize, dst_ysize),
                          base::StringPrintf("input size: %dx%d "
                                             "output size: %dx%d "
                                             "quality: %s",
@@ -839,11 +833,12 @@ class GLHelperTest : public testing::Test {
                      int dst_ysize,
                      const std::string& description) {
     std::vector<GLHelperScaling::ScalerStage> stages;
-    helper_scaling_->ComputeScalerStages(
-        quality, gfx::Size(xsize, ysize), gfx::Rect(0, 0, xsize, ysize),
-        gfx::Size(dst_xsize, dst_ysize), false, false, &stages);
+    helper_scaling_->ComputeScalerStages(quality, gfx::Vector2d(xsize, ysize),
+                                         gfx::Vector2d(dst_xsize, dst_ysize),
+                                         false, false, &stages);
     ValidateScalerStages(GLHelper::SCALER_QUALITY_GOOD, stages,
-                         gfx::Size(dst_xsize, dst_ysize), "");
+                         gfx::Vector2d(xsize, ysize),
+                         gfx::Vector2d(dst_xsize, dst_ysize), "");
     EXPECT_EQ(PrintStages(stages), description);
   }
 
@@ -1118,13 +1113,13 @@ class GLHelperTest : public testing::Test {
                       const std::string& description) {
     std::vector<GLHelperScaling::ScalerStage> stages;
     helper_scaling_->ConvertScalerOpsToScalerStages(
-        GLHelper::SCALER_QUALITY_GOOD, gfx::Size(xsize, ysize),
-        gfx::Rect(0, 0, xsize, ysize), gfx::Size(dst_xsize, dst_ysize), false,
+        GLHelper::SCALER_QUALITY_GOOD, gfx::Vector2d(xsize, ysize), false,
         false, &x_ops_, &y_ops_, &stages);
     EXPECT_EQ(x_ops_.size(), 0U);
     EXPECT_EQ(y_ops_.size(), 0U);
     ValidateScalerStages(GLHelper::SCALER_QUALITY_GOOD, stages,
-                         gfx::Size(dst_xsize, dst_ysize), "");
+                         gfx::Vector2d(xsize, ysize),
+                         gfx::Vector2d(dst_xsize, dst_ysize), "");
     EXPECT_EQ(PrintStages(stages), description);
   }
 

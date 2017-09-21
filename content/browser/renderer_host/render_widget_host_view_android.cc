@@ -401,7 +401,7 @@ void PrepareTextureCopyOutputResult(
 
   gl_helper->CropScaleReadbackAndCleanMailbox(
       texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
-      gfx::Rect(result->size()), output_size_in_pixel, pixels, color_type,
+      output_size_in_pixel, pixels, color_type,
       base::Bind(&CopyFromCompositingSurfaceFinished, callback,
                  base::Passed(&release_callback), base::Passed(&bitmap),
                  start_time, readback_lock),

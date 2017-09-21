@@ -340,20 +340,29 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     return false;
   }
 
-  gfx::Rect result_rect(result->size());
-  if (!yuv_readback_pipeline_ ||
-      yuv_readback_pipeline_->scaler()->SrcSize() != result_rect.size() ||
-      yuv_readback_pipeline_->scaler()->SrcSubrect() != result_rect ||
-      yuv_readback_pipeline_->scaler()->DstSize() != region_in_frame.size()) {
-    yuv_readback_pipeline_.reset(gl_helper->CreateReadbackPipelineYUV(
-        viz::GLHelper::SCALER_QUALITY_FAST, result_rect.size(), result_rect,
-        region_in_frame.size(), true, true));
+  if (!yuv_readback_pipeline_)
+    yuv_readback_pipeline_ = gl_helper->CreateReadbackPipelineYUV(true, true);
+  viz::GLHelper::ScalerInterface* const scaler =
+      yuv_readback_pipeline_->scaler();
+  const gfx::Vector2d scale_from(result->size().width(),
+                                 result->size().height());
+  const gfx::Vector2d scale_to(region_in_frame.width(),
+                               region_in_frame.height());
+  if (scale_from == scale_to) {
+    if (scaler)
+      yuv_readback_pipeline_->SetScaler(nullptr);
+  } else if (!scaler || !scaler->IsSameScaleRatio(scale_from, scale_to)) {
+    std::unique_ptr<viz::GLHelper::ScalerInterface> scaler =
+        gl_helper->CreateScaler(viz::GLHelper::SCALER_QUALITY_FAST, scale_from,
+                                scale_to, false, false);
+    DCHECK(scaler);  // Arguments to CreateScaler() should never be invalid.
+    yuv_readback_pipeline_->SetScaler(std::move(scaler));
   }
 
   cursor_renderer_->SnapshotCursorState(region_in_frame);
   yuv_readback_pipeline_->ReadbackYUV(
-      texture_mailbox.mailbox(), texture_mailbox.sync_token(),
-      video_frame->visible_rect(),
+      texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
+      gfx::Rect(region_in_frame.size()),
       video_frame->stride(media::VideoFrame::kYPlane),
       video_frame->data(media::VideoFrame::kYPlane),
       video_frame->stride(media::VideoFrame::kUPlane),
