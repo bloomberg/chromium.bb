@@ -29,6 +29,8 @@
 
 // https://drafts.csswg.org/css-device-adapt/#css-viewport-rule-interface
 
-interface CSSViewportRule : CSSRule {
+[
+    RuntimeEnabled=CSSViewport
+] interface CSSViewportRule : CSSRule {
     readonly attribute CSSStyleDeclaration style;
 };

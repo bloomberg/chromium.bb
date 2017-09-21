@@ -456,10 +456,6 @@ interface CSSStyleSheet : StyleSheet
 interface CSSSupportsRule : CSSConditionRule
     attribute @@toStringTag
     method constructor
-interface CSSViewportRule : CSSRule
-    attribute @@toStringTag
-    getter style
-    method constructor
 interface Cache
     attribute @@toStringTag
     method add
