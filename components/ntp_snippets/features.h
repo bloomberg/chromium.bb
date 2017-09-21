@@ -62,13 +62,15 @@ enum class CategoryRankerChoice {
   CLICK_BASED,
 };
 
-// Returns which CategoryRanker to use according to kCategoryRanker feature.
-CategoryRankerChoice GetSelectedCategoryRanker();
+// Returns which CategoryRanker to use according to kCategoryRanker feature and
+// Chrome Home.
+CategoryRankerChoice GetSelectedCategoryRanker(bool is_chrome_home_enabled);
 
-// Builds a CategoryRanker according to kCategoryRanker feature.
+// Builds a CategoryRanker according to kCategoryRanker feature and Chrome Home.
 std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
     PrefService* pref_service,
-    std::unique_ptr<base::Clock> clock);
+    std::unique_ptr<base::Clock> clock,
+    bool is_chrome_home_enabled);
 
 // Feature to choose a default category order.
 extern const base::Feature kCategoryOrder;

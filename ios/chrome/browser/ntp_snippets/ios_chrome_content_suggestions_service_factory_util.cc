@@ -133,7 +133,8 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
           chrome_browser_state);
   std::unique_ptr<ntp_snippets::CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
-          prefs, base::MakeUnique<base::DefaultClock>());
+          prefs, base::MakeUnique<base::DefaultClock>(),
+          /*is_chrome_home_enabled=*/false);
   std::unique_ptr<ContentSuggestionsService> service =
       base::MakeUnique<ContentSuggestionsService>(
           State::ENABLED, signin_manager, history_service, large_icon_service,
