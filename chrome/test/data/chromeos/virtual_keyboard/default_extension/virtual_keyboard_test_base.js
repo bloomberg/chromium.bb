@@ -13,24 +13,15 @@ var debugging = false;
  * The enumeration of keyset modifiers.
  * @enum {string}
  */
-var KeysetModifier = {
-  NONE: 'none',
-  SHIFT: 'shift',
-  MORE: 'more',
-  SYMBOL: 'symbol'
-};
+var KeysetModifier =
+    {NONE: 'none', SHIFT: 'shift', MORE: 'more', SYMBOL: 'symbol'};
 
 /**
  * Flag values for the shift, control and alt modifiers as defined by
  * EventFlags in "event_constants.h".
  * @type {enum}
  */
-var Modifier = {
-  NONE: 0,
-  SHIFT: 2,
-  CONTROL: 4,
-  ALT: 8
-};
+var Modifier = {NONE: 0, SHIFT: 2, CONTROL: 4, ALT: 8};
 
 /**
  * Display diagnostic messages when debugging tests.
@@ -50,7 +41,6 @@ var mockController;
  *     calls with expectations.
  */
 function mockExtensionApis(mockController) {
-
   /**
    * Mocks methods within a namespace.
    * @param {string} namespace Dot delimited namespace.
@@ -79,22 +69,13 @@ function mockExtensionApis(mockController) {
   };
 
   var virtualKeyboardPrivateMethods = [
-    'getKeyboardConfig',
-    'hideKeyboard',
-    'insertText',
-    'lockKeyboard',
-    'moveCursor',
-    'sendKeyEvent',
-    'setMode',
-    'setKeyboardState',
+    'getKeyboardConfig', 'hideKeyboard', 'insertText', 'lockKeyboard',
+    'moveCursor', 'sendKeyEvent', 'setMode', 'setKeyboardState',
     'setHotrodKeyboard'
   ];
 
-  var inputMethodPrivateMethods = [
-    'getCurrentInputMethod',
-    'getInputMethods',
-    'setCurrentInputMethod'
-  ];
+  var inputMethodPrivateMethods =
+      ['getCurrentInputMethod', 'getInputMethods', 'setCurrentInputMethod'];
 
   addMocks('chrome.virtualKeyboardPrivate', virtualKeyboardPrivateMethods);
   addMocks('chrome.inputMethodPrivate', inputMethodPrivateMethods);
@@ -158,25 +139,22 @@ function setUp() {
     // sendKeyEvent calls.
     var expectedEvent = expected[0];
     var observedEvent = observed[0];
-    assertEquals(expectedEvent.type,
-                 observedEvent.type,
-                 'Mismatched event types.');
-    assertEquals(expectedEvent.charValue,
-                 observedEvent.charValue,
-                 'Mismatched unicode values for character.');
-    assertEquals(expectedEvent.keyCode,
-                 observedEvent.keyCode,
-                 'Mismatched key codes.');
-    assertEquals(expectedEvent.modifiers,
-                 observedEvent.modifiers,
-                 'Mismatched states for modifiers.');
+    assertEquals(
+        expectedEvent.type, observedEvent.type, 'Mismatched event types.');
+    assertEquals(
+        expectedEvent.charValue, observedEvent.charValue,
+        'Mismatched unicode values for character.');
+    assertEquals(
+        expectedEvent.keyCode, observedEvent.keyCode, 'Mismatched key codes.');
+    assertEquals(
+        expectedEvent.modifiers, observedEvent.modifiers,
+        'Mismatched states for modifiers.');
   };
   chrome.virtualKeyboardPrivate.sendKeyEvent.validateCall = validateSendCall;
 
   var validateLockKeyboard = function(index, expected, observed) {
-    assertEquals(expected[0],
-                 observed[0],
-                 'Mismatched keyboard lock/unlock state.');
+    assertEquals(
+        expected[0], observed[0], 'Mismatched keyboard lock/unlock state.');
   };
   chrome.virtualKeyboardPrivate.lockKeyboard.validateCall =
       validateLockKeyboard;
@@ -235,11 +213,9 @@ function onKeyboardReady(runTestCallback, opt_config) {
   chrome.virtualKeyboardPrivate.keyboardLoaded = function() {
     runTestCallback();
   };
-  window.initializeVirtualKeyboard(config.keyset,
-                                   config.languageCode,
-                                   config.passwordLayout,
-                                   config.name,
-                                   options);
+  window.initializeVirtualKeyboard(
+      config.keyset, config.languageCode, config.passwordLayout, config.name,
+      options);
 }
 
 /**
@@ -276,8 +252,8 @@ function onKeysetsReady(keyset, continueTestCallback) {
  */
 function mockTouchEvent(key, eventType) {
   var rect = key.getBoundingClientRect();
-  var x = rect.left + rect.width/2;
-  var y = rect.top + rect.height/2;
+  var x = rect.left + rect.width / 2;
+  var y = rect.top + rect.height / 2;
   var e = document.createEvent('UIEvent');
   e.initUIEvent(eventType, true, true);
   e.touches = [{pageX: x, pageY: y}];
@@ -422,8 +398,8 @@ function applyKeysetModifier(modifier) {
     // Set state of shift key.
     var leftShift = activeView.querySelector('#ShiftLeft');
     assertTrue(!!leftShift, 'Unable to find left shift key');
-    var currentShiftState = !!leftShift.querySelector(
-        '.inputview-special-key-highlight');
+    var currentShiftState =
+        !!leftShift.querySelector('.inputview-special-key-highlight');
     if (!currentShiftState) {
       mockTap(leftShift);
     }

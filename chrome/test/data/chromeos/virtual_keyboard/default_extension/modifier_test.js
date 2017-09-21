@@ -18,12 +18,8 @@ function testControlKeyStickyAsync(testDoneCallback) {
 
     testDoneCallback();
   };
-  var config = {
-    keyset: 'us',
-    languageCode: 'en',
-    passwordLayout: 'us',
-    name: 'English'
-  };
+  var config =
+      {keyset: 'us', languageCode: 'en', passwordLayout: 'us', name: 'English'};
   onKeyboardReady(testCallback, config);
 }
 
@@ -47,12 +43,8 @@ function testChordedControlKeyAsync(testDoneCallback) {
     mockTypeCharacter('a', 0x41, Modifier.NONE);
     testDoneCallback();
   };
-  var config = {
-    keyset: 'us',
-    languageCode: 'en',
-    passwordLayout: 'us',
-    name: 'English'
-  };
+  var config =
+      {keyset: 'us', languageCode: 'en', passwordLayout: 'us', name: 'English'};
   onKeyboardReady(testCallback, config);
 }
 
@@ -64,20 +56,15 @@ function testMultipleStickyModifiersAsync(testDoneCallback) {
     mockTap(findKeyById('ControlLeft'));
     mockTap(findKeyById('AltLeft'));
     mockTap(findKeyById('ShiftLeft'));
-    mockTypeCharacter('A', 0x41,
-                      Modifier.CONTROL | Modifier.ALT | Modifier.SHIFT,
-                      0);
+    mockTypeCharacter(
+        'A', 0x41, Modifier.CONTROL | Modifier.ALT | Modifier.SHIFT, 0);
 
     // Keys should un-stick on a subsequent press.
     mockTypeCharacter('a', 0x41, Modifier.NONE);
     testDoneCallback();
   };
-  var config = {
-    keyset: 'us',
-    languageCode: 'en',
-    passwordLayout: 'us',
-    name: 'English'
-  };
+  var config =
+      {keyset: 'us', languageCode: 'en', passwordLayout: 'us', name: 'English'};
   onKeyboardReady(testCallback, config);
 }
 
@@ -91,11 +78,7 @@ function testDoubleTapUnstickAsync(testDoneCallback) {
     mockTypeCharacter('a', 0x41, Modifier.NONE);
     testDoneCallback();
   };
-  var config = {
-    keyset: 'us',
-    languageCode: 'en',
-    passwordLayout: 'us',
-    name: 'English'
-  };
+  var config =
+      {keyset: 'us', languageCode: 'en', passwordLayout: 'us', name: 'English'};
   onKeyboardReady(testCallback, config);
 }

@@ -19,11 +19,12 @@ function verifyLayout(rows) {
     key = getSoftKeyView(key);
     for (var i = 1; i < sequence.length; i++) {
       var next = key.nextSibling;
-      assertTrue(!!next,
-                 'Unable to find key to right of "' + sequence[i - 1] + '"');
-      assertTrue(hasLabel(next, sequence[i]),
-                 'Unexpected label: expected: "' + sequence[i] +
-                 '" to follow "' + sequence[i - 1] + '"');
+      assertTrue(
+          !!next, 'Unable to find key to right of "' + sequence[i - 1] + '"');
+      assertTrue(
+          hasLabel(next, sequence[i]),
+          'Unexpected label: expected: "' + sequence[i] + '" to follow "' +
+              sequence[i - 1] + '"');
       key = next;
     }
   });
@@ -34,18 +35,10 @@ function verifyLayout(rows) {
  */
 function testFullQwertyLayoutAsync(testDoneCallback) {
   var testCallback = function() {
-    var lowercase = [
-      '`1234567890-=',
-      'qwertyuiop[]\\',
-      'asdfghjkl;\'',
-      'zxcvbnm,./'
-    ];
-    var uppercase = [
-      '~!@#$%^&*()_+',
-      'QWERTYUIOP{}',
-      'ASDFGHJKL:"',
-      'ZXCVBNM<>?'
-    ];
+    var lowercase =
+        ['`1234567890-=', 'qwertyuiop[]\\', 'asdfghjkl;\'', 'zxcvbnm,./'];
+    var uppercase =
+        ['~!@#$%^&*()_+', 'QWERTYUIOP{}', 'ASDFGHJKL:"', 'ZXCVBNM<>?'];
     var view = getActiveView();
     assertTrue(!!view, 'Unable to find active view');
     assertEquals('us', view.id, 'Expecting full layout');
@@ -56,12 +49,8 @@ function testFullQwertyLayoutAsync(testDoneCallback) {
     verifyLayout(lowercase);
     testDoneCallback();
   };
-  var config = {
-    keyset: 'us',
-    languageCode: 'en',
-    passwordLayout: 'us',
-    name: 'English'
-  };
+  var config =
+      {keyset: 'us', languageCode: 'en', passwordLayout: 'us', name: 'English'};
   onKeyboardReady(testCallback, config);
 }
 
@@ -70,24 +59,11 @@ function testFullQwertyLayoutAsync(testDoneCallback) {
  */
 function testCompactQwertyLayoutAsync(testDoneCallback) {
   var testCallback = function() {
-    var lowercase = [
-      'qwertyuiop',
-      'asdfghjkl',
-      'zxcvbnm!?'
-    ];
-    var uppercase = [
-      'QWERTYUIOP',
-      'ASDFGHJKL',
-      'ZXCVBNM!?'
-    ];
-    var symbol = [
-      '1234567890',
-      '@#$%&-+()',
-      '\\=*"\':;!?'
-    ];
+    var lowercase = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm!?'];
+    var uppercase = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM!?'];
+    var symbol = ['1234567890', '@#$%&-+()', '\\=*"\':;!?'];
     var more = [
-      '~`|',
-      '\u00a3\u00a2\u20ac\u00a5^\u00b0={}',
+      '~`|', '\u00a3\u00a2\u20ac\u00a5^\u00b0={}',
       '\\\u00a9\u00ae\u2122\u2105[]\u00a1\u00bf'
     ];
     var view = getActiveView();
@@ -101,16 +77,18 @@ function testCompactQwertyLayoutAsync(testDoneCallback) {
     // test.
     onKeysetsReady(['us.compact.symbol', 'us.compact.more'], function() {
       onSwitchToKeyset('us.compact.symbol', function() {
-        assertEquals('us-compact-symbol', getActiveView().id,
-                     'Expecting symbol layout');
+        assertEquals(
+            'us-compact-symbol', getActiveView().id, 'Expecting symbol layout');
         verifyLayout(symbol);
         onSwitchToKeyset('us.compact.more', function() {
-          assertEquals('us-compact-more', getActiveView().id,
-                       'Expecting more symbols layout');
+          assertEquals(
+              'us-compact-more', getActiveView().id,
+              'Expecting more symbols layout');
           verifyLayout(more);
           onSwitchToKeyset('us.compact.qwerty', function() {
-            assertEquals('us-compact-qwerty', getActiveView().id,
-                         'Expecting compact text layout');
+            assertEquals(
+                'us-compact-qwerty', getActiveView().id,
+                'Expecting compact text layout');
             verifyLayout(lowercase);
             testDoneCallback();
           });
@@ -137,11 +115,13 @@ function testHandwritingSupportAsync(testDoneCallback) {
   onKeyboardReady(function() {
     var menu = document.querySelector('.inputview-menu-view');
     assertTrue(!!menu, 'Unable to access keyboard menu');
-    assertEquals('none', getComputedStyle(menu)['display'],
-                 'Menu should not be visible until activated');
+    assertEquals(
+        'none', getComputedStyle(menu)['display'],
+        'Menu should not be visible until activated');
     mockTap(findKeyById('Menu'));
-    assertEquals('block', getComputedStyle(menu)['display'],
-                 'Menu should be visible once activated');
+    assertEquals(
+        'block', getComputedStyle(menu)['display'],
+        'Menu should be visible once activated');
     var hwt = menu.querySelector('#handwriting');
     assertFalse(!!hwt, 'Handwriting should be disabled by default');
     testDoneCallback();
@@ -155,30 +135,32 @@ function testHandwritingSupportAsync(testDoneCallback) {
  */
 function testHandwritingLayoutAsync(testDoneCallback) {
   var compactKeysets = [
-    'us.compact.qwerty',
-    'us.compact.symbol',
-    'us.compact.more',
+    'us.compact.qwerty', 'us.compact.symbol', 'us.compact.more',
     'us.compact.numberpad'
   ];
-  var testCallback = function () {
+  var testCallback = function() {
     // Non-active keysets are lazy loaded in order to reduce latency before
     // the virtual keyboard is shown. Wait until the load is complete to
     // continue testing.
     onKeysetsReady(compactKeysets, function() {
       var menu = document.querySelector('.inputview-menu-view');
-      assertEquals('none', getComputedStyle(menu).display,
-                   'Menu should be hidden initially');
+      assertEquals(
+          'none', getComputedStyle(menu).display,
+          'Menu should be hidden initially');
       mockTap(findKeyById('Menu'));
-      assertFalse(menu.hidden,
-                  'Menu should be visible after tapping menu toggle button');
+      assertFalse(
+          menu.hidden,
+          'Menu should be visible after tapping menu toggle button');
       var menuBounds = menu.getBoundingClientRect();
-      assertTrue(menuBounds.width > 0 && menuBounds.height > 0,
-                 'Expect non-zero menu bounds.');
+      assertTrue(
+          menuBounds.width > 0 && menuBounds.height > 0,
+          'Expect non-zero menu bounds.');
       var hwtSelect = menu.querySelector('#handwriting');
       assertTrue(!!hwtSelect, 'Handwriting should be available for testing');
       var hwtSelectBounds = hwtSelect.getBoundingClientRect();
-      assertTrue(hwtSelectBounds.width > 0 && hwtSelectBounds.height > 0,
-                 'Expect non-zero size for hwt select button.');
+      assertTrue(
+          hwtSelectBounds.width > 0 && hwtSelectBounds.height > 0,
+          'Expect non-zero size for hwt select button.');
       onSwitchToKeyset('hwt', function() {
         // The tests below for handwriting part is for material design.
         var view = getActiveView();
@@ -190,7 +172,8 @@ function testHandwritingLayoutAsync(testDoneCallback) {
         var backButton = panelView.querySelector('#backToKeyboard');
         assertTrue(!!backButton, 'Unable to find back button.');
         onSwitchToKeyset('us.compact.qwerty', function() {
-          assertEquals('us-compact-qwerty', getActiveView().id,
+          assertEquals(
+              'us-compact-qwerty', getActiveView().id,
               'compact layout is not active.');
           testDoneCallback();
         });
@@ -213,17 +196,19 @@ function testHandwritingLayoutAsync(testDoneCallback) {
  * Test that IME switching from the InputView menu works.
  */
 function testKeyboardSwitchIMEAsync(testDoneCallback) {
-  var testCallback = function () {
+  var testCallback = function() {
     // Ensure that the menu key is present and displays the menu when pressed.
     var menu = document.querySelector('.inputview-menu-view');
-    assertEquals('none', getComputedStyle(menu).display,
-                 'Menu should be hidden initially');
+    assertEquals(
+        'none', getComputedStyle(menu).display,
+        'Menu should be hidden initially');
     mockTap(findKeyById('Menu'));
-    assertFalse(menu.hidden,
-                'Menu should be visible after tapping menu toggle button');
+    assertFalse(
+        menu.hidden, 'Menu should be visible after tapping menu toggle button');
     var menuBounds = menu.getBoundingClientRect();
-    assertTrue(menuBounds.width > 0 && menuBounds.height > 0,
-               'Expect non-zero menu bounds.');
+    assertTrue(
+        menuBounds.width > 0 && menuBounds.height > 0,
+        'Expect non-zero menu bounds.');
 
     var imes = menu.querySelectorAll('.inputview-menu-list-indicator-name');
     assertEquals(3, imes.length, 'Unexpected number of IMEs in menu view.');
@@ -236,7 +221,7 @@ function testKeyboardSwitchIMEAsync(testDoneCallback) {
 
     // Select the German IME and ensure that the menu is dismissed.
     mockTap(imes[2]);
-    assertEquals('none', menu.style.display, "Menu didn't hide on switch.");
+    assertEquals('none', menu.style.display, 'Menu didn\'t hide on switch.');
 
     testDoneCallback();
   };
