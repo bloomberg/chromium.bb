@@ -344,7 +344,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
       continue;
     }
 
-    entity->ReceiveCommitResponse(data);
+    entity->ReceiveCommitResponse(data, commit_only_);
 
     if (commit_only_) {
       if (!entity->IsUnsynced()) {
@@ -354,6 +354,11 @@ void SharedModelTypeProcessor::OnCommitCompleted(
         storage_key_to_tag_hash_.erase(entity->storage_key());
         entities_.erase(entity->metadata().client_tag_hash());
       }
+      // If unsynced, we could theoretically update persisted metadata to have
+      // more accurate bookkeeping. However, this wouldn't actually do anything
+      // useful, we still need to commit again, and we're not going to include
+      // any of the changing metadata in the commit message. So skip updating
+      // metadata.
     } else if (entity->CanClearMetadata()) {
       metadata_change_list->ClearMetadata(entity->storage_key());
       storage_key_to_tag_hash_.erase(entity->storage_key());

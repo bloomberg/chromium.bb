@@ -192,16 +192,21 @@ void MockModelTypeWorker::TombstoneFromServer(const std::string& tag_hash) {
 }
 
 void MockModelTypeWorker::AckOnePendingCommit() {
+  AckOnePendingCommit(1);
+}
+
+void MockModelTypeWorker::AckOnePendingCommit(int64_t version_offset) {
   CommitResponseDataList list;
   for (const CommitRequestData& data : pending_commits_.front()) {
-    list.push_back(SuccessfulCommitResponse(data));
+    list.push_back(SuccessfulCommitResponse(data, version_offset));
   }
   pending_commits_.pop_front();
   processor_->OnCommitCompleted(model_type_state_, list);
 }
 
 CommitResponseData MockModelTypeWorker::SuccessfulCommitResponse(
-    const CommitRequestData& request_data) {
+    const CommitRequestData& request_data,
+    int64_t version_offset) {
   const EntityData& entity = request_data.entity.value();
   const std::string& client_tag_hash = entity.client_tag_hash;
 
@@ -220,12 +225,12 @@ CommitResponseData MockModelTypeWorker::SuccessfulCommitResponse(
   response_data.sequence_number = request_data.sequence_number;
   response_data.specifics_hash = request_data.specifics_hash;
 
-  // Increment the server version on successful commit.
-  int64_t version = GetServerVersion(client_tag_hash);
-  version++;
-  SetServerVersion(client_tag_hash, version);
-
-  response_data.response_version = version;
+  int64_t old_version = GetServerVersion(client_tag_hash);
+  int64_t new_version = old_version + version_offset;
+  if (new_version > old_version) {
+    SetServerVersion(client_tag_hash, new_version);
+  }
+  response_data.response_version = new_version;
 
   return response_data;
 }

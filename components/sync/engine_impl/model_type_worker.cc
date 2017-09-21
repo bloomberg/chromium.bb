@@ -55,7 +55,7 @@ ModelTypeWorker::ModelTypeWorker(
   // type state that has already done its initial sync, and is going to be
   // tracking metadata changes, however it does not have the most recent
   // encryption key name. The cryptographer was updated while the worker was not
-  // around, and we're not going to recieve the normal UpdateCryptographer() or
+  // around, and we're not going to receive the normal UpdateCryptographer() or
   // EncryptionAcceptedApplyUpdates() calls to drive this process.
   //
   // If |cryptographer_->is_ready()| is false, all the rest of this logic can be

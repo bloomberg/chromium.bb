@@ -143,7 +143,7 @@ class ModelTypeWorker : public UpdateHandler,
 
   // Updates the encryption key name stored in |model_type_state_| if it differs
   // from the default encryption key name in |cryptographer_|. Returns whether
-  // an update occured.
+  // an update occurred.
   bool UpdateEncryptionKeyName();
 
   // Iterates through all elements in |entities_| and tries to decrypt anything
@@ -195,7 +195,7 @@ class ModelTypeWorker : public UpdateHandler,
   //
   // When commits are pending, their information is stored here. This
   // information is dropped from memory when the commit succeeds or gets
-  // cancelled.
+  // canceled.
   //
   // This also stores some information related to received server state in
   // order to implement reflection blocking and conflict detection. This
@@ -209,7 +209,8 @@ class ModelTypeWorker : public UpdateHandler,
   // Whether there are outstanding encrypted updates in |entities_|.
   bool has_encrypted_updates_ = false;
 
-  // Cancelation signal is used to cancel blocking operation on engine shutdown.
+  // Cancellation signal is used to cancel blocking operation on engine
+  // shutdown.
   CancelationSignal* cancelation_signal_;
 
   base::ThreadChecker thread_checker_;
@@ -220,7 +221,7 @@ class ModelTypeWorker : public UpdateHandler,
 
 // GetLocalChangesRequest is a container for GetLocalChanges call response. It
 // allows sync thread to block waiting for model thread to call SetResponse.
-// This class supports cancelling blocking call through CancelationSignal during
+// This class supports canceling blocking call through CancelationSignal during
 // sync engine shutdown.
 //
 // It should be used in the following manner:
@@ -243,7 +244,7 @@ class GetLocalChangesRequest
   void OnSignalReceived() override;
 
   // Blocks current thread until either SetResponse is called or
-  // cancelation_signal_ is signalled.
+  // cancelation_signal_ is signaled.
   void WaitForResponse();
 
   // SetResponse takes ownership of |local_changes| and unblocks WaitForResponse
@@ -251,7 +252,7 @@ class GetLocalChangesRequest
   // GetLocalChanges.
   void SetResponse(CommitRequestDataList&& local_changes);
 
-  // Checks if WaitForResponse was cancelled through CancelationSignal. When
+  // Checks if WaitForResponse was canceled through CancelationSignal. When
   // returns true calling ExtractResponse is unsafe.
   bool WasCancelled();
 
