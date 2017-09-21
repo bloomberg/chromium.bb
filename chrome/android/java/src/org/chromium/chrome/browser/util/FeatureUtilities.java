@@ -319,19 +319,6 @@ public class FeatureUtilities {
     }
 
     /**
-     * @return Whether or not the Chrome Home Modern layout is enabled.
-     */
-    public static boolean isChromeHomeModernEnabled() {
-        if (!isChromeHomeEnabled()) return false;
-
-        // Modern is enabled by default for Chrome Home, so return true if the feature list isn't
-        // yet initialized.
-        if (!ChromeFeatureList.isInitialized()) return true;
-
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
-    }
-
-    /**
      * @return Whether or not showing the Doodle in the Chrome Home NTP is enabled.
      */
     public static boolean isChromeHomeDoodleEnabled() {

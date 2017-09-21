@@ -240,9 +240,8 @@ class SnackbarView {
         int backgroundColor = snackbar.getBackgroundColor();
         if (backgroundColor == 0) {
             backgroundColor = ApiCompatibilityUtils.getColor(mContainerView.getResources(),
-                    FeatureUtilities.isChromeHomeModernEnabled()
-                            ? R.color.modern_primary_color
-                            : R.color.snackbar_background_color);
+                    FeatureUtilities.isChromeHomeEnabled() ? R.color.modern_primary_color
+                                                           : R.color.snackbar_background_color);
         }
 
         if (mIsTablet) {
@@ -269,7 +268,7 @@ class SnackbarView {
             mProfileImageView.setVisibility(View.GONE);
         }
 
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             ApiCompatibilityUtils.setTextAppearance(mMessageView, R.style.BlackBodyDefault);
             mActionButtonView.setTextColor(ApiCompatibilityUtils.getColor(
                     mContainerView.getResources(), R.color.blue_when_enabled));

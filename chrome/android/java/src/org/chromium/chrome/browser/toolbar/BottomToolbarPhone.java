@@ -59,10 +59,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
     private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
         @Override
         public void onSheetOpened(@StateChangeReason int reason) {
-            if (!mUseModernDesign) {
-                mToolbarShadowPermanentlyHidden = false;
-            }
-
             onPrimaryColorChanged(true);
             if (mUseToolbarHandle) {
                 // If the toolbar is focused, switch focus to the bottom sheet before changing the
@@ -75,10 +71,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
         @Override
         public void onSheetClosed(@StateChangeReason int reason) {
-            if (!mUseModernDesign) {
-                mToolbarShadowPermanentlyHidden = true;
-            }
-
             onPrimaryColorChanged(true);
 
             updateMenuButtonClickableState();
@@ -118,9 +110,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     /** The time a transition for the top toolbar shadow should take in ms. */
     private static final int DURATION_SHADOW_TRANSITION_MS = 250;
-
-    /** The background alpha for the tab switcher. */
-    private static final float TAB_SWITCHER_TOOLBAR_ALPHA = 0.7f;
 
     /** The background alpha for the tab switcher in Chrome Modern. */
     private static final float MODERN_TAB_SWITCHER_TOOLBAR_ALPHA = 0.9f;
@@ -186,28 +175,22 @@ public class BottomToolbarPhone extends ToolbarPhone {
     /** Whether the menu button should be shown while the sheet is open. */
     private boolean mShowMenuButtonWhenSheetOpen;
 
-    /** Whether to use the "modern" visual design. */
-    private boolean mUseModernDesign;
-
     /**
-     * The float used to inset the rect returned by {@link #getLocationBarContentRect(Rect)}
-     * when {@link #mUseModernDesign} is true. When the modern layout is used, this extra
-     * vertical inset is needed to ensure the anonymize layer doesn't draw outside of the
+     * The float used to inset the rect returned by {@link #getLocationBarContentRect(Rect)}.
+     * This extra vertical inset is needed to ensure the anonymize layer doesn't draw outside of the
      * background bounds.
      */
     private float mLocationBarContentVerticalInset;
 
     /**
-     * The float used to inset the rect returned by {@link #getLocationBarContentRect(Rect)}
-     * when {@link #mUseModernDesign} is true. When the modern layout is used, this extra
-     * lateral inset is needed to ensure the anonymize layer doesn't draw outside of the
+     * The float used to inset the rect returned by {@link #getLocationBarContentRect(Rect)}.
+     * This extra lateral inset is needed to ensure the anonymize layer doesn't draw outside of the
      * background bounds.
      */
     private float mLocationBarContentLateralInset;
 
     /**
-     * The extra margin to apply to the left side of the location bar when it is focused and
-     * {@link #mUseModernDesign} is true.
+     * The extra margin to apply to the left side of the location bar when it is focused.
      */
     private int mLocationBarExtraFocusedLeftMargin;
 
@@ -245,7 +228,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 res.getDimensionPixelSize(R.dimen.bottom_toolbar_background_focused_left_margin);
 
         mUseToolbarHandle = true;
-        mUseModernDesign = true;
         mToolbarShadowPermanentlyHidden = true;
         mToolbarButtonVisibilityPercent = 1.f;
         mToolbarButtonAnimationIterpolator = BakedBezierInterpolator.FADE_OUT_CURVE;
@@ -253,13 +235,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mInfoBarContainerObserver = new InfoBarContainerObserver() {
             @Override
             public void onAddInfoBar(InfoBarContainer c, InfoBar infoBar, boolean isFirst) {
-                if (!mUseModernDesign || !isFirst) return;
+                if (!isFirst) return;
                 createShadowTransitionAnimator(1, 0).start();
             }
 
             @Override
             public void onRemoveInfoBar(InfoBarContainer c, InfoBar infoBar, boolean isLast) {
-                if (!mUseModernDesign || !isLast) return;
+                if (!isLast) return;
                 createShadowTransitionAnimator(0, 1).start();
             }
 
@@ -268,7 +250,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
             @Override
             public void onInfoBarContainerShownRatioChanged(InfoBarContainer c, float shownRatio) {
-                if (!mUseModernDesign || c.isAnimating()) return;
+                if (c.isAnimating()) return;
                 mBottomToolbarTopShadowDrawable.getDrawable(0).setAlpha(
                         (int) (255 * (1 - shownRatio)));
                 mBottomToolbarTopShadowDrawable.getDrawable(1).setAlpha((int) (255 * shownRatio));
@@ -278,19 +260,19 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mTopShadowTabObserver = new EmptyTabObserver() {
             @Override
             public void onShown(Tab tab) {
-                if (!mUseModernDesign || tab.getInfoBarContainer() == null) return;
+                if (tab.getInfoBarContainer() == null) return;
                 tab.getInfoBarContainer().addObserver(mInfoBarContainerObserver);
             }
 
             @Override
             public void onHidden(Tab tab) {
-                if (!mUseModernDesign || tab.getInfoBarContainer() == null) return;
+                if (tab.getInfoBarContainer() == null) return;
                 tab.getInfoBarContainer().removeObserver(mInfoBarContainerObserver);
             }
 
             @Override
             public void onContentChanged(Tab tab) {
-                if (!mUseModernDesign || tab.getInfoBarContainer() == null) return;
+                if (tab.getInfoBarContainer() == null) return;
                 tab.getInfoBarContainer().addObserver(mInfoBarContainerObserver);
             }
         };
@@ -379,7 +361,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         updateContentDescription();
 
         // Reset top shadow drawable state.
-        if (mUseModernDesign && inTabSwitcherMode) {
+        if (inTabSwitcherMode) {
             mBottomToolbarTopShadowDrawable.getDrawable(0).setAlpha(255);
             mBottomToolbarTopShadowDrawable.getDrawable(1).setAlpha(0);
         }
@@ -407,8 +389,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
      * Attempt to attach the tab observer that controls the top shadow to the current tab.
      */
     private void attachShadowTabObserverToCurrentTab() {
-        if (!mUseModernDesign) return;
-
         Tab currentTab = getToolbarDataProvider().getTab();
         if (currentTab == null) return;
 
@@ -536,20 +516,14 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public void getLocationBarContentRect(Rect outRect) {
         super.getLocationBarContentRect(outRect);
 
-        if (mUseModernDesign) {
-            outRect.left += mLocationBarContentLateralInset;
-            outRect.top += mLocationBarContentVerticalInset;
-            outRect.right -= mLocationBarContentLateralInset;
-            outRect.bottom -= mLocationBarContentVerticalInset;
-        }
+        outRect.left += mLocationBarContentLateralInset;
+        outRect.top += mLocationBarContentVerticalInset;
+        outRect.right -= mLocationBarContentLateralInset;
+        outRect.bottom -= mLocationBarContentVerticalInset;
     }
 
     @Override
     protected int getFocusedLocationBarWidth(int containerWidth, int priorVisibleWidth) {
-        if (!mUseModernDesign) {
-            return super.getFocusedLocationBarWidth(containerWidth, priorVisibleWidth);
-        }
-
         return super.getFocusedLocationBarWidth(containerWidth, priorVisibleWidth)
                 - mLocationBarExtraFocusedLeftMargin - mLocationBarBackgroundPadding.left
                 - mLocationBarBackgroundPadding.right;
@@ -557,8 +531,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     protected int getFocusedLocationBarLeftMargin(int priorVisibleWidth) {
-        if (!mUseModernDesign) return super.getFocusedLocationBarLeftMargin(priorVisibleWidth);
-
         int baseMargin = mToolbarSidePadding + mLocationBarExtraFocusedLeftMargin;
         if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
             return baseMargin - mLocationBarBackgroundPadding.right;
@@ -569,8 +541,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     protected int getLocationBarBackgroundVerticalMargin(float expansion) {
-        if (!mUseModernDesign) return super.getLocationBarBackgroundVerticalMargin(expansion);
-
         return mLocationBarVerticalMargin;
     }
 
@@ -588,8 +558,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     protected int getFocusedLeftPositionOfLocationBarBackground() {
-        if (!mUseModernDesign) return super.getFocusedLeftPositionOfLocationBarBackground();
-
         return mToolbarSidePadding;
     }
 
@@ -607,8 +575,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     protected int getFocusedRightPositionOfLocationBarBackground() {
-        if (!mUseModernDesign) return super.getFocusedRightPositionOfLocationBarBackground();
-
         return getWidth() - mToolbarSidePadding;
     }
 
@@ -719,8 +685,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     protected boolean shouldDrawLocationBarBackground() {
-        if (!mUseModernDesign) return super.shouldDrawLocationBarBackground();
-
         return mLocationBar.getAlpha() > 0 || mForceDrawLocationBarBackground;
     }
 
@@ -743,7 +707,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
 
-        mUseModernDesign = FeatureUtilities.isChromeHomeModernEnabled();
         mUseToolbarHandle = !FeatureUtilities.isChromeHomeExpandButtonEnabled();
 
         if (!mUseToolbarHandle) {
@@ -752,34 +715,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
             updateContentDescription();
         }
 
-        if (mUseModernDesign) {
-            mNewTabButton.setIsModern();
-        } else {
-            // TODO(twellington): remove after modern is always enabled for Chrome Home.
-            revertToNonModernDesign();
-        }
-    }
-
-    /**
-     * Changes the location bar background and other parameters to match the old, non "modern"
-     * visual design.
-     */
-    private void revertToNonModernDesign() {
-        super.initLocationBarBackground();
-
-        mToolbarShadowPermanentlyHidden = false;
-        updateShadowVisibility();
-
-        updateToolbarBackground(mVisualState);
-        updateVisualsForToolbarState();
-
-        mBottomToolbarTopShadow.setImageResource(R.drawable.toolbar_shadow);
-        if (mBottomToolbarTopShadowDrawable != null) {
-            mBottomToolbarTopShadowDrawable.setAlpha(0);
-        }
-
-        invalidate();
-        requestLayout();
+        mNewTabButton.setIsModern();
     }
 
     /**
@@ -845,26 +781,16 @@ public class BottomToolbarPhone extends ToolbarPhone {
             updateMenuButtonClickableState();
         }
 
-        if (mUseModernDesign) {
-            DrawableCompat.setTint(mLocationBarBackground,
-                    isIncognito() ? Color.WHITE
-                                  : ApiCompatibilityUtils.getColor(
-                                            getResources(), R.color.modern_light_grey));
-        }
+        DrawableCompat.setTint(mLocationBarBackground,
+                isIncognito() ? Color.WHITE
+                              : ApiCompatibilityUtils.getColor(
+                                        getResources(), R.color.modern_light_grey));
     }
 
     @Override
     protected void onPrimaryColorChanged(boolean shouldAnimate) {
         // Intentionally not calling super to avoid needless work.
         getProgressBar().setThemeColor(getProgressBarColor(), isIncognito());
-    }
-
-    @Override
-    protected void updateLocationBarBackgroundBounds(Rect out, VisualState visualState) {
-        super.updateLocationBarBackgroundBounds(out, visualState);
-
-        // Allow the location bar to expand to the full height of the control container.
-        if (!mUseModernDesign) out.top -= getExtraTopMargin() * mUrlExpansionPercent;
     }
 
     @Override
@@ -890,15 +816,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
         updateToolbarBackground(ColorUtils.getColorWithOverlay(
                 getTabThemeColor(), getToolbarColorForVisualState(mVisualState), progress));
 
-        if (mUseModernDesign) {
-            mBottomToolbarTopShadow.setAlpha(1f - progress);
-        }
+        mBottomToolbarTopShadow.setAlpha(1f - progress);
 
         // Don't use transparency for accessibility mode or low-end devices since the
         // {@link OverviewListLayout} will be used instead of the normal tab switcher.
         if (!DeviceClassManager.enableAccessibilityLayout()) {
-            float toolbarAlpha = mUseModernDesign ? MODERN_TAB_SWITCHER_TOOLBAR_ALPHA
-                                                  : TAB_SWITCHER_TOOLBAR_ALPHA;
+            float toolbarAlpha = MODERN_TAB_SWITCHER_TOOLBAR_ALPHA;
             float alphaTransition = 1f - toolbarAlpha;
             mToolbarBackground.setAlpha((int) ((1f - (alphaTransition * progress)) * 255));
         }
@@ -998,9 +921,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         int extraTopMargin = getExtraTopMargin();
         otherToolbar.setMinimumHeight(getHeight() - extraTopMargin);
 
-        otherToolbar.setTitleTextAppearance(otherToolbar.getContext(),
-                FeatureUtilities.isChromeHomeModernEnabled() ? R.style.BlackHeadline1
-                                                             : R.style.BlackHeadline2);
+        otherToolbar.setTitleTextAppearance(otherToolbar.getContext(), R.style.BlackHeadline1);
         ApiCompatibilityUtils.setPaddingRelative(otherToolbar,
                 ApiCompatibilityUtils.getPaddingStart(otherToolbar),
                 otherToolbar.getPaddingTop() + extraTopMargin,
@@ -1116,15 +1037,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     protected int getToolbarColorForVisualState(final VisualState visualState) {
-        if (mUseModernDesign) {
-            if (visualState == VisualState.TAB_SWITCHER_INCOGNITO
-                    && DeviceClassManager.enableAccessibilityLayout()) {
-                return ApiCompatibilityUtils.getColor(
-                        getResources(), R.color.incognito_primary_color);
-            } else if (visualState == VisualState.NORMAL
-                    || visualState == VisualState.TAB_SWITCHER_NORMAL) {
-                return ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
-            }
+        if (visualState == VisualState.TAB_SWITCHER_INCOGNITO
+                && DeviceClassManager.enableAccessibilityLayout()) {
+            return ApiCompatibilityUtils.getColor(getResources(), R.color.incognito_primary_color);
+        } else if (visualState == VisualState.NORMAL
+                || visualState == VisualState.TAB_SWITCHER_NORMAL) {
+            return ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
         }
 
         return super.getToolbarColorForVisualState(visualState);

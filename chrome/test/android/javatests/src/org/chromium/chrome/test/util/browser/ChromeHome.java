@@ -35,8 +35,7 @@ import java.lang.annotation.Target;
 public @interface ChromeHome {
     boolean value() default true;
 
-    String FEATURES =
-            ChromeFeatureList.CHROME_HOME + "," + ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT;
+    String FEATURES = ChromeFeatureList.CHROME_HOME;
     String ENABLE_FLAGS = "enable-features=" + FEATURES;
 
     /**

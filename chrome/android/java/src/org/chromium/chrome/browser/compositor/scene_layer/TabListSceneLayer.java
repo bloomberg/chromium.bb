@@ -66,14 +66,10 @@ public class TabListSceneLayer extends SceneLayer {
             assert t.isVisible() : "LayoutTab in that list should be visible";
             final float decoration = t.getDecorationAlpha();
 
-            float shadowAlpha = decoration;
-            if (FeatureUtilities.isChromeHomeModernEnabled()
-                    && FeatureUtilities.isChromeHomeEnabled()) {
-                shadowAlpha /= 2;
-            }
+            boolean useModernDesign = FeatureUtilities.isChromeHomeEnabled();
 
-            boolean useModernDesign = fullscreenManager.areBrowserControlsAtBottom()
-                    && FeatureUtilities.isChromeHomeModernEnabled();
+            float shadowAlpha = decoration;
+            if (useModernDesign) shadowAlpha /= 2;
 
             int defaultThemeColor =
                     ColorUtils.getDefaultThemeColor(res, useModernDesign, t.isIncognito());
@@ -129,10 +125,8 @@ public class TabListSceneLayer extends SceneLayer {
      * @return The close button resource ID.
      */
     private int getCloseButtonIconId() {
-        if (FeatureUtilities.isChromeHomeModernEnabled()
-                && FeatureUtilities.isChromeHomeEnabled()) {
-            return R.drawable.btn_close_white;
-        }
+        if (FeatureUtilities.isChromeHomeEnabled()) return R.drawable.btn_close_white;
+
         return R.drawable.btn_tab_close;
     }
 
@@ -143,8 +137,7 @@ public class TabListSceneLayer extends SceneLayer {
      *         Chrome Modern.
      */
     private int getTabThemeColor(Context context, LayoutTab t) {
-        if (FeatureUtilities.isChromeHomeModernEnabled()
-                && FeatureUtilities.isChromeHomeEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             if (t.isIncognito()) {
                 return ApiCompatibilityUtils.getColor(
                         context.getResources(), R.color.incognito_primary_color);
@@ -160,10 +153,7 @@ public class TabListSceneLayer extends SceneLayer {
      */
     protected int getTabListBackgroundColor(Context context) {
         int colorId = R.color.tab_switcher_background;
-        if (FeatureUtilities.isChromeHomeModernEnabled()
-                && FeatureUtilities.isChromeHomeEnabled()) {
-            colorId = R.color.modern_grey_300;
-        }
+        if (FeatureUtilities.isChromeHomeEnabled()) colorId = R.color.modern_grey_300;
         return ApiCompatibilityUtils.getColor(context.getResources(), colorId);
     }
 

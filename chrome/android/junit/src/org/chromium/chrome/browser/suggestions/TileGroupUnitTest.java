@@ -62,7 +62,6 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 @Features({@Features.Register(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME),
         @Features.Register(ChromeFeatureList.CHROME_HOME),
-        @Features.Register(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT),
         @Features.Register(ChromeFeatureList.NTP_TILES_LOWER_RESOLUTION_FAVICONS)})
 public class TileGroupUnitTest {
     private static final int MAX_TILES_TO_FETCH = 4;

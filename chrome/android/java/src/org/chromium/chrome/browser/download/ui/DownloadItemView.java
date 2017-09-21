@@ -79,7 +79,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
         mIconBackgroundResId = R.drawable.list_item_icon_modern_bg;
 
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             mIconForegroundColorList = ApiCompatibilityUtils.getColorStateList(
                     context.getResources(), R.color.dark_mode_tint);
         } else {
@@ -250,7 +250,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     protected void updateIconView() {
         if (isChecked()) {
-            if (FeatureUtilities.isChromeHomeModernEnabled()) {
+            if (FeatureUtilities.isChromeHomeEnabled()) {
                 mIconView.setBackgroundResource(mIconBackgroundResId);
                 mIconView.getBackground().setLevel(
                         getResources().getInteger(R.integer.list_item_level_selected));
@@ -262,7 +262,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         } else if (mThumbnailBitmap != null) {
             assert !mThumbnailBitmap.isRecycled();
             mIconView.setBackground(null);
-            if (FeatureUtilities.isChromeHomeModernEnabled()) {
+            if (FeatureUtilities.isChromeHomeEnabled()) {
                 RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(
                         getResources(),
                         Bitmap.createScaledBitmap(mThumbnailBitmap, mIconSize, mIconSize, false));
@@ -273,7 +273,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             }
             mIconView.setTint(null);
         } else {
-            if (FeatureUtilities.isChromeHomeModernEnabled()) {
+            if (FeatureUtilities.isChromeHomeEnabled()) {
                 mIconView.setBackgroundResource(mIconBackgroundResId);
                 mIconView.getBackground().setLevel(
                         getResources().getInteger(R.integer.list_item_level_default));

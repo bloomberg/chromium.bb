@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -73,11 +74,8 @@ import java.util.TreeSet;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-// TODO(bauerb): Enable these tests with the modern layout.
-@Features({
-        @Features.Register(value = ChromeFeatureList.CHROME_HOME, enabled = false),
-        @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT, enabled = false)
-})
+// TODO(bauerb): Enable these tests with chrome home enabled.
+@Features({ @Features.Register(value = ChromeFeatureList.CHROME_HOME, enabled = false) })
 public class SuggestionsSectionTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -106,6 +104,7 @@ public class SuggestionsSectionTest {
         RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        FeatureUtilities.resetChromeHomeEnabledForTests();
 
         mBridge = new FakeOfflinePageBridge();
 
@@ -123,6 +122,7 @@ public class SuggestionsSectionTest {
     @After
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
+        FeatureUtilities.resetChromeHomeEnabledForTests();
     }
 
     @Test

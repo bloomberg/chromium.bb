@@ -150,7 +150,7 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
 
         updateFolderList();
 
-        if (!FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (!FeatureUtilities.isChromeHomeEnabled()) {
             findViewById(R.id.shadow).setVisibility(View.VISIBLE);
             toolbar.setTitleTextAppearance(toolbar.getContext(), R.style.BlackHeadline2);
             toolbar.setBackgroundColor(
@@ -350,7 +350,7 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
                 iconId = R.drawable.bookmark_add_folder;
             }
 
-            if (FeatureUtilities.isChromeHomeModernEnabled()) {
+            if (FeatureUtilities.isChromeHomeEnabled()) {
                 startIcon.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
                 startIcon.setImageDrawable(entry.mIsSelected
                                 ? TintedDrawable.constructTintedDrawable(view.getResources(),

@@ -155,12 +155,9 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             if (!fullscreenManager.getTab().isIncognito()) alpha = 1f;
         }
 
-        boolean useModernDesign = fullscreenManager.areBrowserControlsAtBottom()
-                && FeatureUtilities.isChromeHomeModernEnabled();
-
-        // In the modern design, the url bar is always drawn in the Java layer rather than the
+        // In Chrome Home, the url bar is always drawn in the Java layer rather than the
         // compositor layer.
-        if (useModernDesign) alpha = 0;
+        if (FeatureUtilities.isChromeHomeEnabled()) alpha = 0;
 
         update(color, alpha, mLayoutProvider.getFullscreenManager(), resourceManager,
                 forceHideBrowserControlsAndroidView, viewportMode, DeviceFormFactor.isTablet(),

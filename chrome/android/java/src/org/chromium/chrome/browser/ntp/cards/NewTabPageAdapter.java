@@ -112,7 +112,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mRoot.addChild(mSiteSection);
         }
 
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             mRoot.addChildren(mSigninPromo, mAllDismissed, mSections);
         } else {
             mRoot.addChildren(mSections, mSigninPromo, mAllDismissed);
@@ -281,7 +281,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         assert child == mRoot;
         notifyItemRangeInserted(itemPosition, itemCount);
         if (mBottomSpacer != null) mBottomSpacer.refresh();
-        if (mRecyclerView != null && FeatureUtilities.isChromeHomeModernEnabled()
+        if (mRecyclerView != null && FeatureUtilities.isChromeHomeEnabled()
                 && mSections.hasRecentlyInsertedContent()) {
             mRecyclerView.highlightContentLength();
         }
@@ -343,7 +343,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private boolean hasAllBeenDismissed() {
         if (mSigninPromo.isVisible()) return false;
 
-        if (!FeatureUtilities.isChromeHomeModernEnabled()) return mSections.isEmpty();
+        if (!FeatureUtilities.isChromeHomeEnabled()) return mSections.isEmpty();
 
         // In the modern layout, we only consider articles.
         SuggestionsSection suggestions = mSections.getSection(KnownCategories.ARTICLES);

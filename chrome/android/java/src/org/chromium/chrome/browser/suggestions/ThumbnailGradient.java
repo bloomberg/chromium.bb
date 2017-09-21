@@ -76,7 +76,7 @@ public class ThumbnailGradient {
 
     private static boolean isEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)
-                || FeatureUtilities.isChromeHomeModernEnabled();
+                || FeatureUtilities.isChromeHomeEnabled();
     }
 
     /**
@@ -127,7 +127,7 @@ public class ThumbnailGradient {
 
         // The drawable is set up correctly for the modern layout, but needs to be flipped for the
         // large thumbnail layout.
-        boolean modern = FeatureUtilities.isChromeHomeModernEnabled();
+        boolean modern = FeatureUtilities.isChromeHomeEnabled();
 
         // The drawable resource does not get flipped automatically if we are in RTL, so we must
         // flip it ourselves.

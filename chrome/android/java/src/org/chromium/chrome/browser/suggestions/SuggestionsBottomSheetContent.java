@@ -7,15 +7,12 @@ package org.chromium.chrome.browser.suggestions;
 import android.annotation.SuppressLint;
 import android.content.res.Resources;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -36,8 +33,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.widget.FadingShadow;
-import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
@@ -193,8 +188,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             }
         };
 
-        initializeShadow();
-
         final LocationBar locationBar = (LocationBar) sheet.findViewById(R.id.location_bar);
         mRecyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -295,27 +288,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         updateSearchProviderHasLogo();
         loadSearchProviderLogo();
         updateLogoTransition();
-    }
-
-    private void initializeShadow() {
-        final FadingShadowView shadowView = (FadingShadowView) mView.findViewById(R.id.shadow);
-
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
-            ((ViewGroup) mView).removeView(shadowView);
-            return;
-        }
-
-        shadowView.init(
-                ApiCompatibilityUtils.getColor(mView.getResources(), R.color.toolbar_shadow_color),
-                FadingShadow.POSITION_TOP);
-
-        mRecyclerView.addOnScrollListener(new OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                boolean shadowVisible = mRecyclerView.canScrollVertically(-1);
-                shadowView.setVisibility(shadowVisible ? View.VISIBLE : View.GONE);
-            }
-        });
     }
 
     private void maybeUpdateContextualSuggestions() {

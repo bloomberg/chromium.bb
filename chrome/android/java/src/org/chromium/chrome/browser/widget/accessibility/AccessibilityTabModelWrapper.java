@@ -97,7 +97,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
      *                 parent.
      */
     public void setup(AccessibilityTabModelAdapterListener listener) {
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             mTabIconDarkColor = ApiCompatibilityUtils.getColorStateList(
                     getResources(), R.color.toolbar_light_tint);
             mTabIconSelectedDarkColor = ApiCompatibilityUtils.getColorStateList(
@@ -183,7 +183,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
 
         boolean incognitoSelected = mTabModelSelector.isIncognitoSelected();
 
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             mModernLayout.setVisibility(incognitoEnabled ? View.VISIBLE : View.GONE);
             if (incognitoSelected) {
                 setBackgroundResource(R.color.incognito_primary_color);

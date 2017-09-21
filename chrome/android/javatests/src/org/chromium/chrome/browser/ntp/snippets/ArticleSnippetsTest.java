@@ -140,9 +140,9 @@ public class ArticleSnippetsTest {
     @Before
     public void setUp() throws Exception {
         if (mChromeHomeEnabled) {
-            CommandLine.getInstance().appendSwitch("enable-features=ChromeHome,ChromeHomeModern");
+            CommandLine.getInstance().appendSwitch("enable-features=ChromeHome");
         } else {
-            CommandLine.getInstance().appendSwitch("disable-features=ChromeHome,ChromeHomeModern");
+            CommandLine.getInstance().appendSwitch("disable-features=ChromeHome");
         }
 
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -159,7 +159,7 @@ public class ArticleSnippetsTest {
         FeatureUtilities.resetChromeHomeEnabledForTests();
         FeatureUtilities.cacheChromeHomeEnabled();
 
-        assertThat(FeatureUtilities.isChromeHomeModernEnabled(), is(mChromeHomeEnabled));
+        assertThat(FeatureUtilities.isChromeHomeEnabled(), is(mChromeHomeEnabled));
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mContentView = new FrameLayout(mActivityTestRule.getActivity());

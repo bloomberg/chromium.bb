@@ -205,7 +205,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
      */
     @LayoutRes
     private static int getLayout() {
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             return R.layout.content_suggestions_card_modern;
         }
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)) {

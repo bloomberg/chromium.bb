@@ -85,7 +85,7 @@ public class StatusCardViewHolder extends CardViewHolder {
 
     @LayoutRes
     private static int getLayout() {
-        return FeatureUtilities.isChromeHomeModernEnabled()
+        return FeatureUtilities.isChromeHomeEnabled()
                 ? R.layout.content_suggestions_status_card_modern
                 : R.layout.new_tab_page_status_card;
     }

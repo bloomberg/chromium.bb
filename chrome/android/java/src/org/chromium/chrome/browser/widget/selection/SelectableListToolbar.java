@@ -215,7 +215,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         mSelectionMenuButton = TintedDrawable.constructTintedDrawable(
                 getResources(), R.drawable.ic_more_vert_black_24dp, android.R.color.white);
 
-        if (!FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (!FeatureUtilities.isChromeHomeEnabled()) {
             setTitleTextAppearance(getContext(), R.style.BlackHeadline2);
         }
     }
@@ -266,7 +266,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
             }
         });
 
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             mClearTextButton.setPadding(ApiCompatibilityUtils.getPaddingStart(mClearTextButton),
                     mClearTextButton.getPaddingTop(),
                     getResources().getDimensionPixelSize(R.dimen.clear_text_button_end_padding),
@@ -490,8 +490,8 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         int padding =
                 SelectableListLayout.getPaddingForDisplayStyle(newDisplayStyle, getResources());
         int paddingStartOffset = 0;
-        boolean isModernSearchViewEnabled = mIsSearching && !mIsSelectionEnabled
-                && FeatureUtilities.isChromeHomeModernEnabled();
+        boolean isModernSearchViewEnabled =
+                mIsSearching && !mIsSelectionEnabled && FeatureUtilities.isChromeHomeEnabled();
         MarginLayoutParams params = (MarginLayoutParams) getLayoutParams();
 
         if (newDisplayStyle.horizontal == HorizontalDisplayStyle.WIDE
@@ -610,7 +610,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         mSearchView.setVisibility(View.VISIBLE);
 
         setNavigationButton(NAVIGATION_BUTTON_BACK);
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             setBackgroundResource(R.drawable.search_toolbar_modern_bg);
         } else {
             setBackgroundColor(mSearchBackgroundColor);
