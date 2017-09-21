@@ -181,7 +181,10 @@ unit tests.
 - pre_june_2016.pem
 - post_june_2016.pem
    Certs to test that policies related to enforcing CT on Symantec are
-   properly gated on the issuance date.
+   properly gated on the issuance date. These files also contain legacy
+   Symantec roots to simulate a chain for testing the upcoming Symantec
+   distrust events; see https://g.co/chrome/symantecpkicerts. (Note,
+   however, that the leaf and root do not actually form a chain.)
 
 - tls_feature_extension.pem
   A certificate that contains the TLS Feature Extension.

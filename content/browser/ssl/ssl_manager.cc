@@ -49,6 +49,7 @@ enum SSLGoodCertSeenEvent {
 // certificate |cert|, and if so, logs a console warning in |web_contents|.
 void MaybeLogLegacySymantecWarning(
     const LoadCommittedDetails& details,
+    const scoped_refptr<net::X509Certificate>& cert,
     const net::HashValueVector& public_key_hashes,
     content::WebContents* web_contents) {
   // No need to log on same-page navigations, because the message would be
@@ -57,13 +58,21 @@ void MaybeLogLegacySymantecWarning(
     return;
   if (!net::IsLegacySymantecCert(public_key_hashes))
     return;
+  std::string content_client_message;
+  GURL url = details.entry->GetURL();
+  bool message_overridden =
+      GetContentClient()->browser()->OverrideLegacySymantecCertConsoleMessage(
+          url, cert, &content_client_message);
   web_contents->GetMainFrame()->AddMessageToConsole(
       CONSOLE_MESSAGE_LEVEL_WARNING,
-      "The certificate used to load " + details.entry->GetURL().spec() +
-          " uses an SSL certificate that will be distrusted in an upcoming "
-          "release of Chrome. Once distrusted, users will be prevented from "
-          "loading this resource. See https://g.co/chrome/symantecpkicerts for "
-          "more information.");
+      message_overridden ? content_client_message
+                         : "The certificate used to load " + url.spec() +
+                               " uses an SSL certificate that will be "
+                               "distrusted in the future. "
+                               "Once distrusted, users will be prevented from "
+                               "loading this resource. See "
+                               "https://g.co/chrome/symantecpkicerts for "
+                               "more information.");
 }
 
 void OnAllowCertificateWithRecordDecision(
@@ -218,7 +227,8 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
   int add_content_status_flags = 0;
   int remove_content_status_flags = 0;
 
-  MaybeLogLegacySymantecWarning(details, entry->GetSSL().public_key_hashes,
+  MaybeLogLegacySymantecWarning(details, entry->GetSSL().certificate,
+                                entry->GetSSL().public_key_hashes,
                                 controller_->delegate()->GetWebContents());
 
   if (!details.is_main_frame) {

@@ -507,4 +507,11 @@ mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
   return network_context;
 }
 
+bool ContentBrowserClient::OverrideLegacySymantecCertConsoleMessage(
+    const GURL& url,
+    const scoped_refptr<net::X509Certificate>& cert,
+    std::string* console_messsage) {
+  return false;
+}
+
 }  // namespace content
