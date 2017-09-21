@@ -334,6 +334,8 @@ class VIZ_COMMON_EXPORT GLHelper {
   void InitCopyTextToImpl();
   // Creates |scaler_impl_| if NULL.
   void InitScalerImpl();
+  // Creates |readback_support_| if NULL.
+  void LazyInitReadbackSupportImpl();
 
   enum ReadbackSwizzle { kSwizzleNone = 0, kSwizzleBGRA };
 

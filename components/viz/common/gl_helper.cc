@@ -723,14 +723,13 @@ FormatSupport GLHelper::CopyTextureToImpl::GetReadbackConfig(
     GLenum* format,
     GLenum* type,
     size_t* bytes_per_pixel) {
+  helper_->LazyInitReadbackSupportImpl();
   return helper_->readback_support_->GetReadbackConfig(
       color_type, can_swizzle, format, type, bytes_per_pixel);
 }
 
 GLHelper::GLHelper(GLES2Interface* gl, gpu::ContextSupport* context_support)
-    : gl_(gl),
-      context_support_(context_support),
-      readback_support_(new GLHelperReadbackSupport(gl)) {}
+    : gl_(gl), context_support_(context_support) {}
 
 GLHelper::~GLHelper() {}
 
@@ -835,6 +834,12 @@ void GLHelper::InitScalerImpl() {
   // Lazily initialize |scaler_impl_|
   if (!scaler_impl_)
     scaler_impl_.reset(new GLHelperScaling(gl_, this));
+}
+
+void GLHelper::LazyInitReadbackSupportImpl() {
+  // Lazily initialize |readback_support_|.
+  if (!readback_support_)
+    readback_support_.reset(new GLHelperReadbackSupport(gl_));
 }
 
 GLint GLHelper::MaxDrawBuffers() {
@@ -1182,7 +1187,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
 }
 
 bool GLHelper::IsReadbackConfigSupported(SkColorType color_type) {
-  DCHECK(readback_support_.get());
+  LazyInitReadbackSupportImpl();
   GLenum format, type;
   size_t bytes_per_pixel;
   FormatSupport support = readback_support_->GetReadbackConfig(
