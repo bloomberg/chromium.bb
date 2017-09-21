@@ -1141,11 +1141,10 @@ void BridgedNativeWidget::ReparentNativeView(NSView* native_view,
 ui::EventDispatchDetails BridgedNativeWidget::DispatchKeyEventPostIME(
     ui::KeyEvent* key) {
   DCHECK(focus_manager_);
-  native_widget_mac_->GetWidget()->OnKeyEvent(key);
-  if (!key->handled()) {
-    if (!focus_manager_->OnKeyEvent(*key))
-      key->StopPropagation();
-  }
+  if (!focus_manager_->OnKeyEvent(*key))
+    key->StopPropagation();
+  else
+    native_widget_mac_->GetWidget()->OnKeyEvent(key);
   return ui::EventDispatchDetails();
 }
 
