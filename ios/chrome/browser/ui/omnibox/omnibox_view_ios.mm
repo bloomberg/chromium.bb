@@ -23,7 +23,6 @@
 #include "components/toolbar/toolbar_model.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/prerender/preload_provider.h"
 #include "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_text_field_paste_delegate.h"
@@ -163,7 +162,6 @@ UIColor* IncognitoSecureTextColor() {
 OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
                                WebOmniboxEditController* controller,
                                ios::ChromeBrowserState* browser_state,
-                               id<PreloadProvider> preloader,
                                id<OmniboxPopupPositioner> positioner)
     : OmniboxView(
           controller,

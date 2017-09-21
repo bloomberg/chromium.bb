@@ -30,7 +30,6 @@ class OmniboxViewIOS;
 @class OmniboxClearButtonBridge;
 @protocol OmniboxPopupPositioner;
 @class OmniboxTextFieldIOS;
-@protocol PreloadProvider;
 class ToolbarModel;
 
 // Concrete implementation of the LocationBarController interface.
@@ -38,7 +37,6 @@ class LocationBarControllerImpl : public LocationBarController {
  public:
   LocationBarControllerImpl(OmniboxTextFieldIOS* field,
                             ios::ChromeBrowserState* browser_state,
-                            id<PreloadProvider> preloader,
                             id<OmniboxPopupPositioner> positioner,
                             id<LocationBarDelegate> delegate,
                             id<BrowserCommands> dispatcher);

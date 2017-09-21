@@ -77,7 +77,6 @@ class WebToolbarControllerTest : public BlockCleanupTest {
         initWithDelegate:delegate
                urlLoader:urlLoader
             browserState:chrome_browser_state_.get()
-         preloadProvider:nil
               dispatcher:nil];
     [web_toolbar_controller_ setUnitTesting:YES];
   }

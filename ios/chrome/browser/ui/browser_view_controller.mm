@@ -1838,8 +1838,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 
   // Create the toolbar model and controller.
-  id<PreloadProvider> preloadProvider =
-      prerenderService ? prerenderService->GetPreloadProvider() : nil;
   _toolbarModelDelegate.reset(
       new ToolbarModelDelegateIOS([_model webStateList]));
   _toolbarModelIOS.reset([_dependencyFactory
@@ -1847,7 +1845,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _toolbarController =
       [_dependencyFactory newWebToolbarControllerWithDelegate:self
                                                     urlLoader:self
-                                              preloadProvider:preloadProvider
                                                    dispatcher:self.dispatcher];
   [_dispatcher startDispatchingToTarget:_toolbarController
                             forProtocol:@protocol(OmniboxFocuser)];

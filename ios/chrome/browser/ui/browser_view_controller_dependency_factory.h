@@ -14,7 +14,6 @@
 @class MessageBubbleView;
 @class PKPass;
 @class PKAddPassesViewController;
-@protocol PreloadProvider;
 @class TabModel;
 class ToolbarModelDelegateIOS;
 class ToolbarModelIOS;
@@ -55,7 +54,6 @@ extern NSString* const kBrowserViewControllerSnackbarCategory;
 - (WebToolbarController*)
 newWebToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
                           urlLoader:(id<UrlLoader>)urlLoader
-                    preloadProvider:(id<PreloadProvider>)preload
                          dispatcher:(id<ApplicationCommands, BrowserCommands>)
                                         dispatcher;
 

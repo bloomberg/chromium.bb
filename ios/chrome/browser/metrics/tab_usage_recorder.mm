@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/metrics/tab_usage_recorder.h"
 
+#import <UIKit/UIKit.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"

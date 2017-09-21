@@ -17,7 +17,6 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
-@protocol PreloadProvider;
 @class Tab;
 @protocol ToolbarFrameDelegate;
 class ToolbarModelIOS;
@@ -92,7 +91,6 @@ extern const CGFloat kiPhoneOmniboxPlaceholderColorBrightness;
 - (instancetype)initWithDelegate:(id<WebToolbarDelegate>)delegate
                        urlLoader:(id<UrlLoader>)urlLoader
                     browserState:(ios::ChromeBrowserState*)browserState
-                 preloadProvider:(id<PreloadProvider>)preloader
                       dispatcher:
                           (id<ApplicationCommands, BrowserCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
