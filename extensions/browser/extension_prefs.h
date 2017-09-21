@@ -31,6 +31,10 @@
 class ExtensionPrefValueMap;
 class PrefService;
 
+namespace base {
+class Clock;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -80,21 +84,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
     DELAY_REASON_WAIT_FOR_IDLE = 2,
     DELAY_REASON_WAIT_FOR_IMPORTS = 3,
     DELAY_REASON_WAIT_FOR_OS_UPDATE = 4,
-  };
-
-  // Creates base::Time classes. The default implementation is just to return
-  // the current time, but tests can inject alternative implementations.
-  class TimeProvider {
-   public:
-    TimeProvider();
-
-    virtual ~TimeProvider();
-
-    // By default, returns the current time (base::Time::Now()).
-    virtual base::Time GetCurrentTime() const;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(TimeProvider);
   };
 
   // Wrappers around a prefs::ScopedDictionaryPrefUpdate, which allow us to
@@ -169,7 +158,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
       ExtensionPrefValueMap* extension_pref_value_map,
       bool extensions_disabled,
       const std::vector<ExtensionPrefsObserver*>& early_observers,
-      std::unique_ptr<TimeProvider> time_provider);
+      std::unique_ptr<base::Clock> clock);
 
   ~ExtensionPrefs() override;
 
@@ -581,7 +570,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
                  PrefService* prefs,
                  const base::FilePath& root_dir,
                  ExtensionPrefValueMap* extension_pref_value_map,
-                 std::unique_ptr<TimeProvider> time_provider,
+                 std::unique_ptr<base::Clock> clock,
                  bool extensions_disabled,
                  const std::vector<ExtensionPrefsObserver*>& early_observers);
 
@@ -708,7 +697,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Weak pointer, owned by BrowserContext.
   ExtensionPrefValueMap* extension_pref_value_map_;
 
-  std::unique_ptr<TimeProvider> time_provider_;
+  std::unique_ptr<base::Clock> clock_;
 
   bool extensions_disabled_;
 
