@@ -32,6 +32,19 @@ namespace extensions {
 
 namespace {
 
+const int kIgnoreRoutingId = MSG_ROUTING_NONE;
+
+// Returns the routing id to use for matching filtered events.
+// Used for routing events to the correct RenderFrame. This doesn't apply to
+// Extension Service Worker events as there is no RenderFrame to target an event
+// to. This function returns MSG_ROUTING_NONE in that case,
+// essentially ignoring routing id for worker events.
+int GetRoutingIDForFilteredEvents(ScriptContext* script_context) {
+  return script_context->context_type() == Feature::SERVICE_WORKER_CONTEXT
+             ? kIgnoreRoutingId
+             : script_context->GetRenderFrame()->GetRoutingID();
+}
+
 // Returns a v8::Array containing the ids of the listeners that match the given
 // |event_filter_dict| in the given |script_context|.
 v8::Local<v8::Array> GetMatchingListeners(ScriptContext* script_context,
@@ -45,7 +58,7 @@ v8::Local<v8::Array> GetMatchingListeners(ScriptContext* script_context,
   // have a routingId in their filter.
   std::set<EventFilter::MatcherID> matched_event_filters =
       event_filter.MatchEvent(event_name, info,
-                              script_context->GetRenderFrame()->GetRoutingID());
+                              GetRoutingIDForFilteredEvents(script_context));
   v8::Local<v8::Array> array(
       v8::Array::New(isolate, matched_event_filters.size()));
   int i = 0;
@@ -228,8 +241,8 @@ void EventBindings::AttachFilteredEvent(
   EventFilter& event_filter = bookkeeper->event_filter();
   int id = event_filter.AddEventMatcher(
       event_name,
-      std::make_unique<EventMatcher>(
-          std::move(filter), context()->GetRenderFrame()->GetRoutingID()));
+      std::make_unique<EventMatcher>(std::move(filter),
+                                     GetRoutingIDForFilteredEvents(context())));
   if (id == -1) {
     args.GetReturnValue().Set(static_cast<int32_t>(-1));
     return;

@@ -273,6 +273,7 @@ void ExtensionMessageFilter::OnExtensionRemoveLazyServiceWorkerListener(
 void ExtensionMessageFilter::OnExtensionAddFilteredListener(
     const std::string& extension_id,
     const std::string& event_name,
+    base::Optional<ServiceWorkerIdentifier> sw_identifier,
     const base::DictionaryValue& filter,
     bool lazy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -284,12 +285,13 @@ void ExtensionMessageFilter::OnExtensionAddFilteredListener(
     return;
 
   GetEventRouter()->AddFilteredEventListener(event_name, process, extension_id,
-                                             filter, lazy);
+                                             sw_identifier, filter, lazy);
 }
 
 void ExtensionMessageFilter::OnExtensionRemoveFilteredListener(
     const std::string& extension_id,
     const std::string& event_name,
+    base::Optional<ServiceWorkerIdentifier> sw_identifier,
     const base::DictionaryValue& filter,
     bool lazy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -300,8 +302,8 @@ void ExtensionMessageFilter::OnExtensionRemoveFilteredListener(
   if (!process)
     return;
 
-  GetEventRouter()->RemoveFilteredEventListener(event_name, process,
-                                                extension_id, filter, lazy);
+  GetEventRouter()->RemoveFilteredEventListener(
+      event_name, process, extension_id, sw_identifier, filter, lazy);
 }
 
 void ExtensionMessageFilter::OnExtensionShouldSuspendAck(
