@@ -46,7 +46,6 @@ class KeywordTableTest : public testing::Test {
     keyword.SetKeyword(ASCIIToUTF16("keyword"));
     keyword.SetURL("http://url/");
     keyword.suggestions_url = "url2";
-    keyword.instant_url = "http://instant/";
     keyword.image_url = "http://image-search-url/";
     keyword.new_tab_url = "http://new-tab-url/";
     keyword.search_url_post_params = "ie=utf-8,oe=utf-8";
@@ -66,7 +65,6 @@ class KeywordTableTest : public testing::Test {
     keyword.sync_guid = "1234-5678-90AB-CDEF";
     keyword.alternate_urls.push_back("a_url1");
     keyword.alternate_urls.push_back("a_url2");
-    keyword.search_terms_replacement_key = "espv";
     AddKeyword(keyword);
     return keyword;
   }
@@ -121,7 +119,6 @@ TEST_F(KeywordTableTest, Keywords) {
   EXPECT_EQ(keyword.keyword(), restored_keyword.keyword());
   EXPECT_EQ(keyword.url(), restored_keyword.url());
   EXPECT_EQ(keyword.suggestions_url, restored_keyword.suggestions_url);
-  EXPECT_EQ(keyword.instant_url, restored_keyword.instant_url);
   EXPECT_EQ(keyword.favicon_url, restored_keyword.favicon_url);
   EXPECT_EQ(keyword.originating_url, restored_keyword.originating_url);
   EXPECT_EQ(keyword.safe_for_autoreplace,
@@ -152,7 +149,6 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   TemplateURLData keyword(CreateAndAddKeyword());
 
   keyword.SetKeyword(ASCIIToUTF16("url"));
-  keyword.instant_url = "http://instant2/";
   keyword.originating_url = GURL("http://originating.url/");
   keyword.input_encodings.push_back("Shift_JIS");
   keyword.prepopulate_id = 5;
@@ -165,7 +161,6 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   EXPECT_EQ(keyword.short_name(), restored_keyword.short_name());
   EXPECT_EQ(keyword.keyword(), restored_keyword.keyword());
   EXPECT_EQ(keyword.suggestions_url, restored_keyword.suggestions_url);
-  EXPECT_EQ(keyword.instant_url, restored_keyword.instant_url);
   EXPECT_EQ(keyword.favicon_url, restored_keyword.favicon_url);
   EXPECT_EQ(keyword.originating_url, restored_keyword.originating_url);
   EXPECT_EQ(keyword.safe_for_autoreplace,

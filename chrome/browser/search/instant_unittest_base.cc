@@ -55,11 +55,8 @@ void InstantUnitTestBase::SetUserSelectedDefaultSearchProvider(
   data.SetShortName(base::UTF8ToUTF16(base_url));
   data.SetKeyword(base::UTF8ToUTF16(base_url));
   data.SetURL(base_url + "url?bar={searchTerms}");
-  data.instant_url =
-      base_url + "instant?{google:forceInstantResults}foo=foo#foo=foo&strk";
   data.new_tab_url = base_url + "newtab";
   data.alternate_urls.push_back(base_url + "alt#quux={searchTerms}");
-  data.search_terms_replacement_key = "strk";
 
   TemplateURL* template_url =
       template_url_service_->Add(base::MakeUnique<TemplateURL>(data));

@@ -30,11 +30,10 @@ class LocalNTPUITest : public InProcessBrowserTest, public InstantUITestBase {
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(https_test_server().Start());
-    GURL instant_url =
-        https_test_server().GetURL("/instant_extended.html?strk=1&");
-    GURL ntp_url = https_test_server().GetURL(
-        "/local_ntp/local_ntp_browsertest.html?strk=1&");
-    InstantTestBase::Init(instant_url, ntp_url, false);
+    GURL base_url = https_test_server().GetURL("/instant_extended.html?");
+    GURL ntp_url =
+        https_test_server().GetURL("/local_ntp/local_ntp_browsertest.html?");
+    InstantTestBase::Init(base_url, ntp_url, false);
   }
 };
 

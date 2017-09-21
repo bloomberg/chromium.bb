@@ -62,8 +62,6 @@ const char DefaultSearchPolicyHandlerTest::kName[] =
     "MyName";
 const char DefaultSearchPolicyHandlerTest::kKeyword[] =
     "MyKeyword";
-const char DefaultSearchPolicyHandlerTest::kReplacementKey[] =
-    "espv";
 const char DefaultSearchPolicyHandlerTest::kImageURL[] =
     "http://test.com/searchbyimage/upload";
 const char DefaultSearchPolicyHandlerTest::kImageParams[] =
@@ -103,9 +101,6 @@ void DefaultSearchPolicyHandlerTest::
   policy->Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
               default_alternate_urls_.CreateDeepCopy(), nullptr);
-  policy->Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
-              POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(kReplacementKey), nullptr);
   policy->Set(key::kDefaultSearchProviderImageURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
               base::MakeUnique<base::Value>(kImageURL), nullptr);
@@ -159,7 +154,6 @@ TEST_F(DefaultSearchPolicyHandlerTest, InvalidType) {
       key::kDefaultSearchProviderIconURL,
       key::kDefaultSearchProviderEncodings,
       key::kDefaultSearchProviderAlternateURLs,
-      key::kDefaultSearchProviderSearchTermsReplacementKey,
       key::kDefaultSearchProviderImageURL,
       key::kDefaultSearchProviderNewTabURL,
       key::kDefaultSearchProviderImageURLPostParams};
@@ -233,10 +227,6 @@ TEST_F(DefaultSearchPolicyHandlerTest, FullyDefined) {
       dictionary->GetList(DefaultSearchManager::kAlternateURLs, &list_value));
   EXPECT_TRUE(default_alternate_urls_.Equals(list_value));
 
-  EXPECT_TRUE(dictionary->GetString(
-      DefaultSearchManager::kSearchTermsReplacementKey, &value));
-  EXPECT_EQ(kReplacementKey, value);
-
   EXPECT_TRUE(dictionary->GetString(DefaultSearchManager::kImageURL, &value));
   EXPECT_EQ(kImageURL, value);
 
@@ -250,10 +240,6 @@ TEST_F(DefaultSearchPolicyHandlerTest, FullyDefined) {
 
   EXPECT_TRUE(dictionary->GetString(
       DefaultSearchManager::kSuggestionsURLPostParams, &value));
-  EXPECT_EQ(std::string(), value);
-
-  EXPECT_TRUE(dictionary->GetString(DefaultSearchManager::kInstantURLPostParams,
-                                    &value));
   EXPECT_EQ(std::string(), value);
 }
 
@@ -316,9 +302,6 @@ TEST_F(DefaultSearchPolicyHandlerTest, MinimallyDefined) {
   EXPECT_TRUE(
       dictionary->GetList(DefaultSearchManager::kAlternateURLs, &list_value));
   EXPECT_TRUE(base::ListValue().Equals(list_value));
-  EXPECT_TRUE(dictionary->GetString(
-      DefaultSearchManager::kSearchTermsReplacementKey, &value));
-  EXPECT_EQ(std::string(), value);
   EXPECT_TRUE(dictionary->GetString(DefaultSearchManager::kImageURL, &value));
   EXPECT_EQ(std::string(), value);
   EXPECT_TRUE(
@@ -329,9 +312,6 @@ TEST_F(DefaultSearchPolicyHandlerTest, MinimallyDefined) {
   EXPECT_EQ(std::string(), value);
   EXPECT_TRUE(dictionary->GetString(
       DefaultSearchManager::kSuggestionsURLPostParams, &value));
-  EXPECT_EQ(std::string(), value);
-  EXPECT_TRUE(dictionary->GetString(DefaultSearchManager::kInstantURLPostParams,
-                                    &value));
   EXPECT_EQ(std::string(), value);
 }
 

@@ -33,7 +33,6 @@ struct TemplateURLData {
                   const base::string16& keyword,
                   base::StringPiece search_url,
                   base::StringPiece suggest_url,
-                  base::StringPiece instant_url,
                   base::StringPiece image_url,
                   base::StringPiece new_tab_url,
                   base::StringPiece contextual_search_url,
@@ -41,12 +40,10 @@ struct TemplateURLData {
                   base::StringPiece doodle_url,
                   base::StringPiece search_url_post_params,
                   base::StringPiece suggest_url_post_params,
-                  base::StringPiece instant_url_post_params,
                   base::StringPiece image_url_post_params,
                   base::StringPiece favicon_url,
                   base::StringPiece encoding,
                   const base::ListValue& alternate_urls_list,
-                  base::StringPiece search_terms_replacement_key,
                   int prepopulate_id);
 
   ~TemplateURLData();
@@ -68,7 +65,6 @@ struct TemplateURLData {
 
   // Optional additional raw URLs.
   std::string suggestions_url;
-  std::string instant_url;
   std::string image_url;
   std::string new_tab_url;
   std::string contextual_search_url;
@@ -83,7 +79,6 @@ struct TemplateURLData {
   // post parameters for the corresponding URL.
   std::string search_url_post_params;
   std::string suggestions_url_post_params;
-  std::string instant_url_post_params;
   std::string image_url_post_params;
 
   // Favicon for the TemplateURL.
@@ -144,10 +139,6 @@ struct TemplateURLData {
   // A list of URL patterns that can be used, in addition to |url_|, to extract
   // search terms from a URL.
   std::vector<std::string> alternate_urls;
-
-  // A parameter that, if present in the query or ref parameters of a search_url
-  // or instant_url, causes Chrome to replace the URL with the search term.
-  std::string search_terms_replacement_key;
 
  private:
   // Private so we can enforce using the setters and thus enforce that these

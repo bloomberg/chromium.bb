@@ -291,7 +291,6 @@ TEST_F(TemplateURLTest, SetPrepopulatedAndReplace) {
   TemplateURLData data;
   data.SetURL("http://foo{fhqwhgads}search/?q={searchTerms}");
   data.suggestions_url = "http://foo{fhqwhgads}suggest/?q={searchTerms}";
-  data.instant_url = "http://foo{fhqwhgads}instant/";
   data.image_url = "http://foo{fhqwhgads}image/";
   data.new_tab_url = "http://foo{fhqwhgads}newtab/";
   data.contextual_search_url = "http://foo{fhqwhgads}context/";
@@ -310,8 +309,6 @@ TEST_F(TemplateURLTest, SetPrepopulatedAndReplace) {
             url.url_refs()[1].ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://foo%7Bfhqwhgads%7Dsuggest/?q=X",
             url.suggestions_url_ref().ReplaceSearchTerms(args, stdata));
-  EXPECT_EQ("http://foo{fhqwhgads}instant/",
-            url.instant_url_ref().ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://foo{fhqwhgads}image/",
             url.image_url_ref().ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://foo{fhqwhgads}newtab/",
@@ -329,8 +326,6 @@ TEST_F(TemplateURLTest, SetPrepopulatedAndReplace) {
             url2.url_refs()[1].ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://foosuggest/?q=X",
             url2.suggestions_url_ref().ReplaceSearchTerms(args, stdata));
-  EXPECT_EQ("http://fooinstant/",
-            url2.instant_url_ref().ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://fooimage/",
             url2.image_url_ref().ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://foonewtab/",
@@ -999,24 +994,9 @@ TEST_F(TemplateURLTest, SearchClient) {
   EXPECT_EQ("http://google.com/?foobar&client=search_client&", result_2.spec());
 }
 
-TEST_F(TemplateURLTest, GetURLNoInstantURL) {
-  TemplateURLData data;
-  data.SetURL("http://google.com/?q={searchTerms}");
-  data.suggestions_url = "http://google.com/suggest?q={searchTerms}";
-  data.alternate_urls.push_back("http://google.com/alt?q={searchTerms}");
-  data.alternate_urls.push_back("{google:baseURL}/alt/#q={searchTerms}");
-  TemplateURL url(data);
-  const std::vector<TemplateURLRef>& url_refs = url.url_refs();
-  ASSERT_EQ(3U, url_refs.size());
-  EXPECT_EQ("http://google.com/alt?q={searchTerms}", url_refs[0].GetURL());
-  EXPECT_EQ("{google:baseURL}/alt/#q={searchTerms}", url_refs[1].GetURL());
-  EXPECT_EQ("http://google.com/?q={searchTerms}", url_refs[2].GetURL());
-}
-
 TEST_F(TemplateURLTest, GetURLNoSuggestionsURL) {
   TemplateURLData data;
   data.SetURL("http://google.com/?q={searchTerms}");
-  data.instant_url = "http://google.com/instant#q={searchTerms}";
   data.alternate_urls.push_back("http://google.com/alt?q={searchTerms}");
   data.alternate_urls.push_back("{google:baseURL}/alt/#q={searchTerms}");
   TemplateURL url(data);
@@ -1039,7 +1019,6 @@ TEST_F(TemplateURLTest, GetURLOnlyOneURL) {
 TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
   TemplateURLData data;
   data.SetURL("http://google.com/?q={searchTerms}");
-  data.instant_url = "http://google.com/instant#q={searchTerms}";
   data.alternate_urls.push_back("http://google.com/alt/#q={searchTerms}");
   data.alternate_urls.push_back(
       "http://google.com/alt/?ext=foo&q={searchTerms}#ref=bar");
@@ -1291,92 +1270,9 @@ TEST_F(TemplateURLTest, ExtractSearchTermsWithPrefixAndSuffix) {
       GURL("http://www.example.com/?q=google"), search_terms_data_, &result));
 }
 
-TEST_F(TemplateURLTest, HasSearchTermsReplacementKey) {
-  TemplateURLData data;
-  data.SetURL("http://google.com/?q={searchTerms}");
-  data.instant_url = "http://google.com/instant#q={searchTerms}";
-  data.alternate_urls.push_back("http://google.com/alt/#q={searchTerms}");
-  data.alternate_urls.push_back(
-      "http://google.com/alt/?ext=foo&q={searchTerms}#ref=bar");
-  data.search_terms_replacement_key = "espv";
-  TemplateURL url(data);
-
-  // Test with instant enabled required.
-  EXPECT_FALSE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?espv")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/#espv")));
-
-  EXPECT_FALSE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?q=something")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?q=something&espv")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?q=something&espv=1")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?q=something&espv=0")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?espv&q=something")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?espv=1&q=something")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?espv=0&q=something")));
-
-  EXPECT_FALSE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/alt/#q=something")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/alt/#q=something&espv")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/alt/#q=something&espv=1")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/alt/#q=something&espv=0")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/alt/#espv&q=something")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/alt/#espv=1&q=something")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/alt/#espv=0&q=something")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?espv#q=something")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?espv=1#q=something")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?q=something#espv")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://google.com/?q=something#espv=1")));
-
-  // This does not ensure the domain matches.
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://bing.com/?espv")));
-
-  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
-      GURL("http://bing.com/#espv")));
-}
-
 TEST_F(TemplateURLTest, ReplaceSearchTermsInURL) {
   TemplateURLData data;
   data.SetURL("http://google.com/?q={searchTerms}");
-  data.instant_url = "http://google.com/instant#q={searchTerms}";
   data.alternate_urls.push_back("http://google.com/alt/#q={searchTerms}");
   data.alternate_urls.push_back(
       "http://google.com/alt/?ext=foo&q={searchTerms}#ref=bar");
@@ -1640,7 +1536,6 @@ TEST_F(TemplateURLTest, ReplacePageClassification) {
 TEST_F(TemplateURLTest, IsSearchResults) {
   TemplateURLData data;
   data.SetURL("http://bar/search?q={searchTerms}");
-  data.instant_url = "http://bar/instant#q={searchTerms}";
   data.new_tab_url = "http://bar/newtab";
   data.alternate_urls.push_back("http://bar/?q={searchTerms}");
   data.alternate_urls.push_back("http://bar/#q={searchTerms}");
@@ -1815,7 +1710,6 @@ TEST_F(TemplateURLTest, InvalidateCachedValues) {
   TemplateURLData data;
   data.SetURL("{google:baseURL}search?q={searchTerms}");
   data.suggestions_url = "{google:baseSuggestURL}search?q={searchTerms}";
-  data.instant_url = "{google:baseURL}webhp";
   data.image_url = "{google:baseURL}searchbyimage/upload";
   data.new_tab_url = "{google:baseURL}_/chrome/newtab";
   data.contextual_search_url = "{google:baseURL}_/contextualsearch";
@@ -1837,9 +1731,6 @@ TEST_F(TemplateURLTest, InvalidateCachedValues) {
   EXPECT_EQ("http://www.google.com/complete/search?q=X",
             url.suggestions_url_ref().ReplaceSearchTerms(search_terms_args,
                                                          search_terms_data_));
-  EXPECT_EQ("http://www.google.com/webhp",
-            url.instant_url_ref().ReplaceSearchTerms(search_terms_args,
-                                                     search_terms_data_));
   EXPECT_EQ("http://www.google.com/searchbyimage/upload",
             url.image_url_ref().ReplaceSearchTerms(search_terms_args,
                                                    search_terms_data_));
@@ -1875,9 +1766,6 @@ TEST_F(TemplateURLTest, InvalidateCachedValues) {
   EXPECT_EQ("https://www.foo.org/complete/search?q=X",
             url.suggestions_url_ref().ReplaceSearchTerms(search_terms_args,
                                                          search_terms_data_));
-  EXPECT_EQ("https://www.foo.org/webhp",
-            url.instant_url_ref().ReplaceSearchTerms(search_terms_args,
-                                                     search_terms_data_));
   EXPECT_EQ("https://www.foo.org/searchbyimage/upload",
             url.image_url_ref().ReplaceSearchTerms(search_terms_args,
                                                    search_terms_data_));
@@ -1898,44 +1786,4 @@ TEST_F(TemplateURLTest, InvalidateCachedValues) {
   EXPECT_EQ(base::ASCIIToUTF16("123"), search_terms);
 
   search_terms_data_.set_google_base_url("http://www.google.com/");
-}
-
-// search_terms_replacement_key param of TemplateURLData with value of
-// "{google:instantExtendedEnabledKey}" is replaced inside TemplateUrl
-// constructor so must be handled specially inside MatchesData.
-// Test that TemplateURL object created with such param matches correctly its
-// TemplateURLData.
-TEST_F(TemplateURLTest, MatchesData) {
-  TemplateURLData data;
-  data.search_terms_replacement_key =
-      google_util::kGoogleInstantExtendedEnabledKeyFull;
-  TemplateURL url(data);
-  EXPECT_NE(google_util::kGoogleInstantExtendedEnabledKeyFull,
-            url.search_terms_replacement_key());
-  EXPECT_TRUE(TemplateURL::MatchesData(&url, &data, search_terms_data_));
-}
-
-// Test for correct replacement of GoogleInstantExtendedEnabledKey param.
-TEST_F(TemplateURLTest, GoogleInstantExtendedEnabledReplacement) {
-  TemplateURLData data;
-  data.SetURL(std::string("https://www.google.com?") +
-              google_util::kGoogleInstantExtendedEnabledKeyFull +
-              "&q={searchTerms}");
-  data.SetShortName(ASCIIToUTF16("Google"));
-  data.SetKeyword(ASCIIToUTF16("google.com"));
-  data.search_terms_replacement_key =
-      google_util::kGoogleInstantExtendedEnabledKeyFull;
-  TemplateURL turl(data);
-  EXPECT_TRUE(TemplateURL::MatchesData(&turl, &data, search_terms_data_));
-  // Expect that replacement of search_terms_replacement_key in TemplateURL
-  // constructor is correct.
-  EXPECT_EQ(google_util::kInstantExtendedAPIParam,
-            turl.search_terms_replacement_key());
-  // Expect that replacement of {google:instantExtendedEnabledKey} in search url
-  // is correct.
-  GURL search_generated = turl.GenerateSearchURL(search_terms_data_);
-  EXPECT_TRUE(turl.HasSearchTermsReplacementKey(search_generated));
-  net::QueryIterator it(search_generated);
-  ASSERT_FALSE(it.IsAtEnd());
-  EXPECT_EQ(google_util::kInstantExtendedAPIParam, it.GetKey());
 }

@@ -1141,7 +1141,6 @@ syncer::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
       base::JoinString(turl.input_encodings(), ";"));
   se_specifics->set_suggestions_url(turl.suggestions_url());
   se_specifics->set_prepopulate_id(turl.prepopulate_id());
-  se_specifics->set_instant_url(turl.instant_url());
   if (!turl.image_url().empty())
     se_specifics->set_image_url(turl.image_url());
   se_specifics->set_new_tab_url(turl.new_tab_url());
@@ -1151,16 +1150,12 @@ syncer::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
     se_specifics->set_suggestions_url_post_params(
         turl.suggestions_url_post_params());
   }
-  if (!turl.instant_url_post_params().empty())
-    se_specifics->set_instant_url_post_params(turl.instant_url_post_params());
   if (!turl.image_url_post_params().empty())
     se_specifics->set_image_url_post_params(turl.image_url_post_params());
   se_specifics->set_last_modified(turl.last_modified().ToInternalValue());
   se_specifics->set_sync_guid(turl.sync_guid());
   for (size_t i = 0; i < turl.alternate_urls().size(); ++i)
     se_specifics->add_alternate_urls(turl.alternate_urls()[i]);
-  se_specifics->set_search_terms_replacement_key(
-      turl.search_terms_replacement_key());
 
   return syncer::SyncData::CreateLocalData(se_specifics->sync_guid(),
                                            se_specifics->keyword(),
@@ -1210,12 +1205,10 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   data.SetKeyword(keyword);
   data.SetURL(specifics.url());
   data.suggestions_url = specifics.suggestions_url();
-  data.instant_url = specifics.instant_url();
   data.image_url = specifics.image_url();
   data.new_tab_url = specifics.new_tab_url();
   data.search_url_post_params = specifics.search_url_post_params();
   data.suggestions_url_post_params = specifics.suggestions_url_post_params();
-  data.instant_url_post_params = specifics.instant_url_post_params();
   data.image_url_post_params = specifics.image_url_post_params();
   data.favicon_url = GURL(specifics.favicon_url());
   data.safe_for_autoreplace = specifics.safe_for_autoreplace();
@@ -1234,7 +1227,6 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   data.alternate_urls.clear();
   for (int i = 0; i < specifics.alternate_urls_size(); ++i)
     data.alternate_urls.push_back(specifics.alternate_urls(i));
-  data.search_terms_replacement_key = specifics.search_terms_replacement_key();
 
   std::unique_ptr<TemplateURL> turl(new TemplateURL(data));
   // If this TemplateURL matches a built-in prepopulated template URL, it's

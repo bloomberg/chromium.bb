@@ -139,7 +139,6 @@ std::unique_ptr<TemplateURLData> CreateTestSearchEngine() {
   result->prepopulate_id = kPrepopulatedId;
   result->input_encodings = {"UTF-16", "UTF-32"};
   result->alternate_urls = {"http://test.com/search#t={searchTerms}"};
-  result->search_terms_replacement_key = "espv";
   return result;
 }
 
@@ -282,8 +281,6 @@ void TemplateURLServiceTest::AssertEquals(const TemplateURL& expected,
   AssertTimesEqual(expected.last_modified(), actual.last_modified());
   ASSERT_EQ(expected.last_visited(), actual.last_visited());
   ASSERT_EQ(expected.sync_guid(), actual.sync_guid());
-  ASSERT_EQ(expected.search_terms_replacement_key(),
-            actual.search_terms_replacement_key());
 }
 
 void TemplateURLServiceTest::AssertTimesEqual(const Time& expected,
@@ -322,8 +319,6 @@ void TemplateURLServiceTest::SetOverriddenEngines() {
   entry->SetInteger("id", 1001);
   entry->SetString("suggest_url",
                    "http://override.com/suggest?q={searchTerms}");
-  entry->SetString("instant_url",
-                   "http://override.com/instant?q={searchTerms}");
 
   auto overrides_list = base::MakeUnique<base::ListValue>();
   overrides_list->Append(std::move(entry));
@@ -835,7 +830,6 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   data.safe_for_autoreplace = true;
   data.SetURL("http://url/{searchTerms}");
   data.suggestions_url = "http://url2";
-  data.instant_url = "http://instant";
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
   data.last_visited = Time::FromTimeT(100);
@@ -858,7 +852,6 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   EXPECT_EQ(ASCIIToUTF16("a"), default_turl->short_name());
   EXPECT_EQ("http://url/{searchTerms}", default_turl->url());
   EXPECT_EQ("http://url2", default_turl->suggestions_url());
-  EXPECT_EQ("http://instant", default_turl->instant_url());
   EXPECT_EQ(id, default_turl->id());
 
   // Now do a load and make sure the default search provider really takes.

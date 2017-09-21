@@ -152,20 +152,16 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   EXPECT_EQ(1u, t_urls[0]->input_encodings.size());
   EXPECT_EQ(1001, t_urls[0]->prepopulate_id);
   EXPECT_TRUE(t_urls[0]->suggestions_url.empty());
-  EXPECT_TRUE(t_urls[0]->instant_url.empty());
   EXPECT_EQ(0u, t_urls[0]->alternate_urls.size());
-  EXPECT_TRUE(t_urls[0]->search_terms_replacement_key.empty());
   EXPECT_TRUE(t_urls[0]->safe_for_autoreplace);
   EXPECT_TRUE(t_urls[0]->date_created.is_null());
   EXPECT_TRUE(t_urls[0]->last_modified.is_null());
 
   // Test the optional settings too.
   entry->SetString("suggest_url", "http://foo.com/suggest?q={searchTerms}");
-  entry->SetString("instant_url", "http://foo.com/instant?q={searchTerms}");
   auto alternate_urls = base::MakeUnique<base::ListValue>();
   alternate_urls->AppendString("http://foo.com/alternate?q={searchTerms}");
   entry->Set("alternate_urls", std::move(alternate_urls));
-  entry->SetString("search_terms_replacement_key", "espv");
   overrides = base::MakeUnique<base::ListValue>();
   overrides->Append(entry->CreateDeepCopy());
   prefs_.SetUserPref(prefs::kSearchProviderOverrides, std::move(overrides));
@@ -181,12 +177,9 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   EXPECT_EQ(1001, t_urls[0]->prepopulate_id);
   EXPECT_EQ("http://foo.com/suggest?q={searchTerms}",
             t_urls[0]->suggestions_url);
-  EXPECT_EQ("http://foo.com/instant?q={searchTerms}",
-            t_urls[0]->instant_url);
   ASSERT_EQ(1u, t_urls[0]->alternate_urls.size());
   EXPECT_EQ("http://foo.com/alternate?q={searchTerms}",
             t_urls[0]->alternate_urls[0]);
-  EXPECT_EQ("espv", t_urls[0]->search_terms_replacement_key);
 
   // Test that subsequent providers are loaded even if an intermediate
   // provider has an incomplete configuration.
@@ -249,7 +242,6 @@ TEST_F(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   // Ensures the default URL is Google and has the optional fields filled.
   EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name());
   EXPECT_FALSE(t_urls[default_index]->suggestions_url.empty());
-  EXPECT_FALSE(t_urls[default_index]->instant_url.empty());
   EXPECT_FALSE(t_urls[default_index]->image_url.empty());
   EXPECT_FALSE(t_urls[default_index]->new_tab_url.empty());
   EXPECT_FALSE(t_urls[default_index]->contextual_search_url.empty());
@@ -285,7 +277,6 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
   // Ensures the default URL is Google and has the optional fields filled.
   EXPECT_EQ(ASCIIToUTF16("Google"), t_urls[default_index]->short_name());
   EXPECT_FALSE(t_urls[default_index]->suggestions_url.empty());
-  EXPECT_FALSE(t_urls[default_index]->instant_url.empty());
   EXPECT_FALSE(t_urls[default_index]->image_url.empty());
   EXPECT_FALSE(t_urls[default_index]->new_tab_url.empty());
   EXPECT_FALSE(t_urls[default_index]->contextual_search_url.empty());
@@ -298,7 +289,6 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
             TemplateURL(*t_urls[default_index]).GetEngineType(
                 SearchTermsData()));
-  EXPECT_FALSE(t_urls[default_index]->search_terms_replacement_key.empty());
 }
 
 TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeBasic) {
@@ -441,7 +431,6 @@ TEST_F(TemplateURLPrepopulateDataTest, HttpsUrls) {
     // for matching.
     CheckTemplateUrlRefIsCryptographic(template_url.url_ref());
     CheckTemplateUrlRefIsCryptographic(template_url.suggestions_url_ref());
-    CheckTemplateUrlRefIsCryptographic(template_url.instant_url_ref());
     CheckTemplateUrlRefIsCryptographic(template_url.image_url_ref());
     CheckTemplateUrlRefIsCryptographic(template_url.new_tab_url_ref());
     CheckTemplateUrlRefIsCryptographic(

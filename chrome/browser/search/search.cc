@@ -82,12 +82,10 @@ const TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
 
 GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
                           const SearchTermsData& search_terms_data,
-                          bool append_extra_query_params,
-                          bool force_instant_results) {
+                          bool append_extra_query_params) {
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
   search_terms_args.append_extra_query_params = append_extra_query_params;
-  search_terms_args.force_instant_results = force_instant_results;
   return GURL(ref.ReplaceSearchTerms(search_terms_args, search_terms_data));
 }
 
@@ -104,31 +102,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
                                  IsMatchingServiceWorker(url, new_tab_url))) {
     return true;
   }
-
-  const TemplateURL* template_url =
-      GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
-    return false;
-
-  if (!template_url->HasSearchTermsReplacementKey(url))
-    return false;
-
-  // |url| should either have a secure scheme or have a non-HTTPS base URL that
-  // the user specified using --google-base-url. (This allows testers to use
-  // --google-base-url to point at non-HTTPS servers, which eases testing.)
-  if (!url.SchemeIsCryptographic() &&
-      !google_util::StartsWithCommandLineGoogleBaseURL(url)) {
-    return false;
-  }
-
-  const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
-  UIThreadSearchTermsData search_terms_data(profile);
-  const GURL instant_url = TemplateURLRefToGURL(
-      instant_url_ref, search_terms_data, false, false);
-  if (!instant_url.is_valid())
-    return false;
-
-  return MatchesOriginAndPath(url, instant_url);
+  return false;
 }
 
 bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
@@ -196,9 +170,9 @@ struct NewTabURLDetails {
     if (!profile || !template_url)
       return NewTabURLDetails(local_url, NEW_TAB_URL_BAD);
 
-    GURL search_provider_url = TemplateURLRefToGURL(
-        template_url->new_tab_url_ref(), UIThreadSearchTermsData(profile),
-        false, false);
+    GURL search_provider_url =
+        TemplateURLRefToGURL(template_url->new_tab_url_ref(),
+                             UIThreadSearchTermsData(profile), false);
 
     if (ShouldShowLocalNewTab(search_provider_url, profile))
       return NewTabURLDetails(local_url, NEW_TAB_URL_VALID);
@@ -336,8 +310,8 @@ std::vector<GURL> GetSearchURLs(Profile* profile) {
   if (!template_url)
     return result;
   for (const TemplateURLRef& ref : template_url->url_refs()) {
-    result.push_back(TemplateURLRefToGURL(ref, UIThreadSearchTermsData(profile),
-                                          false, false));
+    result.push_back(
+        TemplateURLRefToGURL(ref, UIThreadSearchTermsData(profile), false));
   }
   return result;
 }

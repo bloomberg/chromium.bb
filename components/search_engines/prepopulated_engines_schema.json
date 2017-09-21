@@ -24,8 +24,6 @@
     },
     // If omitted, this engine does not support suggestions.
     { "field": "suggest_url", "type": "string", "optional": true },
-    // If omitted, this engine does not support instant.
-    { "field": "instant_url", "type": "string", "optional": true },
     // If omitted, this engine does not support image search.
     { "field": "image_url", "type": "string", "optional": true },
     // If omitted, this engine does not support rendering a new tab page.
@@ -49,7 +47,6 @@
     // for name2, the actual value will be replaced with real search terms data.
     { "field": "search_url_post_params", "type": "string", "optional": true },
     { "field": "suggest_url_post_params", "type": "string", "optional": true },
-    { "field": "instant_url_post_params", "type": "string", "optional": true },
     { "field": "image_url_post_params", "type": "string", "optional": true },
     // A list of URL patterns that can be used, in addition to |search_url|,
     // to extract search terms from a URL.
@@ -59,14 +56,6 @@
       "field": "alternate_urls",
       "type": "array",
       "contents": { "type": "string" },
-      "optional": true
-    },
-    // A parameter that, if present in the query or ref parameters of a
-    // search_url or instant_url, causes Chrome to replace the URL with the
-    // search term. This can be {google:instantExtendedEnabledKey}.
-    {
-      "field": "search_terms_replacement_key",
-      "type": "string",
       "optional": true
     },
     {
