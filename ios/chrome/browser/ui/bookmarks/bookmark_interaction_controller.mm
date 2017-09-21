@@ -248,29 +248,49 @@ using bookmarks::BookmarkNode;
 - (void)
 bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
                         navigationToUrls:(const std::vector<GURL>&)urls {
+  [self bookmarkHomeViewControllerWantsDismissal:controller
+                                navigationToUrls:urls
+                                     inIncognito:_currentBrowserState
+                                                     ->IsOffTheRecord()];
+}
+
+- (void)bookmarkHomeViewControllerWantsDismissal:
+            (BookmarkHomeViewController*)controller
+                                navigationToUrls:(const std::vector<GURL>&)urls
+                                     inIncognito:(BOOL)inIncognito {
   [self dismissBookmarkBrowserAnimated:YES];
 
   if (urls.empty())
     return;
 
-  BOOL openInCurrentTab = YES;
+  BOOL openInForegroundTab = YES;
   for (const GURL& url : urls) {
     DCHECK(url.is_valid());
-    if (openInCurrentTab) {
-      // Only open the first URL in the current tab.
-      openInCurrentTab = NO;
+    // TODO(crbug.com/695749): Force url to open in non-incognito mode. if
+    // !IsURLAllowedInIncognito(url).
+
+    if (openInForegroundTab) {
+      // Only open the first URL in foreground tab.
+      openInForegroundTab = NO;
 
       // TODO(crbug.com/695749): See if we need different metrics for 'Open
-      // All'.
+      // all', 'Open all in incognito' and 'Open in incognito'.
       new_tab_page_uma::RecordAction(_browserState,
                                      new_tab_page_uma::ACTION_OPENED_BOOKMARK);
       base::RecordAction(
           base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
 
-      [self openURLInCurrentTab:url];
+      if (inIncognito == _currentBrowserState->IsOffTheRecord()) {
+        // Open in current tab if target tab mode is same as current tab mode.
+        [self openURLInCurrentTab:url];
+      } else {
+        // Open in new tab if target tab mode is different from current tab
+        // mode.
+        [self openURLInNewTab:url inIncognito:inIncognito inBackground:NO];
+      }
     } else {
       // Open other URLs (if any) in background tabs.
-      [self openURLInBackgroundTab:url];
+      [self openURLInNewTab:url inIncognito:inIncognito inBackground:YES];
     }
   }  // end for
 }
@@ -282,18 +302,23 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
     NSString* jsToEval = [base::SysUTF8ToNSString(url.GetContent())
         stringByRemovingPercentEncoding];
     [_loader loadJavaScriptFromLocationBar:jsToEval];
-  } else {
-    [_loader loadURL:url
-                 referrer:web::Referrer()
-               transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-        rendererInitiated:NO];
+    return;
   }
+  [_loader loadURL:url
+               referrer:web::Referrer()
+             transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
+      rendererInitiated:NO];
 }
 
-- (void)openURLInBackgroundTab:(const GURL&)url {
+- (void)openURLInNewTab:(const GURL&)url
+            inIncognito:(BOOL)inIncognito
+           inBackground:(BOOL)inBackground {
+  // TODO(crbug.com/695749):  Open bookmarklet in new tab doesn't work.  See how
+  // to deal with this later.
   [_loader webPageOrderedOpen:url
                      referrer:web::Referrer()
-                 inBackground:YES
+                  inIncognito:inIncognito
+                 inBackground:inBackground
                      appendTo:kLastTab];
 }
 
