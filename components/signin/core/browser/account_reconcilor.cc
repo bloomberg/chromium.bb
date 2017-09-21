@@ -240,6 +240,10 @@ void AccountReconcilor::OnEndBatchChanges() {
   StartReconcile();
 }
 
+void AccountReconcilor::OnRefreshTokensLoaded() {
+  StartReconcile();
+}
+
 void AccountReconcilor::GoogleSigninSucceeded(const std::string& account_id,
                                               const std::string& username) {
   VLOG(1) << "AccountReconcilor::GoogleSigninSucceeded: signed in";
@@ -280,6 +284,9 @@ void AccountReconcilor::PerformLogoutAllAccountsAction() {
 }
 
 void AccountReconcilor::StartReconcile() {
+  if (is_reconcile_started_)
+    return;
+
   if (IsReconcileBlocked()) {
     VLOG(1) << "AccountReconcilor::StartReconcile: "
             << "Reconcile is blocked, scheduling for later.";
@@ -288,18 +295,22 @@ void AccountReconcilor::StartReconcile() {
     return;
   }
 
-  for (auto& observer : observer_list_)
-    observer.OnStartReconcile();
-
-  reconcile_start_time_ = base::Time::Now();
 
   if (!IsEnabled() || !client_->AreSigninCookiesAllowed()) {
     VLOG(1) << "AccountReconcilor::StartReconcile: !enabled or no cookies";
     return;
   }
 
-  if (is_reconcile_started_)
+  // Do not reconcile if tokens are not loaded yet.
+  if (!IsTokenServiceReady()) {
+    VLOG(1)
+        << "AccountReconcilor::StartReconcile: token service *not* ready yet.";
     return;
+  }
+
+  reconcile_start_time_ = base::Time::Now();
+  for (auto& observer : observer_list_)
+    observer.OnStartReconcile();
 
   // Reset state for validating gaia cookie.
   gaia_accounts_.clear();
@@ -343,11 +354,6 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
           << "Error was " << error.ToString();
   if (error.state() == GoogleServiceAuthError::NONE) {
     gaia_accounts_ = accounts;
-
-    // It is possible that O2RT is not available at this moment.
-    if (!IsTokenServiceReady())
-      return;
-
     is_reconcile_started_ ? FinishReconcile() : StartReconcile();
   } else {
     if (is_reconcile_started_)
