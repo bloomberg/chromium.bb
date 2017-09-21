@@ -78,7 +78,6 @@ crbug.com/24182 virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-repaint.htm
 crbug.com/24182 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Slow ]
 crbug.com/24182 virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [ Slow ]
 crbug.com/24182 virtual/gpu/fast/canvas/canvas-strokeRect-gradient-shadow.html [ Slow ]
-crbug.com/24182 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-crash.html [ Slow ]
 crbug.com/24182 fast/dom/timer-throttling-background-page-near-alignment-interval.html [ Slow ]
 crbug.com/24182 http/tests/perf/large-inlined-script.html [ Slow ]
 crbug.com/24182 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [ Slow ]
