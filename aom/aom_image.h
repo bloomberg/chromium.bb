@@ -240,6 +240,24 @@ void aom_img_flip(aom_image_t *img);
  */
 void aom_img_free(aom_image_t *img);
 
+/*!\brief Get the width of a plane
+ *
+ * Get the width of a plane of an image
+ *
+ * \param[in]    img       Image descriptor
+ * \param[in]    plane     Plane index
+ */
+int aom_img_plane_width(const aom_image_t *img, int plane);
+
+/*!\brief Get the height of a plane
+ *
+ * Get the height of a plane of an image
+ *
+ * \param[in]    img       Image descriptor
+ * \param[in]    plane     Plane index
+ */
+int aom_img_plane_height(const aom_image_t *img, int plane);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
