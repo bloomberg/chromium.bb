@@ -419,12 +419,15 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     V8ThrowException::ThrowError(isolate, "Source file too large.");
     return v8::Local<v8::Script>();
   }
+  // TODO(kouhei) crbug.com/711706 : Plumb nonce/parser_state through
+  // ScriptSourceCode.
+  const ReferrerScriptInfo referrer_info;
   return CompileScript(
       script_state, V8String(isolate, source.Source()), source.Url(),
       source.SourceMapUrl(), source.StartPosition(), source.GetResource(),
       source.Streamer(),
       source.GetResource() ? source.GetResource()->CacheHandler() : nullptr,
-      access_control_status, cache_options);
+      access_control_status, cache_options, referrer_info);
 }
 
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
@@ -435,7 +438,8 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     const TextPosition& text_position,
     CachedMetadataHandler* cache_metadata_handler,
     AccessControlStatus access_control_status,
-    V8CacheOptions v8_cache_options) {
+    V8CacheOptions v8_cache_options,
+    const ReferrerScriptInfo& referrer_info) {
   v8::Isolate* isolate = script_state->GetIsolate();
   if (code.length() >= v8::String::kMaxLength) {
     V8ThrowException::ThrowError(isolate, "Source file too large.");
@@ -444,7 +448,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
   return CompileScript(script_state, V8String(isolate, code), file_name,
                        source_map_url, text_position, nullptr, nullptr,
                        cache_metadata_handler, access_control_status,
-                       v8_cache_options);
+                       v8_cache_options, referrer_info);
 }
 
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
@@ -459,6 +463,13 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     AccessControlStatus access_control_status,
     V8CacheOptions cache_options,
     const ReferrerScriptInfo& referrer_info) {
+  // As specified in [HIMD] Step 5-6, the credentials mode for a classic script
+  // is always "omit".
+  // [HIMD]
+  // https://github.com/tc39/proposal-dynamic-import/blob/master/HTML%20Integration.md#hostimportmoduledynamicallyreferencingscriptormodule-specifier-promisecapability
+  DCHECK_EQ(WebURLRequest::kFetchCredentialsModeOmit,
+            referrer_info.CredentialsMode());
+
   TRACE_EVENT2(
       "v8,devtools.timeline", "v8.compile", "fileName", file_name.Utf8(),
       "data",
@@ -574,10 +585,13 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
     const String& file_name,
     const TextPosition& script_start_position) {
   v8::Local<v8::Script> script;
-  if (!V8ScriptRunner::CompileScript(script_state, source, file_name, String(),
-                                     script_start_position, nullptr, nullptr,
-                                     nullptr, kSharableCrossOrigin,
-                                     kV8CacheOptionsDefault)
+  // Use default ScriptReferrerInfo here:
+  // - nonce: empty for internal script, and
+  // - parser_state: always "not parser inserted" for internal scripts.
+  if (!V8ScriptRunner::CompileScript(
+           script_state, source, file_name, String(), script_start_position,
+           nullptr, nullptr, nullptr, kSharableCrossOrigin,
+           kV8CacheOptionsDefault, ReferrerScriptInfo())
            .ToLocal(&script))
     return v8::MaybeLocal<v8::Value>();
 

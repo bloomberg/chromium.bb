@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/V8ScriptRunner.h"
 
+#include "bindings/core/v8/ReferrerScriptInfo.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/loader/resource/ScriptResource.h"
@@ -63,7 +64,7 @@ class V8ScriptRunnerTest : public ::testing::Test {
                 script_state, V8String(script_state->GetIsolate(), Code()),
                 Filename(), String(), WTF::TextPosition(), resource_.Get(),
                 nullptr, resource_.Get() ? resource_->CacheHandler() : nullptr,
-                kNotSharableCrossOrigin, cache_options)
+                kNotSharableCrossOrigin, cache_options, ReferrerScriptInfo())
                 .IsEmpty();
   }
 
