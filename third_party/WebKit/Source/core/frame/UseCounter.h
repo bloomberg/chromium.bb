@@ -31,12 +31,10 @@
 #include "core/css/parser/CSSParserMode.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/HeapAllocator.h"
-#include "platform/weborigin/KURL.h"
 #include "platform/wtf/BitVector.h"
+#include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/WTFString.h"
 #include "public/platform/web_feature.mojom-blink.h"
-#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -44,6 +42,7 @@ class CSSStyleSheet;
 class Document;
 class EnumerationHistogram;
 class ExecutionContext;
+class KURL;
 class LocalFrame;
 class StyleSheetContents;
 // Definition for UseCounter features can be found in:
