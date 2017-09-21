@@ -3053,6 +3053,9 @@ crbug.com/736056 [ Mac Win7 ] external/wpt/encoding/legacy-mb-korean [ Timeout P
 crbug.com/736056 [ Mac ] external/wpt/encoding/legacy-mb-tchinese [ Timeout Pass ]
 crbug.com/736056 external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-form-errors-hangul.html [ Timeout Pass ]
 
+# Known issue: module script errors are not derteministic
+crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/module/instantiation-error-5.html [ Failure Pass ]
+
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
