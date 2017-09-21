@@ -45,10 +45,6 @@ class VIEWS_EXPORT PaintInfo {
                                         const gfx::Size& parent_size,
                                         ScaleType scale_type);
 
-  // Clones a given paint info, |other|, without the invalidation from its
-  // PaintContext.
-  static PaintInfo ClonePaintInfo(const PaintInfo& other);
-
   PaintInfo(const PaintInfo& other);
   ~PaintInfo();
 
@@ -87,8 +83,6 @@ class VIEWS_EXPORT PaintInfo {
             const gfx::Rect& bounds,
             const gfx::Size& parent_size,
             ScaleType scale_type);
-  PaintInfo(const PaintInfo& other,
-            ui::PaintContext::CloneWithoutInvalidation c);
 
   // Scales the |child_bounds| to its recording bounds based on the
   // |context.device_scale_factor()|. The recording bounds are snapped to the

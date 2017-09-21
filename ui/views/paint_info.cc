@@ -20,21 +20,6 @@ PaintInfo PaintInfo::CreateChildPaintInfo(const PaintInfo& parent_paint_info,
   return PaintInfo(parent_paint_info, bounds, parent_size, scale_type);
 }
 
-// static
-PaintInfo PaintInfo::ClonePaintInfo(const PaintInfo& parent_paint_info) {
-  return PaintInfo(parent_paint_info,
-                   ui::PaintContext::CLONE_WITHOUT_INVALIDATION);
-}
-
-PaintInfo::PaintInfo(const PaintInfo& other,
-                     ui::PaintContext::CloneWithoutInvalidation c)
-    : paint_recording_scale_x_(other.paint_recording_scale_x_),
-      paint_recording_scale_y_(other.paint_recording_scale_y_),
-      paint_recording_bounds_(other.paint_recording_bounds_),
-      offset_from_parent_(other.offset_from_parent_),
-      context_(other.context(), c),
-      root_context_(nullptr) {}
-
 PaintInfo::~PaintInfo() {}
 
 bool PaintInfo::IsPixelCanvas() const {
