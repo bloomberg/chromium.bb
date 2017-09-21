@@ -1338,11 +1338,6 @@ void AXLayoutObject::AriaDescribedbyElements(
                                        describedby);
 }
 
-void AXLayoutObject::AriaLabelledbyElements(AXObjectVector& labelledby) const {
-  AccessibilityChildrenFromAOMProperty(AOMRelationListProperty::kLabeledBy,
-                                       labelledby);
-}
-
 bool AXLayoutObject::AriaHasPopup() const {
   const AtomicString& has_popup =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kHasPopUp);
