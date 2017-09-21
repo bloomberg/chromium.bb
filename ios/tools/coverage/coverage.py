@@ -15,33 +15,17 @@
         suggested to start with 'url_unittests'.
 
   Example usages:
-  ios/tools/coverage/coverage.py ios_clean_chrome_unittests
-  -t ios/clean/chrome/browser/ui/find_in_page/
-  -i ios/clean/chrome/browser/ui/find_in_page/
-  # Generate code coverage report for ios_clean_chrome_unittests for
-  # ios/clean/chrome/browser/ui/find_in_page/ and only include files under
-  # ios/clean/chrome/browser/ui/find_in_page/.
+  ios/tools/coverage/coverage.py url_unittests -t url/ -i url/third_party
+  # Generate code coverage report for url_unittests for directory url/ and only
+  # include files under url/third_party.
 
-  ios/tools/coverage/coverage.py ios_clean_chrome_unittests
-  -t ios/clean/chrome/browser/ui/find_in_page/
-  -i ios/clean/chrome/browser/ui/find_in_page/
-  -r out/Coverage-iphonesimulator/coverage.profdata
-  # Skip running tests and reuse the specified profile data file to generate
-  # code coverage report.
+  ios/tools/coverage/coverage.py url_unittests -t url/ -i url/third_party
+  -r coverage.profdata
+  # Skip running tests and reuse the specified profile data file.
 
-  ios/tools/coverage/coverage.py ios_clean_chrome_unittests
-  -t ios/clean/chrome/browser/ui/find_in_page/
-  -i ios/clean/chrome/browser/ui/find_in_page/
-  -e //ios/clean/chrome/browser/ui/find_in_page:find_in_page_ui
-  -r out/Coverage-iphonesimulator/coverage.profdata
-  # Exclude the 'sources' of find_in_page_ui build target.
-
-  ios/tools/coverage/coverage.py ios_showcase_egtests
-  -t ios/showcase/content_suggestions
-  -i //ios/showcase/content_suggestions:content_suggestions
-  # Generate code coverage report for ios_showcase_egtests for
-  # ios/showcase/content_suggestions and only include the 'sources' of
-  # content_suggestions build target.
+  ios/tools/coverage/coverage.py url_unittests -t url/ -i url/third_party
+  -e //url/ipc:url_ipc -r coverage.profdata
+  # Exclude the 'sources' of //url/ipc:url_ipc build target.
 
   For more options, please refer to ios/tools/coverage/coverage.py -h
 """
