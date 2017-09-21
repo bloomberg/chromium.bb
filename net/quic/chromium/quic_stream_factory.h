@@ -207,7 +207,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       size_t max_packet_length,
       const std::string& user_agent_id,
       bool store_server_configs_in_properties,
-      bool close_sessions_on_ip_change,
       bool mark_quic_broken_when_network_blackholes,
       int idle_connection_timeout_seconds,
       int reduced_ping_timeout_seconds,
@@ -329,8 +328,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // NetworkChangeNotifier::IPAddressObserver methods:
 
-  // Until the servers support roaming, close all connections when the local
-  // IP address changes.
+  // Called when local IP address changes. Must not be called if
+  // |migrate_sessions_on_network_change_| is true.
   void OnIPAddressChanged() override;
 
   // NetworkChangeNotifier::NetworkObserver methods:
@@ -530,9 +529,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // QuicChromiumPacketReader::StartReading() yields by doing a PostTask().
   int yield_after_packets_;
   QuicTime::Delta yield_after_duration_;
-
-  // Set if all sessions should be closed when any local IP address changes.
-  const bool close_sessions_on_ip_change_;
 
   // Set if migration should be attempted on active sessions when primary
   // interface changes.

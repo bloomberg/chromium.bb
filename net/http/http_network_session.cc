@@ -113,7 +113,6 @@ HttpNetworkSession::Params::Params()
       quic_max_server_configs_stored_in_properties(0u),
       mark_quic_broken_when_network_blackholes(false),
       retry_without_alt_svc_on_quic_errors(false),
-      quic_close_sessions_on_ip_change(false),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_reduced_ping_timeout_seconds(kPingTimeoutSecs),
       quic_migrate_sessions_on_network_change(false),
@@ -187,7 +186,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_max_packet_length,
           params.quic_user_agent_id,
           params.quic_max_server_configs_stored_in_properties > 0,
-          params.quic_close_sessions_on_ip_change,
           params.mark_quic_broken_when_network_blackholes,
           params.quic_idle_connection_timeout_seconds,
           params.quic_reduced_ping_timeout_seconds,
@@ -335,8 +333,6 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_race_cert_verification);
   dict->SetBoolean("disable_bidirectional_streams",
                    params_.quic_disable_bidirectional_streams);
-  dict->SetBoolean("close_sessions_on_ip_change",
-                   params_.quic_close_sessions_on_ip_change);
   dict->SetBoolean("migrate_sessions_on_network_change",
                    params_.quic_migrate_sessions_on_network_change);
   dict->SetBoolean("migrate_sessions_early",

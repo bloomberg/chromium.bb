@@ -144,8 +144,6 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // Retry requests which fail with QUIC_PROTOCOL_ERROR, and mark QUIC
     // broken if the retry succeeds.
     bool retry_without_alt_svc_on_quic_errors;
-    // If true, all QUIC sessions are closed when any local IP address changes.
-    bool quic_close_sessions_on_ip_change;
     // Specifies QUIC idle connection state lifetime.
     int quic_idle_connection_timeout_seconds;
     // Specifies the reduced ping timeout subsequent connections should use when
