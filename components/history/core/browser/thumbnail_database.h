@@ -28,7 +28,7 @@ class HistoryBackendClient;
 
 // The minimum number of days after which last_requested field gets updated.
 // All earlier updates are ignored.
-static const int kFaviconUpdateLastRequestedAfterDays = 14;
+static const int kFaviconUpdateLastRequestedAfterDays = 10;
 
 // This database interface is owned by the history backend and runs on the
 // history thread. It is a totally separate component from history partially
