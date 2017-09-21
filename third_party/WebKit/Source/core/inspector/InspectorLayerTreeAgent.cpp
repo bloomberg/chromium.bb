@@ -453,7 +453,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
   GraphicsContext context(layer->GetPaintController());
   context.BeginRecording(interest_rect);
   layer->GetPaintController().GetPaintArtifact().Replay(interest_rect, context);
-  RefPtr<PictureSnapshot> snapshot = AdoptRef(
+  RefPtr<PictureSnapshot> snapshot = WTF::AdoptRef(
       new PictureSnapshot(ToSkPicture(context.EndRecording(), interest_rect)));
 
   *snapshot_id = String::Number(++last_snapshot_id_);
@@ -471,7 +471,7 @@ Response InspectorLayerTreeAgent::loadSnapshot(
   decoded_tiles.Grow(tiles->length());
   for (size_t i = 0; i < tiles->length(); ++i) {
     protocol::LayerTree::PictureTile* tile = tiles->get(i);
-    decoded_tiles[i] = AdoptRef(new PictureSnapshot::TilePictureStream());
+    decoded_tiles[i] = WTF::AdoptRef(new PictureSnapshot::TilePictureStream());
     decoded_tiles[i]->layer_offset.Set(tile->getX(), tile->getY());
     if (!Base64Decode(tile->getPicture(), decoded_tiles[i]->data))
       return Response::Error("Invalid base64 encoding");

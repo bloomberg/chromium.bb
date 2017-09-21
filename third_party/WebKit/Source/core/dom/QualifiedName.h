@@ -58,7 +58,7 @@ class CORE_EXPORT QualifiedName {
                                             const AtomicString& local_name,
                                             const AtomicString& namespace_uri,
                                             bool is_static) {
-      return AdoptRef(
+      return WTF::AdoptRef(
           new QualifiedNameImpl(prefix, local_name, namespace_uri, is_static));
     }
 

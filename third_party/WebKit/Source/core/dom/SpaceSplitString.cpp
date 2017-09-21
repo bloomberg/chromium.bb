@@ -173,14 +173,14 @@ RefPtr<SpaceSplitString::Data> SpaceSplitString::Data::Create(
   Data*& data = SharedDataMap().insert(string, nullptr).stored_value->value;
   if (!data) {
     data = new Data(string);
-    return AdoptRef(data);
+    return WTF::AdoptRef(data);
   }
   return data;
 }
 
 RefPtr<SpaceSplitString::Data> SpaceSplitString::Data::CreateUnique(
     const Data& other) {
-  return AdoptRef(new SpaceSplitString::Data(other));
+  return WTF::AdoptRef(new SpaceSplitString::Data(other));
 }
 
 SpaceSplitString::Data::Data(const AtomicString& string) : key_string_(string) {
