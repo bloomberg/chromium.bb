@@ -878,7 +878,7 @@ android_library("android_webview_java") {
     ":android_webview_java_enums_srcjar",
     ":aw_error_ui",
     ":aw_safe_browsing_action",
-    "//components/safe_browsing_db:sb_threat_values",
+    "//components/safe_browsing/db:sb_threat_values",
   ]
 
   # Manifest used for linting (determining unused resources).

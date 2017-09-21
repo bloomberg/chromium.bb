@@ -19,7 +19,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing/db/database_manager.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"

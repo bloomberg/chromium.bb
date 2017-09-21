@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/safe_browsing_db/database_manager.h"
-#include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/db/util.h"
 #include "url/gurl.h"
 
 namespace base {

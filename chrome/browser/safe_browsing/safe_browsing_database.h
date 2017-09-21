@@ -21,7 +21,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing/db/util.h"
 
 class GURL;
 

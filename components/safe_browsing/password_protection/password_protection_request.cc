@@ -9,7 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
-#include "components/safe_browsing_db/whitelist_checker_client.h"
+#include "components/safe_browsing/db/whitelist_checker_client.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"

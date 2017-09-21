@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "components/safe_browsing_db/v4_local_database_manager.h"
+#include "components/safe_browsing/db/v4_local_database_manager.h"
 #include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
 namespace safe_browsing {

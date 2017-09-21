@@ -20,7 +20,7 @@
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing/db/util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"

@@ -28,7 +28,7 @@
 #include "content/public/browser/browser_context.h"
 
 #if SAFE_BROWSING_DB_LOCAL
-#include "components/safe_browsing_db/v4_local_database_manager.h"
+#include "components/safe_browsing/db/v4_local_database_manager.h"
 #endif
 
 using base::Time;

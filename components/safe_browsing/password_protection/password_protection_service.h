@@ -18,8 +18,8 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 

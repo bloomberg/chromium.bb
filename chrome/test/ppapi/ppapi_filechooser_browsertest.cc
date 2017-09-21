@@ -26,7 +26,7 @@
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "components/safe_browsing_db/test_database_manager.h"
+#include "components/safe_browsing/db/test_database_manager.h"
 #include "content/public/test/test_download_request_handler.h"
 
 using safe_browsing::DownloadProtectionService;

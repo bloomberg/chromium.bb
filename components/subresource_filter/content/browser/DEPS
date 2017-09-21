@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/safe_browsing_db",
+  "+components/safe_browsing/db",
   "+content/public/browser",
   "+net/base",
   "+ui/base/page_transition_types.h",

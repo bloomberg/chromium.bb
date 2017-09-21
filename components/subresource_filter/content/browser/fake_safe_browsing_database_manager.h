@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "components/safe_browsing_db/test_database_manager.h"
+#include "components/safe_browsing/db/test_database_manager.h"
 #include "content/public/common/resource_type.h"
 
 class GURL;

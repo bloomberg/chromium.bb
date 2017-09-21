@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "components/safe_browsing_db/util.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/db/util.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {

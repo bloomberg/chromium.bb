@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
-#include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing/db/util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
