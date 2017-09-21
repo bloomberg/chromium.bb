@@ -37,7 +37,7 @@ const char kAndroidDownloadDirPrefix[] = "/storage/emulated/0/Download/";
 const char kMediaDocumentsProviderAuthority[] =
     "com.android.providers.media.documents";
 const char* kMediaDocumentsProviderRootIds[] = {
-    "images_root", "videos_root", "audio_root",
+    "images_root", "videos_root",
 };
 
 base::FilePath GetRelativeMountPath(const std::string& root_id) {
