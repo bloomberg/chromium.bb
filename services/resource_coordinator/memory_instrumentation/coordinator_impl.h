@@ -162,13 +162,15 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   void FinalizeGlobalMemoryDumpIfAllManagersReplied();
   QueuedMemoryDumpRequest* GetCurrentRequest();
 
-  mojo::BindingSet<mojom::Coordinator, service_manager::Identity> bindings_;
-
   // Map of registered client processes.
   std::map<mojom::ClientProcess*, std::unique_ptr<ClientInfo>> clients_;
 
   // Outstanding dump requests, enqueued via RequestGlobalMemoryDump().
   std::list<QueuedMemoryDumpRequest> queued_memory_dump_requests_;
+
+  // There may be extant callbacks in |queued_memory_dump_requests_|. The
+  // bindings_ must be closed before destroying the un-run callbacks.
+  mojo::BindingSet<mojom::Coordinator, service_manager::Identity> bindings_;
 
   // Maintains a map of service_manager::Identity -> pid for registered clients.
   std::unique_ptr<ProcessMap> process_map_;
