@@ -268,6 +268,7 @@ void PowerHandler::SendBatteryStatus() {
   }
 
   base::DictionaryValue battery_dict;
+  battery_dict.SetBoolean("present", power_status_->IsBatteryPresent());
   battery_dict.SetBoolean("charging", charging);
   battery_dict.SetBoolean("calculating", calculating);
   battery_dict.SetInteger("percent", percent);

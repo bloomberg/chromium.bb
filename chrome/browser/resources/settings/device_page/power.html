@@ -12,7 +12,8 @@
 <dom-module id="settings-power">
   <template>
     <style include="settings-shared md-select"></style>
-    <div id="powerSourceRow" class="settings-box first two-line">
+    <div id="powerSourceRow" class="settings-box first two-line"
+        hidden$="[[!batteryStatus_.present]]">
       <div class="start">
         <div>[[powerSourceLabel_]]</div>
         <div class="secondary">[[batteryStatus_.statusText]]</div>
@@ -38,7 +39,7 @@
       </div>
     </div>
 
-    <div class="settings-box">
+    <div class$="settings-box [[getFirst_(batteryStatus_.present)]]">
       <div class="start">$i18n{powerIdleLabel}</div>
       <template is="dom-if" if="[[idleControlled_]]" restamp>
         <cr-policy-indicator id="idleControlledIndicator"
