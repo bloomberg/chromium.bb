@@ -4,9 +4,11 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/window_util.h"
@@ -215,6 +217,10 @@ void ShelfTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   if (event->type() != ui::ET_MOUSE_MOVED)
+    return;
+
+  // A workaround for crbug.com/756163, likely not needed as Mus/Mash matures.
+  if (Shell::GetAshConfig() != Config::CLASSIC && event->location().IsOrigin())
     return;
 
   gfx::Point point = event->location();
