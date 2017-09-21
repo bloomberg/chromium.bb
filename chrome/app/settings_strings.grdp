@@ -1163,7 +1163,7 @@
   <message name="IDS_SETTINGS_DOWNLOADS" desc="Name of the settings page which displays download preferences.">
     Downloads
   </message>
-  <message name="IDS_SETTINGS_DOWNLOAD_LOCATION" desc="Label for the input which allows the user to specify the default download directory.">
+  <message name="IDS_SETTINGS_DOWNLOAD_LOCATION" desc="Label for the input which allows the user to specify the default download directory." meaning="File location">
     Location
   </message>
   <message name="IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION" desc="Text for the button which allows the user to change the default download directory.">
@@ -2205,7 +2205,7 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLERS" desc="Label for the protocol handlers (e.g. mailto) in site settings.">
     Handlers
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION" desc="Label for the location site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION" desc="Label for the geolocation site settings." meaning="Geolocation">
     Location
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIC" desc="Label for the microphone site settings.">
