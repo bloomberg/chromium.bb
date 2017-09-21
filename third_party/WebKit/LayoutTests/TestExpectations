@@ -3697,7 +3697,7 @@ crbug.com/762399 [ Android ] http/tests/cache/zero-length-xhr.html [ Pass Crash 
 crbug.com/762486 [ Win7 Debug ] virtual/mojo-loading/http/tests/security/xss-DENIED-iframe-src-alias.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-08
-crbug.com/763208 [ Linux ] virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
+crbug.com/763208 [ Linux Mac10.12 ] virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
 
 crbug.com/763666 [ Linux Win ] external/wpt/assumptions/ahem.html [ Failure ]
 crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
@@ -3731,7 +3731,7 @@ crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Fail
 
 # Sheriff failures 2017-09-20
 # Flaky on chromium.webkit/WebKit Linux Trusty Leak
-crbug.com/766952 [ Win10 Linux Mac ] http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
+crbug.com/766952 [ Win10 Linux ] http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
 # Flaky on chromium.webkit/WebKit Linux Trusty (dbg)
 crbug.com/766983 [ Linux Debug ] external/wpt/fetch/api/basic/integrity.html [ Pass Failure ]
 crbug.com/766983 [ Linux Debug ] virtual/outofblink-cors/external/wpt/fetch/api/basic/integrity.html [ Pass Failure ]
