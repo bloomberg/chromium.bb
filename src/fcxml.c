@@ -3374,7 +3374,7 @@ bail0:
 	    FcConfigMessage (0, FcSevereError, "Cannot load default config file");
 	return FcFalse;
     }
-    return ret;
+    return FcTrue;
 }
 #define __fcxml__
 #include "fcaliastail.h"
