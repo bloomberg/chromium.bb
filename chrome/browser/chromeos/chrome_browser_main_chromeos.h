@@ -15,6 +15,7 @@
 #include "chromeos/system/version_loader.h"
 
 class NightLightClient;
+class TabletModeClient;
 
 namespace lock_screen_apps {
 class StateController;
@@ -106,6 +107,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<memory::MemoryKillsMonitor::Handle> memory_kills_monitor_;
 
+  std::unique_ptr<TabletModeClient> tablet_mode_client_;
   std::unique_ptr<lock_screen_apps::StateController>
       lock_screen_apps_state_controller_;
 

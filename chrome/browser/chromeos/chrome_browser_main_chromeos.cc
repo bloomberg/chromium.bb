@@ -105,6 +105,7 @@
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -798,8 +799,12 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
 
-  // In Aura builds this will initialize ash::Shell.
+  // NOTE: Initializes ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
+
+  // Makes mojo request to TabletModeController in ash.
+  tablet_mode_client_ = std::make_unique<TabletModeClient>();
+  tablet_mode_client_->Init();
 
   if (lock_screen_apps::StateController::IsEnabled()) {
     lock_screen_apps_state_controller_ =
@@ -1145,9 +1150,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   g_browser_process->platform_part()->browser_policy_connector_chromeos()->
       PreShutdown();
 
-  // We first call PostMainMessageLoopRun and then destroy UserManager, because
-  // Ash needs to be closed before UserManager is destroyed.
+  // NOTE: Closes ash and destroys ash::Shell.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
+
+  // Some observers (e.g. SigninScreenHandler) may not be removed until Ash is
+  // closed.
+  tablet_mode_client_.reset();
 
   // Destroy ArcKioskAppManager after its observers are removed when Ash is
   // closed above.
@@ -1181,6 +1189,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   network_portal_detector::Shutdown();
 
   g_browser_process->platform_part()->ShutdownSessionManager();
+  // Ash needs to be closed before UserManager is destroyed.
   g_browser_process->platform_part()->DestroyChromeUserManager();
 }
 

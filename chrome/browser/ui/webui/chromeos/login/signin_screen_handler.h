@@ -10,7 +10,6 @@
 #include <set>
 #include <string>
 
-#include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -34,7 +34,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -238,7 +237,7 @@ class SigninScreenHandler
       public NetworkStateInformer::NetworkStateInformerObserver,
       public PowerManagerClient::Observer,
       public input_method::ImeKeyboard::Observer,
-      public ash::mojom::TabletModeObserver,
+      public TabletModeClientObserver,
       public lock_screen_apps::StateObserver,
       public OobeUI::Observer,
       public ash::WallpaperControllerObserver {
@@ -365,7 +364,7 @@ class SigninScreenHandler
   // PowerManagerClient::Observer implementation:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // ash::mojom::TabletMode:
+  // TabletModeClientObserver:
   void OnTabletModeToggled(bool enabled) override;
 
   // lock_screen_apps::StateObserver:
@@ -540,10 +539,6 @@ class SigninScreenHandler
   // Non-owning ptr.
   // TODO(antrim@): remove this dependency.
   GaiaScreenHandler* gaia_screen_handler_ = nullptr;
-
-  mojo::Binding<ash::mojom::TabletModeObserver> tablet_mode_binding_;
-  ash::mojom::TabletModeManagerPtr tablet_mode_manager_ptr_;
-  bool tablet_mode_enabled_ = false;
 
   // Input Method Engine state used at signin screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;

@@ -16,7 +16,7 @@
           "ash::mojom::ShelfController",
           "ash::mojom::ShutdownController",
           "ash::mojom::SystemTray",
-          "ash::mojom::TabletModeManager",
+          "ash::mojom::TabletModeController",
           "ash::mojom::VpnList",
           "ash::mojom::WallpaperController"
         ],
