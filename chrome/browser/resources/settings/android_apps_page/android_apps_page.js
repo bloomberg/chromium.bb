@@ -53,7 +53,11 @@ Polymer({
   },
 
   /** @private */
-  onSubpageTap_: function() {
+  onSubpageTap_: function(event) {
+    if (event.target && event.target.tagName == 'A') {
+      // Filter out events coming from 'Learn more' link
+      return;
+    }
     if (this.androidAppsInfo.playStoreEnabled)
       settings.navigateTo(settings.routes.ANDROID_APPS_DETAILS);
   },

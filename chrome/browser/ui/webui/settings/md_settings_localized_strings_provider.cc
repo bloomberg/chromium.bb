@@ -308,7 +308,6 @@ void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
       {"androidAppsEnable", IDS_SETTINGS_ANDROID_APPS_ENABLE},
       {"androidAppsManageApps", IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS},
       {"androidAppsRemove", IDS_SETTINGS_ANDROID_APPS_REMOVE},
-      {"androidAppsLearnMore", IDS_SETTINGS_ANDROID_APPS_LEARN_MORE},
       {"androidAppsDisableDialogTitle",
        IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_TITLE},
       {"androidAppsDisableDialogMessage",
