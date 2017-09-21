@@ -84,12 +84,6 @@ const char kBypassAppBannerEngagementChecksDescription[] =
     "eligibility requirements for showing app banners, such as having a "
     "manifest, are met.";
 
-const char kCaptureThumbnailOnLoadFinishedName[] =
-    "Capture page thumbnail on load finished";
-const char kCaptureThumbnailOnLoadFinishedDescription[] =
-    "Capture a page thumbnail (for use on the New Tab page) when the page load "
-    "finishes, in addition to other times a thumbnail may be captured.";
-
 const char kCaptureThumbnailOnNavigatingAwayName[] =
     "Capture page thumbnail on navigating away";
 const char kCaptureThumbnailOnNavigatingAwayDescription[] =

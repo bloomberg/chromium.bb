@@ -124,11 +124,6 @@ const base::Feature kCaptureThumbnailDependingOnTransitionType{
     "CaptureThumbnailDependingOnTransitionType",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether to capture page thumbnails when the page load finishes (in addition
-// to any other times this might happen).
-const base::Feature kCaptureThumbnailOnLoadFinished{
-    "CaptureThumbnailOnLoadFinished", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Whether to capture page thumbnails when navigating away from the current page
 // (in addition to any other times this might happen).
 const base::Feature kCaptureThumbnailOnNavigatingAway{
