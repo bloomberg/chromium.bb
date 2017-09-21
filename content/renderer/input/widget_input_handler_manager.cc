@@ -19,6 +19,7 @@
 #include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "ui/events/base_event_utils.h"
 
 namespace content {
 namespace {
@@ -245,6 +246,15 @@ void WidgetInputHandlerManager::DispatchEvent(
   if (!event || !event->web_event) {
     return;
   }
+
+  // If TimeTicks is not consistent across processes we cannot use the event's
+  // platform timestamp in this process. Instead use the time that the event is
+  // received as the event's timestamp.
+  if (!base::TimeTicks::IsConsistentAcrossProcesses()) {
+    event->web_event->SetTimeStampSeconds(
+        ui::EventTimeStampToSeconds(base::TimeTicks::Now()));
+  }
+
   if (compositor_task_runner_) {
     CHECK(!main_thread_task_runner_->BelongsToCurrentThread());
     input_handler_proxy_->HandleInputEventWithLatencyInfo(
