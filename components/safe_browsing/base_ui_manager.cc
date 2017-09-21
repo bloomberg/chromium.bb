@@ -41,31 +41,46 @@ class WhitelistUrlSet : public base::SupportsUserData::Data {
       *threat_type = found->second;
     return true;
   }
-  void RemovePending(const GURL& url) { pending_.erase(url); }
+  void RemovePending(const GURL& url) {
+    DCHECK(pending_.end() != pending_.find(url));
+    if (--pending_[url].second < 1)
+      pending_.erase(url);
+  }
   void Remove(const GURL& url) { map_.erase(url); }
   void Insert(const GURL url, SBThreatType threat_type) {
     if (Contains(url, nullptr))
       return;
     map_[url] = threat_type;
-    RemovePending(url);
+    RemoveAllPending(url);
   }
   bool ContainsPending(const GURL& url, SBThreatType* threat_type) {
     auto found = pending_.find(url);
     if (found == pending_.end())
       return false;
     if (threat_type)
-      *threat_type = found->second;
+      *threat_type = found->second.first;
     return true;
   }
   void InsertPending(const GURL url, SBThreatType threat_type) {
-    if (ContainsPending(url, nullptr))
+    if (pending_.find(url) != pending_.end()) {
+      pending_[url].first = threat_type;
+      pending_[url].second++;
       return;
-    pending_[url] = threat_type;
+    }
+    pending_[url] = {threat_type, 1};
   }
+
+ protected:
+  // Method to remove all the instances of a website in the pending list
+  // disregarding the count. Used when adding a site to the permanent list.
+  void RemoveAllPending(const GURL& url) { pending_.erase(url); }
 
  private:
   std::map<GURL, SBThreatType> map_;
-  std::map<GURL, SBThreatType> pending_;
+  // Keep a count of how many times a site has been added to the pending list
+  // in order to solve a problem where upon reloading an interstitial, a site
+  // would be re-added to and removed from the whitelist in the wrong order.
+  std::map<GURL, std::pair<SBThreatType, int>> pending_;
   DISALLOW_COPY_AND_ASSIGN(WhitelistUrlSet);
 };
 
