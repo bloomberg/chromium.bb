@@ -142,14 +142,12 @@ bool IsCurrentPageOffline(web::WebState* webState) {
 LocationBarControllerImpl::LocationBarControllerImpl(
     OmniboxTextFieldIOS* field,
     ios::ChromeBrowserState* browser_state,
-    id<PreloadProvider> preloader,
     id<OmniboxPopupPositioner> positioner,
     id<LocationBarDelegate> delegate,
     id<BrowserCommands> dispatcher)
     : edit_view_(base::MakeUnique<OmniboxViewIOS>(field,
                                                   this,
                                                   browser_state,
-                                                  preloader,
                                                   positioner)),
       field_(field),
       delegate_(delegate),

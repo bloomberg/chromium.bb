@@ -28,10 +28,6 @@ void PrerenderService::SetDelegate(id<PreloadControllerDelegate> delegate) {
   controller_.delegate = delegate;
 }
 
-id<PreloadProvider> PrerenderService::GetPreloadProvider() const {
-  return controller_;
-}
-
 void PrerenderService::StartPrerender(const GURL& url,
                                       const web::Referrer& referrer,
                                       ui::PageTransition transition,

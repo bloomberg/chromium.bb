@@ -23,7 +23,6 @@ class GURL;
 @protocol OmniboxPopupPositioner;
 class WebOmniboxEditController;
 class OmniboxPopupViewIOS;
-@protocol PreloadProvider;
 
 namespace ios {
 class ChromeBrowserState;
@@ -38,7 +37,6 @@ class OmniboxViewIOS : public OmniboxView,
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
                  WebOmniboxEditController* controller,
                  ios::ChromeBrowserState* browser_state,
-                 id<PreloadProvider> prerender,
                  id<OmniboxPopupPositioner> positioner);
   ~OmniboxViewIOS() override;
 

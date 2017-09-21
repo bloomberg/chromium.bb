@@ -110,7 +110,6 @@ class OmniboxPerfTest : public PerfTest {
         initWithDelegate:webToolbarDelegate
                urlLoader:urlLoader
             browserState:chrome_browser_state_.get()
-         preloadProvider:nil
               dispatcher:nil];
     UIView* toolbarView = [toolbar_ view];
     CGRect toolbarFrame = toolbarView.frame;

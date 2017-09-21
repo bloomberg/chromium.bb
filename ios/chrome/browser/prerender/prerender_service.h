@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
-#import "ios/chrome/browser/prerender/preload_provider.h"
 #include "ios/web/public/referrer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -34,9 +33,6 @@ class PrerenderService : public KeyedService {
 
   // Sets the delegate that will provide information to this service.
   void SetDelegate(id<PreloadControllerDelegate> delegate);
-
-  // Returns the PreloadProvider that can be used to trigger prerendering.
-  id<PreloadProvider> GetPreloadProvider() const;
 
   // Prerenders the given |url| with the given |transition|.  Normally,
   // prerender requests are fulfilled after a short delay, to prevent

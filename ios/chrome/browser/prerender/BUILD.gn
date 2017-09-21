@@ -15,7 +15,6 @@ source_set("prerender") {
   ]
 
   deps = [
-    ":provider",
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
@@ -27,16 +26,6 @@ source_set("prerender") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/web",
-    "//ui/base",
-    "//url",
-  ]
-}
-
-source_set("provider") {
-  sources = [
-    "preload_provider.h",
-  ]
-  deps = [
     "//ui/base",
     "//url",
   ]
