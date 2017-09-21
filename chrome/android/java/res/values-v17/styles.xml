@@ -737,14 +737,14 @@
         <item name="android:background">@drawable/content_card_modern_background</item>
         <item name="android:foreground">@drawable/button_borderless_compat</item>
     </style>
-    <style name="SuggestionCardTitleModern" parent="BlackBodyDefault">
+    <style name="SuggestionCardTitleModern" parent="BlackTitle1">
         <item name="android:ellipsize">end</item>
-        <item name="leading">16sp</item>
+        <item name="leading">22dp</item>
     </style>
     <style name="SuggestionCardBodyModern" parent="BlackBody">
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:ellipsize">end</item>
-        <item name="leading">16sp</item>
+        <item name="leading">20dp</item>
     </style>
     <style name="SuggestionCardActionModern" parent="ButtonCompatBorderless">
         <item name="android:textAppearance">@style/BlueButtonText2</item>

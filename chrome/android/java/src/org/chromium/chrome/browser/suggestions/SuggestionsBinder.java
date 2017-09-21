@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -13,7 +12,6 @@ import android.graphics.drawable.TransitionDrawable;
 import android.media.ThumbnailUtils;
 import android.os.StrictMode;
 import android.os.SystemClock;
-import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
 import android.text.TextUtils;
@@ -35,7 +33,6 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.TintedImageView;
 
 /**
@@ -87,7 +84,11 @@ public class SuggestionsBinder {
         mPublisherBar = mCardContainerView.findViewById(R.id.publisher_bar);
         mOfflineBadge = mCardContainerView.findViewById(R.id.offline_icon);
 
-        mThumbnailSize = getThumbnailSize(mCardContainerView.getResources());
+        boolean useLargeThumbnailLayout =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL);
+        mThumbnailSize = mCardContainerView.getResources().getDimensionPixelSize(
+                useLargeThumbnailLayout ? R.dimen.snippets_thumbnail_size_large
+                                        : R.dimen.snippets_thumbnail_size);
         mThumbnailFootprintPx = mThumbnailSize
                 + mCardContainerView.getResources().getDimensionPixelSize(
                           R.dimen.snippets_thumbnail_margin);
@@ -396,19 +397,5 @@ public class SuggestionsBinder {
     private void verifyBitmap(Bitmap bitmap) {
         assert !bitmap.isRecycled();
         assert bitmap.getWidth() <= mThumbnailSize || bitmap.getHeight() <= mThumbnailSize;
-    }
-
-    private static int getThumbnailSize(Resources resources) {
-        @DimenRes
-        final int dimension;
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
-            dimension = R.dimen.snippets_thumbnail_size_modern;
-        } else if (ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)) {
-            dimension = R.dimen.snippets_thumbnail_size_large;
-        } else {
-            dimension = R.dimen.snippets_thumbnail_size;
-        }
-        return resources.getDimensionPixelSize(dimension);
     }
 }
