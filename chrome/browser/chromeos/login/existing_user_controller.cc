@@ -1602,10 +1602,8 @@ void ExistingUserController::DoCompleteLogin(
     return;
   }
 
-  // Fetch OAuth2 tokens if we have an auth code and are not using SAML.
-  // SAML uses cookies to get tokens.
-  if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML &&
-      !user_context.GetAuthCode().empty()) {
+  // Fetch OAuth2 tokens if we have an auth code.
+  if (!user_context.GetAuthCode().empty()) {
     oauth2_token_initializer_.reset(new OAuth2TokenInitializer);
     oauth2_token_initializer_->Start(
         user_context, base::Bind(&ExistingUserController::OnOAuth2TokensFetched,
