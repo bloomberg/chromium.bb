@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#include "base/ios/ios_util.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -90,6 +91,14 @@ class ContextMenuJsTest : public web::WebTestWithWebState {
 
 // Tests that __gCrWeb.getElementFromPoint function returns correct src.
 TEST_F(ContextMenuJsTest, GetImageUrlAtPoint) {
+// TODO(crbug.com/767339): This is extremely flaky on iPhone device with iOS 11.
+// Fix it and reenable it.
+#if !TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    return;
+  }
+#endif
+
   NSString* html =
       @"<img id='foo' style='width:200;height:200;' src='file:///bogus'/>";
   NSDictionary* expected_value = @{
@@ -126,6 +135,13 @@ TEST_F(ContextMenuJsTest, GetLinkImageUrlAtPoint) {
 }
 
 TEST_F(ContextMenuJsTest, TextAreaStopsProximity) {
+// TODO(crbug.com/767339): This is extremely flaky on iPhone device with iOS 11.
+// Fix it and reenable it.
+#if !TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    return;
+  }
+#endif
   NSString* html =
       @"<html><body style='margin-left:10px;margin-top:10px;'>"
        "<div style='width:100px;height:100px;'>"
