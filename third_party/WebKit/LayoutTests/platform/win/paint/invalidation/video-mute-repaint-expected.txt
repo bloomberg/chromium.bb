@@ -24,12 +24,12 @@
       "drawsContent": false
     },
     {
-      "name": "LayoutFlexibleBox (relative positioned) DIV class='phase-ready state-stopped'",
+      "name": "LayoutFlexibleBox (relative positioned) DIV",
       "position": [8, 8],
       "bounds": [700, 525],
       "paintInvalidations": [
         {
-          "object": "LayoutFlexibleBox (relative positioned) DIV class='phase-ready state-stopped'",
+          "object": "LayoutFlexibleBox (relative positioned) DIV",
           "rect": [0, 0, 700, 525],
           "reason": "geometry"
         }
@@ -82,7 +82,7 @@
       "reason": "style change"
     },
     {
-      "object": "LayoutFlexibleBox (relative positioned) DIV class='phase-ready state-stopped'",
+      "object": "LayoutFlexibleBox (relative positioned) DIV",
       "reason": "geometry"
     },
     {
