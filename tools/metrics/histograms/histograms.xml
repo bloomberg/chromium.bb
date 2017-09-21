@@ -57334,6 +57334,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.FileSystem.ErrorCount">
+  <owner>gwendal@google.com</owner>
+  <summary>
+    Number of file system errors, as reported by dumpe2fs &quot;FS Error
+    count&quot; field. Reported once per boot.
+  </summary>
+</histogram>
+
+<histogram name="Platform.FileSystem.FsckNeeded" enum="Boolean">
+  <owner>gwendal@google.com</owner>
+  <summary>
+    True when kernel reports that the file system needs deep recovery. File
+    system has corruption the kernel can not fix by itself. Reported once per
+    boot.
+  </summary>
+</histogram>
+
+<histogram name="Platform.FileSystem.RecoveryNeeded" enum="Boolean">
+  <owner>gwendal@google.com</owner>
+  <summary>
+    True when kernel reports that the file system needed recovery at boot. It
+    indicates the filesytem was not properly unmounted, but was recovered.
+    Reported once per boot.
+  </summary>
+</histogram>
+
 <histogram name="Platform.IntelMaxMicroArchitecture"
     enum="IntelMaxMicroArchitecture">
   <owner>fbarchard@chromium.org</owner>
@@ -100740,6 +100766,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="TypeA" label="Memory Type A"/>
   <suffix name="TypeB" label="Memory Type B"/>
   <affected-histogram name="Platform.Emmc.LifeUsed"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PlatformFileSystem" separator="_" ordering="prefix,2">
+  <suffix name="Stateful" label="Stateful filesystem /mnt/stateful"/>
+  <suffix name="EncStateful" label="Encrypted Stateful filesystem"/>
+  <affected-histogram name="Platform.FileSystem.ErrorCount"/>
+  <affected-histogram name="Platform.FileSystem.FsckNeeded"/>
+  <affected-histogram name="Platform.FileSystem.RecoveryNeeded"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PlatformMeminfoPercentage" separator="">
