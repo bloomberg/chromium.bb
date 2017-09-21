@@ -1803,26 +1803,6 @@
             ]
         }
     ],
-    "NTPPersonalizedSectionRanking": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled-ClickBasedRanker-InitialOrderEM",
-                    "params": {
-                        "category_order": "emerging_markets_oriented",
-                        "category_ranker": "click_based"
-                    },
-                    "enable_features": [
-                        "ContentSuggestionsCategoryOrder",
-                        "ContentSuggestionsCategoryRanker"
-                    ]
-                }
-            ]
-        }
-    ],
     "NTPPopularSites": [
         {
             "platforms": [

@@ -536,7 +536,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       LargeIconServiceFactory::GetForBrowserContext(profile);
   std::unique_ptr<CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
-          pref_service, base::MakeUnique<base::DefaultClock>());
+          pref_service, base::MakeUnique<base::DefaultClock>(),
+          GetIsChromeHomeEnabled());
 
   auto* service = new ContentSuggestionsService(
       State::ENABLED, signin_manager, history_service, large_icon_service,
