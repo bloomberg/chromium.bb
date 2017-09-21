@@ -21,6 +21,13 @@ from chromite.lib import git
 site_config = config_lib.GetConfig()
 
 
+# URL to open a build details page.
+BUILD_DETAILS_PATTERN = (
+    'http://cros-goldeneye/chromeos/healthmonitoring/buildDetails?'
+    'buildbucketId=%(buildbucket_id)s'
+)
+
+
 class ValidationError(Exception):
   """Thrown when tryjob validation fails."""
 
@@ -109,6 +116,9 @@ class RemoteTryJob(object):
     self.local_patches = local_patches
     self.manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
     self.swarming = swarming
+
+    # List of buildbucket_ids for submitted jobs.
+    self.buildbucket_ids = []
 
   def _VerifyForBuildbot(self):
     """Early validation, to ensure the job can be processed by buildbot."""
@@ -260,6 +270,7 @@ class RemoteTryJob(object):
            buildbucket_lib.GetErrorMessage(content)))
 
     buildbucket_id = buildbucket_lib.GetBuildId(content)
+    self.buildbucket_ids.append(buildbucket_id)
     print(self.BUILDBUCKET_PUT_RESP_FORMAT %
           (constants.TRYSERVER_BUILDBUCKET_BUCKET, bot, buildbucket_id))
 
@@ -280,13 +291,22 @@ class RemoteTryJob(object):
     for bot in self.build_configs:
       self._PutConfigToBuildBucket(buildbucket_client, bot, dryrun)
 
-  def GetTrybotWaterfallLink(self):
-    """Get link to the waterfall for the user."""
+  def GetTrybotWaterfallLinks(self):
+    """Get link to the waterfall for the user.
+
+    Returns:
+      List of URLs to view submitted tryjobs.
+    """
+    # TODO: Use GE in all cases, after support is in production.
+    if self.swarming:
+      return [BUILD_DETAILS_PATTERN % {'buildbucket_id': b}
+              for b in self.buildbucket_ids]
+
     # The builders on the trybot waterfall are named after the templates.
     builders = set(self._GetBuilder(bot) for bot in self.build_configs)
 
     # Note that this will only show the jobs submitted by the user in the last
     # 24 hours.
-    return '%s/waterfall?committer=%s&%s' % (
+    return ['%s/waterfall?committer=%s&%s' % (
         constants.TRYBOT_DASHBOARD, self.user_email,
-        '&'.join('builder=%s' % b for b in sorted(builders)))
+        '&'.join('builder=%s' % b for b in sorted(builders)))]

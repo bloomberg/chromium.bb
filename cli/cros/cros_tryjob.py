@@ -130,8 +130,9 @@ def RunRemote(options, patch_pool):
                                    options.swarming)
   tryjob.Submit(dryrun=False)
   print('Tryjob submitted!')
-  print(('Go to %s to view the status of your job.'
-         % tryjob.GetTrybotWaterfallLink()))
+  print('To view your tryjobs, visit:')
+  for link in tryjob.GetTrybotWaterfallLinks():
+    print('  %s' % link)
 
 
 @command.CommandDecorator('tryjob')
