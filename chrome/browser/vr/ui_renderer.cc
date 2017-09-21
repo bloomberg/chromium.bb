@@ -39,39 +39,52 @@ UiRenderer::UiRenderer(UiScene* scene, VrShellRenderer* vr_shell_renderer)
 
 UiRenderer::~UiRenderer() = default;
 
+// TODO(crbug.com/767515): UiRenderer must not care about the elements its
+// rendering and be platform agnostic, each element should know how to render
+// itself correctly.
 void UiRenderer::Draw(const RenderInfo& render_info,
-                      const ControllerInfo& controller_info,
-                      bool in_web_vr_mode) {
-  if (in_web_vr_mode)
-    DrawWebVrOverlayBackground(render_info, controller_info);
-  else
-    Draw2dBrowsing(render_info, controller_info);
+                      const ControllerInfo& controller_info) {
+  Draw2dBrowsing(render_info, controller_info);
+  DrawSplashScreen(render_info, controller_info);
 }
 
 void UiRenderer::Draw2dBrowsing(const RenderInfo& render_info,
                                 const ControllerInfo& controller_info) {
-  // Non-WebVR mode, enable depth testing and clear the primary buffers. Note
-  // also that we do not clear the color buffer. The scene's background
-  // elements are responsible for drawing a complete background.
-  glEnable(GL_CULL_FACE);
-  glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
-  glClear(GL_DEPTH_BUFFER_BIT);
-  DrawUiView(render_info, controller_info,
-             scene_->GetVisible2dBrowsingElements(), kReticleVisible);
+  const auto& elements = scene_->GetVisible2dBrowsingElements();
+  const auto& elements_overlay = scene_->GetVisible2dBrowsingOverlayElements();
+  if (elements.empty() && elements_overlay.empty())
+    return;
+
+  // TODO(crbug.com/767583): The controller is drawn as part of a call to
+  // DrawUiView for 2d browsing elements. This means that the controller is not
+  // supported with overlay elements.
+  if (!elements.empty()) {
+    // Enable depth testing. Note that we do not clear the color buffer. The
+    // scene's background elements are responsible for drawing a complete
+    // background.
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    DrawUiView(render_info, controller_info, elements, kReticleVisible);
+  }
+
+  if (elements_overlay.empty())
+    return;
 
   // The overlays do not make use of depth testing.
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
   glDepthMask(GL_FALSE);
-
-  DrawUiView(render_info, controller_info,
-             scene_->GetVisible2dBrowsingOverlayElements(), kReticleHidden);
+  DrawUiView(render_info, controller_info, elements_overlay, kReticleHidden);
 }
 
-void UiRenderer::DrawWebVrOverlayBackground(
-    const RenderInfo& render_info,
-    const ControllerInfo& controller_info) {
+void UiRenderer::DrawSplashScreen(const RenderInfo& render_info,
+                                  const ControllerInfo& controller_info) {
+  const auto& elements = scene_->GetVisibleSplashScreenElements();
+  if (elements.empty())
+    return;
+
   // WebVR is incompatible with 3D world compositing since the
   // depth buffer was already populated with unknown scaling - the
   // WebVR app has full control over zNear/zFar. Just leave the
@@ -82,9 +95,7 @@ void UiRenderer::DrawWebVrOverlayBackground(
   glDisable(GL_CULL_FACE);
   glDisable(GL_DEPTH_TEST);
   glDepthMask(GL_FALSE);
-  DrawUiView(render_info, controller_info,
-             scene_->GetVisibleWebVrOverlayBackgroundElements(),
-             kReticleHidden);
+  DrawUiView(render_info, controller_info, elements, kReticleHidden);
   // NB: we do not draw the viewport aware objects here. They get put into
   // another buffer that is size optimized.
 }

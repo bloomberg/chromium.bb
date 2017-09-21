@@ -66,7 +66,7 @@ class UiScene {
 
   Elements GetVisible2dBrowsingElements() const;
   Elements GetVisible2dBrowsingOverlayElements() const;
-  Elements GetVisibleWebVrOverlayBackgroundElements() const;
+  Elements GetVisibleSplashScreenElements() const;
   Elements GetVisibleWebVrOverlayForegroundElements() const;
 
   float background_distance() const { return background_distance_; }

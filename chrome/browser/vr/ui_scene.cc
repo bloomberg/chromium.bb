@@ -115,10 +115,11 @@ UiScene::Elements UiScene::GetVisible2dBrowsingOverlayElements() const {
       });
 }
 
-UiScene::Elements UiScene::GetVisibleWebVrOverlayBackgroundElements() const {
+UiScene::Elements UiScene::GetVisibleSplashScreenElements() const {
   return GetVisibleElements(
-      GetUiElementByName(kWebVrRoot), [](UiElement* element) {
-        return element->draw_phase() == kPhaseOverlayBackground;
+      GetUiElementByName(kSplashScreenRoot), [](UiElement* element) {
+        return element->draw_phase() == kPhaseOverlayBackground ||
+               element->draw_phase() == kPhaseOverlayForeground;
       });
 }
 

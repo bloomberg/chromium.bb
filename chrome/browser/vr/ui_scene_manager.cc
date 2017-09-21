@@ -369,6 +369,20 @@ void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
 }
 
 void UiSceneManager::CreateSplashScreen() {
+  // Create splash screen root.
+  auto element = base::MakeUnique<UiElement>();
+  element->set_name(kSplashScreenRoot);
+  element->SetVisible(false);
+  element->set_hit_testable(false);
+  scene_->AddUiElement(kRoot, std::move(element));
+
+  // Create viewport arare root.
+  element = base::MakeUnique<ViewportAwareRoot>();
+  element->set_name(kSplashScreenViewportAwareRoot);
+  element->SetVisible(true);
+  element->set_hit_testable(false);
+  scene_->AddUiElement(kSplashScreenRoot, std::move(element));
+
   // Add "Powered by Chrome" text.
   auto text = base::MakeUnique<Text>(
       512, kSplashScreenTextFontHeightM, kSplashScreenTextWidthM,
@@ -377,14 +391,15 @@ void UiSceneManager::CreateSplashScreen() {
       }),
       IDS_VR_POWERED_BY_CHROME_MESSAGE);
   text->set_name(kSplashScreenText);
+  text->SetVisible(true);
   text->set_draw_phase(kPhaseOverlayForeground);
   text->set_hit_testable(false);
   text->SetSize(kSplashScreenTextWidthM, kSplashScreenTextHeightM);
   text->SetTranslate(0, kSplashScreenTextVerticalOffset,
                      -kSplashScreenTextDistance);
-  splash_screen_ = text.get();
-  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(text));
+  scene_->AddUiElement(kSplashScreenViewportAwareRoot, std::move(text));
 
+  // Add splash screen background.
   auto bg = base::MakeUnique<FullScreenRect>();
   bg->set_name(kSplashScreenBackground);
   bg->set_draw_phase(kPhaseOverlayBackground);
@@ -726,8 +741,6 @@ void UiSceneManager::ConfigureScene() {
   // WebVR frame.
   bool showing_web_vr_content = web_vr_mode_ && !showing_web_vr_splash_screen_;
   scene_->set_web_vr_rendering_enabled(showing_web_vr_content);
-  // Splash screen.
-  splash_screen_->SetVisible(showing_web_vr_splash_screen_);
 
   // Exit warning.
   exit_warning_->SetVisible(exiting_);
@@ -736,6 +749,8 @@ void UiSceneManager::ConfigureScene() {
   bool browsing_mode = !web_vr_mode_ && !showing_web_vr_splash_screen_;
   scene_->GetUiElementByName(k2dBrowsingRoot)->SetVisible(browsing_mode);
   scene_->GetUiElementByName(kWebVrRoot)->SetVisible(!browsing_mode);
+  scene_->GetUiElementByName(kSplashScreenRoot)
+      ->SetVisible(showing_web_vr_splash_screen_);
 
   // Controls (URL bar, loading progress, etc).
   bool controls_visible = browsing_mode && !fullscreen_ && !prompting_to_exit_;
