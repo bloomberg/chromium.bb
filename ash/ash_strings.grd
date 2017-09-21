@@ -158,6 +158,22 @@ This file contains the strings for ash.
         Shelf
       </message>
 
+      <message name="IDS_ASH_SHELF_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/lock screen.">
+        Shut down
+      </message>
+      <message name="IDS_ASH_SHELF_RESTART_BUTTON" desc="Text shown on restart button on login/lock screen.">
+        Restart
+      </message>
+      <message name="IDS_ASH_SHELF_UNLOCK_BUTTON" desc="Text shown on unlock button on lock screen.">
+        Unlock
+      </message>
+      <message name="IDS_ASH_SHELF_SIGN_OUT_BUTTON" desc="Text shown on sign out button on lock screen.">
+        Sign out
+      </message>
+      <message name="IDS_ASH_SHELF_CANCEL_BUTTON" desc="Text shown on cancel button on add user screen.">
+        Cancel
+      </message>
+
       <message name="IDS_ASH_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
         Keyboard overlay
       </message>

@@ -6,34 +6,99 @@
 
 #include "ash/ash_constants.h"
 #include "ash/login/lock_screen_controller.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shutdown_controller.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/box_layout.h"
 
 using session_manager::SessionState;
 
 namespace ash {
+namespace {
+
+// Spacing between the button image and label.
+constexpr int kImageLabelSpacingDp = 8;
+
+// The width of the four margins of each button.
+constexpr int kButtonMarginDp = 13;
+
+// The color of the button image and label.
+constexpr SkColor kButtonColor = SK_ColorWHITE;
+
+class LoginShelfButton : public views::LabelButton {
+ public:
+  LoginShelfButton(views::ButtonListener* listener,
+                   const base::string16& text,
+                   const gfx::ImageSkia& image)
+      : LabelButton(listener, text) {
+    SetAccessibleName(text);
+    SetImage(views::Button::STATE_NORMAL, image);
+    SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+        kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
+    SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+    set_ink_drop_base_color(kShelfInkDropBaseColor);
+    set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+
+    SetImageLabelSpacing(kImageLabelSpacingDp);
+    SetTextColor(views::Button::STATE_NORMAL, kButtonColor);
+    SetTextColor(views::Button::STATE_HOVERED, kButtonColor);
+    SetTextColor(views::Button::STATE_PRESSED, kButtonColor);
+    label()->SetFontList(views::Label::GetDefaultFontList().Derive(
+        1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
+  }
+
+  ~LoginShelfButton() override = default;
+
+  // views::View:
+  gfx::Insets GetInsets() const override {
+    return gfx::Insets(kButtonMarginDp);
+  }
+
+  // views::InkDropHostView:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
+    std::unique_ptr<views::InkDropImpl> ink_drop =
+        base::MakeUnique<views::InkDropImpl>(this, size());
+    ink_drop->SetShowHighlightOnHover(false);
+    ink_drop->SetShowHighlightOnFocus(false);
+    return std::move(ink_drop);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginShelfButton);
+};
+
+}  // namespace
 
 LoginShelfView::LoginShelfView()
     : tray_action_observer_(this), shutdown_controller_observer_(this) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
+  auto add_button = [this](ButtonId id, int text_resource_id,
+                           const gfx::VectorIcon& icon) {
+    const base::string16 text = l10n_util::GetStringUTF16(text_resource_id);
+    gfx::ImageSkia image = CreateVectorIcon(icon, kButtonColor);
+    LoginShelfButton* button = new LoginShelfButton(this, text, image);
+    button->set_id(id);
+    AddChildView(button);
+  };
 
-  // TODO(wzang): Add the correct text and image for each type.
-  AddButton(kShutdown, base::ASCIIToUTF16("Shut down(FIXME)"),
-            gfx::ImageSkia());
-  AddButton(kRestart, base::ASCIIToUTF16("Restart(FIXME)"), gfx::ImageSkia());
-  AddButton(kSignOut, base::ASCIIToUTF16("Sign out(FIXME)"), gfx::ImageSkia());
-  AddButton(kCloseNote, base::ASCIIToUTF16("Unlock(FIXME)"), gfx::ImageSkia());
-  AddButton(kCancel, base::ASCIIToUTF16("Cancel(FIXME)"), gfx::ImageSkia());
+  add_button(kShutdown, IDS_ASH_SHELF_SHUTDOWN_BUTTON,
+             kShelfShutdownButtonIcon);
+  add_button(kRestart, IDS_ASH_SHELF_RESTART_BUTTON, kShelfShutdownButtonIcon);
+  add_button(kSignOut, IDS_ASH_SHELF_SIGN_OUT_BUTTON, kShelfSignOutButtonIcon);
+  add_button(kCloseNote, IDS_ASH_SHELF_UNLOCK_BUTTON, kShelfUnlockButtonIcon);
+  add_button(kCancel, IDS_ASH_SHELF_CANCEL_BUTTON, kShelfCancelButtonIcon);
 
   // Adds observers for states that affect the visiblity of different buttons.
   tray_action_observer_.Add(Shell::Get()->tray_action());
@@ -79,23 +144,6 @@ void LoginShelfView::OnLockScreenNoteStateChanged(
 
 void LoginShelfView::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
   UpdateUi();
-}
-
-void LoginShelfView::AddButton(ButtonId button_id,
-                               base::string16 text,
-                               gfx::ImageSkia image) {
-  views::LabelButton* button = new views::LabelButton(this, text);
-  AddChildView(button);
-
-  button->set_id(button_id);
-  button->SetAccessibleName(text);
-  button->SetImage(views::Button::STATE_NORMAL, image);
-  button->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      ash::kFocusBorderColor, ash::kFocusBorderThickness, gfx::InsetsF()));
-  button->SetFocusBehavior(FocusBehavior::ALWAYS);
-  button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
-  button->set_ink_drop_base_color(kShelfInkDropBaseColor);
-  button->set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
 }
 
 void LoginShelfView::UpdateUi() {

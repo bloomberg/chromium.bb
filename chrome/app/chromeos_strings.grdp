@@ -2170,12 +2170,6 @@ Press any key to continue exploring.
   <message name="IDS_OFFLINE_LOGIN_HTML" desc="Text which suggests enter as an existing user when valid network isn't presented.">
     If you've already registered on this device, you can <ph name="LINK2_START">$1<ex>&gt;a&lt;</ex></ph>sign in as an existing user<ph name="LINK2_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>
-  <message name="IDS_RESTART_BUTTON" desc="Text shown on reboot button on login/locker screen">
-    Restart
-  </message>
-  <message name="IDS_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/locker screen">
-    Shut down
-  </message>
   <message name="IDS_KIOSK_APPS_BUTTON" desc="Text shown on a button that brings up the kiosk apps menu on login screen">
     Apps
   </message>

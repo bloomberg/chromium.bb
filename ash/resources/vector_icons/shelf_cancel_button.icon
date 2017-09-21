@@ -1,0 +1,13 @@
+CANVAS_DIMENSIONS, 40,
+MOVE_TO, 20.44f, 12.67f,
+R_CUBIC_TO, -4.4f, 0, -8.39f, 1.65f, -11.46f, 4.33f,
+LINE_TO, 3, 11,
+R_V_LINE_TO, 15,
+R_H_LINE_TO, 14.95f,
+R_LINE_TO, -6.01f, -6.03f,
+R_CUBIC_TO, 2.31f, -1.93f, 5.25f, -3.13f, 8.5f, -3.13f,
+R_CUBIC_TO, 5.88f, 0, 10.88f, 3.85f, 12.62f, 9.17f,
+LINE_TO, 37, 24.7f,
+R_CUBIC_TO, -2.31f, -6.98f, -8.84f, -12.03f, -16.56f, -12.03f,
+CLOSE,
+END
