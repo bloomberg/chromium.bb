@@ -37,6 +37,9 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   std::vector<Notification> GetDisplayedNotificationsForType(
       NotificationCommon::Type type) const;
 
+  const NotificationCommon::Metadata* GetMetadataForNotification(
+      const Notification& notification);
+
   // Simulates the notification identified by |notification_id| being closed due
   // to external events, such as the user dismissing it when |by_user| is set.
   // When |silent| is set, the notification handlers won't be informed of the
@@ -54,14 +57,27 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   // NotificationDisplayService implementation:
   void Display(NotificationCommon::Type notification_type,
                const std::string& notification_id,
-               const Notification& notification) override;
+               const Notification& notification,
+               std::unique_ptr<NotificationCommon::Metadata> metadata) override;
   void Close(NotificationCommon::Type notification_type,
              const std::string& notification_id) override;
   void GetDisplayed(const DisplayedNotificationsCallback& callback) override;
 
  private:
   // Data to store for a notification that's being shown through this service.
-  using NotificationData = std::pair<NotificationCommon::Type, Notification>;
+  struct NotificationData {
+    NotificationData(NotificationCommon::Type type,
+                     const Notification& notification,
+                     std::unique_ptr<NotificationCommon::Metadata> metadata);
+    NotificationData(NotificationData&& other);
+    ~NotificationData();
+
+    NotificationData& operator=(NotificationData&& other);
+
+    NotificationCommon::Type type;
+    Notification notification;
+    std::unique_ptr<NotificationCommon::Metadata> metadata;
+  };
 
   base::RepeatingClosure notification_added_closure_;
   std::vector<NotificationData> notifications_;

@@ -326,8 +326,8 @@ void PlatformNotificationServiceImpl::DisplayNotification(
   DCHECK_EQ(0u, notification_resources.action_icons.size());
 
   Notification notification = CreateNotificationFromData(
-      profile, GURL() /* service_worker_scope */, origin, notification_id,
-      notification_data, notification_resources,
+      profile, origin, notification_id, notification_data,
+      notification_resources,
       new WebNotificationDelegate(NotificationCommon::NON_PERSISTENT, profile,
                                   notification_id, origin));
 
@@ -364,13 +364,16 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
   DCHECK(profile);
 
   Notification notification = CreateNotificationFromData(
-      profile, service_worker_scope, origin, notification_id, notification_data,
+      profile, origin, notification_id, notification_data,
       notification_resources,
       new WebNotificationDelegate(NotificationCommon::PERSISTENT, profile,
                                   notification_id, origin));
+  auto metadata = std::make_unique<PersistentNotificationMetadata>();
+  metadata->service_worker_scope = service_worker_scope;
 
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
-      NotificationCommon::PERSISTENT, notification_id, notification);
+      NotificationCommon::PERSISTENT, notification_id, notification,
+      std::move(metadata));
   base::RecordAction(base::UserMetricsAction("Notifications.Persistent.Shown"));
 }
 
@@ -429,7 +432,6 @@ void PlatformNotificationServiceImpl::OnCloseEventDispatchComplete(
 
 Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
     Profile* profile,
-    const GURL& service_worker_scope,
     const GURL& origin,
     const std::string& notification_id,
     const content::PlatformNotificationData& notification_data,
@@ -447,7 +449,6 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
       NotifierId(origin), base::UTF8ToUTF16(origin.host()), origin,
       notification_data.tag, message_center::RichNotificationData(), delegate);
 
-  notification.set_service_worker_scope(service_worker_scope);
   notification.set_context_message(
       DisplayNameForContextMessage(profile, origin));
   notification.set_vibration_pattern(notification_data.vibration_pattern);

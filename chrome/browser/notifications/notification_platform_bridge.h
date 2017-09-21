@@ -30,11 +30,13 @@ class NotificationPlatformBridge {
   virtual ~NotificationPlatformBridge() {}
 
   // Shows a toast on screen using the data passed in |notification|.
-  virtual void Display(NotificationCommon::Type notification_type,
-                       const std::string& notification_id,
-                       const std::string& profile_id,
-                       bool is_incognito,
-                       const Notification& notification) = 0;
+  virtual void Display(
+      NotificationCommon::Type notification_type,
+      const std::string& notification_id,
+      const std::string& profile_id,
+      bool is_incognito,
+      const Notification& notification,
+      std::unique_ptr<NotificationCommon::Metadata> metadata) = 0;
 
   // Closes a nofication with |notification_id| and |profile_id| if being
   // displayed.

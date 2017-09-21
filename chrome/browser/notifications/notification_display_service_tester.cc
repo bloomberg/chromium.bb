@@ -37,6 +37,12 @@ NotificationDisplayServiceTester::GetDisplayedNotificationsForType(
   return display_service_->GetDisplayedNotificationsForType(type);
 }
 
+const NotificationCommon::Metadata*
+NotificationDisplayServiceTester::GetMetadataForNotification(
+    const Notification& notification) {
+  return display_service_->GetMetadataForNotification(notification);
+}
+
 void NotificationDisplayServiceTester::RemoveNotification(
     NotificationCommon::Type type,
     const std::string& notification_id,

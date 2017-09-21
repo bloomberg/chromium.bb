@@ -27,7 +27,8 @@ MessageCenterDisplayService::~MessageCenterDisplayService() {}
 void MessageCenterDisplayService::Display(
     NotificationCommon::Type notification_type,
     const std::string& notification_id,
-    const Notification& notification) {
+    const Notification& notification,
+    std::unique_ptr<NotificationCommon::Metadata> metadata) {
   // TODO(miguelg): MCDS should stop relying on the |notification|'s delegate
   // for Close/Click operations once the Notification object becomes a mojom
   // type.
