@@ -4,12 +4,8 @@
 
 #include <stddef.h>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_base.h"
-#include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/instant_service.h"
@@ -18,24 +14,18 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
-#include "components/google/core/browser/google_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
-#include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/variations/entropy_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -50,8 +40,6 @@ class SearchTest : public BrowserWithTestWindowTest {
  protected:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    field_trial_list_.reset(new base::FieldTrialList(
-        base::MakeUnique<metrics::SHA1EntropyProvider>("42")));
     TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(), &TemplateURLServiceFactory::BuildInstanceFor);
     TemplateURLService* template_url_service =
@@ -66,38 +54,11 @@ class SearchTest : public BrowserWithTestWindowTest {
     TemplateURLData data;
     data.SetShortName(base::ASCIIToUTF16("foo.com"));
     data.SetURL("http://foo.com/url?bar={searchTerms}");
-    data.instant_url = "http://foo.com/instant?"
-        "{google:forceInstantResults}foo=foo#foo=foo&strk";
     if (set_ntp_url) {
       data.new_tab_url = (insecure_ntp_url ? "http" : "https") +
-          std::string("://foo.com/newtab?strk");
+                         std::string("://foo.com/newtab");
     }
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
-    data.search_terms_replacement_key = "strk";
-
-    TemplateURL* template_url =
-        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
-    template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
-  }
-
-  // Build an Instant URL with or without a valid search terms replacement key
-  // as per |has_search_term_replacement_key|. Set that URL as the instant URL
-  // for the default search provider.
-  void SetDefaultInstantTemplateUrl(bool has_search_term_replacement_key) {
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile());
-
-    static const char kInstantURLWithStrk[] =
-        "http://foo.com/instant?foo=foo#foo=foo&strk";
-    static const char kInstantURLNoStrk[] =
-        "http://foo.com/instant?foo=foo#foo=foo";
-
-    TemplateURLData data;
-    data.SetShortName(base::ASCIIToUTF16("foo.com"));
-    data.SetURL("http://foo.com/url?bar={searchTerms}");
-    data.instant_url = (has_search_term_replacement_key ?
-        kInstantURLWithStrk : kInstantURLNoStrk);
-    data.search_terms_replacement_key = "strk";
 
     TemplateURL* template_url =
         template_url_service->Add(base::MakeUnique<TemplateURL>(data));
@@ -110,8 +71,6 @@ class SearchTest : public BrowserWithTestWindowTest {
     return instant_service->IsInstantProcess(
         contents->GetRenderProcessHost()->GetID());
   }
-
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 struct SearchTestCase {
@@ -120,45 +79,21 @@ struct SearchTestCase {
   const char* comment;
 };
 
-TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabled) {
+TEST_F(SearchTest, ShouldAssignURLToInstantRenderer) {
+  // Only NTPs (both local and remote) should be assigned to Instant renderers.
   const SearchTestCase kTestCases[] = {
-    {chrome::kChromeSearchLocalNtpUrl, true,  ""},
-    {"https://foo.com/instant?strk",   true,  ""},
-    {"https://foo.com/instant#strk",   true,  ""},
-    {"https://foo.com/instant?strk=0", true,  ""},
-    {"https://foo.com/url?strk",       false, ""},
-    {"https://foo.com/alt?strk",       false, ""},
-    {"http://foo.com/instant",         false, "Non-HTTPS"},
-    {"http://foo.com/instant?strk",    false, "Non-HTTPS"},
-    {"http://foo.com/instant?strk=1",  false, "Non-HTTPS"},
-    {"https://foo.com/instant",        false, "No search terms replacement"},
-    {"https://foo.com/?strk",          false, "Non-exact path"},
-  };
-
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    const SearchTestCase& test = kTestCases[i];
-    EXPECT_EQ(test.expected_result,
-              ShouldAssignURLToInstantRenderer(GURL(test.url), profile()))
-        << test.url << " " << test.comment;
-  }
-}
-
-TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabledNotOnSRP) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 suppress_on_srp:1"));
-
-  const SearchTestCase kTestCases[] = {
-    {chrome::kChromeSearchLocalNtpUrl, true,  ""},
-    {"https://foo.com/instant?strk",   true,  ""},
-    {"https://foo.com/instant#strk",   true,  ""},
-    {"https://foo.com/instant?strk=0", true,  ""},
-    {"https://foo.com/url?strk",       false, "Disabled on SRP"},
-    {"https://foo.com/alt?strk",       false, "Disabled ON SRP"},
-    {"http://foo.com/instant",         false, "Non-HTTPS"},
-    {"http://foo.com/instant?strk",    false, "Non-HTTPS"},
-    {"http://foo.com/instant?strk=1",  false, "Non-HTTPS"},
-    {"https://foo.com/instant",        false, "No search terms replacement"},
-    {"https://foo.com/?strk",          false, "Non-exact path"},
+      {chrome::kChromeSearchLocalNtpUrl, true, "Local NTP"},
+      {"https://foo.com/newtab", true, "Remote NTP"},
+      {"https://foo.com/instant?strk", false, "Instant support was removed"},
+      {"https://foo.com/instant#strk", false, "Instant support was removed"},
+      {"https://foo.com/instant?strk=0", false, "Instant support was removed"},
+      {"https://foo.com/url?strk", false, "Instant support was removed"},
+      {"https://foo.com/alt?strk", false, "Instant support was removed"},
+      {"http://foo.com/instant", false, "Instant support was removed"},
+      {"http://foo.com/instant?strk", false, "Instant support was removed"},
+      {"http://foo.com/instant?strk=1", false, "Instant support was removed"},
+      {"https://foo.com/instant", false, "Instant support was removed"},
+      {"https://foo.com/?strk", false, "Instant support was removed"},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
@@ -491,12 +426,8 @@ TEST_F(SearchTest, SearchProviderWithPort) {
   TemplateURLData data;
   data.SetShortName(base::ASCIIToUTF16("localhost"));
   data.SetURL("https://[::1]:1993/url?bar={searchTerms}");
-  data.instant_url =
-      "https://[::1]:1993/instant?"
-      "{google:forceInstantResults}foo=foo#foo=foo&strk";
   data.new_tab_url = "https://[::1]:1993/newtab?strk";
   data.alternate_urls.push_back("https://[::1]:1993/alt#quux={searchTerms}");
-  data.search_terms_replacement_key = "strk";
 
   TemplateURL* template_url =
       template_url_service->Add(base::MakeUnique<TemplateURL>(data));
@@ -509,40 +440,8 @@ TEST_F(SearchTest, SearchProviderWithPort) {
   EXPECT_EQ(GURL("chrome-search://remote-ntp/newtab?lala"),
             GetEffectiveURLForInstant(GURL("https://[::1]:1993/newtab?lala"),
                                       profile()));
-  EXPECT_EQ(GURL("chrome-search://[::1]/instant?strk"),
-            GetEffectiveURLForInstant(GURL("https://[::1]:1993/instant?strk"),
-                                      profile()));
   EXPECT_FALSE(ShouldAssignURLToInstantRenderer(
       GURL("https://[::1]:1993/unregistered-path?strk"), profile()));
-}
-
-class SearchURLTest : public SearchTest {
- protected:
-  void SetSearchProvider(bool set_ntp_url, bool insecure_ntp_url) override {
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile());
-    TemplateURLData data;
-    data.SetShortName(base::ASCIIToUTF16("Google"));
-    data.SetURL("{google:baseURL}search?"
-                "{google:instantExtendedEnabledParameter}q={searchTerms}");
-    data.search_terms_replacement_key = "espv";
-    template_url_ =
-        template_url_service->Add(base::MakeUnique<TemplateURL>(data));
-    template_url_service->SetUserSelectedDefaultSearchProvider(template_url_);
-  }
-
-  TemplateURL* template_url_;
-};
-
-TEST_F(SearchURLTest, QueryExtractionDisabled) {
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
-  TemplateURLRef::SearchTermsArgs search_terms_args(base::ASCIIToUTF16("foo"));
-  GURL result(template_url_->url_ref().ReplaceSearchTerms(
-      search_terms_args, UIThreadSearchTermsData(profile())));
-  ASSERT_TRUE(result.is_valid());
-  // Query extraction is disabled. Make sure
-  // {google:instantExtendedEnabledParameter} is not set in the search URL.
-  EXPECT_EQ("http://www.google.com/search?q=foo", result.spec());
 }
 
 }  // namespace search

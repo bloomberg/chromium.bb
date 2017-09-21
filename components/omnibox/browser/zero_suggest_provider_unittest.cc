@@ -196,8 +196,6 @@ void ZeroSuggestProviderTest::SetUp() {
   data.SetShortName(base::ASCIIToUTF16("t"));
   data.SetURL("https://www.google.com/?q={searchTerms}");
   data.suggestions_url = "https://www.google.com/complete/?q={searchTerms}";
-  data.instant_url = "https://does/not/exist?strk=1";
-  data.search_terms_replacement_key = "strk";
   default_t_url_ = turl_model->Add(base::MakeUnique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 

@@ -130,15 +130,15 @@ void BindURLToStatement(const TemplateURLData& data,
   s->BindString(starting_column + 9, data.suggestions_url);
   s->BindInt(starting_column + 10, data.prepopulate_id);
   s->BindBool(starting_column + 11, data.created_by_policy);
-  s->BindString(starting_column + 12, data.instant_url);
+  s->BindString(starting_column + 12, std::string());
   s->BindInt64(starting_column + 13, data.last_modified.ToTimeT());
   s->BindString(starting_column + 14, data.sync_guid);
   s->BindString(starting_column + 15, alternate_urls);
-  s->BindString(starting_column + 16, data.search_terms_replacement_key);
+  s->BindString(starting_column + 16, std::string());
   s->BindString(starting_column + 17, data.image_url);
   s->BindString(starting_column + 18, data.search_url_post_params);
   s->BindString(starting_column + 19, data.suggestions_url_post_params);
-  s->BindString(starting_column + 20, data.instant_url_post_params);
+  s->BindString(starting_column + 20, std::string());
   s->BindString(starting_column + 21, data.image_url_post_params);
   s->BindString(starting_column + 22, data.new_tab_url);
   s->BindInt64(starting_column + 23, data.last_visited.ToTimeT());
@@ -364,12 +364,10 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
     return false;
   data->SetURL(s.ColumnString(4));
   data->suggestions_url = s.ColumnString(10);
-  data->instant_url = s.ColumnString(13);
   data->image_url = s.ColumnString(18);
   data->new_tab_url = s.ColumnString(23);
   data->search_url_post_params = s.ColumnString(19);
   data->suggestions_url_post_params = s.ColumnString(20);
-  data->instant_url_post_params = s.ColumnString(21);
   data->image_url_post_params = s.ColumnString(22);
   data->favicon_url = GURL(s.ColumnString(3));
   data->originating_url = GURL(s.ColumnString(6));
@@ -397,7 +395,6 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
     }
   }
 
-  data->search_terms_replacement_key = s.ColumnString(17);
   data->last_visited = Time::FromTimeT(s.ColumnInt64(24));
 
   return true;

@@ -25,18 +25,18 @@ class InstantTestBase {
   Browser* instant_browser() { return browser_; }
 
   void SetupInstant(Browser* browser);
-  void Init(const GURL& instant_url,
+  void Init(const GURL& base_url,
             const GURL& ntp_url,
             bool init_suggestions_url);
 
-  const GURL& instant_url() const { return instant_url_; }
+  const GURL& base_url() const { return base_url_; }
 
   const GURL& ntp_url() const { return ntp_url_; }
 
   net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
 
  private:
-  GURL instant_url_;
+  GURL base_url_;
   GURL ntp_url_;
 
   Browser* browser_;

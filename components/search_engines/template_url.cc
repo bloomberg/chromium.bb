@@ -187,7 +187,6 @@ TemplateURLRef::SearchTermsArgs::SearchTermsArgs(
       cursor_position(base::string16::npos),
       page_classification(metrics::OmniboxEventProto::INVALID_SPEC),
       append_extra_query_params(false),
-      force_instant_results(false),
       from_app_list(false),
       contextual_search_params(ContextualSearchParams()) {}
 
@@ -257,7 +256,6 @@ std::string TemplateURLRef::GetURL() const {
   switch (type_) {
     case SEARCH:            return owner_->url();
     case SUGGEST:           return owner_->suggestions_url();
-    case INSTANT:           return owner_->instant_url();
     case IMAGE:             return owner_->image_url();
     case NEW_TAB:           return owner_->new_tab_url();
     case CONTEXTUAL_SEARCH: return owner_->contextual_search_url();
@@ -271,7 +269,6 @@ std::string TemplateURLRef::GetPostParamsString() const {
     case INDEXED:
     case SEARCH:            return owner_->search_url_post_params();
     case SUGGEST:           return owner_->suggestions_url_post_params();
-    case INSTANT:           return owner_->instant_url_post_params();
     case NEW_TAB:           return std::string();
     case CONTEXTUAL_SEARCH: return std::string();
     case IMAGE:             return owner_->image_url_post_params();
@@ -606,8 +603,6 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_CURRENT_PAGE_URL, start));
   } else if (parameter == "google:cursorPosition") {
     replacements->push_back(Replacement(GOOGLE_CURSOR_POSITION, start));
-  } else if (parameter == "google:forceInstantResults") {
-    replacements->push_back(Replacement(GOOGLE_FORCE_INSTANT_RESULTS, start));
   } else if (parameter == "google:imageOriginalHeight") {
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_ORIGINAL_HEIGHT, start));
@@ -626,11 +621,6 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == "google:inputType") {
     replacements->push_back(Replacement(TemplateURLRef::GOOGLE_INPUT_TYPE,
                                         start));
-  } else if (parameter == "google:instantExtendedEnabledParameter") {
-    replacements->push_back(Replacement(GOOGLE_INSTANT_EXTENDED_ENABLED,
-                                        start));
-  } else if (parameter == google_util::kGoogleInstantExtendedEnabledKey) {
-    url->insert(start, google_util::kInstantExtendedAPIParam);
   } else if (parameter == "google:iOSSearchLanguage") {
     replacements->push_back(Replacement(GOOGLE_IOS_SEARCH_LANGUAGE, start));
   } else if (parameter == "google:contextualSearchVersion") {
@@ -945,30 +935,10 @@ std::string TemplateURLRef::HandleReplacements(
               &url);
         break;
 
-      case GOOGLE_FORCE_INSTANT_RESULTS:
-        DCHECK(!i->is_post_param);
-        HandleReplacement(std::string(),
-                          search_terms_data.ForceInstantResultsParam(
-                              search_terms_args.force_instant_results),
-                          *i,
-                          &url);
-        break;
-
       case GOOGLE_INPUT_TYPE:
         DCHECK(!i->is_post_param);
         HandleReplacement(
             "oit", base::IntToString(search_terms_args.input_type), *i, &url);
-        break;
-
-      case GOOGLE_INSTANT_EXTENDED_ENABLED:
-        DCHECK(!i->is_post_param);
-        // Regular search requests don't use Instant, so only add the param for
-        // other types.
-        HandleReplacement(std::string(),
-                          type_ == SEARCH
-                              ? std::string()
-                              : search_terms_data.InstantExtendedEnabledParam(),
-                          *i, &url);
         break;
 
       case GOOGLE_CONTEXTUAL_SEARCH_VERSION:
@@ -1186,7 +1156,6 @@ TemplateURL::TemplateURL(const TemplateURLData& data, Type type)
     : data_(data),
       url_ref_(nullptr),
       suggestions_url_ref_(this, TemplateURLRef::SUGGEST),
-      instant_url_ref_(this, TemplateURLRef::INSTANT),
       image_url_ref_(this, TemplateURLRef::IMAGE),
       new_tab_url_ref_(this, TemplateURLRef::NEW_TAB),
       contextual_search_url_ref_(this, TemplateURLRef::CONTEXTUAL_SEARCH),
@@ -1194,10 +1163,6 @@ TemplateURL::TemplateURL(const TemplateURLData& data, Type type)
       engine_type_(SEARCH_ENGINE_UNKNOWN) {
   ResizeURLRefVector();
   SetPrepopulateId(data_.prepopulate_id);
-
-  if (data_.search_terms_replacement_key ==
-      google_util::kGoogleInstantExtendedEnabledKeyFull)
-    data_.search_terms_replacement_key = google_util::kInstantExtendedAPIParam;
 }
 
 TemplateURL::TemplateURL(const TemplateURLData& data,
@@ -1261,31 +1226,16 @@ bool TemplateURL::MatchesData(const TemplateURL* t_url,
          t_url->HasSameKeywordAs(*data, search_terms_data) &&
          (t_url->url() == data->url()) &&
          (t_url->suggestions_url() == data->suggestions_url) &&
-         (t_url->instant_url() == data->instant_url) &&
          (t_url->image_url() == data->image_url) &&
          (t_url->new_tab_url() == data->new_tab_url) &&
          (t_url->search_url_post_params() == data->search_url_post_params) &&
          (t_url->suggestions_url_post_params() ==
           data->suggestions_url_post_params) &&
-         (t_url->instant_url_post_params() == data->instant_url_post_params) &&
          (t_url->image_url_post_params() == data->image_url_post_params) &&
          (t_url->favicon_url() == data->favicon_url) &&
          (t_url->safe_for_autoreplace() == data->safe_for_autoreplace) &&
          (t_url->input_encodings() == data->input_encodings) &&
-         (t_url->alternate_urls() == data->alternate_urls) &&
-         SearchTermsReplacementKeysMatch(t_url->search_terms_replacement_key(),
-                                         data->search_terms_replacement_key);
-}
-
-// Special case for search_terms_replacement_key comparison, because of
-// its special initialization in TemplateUrl constructor.
-bool TemplateURL::SearchTermsReplacementKeysMatch(const std::string& key1,
-                                                  const std::string& key2) {
-  const auto IsInstantExtended = [](const std::string& key) {
-    return (key == google_util::kInstantExtendedAPIParam) ||
-           (key == google_util::kGoogleInstantExtendedEnabledKeyFull);
-  };
-  return (key1 == key2) || (IsInstantExtended(key1) && IsInstantExtended(key2));
+         (t_url->alternate_urls() == data->alternate_urls);
 }
 
 base::string16 TemplateURL::AdjustedShortNameForLocaleDirection() const {
@@ -1306,7 +1256,6 @@ bool TemplateURL::HasGoogleBaseURLs(
       return true;
   }
   return suggestions_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
-      instant_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
       image_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
       new_tab_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
       contextual_search_url_ref_.HasGoogleBaseURLs(search_terms_data);
@@ -1357,24 +1306,6 @@ bool TemplateURL::IsSearchURL(const GURL& url,
   base::string16 search_terms;
   return ExtractSearchTermsFromURL(url, search_terms_data, &search_terms) &&
       !search_terms.empty();
-}
-
-bool TemplateURL::HasSearchTermsReplacementKey(const GURL& url) const {
-  // Look for the key both in the query and the ref.
-  std::string params[] = {url.query(), url.ref()};
-
-  for (int i = 0; i < 2; ++i) {
-    url::Component query, key, value;
-    query.len = static_cast<int>(params[i].size());
-    while (url::ExtractQueryKeyValue(params[i].c_str(), &query, &key, &value)) {
-      if (key.is_nonempty() &&
-          params[i].substr(key.begin, key.len) ==
-              search_terms_replacement_key()) {
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 bool TemplateURL::ReplaceSearchTermsInURL(
@@ -1492,7 +1423,6 @@ void TemplateURL::SetPrepopulateId(int id) {
   for (TemplateURLRef& ref : url_refs_)
     ref.prepopulated_ = prepopulated;
   suggestions_url_ref_.prepopulated_ = prepopulated;
-  instant_url_ref_.prepopulated_ = prepopulated;
   image_url_ref_.prepopulated_ = prepopulated;
   new_tab_url_ref_.prepopulated_ = prepopulated;
   contextual_search_url_ref_.prepopulated_ = prepopulated;
@@ -1513,7 +1443,6 @@ void TemplateURL::InvalidateCachedValues() const {
   for (const TemplateURLRef& ref : url_refs_)
     ref.InvalidateCachedValues();
   suggestions_url_ref_.InvalidateCachedValues();
-  instant_url_ref_.InvalidateCachedValues();
   image_url_ref_.InvalidateCachedValues();
   new_tab_url_ref_.InvalidateCachedValues();
   contextual_search_url_ref_.InvalidateCachedValues();

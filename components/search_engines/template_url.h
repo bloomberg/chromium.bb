@@ -55,7 +55,6 @@ class TemplateURLRef {
   enum Type {
     SEARCH,
     SUGGEST,
-    INSTANT,
     IMAGE,
     NEW_TAB,
     CONTEXTUAL_SEARCH,
@@ -146,8 +145,8 @@ class TemplateURLRef {
 
     // If set, ReplaceSearchTerms() will automatically append any extra query
     // params specified via the --extra-search-query-params command-line
-    // argument.  Generally, this should be set when dealing with the search or
-    // instant TemplateURLRefs of the default search engine and the caller cares
+    // argument.  Generally, this should be set when dealing with the search
+    // TemplateURLRefs of the default search engine and the caller cares
     // about the query portion of the URL.  Since neither TemplateURLRef nor
     // indeed TemplateURL know whether a TemplateURL is the default search
     // engine, callers instead must set this manually.
@@ -163,12 +162,6 @@ class TemplateURLRef {
 
     // When searching for an image, the original size of the image.
     gfx::Size image_original_size;
-
-    // If set, ReplaceSearchTerms() will append a param to the TemplateURLRef to
-    // update the search results page incrementally even if that is otherwise
-    // disabled by google.com preferences. See comments on
-    // chrome::ForceInstantResultsParam().
-    bool force_instant_results;
 
     // True if the search was made using the app list search box. Otherwise, the
     // search was made using the omnibox.
@@ -302,14 +295,12 @@ class TemplateURLRef {
     GOOGLE_BASE_SUGGEST_URL,
     GOOGLE_CURRENT_PAGE_URL,
     GOOGLE_CURSOR_POSITION,
-    GOOGLE_FORCE_INSTANT_RESULTS,
     GOOGLE_IMAGE_ORIGINAL_HEIGHT,
     GOOGLE_IMAGE_ORIGINAL_WIDTH,
     GOOGLE_IMAGE_SEARCH_SOURCE,
     GOOGLE_IMAGE_THUMBNAIL,
     GOOGLE_IMAGE_URL,
     GOOGLE_INPUT_TYPE,
-    GOOGLE_INSTANT_EXTENDED_ENABLED,
     GOOGLE_IOS_SEARCH_LANGUAGE,
     GOOGLE_NTP_IS_THEMED,
     GOOGLE_CONTEXTUAL_SEARCH_VERSION,
@@ -530,11 +521,6 @@ class TemplateURL {
                           const TemplateURLData* data,
                           const SearchTermsData& search_terms_data);
 
-  // Special case for search_terms_replacement_key comparison, because of
-  // its special initialization in TemplateURL constructor.
-  static bool SearchTermsReplacementKeysMatch(const std::string& key1,
-                                              const std::string& key2);
-
   const TemplateURLData& data() const { return data_; }
 
   const base::string16& short_name() const { return data_.short_name(); }
@@ -546,7 +532,6 @@ class TemplateURL {
 
   const std::string& url() const { return data_.url(); }
   const std::string& suggestions_url() const { return data_.suggestions_url; }
-  const std::string& instant_url() const { return data_.instant_url; }
   const std::string& image_url() const { return data_.image_url; }
   const std::string& new_tab_url() const { return data_.new_tab_url; }
   const std::string& contextual_search_url() const {
@@ -557,9 +542,6 @@ class TemplateURL {
   }
   const std::string& suggestions_url_post_params() const {
     return data_.suggestions_url_post_params;
-  }
-  const std::string& instant_url_post_params() const {
-    return data_.instant_url_post_params;
   }
   const std::string& image_url_post_params() const {
     return data_.image_url_post_params;
@@ -595,17 +577,11 @@ class TemplateURL {
 
   const std::string& sync_guid() const { return data_.sync_guid; }
 
-  // TODO(beaudoin): Rename this when renaming HasSearchTermsReplacementKey().
-  const std::string& search_terms_replacement_key() const {
-    return data_.search_terms_replacement_key;
-  }
-
   const std::vector<TemplateURLRef>& url_refs() const { return url_refs_; }
   const TemplateURLRef& url_ref() const { return *url_ref_; }
   const TemplateURLRef& suggestions_url_ref() const {
     return suggestions_url_ref_;
   }
-  const TemplateURLRef& instant_url_ref() const { return instant_url_ref_; }
   const TemplateURLRef& image_url_ref() const { return image_url_ref_; }
   const TemplateURLRef& new_tab_url_ref() const { return new_tab_url_ref_; }
   const TemplateURLRef& contextual_search_url_ref() const {
@@ -664,14 +640,6 @@ class TemplateURL {
   // could be the result of performing a search with |this|.
   bool IsSearchURL(const GURL& url,
                    const SearchTermsData& search_terms_data) const;
-
-  // Returns true if the specified |url| contains the search terms replacement
-  // key in either the query or the ref. This method does not verify anything
-  // else about the URL. In particular, it does not check that the domain
-  // matches that of this TemplateURL.
-  // TODO(beaudoin): Rename this to reflect that it really checks for an
-  // InstantExtended capable URL.
-  bool HasSearchTermsReplacementKey(const GURL& url) const;
 
   // Given a |url| corresponding to this TemplateURL, identifies the search
   // terms and replaces them with the ones in |search_terms_args|, leaving the
@@ -745,7 +713,6 @@ class TemplateURL {
   TemplateURLRef* url_ref_;
 
   TemplateURLRef suggestions_url_ref_;
-  TemplateURLRef instant_url_ref_;
   TemplateURLRef image_url_ref_;
   TemplateURLRef new_tab_url_ref_;
   TemplateURLRef contextual_search_url_ref_;

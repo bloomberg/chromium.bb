@@ -72,10 +72,6 @@ std::unique_ptr<TemplateURLData> ConvertSearchProvider(
     data->suggestions_url =
         SubstituteInstallParam(*search_provider.suggest_url, install_parameter);
   }
-  if (search_provider.instant_url) {
-    data->instant_url =
-        SubstituteInstallParam(*search_provider.instant_url, install_parameter);
-  }
   if (search_provider.image_url) {
     data->image_url =
         SubstituteInstallParam(*search_provider.image_url, install_parameter);
@@ -85,8 +81,6 @@ std::unique_ptr<TemplateURLData> ConvertSearchProvider(
   if (search_provider.suggest_url_post_params)
     data->suggestions_url_post_params =
         *search_provider.suggest_url_post_params;
-  if (search_provider.instant_url_post_params)
-    data->instant_url_post_params = *search_provider.instant_url_post_params;
   if (search_provider.image_url_post_params)
     data->image_url_post_params = *search_provider.image_url_post_params;
   if (search_provider.favicon_url) {

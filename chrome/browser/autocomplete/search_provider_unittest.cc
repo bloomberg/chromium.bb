@@ -284,8 +284,6 @@ void SearchProviderTest::SetUp() {
   data.SetShortName(ASCIIToUTF16("t"));
   data.SetURL("http://defaultturl/{searchTerms}");
   data.suggestions_url = "http://defaultturl2/{searchTerms}";
-  data.instant_url = "http://does/not/exist?strk=1";
-  data.search_terms_replacement_key = "strk";
   default_t_url_ = turl_model->Add(base::MakeUnique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
   TemplateURLID default_provider_id = default_t_url_->id();
@@ -3236,8 +3234,6 @@ TEST_F(SearchProviderTest, CanSendURL) {
   template_url_data.SetShortName(ASCIIToUTF16("t"));
   template_url_data.SetURL("http://www.google.com/{searchTerms}");
   template_url_data.suggestions_url = "http://www.google.com/{searchTerms}";
-  template_url_data.instant_url = "http://does/not/exist?strk=1";
-  template_url_data.search_terms_replacement_key = "strk";
   template_url_data.id = SEARCH_ENGINE_GOOGLE;
   TemplateURL google_template_url(template_url_data);
 

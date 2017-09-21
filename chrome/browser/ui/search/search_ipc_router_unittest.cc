@@ -119,10 +119,8 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
     TemplateURLData data;
     data.SetShortName(base::ASCIIToUTF16("foo.com"));
     data.SetURL("http://foo.com/url?bar={searchTerms}");
-    data.instant_url = "http://foo.com/instant?foo=foo#foo=foo&espv";
     data.new_tab_url = "https://foo.com/newtab?espv";
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
-    data.search_terms_replacement_key = "espv";
 
     TemplateURL* template_url =
         template_url_service->Add(base::MakeUnique<TemplateURL>(data));

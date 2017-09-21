@@ -43,11 +43,9 @@ void SetOverrides(sync_preferences::TestingPrefServiceSyncable* prefs,
   entry->SetString("encoding", "UTF-8");
   entry->SetInteger("id", 1001);
   entry->SetString("suggest_url", "http://foo.com/suggest?q={searchTerms}");
-  entry->SetString("instant_url", "http://foo.com/instant?q={searchTerms}");
   auto alternate_urls = base::MakeUnique<base::ListValue>();
   alternate_urls->AppendString("http://foo.com/alternate?q={searchTerms}");
   entry->Set("alternate_urls", std::move(alternate_urls));
-  entry->SetString("search_terms_replacement_key", "espv");
   overrides->Append(std::move(entry));
 
   entry = base::MakeUnique<base::DictionaryValue>();

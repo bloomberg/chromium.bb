@@ -42,7 +42,6 @@ std::unique_ptr<TemplateURLData> TemplateURLDataFromDictionary(
   dict.GetString(DefaultSearchManager::kSuggestionsURL,
                  &result->suggestions_url);
 
-  dict.GetString(DefaultSearchManager::kInstantURL, &result->instant_url);
   dict.GetString(DefaultSearchManager::kImageURL, &result->image_url);
   dict.GetString(DefaultSearchManager::kNewTabURL, &result->new_tab_url);
   dict.GetString(DefaultSearchManager::kContextualSearchURL,
@@ -64,8 +63,6 @@ std::unique_ptr<TemplateURLData> TemplateURLDataFromDictionary(
                  &result->search_url_post_params);
   dict.GetString(DefaultSearchManager::kSuggestionsURLPostParams,
                  &result->suggestions_url_post_params);
-  dict.GetString(DefaultSearchManager::kInstantURLPostParams,
-                 &result->instant_url_post_params);
   dict.GetString(DefaultSearchManager::kImageURLPostParams,
                  &result->image_url_post_params);
   dict.GetBoolean(DefaultSearchManager::kSafeForAutoReplace,
@@ -110,8 +107,6 @@ std::unique_ptr<TemplateURLData> TemplateURLDataFromDictionary(
     }
   }
 
-  dict.GetString(DefaultSearchManager::kSearchTermsReplacementKey,
-                 &result->search_terms_replacement_key);
   dict.GetBoolean(DefaultSearchManager::kCreatedByPolicy,
                   &result->created_by_policy);
   return result;
@@ -130,7 +125,6 @@ std::unique_ptr<base::DictionaryValue> TemplateURLDataToDictionary(
   url_dict->SetString(DefaultSearchManager::kURL, data.url());
   url_dict->SetString(DefaultSearchManager::kSuggestionsURL,
                       data.suggestions_url);
-  url_dict->SetString(DefaultSearchManager::kInstantURL, data.instant_url);
   url_dict->SetString(DefaultSearchManager::kImageURL, data.image_url);
   url_dict->SetString(DefaultSearchManager::kNewTabURL, data.new_tab_url);
   url_dict->SetString(DefaultSearchManager::kContextualSearchURL,
@@ -146,8 +140,6 @@ std::unique_ptr<base::DictionaryValue> TemplateURLDataToDictionary(
                       data.search_url_post_params);
   url_dict->SetString(DefaultSearchManager::kSuggestionsURLPostParams,
                       data.suggestions_url_post_params);
-  url_dict->SetString(DefaultSearchManager::kInstantURLPostParams,
-                      data.instant_url_post_params);
   url_dict->SetString(DefaultSearchManager::kImageURLPostParams,
                       data.image_url_post_params);
 
@@ -176,8 +168,6 @@ std::unique_ptr<base::DictionaryValue> TemplateURLDataToDictionary(
     encodings->AppendString(input_encoding);
   url_dict->Set(DefaultSearchManager::kInputEncodings, std::move(encodings));
 
-  url_dict->SetString(DefaultSearchManager::kSearchTermsReplacementKey,
-                      data.search_terms_replacement_key);
   url_dict->SetBoolean(DefaultSearchManager::kCreatedByPolicy,
                        data.created_by_policy);
   return url_dict;
@@ -193,12 +183,11 @@ std::unique_ptr<TemplateURLData> TemplateURLDataFromPrepopulatedEngine(
 
   return base::MakeUnique<TemplateURLData>(
       base::WideToUTF16(engine.name), base::WideToUTF16(engine.keyword),
-      engine.search_url, engine.suggest_url, engine.instant_url,
-      engine.image_url, engine.new_tab_url, engine.contextual_search_url,
-      engine.logo_url, engine.doodle_url, engine.search_url_post_params,
-      engine.suggest_url_post_params, engine.instant_url_post_params,
-      engine.image_url_post_params, engine.favicon_url, engine.encoding,
-      alternate_urls, engine.search_terms_replacement_key, engine.id);
+      engine.search_url, engine.suggest_url, engine.image_url,
+      engine.new_tab_url, engine.contextual_search_url, engine.logo_url,
+      engine.doodle_url, engine.search_url_post_params,
+      engine.suggest_url_post_params, engine.image_url_post_params,
+      engine.favicon_url, engine.encoding, alternate_urls, engine.id);
 }
 
 std::unique_ptr<TemplateURLData> TemplateURLDataFromOverrideDictionary(
@@ -218,7 +207,6 @@ std::unique_ptr<TemplateURLData> TemplateURLDataFromOverrideDictionary(
       engine.GetInteger("id", &id)) {
     // These fields are optional.
     std::string suggest_url;
-    std::string instant_url;
     std::string image_url;
     std::string new_tab_url;
     std::string contextual_search_url;
@@ -226,13 +214,10 @@ std::unique_ptr<TemplateURLData> TemplateURLDataFromOverrideDictionary(
     std::string doodle_url;
     std::string search_url_post_params;
     std::string suggest_url_post_params;
-    std::string instant_url_post_params;
     std::string image_url_post_params;
     base::ListValue empty_list;
     const base::ListValue* alternate_urls = &empty_list;
-    std::string search_terms_replacement_key;
     engine.GetString("suggest_url", &suggest_url);
-    engine.GetString("instant_url", &instant_url);
     engine.GetString("image_url", &image_url);
     engine.GetString("new_tab_url", &new_tab_url);
     engine.GetString("contextual_search_url", &contextual_search_url);
@@ -240,17 +225,13 @@ std::unique_ptr<TemplateURLData> TemplateURLDataFromOverrideDictionary(
     engine.GetString("doodle_url", &doodle_url);
     engine.GetString("search_url_post_params", &search_url_post_params);
     engine.GetString("suggest_url_post_params", &suggest_url_post_params);
-    engine.GetString("instant_url_post_params", &instant_url_post_params);
     engine.GetString("image_url_post_params", &image_url_post_params);
     engine.GetList("alternate_urls", &alternate_urls);
-    engine.GetString("search_terms_replacement_key",
-                     &search_terms_replacement_key);
     return base::MakeUnique<TemplateURLData>(
-        name, keyword, search_url, suggest_url, instant_url, image_url,
-        new_tab_url, contextual_search_url, logo_url, doodle_url,
-        search_url_post_params, suggest_url_post_params,
-        instant_url_post_params, image_url_post_params, favicon_url, encoding,
-        *alternate_urls, search_terms_replacement_key, id);
+        name, keyword, search_url, suggest_url, image_url, new_tab_url,
+        contextual_search_url, logo_url, doodle_url, search_url_post_params,
+        suggest_url_post_params, image_url_post_params, favicon_url, encoding,
+        *alternate_urls, id);
   }
   return std::unique_ptr<TemplateURLData>();
 }

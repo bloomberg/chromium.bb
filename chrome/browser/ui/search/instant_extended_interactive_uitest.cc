@@ -44,11 +44,9 @@ class InstantExtendedTest : public InProcessBrowserTest,
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(https_test_server().Start());
-    GURL instant_url =
-        https_test_server().GetURL("/instant_extended.html?strk=1&");
-    GURL ntp_url =
-        https_test_server().GetURL("/instant_extended_ntp.html?strk=1&");
-    InstantTestBase::Init(instant_url, ntp_url, false);
+    GURL base_url = https_test_server().GetURL("/instant_extended.html?");
+    GURL ntp_url = https_test_server().GetURL("/instant_extended_ntp.html?");
+    InstantTestBase::Init(base_url, ntp_url, false);
   }
 
   bool UpdateSearchState(content::WebContents* contents) WARN_UNUSED_RESULT {
@@ -79,11 +77,9 @@ class InstantThemeTest : public ExtensionBrowserTest, public InstantUITestBase {
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(https_test_server().Start());
-    GURL instant_url =
-        https_test_server().GetURL("/instant_extended.html?strk=1&");
-    GURL ntp_url =
-        https_test_server().GetURL("/instant_extended_ntp.html?strk=1&");
-    InstantTestBase::Init(instant_url, ntp_url, false);
+    GURL base_url = https_test_server().GetURL("/instant_extended.html?");
+    GURL ntp_url = https_test_server().GetURL("/instant_extended_ntp.html?");
+    InstantTestBase::Init(base_url, ntp_url, false);
   }
 
   void InstallThemeSource() {
@@ -364,6 +360,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, Referrer) {
 
   content::WaitForLoadStop(contents);
   std::string expected_title =
-      "Referrer is " + instant_url().GetWithEmptyPath().spec();
+      "Referrer is " + base_url().GetWithEmptyPath().spec();
   EXPECT_EQ(base::ASCIIToUTF16(expected_title), contents->GetTitle());
 }

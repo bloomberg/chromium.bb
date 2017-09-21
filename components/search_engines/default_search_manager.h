@@ -37,7 +37,6 @@ class DefaultSearchManager {
 
   static const char kURL[];
   static const char kSuggestionsURL[];
-  static const char kInstantURL[];
   static const char kImageURL[];
   static const char kNewTabURL[];
   static const char kContextualSearchURL[];
@@ -48,7 +47,6 @@ class DefaultSearchManager {
 
   static const char kSearchURLPostParams[];
   static const char kSuggestionsURLPostParams[];
-  static const char kInstantURLPostParams[];
   static const char kImageURLPostParams[];
 
   static const char kSafeForAutoReplace[];
@@ -60,7 +58,6 @@ class DefaultSearchManager {
 
   static const char kUsageCount[];
   static const char kAlternateURLs[];
-  static const char kSearchTermsReplacementKey[];
   static const char kCreatedByPolicy[];
   static const char kDisabledByPolicy[];
 

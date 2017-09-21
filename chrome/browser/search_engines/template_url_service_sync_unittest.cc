@@ -81,7 +81,6 @@ syncer::SyncData CreateCustomSyncData(const TemplateURL& turl,
   se_specifics->set_prepopulate_id(prepopulate_id == -1 ? turl.prepopulate_id()
                                                         : prepopulate_id);
   se_specifics->set_autogenerate_keyword(autogenerate_keyword);
-  se_specifics->set_instant_url(turl.instant_url());
   se_specifics->set_last_modified(turl.last_modified().ToInternalValue());
   se_specifics->set_sync_guid(sync_guid);
   return syncer::SyncData::CreateLocalData(turl.sync_guid(),  // Must be valid!
@@ -1697,7 +1696,6 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
   managed.favicon_url = GURL("http://manageddefault.com/icon.jpg");
   managed.input_encodings = {"UTF-16", "UTF-32"};
   managed.alternate_urls = {"http://manageddefault.com/search#t={searchTerms}"};
-  managed.search_terms_replacement_key = "espv";
 
   SetManagedDefaultSearchPreferences(managed, true, test_util_a_->profile());
   const TemplateURL* dsp_turl = model()->GetDefaultSearchProvider();

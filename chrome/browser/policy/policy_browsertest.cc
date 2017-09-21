@@ -996,13 +996,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   ASSERT_TRUE(default_search);
   EXPECT_NE(kKeyword, default_search->keyword());
   EXPECT_NE(kSearchURL, default_search->url());
-  EXPECT_NE(kInstantURL, default_search->instant_url());
   EXPECT_FALSE(
     default_search->alternate_urls().size() == 2 &&
     default_search->alternate_urls()[0] == kAlternateURL0 &&
     default_search->alternate_urls()[1] == kAlternateURL1 &&
-    default_search->search_terms_replacement_key() ==
-        kSearchTermsReplacementKey &&
     default_search->image_url() == kImageURL &&
     default_search->image_url_post_params() == kImageURLPostParams &&
     default_search->new_tab_url() == kNewTabURL);
@@ -1045,12 +1042,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   ASSERT_TRUE(default_search);
   EXPECT_EQ(kKeyword, default_search->keyword());
   EXPECT_EQ(kSearchURL, default_search->url());
-  EXPECT_EQ(kInstantURL, default_search->instant_url());
   EXPECT_EQ(2U, default_search->alternate_urls().size());
   EXPECT_EQ(kAlternateURL0, default_search->alternate_urls()[0]);
   EXPECT_EQ(kAlternateURL1, default_search->alternate_urls()[1]);
-  EXPECT_EQ(kSearchTermsReplacementKey,
-            default_search->search_terms_replacement_key());
   EXPECT_EQ(kImageURL, default_search->image_url());
   EXPECT_EQ(kImageURLPostParams, default_search->image_url_post_params());
   EXPECT_EQ(kNewTabURL, default_search->new_tab_url());
