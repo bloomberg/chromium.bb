@@ -218,8 +218,8 @@ struct PaymentOptions {
 };
 
 enum PaymentComplete {
-  SUCCESS,
   FAIL,
+  SUCCESS,
   UNKNOWN
 };
 

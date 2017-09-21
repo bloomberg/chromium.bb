@@ -1417,8 +1417,8 @@ PaymentResponse.prototype.payerPhone = null;
  * @enum {string}
  */
 var PaymentComplete = {
-  SUCCESS: 'success',
   FAIL: 'fail',
+  SUCCESS: 'success',
   UNKNOWN: 'unknown'
 };
 
