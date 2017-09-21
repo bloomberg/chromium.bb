@@ -64,7 +64,7 @@ class UiElement : public cc::AnimationTarget {
 
   virtual void PrepareToDraw();
 
-  void Animate(const base::TimeTicks& time);
+  virtual void OnBeginFrame(const base::TimeTicks& time);
 
   // Indicates whether the element should be tested for cursor input.
   bool IsHitTestable() const;
@@ -144,6 +144,7 @@ class UiElement : public cc::AnimationTarget {
   // being animated, or the current value otherwise.
   gfx::SizeF GetTargetSize() const;
   cc::TransformOperations GetTargetTransform() const;
+  float GetTargetOpacity() const;
 
   float opacity() const { return opacity_; }
   virtual void SetOpacity(float opacity);

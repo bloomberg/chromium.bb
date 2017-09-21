@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/ui_scene_manager.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/button.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/system_indicator.h"
 #include "chrome/browser/vr/elements/text.h"
+#include "chrome/browser/vr/elements/transient_element.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/elements/ui_element_transform_operations.h"
@@ -266,19 +268,22 @@ void UiSceneManager::CreateSecurityWarnings() {
   permanent_security_warning_ = element.get();
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(element));
 
-  auto transient_warning = base::MakeUnique<TransientSecurityWarning>(
-      1024, base::TimeDelta::FromSeconds(kWarningTimeoutSeconds));
-  transient_security_warning_ = transient_warning.get();
+  // Create transient security warning.
+  security_warning_transient_parent_ = AddTransientParent(
+      kWebVrHttpSecurityWarningTransientParent, kWebVrViewportAwareRoot,
+      kWarningTimeoutSeconds, false);
+  auto transient_warning = base::MakeUnique<TransientSecurityWarning>(1024);
   element = std::move(transient_warning);
-  element->set_name(kWebVrTransientHttpSecurityWarning);
+  element->set_name(kWebVrHttpSecurityWarning);
   element->set_draw_phase(kPhaseOverlayForeground);
   element->SetSize(kTransientWarningWidthDMM, kTransientWarningHeightDMM);
   element->SetTranslate(0, 0, -kWarningDistance);
   element->SetScale(kWarningDistance, kWarningDistance, 1);
-  element->SetVisible(false);
   element->set_hit_testable(false);
-  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(element));
+  scene_->AddUiElement(kWebVrHttpSecurityWarningTransientParent,
+                       std::move(element));
 
+  // Create transient exit warning.
   element = base::MakeUnique<ExitWarning>(1024);
   element->set_name(kExitWarning);
   element->SetSize(kExitWarningWidth, kExitWarningHeight);
@@ -510,21 +515,40 @@ void UiSceneManager::CreateUrlBar() {
   scene_->AddUiElement(kUrlBar, std::move(indicator));
 }
 
+TransientElement* UiSceneManager::AddTransientParent(UiElementName name,
+                                                     UiElementName parent_name,
+                                                     int timeout_seconds,
+                                                     bool animate_opacity) {
+  auto element = base::MakeUnique<TransientElement>(
+      base::TimeDelta::FromSeconds(timeout_seconds));
+  TransientElement* to_return = element.get();
+  element->set_name(name);
+  element->SetVisible(false);
+  element->set_hit_testable(false);
+  if (animate_opacity)
+    element->SetTransitionedProperties({OPACITY});
+  scene_->AddUiElement(parent_name, std::move(element));
+  return to_return;
+}
+
 void UiSceneManager::CreateWebVrUrlToast() {
+  webvr_url_toast_transient_parent_ =
+      AddTransientParent(kWebVrUrlToastTransientParent, kWebVrViewportAwareRoot,
+                         kWebVrUrlToastTimeoutSeconds, true);
   auto url_bar = base::MakeUnique<WebVrUrlToast>(
-      512, base::TimeDelta::FromSeconds(kWebVrUrlToastTimeoutSeconds),
+      512,
       base::Bind(&UiSceneManager::OnUnsupportedMode, base::Unretained(this)));
   url_bar->set_name(kWebVrUrlToast);
   url_bar->set_opacity_when_visible(0.8);
   url_bar->set_draw_phase(kPhaseOverlayForeground);
-  url_bar->SetVisible(false);
+  url_bar->SetVisible(true);
   url_bar->set_hit_testable(false);
   url_bar->SetTranslate(0, kWebVrToastDistance * sin(kWebVrUrlToastRotationRad),
                         -kWebVrToastDistance * cos(kWebVrUrlToastRotationRad));
   url_bar->SetRotate(1, 0, 0, kWebVrUrlToastRotationRad);
   url_bar->SetSize(kWebVrUrlToastWidth, kWebVrUrlToastHeight);
   webvr_url_toast_ = url_bar.get();
-  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(url_bar));
+  scene_->AddUiElement(kWebVrUrlToastTransientParent, std::move(url_bar));
 }
 
 void UiSceneManager::CreateCloseButton() {
@@ -573,8 +597,11 @@ void UiSceneManager::CreateExitPrompt() {
 }
 
 void UiSceneManager::CreateToasts() {
-  auto element = base::MakeUnique<ExclusiveScreenToast>(
-      512, base::TimeDelta::FromSeconds(kToastTimeoutSeconds));
+  // Create fullscreen toast.
+  exclusive_screen_toast_transient_parent_ =
+      AddTransientParent(kExclusiveScreenToastTransientParent,
+                         k2dBrowsingForeground, kToastTimeoutSeconds, false);
+  auto element = base::MakeUnique<ExclusiveScreenToast>(512);
   element->set_name(kExclusiveScreenToast);
   element->set_draw_phase(kPhaseForeground);
   element->SetSize(kToastWidthDMM, kToastHeightDMM);
@@ -584,13 +611,15 @@ void UiSceneManager::CreateToasts() {
           (kToastOffsetDMM + kToastHeightDMM) * kFullscreenToastDistance,
       -kFullscreenToastDistance);
   element->SetScale(kFullscreenToastDistance, kFullscreenToastDistance, 1);
-  element->SetVisible(false);
   element->set_hit_testable(false);
-  exclusive_screen_toast_ = element.get();
-  scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
+  scene_->AddUiElement(kExclusiveScreenToastTransientParent,
+                       std::move(element));
 
-  element = base::MakeUnique<ExclusiveScreenToast>(
-      512, base::TimeDelta::FromSeconds(kToastTimeoutSeconds));
+  // Create WebVR toast.
+  exclusive_screen_toast_viewport_aware_transient_parent_ =
+      AddTransientParent(kExclusiveScreenToastViewportAwareTransientParent,
+                         kWebVrViewportAwareRoot, kToastTimeoutSeconds, false);
+  element = base::MakeUnique<ExclusiveScreenToast>(512);
   element->set_name(kExclusiveScreenToastViewportAware);
   element->set_draw_phase(kPhaseOverlayForeground);
   element->SetSize(kToastWidthDMM, kToastHeightDMM);
@@ -598,10 +627,9 @@ void UiSceneManager::CreateToasts() {
                         -kWebVrToastDistance * cos(kWebVrAngleRadians));
   element->SetRotate(1, 0, 0, kWebVrAngleRadians);
   element->SetScale(kWebVrToastDistance, kWebVrToastDistance, 1);
-  element->SetVisible(false);
   element->set_hit_testable(false);
-  exclusive_screen_toast_viewport_aware_ = element.get();
-  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(element));
+  scene_->AddUiElement(kExclusiveScreenToastViewportAwareTransientParent,
+                       std::move(element));
 }
 
 base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
@@ -624,9 +652,9 @@ void UiSceneManager::SetWebVrMode(bool web_vr, bool show_toast) {
   // Because we may be transitioning from and to fullscreen, where the toast is
   // also shown, explicitly kick or end visibility here.
   if (web_vr) {
-    exclusive_screen_toast_viewport_aware_->transience()->KickVisibility();
+    exclusive_screen_toast_viewport_aware_transient_parent_->RefreshVisible();
   } else {
-    exclusive_screen_toast_->transience()->EndVisibility();
+    exclusive_screen_toast_transient_parent_->SetVisible(false);
   }
 }
 
@@ -762,8 +790,8 @@ void UiSceneManager::ConfigureScene() {
 
   scene_->root_element().SetMode(mode());
 
-  webvr_url_toast_->SetVisible(started_for_autopresentation_ &&
-                               !showing_web_vr_splash_screen_);
+  webvr_url_toast_transient_parent_->SetVisible(started_for_autopresentation_ &&
+                                                !showing_web_vr_splash_screen_);
 
   scene_->set_reticle_rendering_enabled(
       !(web_vr_mode_ || exiting_ || showing_web_vr_splash_screen_));
@@ -872,7 +900,7 @@ void UiSceneManager::ConfigureSecurityWarnings() {
   bool enabled =
       web_vr_mode_ && !secure_origin_ && !showing_web_vr_splash_screen_;
   permanent_security_warning_->SetVisible(enabled);
-  transient_security_warning_->SetVisible(enabled);
+  security_warning_transient_parent_->SetVisible(enabled);
 }
 
 void UiSceneManager::ConfigureIndicators() {
@@ -892,9 +920,10 @@ void UiSceneManager::ConfigureIndicators() {
 }
 
 void UiSceneManager::ConfigureExclusiveScreenToast() {
-  exclusive_screen_toast_->SetVisible(fullscreen_ && !web_vr_mode_);
-  exclusive_screen_toast_viewport_aware_->SetVisible(web_vr_mode_ &&
-                                                     web_vr_show_toast_);
+  exclusive_screen_toast_transient_parent_->SetVisible(fullscreen_ &&
+                                                       !web_vr_mode_);
+  exclusive_screen_toast_viewport_aware_transient_parent_->SetVisible(
+      web_vr_mode_ && web_vr_show_toast_);
 }
 
 void UiSceneManager::OnBackButtonClicked() {

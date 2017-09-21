@@ -62,7 +62,7 @@ void UiScene::OnBeginFrame(const base::TimeTicks& current_time,
                            const gfx::Vector3dF& look_at) {
   for (auto& element : *root_element_) {
     // Process all animations before calculating object transforms.
-    element.Animate(current_time);
+    element.OnBeginFrame(current_time);
   }
 
   for (auto& element : *root_element_) {

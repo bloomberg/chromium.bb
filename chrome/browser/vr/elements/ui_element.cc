@@ -84,7 +84,7 @@ void UiElement::OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
 
 void UiElement::PrepareToDraw() {}
 
-void UiElement::Animate(const base::TimeTicks& time) {
+void UiElement::OnBeginFrame(const base::TimeTicks& time) {
   animation_player_.Tick(time);
   last_frame_time_ = time;
 }
@@ -159,13 +159,18 @@ void UiElement::SetOpacity(float opacity) {
                                       opacity);
 }
 
+gfx::SizeF UiElement::GetTargetSize() const {
+  return animation_player_.GetTargetSizeValue(TargetProperty::BOUNDS, size_);
+}
+
 cc::TransformOperations UiElement::GetTargetTransform() const {
   return animation_player_.GetTargetTransformOperationsValue(
       TargetProperty::TRANSFORM, transform_operations_);
 }
 
-gfx::SizeF UiElement::GetTargetSize() const {
-  return animation_player_.GetTargetSizeValue(TargetProperty::BOUNDS, size_);
+float UiElement::GetTargetOpacity() const {
+  return animation_player_.GetTargetFloatValue(TargetProperty::OPACITY,
+                                               opacity_);
 }
 
 bool UiElement::HitTest(const gfx::PointF& point) const {

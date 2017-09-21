@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/elements/textured_element.h"
-#include "chrome/browser/vr/elements/transience_manager.h"
+#include "chrome/browser/vr/elements/transient_element.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
@@ -27,11 +27,8 @@ class WebVrUrlToast : public TexturedElement {
  public:
   WebVrUrlToast(
       int preferred_width,
-      const base::TimeDelta& timeout,
       const base::Callback<void(UiUnsupportedMode)>& failure_callback);
   ~WebVrUrlToast() override;
-
-  void SetVisible(bool visible) override;
 
   void SetToolbarState(const ToolbarState& state);
 
@@ -39,7 +36,6 @@ class WebVrUrlToast : public TexturedElement {
   UiTexture* GetTexture() const override;
 
   std::unique_ptr<WebVrUrlToastTexture> texture_;
-  TransienceManager transience_;
 
   DISALLOW_COPY_AND_ASSIGN(WebVrUrlToast);
 };

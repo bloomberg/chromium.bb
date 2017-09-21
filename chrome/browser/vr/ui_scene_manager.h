@@ -19,10 +19,10 @@ namespace vr {
 
 class ContentElement;
 class ContentInputDelegate;
-class ExclusiveScreenToast;
 class Grid;
 class LoadingIndicator;
 class Rect;
+class TransientElement;
 class WebVrUrlToast;
 class UiBrowserInterface;
 class UiElement;
@@ -147,14 +147,20 @@ class UiSceneManager {
   ColorScheme::Mode mode() const;
   const ColorScheme& color_scheme() const;
 
+  TransientElement* AddTransientParent(UiElementName name,
+                                       UiElementName parent_name,
+                                       int timeout_seconds,
+                                       bool animate_opacity);
+
   UiBrowserInterface* browser_;
   UiScene* scene_;
 
   // UI element pointers (not owned by the scene manager).
   UiElement* permanent_security_warning_ = nullptr;
-  TransientSecurityWarning* transient_security_warning_ = nullptr;
-  ExclusiveScreenToast* exclusive_screen_toast_ = nullptr;
-  ExclusiveScreenToast* exclusive_screen_toast_viewport_aware_ = nullptr;
+  TransientElement* security_warning_transient_parent_ = nullptr;
+  TransientElement* exclusive_screen_toast_transient_parent_ = nullptr;
+  TransientElement* exclusive_screen_toast_viewport_aware_transient_parent_ =
+      nullptr;
   ExitPrompt* exit_prompt_ = nullptr;
   UiElement* exit_prompt_backplane_ = nullptr;
   UiElement* exit_warning_ = nullptr;
@@ -170,6 +176,7 @@ class UiSceneManager {
   UiElement* close_button_ = nullptr;
   UiElement* splash_screen_ = nullptr;
   UrlBar* url_bar_ = nullptr;
+  TransientElement* webvr_url_toast_transient_parent_ = nullptr;
   WebVrUrlToast* webvr_url_toast_ = nullptr;
   LoadingIndicator* loading_indicator_ = nullptr;
 

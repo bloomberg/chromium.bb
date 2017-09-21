@@ -12,9 +12,9 @@
 namespace vr {
 
 class ExclusiveScreenToast
-    : public TransientSimpleTexturedElement<ExclusiveScreenToastTexture> {
+    : public SimpleTexturedElement<ExclusiveScreenToastTexture> {
  public:
-  ExclusiveScreenToast(int preferred_width, const base::TimeDelta& timeout);
+  explicit ExclusiveScreenToast(int preferred_width);
   ~ExclusiveScreenToast() override;
 
  private:
