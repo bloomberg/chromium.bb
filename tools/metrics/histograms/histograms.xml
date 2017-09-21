@@ -40690,6 +40690,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.NeedsHWCAP2Workaround" enum="BooleanBroken">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    Records, on startup, for ARM devices running Android, whether the kernel is
+    missing AT_HWCAP2 from the ELF auxv and /proc/cpuinfo reports support for
+    ARMv8 features. Those features should also be reported in AT_HWCAP2. This is
+    to measure the workaround in https://crbug.com/boringssl/46.
+  </summary>
+</histogram>
+
 <histogram name="Net.NetInternalsUi.Feature" enum="NetInternalsUiFeature">
   <obsolete>
     Removed in Chrome 44.
