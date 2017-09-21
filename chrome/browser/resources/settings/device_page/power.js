@@ -264,6 +264,15 @@ Polymer({
   },
 
   /**
+   * @param {boolean} batteryPresent if battery is present
+   * @return {string} 'first' if idle/lid settings are first visible div
+   * @private
+   */
+  getFirst_: function(batteryPresent) {
+    return !batteryPresent ? 'first' : '';
+  },
+
+  /**
    * @param {*} lhs
    * @param {*} rhs
    * @return {boolean}

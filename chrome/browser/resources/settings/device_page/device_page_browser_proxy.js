@@ -25,6 +25,7 @@ settings.PowerSource;
 
 /**
  * @typedef {{
+ *   present: boolean,
  *   charging: boolean,
  *   calculating: boolean,
  *   percent: number,

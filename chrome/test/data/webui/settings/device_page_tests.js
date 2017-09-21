@@ -864,8 +864,25 @@ cr.define('device_page_tests', function() {
               });
         });
 
+        test('no battery', function() {
+          var batteryStatus = {
+            present: false,
+            charging: false,
+            calculating: false,
+            percent: -1,
+            statusText: '',
+          };
+          cr.webUIListenerCallback(
+              'battery-status-changed', Object.assign({}, batteryStatus));
+          Polymer.dom.flush();
+
+          // Power source row is hidden since there's no battery.
+          assertTrue(powerSourceRow.hidden);
+        });
+
         test('power sources', function() {
           var batteryStatus = {
+            present: true,
             charging: false,
             calculating: false,
             percent: 50,
@@ -876,7 +893,8 @@ cr.define('device_page_tests', function() {
           setPowerSources([], '', false);
           Polymer.dom.flush();
 
-          // Power sources dropdown is hidden.
+          // Power sources row is visible but dropdown is hidden.
+          assertFalse(powerSourceRow.hidden);
           assertTrue(powerSourceWrapper.hidden);
 
           // Attach a dual-role USB device.
@@ -910,6 +928,7 @@ cr.define('device_page_tests', function() {
 
         test('choose power source', function() {
           var batteryStatus = {
+            present: true,
             charging: false,
             calculating: false,
             percent: 50,
