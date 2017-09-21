@@ -741,9 +741,10 @@ void InputMethodController::SetComposition(
     return;
   }
 
+  ContainerNode* root_editable_element = RootEditableElement(*base_node);
   const PlainTextRange composition_plain_text_range =
-      PlainTextRange::Create(*base_node->parentNode(), *composition_range_);
-  AddImeTextSpans(ime_text_spans, base_node->parentNode(),
+      PlainTextRange::Create(*root_editable_element, *composition_range_);
+  AddImeTextSpans(ime_text_spans, root_editable_element,
                   composition_plain_text_range.Start());
 }
 
