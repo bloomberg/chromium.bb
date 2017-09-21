@@ -205,8 +205,8 @@ interface TestObject {
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
     [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString setterCallWithCurrentWindowAndEnteredWindowStringAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
-    [TreatNullAs=EmptyString] attribute DOMString treatNullAsEmptyStringStringAttribute;
-    [TreatNullAs=NullString] attribute DOMString treatNullAsNullStringStringAttribute;
+    attribute [TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringAttribute;
+    attribute [TreatNullAs=NullString] DOMString treatNullAsNullStringStringAttribute;
     [LegacyInterfaceTypeChecking] attribute float legacyInterfaceTypeCheckingFloatAttribute; // nop for non-interface types
     [LegacyInterfaceTypeChecking] attribute TestInterface legacyInterfaceTypeCheckingTestInterfaceAttribute;
     [LegacyInterfaceTypeChecking] attribute TestInterface? legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute;

@@ -58,7 +58,7 @@ enum BinaryType { "blob", "arraybuffer" };
     attribute EventHandler onclose;
     readonly attribute DOMString extensions;
     readonly attribute DOMString protocol;
-    [RaisesException] void close([Clamp] optional unsigned short code, optional USVString reason);
+    [RaisesException] void close(optional [Clamp] unsigned short code, optional USVString reason);
 
     // messaging
     attribute EventHandler onmessage;
