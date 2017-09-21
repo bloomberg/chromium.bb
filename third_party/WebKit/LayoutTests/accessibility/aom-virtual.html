@@ -33,12 +33,14 @@ test(function(t) {
     var container = document.getElementById("container");
     var child = new AccessibleNode();
     child.role = "button";
+    child.label = "Launch";
     container.accessibleNode.appendChild(child);
 
     var axContainer = accessibilityController.accessibleElementById("container");
     assert_equals(axContainer.childrenCount, 1);
     var axChild = axContainer.childAtIndex(0);
     assert_equals(axChild.role, "AXRole: AXButton");
+    assert_equals(axChild.name, "Launch");
 }, "Create a virtual AccessibleNode");
 </script>
 
