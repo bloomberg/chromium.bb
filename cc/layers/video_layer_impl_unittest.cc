@@ -331,6 +331,42 @@ TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
             (yuv_draw_quad->ya_tex_size.width() + 1) / 2);
 }
 
+TEST(VideoLayerImplTest, HibitSoftwareVideoFrameGeneratesYUVQuad) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+  DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
+
+  gpu::MailboxHolder mailbox_holder;
+  mailbox_holder.mailbox.name[0] = 1;
+
+  scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
+      media::PIXEL_FORMAT_YUV420P10, gfx::Size(20, 10), gfx::Rect(20, 10),
+      gfx::Size(20, 10), base::TimeDelta());
+
+  FakeVideoFrameProvider provider;
+  provider.set_frame(video_frame);
+
+  VideoLayerImpl* video_layer_impl =
+      impl.AddChildToRoot<VideoLayerImpl>(&provider, media::VIDEO_ROTATION_0);
+  video_layer_impl->SetBounds(layer_size);
+  video_layer_impl->SetDrawsContent(true);
+  impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
+
+  gfx::Rect occluded;
+  impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
+
+  EXPECT_EQ(1u, impl.quad_list().size());
+  const viz::DrawQuad* draw_quad = impl.quad_list().ElementAt(0);
+  ASSERT_EQ(viz::DrawQuad::YUV_VIDEO_CONTENT, draw_quad->material);
+
+  const auto* yuv_draw_quad =
+      static_cast<const viz::YUVVideoDrawQuad*>(draw_quad);
+  EXPECT_EQ(5, yuv_draw_quad->uv_tex_size.height());
+  EXPECT_EQ(10, yuv_draw_quad->uv_tex_size.width());
+}
+
 TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
