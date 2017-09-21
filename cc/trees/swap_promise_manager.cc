@@ -4,7 +4,7 @@
 
 #include "cc/trees/swap_promise_manager.h"
 
-#include "cc/output/swap_promise.h"
+#include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_monitor.h"
 
 namespace cc {

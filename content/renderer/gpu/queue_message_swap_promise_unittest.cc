@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "cc/output/swap_promise.h"
+#include "cc/trees/swap_promise.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/gpu/render_widget_compositor.h"

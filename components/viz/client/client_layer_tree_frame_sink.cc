@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/layer_tree_frame_sink_client.h"
+#include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"

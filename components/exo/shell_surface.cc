@@ -21,7 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/output/layer_tree_frame_sink.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/surface.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"

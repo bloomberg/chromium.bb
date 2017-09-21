@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_LAYER_TREE_FRAME_SINK_H_
-#define CC_OUTPUT_LAYER_TREE_FRAME_SINK_H_
+#ifndef CC_TREES_LAYER_TREE_FRAME_SINK_H_
+#define CC_TREES_LAYER_TREE_FRAME_SINK_H_
 
 #include <deque>
 #include <memory>
@@ -26,7 +26,7 @@ namespace viz {
 class LocalSurfaceId;
 class SharedBitmapManager;
 struct BeginFrameAck;
-}
+}  // namespace viz
 
 namespace cc {
 
@@ -150,4 +150,4 @@ class CC_EXPORT LayerTreeFrameSink {
 
 }  // namespace cc
 
-#endif  // CC_OUTPUT_LAYER_TREE_FRAME_SINK_H_
+#endif  // CC_TREES_LAYER_TREE_FRAME_SINK_H_

@@ -6,13 +6,13 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
-#include "cc/output/layer_tree_frame_sink.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/zero_copy_raster_buffer_provider.h"
 #include "cc/resources/resource_pool.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
 namespace cc {

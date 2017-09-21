@@ -1,8 +1,8 @@
 include_rules = [
   "+cc/base/switches.h",
   "+cc/ipc/compositor_frame_sink.mojom.h",
-  "+cc/output/layer_tree_frame_sink_client.h",
-  "+cc/output/layer_tree_frame_sink.h",
+  "+cc/trees/layer_tree_frame_sink_client.h",
+  "+cc/trees/layer_tree_frame_sink.h",
   "+cc/scheduler/begin_frame_source.h",
   "+components/discardable_memory/client/client_discardable_shared_memory_manager.h",
   "+components/viz/client",

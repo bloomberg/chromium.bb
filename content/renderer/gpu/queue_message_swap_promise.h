@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/memory/ref_counted.h"
-#include "cc/output/swap_promise.h"
+#include "cc/trees/swap_promise.h"
 
 namespace IPC {
 class SyncMessageFilter;

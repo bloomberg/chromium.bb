@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_MANAGED_MEMORY_POLICY_H_
-#define CC_OUTPUT_MANAGED_MEMORY_POLICY_H_
+#ifndef CC_TREES_MANAGED_MEMORY_POLICY_H_
+#define CC_TREES_MANAGED_MEMORY_POLICY_H_
 
 #include <stddef.h>
 
@@ -21,8 +21,7 @@ struct CC_EXPORT ManagedMemoryPolicy {
   static const size_t kDefaultNumResourcesLimit;
 
   explicit ManagedMemoryPolicy(size_t bytes_limit_when_visible);
-  explicit ManagedMemoryPolicy(
-      const gpu::MemoryAllocation& allocation);
+  explicit ManagedMemoryPolicy(const gpu::MemoryAllocation& allocation);
   ManagedMemoryPolicy(
       size_t bytes_limit_when_visible,
       gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_visible,
@@ -40,4 +39,4 @@ struct CC_EXPORT ManagedMemoryPolicy {
 
 }  // namespace cc
 
-#endif  // CC_OUTPUT_MANAGED_MEMORY_POLICY_H_
+#endif  // CC_TREES_MANAGED_MEMORY_POLICY_H_

@@ -13,7 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/layer_tree_frame_sink.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"

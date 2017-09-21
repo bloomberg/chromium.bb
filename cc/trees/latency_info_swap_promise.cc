@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/latency_info_swap_promise.h"
+#include "cc/trees/latency_info_swap_promise.h"
 
 #include <stdint.h>
 
@@ -29,11 +29,9 @@ ui::LatencyComponentType DidNotSwapReasonToLatencyComponentType(
 namespace cc {
 
 LatencyInfoSwapPromise::LatencyInfoSwapPromise(const ui::LatencyInfo& latency)
-    : latency_(latency) {
-}
+    : latency_(latency) {}
 
-LatencyInfoSwapPromise::~LatencyInfoSwapPromise() {
-}
+LatencyInfoSwapPromise::~LatencyInfoSwapPromise() {}
 
 void LatencyInfoSwapPromise::WillSwap(CompositorFrameMetadata* metadata) {
   DCHECK(!latency_.terminated());
@@ -58,8 +56,7 @@ int64_t LatencyInfoSwapPromise::TraceId() const {
 
 // Trace the original LatencyInfo of a LatencyInfoSwapPromise
 void LatencyInfoSwapPromise::OnCommit() {
-  TRACE_EVENT_WITH_FLOW1("input,benchmark",
-                         "LatencyInfo.Flow",
+  TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                          TRACE_ID_DONT_MANGLE(TraceId()),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "HandleInputEventMainCommit");

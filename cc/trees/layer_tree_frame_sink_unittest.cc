@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/layer_tree_frame_sink.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 
 #include "base/memory/ptr_util.h"
 #include "cc/output/compositor_frame.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_SWAP_PROMISE_H_
-#define CC_OUTPUT_SWAP_PROMISE_H_
+#ifndef CC_TREES_SWAP_PROMISE_H_
+#define CC_TREES_SWAP_PROMISE_H_
 
 #include <stdint.h>
 
@@ -76,4 +76,4 @@ class CC_EXPORT SwapPromise {
 
 }  // namespace cc
 
-#endif  // CC_OUTPUT_SWAP_PROMISE_H_
+#endif  // CC_TREES_SWAP_PROMISE_H_

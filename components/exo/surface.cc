@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/output/layer_tree_frame_sink.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/buffer.h"
 #include "components/exo/pointer.h"
 #include "components/exo/surface_delegate.h"

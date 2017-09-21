@@ -6,7 +6,7 @@
 #define CC_TREES_SCOPED_ABORT_REMAINING_SWAP_PROMISES_H_
 
 #include "base/macros.h"
-#include "cc/output/swap_promise.h"
+#include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_manager.h"
 
 namespace cc {

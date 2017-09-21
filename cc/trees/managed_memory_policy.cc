@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/managed_memory_policy.h"
+#include "cc/trees/managed_memory_policy.h"
 
 #include <stddef.h>
 

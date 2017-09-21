@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "cc/output/managed_memory_policy.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
