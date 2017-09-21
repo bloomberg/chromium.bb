@@ -2,9 +2,9 @@ layer at (0,0) size 480x360
   LayoutView at (0,0) size 480x360
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (72,108) size 324x79.20
-      LayoutSVGContainer {g} at (20,10) size 180x44 [transform={m=((1.80,0.00)(0.00,1.80)) t=(36.00,90.00)}]
-        LayoutSVGPath {path} at (20,10) size 180x20 [stroke={[type=SOLID] [color=#FF0000] [stroke width=3.00]}] [data="M 20 20 Q 50 10 80 20 Q 110 30 140 20 Q 170 10 200 20"]
+    LayoutSVGContainer {g} at (72,117) size 324x70.20
+      LayoutSVGContainer {g} at (20,15) size 180x39 [transform={m=((1.80,0.00)(0.00,1.80)) t=(36.00,90.00)}]
+        LayoutSVGPath {path} at (20,15) size 180x10 [stroke={[type=SOLID] [color=#FF0000] [stroke width=3.00]}] [data="M 20 20 Q 50 10 80 20 Q 110 30 140 20 Q 170 10 200 20"]
         LayoutSVGPath {path} at (20,50) size 60x0 [stroke={[type=SOLID] [color=#0000FF] [stroke width=3.00]}] [data="M 20 50 T 50 50 T 80 50"]
         LayoutSVGRect {rect} at (20,50) size 4x4 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#0000FF]}] [x=20.00] [y=50.00] [width=4.00] [height=4.00]
         LayoutSVGRect {rect} at (50,50) size 4x4 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#0000FF]}] [x=50.00] [y=50.00] [width=4.00] [height=4.00]

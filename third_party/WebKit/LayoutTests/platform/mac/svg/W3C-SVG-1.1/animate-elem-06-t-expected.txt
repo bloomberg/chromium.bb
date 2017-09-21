@@ -9,8 +9,8 @@ layer at (0,0) size 480x360
       LayoutSVGText {text} at (11,10.84) size 51.97x8.83 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (11,10.84) size 51.97x8.83
           chunk 1 text run 1 at (11.00,18.00) startOffset 0 endOffset 17 width 51.98: "'path' attribute."
-      LayoutSVGContainer {g} at (7,20) size 71.02x31.67
-        LayoutSVGPath {path} at (15,20) size 50x23 [stroke={[type=SOLID] [color=#000000]}] [data="M 15 43 C 15 43 36 20 65 33"]
+      LayoutSVGContainer {g} at (7,23) size 71.02x28.67
+        LayoutSVGPath {path} at (15,29.02) size 50x13.98 [stroke={[type=SOLID] [color=#000000]}] [data="M 15 43 C 15 43 36 20 65 33"]
         LayoutSVGRect {rect} at (10,33) size 10x10 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFCCCC]}] [x=10.00] [y=33.00] [width=10.00] [height=10.00]
         LayoutSVGText {text} at (7,42.84) size 21.34x8.83 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (7,42.84) size 21.34x8.83

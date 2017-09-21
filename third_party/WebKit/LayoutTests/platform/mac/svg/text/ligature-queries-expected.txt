@@ -4,8 +4,8 @@ layer at (0,0) size 800x520
   LayoutBlockFlow {HTML} at (0,0) size 800x520
     LayoutBlockFlow {BODY} at (8,8) size 784x504
       LayoutSVGRoot {svg} at (0,0) size 600x500
-        LayoutSVGHiddenContainer {defs} at (25,200) size 475x250
-          LayoutSVGPath {path} at (25,200) size 475x250 [fill={[type=SOLID] [color=#000000]}] [data="M 25 400 C 300 400 200 200 500 450"]
+        LayoutSVGHiddenContainer {defs} at (25,324.26) size 475x125.74
+          LayoutSVGPath {path} at (25,324.26) size 475x125.74 [fill={[type=SOLID] [color=#000000]}] [data="M 25 400 C 300 400 200 200 500 450"]
         LayoutSVGContainer {g} at (25,-6) size 487.81x452.45
           LayoutSVGRect {rect} at (25,-6) size 21.44x79 [fill={[type=SOLID] [color=#FF0000] [opacity=0.50]}] [x=25.00] [y=-6.00] [width=21.44] [height=79.00]
           LayoutSVGText {text} at (33.20,68) size 5x13 contains 1 chunk(s)
@@ -460,8 +460,8 @@ layer at (0,0) size 800x520
         LayoutSVGText {text} at (25,203) size 487.80x58 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (25,203) size 487.80x58
             chunk 1 text run 1 at (25.00,250.00) startOffset 0 endOffset 26 width 487.81: "\x{F6}h \x{443}\x{30C}eah! fi ffi abcffidef"
-        LayoutSVGContainer {use} at (25,200) size 475x250
-          LayoutSVGPath {path} at (25,200) size 475x250 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#00000000]}] [data="M 25 400 C 300 400 200 200 500 450"]
+        LayoutSVGContainer {use} at (25,324.26) size 475x125.74
+          LayoutSVGPath {path} at (25,324.26) size 475x125.74 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#00000000]}] [data="M 25 400 C 300 400 200 200 500 450"]
         LayoutSVGText {text} at (35.56,267.58) size 464.81x172.41 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (35.56,267.58) size 464.81x172.41
             LayoutSVGInlineText {#text} at (35.56,267.58) size 464.81x172.41
