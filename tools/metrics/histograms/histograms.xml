@@ -28668,12 +28668,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="interstitial.ssl.did_user_revoke_decisions"
     enum="BooleanRevoked">
+  <obsolete>
+    Deprecated September 13 2017.
+  </obsolete>
   <owner>jww@chromium.org</owner>
   <summary>
     Specifies when a user enters the page info menu whether or not the user
     pressed the SSL decisions revoke button. This can only by done if the user
     is in the &quot;Remember Certificate Error Decisions&quot; experiment. This
-    is logged when the page info UI is closed.
+    is logged when the page info UI is closed. Replaced by
+    .did_user_revoke_decisions2 to keep data separate after changing
+    functionality to only log when button was visible.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl.did_user_revoke_decisions2"
+    enum="BooleanRevoked">
+  <owner>carlosil@chromium.org</owner>
+  <summary>
+    Specifies when a user enters the page info menu whether or not the user
+    pressed the SSL decisions revoke button. This is logged when the page info
+    UI is closed, only if the button was visible in the page info.
   </summary>
 </histogram>
 
