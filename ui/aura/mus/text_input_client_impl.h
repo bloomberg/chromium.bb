@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/input_method_delegate.h"
 
 namespace ui {
 class TextInputClient;
@@ -19,7 +20,8 @@ namespace aura {
 // notifies the underlying ui::TextInputClient accordingly.
 class TextInputClientImpl : public ui::mojom::TextInputClient {
  public:
-  explicit TextInputClientImpl(ui::TextInputClient* text_input_client);
+  TextInputClientImpl(ui::TextInputClient* text_input_client,
+                      ui::internal::InputMethodDelegate* delegate);
   ~TextInputClientImpl() override;
 
   ui::mojom::TextInputClientPtr CreateInterfacePtrAndBind();
@@ -31,9 +33,13 @@ class TextInputClientImpl : public ui::mojom::TextInputClient {
   void ClearCompositionText() override;
   void InsertText(const std::string& text) override;
   void InsertChar(std::unique_ptr<ui::Event> event) override;
+  void DispatchKeyEventPostIME(
+      std::unique_ptr<ui::Event> event,
+      DispatchKeyEventPostIMECallback callback) override;
 
   ui::TextInputClient* text_input_client_;
   mojo::Binding<ui::mojom::TextInputClient> binding_;
+  ui::internal::InputMethodDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientImpl);
 };

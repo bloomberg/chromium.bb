@@ -151,7 +151,8 @@ void InputMethodMus::OnDidChangeFocusedClient(
   if (!focused)
     return;
 
-  text_input_client_ = base::MakeUnique<TextInputClientImpl>(focused);
+  text_input_client_ =
+      base::MakeUnique<TextInputClientImpl>(focused, delegate());
 
   // We are about to close the pipe with pending callbacks. Closing the pipe
   // results in none of the callbacks being run. We have to run the callbacks
@@ -203,23 +204,12 @@ void InputMethodMus::ProcessKeyEventCallback(
   std::unique_ptr<EventResultCallback> ack_callback =
       std::move(pending_callbacks_.front());
   pending_callbacks_.pop_front();
-  EventResult event_result;
-  if (!handled) {
-    // If not handled by IME, try dispatching the event to delegate to see if
-    // any client-side post-ime processing needs to be done. This includes cases
-    // like backspace, return key, etc.
-    std::unique_ptr<ui::Event> event_clone = ui::Event::Clone(event);
-    ignore_result(DispatchKeyEventPostIME(event_clone->AsKeyEvent()));
-    event_result =
-        event_clone->handled() ? EventResult::HANDLED : EventResult::UNHANDLED;
-  } else {
-    event_result = EventResult::HANDLED;
-  }
+
   // |ack_callback| can be null if the standard form of DispatchKeyEvent() is
   // called instead of the version which provides a callback. In mus+ash we
   // use the version with callback, but some unittests use the standard form.
   if (ack_callback)
-    ack_callback->Run(event_result);
+    ack_callback->Run(handled ? EventResult::HANDLED : EventResult::UNHANDLED);
 }
 
 }  // namespace aura

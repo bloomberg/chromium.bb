@@ -5,13 +5,18 @@
 #include "ui/aura/mus/text_input_client_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/base/ime/text_input_client.h"
 
 namespace aura {
 
-TextInputClientImpl::TextInputClientImpl(ui::TextInputClient* text_input_client)
-    : text_input_client_(text_input_client), binding_(this) {}
+TextInputClientImpl::TextInputClientImpl(
+    ui::TextInputClient* text_input_client,
+    ui::internal::InputMethodDelegate* delegate)
+    : text_input_client_(text_input_client),
+      binding_(this),
+      delegate_(delegate) {}
 
 TextInputClientImpl::~TextInputClientImpl() {}
 
@@ -41,6 +46,16 @@ void TextInputClientImpl::InsertText(const std::string& text) {
 void TextInputClientImpl::InsertChar(std::unique_ptr<ui::Event> event) {
   DCHECK(event->IsKeyEvent());
   text_input_client_->InsertChar(*event->AsKeyEvent());
+}
+
+void TextInputClientImpl::DispatchKeyEventPostIME(
+    std::unique_ptr<ui::Event> event,
+    DispatchKeyEventPostIMECallback callback) {
+  if (delegate_) {
+    delegate_->DispatchKeyEventPostIME(event->AsKeyEvent());
+    if (callback && !callback.is_null())
+      std::move(callback).Run(event->stopped_propagation());
+  }
 }
 
 }  // namespace aura

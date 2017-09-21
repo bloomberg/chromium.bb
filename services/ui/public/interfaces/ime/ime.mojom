@@ -194,6 +194,9 @@ interface TextInputClient {
   // for more details.
   InsertChar(ui.mojom.Event event);
 
+  // Dispatch a key event skipping IME. Returns true if event was consumed.
+  DispatchKeyEventPostIME(ui.mojom.Event event) => (bool stopped_propagation);
+
   // TODO(moshayedi): Add functions corresponding to ui::TextInputClient for:
   // - Input context information
   // - Document content operations

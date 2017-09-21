@@ -203,7 +203,6 @@ TEST_F(InputMethodMusTest, ChangeTextInputTypeWhileProcessingCallback) {
 
   // Callback should have been run.
   EXPECT_TRUE(was_event_result_callback_run);
-  EXPECT_TRUE(input_method_delegate.was_dispatch_key_event_post_ime_called());
 }
 
 }  // namespace aura
