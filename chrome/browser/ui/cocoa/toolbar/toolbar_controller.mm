@@ -971,6 +971,10 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   if (dX == 0)
     return;
 
+  if (dX < 0) {
+    // Clip to the minimum width. Speculative fix for crbug.com/746944.
+    dX = std::max(dX, -location_bar_flex);
+  }
   // Ensure that the location bar is in its proper place.
   locationFrame.size.width += dX;
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
