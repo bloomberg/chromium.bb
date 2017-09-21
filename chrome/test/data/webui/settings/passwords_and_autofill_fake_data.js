@@ -21,6 +21,8 @@ FakeDataMaker.passwordEntry = function(url, username, passwordLength) {
   url = url || FakeDataMaker.patternMaker_('www.xxxxxx.com', 16);
   username = username || FakeDataMaker.patternMaker_('user_xxxxx', 16);
   passwordLength = passwordLength || Math.floor(Math.random() * 15) + 3;
+  entryIndex = -1;
+  exceptionIndex = -1;
 
   return {
     loginPair: {
@@ -32,6 +34,7 @@ FakeDataMaker.passwordEntry = function(url, username, passwordLength) {
       username: username,
     },
     numCharactersInPassword: passwordLength,
+    index: ++entryIndex,
   };
 };
 
@@ -47,7 +50,8 @@ FakeDataMaker.exceptionEntry = function(url) {
       origin: 'http://' + url + '/login',
       shown: url,
       link: 'http://' + url + '/login',
-    }
+    },
+    index: ++exceptionIndex,
   };
 };
 
@@ -196,11 +200,11 @@ TestPasswordManager.prototype = {
   },
 
   /** @override */
-  removeSavedPassword: function(loginPair) {
+  removeSavedPassword: function(index) {
     this.actual_.removed.passwords++;
 
     if (this.onRemoveSavedPassword)
-      this.onRemoveSavedPassword(loginPair);
+      this.onRemoveSavedPassword(index);
   },
 
   /** @override */
@@ -221,15 +225,15 @@ TestPasswordManager.prototype = {
   },
 
   /** @override */
-  removeException: function(exception) {
+  removeException: function(index) {
     this.actual_.removed.exceptions++;
 
     if (this.onRemoveException)
-      this.onRemoveException(exception);
+      this.onRemoveException(index);
   },
 
   /** @override */
-  getPlaintextPassword: function(loginPair, callback) {
+  getPlaintextPassword: function(index, callback) {
     this.actual_.requested.plaintextPassword++;
     this.lastCallback.getPlaintextPassword = callback;
   },

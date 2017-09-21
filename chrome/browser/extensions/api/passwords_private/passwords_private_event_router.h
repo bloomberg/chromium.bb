@@ -36,13 +36,10 @@ class PasswordsPrivateEventRouter : public KeyedService {
       const std::vector<api::passwords_private::ExceptionEntry>& exceptions);
 
   // Notifies listeners after fetching a plain-text password.
-  // |origin_url| The origin which the password is saved for.
-  // |username| The username that this password belongs to.
+  // |index| the index for the password entry being shown.
   // |plaintext_password| The human-readable password.
-  void OnPlaintextPasswordFetched(
-      const std::string& origin_url,
-      const std::string& username,
-      const std::string& plaintext_password);
+  void OnPlaintextPasswordFetched(size_t index,
+                                  const std::string& plaintext_password);
 
  protected:
   explicit PasswordsPrivateEventRouter(content::BrowserContext* context);

@@ -289,10 +289,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assert(firstNode);
       var firstPassword = passwordList[0];
 
-      passwordManager.onRemoveSavedPassword = function(detail) {
+      passwordManager.onRemoveSavedPassword = function(index) {
         // Verify that the event matches the expected value.
-        assertEquals(firstPassword.loginPair.urls.origin, detail.urls.origin);
-        assertEquals(firstPassword.loginPair.username, detail.username);
+        assertEquals(firstPassword.index, index);
 
         // Clean up after self.
         passwordManager.onRemoveSavedPassword = null;
@@ -436,19 +435,19 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
           getDomRepeatChildren(passwordsSection.$.passwordExceptionsList);
 
       // The index of the button currently being checked.
-      var index = 0;
+      var item = 0;
 
       var clickRemoveButton = function() {
         MockInteractions.tap(
-            exceptions[index].querySelector('#removeExceptionButton'));
+            exceptions[item].querySelector('#removeExceptionButton'));
       };
 
-      passwordManager.onRemoveException = function(detail) {
+      passwordManager.onRemoveException = function(index) {
         // Verify that the event matches the expected value.
-        assertTrue(index < exceptionList.length);
-        assertEquals(exceptionList[index].urls.origin, detail);
+        assertTrue(item < exceptionList.length);
+        assertEquals(index, exceptionList[item].index);
 
-        if (++index < exceptionList.length) {
+        if (++item < exceptionList.length) {
           clickRemoveButton();  // Click 'remove' on all passwords, one by one.
         } else {
           // Clean up after self.
