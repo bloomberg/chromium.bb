@@ -91,9 +91,8 @@ public final class ChildAccountInfoFetcher {
 
     @CalledByNative
     private static void initializeForTests() {
-        Context context = ContextUtils.getApplicationContext();
         AccountManagerDelegate delegate = new SystemAccountManagerDelegate();
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(context, delegate);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(delegate);
     }
 
     private static native void nativeSetIsChildAccount(

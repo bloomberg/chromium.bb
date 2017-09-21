@@ -5,8 +5,6 @@
 package org.chromium.components.signin.test;
 
 import android.accounts.Account;
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
@@ -39,11 +37,10 @@ public class AccountManagerFacadeTest {
 
     @Before
     public void setUp() throws Exception {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mDelegate = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
         Assert.assertFalse(mDelegate.isRegisterObserversCalled());
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(context, mDelegate);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(mDelegate);
         Assert.assertTrue(mDelegate.isRegisterObserversCalled());
         mHelper = AccountManagerFacade.get();
     }

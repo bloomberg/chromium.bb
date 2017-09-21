@@ -138,8 +138,7 @@ public class FeatureUtilitiesTest {
 
     private void setUpAccountManager(String accountType) {
         mAccountManager = new FakeAuthenticationAccountManager(accountType);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(
-                mAccountTestingContext, mAccountManager);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(mAccountManager);
     }
 
     private void addTestAccount() {

@@ -115,7 +115,7 @@ public class AndroidSyncSettingsTest {
         mNumberOfCallsToWait = 0;
         mCallbackHelper = new CallbackHelper();
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        setupTestAccounts(mContext);
+        setupTestAccounts();
         // Set signed in account to mAccount before initializing AndroidSyncSettings to let
         // AndroidSyncSettings establish correct assumptions.
         ChromeSigninController.get().setSignedInAccountName(mAccount.name);
@@ -130,10 +130,10 @@ public class AndroidSyncSettingsTest {
 
     }
 
-    private void setupTestAccounts(Context context) {
+    private void setupTestAccounts() {
         mAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(context, mAccountManager);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(mAccountManager);
         mAccount = setupTestAccount("account@example.com");
         mAlternateAccount = setupTestAccount("alternate@example.com");
     }

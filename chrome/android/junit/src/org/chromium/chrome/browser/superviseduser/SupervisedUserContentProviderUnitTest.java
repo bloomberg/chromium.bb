@@ -221,8 +221,7 @@ public class SupervisedUserContentProviderUnitTest {
         ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
         AccountManagerDelegate mockDelegate = mock(AccountManagerDelegate.class);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(
-                RuntimeEnvironment.application, mockDelegate);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(mockDelegate);
         Account account = new Account("Google", "Dummy");
         when(mockDelegate.getAccountsSync()).thenReturn(new Account[] {account});
 
@@ -249,8 +248,7 @@ public class SupervisedUserContentProviderUnitTest {
         ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
         AccountManagerDelegate mockDelegate = mock(AccountManagerDelegate.class);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(
-                RuntimeEnvironment.application, mockDelegate);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(mockDelegate);
         Account account = new Account("Google", "Dummy");
         when(mockDelegate.getAccountsSync()).thenReturn(new Account[] {account});
 

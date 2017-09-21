@@ -7,7 +7,6 @@ package org.chromium.components.signin;
 import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.AnyThread;
 import android.support.annotation.MainThread;
@@ -132,13 +131,11 @@ public class AccountManagerFacade {
      * Unlike initializeAccountManagerFacade, this will override the existing instance of
      * AccountManagerFacade if any. Only for use in Tests.
      *
-     * @param context the applicationContext is retrieved from the context used as an argument.
      * @param delegate the custom AccountManagerDelegate to use.
      */
     @VisibleForTesting
     @AnyThread
-    public static void overrideAccountManagerFacadeForTests(
-            Context context, AccountManagerDelegate delegate) {
+    public static void overrideAccountManagerFacadeForTests(AccountManagerDelegate delegate) {
         sInstance.set(new AccountManagerFacade(delegate));
     }
 
