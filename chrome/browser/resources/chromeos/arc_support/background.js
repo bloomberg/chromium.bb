@@ -194,7 +194,7 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
 
   /** Called when "settings" link is clicked. */
   onSettingsLinkClicked(event) {
-    chrome.browser.openTab({'url': 'chrome://settings'}, function() {});
+    sendNativeMessage('onOpenSettingsPageClicked');
     event.stopPropagation();
   }
 }
