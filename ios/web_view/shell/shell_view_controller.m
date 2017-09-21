@@ -464,4 +464,21 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   NSLog(@"%@", NSStringFromSelector(_cmd));
 }
 
+- (BOOL)webView:(CWVWebView*)webView
+    shouldPreviewElement:(CWVPreviewElementInfo*)elementInfo {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+  return YES;
+}
+
+- (UIViewController*)webView:(CWVWebView*)webView
+    previewingViewControllerForElement:(CWVPreviewElementInfo*)elementInfo {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+  return nil;
+}
+
+- (void)webView:(CWVWebView*)webView
+    commitPreviewingViewController:(UIViewController*)previewingViewController {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+}
+
 @end

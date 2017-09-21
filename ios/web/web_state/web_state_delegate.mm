@@ -57,6 +57,21 @@ void WebStateDelegate::OnAuthRequired(WebState* source,
   callback.Run(nil, nil);
 }
 
+bool WebStateDelegate::ShouldPreviewLink(WebState* source,
+                                         const GURL& link_url) {
+  return false;
+}
+
+UIViewController* WebStateDelegate::GetPreviewingViewController(
+    WebState* source,
+    const GURL& link_url) {
+  return nullptr;
+}
+
+void WebStateDelegate::CommitPreviewingViewController(
+    WebState* source,
+    UIViewController* previewing_view_controller) {}
+
 void WebStateDelegate::Attach(WebState* source) {
   DCHECK(attached_states_.find(source) == attached_states_.end());
   attached_states_.insert(source);

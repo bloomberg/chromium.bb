@@ -11,6 +11,7 @@
 #import "cwv_export.h"
 
 @class CWVHTMLElement;
+@class CWVPreviewElementInfo;
 @class CWVWebView;
 @class CWVWebViewConfiguration;
 @class CWVNavigationAction;
@@ -64,6 +65,22 @@ CWV_EXPORT
                                   pageURL:(NSURL*)URL
                         completionHandler:
                             (void (^)(NSString*))completionHandler;
+
+// Determines whether the given link with |linkURL| should show a preview on
+// force touch. Return value NO is assumed if the method is not implemented.
+- (BOOL)webView:(CWVWebView*)webView
+    shouldPreviewElement:(CWVPreviewElementInfo*)elementInfo;
+
+// Called when the user performs a peek action on a link with |linkURL| with
+// force touch. Returns a view controller shown as a pop-up. Uses Webkit's
+// default preview behavior when it returns nil.
+- (UIViewController*)webView:(CWVWebView*)webView
+    previewingViewControllerForElement:(CWVPreviewElementInfo*)elementInfo;
+
+// Instructs the delegate to display |previewingViewController| inside the app,
+// in response to the user's pop action on the preview on force touch.
+- (void)webView:(CWVWebView*)webView
+    commitPreviewingViewController:(UIViewController*)previewingViewController;
 
 @end
 

@@ -33,6 +33,7 @@
 #import "ios/web_view/internal/web_view_java_script_dialog_presenter.h"
 #import "ios/web_view/internal/web_view_web_state_policy_decider.h"
 #import "ios/web_view/public/cwv_navigation_delegate.h"
+#import "ios/web_view/public/cwv_preview_element_info.h"
 #import "ios/web_view/public/cwv_ui_delegate.h"
 #import "ios/web_view/public/cwv_web_view_configuration.h"
 #import "net/base/mac/url_conversions.h"
@@ -325,6 +326,38 @@ static NSString* gUserAgentProduct = nil;
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState {
   return _javaScriptDialogPresenter.get();
+}
+
+- (BOOL)webState:(web::WebState*)webState
+    shouldPreviewLinkWithURL:(const GURL&)linkURL {
+  SEL selector = @selector(webView:shouldPreviewElement:);
+  if ([_UIDelegate respondsToSelector:selector]) {
+    CWVPreviewElementInfo* elementInfo = [[CWVPreviewElementInfo alloc]
+        initWithLinkURL:net::NSURLWithGURL(linkURL)];
+    return [_UIDelegate webView:self shouldPreviewElement:elementInfo];
+  }
+  return NO;
+}
+
+- (UIViewController*)webState:(web::WebState*)webState
+    previewingViewControllerForLinkWithURL:(const GURL&)linkURL {
+  SEL selector = @selector(webView:previewingViewControllerForElement:);
+  if ([_UIDelegate respondsToSelector:selector]) {
+    CWVPreviewElementInfo* elementInfo = [[CWVPreviewElementInfo alloc]
+        initWithLinkURL:net::NSURLWithGURL(linkURL)];
+    return [_UIDelegate webView:self
+        previewingViewControllerForElement:elementInfo];
+  }
+  return nil;
+}
+
+- (void)webState:(web::WebState*)webState
+    commitPreviewingViewController:(UIViewController*)previewingViewController {
+  SEL selector = @selector(webView:commitPreviewingViewController:);
+  if ([_UIDelegate respondsToSelector:selector]) {
+    [_UIDelegate webView:self
+        commitPreviewingViewController:previewingViewController];
+  }
 }
 
 #pragma mark - Translation

@@ -57,12 +57,6 @@ WKWebView* BuildWKWebView(CGRect frame,
   // reasonable value.
   web_view.scrollView.decelerationRate = UIScrollViewDecelerationRateNormal;
 
-  // Starting in iOS10, |allowsLinkPreview| defaults to YES.  This should be
-  // disabled since the default implementation will open the link in Safari.
-  // TODO(crbug.com/622746): Remove once web// link preview implementation is
-  // created.
-  web_view.allowsLinkPreview = NO;
-
   if (context_menu_delegate) {
     CRWContextMenuController* context_menu_controller = [
         [CRWContextMenuController alloc] initWithWebView:web_view
@@ -74,6 +68,10 @@ WKWebView* BuildWKWebView(CGRect frame,
                              OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
 
+  // Uses the default value for |allowsLinkPreview| i.e., YES in iOS 10 or
+  // later, and NO for iOS 9 or before. But the link preview is still disabled
+  // by default on iOS 10 or later. You need to return true from
+  // web::WebStateDelegate::ShouldPreviewLink() to enable the preview.
   return web_view;
 }
 

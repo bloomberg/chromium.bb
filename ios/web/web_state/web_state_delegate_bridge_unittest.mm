@@ -47,11 +47,11 @@ class WebStateDelegateBridgeTest : public PlatformTest {
   }
 
   void TearDown() override {
-    EXPECT_OCMOCK_VERIFY(delegate_);
+    EXPECT_OCMOCK_VERIFY((OCMockObject*)delegate_);
     PlatformTest::TearDown();
   }
 
-  id delegate_;
+  CRWMockWebStateDelegate* delegate_;
   id empty_delegate_;
   std::unique_ptr<WebStateDelegateBridge> bridge_;
   std::unique_ptr<WebStateDelegateBridge> empty_delegate_bridge_;
@@ -169,6 +169,51 @@ TEST_F(WebStateDelegateBridgeTest, OnAuthRequired) {
                           callback);
   EXPECT_TRUE([delegate_ authenticationRequested]);
   EXPECT_EQ(&test_web_state_, [delegate_ webState]);
+}
+
+// Tests |ShouldPreviewLink| forwarding.
+TEST_F(WebStateDelegateBridgeTest, ShouldPreviewLinkWithURL) {
+  GURL link_url("http://link.test/");
+  EXPECT_FALSE(delegate_.webState);
+
+  delegate_.shouldPreviewLinkWithURLReturnValue = YES;
+  EXPECT_TRUE(bridge_->ShouldPreviewLink(&test_web_state_, link_url));
+  EXPECT_EQ(&test_web_state_, delegate_.webState);
+  EXPECT_EQ(link_url, delegate_.linkURL);
+
+  delegate_.shouldPreviewLinkWithURLReturnValue = NO;
+  EXPECT_FALSE(bridge_->ShouldPreviewLink(&test_web_state_, link_url));
+  EXPECT_EQ(&test_web_state_, delegate_.webState);
+  EXPECT_EQ(link_url, delegate_.linkURL);
+}
+
+// Tests |GetPreviewingViewController| forwarding.
+TEST_F(WebStateDelegateBridgeTest, GetPreviewingViewController) {
+  GURL link_url("http://link.test/");
+  UIViewController* previewing_view_controller =
+      OCMClassMock([UIViewController class]);
+
+  EXPECT_FALSE(delegate_.webState);
+  delegate_.previewingViewControllerForLinkWithURLReturnValue =
+      previewing_view_controller;
+  EXPECT_EQ(previewing_view_controller,
+            bridge_->GetPreviewingViewController(&test_web_state_, link_url));
+  EXPECT_EQ(&test_web_state_, delegate_.webState);
+  EXPECT_EQ(link_url, delegate_.linkURL);
+}
+
+// Tests |CommitPreviewingViewController| forwarding.
+TEST_F(WebStateDelegateBridgeTest, CommitPreviewingViewController) {
+  UIViewController* previewing_view_controller =
+      OCMClassMock([UIViewController class]);
+
+  EXPECT_FALSE(delegate_.webState);
+  EXPECT_FALSE(delegate_.previewingViewController);
+  bridge_->CommitPreviewingViewController(&test_web_state_,
+                                          previewing_view_controller);
+  EXPECT_TRUE(delegate_.commitPreviewingViewControllerRequested);
+  EXPECT_EQ(&test_web_state_, delegate_.webState);
+  EXPECT_EQ(previewing_view_controller, delegate_.previewingViewController);
 }
 
 }  // namespace web

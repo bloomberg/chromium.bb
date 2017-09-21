@@ -126,4 +126,23 @@ void TestWebStateDelegate::OnAuthRequired(
   last_authentication_request_->auth_callback = callback;
 }
 
+bool TestWebStateDelegate::ShouldPreviewLink(WebState* source,
+                                             const GURL& link_url) {
+  last_link_url_ = link_url;
+  return should_preview_link_;
+}
+
+UIViewController* TestWebStateDelegate::GetPreviewingViewController(
+    WebState* source,
+    const GURL& link_url) {
+  last_link_url_ = link_url;
+  return previewing_view_controller_;
+}
+
+void TestWebStateDelegate::CommitPreviewingViewController(
+    WebState* source,
+    UIViewController* previewing_view_controller) {
+  last_previewing_view_controller_ = previewing_view_controller;
+}
+
 }  // namespace web
