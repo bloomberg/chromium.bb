@@ -5009,7 +5009,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_CONFLICTS_HEADER_SIGNED_BY" desc="The 'Signed by' header for each module item in the list">
           Signed by
         </message>
-        <message name="IDS_CONFLICTS_HEADER_LOCATION" desc="The 'Location' header for each module item in the list">
+        <message name="IDS_CONFLICTS_HEADER_LOCATION" desc="The 'Location' header for each module item in the list" meaning="File location">
           Location
         </message>
         <message name="IDS_CONFLICTS_HEADER_VERSION" desc="The 'Version' header for each module item in the list">
@@ -6130,7 +6130,7 @@ I don't think this site should be blocked!
     <message name="IDS_HANDLER_OPTIONS_WINDOW_TITLE" desc="The title of the window that lets a user change what handlers they have registered for various protocols / mimetypes.">
       Protocol handlers
     </message>
-      <message name="IDS_GEOLOCATION_TAB_LABEL" desc="Label for Geolocation tab on Content Settings dialog">
+      <message name="IDS_GEOLOCATION_TAB_LABEL" desc="Label for Geolocation tab on Content Settings dialog" meaning="Geolocation">
         Location
       </message>
       <message name="IDS_GEOLOCATION_HEADER" desc="Label for Geolocation exception management page on Content Settings dialog">

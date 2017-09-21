@@ -952,7 +952,7 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
 
       <!-- Location preferences -->
-      <message name="IDS_WEBSITE_SETTINGS_DEVICE_LOCATION" desc="Title for Location settings, which control which websites can access your location.">
+      <message name="IDS_WEBSITE_SETTINGS_DEVICE_LOCATION" desc="Title for Location settings, which control which websites can access your location." meaning="Geolocation">
         Location
       </message>
       <message name="IDS_GEOLOCATION_PERMISSION_TITLE" desc="Title for the permission of accessing the current location of a device [CHAR-LIMIT=32]">
