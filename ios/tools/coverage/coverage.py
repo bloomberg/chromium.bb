@@ -62,6 +62,141 @@ EARL_GREY_TEST_TARGET_POSTFIX = 'egtests'
 TEST_FILES_POSTFIXES = ['unittest.mm', 'unittest.cc', 'egtest.mm']
 
 
+class _FileLineCoverageReport(object):
+  """Encapsulates coverage calculations for files."""
+
+  def __init__(self):
+    """Initializes FileLineCoverageReport object."""
+    self._coverage = {}
+
+  def AddFile(self, path, total_lines, executed_lines):
+    """Adds a new file entry.
+
+    Args:
+      path: path to the file.
+      total_lines: Total number of lines.
+      executed_lines: Total number of executed lines.
+    """
+    summary = {
+        'total': total_lines,
+        'executed': executed_lines
+    }
+    self._coverage[path] = summary
+
+  def GetCoverageForFile(self, path):
+    """Returns tuple representing coverage for a file.
+
+    Args:
+      path: path to the file.
+
+    Returns:
+      tuple with two integers (total number of lines, number of executed lines.)
+    """
+    assert path in self._coverage, '{} is not in the report.'.format(path)
+    return self._coverage[path]['total'], self._coverage[path]['executed']
+
+  def GetListOfFiles(self):
+    """Returns a list of files in the report.
+
+    Returns:
+      A list of files.
+    """
+    return self._coverage.keys()
+
+  def FilterFiles(self, include_sources, exclude_sources):
+    """Filter files in the report.
+
+    Only includes files that is under at least one of the paths in
+    |include_sources|, but none of them in |exclude_sources|.
+
+    Args:
+      include_sources: A list of directories and files.
+      exclude_sources: A list of directories and files.
+    """
+    files_to_delete = []
+    for path in self._coverage:
+      should_include = (any(path.startswith(source)
+                            for source in include_sources))
+      should_exclude = (any(path.startswith(source)
+                            for source in exclude_sources))
+
+      if not should_include or should_exclude:
+        files_to_delete.append(path)
+
+    for path in files_to_delete:
+      del self._coverage[path]
+
+  def ExcludeTestFiles(self):
+    """Exclude test files from the report.
+
+    Test files are identified by |TEST_FILES_POSTFIXES|.
+    """
+    files_to_delete = []
+    for path in self._coverage:
+      if any(path.endswith(postfix) for postfix in TEST_FILES_POSTFIXES):
+        files_to_delete.append(path)
+
+    for path in files_to_delete:
+      del self._coverage[path]
+
+
+class _DirectoryLineCoverageReport(object):
+  """Encapsulates coverage calculations for directories."""
+
+  def __init__(self, file_line_coverage_report):
+    """Initializes DirectoryLineCoverageReport object."""
+    self._coverage = {}
+    self._subpaths = {}
+
+    # Get line coverage data and list of sub-directories or files
+    # for each directory.
+    per_dir_line_coverage_report = collections.defaultdict(
+        lambda: collections.defaultdict(lambda: 0))
+    per_dir_subpaths = collections.defaultdict(set)
+
+    # Imagine all dirctories and files are nodes in a tree, and files are the
+    # leaves. The following algorithm visits all nodes (including interior
+    # directories) in a layer-to-layer fashion from bottom to top.
+    paths_to_visit = collections.deque()
+    paths_to_visit.extend(file_line_coverage_report.GetListOfFiles())
+    visited = set()
+
+    while paths_to_visit:
+      # Paths maybe added to the queue multiple times, skip if already visited.
+      path = paths_to_visit.popleft()
+      if path in visited:
+        continue
+
+      visited.add(path)
+      if os.path.isfile(path):
+        total, executed = file_line_coverage_report.GetCoverageForFile(path)
+      else:
+        total = per_dir_line_coverage_report[path]['total']
+        executed = per_dir_line_coverage_report[path]['executed']
+
+      dir_path = os.path.dirname(path)
+      per_dir_line_coverage_report[dir_path]['total'] += total
+      per_dir_line_coverage_report[dir_path]['executed'] += executed
+      per_dir_subpaths[dir_path].add(path)
+
+      paths_to_visit.append(dir_path)
+
+    self._coverage = per_dir_line_coverage_report
+    self._subpaths = per_dir_subpaths
+
+  def GetCoverageForDirectory(self, path):
+    """Returns tuple representing coverage for a directory.
+
+    Args:
+      path: path to the directory.
+
+    Returns:
+      tuple with two integers (total number of lines, number of executed lines.)
+    """
+    assert path in self._coverage, '{} is not in the report.'.format(path)
+    return self._coverage[path]['total'], self._coverage[path]['executed']
+
+
 def _CreateCoverageProfileDataForTarget(target, jobs_count=None,
                                         gtest_filter=None):
   """Builds and runs target to generate the coverage profile data.
@@ -84,48 +219,8 @@ def _CreateCoverageProfileDataForTarget(target, jobs_count=None,
   return profdata_path
 
 
-def _DisplayLineCoverageReport(target, profdata_path, top_level_dir,
-                               include_sources, exclude_sources):
-  """Generates and displays line coverage report.
-
-  The output has the following format:
-  Line Coverage Report for the Following Directories:
-  dir1:
-    Total Lines: 10 Executed Lines: 5 Missed Lines: 5  Coverage: 50%
-  dir2:
-    Total Lines: 20 Executed Lines: 2 Missed lines: 18 Coverage: 10%
-  In Aggregate:
-    Total Lines: 30 Executed Lines: 7 Missed Lines: 23 Coverage: 23%
-
-  Args:
-    target: A string representing the name of the target to be tested.
-    profdata_path: A string representing the path to the profdata file.
-    top_level_dir: The top level directory to show code coverage report.
-    include_sources: A list of paths.
-    exclude_sources: A list of paths.
-  """
-  print 'Generating code coverge report'
-  raw_line_coverage_report = _GenerateLineCoverageReport(target, profdata_path)
-  line_coverage_report_with_test = _FilterLineCoverageReport(
-      raw_line_coverage_report, include_sources, exclude_sources)
-  line_coverage_report = _ExcludeTestFiles(line_coverage_report_with_test)
-
-  top_level_dir_coverage = collections.defaultdict(lambda: 0)
-  for file_name in line_coverage_report:
-    total_lines = line_coverage_report[file_name]['total_lines']
-    executed_lines = line_coverage_report[file_name]['executed_lines']
-
-    if file_name.startswith(top_level_dir):
-      top_level_dir_coverage['total_lines'] += total_lines
-      top_level_dir_coverage['executed_lines'] += executed_lines
-
-  print '\nLine Coverage Report for Directory: ' + str(top_level_dir)
-  _PrintLineCoverageStats(top_level_dir_coverage['total_lines'],
-                          top_level_dir_coverage['executed_lines'])
-
-
-def _GenerateLineCoverageReport(target, profdata_path):
-  """Generate code coverage report using llvm-cov report.
+def _GeneratePerFileLineCoverageReport(target, profdata_path):
+  """Generate per file code coverage report using llvm-cov report.
 
   The officially suggested command to export code coverage data is to use
   "llvm-cov export", which returns comprehensive code coverage data in a json
@@ -152,12 +247,7 @@ def _GenerateLineCoverageReport(target, profdata_path):
     profdata_path: A string representing the path to the profdata file.
 
   Returns:
-    A json object whose format can be found at:
-
-    Root: dict => A dictionary of objects describing line covearge for files
-    -- file_name: dict => Line coverage summary.
-    ---- total_lines: int => Number of total lines.
-    ---- executed_lines: int => Number of executed lines.
+    A FileLineCoverageReport object.
   """
   application_path = _GetApplicationBundlePath(target)
   binary_path = os.path.join(application_path, target)
@@ -178,8 +268,7 @@ def _GenerateLineCoverageReport(target, profdata_path):
   # The 2nd to last column contains the missed number of lines.
   missed_lines_index = -2
 
-  line_coverage_report = collections.defaultdict(
-      lambda: collections.defaultdict(lambda: 0))
+  file_line_coverage_report = _FileLineCoverageReport()
   for coverage_content in coverage_content_by_files:
     coverage_data = coverage_content.split()
     file_name = coverage_data[0]
@@ -190,98 +279,33 @@ def _GenerateLineCoverageReport(target, profdata_path):
     try:
       total_lines = int(coverage_data[total_lines_index])
       missed_lines = int(coverage_data[missed_lines_index])
-    except ValueError as e:
+    except ValueError:
       continue
 
     executed_lines = total_lines - missed_lines
-    line_coverage_report[file_name]['total_lines'] = total_lines
-    line_coverage_report[file_name]['executed_lines'] = executed_lines
+    file_line_coverage_report.AddFile(file_name, total_lines, executed_lines)
 
-  return line_coverage_report
-
-
-def _FilterLineCoverageReport(raw_report, include_sources, exclude_sources):
-  """Filter line coverage report to only include directories in |paths|.
-
-  Args:
-    raw_report: A json object with the following format:
-      Root: dict => A dictionary of objects describing line covearge for files
-      -- file_name: dict => Line coverage summary.
-      ---- total_lines: int => Number of total lines.
-      ---- executed_lines: int => Number of executed lines.
-    include_sources: A list of paths.
-    exclude_sources: A list of paths.
-
-  Returns:
-    A json object with the following format:
-
-    Root: dict => A dictionary of objects describing line covearge for files
-    -- file_name: dict => Line coverage summary.
-    ---- total_lines: int => Number of total lines.
-    ---- executed_lines: int => Number of executed lines.
-  """
-  filtered_report = {}
-  for file_name in raw_report:
-    should_include = (any(file_name.startswith(source)
-                          for source in include_sources))
-    should_exclude = (any(file_name.startswith(source)
-                          for source in exclude_sources))
-    if should_include and not should_exclude:
-      filtered_report[file_name] = raw_report[file_name]
-
-  return filtered_report
+  return file_line_coverage_report
 
 
-def _ExcludeTestFiles(line_coverage_report_with_test):
-  """Exclude test files from code coverage report.
-
-  Test files are identified by |TEST_FILES_POSTFIXES|.
-
-  Args:
-    line_coverage_report_with_test: A json object with the following format:
-      Root: dict => A dictionary of objects describing line covearge for files
-      -- file_name: dict => Line coverage summary.
-      ---- total_lines: int => Number of total lines.
-      ---- executed_lines: int => Number of executed lines.
-
-  Returns:
-    A coverage report with test files excluded, as a json object in the format
-    below:
-
-    Root: dict => A dictionary of objects describing line covearge for files
-    -- file_name: dict => Line coverage summary.
-    ---- total_lines: int => Number of total lines.
-    ---- executed_lines: int => Number of executed lines.
-  """
-  line_coverage_report = {}
-  for file_name in line_coverage_report_with_test:
-    if any(file_name.endswith(postfix) for postfix in TEST_FILES_POSTFIXES):
-      continue
-
-    line_coverage_report[file_name] = line_coverage_report_with_test[file_name]
-
-  return line_coverage_report
-
-
-def _PrintLineCoverageStats(total_lines, executed_lines):
+def _PrintLineCoverageStats(total, executed):
   """Print line coverage statistics.
 
   The format is as following:
-    Total Lines: 20 Executed Lines: 2 missed lines: 18 Coverage: 10%
+    Total Lines: 20 Executed Lines: 2 Missed lines: 18 Coverage: 10%
 
   Args:
-    total_lines: number of lines in total.
-    executed_lines: number of lines that are executed.
+    total: total number of lines.
+    executed: number of lines that are executed.
   """
-  missed_lines = total_lines - executed_lines
-  coverage = float(executed_lines) / total_lines if total_lines > 0 else None
+  missed = total - executed
+  coverage = float(executed) / total if total > 0 else None
   percentage_coverage = ('{}%'.format(int(coverage * 100))
                          if coverage is not None else 'NA')
 
   output = ('Total Lines: {}\tExecuted Lines: {}\tMissed Lines: {}\t'
             'Coverage: {}\n')
-  print output.format(total_lines, executed_lines, missed_lines,
-                      percentage_coverage)
+  print output.format(total, executed, missed, percentage_coverage)
 
 
 def _BuildTargetWithCoverageConfiguration(target, jobs_count):
@@ -738,8 +762,21 @@ def Main():
     profdata_path = _CreateCoverageProfileDataForTarget(target, jobs,
                                                         args.gtest_filter)
 
-  _DisplayLineCoverageReport(target, profdata_path, args.top_level_dir,
-                             include_sources, exclude_sources)
+  print 'Generating code coverge report'
+  file_line_coverage_report = _GeneratePerFileLineCoverageReport(
+      target, profdata_path)
+  file_line_coverage_report.FilterFiles(include_sources, exclude_sources)
+  file_line_coverage_report.ExcludeTestFiles()
+
+  dir_line_coverage_report = _DirectoryLineCoverageReport(
+      file_line_coverage_report)
+
+  print '\nLine Coverage Report for: ' + str(args.top_level_dir)
+  # ios/chrome and ios/chrome/ refer to the same directory.
+  norm_path = os.path.normpath(args.top_level_dir)
+  total, executed = dir_line_coverage_report.GetCoverageForDirectory(norm_path)
+  _PrintLineCoverageStats(total, executed)
+
 
 if __name__ == '__main__':
   sys.exit(Main())
