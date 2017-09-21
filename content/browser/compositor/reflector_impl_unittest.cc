@@ -10,11 +10,11 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "cc/output/output_surface_frame.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_texture.h"
@@ -96,7 +96,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                bool use_stencil) override {}
-  void SwapBuffers(cc::OutputSurfaceFrame frame) override {}
+  void SwapBuffers(viz::OutputSurfaceFrame frame) override {}
   uint32_t GetFramebufferCopyTextureFormat() override { return GL_RGB; }
   bool IsDisplayedAsOverlayPlane() const override { return false; }
   unsigned GetOverlayTextureId() const override { return 0; }

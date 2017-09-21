@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread.h"
 #include "cc/base/switches.h"
-#include "cc/output/output_surface_frame.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
@@ -22,6 +21,7 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -88,7 +88,7 @@ class DirectOutputSurface : public viz::OutputSurface {
         size.width(), size.height(), device_scale_factor,
         gl::GetGLColorSpace(color_space), has_alpha);
   }
-  void SwapBuffers(cc::OutputSurfaceFrame frame) override {
+  void SwapBuffers(viz::OutputSurfaceFrame frame) override {
     DCHECK(context_provider_.get());
     if (frame.sub_buffer_rect) {
       context_provider_->ContextSupport()->PartialSwapBuffers(

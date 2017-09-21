@@ -46,7 +46,7 @@ class OffscreenBrowserCompositorOutputSurface
                bool alpha,
                bool stencil) override;
   void BindFramebuffer() override;
-  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
+  void SwapBuffers(viz::OutputSurfaceFrame frame) override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;

@@ -8,7 +8,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/base/render_surface_filters.h"
-#include "cc/output/output_surface_frame.h"
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/copy_output_request.h"
@@ -19,6 +18,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -137,7 +137,7 @@ void SkiaRenderer::FinishDrawingFrame() {
 void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(visible_);
   TRACE_EVENT0("cc,benchmark", "SkiaRenderer::SwapBuffers");
-  cc::OutputSurfaceFrame output_frame;
+  OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(latency_info);
   output_frame.size = surface_size_for_swap_buffers();
   if (use_swap_with_bounds_) {

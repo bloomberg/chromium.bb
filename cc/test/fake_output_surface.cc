@@ -43,8 +43,9 @@ void FakeOutputSurface::Reshape(const gfx::Size& size,
   last_reshape_color_space_ = color_space;
 }
 
-void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
-  last_sent_frame_.reset(new OutputSurfaceFrame(std::move(frame)));
+void FakeOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {
+  last_sent_frame_ =
+      std::make_unique<viz::OutputSurfaceFrame>(std::move(frame));
   ++num_sent_frames_;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

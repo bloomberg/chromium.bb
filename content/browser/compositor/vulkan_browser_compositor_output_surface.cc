@@ -104,7 +104,7 @@ VulkanBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
 }
 
 void VulkanBrowserCompositorOutputSurface::SwapBuffers(
-    cc::OutputSurfaceFrame frame) {
+    viz::OutputSurfaceFrame frame) {
   surface_->SwapBuffers();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

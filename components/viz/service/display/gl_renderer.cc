@@ -31,7 +31,6 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/output_surface_frame.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
@@ -46,6 +45,7 @@
 #include "components/viz/service/display/dynamic_geometry_binding.h"
 #include "components/viz/service/display/layer_quad.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/static_geometry_binding.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -2732,7 +2732,7 @@ void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
 
   gfx::Size surface_size = surface_size_for_swap_buffers();
 
-  cc::OutputSurfaceFrame output_frame;
+  OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(latency_info);
   output_frame.size = surface_size;
   if (use_swap_with_bounds_) {

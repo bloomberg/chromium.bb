@@ -4,15 +4,15 @@
 
 #include "components/viz/service/display/vulkan_renderer.h"
 
-#include "cc/output/output_surface_frame.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/output_surface_frame.h"
 
 namespace viz {
 
 VulkanRenderer::~VulkanRenderer() {}
 
 void VulkanRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
-  cc::OutputSurfaceFrame output_frame;
+  OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(latency_info);
   output_surface_->SwapBuffers(std::move(output_frame));
 }

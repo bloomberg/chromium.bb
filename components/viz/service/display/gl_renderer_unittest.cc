@@ -1786,10 +1786,8 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD1(SetDrawRectangle, void(const gfx::Rect&));
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
-  MOCK_METHOD1(SwapBuffers_, void(cc::OutputSurfaceFrame& frame));  // NOLINT
-  void SwapBuffers(cc::OutputSurfaceFrame frame) override {
-    SwapBuffers_(frame);
-  }
+  MOCK_METHOD1(SwapBuffers_, void(OutputSurfaceFrame& frame));  // NOLINT
+  void SwapBuffers(OutputSurfaceFrame frame) override { SwapBuffers_(frame); }
   MOCK_CONST_METHOD0(GetOverlayCandidateValidator,
                      OverlayCandidateValidator*());
   MOCK_CONST_METHOD0(IsDisplayedAsOverlayPlane, bool());

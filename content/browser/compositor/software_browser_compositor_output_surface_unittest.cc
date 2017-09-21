@@ -10,10 +10,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/output/output_surface_frame.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -139,7 +139,7 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {
   output_surface_ = CreateSurface(std::move(software_device));
   output_surface_->BindToClient(&output_surface_client);
 
-  output_surface_->SwapBuffers(cc::OutputSurfaceFrame());
+  output_surface_->SwapBuffers(viz::OutputSurfaceFrame());
   EXPECT_EQ(NULL, output_surface_->software_device()->GetVSyncProvider());
   EXPECT_EQ(0, update_vsync_parameters_call_count_);
 }
@@ -155,7 +155,7 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, VSyncProviderUpdates) {
       output_surface_->software_device()->GetVSyncProvider());
   EXPECT_EQ(0, vsync_provider->call_count());
 
-  output_surface_->SwapBuffers(cc::OutputSurfaceFrame());
+  output_surface_->SwapBuffers(viz::OutputSurfaceFrame());
   EXPECT_EQ(1, vsync_provider->call_count());
   EXPECT_EQ(1, update_vsync_parameters_call_count_);
 }

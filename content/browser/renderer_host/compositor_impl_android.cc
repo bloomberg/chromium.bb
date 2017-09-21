@@ -32,7 +32,6 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/output_surface_frame.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/layer_tree_host.h"
@@ -47,6 +46,7 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -271,7 +271,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
 
   ~AndroidOutputSurface() override = default;
 
-  void SwapBuffers(cc::OutputSurfaceFrame frame) override {
+  void SwapBuffers(viz::OutputSurfaceFrame frame) override {
     GetCommandBufferProxy()->AddLatencyInfo(frame.latency_info);
     if (frame.sub_buffer_rect) {
       DCHECK(frame.sub_buffer_rect->IsEmpty());

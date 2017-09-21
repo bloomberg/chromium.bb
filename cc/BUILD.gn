@@ -138,8 +138,6 @@ cc_component("cc") {
     "output/compositor_frame.h",
     "output/compositor_frame_metadata.cc",
     "output/compositor_frame_metadata.h",
-    "output/output_surface_frame.cc",
-    "output/output_surface_frame.h",
     "output/overlay_candidate.cc",
     "output/overlay_candidate.h",
     "output/software_output_device.cc",
