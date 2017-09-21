@@ -1957,6 +1957,8 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
   view_->OnScrollEvent(&scroll1);
   input_event = GetInputEventFromMessage(*sink_->GetMessageAt(0));
   wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
+  base::TimeTicks wheel_event_timestamp =
+      ui::EventTimeStampFromSeconds(wheel_event->TimeStampSeconds());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged, wheel_event->phase);
   SendInputEventACK(blink::WebInputEvent::kMouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -1968,6 +1970,7 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
   EXPECT_EQ(2U, gesture_event->data.scroll_update.delta_y);
   SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
+
   sink_->ClearMessages();
 
   // Let the MouseWheelPhaseHandler::mouse_wheel_end_dispatch_timer_ fire. A
@@ -1979,10 +1982,13 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
   base::RunLoop().Run();
 
   input_event = GetInputEventFromMessage(*sink_->GetMessageAt(0));
-  wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
-  EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
-  EXPECT_EQ(0U, wheel_event->delta_x);
-  EXPECT_EQ(0U, wheel_event->delta_y);
+  const WebMouseWheelEvent* wheel_end_event =
+      static_cast<const WebMouseWheelEvent*>(input_event);
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_end_event->phase);
+  EXPECT_EQ(0U, wheel_end_event->delta_x);
+  EXPECT_EQ(0U, wheel_end_event->delta_y);
+  EXPECT_GT(ui::EventTimeStampFromSeconds(wheel_end_event->TimeStampSeconds()),
+            wheel_event_timestamp);
   SendInputEventACK(blink::WebInputEvent::kMouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
