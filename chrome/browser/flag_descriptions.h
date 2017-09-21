@@ -93,9 +93,6 @@ extern const char kClickToOpenPDFDescription[];
 extern const char kCloudImportName[];
 extern const char kCloudImportDescription[];
 
-extern const char kColorCorrectRenderingName[];
-extern const char kColorCorrectRenderingDescription[];
-
 extern const char kForceColorProfileSRGB[];
 extern const char kForceColorProfileP3[];
 extern const char kForceColorProfileColorSpin[];

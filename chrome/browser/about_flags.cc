@@ -3128,11 +3128,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxDisplayTitleForCurrentUrlDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kDisplayTitleForCurrentUrl)},
 
-    {"enable-color-correct-rendering",
-     flag_descriptions::kColorCorrectRenderingName,
-     flag_descriptions::kColorCorrectRenderingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kColorCorrectRendering)},
-
     {"force-color-profile", flag_descriptions::kForceColorProfileName,
      flag_descriptions::kForceColorProfileDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceColorProfileChoices)},
