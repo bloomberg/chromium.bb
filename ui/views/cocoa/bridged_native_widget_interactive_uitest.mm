@@ -15,6 +15,7 @@
 #include "ui/base/test/ui_controls.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
+#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/window/native_frame_view.h"
@@ -41,14 +42,11 @@ class ResizableDelegateView : public WidgetDelegateView {
 
 class BridgedNativeWidgetUITest : public test::WidgetTest {
  public:
-  BridgedNativeWidgetUITest() {
-    // TODO(tapted): Remove this when these are absorbed into Chrome's
-    // interactive_ui_tests target. See http://crbug.com/403679.
-    ui_controls::EnableUIControls();
-  }
+  BridgedNativeWidgetUITest() = default;
 
   // testing::Test:
   void SetUp() override {
+    ViewsInteractiveUITestBase::InteractiveSetUp();
     WidgetTest::SetUp();
     Widget::InitParams init_params =
         CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -72,6 +70,9 @@ class BridgedNativeWidgetUITest : public test::WidgetTest {
 
  protected:
   std::unique_ptr<Widget> widget_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetUITest);
 };
 
 // Tests for correct fullscreen tracking, regardless of whether it is initiated

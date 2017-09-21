@@ -16,7 +16,8 @@ ViewsInteractiveUITestBase::ViewsInteractiveUITestBase() {}
 
 ViewsInteractiveUITestBase::~ViewsInteractiveUITestBase() {}
 
-void ViewsInteractiveUITestBase::SetUp() {
+// static
+void ViewsInteractiveUITestBase::InteractiveSetUp() {
   // Mojo is initialized here similar to how each browser test case initializes
   // Mojo when starting. This only works because each interactive_ui_test runs
   // in a new process.
@@ -27,7 +28,10 @@ void ViewsInteractiveUITestBase::SetUp() {
   base::FilePath ui_test_pak_path;
   ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+}
 
+void ViewsInteractiveUITestBase::SetUp() {
+  InteractiveSetUp();
   ViewsTestBase::SetUp();
 }
 
