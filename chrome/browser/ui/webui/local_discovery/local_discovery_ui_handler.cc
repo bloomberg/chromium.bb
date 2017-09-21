@@ -17,8 +17,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/cloud_print/privet_confirm_api_flow.h"
 #include "chrome/browser/printing/cloud_print/privet_constants.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister_impl.h"
@@ -40,6 +38,11 @@
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
 #define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
+#endif
+
+#if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #endif
 
 using cloud_print::CloudPrintPrinterList;
