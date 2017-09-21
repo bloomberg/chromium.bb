@@ -2161,10 +2161,10 @@
     Google Assistant
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_CONTEXT" desc="Title for a toggle that lets the assistant use whats on the screen.">
-    Let assistant use what's on your screen
+    Let Assistant use what's on your screen
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_CONTEXT_DESCRIPTION" desc="Sub label for context-enable toggle.">
-    Enables the assistant to show you related info, apps, and actions.
+    Enables the Assistant to show you related info, apps, and actions.
   </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_SETTINGS" desc="Title for a button that opens the Google Assistant app settings.">
     Google Assistant settings
