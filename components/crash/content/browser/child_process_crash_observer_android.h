@@ -12,8 +12,12 @@ namespace breakpad {
 
 class ChildProcessCrashObserver : public breakpad::CrashDumpObserver::Client {
  public:
+  // |increase_crash_cb is| the callback to run after processing minidump file.
+  // For now this callback is used to increase render crash counter based on
+  // processing minidump result.
   ChildProcessCrashObserver(const base::FilePath crash_dump_dir,
-                            int descriptor_id);
+                            int descriptor_id,
+                            const base::Closure& increase_crash_cb);
   ~ChildProcessCrashObserver() override;
 
   // breakpad::CrashDumpObserver::Client implementation:
@@ -30,6 +34,8 @@ class ChildProcessCrashObserver : public breakpad::CrashDumpObserver::Client {
   // The id used to identify the file descriptor in the set of file
   // descriptor mappings passed to the child process.
   int descriptor_id_;
+
+  base::Callback<void(bool)> increase_crash_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessCrashObserver);
 };

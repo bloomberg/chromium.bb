@@ -143,18 +143,6 @@ static void UpdateMetricsServiceState(JNIEnv*,
       may_upload);
 }
 
-// Renderer process crashed in the foreground.
-static void LogRendererCrash(JNIEnv*, const JavaParamRef<jclass>&) {
-  DCHECK(g_browser_process);
-  // Increment the renderer crash count in stability metrics.
-  PrefService* pref = g_browser_process->local_state();
-  DCHECK(pref);
-  int value = pref->GetInteger(metrics::prefs::kStabilityRendererCrashCount);
-  pref->SetInteger(metrics::prefs::kStabilityRendererCrashCount, value + 1);
-  // Migrate proto to histogram to repurpose proto count.
-  UMA_HISTOGRAM_BOOLEAN("Stability.Android.RendererCrash", true);
-}
-
 static void RegisterExternalExperiment(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
