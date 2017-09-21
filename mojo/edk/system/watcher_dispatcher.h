@@ -95,9 +95,6 @@ class WatcherDispatcher : public Dispatcher {
   // an invalid object. It must therefore never be dereferenced.
   const Watch* last_watch_to_block_arming_ = nullptr;
 
-  // TODO(crbug.com/740044): Remove this.
-  uint32_t sentinel_value_for_debugging_ = 0x12345678;
-
   DISALLOW_COPY_AND_ASSIGN(WatcherDispatcher);
 };
 
