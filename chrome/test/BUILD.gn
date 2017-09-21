@@ -612,16 +612,13 @@ if (!is_android) {
         "../browser/ui/views/menu_view_drag_and_drop_test.cc",
         "../browser/ui/views/passwords/manage_passwords_bubble_view_interactive_uitest.cc",
         "../browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc",
-        "//ui/views/corewm/desktop_capture_controller_unittest.cc",
-        "//ui/views/widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc",
-        "//ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
-        "//ui/views/widget/widget_interactive_uitest.cc",
         "base/view_event_test_base.cc",
         "base/view_event_test_base.h",
       ]
       deps += [
         "//ui/views",
         "//ui/views:test_support",
+        "//ui/views:views_interactive_ui_tests",
         "//ui/views/controls/webview:test_support",
       ]
       if (!is_mac || mac_views_browser) {
@@ -669,16 +666,6 @@ if (!is_android) {
             deps += [ "//build/config/linux/gtk" ]
           }
         }
-      }
-      if (!use_x11) {
-        sources -= [
-          "//ui/views/widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc",
-          "//ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
-        ]
-      }
-      if (use_aura) {
-        sources +=
-            [ "//ui/views/widget/native_widget_aura_interactive_uitest.cc" ]
       }
       if (use_aura || is_mac) {
         deps += [ "//ui/touch_selection" ]
@@ -800,10 +787,6 @@ if (!is_android) {
       libs = [ "oleacc.lib" ]
     }
 
-    if (toolkit_views && is_win) {
-      sources += [ "//ui/views/accessibility/ax_system_caret_win_interactive_uitest.cc" ]
-    }
-
     if (is_mac) {
       data_deps += [
         "//chrome",
@@ -864,10 +847,6 @@ if (!is_android) {
         "../browser/notifications/notification_interactive_uitest.cc",
         "../browser/notifications/platform_notification_service_interactive_uitest.cc",
       ]
-    }
-
-    if (!use_aura || is_chromeos) {
-      sources -= [ "//ui/views/corewm/desktop_capture_controller_unittest.cc" ]
     }
   }
 

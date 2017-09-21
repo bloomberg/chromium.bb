@@ -1104,28 +1104,65 @@ test("views_unittests") {
   ]
 }
 
-if (is_mac) {
-  test("macviews_interactive_ui_tests") {
-    sources = [
+# This target is added as a dependency of browser interactive_ui_tests. It must
+# be source_set, otherwise the linker will drop the tests as dead code.
+source_set("views_interactive_ui_tests") {
+  testonly = true
+
+  sources = [
+    "widget/widget_interactive_uitest.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    ":views",
+    "//base",
+    "//base/test:test_support",
+    "//mojo/edk/system",
+    "//skia",
+    "//testing/gtest",
+    "//ui/base:test_support",
+    "//ui/compositor",
+    "//ui/events:test_support",
+    "//ui/gl:test_support",
+    "//ui/resources",
+    "//ui/resources:ui_test_pak",
+    "//ui/strings",
+  ]
+
+  if (is_win) {
+    sources += [ "accessibility/ax_system_caret_win_interactive_uitest.cc" ]
+  }
+
+  if (is_mac) {
+    sources += [
       "cocoa/bridged_native_widget_interactive_uitest.mm",
-      "run_all_unittests_main.cc",
       "widget/native_widget_mac_interactive_uitest.mm",
     ]
-    deps = [
-      ":test_support",
-      ":views",
-      "//base",
-      "//base/test:test_support",
-      "//mojo/edk/system",
-      "//skia",
-      "//testing/gtest",
-      "//ui/base:test_support",
-      "//ui/compositor",
-      "//ui/events:test_support",
-      "//ui/gl:test_support",
-      "//ui/resources",
-      "//ui/resources:ui_test_pak",
-      "//ui/strings",
+  }
+
+  if (use_aura) {
+    sources += [
+      "corewm/desktop_capture_controller_unittest.cc",
+      "widget/native_widget_aura_interactive_uitest.cc",
     ]
+    deps += [
+      "//ui/aura",
+      "//ui/aura:test_support",
+      "//ui/wm",
+      "//ui/wm/public",
+    ]
+  }
+
+  if (use_x11) {
+    sources += [
+      "widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc",
+      "widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
+    ]
+    deps += [ "//ui/events/platform/x11:x11" ]
+  }
+
+  if (is_chromeos) {
+    sources -= [ "corewm/desktop_capture_controller_unittest.cc" ]
   }
 }

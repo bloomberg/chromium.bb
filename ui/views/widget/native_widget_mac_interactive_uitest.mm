@@ -14,6 +14,7 @@
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/test/test_widget_observer.h"
+#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/widget_test.h"
 
 namespace views {
@@ -27,11 +28,12 @@ class NativeWidgetMacInteractiveUITest
  public:
   class Observer;
 
-  NativeWidgetMacInteractiveUITest()
-      : activationCount_(0), deactivationCount_(0) {
-    // TODO(tapted): Remove this when these are absorbed into Chrome's
-    // interactive_ui_tests target. See http://crbug.com/403679.
-    ui_controls::EnableUIControls();
+  NativeWidgetMacInteractiveUITest() = default;
+
+  // WidgetTest:
+  void SetUp() override {
+    ViewsInteractiveUITestBase::InteractiveSetUp();
+    WidgetTest::SetUp();
   }
 
   Widget* MakeWidget() {
@@ -41,8 +43,8 @@ class NativeWidgetMacInteractiveUITest
 
  protected:
   std::unique_ptr<Observer> observer_;
-  int activationCount_;
-  int deactivationCount_;
+  int activation_count_ = 0;
+  int deactivation_count_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacInteractiveUITest);
@@ -55,9 +57,9 @@ class NativeWidgetMacInteractiveUITest::Observer : public TestWidgetObserver {
 
   void OnWidgetActivationChanged(Widget* widget, bool active) override {
     if (active)
-      parent_->activationCount_++;
+      parent_->activation_count_++;
     else
-      parent_->deactivationCount_++;
+      parent_->deactivation_count_++;
   }
 
  private:
@@ -72,37 +74,44 @@ TEST_P(NativeWidgetMacInteractiveUITest, ShowAttainsKeyStatus) {
   observer_.reset(new Observer(this, widget));
 
   EXPECT_FALSE(widget->IsActive());
-  EXPECT_EQ(0, activationCount_);
-  widget->Show();
+  EXPECT_EQ(0, activation_count_);
+  {
+    WidgetActivationWaiter wait_for_first_active(widget, true);
+    widget->Show();
+    wait_for_first_active.Wait();
+  }
   EXPECT_TRUE(widget->IsActive());
-  RunPendingMessages();
   EXPECT_TRUE([widget->GetNativeWindow() isKeyWindow]);
-  EXPECT_EQ(1, activationCount_);
-  EXPECT_EQ(0, deactivationCount_);
+  EXPECT_EQ(1, activation_count_);
+  EXPECT_EQ(0, deactivation_count_);
 
   // Now check that losing and gaining key status due events outside of Widget
   // works correctly.
   Widget* widget2 = MakeWidget();  // Note: not observed.
-  EXPECT_EQ(0, deactivationCount_);
-  widget2->Show();
-  EXPECT_EQ(1, deactivationCount_);
-
-  RunPendingMessages();
+  EXPECT_EQ(0, deactivation_count_);
+  {
+    WidgetActivationWaiter wait_for_deactivate(widget, false);
+    widget2->Show();
+    wait_for_deactivate.Wait();
+  }
+  EXPECT_EQ(1, deactivation_count_);
   EXPECT_FALSE(widget->IsActive());
-  EXPECT_EQ(1, deactivationCount_);
-  EXPECT_EQ(1, activationCount_);
+  EXPECT_EQ(1, activation_count_);
 
-  [widget->GetNativeWindow() makeKeyAndOrderFront:nil];
-  RunPendingMessages();
+  {
+    WidgetActivationWaiter wait_for_external_activate(widget, true);
+    [widget->GetNativeWindow() makeKeyAndOrderFront:nil];
+    wait_for_external_activate.Wait();
+  }
   EXPECT_TRUE(widget->IsActive());
-  EXPECT_EQ(1, deactivationCount_);
-  EXPECT_EQ(2, activationCount_);
+  EXPECT_EQ(1, deactivation_count_);
+  EXPECT_EQ(2, activation_count_);
 
   widget2->CloseNow();
   widget->CloseNow();
 
-  EXPECT_EQ(1, deactivationCount_);
-  EXPECT_EQ(2, activationCount_);
+  EXPECT_EQ(1, deactivation_count_);
+  EXPECT_EQ(2, activation_count_);
 }
 
 // Test that ShowInactive does not take keyWindow status.
