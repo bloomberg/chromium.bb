@@ -28,7 +28,9 @@ class LanguageState {
 
   // Should be called when the page did a new navigation (whether it is a main
   // frame or sub-frame navigation).
-  void DidNavigate(bool in_page_navigation, bool is_main_frame, bool reload);
+  void DidNavigate(bool is_same_document_navigation,
+                   bool is_main_frame,
+                   bool reload);
 
   // Should be called when the language of the page has been determined.
   // |page_needs_translation| when false indicates that the browser should not
@@ -66,10 +68,6 @@ class LanguageState {
   // Whether the user has already declined to translate the page.
   bool translation_declined() const { return translation_declined_; }
   void set_translation_declined(bool value) { translation_declined_ = value; }
-
-  // Whether the current page was navigated through an in-page (fragment)
-  // navigation.
-  bool in_page_navigation() const { return in_page_navigation_; }
 
   // Whether the translate is enabled.
   bool translate_enabled() const { return translate_enabled_; }
@@ -121,8 +119,8 @@ class LanguageState {
   // load happens in the page after the user closed the infobar.
   bool translation_declined_;
 
-  // Whether the current navigation is a fragment navigation (in page).
-  bool in_page_navigation_;
+  // Whether the current navigation is a same-document navigation.
+  bool is_same_document_navigation_;
 
   // Whether the Translate is enabled.
   bool translate_enabled_;

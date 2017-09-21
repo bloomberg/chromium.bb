@@ -16,7 +16,7 @@ LanguageState::LanguageState(TranslateDriver* driver)
       translation_pending_(false),
       translation_error_(false),
       translation_declined_(false),
-      in_page_navigation_(false),
+      is_same_document_navigation_(false),
       translate_enabled_(false) {
   DCHECK(translate_driver_);
 }
@@ -24,11 +24,11 @@ LanguageState::LanguageState(TranslateDriver* driver)
 LanguageState::~LanguageState() {
 }
 
-void LanguageState::DidNavigate(bool in_page_navigation,
+void LanguageState::DidNavigate(bool is_same_document_navigation,
                                 bool is_main_frame,
                                 bool reload) {
-  in_page_navigation_ = in_page_navigation;
-  if (in_page_navigation_ || !is_main_frame)
+  is_same_document_navigation_ = is_same_document_navigation;
+  if (is_same_document_navigation_ || !is_main_frame)
     return;  // Don't reset our states, the page has not changed.
 
   if (reload) {
@@ -54,8 +54,8 @@ void LanguageState::DidNavigate(bool in_page_navigation,
 
 void LanguageState::LanguageDetermined(const std::string& page_language,
                                        bool page_needs_translation) {
-  if (in_page_navigation_ && !original_lang_.empty()) {
-    // In-page navigation, we don't expect our states to change.
+  if (is_same_document_navigation_ && !original_lang_.empty()) {
+    // Same-document navigation, we don't expect our states to change.
     // Note that we'll set the languages if original_lang_ is empty.  This might
     // happen if the we did not get called on the top-page.
     return;
