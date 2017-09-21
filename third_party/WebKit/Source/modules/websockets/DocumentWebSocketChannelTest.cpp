@@ -84,13 +84,14 @@ class MockWebSocketHandle : public WebSocketHandle {
     DoInitialize(&websocket);
   }
 
-  MOCK_METHOD6(Connect,
+  MOCK_METHOD7(Connect,
                void(const KURL&,
                     const Vector<String>&,
                     SecurityOrigin*,
                     const KURL&,
                     const String&,
-                    WebSocketHandleClient*));
+                    WebSocketHandleClient*,
+                    WebTaskRunner*));
   MOCK_METHOD4(Send,
                void(bool, WebSocketHandle::MessageType, const char*, size_t));
   MOCK_METHOD1(FlowControl, void(int64_t));
@@ -162,7 +163,7 @@ class DocumentWebSocketChannelTest : public ::testing::Test {
       InSequence s;
       EXPECT_CALL(*Handle(), DoInitialize(_));
       EXPECT_CALL(*Handle(), Connect(KURL(NullURL(), "ws://localhost/"), _, _,
-                                     _, _, HandleClient()));
+                                     _, _, HandleClient(), _));
       EXPECT_CALL(*Handle(), FlowControl(65536));
       EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
     }
@@ -213,7 +214,7 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
     EXPECT_CALL(*Handle(), DoInitialize(_));
     EXPECT_CALL(*Handle(),
                 Connect(KURLEq("ws://localhost/"), _, _,
-                        KURLEq("http://example.com/"), _, HandleClient()))
+                        KURLEq("http://example.com/"), _, HandleClient(), _))
         .WillOnce(DoAll(SaveArg<1>(&protocols), SaveArg<2>(&origin)));
     EXPECT_CALL(*Handle(), FlowControl(65536));
     EXPECT_CALL(checkpoint, Call(1));
@@ -822,7 +823,7 @@ class DocumentWebSocketChannelHandshakeThrottleTest
   // non-null throttle.
   void NormalHandshakeExpectations() {
     EXPECT_CALL(*Handle(), DoInitialize(_));
-    EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _));
+    EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _, _));
     EXPECT_CALL(*Handle(), FlowControl(_));
     EXPECT_CALL(*handshake_throttle_, ThrottleHandshake(_, _, _));
   }
@@ -832,7 +833,7 @@ class DocumentWebSocketChannelHandshakeThrottleTest
 
 TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleArguments) {
   EXPECT_CALL(*Handle(), DoInitialize(_));
-  EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _));
+  EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _, _));
   EXPECT_CALL(*Handle(), FlowControl(_));
   EXPECT_CALL(*handshake_throttle_,
               ThrottleHandshake(WebURL(url()), _, WebCallbacks()));

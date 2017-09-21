@@ -41,6 +41,7 @@ namespace blink {
 class KURL;
 class SecurityOrigin;
 class WebSocketHandleClient;
+class WebTaskRunner;
 
 // WebSocketHandle is an interface class designed to be a handle of WebSocket
 // connection.  WebSocketHandle will be used together with
@@ -66,7 +67,8 @@ class WebSocketHandle {
                        SecurityOrigin*,
                        const KURL& site_for_cookies,
                        const String& user_agent_override,
-                       WebSocketHandleClient*) = 0;
+                       WebSocketHandleClient*,
+                       WebTaskRunner*) = 0;
   virtual void Send(bool fin, MessageType, const char* data, size_t) = 0;
   virtual void FlowControl(int64_t quota) = 0;
   virtual void Close(unsigned short code, const String& reason) = 0;

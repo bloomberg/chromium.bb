@@ -49,7 +49,8 @@ class WebSocketHandleImpl : public WebSocketHandle,
                SecurityOrigin*,
                const KURL& site_for_cookies,
                const String& user_agent_override,
-               WebSocketHandleClient*) override;
+               WebSocketHandleClient*,
+               WebTaskRunner*) override;
   void Send(bool fin, MessageType, const char* data, size_t) override;
   void FlowControl(int64_t quota) override;
   void Close(unsigned short code, const String& reason) override;
