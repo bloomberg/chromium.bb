@@ -139,7 +139,6 @@ html[dir=rtl] .bulletpoints + .bulletpoints {
 /* On narrow screens, align everything to the left. */
 @media (max-width: 720px) {
   .content {
-    -webkit-margin-start: 0;
     max-width: 600px !important;  /* must override the rule set by JS which
                                    * is only valid for width > 720px cases. */
     text-align: start;
