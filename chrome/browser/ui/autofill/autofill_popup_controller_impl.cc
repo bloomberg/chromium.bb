@@ -38,8 +38,8 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction) {
   if (previous.get() && previous->delegate_.get() == delegate.get() &&
-      previous->container_view() == container_view &&
-      previous->element_bounds() == element_bounds) {
+      previous->container_view() == container_view) {
+    previous->SetElementBounds(element_bounds);
     previous->ClearState();
     return previous;
   }
@@ -294,6 +294,11 @@ gfx::NativeView AutofillPopupControllerImpl::container_view() {
 
 const gfx::RectF& AutofillPopupControllerImpl::element_bounds() const {
   return controller_common_.element_bounds;
+}
+
+void AutofillPopupControllerImpl::SetElementBounds(const gfx::RectF& bounds) {
+  controller_common_.element_bounds.set_origin(bounds.origin());
+  controller_common_.element_bounds.set_size(bounds.size());
 }
 
 bool AutofillPopupControllerImpl::IsRTL() const {

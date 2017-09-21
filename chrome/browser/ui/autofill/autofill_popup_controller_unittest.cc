@@ -473,6 +473,19 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
 
   // Hide the test_controller to delete it.
   test_controller->DoHide();
+
+  test_controller = new NiceMock<TestAutofillPopupController>(
+      delegate.GetWeakPtr(), gfx::RectF());
+  EXPECT_CALL(*test_controller, Hide()).Times(0);
+
+  const base::WeakPtr<AutofillPopupControllerImpl> controller4 =
+      AutofillPopupControllerImpl::GetOrCreate(
+          test_controller->GetWeakPtr(), delegate.GetWeakPtr(), nullptr,
+          nullptr, bounds, base::i18n::UNKNOWN_DIRECTION);
+  EXPECT_EQ(bounds,
+            static_cast<const AutofillPopupController*>(controller4.get())
+                ->element_bounds());
+  delete test_controller;
 }
 
 TEST_F(AutofillPopupControllerUnitTest, ProperlyResetController) {
