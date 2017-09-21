@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/browser-payment-api/#idl-def-paymentcomplete
+// https://w3c.github.io/payment-request/#dom-paymentcomplete
 
 enum PaymentComplete {
-    "success",
     "fail",
+    "success",
     "unknown"
 };
 
