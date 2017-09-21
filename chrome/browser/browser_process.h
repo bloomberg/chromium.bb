@@ -57,7 +57,6 @@ class VariationsService;
 
 namespace component_updater {
 class ComponentUpdateService;
-class PnaclComponentInstaller;
 class SupervisedUserWhitelistInstaller;
 }
 
@@ -274,9 +273,6 @@ class BrowserProcess {
   virtual component_updater::ComponentUpdateService* component_updater() = 0;
 
   virtual CRLSetFetcher* crl_set_fetcher() = 0;
-
-  virtual component_updater::PnaclComponentInstaller*
-  pnacl_component_installer() = 0;
 
   virtual component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() = 0;

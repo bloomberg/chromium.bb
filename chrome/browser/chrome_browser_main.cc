@@ -502,7 +502,7 @@ void RegisterComponentsForUpdate() {
   // installer when running on Linux. See crbug.com/422121 for more details.
   if (!base::SysInfo::IsRunningOnChromeOS())
 #endif  // defined(OS_CHROMEOS)
-    g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
+    RegisterPnaclComponent(cus);
 #endif  // BUILDFLAG(ENABLE_NACL) && !defined(OS_ANDROID)
 
   component_updater::SupervisedUserWhitelistInstaller* whitelist_installer =
