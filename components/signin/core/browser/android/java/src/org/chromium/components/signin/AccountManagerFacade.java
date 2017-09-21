@@ -190,15 +190,12 @@ public class AccountManagerFacade {
      */
     @MainThread
     public void tryGetGoogleAccountNames(final Callback<List<String>> callback) {
-        tryGetGoogleAccounts(new Callback<Account[]>() {
-            @Override
-            public void onResult(Account[] accounts) {
-                List<String> accountNames = new ArrayList<>();
-                for (Account account : accounts) {
-                    accountNames.add(account.name);
-                }
-                callback.onResult(accountNames);
+        tryGetGoogleAccounts(accounts -> {
+            List<String> accountNames = new ArrayList<>();
+            for (Account account : accounts) {
+                accountNames.add(account.name);
             }
+            callback.onResult(accountNames);
         });
     }
 
@@ -208,21 +205,18 @@ public class AccountManagerFacade {
     @MainThread
     public void getGoogleAccountNames(
             final Callback<AccountManagerResult<List<String>>> callback) {
-        getGoogleAccounts(new Callback<AccountManagerResult<Account[]>>() {
-            @Override
-            public void onResult(AccountManagerResult<Account[]> accounts) {
-                final AccountManagerResult<List<String>> result;
-                if (accounts.hasValue()) {
-                    List<String> accountNames = new ArrayList<>(accounts.getValue().length);
-                    for (Account account : accounts.getValue()) {
-                        accountNames.add(account.name);
-                    }
-                    result = new AccountManagerResult<>(accountNames);
-                } else {
-                    result = new AccountManagerResult<>(accounts.getException());
+        getGoogleAccounts(accounts -> {
+            final AccountManagerResult<List<String>> result;
+            if (accounts.hasValue()) {
+                List<String> accountNames = new ArrayList<>(accounts.getValue().length);
+                for (Account account : accounts.getValue()) {
+                    accountNames.add(account.name);
                 }
-                callback.onResult(result);
+                result = new AccountManagerResult<>(accountNames);
+            } else {
+                result = new AccountManagerResult<>(accounts.getException());
             }
+            callback.onResult(result);
         });
     }
 
@@ -306,12 +300,7 @@ public class AccountManagerFacade {
      */
     @MainThread
     public void hasGoogleAccounts(final Callback<Boolean> callback) {
-        tryGetGoogleAccounts(new Callback<Account[]>() {
-            @Override
-            public void onResult(Account[] accounts) {
-                callback.onResult(accounts.length > 0);
-            }
-        });
+        tryGetGoogleAccounts(accounts -> callback.onResult(accounts.length > 0));
     }
 
     private String canonicalizeName(String name) {
@@ -349,18 +338,15 @@ public class AccountManagerFacade {
     @MainThread
     public void getAccountFromName(String accountName, final Callback<Account> callback) {
         final String canonicalName = canonicalizeName(accountName);
-        tryGetGoogleAccounts(new Callback<Account[]>() {
-            @Override
-            public void onResult(Account[] accounts) {
-                Account accountForName = null;
-                for (Account account : accounts) {
-                    if (canonicalizeName(account.name).equals(canonicalName)) {
-                        accountForName = account;
-                        break;
-                    }
+        tryGetGoogleAccounts(accounts -> {
+            Account accountForName = null;
+            for (Account account : accounts) {
+                if (canonicalizeName(account.name).equals(canonicalName)) {
+                    accountForName = account;
+                    break;
                 }
-                callback.onResult(accountForName);
             }
+            callback.onResult(accountForName);
         });
     }
 
@@ -380,12 +366,7 @@ public class AccountManagerFacade {
     @VisibleForTesting
     @MainThread
     public void hasAccountForName(String accountName, final Callback<Boolean> callback) {
-        getAccountFromName(accountName, new Callback<Account>() {
-            @Override
-            public void onResult(Account account) {
-                callback.onResult(account != null);
-            }
-        });
+        getAccountFromName(accountName, account -> callback.onResult(account != null));
     }
 
     /**
@@ -527,7 +508,7 @@ public class AccountManagerFacade {
         private final AtomicBoolean mIsTransientError;
 
         public static <T> void runAuthTask(AuthTask<T> authTask) {
-            new ConnectionRetry<T>(authTask).attempt();
+            new ConnectionRetry<>(authTask).attempt();
         }
 
         private ConnectionRetry(AuthTask<T> authTask) {
@@ -538,7 +519,7 @@ public class AccountManagerFacade {
 
         /**
          * Tries running the {@link AuthTask} in the background. This object is never registered
-         * as a {@link ConnectionTypeObserver} when this method is called.
+         * as a {@link NetworkChangeNotifier.ConnectionTypeObserver} when this method is called.
          */
         private void attempt() {
             ThreadUtils.assertOnUiThread();
