@@ -311,13 +311,9 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
 }
 
 bool PasswordGenerationAgent::ShouldAnalyzeDocument() {
-  // Make sure that this security origin is allowed to use password manager.
-  // Generating a password that can't be saved is a bad idea.
-  if (!render_frame() || !render_frame()
-                              ->GetWebFrame()
-                              ->GetDocument()
-                              .GetSecurityOrigin()
-                              .CanAccessPasswordManager()) {
+  // Make sure that this frame is allowed to use password manager. Generating a
+  // password that can't be saved is a bad idea.
+  if (!render_frame() || !password_agent_->FrameCanAccessPasswordManager()) {
     LogMessage(Logger::STRING_GENERATION_RENDERER_NO_PASSWORD_MANAGER_ACCESS);
     return false;
   }

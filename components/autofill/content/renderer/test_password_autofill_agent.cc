@@ -13,8 +13,7 @@ TestPasswordAutofillAgent::TestPasswordAutofillAgent(
 
 TestPasswordAutofillAgent::~TestPasswordAutofillAgent() {}
 
-bool TestPasswordAutofillAgent::OriginCanAccessPasswordManager(
-    const blink::WebSecurityOrigin& origin) {
+bool TestPasswordAutofillAgent::FrameCanAccessPasswordManager() {
   return true;
 }
 

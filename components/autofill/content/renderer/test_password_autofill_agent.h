@@ -19,8 +19,7 @@ class TestPasswordAutofillAgent : public PasswordAutofillAgent {
   // Always returns true. This allows browser tests with "data: " URL scheme to
   // work with the password manager.
   // PasswordAutofillAgent:
-  bool OriginCanAccessPasswordManager(
-      const blink::WebSecurityOrigin& origin) override;
+  bool FrameCanAccessPasswordManager() override;
 };
 
 }  // namespace autofill
