@@ -94,4 +94,17 @@ TEST(ScanTest, av1_update_neighbors) {
   }
 }
 
+#if USE_2X2_PROB
+TEST(ScanTest, av1_down_sample_scan_count) {
+  const uint32_t non_zero_count[16] = { 13, 12, 11, 10, 13, 9, 10, 8,
+                                        11, 12, 9,  8,  13, 9, 9,  10 };
+  const uint32_t ref_non_zero_count_ds[4] = { 47, 39, 45, 36 };
+  uint32_t non_zero_count_ds[4];
+  av1_down_sample_scan_count(non_zero_count_ds, non_zero_count, TX_4X4);
+  for (int i = 0; i < 4; ++i) {
+    EXPECT_EQ(ref_non_zero_count_ds[i], non_zero_count_ds[i]);
+  }
+}
+#endif
+
 }  // namespace

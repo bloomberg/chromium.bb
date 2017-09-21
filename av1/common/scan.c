@@ -6604,6 +6604,39 @@ static INLINE int clamp_64(int64_t value, int low, int high) {
   return value < low ? low : (value > high ? high : (int)value);
 }
 
+#if USE_2X2_PROB
+static int do_down_sample(TX_SIZE tx_size) {
+  const int tx_w = tx_size_wide[tx_size];
+  const int tx_h = tx_size_high[tx_size];
+  if (tx_w > 8 || tx_h > 8) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+void av1_down_sample_scan_count(uint32_t *non_zero_count_ds,
+                                const uint32_t *non_zero_count,
+                                TX_SIZE tx_size) {
+  const int tx_w = tx_size_wide[tx_size];
+  const int tx_h = tx_size_high[tx_size];
+  const int tx_w_ds = tx_w >> 1;
+  for (int r = 0; r < tx_h; r += 2) {
+    for (int c = 0; c < tx_w; c += 2) {
+      assert(r + 2 < tx_h);
+      assert(c + 2 < tx_w);
+      const int ci = r * tx_w + c;
+      const int r_ds = r >> 1;
+      const int c_ds = c >> 1;
+      const int ci_ds = r_ds * tx_w_ds + c_ds;
+      non_zero_count_ds[ci_ds] = non_zero_count[ci] + non_zero_count[ci + 1] +
+                                 non_zero_count[ci + tx_w] +
+                                 non_zero_count[ci + 1 + tx_w];
+    }
+  }
+}
+#endif
+
 static void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
                              int rate) {
   FRAME_CONTEXT *pre_fc = cm->pre_fc;
@@ -6612,12 +6645,29 @@ static void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
   uint32_t *non_zero_count = get_non_zero_counts(&cm->counts, tx_size, tx_type);
   const int tx2d_size = tx_size_2d[tx_size];
   unsigned int block_num = cm->counts.txb_count[tx_size][tx_type];
+  uint32_t *non_zero_count_new = non_zero_count;
+  int count_size = tx2d_size;
+#if USE_2X2_PROB
+#if CONFIG_TX64X64
+  DECLARE_ALIGNED(16, uint32_t, non_zero_count_ds[1024]);
+  assert((tx2d_size >> 2) <= 1024);
+#else   // CONFIG_TX64X64
+  DECLARE_ALIGNED(16, uint32_t, non_zero_count_ds[256]);
+  assert((tx2d_size >> 2) <= 256);
+#endif  // CONFIG_TX64X64
+  if (do_down_sample(tx_size)) {
+    av1_down_sample_scan_count(non_zero_count_ds, non_zero_count, tx_size);
+    non_zero_count_new = non_zero_count_ds;
+    count_size = tx2d_size >> 2;
+    block_num <<= 2;
+  }
+#endif
   int i;
-  for (i = 0; i < tx2d_size; i++) {
+  for (i = 0; i < count_size; i++) {
     int64_t curr_prob =
         block_num == 0
             ? 0
-            : (non_zero_count[i] << ADAPT_SCAN_PROB_PRECISION) / block_num;
+            : (non_zero_count_new[i] << ADAPT_SCAN_PROB_PRECISION) / block_num;
     int64_t prev_prob = prev_non_zero_prob[i];
     int64_t pred_prob =
         (curr_prob * rate +
