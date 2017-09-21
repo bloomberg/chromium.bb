@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -6045,6 +6046,122 @@ IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, SuperfishInterstitialDisabled) {
       l10n_util::GetStringUTF8(IDS_SSL_V2_HEADING);
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
       interstitial_page, expected_title));
+}
+
+// Allows tests to effectively turn off CT requirements. Used by
+// SymantecMessageSSLUITest below to test Symantec certificates issued after the
+// CT requirement date.
+class NoRequireCTDelegate
+    : public net::TransportSecurityState::RequireCTDelegate {
+ public:
+  NoRequireCTDelegate() {}
+  ~NoRequireCTDelegate() override = default;
+
+  CTRequirementLevel IsCTRequiredForHost(const std::string& hostname) override {
+    return CTRequirementLevel::NOT_REQUIRED;
+  }
+};
+
+void SetRequireCTDelegateOnIOThread(
+    scoped_refptr<net::URLRequestContextGetter> context_getter,
+    net::TransportSecurityState::RequireCTDelegate* delegate) {
+  net::TransportSecurityState* state =
+      context_getter->GetURLRequestContext()->transport_security_state();
+  state->SetRequireCTDelegate(delegate);
+}
+
+// A test fixture that mocks certificate verifications for legacy Symantec
+// certificates that are slated to be distrusted in future Chrome releases.
+class SymantecMessageSSLUITest : public CertVerifierBrowserTest {
+ public:
+  SymantecMessageSSLUITest()
+      : CertVerifierBrowserTest(),
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  ~SymantecMessageSSLUITest() override {}
+
+  void SetUpOnMainThread() override {
+    CertVerifierBrowserTest::SetUpOnMainThread();
+
+    require_ct_delegate_ = base::MakeUnique<NoRequireCTDelegate>();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &SetRequireCTDelegateOnIOThread,
+            base::RetainedRef(browser()->profile()->GetRequestContext()),
+            require_ct_delegate_.get()));
+  }
+
+ protected:
+  void SetUpCertVerifier(bool use_chrome_66_date) {
+    net::CertVerifyResult verify_result;
+    {
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      verify_result.verified_cert = net::CreateCertificateChainFromFile(
+          net::GetTestCertsDirectory(),
+          use_chrome_66_date ? "pre_june_2016.pem" : "post_june_2016.pem",
+          net::X509Certificate::FORMAT_AUTO);
+    }
+    ASSERT_TRUE(verify_result.verified_cert);
+    verify_result.cert_status = 0;
+
+    // Collect the hashes of the leaf and intermediates.
+    verify_result.public_key_hashes.push_back(
+        GetSPKIHash(verify_result.verified_cert.get()));
+    for (const net::X509Certificate::OSCertHandle& intermediate :
+         verify_result.verified_cert->GetIntermediateCertificates()) {
+      scoped_refptr<net::X509Certificate> intermediate_x509 =
+          net::X509Certificate::CreateFromHandle(
+              intermediate, net::X509Certificate::OSCertHandles());
+      ASSERT_TRUE(intermediate_x509);
+      verify_result.public_key_hashes.push_back(
+          GetSPKIHash(intermediate_x509.get()));
+    }
+
+    mock_cert_verifier()->AddResultForCert(https_server_.GetCertificate().get(),
+                                           verify_result, net::OK);
+  }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  net::EmbeddedTestServer https_server_;
+  std::unique_ptr<NoRequireCTDelegate> require_ct_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(SymantecMessageSSLUITest);
+};
+
+// Tests that the Symantec console message is properly overridden for pre-June
+// 2016 certificates.
+IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, PreJune2016) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetUpCertVerifier(true /* use Chrome 66 distrust date */));
+  ASSERT_TRUE(https_server()->Start());
+  GURL url(https_server()->GetURL("/ssl/google.html"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  content::ConsoleObserverDelegate console_observer(
+      tab, "*distrusted in Chrome 66*");
+  tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), url);
+  console_observer.Wait();
+  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+                                 "*The certificate used to load*"));
+}
+
+// Tests that the Symantec console message is properly overridden for post-June
+// 2016 certificates.
+IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, PostJune2016) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetUpCertVerifier(false /* use Chrome 66 distrust date */));
+  ASSERT_TRUE(https_server()->Start());
+  GURL url(https_server()->GetURL("/ssl/google.html"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  content::ConsoleObserverDelegate console_observer(
+      tab, "*distrusted in Chrome 66*");
+  tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), url);
+  console_observer.Wait();
+  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+                                 "*The certificate used to load*"));
 }
 
 // TODO(jcampan): more tests to do below.
