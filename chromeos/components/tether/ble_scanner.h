@@ -30,8 +30,8 @@ class BleScanner : public device::BluetoothAdapter::Observer {
   class Observer {
    public:
     virtual void OnReceivedAdvertisementFromDevice(
-        const std::string& device_address,
-        const cryptauth::RemoteDevice& remote_device) {}
+        const cryptauth::RemoteDevice& remote_device,
+        device::BluetoothDevice* bluetooth_device) {}
     virtual void OnDiscoverySessionStateChanged(bool discovery_session_active) {
     }
   };
@@ -63,9 +63,11 @@ class BleScanner : public device::BluetoothAdapter::Observer {
 
  protected:
   void NotifyReceivedAdvertisementFromDevice(
-      const std::string& device_address,
-      const cryptauth::RemoteDevice& remote_device);
+      const cryptauth::RemoteDevice& remote_device,
+      device::BluetoothDevice* bluetooth_device);
   void NotifyDiscoverySessionStateChanged(bool discovery_session_active);
+
+  scoped_refptr<device::BluetoothAdapter> adapter() { return adapter_; }
 
  private:
   friend class BleScannerTest;

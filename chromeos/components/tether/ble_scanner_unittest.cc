@@ -45,9 +45,9 @@ class TestBleScannerObserver final : public BleScanner::Observer {
 
   // BleScanner::Observer:
   void OnReceivedAdvertisementFromDevice(
-      const std::string& device_address,
-      const cryptauth::RemoteDevice& remote_device) override {
-    device_addresses_.push_back(device_address);
+      const cryptauth::RemoteDevice& remote_device,
+      device::BluetoothDevice* bluetooth_device) override {
+    device_addresses_.push_back(bluetooth_device->GetAddress());
     remote_devices_.push_back(remote_device);
   }
 

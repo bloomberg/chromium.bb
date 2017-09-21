@@ -70,7 +70,7 @@ class BluetoothLowEnergyConnectionFinder
   // Creates a proximity_auth::Connection with the device given by
   // |device_address|. Exposed for testing.
   virtual std::unique_ptr<cryptauth::Connection> CreateConnection(
-      const std::string& device_address);
+      device::BluetoothDevice* bluetooth_device);
 
   // Checks if |device| is advertising the right EID.
   virtual bool IsRightDevice(device::BluetoothDevice* device);

@@ -55,14 +55,16 @@ BluetoothLowEnergyWeaveClientConnection::Factory*
 std::unique_ptr<Connection>
 BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
     const RemoteDevice& remote_device,
-    const std::string& device_address,
     scoped_refptr<device::BluetoothAdapter> adapter,
-    const device::BluetoothUUID remote_service_uuid) {
+    const device::BluetoothUUID remote_service_uuid,
+    device::BluetoothDevice* bluetooth_device,
+    bool should_set_low_connection_latency) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
-  return factory_instance_->BuildInstance(remote_device, device_address,
-                                          adapter, remote_service_uuid);
+  return factory_instance_->BuildInstance(remote_device, adapter,
+                                          remote_service_uuid, bluetooth_device,
+                                          should_set_low_connection_latency);
 }
 
 // static
@@ -74,11 +76,13 @@ void BluetoothLowEnergyWeaveClientConnection::Factory::SetInstanceForTesting(
 std::unique_ptr<Connection>
 BluetoothLowEnergyWeaveClientConnection::Factory::BuildInstance(
     const RemoteDevice& remote_device,
-    const std::string& device_address,
     scoped_refptr<device::BluetoothAdapter> adapter,
-    const device::BluetoothUUID remote_service_uuid) {
+    const device::BluetoothUUID remote_service_uuid,
+    device::BluetoothDevice* bluetooth_device,
+    bool should_set_low_connection_latency) {
   return base::MakeUnique<BluetoothLowEnergyWeaveClientConnection>(
-      remote_device, device_address, adapter, remote_service_uuid);
+      remote_device, adapter, remote_service_uuid, bluetooth_device,
+      should_set_low_connection_latency);
 }
 
 // static
@@ -131,11 +135,13 @@ std::string BluetoothLowEnergyWeaveClientConnection::SubStatusToString(
 BluetoothLowEnergyWeaveClientConnection::
     BluetoothLowEnergyWeaveClientConnection(
         const RemoteDevice& device,
-        const std::string& device_address,
         scoped_refptr<device::BluetoothAdapter> adapter,
-        const device::BluetoothUUID remote_service_uuid)
+        const device::BluetoothUUID remote_service_uuid,
+        device::BluetoothDevice* bluetooth_device,
+        bool should_set_low_connection_latency)
     : Connection(device),
-      device_address_(device_address),
+      bluetooth_device_(bluetooth_device),
+      should_set_low_connection_latency_(should_set_low_connection_latency),
       adapter_(adapter),
       remote_service_({remote_service_uuid, std::string()}),
       packet_generator_(
@@ -160,6 +166,15 @@ BluetoothLowEnergyWeaveClientConnection::
 
 void BluetoothLowEnergyWeaveClientConnection::Connect() {
   DCHECK(sub_status() == SubStatus::DISCONNECTED);
+
+  if (should_set_low_connection_latency_)
+    SetConnectionLatency();
+  else
+    CreateGattConnection();
+}
+
+void BluetoothLowEnergyWeaveClientConnection::SetConnectionLatency() {
+  DCHECK(sub_status() == SubStatus::DISCONNECTED);
   SetSubStatus(SubStatus::WAITING_CONNECTION_LATENCY);
 
   device::BluetoothDevice* bluetooth_device = GetBluetoothDevice();
@@ -182,7 +197,8 @@ void BluetoothLowEnergyWeaveClientConnection::Connect() {
 }
 
 void BluetoothLowEnergyWeaveClientConnection::CreateGattConnection() {
-  DCHECK(sub_status() == SubStatus::WAITING_CONNECTION_LATENCY);
+  DCHECK(sub_status() == SubStatus::DISCONNECTED ||
+         sub_status() == SubStatus::WAITING_CONNECTION_LATENCY);
   SetSubStatus(SubStatus::WAITING_GATT_CONNECTION);
 
   device::BluetoothDevice* bluetooth_device = GetBluetoothDevice();
@@ -717,12 +733,12 @@ std::string BluetoothLowEnergyWeaveClientConnection::GetDeviceAddress() {
   // |gatt_connection_|. Unpaired BLE device addresses are ephemeral and are
   // expected to change periodically.
   return gatt_connection_ ? gatt_connection_->GetDeviceAddress()
-                          : device_address_;
+                          : bluetooth_device_->GetAddress();
 }
 
 device::BluetoothDevice*
 BluetoothLowEnergyWeaveClientConnection::GetBluetoothDevice() {
-  return adapter_->GetDevice(GetDeviceAddress());
+  return bluetooth_device_;
 }
 
 device::BluetoothRemoteGattService*
