@@ -24,8 +24,8 @@ class MonkeyTestInstance(test_instance.TestInstance):
     self._package = constants.PACKAGE_INFO[args.browser].package
     self._activity = constants.PACKAGE_INFO[args.browser].activity
 
-    self._timeout_ms = (self.event_count *
-                        (self.throttle + _SINGLE_EVENT_TIMEOUT))
+    self._timeout_s = (
+        self.event_count * (self.throttle + _SINGLE_EVENT_TIMEOUT)) / 1000
 
   #override
   def TestType(self):
@@ -65,7 +65,7 @@ class MonkeyTestInstance(test_instance.TestInstance):
 
   @property
   def timeout(self):
-    return self._timeout_ms
+    return self._timeout_s
 
   @property
   def verbose_count(self):
