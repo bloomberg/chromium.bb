@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -153,6 +154,20 @@ void MediaClient::HandleMediaNextTrack() {
 }
 
 void MediaClient::HandleMediaPlayPause() {
+  // If there is an active browser, then instead of dispatching this event,
+  // handle active tab's media session play pause.
+  Browser* browser = chrome::FindBrowserWithActiveWindow();
+  if (browser) {
+    content::MediaSession* media_session = content::MediaSession::Get(
+        browser->tab_strip_model()->GetActiveWebContents());
+    if (media_session->IsControllable()) {
+      if (media_session->IsActuallyPaused())
+        media_session->Resume(content::MediaSession::SuspendType::UI);
+      else
+        media_session->Suspend(content::MediaSession::SuspendType::UI);
+      return;
+    }
+  }
   extensions::MediaPlayerAPI::Get(ProfileManager::GetActiveUserProfile())
       ->media_player_event_router()
       ->NotifyTogglePlayState();
