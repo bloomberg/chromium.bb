@@ -3314,10 +3314,7 @@ FcConfigParseAndLoad (FcConfig	    *config,
 
     f = FcConfigFilename (name);
     if (!f)
-    {
-	ret = FcTrue;
 	goto bail0;
-    }
     if (sysroot)
 	filename = FcStrBuildFilename (sysroot, f, NULL);
     else
@@ -3348,7 +3345,6 @@ FcConfigParseAndLoad (FcConfig	    *config,
     fd = FcOpen ((char *) filename, O_RDONLY);
     if (fd == -1) {
 	FcStrFree (filename);
-	ret = FcTrue;
 	goto bail1;
     }
 
