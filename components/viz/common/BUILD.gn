@@ -166,6 +166,7 @@ viz_source_set("unit_tests") {
     "frame_sinks/begin_frame_args_unittest.cc",
     "frame_sinks/delay_based_time_source_unittest.cc",
     "gl_helper_unittest.cc",
+    "gpu/context_cache_controller_unittest.cc",
     "quads/draw_quad_unittest.cc",
     "quads/render_pass_unittest.cc",
     "resources/buffer_to_texture_target_map_unittest.cc",
@@ -184,6 +185,7 @@ viz_source_set("unit_tests") {
     "//gpu/ipc:gl_in_process_context",
     "//gpu/ipc/common:surface_handle_type",
     "//media",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

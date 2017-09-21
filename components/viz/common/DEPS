@@ -11,6 +11,7 @@ specific_include_rules = {
     "+third_party/skia",
   ],
   ".*_unittest\.cc": [
+    "+cc/test",
     "+components/viz/test",
     "+gpu/ipc/gl_in_process_context.h",
     "+media/base",

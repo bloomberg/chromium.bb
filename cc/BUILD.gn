@@ -610,7 +610,6 @@ cc_test("cc_unittests") {
     "layers/video_frame_provider_client_impl_unittest.cc",
     "layers/video_layer_impl_unittest.cc",
     "layers/viewport_unittest.cc",
-    "output/context_cache_controller_unittest.cc",
     "paint/discardable_image_map_unittest.cc",
     "paint/display_item_list_unittest.cc",
     "paint/paint_image_unittest.cc",
