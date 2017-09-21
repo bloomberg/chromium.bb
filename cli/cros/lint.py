@@ -21,6 +21,7 @@ as many/few checkers as we want in this one module.
 from __future__ import print_function
 
 import os
+import re
 import sys
 
 from pylint.checkers import BaseChecker
@@ -433,6 +434,8 @@ class SourceChecker(BaseChecker):
   class _MessageR9201(object): pass
   class _MessageR9202(object): pass
   class _MessageR9203(object): pass
+  class _MessageR9204(object): pass
+  class _MessageR9205(object): pass
   class _MessageR9210(object): pass
   # pylint: enable=class-missing-docstring,multiple-statements
 
@@ -449,16 +452,25 @@ class SourceChecker(BaseChecker):
                 ('spurious-shebang'), _MessageR9202),
       'R9203': ('Unittest not named xxx_unittest.py',
                 ('unittest-misnamed'), _MessageR9203),
+      'R9204': ('File encoding missing (the first line after the shebang'
+                ' should be "# -*- coding: utf-8 -*-")',
+                ('missing-file-encoding'), _MessageR9204),
+      'R9205': ('File encoding should be "utf-8"',
+                ('bad-file-encoding'), _MessageR9205),
       'R9210': ('Trailing new lines found at end of file',
                 ('excess-trailing-newlines'), _MessageR9210),
   }
   options = ()
+
+  # Taken from PEP-263.
+  _ENCODING_RE = re.compile(r'^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
 
   def visit_module(self, node):
     """Called when the whole file has been read"""
     stream = node.file_stream
     st = os.fstat(stream.fileno())
     self._check_shebang(node, stream, st)
+    self._check_encoding(node, stream, st)
     self._check_module_name(node)
     self._check_trailing_lines(node, stream, st)
 
@@ -480,6 +492,31 @@ class SourceChecker(BaseChecker):
     if shebang.strip() not in (
         '#!/usr/bin/env python2', '#!/usr/bin/env python3'):
       self.add_message('R9200')
+
+  def _check_encoding(self, _node, stream, st):
+    """Verify the file has an encoding set
+
+    See PEP-263 for more details.
+    https://www.python.org/dev/peps/pep-0263/
+    """
+    # Only allow empty files to have no encoding (e.g. __init__.py).
+    if not st.st_size:
+      return
+
+    stream.seek(0)
+    encoding = stream.readline()
+
+    # If the first line is the shebang, then the encoding is the second line.
+    if encoding[0:2] == '#!':
+      encoding = stream.readline()
+
+    # See if the encoding matches the standard.
+    m = self._ENCODING_RE.match(encoding)
+    if m:
+      if m.group(1) != 'utf-8':
+        self.add_message('R9205')
+    else:
+      self.add_message('R9204')
 
   def _check_module_name(self, node):
     """Make sure the module name is sane"""

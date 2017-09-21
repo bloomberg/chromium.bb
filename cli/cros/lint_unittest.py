@@ -451,6 +451,63 @@ class SourceCheckerTest(CheckerTestCase):
     )
     self._testShebang(shebangs, (), 0o755)
 
+  def testEmptyFileNoEncoding(self):
+    """_check_encoding should ignore 0 byte files"""
+    node = TestNode()
+    self.results = []
+    stream = StringIO.StringIO('')
+    self.checker._check_encoding(node, stream, StatStub())
+    self.assertLintPassed()
+
+  def testMissingEncoding(self):
+    """_check_encoding should fail when there is no encoding"""
+    headers = (
+        '#',
+        '#\n',
+        '#\n#',
+        '#\n#\n',
+        '#!/usr/bin/python\n# foo\n'
+        '#!/usr/bin/python\n',
+        '# some comment\n',
+        '# some comment\n# another line\n',
+        '# first line is not a shebang\n# -*- coding: utf-8 -*-\n',
+        '#!/usr/bin/python\n# second line\n# -*- coding: utf-8 -*-\n',
+    )
+    node = TestNode()
+    for header in headers:
+      self.results = []
+      stream = StringIO.StringIO(header)
+      self.checker._check_encoding(node, stream, StatStub(size=len(header)))
+      self.assertLintFailed(expected=('R9204',))
+
+  def testBadEncoding(self):
+    """_check_encoding should reject non-"utf-8" encodings"""
+    encodings = (
+        'UTF8', 'UTF-8', 'utf8', 'ISO-8859-1',
+    )
+    node = TestNode()
+    for encoding in encodings:
+      self.results = []
+      header = '# -*- coding: %s -*-\n' % (encoding,)
+      stream = StringIO.StringIO(header)
+      self.checker._check_encoding(node, stream, StatStub(size=len(header)))
+      self.assertLintFailed(expected=('R9205',))
+
+  def testGoodEncodings(self):
+    """Verify _check_encoding accepts various correct encoding forms"""
+    shebang = '#!/usr/bin/python\n'
+    encodings = (
+        '# -*- coding: utf-8 -*-',
+    )
+    node = TestNode()
+    self.results = []
+    for first in ('', shebang):
+      for encoding in encodings:
+        data = first + encoding + '\n'
+        stream = StringIO.StringIO(data)
+        self.checker._check_encoding(node, stream, StatStub(size=len(data)))
+        self.assertLintPassed()
+
   def testGoodUnittestName(self):
     """Verify _check_module_name accepts good unittest names"""
     module_names = (
