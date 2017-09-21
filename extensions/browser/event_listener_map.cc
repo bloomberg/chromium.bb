@@ -90,7 +90,11 @@ bool EventListener::IsLazy() const {
 }
 
 void EventListener::MakeLazy() {
-  DCHECK_EQ(worker_thread_id_, kMainThreadId);
+  // A lazy listener neither has a process attached to it nor it has a worker
+  // thread id (if the listener was for a service worker), so reset these values
+  // below to reflect that.
+  if (is_for_service_worker_)
+    worker_thread_id_ = kMainThreadId;
   process_ = nullptr;
 }
 

@@ -950,4 +950,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, OnPush) {
   run_loop.Run();  // Wait until the message is handled by push service.
 }
 
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, FilteredEvents) {
+  // Extensions APIs from SW are only enabled on trunk.
+  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+  ASSERT_TRUE(RunExtensionTest("service_worker/filtered_events"));
+}
+
 }  // namespace extensions
