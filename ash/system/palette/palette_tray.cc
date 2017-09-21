@@ -9,7 +9,6 @@
 #include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
@@ -67,15 +66,6 @@ constexpr int kPaddingBetweenTitleAndSeparator = 3;
 
 // Color of the separator.
 const SkColor kPaletteSeparatorColor = SkColorSetARGB(0x1E, 0x00, 0x00, 0x00);
-
-// Returns true if we are in a user session that can show the stylus tools.
-bool IsInUserSession() {
-  SessionController* session_controller = Shell::Get()->session_controller();
-  return !session_controller->IsUserSessionBlocked() &&
-         session_controller->GetSessionState() ==
-             session_manager::SessionState::ACTIVE &&
-         !session_controller->IsKioskSession();
-}
 
 // Returns true if the |palette_tray| is on an internal display or on every
 // display if requested from the command line.
@@ -288,8 +278,10 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
 
   // Don't do anything if the palette should not be shown or if the user has
   // disabled it all-together.
-  if (!IsInUserSession() || !palette_delegate->ShouldShowPalette())
+  if (!palette_utils::IsInUserSession() ||
+      !palette_delegate->ShouldShowPalette()) {
     return;
+  }
 
   // Auto show/hide the palette if allowed by the user.
   if (palette_delegate->ShouldAutoOpenPalette()) {
@@ -549,7 +541,7 @@ bool PaletteTray::DeactivateActiveTool() {
 void PaletteTray::UpdateIconVisibility() {
   SetVisible(has_seen_stylus_ && is_palette_enabled_ &&
              palette_utils::HasStylusInput() && ShouldShowOnDisplay(this) &&
-             IsInUserSession());
+             palette_utils::IsInUserSession());
 }
 
 // TestApi. For testing purposes.

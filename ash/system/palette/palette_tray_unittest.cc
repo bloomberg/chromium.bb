@@ -392,6 +392,34 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
   EXPECT_TRUE(highlighter_test_api.IsShowingHighlighter());
   generator.ReleaseTouch();
 
+  // The barrel button should not work on the lock screen.
+  highlighter_test_api.DestroyPointerView();
+  GetSessionControllerClient()->RequestLockScreen();
+  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::METALAYER));
+
+  generator.MoveTouch(gfx::Point(1, 1));
+  generator.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
+  generator.PressTouch();
+  generator.set_flags(ui::EF_NONE);
+  generator.MoveTouch(gfx::Point(2, 2));
+  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::METALAYER));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.ReleaseTouch();
+
+  // Unlock the screen, the barrel button should work again.
+  GetSessionControllerClient()->UnlockScreen();
+  generator.MoveTouch(gfx::Point(1, 1));
+  generator.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
+  generator.PressTouch();
+  generator.set_flags(ui::EF_NONE);
+  generator.MoveTouch(gfx::Point(2, 2));
+  EXPECT_TRUE(test_api_->GetPaletteToolManager()->IsToolActive(
+      PaletteToolId::METALAYER));
+  EXPECT_TRUE(highlighter_test_api.IsShowingHighlighter());
+  generator.ReleaseTouch();
+
   // Disable the metalayer support.
   // This should deactivate both the palette tool and the highlighter.
   Shell::Get()->NotifyVoiceInteractionContextEnabled(false);

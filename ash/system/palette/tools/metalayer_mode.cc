@@ -81,6 +81,9 @@ void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
   if (!feature_enabled())
     return;
 
+  if (!palette_utils::IsInUserSession())
+    return;
+
   // The metalayer tool is already selected, no need to do anything.
   if (enabled())
     return;
