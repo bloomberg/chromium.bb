@@ -87,8 +87,8 @@ void AppendBackgroundColorSpan(JNIEnv*,
       reinterpret_cast<std::vector<ui::ImeTextSpan>*>(ime_text_spans_ptr);
   ime_text_spans->push_back(ui::ImeTextSpan(
       ui::ImeTextSpan::Type::kComposition, static_cast<unsigned>(start),
-      static_cast<unsigned>(end), static_cast<unsigned>(background_color),
-      false, SK_ColorTRANSPARENT, SK_ColorTRANSPARENT,
+      static_cast<unsigned>(end), SK_ColorTRANSPARENT, false,
+      static_cast<unsigned>(background_color), SK_ColorTRANSPARENT,
       std::vector<std::string>()));
 }
 
