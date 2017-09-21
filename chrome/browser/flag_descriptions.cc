@@ -790,13 +790,6 @@ const char kMessageCenterNewStyleNotificationName[] = "New style notification";
 const char kMessageCenterNewStyleNotificationDescription[] =
     "Enables the experiment style of material-design notification";
 
-const char kMessageCenterAlwaysScrollUpUponRemovalName[] =
-    "Experiments that message center always scroll up upon notification "
-    "removal";
-const char kMessageCenterAlwaysScrollUpUponRemovalDescription[] =
-    "Enables experiment that message center always scroll up when a "
-    "notification is removed.";
-
 const char kMhtmlGeneratorOptionName[] = "MHTML Generation Option";
 const char kMhtmlGeneratorOptionDescription[] =
     "Provides experimental options for MHTML file generator.";
