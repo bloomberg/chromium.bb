@@ -19,6 +19,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
@@ -121,6 +123,7 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
     scoped_refptr<DeviceLocalAccountExternalDataManager> external_data_manager,
     const base::Closure& policy_update_callback,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& resource_cache_task_runner,
     AffiliatedInvalidationServiceProvider* invalidation_service_provider)
     : invalidation_service_provider_(invalidation_service_provider),
       account_id_(account.account_id),
@@ -132,7 +135,8 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
             store_->account_id(),
             store_.get(),
             task_runner),
-      policy_update_callback_(policy_update_callback) {
+      policy_update_callback_(policy_update_callback),
+      resource_cache_task_runner_(resource_cache_task_runner) {
   if (account.type != DeviceLocalAccount::TYPE_ARC_KIOSK_APP) {
     extension_tracker_.reset(new DeviceLocalAccountExtensionTracker(
         account, store_.get(), &schema_registry_));
@@ -236,16 +240,13 @@ void DeviceLocalAccountPolicyBroker::CreateComponentCloudPolicyService(
     return;
   }
 
-  std::unique_ptr<ResourceCache> resource_cache(
-      new ResourceCache(component_policy_cache_path_,
-                        content::BrowserThread::GetTaskRunnerForThread(
-                            content::BrowserThread::FILE)));
+  std::unique_ptr<ResourceCache> resource_cache(new ResourceCache(
+      component_policy_cache_path_, resource_cache_task_runner_));
 
   component_policy_service_.reset(new ComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, this, &schema_registry_, core(),
       client, std::move(resource_cache), request_context,
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::FILE),
+      resource_cache_task_runner_,
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO)));
 }
@@ -270,12 +271,14 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
       orphan_extension_cache_deletion_state_(NOT_STARTED),
       store_background_task_runner_(store_background_task_runner),
       extension_cache_task_runner_(extension_cache_task_runner),
+      resource_cache_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND})),
       request_context_(request_context),
       local_accounts_subscription_(cros_settings_->AddSettingsObserver(
           chromeos::kAccountsPrefDeviceLocalAccounts,
-          base::Bind(&DeviceLocalAccountPolicyService::
-                         UpdateAccountListIfNonePending,
-                     base::Unretained(this)))),
+          base::Bind(
+              &DeviceLocalAccountPolicyService::UpdateAccountListIfNonePending,
+              base::Unretained(this)))),
       weak_factory_(this) {
   CHECK(PathService::Get(chromeos::DIR_DEVICE_LOCAL_ACCOUNT_COMPONENT_POLICY,
                          &component_policy_cache_root_));
@@ -467,12 +470,14 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
               external_data_service_->GetExternalDataManager(it->account_id,
                                                              store.get());
       broker.reset(new DeviceLocalAccountPolicyBroker(
-          *it, component_policy_cache_root_.Append(
-                   GetCacheSubdirectoryForAccountID(it->account_id)),
+          *it,
+          component_policy_cache_root_.Append(
+              GetCacheSubdirectoryForAccountID(it->account_id)),
           std::move(store), external_data_manager,
           base::Bind(&DeviceLocalAccountPolicyService::NotifyPolicyUpdated,
                      base::Unretained(this), it->user_id),
-          base::ThreadTaskRunnerHandle::Get(), invalidation_service_provider_));
+          base::ThreadTaskRunnerHandle::Get(), resource_cache_task_runner_,
+          invalidation_service_provider_));
     }
 
     // Fire up the cloud connection for fetching policy for the account from
@@ -530,12 +535,11 @@ void DeviceLocalAccountPolicyService::UpdateAccountList() {
   }
 
   // Purge the component policy caches of any accounts that have been removed.
-  // Do this only after any obsolete brokers have been destroyed.
-  // TODO(joaodasilva): for now this must be posted to the FILE thread,
-  // to avoid racing with the ComponentCloudPolicyStore. Use a task runner
-  // once that class supports another background thread too.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
+  // Do this only after any obsolete brokers have been destroyed. This races
+  // with ComponentCloudPolicyStore so make sure they both run on the same task
+  // runner.
+  resource_cache_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&DeleteOrphanedCaches, component_policy_cache_root_,
                      subdirectories_to_keep));
 
