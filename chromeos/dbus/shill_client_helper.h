@@ -92,10 +92,6 @@ class ShillClientHelper {
   void CallVoidMethod(dbus::MethodCall* method_call,
                       VoidDBusMethodCallback callback);
 
-  // Calls a method with an object path result.
-  void CallObjectPathMethod(dbus::MethodCall* method_call,
-                            const ObjectPathDBusMethodCallback& callback);
-
   // Calls a method with an object path result where there is an error callback.
   void CallObjectPathMethodWithErrorCallback(
       dbus::MethodCall* method_call,
