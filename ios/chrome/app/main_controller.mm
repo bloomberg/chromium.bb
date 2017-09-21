@@ -350,6 +350,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 @property(nonatomic, readwrite)
     NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
 
+// Activates browsing and enables web views if |enabled| is YES.
+// Disables browsing and purges web views if |enabled| is NO.
+// Must be called only on the main thread.
+- (void)setWebUsageEnabled:(BOOL)enabled;
 // Activates |mainBVC| and |otrBVC| and sets |currentBVC| as primary iff
 // |currentBVC| can be made active.
 - (void)activateBVCAndMakeCurrentBVCPrimary;
@@ -818,6 +822,16 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
         [[BrowsingDataRemovalController alloc] initWithDelegate:self];
   }
   return _browsingDataRemovalController;
+}
+
+- (void)setWebUsageEnabled:(BOOL)enabled {
+  DCHECK([NSThread isMainThread]);
+  if (enabled) {
+    [self activateBVCAndMakeCurrentBVCPrimary];
+  } else {
+    [self.mainBVC setActive:NO];
+    [self.otrBVC setActive:NO];
+  }
 }
 
 - (void)activateBVCAndMakeCurrentBVCPrimary {
@@ -1932,8 +1946,13 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                                       mask:(int)mask
                                 timePeriod:(browsing_data::TimePeriod)timePeriod
                          completionHandler:(ProceduralBlock)completionHandler {
-
+  // TODO(crbug.com/632772): Remove web usage disabling once
+  // https://bugs.webkit.org/show_bug.cgi?id=149079 has been fixed.
+  if (mask & IOSChromeBrowsingDataRemover::REMOVE_SITE_DATA) {
+    [self setWebUsageEnabled:NO];
+  }
   ProceduralBlock browsingDataRemoved = ^{
+    [self setWebUsageEnabled:YES];
     if (completionHandler) {
       completionHandler();
     }
