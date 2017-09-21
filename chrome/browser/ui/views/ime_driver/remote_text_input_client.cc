@@ -170,3 +170,10 @@ void RemoteTextInputClient::SetTextEditCommandForNextKeyEvent(
   // TODO(moshayedi): crbug.com/631527.
   NOTIMPLEMENTED();
 }
+
+ui::EventDispatchDetails RemoteTextInputClient::DispatchKeyEventPostIME(
+    ui::KeyEvent* event) {
+  remote_client_->DispatchKeyEventPostIME(ui::Event::Clone(*event),
+                                          base::OnceCallback<void(bool)>());
+  return ui::EventDispatchDetails();
+}

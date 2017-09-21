@@ -13,7 +13,7 @@ InputMethodBridge::InputMethodBridge(
     std::unique_ptr<RemoteTextInputClient> client)
     : client_(std::move(client)),
       input_method_chromeos_(
-          base::MakeUnique<ui::InputMethodChromeOS>(nullptr)) {
+          base::MakeUnique<ui::InputMethodChromeOS>(client_.get())) {
   input_method_chromeos_->SetFocusedTextInputClient(client_.get());
 }
 

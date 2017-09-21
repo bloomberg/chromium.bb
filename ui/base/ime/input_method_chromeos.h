@@ -48,9 +48,11 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
                               CompositionText* out_composition) const;
 
   // Process a key returned from the input method.
-  virtual ui::EventDispatchDetails ProcessKeyEventPostIME(ui::KeyEvent* event,
-                                                          bool handled)
-      WARN_UNUSED_RESULT;
+  virtual ui::EventDispatchDetails ProcessKeyEventPostIME(
+      ui::KeyEvent* event,
+      std::unique_ptr<AckCallback> ack_callback,
+      bool skip_process_filtered,
+      bool handled) WARN_UNUSED_RESULT;
 
   // Resets context and abandon all pending results and key events.
   void ResetContext();
@@ -75,12 +77,28 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS : public InputMethodBase {
   // A VKEY_PROCESSKEY may be dispatched to the EventTargets.
   // It returns the result of whether the event has been stopped propagation
   // when dispatching post IME.
-  ui::EventDispatchDetails ProcessFilteredKeyPressEvent(ui::KeyEvent* event)
-      WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails ProcessFilteredKeyPressEvent(
+      ui::KeyEvent* event,
+      std::unique_ptr<AckCallback> ack_callback) WARN_UNUSED_RESULT;
+
+  // Post processes a key event that was already filtered by the input method.
+  void PostProcessFilteredKeyPressEvent(
+      ui::KeyEvent* event,
+      TextInputClient* prev_client,
+      std::unique_ptr<AckCallback> ack_callback,
+      bool stopped_propagation);
 
   // Processes a key event that was not filtered by the input method.
-  ui::EventDispatchDetails ProcessUnfilteredKeyPressEvent(ui::KeyEvent* event)
-      WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails ProcessUnfilteredKeyPressEvent(
+      ui::KeyEvent* event,
+      std::unique_ptr<AckCallback> ack_callback) WARN_UNUSED_RESULT;
+
+  // Post processes a key event that was unfiltered by the input method.
+  void PostProcessUnfilteredKeyPressEvent(
+      ui::KeyEvent* event,
+      TextInputClient* prev_client,
+      std::unique_ptr<AckCallback> ack_callback,
+      bool stopped_propagation);
 
   // Sends input method result caused by the given key event to the focused text
   // input client.

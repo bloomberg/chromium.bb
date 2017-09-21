@@ -65,7 +65,7 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
   if (!GetTextInputClient())
     return DispatchKeyEventPostIME(event);
 
-  if (!event->HasNativeEvent() && sending_key_event_) {
+  if (!event->HasNativeEvent() && sending_key_event()) {
     // Faked key events that are sent from input.ime.sendKeyEvents.
     ui::EventDispatchDetails details = DispatchKeyEventPostIME(event);
     if (details.dispatcher_destroyed || details.target_destroyed ||

@@ -87,6 +87,11 @@ class TestTextInputClient : public ui::mojom::TextInputClient {
     if (run_loop_)
       run_loop_->Quit();
   }
+  void DispatchKeyEventPostIME(
+      std::unique_ptr<ui::Event> event,
+      DispatchKeyEventPostIMECallback callback) override {
+    std::move(callback).Run(false);
+  }
 
   mojo::Binding<ui::mojom::TextInputClient> binding_;
   std::unique_ptr<base::RunLoop> run_loop_;
