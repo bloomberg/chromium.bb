@@ -61,6 +61,10 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // is no such instance.
   const net::BackoffEntry* GetDelegateBackoffEntry();
 
+  void set_all_credentials_loaded_for_testing(bool loaded) {
+    all_credentials_loaded_ = loaded;
+  }
+
  private:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;

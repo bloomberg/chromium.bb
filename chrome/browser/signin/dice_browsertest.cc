@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_Reauth) {
 
   // Start from a signed-in state.
   SetupSignedInAccounts();
-  EXPECT_EQ(2, reconcilor_started_count_);
+  EXPECT_EQ(1, reconcilor_started_count_);
 
   // Navigate to Gaia and sign in again with the main account.
   NavigateToURL(kSigninURL);
@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_Reauth) {
 
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
-  EXPECT_EQ(3, reconcilor_started_count_);
+  EXPECT_EQ(2, reconcilor_started_count_);
 }
 
 // Checks that the Dice signout flow works and deletes all tokens.

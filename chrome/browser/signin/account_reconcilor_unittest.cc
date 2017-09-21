@@ -319,6 +319,7 @@ TEST_F(AccountReconcilorTest, ProfileAlreadyConnected) {
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
+
 // Tests that the AccountReconcilor is enabled when Dice is enabled.
 TEST_F(AccountReconcilorTest, EnabledWithDice) {
   signin::ScopedAccountConsistencyDice scoped_dice;
@@ -477,6 +478,34 @@ TEST_F(AccountReconcilorTest, DiceLastKnownFirstAccount) {
 }
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+// Tests that reconcile cannot start before the tokens are loaded, and is
+// automatically started when tokens are loaded.
+TEST_F(AccountReconcilorTest, TokensNotLoaded) {
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  cookie_manager_service()->SetListAccountsResponseNoAccounts();
+  token_service()->set_all_credentials_loaded_for_testing(false);
+
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  reconcilor->StartReconcile();
+
+#if !defined(OS_CHROMEOS)
+  // No reconcile when tokens are not loaded, except on ChromeOS where reconcile
+  // can start as long as the token service is not empty.
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  // When tokens are loaded, reconcile starts automatically.
+  token_service()->LoadCredentials(account_id);
+#endif
+
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  base::RunLoop().RunUntilIdle();
+  SimulateAddAccountToCookieCompleted(reconcilor, account_id,
+                                      GoogleServiceAuthError::AuthErrorNone());
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+}
 
 TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
   const std::string account_id =
