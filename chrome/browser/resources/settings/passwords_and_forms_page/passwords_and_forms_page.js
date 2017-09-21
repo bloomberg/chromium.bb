@@ -20,8 +20,7 @@ Polymer({
     this.focusConfig_ = new Map();
     if (settings.routes.AUTOFILL) {
       this.focusConfig_.set(
-          settings.routes.AUTOFILL.path,
-          '#autofillManagerButton .subpage-arrow');
+          settings.routes.AUTOFILL.path, '#autofillManagerButton');
     }
     if (settings.routes.MANAGE_PASSWORDS) {
       this.focusConfig_.set(
