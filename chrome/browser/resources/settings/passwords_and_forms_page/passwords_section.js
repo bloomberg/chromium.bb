@@ -33,10 +33,10 @@ class PasswordManager {
 
   /**
    * Should remove the saved password and notify that the list has changed.
-   * @param {!PasswordManager.LoginPair} loginPair The saved password that
-   *     should be removed from the list. No-op if |loginPair| is not found.
+   * @param {number} index The index for the password entry being removed.
+   *     No-op if |index| is not in the list.
    */
-  removeSavedPassword(loginPair) {}
+  removeSavedPassword(index) {}
 
   /**
    * Add an observer to the list of password exceptions.
@@ -58,18 +58,18 @@ class PasswordManager {
 
   /**
    * Should remove the password exception and notify that the list has changed.
-   * @param {string} exception The exception that should be removed from the
-   *     list. No-op if |exception| is not in the list.
+   * @param {number} index The index for the exception url entry being removed.
+   *     No-op if |index| is not in the list.
    */
-  removeException(exception) {}
+  removeException(index) {}
 
   /**
    * Gets the saved password for a given login pair.
-   * @param {!PasswordManager.LoginPair} loginPair The saved password that
-   *     should be retrieved.
+   * @param {number} index The index for password entry that should be
+   *     retrieved. No-op if |index| is not in the list.
    * @param {function(!PasswordManager.PlaintextPasswordEvent):void} callback
    */
-  getPlaintextPassword(loginPair, callback) {}
+  getPlaintextPassword(index, callback) {}
 }
 
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
@@ -106,8 +106,8 @@ class PasswordManagerImpl {
   }
 
   /** @override */
-  removeSavedPassword(loginPair) {
-    chrome.passwordsPrivate.removeSavedPassword(loginPair);
+  removeSavedPassword(index) {
+    chrome.passwordsPrivate.removeSavedPassword(index);
   }
 
   /** @override */
@@ -128,23 +128,22 @@ class PasswordManagerImpl {
   }
 
   /** @override */
-  removeException(exception) {
-    chrome.passwordsPrivate.removePasswordException(exception);
+  removeException(index) {
+    chrome.passwordsPrivate.removePasswordException(index);
   }
 
   /** @override */
-  getPlaintextPassword(loginPair, callback) {
+  getPlaintextPassword(index, callback) {
     var listener = function(reply) {
       // Only handle the reply for our loginPair request.
-      if (reply.loginPair.urls.origin == loginPair.urls.origin &&
-          reply.loginPair.username == loginPair.username) {
+      if (reply.index == index) {
         chrome.passwordsPrivate.onPlaintextPasswordRetrieved.removeListener(
             listener);
         callback(reply);
       }
     };
     chrome.passwordsPrivate.onPlaintextPasswordRetrieved.addListener(listener);
-    chrome.passwordsPrivate.requestPlaintextPassword(loginPair);
+    chrome.passwordsPrivate.requestPlaintextPassword(index);
   }
 }
 
@@ -326,7 +325,7 @@ Polymer({
    * @private
    */
   onMenuRemovePasswordTap_: function() {
-    this.passwordManager_.removeSavedPassword(this.activePassword.loginPair);
+    this.passwordManager_.removeSavedPassword(this.activePassword.index);
     /** @type {CrActionMenuElement} */ (this.$.menu).close();
   },
 
@@ -336,7 +335,7 @@ Polymer({
    * @private
    */
   onRemoveExceptionButtonTap_: function(e) {
-    this.passwordManager_.removeException(e.model.item.urls.origin);
+    this.passwordManager_.removeException(e.model.item.index);
   },
 
   /**
@@ -372,8 +371,7 @@ Polymer({
    */
   showPassword_: function(event) {
     this.passwordManager_.getPlaintextPassword(
-        /** @type {!PasswordManager.LoginPair} */ (event.detail.item.loginPair),
-        item => {
+        /** @type {!number} */ (event.detail.item.index), item => {
           event.detail.password = item.plaintextPassword;
         });
   },

@@ -70,12 +70,10 @@ void PasswordsPrivateEventRouter::SendPasswordExceptionListToListeners() {
 }
 
 void PasswordsPrivateEventRouter::OnPlaintextPasswordFetched(
-        const std::string& origin_url,
-        const std::string& username,
-        const std::string& plaintext_password) {
+    size_t index,
+    const std::string& plaintext_password) {
   api::passwords_private::PlaintextPasswordEventParameters params;
-  params.login_pair.urls.origin = origin_url;
-  params.login_pair.username = username;
+  params.index = index;
   params.plaintext_password = plaintext_password;
 
   std::unique_ptr<base::ListValue> event_value(new base::ListValue);

@@ -251,11 +251,7 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
   // Call back the front end to reveal the password.
   std::string origin_url =
       extensions::CreateUrlCollectionFromForm(*password_list_[index]).origin;
-  password_view_->ShowPassword(
-      index,
-      origin_url,
-      base::UTF16ToUTF8(password_list_[index]->username_value),
-      password_list_[index]->password_value);
+  password_view_->ShowPassword(index, password_list_[index]->password_value);
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.AccessPasswordInSettings",
       password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
