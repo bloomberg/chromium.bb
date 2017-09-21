@@ -67,7 +67,11 @@ def get_scripts_dir():
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 
+@memoized
 def get_source_dir():
+    post_move_path = os.path.join(get_chromium_src_dir(), 'third_party', 'blink', 'renderer')
+    if os.path.exists(post_move_path):
+        return post_move_path
     return os.path.join(get_blink_dir(), 'Source')
 
 
@@ -123,8 +127,16 @@ class PathFinder(object):
     def path_from_chromium_base(self, *comps):
         return self._filesystem.join(self.chromium_base(), *comps)
 
+    @memoized
+    def _blink_source_dir(self):
+        post_move_path = self._filesystem.join(
+            self.chromium_base(), 'third_party', 'blink', 'renderer')
+        if self._filesystem.exists(post_move_path):
+            return post_move_path
+        return self._filesystem.join(self._webkit_base(), 'Source')
+
     def path_from_blink_source(self, *comps):
-        return self._filesystem.join(self._filesystem.join(self._webkit_base(), 'Source'), *comps)
+        return self._filesystem.join(self._blink_source_dir(), *comps)
 
     def path_from_tools_scripts(self, *comps):
         return self._filesystem.join(self._filesystem.join(self._webkit_base(), 'Tools', 'Scripts'), *comps)
