@@ -59,17 +59,17 @@ public class PasswordViewingTypeTest {
                                    .getFragmentForTest();
         mPasswordsPref = (ChromeBasePreference) mMainPreferences.findPreference(
                 MainPreferences.PREF_SAVED_PASSWORDS);
-        setupTestAccount(mContext);
+        setupTestAccount();
         AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate);
         mAuthority = AndroidSyncSettings.getContractAuthority(mContext);
         AndroidSyncSettings.updateAccount(mContext, mAccount);
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
-    private void setupTestAccount(Context context) {
+    private void setupTestAccount() {
         mAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(context, mAccountManager);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(mAccountManager);
         mAccount = AccountManagerFacade.createAccountFromName("account@example.com");
         AccountHolder.Builder accountHolder =
                 AccountHolder.builder(mAccount).password("password").alwaysAccept(true);

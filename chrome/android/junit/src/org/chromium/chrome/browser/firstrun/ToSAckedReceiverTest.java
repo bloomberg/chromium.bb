@@ -62,8 +62,7 @@ public class ToSAckedReceiverTest {
         Account[] accounts = new Account[1];
         accounts[0] = new Account(GOOGLE_ACCOUNT, "LegitAccount");
         Mockito.doReturn(accounts).when(accountManagerDelegate).getAccountsSync();
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(
-                RuntimeEnvironment.application, accountManagerDelegate);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(accountManagerDelegate);
         Assert.assertTrue(ToSAckedReceiver.checkAnyUserHasSeenToS());
     }
 }

@@ -37,7 +37,7 @@ public class OAuth2TokenServiceTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         mAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(mContext, mAccountManager);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(mAccountManager);
     }
 
     @After

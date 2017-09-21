@@ -55,7 +55,7 @@ public final class SigninTestUtil {
         });
         sAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
-        AccountManagerFacade.overrideAccountManagerFacadeForTests(sContext, sAccountManager);
+        AccountManagerFacade.overrideAccountManagerFacadeForTests(sAccountManager);
         overrideAccountIdProvider();
         resetSigninState();
     }

@@ -115,7 +115,7 @@ public class InvalidationControllerTest {
         ContextUtils.initApplicationContextForTests(mContext.getApplicationContext());
 
         AccountManagerFacade.overrideAccountManagerFacadeForTests(
-                mContext, new SystemAccountManagerDelegate());
+                new SystemAccountManagerDelegate());
 
         ModelTypeHelper.setTestDelegate(new ModelTypeHelper.TestDelegate() {
             @Override
