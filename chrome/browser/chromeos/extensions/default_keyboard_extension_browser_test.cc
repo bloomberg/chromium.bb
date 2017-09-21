@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "chrome/browser/chromeos/extensions/virtual_keyboard_browsertest.h"
+#include "chrome/browser/chromeos/extensions/default_keyboard_extension_browser_test.h"
 
 #include <vector>
 
@@ -33,9 +33,11 @@ const base::FilePath::CharType kMockController[] =
 const base::FilePath::CharType kMockTimer[] =
     FILE_PATH_LITERAL("mock_timer.js");
 
-const char kVirtualKeyboardTestDir[] = "chromeos/virtual_keyboard";
+const char kVirtualKeyboardExtensionTestDir[] =
+    "chromeos/virtual_keyboard/default_extension";
 
-const char kBaseKeyboardTestFramework[] = "virtual_keyboard_test_base.js";
+const char kBaseKeyboardExtensionTestFramework[] =
+    "virtual_keyboard_test_base.js";
 
 const char kExtensionId[] = "mppnpdlheglhdfmldimlhpnegondlapf";
 
@@ -46,23 +48,24 @@ const char kVirtualKeyboardURL[] = "chrome://keyboard?id=none";
 
 }  // namespace
 
-VirtualKeyboardBrowserTestConfig::VirtualKeyboardBrowserTestConfig()
-    : base_framework_(kBaseKeyboardTestFramework),
+DefaultKeyboardExtensionBrowserTestConfig::
+    DefaultKeyboardExtensionBrowserTestConfig()
+    : base_framework_(kBaseKeyboardExtensionTestFramework),
       extension_id_(kExtensionId),
-      test_dir_(kVirtualKeyboardTestDir),
-      url_(kVirtualKeyboardURL) {
-}
+      test_dir_(kVirtualKeyboardExtensionTestDir),
+      url_(kVirtualKeyboardURL) {}
 
-VirtualKeyboardBrowserTestConfig::~VirtualKeyboardBrowserTestConfig() {}
+DefaultKeyboardExtensionBrowserTestConfig::
+    ~DefaultKeyboardExtensionBrowserTestConfig() {}
 
-void VirtualKeyboardBrowserTest::SetUpCommandLine(
+void DefaultKeyboardExtensionBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
 }
 
-void VirtualKeyboardBrowserTest::RunTest(
+void DefaultKeyboardExtensionBrowserTest::RunTest(
     const base::FilePath& file,
-    const VirtualKeyboardBrowserTestConfig& config) {
+    const DefaultKeyboardExtensionBrowserTestConfig& config) {
   ui_test_utils::NavigateToURL(browser(), GURL(config.url_));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -84,14 +87,15 @@ void VirtualKeyboardBrowserTest::RunTest(
   EXPECT_TRUE(ExecuteWebUIResourceTest(web_contents, resource_ids));
 }
 
-void VirtualKeyboardBrowserTest::ShowVirtualKeyboard() {
+void DefaultKeyboardExtensionBrowserTest::ShowVirtualKeyboard() {
   aura::Window* window = ash::Shell::GetPrimaryRootWindow();
   ui::InputMethod* input_method = window->GetHost()->GetInputMethod();
   ASSERT_TRUE(input_method);
   input_method->ShowImeIfNeeded();
 }
 
-content::RenderViewHost* VirtualKeyboardBrowserTest::GetKeyboardRenderViewHost(
+content::RenderViewHost*
+DefaultKeyboardExtensionBrowserTest::GetKeyboardRenderViewHost(
     const std::string& id) {
   ShowVirtualKeyboard();
   GURL url = extensions::Extension::GetBaseURLFromExtensionId(id);
@@ -110,8 +114,9 @@ content::RenderViewHost* VirtualKeyboardBrowserTest::GetKeyboardRenderViewHost(
   return NULL;
 }
 
-void VirtualKeyboardBrowserTest::InjectJavascript(const base::FilePath& dir,
-                                                  const base::FilePath& file) {
+void DefaultKeyboardExtensionBrowserTest::InjectJavascript(
+    const base::FilePath& dir,
+    const base::FilePath& file) {
   base::FilePath path = ui_test_utils::GetTestFilePath(dir, file);
   std::string library_content;
   ASSERT_TRUE(base::ReadFileToString(path, &library_content)) << path.value();
@@ -119,65 +124,63 @@ void VirtualKeyboardBrowserTest::InjectJavascript(const base::FilePath& dir,
   utf8_content_.append(";\n");
 }
 
-// Disabled. http://crbug.com/758697
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, TypingTest) {
+IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest, TypingTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("typing_test.js")),
-          VirtualKeyboardBrowserTestConfig());
+          DefaultKeyboardExtensionBrowserTestConfig());
 }
 
-// Disabled. http://crbug.com/758697
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, LayoutTest) {
+IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest, LayoutTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("layout_test.js")),
-          VirtualKeyboardBrowserTestConfig());
+          DefaultKeyboardExtensionBrowserTestConfig());
 }
 
-// Disabled. http://crbug.com/758697
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, ModifierTest) {
+IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest, ModifierTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("modifier_test.js")),
-          VirtualKeyboardBrowserTestConfig());
+          DefaultKeyboardExtensionBrowserTestConfig());
 }
 
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, HideKeyboardKeyTest) {
+IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest,
+                       HideKeyboardKeyTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("hide_keyboard_key_test.js")),
-          VirtualKeyboardBrowserTestConfig());
+          DefaultKeyboardExtensionBrowserTestConfig());
 }
 
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, IsKeyboardLoaded) {
+IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest, IsKeyboardLoaded) {
   content::RenderViewHost* keyboard_rvh =
       GetKeyboardRenderViewHost(kExtensionId);
   ASSERT_TRUE(keyboard_rvh);
   bool loaded = false;
   std::string script = "!!chrome.virtualKeyboardPrivate";
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      keyboard_rvh,
-      "window.domAutomationController.send(" + script + ");",
+      keyboard_rvh, "window.domAutomationController.send(" + script + ");",
       &loaded));
   // Catches the regression in crbug.com/308653.
   ASSERT_TRUE(loaded);
 }
 
 // Disabled; http://crbug.com/515596
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_EndToEndTest) {
+IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest,
+                       DISABLED_EndToEndTest) {
   // Get the virtual keyboard's render view host.
   content::RenderViewHost* keyboard_rvh =
       GetKeyboardRenderViewHost(kExtensionId);
   ASSERT_TRUE(keyboard_rvh);
 
   // Get the test page's render view host.
-  content::RenderViewHost* browser_rvh = browser()->tab_strip_model()->
-      GetActiveWebContents()->GetRenderViewHost();
+  content::RenderViewHost* browser_rvh =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
   ASSERT_TRUE(browser_rvh);
 
   // Set up the test page.
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(),
       base::FilePath(FILE_PATH_LITERAL(
-          "chromeos/virtual_keyboard/end_to_end_test.html")));
+          "chromeos/virtual_keyboard/default_extension/end_to_end_test.html")));
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Press 'a' on keyboard.
   base::FilePath path = ui_test_utils::GetTestFilePath(
-      base::FilePath(FILE_PATH_LITERAL(kVirtualKeyboardTestDir)),
+      base::FilePath(FILE_PATH_LITERAL(kVirtualKeyboardExtensionTestDir)),
       base::FilePath(FILE_PATH_LITERAL("end_to_end_test.js")));
   std::string script;
   ASSERT_TRUE(base::ReadFileToString(path, &script));
@@ -185,8 +188,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_EndToEndTest) {
   // Verify 'a' appeared on test page.
   bool success = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser_rvh,
-      "success ? verifyInput('a') : waitForInput('a');",
+      browser_rvh, "success ? verifyInput('a') : waitForInput('a');",
       &success));
   ASSERT_TRUE(success);
 }

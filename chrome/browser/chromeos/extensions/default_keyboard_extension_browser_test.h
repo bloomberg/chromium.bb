@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_VIRTUAL_KEYBOARD_BROWSERTEST_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_VIRTUAL_KEYBOARD_BROWSERTEST_H_
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEFAULT_KEYBOARD_EXTENSION_BROWSER_TEST_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEFAULT_KEYBOARD_EXTENSION_BROWSER_TEST_H_
 
 #include "base/files/file_path.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -12,17 +12,17 @@
 namespace base {
 class CommandLine;
 class FilePath;
-}
+}  // namespace base
 
 namespace content {
 class RenderViewHost;
 }
 
 // See the .cc for default values.
-struct VirtualKeyboardBrowserTestConfig {
-  VirtualKeyboardBrowserTestConfig();
+struct DefaultKeyboardExtensionBrowserTestConfig {
+  DefaultKeyboardExtensionBrowserTestConfig();
 
-  ~VirtualKeyboardBrowserTestConfig();
+  ~DefaultKeyboardExtensionBrowserTestConfig();
 
   // The filename of the base framework. This file should be in |test_dir_|.
   std::string base_framework_;
@@ -37,12 +37,12 @@ struct VirtualKeyboardBrowserTestConfig {
   std::string url_;
 };
 
-class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
+class DefaultKeyboardExtensionBrowserTest : public InProcessBrowserTest {
  public:
   // Injects javascript in |file| into the keyboard page and runs the methods in
   // |file| whose names match the expression "test*".
   void RunTest(const base::FilePath& file,
-               const VirtualKeyboardBrowserTestConfig& config);
+               const DefaultKeyboardExtensionBrowserTestConfig& config);
 
   void ShowVirtualKeyboard();
 
@@ -62,4 +62,4 @@ class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
   std::string utf8_content_;
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_VIRTUAL_KEYBOARD_BROWSERTEST_H_
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEFAULT_KEYBOARD_EXTENSION_BROWSER_TEST_H_

@@ -41,8 +41,8 @@ function fail(message) {
  */
 function mockTouchEvent(key, eventType) {
   var rect = key.getBoundingClientRect();
-  var x = rect.left + rect.width/2;
-  var y = rect.top + rect.height/2;
+  var x = rect.left + rect.width / 2;
+  var y = rect.top + rect.height / 2;
   var e = document.createEvent('UIEvent');
   e.initUIEvent(eventType, true, true);
   e.touches = [{pageX: x, pageY: y}];
