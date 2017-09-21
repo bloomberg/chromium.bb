@@ -126,7 +126,7 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   // explicitly, never AccessibleNodes from DOM Elements.
   HeapVector<Member<AccessibleNode>> GetChildren() { return children_; }
 
-  // Returns the given string property if the Element has an AccessibleNode.
+  // Returns the given string property.
   const AtomicString& GetProperty(AOMStringProperty) const;
 
   // Returns the given relation property if the Element has an AccessibleNode.
@@ -139,10 +139,12 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
                           AOMRelationListProperty,
                           HeapVector<Member<Element>>&);
 
+  // Returns the given boolean property.
+  bool GetProperty(AOMBooleanProperty, bool& is_null) const;
+
   // Returns the value of the given property if the
   // Element has an AccessibleNode. Sets |isNull| if the property and
   // attribute are not present.
-  static bool GetProperty(Element*, AOMBooleanProperty, bool& is_null);
   static float GetProperty(Element*, AOMFloatProperty, bool& is_null);
   static int32_t GetProperty(Element*, AOMIntProperty, bool& is_null);
   static uint32_t GetProperty(Element*, AOMUIntProperty, bool& is_null);
@@ -192,10 +194,8 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   // with the value of the AOM property if set. Updates
   // |shadowed_aria_attributes| to contain a list of the ARIA attributes that
   // would be shadowed by these AOM properties.
-  static void GetAllAOMProperties(
-      Element*,
-      AOMPropertyClient*,
-      HashSet<QualifiedName>& shadowed_aria_attributes);
+  void GetAllAOMProperties(AOMPropertyClient*,
+                           HashSet<QualifiedName>& shadowed_aria_attributes);
 
   AccessibleNode* activeDescendant() const;
   void setActiveDescendant(AccessibleNode*);

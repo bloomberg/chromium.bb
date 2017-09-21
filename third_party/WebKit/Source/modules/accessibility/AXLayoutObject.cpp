@@ -1414,16 +1414,6 @@ const AtomicString& AXLayoutObject::LiveRegionRelevant() const {
   return relevant;
 }
 
-bool AXLayoutObject::LiveRegionAtomic() const {
-  bool atomic = false;
-  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kAtomic, atomic))
-    return atomic;
-
-  // ARIA roles "alert" and "status" should have an implicit aria-atomic value
-  // of true.
-  return RoleValue() == kAlertRole || RoleValue() == kStatusRole;
-}
-
 //
 // Hit testing.
 //

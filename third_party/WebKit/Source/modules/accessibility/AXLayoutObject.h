@@ -129,7 +129,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // ARIA live-region features.
   const AtomicString& LiveRegionStatus() const override;
   const AtomicString& LiveRegionRelevant() const override;
-  bool LiveRegionAtomic() const override;
 
   // AX name calc.
   String TextAlternative(bool recursive,

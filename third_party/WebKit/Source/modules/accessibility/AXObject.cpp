@@ -32,6 +32,7 @@
 #include "core/InputTypeNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AccessibleNode.h"
+#include "core/dom/AccessibleNodeList.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisiblePosition.h"
@@ -49,6 +50,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/AXSparseAttributeSetter.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -483,6 +485,44 @@ bool AXObject::HasAOMPropertyOrARIAAttribute(AOMStringProperty property,
 
   result = AccessibleNode::GetPropertyOrARIAAttribute(element, property);
   return !result.IsNull();
+}
+
+AccessibleNode* AXObject::GetAccessibleNode() const {
+  Element* element = GetElement();
+  if (!element)
+    return nullptr;
+
+  return element->ExistingAccessibleNode();
+}
+
+void AXObject::GetSparseAXAttributes(
+    AXSparseAttributeClient& sparse_attribute_client) const {
+  AXSparseAttributeAOMPropertyClient property_client(*ax_object_cache_,
+                                                     sparse_attribute_client);
+  HashSet<QualifiedName> shadowed_aria_attributes;
+
+  AccessibleNode* accessible_node = GetAccessibleNode();
+  if (accessible_node) {
+    accessible_node->GetAllAOMProperties(&property_client,
+                                         shadowed_aria_attributes);
+  }
+
+  Element* element = GetElement();
+  if (!element)
+    return;
+
+  AXSparseAttributeSetterMap& ax_sparse_attribute_setter_map =
+      GetSparseAttributeSetterMap();
+  AttributeCollection attributes = element->AttributesWithoutUpdate();
+  for (const Attribute& attr : attributes) {
+    if (shadowed_aria_attributes.Contains(attr.GetName()))
+      continue;
+
+    AXSparseAttributeSetter* setter =
+        ax_sparse_attribute_setter_map.at(attr.GetName());
+    if (setter)
+      setter->Run(*this, sparse_attribute_client, attr.Value());
+  }
 }
 
 bool AXObject::IsARIATextControl() const {
@@ -1486,6 +1526,34 @@ bool AXObject::IsLiveRegion() const {
   return !live_region.IsEmpty() && !EqualIgnoringASCIICase(live_region, "off");
 }
 
+AXRestriction AXObject::Restriction() const {
+  // According to ARIA, all elements of the base markup can be disabled.
+  // According to CORE-AAM, any focusable descendant of aria-disabled
+  // ancestor is also disabled.
+  bool is_disabled;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kDisabled,
+                                    is_disabled)) {
+    // Has aria-disabled, overrides native markup determining disabled.
+    if (is_disabled)
+      return kDisabled;
+  } else if (CanSetFocusAttribute() && IsDescendantOfDisabledNode()) {
+    // No aria-disabled, but other markup says it's disabled.
+    return kDisabled;
+  }
+
+  // Check aria-readonly if supported by current role.
+  bool is_read_only;
+  if (CanSupportAriaReadOnly() &&
+      HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kReadOnly,
+                                    is_read_only)) {
+    // ARIA overrides other readonly state markup.
+    return is_read_only ? kReadOnly : kNone;
+  }
+
+  // This is a node that is not readonly and not disabled.
+  return kNone;
+}
+
 AccessibilityRole AXObject::DetermineAccessibilityRole() {
   aria_role_ = DetermineAriaRoleAttribute();
   return aria_role_;
@@ -1561,6 +1629,16 @@ bool AXObject::IsEditableRoot() const {
 AXObject* AXObject::LiveRegionRoot() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_;
+}
+
+bool AXObject::LiveRegionAtomic() const {
+  bool atomic = false;
+  if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kAtomic, atomic))
+    return atomic;
+
+  // ARIA roles "alert" and "status" should have an implicit aria-atomic value
+  // of true.
+  return RoleValue() == kAlertRole || RoleValue() == kStatusRole;
 }
 
 const AtomicString& AXObject::ContainerLiveRegionStatus() const {
@@ -2344,6 +2422,38 @@ bool AXObject::NameFromContents(bool recursive) const {
   }
 
   return result;
+}
+
+bool AXObject::CanSupportAriaReadOnly() const {
+  switch (RoleValue()) {
+    case kCellRole:
+    case kCheckBoxRole:
+    case kColorWellRole:
+    case kColumnHeaderRole:
+    case kComboBoxRole:
+    case kDateRole:
+    case kDateTimeRole:
+    case kGridRole:
+    case kInputTimeRole:
+    case kListBoxRole:
+    case kMenuButtonRole:
+    case kMenuItemCheckBoxRole:
+    case kMenuItemRadioRole:
+    case kPopUpButtonRole:
+    case kRadioGroupRole:
+    case kRowHeaderRole:
+    case kSearchBoxRole:
+    case kSliderRole:
+    case kSpinButtonRole:
+    case kSwitchRole:
+    case kTextFieldRole:
+    case kToggleButtonRole:
+    case kTreeGridRole:
+      return true;
+    default:
+      break;
+  }
+  return false;
 }
 
 AccessibilityRole AXObject::ButtonRoleType() const {

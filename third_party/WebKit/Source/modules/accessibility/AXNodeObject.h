@@ -92,8 +92,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsDetached() const override { return !node_; }
   bool IsAXNodeObject() const final { return true; }
 
-  void GetSparseAXAttributes(AXSparseAttributeClient&) const override;
-
   // Check object role or purpose.
   bool IsAnchor() const final;
   bool IsControllingVideoElement() const;
@@ -128,7 +126,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsModal() const final;
   bool IsRequired() const final;
   bool IsControl() const;
-  bool CanSupportAriaReadOnly() const;
   AXRestriction Restriction() const override;
 
   // Properties of static elements.
