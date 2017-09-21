@@ -48,7 +48,8 @@ class TaskSchedulerSingleThreadTaskRunnerManagerTest : public testing::Test {
   }
 
   void TearDown() override {
-    TearDownSingleThreadTaskRunnerManager();
+    if (single_thread_task_runner_manager_)
+      TearDownSingleThreadTaskRunnerManager();
     service_thread_.Stop();
   }
 
@@ -329,6 +330,19 @@ TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest, PostDelayedTask) {
   EXPECT_GE(actual_delay, TestTimeouts::tiny_timeout());
   EXPECT_LT(actual_delay,
             TimeDelta::FromMilliseconds(250) + TestTimeouts::tiny_timeout());
+}
+
+// Verify that posting tasks after the single-thread manager is destroyed fails
+// but doesn't crash.
+TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest,
+       PostTaskAfterDestroy) {
+  auto task_runner = single_thread_task_runner_manager_
+                         ->CreateSingleThreadTaskRunnerWithTraits(
+                             "A", TaskTraits(), GetParam());
+  EXPECT_TRUE(task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing)));
+  task_tracker_.Shutdown();
+  TearDownSingleThreadTaskRunnerManager();
+  EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
 }
 
 INSTANTIATE_TEST_CASE_P(

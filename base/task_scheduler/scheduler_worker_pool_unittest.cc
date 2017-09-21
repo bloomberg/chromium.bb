@@ -102,7 +102,8 @@ class TaskSchedulerWorkerPoolTest
 
   void TearDown() override {
     service_thread_.Stop();
-    worker_pool_->JoinForTesting();
+    if (worker_pool_)
+      worker_pool_->JoinForTesting();
   }
 
   void CreateWorkerPool() {
@@ -214,6 +215,19 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostTaskAfterShutdown) {
   EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
 }
 
+// Verify that posting tasks after the pool was destroyed fails but doesn't
+// crash.
+TEST_P(TaskSchedulerWorkerPoolTest, PostAfterDestroy) {
+  StartWorkerPool();
+  auto task_runner = test::CreateTaskRunnerWithExecutionMode(
+      worker_pool_.get(), GetParam().execution_mode);
+  EXPECT_TRUE(task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing)));
+  task_tracker_.Shutdown();
+  worker_pool_->JoinForTesting();
+  worker_pool_.reset();
+  EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
+}
+
 // Verify that a Task runs shortly after its delay expires.
 TEST_P(TaskSchedulerWorkerPoolTest, PostDelayedTask) {
   StartWorkerPool();
@@ -266,7 +280,7 @@ TEST_P(TaskSchedulerWorkerPoolTest, SequencedRunsTasksInCurrentSequence) {
   task_ran.Wait();
 }
 
-// Verify that after tasks posted before Start run after Start.
+// Verify that tasks posted before Start run after Start.
 TEST_P(TaskSchedulerWorkerPoolTest, PostBeforeStart) {
   WaitableEvent task_1_scheduled(WaitableEvent::ResetPolicy::MANUAL,
                                  WaitableEvent::InitialState::NOT_SIGNALED);

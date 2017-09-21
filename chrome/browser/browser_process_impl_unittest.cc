@@ -30,13 +30,14 @@ class BrowserProcessImplTest : public ::testing::Test {
       : stashed_browser_process_(g_browser_process),
         loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &loop_),
-        file_thread_(
-            new content::TestBrowserThread(content::BrowserThread::FILE)),
         io_thread_(new content::TestBrowserThread(content::BrowserThread::IO)),
         command_line_(base::CommandLine::NO_PROGRAM),
         browser_process_impl_(
             new BrowserProcessImpl(base::ThreadTaskRunnerHandle::Get().get(),
                                    command_line_)) {
+    // Create() and StartWithDefaultParams() TaskScheduler in seperate steps to
+    // properly simulate the browser process' lifecycle.
+    base::TaskScheduler::Create("BrowserProcessImplTest");
     base::SetRecordActionTaskRunner(loop_.task_runner());
     browser_process_impl_->SetApplicationLocale("en");
   }
@@ -52,9 +53,7 @@ class BrowserProcessImplTest : public ::testing::Test {
   // The UI thread needs to be alive while BrowserProcessImpl is alive, and is
   // managed separately.
   void StartSecondaryThreads() {
-    base::TaskScheduler::CreateAndStartWithDefaultParams(
-        "BrowserProcessImplTest");
-    file_thread_->StartIOThread();
+    base::TaskScheduler::GetInstance()->StartWithDefaultParams();
     io_thread_->StartIOThread();
   }
 
@@ -65,8 +64,6 @@ class BrowserProcessImplTest : public ::testing::Test {
     // Spin the runloop to allow posted tasks to be processed.
     base::RunLoop().RunUntilIdle();
     io_thread_.reset();
-    base::RunLoop().RunUntilIdle();
-    file_thread_.reset();
     base::RunLoop().RunUntilIdle();
     base::TaskScheduler::GetInstance()->Shutdown();
     base::TaskScheduler::GetInstance()->JoinForTesting();
@@ -84,7 +81,6 @@ class BrowserProcessImplTest : public ::testing::Test {
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer scoped_com_initializer_;
 #endif
-  std::unique_ptr<content::TestBrowserThread> file_thread_;
   std::unique_ptr<content::TestBrowserThread> io_thread_;
   base::CommandLine command_line_;
   std::unique_ptr<BrowserProcessImpl> browser_process_impl_;
