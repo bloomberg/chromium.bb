@@ -5268,7 +5268,7 @@ test("net_unittests") {
     "third_party/nist-pkits/",
   ]
 
-  if (is_linux || is_mac || is_win) {
+  if (is_linux || is_mac || is_win || is_fuchsia) {
     deps += [
       "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/",
