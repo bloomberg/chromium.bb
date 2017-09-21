@@ -1233,8 +1233,11 @@ String AXObject::AriaTextAlternative(bool recursive,
         // the set of visited objects is preserved unmodified for future
         // calculations.
         AXObjectSet visited_copy = visited;
+        Vector<String> ids;
         text_alternative =
-            TextFromAriaLabelledby(visited_copy, related_objects);
+            TextFromAriaLabelledby(visited_copy, related_objects, ids);
+        if (!ids.IsEmpty())
+          AxObjectCache().UpdateReverseRelations(this, ids);
         if (!text_alternative.IsNull()) {
           if (name_sources) {
             NameSource& source = name_sources->back();
@@ -1327,8 +1330,8 @@ void AXObject::TokenVectorFromAttribute(Vector<String>& tokens,
 }
 
 void AXObject::ElementsFromAttribute(HeapVector<Member<Element>>& elements,
-                                     const QualifiedName& attribute) const {
-  Vector<String> ids;
+                                     const QualifiedName& attribute,
+                                     Vector<String>& ids) const {
   TokenVectorFromAttribute(ids, attribute);
   if (ids.IsEmpty())
     return;
@@ -1341,26 +1344,27 @@ void AXObject::ElementsFromAttribute(HeapVector<Member<Element>>& elements,
 }
 
 void AXObject::AriaLabelledbyElementVector(
-    HeapVector<Member<Element>>& elements) const {
+    HeapVector<Member<Element>>& elements,
+    Vector<String>& ids) const {
   // Try both spellings, but prefer aria-labelledby, which is the official spec.
-  ElementsFromAttribute(elements, aria_labelledbyAttr);
-  if (!elements.size())
-    ElementsFromAttribute(elements, aria_labeledbyAttr);
+  ElementsFromAttribute(elements, aria_labelledbyAttr, ids);
+  if (!ids.size())
+    ElementsFromAttribute(elements, aria_labeledbyAttr, ids);
 }
 
-String AXObject::TextFromAriaLabelledby(
-    AXObjectSet& visited,
-    AXRelatedObjectVector* related_objects) const {
+String AXObject::TextFromAriaLabelledby(AXObjectSet& visited,
+                                        AXRelatedObjectVector* related_objects,
+                                        Vector<String>& ids) const {
   HeapVector<Member<Element>> elements;
-  AriaLabelledbyElementVector(elements);
+  AriaLabelledbyElementVector(elements, ids);
   return TextFromElements(true, visited, elements, related_objects);
 }
 
-String AXObject::TextFromAriaDescribedby(
-    AXRelatedObjectVector* related_objects) const {
+String AXObject::TextFromAriaDescribedby(AXRelatedObjectVector* related_objects,
+                                         Vector<String>& ids) const {
   AXObjectSet visited;
   HeapVector<Member<Element>> elements;
-  ElementsFromAttribute(elements, aria_describedbyAttr);
+  ElementsFromAttribute(elements, aria_describedbyAttr, ids);
   return TextFromElements(true, visited, elements, related_objects);
 }
 

@@ -286,6 +286,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TreeChange) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, TreeChangeIndirect) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(
+      RunExtensionSubtest("automation/tests/tabs", "tree_change_indirect.html"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DocumentSelection) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(

@@ -1,0 +1,19 @@
+<!--
+@WAIT-FOR:oranges
+@BLINK-DENY:nameFrom*
+-->
+<!DOCTYPE html>
+<html>
+<body>
+  <input id="input">
+  <label id="label" aria-hidden="true" for="input"><span><span>apples</span></span></label>
+</div>
+
+<script>
+  setTimeout(() => {
+    const label = document.getElementById('label');
+    label.firstElementChild.firstElementChild.innerText = 'oranges';
+  }, 100);
+</script>
+</body>
+</html>
