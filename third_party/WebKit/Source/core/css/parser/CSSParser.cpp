@@ -240,17 +240,12 @@ const CSSValue* CSSParser::ParseFontFaceDescriptor(
     CSSPropertyID property_id,
     const String& property_value,
     const CSSParserContext* context) {
-  StringBuilder builder;
-  builder.Append("@font-face { ");
-  builder.Append(getPropertyNameString(property_id));
-  builder.Append(" : ");
-  builder.Append(property_value);
-  builder.Append("; }");
-  StyleRuleBase* rule = ParseRule(context, nullptr, builder.ToString());
-  if (!rule || !rule->IsFontFaceRule())
-    return nullptr;
-  return ToStyleRuleFontFace(rule)->Properties().GetPropertyCSSValue(
-      property_id);
+  MutableStylePropertySet* style =
+      MutableStylePropertySet::Create(kCSSFontFaceRuleMode);
+  CSSParser::ParseValue(style, property_id, property_value, true, context);
+  const CSSValue* value = style->GetPropertyCSSValue(property_id);
+
+  return value;
 }
 
 }  // namespace blink
