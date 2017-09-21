@@ -13,8 +13,11 @@ namespace aura {
 
 ClientSurfaceEmbedder::ClientSurfaceEmbedder(
     Window* window,
+    bool inject_gutter,
     const gfx::Insets& client_area_insets)
-    : window_(window), client_area_insets_(client_area_insets) {
+    : window_(window),
+      inject_gutter_(inject_gutter),
+      client_area_insets_(client_area_insets) {
   surface_layer_ = base::MakeUnique<ui::Layer>(ui::LAYER_TEXTURED);
   surface_layer_->SetMasksToBounds(true);
   // The frame provided by the parent window->layer() needs to show through
@@ -46,6 +49,9 @@ void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(
 
 void ClientSurfaceEmbedder::UpdateSizeAndGutters() {
   surface_layer_->SetBounds(gfx::Rect(window_->bounds().size()));
+  if (!inject_gutter_)
+    return;
+
   gfx::Size fallback_surface_size_in_dip;
   const viz::SurfaceInfo* fallback_surface_info =
       surface_layer_->GetFallbackSurfaceInfo();

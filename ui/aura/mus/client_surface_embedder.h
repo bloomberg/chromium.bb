@@ -32,7 +32,9 @@ class ClientSurfaceEmbedder {
  public:
   // TODO(fsamuel): Insets might differ when the window is maximized. We should
   // deal with that case as well.
-  ClientSurfaceEmbedder(Window* window, const gfx::Insets& client_area_insets);
+  ClientSurfaceEmbedder(Window* window,
+                        bool inject_gutter,
+                        const gfx::Insets& client_area_insets);
   ~ClientSurfaceEmbedder();
 
   // Updates the clip layer and primary SurfaceInfo of the surface layer based
@@ -62,6 +64,7 @@ class ClientSurfaceEmbedder {
   std::unique_ptr<ui::Layer> right_gutter_;
   std::unique_ptr<ui::Layer> bottom_gutter_;
 
+  bool inject_gutter_;
   gfx::Insets client_area_insets_;
 
   scoped_refptr<viz::SurfaceReferenceFactory> ref_factory_;

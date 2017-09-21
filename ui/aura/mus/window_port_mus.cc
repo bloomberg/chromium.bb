@@ -592,7 +592,8 @@ void WindowPortMus::UpdateClientSurfaceEmbedder() {
 
   if (!client_surface_embedder_) {
     client_surface_embedder_ = base::MakeUnique<ClientSurfaceEmbedder>(
-        window_, window_tree_client_->normal_client_area_insets_);
+        window_, window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM,
+        window_tree_client_->normal_client_area_insets_);
   }
 
   client_surface_embedder_->SetPrimarySurfaceInfo(primary_surface_info_);
