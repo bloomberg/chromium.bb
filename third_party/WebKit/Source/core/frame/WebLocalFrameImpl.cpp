@@ -647,11 +647,8 @@ void WebLocalFrameImpl::DispatchUnloadEvent() {
 
 void WebLocalFrameImpl::ExecuteScript(const WebScriptSource& source) {
   DCHECK(GetFrame());
-  TextPosition position(OrdinalNumber::FromOneBasedInt(source.start_line),
-                        OrdinalNumber::First());
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
-      ScriptSourceCode(source.code, source.url, position));
+  GetFrame()->GetScriptController().ExecuteScriptInMainWorld(source);
 }
 
 void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
@@ -729,12 +726,9 @@ v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(
     const WebScriptSource& source) {
   DCHECK(GetFrame());
 
-  TextPosition position(OrdinalNumber::FromOneBasedInt(source.start_line),
-                        OrdinalNumber::First());
   return GetFrame()
       ->GetScriptController()
-      .ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode(source.code, source.url, position));
+      .ExecuteScriptInMainWorldAndReturnValue(source);
 }
 
 void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(
