@@ -69,7 +69,8 @@ public class DialogOverlayImpl implements AndroidOverlay, DialogOverlayCore.Host
 
         // Register to get token updates.  Note that this may not call us back directly, since
         // |mDialogCore| hasn't been initialized yet.
-        mNativeHandle = nativeInit(config.routingToken.high, config.routingToken.low);
+        mNativeHandle = nativeInit(
+                config.routingToken.high, config.routingToken.low, config.powerEfficient);
 
         if (mNativeHandle == 0) {
             mClient.onDestroyed();
@@ -262,6 +263,17 @@ public class DialogOverlayImpl implements AndroidOverlay, DialogOverlayCore.Host
     }
 
     /**
+     * Callback from native to tell us that the power-efficient state has changed.
+     */
+    @CalledByNative
+    private void onPowerEfficientState(boolean isPowerEfficient) {
+        ThreadUtils.assertOnUiThread();
+        if (mDialogCore == null) return;
+        if (mClient == null) return;
+        mClient.onPowerEfficientState(isPowerEfficient);
+    }
+
+    /**
      * Unregister for callbacks, unregister any surface that we have, and forget about
      * |mDialogCore|.  Multiple calls are okay.
      */
@@ -293,7 +305,7 @@ public class DialogOverlayImpl implements AndroidOverlay, DialogOverlayCore.Host
      * handle that should be provided to nativeDestroy.  This will not call back with a window token
      * immediately.  Call nativeCompleteInit() for the initial token.
      */
-    private native long nativeInit(long high, long low);
+    private native long nativeInit(long high, long low, boolean isPowerEfficient);
 
     /**
      * Notify the native side that we are ready for token / dismissed callbacks.  This may result in

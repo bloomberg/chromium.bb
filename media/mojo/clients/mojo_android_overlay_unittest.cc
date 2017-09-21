@@ -45,6 +45,7 @@ class MojoAndroidOverlayTest : public ::testing::Test {
     MOCK_METHOD1(OnReady, void(AndroidOverlay*));
     MOCK_METHOD1(OnFailed, void(AndroidOverlay*));
     MOCK_METHOD1(OnDestroyed, void(AndroidOverlay*));
+    MOCK_METHOD2(OnPowerEfficient, void(AndroidOverlay*, bool));
   };
 
   class MockAndroidOverlayProvider
@@ -80,6 +81,8 @@ class MojoAndroidOverlayTest : public ::testing::Test {
                                   base::Unretained(&callbacks_));
     config_.failed_cb = base::Bind(&MockClientCallbacks::OnFailed,
                                    base::Unretained(&callbacks_));
+    config_.power_cb = base::Bind(&MockClientCallbacks::OnPowerEfficient,
+                                  base::Unretained(&callbacks_));
 
     // Make sure that we have an implementation of GpuSurfaceLookup.
     gpu::GpuSurfaceTracker::Get();
@@ -223,17 +226,32 @@ TEST_F(MojoAndroidOverlayTest, LayoutBeforeSurfaceIsIgnored) {
 }
 
 // Test |secure| makes it to the mojo config when it is true
-TEST_F(MojoAndroidOverlayTest, SecureFlagIsSentViaMojoWhenTrue) {
+TEST_F(MojoAndroidOverlayTest, FlagsAreSentViaMojoWhenTrue) {
   config_.secure = true;
+  config_.power_efficient = true;
   CreateOverlay();
   ASSERT_TRUE(mock_provider_.config_->secure);
+  ASSERT_TRUE(mock_provider_.config_->power_efficient);
 }
 
 // Test |secure| makes it to the mojo config when it is false
-TEST_F(MojoAndroidOverlayTest, SecureFlagIsSentViaMojoWhenFalse) {
+TEST_F(MojoAndroidOverlayTest, FlagsAreSentViaMojoWhenFalse) {
   config_.secure = false;
+  config_.power_efficient = false;
   CreateOverlay();
   ASSERT_FALSE(mock_provider_.config_->secure);
+  ASSERT_FALSE(mock_provider_.config_->power_efficient);
+}
+
+// Make sure that power efficient cbs are relayed to the application.
+TEST_F(MojoAndroidOverlayTest, PowerEfficientCallbackWorks) {
+  CreateOverlay();
+  EXPECT_CALL(callbacks_, OnPowerEfficient(overlay_client_.get(), true));
+  mock_provider_.client_->OnPowerEfficientState(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_CALL(callbacks_, OnPowerEfficient(overlay_client_.get(), false));
+  mock_provider_.client_->OnPowerEfficientState(false);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media

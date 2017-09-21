@@ -40,6 +40,11 @@ struct MEDIA_EXPORT AndroidOverlayConfig {
   // being deleted.
   using DeletedCB = base::OnceCallback<void(AndroidOverlay*)>;
 
+  // Optional callback to find out about the power-efficient state of the
+  // overlay.  Called with true if the overlay is power-efficient, and false
+  // if it isn't.  To receive these callbacks, one must set |power_efficient|.
+  using PowerEfficientCB = base::RepeatingCallback<void(AndroidOverlay*, bool)>;
+
   // Configuration used to create an overlay.
   AndroidOverlayConfig();
   AndroidOverlayConfig(AndroidOverlayConfig&&);
@@ -51,12 +56,23 @@ struct MEDIA_EXPORT AndroidOverlayConfig {
   // Require a secure overlay?
   bool secure = false;
 
+  // Require that the overlay is power efficient?  In other words, don't get
+  // an overlay if it (for example) pushes the device into GLES composition.  If
+  // an overlay is provided, but it later becomes not power efficient, then it
+  // will not be destroyed.  Use PowerEfficientCB to determine that this has
+  // happened, since that lets the client handle it more gracefully rather than
+  // looking like the surface was lost.
+  bool power_efficient = false;
+
   // Convenient helpers since the syntax is weird.
   void is_ready(AndroidOverlay* overlay) { std::move(ready_cb).Run(overlay); }
   void is_failed(AndroidOverlay* overlay) { std::move(failed_cb).Run(overlay); }
 
   ReadyCB ready_cb;
   FailedCB failed_cb;
+
+  // Optional, may be empty.
+  PowerEfficientCB power_cb;
 
   DISALLOW_COPY(AndroidOverlayConfig);
 };

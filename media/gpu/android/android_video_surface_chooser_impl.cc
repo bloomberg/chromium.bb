@@ -46,7 +46,7 @@ void AndroidVideoSurfaceChooserImpl::Initialize(
     if (overlay_factory_ &&
         (current_state_.is_fullscreen || current_state_.is_secure ||
          current_state_.is_required)) {
-      SwitchToOverlay();
+      SwitchToOverlay(false);
     } else {
       SwitchToSurfaceTexture();
     }
@@ -58,6 +58,12 @@ void AndroidVideoSurfaceChooserImpl::Initialize(
 void AndroidVideoSurfaceChooserImpl::UpdateState(
     base::Optional<AndroidOverlayFactoryCB> new_factory,
     const State& new_state) {
+  // If we're entering fullscreen, clear any previous failure attempt.  It's
+  // likely that any previous failure was due to a lack of power efficiency,
+  // but entering fs likely changes that anyway.
+  if (!current_state_.is_fullscreen && new_state.is_fullscreen)
+    most_recent_overlay_failure_ = base::TimeTicks();
+
   current_state_ = new_state;
 
   if (!new_factory) {
@@ -101,17 +107,28 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   // shouldn't be called.
   DCHECK(allow_dynamic_);
 
-  OverlayState new_overlay_state = kUsingSurfaceTexture;
+  // TODO(liberato): should this depend on resolution?
+  OverlayState new_overlay_state = current_state_.promote_aggressively
+                                       ? kUsingOverlay
+                                       : kUsingSurfaceTexture;
+  // Do we require a power-efficient overlay?
+  bool needs_power_efficient = current_state_.promote_aggressively;
 
-  // In player element fullscreen, we want to use overlays if we can.
+  // In player element fullscreen, we want to use overlays if we can.  Note that
+  // this does nothing if |promote_aggressively|, which is fine since switching
+  // from "want power efficient" from "don't care" is problematic.
   if (current_state_.is_fullscreen)
     new_overlay_state = kUsingOverlay;
 
   // Try to use an overlay if possible for protected content.  If the compositor
   // won't promote, though, it's okay if we switch out.  Set |is_required| in
   // addition, if you don't want this behavior.
-  if (current_state_.is_secure)
+  if (current_state_.is_secure) {
     new_overlay_state = kUsingOverlay;
+    // Don't un-promote if not power efficient.  If we did, then inline playback
+    // would likely not promote.
+    needs_power_efficient = false;
+  }
 
   // If the compositor won't promote, then don't.
   if (!current_state_.is_compositor_promotable)
@@ -142,8 +159,11 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
 
   // If an overlay is required, then choose one.  The only way we won't is if we
   // don't have a factory or our request fails.
-  if (current_state_.is_required)
+  if (current_state_.is_required) {
     new_overlay_state = kUsingOverlay;
+    // Required overlays don't need to be power efficient.
+    needs_power_efficient = false;
+  }
 
   // If we have no factory, then we definitely don't want to use overlays.
   if (!overlay_factory_)
@@ -153,7 +173,7 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   if (new_overlay_state == kUsingSurfaceTexture)
     SwitchToSurfaceTexture();
   else
-    SwitchToOverlay();
+    SwitchToOverlay(needs_power_efficient);
 }
 
 void AndroidVideoSurfaceChooserImpl::SwitchToSurfaceTexture() {
@@ -177,9 +197,13 @@ void AndroidVideoSurfaceChooserImpl::SwitchToSurfaceTexture() {
   }
 }
 
-void AndroidVideoSurfaceChooserImpl::SwitchToOverlay() {
+void AndroidVideoSurfaceChooserImpl::SwitchToOverlay(
+    bool needs_power_efficient) {
   // If there's already an overlay request outstanding, then do nothing.  We'll
   // finish switching when it completes.
+  // TODO(liberato): If the power efficient flag for |overlay_| doesn't match
+  // |needs_power_efficient|, then we should cancel it anyway.  In practice,
+  // this doesn't happen, so we ignore it.
   if (overlay_)
     return;
 
@@ -193,9 +217,10 @@ void AndroidVideoSurfaceChooserImpl::SwitchToOverlay() {
   // We don't modify |client_overlay_state_| yet, since we don't call the client
   // back yet.
 
-  // Invalidate any outstanding callbacks.  This is needed only for the deletion
+  // Invalidate any outstanding callbacks.  This is needed for the deletion
   // callback, since for ready/failed callbacks, we still have ownership of the
   // object.  If we delete the object, then callbacks are cancelled anyway.
+  // We also don't want to receive the power efficient callback.
   weak_factory_.InvalidateWeakPtrs();
 
   AndroidOverlayConfig config;
@@ -208,14 +233,17 @@ void AndroidVideoSurfaceChooserImpl::SwitchToOverlay() {
       base::Bind(&AndroidVideoSurfaceChooserImpl::OnOverlayFailed,
                  weak_factory_.GetWeakPtr());
   config.rect = current_state_.initial_position;
+  config.secure = current_state_.is_secure;
+
+  // Request power efficient overlays and callbacks if we're supposed to.
+  config.power_efficient = needs_power_efficient;
+  config.power_cb =
+      base::Bind(&AndroidVideoSurfaceChooserImpl::OnPowerEfficientState,
+                 weak_factory_.GetWeakPtr());
+
   overlay_ = overlay_factory_.Run(std::move(config));
   if (!overlay_)
     SwitchToSurfaceTexture();
-
-  // We could add a destruction callback here, if we need to find out when the
-  // surface has been destroyed.  It might also be good to have a 'overlay has
-  // been destroyed' callback from ~AndroidOverlay, since we don't really know
-  // how long that will take after SurfaceDestroyed.
 }
 
 void AndroidVideoSurfaceChooserImpl::OnOverlayReady(AndroidOverlay* overlay) {
@@ -252,6 +280,37 @@ void AndroidVideoSurfaceChooserImpl::OnOverlayDeleted(AndroidOverlay* overlay) {
   client_overlay_state_ = kUsingSurfaceTexture;
   // We don't call SwitchToSurfaceTexture since the client dropped the overlay.
   // It's already using SurfaceTexture.
+}
+
+void AndroidVideoSurfaceChooserImpl::OnPowerEfficientState(
+    AndroidOverlay* overlay,
+    bool is_power_efficient) {
+  // We cannot receive this before OnSurfaceReady, since that is the first
+  // callback if it arrives.  Getting a new overlay clears any previous cbs.
+  DCHECK(!overlay_);
+
+  // We cannot receive it after switching to SurfaceTexture, since that also
+  // clears all callbacks.
+  DCHECK(client_overlay_state_ == kUsingOverlay);
+
+  // If the overlay has become power efficient, then take no action.
+  if (is_power_efficient)
+    return;
+
+  // If the overlay is now required, then keep it.  It might have become
+  // required since we requested it.
+  if (current_state_.is_required)
+    return;
+
+  // If we're not able to switch dynamically, then keep the overlay.
+  if (!allow_dynamic_)
+    return;
+
+  // We could set the failure timer here, but we don't mostly for fullscreen.
+  // We don't want to delay transitioning to an overlay if the user re-enters
+  // fullscreen.  TODO(liberato): Perhaps we should just clear the failure timer
+  // if we detect a transition into fs when we get new state from the client.
+  SwitchToSurfaceTexture();
 }
 
 }  // namespace media

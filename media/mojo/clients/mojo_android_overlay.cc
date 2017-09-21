@@ -21,6 +21,7 @@ MojoAndroidOverlay::MojoAndroidOverlay(
   mojo_config->routing_token = routing_token;
   mojo_config->rect = config_.rect;
   mojo_config->secure = config_.secure;
+  mojo_config->power_efficient = config_.power_efficient;
 
   mojom::AndroidOverlayClientPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
@@ -75,6 +76,11 @@ void MojoAndroidOverlay::OnDestroyed() {
 
   // Note: we do not delete |overlay_ptr_| here.  Our client must delete us to
   // signal that we should do that, since it still might be in use.
+}
+
+void MojoAndroidOverlay::OnPowerEfficientState(bool is_power_efficient) {
+  if (config_.power_cb)
+    config_.power_cb.Run(this, is_power_efficient);
 }
 
 }  // namespace media

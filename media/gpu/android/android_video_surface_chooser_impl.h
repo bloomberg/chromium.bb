@@ -46,13 +46,16 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   // the client callbacks if we're changing state, though those callbacks might
   // happen after this returns.
   void SwitchToSurfaceTexture();
-  // If |overlay_| has an in-flight request, then this will do nothing.
-  void SwitchToOverlay();
+  // If |overlay_| has an in-flight request, then this will do nothing.  If
+  // |power_efficient|, then we will require a power-efficient overlay, and
+  // cancel it if it becomes not power efficient.
+  void SwitchToOverlay(bool power_efficient);
 
   // AndroidOverlay callbacks.
   void OnOverlayReady(AndroidOverlay*);
   void OnOverlayFailed(AndroidOverlay*);
   void OnOverlayDeleted(AndroidOverlay*);
+  void OnPowerEfficientState(AndroidOverlay* overlay, bool is_power_efficient);
 
   // Client callbacks.
   UseOverlayCB use_overlay_cb_;

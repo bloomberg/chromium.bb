@@ -41,6 +41,10 @@ interface AndroidOverlayClient {
   // initialize.  It can happen before or after OnSurfaceReady.  It will be the
   // last callback from the overlay in any case.
   OnDestroyed();
+
+  // Called to provide the current power-efficiency state.  May be called more
+  // than once.
+  OnPowerEfficientState(bool is_power_efficient);
 };
 
 // This is not a mirror of AndroidOverlay::Config, since it contains things that
@@ -61,4 +65,7 @@ struct AndroidOverlayConfig {
 
   // Is a secure overlay required, such as for displaying protected content?
   bool secure;
+
+  // Is a power-efficient overlay required?
+  bool power_efficient;
 };

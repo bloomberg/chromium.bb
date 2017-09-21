@@ -30,6 +30,8 @@ MockAndroidOverlay::Callbacks MockAndroidOverlay::GetCallbacks() {
                                weak_factory_.GetWeakPtr());
   c.SurfaceDestroyed = base::Bind(&MockAndroidOverlay::OnSurfaceDestroyed,
                                   weak_factory_.GetWeakPtr());
+  c.PowerEfficientState = base::Bind(&MockAndroidOverlay::OnPowerEfficientState,
+                                     weak_factory_.GetWeakPtr());
 
   return c;
 }
@@ -44,6 +46,10 @@ void MockAndroidOverlay::OnOverlayFailed() {
 
 void MockAndroidOverlay::OnSurfaceDestroyed() {
   RunSurfaceDestroyedCallbacks();
+}
+
+void MockAndroidOverlay::OnPowerEfficientState(bool state) {
+  config_->power_cb.Run(this, state);
 }
 
 }  // namespace media

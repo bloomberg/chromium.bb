@@ -29,6 +29,9 @@ class MockAndroidOverlay : public testing::StrictMock<AndroidOverlay>,
   // via CreateOverlay.  That's helpful to set test expectations.
   void SetConfig(AndroidOverlayConfig config);
 
+  // Return the config, if any, so that tests can check it.
+  AndroidOverlayConfig* config() const { return config_.get(); }
+
   // Set of callbacks that we provide to control the overlay once you've handed
   // off ownership of it.  Will return false if the overlay has been destroyed.
   using ControlCallback = base::RepeatingCallback<void()>;
@@ -40,6 +43,7 @@ class MockAndroidOverlay : public testing::StrictMock<AndroidOverlay>,
     ControlCallback OverlayReady;
     ControlCallback OverlayFailed;
     ControlCallback SurfaceDestroyed;
+    base::RepeatingCallback<void(bool)> PowerEfficientState;
   };
 
   // Return callbacks that can be used to control the overlay.
@@ -49,6 +53,7 @@ class MockAndroidOverlay : public testing::StrictMock<AndroidOverlay>,
   void OnOverlayReady();
   void OnOverlayFailed();
   void OnSurfaceDestroyed();
+  void OnPowerEfficientState(bool state);
 
  private:
   // Initial configuration, mostly for callbacks.
