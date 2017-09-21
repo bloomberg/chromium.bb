@@ -92,15 +92,15 @@ MATCHER_P(ContainsTrackBufferExhaustionSkipLog, skip_milliseconds, "") {
     }                                                                   \
   }
 
-#define EXPECT_STATUS_FOR_STREAM_OP(status_suffix, operation)              \
-  {                                                                        \
-    if (buffering_api_ == BufferingApi::kLegacyByDts) {                    \
-      EXPECT_EQ(SourceBufferStream<SourceBufferRangeByDts>::status_suffix, \
-                stream_dts_->operation);                                   \
-    } else {                                                               \
-      EXPECT_EQ(SourceBufferStream<SourceBufferRangeByPts>::status_suffix, \
-                stream_pts_->operation);                                   \
-    }                                                                      \
+#define EXPECT_STATUS_FOR_STREAM_OP(status_suffix, operation) \
+  {                                                           \
+    if (buffering_api_ == BufferingApi::kLegacyByDts) {       \
+      EXPECT_EQ(SourceBufferStreamStatus::status_suffix,      \
+                stream_dts_->operation);                      \
+    } else {                                                  \
+      EXPECT_EQ(SourceBufferStreamStatus::status_suffix,      \
+                stream_pts_->operation);                      \
+    }                                                         \
   }
 
 // Test parameter determines if media::kMseBufferByPts feature should be forced
@@ -395,20 +395,10 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     int current_position = starting_position;
     for (; current_position <= ending_position; current_position++) {
       scoped_refptr<StreamParserBuffer> buffer;
-      if (buffering_api_ == BufferingApi::kLegacyByDts) {
-        auto status = stream_dts_->GetNextBuffer(&buffer);
-        EXPECT_NE(status,
-                  SourceBufferStream<SourceBufferRangeByDts>::kConfigChange);
-        if (status != SourceBufferStream<SourceBufferRangeByDts>::kSuccess)
-          break;
-      } else {
-        ASSERT_EQ(buffering_api_, BufferingApi::kNewByPts);
-        auto status = stream_pts_->GetNextBuffer(&buffer);
-        EXPECT_NE(status,
-                  SourceBufferStream<SourceBufferRangeByPts>::kConfigChange);
-        if (status != SourceBufferStream<SourceBufferRangeByPts>::kSuccess)
-          break;
-      }
+      SourceBufferStreamStatus status = STREAM_OP(GetNextBuffer(&buffer));
+      EXPECT_NE(status, SourceBufferStreamStatus::kConfigChange);
+      if (status != SourceBufferStreamStatus::kSuccess)
+        break;
 
       if (expect_keyframe && current_position == starting_position)
         EXPECT_TRUE(buffer->is_key_frame());
@@ -435,65 +425,35 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     std::vector<std::string> timestamps = base::SplitString(
         expected, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::stringstream ss;
+    const SourceBufferStreamType type = STREAM_OP(GetType());
     for (size_t i = 0; i < timestamps.size(); i++) {
       scoped_refptr<StreamParserBuffer> buffer;
-      bool configChanged = false;
+      SourceBufferStreamStatus status = STREAM_OP(GetNextBuffer(&buffer));
 
       if (i > 0)
         ss << " ";
 
-      if (buffering_api_ == BufferingApi::kLegacyByDts) {
-        auto status = stream_dts_->GetNextBuffer(&buffer);
-        if (status ==
-            SourceBufferStream<SourceBufferRangeByDts>::kConfigChange) {
-          configChanged = true;
-          switch (stream_dts_->GetType()) {
-            case SourceBufferStream<SourceBufferRangeByDts>::kVideo:
-              stream_dts_->GetCurrentVideoDecoderConfig();
-              break;
-            case SourceBufferStream<SourceBufferRangeByDts>::kAudio:
-              stream_dts_->GetCurrentAudioDecoderConfig();
-              break;
-            case SourceBufferStream<SourceBufferRangeByDts>::kText:
-              stream_dts_->GetCurrentTextTrackConfig();
-              break;
-          }
-        } else {
-          EXPECT_EQ(SourceBufferStream<SourceBufferRangeByDts>::kSuccess,
-                    status);
-          if (status != SourceBufferStream<SourceBufferRangeByDts>::kSuccess)
+      if (status == SourceBufferStreamStatus::kConfigChange) {
+        switch (type) {
+          case SourceBufferStreamType::kVideo:
+            STREAM_OP(GetCurrentVideoDecoderConfig());
+            break;
+          case SourceBufferStreamType::kAudio:
+            STREAM_OP(GetCurrentAudioDecoderConfig());
+            break;
+          case SourceBufferStreamType::kText:
+            STREAM_OP(GetCurrentTextTrackConfig());
             break;
         }
-      } else {
-        ASSERT_EQ(buffering_api_, BufferingApi::kNewByPts);
-        auto status = stream_pts_->GetNextBuffer(&buffer);
-        if (status ==
-            SourceBufferStream<SourceBufferRangeByPts>::kConfigChange) {
-          configChanged = true;
-          switch (stream_pts_->GetType()) {
-            case SourceBufferStream<SourceBufferRangeByPts>::kVideo:
-              stream_pts_->GetCurrentVideoDecoderConfig();
-              break;
-            case SourceBufferStream<SourceBufferRangeByPts>::kAudio:
-              stream_pts_->GetCurrentAudioDecoderConfig();
-              break;
-            case SourceBufferStream<SourceBufferRangeByPts>::kText:
-              stream_pts_->GetCurrentTextTrackConfig();
-              break;
-          }
-        } else {
-          EXPECT_EQ(SourceBufferStream<SourceBufferRangeByPts>::kSuccess,
-                    status);
-          if (status != SourceBufferStream<SourceBufferRangeByPts>::kSuccess)
-            break;
-        }
-      }
 
-      if (configChanged) {
         EXPECT_EQ("C", timestamps[i]);
         ss << "C";
         continue;
       }
+
+      EXPECT_EQ(SourceBufferStreamStatus::kSuccess, status);
+      if (status != SourceBufferStreamStatus::kSuccess)
+        break;
 
       if (granularity == TimeGranularity::kMillisecond)
         ss << buffer->timestamp().InMilliseconds();
