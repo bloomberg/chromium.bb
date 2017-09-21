@@ -111,10 +111,6 @@ const char kClickToOpenPDFDescription[] =
 const char kCloudImportName[] = "Cloud Import";
 const char kCloudImportDescription[] = "Allows the cloud-import feature.";
 
-const char kColorCorrectRenderingName[] = "Color correct rendering";
-const char kColorCorrectRenderingDescription[] =
-    "Enables color correct rendering of web content.";
-
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
 const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";
