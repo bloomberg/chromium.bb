@@ -287,10 +287,7 @@ scoped_refptr<Dispatcher> MessagePipeDispatcher::Deserialize(
                                    state->pipe_id, state->endpoint);
 }
 
-MessagePipeDispatcher::~MessagePipeDispatcher() {
-  // TODO(crbug.com/740044): Remove this CHECK.
-  CHECK(port_closed_ && !in_transit_);
-}
+MessagePipeDispatcher::~MessagePipeDispatcher() = default;
 
 MojoResult MessagePipeDispatcher::CloseNoLock() {
   signal_lock_.AssertAcquired();
