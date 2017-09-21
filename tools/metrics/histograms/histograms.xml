@@ -26593,6 +26593,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.QueryMostVisitedURLsTime" units="ms">
+  <owner>chengx@chromium.org</owner>
+  <summary>
+    The amount of time for function HistoryBackend::QueryMostVisitedURLs to
+    execute. Excludes the case where local HistoryDatabase db_ is unavailable,
+    i.e. where the query doesn't really happen.
+  </summary>
+</histogram>
+
 <histogram name="History.ResultsRenderedTime" units="ms">
   <owner>tsergeant@chromium.org</owner>
   <summary>
