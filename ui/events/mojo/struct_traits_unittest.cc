@@ -197,4 +197,29 @@ TEST_F(StructTraitsTest, KeyEventPropertiesSerialized) {
   EXPECT_EQ(properties, *(deserialized->AsKeyEvent()->properties()));
 }
 
+TEST_F(StructTraitsTest, GestureEvent) {
+  GestureEvent kTestData[] = {
+      {10, 20, EF_NONE,
+       base::TimeTicks() + base::TimeDelta::FromMicroseconds(401),
+       GestureEventDetails(ET_GESTURE_TAP)},
+  };
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  for (size_t i = 0; i < arraysize(kTestData); i++) {
+    std::unique_ptr<Event> output;
+    proxy->EchoEvent(Event::Clone(kTestData[i]), &output);
+    EXPECT_TRUE(output->IsGestureEvent());
+
+    const GestureEvent* output_ptr_event = output->AsGestureEvent();
+    EXPECT_EQ(kTestData[i].type(), output_ptr_event->type());
+    EXPECT_EQ(kTestData[i].flags(), output_ptr_event->flags());
+    EXPECT_EQ(kTestData[i].location(), output_ptr_event->location());
+    EXPECT_EQ(kTestData[i].root_location(), output_ptr_event->root_location());
+    EXPECT_EQ(kTestData[i].details(), output_ptr_event->details());
+    EXPECT_EQ(kTestData[i].unique_touch_event_id(),
+              output_ptr_event->unique_touch_event_id());
+    EXPECT_EQ(kTestData[i].time_stamp(), output_ptr_event->time_stamp());
+  }
+}
+
 }  // namespace ui
