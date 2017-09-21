@@ -4179,6 +4179,26 @@ registerLoadRequestForURL:(const GURL&)requestURL
                        }];
 }
 
+- (BOOL)webView:(WKWebView*)webView
+    shouldPreviewElement:(WKPreviewElementInfo*)elementInfo {
+  return self.webStateImpl->ShouldPreviewLink(
+      net::GURLWithNSURL(elementInfo.linkURL));
+}
+
+- (UIViewController*)webView:(WKWebView*)webView
+    previewingViewControllerForElement:(WKPreviewElementInfo*)elementInfo
+                        defaultActions:
+                            (NSArray<id<WKPreviewActionItem>>*)previewActions {
+  return self.webStateImpl->GetPreviewingViewController(
+      net::GURLWithNSURL(elementInfo.linkURL));
+}
+
+- (void)webView:(WKWebView*)webView
+    commitPreviewingViewController:(UIViewController*)previewingViewController {
+  return self.webStateImpl->CommitPreviewingViewController(
+      previewingViewController);
+}
+
 #pragma mark -
 #pragma mark WKNavigationDelegate Methods
 

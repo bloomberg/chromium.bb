@@ -30,6 +30,7 @@ ios_web_view_public_headers = [
   "public/cwv_navigation_delegate.h",
   "public/cwv_navigation_type.h",
   "public/cwv_preferences.h",
+  "public/cwv_preview_element_info.h",
   "public/cwv_scroll_view.h",
   "public/cwv_scroll_view_delegate.h",
   "public/cwv_translation_controller.h",
@@ -56,6 +57,8 @@ ios_web_view_sources = [
   "internal/cwv_navigation_type_internal.h",
   "internal/cwv_preferences.mm",
   "internal/cwv_preferences_internal.h",
+  "internal/cwv_preview_element_info.mm",
+  "internal/cwv_preview_element_info_internal.h",
   "internal/cwv_scroll_view.mm",
   "internal/cwv_scroll_view_internal.h",
   "internal/cwv_user_content_controller.mm",
@@ -171,6 +174,7 @@ test("ios_web_view_unittests") {
   testonly = true
   sources = [
     "internal/cwv_html_element_unittest.mm",
+    "internal/cwv_preview_element_info_unittest.mm",
   ]
   sources += ios_web_view_sources
 

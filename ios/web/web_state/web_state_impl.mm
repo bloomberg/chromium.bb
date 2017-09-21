@@ -512,6 +512,23 @@ bool WebStateImpl::ShouldAllowResponse(NSURLResponse* response,
   return true;
 }
 
+bool WebStateImpl::ShouldPreviewLink(const GURL& link_url) {
+  return delegate_ && delegate_->ShouldPreviewLink(this, link_url);
+}
+
+UIViewController* WebStateImpl::GetPreviewingViewController(
+    const GURL& link_url) {
+  return delegate_ ? delegate_->GetPreviewingViewController(this, link_url)
+                   : nil;
+}
+
+void WebStateImpl::CommitPreviewingViewController(
+    UIViewController* previewing_view_controller) {
+  if (delegate_) {
+    delegate_->CommitPreviewingViewController(this, previewing_view_controller);
+  }
+}
+
 #pragma mark - RequestTracker management
 
 WebStateInterfaceProvider* WebStateImpl::GetWebStateInterfaceProvider() {

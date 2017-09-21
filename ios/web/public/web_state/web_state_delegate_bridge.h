@@ -9,6 +9,8 @@
 
 #import "ios/web/public/web_state/web_state_delegate.h"
 
+@class UIViewController;
+
 // Objective-C interface for web::WebStateDelegate.
 @protocol CRWWebStateDelegate<NSObject>
 @optional
@@ -58,6 +60,24 @@
                       proposedCredential:(NSURLCredential*)proposedCredential
                        completionHandler:(void (^)(NSString* username,
                                                    NSString* password))handler;
+
+// Determines whether the given link with |linkURL| should show a preview on
+// force touch.
+- (BOOL)webState:(web::WebState*)webState
+    shouldPreviewLinkWithURL:(const GURL&)linkURL;
+
+// Called when the user performs a peek action on a link with |linkURL| with
+// force touch. Returns a view controller shown as a pop-up. Uses Webkit's
+// default preview behavior when it returns nil.
+- (UIViewController*)webState:(web::WebState*)webState
+    previewingViewControllerForLinkWithURL:(const GURL&)linkURL;
+
+// Called when the user performs a pop action on the preview on force touch.
+// |previewing_view_controller| is the view controller that is popped.
+// It should display |previewingViewController| inside the app.
+- (void)webState:(web::WebState*)webState
+    commitPreviewingViewController:(UIViewController*)previewingViewController;
+
 @end
 
 namespace web {
@@ -87,6 +107,12 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
                       NSURLProtectionSpace* protection_space,
                       NSURLCredential* proposed_credential,
                       const AuthCallback& callback) override;
+  bool ShouldPreviewLink(WebState* web_state, const GURL& link_url) override;
+  UIViewController* GetPreviewingViewController(WebState* source,
+                                                const GURL& link_url) override;
+  void CommitPreviewingViewController(
+      WebState* source,
+      UIViewController* previewing_view_controller) override;
 
  private:
   // CRWWebStateDelegate which receives forwarded calls.

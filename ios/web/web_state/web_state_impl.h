@@ -31,6 +31,7 @@
 @class NSURLRequest;
 @class NSURLResponse;
 @protocol CRWWebViewNavigationProxy;
+@class UIViewController;
 
 namespace net {
 class HttpResponseHeaders;
@@ -166,6 +167,19 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Returns whether the navigation corresponding to |response| should be
   // allowed to continue by asking its policy deciders. Defaults to true.
   bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame);
+
+  // Determines whether the given link with |link_url| should show a preview on
+  // force touch.
+  bool ShouldPreviewLink(const GURL& link_url);
+  // Called when the user performs a peek action on a link with |link_url| with
+  // force touch. Returns a view controller shown as a pop-up. Uses Webkit's
+  // default preview behavior when it returns nil.
+  UIViewController* GetPreviewingViewController(const GURL& link_url);
+  // Called when the user performs a pop action on the preview on force touch.
+  // |previewing_view_controller| is the view controller that is popped.
+  // It should display |previewing_view_controller| inside the app.
+  void CommitPreviewingViewController(
+      UIViewController* previewing_view_controller);
 
   // WebState:
   WebStateDelegate* GetDelegate() override;

@@ -102,4 +102,34 @@ void WebStateDelegateBridge::OnAuthRequired(
   }
 }
 
+bool WebStateDelegateBridge::ShouldPreviewLink(WebState* source,
+                                               const GURL& link_url) {
+  if ([delegate_
+          respondsToSelector:@selector(webState:shouldPreviewLinkWithURL:)]) {
+    return [delegate_ webState:source shouldPreviewLinkWithURL:link_url];
+  }
+  return false;
+}
+
+UIViewController* WebStateDelegateBridge::GetPreviewingViewController(
+    WebState* source,
+    const GURL& link_url) {
+  if ([delegate_ respondsToSelector:@selector
+                 (webState:previewingViewControllerForLinkWithURL:)]) {
+    return [delegate_ webState:source
+        previewingViewControllerForLinkWithURL:link_url];
+  }
+  return nil;
+}
+
+void WebStateDelegateBridge::CommitPreviewingViewController(
+    WebState* source,
+    UIViewController* previewing_view_controller) {
+  if ([delegate_ respondsToSelector:@selector
+                 (webState:commitPreviewingViewController:)]) {
+    [delegate_ webState:source
+        commitPreviewingViewController:previewing_view_controller];
+  }
+}
+
 }  // web
