@@ -93,13 +93,15 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
   _consumer = consumer;
 
   [self.consumer setEditorFields:[self createEditorFields]];
-  [self loadMonthsAndYears];
+  if (self.creditCardExpDateField)
+    [self loadMonthsAndYears];
 }
 
 - (void)setBillingProfile:(autofill::AutofillProfile*)billingProfile {
   _billingProfile = billingProfile;
   [self.consumer setEditorFields:[self createEditorFields]];
-  [self loadMonthsAndYears];
+  if (self.creditCardExpDateField)
+    [self loadMonthsAndYears];
 }
 
 #pragma mark - PaymentRequestEditViewControllerDataSource
@@ -217,7 +219,6 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
                 atIndex:0];
   }
 
-  DCHECK(self.creditCardExpDateField);
   // Notify the view controller asynchronously to allow for the view to update.
   __weak CreditCardEditViewControllerMediator* weakSelf = self;
   dispatch_async(dispatch_get_main_queue(), ^{
