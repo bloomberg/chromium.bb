@@ -978,40 +978,49 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
     mi->mbmi.interinter_compound_type
   };
 
+// We're going to call av1_make_inter_predictor to generate a prediction into
+// a temporary buffer, then will blend that temporary buffer with that from
+// the other reference.
+//
+// With CONFIG_CONVOLVE_ROUND, if the rounding mode is CONVOLVE_OPT_NO_ROUND
+// then the predictions are at 32-bits, so we'll need 32 bits per
+// pixel. Otherwise, we'll need up to 16 bits per pixel if
+// CONFIG_HIGHBITDEPTH or just 8 otherwise.
+#if CONFIG_CONVOLVE_ROUND
+#define INTER_PRED_BYTES_PER_PIXEL 4
+#elif CONFIG_HIGHBITDEPTH
+#define INTER_PRED_BYTES_PER_PIXEL 2
+#else
+#define INTER_PRED_BYTES_PER_PIXEL 1
+#endif
+  DECLARE_ALIGNED(16, uint8_t,
+                  tmp_buf[INTER_PRED_BYTES_PER_PIXEL * MAX_SB_SQUARE]);
+  const int tmp_buf_stride = MAX_SB_SIZE;
+#undef INTER_PRED_BYTES_PER_PIXEL
+
 #if CONFIG_HIGHBITDEPTH
-  DECLARE_ALIGNED(16, uint8_t, tmp_dst_[2 * MAX_SB_SQUARE]);
   uint8_t *tmp_dst = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-                         ? CONVERT_TO_BYTEPTR(tmp_dst_)
-                         : tmp_dst_;
+                         ? CONVERT_TO_BYTEPTR(tmp_buf)
+                         : tmp_buf;
   const int bd = xd->bd;
 #else
-  DECLARE_ALIGNED(16, uint8_t, tmp_dst[MAX_SB_SQUARE]);
+  uint8_t *tmp_dst = tmp_buf;
   const int bd = 8;
 #endif
 
 #if CONFIG_CONVOLVE_ROUND
-  // tmp_dst2 is the destination for the inter-prediction from the second
-  // reference frame (which is what we're being called with).
-  //
-  // With COMPOUND_SEG, once we've generated that, we'll compute a mask based
-  // on its contents and also those of conv_params->dst, the first reference
-  // frame (which gets locally referred to as org_dst).
-  //
-  // With COMPOUND_WEDGE, the mask is actually fixed, but we still compute both
-  // predictions in advance and blend.
   const int is_conv_no_round = conv_params->round == CONVOLVE_OPT_NO_ROUND;
-  DECLARE_ALIGNED(16, CONV_BUF_TYPE, tmp_dst2[MAX_SB_SQUARE]);
-  int tmp_dst2_stride = MAX_SB_SIZE;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
+  CONV_BUF_TYPE *tmp_buf32 = (CONV_BUF_TYPE *)tmp_dst;
   if (is_conv_no_round) {
-    conv_params->dst = tmp_dst2;
-    conv_params->dst_stride = tmp_dst2_stride;
-    // mask compound has its own average mechanism
-    conv_params->do_average = 0;
+    conv_params->dst = tmp_buf32;
+    conv_params->dst_stride = tmp_buf_stride;
+    assert(conv_params->do_average == 0);
   }
 #endif  // CONFIG_CONVOLVE_ROUND
 
+  // This will generate a prediction in tmp_buf for the second reference
   av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE, subpel_x,
                            subpel_y, sf, w, h, conv_params, interp_filter,
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -1028,7 +1037,7 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
     if (is_conv_no_round) {
       build_compound_seg_mask_d32(
           comp_data.seg_mask, comp_data.mask_type, org_dst, org_dst_stride,
-          tmp_dst2, tmp_dst2_stride, mi->mbmi.sb_type, h, w, conv_params, bd);
+          tmp_buf32, tmp_buf_stride, mi->mbmi.sb_type, h, w, conv_params, bd);
     } else {
 #endif  // CONFIG_CONVOLVE_ROUND
 #if CONFIG_HIGHBITDEPTH
@@ -1065,19 +1074,19 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #if CONFIG_CONVOLVE_ROUND
   if (is_conv_no_round) {
     build_masked_compound_no_round(org_dst, org_dst_stride, org_dst,
-                                   org_dst_stride, tmp_dst2, tmp_dst2_stride,
+                                   org_dst_stride, tmp_buf32, tmp_buf_stride,
                                    &comp_data, mi->mbmi.sb_type, h, w);
+
+    const int convolve_rounding_bits =
+        FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1;
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-      av1_highbd_convolve_rounding(
-          org_dst, org_dst_stride, dst, dst_stride, w, h,
-          FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1,
-          xd->bd);
+      av1_highbd_convolve_rounding(org_dst, org_dst_stride, dst, dst_stride, w,
+                                   h, convolve_rounding_bits, xd->bd);
     else
 #endif
-      av1_convolve_rounding(
-          org_dst, org_dst_stride, dst, dst_stride, w, h,
-          FILTER_BITS * 2 - conv_params->round_0 - conv_params->round_1);
+      av1_convolve_rounding(org_dst, org_dst_stride, dst, dst_stride, w, h,
+                            convolve_rounding_bits);
 
     conv_params->do_post_rounding = 0;
   } else {
