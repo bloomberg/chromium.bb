@@ -332,6 +332,14 @@ void ContentPasswordManagerDriver::UserModifiedPasswordField() {
 bool ContentPasswordManagerDriver::CheckChildProcessSecurityPolicy(
     const GURL& url,
     BadMessageReason reason) {
+  // Renderer-side logic should prevent any password manager usage for
+  // about:blank frames as well as data URLs.  If that's not the case, kill the
+  // renderer, as it might be exploited.
+  if (url.SchemeIs(url::kAboutScheme) || url.SchemeIs(url::kDataScheme)) {
+    bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(), reason);
+    return false;
+  }
+
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_frame_host_->GetProcess()->GetID(),

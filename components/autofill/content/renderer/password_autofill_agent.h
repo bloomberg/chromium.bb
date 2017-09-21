@@ -28,7 +28,6 @@
 namespace blink {
 class WebFormElementObserver;
 class WebInputElement;
-class WebSecurityOrigin;
 }
 
 namespace autofill {
@@ -149,9 +148,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   bool logging_state_active() const { return logging_state_active_; }
 
- protected:
-  virtual bool OriginCanAccessPasswordManager(
-      const blink::WebSecurityOrigin& origin);
+  // Determine whether the current frame is allowed to access the password
+  // manager. For example, frames with about:blank documents or documents with
+  // unique origins aren't allowed access.
+  virtual bool FrameCanAccessPasswordManager();
 
  private:
   class FormElementObserverCallback;

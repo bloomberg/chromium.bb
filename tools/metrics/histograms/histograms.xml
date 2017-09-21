@@ -54819,6 +54819,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.AboutBlankPasswordSubmission"
+    enum="BooleanMainFrame">
+  <owner>alexmos@chromium.org</owner>
+  <owner>battre@chromium.org</owner>
+  <summary>
+    Records attempts to submit a password on a form in an about:blank frame,
+    indicating whether this attempt is for a main frame or subframe.  Recorded
+    once per form submission.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.AcceptedSaveUpdateSubmissionIndicatorEvent"
     enum="SubmissionIndicatorEvent">
   <owner>dvadym@chromium.org</owner>

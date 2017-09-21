@@ -1118,9 +1118,13 @@ void PasswordAutofillAgent::ShowNotSecureWarning(
       render_frame()->GetRenderView()->ElementBoundsInWindow(element));
 }
 
-bool PasswordAutofillAgent::OriginCanAccessPasswordManager(
-    const blink::WebSecurityOrigin& origin) {
-  return origin.CanAccessPasswordManager();
+bool PasswordAutofillAgent::FrameCanAccessPasswordManager() {
+  // about:blank or about:srcdoc frames should not be allowed to use password
+  // manager.  See https://crbug.com/756587.
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  if (frame->GetDocument().Url().ProtocolIs(url::kAboutScheme))
+    return false;
+  return frame->GetSecurityOrigin().CanAccessPasswordManager();
 }
 
 void PasswordAutofillAgent::OnDynamicFormsSeen() {
@@ -1136,6 +1140,8 @@ void PasswordAutofillAgent::OnSameDocumentNavigationCompleted(
     PasswordForm::SubmissionIndicatorEvent event) {
   if (!provisionally_saved_form_.IsPasswordValid())
     return;
+
+  DCHECK(FrameCanAccessPasswordManager());
 
   // Prompt to save only if the form is now gone, either invisible or
   // removed from the DOM.
@@ -1196,10 +1202,9 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     logger->LogURL(Logger::STRING_SECURITY_ORIGIN,
                    GURL(origin.ToString().Utf8()));
   }
-  if (!OriginCanAccessPasswordManager(origin)) {
-    if (logger) {
+  if (!FrameCanAccessPasswordManager()) {
+    if (logger)
       logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
-    }
     return;
   }
 
@@ -1343,6 +1348,7 @@ void PasswordAutofillAgent::FrameDetached() {
   // for examples of sites that perform login using this technique.
   if (render_frame()->GetWebFrame()->Parent() &&
       provisionally_saved_form_.IsPasswordValid()) {
+    DCHECK(FrameCanAccessPasswordManager());
     provisionally_saved_form_.SetSubmissionIndicatorEvent(
         PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED);
     GetPasswordManagerDriver()->InPageNavigation(
@@ -1408,11 +1414,24 @@ void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
           PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
     }
 
-    // Some observers depend on sending this information now instead of when
-    // the frame starts loading. If there are redirects that cause a new
-    // RenderView to be instantiated (such as redirects to the WebStore)
-    // we will never get to finish the load.
-    GetPasswordManagerDriver()->PasswordFormSubmitted(*submitted_form);
+    if (FrameCanAccessPasswordManager()) {
+      // Some observers depend on sending this information now instead of when
+      // the frame starts loading. If there are redirects that cause a new
+      // RenderView to be instantiated (such as redirects to the WebStore)
+      // we will never get to finish the load.
+      GetPasswordManagerDriver()->PasswordFormSubmitted(*submitted_form);
+    } else {
+      if (logger)
+        logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
+
+      // Record how often users submit passwords on about:blank frames.
+      if (form.GetDocument().Url().ProtocolIs(url::kAboutScheme)) {
+        bool is_main_frame = !form.GetDocument().GetFrame()->Parent();
+        UMA_HISTOGRAM_BOOLEAN("PasswordManager.AboutBlankPasswordSubmission",
+                              is_main_frame);
+      }
+    }
+
     if (form_element_observer_) {
       form_element_observer_->Disconnect();
       form_element_observer_ = nullptr;
@@ -1437,10 +1456,20 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
     logger->LogMessage(Logger::STRING_DID_START_PROVISIONAL_LOAD_METHOD);
   }
 
-  const blink::WebLocalFrame* navigated_frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* navigated_frame = render_frame()->GetWebFrame();
   if (navigated_frame->Parent()) {
     if (logger)
       logger->LogMessage(Logger::STRING_FRAME_NOT_MAIN_FRAME);
+    return;
+  }
+
+  // This is a new navigation, so require a new user gesture before filling in
+  // passwords.
+  gatekeeper_.Reset();
+
+  if (!FrameCanAccessPasswordManager()) {
+    if (logger)
+      logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
     return;
   }
 
@@ -1522,10 +1551,6 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
         logger->LogMessage(Logger::STRING_PASSWORD_FORM_NOT_FOUND_ON_PAGE);
     }
   }
-
-  // This is a new navigation, so require a new user gesture before filling in
-  // passwords.
-  gatekeeper_.Reset();
 }
 
 // mojom::PasswordAutofillAgent:
@@ -1819,6 +1844,10 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     return;
 
   DCHECK(password_form && (!form.IsNull() || !input.IsNull()));
+
+  if (!FrameCanAccessPasswordManager())
+    return;
+
   provisionally_saved_form_.Set(std::move(password_form), form, input);
 
   if (base::FeatureList::IsEnabled(

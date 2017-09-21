@@ -68,6 +68,7 @@
 #include "net/base/url_util.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "url/url_constants.h"
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -210,6 +211,14 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
     // this is effectively their master password.
     is_enabled =
         entry->GetURL().host_piece() != chrome::kChromeUIChromeSigninHost;
+
+    // Per https://crbug.com/756587, exclude existing saved passwords for
+    // about: documents.  Note that this only checks main frames, but this is
+    // sufficient for credentials manager API which is only enabled for main
+    // frames.  Autofill for about: subframes is already disabled by
+    // restricting OnPasswordFormsParsed/OnPasswordFormsRendered.
+    if (entry->GetURL().SchemeIs(url::kAboutScheme))
+      is_enabled = false;
   }
 
   // The password manager is disabled while VR (virtual reality) is being used,

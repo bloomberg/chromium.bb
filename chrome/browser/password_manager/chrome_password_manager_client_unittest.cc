@@ -46,6 +46,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
@@ -440,6 +441,16 @@ TEST_F(ChromePasswordManagerClientTest, SavingDependsOnAutomation) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableAutomation);
   EXPECT_FALSE(client->IsSavingAndFillingEnabledForCurrentPage());
+}
+
+// Check that password manager is disabled on about:blank pages.
+// See https://crbug.com/756587.
+TEST_F(ChromePasswordManagerClientTest, SavingAndFillingDisbledForAboutBlank) {
+  GURL kUrl(url::kAboutBlankURL);
+  NavigateAndCommit(kUrl);
+  EXPECT_EQ(kUrl, GetClient()->GetLastCommittedEntryURL());
+  EXPECT_FALSE(GetClient()->IsSavingAndFillingEnabledForCurrentPage());
+  EXPECT_FALSE(GetClient()->IsFillingEnabledForCurrentPage());
 }
 
 TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL_Empty) {
