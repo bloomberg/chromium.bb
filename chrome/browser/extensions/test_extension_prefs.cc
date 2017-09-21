@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -45,24 +46,22 @@ namespace extensions {
 
 namespace {
 
-// A TimeProvider which returns an incrementally later time each time
-// GetCurrentTime is called.
-class IncrementalTimeProvider : public ExtensionPrefs::TimeProvider {
+// A Clock which returns an incrementally later time each time Now() is called.
+class IncrementalClock : public base::Clock {
  public:
-  IncrementalTimeProvider() : current_time_(base::Time::Now()) {
-  }
+  IncrementalClock() : current_time_(base::Time::Now()) {}
 
-  ~IncrementalTimeProvider() override {}
+  ~IncrementalClock() override {}
 
-  base::Time GetCurrentTime() const override {
+  base::Time Now() override {
     current_time_ += base::TimeDelta::FromSeconds(10);
     return current_time_;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(IncrementalTimeProvider);
+  base::Time current_time_;
 
-  mutable base::Time current_time_;
+  DISALLOW_COPY_AND_ASSIGN(IncrementalClock);
 };
 
 }  // namespace
@@ -126,8 +125,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
       std::vector<ExtensionPrefsObserver*>(),
       // Guarantee that no two extensions get the same installation time
       // stamp and we can reliably assert the installation order in the tests.
-      std::unique_ptr<ExtensionPrefs::TimeProvider>(
-          new IncrementalTimeProvider())));
+      std::make_unique<IncrementalClock>()));
   ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(&profile_,
                                                               std::move(prefs));
   // Hack: After recreating ExtensionPrefs, the AppSorting also needs to be
