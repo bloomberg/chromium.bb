@@ -16,6 +16,8 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
@@ -73,6 +75,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
       if (!Shell::Get()->window_selector_controller()->IsSelecting())
         return true;
 
+      base::RecordAction(base::UserMetricsAction("Tablet_QuickSwitch"));
       MruWindowTracker::WindowList mru_window_list =
           Shell::Get()->mru_window_tracker()->BuildMruWindowList();
 
