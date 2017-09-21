@@ -26,7 +26,7 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
  public:
   static RefPtr<PlaceholderImage> Create(ImageObserver* observer,
                                          const IntSize& size) {
-    return AdoptRef(new PlaceholderImage(observer, size));
+    return WTF::AdoptRef(new PlaceholderImage(observer, size));
   }
 
   ~PlaceholderImage() override;

@@ -99,7 +99,7 @@ RefPtr<PictureSnapshot> PictureSnapshot::Load(
     pictures.push_back(std::move(picture));
   }
   if (tiles.size() == 1)
-    return AdoptRef(new PictureSnapshot(std::move(pictures[0])));
+    return WTF::AdoptRef(new PictureSnapshot(std::move(pictures[0])));
   SkPictureRecorder recorder;
   SkCanvas* canvas =
       recorder.beginRecording(union_rect.Width(), union_rect.Height(), 0, 0);
@@ -110,7 +110,8 @@ RefPtr<PictureSnapshot> PictureSnapshot::Load(
     pictures[i]->playback(canvas, 0);
     canvas->restore();
   }
-  return AdoptRef(new PictureSnapshot(recorder.finishRecordingAsPicture()));
+  return WTF::AdoptRef(
+      new PictureSnapshot(recorder.finishRecordingAsPicture()));
 }
 
 bool PictureSnapshot::IsEmpty() const {

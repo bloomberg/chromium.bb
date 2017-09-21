@@ -67,7 +67,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
       bool is_multi_frame,
       const ColorBehavior& color_behavior,
       std::vector<SkISize> supported_sizes) {
-    return AdoptRef(new ImageFrameGenerator(
+    return WTF::AdoptRef(new ImageFrameGenerator(
         full_size, is_multi_frame, color_behavior, std::move(supported_sizes)));
   }
 

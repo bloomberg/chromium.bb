@@ -54,7 +54,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
  public:
   static RefPtr<BitmapImage> Create(ImageObserver* observer = 0,
                                     bool is_multipart = false) {
-    return AdoptRef(new BitmapImage(observer, is_multipart));
+    return WTF::AdoptRef(new BitmapImage(observer, is_multipart));
   }
 
   ~BitmapImage() override;
