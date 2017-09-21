@@ -835,6 +835,9 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event,
     if (!ancestor_accessible_node)
       continue;
 
+    if (!ancestor_accessible_node->HasEventListeners(event.type()))
+      continue;
+
     event_path.push_back(ancestor_accessible_node);
   }
 
