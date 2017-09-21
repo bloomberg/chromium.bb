@@ -21,7 +21,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testEmpty(self):
     # Test PListStringsWriter in case of empty polices.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [],
         'placeholders': [],
@@ -31,13 +31,11 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'desc': 'blah'
           }
         }
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium': '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist_strings',
-        'en')
+        'plist_strings')
     expected_output = (
         'Chromium.pfm_title = "Chromium";\n'
         'Chromium.pfm_description = "Chromium preferen\\"ces";')
@@ -45,7 +43,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testEmptyVersion(self):
     # Test PListStringsWriter in case of empty polices.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [],
         'placeholders': [],
@@ -55,15 +53,13 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'desc': 'blah'
           }
         }
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium': '1',
          'mac_bundle_id': 'com.example.Test',
          'version': '39.0.0.0'},
-        'plist_strings',
-        'en')
+        'plist_strings')
     expected_output = (
         '/* chromium version: 39.0.0.0 */\n'
         'Chromium.pfm_title = "Chromium";\n'
@@ -72,7 +68,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testMainPolicy(self):
     # Tests a policy group with a single policy of type 'main'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -96,13 +92,11 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'desc': 'blah'
           }
         }
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_google_chrome' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist_strings',
-        'en')
+        'plist_strings')
     expected_output = (
         'Google_Chrome.pfm_title = "Google Chrome";\n'
         'Google_Chrome.pfm_description = "Preferences of Google Chrome";\n'
@@ -113,7 +107,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
   def testStringPolicy(self):
     # Tests a policy group with a single policy of type 'string'. Also test
     # inheriting group description to policy description.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -139,13 +133,11 @@ With a newline.""",
             'desc': 'blah'
           }
         }
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist_strings',
-        'en')
+        'plist_strings')
     expected_output = (
         'Chromium.pfm_title = "Chromium";\n'
         'Chromium.pfm_description = "Preferences of Chromium";\n'
@@ -156,7 +148,7 @@ With a newline.""",
 
   def testStringListPolicy(self):
     # Tests a policy group with a single policy of type 'list'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -185,13 +177,11 @@ With a newline.""",
             'desc': 'blah'
           }
         }
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist_strings',
-        'en')
+        'plist_strings')
     expected_output = (
         'Chromium.pfm_title = "Chromium";\n'
         'Chromium.pfm_description = "Preferences of Chromium";\n'
@@ -202,7 +192,7 @@ With a newline.""",
 
   def testStringEnumListPolicy(self):
     # Tests a policy group with a single policy of type 'string-enum-list'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -243,13 +233,11 @@ With a newline.""",
             'desc': 'blah'
           }
         }
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist_strings',
-        'en')
+        'plist_strings')
     expected_output = (
         'Chromium.pfm_title = "Chromium";\n'
         'Chromium.pfm_description = "Preferences of Chromium";\n'
@@ -261,7 +249,7 @@ With a newline.""",
 
   def testIntEnumPolicy(self):
     # Tests a policy group with a single policy of type 'int-enum'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -297,13 +285,11 @@ With a newline.""",
             'desc': 'blah'
           }
         }
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
-        'plist_strings',
-        'en')
+        'plist_strings')
     expected_output = (
         'Google_Chrome.pfm_title = "Google Chrome";\n'
         'Google_Chrome.pfm_description = "Google Chrome preferences";\n'
@@ -315,7 +301,7 @@ With a newline.""",
 
   def testStringEnumPolicy(self):
     # Tests a policy group with a single policy of type 'string-enum'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -351,13 +337,11 @@ With a newline.""",
             'desc': 'blah'
           }
         }
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
-        'plist_strings',
-        'en')
+        'plist_strings')
     expected_output = (
         'Google_Chrome.pfm_title = "Google Chrome";\n'
         'Google_Chrome.pfm_description = "Google Chrome preferences";\n'
@@ -370,7 +354,7 @@ With a newline.""",
   def testNonSupportedPolicy(self):
     # Tests a policy that is not supported on Mac, so its strings shouldn't
     # be included in the plist string table.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -394,13 +378,11 @@ With a newline.""",
             'desc': 'blah'
           }
         }
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
-        'plist_strings',
-        'en')
+        'plist_strings')
     expected_output = (
         'Google_Chrome.pfm_title = "Google Chrome";\n'
         'Google_Chrome.pfm_description = "Google Chrome preferences";')

@@ -89,40 +89,36 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testEmpty(self):
     # Test PListWriter in case of empty polices.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [],
         'placeholders': [],
         'messages': {},
-      }''')
+      }'''
 
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium': '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Chromium', 'com.example.Test', '<array/>')
     self.assertEquals(output.strip(), expected_output.strip())
 
   def testEmptyVersion(self):
     # Test PListWriter in case of empty polices.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [],
         'placeholders': [],
         'messages': {},
-      }''')
+      }'''
 
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium': '1',
          'mac_bundle_id': 'com.example.Test',
          'version': '39.0.0.0'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputsWithVersion(
         'Chromium',
         'com.example.Test',
@@ -132,7 +128,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testMainPolicy(self):
     # Tests a policy group with a single policy of type 'main'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -151,13 +147,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {}
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Chromium', 'com.example.Test', '''<array>
       <dict>
@@ -179,7 +173,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testRecommendedPolicy(self):
     # Tests a policy group with a single policy of type 'main'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -201,13 +195,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {}
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Chromium', 'com.example.Test', '''<array>
       <dict>
@@ -230,7 +222,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testRecommendedOnlyPolicy(self):
     # Tests a policy group with a single policy of type 'main'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -253,13 +245,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {}
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Chromium', 'com.example.Test', '''<array>
       <dict>
@@ -281,7 +271,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testStringPolicy(self):
     # Tests a policy group with a single policy of type 'string'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -300,13 +290,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {},
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Chromium', 'com.example.Test', '''<array>
       <dict>
@@ -328,7 +316,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testListPolicy(self):
     # Tests a policy group with a single policy of type 'list'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -351,13 +339,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {},
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Chromium', 'com.example.Test', '''<array>
       <dict>
@@ -386,7 +372,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testStringEnumListPolicy(self):
     # Tests a policy group with a single policy of type 'string-enum-list'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -414,13 +400,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {},
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Chromium', 'com.example.Test', '''<array>
       <dict>
@@ -449,7 +433,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testIntPolicy(self):
     # Tests a policy group with a single policy of type 'int'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -468,13 +452,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {},
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Chromium', 'com.example.Test', '''<array>
       <dict>
@@ -496,7 +478,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testIntEnumPolicy(self):
     # Tests a policy group with a single policy of type 'int-enum'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -519,13 +501,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {},
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Google_Chrome', 'com.example.Test2', '''<array>
       <dict>
@@ -552,7 +532,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testStringEnumPolicy(self):
     # Tests a policy group with a single policy of type 'string-enum'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -575,13 +555,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {},
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Google_Chrome', 'com.example.Test2', '''<array>
       <dict>
@@ -608,7 +586,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
   def testDictionaryPolicy(self):
     # Tests a policy group with a single policy of type 'dict'.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -627,13 +605,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {},
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Chromium', 'com.example.Test', '''<array>
       <dict>
@@ -656,7 +632,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
   def testNonSupportedPolicy(self):
     # Tests a policy that is not supported on Mac, so it shouldn't
     # be included in the plist file.
-    grd = self.PrepareTest('''
+    policy_json = '''
       {
         'policy_definitions': [
           {
@@ -675,13 +651,11 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         ],
         'placeholders': [],
         'messages': {},
-      }''')
+      }'''
     output = self.GetOutput(
-        grd,
-        'fr',
+        policy_json,
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
-        'plist',
-        'en')
+        'plist')
     expected_output = self._GetExpectedOutputs(
         'Google_Chrome', 'com.example.Test2', '''<array/>''')
     self.assertEquals(output.strip(), expected_output.strip())
