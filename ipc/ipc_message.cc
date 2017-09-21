@@ -172,9 +172,6 @@ bool Message::WriteAttachment(
       &index);
   DCHECK(success);
 
-  // NOTE: If you add more data to the pickle, make sure to update
-  // PickleSizer::AddAttachment.
-
   // Write the index of the descriptor so that we don't have to
   // keep the current descriptor as extra decoding state when deserialising.
   WriteInt(static_cast<int>(index));

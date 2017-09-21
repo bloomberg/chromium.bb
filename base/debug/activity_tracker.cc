@@ -1128,36 +1128,39 @@ bool GlobalActivityTracker::ModuleInfoRecord::DecodeTo(
   return iter.ReadString(&info->file) && iter.ReadString(&info->debug_file);
 }
 
-bool GlobalActivityTracker::ModuleInfoRecord::EncodeFrom(
+GlobalActivityTracker::ModuleInfoRecord*
+GlobalActivityTracker::ModuleInfoRecord::CreateFrom(
     const GlobalActivityTracker::ModuleInfo& info,
-    size_t record_size) {
+    PersistentMemoryAllocator* allocator) {
   Pickle pickler;
   bool okay =
       pickler.WriteString(info.file) && pickler.WriteString(info.debug_file);
   if (!okay) {
     NOTREACHED();
-    return false;
+    return nullptr;
   }
-  if (offsetof(ModuleInfoRecord, pickle) + pickler.size() > record_size) {
-    NOTREACHED();
-    return false;
-  }
+  size_t required_size = offsetof(ModuleInfoRecord, pickle) + pickler.size();
+  ModuleInfoRecord* record = allocator->New<ModuleInfoRecord>(required_size);
+  if (!record)
+    return nullptr;
 
   // These fields never changes and are done before the record is made
   // iterable so no thread protection is necessary.
-  size = info.size;
-  timestamp = info.timestamp;
-  age = info.age;
-  memcpy(identifier, info.identifier, sizeof(identifier));
-  memcpy(pickle, pickler.data(), pickler.size());
-  pickle_size = pickler.size();
-  changes.store(0, std::memory_order_relaxed);
+  record->size = info.size;
+  record->timestamp = info.timestamp;
+  record->age = info.age;
+  memcpy(record->identifier, info.identifier, sizeof(identifier));
+  memcpy(record->pickle, pickler.data(), pickler.size());
+  record->pickle_size = pickler.size();
+  record->changes.store(0, std::memory_order_relaxed);
 
   // Initialize the owner info.
-  owner.Release_Initialize();
+  record->owner.Release_Initialize();
 
   // Now set those fields that can change.
-  return UpdateFrom(info);
+  bool success = record->UpdateFrom(info);
+  DCHECK(success);
+  return record;
 }
 
 bool GlobalActivityTracker::ModuleInfoRecord::UpdateFrom(
@@ -1183,17 +1186,6 @@ bool GlobalActivityTracker::ModuleInfoRecord::UpdateFrom(
                                                  std::memory_order_relaxed);
   DCHECK(success);
   return true;
-}
-
-// static
-size_t GlobalActivityTracker::ModuleInfoRecord::EncodedSize(
-    const GlobalActivityTracker::ModuleInfo& info) {
-  PickleSizer sizer;
-  sizer.AddString(info.file);
-  sizer.AddString(info.debug_file);
-
-  return offsetof(ModuleInfoRecord, pickle) + sizeof(Pickle::Header) +
-         sizer.payload_size();
 }
 
 GlobalActivityTracker::ScopedThreadActivity::ScopedThreadActivity(
@@ -1593,15 +1585,12 @@ void GlobalActivityTracker::RecordModuleInfo(const ModuleInfo& info) {
     return;
   }
 
-  size_t required_size = ModuleInfoRecord::EncodedSize(info);
-  ModuleInfoRecord* record = allocator_->New<ModuleInfoRecord>(required_size);
+  ModuleInfoRecord* record =
+      ModuleInfoRecord::CreateFrom(info, allocator_.get());
   if (!record)
     return;
-
-  bool success = record->EncodeFrom(info, required_size);
-  DCHECK(success);
   allocator_->MakeIterable(record);
-  modules_.insert(std::make_pair(info.file, record));
+  modules_.emplace(info.file, record);
 }
 
 void GlobalActivityTracker::RecordFieldTrial(const std::string& trial_name,

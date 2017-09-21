@@ -1103,15 +1103,13 @@ class BASE_EXPORT GlobalActivityTracker {
     // Decodes/encodes storage structure from more generic info structure.
     bool DecodeTo(GlobalActivityTracker::ModuleInfo* info,
                   size_t record_size) const;
-    bool EncodeFrom(const GlobalActivityTracker::ModuleInfo& info,
-                    size_t record_size);
+    static ModuleInfoRecord* CreateFrom(
+        const GlobalActivityTracker::ModuleInfo& info,
+        PersistentMemoryAllocator* allocator);
 
     // Updates the core information without changing the encoded strings. This
     // is useful when a known module changes state (i.e. new load or unload).
     bool UpdateFrom(const GlobalActivityTracker::ModuleInfo& info);
-
-    // Determines the required memory size for the encoded storage.
-    static size_t EncodedSize(const GlobalActivityTracker::ModuleInfo& info);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ModuleInfoRecord);
