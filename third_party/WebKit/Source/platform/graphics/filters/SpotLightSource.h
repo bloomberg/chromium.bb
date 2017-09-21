@@ -34,8 +34,8 @@ class PLATFORM_EXPORT SpotLightSource final : public LightSource {
                                         const FloatPoint3D& direction,
                                         float specular_exponent,
                                         float limiting_cone_angle) {
-    return AdoptRef(new SpotLightSource(position, direction, specular_exponent,
-                                        limiting_cone_angle));
+    return WTF::AdoptRef(new SpotLightSource(
+        position, direction, specular_exponent, limiting_cone_angle));
   }
 
   const FloatPoint3D& GetPosition() const { return position_; }

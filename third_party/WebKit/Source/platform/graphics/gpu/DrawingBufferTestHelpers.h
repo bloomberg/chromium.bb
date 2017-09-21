@@ -396,9 +396,9 @@ class DrawingBufferForTests : public DrawingBuffer {
     std::unique_ptr<Extensions3DUtil> extensions_util =
         Extensions3DUtil::Create(context_provider->ContextGL());
     RefPtr<DrawingBufferForTests> drawing_buffer =
-        AdoptRef(new DrawingBufferForTests(std::move(context_provider),
-                                           std::move(extensions_util), client,
-                                           preserve));
+        WTF::AdoptRef(new DrawingBufferForTests(std::move(context_provider),
+                                                std::move(extensions_util),
+                                                client, preserve));
     if (!drawing_buffer->Initialize(
             size, use_multisampling != kDisableMultisampling)) {
       drawing_buffer->BeginDestruction();

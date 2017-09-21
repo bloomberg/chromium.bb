@@ -38,7 +38,8 @@ class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
  public:
   static RefPtr<GradientGeneratedImage> Create(RefPtr<Gradient> generator,
                                                const IntSize& size) {
-    return AdoptRef(new GradientGeneratedImage(std::move(generator), size));
+    return WTF::AdoptRef(
+        new GradientGeneratedImage(std::move(generator), size));
   }
 
   ~GradientGeneratedImage() override {}

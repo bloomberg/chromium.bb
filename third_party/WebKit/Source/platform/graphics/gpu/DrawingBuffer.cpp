@@ -125,7 +125,7 @@ RefPtr<DrawingBuffer> DrawingBuffer::Create(
   if (discard_framebuffer_supported)
     extensions_util->EnsureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-  RefPtr<DrawingBuffer> drawing_buffer = AdoptRef(new DrawingBuffer(
+  RefPtr<DrawingBuffer> drawing_buffer = WTF::AdoptRef(new DrawingBuffer(
       std::move(context_provider), std::move(extensions_util), client,
       discard_framebuffer_supported, want_alpha_channel, premultiplied_alpha,
       preserve, webgl_version, want_depth_buffer, want_stencil_buffer,
@@ -1256,8 +1256,8 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     gl_->DeleteFramebuffers(1, &fbo);
   }
 
-  return AdoptRef(new ColorBuffer(this, parameters, size, texture_id, image_id,
-                                  std::move(gpu_memory_buffer)));
+  return WTF::AdoptRef(new ColorBuffer(this, parameters, size, texture_id,
+                                       image_id, std::move(gpu_memory_buffer)));
 }
 
 void DrawingBuffer::AttachColorBufferToReadFramebuffer() {

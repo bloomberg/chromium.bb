@@ -41,7 +41,7 @@ namespace {
 class TestImage : public Image {
  public:
   static RefPtr<TestImage> Create(const IntSize& size, bool opaque) {
-    return AdoptRef(new TestImage(size, opaque));
+    return WTF::AdoptRef(new TestImage(size, opaque));
   }
 
   bool CurrentFrameKnownToBeOpaque(

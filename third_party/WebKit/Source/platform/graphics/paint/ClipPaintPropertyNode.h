@@ -36,7 +36,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
       RefPtr<const TransformPaintPropertyNode> local_transform_space,
       const FloatRoundedRect& clip_rect,
       CompositingReasons direct_compositing_reasons = kCompositingReasonNone) {
-    return AdoptRef(new ClipPaintPropertyNode(
+    return WTF::AdoptRef(new ClipPaintPropertyNode(
         std::move(parent), std::move(local_transform_space), clip_rect,
         direct_compositing_reasons));
   }
@@ -65,9 +65,9 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a clip node before it has been updated, to later detect changes.
   RefPtr<ClipPaintPropertyNode> Clone() const {
-    return AdoptRef(new ClipPaintPropertyNode(Parent(), local_transform_space_,
-                                              clip_rect_,
-                                              direct_compositing_reasons_));
+    return WTF::AdoptRef(
+        new ClipPaintPropertyNode(Parent(), local_transform_space_, clip_rect_,
+                                  direct_compositing_reasons_));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
