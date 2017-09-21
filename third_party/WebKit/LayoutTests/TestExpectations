@@ -1753,6 +1753,9 @@ crbug.com/751952 virtual/mojo-loading/http/tests/inspector-unit/datagrid-editabl
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/payment-request/PaymentAddress/attributes-and-toJSON-method-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/PaymentRequestUpdateEvent/updateWith-state-checks-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/user-accepts-payment-request-algo-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/html/editing/dnd/the-datatransfer-interface/protectedDragDataTransfer-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/editing/dnd/the-datatransfer-interface/protectedPasteDataTransfer-manual.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/change-shipping-option-manual.https.html [ Skip ]
