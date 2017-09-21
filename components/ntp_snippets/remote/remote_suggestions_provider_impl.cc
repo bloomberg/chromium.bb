@@ -42,9 +42,13 @@ namespace ntp_snippets {
 
 namespace {
 
-// Number of suggestions requested to the server. Consider replacing sparse UMA
-// histograms with COUNTS() if this number increases beyond 50.
-const int kMaxSuggestionCount = 10;
+// Maximal number of suggestions we expect to receive from the server during a
+// normal (not fetch-more) fetch. Consider replacing sparse UMA histograms with
+// COUNTS() if this number increases beyond 50.
+// TODO(vitaliii): Either support requesting a given number of suggestions on
+// the server or delete this constant (this will require moving the UMA
+// reporting below to content_suggestions_metrics).
+const int kMaxNormalFetchSuggestionCount = 20;
 
 // Number of archived suggestions we keep around in memory.
 const int kMaxArchivedSuggestionCount = 200;
@@ -85,7 +89,7 @@ bool IsOrderingNewRemoteCategoriesBasedOnArticlesCategoryEnabled() {
   // base/metrics/field_trial_params.h. GetVariationParamByFeature(As.*)? are
   // deprecated.
   return variations::GetVariationParamByFeatureAsBool(
-      ntp_snippets::kArticleSuggestionsFeature,
+      kArticleSuggestionsFeature,
       kOrderNewRemoteCategoriesBasedOnArticlesCategory,
       /*default_value=*/false);
 }
@@ -145,8 +149,7 @@ const char kEnableFetchedSuggestionsNotificationsParamName[] =
 
 bool IsFetchedSuggestionsNotificationsEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      ntp_snippets::kNotificationsFeature,
-      kEnableFetchedSuggestionsNotificationsParamName,
+      kNotificationsFeature, kEnableFetchedSuggestionsNotificationsParamName,
       kEnableFetchedSuggestionsNotificationsDefault);
 }
 
@@ -159,8 +162,7 @@ const char kEnablePushedSuggestionsNotificationsParamName[] =
 
 bool IsPushedSuggestionsNotificationsEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      ntp_snippets::kNotificationsFeature,
-      kEnablePushedSuggestionsNotificationsParamName,
+      kNotificationsFeature, kEnablePushedSuggestionsNotificationsParamName,
       kEnablePushedSuggestionsNotificationsDefault);
 }
 
@@ -171,7 +173,7 @@ const char kEnableSignedInUsersSubscriptionForPushedSuggestionsParamName[] =
 
 bool IsSignedInUsersSubscriptionForPushedSuggestionsEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      ntp_snippets::kBreakingNewsPushFeature,
+      kBreakingNewsPushFeature,
       kEnableSignedInUsersSubscriptionForPushedSuggestionsParamName,
       kEnableSignedInUsersSubscriptionForPushedSuggestionsDefault);
 }
@@ -183,7 +185,7 @@ const char kEnableSignedOutUsersSubscriptionForPushedSuggestionsParamName[] =
 
 bool IsSignedOutUsersSubscriptionForPushedSuggestionsEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      ntp_snippets::kBreakingNewsPushFeature,
+      kBreakingNewsPushFeature,
       kEnableSignedOutUsersSubscriptionForPushedSuggestionsParamName,
       kEnableSignedOutUsersSubscriptionForPushedSuggestionsDefault);
 }
@@ -197,9 +199,19 @@ const char kForceFetchedSuggestionsNotificationsParamName[] =
 
 bool ShouldForceFetchedSuggestionsNotifications() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      ntp_snippets::kNotificationsFeature,
-      kForceFetchedSuggestionsNotificationsParamName,
+      kNotificationsFeature, kForceFetchedSuggestionsNotificationsParamName,
       kForceFetchedSuggestionsNotificationsDefault);
+}
+
+// Variation parameter for number of suggestions to request when fetching more.
+const char kFetchMoreSuggestionsCountParamName[] =
+    "fetch_more_suggestions_count";
+const int kFetchMoreSuggestionsCountDefault = 25;
+
+int GetFetchMoreSuggestionsCount() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      kArticleSuggestionsFeature, kFetchMoreSuggestionsCountParamName,
+      kFetchMoreSuggestionsCountDefault);
 }
 
 template <typename SuggestionPtrContainer>
@@ -459,7 +471,10 @@ void RemoteSuggestionsProviderImpl::FetchSuggestions(
 
   MarkEmptyCategoriesAsLoading();
 
-  RequestParams params = BuildFetchParams(/*fetched_category=*/base::nullopt);
+  // |count_to_fetch| is actually ignored, because the server does not support
+  // this functionality.
+  RequestParams params = BuildFetchParams(/*fetched_category=*/base::nullopt,
+                                          /*count_to_fetch=*/10);
   params.interactive_request = interactive_request;
   suggestions_fetcher_->FetchSnippets(
       params, base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchFinished,
@@ -494,7 +509,8 @@ void RemoteSuggestionsProviderImpl::Fetch(
       },
       base::Unretained(remote_suggestions_scheduler_), std::move(callback));
 
-  RequestParams params = BuildFetchParams(category);
+  RequestParams params = BuildFetchParams(
+      category, /*count_to_fetch=*/GetFetchMoreSuggestionsCount());
   params.excluded_ids.insert(known_suggestion_ids.begin(),
                              known_suggestion_ids.end());
   params.interactive_request = true;
@@ -508,10 +524,11 @@ void RemoteSuggestionsProviderImpl::Fetch(
 
 // Builds default fetcher params.
 RequestParams RemoteSuggestionsProviderImpl::BuildFetchParams(
-    base::Optional<Category> fetched_category) const {
+    base::Optional<Category> fetched_category,
+    int count_to_fetch) const {
   RequestParams result;
   result.language_code = application_language_code_;
-  result.count_to_fetch = kMaxSuggestionCount;
+  result.count_to_fetch = count_to_fetch;
   // If this is a fetch for a specific category, its dismissed suggestions are
   // added first to truncate them less.
   if (fetched_category.has_value()) {
@@ -644,8 +661,9 @@ void RemoteSuggestionsProviderImpl::ClearDismissedSuggestionsForDebugging(
 }
 
 // static
-int RemoteSuggestionsProviderImpl::GetMaxSuggestionCountForTesting() {
-  return kMaxSuggestionCount;
+int RemoteSuggestionsProviderImpl::
+    GetMaxNormalFetchSuggestionCountForTesting() {
+  return kMaxNormalFetchSuggestionCount;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -848,7 +866,7 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
         UMA_HISTOGRAM_SPARSE_SLOWLY(
             "NewTabPage.Snippets.NumArticlesFetched",
             std::min(fetched_category.suggestions.size(),
-                     static_cast<size_t>(kMaxSuggestionCount + 1)));
+                     static_cast<size_t>(kMaxNormalFetchSuggestionCount)));
         response_includes_article_category = true;
 
         if (Logger::IsLoggingEnabled()) {

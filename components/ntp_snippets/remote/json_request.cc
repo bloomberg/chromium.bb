@@ -340,7 +340,19 @@ std::string JsonRequest::Builder::BuildBody() const {
     request->Set("topLanguages", std::move(language_list));
   }
 
-  // TODO(sfiera): Support count_to_fetch.
+  // TODO(vitaliii): Support count_to_fetch without requiring
+  // |exclusive_category|.
+  if (params_.exclusive_category.has_value()) {
+    base::DictionaryValue exclusive_category_parameters;
+    exclusive_category_parameters.SetInteger(
+        "id", params_.exclusive_category->remote_id());
+    exclusive_category_parameters.SetInteger("numSuggestions",
+                                             params_.count_to_fetch);
+    base::ListValue category_parameters;
+    category_parameters.GetList().push_back(
+        std::move(exclusive_category_parameters));
+    request->SetKey("categoryParameters", std::move(category_parameters));
+  }
 
   std::string request_json;
   bool success = base::JSONWriter::WriteWithOptions(
