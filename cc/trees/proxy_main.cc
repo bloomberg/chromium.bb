@@ -13,14 +13,14 @@
 #include "cc/base/completion_event.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
-#include "cc/output/layer_tree_frame_sink.h"
-#include "cc/output/swap_promise.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/blocking_task_runner.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/proxy_impl.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
+#include "cc/trees/swap_promise.h"
 
 namespace cc {
 

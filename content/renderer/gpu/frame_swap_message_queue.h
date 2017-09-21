@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "cc/output/swap_promise.h"
+#include "cc/trees/swap_promise.h"
 #include "content/common/content_export.h"
 #include "content/renderer/message_delivery_policy.h"
 

@@ -36,7 +36,6 @@
 #include "WebScrollBoundaryBehavior.h"
 #include "WebSize.h"
 #include "base/callback.h"
-#include "cc/output/swap_promise.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 
 #include "third_party/skia/include/core/SkImage.h"

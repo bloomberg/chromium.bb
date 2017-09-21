@@ -26,7 +26,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/latency_info_swap_promise.h"
+#include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/quads/copy_output_request.h"

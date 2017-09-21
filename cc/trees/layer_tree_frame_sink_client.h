@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_LAYER_TREE_FRAME_SINK_CLIENT_H_
-#define CC_OUTPUT_LAYER_TREE_FRAME_SINK_CLIENT_H_
+#ifndef CC_TREES_LAYER_TREE_FRAME_SINK_CLIENT_H_
+#define CC_TREES_LAYER_TREE_FRAME_SINK_CLIENT_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -77,4 +77,4 @@ class CC_EXPORT LayerTreeFrameSinkClient {
 
 }  // namespace cc
 
-#endif  // CC_OUTPUT_LAYER_TREE_FRAME_SINK_CLIENT_H_
+#endif  // CC_TREES_LAYER_TREE_FRAME_SINK_CLIENT_H_

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "cc/cc_export.h"
-#include "cc/output/swap_promise.h"
+#include "cc/trees/swap_promise.h"
 
 namespace cc {
 class SwapPromise;

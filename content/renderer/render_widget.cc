@@ -25,7 +25,7 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/input/touch_action.h"
-#include "cc/output/layer_tree_frame_sink.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/copy_output_request.h"

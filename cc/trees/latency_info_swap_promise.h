@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_LATENCY_INFO_SWAP_PROMISE_H_
-#define CC_OUTPUT_LATENCY_INFO_SWAP_PROMISE_H_
+#ifndef CC_TREES_LATENCY_INFO_SWAP_PROMISE_H_
+#define CC_TREES_LATENCY_INFO_SWAP_PROMISE_H_
 
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "cc/output/swap_promise.h"
+#include "cc/trees/swap_promise.h"
 #include "ui/latency/latency_info.h"
 
 namespace cc {
@@ -32,4 +32,4 @@ class CC_EXPORT LatencyInfoSwapPromise : public SwapPromise {
 
 }  // namespace cc
 
-#endif  // CC_OUTPUT_LATENCY_INFO_SWAP_PROMISE_H_
+#endif  // CC_TREES_LATENCY_INFO_SWAP_PROMISE_H_

@@ -20,10 +20,10 @@
 #include "cc/input/scroll_boundary_behavior.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_list_iterator.h"
-#include "cc/output/swap_promise.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/property_tree.h"
+#include "cc/trees/swap_promise.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
 namespace base {

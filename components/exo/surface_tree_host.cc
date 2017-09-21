@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/layer_tree_frame_sink.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/surface.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"

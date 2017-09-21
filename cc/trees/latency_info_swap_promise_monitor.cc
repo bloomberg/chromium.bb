@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "base/threading/platform_thread.h"
-#include "cc/output/latency_info_swap_promise.h"
+#include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/swap_promise_manager.h"

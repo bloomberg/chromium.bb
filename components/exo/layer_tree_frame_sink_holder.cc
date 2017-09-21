@@ -4,7 +4,7 @@
 
 #include "components/exo/layer_tree_frame_sink_holder.h"
 
-#include "cc/output/layer_tree_frame_sink.h"
+#include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/surface_tree_host.h"
 #include "components/viz/common/resources/returned_resource.h"
 

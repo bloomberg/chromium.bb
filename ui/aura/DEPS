@@ -1,6 +1,9 @@
 include_rules = [
   "+cc/base",
-  "+cc/output",
+  # TODO(danakj): This should not use LayerTreeFrameSink, which is part of the
+  # layer compositor. It should use CompositorFrameSink instead.
+  "+cc/trees/layer_tree_frame_sink.h",
+  "+cc/trees/layer_tree_frame_sink_client.h",
   "+components/viz/client",
   "+components/viz/common",
   "+components/viz/host",

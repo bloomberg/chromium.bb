@@ -11,7 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/output/layer_tree_frame_sink_client.h"
+#include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "ui/views/view.h"
 
