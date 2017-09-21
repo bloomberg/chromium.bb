@@ -649,8 +649,11 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 // NSView implementation.
 
+// Always refuse first responder. Note this does not prevent the view becoming
+// first responder via -[NSWindow makeFirstResponder:] when invoked during Init
+// or by FocusManager.
 - (BOOL)acceptsFirstResponder {
-  return YES;
+  return NO;
 }
 
 - (BOOL)becomeFirstResponder {
