@@ -57,6 +57,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   virtual bool DispatchProtocolMessage(
       DevToolsSession* session,
       const std::string& message) = 0;
+  bool SendProtocolMessageToClient(int session_id,
+                                   const std::string& message) override;
   virtual void InspectElement(DevToolsSession* session, int x, int y);
 
   void NotifyCreated();
