@@ -80,7 +80,7 @@ public final class BootstrapApplication extends Application {
             File instLibDir = new File(instIncrementalRootDir, "lib");
             File instDexDir = new File(instIncrementalRootDir, "dex");
             File instInstallLockFile = new File(instIncrementalRootDir, "install.lock");
-            File instFirstRunLockFile = new File(instIncrementalRootDir , "firstrun.lock");
+            File instFirstRunLockFile = new File(instIncrementalRootDir, "firstrun.lock");
 
             boolean isFirstRun = LockFile.installerLockExists(appFirstRunLockFile)
                     || (instPackageNameDiffers
@@ -271,7 +271,12 @@ public final class BootstrapApplication extends Application {
             }
         }
 
-        for (String fieldName : new String[] { "mPackages", "mResourcePackages" }) {
+        // Contains a reference to BootstrapApplication and will cause BroadCastReceivers to fail
+        // if not replaced.
+        Object contextWrapperBase = Reflect.getField(mRealApplication, "mBase");
+        Reflect.setField(contextWrapperBase, "mOuterContext", mRealApplication);
+
+        for (String fieldName : new String[] {"mPackages", "mResourcePackages"}) {
             Map<String, WeakReference<?>> packageMap =
                     (Map<String, WeakReference<?>>) Reflect.getField(mActivityThread, fieldName);
             for (Map.Entry<String, WeakReference<?>> entry : packageMap.entrySet()) {
