@@ -11,9 +11,7 @@ cr.define('print_preview', function() {
       super([
         'getInitialSettings',
         'getPrinters',
-        'getExtensionPrinters',
         'getPreview',
-        'getPrivetPrinters',
         'getPrinterCapabilities',
         'hidePreview',
         'print',
@@ -66,15 +64,11 @@ cr.define('print_preview', function() {
     }
 
     /** @override */
-    getPrinters() {
-      this.methodCalled('getPrinters');
-      return Promise.resolve(this.localDestinationInfos_);
-    }
-
-    /** @override */
-    getExtensionPrinters() {
-      this.methodCalled('getExtensionPrinters');
-      return Promise.resolve(true);
+    getPrinters(type) {
+      this.methodCalled('getPrinters', type);
+      cr.webUIListenerCallback(
+          'printers-added', type, this.localDestinationInfos_);
+      return Promise.resolve();
     }
 
     /** @override */

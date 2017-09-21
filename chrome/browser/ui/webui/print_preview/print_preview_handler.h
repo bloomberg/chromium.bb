@@ -38,10 +38,14 @@ namespace printing {
 
 // Must match print_preview.PrinterType in
 // chrome/browser/resources/print_preview/native_layer.js
-enum PrinterType { kPrivetPrinter, kExtensionPrinter, kPdfPrinter };
+enum PrinterType {
+  kPrivetPrinter,
+  kExtensionPrinter,
+  kPdfPrinter,
+  kLocalPrinter
+};
 
-class PrinterBackendProxy;
-}
+}  // namespace printing
 
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler
@@ -131,14 +135,9 @@ class PrintPreviewHandler
 
   PrintPreviewUI* print_preview_ui() const;
 
-  printing::PrinterBackendProxy* printer_backend_proxy();
-
-  // Gets the list of printers. |args| is unused.
+  // Gets the list of printers. First element of |args| is the Javascript
+  // callback, second element of |args| is the printer type to fetch.
   void HandleGetPrinters(const base::ListValue* args);
-
-  // Starts getting all extension managed or local privet printers.
-  // |args| contains the type of printers and the Javascript callback.
-  void HandleGetExtensionOrPrivetPrinters(const base::ListValue* args);
 
   // Grants an extension access to a provisional printer.  First element of
   // |args| is the provisional printer ID.
@@ -163,7 +162,10 @@ class PrintPreviewHandler
   // First element of |args| is the data to persist.
   void HandleSaveAppState(const base::ListValue* args);
 
-  // Gets the printer capabilities. First element of |args| is the printer name.
+  // Gets the printer capabilities. Fist element of |args| is the Javascript
+  // callback, second element is the printer ID of the printer whose
+  // capabilities are requested, and the third element is the type of the
+  // printer whose capabilities are requested.
   void HandleGetPrinterCapabilities(const base::ListValue* args);
 
   // Performs printer setup. First element of |args| is the printer name.
@@ -214,12 +216,6 @@ class PrintPreviewHandler
   // window opens behind the initiator window.
   void HandleForceOpenNewTab(const base::ListValue* args);
 
-  // Requests a privet or extension managed printer's capabilities.
-  // |args| contains the ID and type of the printer whose capabilities are
-  // requested.
-  void HandleGetExtensionOrPrivetPrinterCapabilities(
-      const base::ListValue* args);
-
   void SendInitialSettings(const std::string& callback_id,
                            const std::string& default_printer);
 
@@ -242,10 +238,6 @@ class PrintPreviewHandler
   void SendPrinterSetup(const std::string& callback_id,
                         const std::string& printer_name,
                         std::unique_ptr<base::DictionaryValue> settings_info);
-
-  // Send the list of printers to the Web UI.
-  void SetupPrinterList(const std::string& callback_id,
-                        const printing::PrinterList& printer_list);
 
   // Send whether cloud print integration should be enabled.
   void SendCloudPrintEnabled();
@@ -294,18 +286,16 @@ class PrintPreviewHandler
 
   PdfPrinterHandler* GetPdfPrinterHandler();
 
-  // Called when a privet printer or extension printers are detected.
-  // |callback_id|: The javascript callback to call if all printers have been
-  //     loaded (when |done| = true).
+  // Called when printers are detected.
   // |printer_type|: The type of printers that were added.
-  // |printers|: A list containing extension printers or a privet printer that
-  //     has been found.
-  // |done|: Whether the printers are done being loaded (all extensions
-  //     have responded, or privet printer search has timed out).
-  void OnGotPrintersForExtensionOrPrivet(const std::string& callback_id,
-                                         printing::PrinterType printer_type,
-                                         const base::ListValue& printers,
-                                         bool done);
+  // |printers|: A non-empty list containing information about the printer or
+  //     printers that have been added.
+  void OnAddedPrinters(printing::PrinterType printer_type,
+                       const base::ListValue& printers);
+
+  // Called when printer search is done for some destination type.
+  // |callback_id|: The javascript callback to call.
+  void OnGetPrintersDone(const std::string& callback_id);
 
   // Called when an extension reports information requested for a provisional
   // printer.
@@ -361,6 +351,10 @@ class PrintPreviewHandler
   // GetPrinterHandler().
   std::unique_ptr<PrinterHandler> pdf_printer_handler_;
 
+  // Handles requests for printing to local printers. Created lazily by calling
+  // GetPrinterHandler().
+  std::unique_ptr<PrinterHandler> local_printer_handler_;
+
   base::queue<std::string> preview_callbacks_;
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -368,10 +362,6 @@ class PrintPreviewHandler
   // HandleHidePreview() is called.
   std::unique_ptr<base::DictionaryValue> settings_;
 #endif
-
-  // Proxy for calls to the print backend.  Lazily initialized since web_ui() is
-  // not available at construction time.
-  std::unique_ptr<printing::PrinterBackendProxy> printer_backend_proxy_;
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
 

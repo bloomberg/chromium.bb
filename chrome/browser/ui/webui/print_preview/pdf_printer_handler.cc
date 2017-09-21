@@ -152,7 +152,9 @@ void PdfPrinterHandler::Reset() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void PdfPrinterHandler::StartGetPrinters(const GetPrintersCallback& callback) {
+void PdfPrinterHandler::StartGetPrinters(
+    const AddedPrintersCallback& added_printers_callback,
+    const GetPrintersDoneCallback& done_callback) {
   NOTREACHED();
 }
 
@@ -165,12 +167,6 @@ void PdfPrinterHandler::StartGetCapability(
       printing::kPrinterCapabilities,
       GetPdfCapabilities(g_browser_process->GetApplicationLocale()));
   callback.Run(std::move(printer_info));
-}
-
-void PdfPrinterHandler::StartGrantPrinterAccess(
-    const std::string& printer_id,
-    const GetPrinterInfoCallback& callback) {
-  NOTREACHED();
 }
 
 void PdfPrinterHandler::StartPrint(

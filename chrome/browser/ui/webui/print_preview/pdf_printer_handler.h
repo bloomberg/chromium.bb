@@ -45,12 +45,10 @@ class PdfPrinterHandler : public PrinterHandler,
   // PrinterHandler implementation
   void Reset() override;
   // Required by PrinterHandler implementation but should never be called.
-  void StartGetPrinters(const GetPrintersCallback& callback) override;
+  void StartGetPrinters(const AddedPrintersCallback& added_printers_callback,
+                        const GetPrintersDoneCallback& done_callback) override;
   void StartGetCapability(const std::string& destination_id,
                           const GetCapabilityCallback& callback) override;
-  // Required by PrinterHandler implementation but should never be called.
-  void StartGrantPrinterAccess(const std::string& printer_id,
-                               const GetPrinterInfoCallback& callback) override;
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
                   const base::string16& job_title,

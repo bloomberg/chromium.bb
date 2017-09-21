@@ -64,7 +64,8 @@ cr.define('print_preview_test', function() {
 
     printPreview.initialize();
     return nativeLayer.whenCalled('getInitialSettings').then(function() {
-      printPreview.destinationStore_.startLoadLocalDestinations();
+      printPreview.destinationStore_.startLoadDestinations(
+          print_preview.PrinterType.LOCAL_PRINTER);
       return Promise.all([
         nativeLayer.whenCalled('getPrinters'),
         nativeLayer.whenCalled('getPrinterCapabilities')
