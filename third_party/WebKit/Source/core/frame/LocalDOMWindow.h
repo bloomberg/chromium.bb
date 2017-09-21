@@ -213,8 +213,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   MediaQueryList* matchMedia(const String&);
 
   // DOM Level 2 Style Interface
-  CSSStyleDeclaration* getComputedStyle(Element*,
-                                        const String& pseudo_elt) const;
+  CSSStyleDeclaration* getComputedStyle(
+      Element*,
+      const String& pseudo_elt = String()) const;
 
   // WebKit extension
   CSSRuleList* getMatchedCSSRules(Element*, const String& pseudo_elt) const;

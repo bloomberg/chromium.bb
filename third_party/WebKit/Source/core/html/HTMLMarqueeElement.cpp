@@ -336,7 +336,7 @@ HTMLMarqueeElement::Direction HTMLMarqueeElement::GetDirection() const {
 HTMLMarqueeElement::Metrics HTMLMarqueeElement::GetMetrics() {
   Metrics metrics;
   CSSStyleDeclaration* marquee_style =
-      GetDocument().domWindow()->getComputedStyle(this, String());
+      GetDocument().domWindow()->getComputedStyle(this);
   // For marquees that are declared inline, getComputedStyle returns "auto" for
   // width and height. Setting all the metrics to zero disables animation for
   // inline marquees.
@@ -357,7 +357,7 @@ HTMLMarqueeElement::Metrics HTMLMarqueeElement::GetMetrics() {
                                  ASSERT_NO_EXCEPTION);
   }
   CSSStyleDeclaration* mover_style =
-      GetDocument().domWindow()->getComputedStyle(mover_, String());
+      GetDocument().domWindow()->getComputedStyle(mover_);
 
   metrics.content_width = mover_style->getPropertyValue("width").ToDouble();
   metrics.content_height = mover_style->getPropertyValue("height").ToDouble();

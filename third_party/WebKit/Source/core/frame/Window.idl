@@ -116,8 +116,7 @@
 
     // CSS Object Model (CSSOM)
     // https://drafts.csswg.org/cssom/#extensions-to-the-window-interface
-    // FIXME: The optional pseudoElt argument should have no default.
-    [NewObject] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt = null);
+    [NewObject] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt);
 
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extensions-to-the-window-interface
