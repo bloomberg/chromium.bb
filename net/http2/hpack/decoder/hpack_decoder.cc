@@ -19,14 +19,6 @@ HpackDecoder::HpackDecoder(HpackDecoderListener* listener,
 
 HpackDecoder::~HpackDecoder() {}
 
-void HpackDecoder::set_listener(HpackDecoderListener* listener) {
-  return decoder_state_.set_listener(listener);
-}
-
-HpackDecoderListener* HpackDecoder::listener() const {
-  return decoder_state_.listener();
-}
-
 void HpackDecoder::set_tables_debug_listener(
     HpackDecoderTablesDebugListener* debug_listener) {
   decoder_state_.set_tables_debug_listener(debug_listener);
@@ -123,7 +115,7 @@ void HpackDecoder::ReportError(Http2StringPiece error_message) {
            << ", error_message: " << error_message;
   if (!error_detected_) {
     error_detected_ = true;
-    listener()->OnHeaderErrorDetected(error_message);
+    decoder_state_.listener()->OnHeaderErrorDetected(error_message);
   }
 }
 

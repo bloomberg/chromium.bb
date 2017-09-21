@@ -37,7 +37,6 @@ class HTTP2_EXPORT_PRIVATE HpackDecoderState : public HpackWholeEntryListener {
   // Set the listener to be notified when a whole entry has been decoded,
   // including resolving name or name and value references.
   // The listener may be changed at any time.
-  void set_listener(HpackDecoderListener* listener);
   HpackDecoderListener* listener() const { return listener_; }
 
   // Set listener to be notified of insertions into the HPACK dynamic table,

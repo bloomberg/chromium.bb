@@ -135,10 +135,6 @@ class HTTP2_EXPORT_PRIVATE FrameDecoderState {
     return remaining_padding_;
   }
 
-  // Returns the amount of trailing padding after the payload that remains to be
-  // decoded.
-  uint32_t remaining_padding_for_test() const { return remaining_padding_; }
-
   // How many bytes of the remaining payload are in db?
   size_t AvailablePayload(DecodeBuffer* db) const {
     return db->MinLengthRemaining(remaining_payload_);
