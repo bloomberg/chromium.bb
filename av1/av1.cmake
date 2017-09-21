@@ -189,9 +189,6 @@ set(AOM_AV1_ENCODER_INTRIN_SSE2
 set(AOM_AV1_ENCODER_ASM_SSSE3_X86_64
     "${AOM_ROOT}/av1/encoder/x86/av1_quantize_ssse3_x86_64.asm")
 
-set(AOM_AV1_ENCODER_INTRIN_SSSE3
-    "${AOM_ROOT}/av1/encoder/x86/dct_ssse3.c")
-
 set(AOM_AV1_ENCODER_INTRIN_SSE4_1
     ${AOM_AV1_ENCODER_INTRIN_SSE4_1}
     "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
@@ -221,7 +218,6 @@ if (CONFIG_HIGHBITDEPTH)
 else ()
   set(AOM_AV1_COMMON_INTRIN_NEON
       ${AOM_AV1_COMMON_INTRIN_NEON}
-      "${AOM_ROOT}/av1/encoder/arm/neon/dct_neon.c"
       "${AOM_ROOT}/av1/common/arm/neon/iht4x4_add_neon.c"
       "${AOM_ROOT}/av1/common/arm/neon/iht8x8_add_neon.c")
 
@@ -468,9 +464,6 @@ if (CONFIG_PVQ)
           ${AOM_AV1_DECODER_INTRIN_SSE2}
           "${AOM_ROOT}/av1/encoder/x86/dct_intrin_sse2.c")
 
-      set(AOM_AV1_DECODER_INTRIN_SSSE3
-          ${AOM_AV1_DECODER_INTRIN_SSSE3}
-          "${AOM_ROOT}/av1/encoder/x86/dct_ssse3.c")
     endif ()
 endif ()
 
