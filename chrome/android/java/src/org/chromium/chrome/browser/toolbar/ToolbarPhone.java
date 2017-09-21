@@ -1484,6 +1484,7 @@ public class ToolbarPhone extends ToolbarLayout
         if (mIsHomeButtonEnabled) {
             mHomeButton.setVisibility(urlHasFocus() || isTabSwitcherAnimationRunning()
                     ? INVISIBLE : VISIBLE);
+            mHomeButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
             mBrowsingModeViews.add(mHomeButton);
         } else {
             mHomeButton.setVisibility(GONE);
