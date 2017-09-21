@@ -227,8 +227,13 @@ bool ComputeBoundary(const Display& a_display,
   int rb = std::min(a_bounds.bottom(), b_bounds.bottom());
 
   DisplayPlacement::Position position;
-  if ((rb - ry) == 0) {
+  if (rb == ry) {
     // top bottom
+    if (rr <= rx) {
+      // Top and bottom align, but no edges are shared.
+      return false;
+    }
+
     if (a_bounds.bottom() == b_bounds.y()) {
       position = DisplayPlacement::BOTTOM;
     } else if (a_bounds.y() == b_bounds.bottom()) {
@@ -236,16 +241,22 @@ bool ComputeBoundary(const Display& a_display,
     } else {
       return false;
     }
-  } else {
+  } else if (rr == rx) {
     // left right
+    if (rb <= ry) {
+      // Left and right align, but no edges are shared.
+      return false;
+    }
+
     if (a_bounds.right() == b_bounds.x()) {
       position = DisplayPlacement::RIGHT;
     } else if (a_bounds.x() == b_bounds.right()) {
       position = DisplayPlacement::LEFT;
     } else {
-      DCHECK_NE(rr, rx);
       return false;
     }
+  } else {
+    return false;
   }
 
   switch (position) {
