@@ -53,8 +53,9 @@ NSString* const kSaveTouchBarId = @"SAVE";
   if (editMode_) {
     PendingPasswordItemView* row =
         [[passwordItemContainer_ subviews] objectAtIndex:0];
-    self.model->OnUsernameEdited(
-        base::SysNSStringToUTF16([[row usernameField] stringValue]));
+    self.model->OnCredentialEdited(
+        base::SysNSStringToUTF16([[row usernameField] stringValue]),
+        self.model->pending_password().password_value);
     [self disableEditMode];
   }
   ManagePasswordsBubbleModel* model = self.model;
@@ -96,8 +97,9 @@ NSString* const kSaveTouchBarId = @"SAVE";
   if (editMode_) {
     PendingPasswordItemView* row =
         [[passwordItemContainer_ subviews] objectAtIndex:0];
-    self.model->OnUsernameEdited(
-        base::SysNSStringToUTF16([[row usernameField] stringValue]));
+    self.model->OnCredentialEdited(
+        base::SysNSStringToUTF16([[row usernameField] stringValue]),
+        self.model->pending_password().password_value);
     [self disableEditMode];
   }
 }
