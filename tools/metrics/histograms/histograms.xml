@@ -706,6 +706,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.CompressedResources.ExtractionBlockingTime" units="ms">
+  <owner>estevenson@chromium.org</owner>
+  <owner>agrieve@chromium.org</owner>
+  <summary>
+    The amount of time Chrome spends blocked on resource extraction. Generally,
+    extraction is completed in the background but in certain cases a main-thread
+    getResources() call may block on resource extraction.
+  </summary>
+</histogram>
+
+<histogram name="Android.CompressedResources.ExtractionTime" units="ms">
+  <owner>estevenson@chromium.org</owner>
+  <owner>agrieve@chromium.org</owner>
+  <summary>
+    The amount of time spent on resource extraction, whether or not extraction
+    was performed in the background or foreground.
+  </summary>
+</histogram>
+
 <histogram name="Android.CustomFeedback.Category"
     enum="AndroidFeedbackCategory">
   <owner>jwanda@chromium.org</owner>
