@@ -139,4 +139,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
                          forItem:item];
 }
 
+#pragma mark - UIAccessibilityAction
+
+- (BOOL)accessibilityPerformEscape {
+  [self onOk];
+  return YES;
+}
+
 @end

@@ -505,4 +505,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierContactInfo];
 }
 
+#pragma mark - UIAccessibilityAction
+
+- (BOOL)accessibilityPerformEscape {
+  [self onCancel];
+  return YES;
+}
+
 @end
