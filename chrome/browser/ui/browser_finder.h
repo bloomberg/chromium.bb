@@ -52,6 +52,9 @@ Browser* FindBrowserWithID(SessionID::id_type desired_id);
 // Find the browser represented by |window| or NULL if not found.
 Browser* FindBrowserWithWindow(gfx::NativeWindow window);
 
+// Find the browser with active window or NULL if not found.
+Browser* FindBrowserWithActiveWindow();
+
 // Find the browser containing |web_contents| or NULL if none is found.
 // |web_contents| must not be NULL.
 Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
