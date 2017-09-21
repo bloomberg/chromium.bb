@@ -86,26 +86,26 @@ class _AtestSource(object):
 
 
 def _get_hostname(server):
-    """Get server hostname from an atest dict.
+  """Get server hostname from an atest dict.
 
-    >>> server = {'hostname': 'foo.example.com'}  # from atest
-    >>> _get_hostname(server)
-    'foo'
-    """
-    return server['hostname'].partition('.')[0]
+  >>> server = {'hostname': 'foo.example.com'}  # from atest
+  >>> _get_hostname(server)
+  'foo'
+  """
+  return server['hostname'].partition('.')[0]
 
 
 def _get_data_center(server):
-    """Get server data center from an atest dict.
+  """Get server data center from an atest dict.
 
-    >>> server = {'hostname': 'foo.mtv.example.com'}  # from atest
-    >>> _get_data_center(server)
-    'mtv'
-    """
-    try:
-      return server['hostname'].split('.')[1]
-    except IndexError:
-      raise ValueError('%r hostname is invalid' % server)
+  >>> server = {'hostname': 'foo.mtv.example.com'}  # from atest
+  >>> _get_data_center(server)
+  'mtv'
+  """
+  try:
+    return server['hostname'].split('.')[1]
+  except IndexError:
+    raise ValueError('%r hostname is invalid' % server)
 
 
 Server = collections.namedtuple(
