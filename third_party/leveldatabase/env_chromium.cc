@@ -1309,18 +1309,14 @@ class DBTracker::MemoryDumpProvider
  public:
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override {
-    // Don't dump in background mode ("from the field") until whitelisted.
-    if (args.level_of_detail ==
-        base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
-      return true;
-    }
-
     auto db_visitor = [](const base::trace_event::MemoryDumpArgs& args,
                          base::trace_event::ProcessMemoryDump* pmd,
                          TrackedDB* db) {
       auto* dump = DBTracker::GetOrCreateAllocatorDump(pmd, db);
-      // TODO(ssid): Do not add string attribute in background mode.
-      dump->AddString("name", "", db->name());
+      if (args.level_of_detail !=
+          base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+        dump->AddString("name", "", db->name());
+      }
     };
 
     DBTracker::GetInstance()->VisitDatabases(
@@ -1357,10 +1353,6 @@ base::trace_event::MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
 base::trace_event::MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
     base::trace_event::ProcessMemoryDump* pmd,
     TrackedDB* db) {
-  if (pmd->dump_args().level_of_detail ==
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
-    return nullptr;
-  }
   std::string dump_name = base::StringPrintf("leveldatabase/0x%" PRIXPTR,
                                              reinterpret_cast<uintptr_t>(db));
   auto* dump = pmd->GetAllocatorDump(dump_name);
