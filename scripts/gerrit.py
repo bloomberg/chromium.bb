@@ -295,21 +295,44 @@ def UserActDeps(opts, query):
   def _QueryChange(cl, helper=None):
     return _Query(opts, cl, raw=False, helper=helper)
 
-  def _Children(cl):
-    """Returns the Gerrit and CQ-Depends dependencies of a patch"""
-    cq_deps = cl.PaladinDependencies(None)
-    direct_deps = cl.GerritDependencies() + cq_deps
+  def _ProcessDeps(cl, deps, required):
+    """Yields matching dependencies for a patch"""
     # We need to query the change to guarantee that we have a .gerrit_number
-    for dep in direct_deps:
+    for dep in deps:
       if not dep.remote in opts.gerrit:
         opts.gerrit[dep.remote] = gerrit.GetGerritHelper(
             remote=dep.remote, print_cmd=opts.debug)
       helper = opts.gerrit[dep.remote]
 
       # TODO(phobbs) this should maybe catch network errors.
-      change = _QueryChange(dep.ToGerritQueryText(), helper=helper)[-1]
-      if change.status == 'NEW':
-        yield change
+      changes = _QueryChange(dep.ToGerritQueryText(), helper=helper)
+
+      # Handle empty results.  If we found a commit that was pushed directly
+      # (e.g. a bot commit), then gerrit won't know about it.
+      if not changes:
+        if required:
+          logging.error('CL %s depends on %s which cannot be found',
+                        cl, dep.ToGerritQueryText())
+        continue
+
+      # Our query might have matched more than one result.  This can come up
+      # when CQ-DEPEND uses a Gerrit Change-Id, but that Change-Id shows up
+      # across multiple repos/branches.  We blindly check all of them in the
+      # hopes that all open ones are what the user wants, but then again the
+      # CQ-DEPEND syntax itself is unable to differeniate.  *shrug*
+      if len(changes) > 1:
+        logging.warning('CL %s has an ambiguous CQ dependency %s',
+                        cl, dep.ToGerritQueryText())
+      for change in changes:
+        if change.status == 'NEW':
+          yield change
+
+  def _Children(cl):
+    """Yields the Gerrit and CQ-Depends dependencies of a patch"""
+    for change in _ProcessDeps(cl, cl.PaladinDependencies(None), True):
+      yield change
+    for change in _ProcessDeps(cl, cl.GerritDependencies(), False):
+      yield change
 
   transitives = _BreadthFirstSearch(
       cls, _Children,
