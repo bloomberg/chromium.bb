@@ -1241,16 +1241,13 @@ config("default_warnings") {
 
         # TODO(hans): https://crbug.com/763392
         "-Wno-tautological-unsigned-zero-compare",
-      ]
-      if (llvm_force_head_revision) {
-        cflags += [
-          # TODO(hans): https://crbug.com/766891
-          "-Wno-null-pointer-arithmetic",
 
-          # TODO(hans): https://crbug.com/767059
-          "-Wno-tautological-unsigned-enum-zero-compare",
-        ]
-      }
+        # TODO(hans): https://crbug.com/766891
+        "-Wno-null-pointer-arithmetic",
+
+        # TODO(hans): https://crbug.com/767059
+        "-Wno-tautological-unsigned-enum-zero-compare",
+      ]
     } else if (use_xcode_clang && xcode_version_int >= 830) {
       # This is necessary to allow a progressive transition from using xcode 8.0
       # to 8.3 or more recent. Remove when all bots are migrated to 8.3.
