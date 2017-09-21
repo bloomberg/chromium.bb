@@ -139,7 +139,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
       override {
     if (!use_gl_renderer_) {
       return FakeOutputSurface::CreateSoftware(
-          base::WrapUnique(new SoftwareOutputDevice));
+          std::make_unique<viz::SoftwareOutputDevice>());
     }
 
     scoped_refptr<TestContextProvider> display_context_provider =

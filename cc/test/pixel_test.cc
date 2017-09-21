@@ -11,7 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/software_output_device.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -25,6 +24,7 @@
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/display/software_renderer.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/test/paths.h"
@@ -194,8 +194,8 @@ void PixelTest::EnableExternalStencilTest() {
 }
 
 void PixelTest::SetUpSoftwareRenderer() {
-  output_surface_.reset(
-      new PixelTestOutputSurface(std::make_unique<SoftwareOutputDevice>()));
+  output_surface_.reset(new PixelTestOutputSurface(
+      std::make_unique<viz::SoftwareOutputDevice>()));
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
   constexpr bool delegated_sync_points_required =

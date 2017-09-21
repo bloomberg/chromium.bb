@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "cc/output/software_output_device.h"
+#include "components/viz/service/display/software_output_device.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -47,7 +47,7 @@ class OutputDeviceBacking {
   DISALLOW_COPY_AND_ASSIGN(OutputDeviceBacking);
 };
 
-class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
+class SoftwareOutputDeviceWin : public viz::SoftwareOutputDevice {
  public:
   SoftwareOutputDeviceWin(OutputDeviceBacking* backing,
                           ui::Compositor* compositor);

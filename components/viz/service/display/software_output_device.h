@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_SOFTWARE_OUTPUT_DEVICE_H_
-#define CC_OUTPUT_SOFTWARE_OUTPUT_DEVICE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_SOFTWARE_OUTPUT_DEVICE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_SOFTWARE_OUTPUT_DEVICE_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/cc_export.h"
+#include "components/viz/service/viz_service_export.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -20,11 +20,11 @@ namespace gfx {
 class VSyncProvider;
 }
 
-namespace cc {
+namespace viz {
 
 // This is a "tear-off" class providing software drawing support to
 // OutputSurface, such as to a platform-provided window framebuffer.
-class CC_EXPORT SoftwareOutputDevice {
+class VIZ_SERVICE_EXPORT SoftwareOutputDevice {
  public:
   SoftwareOutputDevice();
   virtual ~SoftwareOutputDevice();
@@ -52,7 +52,7 @@ class CC_EXPORT SoftwareOutputDevice {
   virtual void EnsureBackbuffer() {}
 
   // VSyncProvider used to update the timer used to schedule draws with the
-  // hardware vsync. Return NULL if a provider doesn't exist.
+  // hardware vsync. Return null if a provider doesn't exist.
   virtual gfx::VSyncProvider* GetVSyncProvider();
 
  protected:
@@ -65,6 +65,6 @@ class CC_EXPORT SoftwareOutputDevice {
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDevice);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_SOFTWARE_OUTPUT_DEVICE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_SOFTWARE_OUTPUT_DEVICE_H_

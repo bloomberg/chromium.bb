@@ -8839,16 +8839,16 @@ TEST_F(CompositorFrameMetadataTest, CompositorFrameAckCountsAsSwapComplete) {
   EXPECT_EQ(acks_received_, 1);
 }
 
-class CountingSoftwareDevice : public SoftwareOutputDevice {
+class CountingSoftwareDevice : public viz::SoftwareOutputDevice {
  public:
   CountingSoftwareDevice() : frames_began_(0), frames_ended_(0) {}
 
   SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override {
     ++frames_began_;
-    return SoftwareOutputDevice::BeginPaint(damage_rect);
+    return viz::SoftwareOutputDevice::BeginPaint(damage_rect);
   }
   void EndPaint() override {
-    SoftwareOutputDevice::EndPaint();
+    viz::SoftwareOutputDevice::EndPaint();
     ++frames_ended_;
   }
 

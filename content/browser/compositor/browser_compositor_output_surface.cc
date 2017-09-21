@@ -31,7 +31,7 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
 }
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
-    std::unique_ptr<cc::SoftwareOutputDevice> software_device,
+    std::unique_ptr<viz::SoftwareOutputDevice> software_device,
     const UpdateVSyncParametersCallback& update_vsync_parameters_callback)
     : OutputSurface(std::move(software_device)),
       update_vsync_parameters_callback_(update_vsync_parameters_callback),
