@@ -45,6 +45,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -78,7 +79,9 @@ class ZoomValue : public views::Label {
       : Label(base::string16(),
               views::style::CONTEXT_LABEL,
               views::style::STYLE_PRIMARY),
-        max_width_(GetLabelMaxWidth(web_contents)) {}
+        max_width_(GetLabelMaxWidth(web_contents)) {
+    SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
   ~ZoomValue() override {}
 
   // views::Label:
@@ -88,7 +91,7 @@ class ZoomValue : public views::Label {
 
  private:
   int GetLabelMaxWidth(const content::WebContents* web_contents) const {
-    int border_width = border() ? border()->GetInsets().width() : 0;
+    const int border_width = border() ? border()->GetInsets().width() : 0;
     int max_w = 0;
     auto* zoom_controller = zoom::ZoomController::FromWebContents(web_contents);
     DCHECK(zoom_controller);
@@ -268,17 +271,34 @@ void ZoomBubbleView::OnMouseExited(const ui::MouseEvent& event) {
 
 void ZoomBubbleView::Init() {
   // Set up the layout of the zoom bubble.
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  const int margin =
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const int spacing =
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
   views::BoxLayout* box_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, gfx::Insets(0, margin), margin);
-
+      views::BoxLayout::kHorizontal,
+      provider->GetInsetsMetric(INSETS_TOAST) - margins(), spacing);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(box_layout);
+
+  // Calculate child views margins in |this| client view.
+  const int label_vertical_spacing =
+      provider->GetDistanceMetric(DISTANCE_TOAST_LABEL_VERTICAL);
+  const gfx::Insets label_vertical_margin(
+      label_vertical_spacing - margins().top(), 0,
+      label_vertical_spacing - margins().bottom(), 0);
+
+  // Account for the apparent margins that vector buttons have around icons.
+  const int control_vertical_spacing =
+      provider->GetDistanceMetric(DISTANCE_TOAST_CONTROL_VERTICAL);
+  const gfx::Insets control_vertical_margin(
+      control_vertical_spacing - margins().top(), 0,
+      control_vertical_spacing - margins().bottom(), 0);
+  const gfx::Insets vector_button_margin(
+      control_vertical_margin -
+      provider->GetInsetsMetric(views::INSETS_VECTOR_IMAGE_BUTTON));
 
   // If this zoom change was initiated by an extension, that extension will be
   // attributed by showing its icon in the zoom bubble.
@@ -292,21 +312,34 @@ void ZoomBubbleView::Init() {
     AddChildView(image_button_);
   }
 
+  // Add zoom label with the new zoom percent.
+  label_ = new ZoomValue(web_contents_);
+  UpdateZoomPercent();
+  label_->SetProperty(views::kMarginsKey,
+                      new gfx::Insets(label_vertical_margin));
+  AddChildView(label_);
+
+  // Add extra padding between the zoom percent label and the buttons.
+  constexpr int kPercentLabelPadding = 64;
+  auto* label_padding_view = new views::View();
+  label_padding_view->SetPreferredSize(gfx::Size(
+      kPercentLabelPadding - spacing * 2, label_->GetPreferredSize().height()));
+  AddChildView(label_padding_view);
+
   // Add Zoom Out ("-") button.
   std::unique_ptr<views::Button> zoom_out_button =
       CreateZoomButton(this, kRemoveIcon, IDS_ACCNAME_ZOOM_MINUS2);
   zoom_out_button_ = zoom_out_button.get();
+  zoom_out_button_->SetProperty(views::kMarginsKey,
+                                new gfx::Insets(vector_button_margin));
   AddChildView(zoom_out_button.release());
-
-  // Add zoom label with the new zoom percent.
-  label_ = new ZoomValue(web_contents_);
-  UpdateZoomPercent();
-  AddChildView(label_);
 
   // Add Zoom In ("+") button.
   std::unique_ptr<views::Button> zoom_in_button =
       CreateZoomButton(this, kAddIcon, IDS_ACCNAME_ZOOM_PLUS2);
   zoom_in_button_ = zoom_in_button.get();
+  zoom_in_button_->SetProperty(views::kMarginsKey,
+                               new gfx::Insets(vector_button_margin));
   AddChildView(zoom_in_button.release());
 
   // Add "Reset" button.
