@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/grit/generated_resources.h"
@@ -96,6 +97,9 @@ constexpr char kEventOnRetryClicked[] = "onRetryClicked";
 
 // "onSendFeedbackClicked" is fired when a user clicks "Send Feedback" button.
 constexpr char kEventOnSendFeedbackClicked[] = "onSendFeedbackClicked";
+
+// "onOpenSettingsPageClicked" is fired when a user clicks settings link.
+constexpr char kEventOnOpenSettingsPageClicked[] = "onOpenSettingsPageClicked";
 
 void RequestOpenApp(Profile* profile) {
   const extensions::Extension* extension =
@@ -626,6 +630,8 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
   } else if (event == kEventOnSendFeedbackClicked) {
     DCHECK(error_delegate_);
     error_delegate_->OnSendFeedbackClicked();
+  } else if (event == kEventOnOpenSettingsPageClicked) {
+    chrome::ShowSettingsSubPageForProfile(profile_, std::string());
   } else {
     LOG(ERROR) << "Unknown message: " << event;
     NOTREACHED();
