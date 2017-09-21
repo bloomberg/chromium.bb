@@ -16,7 +16,7 @@ import unittest
 from core import trybot_command
 import mock
 from telemetry import benchmark
-
+from telemetry import decorators
 
 class FakeProcess(object):
 
@@ -911,6 +911,7 @@ class TrybotCommandTest(unittest.TestCase):
     self.assertEquals(output, sys.stdout.getvalue().strip())
 
 
+# TODO(rnephew): Modernize these tests to use StoryExpectations.
 class IsBenchmarkDisabledOnTrybotPlatformTest(unittest.TestCase):
 
   def IsBenchmarkDisabled(self, benchmark_class, trybot_name):
@@ -918,7 +919,7 @@ class IsBenchmarkDisabledOnTrybotPlatformTest(unittest.TestCase):
         benchmark_class, trybot_name)[0]
 
   def testBenchmarkIsDisabledAll(self):
-    @benchmark.Disabled('all')
+    @decorators.Disabled('all')
     class FooBenchmark(benchmark.Benchmark):
       pass
     self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'all'))
@@ -928,7 +929,7 @@ class IsBenchmarkDisabledOnTrybotPlatformTest(unittest.TestCase):
     self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'winx64ati'))
 
   def testBenchmarkIsEnabledAll(self):
-    @benchmark.Enabled('all')
+    @decorators.Enabled('all')
     class FooBenchmark(benchmark.Benchmark):
       pass
     self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'all'))
@@ -938,7 +939,7 @@ class IsBenchmarkDisabledOnTrybotPlatformTest(unittest.TestCase):
     self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'winx64ati'))
 
   def testBenchmarkIsDisabledOnMultiplePlatforms(self):
-    @benchmark.Disabled('win', 'mac')
+    @decorators.Disabled('win', 'mac')
     class FooBenchmark(benchmark.Benchmark):
       pass
     self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'all'))
@@ -949,7 +950,7 @@ class IsBenchmarkDisabledOnTrybotPlatformTest(unittest.TestCase):
     self.assertTrue(self.IsBenchmarkDisabled(FooBenchmark, 'winx64ati'))
 
   def testBenchmarkIsEnabledOnMultiplePlatforms(self):
-    @benchmark.Enabled('win', 'mac')
+    @decorators.Enabled('win', 'mac')
     class FooBenchmark(benchmark.Benchmark):
       pass
     self.assertFalse(self.IsBenchmarkDisabled(FooBenchmark, 'all'))

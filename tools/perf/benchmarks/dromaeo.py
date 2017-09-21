@@ -9,7 +9,6 @@ import os
 from core import perf_benchmark
 
 from telemetry import benchmark
-from telemetry import decorators
 from telemetry import page as page_module
 from telemetry.page import legacy_page_test
 from telemetry import story
@@ -191,8 +190,6 @@ class DromaeoDomCoreQuery(_DromaeoBenchmark):
     return StoryExpectations()
 
 
-# Flaky on Windows: https://crbug.com/763263
-@decorators.Disabled('win')
 @benchmark.Owner(emails=['jbroman@chromium.org',
                          'yukishiino@chromium.org',
                          'haraken@chromium.org'])
@@ -211,5 +208,5 @@ class DromaeoDomCoreTraverse(_DromaeoBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # http://dromaeo.com?dom-traverse not disabled.
+        self.DisableBenchmark([story.expectations.ALL_WIN], 'crbug.com/763263')
     return StoryExpectations()

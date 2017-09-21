@@ -6,6 +6,7 @@ from common.chrome_proxy_benchmark import ChromeProxyBenchmark
 from integration_tests import chrome_proxy_measurements as measurements
 from integration_tests import chrome_proxy_pagesets as pagesets
 from telemetry import benchmark
+from telemetry import decorators
 
 DESKTOP_PLATFORMS = ['mac', 'linux', 'win', 'chromeos']
 WEBVIEW_PLATFORMS = ['android-webview', 'android-webview-instrumentation']
@@ -49,7 +50,7 @@ class ChromeProxyClientType(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.client_type.client_type'
 
 
-@benchmark.Disabled(*WEBVIEW_PLATFORMS)
+@decorators.Disabled(*WEBVIEW_PLATFORMS)
 class ChromeProxyLoFi(ChromeProxyBenchmark):
   tag = 'lo_fi'
   test = measurements.ChromeProxyLoFi
@@ -60,7 +61,7 @@ class ChromeProxyLoFi(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.lo_fi.lo_fi'
 
 
-@benchmark.Disabled(*WEBVIEW_PLATFORMS)
+@decorators.Disabled(*WEBVIEW_PLATFORMS)
 class ChromeProxyCacheLoFiDisabled(ChromeProxyBenchmark):
   tag = 'cache_lo_fi_disabled'
   test = measurements.ChromeProxyCacheLoFiDisabled
@@ -71,7 +72,7 @@ class ChromeProxyCacheLoFiDisabled(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.lo_fi.cache_lo_fi_disabled'
 
 
-@benchmark.Disabled(*WEBVIEW_PLATFORMS)
+@decorators.Disabled(*WEBVIEW_PLATFORMS)
 class ChromeProxyCacheProxyDisabled(ChromeProxyBenchmark):
   tag = 'cache_proxy_disabled'
   test = measurements.ChromeProxyCacheProxyDisabled
@@ -82,7 +83,7 @@ class ChromeProxyCacheProxyDisabled(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.lo_fi.cache_proxy_disabled'
 
 
-@benchmark.Disabled(*WEBVIEW_PLATFORMS)
+@decorators.Disabled(*WEBVIEW_PLATFORMS)
 class ChromeProxyLitePage(ChromeProxyBenchmark):
   tag = 'lite_page'
   test = measurements.ChromeProxyLitePage
@@ -143,7 +144,7 @@ class ChromeProxyHTML5Test(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.html5test.html5test'
 
 
-@benchmark.Enabled(*DESKTOP_PLATFORMS)
+@decorators.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyYouTube(ChromeProxyBenchmark):
   tag = 'youtube'
   test = measurements.ChromeProxyYouTube
@@ -174,7 +175,7 @@ class ChromeProxyBlockOnce(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.block_once.block_once'
 
 
-@benchmark.Disabled(*(DESKTOP_PLATFORMS + WEBVIEW_PLATFORMS))
+@decorators.Disabled(*(DESKTOP_PLATFORMS + WEBVIEW_PLATFORMS))
 # Safebrowsing is enabled for Android and iOS.
 class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
   tag = 'safebrowsing_on'
@@ -191,7 +192,7 @@ class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.safebrowsing_on.safebrowsing'
 
 
-@benchmark.Enabled(*(DESKTOP_PLATFORMS + WEBVIEW_PLATFORMS))
+@decorators.Enabled(*(DESKTOP_PLATFORMS + WEBVIEW_PLATFORMS))
 # Safebrowsing is switched off for Android Webview and all desktop platforms.
 class ChromeProxySafeBrowsingOff(ChromeProxyBenchmark):
   tag = 'safebrowsing_off'
@@ -283,7 +284,7 @@ class ChromeProxyClientConfig(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.client_config.synthetic'
 
 
-@benchmark.Enabled(*DESKTOP_PLATFORMS)
+@decorators.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoDirect(benchmark.Benchmark):
   tag = 'video'
   test = measurements.ChromeProxyVideoValidation
@@ -294,7 +295,7 @@ class ChromeProxyVideoDirect(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.video.direct'
 
 
-@benchmark.Enabled(*DESKTOP_PLATFORMS)
+@decorators.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoProxied(benchmark.Benchmark):
   tag = 'video'
   test = measurements.ChromeProxyVideoValidation
@@ -305,7 +306,7 @@ class ChromeProxyVideoProxied(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.video.proxied'
 
 
-@benchmark.Enabled(*DESKTOP_PLATFORMS)
+@decorators.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoCompare(benchmark.Benchmark):
   """Comparison of direct and proxied video fetches.
 
@@ -321,7 +322,7 @@ class ChromeProxyVideoCompare(benchmark.Benchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.video.compare'
 
-@benchmark.Enabled(*DESKTOP_PLATFORMS)
+@decorators.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoFrames(benchmark.Benchmark):
   """Check for video frames similar to original video."""
 
@@ -333,7 +334,7 @@ class ChromeProxyVideoFrames(benchmark.Benchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.video.frames'
 
-@benchmark.Enabled(*DESKTOP_PLATFORMS)
+@decorators.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoAudio(benchmark.Benchmark):
   """Check that audio is similar to original video."""
 
