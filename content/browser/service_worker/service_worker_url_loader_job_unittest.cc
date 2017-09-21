@@ -228,6 +228,12 @@ class Helper : public EmbeddedWorkerTestHelper {
     response_mode_ = ResponseMode::kNavigationPreloadResponse;
   }
 
+  // Tells this helper to respond to fetch events with the redirect response.
+  void RespondWithRedirectResponse(const GURL& new_url) {
+    response_mode_ = ResponseMode::kRedirect;
+    redirected_url_ = new_url;
+  }
+
   // Tells this helper to simulate failure to dispatch the fetch event to the
   // service worker.
   void FailToDispatchFetchEvent() {
@@ -333,6 +339,22 @@ class Helper : public EmbeddedWorkerTestHelper {
             base::Time::Now());
         // Now the caller must call FinishWaitUntil() to finish the event.
         return;
+      case ResponseMode::kRedirect:
+        auto headers = base::MakeUnique<ServiceWorkerHeaderMap>();
+        (*headers)["location"] = redirected_url_.spec();
+        response_callback->OnResponse(
+            ServiceWorkerResponse(
+                base::MakeUnique<std::vector<GURL>>(), 301, "Moved Permanently",
+                network::mojom::FetchResponseType::kDefault, std::move(headers),
+                "" /* blob_uuid */, 0 /* blob_size */, nullptr /* blob */,
+                blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
+                false /* response_is_in_cache_storage */,
+                std::string() /* response_cache_storage_cache_name */,
+                base::MakeUnique<
+                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
+            base::Time::Now());
+        std::move(finish_callback).Run(SERVICE_WORKER_OK, base::Time::Now());
+        return;
     }
     NOTREACHED();
   }
@@ -345,7 +367,8 @@ class Helper : public EmbeddedWorkerTestHelper {
     kFallbackResponse,
     kNavigationPreloadResponse,
     kFailFetchEventDispatch,
-    kEarlyResponse
+    kEarlyResponse,
+    kRedirect
   };
 
   ResponseMode response_mode_ = ResponseMode::kDefault;
@@ -359,6 +382,9 @@ class Helper : public EmbeddedWorkerTestHelper {
 
   // For ResponseMode::kEarlyResponse.
   FetchCallback finish_callback_;
+
+  // For ResponseMode::kRedirect.
+  GURL redirected_url_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
 };
@@ -791,6 +817,26 @@ TEST_F(ServiceWorkerURLLoaderJobTest, NavigationPreload) {
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
       client_.response_body_release(), &response));
   EXPECT_EQ("this body came from the network", response);
+}
+
+// Test responding to the fetch event with a redirect response.
+TEST_F(ServiceWorkerURLLoaderJobTest, Redirect) {
+  GURL new_url("https://example.com/redirected");
+  helper_->RespondWithRedirectResponse(new_url);
+
+  // Perform the request.
+  JobResult result = StartRequest();
+  EXPECT_EQ(JobResult::kHandledRequest, result);
+  client_.RunUntilRedirectReceived();
+
+  const ResourceResponseHead& info = client_.response_head();
+  EXPECT_EQ(301, info.headers->response_code());
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+
+  const net::RedirectInfo& redirect_info = client_.redirect_info();
+  EXPECT_EQ(301, redirect_info.status_code);
+  EXPECT_EQ("GET", redirect_info.new_method);
+  EXPECT_EQ(new_url, redirect_info.new_url);
 }
 
 }  // namespace content

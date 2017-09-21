@@ -18,6 +18,55 @@
 
 namespace content {
 
+namespace {
+
+// TODO(horo): We should have shared logic with
+// net::URLRequestJob::ComputeRedirectInfo()
+std::unique_ptr<net::RedirectInfo> ComputeRedirectInfo(
+    const ResourceRequest& original_request,
+    const ResourceResponseHead& response_head) {
+  std::string new_location;
+  if (!response_head.headers->IsRedirect(&new_location))
+    return nullptr;
+
+  const int status = response_head.headers->response_code();
+  const std::string& method = original_request.method;
+  const GURL& url = original_request.url;
+  const GURL location = url.Resolve(new_location);
+
+  std::unique_ptr<net::RedirectInfo> redirect_info =
+      base::MakeUnique<net::RedirectInfo>();
+  redirect_info->status_code = status;
+  // The request method may change, depending on the status code.
+  // See the comments in net::URLRequestJob::ComputeRedirectInfo() for details.
+  redirect_info->new_method =
+      ((status == 303 && method != "HEAD") ||
+       ((status == 301 || status == 302) && method == "POST"))
+          ? "GET"
+          : method;
+  if (url.is_valid() && url.has_ref() && !location.has_ref()) {
+    GURL::Replacements replacements;
+    replacements.SetRef(url.spec().data(),
+                        url.parsed_for_possibly_invalid_spec().ref);
+    redirect_info->new_url = location.ReplaceComponents(replacements);
+  } else {
+    redirect_info->new_url = location;
+  }
+  // If the request is a MAIN_FRAME request, the first-party URL gets updated
+  // on redirects.
+  redirect_info->new_site_for_cookies =
+      original_request.resource_type == RESOURCE_TYPE_MAIN_FRAME
+          ? redirect_info->new_url
+          : original_request.site_for_cookies;
+  // TODO(horo): Set new_referrer_policy and new_referrer by checking
+  // Referrer-Policy header.
+  // TODO(horo): Set referred_token_binding_host by checking
+  // include-referred-token-binding-id header.
+  return redirect_info;
+}
+
+}  // namespace
+
 // This class waits for completion of a stream response from the service worker.
 // It calls ServiceWorkerURLLoader::CommitComplete() upon completion of the
 // response.
@@ -68,7 +117,10 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
       blob_storage_context_(blob_storage_context),
       blob_client_binding_(this),
       binding_(this),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  response_head_.load_timing.request_start = base::TimeTicks::Now();
+  response_head_.load_timing.request_start_time = base::Time::Now();
+}
 
 ServiceWorkerURLLoaderJob::~ServiceWorkerURLLoaderJob() {}
 
@@ -153,6 +205,8 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
           resource_request_, url_loader_factory_getter_.get(),
           base::BindOnce(&base::DoNothing /* TODO(crbug/762357): metrics? */));
   response_head_.service_worker_start_time = base::TimeTicks::Now();
+  response_head_.load_timing.send_start = base::TimeTicks::Now();
+  response_head_.load_timing.send_end = base::TimeTicks::Now();
   fetch_dispatcher_->Run();
 }
 
@@ -262,6 +316,15 @@ void ServiceWorkerURLLoaderJob::StartResponse(
 
   response_head_.did_service_worker_navigation_preload =
       did_navigation_preload_;
+  response_head_.load_timing.receive_headers_end = base::TimeTicks::Now();
+
+  if (std::unique_ptr<net::RedirectInfo> redirect_info =
+          ComputeRedirectInfo(resource_request_, response_head_)) {
+    response_head_.encoded_data_length = 0;
+    url_loader_client_->OnReceiveRedirect(*redirect_info, response_head_);
+    status_ = Status::kCompleted;
+    return;
+  }
 
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {

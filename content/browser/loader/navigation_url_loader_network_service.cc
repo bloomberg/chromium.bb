@@ -195,6 +195,13 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   // This could be called multiple times to follow a chain of redirects.
   void Restart() {
+    // Clear |url_loader_| if it's not the default one (network). This allows
+    // the restarted request to use a new loader, instead of, e.g., reusing the
+    // AppCache or service worker loader. For an optimization, we keep and reuse
+    // the default url loader if the all |handlers_| doesn't handle the
+    // redirected request.
+    if (!default_loader_used_)
+      url_loader_.reset();
     handler_index_ = 0;
     received_response_ = false;
     MaybeStartLoader(StartLoaderCallback());
