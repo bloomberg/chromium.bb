@@ -7,10 +7,7 @@
 
 #include <memory>
 
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace vr_shell {
@@ -31,8 +28,9 @@ enum class VRMode {
 class SessionTimer {
  public:
   virtual ~SessionTimer() {}
-  void StartSession(base::Time startTime);
-  void StopSession(bool continuable, base::Time stopTime);
+
+  void StartSession(base::Time start_time);
+  void StopSession(bool continuable, base::Time stop_time);
 
  protected:
   SessionTimer() {}
@@ -53,11 +51,12 @@ class SessionTimer {
   DISALLOW_COPY_AND_ASSIGN(SessionTimer);
 };
 
-// This class is not threadsafe and must only be used from the main thread.
+// This class is not thread-safe and must only be used from the main thread.
 class VrMetricsHelper : public content::WebContentsObserver {
  public:
-  explicit VrMetricsHelper(content::WebContents*);
+  explicit VrMetricsHelper(content::WebContents* contents);
   ~VrMetricsHelper() override;
+
   void SetWebVREnabled(bool is_webvr_presenting);
   void SetVRActive(bool is_vr_enabled);
 
@@ -67,7 +66,7 @@ class VrMetricsHelper : public content::WebContentsObserver {
                            const MediaPlayerId&) override;
   void MediaStoppedPlaying(const MediaPlayerInfo& media_info,
                            const MediaPlayerId&) override;
-  void DidFinishNavigation(content::NavigationHandle*) override;
+  void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
 
