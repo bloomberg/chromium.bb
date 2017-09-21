@@ -78,6 +78,8 @@ class PrefService;
   [self.browser->broadcaster()
       stopBroadcastingForSelector:@selector(broadcastSelectedNTPPanel:)];
   [self.dispatcher stopDispatchingToTarget:self];
+  [self.dispatcher
+      deregisterMetricsRecordingForSelector:@selector(showNTPHomePanel)];
 }
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)coordinator {
