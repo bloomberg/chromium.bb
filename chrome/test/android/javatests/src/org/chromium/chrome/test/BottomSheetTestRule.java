@@ -6,7 +6,6 @@ package org.chromium.chrome.test;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE;
-import static org.chromium.chrome.test.BottomSheetTestRule.ENABLE_CHROME_HOME;
 import static org.chromium.chrome.test.ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG;
 
 import android.support.test.InstrumentationRegistry;
@@ -16,19 +15,18 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.chrome.test.util.browser.ChromeHome;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 
 /**
  * Junit4 rule for tests testing the Chrome Home bottom sheet.
  */
-@CommandLineFlags.Add({ENABLE_CHROME_HOME, DISABLE_FIRST_RUN_EXPERIENCE,
+@CommandLineFlags.Add({ChromeHome.ENABLE_FLAGS, DISABLE_FIRST_RUN_EXPERIENCE,
         DISABLE_NETWORK_PREDICTION_FLAG})
 public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     /** An observer used to record events that occur with respect to the bottom sheet. */
@@ -92,23 +90,15 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         }
     }
 
-    public static final String ENABLE_CHROME_HOME =
-            "enable-features=" + ChromeFeatureList.CHROME_HOME;
-
     /** A handle to the sheet's observer. */
     private Observer mObserver;
 
-    private boolean mOldChromeHomeFlagValue;
+    private ChromeHome.Processor mChromeHomeEnabler = new ChromeHome.Processor();
 
     private @BottomSheet.SheetState int mStartingBottomSheetState = BottomSheet.SHEET_STATE_FULL;
 
     protected void beforeStartingActivity() {
-        // Chrome relies on a shared preference to determine if the ChromeHome feature is enabled
-        // during start up, so we need to manually set the preference to enable ChromeHome before
-        // starting Chrome.
-        ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-        mOldChromeHomeFlagValue = prefManager.isChromeHomeEnabled();
-        prefManager.setChromeHomeEnabled(true);
+        mChromeHomeEnabler.setPrefs(true);
     }
 
     protected void afterStartingActivity() {
@@ -128,7 +118,7 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
     @Override
     protected void afterActivityFinished() {
         super.afterActivityFinished();
-        ChromePreferenceManager.getInstance().setChromeHomeEnabled(mOldChromeHomeFlagValue);
+        mChromeHomeEnabler.clearTestState();
     }
 
     public void startMainActivityOnBottomSheet(@BottomSheet.SheetState int startingSheetState)
