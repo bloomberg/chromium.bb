@@ -100,7 +100,7 @@ void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
 }
 
 void BindTabletModeRequestOnMainThread(
-    mojom::TabletModeManagerRequest request) {
+    mojom::TabletModeControllerRequest request) {
   Shell::Get()->tablet_mode_controller()->BindRequest(std::move(request));
 }
 

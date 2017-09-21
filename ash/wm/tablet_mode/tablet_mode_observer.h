@@ -9,7 +9,8 @@
 
 namespace ash {
 
-// Used to observe tablet mode changes.
+// Used to observe tablet mode changes inside ash. Exported for tests.
+// NOTE: Code in chrome should use TabletModeClientObserver.
 class ASH_EXPORT TabletModeObserver {
  public:
   // Called when the tablet mode has started. Windows might still be animating

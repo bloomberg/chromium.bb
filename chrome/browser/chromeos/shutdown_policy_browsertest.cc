@@ -251,6 +251,11 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
     WaitUntilOobeUIIsReady(web_ui_screen_locker->GetOobeUI());
   }
 
+  void TearDownOnMainThread() override {
+    ScreenLocker::Hide();
+    ShutdownPolicyBaseTest::TearDownOnMainThread();
+  }
+
  private:
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
   FakeSessionManagerClient* fake_session_manager_client_;

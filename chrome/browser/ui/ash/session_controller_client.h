@@ -138,7 +138,8 @@ class SessionControllerClient
   // Binds to the client interface.
   mojo::Binding<ash::mojom::SessionControllerClient> binding_;
 
-  // SessionController interface in ash.
+  // SessionController interface in ash. Holding the interface pointer keeps the
+  // pipe alive to receive mojo return values.
   ash::mojom::SessionControllerPtr session_controller_;
 
   // Whether the primary user session info is sent to ash.

@@ -4,16 +4,15 @@
 
 module ash.mojom;
 
-// Used to listen for when TabletMode is toggled.
-interface TabletModeObserver {
-  // This is fired after the tablet mode has been toggled.
+// Controls tablet mode state in a client app (e.g. chrome).
+interface TabletModeClient {
+  // Fired after the tablet mode has been toggled.
   OnTabletModeToggled(bool enabled);
 };
 
-// Accepts observers which are notified of the current state of TabletMode, and
-// of all future state changes.
-interface TabletModeManager {
-  // Calling this method triggers an initial notification of the tablet mode
-  // state. Observers are automatically removed as their connections are closed.
-  AddObserver(TabletModeObserver observer);
+// Controls tablet mode state in ash.
+interface TabletModeController {
+  // Sets a client (e.g. chrome). Triggers OnTabletModeToggled() to provide
+  // the initial state.
+  SetClient(TabletModeClient client);
 };
