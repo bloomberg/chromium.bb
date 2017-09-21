@@ -92,13 +92,6 @@ using content::BrowserThread;
 
 namespace {
 
-// Events for UMA. Do not reorder or change!
-enum SSLCertificateDecisionsDidRevoke {
-  USER_CERT_DECISIONS_NOT_REVOKED = 0,
-  USER_CERT_DECISIONS_REVOKED,
-  END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM
-};
-
 // The list of content settings types to display on the Page Info UI. THE
 // ORDER OF THESE ITEMS IS IMPORTANT and comes from https://crbug.com/610358. To
 // propose changing it, email security-dev@chromium.org.
@@ -337,13 +330,23 @@ PageInfo::PageInfo(PageInfoUI* ui,
   RecordPageInfoAction(PAGE_INFO_OPENED);
 }
 
-PageInfo::~PageInfo() {}
+PageInfo::~PageInfo() {
+  // Check if Re-enable warnings button was visible, if so, log on UMA whether
+  // it was clicked or not.
+  SSLCertificateDecisionsDidRevoke user_decision =
+      did_revoke_user_ssl_decisions_ ? USER_CERT_DECISIONS_REVOKED
+                                     : USER_CERT_DECISIONS_NOT_REVOKED;
+  if (show_ssl_decision_revoke_button_) {
+    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.did_user_revoke_decisions2",
+                              user_decision,
+                              END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM);
+  }
+}
 
 void PageInfo::RecordPageInfoAction(PageInfoAction action) {
   UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action", action, PAGE_INFO_COUNT);
 
   std::string histogram_name;
-
   if (site_url_.SchemeIsCryptographic()) {
     if (security_level_ == security_state::SECURE ||
         security_level_ == security_state::EV_SECURE) {
@@ -425,7 +428,6 @@ void PageInfo::OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
   ChooserContextBase* context = ui_info.get_context(profile_);
   const GURL origin = site_url_.GetOrigin();
   context->RevokeObjectPermission(origin, origin, object);
-
   show_info_bar_ = true;
 
   // Refresh the UI to reflect the changed settings.
@@ -446,14 +448,6 @@ void PageInfo::OnUIClosing() {
     if (infobar_service)
       PageInfoInfoBarDelegate::Create(infobar_service);
   }
-
-  SSLCertificateDecisionsDidRevoke user_decision =
-      did_revoke_user_ssl_decisions_ ? USER_CERT_DECISIONS_REVOKED
-                                     : USER_CERT_DECISIONS_NOT_REVOKED;
-
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.did_user_revoke_decisions",
-                            user_decision,
-                            END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM);
 #endif
 }
 

@@ -92,6 +92,14 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     SITE_IDENTITY_STATUS_PASSWORD_REUSE,
   };
 
+  // Events for UMA. Do not reorder or change! Exposed in header so enum is
+  // accessible from test.
+  enum SSLCertificateDecisionsDidRevoke {
+    USER_CERT_DECISIONS_NOT_REVOKED = 0,
+    USER_CERT_DECISIONS_REVOKED = 1,
+    END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM
+  };
+
   // UMA statistics for PageInfo. Do not reorder or remove existing
   // fields. A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.page_info
