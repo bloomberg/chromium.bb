@@ -51,6 +51,7 @@ const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
     "{{arflags}}",  // SUBSTITUTION_ARFLAGS
 
     "{{bundle_root_dir}}",            // SUBSTITUTION_BUNDLE_ROOT_DIR
+    "{{bundle_contents_dir}}",        // SUBSTITUTION_BUNDLE_CONTENTS_DIR
     "{{bundle_resources_dir}}",       // SUBSTITUTION_BUNDLE_RESOURCES_DIR
     "{{bundle_executable_dir}}",      // SUBSTITUTION_BUNDLE_EXECUTABLE_DIR
     "{{bundle_plugins_dir}}",         // SUBSTITUTION_BUNDLE_PLUGINS_DIR
@@ -105,6 +106,7 @@ const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
     "arflags",  // SUBSTITUTION_ARFLAGS
 
     "bundle_root_dir",        // SUBSTITUTION_BUNDLE_ROOT_DIR
+    "bundle_contents_dir",    // SUBSTITUTION_BUNDLE_CONTENTS_DIR
     "bundle_resources_dir",   // SUBSTITUTION_BUNDLE_RESOURCES_DIR
     "bundle_executable_dir",  // SUBSTITUTION_BUNDLE_EXECUTABLE_DIR
     "bundle_plugins_dir",     // SUBSTITUTION_BUNDLE_PLUGINS_DIR
@@ -140,6 +142,7 @@ bool SubstitutionIsInOutputDir(SubstitutionType type) {
 
 bool SubstitutionIsInBundleDir(SubstitutionType type) {
   return type == SUBSTITUTION_BUNDLE_ROOT_DIR ||
+         type == SUBSTITUTION_BUNDLE_CONTENTS_DIR ||
          type == SUBSTITUTION_BUNDLE_RESOURCES_DIR ||
          type == SUBSTITUTION_BUNDLE_EXECUTABLE_DIR ||
          type == SUBSTITUTION_BUNDLE_PLUGINS_DIR;
@@ -151,6 +154,7 @@ bool IsValidBundleDataSubstitution(SubstitutionType type) {
          type == SUBSTITUTION_SOURCE_FILE_PART ||
          type == SUBSTITUTION_SOURCE_ROOT_RELATIVE_DIR ||
          type == SUBSTITUTION_BUNDLE_ROOT_DIR ||
+         type == SUBSTITUTION_BUNDLE_CONTENTS_DIR ||
          type == SUBSTITUTION_BUNDLE_RESOURCES_DIR ||
          type == SUBSTITUTION_BUNDLE_EXECUTABLE_DIR ||
          type == SUBSTITUTION_BUNDLE_PLUGINS_DIR;

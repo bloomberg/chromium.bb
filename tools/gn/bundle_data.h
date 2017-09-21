@@ -88,6 +88,9 @@ class BundleData {
   SourceDir& root_dir() { return root_dir_; }
   const SourceDir& root_dir() const { return root_dir_; }
 
+  SourceDir& contents_dir() { return contents_dir_; }
+  const SourceDir& contents_dir() const { return contents_dir_; }
+
   SourceDir& resources_dir() { return resources_dir_; }
   const SourceDir& resources_dir() const { return resources_dir_; }
 
@@ -159,8 +162,9 @@ class BundleData {
   std::vector<LabelPattern> bundle_deps_filter_;
 
   // All those values are subdirectories relative to root_build_dir, and apart
-  // from root_dir, they are either equal to root_dir_ or subdirectories of it.
+  // from root_dir_, they are either equal to root_dir_ or subdirectories of it.
   SourceDir root_dir_;
+  SourceDir contents_dir_;
   SourceDir resources_dir_;
   SourceDir executable_dir_;
   SourceDir plugins_dir_;
