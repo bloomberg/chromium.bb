@@ -85,6 +85,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   gfx::Rect popup_bounds() const override;
   gfx::NativeView container_view() override;
   const gfx::RectF& element_bounds() const override;
+  void SetElementBounds(const gfx::RectF& bounds);
   bool IsRTL() const override;
   const std::vector<autofill::Suggestion> GetSuggestions() override;
 #if !defined(OS_ANDROID)
@@ -135,7 +136,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // Contains common popup functionality such as popup layout. Protected for
   // testing.
-  const PopupControllerCommon controller_common_;
+  PopupControllerCommon controller_common_;
 
  private:
 #if !defined(OS_ANDROID)
