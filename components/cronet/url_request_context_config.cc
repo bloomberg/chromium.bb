@@ -48,7 +48,6 @@ const char kQuicMaxServerConfigsStoredInProperties[] =
     "max_server_configs_stored_in_properties";
 const char kQuicIdleConnectionTimeoutSeconds[] =
     "idle_connection_timeout_seconds";
-const char kQuicCloseSessionsOnIpChange[] = "close_sessions_on_ip_change";
 const char kQuicMigrateSessionsOnNetworkChange[] =
     "migrate_sessions_on_network_change";
 const char kQuicUserAgentId[] = "user_agent_id";
@@ -245,13 +244,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                 &quic_idle_connection_timeout_seconds)) {
         session_params->quic_idle_connection_timeout_seconds =
             quic_idle_connection_timeout_seconds;
-      }
-
-      bool quic_close_sessions_on_ip_change = false;
-      if (quic_args->GetBoolean(kQuicCloseSessionsOnIpChange,
-                                &quic_close_sessions_on_ip_change)) {
-        session_params->quic_close_sessions_on_ip_change =
-            quic_close_sessions_on_ip_change;
       }
 
       bool quic_migrate_sessions_on_network_change = false;
