@@ -17,6 +17,7 @@
 
 class CookieInfoView;
 class CookiesTreeModel;
+class CookiesTreeViewDrawingProvider;
 class InfobarView;
 
 namespace content {
@@ -109,6 +110,9 @@ class CollectedCookiesViews : public views::DialogDelegateView,
 
   std::unique_ptr<CookiesTreeModel> allowed_cookies_tree_model_;
   std::unique_ptr<CookiesTreeModel> blocked_cookies_tree_model_;
+
+  CookiesTreeViewDrawingProvider* allowed_cookies_drawing_provider_;
+  CookiesTreeViewDrawingProvider* blocked_cookies_drawing_provider_;
 
   CookieInfoView* cookie_info_view_;
 

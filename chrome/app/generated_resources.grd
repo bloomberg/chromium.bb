@@ -7587,6 +7587,12 @@ I don't think this site should be blocked!
       <message name="IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_TAB_LABEL" desc="The label in a tabbed pane that holds the UI controls for the cookies blocked while loading the page.">
         Blocked
       </message>
+      <message name="IDS_COLLECTED_COOKIES_ALLOWED_AUX_TEXT" desc="The text used to label a cookie which has been marked as allowed.">
+        Allowed
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_BLOCKED_AUX_TEXT" desc="The text used to label a cookie which has been marked as blocked.">
+        Blocked
+      </message>
       <message name="IDS_COLLECTED_COOKIES_INFOBAR_MESSAGE" desc="The string shown in the infobar after the user has changed the allowed/blocked state of a cookie, reminding them to reload the page in order for the new cookies to take effect.">
         New cookie settings will take effect after reloading the page.
       </message>

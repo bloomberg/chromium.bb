@@ -91,6 +91,50 @@ void StartNewButtonColumnSet(views::GridLayout* layout,
 
 }  // namespace
 
+// This DrawingProvider keeps track of a set of ui::TreeModelNode*s which are
+// considered "invalidated", and marks them as such by lightening their text
+// color and adding auxiliary text to them.
+class CookiesTreeViewDrawingProvider : public views::TreeViewDrawingProvider {
+ public:
+  explicit CookiesTreeViewDrawingProvider(
+      const base::string16& invalidated_text)
+      : invalidated_text_(invalidated_text) {}
+  ~CookiesTreeViewDrawingProvider() override {}
+
+  void MarkNodeAsInvalidated(ui::TreeModelNode* node);
+
+  SkColor GetTextColorForNode(views::TreeView* tree_view,
+                              ui::TreeModelNode* node) override;
+  base::string16 GetAuxiliaryTextForNode(views::TreeView* tree_view,
+                                         ui::TreeModelNode* node) override;
+
+ private:
+  base::string16 invalidated_text_;
+  std::set<ui::TreeModelNode*> invalidated_nodes_;
+};
+
+void CookiesTreeViewDrawingProvider::MarkNodeAsInvalidated(
+    ui::TreeModelNode* node) {
+  invalidated_nodes_.insert(node);
+}
+
+SkColor CookiesTreeViewDrawingProvider::GetTextColorForNode(
+    views::TreeView* tree_view,
+    ui::TreeModelNode* node) {
+  SkColor color = TreeViewDrawingProvider::GetTextColorForNode(tree_view, node);
+  if (invalidated_nodes_.find(node) != invalidated_nodes_.end())
+    color = SkColorSetA(color, 0x80);
+  return color;
+}
+
+base::string16 CookiesTreeViewDrawingProvider::GetAuxiliaryTextForNode(
+    views::TreeView* tree_view,
+    ui::TreeModelNode* node) {
+  if (invalidated_nodes_.find(node) != invalidated_nodes_.end())
+    return invalidated_text_;
+  return TreeViewDrawingProvider::GetAuxiliaryTextForNode(tree_view, node);
+}
+
 // A custom view that conditionally displays an infobar.
 class InfobarView : public views::View {
  public:
@@ -368,8 +412,14 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
 
   allowed_cookies_tree_model_ =
       content_settings->allowed_local_shared_objects().CreateCookiesTreeModel();
+  std::unique_ptr<CookiesTreeViewDrawingProvider> allowed_drawing_provider =
+      base::MakeUnique<CookiesTreeViewDrawingProvider>(
+          l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCKED_AUX_TEXT));
+  allowed_cookies_drawing_provider_ = allowed_drawing_provider.get();
   allowed_cookies_tree_ = new views::TreeView();
   allowed_cookies_tree_->SetModel(allowed_cookies_tree_model_.get());
+  allowed_cookies_tree_->SetDrawingProvider(
+      std::move(allowed_drawing_provider));
   allowed_cookies_tree_->SetRootShown(false);
   allowed_cookies_tree_->SetEditable(false);
   allowed_cookies_tree_->set_auto_expand_children(true);
@@ -435,8 +485,14 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   blocked_label_->SizeToFit(kTreeViewWidth);
   blocked_cookies_tree_model_ =
       content_settings->blocked_local_shared_objects().CreateCookiesTreeModel();
+  std::unique_ptr<CookiesTreeViewDrawingProvider> blocked_drawing_provider =
+      base::MakeUnique<CookiesTreeViewDrawingProvider>(
+          l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOWED_AUX_TEXT));
+  blocked_cookies_drawing_provider_ = blocked_drawing_provider.get();
   blocked_cookies_tree_ = new views::TreeView();
   blocked_cookies_tree_->SetModel(blocked_cookies_tree_model_.get());
+  blocked_cookies_tree_->SetDrawingProvider(
+      std::move(blocked_drawing_provider));
   blocked_cookies_tree_->SetRootShown(false);
   blocked_cookies_tree_->SetEditable(false);
   blocked_cookies_tree_->set_auto_expand_children(true);
@@ -551,6 +607,12 @@ void CollectedCookiesViews::AddContentException(views::TreeView* tree_view,
       CookieSettingsFactory::GetForProfile(profile).get(), setting);
   infobar_->UpdateVisibility(true, setting, host_node->GetTitle());
   status_changed_ = true;
+
+  CookiesTreeViewDrawingProvider* provider =
+      (tree_view == allowed_cookies_tree_) ? allowed_cookies_drawing_provider_
+                                           : blocked_cookies_drawing_provider_;
+  provider->MarkNodeAsInvalidated(tree_view->GetSelectedNode());
+  tree_view->SchedulePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
