@@ -45,15 +45,14 @@ RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
       base::MakeUnique<ProtoDatabaseImpl<SnippetImageProto>>(file_task_runner);
 
   base::FilePath snippet_dir = database_dir.AppendASCII(kSnippetDatabaseFolder);
-  leveldb_env::Options options;
+  leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
   options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
-  database_->InitWithOptions(
-      kDatabaseUMAClientName, snippet_dir, options,
-      base::Bind(&RemoteSuggestionsDatabase::OnDatabaseInited,
-                 weak_ptr_factory_.GetWeakPtr()));
+  database_->Init(kDatabaseUMAClientName, snippet_dir, options,
+                  base::Bind(&RemoteSuggestionsDatabase::OnDatabaseInited,
+                             weak_ptr_factory_.GetWeakPtr()));
 
   base::FilePath image_dir = database_dir.AppendASCII(kImageDatabaseFolder);
-  image_database_->InitWithOptions(
+  image_database_->Init(
       kImageDatabaseUMAClientName, image_dir, options,
       base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseInited,
                  weak_ptr_factory_.GetWeakPtr()));
