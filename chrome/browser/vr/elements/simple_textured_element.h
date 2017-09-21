@@ -14,7 +14,7 @@
 #include "chrome/browser/vr/elements/insecure_content_permanent_texture.h"
 #include "chrome/browser/vr/elements/insecure_content_transient_texture.h"
 #include "chrome/browser/vr/elements/textured_element.h"
-#include "chrome/browser/vr/elements/transience_manager.h"
+#include "chrome/browser/vr/elements/transient_element.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
 
 namespace vr {
@@ -39,29 +39,10 @@ class SimpleTexturedElement : public TexturedElement {
   DISALLOW_COPY_AND_ASSIGN(SimpleTexturedElement);
 };
 
-template <class T>
-class TransientSimpleTexturedElement : public SimpleTexturedElement<T> {
- public:
-  TransientSimpleTexturedElement(int maximum_width,
-                                 const base::TimeDelta& timeout)
-      : SimpleTexturedElement<T>(maximum_width), transience_(this, timeout) {}
-
-  ~TransientSimpleTexturedElement() override {}
-
-  void SetVisible(bool visible) override { transience_.SetVisible(visible); }
-
-  TransienceManager* transience() { return &transience_; }
-
- private:
-  TransienceManager transience_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransientSimpleTexturedElement);
-};
-
 typedef SimpleTexturedElement<ExitWarningTexture> ExitWarning;
 typedef SimpleTexturedElement<InsecureContentPermanentTexture>
     PermanentSecurityWarning;
-typedef TransientSimpleTexturedElement<InsecureContentTransientTexture>
+typedef SimpleTexturedElement<InsecureContentTransientTexture>
     TransientSecurityWarning;
 
 }  // namespace vr
