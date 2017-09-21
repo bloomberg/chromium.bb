@@ -6,11 +6,8 @@
 
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/usb/usb_service.h"
-
-#if !defined(OS_ANDROID)
 #include "device/hid/hid_service.h"
-#endif
+#include "device/usb/usb_service.h"
 
 using content::BrowserThread;
 
@@ -25,11 +22,11 @@ device::UsbService* ChromeDeviceClient::GetUsbService() {
   return usb_service_.get();
 }
 
-#if !defined(OS_ANDROID)
 device::HidService* ChromeDeviceClient::GetHidService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if !defined(OS_ANDROID)
   if (!hid_service_)
     hid_service_ = device::HidService::Create();
+#endif
   return hid_service_.get();
 }
-#endif
