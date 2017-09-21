@@ -20338,6 +20338,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="IdleSocketFate">
+  <obsolete>
+    Deprecated as of 9/2017.
+  </obsolete>
   <int value="0" label="Reuse: Reused">
     Reusing an idle socket that is previously used.
   </int>

@@ -43033,6 +43033,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.Socket.IdleSocketFate" enum="IdleSocketFate">
+  <obsolete>
+    Deprecated as of 9/2017.
+  </obsolete>
   <owner>xunjieli@chromium.org</owner>
   <summary>
     Whether an idle socket is reused, timed out, or closed to make room for new
