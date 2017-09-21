@@ -202,12 +202,6 @@ Tree: v1.4.0
 Revision: 1d1c9439fe3a056356233e04171fd9c62f0857fb
 Tree link: https://github.com/PolymerElements/paper-checkbox/tree/v1.4.0
 
-Name: paper-drawer-panel
-Repository: https://github.com/PolymerElements/paper-drawer-panel.git
-Tree: v1.0.10
-Revision: 34c1d82dc3048dff33c83047bfaa95414e36d673
-Tree link: https://github.com/PolymerElements/paper-drawer-panel/tree/v1.0.10
-
 Name: paper-fab
 Repository: https://github.com/PolymerElements/paper-fab.git
 Tree: v1.2.0
