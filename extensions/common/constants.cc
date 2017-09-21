@@ -4,6 +4,8 @@
 
 #include "extensions/common/constants.h"
 
+#include "ipc/ipc_message.h"
+
 namespace extensions {
 
 const char kExtensionScheme[] = "chrome-extension";
@@ -86,6 +88,7 @@ const size_t kWebstoreSignaturesPublicKeySize =
     arraysize(kWebstoreSignaturesPublicKey);
 
 const int kMainThreadId = 0;
+const int kIgnoreRoutingId = MSG_ROUTING_NONE;
 
 const char kMimeTypeJpeg[] = "image/jpeg";
 const char kMimeTypePng[] = "image/png";
