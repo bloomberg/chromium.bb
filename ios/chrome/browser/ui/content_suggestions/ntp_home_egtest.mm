@@ -82,7 +82,14 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 @implementation NTPHomeTestCase
 
 + (void)setUp {
-  [super setUp];
+  if (IsIPadIdiom()) {
+    [super setUp];
+    // Make sure we are on the Home panel on iPad.
+    chrome_test_util::OpenNewTab();
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        performAction:grey_typeText(@"chrome://newtab/#most_visited\n")];
+  }
+
   [self closeAllTabs];
   ios::ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
@@ -268,9 +275,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that the promo is correctly displayed and removed once tapped.
 - (void)testPromoTap {
-  // TODO(crbug.com/767095): Enable this test.
-  EARL_GREY_TEST_DISABLED(@"Test disabled.");
-
   // Setup the promo.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults setInteger:experimental_flags::WHATS_NEW_APP_RATING
@@ -302,9 +306,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Tests that the position of the collection view is restored when navigating
 // back to the NTP.
 - (void)testPositionRestored {
-  // TODO(crbug.com/767095): Enable this test.
-  EARL_GREY_TEST_DISABLED(@"Test disabled.");
-
   [self addMostVisitedTile];
 
   // Add suggestions to be able to scroll on iPad.
@@ -342,9 +343,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // and moved up, the scroll position restored is the position before the omnibox
 // is selected.
 - (void)testPositionRestoredWithOmniboxFocused {
-  // TODO(crbug.com/767095): Enable this test.
-  EARL_GREY_TEST_DISABLED(@"Test disabled.");
-
   [self addMostVisitedTile];
 
   // Add suggestions to be able to scroll on iPad.
@@ -385,9 +383,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that tapping the fake omnibox focuses the real omnibox.
 - (void)testTapFakeOmnibox {
-  // TODO(crbug.com/767095): Enable this test.
-  EARL_GREY_TEST_DISABLED(@"Test disabled.");
-
   // Setup the server.
   self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
@@ -405,9 +400,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that tapping the fake omnibox moves the collection.
 - (void)testTapFakeOmniboxScroll {
-  // TODO(crbug.com/767095): Enable this test.
-  EARL_GREY_TEST_DISABLED(@"Test disabled.");
-
   // Get the collection and its layout.
   UIView* collection = ntp_home::CollectionView();
   GREYAssertTrue([collection isKindOfClass:[UICollectionView class]],
@@ -463,9 +455,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Tests that tapping the fake omnibox then unfocusing it moves the collection
 // back to where it was.
 - (void)testTapFakeOmniboxScrollScrolled {
-  // TODO(crbug.com/767095): Enable this test.
-  EARL_GREY_TEST_DISABLED(@"Test disabled.");
-
   // Get the collection and its layout.
   UIView* collection = ntp_home::CollectionView();
   GREYAssertTrue([collection isKindOfClass:[UICollectionView class]],
