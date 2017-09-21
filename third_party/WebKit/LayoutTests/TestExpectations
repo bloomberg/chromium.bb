@@ -3744,3 +3744,4 @@ crbug.com/767091 [ Mac10.12 ] http/tests/security/link-crossorigin-preload-use-c
 
 # Sheriff failures 2017-09-21
 crbug.com/767012 [ Win10 ] http/tests/devtools/startup/console-log-before-frame-navigation.html [ Pass Timeout ]
+crbug.com/767469 [ Linux Mac ] virtual/stable/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
