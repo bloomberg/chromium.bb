@@ -35,6 +35,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 
+#if !defined(OS_NACL)  // crbug/744734
+#include "base/trace_event/freed_object_tracker.h"
+#include "base/trace_event/heap_profiler_allocation_context.h"
+#endif
+
 namespace base {
 
 namespace {
@@ -583,10 +588,42 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
     return is_valid;
 
   // Abort if a problem is found (except "flags", which could legally be zero).
-  const std::string debug_string = base::StringPrintf(
+  std::string debug_string = base::StringPrintf(
       "%s/%" PRIu32 "#%d", histogram_name().c_str(), bad_fields, identifier);
 #if !defined(OS_NACL)
-  // Temporary for https://crbug.com/736675.
+  base::trace_event::AllocationRegister::Allocation allocation;
+  if (base::trace_event::FreedObjectTracker::GetInstance()->Get(this,
+                                                                &allocation)) {
+    debug_string.reserve(10000);
+    if (allocation.context.type_name) {
+      debug_string += " (";
+      debug_string += allocation.context.type_name;
+      debug_string += ")";
+    }
+    for (size_t i = 0; i < allocation.context.backtrace.frame_count; ++i) {
+      base::trace_event::StackFrame& frame =
+          allocation.context.backtrace.frames[i];
+      switch (frame.type) {
+        case base::trace_event::StackFrame::Type::TRACE_EVENT_NAME:
+          debug_string += " EV=\"";
+          debug_string += static_cast<const char*>(frame.value);
+          debug_string += "\"";
+          break;
+        case base::trace_event::StackFrame::Type::THREAD_NAME:
+          debug_string += " T=\"";
+          debug_string += static_cast<const char*>(frame.value);
+          debug_string += "\"";
+          break;
+        case base::trace_event::StackFrame::Type::PROGRAM_COUNTER:
+          debug_string += " PC:";
+          debug_string += StringPrintf(
+              "%08" PRIXPTR, reinterpret_cast<uintptr_t>(frame.value));
+          break;
+      }
+    }
+  } else {
+    debug_string += " [no previous allocation]";
+  }
   base::debug::ScopedCrashKey crash_key("bad_histogram", debug_string);
 #endif
   CHECK(false) << debug_string;
