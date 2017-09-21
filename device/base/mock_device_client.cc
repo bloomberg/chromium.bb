@@ -4,8 +4,12 @@
 
 #include "device/base/mock_device_client.h"
 
-#include "device/hid/mock_hid_service.h"
+#include "base/logging.h"
 #include "device/usb/mock_usb_service.h"
+
+#if !defined(OS_ANDROID)
+#include "device/hid/mock_hid_service.h"
+#endif
 
 namespace device {
 
@@ -14,7 +18,12 @@ MockDeviceClient::MockDeviceClient() {}
 MockDeviceClient::~MockDeviceClient() {}
 
 HidService* MockDeviceClient::GetHidService() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+  return nullptr;
+#else
   return hid_service();
+#endif
 }
 
 UsbService* MockDeviceClient::GetUsbService() {
@@ -22,9 +31,14 @@ UsbService* MockDeviceClient::GetUsbService() {
 }
 
 MockHidService* MockDeviceClient::hid_service() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+  return nullptr;
+#else
   if (!hid_service_)
     hid_service_.reset(new MockHidService());
   return hid_service_.get();
+#endif
 }
 
 MockUsbService* MockDeviceClient::usb_service() {
