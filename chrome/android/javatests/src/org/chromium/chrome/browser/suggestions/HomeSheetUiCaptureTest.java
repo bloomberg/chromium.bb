@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.suggestions;
 
 import static org.junit.Assert.assertNotEquals;
 
-import static org.chromium.chrome.test.BottomSheetTestRule.ENABLE_CHROME_HOME;
 import static org.chromium.chrome.test.BottomSheetTestRule.waitForWindowUpdates;
 
 import android.support.test.filters.MediumTest;
@@ -29,6 +28,7 @@ import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.ChromeHome;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.ui.test.util.UiRestriction;
@@ -40,7 +40,7 @@ import org.chromium.ui.test.util.UiRestriction;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 // TODO(https://crbug.com/754778) improve annotation processor. We need to remove the currently
 // registered Feature flags to be able to change them later.
-@CommandLineFlags.Remove(ENABLE_CHROME_HOME)
+@CommandLineFlags.Remove(ChromeHome.ENABLE_FLAGS)
 @ScreenShooter.Directory("HomeSheetStates")
 public class HomeSheetUiCaptureTest {
     @Rule
@@ -66,9 +66,10 @@ public class HomeSheetUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    @CommandLineParameter({ENABLE_CHROME_HOME,
-            "enable-features=" + ChromeFeatureList.CHROME_HOME + ","
-                    + ChromeFeatureList.ANDROID_SIGNIN_PROMOS})
+    @CommandLineParameter({
+            ChromeHome.ENABLE_FLAGS,
+            "enable-features=" + ChromeHome.FEATURES + "," + ChromeFeatureList.ANDROID_SIGNIN_PROMOS
+    })
     @ScreenShooter.Directory("SignInPromo")
     public void testSignInPromo() {
         // Needs to be "Full" to for this to work on small screens in landscape.
@@ -85,7 +86,7 @@ public class HomeSheetUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    @CommandLineFlags.Add(ENABLE_CHROME_HOME)
+    @CommandLineFlags.Add(ChromeHome.ENABLE_FLAGS)
     @ScreenShooter.Directory("AllDismissed")
     public void testAllDismissed() {
         NewTabPageAdapter adapter = mActivityRule.getAdapter();

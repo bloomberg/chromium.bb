@@ -45,8 +45,7 @@ import java.util.concurrent.TimeoutException;
  * Tests for the NTP UI displayed when Chrome Home is enabled.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({BottomSheetTestRule.ENABLE_CHROME_HOME,
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         BottomSheetTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class BottomSheetNewTabControllerTest {
