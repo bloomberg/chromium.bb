@@ -278,7 +278,9 @@ bool NativeWidgetMac::SetWindowTitle(const base::string16& title) {
 
 void NativeWidgetMac::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                      const gfx::ImageSkia& app_icon) {
-  NOTIMPLEMENTED();
+  // Per-window icons are not really a thing on Mac, so do nothing.
+  // TODO(tapted): Investigate whether to use NSWindowDocumentIconButton to set
+  // an icon next to the window title. See http://crbug.com/766897.
 }
 
 void NativeWidgetMac::InitModalType(ui::ModalType modal_type) {
@@ -326,7 +328,11 @@ void NativeWidgetMac::SetSize(const gfx::Size& size) {
 }
 
 void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
+  // NativeWidgetMac currently only has machinery for stacking windows, and only
+  // stacks child windows above parents. That's currently all this is used for.
+  // DCHECK if a new use case comes along.
+  DCHECK(bridge_ && bridge_->parent());
+  DCHECK_EQ([native_view window], bridge_->parent()->GetNSWindow());
 }
 
 void NativeWidgetMac::StackAtTop() {
