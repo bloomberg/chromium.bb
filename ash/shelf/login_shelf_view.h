@@ -56,9 +56,6 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
 
  private:
-  // Creates and initializes the buttons shown on the login shelf.
-  void AddButton(ButtonId button_id, base::string16 text, gfx::ImageSkia image);
-
   // Updates the visibility of buttons based on state changes, e.g. shutdown
   // policy updates, session state changes etc.
   void UpdateUi();

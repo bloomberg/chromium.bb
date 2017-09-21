@@ -10303,9 +10303,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
             <message name="IDS_CREATE_LEGACY_SUPERVISED_USER_MENU_LABEL" desc="Text shown on a menu option that creates a legacy supervised user.">
               Add Supervised User
             </message>
-            <message name="IDS_SCREEN_LOCK_UNLOCK_USER_BUTTON" desc="Text shown on unlock user button on lock screen.">
-              Unlock
-            </message>
           </if>
           <message name="IDS_SCREEN_LOCK_SIGN_OUT">
             Sign out
@@ -10329,9 +10326,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
             </message>
             <message name="IDS_CREATE_LEGACY_SUPERVISED_USER_MENU_LABEL" desc="Text shown on a menu option that creates a legacy supervised user.">
               Add supervised user
-            </message>
-            <message name="IDS_SCREEN_LOCK_UNLOCK_USER_BUTTON" desc="Text shown on unlock user button on lock screen.">
-              Unlock
             </message>
           </if>
           <message name="IDS_SCREEN_LOCK_SIGN_OUT">

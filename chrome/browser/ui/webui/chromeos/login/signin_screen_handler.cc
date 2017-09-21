@@ -15,6 +15,7 @@
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
@@ -89,7 +90,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/screenlock_bridge.h"
-#include "components/strings/grit/components_strings.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -345,16 +345,16 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_POD_SUBMIT_BUTTON_ACCESSIBLE_NAME);
   builder->Add("signedIn", IDS_SCREEN_LOCK_ACTIVE_USER);
   builder->Add("launchAppButton", IDS_LAUNCH_APP_BUTTON);
-  builder->Add("restart", IDS_RESTART_BUTTON);
-  builder->Add("shutDown", IDS_SHUTDOWN_BUTTON);
+  builder->Add("restart", IDS_ASH_SHELF_RESTART_BUTTON);
+  builder->Add("shutDown", IDS_ASH_SHELF_SHUTDOWN_BUTTON);
   builder->Add("addUser", IDS_ADD_USER_BUTTON);
   builder->Add("browseAsGuest", IDS_BROWSE_AS_GUEST_BUTTON);
   builder->Add("moreOptions", IDS_MORE_OPTIONS_BUTTON);
   builder->Add("addSupervisedUser",
                IDS_CREATE_LEGACY_SUPERVISED_USER_MENU_LABEL);
-  builder->Add("cancel", IDS_CANCEL);
-  builder->Add("signOutUser", IDS_SCREEN_LOCK_SIGN_OUT);
-  builder->Add("unlockUser", IDS_SCREEN_LOCK_UNLOCK_USER_BUTTON);
+  builder->Add("cancel", IDS_ASH_SHELF_CANCEL_BUTTON);
+  builder->Add("signOutUser", IDS_ASH_SHELF_SIGN_OUT_BUTTON);
+  builder->Add("unlockUser", IDS_ASH_SHELF_UNLOCK_BUTTON);
   builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
   builder->Add("ownerUserPattern", IDS_LOGIN_POD_OWNER_USER);
   builder->Add("removeUser", IDS_LOGIN_POD_REMOVE_USER);
