@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
@@ -30,8 +31,11 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 using gpu::gles2::GLES2Interface;
+
+namespace viz {
 
 namespace {
 
@@ -48,60 +52,28 @@ class ScopedFlush {
 };
 
 // Helper class for allocating and holding an RGBA texture of a given
-// size and an associated framebuffer.
-class TextureFrameBufferPair {
+// size.
+class TextureHolder {
  public:
-  TextureFrameBufferPair(GLES2Interface* gl, gfx::Size size)
-      : texture_(gl), framebuffer_(gl), size_(size) {
-    viz::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl, texture_);
+  TextureHolder(GLES2Interface* gl, gfx::Size size)
+      : texture_(gl), size_(size) {
+    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl, texture_);
     gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
                    GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    viz::ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
-        gl, framebuffer_);
-    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                             GL_TEXTURE_2D, texture_, 0);
   }
 
   GLuint texture() const { return texture_.id(); }
-  GLuint framebuffer() const { return framebuffer_.id(); }
   gfx::Size size() const { return size_; }
 
  private:
-  viz::ScopedTexture texture_;
-  viz::ScopedFramebuffer framebuffer_;
+  ScopedTexture texture_;
   gfx::Size size_;
 
-  DISALLOW_COPY_AND_ASSIGN(TextureFrameBufferPair);
-};
-
-// Helper class for holding a scaler, a texture for the output of that
-// scaler and an associated frame buffer. This is inteded to be used
-// when the output of a scaler is to be sent to a readback.
-class ScalerHolder {
- public:
-  ScalerHolder(GLES2Interface* gl, viz::GLHelper::ScalerInterface* scaler)
-      : texture_and_framebuffer_(gl, scaler->DstSize()), scaler_(scaler) {}
-
-  void Scale(GLuint src_texture) {
-    scaler_->Scale(src_texture, texture_and_framebuffer_.texture());
-  }
-
-  viz::GLHelper::ScalerInterface* scaler() const { return scaler_.get(); }
-  TextureFrameBufferPair* texture_and_framebuffer() {
-    return &texture_and_framebuffer_;
-  }
-  GLuint texture() const { return texture_and_framebuffer_.texture(); }
-
- private:
-  TextureFrameBufferPair texture_and_framebuffer_;
-  std::unique_ptr<viz::GLHelper::ScalerInterface> scaler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScalerHolder);
+  DISALLOW_COPY_AND_ASSIGN(TextureHolder);
 };
 
 }  // namespace
 
-namespace viz {
 typedef GLHelperReadbackSupport::FormatSupport FormatSupport;
 
 // Implements GLHelper::CropScaleReadbackAndCleanTexture and encapsulates
@@ -136,7 +108,6 @@ class GLHelper::CopyTextureToImpl
   void CropScaleReadbackAndCleanTexture(
       GLuint src_texture,
       const gfx::Size& src_size,
-      const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       unsigned char* out,
       const SkColorType out_color_type,
@@ -165,7 +136,8 @@ class GLHelper::CopyTextureToImpl
                      size_t bytes_per_pixel,
                      const base::Callback<void(bool)>& callback);
 
-  void ReadbackPlane(TextureFrameBufferPair* source,
+  void ReadbackPlane(GLuint framebuffer,
+                     const gfx::Size& texture_size,
                      int row_stride_bytes,
                      unsigned char* data,
                      int size_shift,
@@ -179,11 +151,7 @@ class GLHelper::CopyTextureToImpl
                              bool vertically_flip_texture,
                              GLHelper::ScalerQuality quality);
 
-  ReadbackYUVInterface* CreateReadbackPipelineYUV(
-      GLHelper::ScalerQuality quality,
-      const gfx::Size& src_size,
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
+  std::unique_ptr<ReadbackYUVInterface> CreateReadbackPipelineYUV(
       bool flip_vertically,
       bool use_mrt);
 
@@ -260,16 +228,18 @@ class GLHelper::CopyTextureToImpl
     ReadbackYUVImpl(GLES2Interface* gl,
                     CopyTextureToImpl* copy_impl,
                     GLHelperScaling* scaler_impl,
-                    GLHelper::ScalerQuality quality,
-                    const gfx::Size& src_size,
-                    const gfx::Rect& src_subrect,
-                    const gfx::Size& dst_size,
                     bool flip_vertically,
-                    ReadbackSwizzle swizzle);
+                    ReadbackSwizzle swizzle,
+                    bool use_mrt);
+
+    void SetScaler(std::unique_ptr<GLHelper::ScalerInterface> scaler) override;
+
+    GLHelper::ScalerInterface* scaler() const override;
 
     void ReadbackYUV(const gpu::Mailbox& mailbox,
                      const gpu::SyncToken& sync_token,
-                     const gfx::Rect& target_visible_rect,
+                     const gfx::Size& src_texture_size,
+                     const gfx::Rect& output_rect,
                      int y_plane_row_stride_bytes,
                      unsigned char* y_plane_data,
                      int u_plane_row_stride_bytes,
@@ -279,73 +249,56 @@ class GLHelper::CopyTextureToImpl
                      const gfx::Point& paste_location,
                      const base::Callback<void(bool)>& callback) override;
 
-    ScalerInterface* scaler() override { return scaler_.scaler(); }
-
    private:
+    // Returns true if ReadbackYUV should use the faster, two-pass
+    // "planerizers" to generate the YUV planar outputs. If false, the source
+    // will be scanned three times, once for each Y/U/V plane.
+    bool use_mrt() const { return !v_planerizer_; }
+
+    // Reallocates the intermediate and plane textures and their associated
+    // readback framebuffers, if needed.
+    void EnsureTexturesSizedFor(const gfx::Size& output_size);
+
     GLES2Interface* gl_;
     CopyTextureToImpl* copy_impl_;
-    gfx::Size dst_size_;
     ReadbackSwizzle swizzle_;
-    ScalerHolder scaler_;
-    ScalerHolder y_;
-    ScalerHolder u_;
-    ScalerHolder v_;
+
+    // May be null if no scaling is required. This can be changed between calls
+    // to ReadbackYUV().
+    std::unique_ptr<GLHelper::ScalerInterface> scaler_;
+
+    // These generate the Y/U/V planes. If MRT is being used, |y_planerizer_|
+    // generates the Y and interim UV plane, |u_planerizer_| generates the final
+    // U and V planes, and |v_planerizer_| is unused. If MRT is not being used,
+    // each of these generates only one of the Y/U/V planes.
+    const std::unique_ptr<GLHelper::ScalerInterface> y_planerizer_;
+    const std::unique_ptr<GLHelper::ScalerInterface> u_planerizer_;
+    const std::unique_ptr<GLHelper::ScalerInterface> v_planerizer_;
+
+    // Intermediate texture, holding the scaler's output.
+    base::Optional<TextureHolder> intermediate_;
+
+    // These hold the output textures for each Y/U/V plane. |uv_| is only used
+    // if MRT is being used.
+    base::Optional<TextureHolder> y_;
+    base::Optional<ScopedTexture> uv_;
+    base::Optional<TextureHolder> u_;
+    base::Optional<TextureHolder> v_;
+
+    // Framebuffers used by ReadbackPlane(). They are cached here so as to not
+    // be re-allocated for every frame of video.
+    ScopedFramebuffer y_readback_framebuffer_;
+    ScopedFramebuffer u_readback_framebuffer_;
+    ScopedFramebuffer v_readback_framebuffer_;
 
     DISALLOW_COPY_AND_ASSIGN(ReadbackYUVImpl);
   };
 
-  // A readback pipeline that also converts the data to YUV before
-  // reading it back. This one uses Multiple Render Targets, which
-  // may not be supported on all platforms.
-  class ReadbackYUV_MRT : public ReadbackYUVInterface {
-   public:
-    ReadbackYUV_MRT(GLES2Interface* gl,
-                    CopyTextureToImpl* copy_impl,
-                    GLHelperScaling* scaler_impl,
-                    GLHelper::ScalerQuality quality,
-                    const gfx::Size& src_size,
-                    const gfx::Rect& src_subrect,
-                    const gfx::Size& dst_size,
-                    bool flip_vertically,
-                    ReadbackSwizzle swizzle);
-
-    void ReadbackYUV(const gpu::Mailbox& mailbox,
-                     const gpu::SyncToken& sync_token,
-                     const gfx::Rect& target_visible_rect,
-                     int y_plane_row_stride_bytes,
-                     unsigned char* y_plane_data,
-                     int u_plane_row_stride_bytes,
-                     unsigned char* u_plane_data,
-                     int v_plane_row_stride_bytes,
-                     unsigned char* v_plane_data,
-                     const gfx::Point& paste_location,
-                     const base::Callback<void(bool)>& callback) override;
-
-    ScalerInterface* scaler() override { return scaler_.scaler(); }
-
-   private:
-    GLES2Interface* gl_;
-    CopyTextureToImpl* copy_impl_;
-    gfx::Size dst_size_;
-    GLHelper::ScalerQuality quality_;
-    ReadbackSwizzle swizzle_;
-    ScalerHolder scaler_;
-    std::unique_ptr<GLHelperScaling::ShaderInterface> pass1_shader_;
-    std::unique_ptr<GLHelperScaling::ShaderInterface> pass2_shader_;
-    TextureFrameBufferPair y_;
-    ScopedTexture uv_;
-    TextureFrameBufferPair u_;
-    TextureFrameBufferPair v_;
-
-    DISALLOW_COPY_AND_ASSIGN(ReadbackYUV_MRT);
-  };
-
-  // Copies the block of pixels specified with |src_subrect| from |src_texture|,
+  // Copies everything from |src_texture| (of size |src_size|),
   // scales it to |dst_size|, writes it into a texture, and returns its ID.
   // |src_size| is the size of |src_texture|.
   GLuint ScaleTexture(GLuint src_texture,
                       const gfx::Size& src_size,
-                      const gfx::Rect& src_subrect,
                       const gfx::Size& dst_size,
                       bool vertically_flip_texture,
                       bool swizzle,
@@ -378,11 +331,6 @@ class GLHelper::CopyTextureToImpl
                      FinishRequestHelper* helper);
   void CancelRequests();
 
-  static const float kRGBtoYColorWeights[];
-  static const float kRGBtoUColorWeights[];
-  static const float kRGBtoVColorWeights[];
-  static const float kRGBtoGrayscaleColorWeights[];
-
   GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
   GLHelper* helper_;
@@ -395,26 +343,28 @@ class GLHelper::CopyTextureToImpl
   GLint max_draw_buffers_;
 };
 
-GLHelper::ScalerInterface* GLHelper::CreateScaler(ScalerQuality quality,
-                                                  const gfx::Size& src_size,
-                                                  const gfx::Rect& src_subrect,
-                                                  const gfx::Size& dst_size,
-                                                  bool vertically_flip_texture,
-                                                  bool swizzle) {
+std::unique_ptr<GLHelper::ScalerInterface> GLHelper::CreateScaler(
+    ScalerQuality quality,
+    const gfx::Vector2d& scale_from,
+    const gfx::Vector2d& scale_to,
+    bool vertically_flip_texture,
+    bool swizzle) {
   InitScalerImpl();
-  return scaler_impl_->CreateScaler(quality, src_size, src_subrect, dst_size,
+  return scaler_impl_->CreateScaler(quality, scale_from, scale_to,
                                     vertically_flip_texture, swizzle);
 }
 
 GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
     GLuint src_texture,
     const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     bool vertically_flip_texture,
     bool swizzle,
     SkColorType color_type,
     GLHelper::ScalerQuality quality) {
+  if (src_size.IsEmpty() || dst_size.IsEmpty())
+    return 0;
+
   GLuint dst_texture = 0u;
   gl_->GenTextures(1, &dst_texture);
   {
@@ -427,14 +377,15 @@ GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
       format = GL_RGB;
       type = GL_UNSIGNED_SHORT_5_6_5;
     }
-
     gl_->TexImage2D(GL_TEXTURE_2D, 0, format, dst_size.width(),
                     dst_size.height(), 0, format, type, NULL);
   }
-  std::unique_ptr<ScalerInterface> scaler(
-      helper_->CreateScaler(quality, src_size, src_subrect, dst_size,
-                            vertically_flip_texture, swizzle));
-  scaler->Scale(src_texture, dst_texture);
+
+  const std::unique_ptr<ScalerInterface> scaler = helper_->CreateScaler(
+      quality, gfx::Vector2d(src_size.width(), src_size.height()),
+      gfx::Vector2d(dst_size.width(), dst_size.height()),
+      vertically_flip_texture, swizzle);
+  scaler->Scale(src_texture, src_size, dst_texture, gfx::Rect(dst_size));
   return dst_texture;
 }
 
@@ -457,13 +408,11 @@ GLuint GLHelper::CopyTextureToImpl::EncodeTextureAsGrayscale(
   }
 
   helper_->InitScalerImpl();
-  std::unique_ptr<ScalerInterface> grayscale_scaler(
-      helper_->scaler_impl_.get()->CreatePlanarScaler(
-          src_size,
-          gfx::Rect(0, 0, (src_size.width() + 3) & ~3, src_size.height()),
-          *encoded_texture_size, vertically_flip_texture, swizzle,
-          kRGBtoGrayscaleColorWeights));
-  grayscale_scaler->Scale(src_texture, dst_texture);
+  const std::unique_ptr<ScalerInterface> planerizer =
+      helper_->scaler_impl_.get()->CreateGrayscalePlanerizer(
+          vertically_flip_texture, swizzle);
+  planerizer->Scale(src_texture, src_size, dst_texture,
+                    gfx::Rect(*encoded_texture_size));
   return dst_texture;
 }
 
@@ -502,7 +451,6 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
 void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
     GLuint src_texture,
     const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     unsigned char* out,
     const SkColorType out_color_type,
@@ -542,12 +490,15 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
     bool scale_swizzle = out_color_type == kAlpha_8_SkColorType
                              ? false
                              : supported == GLHelperReadbackSupport::SWIZZLE;
-    texture = ScaleTexture(
-        src_texture, src_size, src_subrect, dst_size, true, scale_swizzle,
-        out_color_type == kAlpha_8_SkColorType ? kN32_SkColorType
-                                               : out_color_type,
-        quality);
-    DCHECK(texture);
+    texture =
+        ScaleTexture(src_texture, src_size, dst_size, true, scale_swizzle,
+                     out_color_type == kAlpha_8_SkColorType ? kN32_SkColorType
+                                                            : out_color_type,
+                     quality);
+    if (!texture) {
+      callback.Run(false);
+      return;
+    }
   }
 
   gfx::Size readback_texture_size = dst_size;
@@ -640,10 +591,8 @@ GLuint GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
     const gfx::Size& dst_size,
     bool vertically_flip_texture,
     GLHelper::ScalerQuality quality) {
-  return ScaleTexture(src_texture, src_size, gfx::Rect(src_size), dst_size,
-                      vertically_flip_texture, false,
-                      kRGBA_8888_SkColorType,  // GL_RGBA
-                      quality);
+  return ScaleTexture(src_texture, src_size, dst_size, vertically_flip_texture,
+                      false, kRGBA_8888_SkColorType, quality);
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackDone(Request* finished_request,
@@ -736,7 +685,6 @@ GLHelper::~GLHelper() {}
 void GLHelper::CropScaleReadbackAndCleanTexture(
     GLuint src_texture,
     const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     unsigned char* out,
     const SkColorType out_color_type,
@@ -744,24 +692,21 @@ void GLHelper::CropScaleReadbackAndCleanTexture(
     GLHelper::ScalerQuality quality) {
   InitCopyTextToImpl();
   copy_texture_to_impl_->CropScaleReadbackAndCleanTexture(
-      src_texture, src_size, src_subrect, dst_size, out, out_color_type,
-      callback, quality);
+      src_texture, src_size, dst_size, out, out_color_type, callback, quality);
 }
 
 void GLHelper::CropScaleReadbackAndCleanMailbox(
     const gpu::Mailbox& src_mailbox,
     const gpu::SyncToken& sync_token,
     const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     unsigned char* out,
     const SkColorType out_color_type,
     const base::Callback<void(bool)>& callback,
     GLHelper::ScalerQuality quality) {
   GLuint mailbox_texture = ConsumeMailboxToTexture(src_mailbox, sync_token);
-  CropScaleReadbackAndCleanTexture(mailbox_texture, src_size, src_subrect,
-                                   dst_size, out, out_color_type, callback,
-                                   quality);
+  CropScaleReadbackAndCleanTexture(mailbox_texture, src_size, dst_size, out,
+                                   out_color_type, callback, quality);
   gl_->DeleteTextures(1, &mailbox_texture);
 }
 
@@ -782,12 +727,6 @@ void GLHelper::ReadbackTextureAsync(
   InitCopyTextToImpl();
   copy_texture_to_impl_->ReadbackTextureAsync(texture, dst_size, out,
                                               color_type, callback);
-}
-
-GLuint GLHelper::CopyTexture(GLuint texture, const gfx::Size& size) {
-  InitCopyTextToImpl();
-  return copy_texture_to_impl_->CopyAndScaleTexture(
-      texture, size, size, false, GLHelper::SCALER_QUALITY_FAST);
 }
 
 GLuint GLHelper::CopyAndScaleTexture(GLuint texture,
@@ -945,30 +884,22 @@ void GLHelper::InsertOrderingBarrier() {
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackPlane(
-    TextureFrameBufferPair* source,
+    GLuint framebuffer,
+    const gfx::Size& texture_size,
     int row_stride_bytes,
     unsigned char* data,
     int size_shift,
     const gfx::Rect& paste_rect,
     ReadbackSwizzle swizzle,
     const base::Callback<void(bool)>& callback) {
-  gl_->BindFramebuffer(GL_FRAMEBUFFER, source->framebuffer());
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   const size_t offset = row_stride_bytes * (paste_rect.y() >> size_shift) +
                         (paste_rect.x() >> size_shift);
-  ReadbackAsync(source->size(), paste_rect.width() >> size_shift,
+  ReadbackAsync(texture_size, paste_rect.width() >> size_shift,
                 row_stride_bytes, data + offset,
                 (swizzle == kSwizzleBGRA) ? GL_BGRA_EXT : GL_RGBA,
                 GL_UNSIGNED_BYTE, 4, callback);
 }
-
-const float GLHelper::CopyTextureToImpl::kRGBtoYColorWeights[] = {
-    0.257f, 0.504f, 0.098f, 0.0625f};
-const float GLHelper::CopyTextureToImpl::kRGBtoUColorWeights[] = {
-    -0.148f, -0.291f, 0.439f, 0.5f};
-const float GLHelper::CopyTextureToImpl::kRGBtoVColorWeights[] = {
-    0.439f, -0.368f, -0.071f, 0.5f};
-const float GLHelper::CopyTextureToImpl::kRGBtoGrayscaleColorWeights[] = {
-    0.213f, 0.715f, 0.072f, 0.0f};
 
 // YUV readback constructors. Initiates the main scaler pipeline and
 // one planar scaler for each of the Y, U and V planes.
@@ -976,61 +907,51 @@ GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUVImpl(
     GLES2Interface* gl,
     CopyTextureToImpl* copy_impl,
     GLHelperScaling* scaler_impl,
-    GLHelper::ScalerQuality quality,
-    const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
     bool flip_vertically,
-    ReadbackSwizzle swizzle)
+    ReadbackSwizzle swizzle,
+    bool use_mrt)
     : gl_(gl),
       copy_impl_(copy_impl),
-      dst_size_(dst_size),
       swizzle_(swizzle),
-      scaler_(gl,
-              scaler_impl->CreateScaler(quality,
-                                        src_size,
-                                        src_subrect,
-                                        dst_size,
-                                        flip_vertically,
-                                        false)),
-      y_(gl,
-         scaler_impl->CreatePlanarScaler(
-             dst_size,
-             gfx::Rect(0, 0, (dst_size.width() + 3) & ~3, dst_size.height()),
-             gfx::Size((dst_size.width() + 3) / 4, dst_size.height()),
-             false,
-             (swizzle == kSwizzleBGRA),
-             kRGBtoYColorWeights)),
-      u_(gl,
-         scaler_impl->CreatePlanarScaler(
-             dst_size,
-             gfx::Rect(0,
-                       0,
-                       (dst_size.width() + 7) & ~7,
-                       (dst_size.height() + 1) & ~1),
-             gfx::Size((dst_size.width() + 7) / 8, (dst_size.height() + 1) / 2),
-             false,
-             (swizzle == kSwizzleBGRA),
-             kRGBtoUColorWeights)),
-      v_(gl,
-         scaler_impl->CreatePlanarScaler(
-             dst_size,
-             gfx::Rect(0,
-                       0,
-                       (dst_size.width() + 7) & ~7,
-                       (dst_size.height() + 1) & ~1),
-             gfx::Size((dst_size.width() + 7) / 8, (dst_size.height() + 1) / 2),
-             false,
-             (swizzle == kSwizzleBGRA),
-             kRGBtoVColorWeights)) {
-  DCHECK(!(dst_size.width() & 1));
-  DCHECK(!(dst_size.height() & 1));
+      y_planerizer_(use_mrt ? scaler_impl->CreateI420MrtPass1Planerizer(
+                                  flip_vertically,
+                                  (swizzle == kSwizzleBGRA))
+                            : scaler_impl->CreateI420Planerizer(
+                                  0,
+                                  flip_vertically,
+                                  (swizzle == kSwizzleBGRA))),
+      u_planerizer_(use_mrt ? scaler_impl->CreateI420MrtPass2Planerizer(
+                                  false,
+                                  (swizzle == kSwizzleBGRA))
+                            : scaler_impl->CreateI420Planerizer(
+                                  1,
+                                  flip_vertically,
+                                  (swizzle == kSwizzleBGRA))),
+      v_planerizer_(use_mrt ? nullptr
+                            : scaler_impl->CreateI420Planerizer(
+                                  2,
+                                  flip_vertically,
+                                  (swizzle == kSwizzleBGRA))),
+      y_readback_framebuffer_(gl_),
+      u_readback_framebuffer_(gl_),
+      v_readback_framebuffer_(gl_) {}
+
+void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::SetScaler(
+    std::unique_ptr<GLHelper::ScalerInterface> scaler) {
+  scaler_ = std::move(scaler);
+  intermediate_ = base::nullopt;
+}
+
+GLHelper::ScalerInterface*
+GLHelper::CopyTextureToImpl::ReadbackYUVImpl::scaler() const {
+  return scaler_.get();
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
-    const gfx::Rect& target_visible_rect,
+    const gfx::Size& src_texture_size,
+    const gfx::Rect& output_rect,
     int y_plane_row_stride_bytes,
     unsigned char* y_plane_data,
     int u_plane_row_stride_bytes,
@@ -1042,148 +963,98 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
   DCHECK(!(paste_location.x() & 1));
   DCHECK(!(paste_location.y() & 1));
 
+  EnsureTexturesSizedFor(output_rect.size());
+
   GLuint mailbox_texture =
       copy_impl_->ConsumeMailboxToTexture(mailbox, sync_token);
 
-  // Scale texture to right size.
-  scaler_.Scale(mailbox_texture);
-  gl_->DeleteTextures(1, &mailbox_texture);
-
-  // Convert the scaled texture in to Y, U and V planes.
-  y_.Scale(scaler_.texture());
-  u_.Scale(scaler_.texture());
-  v_.Scale(scaler_.texture());
-
-  const gfx::Rect paste_rect(paste_location, dst_size_);
-  if (!target_visible_rect.Contains(paste_rect)) {
-    LOG(DFATAL) << "Paste rect not inside VideoFrame's visible rect!";
-    callback.Run(false);
-    return;
+  // Scale first, if needed.
+  if (scaler_) {
+    scaler_->Scale(mailbox_texture, src_texture_size, intermediate_->texture(),
+                   output_rect);
   }
+
+  // Convert the intermediate (or source) texture into Y, U and V planes.
+  const GLuint texture = scaler_ ? intermediate_->texture() : mailbox_texture;
+  const gfx::Size texture_size =
+      scaler_ ? intermediate_->size() : src_texture_size;
+  if (use_mrt()) {
+    y_planerizer_->ScaleToMultipleOutputs(texture, texture_size, y_->texture(),
+                                          uv_->id(), gfx::Rect(y_->size()));
+    u_planerizer_->ScaleToMultipleOutputs(uv_->id(), y_->size(), u_->texture(),
+                                          v_->texture(), gfx::Rect(u_->size()));
+  } else {
+    y_planerizer_->Scale(texture, texture_size, y_->texture(),
+                         gfx::Rect(y_->size()));
+    u_planerizer_->Scale(texture, texture_size, u_->texture(),
+                         gfx::Rect(u_->size()));
+    v_planerizer_->Scale(texture, texture_size, v_->texture(),
+                         gfx::Rect(v_->size()));
+  }
+
+  gl_->DeleteTextures(1, &mailbox_texture);
 
   // Read back planes, one at a time. Keep the video frame alive while doing the
   // readback.
-  copy_impl_->ReadbackPlane(y_.texture_and_framebuffer(),
+  const gfx::Rect paste_rect(paste_location, output_rect.size());
+  copy_impl_->ReadbackPlane(y_readback_framebuffer_.id(), y_->size(),
                             y_plane_row_stride_bytes, y_plane_data, 0,
                             paste_rect, swizzle_, base::Bind(&nullcallback));
-  copy_impl_->ReadbackPlane(u_.texture_and_framebuffer(),
+  copy_impl_->ReadbackPlane(u_readback_framebuffer_.id(), u_->size(),
                             u_plane_row_stride_bytes, u_plane_data, 1,
                             paste_rect, swizzle_, base::Bind(&nullcallback));
-  copy_impl_->ReadbackPlane(v_.texture_and_framebuffer(),
+  copy_impl_->ReadbackPlane(v_readback_framebuffer_.id(), v_->size(),
                             v_plane_row_stride_bytes, v_plane_data, 1,
                             paste_rect, swizzle_, callback);
   gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-// YUV readback constructors. Initiates the main scaler pipeline and
-// one planar scaler for each of the Y, U and V planes.
-GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV_MRT(
-    GLES2Interface* gl,
-    CopyTextureToImpl* copy_impl,
-    GLHelperScaling* scaler_impl,
-    GLHelper::ScalerQuality quality,
-    const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
-    bool flip_vertically,
-    ReadbackSwizzle swizzle)
-    : gl_(gl),
-      copy_impl_(copy_impl),
-      dst_size_(dst_size),
-      quality_(quality),
-      swizzle_(swizzle),
-      scaler_(gl,
-              scaler_impl->CreateScaler(quality,
-                                        src_size,
-                                        src_subrect,
-                                        dst_size,
-                                        false,
-                                        false)),
-      pass1_shader_(scaler_impl->CreateYuvMrtShader(
-          dst_size,
-          gfx::Rect(0, 0, (dst_size.width() + 3) & ~3, dst_size.height()),
-          gfx::Size((dst_size.width() + 3) / 4, dst_size.height()),
-          flip_vertically,
-          (swizzle == kSwizzleBGRA),
-          GLHelperScaling::SHADER_YUV_MRT_PASS1)),
-      pass2_shader_(scaler_impl->CreateYuvMrtShader(
-          gfx::Size((dst_size.width() + 3) / 4, dst_size.height()),
-          gfx::Rect(0, 0, (dst_size.width() + 7) / 8 * 2, dst_size.height()),
-          gfx::Size((dst_size.width() + 7) / 8, (dst_size.height() + 1) / 2),
-          false,
-          (swizzle == kSwizzleBGRA),
-          GLHelperScaling::SHADER_YUV_MRT_PASS2)),
-      y_(gl, gfx::Size((dst_size.width() + 3) / 4, dst_size.height())),
-      uv_(gl),
-      u_(gl,
-         gfx::Size((dst_size.width() + 7) / 8, (dst_size.height() + 1) / 2)),
-      v_(gl,
-         gfx::Size((dst_size.width() + 7) / 8, (dst_size.height() + 1) / 2)) {
-  DCHECK(!(dst_size.width() & 1));
-  DCHECK(!(dst_size.height() & 1));
-
-  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl, uv_);
-  gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (dst_size.width() + 3) / 4,
-                 dst_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-}
-
-void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
-    const gpu::Mailbox& mailbox,
-    const gpu::SyncToken& sync_token,
-    const gfx::Rect& target_visible_rect,
-    int y_plane_row_stride_bytes,
-    unsigned char* y_plane_data,
-    int u_plane_row_stride_bytes,
-    unsigned char* u_plane_data,
-    int v_plane_row_stride_bytes,
-    unsigned char* v_plane_data,
-    const gfx::Point& paste_location,
-    const base::Callback<void(bool)>& callback) {
-  DCHECK(!(paste_location.x() & 1));
-  DCHECK(!(paste_location.y() & 1));
-
-  GLuint mailbox_texture =
-      copy_impl_->ConsumeMailboxToTexture(mailbox, sync_token);
-
-  GLuint texture;
-  if (quality_ == GLHelper::SCALER_QUALITY_FAST) {
-    // Optimization: SCALER_QUALITY_FAST is just a single bilinear
-    // pass, which pass1_shader_ can do just as well, so let's skip
-    // the actual scaling in that case.
-    texture = mailbox_texture;
-  } else {
-    // Scale texture to right size.
-    scaler_.Scale(mailbox_texture);
-    texture = scaler_.texture();
+void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::EnsureTexturesSizedFor(
+    const gfx::Size& output_size) {
+  // Reallocate the intermediate texture, if needed.
+  if (scaler_) {
+    if (!intermediate_ || intermediate_->size() != output_size)
+      intermediate_.emplace(gl_, output_size);
   }
 
-  std::vector<GLuint> outputs(2);
-  // Convert the scaled texture in to Y, U and V planes.
-  outputs[0] = y_.texture();
-  outputs[1] = uv_;
-  pass1_shader_->Execute(texture, outputs);
+  // Reallocate the Y plane, if necessary.
+  gfx::Size required_size((output_size.width() + 3) / 4, output_size.height());
+  if (y_ && y_->size() == required_size)
+    return;  // If Y didn't need to be enlarged, U and V don't either.
+  y_.emplace(gl_, required_size);
+  {
+    ScopedFramebufferBinder<GL_FRAMEBUFFER> binder(
+        gl_, y_readback_framebuffer_.id());
+    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, y_->texture(), 0);
+  }
+  if (use_mrt()) {
+    uv_.emplace(gl_);
+    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, uv_->id());
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, required_size.width(),
+                    required_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                    nullptr);
+  }
 
-  gl_->DeleteTextures(1, &mailbox_texture);
-
-  outputs[0] = u_.texture();
-  outputs[1] = v_.texture();
-  pass2_shader_->Execute(uv_, outputs);
-
-  const gfx::Rect paste_rect(paste_location, dst_size_);
-  if (!target_visible_rect.Contains(paste_rect)) {
-    LOG(DFATAL) << "Paste rect not inside VideoFrame's visible rect!";
-    callback.Run(false);
+  // Reallocate the chroma planes, if necessary.
+  required_size =
+      gfx::Size((output_size.width() + 7) / 8, (output_size.height() + 1) / 2);
+  if (u_ && u_->size() == required_size)
     return;
+  u_.emplace(gl_, required_size);
+  {
+    ScopedFramebufferBinder<GL_FRAMEBUFFER> binder(
+        gl_, u_readback_framebuffer_.id());
+    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, u_->texture(), 0);
   }
-
-  // Read back planes, one at a time.
-  copy_impl_->ReadbackPlane(&y_, y_plane_row_stride_bytes, y_plane_data, 0,
-                            paste_rect, swizzle_, base::Bind(&nullcallback));
-  copy_impl_->ReadbackPlane(&u_, u_plane_row_stride_bytes, u_plane_data, 1,
-                            paste_rect, swizzle_, base::Bind(&nullcallback));
-  copy_impl_->ReadbackPlane(&v_, v_plane_row_stride_bytes, v_plane_data, 1,
-                            paste_rect, swizzle_, callback);
-  gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  v_.emplace(gl_, required_size);
+  {
+    ScopedFramebufferBinder<GL_FRAMEBUFFER> binder(
+        gl_, v_readback_framebuffer_.id());
+    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, v_->texture(), 0);
+  }
 }
 
 bool GLHelper::IsReadbackConfigSupported(SkColorType color_type) {
@@ -1196,13 +1067,9 @@ bool GLHelper::IsReadbackConfigSupported(SkColorType color_type) {
   return (support == GLHelperReadbackSupport::SUPPORTED);
 }
 
-ReadbackYUVInterface* GLHelper::CopyTextureToImpl::CreateReadbackPipelineYUV(
-    GLHelper::ScalerQuality quality,
-    const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
-    bool flip_vertically,
-    bool use_mrt) {
+std::unique_ptr<ReadbackYUVInterface>
+GLHelper::CopyTextureToImpl::CreateReadbackPipelineYUV(bool flip_vertically,
+                                                       bool use_mrt) {
   helper_->InitScalerImpl();
   // Just query if the best readback configuration needs a swizzle In
   // ReadbackPlane() we will choose GL_RGBA/GL_BGRA_EXT based on swizzle
@@ -1217,26 +1084,17 @@ ReadbackYUVInterface* GLHelper::CopyTextureToImpl::CreateReadbackPipelineYUV(
   if (supported == GLHelperReadbackSupport::SWIZZLE)
     swizzle = kSwizzleBGRA;
 
-  if (max_draw_buffers_ >= 2 && use_mrt) {
-    return new ReadbackYUV_MRT(gl_, this, helper_->scaler_impl_.get(), quality,
-                               src_size, src_subrect, dst_size, flip_vertically,
-                               swizzle);
-  }
-  return new ReadbackYUVImpl(gl_, this, helper_->scaler_impl_.get(), quality,
-                             src_size, src_subrect, dst_size, flip_vertically,
-                             swizzle);
+  return base::MakeUnique<ReadbackYUVImpl>(
+      gl_, this, helper_->scaler_impl_.get(), flip_vertically, swizzle,
+      use_mrt && (max_draw_buffers_ >= 2));
 }
 
-ReadbackYUVInterface* GLHelper::CreateReadbackPipelineYUV(
-    ScalerQuality quality,
-    const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
+std::unique_ptr<ReadbackYUVInterface> GLHelper::CreateReadbackPipelineYUV(
     bool flip_vertically,
     bool use_mrt) {
   InitCopyTextToImpl();
-  return copy_texture_to_impl_->CreateReadbackPipelineYUV(
-      quality, src_size, src_subrect, dst_size, flip_vertically, use_mrt);
+  return copy_texture_to_impl_->CreateReadbackPipelineYUV(flip_vertically,
+                                                          use_mrt);
 }
 
 }  // namespace viz

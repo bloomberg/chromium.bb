@@ -12,8 +12,7 @@
 #include "base/macros.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/viz_common_export.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace viz {
 
@@ -39,44 +38,45 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
     SHADER_YUV_MRT_PASS2,
   };
 
-  // Similar to ScalerInterface, but can generate multiple outputs.
-  // Used for YUV conversion in gl_helper.c
-  class ShaderInterface {
-   public:
-    ShaderInterface() {}
-    virtual ~ShaderInterface() {}
-    // Note that the src_texture will have the min/mag filter set to GL_LINEAR
-    // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-    virtual void Execute(GLuint source_texture,
-                         const std::vector<GLuint>& dest_textures) = 0;
-  };
-
   using ShaderProgramKeyType = std::pair<ShaderType, bool>;
 
   GLHelperScaling(gpu::gles2::GLES2Interface* gl, GLHelper* helper);
   ~GLHelperScaling();
   void InitBuffer();
 
-  GLHelper::ScalerInterface* CreateScaler(GLHelper::ScalerQuality quality,
-                                          gfx::Size src_size,
-                                          gfx::Rect src_subrect,
-                                          const gfx::Size& dst_size,
-                                          bool vertically_flip_texture,
-                                          bool swizzle);
+  // Returns null on invalid arguments.
+  std::unique_ptr<GLHelper::ScalerInterface> CreateScaler(
+      GLHelper::ScalerQuality quality,
+      const gfx::Vector2d& scale_from,
+      const gfx::Vector2d& scale_to,
+      bool vertically_flip_texture,
+      bool swizzle);
 
-  GLHelper::ScalerInterface* CreatePlanarScaler(const gfx::Size& src_size,
-                                                const gfx::Rect& src_subrect,
-                                                const gfx::Size& dst_size,
-                                                bool vertically_flip_texture,
-                                                bool swizzle,
-                                                const float color_weights[4]);
+  // These convert source textures with RGBA pixel data into a single-color-
+  // channel planar format. Used for grayscale and I420 format conversion.
+  //
+  // While these output RGBA pixels in the destination texture(s), each RGBA
+  // pixel is actually a container for 4 consecutive pixels in the result.
+  std::unique_ptr<GLHelper::ScalerInterface> CreateGrayscalePlanerizer(
+      bool vertically_flip_texture,
+      bool swizzle);
+  std::unique_ptr<GLHelper::ScalerInterface> CreateI420Planerizer(
+      int plane,  // 0=Y, 1=U, 2=V
+      bool vertically_flip_texture,
+      bool swizzle);
 
-  ShaderInterface* CreateYuvMrtShader(const gfx::Size& src_size,
-                                      const gfx::Rect& src_subrect,
-                                      const gfx::Size& dst_size,
-                                      bool vertically_flip_texture,
-                                      bool swizzle,
-                                      ShaderType shader);
+  // These are a faster path to I420 planerization, if the platform supports
+  // it. The first pass draws to two outputs simultaneously: the Y plane and an
+  // interim UV plane that is used as the input to the second pass. Then, the
+  // second pass splits the UV plane, drawing to two outputs: the final U plane
+  // and final V plane. Thus, clients should call ScaleToMultipleOutputs() on
+  // the returned instance.
+  std::unique_ptr<GLHelper::ScalerInterface> CreateI420MrtPass1Planerizer(
+      bool vertically_flip_texture,
+      bool swizzle);
+  std::unique_ptr<GLHelper::ScalerInterface> CreateI420MrtPass2Planerizer(
+      bool vertically_flip_texture,
+      bool swizzle);
 
  private:
   // A ScaleOp represents a pass in a scaler pipeline, in one dimension.
@@ -87,9 +87,9 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
     ScaleOp(int factor, bool x, int size)
         : scale_factor(factor), scale_x(x), scale_size(size) {}
 
-    // Calculate a set of ScaleOp needed to convert an image of size
-    // |src| into an image of size |dst|. If |scale_x| is true, then
-    // the calculations are for the X axis of the image, otherwise Y.
+    // Calculates the sequence of ScaleOp needed to convert an image of
+    // relative size |src| into an image of relative size |dst|. If |scale_x| is
+    // true, then the calculations are for the X axis of the image, otherwise Y.
     // If |allow3| is true, we can use a SHADER_BILINEAR3 to replace
     // a scale up and scale down with a 3-tap bilinear scale.
     // The calculated ScaleOps are added to |ops|.
@@ -118,15 +118,13 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
       }
     }
 
-    // Update |size| to its new size. Before calling this function
-    // |size| should be the size of the input image. After calling it,
-    // |size| will be the size of the image after this particular
-    // scaling operation.
-    void UpdateSize(gfx::Size* subrect) {
+    // Update either the X or Y component of |scale| to the match the relative
+    // result size of this ScaleOp.
+    void UpdateScale(gfx::Vector2d* scale) {
       if (scale_x) {
-        subrect->set_width(scale_size);
+        scale->set_x(scale_size);
       } else {
-        subrect->set_height(scale_size);
+        scale->set_y(scale_size);
       }
     }
 
@@ -140,18 +138,9 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
 
   // Full specification for a single scaling stage.
   struct ScalerStage {
-    ScalerStage(ShaderType shader_,
-                gfx::Size src_size_,
-                gfx::Rect src_subrect_,
-                gfx::Size dst_size_,
-                bool scale_x_,
-                bool vertically_flip_texture_,
-                bool swizzle_);
-    ScalerStage(const ScalerStage& other);
     ShaderType shader;
-    gfx::Size src_size;
-    gfx::Rect src_subrect;
-    gfx::Size dst_size;
+    gfx::Vector2d scale_from;
+    gfx::Vector2d scale_to;
     bool scale_x;
     bool vertically_flip_texture;
     bool swizzle;
@@ -159,22 +148,19 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
 
   // Compute a vector of scaler stages for a particular
   // set of input/output parameters.
-  void ComputeScalerStages(GLHelper::ScalerQuality quality,
-                           const gfx::Size& src_size,
-                           const gfx::Rect& src_subrect,
-                           const gfx::Size& dst_size,
-                           bool vertically_flip_texture,
-                           bool swizzle,
-                           std::vector<ScalerStage>* scaler_stages);
+  static void ComputeScalerStages(GLHelper::ScalerQuality quality,
+                                  const gfx::Vector2d& scale_from,
+                                  const gfx::Vector2d& scale_to,
+                                  bool vertically_flip_texture,
+                                  bool swizzle,
+                                  std::vector<ScalerStage>* scaler_stages);
 
   // Take two queues of ScaleOp structs and generate a
   // vector of scaler stages. This is the second half of
   // ComputeScalerStages.
-  void ConvertScalerOpsToScalerStages(
+  static void ConvertScalerOpsToScalerStages(
       GLHelper::ScalerQuality quality,
-      gfx::Size src_size,
-      gfx::Rect src_subrect,
-      const gfx::Size& dst_size,
+      gfx::Vector2d scale_from,
       bool vertically_flip_texture,
       bool swizzle,
       base::circular_deque<GLHelperScaling::ScaleOp>* x_ops,

@@ -17,16 +17,47 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
 using gpu::gles2::GLES2Interface;
 
 namespace viz {
+
+namespace {
+
+// Linear translation from RGB to grayscale.
+const GLfloat kRGBtoGrayscaleColorWeights[4] = {0.213f, 0.715f, 0.072f, 0.0f};
+
+// Linear translation from RGB to YUV color space.
+// TODO(miu): This needs to stop being hardcoded...and need to identify to&from
+// color spaces.
+const GLfloat kRGBtoYColorWeights[4] = {0.257f, 0.504f, 0.098f, 0.0625f};
+const GLfloat kRGBtoUColorWeights[4] = {-0.148f, -0.291f, 0.439f, 0.5f};
+const GLfloat kRGBtoVColorWeights[4] = {0.439f, -0.368f, -0.071f, 0.5f};
+
+// Returns true iff a_num/a_denom == b_num/b_denom.
+bool AreRatiosEqual(int32_t a_num,
+                    int32_t a_denom,
+                    int32_t b_num,
+                    int32_t b_denom) {
+  // The math (for each dimension):
+  //   If: a_num/a_denom == b_num/b_denom
+  //   Then: a_num*b_denom == b_num*a_denom
+  //
+  // ...and cast to int64_t to guarantee no overflow from the multiplications.
+  return (static_cast<int64_t>(a_num) * b_denom) ==
+         (static_cast<int64_t>(b_num) * a_denom);
+}
+
+}  // namespace
 
 GLHelperScaling::GLHelperScaling(GLES2Interface* gl, GLHelper* helper)
     : gl_(gl), helper_(helper), vertex_attributes_buffer_(gl_) {
@@ -41,31 +72,38 @@ GLHelperScaling::~GLHelperScaling() {}
 // and |helper_| are assumed to live longer than this program.
 class ShaderProgram : public base::RefCounted<ShaderProgram> {
  public:
-  ShaderProgram(GLES2Interface* gl, GLHelper* helper)
+  ShaderProgram(GLES2Interface* gl,
+                GLHelper* helper,
+                GLHelperScaling::ShaderType shader)
       : gl_(gl),
         helper_(helper),
+        shader_(shader),
         program_(gl_->CreateProgram()),
         position_location_(-1),
         texcoord_location_(-1),
-        src_subrect_location_(-1),
+        sampling_rect_location_(-1),
         src_pixelsize_location_(-1),
-        dst_pixelsize_location_(-1),
         scaling_vector_location_(-1),
-        color_weights_location_(-1) {}
+        rgb_to_plane0_location_(-1),
+        rgb_to_plane1_location_(-1),
+        rgb_to_plane2_location_(-1) {}
 
   // Compile shader program.
   void Setup(const GLchar* vertex_shader_text,
              const GLchar* fragment_shader_text);
 
-  // UseProgram must be called with GL_TEXTURE_2D bound to the
-  // source texture and GL_ARRAY_BUFFER bound to a vertex
-  // attribute buffer.
-  void UseProgram(const gfx::Size& src_size,
-                  const gfx::Rect& src_subrect,
+  // UseProgram must be called with GL_ARRAY_BUFFER bound to a vertex attribute
+  // buffer. |src_texture_size| is the size of the entire source texture,
+  // regardless of which region is to be sampled. |sampling_rect| is the source
+  // region to be sampled to produce the scaled image placed at
+  // Rect(0, 0, dst_size.width(), dst_size.height()) in the destination
+  // texture(s).
+  void UseProgram(const gfx::Size& src_texture_size,
+                  const gfx::RectF& sampling_rect,
                   const gfx::Size& dst_size,
                   bool scale_x,
                   bool flip_y,
-                  GLfloat color_weights[4]);
+                  const GLfloat color_weights[3][4]);
 
   bool Initialized() const { return position_location_ != -1; }
 
@@ -75,6 +113,7 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
 
   GLES2Interface* gl_;
   GLHelper* helper_;
+  const GLHelperScaling::ShaderType shader_;
 
   // A program for copying a source texture into a destination texture.
   GLuint program_;
@@ -85,17 +124,18 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
   GLint texcoord_location_;
   // The location of the source texture in the program.
   GLint texture_location_;
-  // The location of the texture coordinate of
-  // the sub-rectangle in the program.
-  GLint src_subrect_location_;
+  // The location of the texture coordinate of the sampling rectangle in the
+  // program.
+  GLint sampling_rect_location_;
   // Location of size of source image in pixels.
   GLint src_pixelsize_location_;
-  // Location of size of destination image in pixels.
-  GLint dst_pixelsize_location_;
-  // Location of vector for scaling direction.
+  // Location of vector for scaling ratio between source and dest textures.
   GLint scaling_vector_location_;
-  // Location of color weights.
-  GLint color_weights_location_;
+  // Location of color weights, for programs that convert from interleaved to
+  // planar pixel orderings/formats.
+  GLint rgb_to_plane0_location_;
+  GLint rgb_to_plane1_location_;
+  GLint rgb_to_plane2_location_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderProgram);
 };
@@ -104,53 +144,21 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
 // multiple stages, it calls Scale() on the subscaler, then further scales the
 // output. Caches textures and framebuffers to avoid allocating/deleting
 // them once per frame, which can be expensive on some drivers.
-class ScalerImpl : public GLHelper::ScalerInterface,
-                   public GLHelperScaling::ShaderInterface {
+class ScalerImpl : public GLHelper::ScalerInterface {
  public:
-  // |gl| and |copy_impl| are expected to live longer than this object.
-  // |src_size| is the size of the input texture in pixels.
-  // |dst_size| is the size of the output texutre in pixels.
-  // |src_subrect| is the portion of the src to copy to the output texture.
-  // If |scale_x| is true, we are scaling along the X axis, otherwise Y.
-  // If we are scaling in both X and Y, |scale_x| is ignored.
-  // If |vertically_flip_texture| is true, output will be upside-down.
-  // If |swizzle| is true, RGBA will be transformed into BGRA.
-  // |color_weights| are only used together with SHADER_PLANAR to specify
-  //   how to convert RGB colors into a single value.
+  // |gl| and |scaler_helper| are expected to live longer than this object.
   ScalerImpl(GLES2Interface* gl,
              GLHelperScaling* scaler_helper,
              const GLHelperScaling::ScalerStage& scaler_stage,
-             ScalerImpl* subscaler,
-             const float* color_weights)
+             std::unique_ptr<ScalerImpl> subscaler)
       : gl_(gl),
         scaler_helper_(scaler_helper),
         spec_(scaler_stage),
         intermediate_texture_(0),
         dst_framebuffer_(gl),
-        subscaler_(subscaler) {
-    if (color_weights) {
-      color_weights_[0] = color_weights[0];
-      color_weights_[1] = color_weights[1];
-      color_weights_[2] = color_weights[2];
-      color_weights_[3] = color_weights[3];
-    } else {
-      color_weights_[0] = 0.0;
-      color_weights_[1] = 0.0;
-      color_weights_[2] = 0.0;
-      color_weights_[3] = 0.0;
-    }
+        subscaler_(std::move(subscaler)) {
     shader_program_ =
         scaler_helper_->GetShaderProgram(spec_.shader, spec_.swizzle);
-
-    if (subscaler_) {
-      intermediate_texture_ = 0u;
-      gl_->GenTextures(1, &intermediate_texture_);
-      ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_,
-                                                        intermediate_texture_);
-      gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, spec_.src_size.width(),
-                      spec_.src_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                      NULL);
-    }
   }
 
   ~ScalerImpl() override {
@@ -159,123 +167,263 @@ class ScalerImpl : public GLHelper::ScalerInterface,
     }
   }
 
-  // GLHelperShader::ShaderInterface implementation.
-  void Execute(GLuint source_texture,
-               const std::vector<GLuint>& dest_textures) override {
+  void SetColorWeights(int plane, const GLfloat color_weights[4]) {
+    DCHECK(plane >= 0 && plane < 3);
+    color_weights_[plane][0] = color_weights[0];
+    color_weights_[plane][1] = color_weights[1];
+    color_weights_[plane][2] = color_weights[2];
+    color_weights_[plane][3] = color_weights[3];
+  }
+
+  void ScaleToMultipleOutputs(GLuint src_texture,
+                              const gfx::Size& src_texture_size,
+                              GLuint dest_texture_0,
+                              GLuint dest_texture_1,
+                              const gfx::Rect& output_rect) override {
+    if (output_rect.IsEmpty())
+      return;  // No work to do.
+    gfx::RectF sampling_rect = ToSourceRect(output_rect);
     if (subscaler_) {
-      subscaler_->Scale(source_texture, intermediate_texture_);
-      source_texture = intermediate_texture_;
+      const auto intermediate = subscaler_->GenerateIntermediateTexture(
+          src_texture, src_texture_size, gfx::ToEnclosingRect(sampling_rect));
+      sampling_rect -= intermediate.second.OffsetFromOrigin();
+      Execute(intermediate.first, intermediate.second.size(), sampling_rect,
+              dest_texture_0, dest_texture_1, output_rect.size());
+    } else {
+      Execute(src_texture, src_texture_size, sampling_rect, dest_texture_0,
+              dest_texture_1, output_rect.size());
+    }
+  }
+
+  // Sets the overall scale ratio for the entire chain of Scalers.
+  void SetFinalScaleRatio(const gfx::Vector2d& from, const gfx::Vector2d& to) {
+    final_scale_ratio_.emplace(FinalScaleRatio{from, to});
+  }
+
+  // WARNING: This method should only be called by external clients, since they
+  // are using it compare against the overall scale ratio (of the entire chain
+  // of Scalers).
+  bool IsSameScaleRatio(const gfx::Vector2d& from,
+                        const gfx::Vector2d& to) const override {
+    return AreRatiosEqual(final_scale_ratio_->from.x(),
+                          final_scale_ratio_->to.x(), from.x(), to.x()) &&
+           AreRatiosEqual(final_scale_ratio_->from.y(),
+                          final_scale_ratio_->to.y(), from.y(), to.y());
+  }
+
+ private:
+  // Expands the given |sampling_rect| to account for the extra pixels bordering
+  // it that will be sampled by the shaders.
+  void PadForOverscan(gfx::RectF* sampling_rect) const {
+    float overscan_x = 0;
+    float overscan_y = 0;
+    switch (spec_.shader) {
+      case GLHelperScaling::SHADER_BILINEAR:
+      case GLHelperScaling::SHADER_BILINEAR2:
+      case GLHelperScaling::SHADER_BILINEAR3:
+      case GLHelperScaling::SHADER_BILINEAR4:
+      case GLHelperScaling::SHADER_BILINEAR2X2:
+      case GLHelperScaling::SHADER_PLANAR:
+      case GLHelperScaling::SHADER_YUV_MRT_PASS1:
+      case GLHelperScaling::SHADER_YUV_MRT_PASS2:
+        // Room for optimization: This is a conservative calculation. Some of
+        // the shaders require fewer overscan pixels.
+        overscan_x =
+            static_cast<float>(spec_.scale_from.x()) / spec_.scale_to.x();
+        overscan_y =
+            static_cast<float>(spec_.scale_from.y()) / spec_.scale_to.y();
+        break;
+
+      case GLHelperScaling::SHADER_BICUBIC_UPSCALE:
+        DCHECK_LE(spec_.scale_from.x(), spec_.scale_to.x());
+        DCHECK_LE(spec_.scale_from.y(), spec_.scale_to.y());
+        // This shader always reads a radius of 2 pixels about the sampling
+        // point.
+        overscan_x = 2.0f;
+        overscan_y = 2.0f;
+        break;
+
+      case GLHelperScaling::SHADER_BICUBIC_HALF_1D: {
+        DCHECK_GE(spec_.scale_from.x(), spec_.scale_to.x());
+        DCHECK_GE(spec_.scale_from.y(), spec_.scale_to.y());
+        // kLobeDist is the largest pixel read offset in the shader program.
+        constexpr float kLobeDist = 11.0f / 4.0f;
+        constexpr float kRelativeSamplingRadius = kLobeDist / 2.0f;
+        overscan_x = (kRelativeSamplingRadius * spec_.scale_from.x()) /
+                     spec_.scale_to.x();
+        overscan_y = (kRelativeSamplingRadius * spec_.scale_from.y()) /
+                     spec_.scale_to.y();
+        break;
+      }
+    }
+    sampling_rect->Inset(-overscan_x, -overscan_y);
+  }
+
+  // Returns the given |rect| in source coordinates.
+  gfx::RectF ToSourceRect(const gfx::Rect& rect) const {
+    return gfx::ScaleRect(
+        gfx::RectF(rect),
+        static_cast<float>(spec_.scale_from.x()) / spec_.scale_to.x(),
+        static_cast<float>(spec_.scale_from.y()) / spec_.scale_to.y());
+  }
+
+  // Returns the given |rect| in output coordinates, enlarged to whole-number
+  // coordinates.
+  gfx::Rect ToOutputRect(const gfx::RectF& rect) const {
+    return gfx::ToEnclosingRect(gfx::ScaleRect(
+        rect, static_cast<float>(spec_.scale_to.x()) / spec_.scale_from.x(),
+        static_cast<float>(spec_.scale_to.y()) / spec_.scale_from.y()));
+  }
+
+  // Returns a texture of this intermediate scaling step. The caller does NOT
+  // own the returned texture. The texture may be smaller than the
+  // |requested_output_rect.size()|, if that eliminates data redundancy that
+  // GL_CLAMP_TO_EDGE will correct for.
+  std::pair<GLuint, gfx::Rect> GenerateIntermediateTexture(
+      GLuint src_texture,
+      const gfx::Size& src_texture_size,
+      const gfx::Rect& requested_output_rect) {
+    // Compute the region of all input pixels that will be sampled. This region
+    // might extend beyond the source texture's bounds.
+    gfx::RectF sampling_rect = ToSourceRect(requested_output_rect);
+    PadForOverscan(&sampling_rect);
+
+    // If there is a sub-scaler, have it produce an intermediate texture to
+    // source from. Otherwise, use |src_texture| as the input.
+    GLuint sampling_texture;
+    gfx::Rect sampling_bounds;
+    if (subscaler_) {
+      const auto intermediate = subscaler_->GenerateIntermediateTexture(
+          src_texture, src_texture_size, gfx::ToEnclosingRect(sampling_rect));
+      sampling_texture = intermediate.first;
+      sampling_bounds = intermediate.second;
+    } else {
+      sampling_texture = src_texture;
+      sampling_bounds = gfx::Rect(src_texture_size);
     }
 
+    // If the sampling region extends beyond the bounds of the texture, clamp it
+    // and compute an |output_rect| that contains the non-redundant subset of
+    // what was requested.
+    gfx::Rect output_rect;
+    if (sampling_bounds.Contains(gfx::ToEnclosingRect(sampling_rect))) {
+      output_rect = requested_output_rect;
+    } else {
+      sampling_rect.Intersect(gfx::RectF(sampling_bounds));
+      output_rect = ToOutputRect(sampling_rect);
+      // Re-compute the sampling region. This might, again, extend beyond the
+      // bounds of the source texture, but only by a smaller, necessary amount.
+      sampling_rect = ToSourceRect(output_rect);
+    }
+
+    // Reallocate a new texture, if needed.
+    if (!intermediate_texture_)
+      gl_->GenTextures(1, &intermediate_texture_);
+    if (intermediate_texture_size_ != output_rect.size()) {
+      gl_->BindTexture(GL_TEXTURE_2D, intermediate_texture_);
+      gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, output_rect.width(),
+                      output_rect.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                      nullptr);
+      intermediate_texture_size_ = output_rect.size();
+    }
+
+    Execute(sampling_texture, sampling_bounds.size(),
+            sampling_rect - sampling_bounds.OffsetFromOrigin(),
+            intermediate_texture_, 0, output_rect.size());
+
+    return std::make_pair(intermediate_texture_, output_rect);
+  }
+
+  // Executes the scale, mapping pixels from |src_texture| to one or two
+  // outputs, transforming the source pixels in |sampling_rect| to produce a
+  // result of the given size. |src_texture_size| is the size of the entire
+  // |src_texture|, regardless of the sampled region.
+  void Execute(GLuint src_texture,
+               const gfx::Size& src_texture_size,
+               const gfx::RectF& sampling_rect,
+               GLuint dest_texture_0,
+               GLuint dest_texture_1,
+               const gfx::Size& result_size) {
+    // Attach output texture(s) to the framebuffer.
     ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
         gl_, dst_framebuffer_);
-    DCHECK_GT(dest_textures.size(), 0U);
-    auto num_dest_textures = static_cast<GLsizei>(dest_textures.size());
-    auto buffers = base::MakeUnique<GLenum[]>(num_dest_textures);
-    for (GLsizei t = 0; t < num_dest_textures; t++) {
-      ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dest_textures[t]);
-      gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + t,
-                                GL_TEXTURE_2D, dest_textures[t], 0);
-      buffers[t] = GL_COLOR_ATTACHMENT0 + t;
+    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, dest_texture_0, 0);
+    if (dest_texture_1 > 0) {
+      gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 1,
+                                GL_TEXTURE_2D, dest_texture_1, 0);
     }
-    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, source_texture);
 
+    // Bind to the source texture and set the texture sampler to use bilinear
+    // filtering and clamp to the edge, as required by all shader programs.
+    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, src_texture);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+    // Prepare the shader program for drawing.
     ScopedBufferBinder<GL_ARRAY_BUFFER> buffer_binder(
         gl_, scaler_helper_->vertex_attributes_buffer_);
-    shader_program_->UseProgram(spec_.src_size, spec_.src_subrect,
-                                spec_.dst_size, spec_.scale_x,
-                                spec_.vertically_flip_texture, color_weights_);
-    gl_->Viewport(0, 0, spec_.dst_size.width(), spec_.dst_size.height());
+    shader_program_->UseProgram(src_texture_size, sampling_rect, result_size,
+                                spec_.scale_x, spec_.vertically_flip_texture,
+                                color_weights_);
 
-    if (num_dest_textures > 1) {
-      DCHECK_LE(num_dest_textures, scaler_helper_->helper_->MaxDrawBuffers());
-      gl_->DrawBuffersEXT(num_dest_textures, buffers.get());
+    // Execute the draw.
+    gl_->Viewport(0, 0, result_size.width(), result_size.height());
+    const GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT0 + 1};
+    if (dest_texture_1 > 0) {
+      DCHECK_LE(2, scaler_helper_->helper_->MaxDrawBuffers());
+      gl_->DrawBuffersEXT(2, buffers);
     }
-    // Conduct texture mapping by drawing a quad composed of two triangles.
     gl_->DrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    if (dest_textures.size() > 1) {
-      // Set the draw buffers back to not confuse others.
-      gl_->DrawBuffersEXT(1, &buffers[0]);
+    if (dest_texture_1 > 0) {
+      // Set the draw buffers back to not disrupt external operations.
+      gl_->DrawBuffersEXT(1, buffers);
     }
   }
 
-  // GLHelper::ScalerInterface implementation.
-  void Scale(GLuint source_texture, GLuint dest_texture) override {
-    std::vector<GLuint> tmp(1);
-    tmp[0] = dest_texture;
-    Execute(source_texture, tmp);
-  }
-
-  const gfx::Size& SrcSize() override {
-    if (subscaler_) {
-      return subscaler_->SrcSize();
-    }
-    return spec_.src_size;
-  }
-  const gfx::Rect& SrcSubrect() override {
-    if (subscaler_) {
-      return subscaler_->SrcSubrect();
-    }
-    return spec_.src_subrect;
-  }
-  const gfx::Size& DstSize() override { return spec_.dst_size; }
-
- private:
   GLES2Interface* gl_;
   GLHelperScaling* scaler_helper_;
   GLHelperScaling::ScalerStage spec_;
-  GLfloat color_weights_[4];
+  GLfloat color_weights_[3][4];  // A vec4 for each plane.
   GLuint intermediate_texture_;
+  gfx::Size intermediate_texture_size_;
   scoped_refptr<ShaderProgram> shader_program_;
   ScopedFramebuffer dst_framebuffer_;
   std::unique_ptr<ScalerImpl> subscaler_;
+
+  // This last member is only set on ScalerImpls that are exposed to external
+  // modules. This is so the client can query the overall scale ratio provided
+  // by a chain of ScalerImpls.
+  struct FinalScaleRatio {
+    gfx::Vector2d from;
+    gfx::Vector2d to;
+  };
+  base::Optional<FinalScaleRatio> final_scale_ratio_;
 };
 
-GLHelperScaling::ScalerStage::ScalerStage(ShaderType shader_,
-                                          gfx::Size src_size_,
-                                          gfx::Rect src_subrect_,
-                                          gfx::Size dst_size_,
-                                          bool scale_x_,
-                                          bool vertically_flip_texture_,
-                                          bool swizzle_)
-    : shader(shader_),
-      src_size(src_size_),
-      src_subrect(src_subrect_),
-      dst_size(dst_size_),
-      scale_x(scale_x_),
-      vertically_flip_texture(vertically_flip_texture_),
-      swizzle(swizzle_) {}
-
-GLHelperScaling::ScalerStage::ScalerStage(const ScalerStage& other) = default;
-
-// The important inputs for this function is |x_ops| and
-// |y_ops|. They represent scaling operations to be done
-// on an imag of size |src_size|. If |quality| is SCALER_QUALITY_BEST,
-// then we will interpret these scale operations literally and we'll
-// create one scaler stage for each ScaleOp.  However, if |quality|
-// is SCALER_QUALITY_GOOD, then we can do a whole bunch of optimizations
-// by combining two or more ScaleOps in to a single scaler stage.
-// Normally we process ScaleOps from |y_ops| first and |x_ops| after
-// all |y_ops| are processed, but sometimes we can combine one or more
-// operation from both queues essentially for free. This is the reason
-// why |x_ops| and |y_ops| aren't just one single queue.
+// The important inputs for this function is |x_ops| and |y_ops|. They represent
+// scaling operations to be done on a source image of relative size
+// |scale_from|. If |quality| is SCALER_QUALITY_BEST, then interpret these scale
+// operations literally and create one scaler stage for each ScaleOp. However,
+// if |quality| is SCALER_QUALITY_GOOD, then enable some optimizations that
+// combine two or more ScaleOps in to a single scaler stage. Normally first
+// ScaleOps from |y_ops| are processed first and |x_ops| after all the |y_ops|,
+// but sometimes it's possible to  combine one or more operation from both
+// queues essentially for free. This is the reason why |x_ops| and |y_ops|
+// aren't just one single queue.
+// static
 void GLHelperScaling::ConvertScalerOpsToScalerStages(
     GLHelper::ScalerQuality quality,
-    gfx::Size src_size,
-    gfx::Rect src_subrect,
-    const gfx::Size& dst_size,
+    gfx::Vector2d scale_from,
     bool vertically_flip_texture,
     bool swizzle,
     base::circular_deque<GLHelperScaling::ScaleOp>* x_ops,
     base::circular_deque<GLHelperScaling::ScaleOp>* y_ops,
     std::vector<ScalerStage>* scaler_stages) {
   while (!x_ops->empty() || !y_ops->empty()) {
-    gfx::Size intermediate_size = src_subrect.size();
+    gfx::Vector2d intermediate_scale = scale_from;
     base::circular_deque<ScaleOp>* current_queue = NULL;
 
     if (!y_ops->empty()) {
@@ -304,7 +452,7 @@ void GLHelperScaling::ConvertScalerOpsToScalerStages(
         NOTREACHED();
     }
     bool scale_x = current_queue->front().scale_x;
-    current_queue->front().UpdateSize(&intermediate_size);
+    current_queue->front().UpdateScale(&intermediate_scale);
     current_queue->pop_front();
 
     // Optimization: Sometimes we can combine 2-4 scaling operations into
@@ -312,12 +460,12 @@ void GLHelperScaling::ConvertScalerOpsToScalerStages(
     if (quality == GLHelper::SCALER_QUALITY_GOOD) {
       if (!current_queue->empty() && current_shader == SHADER_BILINEAR) {
         // Combine two steps in the same dimension.
-        current_queue->front().UpdateSize(&intermediate_size);
+        current_queue->front().UpdateScale(&intermediate_scale);
         current_queue->pop_front();
         current_shader = SHADER_BILINEAR2;
         if (!current_queue->empty()) {
           // Combine three steps in the same dimension.
-          current_queue->front().UpdateSize(&intermediate_size);
+          current_queue->front().UpdateScale(&intermediate_scale);
           current_queue->pop_front();
           current_shader = SHADER_BILINEAR4;
         }
@@ -365,94 +513,146 @@ void GLHelperScaling::ConvertScalerOpsToScalerStages(
         }
 
         for (int i = 0; i < x_passes; i++) {
-          x_ops->front().UpdateSize(&intermediate_size);
+          x_ops->front().UpdateScale(&intermediate_scale);
           x_ops->pop_front();
         }
       }
     }
 
-    scaler_stages->push_back(ScalerStage(current_shader, src_size, src_subrect,
-                                         intermediate_size, scale_x,
-                                         vertically_flip_texture, swizzle));
-    src_size = intermediate_size;
-    src_subrect = gfx::Rect(intermediate_size);
+    scaler_stages->emplace_back(ScalerStage{current_shader, scale_from,
+                                            intermediate_scale, scale_x,
+                                            vertically_flip_texture, swizzle});
+    scale_from = intermediate_scale;
     vertically_flip_texture = false;
     swizzle = false;
   }
 }
 
+// static
 void GLHelperScaling::ComputeScalerStages(
     GLHelper::ScalerQuality quality,
-    const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
+    const gfx::Vector2d& scale_from,
+    const gfx::Vector2d& scale_to,
     bool vertically_flip_texture,
     bool swizzle,
     std::vector<ScalerStage>* scaler_stages) {
-  if (quality == GLHelper::SCALER_QUALITY_FAST ||
-      src_subrect.size() == dst_size) {
-    scaler_stages->push_back(ScalerStage(SHADER_BILINEAR, src_size, src_subrect,
-                                         dst_size, false,
-                                         vertically_flip_texture, swizzle));
+  if (quality == GLHelper::SCALER_QUALITY_FAST || scale_from == scale_to) {
+    scaler_stages->emplace_back(ScalerStage{SHADER_BILINEAR, scale_from,
+                                            scale_to, false,
+                                            vertically_flip_texture, swizzle});
     return;
   }
 
   base::circular_deque<GLHelperScaling::ScaleOp> x_ops, y_ops;
-  GLHelperScaling::ScaleOp::AddOps(src_subrect.width(), dst_size.width(), true,
+  GLHelperScaling::ScaleOp::AddOps(scale_from.x(), scale_to.x(), true,
                                    quality == GLHelper::SCALER_QUALITY_GOOD,
                                    &x_ops);
-  GLHelperScaling::ScaleOp::AddOps(
-      src_subrect.height(), dst_size.height(), false,
-      quality == GLHelper::SCALER_QUALITY_GOOD, &y_ops);
-
-  ConvertScalerOpsToScalerStages(quality, src_size, src_subrect, dst_size,
-                                 vertically_flip_texture, swizzle, &x_ops,
-                                 &y_ops, scaler_stages);
+  GLHelperScaling::ScaleOp::AddOps(scale_from.y(), scale_to.y(), false,
+                                   quality == GLHelper::SCALER_QUALITY_GOOD,
+                                   &y_ops);
+  DCHECK_GT(x_ops.size() + y_ops.size(), 0u);
+  ConvertScalerOpsToScalerStages(quality, scale_from, vertically_flip_texture,
+                                 swizzle, &x_ops, &y_ops, scaler_stages);
+  DCHECK_EQ(x_ops.size() + y_ops.size(), 0u);
 }
 
-GLHelper::ScalerInterface* GLHelperScaling::CreateScaler(
+std::unique_ptr<GLHelper::ScalerInterface> GLHelperScaling::CreateScaler(
     GLHelper::ScalerQuality quality,
-    gfx::Size src_size,
-    gfx::Rect src_subrect,
-    const gfx::Size& dst_size,
+    const gfx::Vector2d& scale_from,
+    const gfx::Vector2d& scale_to,
     bool vertically_flip_texture,
     bool swizzle) {
-  std::vector<ScalerStage> scaler_stages;
-  ComputeScalerStages(quality, src_size, src_subrect, dst_size,
-                      vertically_flip_texture, swizzle, &scaler_stages);
-
-  ScalerImpl* ret = NULL;
-  for (unsigned int i = 0; i < scaler_stages.size(); i++) {
-    ret = new ScalerImpl(gl_, this, scaler_stages[i], ret, NULL);
+  if (scale_from.x() == 0 || scale_from.y() == 0 || scale_to.x() == 0 ||
+      scale_to.y() == 0) {
+    // Invalid arguments: Cannot scale from or to a relative size of 0.
+    return nullptr;
   }
+
+  std::vector<ScalerStage> scaler_stages;
+  ComputeScalerStages(quality, scale_from, scale_to, vertically_flip_texture,
+                      swizzle, &scaler_stages);
+
+  std::unique_ptr<ScalerImpl> ret;
+  for (unsigned int i = 0; i < scaler_stages.size(); i++) {
+    ret = base::MakeUnique<ScalerImpl>(gl_, this, scaler_stages[i],
+                                       std::move(ret));
+  }
+  ret->SetFinalScaleRatio(scale_from, scale_to);
   return ret;
 }
 
-GLHelper::ScalerInterface* GLHelperScaling::CreatePlanarScaler(
-    const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
-    bool vertically_flip_texture,
-    bool swizzle,
-    const float color_weights[4]) {
-  ScalerStage stage(SHADER_PLANAR, src_size, src_subrect, dst_size, true,
-                    vertically_flip_texture, swizzle);
-  return new ScalerImpl(gl_, this, stage, NULL, color_weights);
+std::unique_ptr<GLHelper::ScalerInterface>
+GLHelperScaling::CreateGrayscalePlanerizer(bool vertically_flip_texture,
+                                           bool swizzle) {
+  const ScalerStage stage = {SHADER_PLANAR,           gfx::Vector2d(4, 1),
+                             gfx::Vector2d(1, 1),     true,
+                             vertically_flip_texture, swizzle};
+  auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
+  result->SetColorWeights(0, kRGBtoGrayscaleColorWeights);
+  result->SetFinalScaleRatio(stage.scale_from, stage.scale_to);
+  return result;
 }
 
-GLHelperScaling::ShaderInterface* GLHelperScaling::CreateYuvMrtShader(
-    const gfx::Size& src_size,
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
-    bool vertically_flip_texture,
-    bool swizzle,
-    ShaderType shader) {
-  DCHECK(shader == SHADER_YUV_MRT_PASS1 || shader == SHADER_YUV_MRT_PASS2);
-  ScalerStage stage(shader, src_size, src_subrect, dst_size, true,
-                    vertically_flip_texture, swizzle);
-  return new ScalerImpl(gl_, this, stage, NULL, NULL);
+std::unique_ptr<GLHelper::ScalerInterface>
+GLHelperScaling::CreateI420Planerizer(int plane,
+                                      bool vertically_flip_texture,
+                                      bool swizzle) {
+  const ScalerStage stage = {
+      SHADER_PLANAR,
+      plane == 0 ? gfx::Vector2d(4, 1) : gfx::Vector2d(8, 2),
+      gfx::Vector2d(1, 1),
+      true,
+      vertically_flip_texture,
+      swizzle};
+  auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
+  switch (plane) {
+    case 0:
+      result->SetColorWeights(0, kRGBtoYColorWeights);
+      break;
+    case 1:
+      result->SetColorWeights(0, kRGBtoUColorWeights);
+      break;
+    case 2:
+      result->SetColorWeights(0, kRGBtoVColorWeights);
+      break;
+    default:
+      NOTREACHED();
+  }
+  result->SetFinalScaleRatio(stage.scale_from, stage.scale_to);
+  return result;
 }
 
+std::unique_ptr<GLHelper::ScalerInterface>
+GLHelperScaling::CreateI420MrtPass1Planerizer(bool vertically_flip_texture,
+                                              bool swizzle) {
+  const ScalerStage stage = {SHADER_YUV_MRT_PASS1,    gfx::Vector2d(4, 1),
+                             gfx::Vector2d(1, 1),     true,
+                             vertically_flip_texture, swizzle};
+  auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
+  result->SetColorWeights(0, kRGBtoYColorWeights);
+  result->SetColorWeights(1, kRGBtoUColorWeights);
+  result->SetColorWeights(2, kRGBtoVColorWeights);
+  result->SetFinalScaleRatio(stage.scale_from, stage.scale_to);
+  return result;
+}
+
+std::unique_ptr<GLHelper::ScalerInterface>
+GLHelperScaling::CreateI420MrtPass2Planerizer(bool vertically_flip_texture,
+                                              bool swizzle) {
+  const ScalerStage stage = {SHADER_YUV_MRT_PASS2,    gfx::Vector2d(2, 2),
+                             gfx::Vector2d(1, 1),     true,
+                             vertically_flip_texture, swizzle};
+  auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
+  result->SetFinalScaleRatio(stage.scale_from, stage.scale_to);
+  return result;
+}
+
+// Triangle strip coordinates, used to sweep the entire source area when
+// executing the shader programs. The first two columns correspond to
+// values interpolated to produce |a_position| values in the shader programs,
+// while the latter two columns relate to the |a_texcoord| values; respectively,
+// the first pair are the vertex coordinates in object space, and the second
+// pair are the corresponding source texture coordinates.
 const GLfloat GLHelperScaling::kVertexAttributes[] = {
     -1.0f, -1.0f, 0.0f, 0.0f,  // vertex 0
     1.0f,  -1.0f, 1.0f, 0.0f,  // vertex 1
@@ -472,7 +672,7 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
   ShaderProgramKeyType key(type, swizzle);
   scoped_refptr<ShaderProgram>& cache_entry(shader_programs_[key]);
   if (!cache_entry.get()) {
-    cache_entry = new ShaderProgram(gl_, helper_);
+    cache_entry = new ShaderProgram(gl_, helper_, type);
     std::basic_string<GLchar> vertex_program;
     std::basic_string<GLchar> fragment_program;
     std::basic_string<GLchar> vertex_header;
@@ -484,7 +684,7 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
         "precision highp float;\n"
         "attribute vec2 a_position;\n"
         "attribute vec2 a_texcoord;\n"
-        "uniform vec4 src_subrect;\n");
+        "uniform vec4 sampling_rect;\n");
 
     fragment_header.append(
         "precision mediump float;\n"
@@ -492,7 +692,8 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
 
     vertex_program.append(
         "  gl_Position = vec4(a_position, 0.0, 1.0);\n"
-        "  vec2 texcoord = src_subrect.xy + a_texcoord * src_subrect.zw;\n");
+        "  vec2 texcoord = \n"
+        "      sampling_rect.xy + a_texcoord * sampling_rect.zw;\n");
 
     switch (type) {
       case SHADER_BILINEAR:
@@ -508,12 +709,9 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
         // or exactly 4x.
         shared_variables.append(
             "varying vec4 v_texcoords;\n");  // 2 texcoords packed in one quad
-        vertex_header.append(
-            "uniform vec2 scaling_vector;\n"
-            "uniform vec2 dst_pixelsize;\n");
+        vertex_header.append("uniform vec2 scaling_vector;\n");
         vertex_program.append(
-            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
-            "  step /= 4.0;\n"
+            "  vec2 step = scaling_vector / 4.0;\n"
             "  v_texcoords.xy = texcoord + step;\n"
             "  v_texcoords.zw = texcoord - step;\n");
 
@@ -528,12 +726,9 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
         shared_variables.append(
             "varying vec4 v_texcoords1;\n"  // 2 texcoords packed in one quad
             "varying vec2 v_texcoords2;\n");
-        vertex_header.append(
-            "uniform vec2 scaling_vector;\n"
-            "uniform vec2 dst_pixelsize;\n");
+        vertex_header.append("uniform vec2 scaling_vector;\n");
         vertex_program.append(
-            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
-            "  step /= 3.0;\n"
+            "  vec2 step = scaling_vector / 3.0;\n"
             "  v_texcoords1.xy = texcoord + step;\n"
             "  v_texcoords1.zw = texcoord;\n"
             "  v_texcoords2 = texcoord - step;\n");
@@ -547,12 +742,9 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
         // This is equivialent to three passes of the BILINEAR shader above,
         // It can be used to scale an image down 2.0x-4.0x or exactly 8x.
         shared_variables.append("varying vec4 v_texcoords[2];\n");
-        vertex_header.append(
-            "uniform vec2 scaling_vector;\n"
-            "uniform vec2 dst_pixelsize;\n");
+        vertex_header.append("uniform vec2 scaling_vector;\n");
         vertex_program.append(
-            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
-            "  step /= 8.0;\n"
+            "  vec2 step = scaling_vector / 8.0;\n"
             "  v_texcoords[0].xy = texcoord - step * 3.0;\n"
             "  v_texcoords[0].zw = texcoord - step;\n"
             "  v_texcoords[1].xy = texcoord + step;\n"
@@ -571,9 +763,9 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
         // 1.0x-2.0x in both X and Y directions. Or, it could be used to
         // scale an image down by exactly 4x in both dimensions.
         shared_variables.append("varying vec4 v_texcoords[2];\n");
-        vertex_header.append("uniform vec2 dst_pixelsize;\n");
+        vertex_header.append("uniform vec2 scaling_vector;\n");
         vertex_program.append(
-            "  vec2 step = src_subrect.zw / 4.0 / dst_pixelsize;\n"
+            "  vec2 step = scaling_vector / 4.0;\n"
             "  v_texcoords[0].xy = texcoord + vec2(step.x, step.y);\n"
             "  v_texcoords[0].zw = texcoord + vec2(step.x, -step.y);\n"
             "  v_texcoords[1].xy = texcoord + vec2(-step.x, step.y);\n"
@@ -596,11 +788,9 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
             "const float CenterWeight = 35.0 / 64.0;\n"
             "const float LobeWeight = -3.0 / 64.0;\n"
             "varying vec4 v_texcoords[2];\n");
-        vertex_header.append(
-            "uniform vec2 scaling_vector;\n"
-            "uniform vec2 src_pixelsize;\n");
+        vertex_header.append("uniform vec2 scaling_vector;\n");
         vertex_program.append(
-            "  vec2 step = src_subrect.zw * scaling_vector / src_pixelsize;\n"
+            "  vec2 step = scaling_vector / 2.0;\n"
             "  v_texcoords[0].xy = texcoord - LobeDist * step;\n"
             "  v_texcoords[0].zw = texcoord - CenterDist * step;\n"
             "  v_texcoords[1].xy = texcoord + CenterDist * step;\n"
@@ -664,19 +854,16 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
         // because single-component textures are not renderable on all
         // architectures.
         shared_variables.append("varying vec4 v_texcoords[2];\n");
-        vertex_header.append(
-            "uniform vec2 scaling_vector;\n"
-            "uniform vec2 dst_pixelsize;\n");
+        vertex_header.append("uniform vec2 scaling_vector;\n");
         vertex_program.append(
-            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
-            "  step /= 4.0;\n"
+            "  vec2 step = scaling_vector / 4.0;\n"
             "  v_texcoords[0].xy = texcoord - step * 1.5;\n"
             "  v_texcoords[0].zw = texcoord - step * 0.5;\n"
             "  v_texcoords[1].xy = texcoord + step * 0.5;\n"
             "  v_texcoords[1].zw = texcoord + step * 1.5;\n");
-        fragment_header.append("uniform vec4 color_weights;\n");
+        fragment_header.append("uniform vec4 rgb_to_plane0;\n");
         fragment_program.append(
-            "  gl_FragColor = color_weights * mat4(\n"
+            "  gl_FragColor = rgb_to_plane0 * mat4(\n"
             "    vec4(texture2D(s_texture, v_texcoords[0].xy).rgb, 1.0),\n"
             "    vec4(texture2D(s_texture, v_texcoords[0].zw).rgb, 1.0),\n"
             "    vec4(texture2D(s_texture, v_texcoords[1].xy).rgb, 1.0),\n"
@@ -710,39 +897,37 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
         //                                     UUUU   VVVV
         //
         shared_variables.append("varying vec4 v_texcoords[2];\n");
-        vertex_header.append(
-            "uniform vec2 scaling_vector;\n"
-            "uniform vec2 dst_pixelsize;\n");
+        vertex_header.append("uniform vec2 scaling_vector;\n");
         vertex_program.append(
-            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
-            "  step /= 4.0;\n"
+            "  vec2 step = scaling_vector / 4.0;\n"
             "  v_texcoords[0].xy = texcoord - step * 1.5;\n"
             "  v_texcoords[0].zw = texcoord - step * 0.5;\n"
             "  v_texcoords[1].xy = texcoord + step * 0.5;\n"
             "  v_texcoords[1].zw = texcoord + step * 1.5;\n");
         fragment_directives.append("#extension GL_EXT_draw_buffers : enable\n");
         fragment_header.append(
-            "const vec3 kRGBtoY = vec3(0.257, 0.504, 0.098);\n"
-            "const float kYBias = 0.0625;\n"
-            // Divide U and V by two to compensate for averaging below.
-            "const vec3 kRGBtoU = vec3(-0.148, -0.291, 0.439) / 2.0;\n"
-            "const vec3 kRGBtoV = vec3(0.439, -0.368, -0.071) / 2.0;\n"
-            "const float kUVBias = 0.5;\n");
+            "uniform vec4 rgb_to_plane0;\n"    // RGB-to-Y
+            "uniform vec4 rgb_to_plane1;\n"    // RGB-to-U
+            "uniform vec4 rgb_to_plane2;\n");  // RGB-to-V
         fragment_program.append(
-            "  vec3 pixel1 = texture2D(s_texture, v_texcoords[0].xy).rgb;\n"
-            "  vec3 pixel2 = texture2D(s_texture, v_texcoords[0].zw).rgb;\n"
-            "  vec3 pixel3 = texture2D(s_texture, v_texcoords[1].xy).rgb;\n"
-            "  vec3 pixel4 = texture2D(s_texture, v_texcoords[1].zw).rgb;\n"
-            "  vec3 pixel12 = pixel1 + pixel2;\n"
-            "  vec3 pixel34 = pixel3 + pixel4;\n"
-            "  gl_FragData[0] = vec4(dot(pixel1, kRGBtoY),\n"
-            "                        dot(pixel2, kRGBtoY),\n"
-            "                        dot(pixel3, kRGBtoY),\n"
-            "                        dot(pixel4, kRGBtoY)) + kYBias;\n"
-            "  gl_FragData[1] = vec4(dot(pixel12, kRGBtoU),\n"
-            "                        dot(pixel34, kRGBtoU),\n"
-            "                        dot(pixel12, kRGBtoV),\n"
-            "                        dot(pixel34, kRGBtoV)) + kUVBias;\n");
+            "  vec4 pixel1 = vec4(texture2D(s_texture, v_texcoords[0].xy).rgb, "
+            "                     1.0);\n"
+            "  vec4 pixel2 = vec4(texture2D(s_texture, v_texcoords[0].zw).rgb, "
+            "                     1.0);\n"
+            "  vec4 pixel3 = vec4(texture2D(s_texture, v_texcoords[1].xy).rgb, "
+            "                     1.0);\n"
+            "  vec4 pixel4 = vec4(texture2D(s_texture, v_texcoords[1].zw).rgb, "
+            "                     1.0);\n"
+            "  vec4 pixel12 = (pixel1 + pixel2) / 2.0;\n"
+            "  vec4 pixel34 = (pixel3 + pixel4) / 2.0;\n"
+            "  gl_FragData[0] = vec4(dot(pixel1, rgb_to_plane0),\n"
+            "                        dot(pixel2, rgb_to_plane0),\n"
+            "                        dot(pixel3, rgb_to_plane0),\n"
+            "                        dot(pixel4, rgb_to_plane0));\n"
+            "  gl_FragData[1] = vec4(dot(pixel12, rgb_to_plane1),\n"
+            "                        dot(pixel34, rgb_to_plane1),\n"
+            "                        dot(pixel12, rgb_to_plane2),\n"
+            "                        dot(pixel34, rgb_to_plane2));\n");
         break;
 
       case SHADER_YUV_MRT_PASS2:
@@ -750,12 +935,9 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
         // no need to do vertical scaling with math, since bilinear
         // interpolation in the sampler takes care of that.
         shared_variables.append("varying vec4 v_texcoords;\n");
-        vertex_header.append(
-            "uniform vec2 scaling_vector;\n"
-            "uniform vec2 dst_pixelsize;\n");
+        vertex_header.append("uniform vec2 scaling_vector;\n");
         vertex_program.append(
-            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
-            "  step /= 2.0;\n"
+            "  vec2 step = scaling_vector / 2.0;\n"
             "  v_texcoords.xy = texcoord - step * 0.5;\n"
             "  v_texcoords.zw = texcoord + step * 0.5;\n");
         fragment_directives.append("#extension GL_EXT_draw_buffers : enable\n");
@@ -821,24 +1003,25 @@ void ShaderProgram::Setup(const GLchar* vertex_shader_text,
   position_location_ = gl_->GetAttribLocation(program_, "a_position");
   texcoord_location_ = gl_->GetAttribLocation(program_, "a_texcoord");
   texture_location_ = gl_->GetUniformLocation(program_, "s_texture");
-  src_subrect_location_ = gl_->GetUniformLocation(program_, "src_subrect");
+  sampling_rect_location_ = gl_->GetUniformLocation(program_, "sampling_rect");
   src_pixelsize_location_ = gl_->GetUniformLocation(program_, "src_pixelsize");
-  dst_pixelsize_location_ = gl_->GetUniformLocation(program_, "dst_pixelsize");
   scaling_vector_location_ =
       gl_->GetUniformLocation(program_, "scaling_vector");
-  color_weights_location_ = gl_->GetUniformLocation(program_, "color_weights");
+  rgb_to_plane0_location_ = gl_->GetUniformLocation(program_, "rgb_to_plane0");
+  rgb_to_plane1_location_ = gl_->GetUniformLocation(program_, "rgb_to_plane1");
+  rgb_to_plane2_location_ = gl_->GetUniformLocation(program_, "rgb_to_plane2");
   // The only reason fetching these attribute locations should fail is
   // if the context was spontaneously lost (i.e., because the GPU
   // process crashed, perhaps deliberately for testing).
   DCHECK(Initialized() || gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
 }
 
-void ShaderProgram::UseProgram(const gfx::Size& src_size,
-                               const gfx::Rect& src_subrect,
+void ShaderProgram::UseProgram(const gfx::Size& src_texture_size,
+                               const gfx::RectF& sampling_rect,
                                const gfx::Size& dst_size,
                                bool scale_x,
                                bool flip_y,
-                               GLfloat color_weights[4]) {
+                               const GLfloat color_weights[3][4]) {
   gl_->UseProgram(program_);
 
   // OpenGL defines the last parameter to VertexAttribPointer as type
@@ -857,26 +1040,73 @@ void ShaderProgram::UseProgram(const gfx::Size& src_size,
 
   gl_->Uniform1i(texture_location_, 0);
 
-  // Convert |src_subrect| to texture coordinates.
-  GLfloat src_subrect_texcoord[] = {
-      static_cast<float>(src_subrect.x()) / src_size.width(),
-      static_cast<float>(src_subrect.y()) / src_size.height(),
-      static_cast<float>(src_subrect.width()) / src_size.width(),
-      static_cast<float>(src_subrect.height()) / src_size.height(),
+  // Convert |sampling_rect| from pixel coordinates to texture coordinates. The
+  // source texture coordinates are in the range [0.0,1.0] for each dimension,
+  // but the sampling rect may slightly "spill" outside that range (e.g., for
+  // scaler overscan).
+  GLfloat sampling_rect_texcoord[4] = {
+      sampling_rect.x() / src_texture_size.width(),
+      sampling_rect.y() / src_texture_size.height(),
+      sampling_rect.width() / src_texture_size.width(),
+      sampling_rect.height() / src_texture_size.height(),
   };
   if (flip_y) {
-    src_subrect_texcoord[1] += src_subrect_texcoord[3];
-    src_subrect_texcoord[3] *= -1.0;
+    sampling_rect_texcoord[1] += sampling_rect_texcoord[3];
+    sampling_rect_texcoord[3] *= -1.0;
   }
-  gl_->Uniform4fv(src_subrect_location_, 1, src_subrect_texcoord);
+  gl_->Uniform4fv(sampling_rect_location_, 1, sampling_rect_texcoord);
 
-  gl_->Uniform2f(src_pixelsize_location_, src_size.width(), src_size.height());
-  gl_->Uniform2f(dst_pixelsize_location_, static_cast<float>(dst_size.width()),
-                 static_cast<float>(dst_size.height()));
+  // Set shader-specific uniform inputs. The |scaling_vector| is the ratio of
+  // the number of source pixels sampled per dest pixels output. It is used by
+  // the shader programs to locate distinct texels from the source texture, and
+  // sample them at the appropriate offset to produce each output texel. In many
+  // cases, |scaling_vector| also selects whether scaling will happen only in
+  // the X or the Y dimension.
+  switch (shader_) {
+    case GLHelperScaling::SHADER_BILINEAR:
+      break;
 
-  gl_->Uniform2f(scaling_vector_location_, scale_x ? 1.0 : 0.0,
-                 scale_x ? 0.0 : 1.0);
-  gl_->Uniform4fv(color_weights_location_, 1, color_weights);
+    case GLHelperScaling::SHADER_BILINEAR2:
+    case GLHelperScaling::SHADER_BILINEAR3:
+    case GLHelperScaling::SHADER_BILINEAR4:
+    case GLHelperScaling::SHADER_BICUBIC_HALF_1D:
+    case GLHelperScaling::SHADER_PLANAR:
+    case GLHelperScaling::SHADER_YUV_MRT_PASS1:
+    case GLHelperScaling::SHADER_YUV_MRT_PASS2:
+      if (scale_x) {
+        gl_->Uniform2f(scaling_vector_location_,
+                       sampling_rect_texcoord[2] / dst_size.width(), 0.0);
+      } else {
+        gl_->Uniform2f(scaling_vector_location_, 0.0,
+                       sampling_rect_texcoord[3] / dst_size.height());
+      }
+      break;
+
+    case GLHelperScaling::SHADER_BILINEAR2X2:
+      gl_->Uniform2f(scaling_vector_location_,
+                     sampling_rect_texcoord[2] / dst_size.width(),
+                     sampling_rect_texcoord[3] / dst_size.height());
+      break;
+
+    case GLHelperScaling::SHADER_BICUBIC_UPSCALE:
+      gl_->Uniform2f(src_pixelsize_location_, src_texture_size.width(),
+                     src_texture_size.height());
+      // For this shader program, the |scaling_vector| has an alternate meaning:
+      // It is only being used to select whether sampling is stepped in the X or
+      // the Y direction.
+      gl_->Uniform2f(scaling_vector_location_, scale_x ? 1.0 : 0.0,
+                     scale_x ? 0.0 : 1.0);
+      break;
+  }
+
+  if (rgb_to_plane0_location_ != -1) {
+    gl_->Uniform4fv(rgb_to_plane0_location_, 1, &color_weights[0][0]);
+    if (rgb_to_plane1_location_ != -1) {
+      DCHECK_NE(rgb_to_plane2_location_, -1);
+      gl_->Uniform4fv(rgb_to_plane1_location_, 1, &color_weights[1][0]);
+      gl_->Uniform4fv(rgb_to_plane2_location_, 1, &color_weights[2][0]);
+    }
+  }
 }
 
 }  // namespace viz
