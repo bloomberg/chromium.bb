@@ -9,6 +9,7 @@
 #include "content/public/common/screen_orientation_values.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/icc_profile.h"
 
 namespace content {
 
@@ -25,6 +26,9 @@ struct CONTENT_EXPORT ScreenInfo {
 
     // The color space of the output display.
     gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+
+    // The ICC profile from which |color_space| was derived, if any.
+    gfx::ICCProfile icc_profile;
 
     // The screen depth in bits per pixel
     uint32_t depth = 0;

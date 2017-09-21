@@ -1917,22 +1917,21 @@ ICCProfile ICCProfileForTestingColorSpin() {
 }
 
 ICCProfile ICCProfileForTestingNoAnalyticTrFn() {
-  return ICCProfile::FromDataWithId(
+  return ICCProfile::FromData(
       reinterpret_cast<const char*>(no_analytic_tr_fn_profile_data),
-      arraysize(no_analytic_tr_fn_profile_data),
-      ICCProfile::test_id_no_analytic_tr_fn_);
+      arraysize(no_analytic_tr_fn_profile_data));
 }
 
 ICCProfile ICCProfileForTestingA2BOnly() {
-  return ICCProfile::FromDataWithId(
+  return ICCProfile::FromData(
       reinterpret_cast<const char*>(a2b_only_profile_data),
-      arraysize(a2b_only_profile_data), ICCProfile::test_id_a2b_only_);
+      arraysize(a2b_only_profile_data));
 }
 
 ICCProfile ICCProfileForTestingOvershoot() {
-  return ICCProfile::FromDataWithId(
+  return ICCProfile::FromData(
       reinterpret_cast<const char*>(overshoot_profile_data),
-      arraysize(overshoot_profile_data), ICCProfile::test_id_overshoot_);
+      arraysize(overshoot_profile_data));
 }
 
 }  // namespace gfx

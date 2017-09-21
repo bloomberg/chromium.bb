@@ -167,14 +167,23 @@ bool ColorSpace::operator==(const ColorSpace& other) const {
   if (primaries_ != other.primaries_ || transfer_ != other.transfer_ ||
       matrix_ != other.matrix_ || range_ != other.range_)
     return false;
-  if (primaries_ == PrimaryID::CUSTOM &&
-      memcmp(custom_primary_matrix_, other.custom_primary_matrix_,
-             sizeof(custom_primary_matrix_)))
-    return false;
-  if (transfer_ == TransferID::CUSTOM &&
-      memcmp(custom_transfer_params_, other.custom_transfer_params_,
-             sizeof(custom_transfer_params_)))
-    return false;
+  if (primaries_ == PrimaryID::CUSTOM) {
+    if (memcmp(custom_primary_matrix_, other.custom_primary_matrix_,
+               sizeof(custom_primary_matrix_))) {
+      return false;
+    }
+  }
+  if (transfer_ == TransferID::CUSTOM) {
+    if (memcmp(custom_transfer_params_, other.custom_transfer_params_,
+               sizeof(custom_transfer_params_))) {
+      return false;
+    }
+  }
+  if (primaries_ == PrimaryID::ICC_BASED ||
+      transfer_ == TransferID::ICC_BASED) {
+    if (icc_profile_id_ != other.icc_profile_id_)
+      return false;
+  }
   return true;
 }
 
@@ -204,8 +213,12 @@ ColorSpace ColorSpace::GetParametricApproximation() const {
 
   // Query the ICC profile, if available, for the parametric approximation.
   ICCProfile icc_profile;
-  if (GetICCProfile(&icc_profile))
+  if (GetICCProfile(&icc_profile)) {
     return icc_profile.GetParametricColorSpace();
+  } else {
+    DLOG(ERROR)
+        << "Unable to acquire ICC profile for parametric approximation.";
+  }
 
   // Fall back to sRGB if the ICC profile is no longer cached.
   return CreateSRGB();
