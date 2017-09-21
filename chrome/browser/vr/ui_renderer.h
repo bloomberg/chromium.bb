@@ -53,8 +53,7 @@ class UiRenderer {
   ~UiRenderer();
 
   void Draw(const RenderInfo& render_info,
-            const ControllerInfo& controller_info,
-            bool in_web_vr_mode);
+            const ControllerInfo& controller_info);
 
   // This is exposed separately because we do a separate pass to render this
   // content into an optimized viewport.
@@ -66,8 +65,8 @@ class UiRenderer {
 
   void Draw2dBrowsing(const RenderInfo& render_info,
                       const ControllerInfo& controller_info);
-  void DrawWebVrOverlayBackground(const RenderInfo& render_info,
-                                  const ControllerInfo& controller_info);
+  void DrawSplashScreen(const RenderInfo& render_info,
+                        const ControllerInfo& controller_info);
 
   void DrawUiView(const RenderInfo& render_info,
                   const ControllerInfo& controller_info,

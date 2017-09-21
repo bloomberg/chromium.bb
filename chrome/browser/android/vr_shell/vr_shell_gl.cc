@@ -868,7 +868,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   // At this point, we draw non-WebVR content that could, potentially, fill the
   // viewport.  NB: this is not just 2d browsing stuff, we may have a splash
   // screen showing in WebVR mode that must also fill the screen.
-  ui_renderer_->Draw(render_info_primary_, controller_info_, ShouldDrawWebVr());
+  ui_renderer_->Draw(render_info_primary_, controller_info_);
   frame.Unbind();
 
   std::vector<const vr::UiElement*> overlay_elements;

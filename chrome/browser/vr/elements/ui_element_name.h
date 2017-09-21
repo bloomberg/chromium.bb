@@ -44,6 +44,8 @@ enum UiElementName {
   kExclusiveScreenToast,
   kExclusiveScreenToastViewportAwareTransientParent,
   kExclusiveScreenToastViewportAware,
+  kSplashScreenRoot,
+  kSplashScreenViewportAwareRoot,
   kSplashScreenText,
   kSplashScreenBackground,
   kBackgroundFront,

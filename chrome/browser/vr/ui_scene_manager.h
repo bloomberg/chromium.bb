@@ -66,12 +66,14 @@ class ExitPrompt;
 //       kExitWarning
 //   kWebVrRoot
 //     kWebVrViewportAwareRoot
-//       kSplashScreenText
-//         kSplashScreenBackground
 //       kExclusiveScreenToastViewportAware
 //       kWebVrPermanentHttpSecurityWarning
 //       kWebVrTransientHttpSecurityWarning
 //       kWebVrUrlToast
+//   kSplashScreenRoot
+//     kSplashScreenViewportAwareRoot
+//       kSplashScreenText
+//         kSplashScreenBackground
 //
 // TODO(vollick): The above hierarchy is complex, brittle, and would be easier
 // to manage if it were specified in a declarative format.
@@ -174,7 +176,6 @@ class UiSceneManager {
   Rect* ceiling_ = nullptr;
   Grid* floor_ = nullptr;
   UiElement* close_button_ = nullptr;
-  UiElement* splash_screen_ = nullptr;
   UrlBar* url_bar_ = nullptr;
   TransientElement* webvr_url_toast_transient_parent_ = nullptr;
   WebVrUrlToast* webvr_url_toast_ = nullptr;
