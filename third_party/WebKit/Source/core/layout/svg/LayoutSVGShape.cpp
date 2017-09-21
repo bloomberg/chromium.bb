@@ -286,7 +286,7 @@ bool LayoutSVGShape::NodeAtFloatPointInternal(const HitTestRequest& request,
 }
 
 FloatRect LayoutSVGShape::CalculateObjectBoundingBox() const {
-  return GetPath().BoundingRect();
+  return GetPath().BoundingRect(Path::BoundsType::kExact);
 }
 
 FloatRect LayoutSVGShape::CalculateStrokeBoundingBox() const {

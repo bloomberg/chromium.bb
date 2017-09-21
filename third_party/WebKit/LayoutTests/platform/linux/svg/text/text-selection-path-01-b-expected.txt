@@ -3,13 +3,13 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (-8.64,-6.92) size 426.64x298.13
-      LayoutSVGHiddenContainer {defs} at (33.50,13.20) size 384.50x219.80
-        LayoutSVGPath {path} at (199,13.20) size 219x97.90 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 199 89.3 C 206.6 66.6 235.8 13.2 270 30.3 C 286.6 38.6 298.9 59.4 310 73.3 C 321.7 87.9 338.6 99 356 103.3 C 387.3 111.1 396.6 90.4 418 74.3"]
-        LayoutSVGPath {path} at (33.50,69.70) size 219x97.90 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 33.5 145.8 C 41 123 70.3 69.7 104.5 86.8 C 121 95 133 116 144.5 129.8 C 156.2 144.4 173 155.5 190.5 159.8 C 221.8 167.6 231 146.9 252.5 130.8"]
+      LayoutSVGHiddenContainer {defs} at (33.50,26.98) size 384.50x206.02
+        LayoutSVGPath {path} at (199,26.98) size 219x78.02 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 199 89.3 C 206.6 66.6 235.8 13.2 270 30.3 C 286.6 38.6 298.9 59.4 310 73.3 C 321.7 87.9 338.6 99 356 103.3 C 387.3 111.1 396.6 90.4 418 74.3"]
+        LayoutSVGPath {path} at (33.50,83.48) size 219x78.02 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 33.5 145.8 C 41 123 70.3 69.7 104.5 86.8 C 121 95 133 116 144.5 129.8 C 156.2 144.4 173 155.5 190.5 159.8 C 221.8 167.6 231 146.9 252.5 130.8"]
         LayoutSVGPath {path} at (113,233) size 300x0 [stroke={[type=SOLID] [color=#0000FF] [stroke width=4.00]}] [data="M 113 233 L 413 233"]
       LayoutSVGContainer {g} at (167.86,-6.92) size 250.14x119.84
-        LayoutSVGContainer {use} at (199,13.20) size 219x97.90
-          LayoutSVGPath {path} at (199,13.20) size 219x97.90 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 199 89.3 C 206.6 66.6 235.8 13.2 270 30.3 C 286.6 38.6 298.9 59.4 310 73.3 C 321.7 87.9 338.6 99 356 103.3 C 387.3 111.1 396.6 90.4 418 74.3"]
+        LayoutSVGContainer {use} at (199,26.98) size 219x78.02
+          LayoutSVGPath {path} at (199,26.98) size 219x78.02 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 199 89.3 C 206.6 66.6 235.8 13.2 270 30.3 C 286.6 38.6 298.9 59.4 310 73.3 C 321.7 87.9 338.6 99 356 103.3 C 387.3 111.1 396.6 90.4 418 74.3"]
         LayoutSVGText {text} at (167.86,-6.92) size 204.64x119.84 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (167.86,-6.92) size 204.64x119.84
             LayoutSVGInlineText {#text} at (167.86,-6.92) size 204.64x119.84
@@ -29,8 +29,8 @@ layer at (0,0) size 800x600
               chunk 1 text run 14 at (353.02,102.49) startOffset 13 endOffset 14 width 21.00: "h"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGContainer {g} at (-8.64,49.55) size 299.64x161.66
-        LayoutSVGContainer {use} at (33.50,69.70) size 219x97.90
-          LayoutSVGPath {path} at (33.50,69.70) size 219x97.90 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 33.5 145.8 C 41 123 70.3 69.7 104.5 86.8 C 121 95 133 116 144.5 129.8 C 156.2 144.4 173 155.5 190.5 159.8 C 221.8 167.6 231 146.9 252.5 130.8"]
+        LayoutSVGContainer {use} at (33.50,83.48) size 219x78.02
+          LayoutSVGPath {path} at (33.50,83.48) size 219x78.02 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 33.5 145.8 C 41 123 70.3 69.7 104.5 86.8 C 121 95 133 116 144.5 129.8 C 156.2 144.4 173 155.5 190.5 159.8 C 221.8 167.6 231 146.9 252.5 130.8"]
         LayoutSVGText {text} at (-8.64,49.55) size 215.59x119.86 contains 1 chunk(s)
           LayoutSVGTextPath {textPath} at (-8.64,49.55) size 215.59x119.86
             LayoutSVGTSpan {tspan} at (-8.64,49.55) size 215.59x119.86
