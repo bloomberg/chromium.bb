@@ -5,6 +5,7 @@
 #include "bindings/core/v8/IDLTypes.h"
 
 #include <type_traits>
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8InternalDictionary.h"
 #include "bindings/core/v8/dictionary_sequence_or_dictionary.h"
 #include "core/dom/Element.h"
