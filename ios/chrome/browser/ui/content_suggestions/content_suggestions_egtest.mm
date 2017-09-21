@@ -134,6 +134,13 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
 + (void)setUp {
   [super setUp];
+  if (IsIPadIdiom()) {
+    // Make sure we are on the Home panel on iPad.
+    chrome_test_util::OpenNewTab();
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        performAction:grey_typeText(@"chrome://newtab/#most_visited\n")];
+  }
+
   [self closeAllTabs];
   ios::ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
