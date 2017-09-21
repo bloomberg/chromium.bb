@@ -1186,7 +1186,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         @"topGuide" : self.topLayoutGuide,
       };
       NSArray* constraints = @[
-        @"V:|[topGuide][tableView][contextBar(==48)]|",
+        @"V:|[topGuide][tableView][contextBar]|",
         @"H:|[tableView]|",
         @"H:|[contextBar]|",
       ];
