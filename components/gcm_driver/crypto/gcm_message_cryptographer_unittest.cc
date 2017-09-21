@@ -49,16 +49,6 @@ const unsigned char kCommonRecipientPublicKey[] = {
 static_assert(arraysize(kCommonRecipientPublicKey) == 65,
               "Raw P-256 public keys must be 65 bytes in size.");
 
-const unsigned char kCommonRecipientPublicKeyX509[] = {
-    0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02,
-    0x01, 0x06, 0x08, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x03, 0x01, 0x07, 0x03,
-    0x42, 0x00, 0x04, 0x35, 0x02, 0x67, 0xB9, 0x10, 0x8F, 0x9B, 0xF1, 0x85,
-    0xF5, 0x1B, 0xD7, 0xA4, 0xEF, 0xBD, 0x28, 0xB3, 0x11, 0x40, 0xBA, 0xD0,
-    0xEE, 0xB2, 0x97, 0xDA, 0x6A, 0x93, 0x2D, 0x26, 0x45, 0xBD, 0xB2, 0x9A,
-    0x9F, 0xB8, 0x19, 0xD8, 0x21, 0x6F, 0x66, 0xE3, 0xF6, 0x0B, 0x74, 0xB2,
-    0x28, 0x38, 0xDC, 0xA7, 0x8A, 0x58, 0x0D, 0x56, 0x47, 0x3E, 0xD0, 0x5B,
-    0x5C, 0x93, 0x4E, 0xB3, 0x89, 0x87, 0x64};
-
 const unsigned char kCommonRecipientPrivateKey[] = {
     0x30, 0x81, 0xB0, 0x30, 0x1B, 0x06, 0x0A, 0x2A, 0x86, 0x48, 0x86, 0xF7,
     0x0D, 0x01, 0x0C, 0x01, 0x03, 0x30, 0x0D, 0x04, 0x08, 0xF3, 0xD6, 0x39,
@@ -260,16 +250,8 @@ class GCMMessageCryptographerTestBase : public ::testing::Test {
         kCommonRecipientPrivateKey,
         kCommonRecipientPrivateKey + arraysize(kCommonRecipientPrivateKey));
 
-    // TODO(peter): Remove the dependency on the x509 keying material when
-    // crbug.com/618025 has been resolved.
-    std::string recipient_public_key_x509(
-        kCommonRecipientPublicKeyX509,
-        kCommonRecipientPublicKeyX509 +
-            arraysize(kCommonRecipientPublicKeyX509));
-
     ASSERT_TRUE(ComputeSharedP256Secret(
-        recipient_private_key, recipient_public_key_x509, sender_public_key_,
-        &ecdh_shared_secret_));
+        recipient_private_key, sender_public_key_, &ecdh_shared_secret_));
 
     auth_secret_.assign(kCommonAuthSecret,
                         kCommonAuthSecret + arraysize(kCommonAuthSecret));
@@ -707,28 +689,22 @@ TEST_F(GCMMessageCryptographerTestVectorTest, DecryptionVectorsDraft08) {
 class GCMMessageCryptographerReferenceTest : public ::testing::Test {
  protected:
   // Computes the shared secret between the sender and the receiver. The sender
-  // must have a key-pair containing a X.509 SubjectPublicKeyInfo block and a
-  // ASN.1-encoded PKCS #8 EncryptedPrivateKeyInfo block, whereas the receiver
-  // must have a public key in uncompressed EC point format.
+  // must have a ASN.1-encoded PKCS #8 EncryptedPrivateKeyInfo block, whereas
+  // the receiver must have a public key in uncompressed EC point format.
   void ComputeSharedSecret(
       const base::StringPiece& encoded_sender_private_key,
-      const base::StringPiece& encoded_sender_public_key_x509,
       const base::StringPiece& encoded_receiver_public_key,
       std::string* shared_secret) const {
-    std::string sender_private_key, sender_public_key_x509, receiver_public_key;
+    std::string sender_private_key, receiver_public_key;
     ASSERT_TRUE(base::Base64UrlDecode(
         encoded_sender_private_key,
         base::Base64UrlDecodePolicy::IGNORE_PADDING, &sender_private_key));
     ASSERT_TRUE(base::Base64UrlDecode(
-        encoded_sender_public_key_x509,
-        base::Base64UrlDecodePolicy::IGNORE_PADDING, &sender_public_key_x509));
-    ASSERT_TRUE(base::Base64UrlDecode(
         encoded_receiver_public_key,
         base::Base64UrlDecodePolicy::IGNORE_PADDING, &receiver_public_key));
 
-    ASSERT_TRUE(ComputeSharedP256Secret(
-        sender_private_key, sender_public_key_x509, receiver_public_key,
-        shared_secret));
+    ASSERT_TRUE(ComputeSharedP256Secret(sender_private_key, receiver_public_key,
+                                        shared_secret));
   }
 };
 
@@ -751,9 +727,6 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft03) {
   const char kSenderPublicKeyUncompressed[] =
       "BNoRDbb84JGm8g5Z5CFxurSqsXWJ11ItfXEWYVLE85Y7CYkDjXsIEc4aqxYaQ1G8BqkXCJ6D"
       "PpDrWtdWj_mugHU";
-  const char kSenderPublicX509[] =
-      "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2hENtvzgkabyDlnkIXG6tKqxdYnXUi19cRZh"
-      "UsTzljsJiQONewgRzhqrFhpDUbwGqRcInoM-kOta11aP-a6AdQ";
 
   // The keying material used by the recipient to decrypt the |kCiphertext|.
   const char kRecipientPrivate[] =
@@ -764,9 +737,6 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft03) {
   const char kRecipientPublicKeyUncompressed[] =
       "BCEkBjzL8Z3C-oi2Q7oE5t2Np-p7osjGLg93qUP0wvqRT21EEWyf0cQDQcakQMqz4hQKYOQ3"
       "il2nNZct4HgAUQU";
-  const char kRecipientPublicX509[] =
-      "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEISQGPMvxncL6iLZDugTm3Y2n6nuiyMYuD3ep"
-      "Q_TC-pFPbUQRbJ_RxANBxqRAyrPiFApg5DeKXac1ly3geABRBQ";
 
   // The ciphertext and associated plaintext of the message.
   const char kCiphertext[] = "6nqAQUME8hNqw5J3kl8cpVVJylXKYqZOeseZG8UueKpA";
@@ -775,12 +745,11 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft03) {
   std::string sender_shared_secret, receiver_shared_secret;
 
   // Compute the shared secrets between the sender and receiver's keys.
-  ASSERT_NO_FATAL_FAILURE(ComputeSharedSecret(kSenderPrivate, kSenderPublicX509,
-                                              kRecipientPublicKeyUncompressed,
-                                              &sender_shared_secret));
   ASSERT_NO_FATAL_FAILURE(ComputeSharedSecret(
-      kRecipientPrivate, kRecipientPublicX509, kSenderPublicKeyUncompressed,
-      &receiver_shared_secret));
+      kSenderPrivate, kRecipientPublicKeyUncompressed, &sender_shared_secret));
+  ASSERT_NO_FATAL_FAILURE(ComputeSharedSecret(kRecipientPrivate,
+                                              kSenderPublicKeyUncompressed,
+                                              &receiver_shared_secret));
 
   ASSERT_GT(sender_shared_secret.size(), 0u);
   ASSERT_EQ(sender_shared_secret, receiver_shared_secret);
@@ -835,9 +804,6 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft08) {
       "AyQzjG7jdSXooDx_yPXgwMskoNzKhBXIG0AZF7MBimdXFTg_wlv38empWRr_-x4fnQiIBKya"
       "pt6uBOfYVuE_nnhqudqvSxiiv6hikBvxS2zabgph8-vFPQG10uUv8xkAO6vPdtTABCUzCXQU"
       "p1QmuP471ZdaNAMuCPmxry-C";
-  const char kSenderPublicX509[] =
-      "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE_jP0qw3qcZFNtVgj9ztUlI9BMG2SBzLbuaWa"
-      "UyhkgiAOWXp7e8JguhwieZhYCZLpOXMALzASooro8Gu7eOXsDw";
 
   // The keying material used by the recipient to decrypt the |kCiphertext|.
   const char kRecipientPrivate[] =
@@ -848,9 +814,6 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft08) {
   const char kRecipientPublicKeyUncompressed[] =
       "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZ"
       "GH6SRpkNtoIAiw4";
-  const char kRecipientPublicX509[] =
-      "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJXGyvs3942BVGq8e0PTNNmwRzr5VX4m8t7GG"
-      "pTM5FzFo7OLr4BhZe9MEebhuPI-OztV3ylkYfpJGmQ22ggCLDg";
 
   // The plain text of the message, as well as the encrypted reference message.
   const char kPlaintext[] = "When I grow up, I want to be a watermelon";
@@ -876,22 +839,17 @@ TEST_F(GCMMessageCryptographerReferenceTest, ReferenceDraft08) {
   std::string sender_shared_secret, receiver_shared_secret;
 
   // Compute the shared secrets between the sender and receiver's keys.
-  ASSERT_NO_FATAL_FAILURE(ComputeSharedSecret(kSenderPrivate, kSenderPublicX509,
-                                              kRecipientPublicKeyUncompressed,
-                                              &sender_shared_secret));
+  ASSERT_NO_FATAL_FAILURE(ComputeSharedSecret(
+      kSenderPrivate, kRecipientPublicKeyUncompressed, &sender_shared_secret));
 
   // Compute the shared secret based on the sender's public key, which isn't a
   // constant but instead is included in the message's binary header.
-  std::string sender_private_key, sender_public_key_x509;
+  std::string sender_private_key;
   ASSERT_TRUE(base::Base64UrlDecode(kRecipientPrivate,
                                     base::Base64UrlDecodePolicy::IGNORE_PADDING,
                                     &sender_private_key));
-  ASSERT_TRUE(base::Base64UrlDecode(kRecipientPublicX509,
-                                    base::Base64UrlDecodePolicy::IGNORE_PADDING,
-                                    &sender_public_key_x509));
 
-  ASSERT_TRUE(ComputeSharedP256Secret(sender_private_key,
-                                      sender_public_key_x509, sender_public_key,
+  ASSERT_TRUE(ComputeSharedP256Secret(sender_private_key, sender_public_key,
                                       &receiver_shared_secret));
 
   ASSERT_GT(sender_shared_secret.size(), 0u);

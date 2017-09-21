@@ -92,7 +92,6 @@ bool CreateP256KeyPair(std::string* out_private_key,
 }
 
 bool ComputeSharedP256Secret(const base::StringPiece& private_key,
-                             const base::StringPiece& public_key_x509,
                              const base::StringPiece& peer_public_key,
                              std::string* out_shared_secret) {
   DCHECK(out_shared_secret);
@@ -100,10 +99,7 @@ bool ComputeSharedP256Secret(const base::StringPiece& private_key,
   std::unique_ptr<crypto::ECPrivateKey> local_key_pair(
       crypto::ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
           std::vector<uint8_t>(private_key.data(),
-                               private_key.data() + private_key.size()),
-          std::vector<uint8_t>(
-              public_key_x509.data(),
-              public_key_x509.data() + public_key_x509.size())));
+                               private_key.data() + private_key.size())));
 
   if (!local_key_pair) {
     DLOG(ERROR) << "Unable to create the local key pair.";

@@ -33,8 +33,7 @@ bool CreateEncryptedPayloadForTesting(const base::StringPiece& payload,
   std::string shared_secret;
 
   // Calculate the shared secret between the sender and its peer.
-  if (!ComputeSharedP256Secret(private_key, public_key_x509, peer_public_key,
-                               &shared_secret)) {
+  if (!ComputeSharedP256Secret(private_key, peer_public_key, &shared_secret)) {
     return false;
   }
 

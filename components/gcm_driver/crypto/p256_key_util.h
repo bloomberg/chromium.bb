@@ -28,13 +28,11 @@ bool CreateP256KeyPair(std::string* out_private_key,
 // whether the secret could be computed, and was written to the out argument.
 //
 // The |private_key| must be an ASN.1-encoded PKCS#8 EncryptedPrivateKeyInfo
-// block together, where |public_key_x509| must be an X.509 SubjectPublicKeyInfo
-// block. This is necessary for NSS to be able to import the |private_key|.
+// block. This is legacy from the NSS implementation.
 //
 // The |peer_public_key| must be an octet string in uncompressed form per
 // SEC1 2.3.3.
 bool ComputeSharedP256Secret(const base::StringPiece& private_key,
-                             const base::StringPiece& public_key_x509,
                              const base::StringPiece& peer_public_key,
                              std::string* out_shared_secret) WARN_UNUSED_RESULT;
 

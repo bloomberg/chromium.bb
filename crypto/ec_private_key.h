@@ -47,8 +47,7 @@ class CRYPTO_EXPORT ECPrivateKey {
   // This function is deprecated. Use CreateFromPrivateKeyInfo for new code.
   // See https://crbug.com/603319.
   static std::unique_ptr<ECPrivateKey> CreateFromEncryptedPrivateKeyInfo(
-      const std::vector<uint8_t>& encrypted_private_key_info,
-      const std::vector<uint8_t>& subject_public_key_info);
+      const std::vector<uint8_t>& encrypted_private_key_info);
 
   // Returns a copy of the object.
   std::unique_ptr<ECPrivateKey> Copy() const;
