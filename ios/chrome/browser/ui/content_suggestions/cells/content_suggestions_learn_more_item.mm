@@ -79,6 +79,7 @@ const int kLinkColorRGB = 0x5595FE;
     _label = [[UILabel alloc] init];
     _label.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:_label];
+    _label.accessibilityTraits = UIAccessibilityTraitLink;
     [NSLayoutConstraint activateConstraints:@[
       [_label.centerXAnchor
           constraintEqualToAnchor:self.contentView.centerXAnchor],
