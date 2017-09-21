@@ -499,9 +499,6 @@ extern const char kMemoryCoordinatorDescription[];
 extern const char kMessageCenterNewStyleNotificationName[];
 extern const char kMessageCenterNewStyleNotificationDescription[];
 
-extern const char kMessageCenterAlwaysScrollUpUponRemovalName[];
-extern const char kMessageCenterAlwaysScrollUpUponRemovalDescription[];
-
 extern const char kMhtmlGeneratorOptionName[];
 extern const char kMhtmlGeneratorOptionDescription[];
 extern const char kMhtmlSkipNostoreMain[];

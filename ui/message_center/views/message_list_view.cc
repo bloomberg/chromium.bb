@@ -362,11 +362,7 @@ void MessageListView::DoUpdateIfPossible() {
     return;
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval))
-    AnimateNotificationsBelowTarget();
-  else
-    AnimateNotifications();
+  AnimateNotifications();
 
   // Should calculate and set new size after calling AnimateNotifications()
   // because fixed_height_ may be updated in it.
@@ -378,55 +374,6 @@ void MessageListView::DoUpdateIfPossible() {
 
   if (!animator_.IsAnimating() && GetWidget())
     GetWidget()->SynthesizeMouseMoveEvent();
-}
-
-// TODO(yoshiki): Remove this method. It is no longer maintained.
-void MessageListView::AnimateNotificationsBelowTarget() {
-  int target_index = -1;
-  int padding = kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
-  gfx::Rect child_area = GetContentsBounds();
-  if (reposition_top_ >= 0) {
-    for (int i = 0; i < child_count(); ++i) {
-      views::View* child = child_at(i);
-      if (child->y() >= reposition_top_) {
-        // Find the target.
-        target_index = i;
-        break;
-      }
-    }
-  }
-  int top;
-  if (target_index != -1) {
-    // Layout the target.
-    int y = reposition_top_;
-    views::View* target = child_at(target_index);
-    int target_height = target->GetHeightForWidth(child_area.width());
-    if (AnimateChild(target, y - target_height, target_height,
-                     false /* animate_on_move */)) {
-      y -= target_height + padding;
-    }
-
-    // Layout the items above the target.
-    for (int i = target_index - 1; i >= 0; --i) {
-      views::View* child = child_at(i);
-      int height = child->GetHeightForWidth(child_area.width());
-      if (AnimateChild(child, y - height, height, false /* animate_on_move */))
-        y -= height + padding;
-    }
-
-    top = reposition_top_ + target_height + padding;
-  } else {
-    target_index = -1;
-    top = GetInsets().top();
-  }
-
-  // Layout the items below the target (or all items if target is unavailable).
-  for (int i = target_index + 1; i < child_count(); ++i) {
-    views::View* child = child_at(i);
-    int height = child->GetHeightForWidth(child_area.width());
-    if (AnimateChild(child, top, height, true /* animate_on_move */))
-      top += height + padding;
-  }
 }
 
 std::vector<int> MessageListView::ComputeRepositionOffsets(

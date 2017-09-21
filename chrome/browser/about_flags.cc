@@ -1990,13 +1990,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDropSyncCredentialDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kDropSyncCredential)},
 #if !defined(OS_ANDROID)
-    {"enable-message-center-always-scroll-up-upon-notification-removal",
-     flag_descriptions::kMessageCenterAlwaysScrollUpUponRemovalName,
-     flag_descriptions::kMessageCenterAlwaysScrollUpUponRemovalDescription,
-     kOsDesktop,
-     SINGLE_VALUE_TYPE(
-         message_center::switches::
-             kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)},
     {"enable-message-center-new-style-notification",
      flag_descriptions::kMessageCenterNewStyleNotificationName,
      flag_descriptions::kMessageCenterNewStyleNotificationDescription,

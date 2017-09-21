@@ -16,9 +16,6 @@ bool MESSAGE_CENTER_PUBLIC_EXPORT IsNewStyleNotificationEnabled();
 namespace switches {
 
 MESSAGE_CENTER_PUBLIC_EXPORT extern const char
-    kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval[];
-
-MESSAGE_CENTER_PUBLIC_EXPORT extern const char
     kEnableMessageCenterNewStyleNotification[];
 MESSAGE_CENTER_PUBLIC_EXPORT extern const char
     kDisableMessageCenterNewStyleNotification[];

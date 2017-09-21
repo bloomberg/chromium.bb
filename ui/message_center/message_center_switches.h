@@ -11,9 +11,6 @@
 namespace switches {
 
 MESSAGE_CENTER_EXPORT extern const char
-    kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval[];
-
-MESSAGE_CENTER_EXPORT extern const char
     kEnableMessageCenterNewStyleNotification[];
 MESSAGE_CENTER_EXPORT extern const char
     kDisableMessageCenterNewStyleNotification[];

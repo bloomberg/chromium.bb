@@ -24,12 +24,6 @@ bool IsNewStyleNotificationEnabled() {
 
 namespace switches {
 
-// Enables message center to always move other notifications upwards when a
-// notification is removed, no matter whether the message center is displayed
-// top down or not.
-const char kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval[] =
-    "enable-message-center-always-scroll-up-upon-notification-removal";
-
 // Flag to enable or disable new-style notification. This flag will be removed
 // once the feature gets stable.
 const char kEnableMessageCenterNewStyleNotification[] =
