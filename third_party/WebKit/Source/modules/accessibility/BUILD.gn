@@ -52,6 +52,8 @@ blink_modules_sources("accessibility") {
     "AXSVGRoot.h",
     "AXSlider.cpp",
     "AXSlider.h",
+    "AXSparseAttributeSetter.cpp",
+    "AXSparseAttributeSetter.h",
     "AXSpinButton.cpp",
     "AXSpinButton.h",
     "AXTable.cpp",

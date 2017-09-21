@@ -41,6 +41,20 @@ const AtomicString& AXVirtualObject::GetAOMPropertyOrARIAAttribute(
   return accessible_node_->GetProperty(property);
 }
 
+bool AXVirtualObject::HasAOMPropertyOrARIAAttribute(AOMBooleanProperty property,
+                                                    bool& result) const {
+  if (!accessible_node_)
+    return false;
+
+  bool is_null = true;
+  result = accessible_node_->GetProperty(property, is_null);
+  return !is_null;
+}
+
+AccessibleNode* AXVirtualObject::GetAccessibleNode() const {
+  return accessible_node_;
+}
+
 String AXVirtualObject::TextAlternative(bool recursive,
                                         bool in_aria_labelled_by_traversal,
                                         AXObjectSet& visited,

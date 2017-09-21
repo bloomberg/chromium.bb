@@ -26,6 +26,9 @@ class MODULES_EXPORT AXVirtualObject : public AXObject {
   void AddChildren() override;
   const AtomicString& GetAOMPropertyOrARIAAttribute(
       AOMStringProperty) const override;
+  bool HasAOMPropertyOrARIAAttribute(AOMBooleanProperty,
+                                     bool& result) const override;
+  AccessibleNode* GetAccessibleNode() const override;
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,

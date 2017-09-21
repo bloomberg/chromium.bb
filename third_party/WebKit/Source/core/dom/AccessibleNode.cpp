@@ -286,7 +286,7 @@ bool AccessibleNode::GetProperty(Element* element,
 template <typename P, typename T>
 static T FindPropertyValue(P property,
                            bool& is_null,
-                           Vector<std::pair<P, T>>& properties,
+                           const Vector<std::pair<P, T>>& properties,
                            T default_value) {
   for (const auto& item : properties) {
     if (item.first == property) {
@@ -298,19 +298,10 @@ static T FindPropertyValue(P property,
   return default_value;
 }
 
-// static
-bool AccessibleNode::GetProperty(Element* element,
-                                 AOMBooleanProperty property,
-                                 bool& is_null) {
+bool AccessibleNode::GetProperty(AOMBooleanProperty property,
+                                 bool& is_null) const {
   is_null = true;
-
-  bool default_value = false;
-  if (!element || !element->ExistingAccessibleNode())
-    return default_value;
-
-  return FindPropertyValue(
-      property, is_null, element->ExistingAccessibleNode()->boolean_properties_,
-      default_value);
+  return FindPropertyValue(property, is_null, boolean_properties_, false);
 }
 
 // static
@@ -446,9 +437,12 @@ bool AccessibleNode::GetPropertyOrARIAAttribute(Element* element,
   if (!element)
     return false;
 
-  bool result = GetProperty(element, property, is_null);
-  if (!is_null)
-    return result;
+  AccessibleNode* accessible_node = element->ExistingAccessibleNode();
+  if (accessible_node) {
+    bool result = accessible_node->GetProperty(property, is_null);
+    if (!is_null)
+      return result;
+  }
 
   // Fall back on the equivalent ARIA attribute.
   QualifiedName attribute = GetCorrespondingARIAAttribute(property);
@@ -514,42 +508,36 @@ int32_t AccessibleNode::GetPropertyOrARIAAttribute(Element* element,
   return attr_value.ToInt();
 }
 
-// static
 void AccessibleNode::GetAllAOMProperties(
-    Element* element,
     AOMPropertyClient* client,
     HashSet<QualifiedName>& shadowed_aria_attributes) {
-  AccessibleNode* accessible_node = element->ExistingAccessibleNode();
-  if (!accessible_node)
-    return;
-
-  for (auto& item : accessible_node->string_properties_) {
+  for (auto& item : string_properties_) {
     client->AddStringProperty(item.first, item.second);
     shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
   }
-  for (auto& item : accessible_node->boolean_properties_) {
+  for (auto& item : boolean_properties_) {
     client->AddBooleanProperty(item.first, item.second);
     shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
   }
-  for (auto& item : accessible_node->float_properties_) {
+  for (auto& item : float_properties_) {
     client->AddFloatProperty(item.first, item.second);
     shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
   }
-  for (auto& item : accessible_node->int_properties_) {
+  for (auto& item : int_properties_) {
     client->AddIntProperty(item.first, item.second);
     shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
   }
-  for (auto& item : accessible_node->uint_properties_) {
+  for (auto& item : uint_properties_) {
     client->AddUIntProperty(item.first, item.second);
     shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
   }
-  for (auto& item : accessible_node->relation_properties_) {
+  for (auto& item : relation_properties_) {
     if (!item.second)
       continue;
     client->AddRelationProperty(item.first, *item.second);
     shadowed_aria_attributes.insert(GetCorrespondingARIAAttribute(item.first));
   }
-  for (auto& item : accessible_node->relation_list_properties_) {
+  for (auto& item : relation_list_properties_) {
     if (!item.second)
       continue;
     client->AddRelationListProperty(item.first, *item.second);
@@ -568,7 +556,7 @@ void AccessibleNode::setActiveDescendant(AccessibleNode* active_descendant) {
 }
 
 bool AccessibleNode::atomic(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kAtomic, is_null);
+  return GetProperty(AOMBooleanProperty::kAtomic, is_null);
 }
 
 void AccessibleNode::setAtomic(bool atomic, bool is_null) {
@@ -586,7 +574,7 @@ void AccessibleNode::setAutocomplete(const AtomicString& autocomplete) {
 }
 
 bool AccessibleNode::busy(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kBusy, is_null);
+  return GetProperty(AOMBooleanProperty::kBusy, is_null);
 }
 
 void AccessibleNode::setBusy(bool busy, bool is_null) {
@@ -669,7 +657,7 @@ void AccessibleNode::setDetails(AccessibleNode* details) {
 }
 
 bool AccessibleNode::disabled(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kDisabled, is_null);
+  return GetProperty(AOMBooleanProperty::kDisabled, is_null);
 }
 
 void AccessibleNode::setDisabled(bool disabled, bool is_null) {
@@ -687,7 +675,7 @@ void AccessibleNode::setErrorMessage(AccessibleNode* error_message) {
 }
 
 bool AccessibleNode::expanded(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kExpanded, is_null);
+  return GetProperty(AOMBooleanProperty::kExpanded, is_null);
 }
 
 void AccessibleNode::setExpanded(bool expanded, bool is_null) {
@@ -714,7 +702,7 @@ void AccessibleNode::setHasPopUp(const AtomicString& has_popup) {
 }
 
 bool AccessibleNode::hidden(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kHidden, is_null);
+  return GetProperty(AOMBooleanProperty::kHidden, is_null);
 }
 
 void AccessibleNode::setHidden(bool hidden, bool is_null) {
@@ -777,7 +765,7 @@ void AccessibleNode::setLive(const AtomicString& live) {
 }
 
 bool AccessibleNode::modal(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kModal, is_null);
+  return GetProperty(AOMBooleanProperty::kModal, is_null);
 }
 
 void AccessibleNode::setModal(bool modal, bool is_null) {
@@ -786,7 +774,7 @@ void AccessibleNode::setModal(bool modal, bool is_null) {
 }
 
 bool AccessibleNode::multiline(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kMultiline, is_null);
+  return GetProperty(AOMBooleanProperty::kMultiline, is_null);
 }
 
 void AccessibleNode::setMultiline(bool multiline, bool is_null) {
@@ -795,7 +783,7 @@ void AccessibleNode::setMultiline(bool multiline, bool is_null) {
 }
 
 bool AccessibleNode::multiselectable(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kMultiselectable, is_null);
+  return GetProperty(AOMBooleanProperty::kMultiselectable, is_null);
 }
 
 void AccessibleNode::setMultiselectable(bool multiselectable, bool is_null) {
@@ -850,7 +838,7 @@ void AccessibleNode::setPressed(const AtomicString& pressed) {
 }
 
 bool AccessibleNode::readOnly(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kReadOnly, is_null);
+  return GetProperty(AOMBooleanProperty::kReadOnly, is_null);
 }
 
 void AccessibleNode::setReadOnly(bool read_only, bool is_null) {
@@ -868,7 +856,7 @@ void AccessibleNode::setRelevant(const AtomicString& relevant) {
 }
 
 bool AccessibleNode::required(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kRequired, is_null);
+  return GetProperty(AOMBooleanProperty::kRequired, is_null);
 }
 
 void AccessibleNode::setRequired(bool required, bool is_null) {
@@ -922,7 +910,7 @@ void AccessibleNode::setRowSpan(uint32_t row_span, bool is_null) {
 }
 
 bool AccessibleNode::selected(bool& is_null) const {
-  return GetProperty(element_, AOMBooleanProperty::kSelected, is_null);
+  return GetProperty(AOMBooleanProperty::kSelected, is_null);
 }
 
 void AccessibleNode::setSelected(bool selected, bool is_null) {
