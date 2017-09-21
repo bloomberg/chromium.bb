@@ -25,7 +25,7 @@
 
 namespace safe_browsing {
 
-constexpr int kIconSize = 24;
+constexpr int kIconSize = 20;
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 void ShowPasswordReuseModalWarningDialog(
@@ -158,6 +158,29 @@ void PasswordReuseModalWarningDialog::OnMarkingSiteAsLegitimate(
     const GURL& url) {
   if (url_.GetWithEmptyPath() == url.GetWithEmptyPath())
     GetWidget()->Close();
+}
+
+void PasswordReuseModalWarningDialog::InvokeActionForTesting(
+    ChromePasswordProtectionService::WarningAction action) {
+  switch (action) {
+    case ChromePasswordProtectionService::CHANGE_PASSWORD:
+      Accept();
+      break;
+    case ChromePasswordProtectionService::IGNORE_WARNING:
+      Cancel();
+      break;
+    case ChromePasswordProtectionService::CLOSE:
+      Close();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+ChromePasswordProtectionService::WarningUIType
+PasswordReuseModalWarningDialog::GetObserverType() {
+  return ChromePasswordProtectionService::MODAL_DIALOG;
 }
 
 }  // namespace safe_browsing

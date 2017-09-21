@@ -148,16 +148,23 @@ void PasswordProtectionService::RecordWarningAction(WarningUIType ui_type,
   }
 }
 
-void PasswordProtectionService::OnWarningDone(WebContents* web_contents,
-                                              WarningUIType ui_type,
-                                              WarningAction action) {
-  RecordWarningAction(ui_type, action);
-  // TODO(jialiul): Need to send post-warning report, trigger event logger and
-  // other tasks.
-  if (action == MARK_AS_LEGITIMATE) {
-    DCHECK_EQ(PAGE_INFO, ui_type);
-    UpdateSecurityState(SB_THREAT_TYPE_SAFE, web_contents);
-  }
+// static
+bool PasswordProtectionService::ShouldShowModalWarning(
+    const LoginReputationClientRequest* request,
+    const LoginReputationClientResponse* response) {
+  return base::FeatureList::IsEnabled(kGoogleBrandedPhishingWarning) &&
+         request->trigger_type() ==
+             LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
+         request->has_password_reuse_event() &&
+         request->password_reuse_event().is_chrome_signin_password() &&
+         request->password_reuse_event().sync_account_type() ==
+             LoginReputationClientRequest::PasswordReuseEvent::GMAIL &&
+         (response->verdict_type() == LoginReputationClientResponse::PHISHING ||
+          (response->verdict_type() ==
+               LoginReputationClientResponse::LOW_REPUTATION &&
+           base::GetFieldTrialParamByFeatureAsBool(
+               kGoogleBrandedPhishingWarning, "warn_on_low_reputation",
+               false)));
 }
 
 void PasswordProtectionService::OnWarningShown(WebContents* web_contents,
@@ -427,9 +434,14 @@ void PasswordProtectionService::RequestFinished(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
 
-  if (response && !already_cached) {
-    CacheVerdict(request->main_frame_url(), request->trigger_type(),
-                 response.get(), base::Time::Now());
+  if (response) {
+    if (!already_cached) {
+      CacheVerdict(request->main_frame_url(), request->trigger_type(),
+                   response.get(), base::Time::Now());
+    }
+    if (ShouldShowModalWarning(request->request_proto(), response.get())) {
+      ShowModalWarning(request->web_contents(), response->verdict_token());
+    }
   }
 
   // Finished processing this request. Remove it from pending list.

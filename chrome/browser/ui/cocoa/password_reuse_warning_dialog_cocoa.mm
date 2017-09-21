@@ -64,6 +64,29 @@ void PasswordReuseWarningDialogCocoa::OnMarkingSiteAsLegitimate(
     window_->CloseWebContentsModalDialog();
 }
 
+void PasswordReuseWarningDialogCocoa::InvokeActionForTesting(
+    safe_browsing::ChromePasswordProtectionService::WarningAction action) {
+  switch (action) {
+    case safe_browsing::ChromePasswordProtectionService::CHANGE_PASSWORD:
+      OnChangePassword();
+      break;
+    case safe_browsing::ChromePasswordProtectionService::IGNORE_WARNING:
+      OnIgnore();
+      break;
+    case safe_browsing::ChromePasswordProtectionService::CLOSE:
+      window_->CloseWebContentsModalDialog();
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+safe_browsing::ChromePasswordProtectionService::WarningUIType
+PasswordReuseWarningDialogCocoa::GetObserverType() {
+  return safe_browsing::ChromePasswordProtectionService::MODAL_DIALOG;
+}
+
 void PasswordReuseWarningDialogCocoa::OnChangePassword() {
   std::move(callback_).Run(
       safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);

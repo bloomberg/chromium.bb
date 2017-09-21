@@ -39,6 +39,11 @@ class ChangePasswordHandler
   void OnStartingGaiaPasswordChange() override {}
   void OnGaiaPasswordChanged() override;
   void OnMarkingSiteAsLegitimate(const GURL& url) override;
+  void InvokeActionForTesting(
+      safe_browsing::ChromePasswordProtectionService::WarningAction action)
+      override;
+  safe_browsing::ChromePasswordProtectionService::WarningUIType
+  GetObserverType() override;
 
  private:
   void HandleChangePasswordPageShown(const base::ListValue* args);

@@ -15,6 +15,8 @@
 
 namespace settings {
 
+using safe_browsing::ChromePasswordProtectionService;
+
 ChangePasswordHandler::ChangePasswordHandler(Profile* profile)
     : profile_(profile),
       service_(nullptr),
@@ -55,6 +57,22 @@ void ChangePasswordHandler::OnMarkingSiteAsLegitimate(const GURL& url) {
   }
 }
 
+void ChangePasswordHandler::InvokeActionForTesting(
+    ChromePasswordProtectionService::WarningAction action) {
+  if (!ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
+          profile_))
+    return;
+
+  DCHECK_EQ(ChromePasswordProtectionService::CHANGE_PASSWORD, action);
+  base::ListValue value;
+  HandleChangePassword(&value);
+}
+
+ChromePasswordProtectionService::WarningUIType
+ChangePasswordHandler::GetObserverType() {
+  return ChromePasswordProtectionService::CHROME_SETTINGS;
+}
+
 void ChangePasswordHandler::HandleChangePasswordPageShown(
     const base::ListValue* args) {
   AllowJavascript();
@@ -67,7 +85,7 @@ void ChangePasswordHandler::HandleChangePasswordPageShown(
 
 void ChangePasswordHandler::HandleChangePassword(const base::ListValue* args) {
   if (service_) {
-    service_->OnWarningDone(
+    service_->OnUserAction(
         web_ui()->GetWebContents(),
         safe_browsing::PasswordProtectionService::CHROME_SETTINGS,
         safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);
