@@ -36,6 +36,7 @@ MAX_CONSECUTIVE_BUILDS = 50
 MAX_LAST_N_BUILDS = 10
 
 CROSLAND_VERSION_RE = re.compile(r'^\d+\.\d+\.\d+$')
+SANITY_BUILD_CONFIG_RE = re.compile(r'.*-tot-paladin$')
 
 def GetParser():
   """Creates the argparse parser."""
@@ -399,6 +400,12 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
   if build['status'] in CIDB_INDETERMINATE_STATUSES:
     notes.append('Indeterminate CIDB status: '
                  'https://yaqs.googleplex.com/eng/q/5238815784697856')
+
+  # Annotate sanity builders as such.
+  if SANITY_BUILD_CONFIG_RE.match(build['build_config']):
+    notes.append('%s is a sanity builder: '
+                 'https://yaqs.googleplex.com/eng/q/5913965810155520' %
+                 build['build_config'])
 
   # TODO: Gather similar failures.
   # TODO: Report of how many builds failed in a row.
