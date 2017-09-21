@@ -3,7 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-ripple-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/default-theme.html">
 
 <dom-module id="cr-link-row">
@@ -35,6 +35,11 @@
         pointer-events: none;
       }
 
+      #icon {
+        /* The |_rippleContainer| must be position relative. */
+        position: relative;
+      }
+
       #label,
       #subLabel {
         display: flex;
@@ -56,6 +61,10 @@
         min-height: var(--cr-section-min-height);
       }
 
+      paper-ripple {
+        opacity: 0.6;
+      }
+
       #subLabel {
         /* TODO(dschuyler): replace with: @apply(--cr-secondary-text); */
         color: var(--paper-grey-600);
@@ -67,9 +76,8 @@
         <div id="label" class="label">[[label]]</div>
         <div id="subLabel" class="secondary label">[[subLabel]]</div>
       </div>
-      <button class$="[[iconClass]]" is="paper-icon-button-light"
-          aria-label$="[[label]]" aria-describedby="subLabel">
-      </button>
+      <div id="icon" class$="cr-icon [[iconClass]]" aria-label$="[[label]]">
+      </div>
     </div>
   </template>
   <script src="cr_link_row.js"></script>

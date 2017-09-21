@@ -4,11 +4,13 @@
 <dom-module id="cr-icons">
   <template>
     <style>
-      :host-context([dir=rtl]) button[is='paper-icon-button-light'] {
+      :host-context([dir=rtl]) :-webkit-any(
+          button[is='paper-icon-button-light'], .cr-icon) {
         transform: scaleX(-1);  /* Invert X: flip on the Y axis (aka mirror). */
       }
 
-      button[is='paper-icon-button-light'] {
+      button[is='paper-icon-button-light'],
+      .cr-icon {
         @apply(--cr-paper-icon-button-margin);
         background-position: center;
         background-repeat: no-repeat;
@@ -18,72 +20,89 @@
         width: var(--cr-icon-ripple-size);
       }
 
-      button[is='paper-icon-button-light'].no-overlap {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).no-overlap {
         margin-left: 0;
         margin-right: 0;
       }
 
-      button[is='paper-icon-button-light'].icon-arrow-back {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-arrow-back {
         background-image: url(../images/icon_arrow_back.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-cancel {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-cancel {
         background-image: url(../images/icon_cancel.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-cancel-toolbar {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-cancel-toolbar {
         background-image: url(../images/icon_cancel_toolbar.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-clear {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-clear {
         background-image: url(../images/icon_clear.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-delete-gray {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-delete-gray {
         background-image: url(../images/icon_delete_gray.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-delete-white {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-delete-white {
         background-image: url(../images/icon_delete_white.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-expand-less {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-expand-less {
         background-image: url(../images/icon_expand_less.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-expand-more {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-expand-more {
         background-image: url(../images/icon_expand_more.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-external {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-external {
         background-image: url(../images/open_in_new.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-menu-white {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-menu-white {
         background-image: url(../images/icon_menu_white.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-more-vert {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-more-vert {
         background-image: url(../images/icon_more_vert.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-refresh {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-refresh {
         background-image: url(../images/icon_refresh.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-settings {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-settings {
         background-image: url(../images/icon_settings.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-search {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-search {
         background-image: url(../images/icon_search.svg);
       }
 
-      button[is='paper-icon-button-light'].icon-arrow-dropdown {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).icon-arrow-dropdown {
         background-image: url(../images/icon_arrow_dropdown.svg);
       }
 
-      button[is='paper-icon-button-light'].subpage-arrow {
+      :-webkit-any(button[is='paper-icon-button-light'],
+          .cr-icon).subpage-arrow {
         background-image: url(../images/arrow_right.svg);
       }
     </style>
