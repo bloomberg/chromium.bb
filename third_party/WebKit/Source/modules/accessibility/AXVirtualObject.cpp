@@ -10,7 +10,6 @@ namespace blink {
 AXVirtualObject::AXVirtualObject(AXObjectCacheImpl& axObjectCache,
                                  AccessibleNode* accessible_node)
     : AXObject(axObjectCache), accessible_node_(accessible_node) {
-  LOG(ERROR) << "AXVirtualObject ctor";
 }
 
 AXVirtualObject::~AXVirtualObject() {}
@@ -40,6 +39,21 @@ const AtomicString& AXVirtualObject::GetAOMPropertyOrARIAAttribute(
     return g_null_atom;
 
   return accessible_node_->GetProperty(property);
+}
+
+String AXVirtualObject::TextAlternative(bool recursive,
+                                        bool in_aria_labelled_by_traversal,
+                                        AXObjectSet& visited,
+                                        AXNameFrom& name_from,
+                                        AXRelatedObjectVector* related_objects,
+                                        NameSources* name_sources) const {
+  if (!accessible_node_)
+    return String();
+
+  bool found_text_alternative = false;
+  return AriaTextAlternative(recursive, in_aria_labelled_by_traversal, visited,
+                             name_from, related_objects, name_sources,
+                             &found_text_alternative);
 }
 
 DEFINE_TRACE(AXVirtualObject) {
