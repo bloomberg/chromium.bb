@@ -5378,9 +5378,16 @@ void RenderFrameImpl::OnFailedNavigation(
   // If we didn't call didFailProvisionalLoad or there wasn't a
   // GetProvisionalDocumentLoader(), LoadNavigationErrorPage wasn't called, so
   // do it now.
+  // Note: the load of the error page can result in this frame being removed.
+  // Use a WeakPtr as an easy way to detect whether this has occured. If so,
+  // this method should return immediately and not touch any part of the object,
+  // otherwise it will result in a use-after-free bug.
   if (request_params.nav_entry_id != 0 || !had_provisional_document_loader) {
+    base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
     LoadNavigationErrorPage(failed_request, error, replace,
                             history_entry.get());
+    if (!weak_this)
+      return;
   }
 
   browser_side_navigation_pending_ = false;
