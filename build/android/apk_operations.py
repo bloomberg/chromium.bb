@@ -3,7 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Using colorama.Fore/Back/Style members
+# pylint: disable=no-member
+
 import argparse
+import collections
 import json
 import logging
 import os
@@ -34,10 +38,10 @@ from pylib import constants
 from pylib.symbols import deobfuscator
 
 
-def _Colorize(color, text):
-  # |color| as a string to avoid pylint's no-member warning :(.
-  # pylint: disable=no-member
-  return getattr(colorama.Fore, color) + text + colorama.Fore.RESET
+def _Colorize(text, style=''):
+  return (style
+      + text
+      + colorama.Style.RESET_ALL)
 
 
 def _InstallApk(devices, apk, install_dict):
@@ -127,7 +131,8 @@ def _RunGdb(device, package_name, output_directory, target_cpu, extra_args,
     cmd.append('--target-arch=%s' % _TargetCpuToTargetArch(target_cpu))
   cmd.extend(extra_args)
   logging.warning('Running: %s', ' '.join(pipes.quote(x) for x in cmd))
-  print _Colorize('YELLOW', 'All subsequent output is from adb_gdb script.')
+  print _Colorize(
+      'All subsequent output is from adb_gdb script.', colorama.Fore.YELLOW)
   os.execv(gdb_script_path, cmd)
 
 
@@ -136,7 +141,8 @@ def _PrintPerDeviceOutput(devices, results, single_line=False):
     if not single_line and d is not devices[0]:
       sys.stdout.write('\n')
     sys.stdout.write(
-          _Colorize('YELLOW', '%s (%s):' % (d, d.build_description)))
+          _Colorize('{} ({}):'.format(d, d.build_description),
+                    colorama.Fore.YELLOW))
     sys.stdout.write(' ' if single_line else '\n')
     yield result
 
@@ -354,7 +360,120 @@ def _RunDiskUsage(devices, package_name, verbose):
     print 'Total: %skb (%.1fmb)' % (total, total / 1024.0)
 
 
-def _RunLogcat(device, package_name, verbose, mapping_path):
+class _LogcatProcessor(object):
+  ParsedLine = collections.namedtuple(
+      'ParsedLine',
+      ['date', 'invokation_time', 'pid', 'tid', 'priority', 'tag', 'messages'])
+
+  def __init__(self, device, package_name, deobfuscate=None, verbose=False):
+    self._device = device
+    self._package_name = package_name
+    self._verbose = verbose
+    self._deobfuscator = deobfuscate
+    self._primary_pid = None
+    self._my_pids = set()
+    self._not_my_pids = set()
+    self._UpdateMyPids()
+
+  def _UpdateMyPids(self):
+    for name, pids in self._device.GetPids(self._package_name).items():
+      if ':' not in name:
+        self._primary_pid = int(pids[0])
+      self._my_pids.update(int(p) for p in pids)
+
+  def _GetPidStyle(self, pid, dim=False):
+    if pid == self._primary_pid:
+      return colorama.Fore.WHITE
+    elif pid in self._my_pids:
+      # TODO(wnwen): Use one separate persistent color per process, pop LRU
+      return colorama.Fore.YELLOW
+    elif dim:
+      return colorama.Style.DIM
+    return ''
+
+  def _GetPriorityStyle(self, priority, dim=False):
+    # pylint:disable=no-self-use
+    if dim:
+      return ''
+    style = ''
+    if priority == 'E' or priority == 'F':
+      style = colorama.Back.RED
+    elif priority == 'W':
+      style = colorama.Back.YELLOW
+    elif priority == 'I':
+      style = colorama.Back.GREEN
+    elif priority == 'D':
+      style = colorama.Back.BLUE
+    return style + colorama.Style.BRIGHT + colorama.Fore.BLACK
+
+  def _ParseLine(self, line):
+    tokens = line.split(None, 6)
+    date = tokens[0]
+    invokation_time = tokens[1]
+    pid = int(tokens[2])
+    tid = int(tokens[3])
+    priority = tokens[4]
+    tag = tokens[5]
+    if len(tokens) > 6:
+      original_message = tokens[6]
+    else:  # Empty log message
+      original_message = ''
+    # Example:
+    #   09-19 06:35:51.113  9060  9154 W GCoreFlp: No location...
+    #   09-19 06:01:26.174  9060 10617 I Auth    : [ReflectiveChannelBinder]...
+    # Parsing "GCoreFlp:" vs "Auth    :", we only want tag to contain the word,
+    # and we don't want to keep the colon for the message.
+    if tag[-1] == ':':
+      tag = tag[:-1]
+    else:
+      original_message = original_message[2:]
+    messages = [original_message]
+    if self._deobfuscator:
+      messages = self._deobfuscator.TransformLines(messages)
+    return self.ParsedLine(
+        date, invokation_time, pid, tid, priority, tag, messages)
+
+  def _PrintParsedLine(self, parsed_line, dim=False):
+    pid_style = self._GetPidStyle(parsed_line.pid, dim)
+    # We have to pad before adding color as that changes the width of the tag.
+    tag = _Colorize('{:8}'.format(parsed_line.tag),
+                    pid_style + ('' if dim else colorama.Style.BRIGHT))
+    priority = _Colorize(parsed_line.priority,
+                         self._GetPriorityStyle(parsed_line.priority))
+    for message in parsed_line.messages:
+      message = _Colorize(message, pid_style)
+      sys.stdout.write('{} {} {:5} {:5} {} {}: {}\n'.format(
+          parsed_line.date, parsed_line.invokation_time, parsed_line.pid,
+          parsed_line.tid, priority, tag, message))
+
+  def ProcessLine(self, line, fast=False):
+    dim = False
+    if not line or line.startswith('------'):
+      return
+    log = self._ParseLine(line)
+    if log.pid in self._my_pids or (not fast and
+        (log.priority == 'F' or  # Java crash dump
+         log.tag == 'ActivityManager' or  # Android system
+         log.tag == 'DEBUG')):  # Native crash dump
+      pass  # write
+    elif log.pid in self._not_my_pids:
+      dim = True
+    elif fast:
+      # Skip checking whether our package spawned new processes.
+      self._not_my_pids.add(log.pid)
+      dim = True
+    else:
+      # Check and add the pid if it is a new one from our package.
+      self._UpdateMyPids()
+      if log.pid not in self._my_pids:
+        self._not_my_pids.add(log.pid)
+        dim = True
+    if self._verbose or not dim:
+      self._PrintParsedLine(log, dim)
+
+
+def _RunLogcat(device, package_name, mapping_path, verbose):
+  deobfuscate = None
   if mapping_path:
     try:
       deobfuscate = deobfuscator.Deobfuscator(mapping_path)
@@ -363,50 +482,15 @@ def _RunLogcat(device, package_name, verbose, mapping_path):
                        'Did you forget to build it?\n')
       sys.exit(1)
 
-  def get_my_pids():
-    my_pids = []
-    for pids in device.GetPids(package_name).values():
-      my_pids.extend(pids)
-    return [int(pid) for pid in my_pids]
-
-  def process_line(line, fast=False):
-    if verbose:
-      if fast:
-        return
-    else:
-      if not line or line.startswith('------'):
-        return
-      tokens = line.split(None, 4)
-      pid = int(tokens[2])
-      priority = tokens[4]
-      if pid in my_pids or (not fast and priority == 'F'):
-        pass  # write
-      elif pid in not_my_pids:
-        return
-      elif fast:
-        # Skip checking whether our package spawned new processes.
-        not_my_pids.add(pid)
-        return
-      else:
-        # Check and add the pid if it is a new one from our package.
-        my_pids.update(get_my_pids())
-        if pid not in my_pids:
-          not_my_pids.add(pid)
-          return
-    if mapping_path:
-      line = '\n'.join(deobfuscate.TransformLines([line.rstrip()])) + '\n'
-    sys.stdout.write(line)
-
   try:
-    my_pids = set(get_my_pids())
-    not_my_pids = set()
-
+    logcat_processor = _LogcatProcessor(
+        device, package_name, deobfuscate, verbose)
     nonce = 'apk_wrappers.py nonce={}'.format(random.random())
     device.RunShellCommand(['log', nonce])
     fast = True
     for line in device.adb.Logcat(logcat_format='threadtime'):
       try:
-        process_line(line, fast)
+        logcat_processor.ProcessLine(line, fast)
       except:
         sys.stderr.write('Failed to process line: ' + line)
         raise
@@ -597,10 +681,12 @@ class _Command(object):
     # accepts_command_line_flags and accepts_args are mutually exclusive.
     # argparse will throw if they are both set.
     if self.accepts_command_line_flags:
-      group.add_argument('--args', help='Command-line flags.')
+      group.add_argument(
+          '--args', help='Command-line flags. Use = to assign args.')
 
     if self.accepts_args:
-      group.add_argument('--args', help='Extra arguments.')
+      group.add_argument(
+          '--args', help='Extra arguments. Use = to assign args')
 
     if self.accepts_url:
       group.add_argument('url', nargs='?', help='A URL to launch with.')
@@ -805,8 +891,8 @@ class _LogcatCommand(_Command):
     mapping = self.args.proguard_mapping_path
     if self.args.no_deobfuscate:
       mapping = None
-    _RunLogcat(self.devices[0], self.args.package_name,
-               bool(self.args.verbose_count), mapping)
+    _RunLogcat(self.devices[0], self.args.package_name, mapping,
+               bool(self.args.verbose_count))
 
   def _RegisterExtraArgs(self, group):
     if self._from_wrapper_script:
