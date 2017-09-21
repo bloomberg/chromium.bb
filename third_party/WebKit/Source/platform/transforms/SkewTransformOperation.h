@@ -35,7 +35,7 @@ class PLATFORM_EXPORT SkewTransformOperation final : public TransformOperation {
   static RefPtr<SkewTransformOperation> Create(double angle_x,
                                                double angle_y,
                                                OperationType type) {
-    return AdoptRef(new SkewTransformOperation(angle_x, angle_y, type));
+    return WTF::AdoptRef(new SkewTransformOperation(angle_x, angle_y, type));
   }
 
   double AngleX() const { return angle_x_; }

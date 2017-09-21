@@ -69,7 +69,7 @@ RefPtr<DOMWrapperWorld> DOMWrapperWorld::Create(v8::Isolate* isolate,
   int world_id = GenerateWorldIdForType(world_type);
   if (world_id == kInvalidWorldId)
     return nullptr;
-  return AdoptRef(new DOMWrapperWorld(isolate, world_type, world_id));
+  return WTF::AdoptRef(new DOMWrapperWorld(isolate, world_type, world_id));
 }
 
 DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
@@ -166,7 +166,8 @@ RefPtr<DOMWrapperWorld> DOMWrapperWorld::EnsureIsolatedWorld(
     return world;
   }
 
-  return AdoptRef(new DOMWrapperWorld(isolate, WorldType::kIsolated, world_id));
+  return WTF::AdoptRef(
+      new DOMWrapperWorld(isolate, WorldType::kIsolated, world_id));
 }
 
 typedef HashMap<int, RefPtr<SecurityOrigin>> IsolatedWorldSecurityOriginMap;

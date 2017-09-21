@@ -58,7 +58,7 @@ class WebRTCSessionDescriptionPrivate final
 RefPtr<WebRTCSessionDescriptionPrivate> WebRTCSessionDescriptionPrivate::Create(
     const WebString& type,
     const WebString& sdp) {
-  return AdoptRef(new WebRTCSessionDescriptionPrivate(type, sdp));
+  return WTF::AdoptRef(new WebRTCSessionDescriptionPrivate(type, sdp));
 }
 
 WebRTCSessionDescriptionPrivate::WebRTCSessionDescriptionPrivate(

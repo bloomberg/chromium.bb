@@ -35,14 +35,14 @@ class PLATFORM_EXPORT ScaleTransformOperation final
   static RefPtr<ScaleTransformOperation> Create(double sx,
                                                 double sy,
                                                 OperationType type) {
-    return AdoptRef(new ScaleTransformOperation(sx, sy, 1, type));
+    return WTF::AdoptRef(new ScaleTransformOperation(sx, sy, 1, type));
   }
 
   static RefPtr<ScaleTransformOperation> Create(double sx,
                                                 double sy,
                                                 double sz,
                                                 OperationType type) {
-    return AdoptRef(new ScaleTransformOperation(sx, sy, sz, type));
+    return WTF::AdoptRef(new ScaleTransformOperation(sx, sy, sz, type));
   }
 
   bool operator==(const ScaleTransformOperation& other) const {

@@ -27,7 +27,7 @@ ResourceLoadTiming::ResourceLoadTiming()
       push_end_(0) {}
 
 RefPtr<ResourceLoadTiming> ResourceLoadTiming::Create() {
-  return AdoptRef(new ResourceLoadTiming);
+  return WTF::AdoptRef(new ResourceLoadTiming);
 }
 
 RefPtr<ResourceLoadTiming> ResourceLoadTiming::DeepCopy() {

@@ -50,11 +50,11 @@ namespace blink {
 class TestImage : public Image {
  public:
   static RefPtr<TestImage> Create(sk_sp<SkImage> image) {
-    return AdoptRef(new TestImage(image));
+    return WTF::AdoptRef(new TestImage(image));
   }
 
   static RefPtr<TestImage> Create(const IntSize& size) {
-    return AdoptRef(new TestImage(size));
+    return WTF::AdoptRef(new TestImage(size));
   }
 
   IntSize Size() const override {

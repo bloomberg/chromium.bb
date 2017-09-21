@@ -183,16 +183,16 @@ sk_sp<SkData> ROBufferSegmentReader::GetAsSkData() const {
 
 RefPtr<SegmentReader> SegmentReader::CreateFromSharedBuffer(
     RefPtr<SharedBuffer> buffer) {
-  return AdoptRef(new SharedBufferSegmentReader(std::move(buffer)));
+  return WTF::AdoptRef(new SharedBufferSegmentReader(std::move(buffer)));
 }
 
 RefPtr<SegmentReader> SegmentReader::CreateFromSkData(sk_sp<SkData> data) {
-  return AdoptRef(new DataSegmentReader(std::move(data)));
+  return WTF::AdoptRef(new DataSegmentReader(std::move(data)));
 }
 
 RefPtr<SegmentReader> SegmentReader::CreateFromSkROBuffer(
     sk_sp<SkROBuffer> buffer) {
-  return AdoptRef(new ROBufferSegmentReader(std::move(buffer)));
+  return WTF::AdoptRef(new ROBufferSegmentReader(std::move(buffer)));
 }
 
 }  // namespace blink

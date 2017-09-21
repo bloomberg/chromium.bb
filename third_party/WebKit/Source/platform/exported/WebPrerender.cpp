@@ -43,7 +43,7 @@ class PrerenderExtraDataContainer : public Prerender::ExtraData {
  public:
   static RefPtr<PrerenderExtraDataContainer> Create(
       WebPrerender::ExtraData* extra_data) {
-    return AdoptRef(new PrerenderExtraDataContainer(extra_data));
+    return WTF::AdoptRef(new PrerenderExtraDataContainer(extra_data));
   }
 
   ~PrerenderExtraDataContainer() override {}

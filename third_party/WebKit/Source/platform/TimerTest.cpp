@@ -81,7 +81,7 @@ class OnHeapTimerOwner final
  public:
   class Record final : public RefCounted<Record> {
    public:
-    static RefPtr<Record> Create() { return AdoptRef(new Record); }
+    static RefPtr<Record> Create() { return WTF::AdoptRef(new Record); }
 
     bool TimerHasFired() const { return timer_has_fired_; }
     bool IsDisposed() const { return is_disposed_; }

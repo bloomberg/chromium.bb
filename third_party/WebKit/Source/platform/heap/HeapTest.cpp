@@ -422,7 +422,7 @@ class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
 class OffHeapInt : public RefCounted<OffHeapInt> {
  public:
   static RefPtr<OffHeapInt> Create(int x) {
-    return AdoptRef(new OffHeapInt(x));
+    return WTF::AdoptRef(new OffHeapInt(x));
   }
 
   virtual ~OffHeapInt() { ++destructor_calls_; }
@@ -657,7 +657,7 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
 
    private:
     explicit PersistentChain(int count) {
-      ref_counted_chain_ = AdoptRef(RefCountedChain::Create(count));
+      ref_counted_chain_ = WTF::AdoptRef(RefCountedChain::Create(count));
     }
 
     RefPtr<RefCountedChain> ref_counted_chain_;
@@ -4614,12 +4614,12 @@ void DestructorsCalledOnGC(bool add_lots) {
   {
     Set set;
     RefCountedWithDestructor* has_destructor = new RefCountedWithDestructor();
-    set.Add(AdoptRef(has_destructor));
+    set.Add(WTF::AdoptRef(has_destructor));
     EXPECT_FALSE(RefCountedWithDestructor::was_destructed_);
 
     if (add_lots) {
       for (int i = 0; i < 1000; i++) {
-        set.Add(AdoptRef(new RefCountedWithDestructor()));
+        set.Add(WTF::AdoptRef(new RefCountedWithDestructor()));
       }
     }
 
@@ -4640,12 +4640,12 @@ void DestructorsCalledOnClear(bool add_lots) {
   RefCountedWithDestructor::was_destructed_ = false;
   Set set;
   RefCountedWithDestructor* has_destructor = new RefCountedWithDestructor();
-  set.Add(AdoptRef(has_destructor));
+  set.Add(WTF::AdoptRef(has_destructor));
   EXPECT_FALSE(RefCountedWithDestructor::was_destructed_);
 
   if (add_lots) {
     for (int i = 0; i < 1000; i++) {
-      set.Add(AdoptRef(new RefCountedWithDestructor()));
+      set.Add(WTF::AdoptRef(new RefCountedWithDestructor()));
     }
   }
 
@@ -6076,7 +6076,7 @@ TEST(HeapTest, DequeExpand) {
 class SimpleRefValue : public RefCounted<SimpleRefValue> {
  public:
   static RefPtr<SimpleRefValue> Create(int i) {
-    return AdoptRef(new SimpleRefValue(i));
+    return WTF::AdoptRef(new SimpleRefValue(i));
   }
 
   int Value() const { return value_; }

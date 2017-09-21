@@ -49,7 +49,8 @@ class WebFileSystemCallbacksPrivate
  public:
   static RefPtr<WebFileSystemCallbacksPrivate> Create(
       std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
-    return AdoptRef(new WebFileSystemCallbacksPrivate(std::move(callbacks)));
+    return WTF::AdoptRef(
+        new WebFileSystemCallbacksPrivate(std::move(callbacks)));
   }
 
   AsyncFileSystemCallbacks* Callbacks() { return callbacks_.get(); }

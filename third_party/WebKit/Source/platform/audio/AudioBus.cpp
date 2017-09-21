@@ -54,7 +54,7 @@ RefPtr<AudioBus> AudioBus::Create(unsigned number_of_channels,
   if (number_of_channels > kMaxBusChannels)
     return nullptr;
 
-  return AdoptRef(new AudioBus(number_of_channels, length, allocate));
+  return WTF::AdoptRef(new AudioBus(number_of_channels, length, allocate));
 }
 
 AudioBus::AudioBus(unsigned number_of_channels, size_t length, bool allocate)

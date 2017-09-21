@@ -68,7 +68,7 @@ class PLATFORM_EXPORT LinearTimingFunction final : public TimingFunction {
  public:
   static LinearTimingFunction* Shared() {
     DEFINE_STATIC_REF(LinearTimingFunction, linear,
-                      (AdoptRef(new LinearTimingFunction())));
+                      (WTF::AdoptRef(new LinearTimingFunction())));
     return linear;
   }
 
@@ -92,7 +92,7 @@ class PLATFORM_EXPORT CubicBezierTimingFunction final : public TimingFunction {
                                                   double y1,
                                                   double x2,
                                                   double y2) {
-    return AdoptRef(new CubicBezierTimingFunction(x1, y1, x2, y2));
+    return WTF::AdoptRef(new CubicBezierTimingFunction(x1, y1, x2, y2));
   }
 
   static CubicBezierTimingFunction* Preset(EaseType);
@@ -155,7 +155,7 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
 
   static RefPtr<StepsTimingFunction> Create(int steps,
                                             StepPosition step_position) {
-    return AdoptRef(new StepsTimingFunction(steps, step_position));
+    return WTF::AdoptRef(new StepsTimingFunction(steps, step_position));
   }
 
   static StepsTimingFunction* Preset(StepPosition position) {
@@ -199,7 +199,7 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
 class PLATFORM_EXPORT FramesTimingFunction final : public TimingFunction {
  public:
   static RefPtr<FramesTimingFunction> Create(int frames) {
-    return AdoptRef(new FramesTimingFunction(frames));
+    return WTF::AdoptRef(new FramesTimingFunction(frames));
   }
 
   ~FramesTimingFunction() override {}

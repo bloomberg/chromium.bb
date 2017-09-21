@@ -145,7 +145,7 @@ TaskHandle WebTaskRunner::PostCancellableTask(const WebTraceLocation& location,
                                               WTF::Closure task) {
   DCHECK(RunsTasksInCurrentSequence());
   RefPtr<TaskHandle::Runner> runner =
-      AdoptRef(new TaskHandle::Runner(std::move(task)));
+      WTF::AdoptRef(new TaskHandle::Runner(std::move(task)));
   PostTask(location, WTF::Bind(&TaskHandle::Runner::Run, runner->AsWeakPtr(),
                                TaskHandle(runner)));
   return TaskHandle(runner);
@@ -157,7 +157,7 @@ TaskHandle WebTaskRunner::PostDelayedCancellableTask(
     TimeDelta delay) {
   DCHECK(RunsTasksInCurrentSequence());
   RefPtr<TaskHandle::Runner> runner =
-      AdoptRef(new TaskHandle::Runner(std::move(task)));
+      WTF::AdoptRef(new TaskHandle::Runner(std::move(task)));
   PostDelayedTask(location,
                   WTF::Bind(&TaskHandle::Runner::Run, runner->AsWeakPtr(),
                             TaskHandle(runner)),

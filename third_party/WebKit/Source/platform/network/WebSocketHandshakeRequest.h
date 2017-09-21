@@ -46,14 +46,14 @@ class PLATFORM_EXPORT WebSocketHandshakeRequest final
     : public RefCounted<WebSocketHandshakeRequest> {
  public:
   static RefPtr<WebSocketHandshakeRequest> Create(const KURL& url) {
-    return AdoptRef(new WebSocketHandshakeRequest(url));
+    return WTF::AdoptRef(new WebSocketHandshakeRequest(url));
   }
   static RefPtr<WebSocketHandshakeRequest> Create() {
-    return AdoptRef(new WebSocketHandshakeRequest);
+    return WTF::AdoptRef(new WebSocketHandshakeRequest);
   }
   static RefPtr<WebSocketHandshakeRequest> Create(
       const WebSocketHandshakeRequest& request) {
-    return AdoptRef(new WebSocketHandshakeRequest(request));
+    return WTF::AdoptRef(new WebSocketHandshakeRequest(request));
   }
   virtual ~WebSocketHandshakeRequest();
 

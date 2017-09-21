@@ -46,7 +46,7 @@ inline EncodedFormData::EncodedFormData(const EncodedFormData& data)
 EncodedFormData::~EncodedFormData() {}
 
 RefPtr<EncodedFormData> EncodedFormData::Create() {
-  return AdoptRef(new EncodedFormData);
+  return WTF::AdoptRef(new EncodedFormData);
 }
 
 RefPtr<EncodedFormData> EncodedFormData::Create(const void* data, size_t size) {
@@ -68,7 +68,7 @@ RefPtr<EncodedFormData> EncodedFormData::Create(const Vector<char>& vector) {
 }
 
 RefPtr<EncodedFormData> EncodedFormData::Copy() const {
-  return AdoptRef(new EncodedFormData(*this));
+  return WTF::AdoptRef(new EncodedFormData(*this));
 }
 
 RefPtr<EncodedFormData> EncodedFormData::DeepCopy() const {

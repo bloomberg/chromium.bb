@@ -56,7 +56,7 @@ HRTFDatabaseLoader::CreateAndLoadAsynchronouslyIfNecessary(float sample_rate) {
     return loader;
   }
 
-  loader = AdoptRef(new HRTFDatabaseLoader(sample_rate));
+  loader = WTF::AdoptRef(new HRTFDatabaseLoader(sample_rate));
   GetLoaderMap().insert(sample_rate, loader.Get());
   loader->LoadAsynchronously();
   return loader;

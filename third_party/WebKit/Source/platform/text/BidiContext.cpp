@@ -44,7 +44,8 @@ inline RefPtr<BidiContext> BidiContext::CreateUncached(
     bool override,
     BidiEmbeddingSource source,
     BidiContext* parent) {
-  return AdoptRef(new BidiContext(level, direction, override, source, parent));
+  return WTF::AdoptRef(
+      new BidiContext(level, direction, override, source, parent));
 }
 
 RefPtr<BidiContext> BidiContext::Create(unsigned char level,
