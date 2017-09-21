@@ -456,14 +456,15 @@ class SourceChecker(BaseChecker):
   def visit_module(self, node):
     """Called when the whole file has been read"""
     stream = node.file_stream
-    stream.seek(0)
-    self._check_shebang(node, stream)
-    self._check_module_name(node)
-    self._check_trailing_lines(node, stream)
-
-  def _check_shebang(self, _node, stream):
-    """Verify the shebang is version specific"""
     st = os.fstat(stream.fileno())
+    self._check_shebang(node, stream, st)
+    self._check_module_name(node)
+    self._check_trailing_lines(node, stream, st)
+
+  def _check_shebang(self, _node, stream, st):
+    """Verify the shebang is version specific"""
+    stream.seek(0)
+
     mode = st.st_mode
     executable = bool(mode & 0o0111)
 
@@ -486,9 +487,8 @@ class SourceChecker(BaseChecker):
     if name.rsplit('_', 2)[-1] in ('unittests',):
       self.add_message('R9203')
 
-  def _check_trailing_lines(self, _node, stream):
+  def _check_trailing_lines(self, _node, stream, st):
     """Reject trailing lines"""
-    st = os.fstat(stream.fileno())
     if st.st_size > 1:
       stream.seek(st.st_size - 2)
       if not stream.read().strip('\n'):
