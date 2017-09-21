@@ -324,52 +324,36 @@ void EventRouter::RemoveLazyServiceWorkerEventListener(
                               RegisteredEventType::kServiceWorker);
 }
 
-void EventRouter::AddFilteredEventListener(
-    const std::string& event_name,
-    content::RenderProcessHost* process,
-    const std::string& extension_id,
-    base::Optional<ServiceWorkerIdentifier> sw_identifier,
-    const base::DictionaryValue& filter,
-    bool add_lazy_listener) {
-  const bool is_for_service_worker = sw_identifier.has_value();
-  listeners_.AddListener(
-      is_for_service_worker
-          ? EventListener::ForExtensionServiceWorker(
-                event_name, extension_id, process, sw_identifier->scope,
-                sw_identifier->thread_id, filter.CreateDeepCopy())
-          : EventListener::ForExtension(event_name, extension_id, process,
-                                        filter.CreateDeepCopy()));
+// TODO(lazyboy): Support filters for extension SW events.
+void EventRouter::AddFilteredEventListener(const std::string& event_name,
+                                           content::RenderProcessHost* process,
+                                           const std::string& extension_id,
+                                           const base::DictionaryValue& filter,
+                                           bool add_lazy_listener) {
+  listeners_.AddListener(EventListener::ForExtension(
+      event_name, extension_id, process,
+      std::unique_ptr<DictionaryValue>(filter.DeepCopy())));
 
   if (!add_lazy_listener)
     return;
 
-  bool added = listeners_.AddListener(
-      is_for_service_worker
-          ? EventListener::ForExtensionServiceWorker(
-                event_name, extension_id, nullptr, sw_identifier->scope,
-                kMainThreadId,  // Lazy, without worker thread id.
-                filter.CreateDeepCopy())
-          : EventListener::ForExtension(event_name, extension_id, nullptr,
-                                        filter.CreateDeepCopy()));
+  bool added = listeners_.AddListener(EventListener::ForExtension(
+      event_name, extension_id, nullptr,
+      std::unique_ptr<DictionaryValue>(filter.DeepCopy())));
   if (added)
     AddFilterToEvent(event_name, extension_id, &filter);
 }
 
+// TODO(lazyboy): Support filters for extension SW events.
 void EventRouter::RemoveFilteredEventListener(
     const std::string& event_name,
     content::RenderProcessHost* process,
     const std::string& extension_id,
-    base::Optional<ServiceWorkerIdentifier> sw_identifier,
     const base::DictionaryValue& filter,
     bool remove_lazy_listener) {
-  const bool is_for_service_worker = sw_identifier.has_value();
-  std::unique_ptr<EventListener> listener =
-      is_for_service_worker
-          ? EventListener::ForExtensionServiceWorker(
-                event_name, extension_id, process, sw_identifier->scope,
-                sw_identifier->thread_id, filter.CreateDeepCopy())
-          : EventListener::ForExtension(event_name, extension_id, process,
-                                        filter.CreateDeepCopy());
+  std::unique_ptr<EventListener> listener = EventListener::ForExtension(
+      event_name, extension_id, process,
+      std::unique_ptr<DictionaryValue>(filter.DeepCopy()));
 
   listeners_.RemoveListener(listener.get());
 
@@ -787,6 +771,7 @@ void EventRouter::OnExtensionLoaded(content::BrowserContext* browser_context,
   std::set<std::string> registered_events =
       GetRegisteredEvents(extension->id(), RegisteredEventType::kLazy);
   listeners_.LoadUnfilteredLazyListeners(extension->id(), registered_events);
+  // TODO(lazyboy): Load extension SW filtered events when they are available.
   const DictionaryValue* filtered_events = GetFilteredEvents(extension->id());
   if (filtered_events)
     listeners_.LoadFilteredLazyListeners(extension->id(), *filtered_events);
