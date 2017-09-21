@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -16,9 +17,11 @@
 
 namespace {
 // Shadow opacity for the BookmarkContextBar.
-CGFloat kShadowOpacity = 0.2f;
+const CGFloat kShadowOpacity = 0.2f;
 // Horizontal margin for the contents of BookmarkContextBar.
-CGFloat kHorizontalMargin = 8.0f;
+const CGFloat kHorizontalMargin = 8.0f;
+// Height of the part of the toolbar containing content.
+const CGFloat kToolbarHeight = 48.0f;
 }  // namespace
 
 @interface BookmarkContextBar () {
@@ -129,16 +132,26 @@ CGFloat kHorizontalMargin = 8.0f;
     [self addSubview:_stackView];
     _stackView.translatesAutoresizingMaskIntoConstraints = NO;
     _stackView.layoutMarginsRelativeArrangement = YES;
-    [NSLayoutConstraint activateConstraints:@[
-      [_stackView.layoutMarginsGuide.leadingAnchor
-          constraintEqualToAnchor:self.leadingAnchor
-                         constant:kHorizontalMargin],
-      [_stackView.layoutMarginsGuide.trailingAnchor
-          constraintEqualToAnchor:self.trailingAnchor
-                         constant:-kHorizontalMargin],
-      [_stackView.topAnchor constraintEqualToAnchor:self.topAnchor],
-      [_stackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-    ]];
+    if (@available(iOS 11.0, *)) {
+      [NSLayoutConstraint activateConstraints:@[
+        [self.safeAreaLayoutGuide.topAnchor
+            constraintEqualToAnchor:_stackView.topAnchor],
+        [self.safeAreaLayoutGuide.leadingAnchor
+            constraintEqualToAnchor:_stackView.leadingAnchor],
+        [self.safeAreaLayoutGuide.trailingAnchor
+            constraintEqualToAnchor:_stackView.trailingAnchor],
+        [self.safeAreaLayoutGuide.bottomAnchor
+            constraintEqualToAnchor:_stackView.bottomAnchor],
+      ]];
+    } else {
+      AddSameConstraints(_stackView, self);
+    }
+    [_stackView.heightAnchor constraintEqualToConstant:kToolbarHeight].active =
+        YES;
+
+    _stackView.layoutMarginsRelativeArrangement = YES;
+    _stackView.layoutMargins =
+        UIEdgeInsetsMake(0, kHorizontalMargin, 0, kHorizontalMargin);
 
     [self setBackgroundColor:[UIColor whiteColor]];
     [[self layer] setShadowOpacity:kShadowOpacity];
