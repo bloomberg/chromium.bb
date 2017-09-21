@@ -12,9 +12,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/latency/latency_info.h"
@@ -69,7 +69,7 @@ void SoftwareBrowserCompositorOutputSurface::Reshape(
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
-    cc::OutputSurfaceFrame frame) {
+    viz::OutputSurfaceFrame frame) {
   DCHECK(client_);
   base::TimeTicks swap_time = base::TimeTicks::Now();
   for (auto& latency : frame.latency_info) {

@@ -39,7 +39,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                bool use_stencil) override;
-  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
+  void SwapBuffers(viz::OutputSurfaceFrame frame) override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;

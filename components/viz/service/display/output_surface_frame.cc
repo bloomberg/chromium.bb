@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/output_surface_frame.h"
+#include "components/viz/service/display/output_surface_frame.h"
 
-namespace cc {
+namespace viz {
 
 OutputSurfaceFrame::OutputSurfaceFrame() = default;
 
@@ -15,4 +15,4 @@ OutputSurfaceFrame::~OutputSurfaceFrame() = default;
 OutputSurfaceFrame& OutputSurfaceFrame::operator=(OutputSurfaceFrame&& other) =
     default;
 
-}  // namespace cc
+}  // namespace viz

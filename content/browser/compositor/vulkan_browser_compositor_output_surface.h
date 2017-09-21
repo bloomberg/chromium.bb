@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/output/output_surface_frame.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -46,7 +46,7 @@ class VulkanBrowserCompositorOutputSurface
                bool has_alpha,
                bool use_stencil) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
+  void SwapBuffers(viz::OutputSurfaceFrame frame) override;
   void SetDrawRectangle(const gfx::Rect& rect) override;
 
  private:

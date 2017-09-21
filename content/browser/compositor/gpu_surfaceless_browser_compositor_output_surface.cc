@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "cc/output/output_surface_frame.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/buffer_queue.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
@@ -73,7 +73,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayBufferFormat() const {
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
-    cc::OutputSurfaceFrame frame) {
+    viz::OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);
   DCHECK(reshape_size_ == frame.size);
   // TODO(ccameron): What if a swap comes again before OnGpuSwapBuffersCompleted

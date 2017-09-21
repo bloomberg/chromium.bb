@@ -32,7 +32,7 @@ class PixelTestOutputSurface : public viz::OutputSurface {
                bool use_stencil) override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
-  void SwapBuffers(OutputSurfaceFrame frame) override;
+  void SwapBuffers(viz::OutputSurfaceFrame frame) override;
   viz::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;

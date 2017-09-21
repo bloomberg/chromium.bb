@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -24,6 +23,7 @@
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/texture_mailbox_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -88,7 +88,7 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override {}
   void SetDrawRectangle(const gfx::Rect& rect) override {}
-  void SwapBuffers(cc::OutputSurfaceFrame frame) override {}
+  void SwapBuffers(viz::OutputSurfaceFrame frame) override {}
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,

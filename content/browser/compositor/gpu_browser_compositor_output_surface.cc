@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "cc/output/output_surface_frame.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
@@ -106,7 +106,7 @@ void GpuBrowserCompositorOutputSurface::Reshape(
 }
 
 void GpuBrowserCompositorOutputSurface::SwapBuffers(
-    cc::OutputSurfaceFrame frame) {
+    viz::OutputSurfaceFrame frame) {
   GetCommandBufferProxy()->AddLatencyInfo(frame.latency_info);
 
   gfx::Size surface_size = frame.size;

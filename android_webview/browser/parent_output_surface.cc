@@ -6,8 +6,8 @@
 
 #include "android_webview/browser/aw_render_thread_context_provider.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
-#include "cc/output/output_surface_frame.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace android_webview {
@@ -39,7 +39,7 @@ void ParentOutputSurface::Reshape(const gfx::Size& size,
                                   bool has_alpha,
                                   bool use_stencil) {}
 
-void ParentOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
+void ParentOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {
   context_provider_->ContextGL()->ShallowFlushCHROMIUM();
 }
 

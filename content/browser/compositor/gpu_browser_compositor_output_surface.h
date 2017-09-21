@@ -71,7 +71,7 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                bool use_stencil) override;
-  void SwapBuffers(cc::OutputSurfaceFrame frame) override;
+  void SwapBuffers(viz::OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;

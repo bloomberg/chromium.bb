@@ -11,13 +11,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
-#include "cc/output/output_surface_frame.h"
 #include "cc/output/software_output_device.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gles2_interface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/output_surface_frame.h"
 
 namespace cc {
 
@@ -53,7 +53,7 @@ class FakeOutputSurface : public viz::OutputSurface {
     capabilities_.max_frames_pending = max;
   }
 
-  OutputSurfaceFrame* last_sent_frame() { return last_sent_frame_.get(); }
+  viz::OutputSurfaceFrame* last_sent_frame() { return last_sent_frame_.get(); }
   size_t num_sent_frames() { return num_sent_frames_; }
 
   viz::OutputSurfaceClient* client() { return client_; }
@@ -68,7 +68,7 @@ class FakeOutputSurface : public viz::OutputSurface {
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                bool use_stencil) override;
-  void SwapBuffers(OutputSurfaceFrame frame) override;
+  void SwapBuffers(viz::OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override {}
@@ -110,7 +110,7 @@ class FakeOutputSurface : public viz::OutputSurface {
       std::unique_ptr<SoftwareOutputDevice> software_device);
 
   viz::OutputSurfaceClient* client_ = nullptr;
-  std::unique_ptr<OutputSurfaceFrame> last_sent_frame_;
+  std::unique_ptr<viz::OutputSurfaceFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;
   bool has_external_stencil_test_ = false;
   bool suspended_for_recycle_ = false;

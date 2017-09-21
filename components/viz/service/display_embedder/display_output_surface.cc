@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/output/output_surface_frame.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gl/gl_utils.h"
@@ -79,7 +79,7 @@ void DisplayOutputSurface::Reshape(const gfx::Size& size,
       gl::GetGLColorSpace(color_space), has_alpha);
 }
 
-void DisplayOutputSurface::SwapBuffers(cc::OutputSurfaceFrame frame) {
+void DisplayOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(context_provider_);
 
   if (frame.latency_info.size() > 0)

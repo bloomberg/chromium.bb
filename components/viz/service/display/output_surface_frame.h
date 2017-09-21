@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_OUTPUT_SURFACE_FRAME_H_
-#define CC_OUTPUT_OUTPUT_SURFACE_FRAME_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_FRAME_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_FRAME_H_
 
 #include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "cc/cc_export.h"
+#include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/latency/latency_info.h"
 
-namespace cc {
+namespace viz {
 
 // Metadata given to the OutputSurface for it to swap what was drawn and make
 // current frame visible.
-class CC_EXPORT OutputSurfaceFrame {
+class VIZ_SERVICE_EXPORT OutputSurfaceFrame {
  public:
   OutputSurfaceFrame();
   OutputSurfaceFrame(OutputSurfaceFrame&& other);
@@ -39,6 +39,6 @@ class CC_EXPORT OutputSurfaceFrame {
   DISALLOW_COPY_AND_ASSIGN(OutputSurfaceFrame);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_OUTPUT_SURFACE_FRAME_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_FRAME_H_

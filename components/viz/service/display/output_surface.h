@@ -20,10 +20,6 @@
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
 
-namespace cc {
-class OutputSurfaceFrame;
-}
-
 namespace gfx {
 class ColorSpace;
 class Size;
@@ -31,6 +27,7 @@ class Size;
 
 namespace viz {
 class OutputSurfaceClient;
+class OutputSurfaceFrame;
 
 // This class represents a platform-independent API for presenting
 // buffers to display via GPU or software compositing. Implementations
@@ -122,7 +119,7 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // Swaps the current backbuffer to the screen. For successful swaps, the
   // implementation must call OutputSurfaceClient::DidReceiveSwapBuffersAck()
   // after returning from this method in order to unblock the next frame.
-  virtual void SwapBuffers(cc::OutputSurfaceFrame frame) = 0;
+  virtual void SwapBuffers(OutputSurfaceFrame frame) = 0;
 
  protected:
   struct OutputSurface::Capabilities capabilities_;

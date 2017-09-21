@@ -10,7 +10,6 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "cc/output/output_surface_frame.h"
 #include "cc/resources/display_resource_provider.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -29,6 +28,7 @@
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
@@ -198,7 +198,7 @@ class OverlayOutputSurface : public OutputSurface {
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                bool use_stencil) override {}
-  void SwapBuffers(cc::OutputSurfaceFrame frame) override {}
+  void SwapBuffers(OutputSurfaceFrame frame) override {}
   uint32_t GetFramebufferCopyTextureFormat() override {
     // TestContextProvider has no real framebuffer, just use RGB.
     return GL_RGB;
