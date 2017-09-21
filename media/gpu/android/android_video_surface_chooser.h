@@ -38,6 +38,11 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooser {
     // Are we expecting a relayout soon?
     bool is_expecting_relayout = false;
 
+    // If true,  then we will default to promoting to overlay if it's power-
+    // efficient even if not otherwise required.  Otherwise, we'll require other
+    // signals, like fs or secure, before we promote.
+    bool promote_aggressively = false;
+
     // Hint to use for the initial position when transitioning to an overlay.
     gfx::Rect initial_position;
   };

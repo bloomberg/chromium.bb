@@ -26,7 +26,8 @@ class DialogOverlayImpl : public ui::ViewAndroidObserver,
   // |obj| is still being initialized.
   DialogOverlayImpl(const base::android::JavaParamRef<jobject>& obj,
                     RenderFrameHostImpl* rfhi,
-                    WebContents* web_contents);
+                    WebContents* web_contents,
+                    bool power_efficient);
   ~DialogOverlayImpl() override;
 
   // Called when the java side is ready for token / dismissed callbacks.  May
@@ -51,6 +52,8 @@ class DialogOverlayImpl : public ui::ViewAndroidObserver,
   // WebContentsObserver
   void WasHidden() override;
   void WebContentsDestroyed() override;
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override;
   void FrameDeleted(RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
@@ -68,6 +71,9 @@ class DialogOverlayImpl : public ui::ViewAndroidObserver,
 
   // RenderFrameHostImpl* associated with the given overlay routing token.
   RenderFrameHostImpl* rfhi_;
+
+  // Do we care about power efficiency?
+  bool power_efficient_;
 };
 
 }  // namespace content

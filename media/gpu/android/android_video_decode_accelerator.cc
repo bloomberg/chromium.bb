@@ -117,6 +117,13 @@ constexpr base::TimeDelta NoWaitTimeOut = base::TimeDelta::FromMicroseconds(0);
 
 constexpr base::TimeDelta IdleTimerTimeOut = base::TimeDelta::FromSeconds(1);
 
+// How often do we let the surface chooser try for an overlay?  While we'll
+// retry if some relevant state changes on our side (e.g., fullscreen state),
+// there's plenty of state that we don't know about (e.g., power efficiency,
+// memory pressure => cancelling an old overlay, etc.).  We just let the chooser
+// retry every once in a while for those things.
+constexpr base::TimeDelta RetryChooserTimeout = base::TimeDelta::FromSeconds(5);
+
 // On low end devices (< KitKat is always low-end due to buggy MediaCodec),
 // defer the surface creation until the codec is actually used if we know no
 // software fallback exists.
@@ -369,6 +376,10 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
           switches::kForceVideoOverlays)) {
     surface_chooser_state_.is_required = is_overlay_required_ = true;
   }
+
+  // If we're trying for fullscreen-div cases, then we should promote more.
+  surface_chooser_state_.promote_aggressively =
+      base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively);
 
   // For encrypted media, start by initializing the CDM.  Otherwise, start with
   // the surface.
@@ -1627,7 +1638,23 @@ void AndroidVideoDecodeAccelerator::NotifyPromotionHint(
     update_state = true;
   }
 
+  // If we've been provided with enough new frames, then update the state even
+  // if it hasn't changed.  This lets |surface_chooser_| retry for an overlay.
+  // It's especially helpful for power-efficient overlays, since we don't know
+  // when an overlay becomes power efficient.  It also helps retry any failure
+  // that's not accompanied by a state change, such as if android destroys the
+  // overlay asynchronously for a transient reason.
+  //
+  // If we're already using an overlay, then there's no need to do this.
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (codec_config_->surface_bundle &&
+      !codec_config_->surface_bundle->overlay &&
+      now - most_recent_chooser_retry_ >= RetryChooserTimeout) {
+    update_state = true;
+  }
+
   if (update_state) {
+    most_recent_chooser_retry_ = now;
     surface_chooser_->UpdateState(base::Optional<AndroidOverlayFactoryCB>(),
                                   surface_chooser_state_);
   }

@@ -432,6 +432,9 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   FrameInformation cached_frame_information_ =
       FrameInformation::SURFACETEXTURE_INSECURE;
 
+  // Time since we last updated the chooser state.
+  base::TimeTicks most_recent_chooser_retry_;
+
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;
 
