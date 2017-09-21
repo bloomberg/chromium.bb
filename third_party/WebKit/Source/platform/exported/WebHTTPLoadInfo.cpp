@@ -37,7 +37,7 @@
 namespace blink {
 
 void WebHTTPLoadInfo::Initialize() {
-  private_ = AdoptRef(new ResourceLoadInfo());
+  private_ = WTF::AdoptRef(new ResourceLoadInfo());
 }
 
 void WebHTTPLoadInfo::Reset() {

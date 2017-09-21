@@ -51,7 +51,7 @@ class URLResponseExtraDataContainer : public ResourceResponse::ExtraData {
  public:
   static RefPtr<URLResponseExtraDataContainer> Create(
       WebURLResponse::ExtraData* extra_data) {
-    return AdoptRef(new URLResponseExtraDataContainer(extra_data));
+    return WTF::AdoptRef(new URLResponseExtraDataContainer(extra_data));
   }
 
   ~URLResponseExtraDataContainer() override {}

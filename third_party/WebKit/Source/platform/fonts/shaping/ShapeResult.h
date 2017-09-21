@@ -56,7 +56,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   static RefPtr<ShapeResult> Create(const Font* font,
                                     unsigned num_characters,
                                     TextDirection direction) {
-    return AdoptRef(new ShapeResult(font, num_characters, direction));
+    return WTF::AdoptRef(new ShapeResult(font, num_characters, direction));
   }
   static RefPtr<ShapeResult> CreateForTabulationCharacters(
       const Font*,
@@ -121,7 +121,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   ShapeResult(const ShapeResult&);
 
   static RefPtr<ShapeResult> Create(const ShapeResult& other) {
-    return AdoptRef(new ShapeResult(other));
+    return WTF::AdoptRef(new ShapeResult(other));
   }
 
   template <typename TextContainerType>

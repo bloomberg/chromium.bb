@@ -37,14 +37,14 @@ class PLATFORM_EXPORT TranslateTransformOperation final
   static RefPtr<TranslateTransformOperation> Create(const Length& tx,
                                                     const Length& ty,
                                                     OperationType type) {
-    return AdoptRef(new TranslateTransformOperation(tx, ty, 0, type));
+    return WTF::AdoptRef(new TranslateTransformOperation(tx, ty, 0, type));
   }
 
   static RefPtr<TranslateTransformOperation> Create(const Length& tx,
                                                     const Length& ty,
                                                     double tz,
                                                     OperationType type) {
-    return AdoptRef(new TranslateTransformOperation(tx, ty, tz, type));
+    return WTF::AdoptRef(new TranslateTransformOperation(tx, ty, tz, type));
   }
 
   bool operator==(const TranslateTransformOperation& other) const {

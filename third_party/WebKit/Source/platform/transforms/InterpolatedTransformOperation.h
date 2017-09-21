@@ -44,7 +44,8 @@ class PLATFORM_EXPORT InterpolatedTransformOperation final
       const TransformOperations& from,
       const TransformOperations& to,
       double progress) {
-    return AdoptRef(new InterpolatedTransformOperation(from, to, progress));
+    return WTF::AdoptRef(
+        new InterpolatedTransformOperation(from, to, progress));
   }
 
   virtual bool CanBlendWith(const TransformOperation& other) const {

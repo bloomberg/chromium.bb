@@ -49,12 +49,12 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
   static RefPtr<CachedMetadata> Create(uint32_t data_type_id,
                                        const char* data,
                                        size_t size) {
-    return AdoptRef(new CachedMetadata(data_type_id, data, size));
+    return WTF::AdoptRef(new CachedMetadata(data_type_id, data, size));
   }
 
   static RefPtr<CachedMetadata> CreateFromSerializedData(const char* data,
                                                          size_t size) {
-    return AdoptRef(new CachedMetadata(data, size));
+    return WTF::AdoptRef(new CachedMetadata(data, size));
   }
 
   ~CachedMetadata() {}

@@ -39,12 +39,12 @@ class PLATFORM_EXPORT MatrixTransformOperation final
                                                  double d,
                                                  double e,
                                                  double f) {
-    return AdoptRef(new MatrixTransformOperation(a, b, c, d, e, f));
+    return WTF::AdoptRef(new MatrixTransformOperation(a, b, c, d, e, f));
   }
 
   static RefPtr<MatrixTransformOperation> Create(
       const TransformationMatrix& t) {
-    return AdoptRef(new MatrixTransformOperation(t));
+    return WTF::AdoptRef(new MatrixTransformOperation(t));
   }
 
   TransformationMatrix Matrix() const {

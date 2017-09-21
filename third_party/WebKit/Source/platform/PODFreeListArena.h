@@ -36,13 +36,13 @@ template <class T>
 class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
  public:
   static RefPtr<PODFreeListArena> Create() {
-    return AdoptRef(new PODFreeListArena);
+    return WTF::AdoptRef(new PODFreeListArena);
   }
 
   // Creates a new PODFreeListArena configured with the given Allocator.
   static RefPtr<PODFreeListArena> Create(
       RefPtr<PODArena::Allocator> allocator) {
-    return AdoptRef(new PODFreeListArena(std::move(allocator)));
+    return WTF::AdoptRef(new PODFreeListArena(std::move(allocator)));
   }
 
   // Allocates an object from the arena.

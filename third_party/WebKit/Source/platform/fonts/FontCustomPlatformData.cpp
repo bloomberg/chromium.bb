@@ -154,7 +154,7 @@ RefPtr<FontCustomPlatformData> FontCustomPlatformData::Create(
     ots_parse_message = decoder.GetErrorString();
     return nullptr;
   }
-  return AdoptRef(
+  return WTF::AdoptRef(
       new FontCustomPlatformData(std::move(typeface), decoder.DecodedSize()));
 }
 

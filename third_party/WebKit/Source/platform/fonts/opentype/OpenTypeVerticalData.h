@@ -43,7 +43,7 @@ class PLATFORM_EXPORT OpenTypeVerticalData
  public:
   static RefPtr<OpenTypeVerticalData> Create(
       const FontPlatformData& platform_data) {
-    return AdoptRef(new OpenTypeVerticalData(platform_data));
+    return WTF::AdoptRef(new OpenTypeVerticalData(platform_data));
   }
 
   bool IsOpenType() const { return !advance_widths_.IsEmpty(); }

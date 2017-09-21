@@ -44,7 +44,7 @@ class WebServiceWorkerRequestPrivate
 };
 
 WebServiceWorkerRequest::WebServiceWorkerRequest()
-    : private_(AdoptRef(new WebServiceWorkerRequestPrivate)) {}
+    : private_(WTF::AdoptRef(new WebServiceWorkerRequestPrivate)) {}
 
 void WebServiceWorkerRequest::Reset() {
   private_.Reset();

@@ -49,7 +49,7 @@ class URLRequestExtraDataContainer : public ResourceRequest::ExtraData {
  public:
   static RefPtr<URLRequestExtraDataContainer> Create(
       WebURLRequest::ExtraData* extra_data) {
-    return AdoptRef(new URLRequestExtraDataContainer(extra_data));
+    return WTF::AdoptRef(new URLRequestExtraDataContainer(extra_data));
   }
 
   ~URLRequestExtraDataContainer() override {}

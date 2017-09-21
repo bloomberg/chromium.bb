@@ -42,26 +42,28 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
  public:
   enum : unsigned { kSegmentSize = 0x1000 };
 
-  static RefPtr<SharedBuffer> Create() { return AdoptRef(new SharedBuffer); }
+  static RefPtr<SharedBuffer> Create() {
+    return WTF::AdoptRef(new SharedBuffer);
+  }
 
   HAS_STRICTLY_TYPED_ARG
   static RefPtr<SharedBuffer> Create(STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
-    return AdoptRef(new SharedBuffer(size));
+    return WTF::AdoptRef(new SharedBuffer(size));
   }
 
   HAS_STRICTLY_TYPED_ARG
   static RefPtr<SharedBuffer> Create(const char* data,
                                      STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
-    return AdoptRef(new SharedBuffer(data, size));
+    return WTF::AdoptRef(new SharedBuffer(data, size));
   }
 
   HAS_STRICTLY_TYPED_ARG
   static RefPtr<SharedBuffer> Create(const unsigned char* data,
                                      STRICTLY_TYPED_ARG(size)) {
     STRICT_ARG_TYPE(size_t);
-    return AdoptRef(new SharedBuffer(data, size));
+    return WTF::AdoptRef(new SharedBuffer(data, size));
   }
 
   static RefPtr<SharedBuffer> AdoptVector(Vector<char>&);

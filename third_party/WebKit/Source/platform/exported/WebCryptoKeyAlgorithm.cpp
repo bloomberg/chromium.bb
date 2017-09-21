@@ -56,8 +56,8 @@ class WebCryptoKeyAlgorithmPrivate
 WebCryptoKeyAlgorithm::WebCryptoKeyAlgorithm(
     WebCryptoAlgorithmId id,
     std::unique_ptr<WebCryptoKeyAlgorithmParams> params)
-    : private_(
-          AdoptRef(new WebCryptoKeyAlgorithmPrivate(id, std::move(params)))) {}
+    : private_(WTF::AdoptRef(
+          new WebCryptoKeyAlgorithmPrivate(id, std::move(params)))) {}
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::AdoptParamsAndCreate(
     WebCryptoAlgorithmId id,

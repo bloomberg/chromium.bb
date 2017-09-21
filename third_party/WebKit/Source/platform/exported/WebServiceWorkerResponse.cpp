@@ -33,7 +33,7 @@ class WebServiceWorkerResponsePrivate
 };
 
 WebServiceWorkerResponse::WebServiceWorkerResponse()
-    : private_(AdoptRef(new WebServiceWorkerResponsePrivate)) {}
+    : private_(WTF::AdoptRef(new WebServiceWorkerResponsePrivate)) {}
 
 void WebServiceWorkerResponse::Reset() {
   private_.Reset();

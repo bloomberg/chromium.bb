@@ -11,7 +11,7 @@ namespace blink {
 RefPtr<ScriptState> ScriptState::Create(v8::Local<v8::Context> context,
                                         RefPtr<DOMWrapperWorld> world) {
   RefPtr<ScriptState> script_state =
-      AdoptRef(new ScriptState(context, std::move(world)));
+      WTF::AdoptRef(new ScriptState(context, std::move(world)));
   // This ref() is for keeping this ScriptState alive as long as the v8::Context
   // is alive.  This is deref()ed in the weak callback of the v8::Context.
   script_state->Ref();

@@ -181,22 +181,22 @@ RefPtr<SecurityOrigin> SecurityOrigin::Create(const KURL& url) {
     return origin;
 
   if (ShouldTreatAsUniqueOrigin(url))
-    return AdoptRef(new SecurityOrigin());
+    return WTF::AdoptRef(new SecurityOrigin());
 
   if (ShouldUseInnerURL(url))
-    return AdoptRef(new SecurityOrigin(ExtractInnerURL(url)));
+    return WTF::AdoptRef(new SecurityOrigin(ExtractInnerURL(url)));
 
-  return AdoptRef(new SecurityOrigin(url));
+  return WTF::AdoptRef(new SecurityOrigin(url));
 }
 
 RefPtr<SecurityOrigin> SecurityOrigin::CreateUnique() {
-  RefPtr<SecurityOrigin> origin = AdoptRef(new SecurityOrigin());
+  RefPtr<SecurityOrigin> origin = WTF::AdoptRef(new SecurityOrigin());
   DCHECK(origin->IsUnique());
   return origin;
 }
 
 RefPtr<SecurityOrigin> SecurityOrigin::IsolatedCopy() const {
-  return AdoptRef(new SecurityOrigin(this));
+  return WTF::AdoptRef(new SecurityOrigin(this));
 }
 
 void SecurityOrigin::SetDomainFromDOM(const String& new_domain) {

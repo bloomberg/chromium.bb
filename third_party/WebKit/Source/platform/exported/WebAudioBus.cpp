@@ -85,7 +85,7 @@ float* WebAudioBus::ChannelData(unsigned channel_index) {
 }
 
 RefPtr<AudioBus> WebAudioBus::Release() {
-  RefPtr<AudioBus> audio_bus(AdoptRef(static_cast<AudioBus*>(private_)));
+  RefPtr<AudioBus> audio_bus(WTF::AdoptRef(static_cast<AudioBus*>(private_)));
   private_ = 0;
   return audio_bus;
 }

@@ -63,7 +63,7 @@ class PLATFORM_EXPORT SharedFontFamily : public FontFamily,
 
  public:
   static RefPtr<SharedFontFamily> Create() {
-    return AdoptRef(new SharedFontFamily);
+    return WTF::AdoptRef(new SharedFontFamily);
   }
 
  private:

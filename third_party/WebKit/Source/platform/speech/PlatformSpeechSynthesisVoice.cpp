@@ -33,12 +33,12 @@ RefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::Create(
     const String& lang,
     bool local_service,
     bool is_default) {
-  return AdoptRef(new PlatformSpeechSynthesisVoice(voice_uri, name, lang,
-                                                   local_service, is_default));
+  return WTF::AdoptRef(new PlatformSpeechSynthesisVoice(
+      voice_uri, name, lang, local_service, is_default));
 }
 
 RefPtr<PlatformSpeechSynthesisVoice> PlatformSpeechSynthesisVoice::Create() {
-  return AdoptRef(new PlatformSpeechSynthesisVoice);
+  return WTF::AdoptRef(new PlatformSpeechSynthesisVoice);
 }
 
 PlatformSpeechSynthesisVoice::PlatformSpeechSynthesisVoice(
