@@ -7,7 +7,10 @@
 
 #include "base/callback.h"
 #include "cc/paint/decoded_draw_image.h"
+#include "cc/paint/draw_image.h"
 #include "cc/paint/paint_export.h"
+
+#include <vector>
 
 namespace cc {
 class PaintImage;
@@ -43,13 +46,13 @@ class CC_PAINT_EXPORT ImageProvider {
 
   virtual ~ImageProvider() {}
 
+  virtual void BeginRaster() {}
+  virtual void EndRaster() {}
+
   // Returns the DecodedDrawImage to use for this PaintImage. If no image is
   // provided, the draw for this image will be skipped during raster.
   virtual ScopedDecodedDrawImage GetDecodedDrawImage(
-      const PaintImage& paint_image,
-      const SkRect& src_rect,
-      SkFilterQuality filter_quality,
-      const SkMatrix& matrix) = 0;
+      const DrawImage& draw_image) = 0;
 };
 
 }  // namespace cc

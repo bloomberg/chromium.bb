@@ -141,21 +141,24 @@ void ImageController::SetImageDecodeCache(ImageDecodeCache* cache) {
     GenerateTasksForOrphanedRequests();
   }
 }
-
 void ImageController::GetTasksForImagesAndRef(
-    std::vector<DrawImage>* images,
+    std::vector<DrawImage>* sync_decoded_images,
+    std::vector<DrawImage>* at_raster_images,
     std::vector<scoped_refptr<TileTask>>* tasks,
     const ImageDecodeCache::TracingInfo& tracing_info) {
   DCHECK(cache_);
-  for (auto it = images->begin(); it != images->end();) {
+  for (auto it = sync_decoded_images->begin();
+       it != sync_decoded_images->end();) {
     ImageDecodeCache::TaskResult result =
         cache_->GetTaskForImageAndRef(*it, tracing_info);
     if (result.task)
       tasks->push_back(std::move(result.task));
+    if (at_raster_images && result.IsAtRaster())
+      at_raster_images->push_back(*it);
     if (result.need_unref)
       ++it;
     else
-      it = images->erase(it);
+      it = sync_decoded_images->erase(it);
   }
 }
 
@@ -173,7 +176,7 @@ std::vector<scoped_refptr<TileTask>> ImageController::SetPredecodeImages(
     std::vector<DrawImage> images,
     const ImageDecodeCache::TracingInfo& tracing_info) {
   std::vector<scoped_refptr<TileTask>> new_tasks;
-  GetTasksForImagesAndRef(&images, &new_tasks, tracing_info);
+  GetTasksForImagesAndRef(&images, nullptr, &new_tasks, tracing_info);
   UnrefImages(predecode_locked_images_);
   predecode_locked_images_ = std::move(images);
   return new_tasks;

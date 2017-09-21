@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/draw_image.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/test/stub_paint_image_generator.h"
@@ -81,6 +82,18 @@ PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
       .set_paint_image_generator(sk_make_sp<TestImageGenerator>(
           SkImageInfo::MakeN32Premul(size.width(), size.height(), color_space)))
       .TakePaintImage();
+}
+
+DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
+                                     sk_sp<SkColorSpace> color_space,
+                                     SkRect rect,
+                                     SkFilterQuality filter_quality,
+                                     const SkMatrix& matrix) {
+  SkIRect irect;
+  rect.roundOut(&irect);
+
+  return DrawImage(CreateDiscardablePaintImage(size, color_space), irect,
+                   filter_quality, matrix);
 }
 
 PaintImage CreateAnimatedImage(const gfx::Size& size,

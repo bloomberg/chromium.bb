@@ -23,22 +23,27 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
  public:
   PlaybackImageProvider(bool skip_all_images,
                         PaintImageIdFlatSet images_to_skip,
+                        std::vector<DrawImage> at_raster_images,
                         ImageDecodeCache* cache,
                         const gfx::ColorSpace& taget_color_space);
   ~PlaybackImageProvider() override;
+
+  void BeginRaster() override;
+  void EndRaster() override;
 
   PlaybackImageProvider(PlaybackImageProvider&& other);
   PlaybackImageProvider& operator=(PlaybackImageProvider&& other);
 
   // ImageProvider implementation.
-  ScopedDecodedDrawImage GetDecodedDrawImage(const PaintImage& paint_image,
-                                             const SkRect& src_rect,
-                                             SkFilterQuality filter_quality,
-                                             const SkMatrix& matrix) override;
+  ScopedDecodedDrawImage GetDecodedDrawImage(
+      const DrawImage& draw_image) override;
 
  private:
   bool skip_all_images_;
+  bool in_raster_ = false;
   PaintImageIdFlatSet images_to_skip_;
+  std::vector<DrawImage> at_raster_images_;
+  std::vector<ImageProvider::ScopedDecodedDrawImage> decoded_at_raster_;
   ImageDecodeCache* cache_;
   gfx::ColorSpace target_color_space_;
 
