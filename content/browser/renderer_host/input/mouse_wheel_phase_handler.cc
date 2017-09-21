@@ -7,6 +7,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "ui/events/base_event_utils.h"
 
 namespace content {
 MouseWheelPhaseHandler::MouseWheelPhaseHandler(
@@ -70,6 +71,8 @@ void MouseWheelPhaseHandler::SendSyntheticWheelEventWithPhaseEnded(
     bool should_route_event) {
   DCHECK(host_view_->wheel_scroll_latching_enabled());
   blink::WebMouseWheelEvent mouse_wheel_event = last_mouse_wheel_event;
+  mouse_wheel_event.SetTimeStampSeconds(
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   mouse_wheel_event.delta_x = 0;
   mouse_wheel_event.delta_y = 0;
   mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
