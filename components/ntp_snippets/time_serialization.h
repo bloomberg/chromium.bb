@@ -17,6 +17,10 @@ namespace ntp_snippets {
 int64_t SerializeTime(const base::Time& time);
 base::Time DeserializeTime(int64_t serialized_time);
 
+// Same as above, but for base::TimeDelta.
+int64_t SerializeTimeDelta(const base::TimeDelta& time_delta);
+base::TimeDelta DeserializeTimeDelta(int64_t serialized_time_delta);
+
 }  // namespace ntp_snippets
 
 #endif  // COMPONENTS_NTP_SNIPPETS_TIME_SERIALIZATION_H_

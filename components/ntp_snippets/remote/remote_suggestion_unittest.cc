@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
+#include "components/ntp_snippets/time_serialization.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,7 +57,7 @@ TEST(RemoteSuggestionTest, FromContentSuggestionsDictionary) {
       "imageDominantColor": 4289379276
     }
   )";
-  const base::Time fetch_date = base::Time::FromInternalValue(1466634774L);
+  const base::Time fetch_date = DeserializeTime(1466634774L);
   auto snippet = SnippetFromContentSuggestionJSON(kJsonStr, fetch_date);
   ASSERT_THAT(snippet, NotNull());
 
@@ -263,7 +264,7 @@ TEST(RemoteSuggestionTest, NotificationInfoAbsent) {
 
 TEST(RemoteSuggestionTest, ToContentSuggestion) {
   auto json = ContentSuggestionSnippet();
-  const base::Time fetch_date = base::Time::FromInternalValue(1466634774L);
+  const base::Time fetch_date = DeserializeTime(1466634774L);
   auto snippet = RemoteSuggestion::CreateFromContentSuggestionsDictionary(
       *json, 0, fetch_date);
   ASSERT_THAT(snippet, NotNull());

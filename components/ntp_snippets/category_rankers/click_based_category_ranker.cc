@@ -16,6 +16,7 @@
 #include "components/ntp_snippets/content_suggestions_metrics.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/time_serialization.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -153,7 +154,7 @@ ClickBasedCategoryRanker::ClickBasedCategoryRanker(
     RestoreDefaultOrder();
   }
 
-  if (ReadLastDecayTimeFromPrefs() == base::Time::FromInternalValue(0)) {
+  if (ReadLastDecayTimeFromPrefs() == DeserializeTime(0)) {
     StoreLastDecayTimeToPrefs(clock_->Now());
   }
   promoted_category_ = DeterminePromotedCategory();
@@ -219,7 +220,7 @@ void ClickBasedCategoryRanker::ClearHistory(base::Time begin, base::Time end) {
     return;
   }
 
-  StoreLastDecayTimeToPrefs(base::Time::FromInternalValue(0));
+  StoreLastDecayTimeToPrefs(DeserializeTime(0));
 
   // The categories added through |AppendCategoryIfNecessary| cannot be
   // completely removed, since no one is required to reregister them. Instead
@@ -461,7 +462,7 @@ base::Time ParseLastDismissedDate(const base::DictionaryValue& value) {
   int64_t parsed_value;
   if (value.GetString(kLastDismissedKey, &serialized_value) &&
       base::StringToInt64(serialized_value, &parsed_value)) {
-    return base::Time::FromInternalValue(parsed_value);
+    return DeserializeTime(parsed_value);
   }
   return base::Time();
 }
@@ -511,7 +512,7 @@ void ClickBasedCategoryRanker::StoreOrderToPrefs(
     dictionary->SetInteger(kClicksKey, category.clicks);
     dictionary->SetString(
         kLastDismissedKey,
-        base::Int64ToString(category.last_dismissed.ToInternalValue()));
+        base::Int64ToString(SerializeTime(category.last_dismissed)));
     list.Append(std::move(dictionary));
   }
   pref_service_->Set(prefs::kClickBasedCategoryRankerOrderWithClicks, list);
@@ -552,14 +553,14 @@ void ClickBasedCategoryRanker::InsertCategoryRelativeToIfNecessary(
 }
 
 base::Time ClickBasedCategoryRanker::ReadLastDecayTimeFromPrefs() const {
-  return base::Time::FromInternalValue(
+  return DeserializeTime(
       pref_service_->GetInt64(prefs::kClickBasedCategoryRankerLastDecayTime));
 }
 
 void ClickBasedCategoryRanker::StoreLastDecayTimeToPrefs(
     base::Time last_decay_time) {
   pref_service_->SetInt64(prefs::kClickBasedCategoryRankerLastDecayTime,
-                          last_decay_time.ToInternalValue());
+                          SerializeTime(last_decay_time));
 }
 
 bool ClickBasedCategoryRanker::IsEnoughClicksToDecay() const {

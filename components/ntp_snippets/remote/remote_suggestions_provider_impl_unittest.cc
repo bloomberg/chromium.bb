@@ -2215,7 +2215,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
   WaitForSuggestionsProviderInitialization(provider.get());
   EXPECT_EQ(
-      simple_test_clock_ptr->Now().ToInternalValue(),
+      SerializeTime(simple_test_clock_ptr->Now()),
       pref_service()->GetInt64(prefs::kLastSuccessfulBackgroundFetchTime));
 
   // Advance the time and check whether the time was updated correctly after the
@@ -2232,7 +2232,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   std::move(snippets_callback).Run(Status::Success(), base::nullopt);
   // TODO(jkrcal): Move together with the pref storage into the scheduler.
   EXPECT_EQ(
-      simple_test_clock_ptr->Now().ToInternalValue(),
+      SerializeTime(simple_test_clock_ptr->Now()),
       pref_service()->GetInt64(prefs::kLastSuccessfulBackgroundFetchTime));
   // TODO(markusheintz): Add a test that simulates a browser restart once the
   // scheduler refactoring is done (crbug.com/672434).

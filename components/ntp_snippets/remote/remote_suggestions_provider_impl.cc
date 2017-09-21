@@ -32,6 +32,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service_impl.h"
 #include "components/ntp_snippets/switches.h"
+#include "components/ntp_snippets/time_serialization.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -834,7 +835,7 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
   // Record the fetch time of a successfull background fetch.
   if (!interactive_request) {
     pref_service_->SetInt64(prefs::kLastSuccessfulBackgroundFetchTime,
-                            clock_->Now().ToInternalValue());
+                            SerializeTime(clock_->Now()));
   }
 
   // Mark all categories as not provided by the server in the latest fetch. The

@@ -7,12 +7,19 @@
 namespace ntp_snippets {
 
 int64_t SerializeTime(const base::Time& time) {
-  base::TimeDelta delta = time - base::Time();
-  return delta.InMicroseconds();
+  return SerializeTimeDelta(time - base::Time());
 }
 
 base::Time DeserializeTime(int64_t serialized_time) {
-  return base::Time() + base::TimeDelta::FromMicroseconds(serialized_time);
+  return base::Time() + DeserializeTimeDelta(serialized_time);
+}
+
+int64_t SerializeTimeDelta(const base::TimeDelta& time_delta) {
+  return time_delta.InMicroseconds();
+}
+
+base::TimeDelta DeserializeTimeDelta(int64_t serialized_time_delta) {
+  return base::TimeDelta::FromMicroseconds(serialized_time_delta);
 }
 
 }  // namespace ntp_snippets
