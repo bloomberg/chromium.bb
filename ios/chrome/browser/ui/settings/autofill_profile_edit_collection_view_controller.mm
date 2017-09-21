@@ -103,6 +103,8 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
     [self setCollectionViewAccessibilityIdentifier:
               kAutofillProfileEditCollectionViewId];
     [self setTitle:l10n_util::GetNSString(IDS_IOS_AUTOFILL_EDIT_ADDRESS)];
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
   }
 

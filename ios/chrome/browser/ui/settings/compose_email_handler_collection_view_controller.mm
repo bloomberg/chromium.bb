@@ -74,6 +74,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.title = l10n_util::GetNSString(IDS_IOS_COMPOSE_EMAIL_SETTING);
   self.collectionViewAccessibilityIdentifier =
       @"compose_email_handler_view_controller";
+  // TODO(crbug.com/764578): -loadModel should not be called from
+  // initializer. A possible fix is to move this call to -viewDidLoad.
   [self loadModel];
 }
 

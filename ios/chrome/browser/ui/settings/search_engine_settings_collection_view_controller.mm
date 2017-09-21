@@ -90,6 +90,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     templateURLService_->Load();
     [self setTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_ENGINE_SETTING_TITLE)];
     [self setCollectionViewAccessibilityIdentifier:@"Search Engine"];
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
   }
   return self;

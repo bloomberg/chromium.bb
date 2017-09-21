@@ -60,6 +60,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.title = l10n_util::GetNSString(IDS_IOS_OPTIONS_DO_NOT_TRACK_MOBILE);
     _doNotTrackEnabled.Init(prefs::kEnableDoNotTrack, prefs);
     self.collectionViewAccessibilityIdentifier = @"Do Not Track";
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
   }
   return self;

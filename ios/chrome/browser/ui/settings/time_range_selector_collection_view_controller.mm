@@ -75,6 +75,8 @@ initWithPrefs:(PrefService*)prefs
     self.title = l10n_util::GetNSString(
         IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
     timeRangePref_.Init(browsing_data::prefs::kDeleteTimePeriod, prefs);
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
     self.shouldHideDoneButton = YES;
   }

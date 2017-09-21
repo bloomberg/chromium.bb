@@ -143,6 +143,8 @@ const CGFloat kSpinnerButtonPadding = 18;
     tokenServiceObserver_.reset(new OAuth2TokenServiceObserverBridge(
         OAuth2TokenServiceFactory::GetForBrowserState(browserState_), self));
 
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
   }
   return self;

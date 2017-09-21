@@ -83,6 +83,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.collectionViewAccessibilityIdentifier =
         @"block_popups_settings_view_controller";
 
+    // TODO(crbug.com/764578): Instance methods should not be called from
+    // initializer.
     [self populateExceptionsList];
     [self updateEditButton];
     [self loadModel];

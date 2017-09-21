@@ -142,6 +142,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         prefs::kMetricsReportingWifiOnly,
         &_prefChangeRegistrarApplicationContext);
 
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
   }
   return self;

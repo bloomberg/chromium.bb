@@ -60,6 +60,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.title = title;
     basePreference_.Init(basePreference, prefs);
     wifiPreference_.Init(wifiPreference, prefs);
+    // TODO(crbug.com/764578): -loadModel should not be called from
+    // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
   }
   return self;
