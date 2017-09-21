@@ -15,6 +15,7 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -28,21 +29,23 @@
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
+#include "media/filters/source_buffer_range.h"
 
 namespace media {
 
-class SourceBufferRangeByDts;
-
 // See file-level comment for complete description.
+// Template parameter determines which kind of buffering behavior is used. See
+// https://crbug.com/718641 and media::MseBufferByPts feature.
+template <typename RangeClass>
 class MEDIA_EXPORT SourceBufferStream {
  public:
-  typedef StreamParser::BufferQueue BufferQueue;
-  // TODO(wolenetz): Define both a ByDts and ByPts RangeList and use the type
-  // conditioned on which kind of SourceBufferStream. Maybe take a template
-  // parameter to SourceBufferStream class (e.g. SourceBufferRangeBy{Dts,Pts})
-  // to differentiate the behavior while being type-safe and efficient. See
-  // https://crbug.com/718641.
-  typedef std::list<std::unique_ptr<SourceBufferRangeByDts>> RangeList;
+  static_assert(
+      std::is_base_of<SourceBufferRange, RangeClass>::value &&
+          !std::is_abstract<RangeClass>::value,
+      "RangeClass must be a concrete class having SourceBufferRange as base");
+
+  using BufferQueue = StreamParser::BufferQueue;
+  using RangeList = std::list<std::unique_ptr<RangeClass>>;
 
   // Status returned by GetNextBuffer().
   // kSuccess: Indicates that the next buffer was returned.
@@ -215,7 +218,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // Checks to see if |range_with_new_buffers_itr| can be merged with the range
   // next to it, and merges them if so.
   void MergeWithAdjacentRangeIfNecessary(
-      const RangeList::iterator& range_with_new_buffers_itr);
+      const typename RangeList::iterator& range_with_new_buffers_itr);
 
   // Returns true if |second_timestamp| is the timestamp of the next buffer in
   // sequence after |first_timestamp|, false otherwise.
@@ -230,25 +233,26 @@ class MEDIA_EXPORT SourceBufferStream {
   // Finds the range that should contain a coded frame group that begins with
   // |start_timestamp| and returns the iterator pointing to it. Returns
   // |ranges_.end()| if there's no such existing range.
-  RangeList::iterator FindExistingRangeFor(DecodeTimestamp start_timestamp);
+  typename RangeList::iterator FindExistingRangeFor(
+      DecodeTimestamp start_timestamp);
 
   // Inserts |new_range| into |ranges_| preserving sorted order. Returns an
   // iterator in |ranges_| that points to |new_range|. |new_range| becomes owned
   // by |ranges_|.
-  RangeList::iterator AddToRanges(
-      std::unique_ptr<SourceBufferRangeByDts> new_range);
+  typename RangeList::iterator AddToRanges(
+      std::unique_ptr<RangeClass> new_range);
 
   // Returns an iterator that points to the place in |ranges_| where
   // |selected_range_| lives.
-  RangeList::iterator GetSelectedRangeItr();
+  typename RangeList::iterator GetSelectedRangeItr();
 
   // Sets the |selected_range_| to |range| and resets the next buffer position
   // for the previous |selected_range_|.
-  void SetSelectedRange(SourceBufferRangeByDts* range);
+  void SetSelectedRange(RangeClass* range);
 
   // Seeks |range| to |seek_timestamp| and then calls SetSelectedRange() with
   // |range|.
-  void SeekAndSetSelectedRange(SourceBufferRangeByDts* range,
+  void SeekAndSetSelectedRange(RangeClass* range,
                                DecodeTimestamp seek_timestamp);
 
   // Resets this stream back to an unseeked state.
@@ -318,7 +322,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // If |*itr| points to |selected_range_|, then |selected_range_| is set to
   // NULL. After the range is removed, |*itr| is to the range after the one that
   // was removed or to |ranges_.end()| if the last range was removed.
-  void DeleteAndRemoveRange(RangeList::iterator* itr);
+  void DeleteAndRemoveRange(typename RangeList::iterator* itr);
 
   // Helper function used when updating |range_for_next_append_|.
   // Returns a guess of what the next append timestamp will be based on
@@ -413,7 +417,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // Pointer to the seeked-to Range. This is the range from which
   // GetNextBuffer() calls are fulfilled after the |track_buffer_| has been
   // emptied.
-  SourceBufferRangeByDts* selected_range_ = nullptr;
+  RangeClass* selected_range_ = nullptr;
 
   // Queue of the next buffers to be returned from calls to GetNextBuffer(). If
   // |track_buffer_| is empty, return buffers from |selected_range_|.
@@ -428,7 +432,7 @@ class MEDIA_EXPORT SourceBufferStream {
 
   // Points to the range containing the current coded frame group being
   // appended.
-  RangeList::iterator range_for_next_append_;
+  typename RangeList::iterator range_for_next_append_;
 
   // True when the next call to Append() begins a new coded frame group.
   // TODO(wolenetz): Simplify by passing this flag into Append().
@@ -473,7 +477,7 @@ class MEDIA_EXPORT SourceBufferStream {
   int num_garbage_collect_algorithm_logs_ = 0;
   int num_strange_same_timestamps_logs_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(SourceBufferStream);
+  DISALLOW_COPY_AND_ASSIGN(SourceBufferStream<RangeClass>);
 };
 
 }  // namespace media

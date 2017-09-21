@@ -25,6 +25,7 @@
 #include "media/base/ranges.h"
 #include "media/base/stream_parser.h"
 #include "media/filters/source_buffer_parse_warnings.h"
+#include "media/filters/source_buffer_range_by_dts.h"
 #include "media/filters/source_buffer_state.h"
 #include "media/filters/source_buffer_stream.h"
 
@@ -33,6 +34,10 @@ namespace media {
 class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
  public:
   using BufferQueue = base::circular_deque<scoped_refptr<StreamParserBuffer>>;
+
+  // TODO(wolenetz): Vary the buffering API used by the stream. See
+  // https://crbug.com/718641.
+  using StreamType = SourceBufferStream<SourceBufferRangeByDts>;
 
   ChunkDemuxerStream(Type type, MediaTrack::Id media_track_id);
   ~ChunkDemuxerStream() override;
@@ -151,7 +156,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   Liveness liveness_;
 
-  std::unique_ptr<SourceBufferStream> stream_;
+  std::unique_ptr<StreamType> stream_;
 
   const MediaTrack::Id media_track_id_;
 
