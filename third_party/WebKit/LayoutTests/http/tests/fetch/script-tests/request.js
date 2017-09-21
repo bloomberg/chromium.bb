@@ -294,13 +294,6 @@ test(function() {
     request2 = new Request(request1);
     assert_equals(request2.integrity, 'sha256-deadbeef',
                   'Request.integrity should match');
-    init['mode'] = 'no-cors';
-    assert_throws(
-        {name: 'TypeError'},
-        function() {
-            var request = new Request(URL, init);
-        },
-        'new Request with a non-empty integrity and mode of \'no-cors\' should throw');
 }, 'Request integrity test');
 
 test(function() {

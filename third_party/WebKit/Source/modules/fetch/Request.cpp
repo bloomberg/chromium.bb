@@ -333,13 +333,6 @@ Request* Request::CreateRequestWithRequestOrString(
                                      "' is unsupported in no-cors mode.");
       return nullptr;
     }
-    // "If |request|'s integrity metadata is not the empty string, throw a
-    // TypeError."
-    if (!request->Integrity().IsEmpty()) {
-      exception_state.ThrowTypeError(
-          "The integrity attribute is unsupported in no-cors mode.");
-      return nullptr;
-    }
     // "Set |r|'s Headers object's guard to "request-no-cors"."
     r->getHeaders()->SetGuard(Headers::kRequestNoCORSGuard);
   }
