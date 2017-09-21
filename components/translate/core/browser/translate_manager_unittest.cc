@@ -13,6 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
+#include "components/language/core/browser/language_model.h"
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -88,6 +89,14 @@ MATCHER_P(EqualsTranslateEventProto, translate_event, "") {
           arg.target_language() == tep.target_language() &&
           arg.event_type() == tep.event_type());
 }
+
+// A language model that just returns its instance variable.
+class MockLanguageModel : public language::LanguageModel {
+ public:
+  std::vector<LanguageDetails> GetLanguages() override { return details; }
+
+  std::vector<LanguageDetails> details;
+};
 
 }  // namespace
 
@@ -265,31 +274,57 @@ TEST_F(TranslateManagerTest, GetTargetLanguageDefaultsToAppLocale) {
   EXPECT_EQ("no", TranslateManager::GetTargetLanguage(&translate_prefs_));
 }
 
-// If the application locale's language is not supported, the target language
-// falls back to the first supported language in |accept_languages_list|. If
-// none of the languages in |accept_language_list| is supported, the target
-// language is empty.
-TEST_F(TranslateManagerTest, GetTargetLanguageAcceptLangFallback) {
-  std::vector<std::string> accept_language_list;
+// Test that the language model is used if provided.
+TEST_F(TranslateManagerTest, GetTargetLanguageFromModel) {
+  MockLanguageModel mock_language_model;
 
-  // Ensure locale is set to a not-supported language.
-  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("xy"));
-  manager_->set_application_locale("xy");
-
-  // Default return is empty string.
-  EXPECT_EQ("", TranslateManager::GetTargetLanguage(&translate_prefs_));
-
-  // Unsupported languages still result in the empty string.
-  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("zy"));
-  accept_language_list.push_back("zy");
-  translate_prefs_.UpdateLanguageList(accept_language_list);
-  EXPECT_EQ("", TranslateManager::GetTargetLanguage(&translate_prefs_));
-
-  // First supported language is the fallback language.
+  // Try with a single, supported language.
   ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("en"));
-  accept_language_list.push_back("en");
-  translate_prefs_.UpdateLanguageList(accept_language_list);
-  EXPECT_EQ("en", TranslateManager::GetTargetLanguage(&translate_prefs_));
+  mock_language_model.details = {MockLanguageModel::LanguageDetails("en", 1.0)};
+  EXPECT_EQ("en",
+            TranslateManager::GetTargetLanguage(nullptr, &mock_language_model));
+
+  // Try with two supported languages.
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("de"));
+  mock_language_model.details = {MockLanguageModel::LanguageDetails("de", 1.0),
+                                 MockLanguageModel::LanguageDetails("en", 0.5)};
+  EXPECT_EQ("de",
+            TranslateManager::GetTargetLanguage(nullptr, &mock_language_model));
+
+  // Try with first supported language lower in the list.
+  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("xx"));
+  mock_language_model.details = {MockLanguageModel::LanguageDetails("xx", 1.0),
+                                 MockLanguageModel::LanguageDetails("en", 0.5)};
+  EXPECT_EQ("en",
+            TranslateManager::GetTargetLanguage(nullptr, &mock_language_model));
+
+  // Try with no supported languages.
+  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("yy"));
+  mock_language_model.details = {MockLanguageModel::LanguageDetails("xx", 1.0),
+                                 MockLanguageModel::LanguageDetails("yy", 0.5)};
+  EXPECT_EQ("",
+            TranslateManager::GetTargetLanguage(nullptr, &mock_language_model));
+
+  // Try non standard codes.
+  // 'he', 'fil', 'nb' => 'iw', 'tl', 'no'
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("iw"));
+  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("he"));
+  mock_language_model.details = {MockLanguageModel::LanguageDetails("he", 1.0)};
+  EXPECT_EQ("iw",
+            TranslateManager::GetTargetLanguage(nullptr, &mock_language_model));
+
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("tl"));
+  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("fil"));
+  mock_language_model.details = {
+      MockLanguageModel::LanguageDetails("fil", 1.0)};
+  EXPECT_EQ("tl",
+            TranslateManager::GetTargetLanguage(nullptr, &mock_language_model));
+
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("no"));
+  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("nb"));
+  mock_language_model.details = {MockLanguageModel::LanguageDetails("nb", 1.0)};
+  EXPECT_EQ("no",
+            TranslateManager::GetTargetLanguage(nullptr, &mock_language_model));
 }
 
 TEST_F(TranslateManagerTest, DontTranslateOffline) {

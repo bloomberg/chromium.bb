@@ -15,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "components/language/core/browser/language_model.h"
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/language_state.h"
@@ -475,28 +476,41 @@ void TranslateManager::OnTranslateScriptFetchComplete(
 }
 
 // static
-std::string TranslateManager::GetTargetLanguage(const TranslatePrefs* prefs) {
-  // Get target language from ULP if the ULP experiment is enabled.
-  std::string language = TranslateManager::GetTargetLanguageFromULP(prefs);
-  if (!language.empty())
-    return language;
+std::string TranslateManager::GetTargetLanguage(
+    const TranslatePrefs* prefs,
+    language::LanguageModel* language_model) {
+  if (language_model) {
+    // Use the first language from the model that translate supports.
+    for (const auto& lang : language_model->GetLanguages()) {
+      std::string lang_code =
+          TranslateDownloadManager::GetLanguageCode(lang.lang_code);
+      translate::ToTranslateLanguageSynonym(&lang_code);
+      if (TranslateDownloadManager::IsSupportedLanguage(lang_code))
+        return lang_code;
+    }
+  } else {
+    // Get target language from ULP if the ULP experiment is enabled.
+    std::string language = TranslateManager::GetTargetLanguageFromULP(prefs);
+    if (!language.empty())
+      return language;
 
-  // Get the browser's user interface language.
-  language = TranslateDownloadManager::GetLanguageCode(
-      TranslateDownloadManager::GetInstance()->application_locale());
-  // Map 'he', 'nb', 'fil' back to 'iw', 'no', 'tl'
-  translate::ToTranslateLanguageSynonym(&language);
-  if (TranslateDownloadManager::IsSupportedLanguage(language))
-    return language;
+    // Get the browser's user interface language.
+    language = TranslateDownloadManager::GetLanguageCode(
+        TranslateDownloadManager::GetInstance()->application_locale());
+    // Map 'he', 'nb', 'fil' back to 'iw', 'no', 'tl'
+    translate::ToTranslateLanguageSynonym(&language);
+    if (TranslateDownloadManager::IsSupportedLanguage(language))
+      return language;
 
-  // Will translate to the first supported language on the Accepted Language
-  // list or not at all if no such candidate exists.
-  std::vector<std::string> accept_languages_list;
-  prefs->GetLanguageList(&accept_languages_list);
-  for (const auto& lang : accept_languages_list) {
-    std::string lang_code = TranslateDownloadManager::GetLanguageCode(lang);
-    if (TranslateDownloadManager::IsSupportedLanguage(lang_code))
-      return lang_code;
+    // Will translate to the first supported language on the Accepted Language
+    // list or not at all if no such candidate exists.
+    std::vector<std::string> accept_languages_list;
+    prefs->GetLanguageList(&accept_languages_list);
+    for (const auto& lang : accept_languages_list) {
+      std::string lang_code = TranslateDownloadManager::GetLanguageCode(lang);
+      if (TranslateDownloadManager::IsSupportedLanguage(lang_code))
+        return lang_code;
+    }
   }
 
   return std::string();

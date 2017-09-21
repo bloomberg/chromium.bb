@@ -18,9 +18,13 @@
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/common/translate_errors.h"
 
+namespace language {
+class LanguageModel;
+}  // namespace language
+
 namespace metrics {
 class TranslateEventProto;
-}
+}  // namespace metrics
 
 namespace translate {
 
@@ -65,14 +69,21 @@ class TranslateManager {
     return translate_event_.get();
   }
 
-  // Returns the language to translate to. The language returned is the
-  // first language found in the following list that is supported by the
-  // translation service:
+  // Returns the language to translate to.
+  //
+  // If provided a language model, returns the first language from the model
+  // that is supported by the translation service.
+  //
+  // Otherwise, returns the first language found in the following list that is
+  // supported by the translation service:
   //     High confidence and high probability reading language in ULP
   //     the UI language
   //     the accept-language list
+  //
   // If no language is found then an empty string is returned.
-  static std::string GetTargetLanguage(const TranslatePrefs* prefs);
+  static std::string GetTargetLanguage(
+      const TranslatePrefs* prefs,
+      language::LanguageModel* language_model = nullptr);
 
   // Returns the language to automatically translate to. |original_language| is
   // the webpage's original language.
