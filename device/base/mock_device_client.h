@@ -7,14 +7,13 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "device/base/device_client.h"
 
 namespace device {
 
-class HidService;
 class MockHidService;
 class MockUsbService;
-class UsbService;
 
 class MockDeviceClient : device::DeviceClient {
  public:
@@ -23,14 +22,20 @@ class MockDeviceClient : device::DeviceClient {
 
   // device::DeviceClient implementation:
   UsbService* GetUsbService() override;
+#if !defined(OS_ANDROID)
   HidService* GetHidService() override;
+#endif
 
   // Accessors for the mock instances.
-  MockHidService* hid_service();
   MockUsbService* usb_service();
+#if !defined(OS_ANDROID)
+  MockHidService* hid_service();
+#endif
 
  private:
+#if !defined(OS_ANDROID)
   std::unique_ptr<MockHidService> hid_service_;
+#endif
   std::unique_ptr<MockUsbService> usb_service_;
 };
 
