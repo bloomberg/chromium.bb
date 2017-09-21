@@ -16,6 +16,7 @@
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
+#include "components/ntp_snippets/time_serialization.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/variations_params_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -344,18 +345,18 @@ TEST_F(ClickBasedCategoryRankerTest, ShouldDecayAfterClearHistory) {
 }
 
 TEST_F(ClickBasedCategoryRankerTest, ShouldRemoveLastDecayTimeOnClearHistory) {
-  ASSERT_NE(ranker()->GetLastDecayTime(), base::Time::FromInternalValue(0));
+  ASSERT_NE(ranker()->GetLastDecayTime(), DeserializeTime(0));
 
   // The user clears entire history.
   ranker()->ClearHistory(/*begin=*/base::Time(),
                          /*end=*/base::Time::Max());
 
-  EXPECT_EQ(ranker()->GetLastDecayTime(), base::Time::FromInternalValue(0));
+  EXPECT_EQ(ranker()->GetLastDecayTime(), DeserializeTime(0));
 }
 
 TEST_F(ClickBasedCategoryRankerTest, ShouldPersistLastDecayTimeWhenRestarted) {
   base::Time before = ranker()->GetLastDecayTime();
-  ASSERT_NE(before, base::Time::FromInternalValue(0));
+  ASSERT_NE(before, DeserializeTime(0));
 
   // Ensure that |Now()| is different from |before| by injecting our clock.
   auto test_clock = base::MakeUnique<base::SimpleTestClock>();

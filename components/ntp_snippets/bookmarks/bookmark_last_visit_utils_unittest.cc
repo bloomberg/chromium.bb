@@ -14,6 +14,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/ntp_snippets/time_serialization.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -53,14 +54,14 @@ void AddBookmarksRecentOnMobile(BookmarkModel* model,
                                 int num,
                                 const base::Time& visit_time) {
   AddBookmarks(model, num, kBookmarkLastVisitDateOnMobileKey,
-               base::Int64ToString(visit_time.ToInternalValue()));
+               base::Int64ToString(SerializeTime(visit_time)));
 }
 
 void AddBookmarksRecentOnDesktop(BookmarkModel* model,
                                  int num,
                                  const base::Time& visit_time) {
   AddBookmarks(model, num, kBookmarkLastVisitDateOnDesktopKey,
-               base::Int64ToString(visit_time.ToInternalValue()));
+               base::Int64ToString(SerializeTime(visit_time)));
 }
 
 void AddBookmarksNonVisited(BookmarkModel* model, int num) {
@@ -76,7 +77,7 @@ const BookmarkNode* AddSingleBookmark(BookmarkModel* model,
   const BookmarkNode* node =
       model->AddURL(model->bookmark_bar_node(), 0, title, GURL(url));
   model->SetNodeMetaInfo(node, last_visit_key,
-                         base::Int64ToString(visit_time.ToInternalValue()));
+                         base::Int64ToString(SerializeTime(visit_time)));
   return node;
 }
 
@@ -218,10 +219,9 @@ TEST(RemoveLastVisitedDatesBetween,
   const BookmarkNode* node = AddSingleBookmark(
       model.get(), "http://url-1.com", kBookmarkLastVisitDateOnMobileKey,
       delete_begin + base::TimeDelta::FromSeconds(1));
-  model->SetNodeMetaInfo(
-      node, kBookmarkLastVisitDateOnDesktopKey,
-      base::Int64ToString(
-          (delete_begin - base::TimeDelta::FromSeconds(1)).ToInternalValue()));
+  model->SetNodeMetaInfo(node, kBookmarkLastVisitDateOnDesktopKey,
+                         base::Int64ToString(SerializeTime(
+                             delete_begin - base::TimeDelta::FromSeconds(1))));
   ASSERT_THAT(
       GetRecentlyVisitedBookmarks(model.get(), 20, base::Time(),
                                   /*consider_visits_from_desktop=*/true),

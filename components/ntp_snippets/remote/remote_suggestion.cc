@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
+#include "components/ntp_snippets/time_serialization.h"
 
 namespace {
 
@@ -198,8 +199,8 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
     snippet->image_dominant_color_ = proto.image_dominant_color();
   }
 
-  snippet->publish_date_ = base::Time::FromInternalValue(proto.publish_date());
-  snippet->expiry_date_ = base::Time::FromInternalValue(proto.expiry_date());
+  snippet->publish_date_ = DeserializeTime(proto.publish_date());
+  snippet->expiry_date_ = DeserializeTime(proto.expiry_date());
   snippet->score_ = proto.score();
   snippet->is_dismissed_ = proto.dismissed();
 
@@ -224,7 +225,7 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
   snippet->amp_url_ = amp_url;
 
   if (proto.has_fetch_date()) {
-    snippet->fetch_date_ = base::Time::FromInternalValue(proto.fetch_date());
+    snippet->fetch_date_ = DeserializeTime(proto.fetch_date());
   }
 
   if (proto.content_type() == SnippetProto_ContentType_VIDEO) {
@@ -255,10 +256,10 @@ SnippetProto RemoteSuggestion::ToProto() const {
     result.set_image_dominant_color(*image_dominant_color_);
   }
   if (!publish_date_.is_null()) {
-    result.set_publish_date(publish_date_.ToInternalValue());
+    result.set_publish_date(SerializeTime(publish_date_));
   }
   if (!expiry_date_.is_null()) {
-    result.set_expiry_date(expiry_date_.ToInternalValue());
+    result.set_expiry_date(SerializeTime(expiry_date_));
   }
   result.set_score(score_);
   result.set_dismissed(is_dismissed_);
@@ -274,7 +275,7 @@ SnippetProto RemoteSuggestion::ToProto() const {
   }
 
   if (!fetch_date_.is_null()) {
-    result.set_fetch_date(fetch_date_.ToInternalValue());
+    result.set_fetch_date(SerializeTime(fetch_date_));
   }
 
   if (content_type_ == ContentType::VIDEO) {

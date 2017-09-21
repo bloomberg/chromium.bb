@@ -13,6 +13,7 @@
 #include "base/time/clock.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/time_serialization.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -357,7 +358,7 @@ double UserClassifier::GetHoursSinceLastTime(Metric metric) const {
   }
 
   base::TimeDelta since_last_time =
-      clock_->Now() - base::Time::FromInternalValue(pref_service_->GetInt64(
+      clock_->Now() - DeserializeTime(pref_service_->GetInt64(
                           kLastTimeKeys[static_cast<int>(metric)]));
   return since_last_time.InSecondsF() / 3600;
 }
@@ -368,7 +369,7 @@ bool UserClassifier::HasLastTime(Metric metric) const {
 
 void UserClassifier::SetLastTimeToNow(Metric metric) {
   pref_service_->SetInt64(kLastTimeKeys[static_cast<int>(metric)],
-                          clock_->Now().ToInternalValue());
+                          SerializeTime(clock_->Now()));
 }
 
 double UserClassifier::GetMetricValue(Metric metric) const {

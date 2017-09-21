@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/ntp_snippets/time_serialization.h"
 #include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
@@ -38,7 +39,7 @@ const char kBookmarkLastVisitDateOnDesktopKey[] = "last_visited_desktop";
 const char kBookmarkDismissedFromNTP[] = "dismissed_from_ntp";
 
 std::string FormatLastVisitDate(const base::Time& date) {
-  return base::Int64ToString(date.ToInternalValue());
+  return base::Int64ToString(SerializeTime(date));
 }
 
 bool ExtractLastVisitDate(const BookmarkNode& node,
@@ -54,7 +55,7 @@ bool ExtractLastVisitDate(const BookmarkNode& node,
     return false;
   }
 
-  *out = base::Time::FromInternalValue(date);
+  *out = DeserializeTime(date);
   return true;
 }
 

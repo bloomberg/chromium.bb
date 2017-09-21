@@ -23,6 +23,7 @@
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/status.h"
+#include "components/ntp_snippets/time_serialization.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -627,37 +628,38 @@ RemoteSuggestionsSchedulerImpl::GetDesiredFetchingSchedule() const {
 }
 
 void RemoteSuggestionsSchedulerImpl::LoadLastFetchingSchedule() {
-  schedule_.interval_persistent_wifi = base::TimeDelta::FromInternalValue(
+  schedule_.interval_persistent_wifi = DeserializeTimeDelta(
       profile_prefs_->GetInt64(prefs::kSnippetPersistentFetchingIntervalWifi));
   schedule_.interval_persistent_fallback =
-      base::TimeDelta::FromInternalValue(profile_prefs_->GetInt64(
+      DeserializeTimeDelta(profile_prefs_->GetInt64(
           prefs::kSnippetPersistentFetchingIntervalFallback));
-  schedule_.interval_startup_wifi = base::TimeDelta::FromInternalValue(
+  schedule_.interval_startup_wifi = DeserializeTimeDelta(
       profile_prefs_->GetInt64(prefs::kSnippetStartupFetchingIntervalWifi));
-  schedule_.interval_startup_fallback = base::TimeDelta::FromInternalValue(
+  schedule_.interval_startup_fallback = DeserializeTimeDelta(
       profile_prefs_->GetInt64(prefs::kSnippetStartupFetchingIntervalFallback));
-  schedule_.interval_shown_wifi = base::TimeDelta::FromInternalValue(
+  schedule_.interval_shown_wifi = DeserializeTimeDelta(
       profile_prefs_->GetInt64(prefs::kSnippetShownFetchingIntervalWifi));
-  schedule_.interval_shown_fallback = base::TimeDelta::FromInternalValue(
+  schedule_.interval_shown_fallback = DeserializeTimeDelta(
       profile_prefs_->GetInt64(prefs::kSnippetShownFetchingIntervalFallback));
 }
 
 void RemoteSuggestionsSchedulerImpl::StoreFetchingSchedule() {
   profile_prefs_->SetInt64(
       prefs::kSnippetPersistentFetchingIntervalWifi,
-      schedule_.interval_persistent_wifi.ToInternalValue());
+      SerializeTimeDelta(schedule_.interval_persistent_wifi));
   profile_prefs_->SetInt64(
       prefs::kSnippetPersistentFetchingIntervalFallback,
-      schedule_.interval_persistent_fallback.ToInternalValue());
+      SerializeTimeDelta(schedule_.interval_persistent_fallback));
   profile_prefs_->SetInt64(prefs::kSnippetStartupFetchingIntervalWifi,
-                           schedule_.interval_startup_wifi.ToInternalValue());
+                           SerializeTimeDelta(schedule_.interval_startup_wifi));
   profile_prefs_->SetInt64(
       prefs::kSnippetStartupFetchingIntervalFallback,
-      schedule_.interval_startup_fallback.ToInternalValue());
+      SerializeTimeDelta(schedule_.interval_startup_fallback));
   profile_prefs_->SetInt64(prefs::kSnippetShownFetchingIntervalWifi,
-                           schedule_.interval_shown_wifi.ToInternalValue());
-  profile_prefs_->SetInt64(prefs::kSnippetShownFetchingIntervalFallback,
-                           schedule_.interval_shown_fallback.ToInternalValue());
+                           SerializeTimeDelta(schedule_.interval_shown_wifi));
+  profile_prefs_->SetInt64(
+      prefs::kSnippetShownFetchingIntervalFallback,
+      SerializeTimeDelta(schedule_.interval_shown_fallback));
 }
 
 void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfAppropriate(
@@ -826,7 +828,7 @@ void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundFinished(
 
 void RemoteSuggestionsSchedulerImpl::OnFetchCompleted(Status fetch_status) {
   profile_prefs_->SetInt64(prefs::kSnippetLastFetchAttempt,
-                           clock_->Now().ToInternalValue());
+                           SerializeTime(clock_->Now()));
   time_until_first_shown_trigger_reported_ = false;
   time_until_first_startup_trigger_reported_ = false;
 
