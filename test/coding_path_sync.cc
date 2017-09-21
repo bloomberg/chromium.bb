@@ -151,13 +151,7 @@ TEST(CodingPathSync, SearchForHbdLbdMismatch) {
     std::vector<int16_t> lbd_yuv = dec_lbd.decode(frame);
     std::vector<int16_t> hbd_yuv = dec_hbd.decode(frame);
 
-    // TODO(aomedia:39): re-enable the comparison when both coding paths match,
-    // so they don't diverge anymore.
-    // Until then, keep doing the decoding to prevent crashes from creeping in,
-    // making this test harder to re-enable.
-    if (0) {
-      ASSERT_EQ(lbd_yuv, hbd_yuv);
-    }
+    ASSERT_EQ(lbd_yuv, hbd_yuv);
   }
 }
 
