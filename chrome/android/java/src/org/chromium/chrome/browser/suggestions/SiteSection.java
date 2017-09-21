@@ -113,12 +113,14 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
 
     private static int getMaxTileRows() {
         int defaultValue = 2;
+        if (!FeatureUtilities.isChromeHomeEnabled()) return defaultValue;
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.CHROME_HOME, PARAM_CHROME_HOME_MAX_TILE_ROWS, defaultValue);
     }
 
     private static int getTileTitleLines() {
         int defaultValue = 1;
+        if (!FeatureUtilities.isChromeHomeEnabled()) return defaultValue;
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.CHROME_HOME, PARAM_CHROME_HOME_TILE_TITLE_LINES, defaultValue);
     }
