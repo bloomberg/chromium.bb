@@ -2361,4 +2361,30 @@ TEST_F(InputMethodControllerTest, InputModeOfFocusedElement) {
   EXPECT_EQ(kWebTextInputModeDefault, Controller().InputModeOfFocusedElement());
 }
 
+TEST_F(InputMethodControllerTest, CompositionUnderlineSpansMultipleNodes) {
+  Element* div = InsertHTMLElement(
+      "<div id='sample' contenteditable><b>t</b>est</div>", "sample");
+  Vector<ImeTextSpan> ime_text_spans;
+  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 4,
+                                       Color(255, 0, 0), false, 0));
+  Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 0, 4);
+  Controller().SetComposition("test", ime_text_spans, 0, 4);
+
+  Node* b = div->firstChild();
+  Node* text1 = b->firstChild();
+  Node* text2 = b->nextSibling();
+
+  const DocumentMarkerVector& text1_markers =
+      GetDocument().Markers().MarkersFor(text1, DocumentMarker::kComposition);
+  EXPECT_EQ(1u, text1_markers.size());
+  EXPECT_EQ(0u, text1_markers[0]->StartOffset());
+  EXPECT_EQ(1u, text1_markers[0]->EndOffset());
+
+  const DocumentMarkerVector& text2_markers =
+      GetDocument().Markers().MarkersFor(text2, DocumentMarker::kComposition);
+  EXPECT_EQ(1u, text2_markers.size());
+  EXPECT_EQ(0u, text2_markers[0]->StartOffset());
+  EXPECT_EQ(3u, text2_markers[0]->EndOffset());
+}
+
 }  // namespace blink
