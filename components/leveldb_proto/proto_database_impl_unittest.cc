@@ -110,6 +110,10 @@ class OptionsEqMatcher : public MatcherInterface<const Options&> {
   DISALLOW_COPY_AND_ASSIGN(OptionsEqMatcher);
 };
 
+Matcher<const Options&> OptionsEq(const Options& expected) {
+  return MakeMatcher(new OptionsEqMatcher(expected));
+}
+
 }  // namespace
 
 EntryMap GetSmallModel() {
@@ -143,7 +147,7 @@ void ExpectEntryPointersEquals(EntryMap expected,
 class ProtoDatabaseImplTest : public testing::Test {
  public:
   ProtoDatabaseImplTest()
-      : options_(MakeMatcher(new OptionsEqMatcher(Options()))) {}
+      : options_(MakeMatcher(new OptionsEqMatcher(CreateSimpleOptions()))) {}
   void SetUp() override {
     main_loop_.reset(new MessageLoop());
     db_.reset(new ProtoDatabaseImpl<TestProto>(main_loop_->task_runner()));
@@ -172,7 +176,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBInitSuccess) {
   EXPECT_CALL(caller, InitCallback(true));
 
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
@@ -182,13 +186,15 @@ TEST_F(ProtoDatabaseImplTest, TestDBInitFailure) {
   base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
 
   MockDB* mock_db = new MockDB();
-  EXPECT_CALL(*mock_db, Init(path, options_)).WillOnce(Return(false));
+  Options options;
+  options.create_if_missing = true;
+  EXPECT_CALL(*mock_db, Init(path, OptionsEq(options))).WillOnce(Return(false));
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(false));
 
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, options,
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
@@ -221,7 +227,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBLoadSuccess) {
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   EXPECT_CALL(*mock_db, Load(_)).WillOnce(AppendLoadEntries(model));
@@ -242,7 +248,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBLoadFailure) {
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   EXPECT_CALL(*mock_db, Load(_)).WillOnce(Return(false));
@@ -282,7 +288,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBGetSuccess) {
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   std::string key("1");
@@ -308,7 +314,8 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoadKeys) {
 
   auto expect_init_success =
       base::Bind([](bool success) { EXPECT_TRUE(success); });
-  db->Init(kTestLevelDBClientName, temp_dir.GetPath(), expect_init_success);
+  db->Init(kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
+           expect_init_success);
 
   base::RunLoop run_update_entries;
   auto expect_update_success = base::Bind(
@@ -356,7 +363,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBGetNotFound) {
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   std::string key("does_not_exist");
@@ -379,7 +386,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBGetFailure) {
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   std::string key("does_not_exist");
@@ -424,7 +431,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBSaveSuccess) {
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   std::unique_ptr<ProtoDatabase<TestProto>::KeyEntryVector> entries(
@@ -455,7 +462,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBSaveFailure) {
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(Return(false));
@@ -480,7 +487,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBRemoveSuccess) {
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   std::unique_ptr<ProtoDatabase<TestProto>::KeyEntryVector> entries(
@@ -511,7 +518,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBRemoveFailure) {
   EXPECT_CALL(*mock_db, Init(_, options_));
   EXPECT_CALL(caller, InitCallback(_));
   db_->InitWithDatabase(
-      base::WrapUnique(mock_db), path, Options(),
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(Return(false));
@@ -540,7 +547,7 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestruction) {
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
   db->Init(
-      kTestLevelDBClientName, temp_dir.GetPath(),
+      kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   db.reset();
@@ -568,7 +575,7 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestroy) {
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
   db->Init(
-      kTestLevelDBClientName, temp_dir.GetPath(),
+      kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
   EXPECT_CALL(caller, DestroyCallback(_));
@@ -601,14 +608,13 @@ void TestLevelDBSaveAndLoad(bool close_after_save) {
         std::make_pair(pair.second.id(), pair.second.SerializeAsString()));
   }
 
-  Options options;
   std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
-  EXPECT_TRUE(db->Init(temp_dir.GetPath(), options));
+  EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
   EXPECT_TRUE(db->Save(save_entries, remove_keys));
 
   if (close_after_save) {
     db.reset(new LevelDB(kTestLevelDBClientName));
-    EXPECT_TRUE(db->Init(temp_dir.GetPath(), options));
+    EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
   }
 
   EXPECT_TRUE(db->Load(&load_entries));
@@ -644,7 +650,7 @@ TEST(ProtoDatabaseImplLevelDBTest, TestDBInitFail) {
   std::vector<std::string> load_entries;
   KeyVector remove_keys;
 
-  EXPECT_FALSE(db->InitWithOptions(temp_dir.GetPath(), options));
+  EXPECT_FALSE(db->Init(temp_dir.GetPath(), options));
   EXPECT_FALSE(db->Load(&load_entries));
   EXPECT_FALSE(db->Save(save_entries, remove_keys));
 }
@@ -654,7 +660,7 @@ TEST(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
 
   std::vector<std::string> load_entries;
 
-  ASSERT_TRUE(db->Init(base::FilePath(), Options()));
+  ASSERT_TRUE(db->Init(base::FilePath(), CreateSimpleOptions()));
 
   ASSERT_TRUE(db->Load(&load_entries));
   EXPECT_EQ(0u, load_entries.size());

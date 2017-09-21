@@ -45,18 +45,25 @@ LevelDB::~LevelDB() {
   DFAKE_SCOPED_LOCK(thread_checker_);
 }
 
-bool LevelDB::InitWithOptions(const base::FilePath& database_dir,
-                              const leveldb_env::Options& options) {
+bool LevelDB::Init(const base::FilePath& database_dir,
+                   const leveldb_env::Options& options) {
   DFAKE_SCOPED_LOCK(thread_checker_);
+  leveldb_env::Options open_options = options;
+
+  if (database_dir.empty()) {
+    env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
+    open_options.env = env_.get();
+  }
 
   std::string path = database_dir.AsUTF8Unsafe();
 
-  leveldb::Status status = leveldb_env::OpenDB(options, path, &db_);
+  leveldb::Status status = leveldb_env::OpenDB(open_options, path, &db_);
   if (open_histogram_)
     open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(status));
   if (status.IsCorruption()) {
+    // TODO(cmumford): Log this corruption and use leveldb::DestroyDB.
     base::DeleteFile(database_dir, true);
-    status = leveldb_env::OpenDB(options, path, &db_);
+    status = leveldb_env::OpenDB(open_options, path, &db_);
   }
 
   if (status.ok())
@@ -65,20 +72,6 @@ bool LevelDB::InitWithOptions(const base::FilePath& database_dir,
   LOG(WARNING) << "Unable to open " << database_dir.value() << ": "
                << status.ToString();
   return false;
-}
-
-bool LevelDB::Init(const base::FilePath& database_dir,
-                   const leveldb_env::Options& options) {
-  leveldb_env::Options open_options = options;
-  open_options.create_if_missing = true;
-  open_options.max_open_files = 0;  // Use minimum.
-
-  if (database_dir.empty()) {
-    env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
-    open_options.env = env_.get();
-  }
-
-  return InitWithOptions(database_dir, open_options);
 }
 
 bool LevelDB::Save(const base::StringPairs& entries_to_save,

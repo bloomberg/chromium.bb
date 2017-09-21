@@ -284,6 +284,7 @@ void GCMKeyStore::LazyInitialize(const base::Closure& done_closure) {
 
   database_->Init(
       kDatabaseUMAClientName, key_store_path_,
+      leveldb_proto::CreateSimpleOptions(),
       base::Bind(&GCMKeyStore::DidInitialize, weak_factory_.GetWeakPtr()));
 }
 

@@ -24,7 +24,6 @@ namespace leveldb {
 class Cache;
 class DB;
 class Env;
-struct Options;
 }  // namespace leveldb
 
 namespace leveldb_proto {
@@ -53,10 +52,6 @@ class LevelDB {
   virtual bool Get(const std::string& key, bool* found, std::string* entry);
 
   static bool Destroy(const base::FilePath& database_dir);
-
- protected:
-  virtual bool InitWithOptions(const base::FilePath& database_dir,
-                               const leveldb_env::Options& options);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProtoDatabaseImplLevelDBTest, TestDBInitFail);

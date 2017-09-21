@@ -41,10 +41,10 @@ bool DownloadStore::IsInitialized() {
 
 void DownloadStore::Initialize(InitCallback callback) {
   DCHECK(!IsInitialized());
-  db_->InitWithOptions(
-      kDatabaseClientName, database_dir_, leveldb_env::Options(),
-      base::BindOnce(&DownloadStore::OnDatabaseInited,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  db_->Init(kDatabaseClientName, database_dir_,
+            leveldb_proto::CreateSimpleOptions(),
+            base::BindOnce(&DownloadStore::OnDatabaseInited,
+                           weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void DownloadStore::HardRecover(StoreCallback callback) {
@@ -83,10 +83,10 @@ void DownloadStore::OnDatabaseDestroyed(StoreCallback callback, bool success) {
     return;
   }
 
-  db_->InitWithOptions(
-      kDatabaseClientName, database_dir_, leveldb_env::Options(),
-      base::BindOnce(&DownloadStore::OnDatabaseInitedAfterDestroy,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  db_->Init(kDatabaseClientName, database_dir_,
+            leveldb_proto::CreateSimpleOptions(),
+            base::BindOnce(&DownloadStore::OnDatabaseInitedAfterDestroy,
+                           weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void DownloadStore::OnDatabaseInitedAfterDestroy(StoreCallback callback,

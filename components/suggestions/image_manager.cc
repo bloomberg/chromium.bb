@@ -92,6 +92,7 @@ ImageManager::ImageManager(
       weak_ptr_factory_(this) {
   image_fetcher_->SetImageFetcherDelegate(this);
   database_->Init(kDatabaseUMAClientName, database_dir,
+                  leveldb_proto::CreateSimpleOptions(),
                   base::Bind(&ImageManager::OnDatabaseInit,
                              weak_ptr_factory_.GetWeakPtr()));
 }

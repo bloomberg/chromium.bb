@@ -39,6 +39,7 @@ void PersistentEventStore::Load(const OnLoadedCallback& callback) {
   DCHECK(!ready_);
 
   db_->Init(kDatabaseUMAName, storage_dir_,
+            leveldb_proto::CreateSimpleOptions(),
             base::Bind(&PersistentEventStore::OnInitComplete,
                        weak_ptr_factory_.GetWeakPtr(), callback));
 }

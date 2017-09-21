@@ -57,9 +57,10 @@ BudgetDatabase::BudgetDatabase(Profile* profile,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))),
       clock_(base::WrapUnique(new base::DefaultClock)),
       weak_ptr_factory_(this) {
-  db_->InitWithOptions(kDatabaseUMAName, database_dir, leveldb_env::Options(),
-                       base::BindOnce(&BudgetDatabase::OnDatabaseInit,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  db_->Init(kDatabaseUMAName, database_dir,
+            leveldb_proto::CreateSimpleOptions(),
+            base::BindOnce(&BudgetDatabase::OnDatabaseInit,
+                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 BudgetDatabase::~BudgetDatabase() {}
