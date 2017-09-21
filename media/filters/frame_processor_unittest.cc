@@ -36,20 +36,18 @@ using ::testing::Values;
 
 namespace {
 
-enum class BufferingApi { kLegacyByDts, kNewByPts };
-
 struct FrameProcessorTestParams {
  public:
   FrameProcessorTestParams(const bool use_sequence_mode,
-                           const BufferingApi buffering_api)
-      : use_sequence_mode(use_sequence_mode), buffering_api(buffering_api) {}
+                           const media::ChunkDemuxerStream::RangeApi range_api)
+      : use_sequence_mode(use_sequence_mode), range_api(range_api) {}
 
   // Test will use 'sequence' append mode if true, or 'segments' if false.
   const bool use_sequence_mode;
 
   // Determines if media::kMseBufferByPts feature should be forced on or off for
-  // the test.
-  const BufferingApi buffering_api;
+  // the test, and is also used in tests' ChunkDemuxerStream constructions.
+  const media::ChunkDemuxerStream::RangeApi range_api;
 };
 
 }  // namespace
@@ -91,13 +89,13 @@ class FrameProcessorTest
         video_id_(2) {
     const FrameProcessorTestParams& params = GetParam();
     use_sequence_mode_ = params.use_sequence_mode;
-    buffering_api_ = params.buffering_api;
+    range_api_ = params.range_api;
 
-    switch (buffering_api_) {
-      case BufferingApi::kLegacyByDts:
+    switch (range_api_) {
+      case ChunkDemuxerStream::RangeApi::kLegacyByDts:
         scoped_feature_list_.InitAndDisableFeature(media::kMseBufferByPts);
         break;
-      case BufferingApi::kNewByPts:
+      case ChunkDemuxerStream::RangeApi::kNewByPts:
         scoped_feature_list_.InitAndEnableFeature(media::kMseBufferByPts);
         break;
     }
@@ -308,7 +306,7 @@ class FrameProcessorTest
   StrictMock<FrameProcessorTestCallbackHelper> callbacks_;
 
   bool use_sequence_mode_;
-  BufferingApi buffering_api_;
+  ChunkDemuxerStream::RangeApi range_api_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<FrameProcessor> frame_processor_;
@@ -347,7 +345,8 @@ class FrameProcessorTest
     switch (type) {
       case DemuxerStream::AUDIO: {
         ASSERT_FALSE(audio_);
-        audio_.reset(new ChunkDemuxerStream(DemuxerStream::AUDIO, "1"));
+        audio_.reset(
+            new ChunkDemuxerStream(DemuxerStream::AUDIO, "1", range_api_));
         AudioDecoderConfig decoder_config(kCodecVorbis, kSampleFormatPlanarF32,
                                           CHANNEL_LAYOUT_STEREO, 1000,
                                           EmptyExtraData(), Unencrypted());
@@ -357,7 +356,8 @@ class FrameProcessorTest
       }
       case DemuxerStream::VIDEO: {
         ASSERT_FALSE(video_);
-        video_.reset(new ChunkDemuxerStream(DemuxerStream::VIDEO, "2"));
+        video_.reset(
+            new ChunkDemuxerStream(DemuxerStream::VIDEO, "2", range_api_));
         ASSERT_TRUE(
             video_->UpdateVideoConfig(TestVideoConfig::Normal(), &media_log_));
         break;
@@ -1160,21 +1160,25 @@ TEST_P(FrameProcessorTest, AudioNonKeyframeChangedToKeyframe) {
   CheckReadsThenReadStalls(audio_.get(), "0 10 20");
 }
 
-INSTANTIATE_TEST_CASE_P(
-    SequenceModeLegacyByDts,
-    FrameProcessorTest,
-    Values(FrameProcessorTestParams(true, BufferingApi::kLegacyByDts)));
-INSTANTIATE_TEST_CASE_P(
-    SegmentsModeLegacyByDts,
-    FrameProcessorTest,
-    Values(FrameProcessorTestParams(false, BufferingApi::kLegacyByDts)));
+INSTANTIATE_TEST_CASE_P(SequenceModeLegacyByDts,
+                        FrameProcessorTest,
+                        Values(FrameProcessorTestParams(
+                            true,
+                            ChunkDemuxerStream::RangeApi::kLegacyByDts)));
+INSTANTIATE_TEST_CASE_P(SegmentsModeLegacyByDts,
+                        FrameProcessorTest,
+                        Values(FrameProcessorTestParams(
+                            false,
+                            ChunkDemuxerStream::RangeApi::kLegacyByDts)));
 INSTANTIATE_TEST_CASE_P(
     SequenceModeNewByPts,
     FrameProcessorTest,
-    Values(FrameProcessorTestParams(true, BufferingApi::kNewByPts)));
+    Values(FrameProcessorTestParams(true,
+                                    ChunkDemuxerStream::RangeApi::kNewByPts)));
 INSTANTIATE_TEST_CASE_P(
     SegmentsModeNewByPts,
     FrameProcessorTest,
-    Values(FrameProcessorTestParams(false, BufferingApi::kNewByPts)));
+    Values(FrameProcessorTestParams(false,
+                                    ChunkDemuxerStream::RangeApi::kNewByPts)));
 
 }  // namespace media

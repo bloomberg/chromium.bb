@@ -26,6 +26,7 @@
 #include "media/base/stream_parser.h"
 #include "media/filters/source_buffer_parse_warnings.h"
 #include "media/filters/source_buffer_range_by_dts.h"
+#include "media/filters/source_buffer_range_by_pts.h"
 #include "media/filters/source_buffer_state.h"
 #include "media/filters/source_buffer_stream.h"
 
@@ -35,11 +36,11 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
  public:
   using BufferQueue = base::circular_deque<scoped_refptr<StreamParserBuffer>>;
 
-  // TODO(wolenetz): Vary the buffering API used by the stream. See
-  // https://crbug.com/718641.
-  using StreamType = SourceBufferStream<SourceBufferRangeByDts>;
+  enum class RangeApi { kLegacyByDts, kNewByPts };
 
-  ChunkDemuxerStream(Type type, MediaTrack::Id media_track_id);
+  ChunkDemuxerStream(Type type,
+                     MediaTrack::Id media_track_id,
+                     RangeApi range_api);
   ~ChunkDemuxerStream() override;
 
   // ChunkDemuxerStream control methods.
@@ -153,10 +154,14 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   // Specifies the type of the stream.
   Type type_;
+  const RangeApi range_api_;
 
   Liveness liveness_;
 
-  std::unique_ptr<StreamType> stream_;
+  // Precisely one of these will be used by an instance, determined by
+  // |range_api_| set in ctor. See https://crbug.com/718641.
+  std::unique_ptr<SourceBufferStream<SourceBufferRangeByDts>> stream_dts_;
+  std::unique_ptr<SourceBufferStream<SourceBufferRangeByPts>> stream_pts_;
 
   const MediaTrack::Id media_track_id_;
 
@@ -465,6 +470,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   int detected_audio_track_count_;
   int detected_video_track_count_;
   int detected_text_track_count_;
+
+  // Caches whether |media::kMseBufferByPts| feature was enabled at ChunkDemuxer
+  // construction time. This makes sure that all buffering for this ChunkDemuxer
+  // uses the same behavior. See https://crbug.com/718641.
+  const bool buffering_by_pts_;
 
   std::map<MediaTrack::Id, ChunkDemuxerStream*> track_id_to_demux_stream_map_;
 

@@ -33,6 +33,20 @@
 
 namespace media {
 
+// Status returned by GetNextBuffer().
+// kSuccess: Indicates that the next buffer was returned.
+// kNeedBuffer: Indicates that we need more data before a buffer can be
+//              returned.
+// kConfigChange: Indicates that the next buffer requires a config change.
+enum class SourceBufferStreamStatus {
+  kSuccess,
+  kNeedBuffer,
+  kConfigChange,
+  kEndOfStream
+};
+
+enum class SourceBufferStreamType { kAudio, kVideo, kText };
+
 // See file-level comment for complete description.
 // Template parameter determines which kind of buffering behavior is used. See
 // https://crbug.com/718641 and media::MseBufferByPts feature.
@@ -46,24 +60,6 @@ class MEDIA_EXPORT SourceBufferStream {
 
   using BufferQueue = StreamParser::BufferQueue;
   using RangeList = std::list<std::unique_ptr<RangeClass>>;
-
-  // Status returned by GetNextBuffer().
-  // kSuccess: Indicates that the next buffer was returned.
-  // kNeedBuffer: Indicates that we need more data before a buffer can be
-  //              returned.
-  // kConfigChange: Indicates that the next buffer requires a config change.
-  enum Status {
-    kSuccess,
-    kNeedBuffer,
-    kConfigChange,
-    kEndOfStream
-  };
-
-  enum Type {
-    kAudio,
-    kVideo,
-    kText
-  };
 
   SourceBufferStream(const AudioDecoderConfig& audio_config,
                      MediaLog* media_log);
@@ -132,7 +128,8 @@ class MEDIA_EXPORT SourceBufferStream {
   // Returns kSuccess if |out_buffer| is filled with a valid buffer, kNeedBuffer
   // if there is not enough data buffered to fulfill the request, and
   // kConfigChange if the next buffer requires a config change.
-  Status GetNextBuffer(scoped_refptr<StreamParserBuffer>* out_buffer);
+  SourceBufferStreamStatus GetNextBuffer(
+      scoped_refptr<StreamParserBuffer>* out_buffer);
 
   // Returns a list of the buffered time ranges.
   Ranges<base::TimeDelta> GetBufferedTime() const;
@@ -354,17 +351,18 @@ class MEDIA_EXPORT SourceBufferStream {
                                       DecodeTimestamp remove_end,
                                       bool exclude_start);
 
-  Type GetType() const;
+  SourceBufferStreamType GetType() const;
 
   // See GetNextBuffer() for additional details.  This method handles preroll
   // frame processing.
-  Status HandleNextBufferWithPreroll(
+  SourceBufferStreamStatus HandleNextBufferWithPreroll(
       scoped_refptr<StreamParserBuffer>* out_buffer);
 
   // See GetNextBuffer() for additional details.  The internal method hands out
   // single buffers from the |track_buffer_| and |selected_range_| without
   // additional processing for preroll buffers.
-  Status GetNextBufferInternal(scoped_refptr<StreamParserBuffer>* out_buffer);
+  SourceBufferStreamStatus GetNextBufferInternal(
+      scoped_refptr<StreamParserBuffer>* out_buffer);
 
   // If the next buffer's timestamp is significantly beyond the last output
   // buffer, and if we just exhausted |track_buffer_| on the previous read, this

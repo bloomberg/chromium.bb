@@ -80,6 +80,22 @@ base::TimeDelta kSeekToStartFudgeRoom() {
   return base::TimeDelta::FromMilliseconds(1000);
 }
 
+// Helper method for logging.
+std::string StatusToString(const SourceBufferStreamStatus& status) {
+  switch (status) {
+    case SourceBufferStreamStatus::kSuccess:
+      return "kSuccess";
+    case SourceBufferStreamStatus::kNeedBuffer:
+      return "kNeedBuffer";
+    case SourceBufferStreamStatus::kConfigChange:
+      return "kConfigChange";
+    case SourceBufferStreamStatus::kEndOfStream:
+      return "kEndOfStream";
+  }
+  NOTREACHED();
+  return "";
+}
+
 // Helper method for logging, converts a range into a readable string.
 template <typename RangeClass>
 std::string RangeToString(const RangeClass& range) {
@@ -131,13 +147,12 @@ std::string BufferQueueToLogString(
 }
 
 template <typename RangeClass>
-SourceBufferRange::GapPolicy TypeToGapPolicy(
-    typename SourceBufferStream<RangeClass>::Type type) {
+SourceBufferRange::GapPolicy TypeToGapPolicy(SourceBufferStreamType type) {
   switch (type) {
-    case SourceBufferStream<RangeClass>::kAudio:
-    case SourceBufferStream<RangeClass>::kVideo:
+    case SourceBufferStreamType::kAudio:
+    case SourceBufferStreamType::kVideo:
       return SourceBufferRange::NO_GAPS_ALLOWED;
-    case SourceBufferStream<RangeClass>::kText:
+    case SourceBufferStreamType::kText:
       return SourceBufferRange::ALLOW_GAPS;
   }
 
@@ -1080,7 +1095,7 @@ template <typename RangeClass>
 void SourceBufferStream<RangeClass>::TrimSpliceOverlap(
     const BufferQueue& new_buffers) {
   DCHECK(!new_buffers.empty());
-  DCHECK_EQ(kAudio, GetType());
+  DCHECK_EQ(SourceBufferStreamType::kAudio, GetType());
 
   // Find the overlapped range (if any).
   const base::TimeDelta splice_timestamp = new_buffers.front()->timestamp();
@@ -1192,7 +1207,7 @@ void SourceBufferStream<RangeClass>::PrepareRangesForNextAppend(
     BufferQueue* deleted_buffers) {
   DCHECK(deleted_buffers);
 
-  if (GetType() == kAudio)
+  if (GetType() == SourceBufferStreamType::kAudio)
     TrimSpliceOverlap(new_buffers);
 
   base::TimeDelta prev_duration = last_appended_buffer_duration_;
@@ -1227,7 +1242,8 @@ void SourceBufferStream<RangeClass>::PrepareRangesForNextAppend(
   //      non-zero duration removing overlapped frames is important to preserve
   //      A/V sync (see AudioClock).
   const bool exclude_start = prev_timestamp == next_timestamp &&
-                             (GetType() == kVideo || GetType() == kText ||
+                             (GetType() == SourceBufferStreamType::kVideo ||
+                              GetType() == SourceBufferStreamType::kText ||
                               prev_duration == base::TimeDelta());
 
   // Set end time for remove to include the duration of last buffer. If the
@@ -1378,31 +1394,32 @@ void SourceBufferStream<RangeClass>::OnSetDuration(base::TimeDelta duration) {
 }
 
 template <typename RangeClass>
-typename SourceBufferStream<RangeClass>::Status
-SourceBufferStream<RangeClass>::GetNextBuffer(
+SourceBufferStreamStatus SourceBufferStream<RangeClass>::GetNextBuffer(
     scoped_refptr<StreamParserBuffer>* out_buffer) {
   DVLOG(2) << __func__ << " " << GetStreamTypeName();
   if (!pending_buffer_.get()) {
-    const SourceBufferStream::Status status = GetNextBufferInternal(out_buffer);
-    if (status != SourceBufferStream::kSuccess ||
+    const SourceBufferStreamStatus status = GetNextBufferInternal(out_buffer);
+    if (status != SourceBufferStreamStatus::kSuccess ||
         !SetPendingBuffer(out_buffer)) {
       DVLOG(2) << __func__ << " " << GetStreamTypeName()
-               << ": no pending buffer, returning status " << status;
+               << ": no pending buffer, returning status "
+               << StatusToString(status);
       return status;
     }
   }
 
   DCHECK(pending_buffer_->preroll_buffer().get());
 
-  const SourceBufferStream::Status status =
+  const SourceBufferStreamStatus status =
       HandleNextBufferWithPreroll(out_buffer);
   DVLOG(2) << __func__ << " " << GetStreamTypeName()
-           << ": handled next buffer with preroll, returning status " << status;
+           << ": handled next buffer with preroll, returning status "
+           << StatusToString(status);
   return status;
 }
 
 template <typename RangeClass>
-typename SourceBufferStream<RangeClass>::Status
+SourceBufferStreamStatus
 SourceBufferStream<RangeClass>::HandleNextBufferWithPreroll(
     scoped_refptr<StreamParserBuffer>* out_buffer) {
   // Any config change should have already been handled.
@@ -1412,18 +1429,17 @@ SourceBufferStream<RangeClass>::HandleNextBufferWithPreroll(
   if (!pending_buffers_complete_) {
     pending_buffers_complete_ = true;
     *out_buffer = pending_buffer_->preroll_buffer();
-    return SourceBufferStream::kSuccess;
+    return SourceBufferStreamStatus::kSuccess;
   }
 
   // Preroll complete, hand out the final buffer.
   *out_buffer = pending_buffer_;
   pending_buffer_ = NULL;
-  return SourceBufferStream::kSuccess;
+  return SourceBufferStreamStatus::kSuccess;
 }
 
 template <typename RangeClass>
-typename SourceBufferStream<RangeClass>::Status
-SourceBufferStream<RangeClass>::GetNextBufferInternal(
+SourceBufferStreamStatus SourceBufferStream<RangeClass>::GetNextBufferInternal(
     scoped_refptr<StreamParserBuffer>* out_buffer) {
   CHECK(!config_change_pending_);
 
@@ -1436,7 +1452,7 @@ SourceBufferStream<RangeClass>::GetNextBufferInternal(
     if (next_buffer->GetConfigId() != current_config_index_) {
       config_change_pending_ = true;
       DVLOG(1) << "Config change (track buffer config ID does not match).";
-      return kConfigChange;
+      return SourceBufferStreamStatus::kConfigChange;
     }
 
     DVLOG(3) << __func__ << " Next buffer coming from track_buffer_";
@@ -1452,31 +1468,31 @@ SourceBufferStream<RangeClass>::GetNextBufferInternal(
       SetSelectedRangeIfNeeded(last_output_buffer_timestamp_);
     }
 
-    return kSuccess;
+    return SourceBufferStreamStatus::kSuccess;
   }
 
   DCHECK(track_buffer_.empty());
   if (!selected_range_ || !selected_range_->HasNextBuffer()) {
     if (IsEndOfStreamReached()) {
-      return kEndOfStream;
+      return SourceBufferStreamStatus::kEndOfStream;
     }
     DVLOG(3) << __func__ << " " << GetStreamTypeName()
              << ": returning kNeedBuffer "
              << (selected_range_ ? "(selected range has no next buffer)"
                                  : "(no selected range)");
-    return kNeedBuffer;
+    return SourceBufferStreamStatus::kNeedBuffer;
   }
 
   if (selected_range_->GetNextConfigId() != current_config_index_) {
     config_change_pending_ = true;
     DVLOG(1) << "Config change (selected range config ID does not match).";
-    return kConfigChange;
+    return SourceBufferStreamStatus::kConfigChange;
   }
 
   CHECK(selected_range_->GetNextBuffer(out_buffer));
   WarnIfTrackBufferExhaustionSkipsForward(*out_buffer);
   last_output_buffer_timestamp_ = (*out_buffer)->GetDecodeTimestamp();
-  return kSuccess;
+  return SourceBufferStreamStatus::kSuccess;
 }
 
 template <typename RangeClass>
@@ -1852,11 +1868,11 @@ DecodeTimestamp SourceBufferStream<RangeClass>::FindKeyframeAfterTimestamp(
 template <typename RangeClass>
 std::string SourceBufferStream<RangeClass>::GetStreamTypeName() const {
   switch (GetType()) {
-    case kAudio:
+    case SourceBufferStreamType::kAudio:
       return "AUDIO";
-    case kVideo:
+    case SourceBufferStreamType::kVideo:
       return "VIDEO";
-    case kText:
+    case SourceBufferStreamType::kText:
       return "TEXT";
   }
   NOTREACHED();
@@ -1864,14 +1880,13 @@ std::string SourceBufferStream<RangeClass>::GetStreamTypeName() const {
 }
 
 template <typename RangeClass>
-typename SourceBufferStream<RangeClass>::Type
-SourceBufferStream<RangeClass>::GetType() const {
+SourceBufferStreamType SourceBufferStream<RangeClass>::GetType() const {
   if (!audio_configs_.empty())
-    return kAudio;
+    return SourceBufferStreamType::kAudio;
   if (!video_configs_.empty())
-    return kVideo;
+    return SourceBufferStreamType::kVideo;
   DCHECK_NE(text_track_config_.kind(), kTextNone);
-  return kText;
+  return SourceBufferStreamType::kText;
 }
 
 template <typename RangeClass>
