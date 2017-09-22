@@ -24,8 +24,10 @@ import org.chromium.base.test.util.ScreenShooter;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -40,7 +42,11 @@ public class SuggestionsBottomSheetUiCaptureTest {
 
     @Rule
     public SuggestionsDependenciesRule createSuggestions() {
-        return new SuggestionsDependenciesRule(NtpUiCaptureTestData.createFactory());
+        SuggestionsDependenciesRule.TestFactory depsFactory = NtpUiCaptureTestData.createFactory();
+        FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
+        NtpUiCaptureTestData.registerArticleSamples(suggestionsSource);
+        depsFactory.suggestionsSource = suggestionsSource;
+        return new SuggestionsDependenciesRule(depsFactory);
     }
 
     @Rule
@@ -48,6 +54,7 @@ public class SuggestionsBottomSheetUiCaptureTest {
 
     @Before
     public void setup() throws InterruptedException {
+        ChromePreferenceManager.getInstance().setNewTabPageGenericSigninPromoDismissed(true);
         mActivityRule.startMainActivityOnBlankPage();
     }
 

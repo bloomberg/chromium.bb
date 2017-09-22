@@ -21,6 +21,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.ScreenShooter;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -51,6 +52,7 @@ public class HomeSheetTilesUiCaptureTest {
 
     @Before
     public void setup() throws InterruptedException {
+        ChromePreferenceManager.getInstance().setNewTabPageGenericSigninPromoDismissed(true);
         mActivityRule.startMainActivityOnBlankPage();
     }
 
