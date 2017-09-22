@@ -4021,28 +4021,64 @@ void vpx_highbd_d207_predictor_16x16_c(uint16_t* dst,
                                        const uint16_t* above,
                                        const uint16_t* left,
                                        int bd);
-#define vpx_highbd_d207_predictor_16x16 vpx_highbd_d207_predictor_16x16_c
+void vpx_highbd_d207_predictor_16x16_ssse3(uint16_t* dst,
+                                           ptrdiff_t y_stride,
+                                           const uint16_t* above,
+                                           const uint16_t* left,
+                                           int bd);
+RTCD_EXTERN void (*vpx_highbd_d207_predictor_16x16)(uint16_t* dst,
+                                                    ptrdiff_t y_stride,
+                                                    const uint16_t* above,
+                                                    const uint16_t* left,
+                                                    int bd);
 
 void vpx_highbd_d207_predictor_32x32_c(uint16_t* dst,
                                        ptrdiff_t y_stride,
                                        const uint16_t* above,
                                        const uint16_t* left,
                                        int bd);
-#define vpx_highbd_d207_predictor_32x32 vpx_highbd_d207_predictor_32x32_c
+void vpx_highbd_d207_predictor_32x32_ssse3(uint16_t* dst,
+                                           ptrdiff_t y_stride,
+                                           const uint16_t* above,
+                                           const uint16_t* left,
+                                           int bd);
+RTCD_EXTERN void (*vpx_highbd_d207_predictor_32x32)(uint16_t* dst,
+                                                    ptrdiff_t y_stride,
+                                                    const uint16_t* above,
+                                                    const uint16_t* left,
+                                                    int bd);
 
 void vpx_highbd_d207_predictor_4x4_c(uint16_t* dst,
                                      ptrdiff_t y_stride,
                                      const uint16_t* above,
                                      const uint16_t* left,
                                      int bd);
-#define vpx_highbd_d207_predictor_4x4 vpx_highbd_d207_predictor_4x4_c
+void vpx_highbd_d207_predictor_4x4_sse2(uint16_t* dst,
+                                        ptrdiff_t y_stride,
+                                        const uint16_t* above,
+                                        const uint16_t* left,
+                                        int bd);
+RTCD_EXTERN void (*vpx_highbd_d207_predictor_4x4)(uint16_t* dst,
+                                                  ptrdiff_t y_stride,
+                                                  const uint16_t* above,
+                                                  const uint16_t* left,
+                                                  int bd);
 
 void vpx_highbd_d207_predictor_8x8_c(uint16_t* dst,
                                      ptrdiff_t y_stride,
                                      const uint16_t* above,
                                      const uint16_t* left,
                                      int bd);
-#define vpx_highbd_d207_predictor_8x8 vpx_highbd_d207_predictor_8x8_c
+void vpx_highbd_d207_predictor_8x8_ssse3(uint16_t* dst,
+                                         ptrdiff_t y_stride,
+                                         const uint16_t* above,
+                                         const uint16_t* left,
+                                         int bd);
+RTCD_EXTERN void (*vpx_highbd_d207_predictor_8x8)(uint16_t* dst,
+                                                  ptrdiff_t y_stride,
+                                                  const uint16_t* above,
+                                                  const uint16_t* left,
+                                                  int bd);
 
 void vpx_highbd_d45_predictor_16x16_c(uint16_t* dst,
                                       ptrdiff_t y_stride,
@@ -4077,28 +4113,64 @@ void vpx_highbd_d63_predictor_16x16_c(uint16_t* dst,
                                       const uint16_t* above,
                                       const uint16_t* left,
                                       int bd);
-#define vpx_highbd_d63_predictor_16x16 vpx_highbd_d63_predictor_16x16_c
+void vpx_highbd_d63_predictor_16x16_ssse3(uint16_t* dst,
+                                          ptrdiff_t y_stride,
+                                          const uint16_t* above,
+                                          const uint16_t* left,
+                                          int bd);
+RTCD_EXTERN void (*vpx_highbd_d63_predictor_16x16)(uint16_t* dst,
+                                                   ptrdiff_t y_stride,
+                                                   const uint16_t* above,
+                                                   const uint16_t* left,
+                                                   int bd);
 
 void vpx_highbd_d63_predictor_32x32_c(uint16_t* dst,
                                       ptrdiff_t y_stride,
                                       const uint16_t* above,
                                       const uint16_t* left,
                                       int bd);
-#define vpx_highbd_d63_predictor_32x32 vpx_highbd_d63_predictor_32x32_c
+void vpx_highbd_d63_predictor_32x32_ssse3(uint16_t* dst,
+                                          ptrdiff_t y_stride,
+                                          const uint16_t* above,
+                                          const uint16_t* left,
+                                          int bd);
+RTCD_EXTERN void (*vpx_highbd_d63_predictor_32x32)(uint16_t* dst,
+                                                   ptrdiff_t y_stride,
+                                                   const uint16_t* above,
+                                                   const uint16_t* left,
+                                                   int bd);
 
 void vpx_highbd_d63_predictor_4x4_c(uint16_t* dst,
                                     ptrdiff_t y_stride,
                                     const uint16_t* above,
                                     const uint16_t* left,
                                     int bd);
-#define vpx_highbd_d63_predictor_4x4 vpx_highbd_d63_predictor_4x4_c
+void vpx_highbd_d63_predictor_4x4_sse2(uint16_t* dst,
+                                       ptrdiff_t y_stride,
+                                       const uint16_t* above,
+                                       const uint16_t* left,
+                                       int bd);
+RTCD_EXTERN void (*vpx_highbd_d63_predictor_4x4)(uint16_t* dst,
+                                                 ptrdiff_t y_stride,
+                                                 const uint16_t* above,
+                                                 const uint16_t* left,
+                                                 int bd);
 
 void vpx_highbd_d63_predictor_8x8_c(uint16_t* dst,
                                     ptrdiff_t y_stride,
                                     const uint16_t* above,
                                     const uint16_t* left,
                                     int bd);
-#define vpx_highbd_d63_predictor_8x8 vpx_highbd_d63_predictor_8x8_c
+void vpx_highbd_d63_predictor_8x8_ssse3(uint16_t* dst,
+                                        ptrdiff_t y_stride,
+                                        const uint16_t* above,
+                                        const uint16_t* left,
+                                        int bd);
+RTCD_EXTERN void (*vpx_highbd_d63_predictor_8x8)(uint16_t* dst,
+                                                 ptrdiff_t y_stride,
+                                                 const uint16_t* above,
+                                                 const uint16_t* left,
+                                                 int bd);
 
 void vpx_highbd_dc_128_predictor_16x16_c(uint16_t* dst,
                                          ptrdiff_t y_stride,
@@ -6379,6 +6451,19 @@ void vpx_quantize_b_32x32_ssse3(const tran_low_t* coeff_ptr,
                                 uint16_t* eob_ptr,
                                 const int16_t* scan,
                                 const int16_t* iscan);
+void vpx_quantize_b_32x32_avx(const tran_low_t* coeff_ptr,
+                              intptr_t n_coeffs,
+                              int skip_block,
+                              const int16_t* zbin_ptr,
+                              const int16_t* round_ptr,
+                              const int16_t* quant_ptr,
+                              const int16_t* quant_shift_ptr,
+                              tran_low_t* qcoeff_ptr,
+                              tran_low_t* dqcoeff_ptr,
+                              const int16_t* dequant_ptr,
+                              uint16_t* eob_ptr,
+                              const int16_t* scan,
+                              const int16_t* iscan);
 RTCD_EXTERN void (*vpx_quantize_b_32x32)(const tran_low_t* coeff_ptr,
                                          intptr_t n_coeffs,
                                          int skip_block,
@@ -9194,6 +9279,30 @@ static void setup_rtcd_internal(void) {
     vpx_highbd_convolve_copy = vpx_highbd_convolve_copy_sse2;
   if (flags & HAS_AVX2)
     vpx_highbd_convolve_copy = vpx_highbd_convolve_copy_avx2;
+  vpx_highbd_d207_predictor_16x16 = vpx_highbd_d207_predictor_16x16_c;
+  if (flags & HAS_SSSE3)
+    vpx_highbd_d207_predictor_16x16 = vpx_highbd_d207_predictor_16x16_ssse3;
+  vpx_highbd_d207_predictor_32x32 = vpx_highbd_d207_predictor_32x32_c;
+  if (flags & HAS_SSSE3)
+    vpx_highbd_d207_predictor_32x32 = vpx_highbd_d207_predictor_32x32_ssse3;
+  vpx_highbd_d207_predictor_4x4 = vpx_highbd_d207_predictor_4x4_c;
+  if (flags & HAS_SSE2)
+    vpx_highbd_d207_predictor_4x4 = vpx_highbd_d207_predictor_4x4_sse2;
+  vpx_highbd_d207_predictor_8x8 = vpx_highbd_d207_predictor_8x8_c;
+  if (flags & HAS_SSSE3)
+    vpx_highbd_d207_predictor_8x8 = vpx_highbd_d207_predictor_8x8_ssse3;
+  vpx_highbd_d63_predictor_16x16 = vpx_highbd_d63_predictor_16x16_c;
+  if (flags & HAS_SSSE3)
+    vpx_highbd_d63_predictor_16x16 = vpx_highbd_d63_predictor_16x16_ssse3;
+  vpx_highbd_d63_predictor_32x32 = vpx_highbd_d63_predictor_32x32_c;
+  if (flags & HAS_SSSE3)
+    vpx_highbd_d63_predictor_32x32 = vpx_highbd_d63_predictor_32x32_ssse3;
+  vpx_highbd_d63_predictor_4x4 = vpx_highbd_d63_predictor_4x4_c;
+  if (flags & HAS_SSE2)
+    vpx_highbd_d63_predictor_4x4 = vpx_highbd_d63_predictor_4x4_sse2;
+  vpx_highbd_d63_predictor_8x8 = vpx_highbd_d63_predictor_8x8_c;
+  if (flags & HAS_SSSE3)
+    vpx_highbd_d63_predictor_8x8 = vpx_highbd_d63_predictor_8x8_ssse3;
   vpx_highbd_dc_128_predictor_16x16 = vpx_highbd_dc_128_predictor_16x16_c;
   if (flags & HAS_SSE2)
     vpx_highbd_dc_128_predictor_16x16 = vpx_highbd_dc_128_predictor_16x16_sse2;
@@ -9633,6 +9742,8 @@ static void setup_rtcd_internal(void) {
   vpx_quantize_b_32x32 = vpx_quantize_b_32x32_c;
   if (flags & HAS_SSSE3)
     vpx_quantize_b_32x32 = vpx_quantize_b_32x32_ssse3;
+  if (flags & HAS_AVX)
+    vpx_quantize_b_32x32 = vpx_quantize_b_32x32_avx;
   vpx_sad16x16 = vpx_sad16x16_c;
   if (flags & HAS_SSE2)
     vpx_sad16x16 = vpx_sad16x16_sse2;

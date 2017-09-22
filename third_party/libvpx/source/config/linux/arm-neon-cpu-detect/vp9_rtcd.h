@@ -36,14 +36,14 @@ int64_t vp9_block_error_c(const tran_low_t* coeff,
                           int64_t* ssz);
 #define vp9_block_error vp9_block_error_c
 
-int64_t vp9_block_error_fp_c(const int16_t* coeff,
-                             const int16_t* dqcoeff,
+int64_t vp9_block_error_fp_c(const tran_low_t* coeff,
+                             const tran_low_t* dqcoeff,
                              int block_size);
-int64_t vp9_block_error_fp_neon(const int16_t* coeff,
-                                const int16_t* dqcoeff,
+int64_t vp9_block_error_fp_neon(const tran_low_t* coeff,
+                                const tran_low_t* dqcoeff,
                                 int block_size);
-RTCD_EXTERN int64_t (*vp9_block_error_fp)(const int16_t* coeff,
-                                          const int16_t* dqcoeff,
+RTCD_EXTERN int64_t (*vp9_block_error_fp)(const tran_low_t* coeff,
+                                          const tran_low_t* dqcoeff,
                                           int block_size);
 
 int vp9_denoiser_filter_c(const uint8_t* sig,
