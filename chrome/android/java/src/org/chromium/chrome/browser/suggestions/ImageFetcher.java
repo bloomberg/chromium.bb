@@ -13,7 +13,6 @@ import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Promise;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.NativePageHost;
-import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
@@ -22,6 +21,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.widget.ThumbnailProvider;
 
 import java.net.URI;
 import java.net.URISyntaxException;

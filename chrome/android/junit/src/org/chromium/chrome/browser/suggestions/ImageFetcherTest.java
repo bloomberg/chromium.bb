@@ -24,7 +24,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.NativePageHost;
-import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
@@ -35,6 +34,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ImageFetcher.DownloadThumbnailRequest;
+import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 

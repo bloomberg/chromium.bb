@@ -9,7 +9,6 @@ import org.junit.runner.Description;
 
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
@@ -17,6 +16,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.MostVisitedSites;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
+import org.chromium.chrome.browser.widget.ThumbnailProvider;
 
 /**
  * Rule that allows mocking native dependencies of the suggestions package.
