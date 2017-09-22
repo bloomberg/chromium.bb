@@ -40,6 +40,7 @@ class ClientPolicyController {
 
   // Returns whether pages for |name_space| should be removed on cache reset.
   bool IsRemovedOnCacheReset(const std::string& name_space) const;
+  const std::vector<std::string>& GetNamespacesRemovedOnCacheReset() const;
 
   // Returns whether pages for |name_space| are shown in Download UI.
   bool IsSupportedByDownload(const std::string& name_space) const;
@@ -73,6 +74,8 @@ class ClientPolicyController {
   std::map<std::string, OfflinePageClientPolicy> policies_;
 
   // Memoizing results.
+  mutable std::unique_ptr<std::vector<std::string>>
+      cache_reset_namespace_cache_;
   mutable std::unique_ptr<std::vector<std::string>> download_namespace_cache_;
   mutable std::unique_ptr<std::vector<std::string>> recent_tab_namespace_cache_;
   mutable std::unique_ptr<std::vector<std::string>> show_in_original_tab_cache_;

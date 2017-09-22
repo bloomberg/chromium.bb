@@ -11,6 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
@@ -161,6 +163,27 @@ TEST_F(GetPagesTaskTest, GetPagesForMultipleClientIds) {
   EXPECT_EQ(1UL, result_set.count(item_2));
 }
 
+TEST_F(GetPagesTaskTest, GetPagesByNamespace) {
+  static const char kOtherNamespace[] = "other_namespace";
+  generator()->SetNamespace(kTestNamespace);
+  OfflinePageItem item_1 = generator()->CreateItem();
+  store_util()->InsertItem(item_1);
+  OfflinePageItem item_2 = generator()->CreateItem();
+  store_util()->InsertItem(item_2);
+  generator()->SetNamespace(kOtherNamespace);
+  OfflinePageItem item_3 = generator()->CreateItem();
+  store_util()->InsertItem(item_3);
+
+  runner()->RunTask(GetPagesTask::CreateTaskMatchingNamespace(
+      store(), get_pages_callback(), kTestNamespace));
+
+  std::set<OfflinePageItem> result_set;
+  result_set.insert(read_result().begin(), read_result().end());
+  EXPECT_EQ(2UL, result_set.size());
+  EXPECT_EQ(1UL, result_set.count(item_1));
+  EXPECT_EQ(1UL, result_set.count(item_2));
+}
+
 TEST_F(GetPagesTaskTest, GetPagesByRequestOrigin) {
   static const char kRequestOrigin1[] = "bar";
   static const char kRequestOrigin2[] = "baz";
@@ -237,6 +260,46 @@ TEST_F(GetPagesTaskTest, GetPageByOfflineId) {
       store(), get_single_page_callback(), item_1.offline_id));
 
   EXPECT_EQ(item_1, single_page_result());
+}
+
+TEST_F(GetPagesTaskTest, GetPagesSupportedByDownloads) {
+  ClientPolicyController policy_controller;
+  generator()->SetNamespace(kCCTNamespace);
+  store_util()->InsertItem(generator()->CreateItem());
+  generator()->SetNamespace(kDownloadNamespace);
+  OfflinePageItem download_item = generator()->CreateItem();
+  store_util()->InsertItem(download_item);
+  generator()->SetNamespace(kNTPSuggestionsNamespace);
+  OfflinePageItem ntp_suggestion_item = generator()->CreateItem();
+  store_util()->InsertItem(ntp_suggestion_item);
+
+  runner()->RunTask(GetPagesTask::CreateTaskMatchingPagesSupportedByDownloads(
+      store(), &policy_controller, get_pages_callback()));
+
+  std::set<OfflinePageItem> result_set;
+  result_set.insert(read_result().begin(), read_result().end());
+  EXPECT_EQ(2UL, result_set.size());
+  EXPECT_EQ(1UL, result_set.count(download_item));
+  EXPECT_EQ(1UL, result_set.count(ntp_suggestion_item));
+}
+
+TEST_F(GetPagesTaskTest, GetPagesRemovedOnCacheReset) {
+  ClientPolicyController policy_controller;
+  generator()->SetNamespace(kCCTNamespace);
+  OfflinePageItem cct_item = generator()->CreateItem();
+  store_util()->InsertItem(cct_item);
+  generator()->SetNamespace(kDownloadNamespace);
+  store_util()->InsertItem(generator()->CreateItem());
+  generator()->SetNamespace(kNTPSuggestionsNamespace);
+  store_util()->InsertItem(generator()->CreateItem());
+
+  runner()->RunTask(GetPagesTask::CreateTaskMatchingPagesRemovedOnCacheReset(
+      store(), &policy_controller, get_pages_callback()));
+
+  std::set<OfflinePageItem> result_set;
+  result_set.insert(read_result().begin(), read_result().end());
+  EXPECT_EQ(1UL, result_set.size());
+  EXPECT_EQ(1UL, result_set.count(cct_item));
 }
 
 }  // namespace offline_pages
