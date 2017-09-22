@@ -98,8 +98,12 @@ Polymer({
    * GUID of the user-selected network. It is remembered after user taps on
    * network entry. After we receive event "connected" on this network,
    * OOBE will proceed.
+   * @private {string}
    */
   networkLastSelectedGuid_: '',
+
+  /** @private {string} GUID of the default network. */
+  defaultNetworkGuid_: '',
 
   /** @override */
   ready: function() {
@@ -320,6 +324,7 @@ Polymer({
    */
   onDefaultNetworkChanged_: function(event) {
     var state = event.detail;
+    this.defaultNetworkGuid_ = state.GUID;
     this.isConnected_ =
         !!state && state.ConnectionState == CrOnc.ConnectionState.CONNECTED;
     if (!state || state.GUID != this.networkLastSelectedGuid_)
@@ -339,9 +344,10 @@ Polymer({
    */
   onNetworkListNetworkItemSelected_: function(event) {
     var state = event.detail;
-    // If user has not previously made a selection and selected network
-    // is already connected, just continue to the next screen.
+    // If the user has not previously made a selection and the default network
+    // is selected and connected, continue to the next screen.
     if (this.networkLastSelectedGuid_ == '' &&
+        state.GUID == this.defaultNetworkGuid_ &&
         state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
       this.onSelectedNetworkConnected_();
       return;
