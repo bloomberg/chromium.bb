@@ -25,10 +25,12 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/video_layer.h"
+#include "cc/paint/image_animation_count.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_paint_image_generator.h"
 #include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
@@ -7841,7 +7843,8 @@ class LayerTreeHostTestQueueImageDecode : public LayerTreeHostTest {
 
     image_ = DrawImage(CreateDiscardablePaintImage(gfx::Size(400, 400)),
                        SkIRect::MakeWH(400, 400), kNone_SkFilterQuality,
-                       SkMatrix::I(), gfx::ColorSpace());
+                       SkMatrix::I(), PaintImage::kDefaultFrameIndex,
+                       gfx::ColorSpace());
     auto callback =
         base::Bind(&LayerTreeHostTestQueueImageDecode::ImageDecodeFinished,
                    base::Unretained(this));
@@ -8040,6 +8043,87 @@ class LayerTreeHostTestDiscardAckAfterRelease : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDiscardAckAfterRelease);
+
+class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
+ public:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_image_animations = true;
+  }
+
+  void SetupTree() override {
+    gfx::Size layer_size(1000, 500);
+    content_layer_client_.set_bounds(layer_size);
+    content_layer_client_.set_fill_with_nonsolid_color(true);
+    std::vector<FrameMetadata> frames = {
+        FrameMetadata(true, base::TimeDelta::FromSeconds(1)),
+        FrameMetadata(true, base::TimeDelta::FromSeconds(1)),
+        FrameMetadata(true, base::TimeDelta::FromSeconds(1))};
+    generator_ = sk_make_sp<FakePaintImageGenerator>(
+        SkImageInfo::MakeN32Premul(500, 500), frames);
+    PaintImage image =
+        PaintImageBuilder()
+            .set_id(PaintImage::GetNextId())
+            .set_paint_image_generator(generator_)
+            .set_frame_index(0u)
+            .set_animation_type(PaintImage::AnimationType::ANIMATED)
+            .set_repetition_count(kAnimationLoopOnce)
+            .TakePaintImage();
+    content_layer_client_.add_draw_image(image, gfx::Point(0, 0), PaintFlags());
+
+    layer_tree_host()->SetRootLayer(
+        FakePictureLayer::Create(&content_layer_client_));
+    layer_tree_host()->root_layer()->SetBounds(layer_size);
+    LayerTreeTest::SetupTree();
+  }
+
+  void WillPrepareToDrawOnThread(LayerTreeHostImpl* host_impl) override {
+    gfx::Rect image_rect(-1, -1, 502, 502);
+    auto* layer = static_cast<PictureLayerImpl*>(
+        host_impl->active_tree()->root_layer_for_testing());
+    switch (++draw_count_) {
+      case 1:
+        // First draw, everything is invalid.
+        EXPECT_EQ(layer->InvalidationForTesting().bounds(),
+                  gfx::Rect(layer->bounds()));
+        EXPECT_EQ(layer->update_rect(), gfx::Rect(layer->bounds()));
+        EXPECT_EQ(generator_->frames_decoded().size(), 1u);
+        EXPECT_EQ(generator_->frames_decoded().count(0u), 1u);
+        break;
+      case 2:
+        // Every frame after the first one should invalidate only the image.
+        EXPECT_EQ(layer->InvalidationForTesting().bounds(), image_rect);
+        EXPECT_EQ(layer->update_rect(), image_rect);
+        EXPECT_EQ(generator_->frames_decoded().size(), 2u);
+        EXPECT_EQ(generator_->frames_decoded().count(1u), 1u);
+        break;
+      case 3:
+        EXPECT_EQ(layer->InvalidationForTesting().bounds(), image_rect);
+        EXPECT_EQ(layer->update_rect(), image_rect);
+        EXPECT_EQ(generator_->frames_decoded().size(), 3u);
+        EXPECT_EQ(generator_->frames_decoded().count(2u), 1u);
+        break;
+      default:
+        // Only 3 draws should happen for 3 frames of the animate image.
+        NOTREACHED();
+    }
+
+    if (draw_count_ == 3)
+      EndTest();
+  }
+
+  void AfterTest() override {
+    EXPECT_EQ(generator_->frames_decoded().size(), 3u);
+  }
+
+ private:
+  FakeContentLayerClient content_layer_client_;
+  sk_sp<FakePaintImageGenerator> generator_;
+  int draw_count_ = 0;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimation);
 
 }  // namespace
 }  // namespace cc

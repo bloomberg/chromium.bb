@@ -5,6 +5,7 @@
 #ifndef CC_RASTER_PLAYBACK_IMAGE_PROVIDER_H_
 #define CC_RASTER_PLAYBACK_IMAGE_PROVIDER_H_
 
+#include "base/containers/flat_map.h"
 #include "cc/cc_export.h"
 #include "cc/paint/image_id.h"
 #include "cc/paint/image_provider.h"
@@ -21,11 +22,13 @@ class ImageDecodeCache;
 //    only be used for lazy generated images.
 class CC_EXPORT PlaybackImageProvider : public ImageProvider {
  public:
-  PlaybackImageProvider(bool skip_all_images,
-                        PaintImageIdFlatSet images_to_skip,
-                        std::vector<DrawImage> at_raster_images,
-                        ImageDecodeCache* cache,
-                        const gfx::ColorSpace& taget_color_space);
+  PlaybackImageProvider(
+      bool skip_all_images,
+      PaintImageIdFlatSet images_to_skip,
+      std::vector<DrawImage> at_raster_images,
+      ImageDecodeCache* cache,
+      const gfx::ColorSpace& taget_color_space,
+      base::flat_map<PaintImage::Id, size_t> image_to_current_frame_index);
   ~PlaybackImageProvider() override;
 
   void BeginRaster() override;
@@ -46,6 +49,7 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
   std::vector<ImageProvider::ScopedDecodedDrawImage> decoded_at_raster_;
   ImageDecodeCache* cache_;
   gfx::ColorSpace target_color_space_;
+  base::flat_map<PaintImage::Id, size_t> image_to_current_frame_index_;
 
   DISALLOW_COPY_AND_ASSIGN(PlaybackImageProvider);
 };

@@ -59,6 +59,7 @@ class LayerTreeFrameSink;
 class DebugRectHistory;
 class EvictionTilePriorityQueue;
 class FrameRateCounter;
+class ImageAnimationController;
 class LayerImpl;
 class LayerTreeImpl;
 class MemoryHistory;
@@ -354,6 +355,8 @@ class CC_EXPORT LayerTreeHostImpl
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
   gfx::ColorSpace GetRasterColorSpace() const override;
   void RequestImplSideInvalidationForCheckerImagedTiles() override;
+  size_t GetFrameIndexForImage(const PaintImage& paint_image,
+                               WhichTree tree) const override;
 
   // ScrollbarAnimationControllerClient implementation.
   void PostDelayedScrollbarAnimationTask(const base::Closure& task,
@@ -417,6 +420,11 @@ class CC_EXPORT LayerTreeHostImpl
   }
   ResourcePool* resource_pool() { return resource_pool_.get(); }
   ImageDecodeCache* image_decode_cache() { return image_decode_cache_.get(); }
+  ImageAnimationController* image_animation_controller() {
+    if (!image_animation_controller_.has_value())
+      return nullptr;
+    return &image_animation_controller_.value();
+  }
 
   virtual void WillBeginImplFrame(const viz::BeginFrameArgs& args);
   virtual void DidFinishImplFrame();
@@ -733,6 +741,9 @@ class CC_EXPORT LayerTreeHostImpl
   // tree, because the active tree value always takes precedence for scrollbars.
   void PushScrollbarOpacitiesFromActiveToPending();
 
+  // Request an impl-side invalidation to animate an image.
+  void RequestInvalidationForAnimatedImages();
+
   using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
   UIResourceMap ui_resource_map_;
 
@@ -895,6 +906,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool touchpad_and_wheel_scroll_latching_enabled_;
 
   ImplThreadPhase impl_thread_phase_;
+
+  base::Optional<ImageAnimationController> image_animation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

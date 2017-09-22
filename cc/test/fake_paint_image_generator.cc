@@ -2,31 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/stub_paint_image_generator.h"
+#include <cc/test/fake_paint_image_generator.h>
 
 namespace cc {
 
-sk_sp<SkData> StubPaintImageGenerator::GetEncodedData() const {
+FakePaintImageGenerator::FakePaintImageGenerator(
+    const SkImageInfo& info,
+    std::vector<FrameMetadata> frames)
+    : PaintImageGenerator(info, std::move(frames)),
+      image_backing_memory_(info.getSafeSize(info.minRowBytes()), 0),
+      image_pixmap_(info, image_backing_memory_.data(), info.minRowBytes()) {}
+
+FakePaintImageGenerator::~FakePaintImageGenerator() = default;
+
+sk_sp<SkData> FakePaintImageGenerator::GetEncodedData() const {
   return nullptr;
 }
 
-bool StubPaintImageGenerator::GetPixels(const SkImageInfo& info,
+bool FakePaintImageGenerator::GetPixels(const SkImageInfo& info,
                                         void* pixels,
                                         size_t row_bytes,
                                         size_t frame_index,
                                         uint32_t lazy_pixel_ref) {
-  return false;
+  frames_decoded_.insert(frame_index);
+  return true;
 }
 
-bool StubPaintImageGenerator::QueryYUV8(SkYUVSizeInfo* info,
+bool FakePaintImageGenerator::QueryYUV8(SkYUVSizeInfo* info,
                                         SkYUVColorSpace* color_space) const {
   return false;
 }
 
-bool StubPaintImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& info,
+bool FakePaintImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& info,
                                             void* planes[3],
                                             size_t frame_index,
                                             uint32_t lazy_pixel_ref) {
+  NOTREACHED();
   return false;
 }
 
