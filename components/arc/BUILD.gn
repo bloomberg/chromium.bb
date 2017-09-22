@@ -104,7 +104,7 @@ static_library("prefs") {
   defines = [ "ARC_IMPLEMENTATION" ]
 
   deps = [
-    "//components/pref_registry",
+    "//components/prefs",
   ]
 }
 
@@ -117,6 +117,8 @@ static_library("arc_base") {
     "arc_bridge_service.cc",
     "arc_bridge_service.h",
     "arc_browser_context_keyed_service_factory_base.h",
+    "arc_data_remover.cc",
+    "arc_data_remover.h",
     "arc_features.cc",
     "arc_features.h",
     "arc_service_manager.cc",
@@ -136,6 +138,7 @@ static_library("arc_base") {
     "//base",
     "//chromeos",
     "//components/keyed_service/content",
+    "//components/prefs",
     "//components/signin/core/account_id",
     "//components/user_manager",
     "//mojo/edk/system",
@@ -144,6 +147,7 @@ static_library("arc_base") {
 
   public_deps = [
     ":arc_bindings",
+    ":prefs",
   ]
 }
 
@@ -237,6 +241,7 @@ static_library("arc_test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "arc_data_remover_unittest.cc",
     "arc_session_runner_unittest.cc",
     "arc_util_unittest.cc",
     "bluetooth/bluetooth_struct_traits_unittest.cc",
@@ -257,6 +262,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos",
     "//chromeos:test_support_without_gmock",
+    "//components/prefs:test_support",
     "//components/signin/core/account_id",
     "//components/user_manager",
     "//components/user_manager:test_support",

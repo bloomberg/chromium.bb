@@ -25,6 +25,7 @@ namespace arc {
 
 class ArcAndroidManagementChecker;
 class ArcAuthContext;
+class ArcDataRemover;
 class ArcPaiStarter;
 class ArcTermsOfServiceNegotiator;
 enum class ProvisioningResult : int;
@@ -336,7 +337,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // If not requested, just skipping the data removal, and moves to
   // MaybeReenableArc() directly.
   void MaybeStartArcDataRemoval();
-  void OnArcDataRemoved(bool success);
+  void OnArcDataRemoved(base::Optional<bool> success);
 
   // On ARC session stopped and/or data removal completion, this is called
   // so that, if necessary, ARC session is restarted.
@@ -373,6 +374,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   base::OneShotTimer arc_sign_in_timer_;
 
   std::unique_ptr<ArcSupportHost> support_host_;
+  std::unique_ptr<ArcDataRemover> data_remover_;
 
   std::unique_ptr<ArcTermsOfServiceNegotiator> terms_of_service_negotiator_;
 
