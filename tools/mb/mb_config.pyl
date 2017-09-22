@@ -158,6 +158,7 @@
       'ClangToTLinux (dbg)': 'clang_tot_shared_debug',
       'ClangToTLinuxASan': 'clang_tot_asan_lsan_static_release',
       'ClangToTLinuxASanLibfuzzer': 'release_libfuzzer_asan_clang_tot',
+      'ClangToTLinuxMSan': 'clang_tot_msan_release_bot',
       'ClangToTLinuxLLD': 'clang_tot_lld_release_shared',
       'ClangToTLinuxThinLTO': 'clang_tot_release_full_symbols_thin_lto_static_use_lld',
       'ClangToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
@@ -1135,6 +1136,10 @@
       # Enable debug info, as on official builders, to catch issues with
       # optimized debug info.
       'clang_tot', 'full_symbols', 'shared', 'release',
+    ],
+
+    'clang_tot_msan_release_bot': [
+      'clang_tot', 'msan', 'release_bot',
     ],
 
     'clang_tot_shared_debug': [
