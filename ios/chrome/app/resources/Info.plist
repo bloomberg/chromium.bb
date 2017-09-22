@@ -29,16 +29,17 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>Icon-120.png</string>
-				<string>Icon-152.png</string>
-				<string>Icon-167.png</string>
-				<string>Icon-180.png</string>
-				<string>Icon-29.png</string>
-				<string>Icon-40.png</string>
-				<string>Icon-58.png</string>
-				<string>Icon-76.png</string>
-				<string>Icon-80.png</string>
-				<string>Icon-87.png</string>
+			</array>
+			<key>UIPrerenderedIcon</key>
+			<true/>
+		</dict>
+	</dict>
+	<key>CFBundleIcons~ipad</key>
+	<dict>
+		<key>CFBundlePrimaryIcon</key>
+		<dict>
+			<key>CFBundleIconFiles</key>
+			<array>
 			</array>
 			<key>UIPrerenderedIcon</key>
 			<true/>
