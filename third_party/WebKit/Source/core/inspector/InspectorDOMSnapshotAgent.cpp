@@ -70,12 +70,11 @@ struct InspectorDOMSnapshotAgent::VectorStringHashTraits
   }
 
   static void ConstructDeletedValue(Vector<String>& vec, bool) {
-    vec.clear();
-    vec.push_back(String(WTF::kHashTableDeletedValue));
+    new (NotNull, &vec) Vector<String>(WTF::kHashTableDeletedValue);
   }
 
   static bool IsDeletedValue(const Vector<String>& vec) {
-    return !vec.IsEmpty() && vec[0].IsHashTableDeletedValue();
+    return vec.IsHashTableDeletedValue();
   }
 
   static bool IsEmptyValue(const Vector<String>& vec) { return vec.IsEmpty(); }
