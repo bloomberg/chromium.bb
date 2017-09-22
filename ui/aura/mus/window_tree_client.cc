@@ -250,6 +250,18 @@ WindowTreeClient::~WindowTreeClient() {
   // is necessary because of shutdown ordering (WindowTreeClient is destroyed
   // before windows).
   in_shutdown_ = true;
+
+  // Windows of type WindowMusType::OTHER were implicitly created from the
+  // server and may not have been destroyed. Delete them to ensure we don't
+  // leak.
+  WindowTracker windows_to_destroy;
+  for (auto& pair : windows_) {
+    if (pair.second->window_mus_type() == WindowMusType::OTHER)
+      windows_to_destroy.Add(pair.second->GetWindow());
+  }
+  while (!windows_to_destroy.windows().empty())
+    delete windows_to_destroy.Pop();
+
   IdToWindowMap windows;
   std::swap(windows, windows_);
   for (auto& pair : windows)
