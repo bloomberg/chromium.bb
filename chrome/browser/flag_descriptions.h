@@ -438,6 +438,9 @@ extern const char kHostedAppQuitNotificationDescription[];
 extern const char kHostedAppShimCreationName[];
 extern const char kHostedAppShimCreationDescription[];
 
+extern const char kHtmlBasedUsernameDetectorName[];
+extern const char kHtmlBasedUsernameDetectorDescription[];
+
 extern const char kIconNtpName[];
 extern const char kIconNtpDescription[];
 

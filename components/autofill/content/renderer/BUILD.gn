@@ -12,6 +12,8 @@ static_library("renderer") {
     "form_cache.h",
     "form_classifier.cc",
     "form_classifier.h",
+    "html_based_username_detector.cc",
+    "html_based_username_detector.h",
     "page_click_listener.h",
     "page_click_tracker.cc",
     "page_click_tracker.h",
