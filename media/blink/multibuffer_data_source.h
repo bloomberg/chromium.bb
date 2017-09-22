@@ -128,6 +128,10 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   // Task posted to perform actual reading on the render thread.
   void ReadTask();
 
+  // When reading happens in read(), this does the parts which has to happen
+  // on the renderer thread.
+  void SeekTask(int64_t pos, int bytes_read);
+
   // Cancels oustanding callbacks and sets |stop_signal_received_|. Safe to call
   // from any thread.
   void StopInternal_Locked();
