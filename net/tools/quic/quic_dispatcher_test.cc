@@ -551,7 +551,7 @@ TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = true;
   FLAGS_quic_reloadable_flag_quic_enable_version_39 = true;
   FLAGS_quic_reloadable_flag_quic_enable_version_40 = true;
-  SetQuicFlag(&FLAGS_quic_enable_version_41, true);
+  SetQuicFlag(&FLAGS_quic_enable_version_42, true);
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);
   QuicConnectionId connection_id = 1;
@@ -597,17 +597,17 @@ TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {
                 SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
                 PACKET_6BYTE_PACKET_NUMBER, 1);
   // Turn off version 41.
-  SetQuicFlag(&FLAGS_quic_enable_version_41, false);
+  SetQuicFlag(&FLAGS_quic_enable_version_42, false);
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
                                               QuicStringPiece("hq")))
       .Times(0);
-  ProcessPacket(client_address, connection_id, true, QUIC_VERSION_41,
+  ProcessPacket(client_address, connection_id, true, QUIC_VERSION_42,
                 SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
                 PACKET_6BYTE_PACKET_NUMBER, 1);
 
   // Turn on version 41.
-  SetQuicFlag(&FLAGS_quic_enable_version_41, true);
+  SetQuicFlag(&FLAGS_quic_enable_version_42, true);
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
                                               QuicStringPiece("hq")))
@@ -622,7 +622,7 @@ TEST_F(QuicDispatcherTest, SupportedVersionsChangeInFlight) {
                                base::Unretained(this), connection_id))));
   EXPECT_CALL(*dispatcher_,
               ShouldCreateOrBufferPacketForConnection(connection_id));
-  ProcessPacket(client_address, connection_id, true, QUIC_VERSION_41,
+  ProcessPacket(client_address, connection_id, true, QUIC_VERSION_42,
                 SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
                 PACKET_6BYTE_PACKET_NUMBER, 1);
   // Turn off version 40.

@@ -16,7 +16,7 @@ namespace {
 class QuicVersionManagerTest : public QuicTest {};
 
 TEST_F(QuicVersionManagerTest, QuicVersionManager) {
-  SetQuicFlag(&FLAGS_quic_enable_version_41, false);
+  SetQuicFlag(&FLAGS_quic_enable_version_42, false);
   FLAGS_quic_reloadable_flag_quic_enable_version_40 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_39 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_38 = false;
@@ -55,9 +55,9 @@ TEST_F(QuicVersionManagerTest, QuicVersionManager) {
   EXPECT_EQ(QUIC_VERSION_37, manager.GetSupportedVersions()[3]);
   EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[4]);
 
-  SetQuicFlag(&FLAGS_quic_enable_version_41, true);
+  SetQuicFlag(&FLAGS_quic_enable_version_42, true);
   ASSERT_EQ(6u, manager.GetSupportedVersions().size());
-  EXPECT_EQ(QUIC_VERSION_41, manager.GetSupportedVersions()[0]);
+  EXPECT_EQ(QUIC_VERSION_42, manager.GetSupportedVersions()[0]);
   EXPECT_EQ(QUIC_VERSION_40, manager.GetSupportedVersions()[1]);
   EXPECT_EQ(QUIC_VERSION_39, manager.GetSupportedVersions()[2]);
   EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedVersions()[3]);
@@ -67,7 +67,7 @@ TEST_F(QuicVersionManagerTest, QuicVersionManager) {
   EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
             manager.GetSupportedVersions());
   ASSERT_EQ(6u, manager.GetSupportedVersions().size());
-  EXPECT_EQ(QUIC_VERSION_41, manager.GetSupportedVersions()[0]);
+  EXPECT_EQ(QUIC_VERSION_42, manager.GetSupportedVersions()[0]);
   EXPECT_EQ(QUIC_VERSION_40, manager.GetSupportedVersions()[1]);
   EXPECT_EQ(QUIC_VERSION_39, manager.GetSupportedVersions()[2]);
   EXPECT_EQ(QUIC_VERSION_38, manager.GetSupportedVersions()[3]);
