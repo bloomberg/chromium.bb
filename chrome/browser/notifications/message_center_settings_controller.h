@@ -20,10 +20,6 @@
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/favicon_base/favicon_types.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(OS_CHROMEOS)
@@ -40,7 +36,6 @@ class ProfileNotifierGroup;
 // storage.
 class MessageCenterSettingsController
     : public message_center::NotifierSettingsProvider,
-      public content::NotificationObserver,
       public ProfileAttributesStorage::Observer,
 #if defined(OS_CHROMEOS)
       public user_manager::UserManager::UserSessionStateObserver,
@@ -78,11 +73,6 @@ class MessageCenterSettingsController
 #endif
 
  private:
-  // Overridden from content::NotificationObserver.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Overridden from ProfileAttributesStorage::Observer.
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
@@ -126,8 +116,6 @@ class MessageCenterSettingsController
       sources_;
 
   size_t current_notifier_group_;
-
-  content::NotificationRegistrar registrar_;
 
   ProfileAttributesStorage& profile_attributes_storage_;
 
