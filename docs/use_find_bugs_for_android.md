@@ -6,10 +6,6 @@ files. We have some scripts to run it over the Java code at build time.
 
 ## How To Run
 
-For gyp builds, add `run_findbugs=1` to your `GYP_DEFINES`.
-
-For gn builds, add `run_findbugs=true` to the args you pass to `gn gen`:
-
     gn gen --args='target_os="android" run_findbugs=true'
 
 Note that running findbugs will add time to your build. The amount of additional
