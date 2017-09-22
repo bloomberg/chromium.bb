@@ -407,6 +407,7 @@ void ServiceWorkerInstalledScriptsSender::OnAbortSendingScript(
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker",
                                   "ServiceWorkerInstalledScriptsSender", this,
                                   "FinishedReason", static_cast<int>(reason));
+  running_sender_.reset();
   Finish(reason);
 
   switch (reason) {

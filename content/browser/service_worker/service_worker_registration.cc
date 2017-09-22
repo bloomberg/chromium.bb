@@ -405,6 +405,11 @@ void ServiceWorkerRegistration::DeleteVersion(
     const scoped_refptr<ServiceWorkerVersion>& version) {
   DCHECK_EQ(id(), version->registration_id());
 
+  // Protect the registration since version->Doom() can stop |version|, which
+  // destroys start worker callbacks, which might be the only things holding a
+  // reference to |this|.
+  scoped_refptr<ServiceWorkerRegistration> protect(this);
+
   UnsetVersion(version.get());
 
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
@@ -421,7 +426,7 @@ void ServiceWorkerRegistration::DeleteVersion(
     // Delete the records from the db.
     context_->storage()->DeleteRegistration(
         id(), pattern().GetOrigin(),
-        base::Bind(&ServiceWorkerRegistration::OnDeleteFinished, this));
+        base::Bind(&ServiceWorkerRegistration::OnDeleteFinished, protect));
     // But not from memory if there is a version in the pipeline.
     // TODO(falken): Fix this logic. There could be a running register job for
     // this registration that hasn't set installing_version() yet.
