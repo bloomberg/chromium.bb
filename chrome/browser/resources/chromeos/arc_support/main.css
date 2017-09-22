@@ -65,10 +65,6 @@ p.title {
   width: 12px;
 }
 
-.button-separator {
-  width: 1px;
-}
-
 .button-active-directory-auth {
   border: 1px solid #e6e6e6;
   border-radius: 2px;
@@ -79,6 +75,11 @@ p.title {
 #button-retry,
 #button-agree {
   -webkit-margin-end: 18px;
+}
+
+#button-cancel,
+#button-send-feedback {
+  -webkit-margin-end: 6px;
 }
 
 .checkbox-text,
