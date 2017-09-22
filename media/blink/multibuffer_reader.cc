@@ -84,29 +84,26 @@ int64_t MultiBufferReader::AvailableAt(int64_t pos) const {
 
 int64_t MultiBufferReader::TryReadAt(int64_t pos, uint8_t* data, int64_t len) {
   DCHECK_GT(len, 0);
-  current_wait_size_ = 0;
-  cb_.Reset();
-  DCHECK_LE(pos + len, end_);
-  const MultiBuffer::DataMap& data_map = multibuffer_->map();
-  MultiBuffer::DataMap::const_iterator i = data_map.find(block(pos));
+  std::vector<scoped_refptr<DataBuffer>> buffers;
+  multibuffer_->GetBlocksThreadsafe(block(pos), block_ceil(pos + len),
+                                    &buffers);
   int64_t bytes_read = 0;
-  while (bytes_read < len) {
-    if (i == data_map.end())
-      break;
-    if (i->first != block(pos))
-      break;
-    if (i->second->end_of_stream())
+  for (auto& buffer : buffers) {
+    if (buffer->end_of_stream())
       break;
     size_t offset = pos & ((1LL << multibuffer_->block_size_shift()) - 1);
-    if (offset > static_cast<size_t>(i->second->data_size()))
+    if (offset > static_cast<size_t>(buffer->data_size()))
       break;
     size_t tocopy =
-        std::min<size_t>(len - bytes_read, i->second->data_size() - offset);
-    memcpy(data, i->second->data() + offset, tocopy);
+        std::min<size_t>(len - bytes_read, buffer->data_size() - offset);
+    memcpy(data, buffer->data() + offset, tocopy);
     data += tocopy;
     bytes_read += tocopy;
+    if (bytes_read == len)
+      break;
+    if (block(pos + tocopy) != block(pos) + 1)
+      break;
     pos += tocopy;
-    ++i;
   }
   return bytes_read;
 }
@@ -152,6 +149,7 @@ void MultiBufferReader::CheckWait() {
       (Available() >= current_wait_size_ || Available() == -1)) {
     // We redirect the call through a weak pointer to ourselves to guarantee
     // there are no callbacks from us after we've been destroyed.
+    current_wait_size_ = 0;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&MultiBufferReader::Call, weak_factory_.GetWeakPtr(),

@@ -268,15 +268,18 @@ void MultiBuffer::NotifyAvailableRange(
 
 void MultiBuffer::ReleaseBlocks(const std::vector<MultiBufferBlockId>& blocks) {
   IntervalMap<BlockId, int32_t> freed;
-  for (MultiBufferBlockId to_free : blocks) {
-    DCHECK(data_[to_free]);
-    DCHECK_EQ(pinned_[to_free], 0);
-    DCHECK_EQ(present_[to_free], 1);
-    data_.erase(to_free);
-    freed.IncrementInterval(to_free, to_free + 1, 1);
-    present_.IncrementInterval(to_free, to_free + 1, -1);
+  {
+    base::AutoLock auto_lock(data_lock_);
+    for (MultiBufferBlockId to_free : blocks) {
+      DCHECK(data_[to_free]);
+      DCHECK_EQ(pinned_[to_free], 0);
+      DCHECK_EQ(present_[to_free], 1);
+      data_.erase(to_free);
+      freed.IncrementInterval(to_free, to_free + 1, 1);
+      present_.IncrementInterval(to_free, to_free + 1, -1);
+    }
+    lru_->IncrementDataSize(-static_cast<int64_t>(blocks.size()));
   }
-  lru_->IncrementDataSize(-static_cast<int64_t>(blocks.size()));
 
   for (const auto& freed_range : freed) {
     if (freed_range.second) {
@@ -385,18 +388,21 @@ void MultiBuffer::OnDataProviderEvent(DataProvider* provider_tmp) {
   bool eof = false;
   int64_t blocks_before = data_.size();
 
-  while (!ProviderCollision(pos) && !eof) {
-    if (!provider->Available()) {
-      AddProvider(std::move(provider));
-      break;
+  {
+    base::AutoLock auto_lock(data_lock_);
+    while (!ProviderCollision(pos) && !eof) {
+      if (!provider->Available()) {
+        AddProvider(std::move(provider));
+        break;
+      }
+      DCHECK_GE(pos, 0);
+      scoped_refptr<DataBuffer> data = provider->Read();
+      data_[pos] = data;
+      eof = data->end_of_stream();
+      if (!pinned_[pos])
+        lru_->Use(this, pos);
+      ++pos;
     }
-    DCHECK_GE(pos, 0);
-    scoped_refptr<DataBuffer> data = provider->Read();
-    data_[pos] = data;
-    eof = data->end_of_stream();
-    if (!pinned_[pos])
-      lru_->Use(this, pos);
-    ++pos;
   }
   int64_t blocks_after = data_.size();
   int64_t blocks_added = blocks_after - blocks_before;
@@ -436,16 +442,19 @@ void MultiBuffer::OnDataProviderEvent(DataProvider* provider_tmp) {
 }
 
 void MultiBuffer::MergeFrom(MultiBuffer* other) {
-  // Import data and update LRU.
-  size_t data_size = data_.size();
-  for (const auto& data : other->data_) {
-    if (data_.insert(std::make_pair(data.first, data.second)).second) {
-      if (!pinned_[data.first]) {
-        lru_->Insert(this, data.first);
+  {
+    base::AutoLock auto_lock(data_lock_);
+    // Import data and update LRU.
+    size_t data_size = data_.size();
+    for (const auto& data : other->data_) {
+      if (data_.insert(std::make_pair(data.first, data.second)).second) {
+        if (!pinned_[data.first]) {
+          lru_->Insert(this, data.first);
+        }
       }
     }
+    lru_->IncrementDataSize(static_cast<int64_t>(data_.size() - data_size));
   }
-  lru_->IncrementDataSize(static_cast<int64_t>(data_.size() - data_size));
   // Update present_
   for (const auto& r : other->present_) {
     if (r.second) {
@@ -462,6 +471,20 @@ void MultiBuffer::MergeFrom(MultiBuffer* other) {
         last = i;
       }
     }
+  }
+}
+
+void MultiBuffer::GetBlocksThreadsafe(
+    const BlockId& from,
+    const BlockId& to,
+    std::vector<scoped_refptr<DataBuffer>>* output) {
+  base::AutoLock auto_lock(data_lock_);
+  auto i = data_.find(from);
+  BlockId j = from;
+  while (j <= to && i != data_.end() && i->first == j) {
+    output->push_back(i->second);
+    ++j;
+    ++i;
   }
 }
 

@@ -60,12 +60,11 @@ class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
 
   // Tries to read |len| bytes from position |pos|.
   // Returns number of bytes read.
-  // If there is a pending Wait(), it will be cancelled.
+  // Safe to call from any thread.
   int64_t TryReadAt(int64_t pos, uint8_t* data, int64_t len);
 
   // Tries to read |len| bytes and update current position.
   // Returns number of bytes read.
-  // If there is a pending Wait(), it will be cancelled.
   int64_t TryRead(uint8_t* data, int64_t len);
 
   // Wait until |len| bytes are available for reading.
