@@ -262,7 +262,6 @@ class BuildStartStage(generic_stages.BuilderStage):
       db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
       if db:
         wfall = d['buildbot-master-name']
-        assert wfall in waterfall.CIDB_KNOWN_WATERFALLS
         try:
           build_id = db.InsertBuild(
               builder_name=d['builder-name'],

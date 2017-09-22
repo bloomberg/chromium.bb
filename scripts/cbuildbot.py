@@ -752,12 +752,10 @@ _ENVIRONMENT_STANDALONE = 'standalone'
 
 def _GetRunEnvironment(options, build_config):
   """Determine whether this is a prod/debug/standalone run."""
-  # TODO(akeshet): This is a temporary workaround to make sure that the cidb
-  # is not used on waterfalls that the db schema does not support (in particular
-  # the chromeos.chrome waterfall).
-  # See crbug.com/406940
+  # Look up the buildbot waterfall.
   wfall = os.environ.get('BUILDBOT_MASTERNAME', '')
-  if not wfall in waterfall.CIDB_KNOWN_WATERFALLS:
+
+  if not wfall:
     return _ENVIRONMENT_STANDALONE
 
   # TODO(akeshet): Clean up this code once we have better defined flags to

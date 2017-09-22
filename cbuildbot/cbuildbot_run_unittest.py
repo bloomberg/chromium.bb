@@ -350,7 +350,7 @@ class BuilderRunTest(_BuilderRunTestCase):
     self.assertFalse(run.InEmailReportingEnvironment())
 
     run.attrs.metadata.UpdateWithDict(
-        {'buildbot-master-name': waterfall.WATERFALL_BRILLO})
+        {'buildbot-master-name': waterfall.WATERFALL_INTERNAL})
     self.assertTrue(run.InEmailReportingEnvironment())
 
 

@@ -162,11 +162,6 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     self._Prepare(build_id=None, master_build_id=master_build_id)
 
-  def testUnknownWaterfall(self):
-    """Test that an assertion is thrown if master name is not valid."""
-    os.environ['BUILDBOT_MASTERNAME'] = 'gibberish'
-    self.assertRaises(failures_lib.StepFailure, self.RunStage)
-
   def testPerformStage(self):
     """Test that a normal run of the stage does a database insert."""
     self.RunStage()

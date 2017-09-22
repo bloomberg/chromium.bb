@@ -10,11 +10,8 @@ WATERFALL_INFRA = 'chromeos.infra'
 WATERFALL_TRYBOT = 'chromiumos.tryserver'
 WATERFALL_RELEASE = 'chromeos_release'
 WATERFALL_BRANCH = 'chromeos.branch'
-# These waterfalls are not yet using cidb.
 WATERFALL_CHROMIUM = 'chromiumos.chromium'
 WATERFALL_CHROME = 'chromeos.chrome'
-WATERFALL_BRILLO = 'internal.client.brillo'
-WATERFALL_WEAVE = 'internal.client.weave'
 
 # These waterfalls should send email reports regardless of cidb connection.
 EMAIL_WATERFALLS = (
@@ -22,19 +19,7 @@ EMAIL_WATERFALLS = (
     WATERFALL_EXTERNAL,
     WATERFALL_RELEASE,
     WATERFALL_BRANCH,
-    WATERFALL_BRILLO,
-    WATERFALL_WEAVE,
 )
-
-CIDB_KNOWN_WATERFALLS = (WATERFALL_INTERNAL,
-                         WATERFALL_EXTERNAL,
-                         WATERFALL_TRYBOT,
-                         WATERFALL_RELEASE,
-                         WATERFALL_BRANCH,
-                         WATERFALL_CHROMIUM,
-                         WATERFALL_CHROME,)
-
-ALL_WATERFALLS = CIDB_KNOWN_WATERFALLS
 
 # URLs to the various waterfalls.
 BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
