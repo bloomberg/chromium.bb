@@ -885,13 +885,25 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   // During initialization we are allowed to set any texture parameters.
   EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
 
+  std::unique_ptr<TextureStateTrackingContext> child_context_owned(
+      new TextureStateTrackingContext);
+
+  auto child_context_provider =
+      cc::TestContextProvider::Create(std::move(child_context_owned));
+  ASSERT_TRUE(child_context_provider->BindToCurrentThread());
+  auto child_resource_provider =
+      cc::FakeResourceProvider::Create<cc::LayerTreeResourceProvider>(
+          child_context_provider.get(), shared_bitmap_manager.get());
+
   RenderPass* root_pass =
       cc::AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(100, 100),
                         gfx::Transform(), cc::FilterOperations());
   gpu::SyncToken mailbox_sync_token;
-  AddOneOfEveryQuadType(root_pass, resource_provider.get(), 0,
-                        &mailbox_sync_token);
+  AddOneOfEveryQuadTypeInDisplayResourceProvider(
+      root_pass, resource_provider.get(), child_resource_provider.get(), 0,
+      &mailbox_sync_token);
 
+  EXPECT_EQ(12u, resource_provider->num_resources());
   renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
 
   // Set up expected texture filter state transitions that match the quads
@@ -899,11 +911,19 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   Mock::VerifyAndClearExpectations(context);
   {
     InSequence sequence;
-
-    // The sync points for all quads are waited on first. This sync point is
-    // for a texture quad drawn later in the frame.
+    // The verified flush flag will be set by
+    // cc::LayerTreeResourceProvider::PrepareSendToParent. Before checking if
+    // the gpu::SyncToken matches, set this flag first.
+    mailbox_sync_token.SetVerifyFlush();
+    // In AddOneOfEveryQuadTypeInDisplayResourceProvider, resources are added
+    // into RenderPass with the below order: resource6, resource1, resource8
+    // (with mailbox), resource2, resource3, resource4, resource9, resource10,
+    // resource11, resource12. resource8 has its own mailbox mailbox_sync_token.
+    // The rest resources share a common default sync token.
+    EXPECT_CALL(*context, waitSyncToken(_)).Times(2);
     EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(mailbox_sync_token)))
         .Times(1);
+    EXPECT_CALL(*context, waitSyncToken(_)).Times(7);
 
     // yuv_quad is drawn with the default linear filter.
     EXPECT_CALL(*context, drawElements(_, _, _, _));
@@ -914,17 +934,9 @@ TEST_F(GLRendererTest, ActiveTextureState) {
                                         GL_NEAREST));
     EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
                                         GL_NEAREST));
-    EXPECT_CALL(*context, drawElements(_, _, _, _));
-
-    // transformed_tile_quad uses GL_LINEAR.
-    EXPECT_CALL(*context, drawElements(_, _, _, _));
-
-    // scaled_tile_quad also uses GL_LINEAR.
-    EXPECT_CALL(*context, drawElements(_, _, _, _));
-
     // The remaining quads also use GL_LINEAR because nearest neighbor
     // filtering is currently only used with tile quads.
-    EXPECT_CALL(*context, drawElements(_, _, _, _)).Times(5);
+    EXPECT_CALL(*context, drawElements(_, _, _, _)).Times(8);
   }
 
   gfx::Size viewport_size(100, 100);
