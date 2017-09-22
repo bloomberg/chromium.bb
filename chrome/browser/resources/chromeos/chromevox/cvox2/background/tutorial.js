@@ -159,17 +159,17 @@ Tutorial.prototype = {
     delete sessionStorage['tutorial_page_pos'];
     this.page = -1;
     this.showPage_([
-      {msgid: 'update_56_title', heading: true},
-      {msgid: 'update_56_intro'},
+      {msgid: 'update_63_title', heading: true},
+      {msgid: 'update_63_intro'},
       {
         list: true,
         items: [
-          {msgid: 'update_56_item_1', listItem: true},
-          {msgid: 'update_56_item_2', listItem: true},
-          {msgid: 'update_56_item_3', listItem: true},
+          {msgid: 'update_63_item_1', listItem: true},
+          {msgid: 'update_63_item_2', listItem: true},
+          {msgid: 'update_63_item_3', listItem: true},
         ],
       },
-      {msgid: 'update_56_OUTTRO'},
+      {msgid: 'update_63_OUTTRO'},
     ]);
   },
 
