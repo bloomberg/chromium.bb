@@ -223,11 +223,25 @@ public class OfflinePageBridge {
      * @param namespace The string form of the namespace to query.
      * @return A list of {@link OfflinePageItem} matching the provided namespace, or an empty list
      * if none exist.
+     * TODO(fgorski): This method will be removed, once all uses are converted to
+     * #getPageByNamespace(String, Callback<OfflinePageItem>).
      */
     public void getPagesForNamespace(
             final String namespace, final Callback<List<OfflinePageItem>> callback) {
+        getPagesByNamespace(namespace, callback);
+    }
+
+    /**
+     * Gets the offline pages associated with the provided namespace.
+     *
+     * @param namespace The string form of the namespace to query.
+     * @return A list of {@link OfflinePageItem} matching the provided namespace, or an empty list
+     * if none exist.
+     */
+    public void getPagesByNamespace(
+            final String namespace, final Callback<List<OfflinePageItem>> callback) {
         List<OfflinePageItem> result = new ArrayList<>();
-        nativeGetPagesForNamespace(mNativeOfflinePageBridge, result, namespace, callback);
+        nativeGetPagesByNamespace(mNativeOfflinePageBridge, result, namespace, callback);
     }
 
     /**
@@ -728,7 +742,7 @@ public class OfflinePageBridge {
     native void nativeGetPagesByRequestOrigin(long nativeOfflinePageBridge,
             List<OfflinePageItem> result, String requestOrigin,
             Callback<List<OfflinePageItem>> callback);
-    native void nativeGetPagesForNamespace(long nativeOfflinePageBridge,
+    native void nativeGetPagesByNamespace(long nativeOfflinePageBridge,
             List<OfflinePageItem> result, String nameSpace,
             Callback<List<OfflinePageItem>> callback);
     @VisibleForTesting
