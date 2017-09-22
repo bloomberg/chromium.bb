@@ -63,24 +63,6 @@ namespace content {
 
 namespace {
 
-// A provider of services for Geolocation.
-class ShellGeolocationDelegate : public device::GeolocationDelegate {
- public:
-  ShellGeolocationDelegate() = default;
-
-  // Since content shell is a test executable, rather than an end-user program,
-  // don't make calls to the network geolocation API.
-  bool UseNetworkLocationProviders() override { return false; }
-
-  scoped_refptr<device::AccessTokenStore> CreateAccessTokenStore() final {
-    NOTREACHED() << "No network geolocation for content shell";
-    return nullptr;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellGeolocationDelegate);
-};
-
 GURL GetStartupURL() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kContentBrowserTest))
@@ -195,8 +177,6 @@ int ShellBrowserMainParts::PreCreateThreads() {
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new ShellNetLog("content_shell"));
   InitializeBrowserContexts();
-  device::GeolocationProvider::SetGeolocationDelegate(
-      new ShellGeolocationDelegate());
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
   ShellDevToolsManagerDelegate::StartHttpHandler(browser_context_.get());

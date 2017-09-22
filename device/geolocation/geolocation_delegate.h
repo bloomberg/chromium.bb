@@ -20,12 +20,9 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationDelegate {
  public:
   virtual ~GeolocationDelegate() {}
 
-  // Returns true if the location API should use network-based location
-  // approximation in addition to the system provider, if any.
-  virtual bool UseNetworkLocationProviders();
-
-  // Creates a new AccessTokenStore for geolocation. May return nullptr.
-  // Won't be called unless UseNetworkLocationProviders() is true.
+  // Creates a new AccessTokenStore for geolocation. May return nullptr, in
+  // which case network location providers are not used.
+  // Default implementation returns nullptr.
   virtual scoped_refptr<AccessTokenStore> CreateAccessTokenStore();
 
   // Allows an embedder to return its own LocationProvider implementation.

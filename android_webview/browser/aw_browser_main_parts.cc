@@ -46,27 +46,6 @@
 #include "ui/gl/gl_surface.h"
 
 namespace android_webview {
-namespace {
-
-// A provider of Geolocation services to override AccessTokenStore.
-class AwGeolocationDelegate : public device::GeolocationDelegate {
- public:
-  AwGeolocationDelegate() = default;
-
-  // Android doesn't use NetworkLocationProvider (the capability is folded into
-  // the system location provider).
-  bool UseNetworkLocationProviders() override { return false; }
-
-  scoped_refptr<device::AccessTokenStore> CreateAccessTokenStore() final {
-    NOTREACHED() << "No network geolocation for Android webview";
-    return nullptr;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AwGeolocationDelegate);
-};
-
-}  // anonymous namespace
 
 AwBrowserMainParts::AwBrowserMainParts(AwContentBrowserClient* browser_client)
     : browser_client_(browser_client) {
@@ -143,9 +122,6 @@ int AwBrowserMainParts::PreCreateThreads() {
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
   browser_client_->InitBrowserContext()->PreMainMessageLoopRun();
-
-  device::GeolocationProvider::SetGeolocationDelegate(
-      new AwGeolocationDelegate());
 
   content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 
