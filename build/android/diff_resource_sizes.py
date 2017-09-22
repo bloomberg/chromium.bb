@@ -78,16 +78,23 @@ def AddIntermediateResults(chartjson, base_results, diff_results):
 
 
 def _CreateArgparser():
+  def chromium_path(arg):
+    if arg.startswith('//'):
+      return os.path.join(host_paths.DIR_SOURCE_ROOT, arg[2:])
+    return arg
+
   argparser = argparse.ArgumentParser(
       description='Diff resource sizes of two APKs. Arguments not listed here '
                   'will be passed on to both invocations of resource_sizes.py.')
   argparser.add_argument('--chromium-output-directory-base',
                          dest='out_dir_base',
+                         type=chromium_path,
                          help='Location of the build artifacts for the base '
                               'APK, i.e. what the size increase/decrease will '
                               'be measured from.')
   argparser.add_argument('--chromium-output-directory-diff',
                          dest='out_dir_diff',
+                         type=chromium_path,
                          help='Location of the build artifacts for the diff '
                               'APK.')
   argparser.add_argument('--chartjson',
@@ -99,13 +106,16 @@ def _CreateArgparser():
                               'runs in the chartjson output.')
   argparser.add_argument('--output-dir',
                          default='.',
+                         type=chromium_path,
                          help='Directory to save chartjson to.')
   argparser.add_argument('--base-apk',
                          required=True,
+                         type=chromium_path,
                          help='Path to the base APK, i.e. what the size '
                               'increase/decrease will be measured from.')
   argparser.add_argument('--diff-apk',
                          required=True,
+                         type=chromium_path,
                          help='Path to the diff APK, i.e. the APK whose size '
                               'increase/decrease will be measured against the '
                               'base APK.')
