@@ -637,6 +637,11 @@ const char kLogGpuControlListDecisions[]    = "log-gpu-control-list-decisions";
 // INFO = 0, WARNING = 1, LOG_ERROR = 2, LOG_FATAL = 3.
 const char kLoggingLevel[]                  = "log-level";
 
+// Overrides the default file name to use for general-purpose logging (does not
+// affect which events are logged). Currently supported only in app_shell.
+// TODO(crbug.com/760431): Make this work in chrome and content_shell too.
+const char kLogFile[] = "log-file";
+
 // Enables saving net log events to a file and sets the file name to use.
 const char kLogNetLog[]                     = "log-net-log";
 
