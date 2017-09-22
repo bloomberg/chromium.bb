@@ -278,11 +278,6 @@ cr.define('cr.ui.login', function() {
     },
 
     set headerHidden(hidden) {
-      if (this.showingViewsBasedShelf && !hidden) {
-        // Callers should not use this function to show header bar if
-        // views-based shelf is enabled.
-        return;
-      }
       $('login-header-bar').hidden = hidden;
     },
 
