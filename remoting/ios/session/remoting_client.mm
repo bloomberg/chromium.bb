@@ -133,14 +133,20 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
         }
         strongSelf->_secretFetchedCallback = secret_fetched_callback;
         strongSelf->_sessionDetails.state = SessionPinPrompt;
-        [[NSNotificationCenter defaultCenter]
-            postNotificationName:kHostSessionStatusChanged
-                          object:weakSelf
-                        userInfo:@{
-                          kSessionDetails : strongSelf->_sessionDetails,
-                          kSessionSupportsPairing :
-                              [NSNumber numberWithBool:pairing_supported],
-                        }];
+
+        // Notification will be received on the thread they are posted, so we
+        // need to post the notification on UI thread.
+        strongSelf->_runtime->ui_task_runner()->PostTask(
+            FROM_HERE, base::BindBlockArc(^() {
+              [NSNotificationCenter.defaultCenter
+                  postNotificationName:kHostSessionStatusChanged
+                                object:weakSelf
+                              userInfo:@{
+                                kSessionDetails : strongSelf->_sessionDetails,
+                                kSessionSupportsPairing :
+                                    [NSNumber numberWithBool:pairing_supported],
+                              }];
+            }));
       });
 
   _audioPlayer = remoting::AudioPlayerIos::CreateAudioPlayer(
