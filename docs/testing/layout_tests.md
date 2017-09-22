@@ -538,9 +538,6 @@ See
 [bugs with the component Blink>Infra](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3ABlink%3EInfra)
 for issues related to Blink tools, include the layout test runner.
 
-* Windows and Linux: Do not copy and paste while the layout tests are running,
-  as it may interfere with the editing/pasteboard and other clipboard-related
-  tests. (Mac tests swizzle NSClipboard to avoid any conflicts).
 * If QuickTime is not installed, the plugin tests
   `fast/dom/object-embed-plugin-scripting.html` and
   `plugins/embed-attributes-setting.html` are expected to fail.
