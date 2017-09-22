@@ -18,7 +18,7 @@ const char kNoSandbox[] = "none";
 const char kNetworkSandbox[] = "network";
 const char kPpapiSandbox[] = "ppapi";
 const char kUtilitySandbox[] = "utility";
-const char kWidevineSandbox[] = "widevine";
+const char kCdmSandbox[] = "cdm";
 
 }  // namespace
 
@@ -60,12 +60,12 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
       command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
                                       kNetworkSandbox);
       break;
-    case SANDBOX_TYPE_WIDEVINE:
+    case SANDBOX_TYPE_CDM:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
       DCHECK(!command_line->HasSwitch(switches::kUtilityProcessSandboxType));
       command_line->AppendSwitchASCII(switches::kUtilityProcessSandboxType,
-                                      kWidevineSandbox);
+                                      kCdmSandbox);
       break;
     default:
       break;
@@ -112,8 +112,8 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
     return SANDBOX_TYPE_NETWORK;
   if (sandbox_string == kPpapiSandbox)
     return SANDBOX_TYPE_PPAPI;
-  if (sandbox_string == kWidevineSandbox)
-    return SANDBOX_TYPE_WIDEVINE;
+  if (sandbox_string == kCdmSandbox)
+    return SANDBOX_TYPE_CDM;
   return SANDBOX_TYPE_UTILITY;
 }
 

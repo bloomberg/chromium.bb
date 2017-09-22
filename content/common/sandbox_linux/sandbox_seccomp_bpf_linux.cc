@@ -25,13 +25,13 @@
 
 #include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
+#include "content/common/sandbox_linux/bpf_cdm_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_cros_amd_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_ppapi_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_renderer_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_utility_policy_linux.h"
-#include "content/common/sandbox_linux/bpf_widevine_policy_linux.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
@@ -137,7 +137,7 @@ void RunSandboxSanityChecks(SandboxType sandbox_type) {
     case SANDBOX_TYPE_RENDERER:
     case SANDBOX_TYPE_GPU:
     case SANDBOX_TYPE_PPAPI:
-    case SANDBOX_TYPE_WIDEVINE: {
+    case SANDBOX_TYPE_CDM: {
       int syscall_ret;
       errno = 0;
 
@@ -198,8 +198,8 @@ bool StartBPFSandbox(SandboxType sandbox_type,
     case SANDBOX_TYPE_UTILITY:
       policy = std::make_unique<UtilityProcessPolicy>();
       break;
-    case SANDBOX_TYPE_WIDEVINE:
-      policy = std::make_unique<WidevineProcessPolicy>();
+    case SANDBOX_TYPE_CDM:
+      policy = std::make_unique<CdmProcessPolicy>();
       break;
     case SANDBOX_TYPE_NO_SANDBOX:
     default:
