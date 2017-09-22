@@ -344,6 +344,7 @@ static void setup_frame(AV1_COMP *cpi) {
     cpi->refresh_golden_frame = 1;
     cpi->refresh_alt_ref_frame = 1;
     av1_zero(cpi->interp_filter_selected);
+    set_sb_size(cm, select_sb_size(cpi));
   } else {
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
     if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
@@ -380,8 +381,6 @@ static void setup_frame(AV1_COMP *cpi) {
 #endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
   cpi->vaq_refresh = 0;
-
-  set_sb_size(cm, select_sb_size(cpi));
 }
 
 static void enc_setup_mi(AV1_COMMON *cm) {

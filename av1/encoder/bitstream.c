@@ -4319,6 +4319,20 @@ void write_sequence_header(
 }
 #endif
 
+static void write_sb_size(const AV1_COMMON *cm,
+                          struct aom_write_bit_buffer *wb) {
+  (void)cm;
+  (void)wb;
+  assert(cm->mib_size == mi_size_wide[cm->sb_size]);
+  assert(cm->mib_size == 1 << cm->mib_size_log2);
+#if CONFIG_EXT_PARTITION
+  assert(cm->sb_size == BLOCK_128X128 || cm->sb_size == BLOCK_64X64);
+  aom_wb_write_bit(wb, cm->sb_size == BLOCK_128X128 ? 1 : 0);
+#else
+  assert(cm->sb_size == BLOCK_64X64);
+#endif  // CONFIG_EXT_PARTITION
+}
+
 #if CONFIG_EXT_INTER
 static void write_compound_tools(const AV1_COMMON *cm,
                                  struct aom_write_bit_buffer *wb) {
@@ -4538,6 +4552,8 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     write_sync_code(wb);
     write_bitdepth_colorspace_sampling(cm, wb);
     write_frame_size(cm, wb);
+    write_sb_size(cm, wb);
+
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
     assert(cpi->common.ans_window_size_log2 >= 8);
     assert(cpi->common.ans_window_size_log2 < 24);
@@ -4684,15 +4700,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   aom_wb_write_literal(wb, cm->frame_context_idx, FRAME_CONTEXTS_LOG2);
 #endif
-  assert(cm->mib_size == mi_size_wide[cm->sb_size]);
-  assert(cm->mib_size == 1 << cm->mib_size_log2);
-#if CONFIG_EXT_PARTITION
-  assert(cm->sb_size == BLOCK_128X128 || cm->sb_size == BLOCK_64X64);
-  aom_wb_write_bit(wb, cm->sb_size == BLOCK_128X128 ? 1 : 0);
-#else
-  assert(cm->sb_size == BLOCK_64X64);
-#endif  // CONFIG_EXT_PARTITION
-
   encode_loopfilter(cm, wb);
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);
@@ -4829,8 +4836,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   if (cm->frame_type == KEY_FRAME) {
     write_sync_code(wb);
-
     write_frame_size(cm, wb);
+    write_sb_size(cm, wb);
+
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
     assert(cpi->common.ans_window_size_log2 >= 8);
     assert(cpi->common.ans_window_size_log2 < 24);
@@ -5041,15 +5049,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #if !CONFIG_NO_FRAME_CONTEXT_SIGNALING
   aom_wb_write_literal(wb, cm->frame_context_idx, FRAME_CONTEXTS_LOG2);
 #endif
-  assert(cm->mib_size == mi_size_wide[cm->sb_size]);
-  assert(cm->mib_size == 1 << cm->mib_size_log2);
-#if CONFIG_EXT_PARTITION
-  assert(cm->sb_size == BLOCK_128X128 || cm->sb_size == BLOCK_64X64);
-  aom_wb_write_bit(wb, cm->sb_size == BLOCK_128X128 ? 1 : 0);
-#else
-  assert(cm->sb_size == BLOCK_64X64);
-#endif  // CONFIG_EXT_PARTITION
-
   encode_loopfilter(cm, wb);
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);

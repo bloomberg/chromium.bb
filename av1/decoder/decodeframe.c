@@ -3085,6 +3085,15 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
 }
 
+static void setup_sb_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
+  (void)rb;
+#if CONFIG_EXT_PARTITION
+  set_sb_size(cm, aom_rb_read_bit(rb) ? BLOCK_128X128 : BLOCK_64X64);
+#else
+  set_sb_size(cm, BLOCK_64X64);
+#endif  // CONFIG_EXT_PARTITION
+}
+
 static INLINE int valid_ref_frame_img_fmt(aom_bit_depth_t ref_bit_depth,
                                           int ref_xss, int ref_yss,
                                           aom_bit_depth_t this_bit_depth,
@@ -4720,6 +4729,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     }
 
     setup_frame_size(cm, rb);
+    setup_sb_size(cm, rb);
+
     if (pbi->need_resync) {
       memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
       pbi->need_resync = 0;
@@ -4966,12 +4977,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
   if (frame_is_intra_only(cm) || cm->error_resilient_mode)
     av1_setup_past_independence(cm);
-
-#if CONFIG_EXT_PARTITION
-  set_sb_size(cm, aom_rb_read_bit(rb) ? BLOCK_128X128 : BLOCK_64X64);
-#else
-  set_sb_size(cm, BLOCK_64X64);
-#endif  // CONFIG_EXT_PARTITION
 
   setup_loopfilter(cm, rb);
   setup_quantization(cm, rb);
