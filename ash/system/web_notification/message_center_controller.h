@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_MESSAGE_CENTER_CONTROLLER_H_
-#define ASH_MESSAGE_CENTER_MESSAGE_CENTER_CONTROLLER_H_
+#ifndef ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_CONTROLLER_H_
+#define ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_CONTROLLER_H_
 
 #include "ash/system/web_notification/fullscreen_notification_blocker.h"
 #include "ash/system/web_notification/inactive_user_notification_blocker.h"
@@ -31,4 +31,4 @@ class MessageCenterController {
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_MESSAGE_CENTER_CONTROLLER_H_
+#endif  // ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_CONTROLLER_H_

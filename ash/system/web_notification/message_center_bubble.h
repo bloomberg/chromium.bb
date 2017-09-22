@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MESSAGE_CENTER_MESSAGE_CENTER_BUBBLE_H_
-#define ASH_MESSAGE_CENTER_MESSAGE_CENTER_BUBBLE_H_
+#ifndef ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_BUBBLE_H_
+#define ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_BUBBLE_H_
 
 #include <stddef.h>
 
@@ -19,11 +19,10 @@ class TrayBubbleView;
 namespace message_center {
 class MessageCenter;
 class MessageCenterTray;
+class MessageCenterView;
 }  // namespace message_center
 
 namespace ash {
-
-class MessageCenterView;
 
 // Bubble for message center.
 class MessageCenterBubble : public views::WidgetObserver,
@@ -64,7 +63,7 @@ class MessageCenterBubble : public views::WidgetObserver,
   message_center::MessageCenter* message_center_;
   message_center::MessageCenterTray* tray_;
   views::TrayBubbleView* bubble_view_ = nullptr;
-  MessageCenterView* message_center_view_ = nullptr;
+  message_center::MessageCenterView* message_center_view_ = nullptr;
 
   // Use settings view as the initially visible content if true.
   bool initially_settings_visible_ = false;
@@ -78,4 +77,4 @@ class MessageCenterBubble : public views::WidgetObserver,
 
 }  // namespace ash
 
-#endif  // ASH_MESSAGE_CENTER_MESSAGE_CENTER_BUBBLE_H_
+#endif  // ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_BUBBLE_H_

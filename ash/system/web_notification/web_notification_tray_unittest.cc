@@ -7,8 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/message_center/message_center_bubble.h"
-#include "ash/message_center/message_center_view.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
@@ -21,6 +19,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
+#include "ash/system/web_notification/message_center_bubble.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/ptr_util.h"
@@ -213,7 +212,8 @@ using message_center::NotificationList;
 
 TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
   // Add the max visible notifications +1, ensure the correct visible number.
-  size_t notifications_to_add = MessageCenterView::kMaxVisibleNotifications + 1;
+  size_t notifications_to_add =
+      message_center::kMaxVisibleMessageCenterNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = base::StringPrintf("test_id%d", static_cast<int>(i));
     AddNotification(id);
@@ -224,7 +224,7 @@ TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
   EXPECT_TRUE(GetTray()->message_center_bubble() != NULL);
   EXPECT_EQ(notifications_to_add, GetMessageCenter()->NotificationCount());
   EXPECT_EQ(
-      MessageCenterView::kMaxVisibleNotifications,
+      message_center::kMaxVisibleMessageCenterNotifications,
       GetTray()->GetMessageCenterBubbleForTest()->NumMessageViewsForTest());
 }
 
