@@ -858,9 +858,6 @@
       'filepath': 'third_party/WebKit/Source/platform/feature_policy/|' \
                   'third_party/WebKit/Source/bindings/core/v8/ConditionalFeatures',
     },
-    'feedback_ui': {
-      'filepath': 'chrome/browser/resources/(md_)?feedback/'
-    },
     'fileapi': {
       'filepath': 'file_system/|' \
                   'fileapi/'
@@ -2011,7 +2008,6 @@
                   'extensions-reviews@chromium.org'],
     'feature_policy': ['loonybear@chromium.org',
                        'iclelland+watch@chromium.org'],
-    'feedback_ui': ['apacible+watch@chromium.org'],
     'fileapi': ['kinuko+fileapi@chromium.org',
                 'nhiroki@chromium.org',
                 'tzik@chromium.org'],
