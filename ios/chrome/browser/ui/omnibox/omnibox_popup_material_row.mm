@@ -60,13 +60,13 @@ const CGFloat kAppendButtonSize = 48.0;
         [[OmniboxPopupTruncatingLabel alloc] initWithFrame:CGRectZero];
     _textTruncatingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _textTruncatingLabel.userInteractionEnabled = NO;
-    [self addSubview:_textTruncatingLabel];
+    [self.contentView addSubview:_textTruncatingLabel];
 
     _detailTruncatingLabel =
         [[OmniboxPopupTruncatingLabel alloc] initWithFrame:CGRectZero];
     _detailTruncatingLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _detailTruncatingLabel.userInteractionEnabled = NO;
-    [self addSubview:_detailTruncatingLabel];
+    [self.contentView addSubview:_detailTruncatingLabel];
 
     // Answers use a UILabel with NSLineBreakByTruncatingTail to produce a
     // truncation with an ellipse instead of fading on multi-line text.
@@ -74,14 +74,14 @@ const CGFloat kAppendButtonSize = 48.0;
     _detailAnswerLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _detailAnswerLabel.userInteractionEnabled = NO;
     _detailAnswerLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-    [self addSubview:_detailAnswerLabel];
+    [self.contentView addSubview:_detailAnswerLabel];
 
     _appendButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [_appendButton setContentMode:UIViewContentModeRight];
     [self updateAppendButtonImages];
     // TODO(justincohen): Consider using the UITableViewCell's accessory view.
     // The current implementation is from before using a UITableViewCell.
-    [self addSubview:_appendButton];
+    [self.contentView addSubview:_appendButton];
 
     // Leading icon is only displayed on iPad.
     if (IsIPadIdiom()) {
@@ -91,13 +91,13 @@ const CGFloat kAppendButtonSize = 48.0;
 
       // TODO(justincohen): Consider using the UITableViewCell's image view.
       // The current implementation is from before using a UITableViewCell.
-      [self addSubview:_imageView];
+      [self.contentView addSubview:_imageView];
     }
 
     _answerImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _answerImageView.userInteractionEnabled = NO;
     _answerImageView.contentMode = UIViewContentModeScaleAspectFit;
-    [self addSubview:_answerImageView];
+    [self.contentView addSubview:_answerImageView];
   }
   return self;
 }
