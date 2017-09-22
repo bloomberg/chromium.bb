@@ -175,7 +175,8 @@ class GmailServer(MailServer):
       payload = {'raw': base64.urlsafe_b64encode(message.as_string())}
       service.users().messages().send(userId='me', body=payload).execute()
       return True
-    except (apiclient_errors.HttpError, httplib.HTTPException) as error:
+    except (apiclient_errors.HttpError, httplib.HTTPException,
+            client.Error) as error:
       logging.warning('Could not send email: %s', error)
       return False
 
