@@ -497,6 +497,7 @@ junit_binary("content_junit_tests") {
   java_files = [
     "junit/src/org/chromium/content/browser/BindingManagerImplTest.java",
     "junit/src/org/chromium/content/browser/MenuDescriptorTest.java",
+    "junit/src/org/chromium/content/browser/SelectionPopupControllerTest.java",
     "junit/src/org/chromium/content/browser/SpareChildConnectionTest.java",
     "junit/src/org/chromium/content/browser/androidoverlay/DialogOverlayCoreTest.java",
     "junit/src/org/chromium/content/browser/input/RangeTest.java",
@@ -513,6 +514,7 @@ junit_binary("content_junit_tests") {
     "//media/mojo/interfaces:interfaces_java",
     "//mojo/public/java:bindings_java",
     "//third_party/WebKit/public:android_mojo_bindings_java",
+    "//ui/android:ui_java",
     "//ui/gfx/geometry/mojo:mojo_java",
   ]
 }

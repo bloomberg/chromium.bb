@@ -45,7 +45,7 @@ public class SmartSelectionClient implements SelectionClient {
 
     private long mNativeSmartSelectionClient;
     private SmartSelectionProvider mProvider;
-    private SmartSelectionProvider.ResultCallback mCallback;
+    private ResultCallback mCallback;
 
     public static void setEnabled(boolean enabled) {
         sEnabled = enabled;
@@ -55,15 +55,15 @@ public class SmartSelectionClient implements SelectionClient {
      * Creates the SmartSelectionClient. Returns null in case SmartSelectionProvider does not exist
      * in the system.
      */
-    public static SmartSelectionClient create(SmartSelectionProvider.ResultCallback callback,
-            WindowAndroid windowAndroid, WebContents webContents) {
+    public static SmartSelectionClient create(
+            ResultCallback callback, WindowAndroid windowAndroid, WebContents webContents) {
         if (!sEnabled) return null;
         SmartSelectionProvider provider = new SmartSelectionProvider(callback, windowAndroid);
         return new SmartSelectionClient(provider, callback, webContents);
     }
 
-    private SmartSelectionClient(SmartSelectionProvider provider,
-            SmartSelectionProvider.ResultCallback callback, WebContents webContents) {
+    private SmartSelectionClient(
+            SmartSelectionProvider provider, ResultCallback callback, WebContents webContents) {
         mProvider = provider;
         mCallback = callback;
         mNativeSmartSelectionClient = nativeInit(webContents);
@@ -132,7 +132,7 @@ public class SmartSelectionClient implements SelectionClient {
     private void onSurroundingTextReceived(
             @RequestType int callbackData, String text, int start, int end) {
         if (!textHasValidSelection(text, start, end)) {
-            mCallback.onClassified(new SmartSelectionProvider.Result());
+            mCallback.onClassified(new Result());
             return;
         }
 

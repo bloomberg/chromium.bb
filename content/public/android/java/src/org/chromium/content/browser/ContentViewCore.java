@@ -480,6 +480,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
         mSelectionPopupController = new SelectionPopupController(
                 mContext, windowAndroid, webContents, mContainerView, mRenderCoordinates);
+        mSelectionPopupController.setSelectionClient(SmartSelectionClient.create(
+                mSelectionPopupController.getResultCallback(), windowAndroid, webContents));
         mSelectionPopupController.setCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
         mSelectionPopupController.setContainerView(mContainerView);
 
@@ -2136,7 +2138,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      * Sets TextClassifier for Smart Text selection.
      */
     public void setTextClassifier(TextClassifier textClassifier) {
-        mSelectionPopupController.setTextClassifier(textClassifier);
+        SelectionClient client = mSelectionPopupController.getSelectionClient();
+        if (client != null) client.setTextClassifier(textClassifier);
     }
 
     /**
@@ -2145,14 +2148,16 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      * classifier.
      */
     public TextClassifier getTextClassifier() {
-        return mSelectionPopupController.getTextClassifier();
+        SelectionClient client = mSelectionPopupController.getSelectionClient();
+        return client == null ? null : client.getTextClassifier();
     }
 
     /**
      * Returns the TextClassifier which has been set with setTextClassifier(), or null.
      */
     public TextClassifier getCustomTextClassifier() {
-        return mSelectionPopupController.getCustomTextClassifier();
+        SelectionClient client = mSelectionPopupController.getSelectionClient();
+        return client == null ? null : client.getCustomTextClassifier();
     }
 
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
