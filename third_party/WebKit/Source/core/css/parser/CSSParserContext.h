@@ -55,6 +55,8 @@ class CORE_EXPORT CSSParserContext
       ReferrerPolicy referrer_policy_override,
       const WTF::TextEncoding& charset = WTF::TextEncoding(),
       SelectorProfile = kDynamicProfile);
+  // This is used for workers, where we don't have a document.
+  static CSSParserContext* Create(const ExecutionContext&);
 
   bool operator==(const CSSParserContext&) const;
   bool operator!=(const CSSParserContext& other) const {
