@@ -74,7 +74,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return std::isfinite(value) ? value : 0.0;
   }
 
-  virtual PlatformChromeClient* GetChromeClient() const { return 0; }
+  virtual PlatformChromeClient* GetChromeClient() const { return nullptr; }
 
   virtual SmoothScrollSequencer* GetSmoothScrollSequencer() const {
     return nullptr;
@@ -298,10 +298,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   }
 
   virtual GraphicsLayer* LayerForContainer() const;
-  virtual GraphicsLayer* LayerForScrolling() const { return 0; }
-  virtual GraphicsLayer* LayerForHorizontalScrollbar() const { return 0; }
-  virtual GraphicsLayer* LayerForVerticalScrollbar() const { return 0; }
-  virtual GraphicsLayer* LayerForScrollCorner() const { return 0; }
+  virtual GraphicsLayer* LayerForScrolling() const { return nullptr; }
+  virtual GraphicsLayer* LayerForHorizontalScrollbar() const { return nullptr; }
+  virtual GraphicsLayer* LayerForVerticalScrollbar() const { return nullptr; }
+  virtual GraphicsLayer* LayerForScrollCorner() const { return nullptr; }
   bool HasLayerForHorizontalScrollbar() const;
   bool HasLayerForVerticalScrollbar() const;
   bool HasLayerForScrollCorner() const;
