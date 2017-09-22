@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Test "video" as a source for "canvas". assert_equals: expected 9 but got 8
+Harness: the test ran to completion.
+
