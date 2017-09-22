@@ -2442,6 +2442,23 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultipleMix) {
   EXPECT_TRUE(staple_state.include_subdomains);
   EXPECT_EQ(GURL("https://report.badssl.com/staple-upload"),
             staple_state.report_uri);
+
+  sts_state = TransportSecurityState::STSState();
+  pkp_state = TransportSecurityState::PKPState();
+  ct_state = TransportSecurityState::ExpectCTState();
+  staple_state = TransportSecurityState::ExpectStapleState();
+
+  // This should be a simple entry in the context of
+  // TrieWriter::IsSimpleEntry().
+  EXPECT_TRUE(GetStaticDomainState(&state, "simple-entry.example.com",
+                                   &sts_state, &pkp_state));
+  EXPECT_TRUE(sts_state.include_subdomains);
+  EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
+            sts_state.upgrade_mode);
+  EXPECT_FALSE(pkp_state.include_subdomains);
+  EXPECT_FALSE(GetExpectCTState(&state, "simple-entry.example.com", &ct_state));
+  EXPECT_FALSE(
+      GetExpectStapleState(&state, "simple-entry.example.com", &staple_state));
 }
 
 static const struct ExpectStapleErrorResponseData {
