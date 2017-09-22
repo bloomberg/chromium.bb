@@ -326,11 +326,15 @@ ANDROID_MNC_BUILD_TARGETS = {
     'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb)$'),
 
 }
+
+ANDROID_INTERNAL_PATTERN = r'\.zip.internal$'
+
 ANDROID_NYC_BUILD_TARGETS = {
     # TODO(b/29509721): Workaround to roll adb with system image. We want to
     # get rid of this.
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/adb)$'),
     'X86': ('linux-cheets_x86-user', r'\.zip$'),
+    'X86_INTERNAL': ('linux-cheets_x86-user', ANDROID_INTERNAL_PATTERN),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'AOSP_X86_USERDEBUG': ('linux-aosp_cheets_x86-userdebug', r'\.zip$'),
     'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb)$'),
@@ -355,6 +359,7 @@ ARC_BUCKET_ACLS = {
     'AOSP_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'SDK_GOOGLE_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'SDK_GOOGLE_X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
+    'X86_INTERNAL': 'googlestorage_acl_internal.txt',
     'SDK_TOOLS': 'googlestorage_acl_public.txt',
     'XTS': 'googlestorage_acl_cts.txt',
 }
