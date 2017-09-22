@@ -5,14 +5,20 @@
 #include <stddef.h>
 #include <memory>
 
+#include "ash/message_center/notifier_settings_view.h"
+#include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/notifier_settings.h"
-#include "ui/message_center/views/notifier_settings_view.h"
-#include "ui/views/test/views_test_base.h"
 
-namespace message_center {
+using message_center::Notifier;
+using message_center::NotifierGroup;
+using message_center::NotifierId;
+using message_center::NotifierSettingsObserver;
+using message_center::NotifierSettingsProvider;
+
+namespace ash {
 
 namespace {
 
@@ -46,7 +52,7 @@ class TestingNotifierSettingsProvider : public NotifierSettingsProvider {
 
   void SwitchToNotifierGroup(size_t index) override { NOTREACHED(); }
 
-  const message_center::NotifierGroup& GetActiveNotifierGroup() const override {
+  const NotifierGroup& GetActiveNotifierGroup() const override {
     static NotifierGroup group{base::UTF8ToUTF16("Fake name"),
                                base::UTF8ToUTF16("fake@email.com")};
     return group;
@@ -92,7 +98,7 @@ class TestingNotifierSettingsProvider : public NotifierSettingsProvider {
 
 }  // namespace
 
-class NotifierSettingsViewTest : public views::ViewsTestBase {
+class NotifierSettingsViewTest : public AshTestBase {
  public:
   NotifierSettingsViewTest();
   ~NotifierSettingsViewTest() override;
@@ -117,14 +123,14 @@ NotifierSettingsViewTest::NotifierSettingsViewTest() = default;
 NotifierSettingsViewTest::~NotifierSettingsViewTest() = default;
 
 void NotifierSettingsViewTest::SetUp() {
-  views::ViewsTestBase::SetUp();
+  AshTestBase::SetUp();
   notifier_settings_view_ =
       std::make_unique<NotifierSettingsView>(&settings_provider_);
 }
 
 void NotifierSettingsViewTest::TearDown() {
   notifier_settings_view_.reset();
-  views::ViewsTestBase::TearDown();
+  AshTestBase::TearDown();
 }
 
 NotifierSettingsView* NotifierSettingsViewTest::GetView() const {
@@ -152,4 +158,4 @@ TEST_F(NotifierSettingsViewTest, TestLearnMoreButton) {
             *last_settings_button_id);
 }
 
-}  // namespace message_center
+}  // namespace ash

@@ -2,26 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/views/message_list_view.h"
+#include "ash/message_center/message_list_view.h"
 
+#include "ash/message_center/message_center_view.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/message_center_switches.h"
-#include "ui/message_center/views/message_center_view.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace message_center {
+using message_center::MessageView;
+using message_center::Notification;
+using message_center::kMarginBetweenItems;
+
+namespace ash {
 
 namespace {
 const int kAnimateClearingNextNotificationDelayMS = 40;
@@ -33,7 +37,6 @@ MessageListView::MessageListView()
       has_deferred_task_(false),
       clear_all_started_(false),
       animator_(this),
-      quit_message_loop_after_animation_for_test_(false),
       weak_ptr_factory_(this) {
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 1);
@@ -45,11 +48,12 @@ MessageListView::MessageListView()
   // because of the shadow of message view. Use an empty border instead
   // to provide this margin.
   gfx::Insets shadow_insets = MessageView::GetShadowInsets();
-  SetBackground(views::CreateSolidBackground(kMessageCenterBackgroundColor));
+  SetBackground(
+      views::CreateSolidBackground(MessageCenterView::kBackgroundColor));
   SetBorder(views::CreateEmptyBorder(
-      kMarginBetweenItems - shadow_insets.top(), /* top */
+      kMarginBetweenItems - shadow_insets.top(),  /* top */
       kMarginBetweenItems - shadow_insets.left(), /* left */
-      0, /* bottom */
+      0,                                          /* bottom */
       kMarginBetweenItems - shadow_insets.right() /* right */));
   animator_.AddObserver(this);
 }
@@ -255,7 +259,7 @@ void MessageListView::ClearAllClosableNotifications(
     const gfx::Rect& visible_scroll_rect) {
   for (int i = 0; i < child_count(); ++i) {
     // Safe cast since all views in MessageListView are MessageViews.
-    MessageView* child = (MessageView*)child_at(i);
+    MessageView* child = static_cast<MessageView*>(child_at(i));
     if (!child->visible())
       continue;
     if (gfx::IntersectRects(child->bounds(), visible_scroll_rect).IsEmpty())
@@ -332,9 +336,6 @@ void MessageListView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
 
   if (GetWidget())
     GetWidget()->SynthesizeMouseMoveEvent();
-
-  if (quit_message_loop_after_animation_for_test_)
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 bool MessageListView::IsValidChild(const views::View* child) const {
@@ -526,8 +527,9 @@ void MessageListView::AnimateClearingOneNotification() {
   // Schedule to start sliding out next notification after a short delay.
   if (!clearing_all_views_.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&MessageListView::AnimateClearingOneNotification,
-                              weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::Bind(&MessageListView::AnimateClearingOneNotification,
+                   weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(
             kAnimateClearingNextNotificationDelayMS));
   }
@@ -537,4 +539,4 @@ void MessageListView::SetRepositionTargetForTest(const gfx::Rect& target_rect) {
   SetRepositionTarget(target_rect);
 }
 
-}  // namespace message_center
+}  // namespace ash

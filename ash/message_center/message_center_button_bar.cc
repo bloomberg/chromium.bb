@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/views/message_center_button_bar.h"
+#include "ash/message_center/message_center_button_bar.h"
 
+#include "ash/message_center/message_center_view.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -15,9 +17,7 @@
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/message_center_view.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -30,7 +30,10 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
 
-namespace message_center {
+using message_center::MessageCenter;
+using message_center::NotifierSettingsProvider;
+
+namespace ash {
 
 namespace {
 constexpr int kButtonSize = 40;
@@ -58,7 +61,7 @@ views::ToggleImageButton* CreateNotificationCenterButton(
   button->SetFocusForPlatform();
 
   button->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
+      message_center::kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
 
   button->SetPreferredSize(gfx::Size(kButtonSize, kButtonSize));
   return button;
@@ -74,17 +77,15 @@ MessageCenterButtonBar::MessageCenterButtonBar(
     const base::string16& title)
     : message_center_view_(message_center_view),
       message_center_(message_center),
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-      close_bubble_button_(NULL),
-#endif
-      title_arrow_(NULL),
-      notification_label_(NULL),
-      button_container_(NULL),
-      close_all_button_(NULL),
-      settings_button_(NULL),
-      quiet_mode_button_(NULL) {
+      title_arrow_(nullptr),
+      notification_label_(nullptr),
+      button_container_(nullptr),
+      close_all_button_(nullptr),
+      settings_button_(nullptr),
+      quiet_mode_button_(nullptr) {
   SetPaintToLayer();
-  SetBackground(views::CreateSolidBackground(kMessageCenterBackgroundColor));
+  SetBackground(
+      views::CreateSolidBackground(MessageCenterView::kBackgroundColor));
 
   ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
 
@@ -99,7 +100,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   notification_label_ = new views::Label(title);
   notification_label_->SetAutoColorReadabilityEnabled(false);
   notification_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  notification_label_->SetEnabledColor(kRegularTextColor);
+  notification_label_->SetEnabledColor(message_center::kRegularTextColor);
   AddChildView(notification_label_);
 
   button_container_ = new views::View;
@@ -109,7 +110,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       this, IDR_NOTIFICATION_DO_NOT_DISTURB,
       IDR_NOTIFICATION_DO_NOT_DISTURB_HOVER,
       IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED,
-      IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP);
+      IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP);
   quiet_mode_button_->SetToggledImage(
       views::Button::STATE_NORMAL,
       resource_bundle.GetImageSkiaNamed(
@@ -127,7 +128,8 @@ MessageCenterButtonBar::MessageCenterButtonBar(
 
   close_all_button_ = CreateNotificationCenterButton(
       this, IDR_NOTIFICATION_CLEAR_ALL, IDR_NOTIFICATION_CLEAR_ALL_HOVER,
-      IDR_NOTIFICATION_CLEAR_ALL_PRESSED, IDS_MESSAGE_CENTER_CLEAR_ALL);
+      IDR_NOTIFICATION_CLEAR_ALL_PRESSED,
+      IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP);
   close_all_button_->SetImage(
       views::Button::STATE_DISABLED,
       *resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_CLEAR_ALL_DISABLED));
@@ -136,22 +138,8 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   settings_button_ = CreateNotificationCenterButton(
       this, IDR_NOTIFICATION_SETTINGS, IDR_NOTIFICATION_SETTINGS_HOVER,
       IDR_NOTIFICATION_SETTINGS_PRESSED,
-      IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL);
+      IDS_ASH_MESSAGE_CENTER_SETTINGS_BUTTON_TOOLTIP);
   button_container_->AddChildView(settings_button_);
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  close_bubble_button_ = new views::ImageButton(this);
-  close_bubble_button_->SetImage(
-      views::Button::STATE_NORMAL,
-      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_BUBBLE_CLOSE));
-  close_bubble_button_->SetImage(
-      views::Button::STATE_HOVERED,
-      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_BUBBLE_CLOSE_HOVER));
-  close_bubble_button_->SetImage(
-      views::Button::STATE_PRESSED,
-      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_BUBBLE_CLOSE_PRESSED));
-  AddChildView(close_bubble_button_);
-#endif
 
   SetCloseAllButtonEnabled(!settings_initially_visible);
   SetBackArrowVisible(settings_initially_visible);
@@ -165,24 +153,16 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
   column->AddPaddingColumn(0, kFooterLeftMargin);
   if (title_arrow_->visible()) {
     // Column for the left-arrow used to back out of settings.
-    column->AddColumn(views::GridLayout::LEADING,
-                      views::GridLayout::CENTER,
-                      0.0f,
-                      views::GridLayout::FIXED,
-                      kButtonSize,
-                      0);
+    column->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                      0.0f, views::GridLayout::FIXED, kButtonSize, 0);
   } else {
     constexpr int kLeftPaddingWidthForNonArrows = 16;
     column->AddPaddingColumn(0.0f, kLeftPaddingWidthForNonArrows);
   }
 
   // Column for the label "Notifications".
-  column->AddColumn(views::GridLayout::LEADING,
-                    views::GridLayout::CENTER,
-                    0.0f,
-                    views::GridLayout::USE_PREF,
-                    0,
-                    0);
+  column->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0.0f,
+                    views::GridLayout::USE_PREF, 0, 0);
 
   // Fills in the remaining space between "Notifications" and buttons.
   gfx::ImageSkia* settings_image =
@@ -193,22 +173,9 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
   column->AddPaddingColumn(1.0f, image_margin);
 
   // The button area column.
-  column->AddColumn(views::GridLayout::LEADING,
-                    views::GridLayout::CENTER,
-                    0.0f,
-                    views::GridLayout::USE_PREF,
-                    0,
-                    0);
+  column->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0.0f,
+                    views::GridLayout::USE_PREF, 0, 0);
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // The close-bubble button.
-  column->AddColumn(views::GridLayout::LEADING,
-                    views::GridLayout::LEADING,
-                    0.0f,
-                    views::GridLayout::USE_PREF,
-                    0,
-                    0);
-#endif
   constexpr int kFooterRightMargin = 14;
   const int right_margin = std::max(0, kFooterRightMargin - image_margin);
   column->AddPaddingColumn(0, right_margin);
@@ -220,9 +187,6 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
     layout->AddView(title_arrow_);
   layout->AddView(notification_label_);
   layout->AddView(button_container_);
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  layout->AddView(close_bubble_button_);
-#endif
   constexpr int kFooterBottomMargin = 3;
   layout->AddPaddingRow(0, kFooterBottomMargin);
 }
@@ -291,13 +255,9 @@ void MessageCenterButtonBar::ButtonPressed(views::Button* sender,
     else
       message_center()->EnterQuietModeWithExpire(base::TimeDelta::FromDays(1));
     quiet_mode_button_->SetToggled(message_center()->IsQuietMode());
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  } else if (sender == close_bubble_button_) {
-    message_center_view()->tray()->HideMessageCenterBubble();
-#endif
   } else {
     NOTREACHED();
   }
 }
 
-}  // namespace message_center
+}  // namespace ash
