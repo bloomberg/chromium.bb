@@ -1,0 +1,101 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/cr/ui/focus_outline_manager.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-ripple-behavior.html">
+
+<dom-module id="cr-toggle">
+  <template>
+    <style>
+      :host {
+        cursor: pointer;
+        display: block;
+      }
+
+      :host([disabled]) {
+        cursor: initial;
+        pointer-events: none;
+      }
+
+      #container {
+        outline: none;
+        position: relative;
+        width: 34px;
+      }
+
+      #bar {
+        background-color: var(--cr-toggle-unchecked-bar-color, black);
+        border-radius: 8px;
+        height: 12px;
+        left: 3px;
+        opacity: 0.4;
+        position: absolute;
+        top: 2px;
+        transition: background-color linear 80ms;
+        width: 28px;
+        z-index: 0;
+      }
+
+      :host([checked]) #bar {
+        background-color: var(
+            --cr-toggle-checked-bar-color, var(--google-blue-500));
+      }
+
+      :host([disabled]) #bar {
+        background-color: black;
+        opacity: 0.12;
+      }
+
+      #button {
+        background-color: var(
+            --cr-toggle-unchecked-button-color, var(--paper-grey-50));
+        border-radius: 50%;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+        height: 16px;
+        position: relative;
+        transition: transform linear 80ms, background-color linear 80ms;
+        width: 16px;
+        z-index: 1;
+      }
+
+      :host([checked]) #button {
+        background-color: var(
+            --cr-toggle-checked-button-color, var(--google-blue-500));
+        transform: translate3d(18px, 0, 0);
+      }
+
+      :host-context([dir=rtl]):host([checked]) #button {
+        transform: translate3d(-18px, 0, 0);
+      }
+
+      :host([disabled]) #button {
+        background-color: #bdbdbd;
+        opacity: 1;
+      }
+
+      paper-ripple {
+        color: var(--cr-toggle-unchecked-ink-color, var(--primary-text-color));
+        height: 40px;
+        left: -12px;
+        opacity: 0.5;
+        pointer-events: none;
+        top: -12px;
+        transition: color linear 80ms;
+        width: 40px;
+      }
+
+      :host-context([dir=rtl]) paper-ripple {
+        left: auto;
+        right: -12px;
+      }
+
+      :host([checked]) paper-ripple {
+        color: var(--cr-toggle-checked-ink-color, var(--primary-color));
+      }
+    </style>
+    <div id="container" tabindex$="[[tabIndex]]">
+     <div id="bar"></div>
+     <div id="button"></div>
+    </div>
+  </template>
+  <script src="cr_toggle.js"></script>
+</dom-module>

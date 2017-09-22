@@ -112,5 +112,9 @@
       'target_name': 'web_animations',
       'includes': ['../include_js.gypi'],
     },
+    {
+      'target_name': 'pending',
+      'includes': ['../include_js.gypi'],
+    },
   ],
 }

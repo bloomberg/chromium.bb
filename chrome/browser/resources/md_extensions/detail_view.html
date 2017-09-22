@@ -2,8 +2,8 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_toggle_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
@@ -18,8 +18,7 @@
 
 <dom-module id="extensions-detail-view">
   <template>
-    <style include=
-        "iron-flex cr-hidden-style cr-icons action-link paper-toggle-style">
+    <style include="iron-flex cr-hidden-style cr-icons action-link">
       :host {
         --iron-icon-fill-color: var(--paper-grey-600);
         display: block;
@@ -135,11 +134,11 @@
                 icon-class="[[getIndicatorIcon_(data.controlledInfo.type)]]"
                 icon-aria-label="[[data.controlledInfo.type]]">
             </cr-tooltip-icon>
-            <paper-toggle-button id="enable-toggle"
+            <cr-toggle id="enable-toggle"
                 checked="[[isEnabled_(data.state)]]"
                 on-change="onEnableChange_"
                 disabled="[[!isEnableToggleEnabled_(data.*)]]">
-            </paper-toggle-button>
+            </cr-toggle>
           </div>
         </div>
       </div>
@@ -203,33 +202,33 @@
           <template is="dom-if" if="[[data.incognitoAccess.isEnabled]]">
             <div class="control-line">
               <span>$i18n{itemAllowIncognito}</span>
-              <paper-toggle-button id="allow-incognito"
+              <cr-toggle id="allow-incognito"
                   checked="[[data.incognitoAccess.isActive]]"
-                  on-change="onAllowIncognitoChange_"></paper-toggle-button>
+                  on-change="onAllowIncognitoChange_"></cr-toggle>
             </div>
           </template>
           <template is="dom-if" if="[[data.fileAccess.isEnabled]]">
             <div class="control-line">
               <span>$i18n{itemAllowOnFileUrls}</span>
-              <paper-toggle-button id="allow-on-file-urls"
+              <cr-toggle id="allow-on-file-urls"
                   checked="[[data.fileAccess.isActive]]"
-                  on-change="onAllowOnFileUrlsChange_"></paper-toggle-button>
+                  on-change="onAllowOnFileUrlsChange_"></cr-toggle>
             </div>
           </template>
           <template is="dom-if" if="[[data.runOnAllUrls.isEnabled]]">
             <div class="control-line">
               <span>$i18n{itemAllowOnAllSites}</span>
-              <paper-toggle-button id="allow-on-all-sites"
+              <cr-toggle id="allow-on-all-sites"
                   checked="[[data.runOnAllUrls.isActive]]"
-                  on-change="onAllowOnAllSitesChange_"></paper-toggle-button>
+                  on-change="onAllowOnAllSitesChange_"></cr-toggle>
             </div>
           </template>
           <template is="dom-if" if="[[data.errorCollection.isEnabled]]">
             <div class="control-line">
               <span>$i18n{itemCollectErrors}</span>
-              <paper-toggle-button id="collect-errors"
+              <cr-toggle id="collect-errors"
                   checked="[[data.errorCollection.isActive]]"
-                  on-change="onCollectErrorsChange_"></paper-toggle-button>
+                  on-change="onCollectErrorsChange_"></cr-toggle>
             </div>
           </template>
         </div>
