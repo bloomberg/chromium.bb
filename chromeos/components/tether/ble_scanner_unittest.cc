@@ -503,7 +503,7 @@ TEST_F(BleScannerTest, TestRegistrationLimit) {
 
   // Attempt to register another device. Registration should fail since the
   // maximum number of devices have already been registered.
-  ASSERT_EQ(2, kMaxConcurrentAdvertisements);
+  ASSERT_EQ(2u, kMaxConcurrentAdvertisements);
   EXPECT_FALSE(ble_scanner_->RegisterScanFilterForDevice(test_devices_[2]));
   EXPECT_FALSE(IsDeviceRegistered(test_devices_[2].GetDeviceId()));
 

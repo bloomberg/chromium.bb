@@ -385,8 +385,7 @@ void BleConnectionManager::UpdateConnectionAttempts() {
 
   std::vector<cryptauth::RemoteDevice> should_advertise_to =
       ble_advertisement_device_queue_->GetDevicesToWhichToAdvertise();
-  DCHECK(should_advertise_to.size() <=
-         static_cast<size_t>(kMaxConcurrentAdvertisements));
+  DCHECK(should_advertise_to.size() <= kMaxConcurrentAdvertisements);
 
   for (const auto& remote_device : should_advertise_to) {
     ConnectionMetadata* associated_data = GetConnectionMetadata(remote_device);
