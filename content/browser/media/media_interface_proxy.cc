@@ -69,9 +69,10 @@ void MediaInterfaceProxy::CreateRenderer(
 }
 
 void MediaInterfaceProxy::CreateCdm(
+    const std::string& key_system,
     media::mojom::ContentDecryptionModuleRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  GetCdmInterfaceFactory()->CreateCdm(std::move(request));
+  GetCdmInterfaceFactory(key_system)->CreateCdm(key_system, std::move(request));
 }
 
 media::mojom::InterfaceFactory*
@@ -87,14 +88,15 @@ MediaInterfaceProxy::GetMediaInterfaceFactory() {
   return interface_factory_ptr_.get();
 }
 
-media::mojom::InterfaceFactory* MediaInterfaceProxy::GetCdmInterfaceFactory() {
+media::mojom::InterfaceFactory* MediaInterfaceProxy::GetCdmInterfaceFactory(
+    const std::string& key_system) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 #if !BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
   return GetMediaInterfaceFactory();
 #else
   if (!cdm_interface_factory_ptr_)
-    ConnectToCdmService();
+    ConnectToCdmService(key_system);
 
   DCHECK(cdm_interface_factory_ptr_);
 
@@ -145,8 +147,6 @@ MediaInterfaceProxy::GetFrameServices() {
 }
 
 void MediaInterfaceProxy::ConnectToMediaService() {
-  DVLOG(1) << __FUNCTION__;
-
   media::mojom::MediaServicePtr media_service;
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
@@ -162,8 +162,12 @@ void MediaInterfaceProxy::ConnectToMediaService() {
                      base::Unretained(this)));
 }
 
-void MediaInterfaceProxy::ConnectToCdmService() {
-  DVLOG(1) << __FUNCTION__;
+void MediaInterfaceProxy::ConnectToCdmService(
+    const std::string& /* key_system */) {
+  // TODO(xhwang): From |key_system|, get the CDM type. Check CdmRegistry to get
+  // the path of the CDM for that CDM type so that we can do CDM preloading.
+  // Also, we can use different "Instance ID" based on the CDM type to launch
+  // different CDMs in different processes. See https://crbug.com/510604
 
   media::mojom::MediaServicePtr media_service;
 

@@ -34,7 +34,8 @@ class CONTENT_EXPORT MediaInterfaceFactory
   void CreateVideoDecoder(media::mojom::VideoDecoderRequest request) final;
   void CreateRenderer(const std::string& audio_device_id,
                       media::mojom::RendererRequest request) final;
-  void CreateCdm(media::mojom::ContentDecryptionModuleRequest request) final;
+  void CreateCdm(const std::string& key_system,
+                 media::mojom::ContentDecryptionModuleRequest request) final;
 
  private:
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();

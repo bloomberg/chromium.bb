@@ -41,14 +41,16 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   void CreateVideoDecoder(media::mojom::VideoDecoderRequest request) final;
   void CreateRenderer(const std::string& audio_device_id,
                       media::mojom::RendererRequest request) final;
-  void CreateCdm(media::mojom::ContentDecryptionModuleRequest request) final;
+  void CreateCdm(const std::string& key_system,
+                 media::mojom::ContentDecryptionModuleRequest request) final;
 
  private:
   // Get the |interface_factory_ptr_|.
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
 
   // Get the |cdm_interface_factory_ptr_|.
-  media::mojom::InterfaceFactory* GetCdmInterfaceFactory();
+  media::mojom::InterfaceFactory* GetCdmInterfaceFactory(
+      const std::string& key_system);
 
   // Callback for connection error from |interface_factory_ptr_| or
   // |cdm_interface_factory_ptr_|.
@@ -58,7 +60,7 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   service_manager::mojom::InterfaceProviderPtr GetFrameServices();
 
   void ConnectToMediaService();
-  void ConnectToCdmService();
+  void ConnectToCdmService(const std::string& key_system);
 
   // Safe to hold a raw pointer since |this| is owned by RenderFrameHostImpl.
   RenderFrameHost* render_frame_host_;

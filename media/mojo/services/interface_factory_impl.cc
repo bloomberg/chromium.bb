@@ -133,6 +133,7 @@ void InterfaceFactoryImpl::CreateRenderer(
 }
 
 void InterfaceFactoryImpl::CreateCdm(
+    const std::string& /* key_system */,
     mojo::InterfaceRequest<mojom::ContentDecryptionModule> request) {
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   CdmFactory* cdm_factory = GetCdmFactory();
