@@ -6,6 +6,7 @@
 
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -13,6 +14,23 @@
 #include "core/page/Page.h"
 
 namespace blink {
+
+// static
+CSSParserContext* CSSParserContext::Create(const ExecutionContext& context) {
+  const Referrer referrer(context.Url().StrippedForUseAsReferrer(),
+                          context.GetReferrerPolicy());
+
+  ContentSecurityPolicyDisposition policy_disposition;
+  if (ContentSecurityPolicy::ShouldBypassMainWorld(&context))
+    policy_disposition = kDoNotCheckContentSecurityPolicy;
+  else
+    policy_disposition = kCheckContentSecurityPolicy;
+
+  return new CSSParserContext(
+      context.Url(), WTF::TextEncoding(), kHTMLStandardMode, kHTMLStandardMode,
+      kDynamicProfile, referrer, true, false, policy_disposition,
+      context.IsDocument() ? &ToDocument(context) : nullptr);
+}
 
 // static
 CSSParserContext* CSSParserContext::CreateWithStyleSheet(
