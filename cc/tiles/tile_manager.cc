@@ -883,8 +883,7 @@ void TileManager::PartitionImagesForCheckering(
     const PrioritizedTile& prioritized_tile,
     const gfx::ColorSpace& raster_color_space,
     std::vector<DrawImage>* sync_decoded_images,
-    std::vector<PaintImage>* checkered_images,
-    base::flat_map<PaintImage::Id, size_t>* image_to_frame_index) {
+    std::vector<PaintImage>* checkered_images) {
   Tile* tile = prioritized_tile.tile();
   std::vector<const DrawImage*> images_in_tile;
   prioritized_tile.raster_source()->GetDiscardableImagesInRect(
@@ -892,15 +891,8 @@ void TileManager::PartitionImagesForCheckering(
   WhichTree tree = tile->tiling()->tree();
 
   for (const auto* original_draw_image : images_in_tile) {
-    size_t frame_index = client_->GetFrameIndexForImage(
-        original_draw_image->paint_image(), tree);
     DrawImage draw_image(*original_draw_image, tile->raster_transform().scale(),
-                         frame_index, raster_color_space);
-    if (image_to_frame_index) {
-      (*image_to_frame_index)[draw_image.paint_image().stable_id()] =
-          frame_index;
-    }
-
+                         raster_color_space);
     if (checker_image_tracker_.ShouldCheckerImage(
             draw_image, tree, tile->required_for_activation()))
       checkered_images->push_back(draw_image.paint_image());
@@ -921,10 +913,9 @@ void TileManager::AddCheckeredImagesToDecodeQueue(
   WhichTree tree = tile->tiling()->tree();
 
   for (const auto* original_draw_image : images_in_tile) {
-    size_t frame_index = client_->GetFrameIndexForImage(
-        original_draw_image->paint_image(), tree);
     DrawImage draw_image(*original_draw_image, tile->raster_transform().scale(),
-                         frame_index, raster_color_space);
+                         raster_color_space);
+
     if (checker_image_tracker_.ShouldCheckerImage(
             draw_image, tree, tile->required_for_activation())) {
       image_decode_queue->emplace_back(draw_image.paint_image(), decode_type);
@@ -1142,15 +1133,11 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       scheduled_draw_images_[tile->id()];
   sync_decoded_images.clear();
   PaintImageIdFlatSet images_to_skip;
-  base::flat_map<PaintImage::Id, size_t> image_id_to_current_frame_index;
   if (!skip_images) {
     std::vector<PaintImage> checkered_images;
     PartitionImagesForCheckering(prioritized_tile, color_space,
-                                 &sync_decoded_images, &checkered_images,
-                                 &image_id_to_current_frame_index);
+                                 &sync_decoded_images, &checkered_images);
     for (const auto& image : checkered_images) {
-      DCHECK(!image.ShouldAnimate());
-
       images_to_skip.insert(image.stable_id());
 
       // This can be the case for tiles on the active tree that will be replaced
@@ -1188,8 +1175,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       has_at_raster_images) {
     image_provider.emplace(skip_images, std::move(images_to_skip),
                            std::move(at_raster_images),
-                           image_controller_.cache(), color_space,
-                           std::move(image_id_to_current_frame_index));
+                           image_controller_.cache(), color_space);
   }
 
   return make_scoped_refptr(new RasterTaskImpl(

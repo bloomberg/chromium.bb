@@ -87,9 +87,6 @@ class CC_EXPORT TileManagerClient {
   // rasterized with missing images need to be invalidated.
   virtual void RequestImplSideInvalidationForCheckerImagedTiles() = 0;
 
-  virtual size_t GetFrameIndexForImage(const PaintImage& paint_image,
-                                       WhichTree tree) const = 0;
-
  protected:
   virtual ~TileManagerClient() {}
 };
@@ -360,12 +357,10 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   PrioritizedWorkToSchedule AssignGpuMemoryToTiles();
   void ScheduleTasks(PrioritizedWorkToSchedule work_to_schedule);
 
-  void PartitionImagesForCheckering(
-      const PrioritizedTile& prioritized_tile,
-      const gfx::ColorSpace& raster_color_space,
-      std::vector<DrawImage>* sync_decoded_images,
-      std::vector<PaintImage>* checkered_images,
-      base::flat_map<PaintImage::Id, size_t>* image_to_frame_index = nullptr);
+  void PartitionImagesForCheckering(const PrioritizedTile& prioritized_tile,
+                                    const gfx::ColorSpace& raster_color_space,
+                                    std::vector<DrawImage>* sync_decoded_images,
+                                    std::vector<PaintImage>* checkered_images);
   void AddCheckeredImagesToDecodeQueue(
       const PrioritizedTile& prioritized_tile,
       const gfx::ColorSpace& raster_color_space,

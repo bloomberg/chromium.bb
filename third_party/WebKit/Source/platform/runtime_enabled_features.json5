@@ -166,10 +166,6 @@
       status: "stable",
     },
     {
-      name: "CompositorImageAnimations",
-      status: "test",
-    },
-    {
       name: "CompositorTouchAction",
       status: "test",
     },

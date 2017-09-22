@@ -592,8 +592,6 @@ bool SchedulerStateMachine::ShouldPerformImplSideInvalidation() const {
 
   // Only perform impl side invalidation after the frame ends so that we wait
   // for any commit to happen before invalidating.
-  // TODO(khushalsagar): Invalidate at the beginning of the frame if there is no
-  // commit request from the main thread.
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
     return false;
 

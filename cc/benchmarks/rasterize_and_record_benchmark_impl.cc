@@ -60,7 +60,7 @@ void RunBenchmark(RasterSource* raster_source,
 
       PlaybackImageProvider image_provider(false, PaintImageIdFlatSet(), {},
                                            image_decode_cache,
-                                           gfx::ColorSpace(), {});
+                                           gfx::ColorSpace());
       RasterSource::PlaybackSettings settings;
       settings.image_provider = &image_provider;
 

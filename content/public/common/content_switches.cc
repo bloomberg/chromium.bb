@@ -362,10 +362,6 @@ const char kEnableBlinkFeatures[]           = "enable-blink-features";
 const char kDisableBrowserSideNavigation[] = "disable-browser-side-navigation";
 const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
 
-// Enable animating of images in the compositor instead of blink.
-const char kEnableCompositorImageAnimations[] =
-    "enable-compositor-image-animations";
-
 // Enables display list based 2d canvas implementation. Options:
 //  1. Enable: allow browser to use display list for 2d canvas (browser makes
 //     decision).

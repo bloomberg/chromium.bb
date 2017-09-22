@@ -43,13 +43,6 @@ PaintImage PaintImageBuilder::TakePaintImage() const {
     DCHECK(!paint_image_.sk_image_);
     DCHECK(!paint_image_.paint_record_);
   }
-
-  if (paint_image_.ShouldAnimate()) {
-    DCHECK(paint_image_.paint_image_generator_)
-        << "Animated images must provide a generator";
-    for (const auto& frame : paint_image_.GetFrameMetadata())
-      DCHECK_GT(frame.duration, base::TimeDelta());
-  }
 #endif
 
   return std::move(paint_image_);

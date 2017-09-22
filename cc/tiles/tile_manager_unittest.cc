@@ -22,7 +22,6 @@
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/fake_paint_image_generator.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/fake_raster_source.h"
@@ -30,6 +29,7 @@
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_task_manager.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/stub_paint_image_generator.h"
 #include "cc/test/test_layer_tree_host_base.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_tile_priorities.h"
@@ -2307,10 +2307,10 @@ TEST_F(TileManagerReadyToDrawTest, ReadyToDrawRespectsRequirementChange) {
 
 class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
  public:
-  class MockImageGenerator : public FakePaintImageGenerator {
+  class MockImageGenerator : public StubPaintImageGenerator {
    public:
     explicit MockImageGenerator(const gfx::Size& size)
-        : FakePaintImageGenerator(
+        : StubPaintImageGenerator(
               SkImageInfo::MakeN32Premul(size.width(), size.height())) {}
 
     MOCK_METHOD5(GetPixels,

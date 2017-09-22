@@ -257,14 +257,6 @@ Image::SizeAvailability BitmapImage::DataChanged(bool all_data_received) {
     }
   }
 
-  // If the image is being animated by the compositor, clear the cached_frame_
-  // on a data update to push it to the compositor. Since we never advance the
-  // animation here, the |cached_frame_index_| is always the first frame and the
-  // |cached_frame_| might have not have been cleared in the loop above.
-  if (RuntimeEnabledFeatures::CompositorImageAnimationsEnabled()
-      && MaybeAnimated())
-    cached_frame_ = PaintImage();
-
   // Feed all the data we've seen so far to the image decoder.
   all_data_received_ = all_data_received;
 
@@ -484,9 +476,6 @@ int BitmapImage::RepetitionCount() {
 }
 
 bool BitmapImage::ShouldAnimate() {
-  if (RuntimeEnabledFeatures::CompositorImageAnimationsEnabled())
-    return false;
-
   bool animated = RepetitionCount() != kAnimationNone && !animation_finished_ &&
                   GetImageObserver();
   if (animated && animation_policy_ == kImageAnimationPolicyNoAnimation)

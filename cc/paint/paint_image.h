@@ -39,11 +39,11 @@ class CC_PAINT_EXPORT PaintImage {
   // An id that can be used for all non-lazy images. Note that if an image is
   // not lazy, it does not mean that this id must be used; one can still use
   // GetNextId to generate a stable id for such images.
-  static const Id kNonLazyStableId;
+  static const Id kNonLazyStableId = -1;
 
   // The default frame index to use if no index is provided. For multi-frame
   // images, this would imply the first frame of the animation.
-  static const size_t kDefaultFrameIndex;
+  static const size_t kDefaultFrameIndex = 0;
 
   class CC_PAINT_EXPORT FrameKey {
    public:
@@ -53,7 +53,6 @@ class CC_PAINT_EXPORT PaintImage {
 
     uint64_t hash() const { return hash_; }
     std::string ToString() const;
-    size_t frame_index() const { return frame_index_; }
 
    private:
     ContentId content_id_;
@@ -113,8 +112,7 @@ class CC_PAINT_EXPORT PaintImage {
   // is texture backed.
   bool Decode(void* memory,
               SkImageInfo* info,
-              sk_sp<SkColorSpace> color_space,
-              size_t frame_index) const;
+              sk_sp<SkColorSpace> color_space) const;
 
   Id stable_id() const { return id_; }
   const sk_sp<SkImage>& GetSkImage() const;
@@ -144,9 +142,6 @@ class CC_PAINT_EXPORT PaintImage {
   // Returns the total number of frames known to exist in this image.
   size_t FrameCount() const;
 
-  // Returns an SkImage for the frame at |index|.
-  sk_sp<SkImage> GetSkImageForFrame(size_t index) const;
-
   std::string ToString() const;
 
  private:
@@ -156,12 +151,10 @@ class CC_PAINT_EXPORT PaintImage {
 
   bool DecodeFromGenerator(void* memory,
                            SkImageInfo* info,
-                           sk_sp<SkColorSpace> color_space,
-                           size_t frame_index) const;
+                           sk_sp<SkColorSpace> color_space) const;
   bool DecodeFromSkImage(void* memory,
                          SkImageInfo* info,
-                         sk_sp<SkColorSpace> color_space,
-                         size_t frame_index) const;
+                         sk_sp<SkColorSpace> color_space) const;
 
   sk_sp<SkImage> sk_image_;
 
