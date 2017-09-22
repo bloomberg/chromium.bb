@@ -33,8 +33,7 @@
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/test/mock_blob_url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 #define FPL FILE_PATH_LITERAL
 
@@ -68,7 +67,7 @@ class LocalFileSyncContextTest : public testing::Test {
   void SetUp() override {
     RegisterSyncableFileSystem();
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
-    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
 
     ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     io_task_runner_ = BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);

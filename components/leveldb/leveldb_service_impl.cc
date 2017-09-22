@@ -12,9 +12,9 @@
 #include "components/leveldb/leveldb_database_impl.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
