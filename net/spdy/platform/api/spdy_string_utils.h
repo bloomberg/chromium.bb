@@ -41,6 +41,18 @@ inline SpdyString SpdyHexDecode(SpdyStringPiece data) {
   return SpdyHexDecodeImpl(data);
 }
 
+inline bool SpdyHexDecodeToUInt32(SpdyStringPiece data, uint32_t* out) {
+  return SpdyHexDecodeToUInt32Impl(data, out);
+}
+
+inline SpdyString SpdyHexEncode(const char* bytes, size_t size) {
+  return SpdyHexEncodeImpl(bytes, size);
+}
+
+inline SpdyString SpdyHexEncodeUInt32AndTrim(uint32_t data) {
+  return SpdyHexEncodeUInt32AndTrimImpl(data);
+}
+
 inline SpdyString SpdyHexDump(SpdyStringPiece data) {
   return SpdyHexDumpImpl(data);
 }

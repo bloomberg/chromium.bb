@@ -25,7 +25,7 @@ class SpdyAltSvcWireFormatPeer;
 
 class SPDY_EXPORT_PRIVATE SpdyAltSvcWireFormat {
  public:
-  using VersionVector = std::vector<uint16_t>;
+  using VersionVector = std::vector<uint32_t>;
 
   struct SPDY_EXPORT_PRIVATE AlternativeService {
     SpdyString protocol_id;

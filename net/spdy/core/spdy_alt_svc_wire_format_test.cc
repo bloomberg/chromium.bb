@@ -57,50 +57,76 @@ void FuzzHeaderFieldValue(
   if (!header_field_value->empty()) {
     header_field_value->push_back(',');
   }
-  expected_altsvc->protocol_id = "a=b%c";
-  header_field_value->append("a%3Db%25c=\"");
-  expected_altsvc->host = "";
+  // TODO(wangyix): use struct of bools instead of int |i| to generate the
+  // header field value.
+  bool is_ietf_format_quic = (i & 1 << 0) != 0;
   if (i & 1 << 0) {
+    expected_altsvc->protocol_id = "hq";
+    header_field_value->append("hq=\"");
+  } else {
+    expected_altsvc->protocol_id = "a=b%c";
+    header_field_value->append("a%3Db%25c=\"");
+  }
+  if (i & 1 << 1) {
     expected_altsvc->host = "foo\"bar\\baz";
     header_field_value->append("foo\\\"bar\\\\baz");
+  } else {
+    expected_altsvc->host = "";
   }
   expected_altsvc->port = 42;
   header_field_value->append(":42\"");
-  if (i & 1 << 1) {
+  if (i & 1 << 2) {
     header_field_value->append(" ");
   }
-  if (i & 3 << 2) {
+  if (i & 3 << 3) {
     expected_altsvc->max_age = 1111;
     header_field_value->append(";");
-    if (i & 1 << 2) {
+    if (i & 1 << 3) {
       header_field_value->append(" ");
     }
     header_field_value->append("mA=1111");
-    if (i & 2 << 2) {
+    if (i & 2 << 3) {
       header_field_value->append(" ");
     }
   }
-  if (i & 1 << 4) {
+  if (i & 1 << 5) {
     header_field_value->append("; J=s");
   }
-  if (i & 1 << 5) {
-    expected_altsvc->version.push_back(24);
-    header_field_value->append("; v=\"24\"");
-  }
   if (i & 1 << 6) {
+    if (is_ietf_format_quic) {
+      if (i & 1 << 7) {
+        expected_altsvc->version.push_back(0x923457e);
+        header_field_value->append("; quic=923457E");
+      } else {
+        expected_altsvc->version.push_back(1);
+        expected_altsvc->version.push_back(0xFFFFFFFF);
+        header_field_value->append("; quic=1; quic=fFfFffFf");
+      }
+    } else {
+      if (i & i << 7) {
+        expected_altsvc->version.push_back(24);
+        header_field_value->append("; v=\"24\"");
+      } else {
+        expected_altsvc->version.push_back(1);
+        expected_altsvc->version.push_back(65535);
+        header_field_value->append("; v=\"1,65535\"");
+      }
+    }
+  }
+  if (i & 1 << 8) {
     expected_altsvc->max_age = 999999999;
     header_field_value->append("; Ma=999999999");
   }
-  if (i & 1 << 7) {
+  if (i & 1 << 9) {
     header_field_value->append(";");
   }
-  if (i & 1 << 8) {
+  if (i & 1 << 10) {
     header_field_value->append(" ");
   }
-  if (i & 1 << 9) {
+  if (i & 1 << 11) {
     header_field_value->append(",");
   }
-  if (i & 1 << 10) {
+  if (i & 1 << 12) {
     header_field_value->append(" ");
   }
 }
@@ -161,7 +187,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueClear) {
 // parameters, duplicate parameters, trailing space, trailing alternate service
 // separator, etc.  Single alternative service at a time.
 TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValue) {
-  for (int i = 0; i < 1 << 11; ++i) {
+  for (int i = 0; i < 1 << 13; ++i) {
     SpdyString header_field_value;
     SpdyAltSvcWireFormat::AlternativeService expected_altsvc;
     FuzzHeaderFieldValue(i, &header_field_value, &expected_altsvc);
@@ -195,7 +221,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValue) {
 // parameters, duplicate parameters, trailing space, trailing alternate service
 // separator, etc.  Possibly multiple alternative service at a time.
 TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueMultiple) {
-  for (int i = 0; i < 1 << 11;) {
+  for (int i = 0; i < 1 << 13;) {
     SpdyString header_field_value;
     SpdyAltSvcWireFormat::AlternativeServiceVector expected_altsvc_vector;
     // This will generate almost two hundred header field values with two,
@@ -206,7 +232,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueMultiple) {
       FuzzHeaderFieldValue(i, &header_field_value, &expected_altsvc);
       expected_altsvc_vector.push_back(expected_altsvc);
       ++i;
-    } while ((i < 1 << 13) && (i % 6 < i % 7));
+    } while (i % 6 < i % 7);
     SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
     ASSERT_TRUE(SpdyAltSvcWireFormat::ParseHeaderFieldValue(header_field_value,
                                                             &altsvc_vector));
