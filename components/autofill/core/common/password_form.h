@@ -337,7 +337,11 @@ struct PasswordForm {
 
   PasswordForm();
   PasswordForm(const PasswordForm& other);
+  PasswordForm(PasswordForm&& other);
   ~PasswordForm();
+
+  PasswordForm& operator=(const PasswordForm& form);
+  PasswordForm& operator=(PasswordForm&& form);
 };
 
 // True if the unique keys for the forms are the same. The unique key is
