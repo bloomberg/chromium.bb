@@ -80,6 +80,8 @@ class WTF_EXPORT AtomicString {
 
   // Hash table deleted values, which are only constructed and never copied or
   // destroyed.
+  // TODO(tzik): Remove this after updating callsites of this to use
+  // HashTraits<AtomicString>::{ConstructDeletedValue,IsHashTableDeletedValue}.
   AtomicString(WTF::HashTableDeletedValueType)
       : string_(WTF::kHashTableDeletedValue) {}
   bool IsHashTableDeletedValue() const {
@@ -231,6 +233,8 @@ class WTF_EXPORT AtomicString {
 #endif
 
  private:
+  friend struct HashTraits<AtomicString>;
+
   String string_;
 
   ALWAYS_INLINE static RefPtr<StringImpl> Add(StringImpl* r) {

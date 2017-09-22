@@ -84,6 +84,8 @@ class RefPtr {
 
   // Hash table deleted values, which are only constructed and never copied or
   // destroyed.
+  // TODO(tzik): Remove this after updating callsites of this to use
+  // HashTraits<RefPtr<>>::{ConstructDeletedValue,IsHashTableDeletedValue}.
   RefPtr(HashTableDeletedValueType) : ptr_(HashTableDeletedValue()) {}
   bool IsHashTableDeletedValue() const {
     return ptr_ == HashTableDeletedValue();

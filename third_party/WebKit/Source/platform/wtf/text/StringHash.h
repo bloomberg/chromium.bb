@@ -33,6 +33,15 @@ inline bool HashTraits<String>::IsEmptyValue(const String& value) {
   return value.IsNull();
 }
 
+inline bool HashTraits<String>::IsDeletedValue(const String& value) {
+  return HashTraits<RefPtr<StringImpl>>::IsDeletedValue(value.impl_);
+}
+
+inline void HashTraits<String>::ConstructDeletedValue(String& slot,
+                                                      bool zero_value) {
+  HashTraits<RefPtr<StringImpl>>::ConstructDeletedValue(slot.impl_, zero_value);
+}
+
 // The hash() functions on StringHash and CaseFoldingHash do not support null
 // strings. get(), contains(), and add() on HashMap<String,..., StringHash>
 // cause a null-pointer dereference when passed null strings.

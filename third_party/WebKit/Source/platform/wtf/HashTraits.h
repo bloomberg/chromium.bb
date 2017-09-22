@@ -22,16 +22,16 @@
 #ifndef WTF_HashTraits_h
 #define WTF_HashTraits_h
 
+#include <string.h>  // For memset.
+#include <limits>
+#include <memory>
+#include <type_traits>
+#include <utility>
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/TypeTraits.h"
-#include <limits>
-#include <memory>
-#include <string.h>  // For memset.
-#include <type_traits>
-#include <utility>
 
 namespace WTF {
 
@@ -215,11 +215,24 @@ struct SimpleClassHashTraits : GenericHashTraits<T> {
 
 template <typename P>
 struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPtr<P>> {
+  static_assert(sizeof(void*) == sizeof(RefPtr<P>),
+                "Unexpected RefPtr size."
+                " RefPtr needs to be single pointer to support deleted value.");
+
   typedef std::nullptr_t EmptyValueType;
   static EmptyValueType EmptyValue() { return nullptr; }
 
   static const bool kHasIsEmptyValueFunction = true;
   static bool IsEmptyValue(const RefPtr<P>& value) { return !value; }
+
+  static bool IsDeletedValue(const RefPtr<P>& value) {
+    return *reinterpret_cast<void* const*>(&value) ==
+           reinterpret_cast<const void*>(-1);
+  }
+
+  static void ConstructDeletedValue(RefPtr<P>& slot, bool zero_value) {
+    *reinterpret_cast<void**>(&slot) = reinterpret_cast<void*>(-1);
+  }
 
   typedef RefPtrValuePeeker<P> PeekInType;
   typedef RefPtr<P>* IteratorGetType;
@@ -276,6 +289,8 @@ template <>
 struct HashTraits<String> : SimpleClassHashTraits<String> {
   static const bool kHasIsEmptyValueFunction = true;
   static bool IsEmptyValue(const String&);
+  static bool IsDeletedValue(const String& value);
+  static void ConstructDeletedValue(String& slot, bool zero_value);
 };
 
 // This struct template is an implementation detail of the
