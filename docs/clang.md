@@ -3,9 +3,9 @@
 [Clang](http://clang.llvm.org/) is a compiler with many desirable features
 (outlined on their website).
 
-Chrome can be built with Clang. It is now the default compiler on Mac and Linux
-for building Chrome, and it is currently useful for its warning and error
-messages on Android and Windows.
+Chrome can be built with Clang. It is now the default compiler on Android, Mac
+and Linux for building Chrome, and it is currently useful for its warning and
+error messages on Windows.
 
 See
 [the open bugs](http://code.google.com/p/chromium/issues/list?q=label:clang).
@@ -120,8 +120,6 @@ If your clang revision is very different from the one currently used in chromium
 
 LLD is a relatively new linker from LLVM. The current focus is on Windows and
 Linux support, where it can link Chrome approximately twice as fast as gold and
-MSVC's link.exe as of this writing. LLD does not yet support generating PDB
-files, which makes it hard to debug Chrome while using LLD.
+MSVC's link.exe as of this writing.
 
-on Windows.
 Set `use_lld = true` in args.gn.
