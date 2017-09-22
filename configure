@@ -276,6 +276,7 @@ EXPERIMENT_LIST="
     supertx
     ans
     loop_restoration
+    striped_loop_restoration
     ext_partition
     ext_partition_types
     ext_partition_types_ab
@@ -625,6 +626,17 @@ post_process_cmdline() {
     if enabled amvr; then
       log_echo "amvr requires hash_me"
       enable_feature hash_me
+    fi
+
+    if enabled striped_loop_restoration && ! enabled loop_restoration ; then
+      log_echo "striped_loop_restoration requires loop_restoration"
+      log_echo "enable loop_restoration"
+      enable_feature loop_restoration
+    fi
+    if enabled striped_loop_restoration && enabled frame_superres ; then
+      log_echo "striped_loop_restoration not compatible with frame_superres"
+      log_echo "disabling striped_loop_restoration"
+      disable_feature striped_loop_restoration
     fi
 }
 

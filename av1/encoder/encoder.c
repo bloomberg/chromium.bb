@@ -4525,6 +4525,10 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif
   }
 
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm);
+#endif
+
 #if CONFIG_CDEF
   if (is_lossless_requested(&cpi->oxcf)) {
     cm->cdef_bits = 0;

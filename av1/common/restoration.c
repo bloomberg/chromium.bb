@@ -123,6 +123,111 @@ void extend_frame(uint8_t *data, int width, int height, int stride,
   }
 }
 
+#if CONFIG_STRIPED_LOOP_RESTORATION
+
+// This function setup a processing stripe by replacing the vertical
+// stripe boundary (2 lines above and 2 lines below) by data coming
+// from the above/below buffers. Before doing so the original
+// frame data is saved into a temporary buffer, such that it
+// can be restored by the restore_processing_stripe_boundary
+// function after the filtering of the processing stripe.
+// Returns the height of the processing stripe
+static int setup_processing_stripe_boundary(int y0, int v_end, int h_start,
+                                            int h_end, uint8_t *data,
+                                            int stride,
+                                            RestorationInternal *rst,
+                                            int use_highbd) {
+  int y, y_stripe_topmost, stripe_index, i;
+  int tile_offset = RESTORATION_TILE_OFFSET >> rst->subsampling_y;
+  int stripe_height = rst->rsi->procunit_height;
+  int comp = rst->component;
+  uint8_t *boundary_above_buf = rst->stripe_boundary_above[comp];
+  uint8_t *boundary_below_buf = rst->stripe_boundary_below[comp];
+  int boundary_stride = rst->stripe_boundary_stride[comp];
+  int x0 = h_start - RESTORATION_EXTRA_HORZ;
+  int x1 = h_end + RESTORATION_EXTRA_HORZ;
+
+  stripe_index = (y0 + tile_offset) / stripe_height;
+  y_stripe_topmost = stripe_index * stripe_height - tile_offset;
+  boundary_above_buf +=
+      ((stripe_index - 1) * 2 * boundary_stride + RESTORATION_EXTRA_HORZ)
+      << use_highbd;
+  boundary_below_buf +=
+      (stripe_index * 2 * boundary_stride + RESTORATION_EXTRA_HORZ)
+      << use_highbd;
+
+  // setup the 2 lines above the stripe
+  for (i = 0; i < 2; i++) {
+    y = y_stripe_topmost - 2 + i;
+    if (y >= 0 && y < y0 && y >= y0 - 2) {
+      uint8_t *p = data + ((y * stride + x0) << use_highbd);
+      uint8_t *new_data =
+          boundary_above_buf + ((i * boundary_stride + x0) << use_highbd);
+      // printf("above %3d %3d: %08x %08x : %08x %08x\n", y, x0,
+      // ((uint32_t*)p)[0], ((uint32_t*)p)[1], ((uint32_t*)new_data)[0],
+      // ((uint32_t*)new_data)[1]);
+      // Save old pixels
+      memcpy(rst->tmp_save_above[i], p, (x1 - x0) << use_highbd);
+      // Replace width pixels from boundary_above_buf
+      memcpy(p, new_data, (x1 - x0) << use_highbd);
+    }
+  }
+  // setup the 2 lines below the stripe
+  for (i = 0; i < 2; i++) {
+    y = y_stripe_topmost + stripe_height + i;
+    if (y < v_end + 2) {
+      uint8_t *p = data + ((y * stride + x0) << use_highbd);
+      uint8_t *new_data =
+          boundary_below_buf + ((i * boundary_stride + x0) << use_highbd);
+      // printf("below %3d %3d: %08x %08x : %08x %08x\n", y, x0,
+      // ((uint32_t*)p)[0], ((uint32_t*)p)[1], ((uint32_t*)new_data)[0],
+      // ((uint32_t*)new_data)[1]);
+      // Save old pixels
+      memcpy(rst->tmp_save_below[i], p, (x1 - x0) << use_highbd);
+      // Replace width pixels from boundary_below_buf
+      memcpy(p, new_data, (x1 - x0) << use_highbd);
+    }
+  }
+  // Return actual stripe height
+  return AOMMIN(v_end, y_stripe_topmost + stripe_height) - y0;
+}
+
+// This function restores the boundary lines modified by
+// setup_processing_stripe_boundary.
+static void restore_processing_stripe_boundary(int y0, int v_end, int h_start,
+                                               int h_end, uint8_t *data,
+                                               int stride,
+                                               RestorationInternal *rst,
+                                               int use_highbd) {
+  int y, y_stripe_topmost, i, stripe_index;
+  int tile_offset = 8 >> rst->subsampling_y;
+  int stripe_height = rst->rsi->procunit_height;
+  int x0 = h_start - RESTORATION_EXTRA_HORZ;
+  int x1 = h_end + RESTORATION_EXTRA_HORZ;
+
+  stripe_index = (y0 + tile_offset) / stripe_height;
+  y_stripe_topmost = stripe_index * stripe_height - tile_offset;
+
+  // restore the 2 lines above the stripe
+  for (i = 0; i < 2; i++) {
+    y = y_stripe_topmost - 2 + i;
+    if (y >= 0 && y < y0 && y >= y0 - 2) {
+      uint8_t *p = data + ((y * stride + x0) << use_highbd);
+      memcpy(p, rst->tmp_save_above[i], (x1 - x0) << use_highbd);
+    }
+  }
+  // restore the 2 lines below the stripe
+  for (i = 0; i < 2; i++) {
+    y = y_stripe_topmost + stripe_height + i;
+    if (y < v_end + 2) {
+      uint8_t *p = data + ((y * stride + x0) << use_highbd);
+      memcpy(p, rst->tmp_save_below[i], (x1 - x0) << use_highbd);
+    }
+  }
+}
+
+#endif
+
 static void loop_copy_tile(uint8_t *data, int tile_idx, int width, int height,
                            int stride, RestorationInternal *rst, uint8_t *dst,
                            int dst_stride) {
@@ -130,7 +235,11 @@ static void loop_copy_tile(uint8_t *data, int tile_idx, int width, int height,
   const int tile_height = rst->tile_height;
   RestorationTileLimits limits =
       av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+                               tile_height, width, height, rst->subsampling_y);
+#else
                                tile_height, width, height);
+#endif
   for (int i = limits.v_start; i < limits.v_end; ++i)
     memcpy(dst + i * dst_stride + limits.h_start,
            data + i * stride + limits.h_start, limits.h_end - limits.h_start);
@@ -173,7 +282,11 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
                                     RestorationInternal *rst, uint8_t *dst,
                                     int dst_stride) {
   const int procunit_width = rst->rsi->procunit_width;
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  int procunit_height;
+#else
   const int procunit_height = rst->rsi->procunit_height;
+#endif
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
@@ -183,13 +296,25 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
   InterpKernel vertical_topbot;
   RestorationTileLimits limits =
       av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+                               tile_height, width, height, rst->subsampling_y);
+#else
                                tile_height, width, height);
+#endif
+
   // Convolve the whole tile (done in blocks here to match the requirements
   // of the vectorized convolve functions, but the result is equivalent)
-  for (int i = limits.v_start; i < limits.v_end; i += procunit_height)
+  for (int i = limits.v_start; i < limits.v_end; i += procunit_height) {
+#if CONFIG_STRIPED_LOOP_RESTORATION
+    int h = setup_processing_stripe_boundary(
+        i, limits.v_end, limits.h_start, limits.h_end, data, stride, rst, 0);
+    h = ALIGN_POWER_OF_TWO(h, 1);
+    procunit_height = h;
+#else
+    int h = AOMMIN(procunit_height, (limits.v_end - i + 15) & ~15);
+#endif
     for (int j = limits.h_start; j < limits.h_end; j += procunit_width) {
       int w = AOMMIN(procunit_width, (limits.h_end - j + 15) & ~15);
-      int h = AOMMIN(procunit_height, (limits.v_end - i + 15) & ~15);
       const uint8_t *data_p = data + i * stride + j;
       uint8_t *dst_p = dst + i * dst_stride + j;
       // Note h is at least 16
@@ -237,6 +362,11 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
         dst_p += dst_stride;
       }
     }
+#if CONFIG_STRIPED_LOOP_RESTORATION
+    restore_processing_stripe_boundary(i, limits.v_end, limits.h_start,
+                                       limits.h_end, data, stride, rst, 0);
+#endif
+  }
 }
 
 static void loop_wiener_filter(uint8_t *data, int width, int height, int stride,
@@ -978,7 +1108,11 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
                                      RestorationInternal *rst, uint8_t *dst,
                                      int dst_stride) {
   const int procunit_width = rst->rsi->procunit_width;
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  int procunit_height;
+#else
   const int procunit_height = rst->rsi->procunit_height;
+#endif
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
@@ -987,17 +1121,32 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
   }
   RestorationTileLimits limits =
       av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+                               tile_height, width, height, rst->subsampling_y);
+#else
                                tile_height, width, height);
-  for (int i = limits.v_start; i < limits.v_end; i += procunit_height)
+#endif
+  for (int i = limits.v_start; i < limits.v_end; i += procunit_height) {
+#if CONFIG_STRIPED_LOOP_RESTORATION
+    int h = setup_processing_stripe_boundary(
+        i, limits.v_end, limits.h_start, limits.h_end, data, stride, rst, 0);
+    procunit_height = h;
+#else
+    int h = AOMMIN(procunit_height, limits.v_end - i);
+#endif
     for (int j = limits.h_start; j < limits.h_end; j += procunit_width) {
       int w = AOMMIN(procunit_width, limits.h_end - j);
-      int h = AOMMIN(procunit_height, limits.v_end - i);
       uint8_t *data_p = data + i * stride + j;
       uint8_t *dst_p = dst + i * dst_stride + j;
       apply_selfguided_restoration(
           data_p, w, h, stride, rst->rsi->sgrproj_info[tile_idx].ep,
           rst->rsi->sgrproj_info[tile_idx].xqd, dst_p, dst_stride, rst->tmpbuf);
     }
+#if CONFIG_STRIPED_LOOP_RESTORATION
+    restore_processing_stripe_boundary(i, limits.v_end, limits.h_start,
+                                       limits.h_end, data, stride, rst, 0);
+#endif
+  }
 }
 
 static void loop_sgrproj_filter(uint8_t *data, int width, int height,
@@ -1061,7 +1210,11 @@ static void loop_copy_tile_highbd(uint16_t *data, int tile_idx, int width,
   const int tile_height = rst->tile_height;
   RestorationTileLimits limits =
       av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+                               tile_height, width, height, rst->subsampling_y);
+#else
                                tile_height, width, height);
+#endif
   for (int i = limits.v_start; i < limits.v_end; ++i)
     memcpy(dst + i * dst_stride + limits.h_start,
            data + i * stride + limits.h_start,
@@ -1074,7 +1227,11 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
                                            int bit_depth, uint16_t *dst,
                                            int dst_stride) {
   const int procunit_width = rst->rsi->procunit_width;
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  int procunit_height;
+#else
   const int procunit_height = rst->rsi->procunit_height;
+#endif
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
 
@@ -1085,14 +1242,27 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
   }
   RestorationTileLimits limits =
       av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+                               tile_height, width, height, rst->subsampling_y);
+#else
                                tile_height, width, height);
+#endif
   InterpKernel vertical_topbot;
+
   // Convolve the whole tile (done in blocks here to match the requirements
   // of the vectorized convolve functions, but the result is equivalent)
-  for (int i = limits.v_start; i < limits.v_end; i += procunit_height)
+  for (int i = limits.v_start; i < limits.v_end; i += procunit_height) {
+#if CONFIG_STRIPED_LOOP_RESTORATION
+    int h = setup_processing_stripe_boundary(i, limits.v_end, limits.h_start,
+                                             limits.h_end, (uint8_t *)data,
+                                             stride, rst, 1);
+    h = ALIGN_POWER_OF_TWO(h, 1);
+    procunit_height = h;
+#else
+    int h = AOMMIN(procunit_height, (limits.v_end - i + 15) & ~15);
+#endif
     for (int j = limits.h_start; j < limits.h_end; j += procunit_width) {
       int w = AOMMIN(procunit_width, (limits.h_end - j + 15) & ~15);
-      int h = AOMMIN(procunit_height, (limits.v_end - i + 15) & ~15);
       const uint16_t *data_p = data + i * stride + j;
       uint16_t *dst_p = dst + i * dst_stride + j;
       // Note h is at least 16
@@ -1146,6 +1316,12 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
         dst_p += dst_stride;
       }
     }
+#if CONFIG_STRIPED_LOOP_RESTORATION
+    restore_processing_stripe_boundary(i, limits.v_end, limits.h_start,
+                                       limits.h_end, (uint8_t *)data, stride,
+                                       rst, 1);
+#endif
+  }
 }
 
 static void loop_wiener_filter_highbd(uint8_t *data8, int width, int height,
@@ -1315,7 +1491,11 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
                                             int bit_depth, uint16_t *dst,
                                             int dst_stride) {
   const int procunit_width = rst->rsi->procunit_width;
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  int procunit_height;
+#else
   const int procunit_height = rst->rsi->procunit_height;
+#endif
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
 
@@ -1326,17 +1506,34 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
   }
   RestorationTileLimits limits =
       av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+                               tile_height, width, height, rst->subsampling_y);
+#else
                                tile_height, width, height);
-  for (int i = limits.v_start; i < limits.v_end; i += procunit_height)
+#endif
+  for (int i = limits.v_start; i < limits.v_end; i += procunit_height) {
+#if CONFIG_STRIPED_LOOP_RESTORATION
+    int h = setup_processing_stripe_boundary(i, limits.v_end, limits.h_start,
+                                             limits.h_end, (uint8_t *)data,
+                                             stride, rst, 1);
+    procunit_height = h;
+#else
+    int h = AOMMIN(procunit_height, limits.v_end - i);
+#endif
     for (int j = limits.h_start; j < limits.h_end; j += procunit_width) {
       int w = AOMMIN(procunit_width, limits.h_end - j);
-      int h = AOMMIN(procunit_height, limits.v_end - i);
       uint16_t *data_p = data + i * stride + j;
       uint16_t *dst_p = dst + i * dst_stride + j;
       apply_selfguided_restoration_highbd(
           data_p, w, h, stride, bit_depth, rst->rsi->sgrproj_info[tile_idx].ep,
           rst->rsi->sgrproj_info[tile_idx].xqd, dst_p, dst_stride, rst->tmpbuf);
     }
+#if CONFIG_STRIPED_LOOP_RESTORATION
+    restore_processing_stripe_boundary(i, limits.v_end, limits.h_start,
+                                       limits.h_end, (uint8_t *)data, stride,
+                                       rst, 1);
+#endif
+  }
 }
 
 static void loop_sgrproj_filter_highbd(uint8_t *data8, int width, int height,
@@ -1409,7 +1606,6 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
   yend = AOMMIN(yend, yheight);
   uvend = AOMMIN(uvend, uvheight);
-
   if (components_pattern == (1 << AOM_PLANE_Y)) {
     // Only y
     if (rsi[0].frame_restoration_type == RESTORE_NONE) {
@@ -1459,6 +1655,10 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
           &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[0];
+#if CONFIG_STRIPED_LOOP_RESTORATION
+      cm->rst_internal.component = AOM_PLANE_Y;
+      cm->rst_internal.subsampling_y = 0;
+#endif
       restore_func =
           restore_funcs[cm->rst_internal.rsi->frame_restoration_type];
 #if CONFIG_HIGHBITDEPTH
@@ -1486,6 +1686,10 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
           &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[AOM_PLANE_U];
+#if CONFIG_STRIPED_LOOP_RESTORATION
+      cm->rst_internal.component = AOM_PLANE_U;
+      cm->rst_internal.subsampling_y = cm->subsampling_y;
+#endif
       restore_func =
           restore_funcs[cm->rst_internal.rsi->frame_restoration_type];
 #if CONFIG_HIGHBITDEPTH
@@ -1513,6 +1717,10 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
           &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[AOM_PLANE_V];
+#if CONFIG_STRIPED_LOOP_RESTORATION
+      cm->rst_internal.component = AOM_PLANE_V;
+      cm->rst_internal.subsampling_y = cm->subsampling_y;
+#endif
       restore_func =
           restore_funcs[cm->rst_internal.rsi->frame_restoration_type];
 #if CONFIG_HIGHBITDEPTH
@@ -1629,3 +1837,93 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 
   return *rcol0 < *rcol1 && *rrow0 < *rrow1;
 }
+
+#if CONFIG_STRIPED_LOOP_RESTORATION
+
+// Extend to left and right
+static void extend_line(uint8_t *buf, int width, int extend,
+                        int use_highbitdepth) {
+  int i;
+  if (use_highbitdepth) {
+    uint16_t val, *buf16 = (uint16_t *)buf;
+    val = buf16[0];
+    for (i = 0; i < extend; i++) buf16[-1 - i] = val;
+    val = buf16[width - 1];
+    for (i = 0; i < extend; i++) buf16[width + i] = val;
+  } else {
+    uint8_t val;
+    val = buf[0];
+    for (i = 0; i < extend; i++) buf[-1 - i] = val;
+    val = buf[width - 1];
+    for (i = 0; i < extend; i++) buf[width + i] = val;
+  }
+}
+
+// For each 64 pixel high stripe, save 4 scan lines to be used as boundary in
+// the loop restoration process. The lines are saved in
+// rst_internal.stripe_boundary_lines
+void av1_loop_restoration_save_boundary_lines(YV12_BUFFER_CONFIG *frame,
+                                              AV1_COMMON *cm) {
+  int p, boundary_stride;
+  int src_width, src_height, src_stride, stripe_height, stripe_offset, stripe_y,
+      yy;
+  uint8_t *src_buf, *boundary_below_buf, *boundary_above_buf;
+  int use_highbitdepth = 0;
+  for (p = 0; p < MAX_MB_PLANE; ++p) {
+    if (p == 0) {
+      src_buf = frame->y_buffer;
+      src_width = frame->y_crop_width;
+      src_height = frame->y_crop_height;
+      src_stride = frame->y_stride;
+      stripe_height = 64;
+      stripe_offset = 56 - 2;  // offset of first line to copy
+    } else {
+      src_buf = p == 1 ? frame->u_buffer : frame->v_buffer;
+      src_width = frame->uv_crop_width;
+      src_height = frame->uv_crop_height;
+      src_stride = frame->uv_stride;
+      stripe_height = 64 >> cm->subsampling_y;
+      stripe_offset = (56 >> cm->subsampling_y) - 2;
+    }
+    boundary_above_buf = cm->rst_internal.stripe_boundary_above[p];
+    boundary_below_buf = cm->rst_internal.stripe_boundary_below[p];
+    boundary_stride = cm->rst_internal.stripe_boundary_stride[p];
+#if CONFIG_HIGHBITDEPTH
+    use_highbitdepth = cm->use_highbitdepth;
+    if (use_highbitdepth) {
+      src_buf = (uint8_t *)CONVERT_TO_SHORTPTR(src_buf);
+    }
+#endif
+    src_buf += (stripe_offset * src_stride) << use_highbitdepth;
+    boundary_above_buf += RESTORATION_EXTRA_HORZ << use_highbitdepth;
+    boundary_below_buf += RESTORATION_EXTRA_HORZ << use_highbitdepth;
+    // Loop over stripes
+    for (stripe_y = stripe_offset; stripe_y < src_height;
+         stripe_y += stripe_height) {
+      // Save 2 lines above the LR stripe (offset -9, -10)
+      for (yy = 0; yy < 2; yy++) {
+        if (stripe_y + yy < src_height) {
+          memcpy(boundary_above_buf, src_buf, src_width << use_highbitdepth);
+          extend_line(boundary_above_buf, src_width, RESTORATION_EXTRA_HORZ,
+                      use_highbitdepth);
+          src_buf += src_stride << use_highbitdepth;
+          boundary_above_buf += boundary_stride << use_highbitdepth;
+        }
+      }
+      // Save 2 lines below the LR stripe (offset 56,57)
+      for (yy = 2; yy < 4; yy++) {
+        if (stripe_y + yy < src_height) {
+          memcpy(boundary_below_buf, src_buf, src_width << use_highbitdepth);
+          extend_line(boundary_below_buf, src_width, RESTORATION_EXTRA_HORZ,
+                      use_highbitdepth);
+          src_buf += src_stride << use_highbitdepth;
+          boundary_below_buf += boundary_stride << use_highbitdepth;
+        }
+      }
+      // jump to next stripe
+      src_buf += ((stripe_height - 4) * src_stride) << use_highbitdepth;
+    }
+  }
+}
+
+#endif  // CONFIG_STRIPED_LOOP_RESTORATION

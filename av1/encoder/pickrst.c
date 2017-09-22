@@ -150,7 +150,12 @@ static int64_t try_restoration_tile(const YV12_BUFFER_CONFIG *src,
   av1_loop_restoration_frame(cm->frame_to_show, cm, rsi, components_pattern,
                              partial_frame, dst_frame);
   RestorationTileLimits limits = av1_get_rest_tile_limits(
-      tile_idx, nhtiles, nvtiles, tile_width, tile_height, width, height);
+      tile_idx, nhtiles, nvtiles, tile_width, tile_height, width,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+      height, components_pattern > 1 ? cm->subsampling_y : 0);
+#else
+      height);
+#endif
   filt_err = sse_restoration_tile(
       src, dst_frame, cm, limits.h_start, limits.h_end - limits.h_start,
       limits.v_start, limits.v_end - limits.v_start, components_pattern);
@@ -550,7 +555,12 @@ static void foreach_rtile_in_tile(const struct rest_search_ctxt *ctxt,
       const int rtile_idx = rtile_row * ctxt->nrtiles_x + rtile_col;
       RestorationTileLimits limits = av1_get_rest_tile_limits(
           rtile_idx, ctxt->nrtiles_x, ctxt->nrtiles_y, rtile_width,
-          rtile_height, ctxt->plane_width, ctxt->plane_height);
+          rtile_height, ctxt->plane_width,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+          ctxt->plane_height, ctxt->plane > 0 ? cm->subsampling_y : 0);
+#else
+          ctxt->plane_height);
+#endif
       fun(ctxt, rtile_idx, &limits, arg);
     }
   }
@@ -1324,7 +1334,12 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   info->frame_restoration_type = RESTORE_NONE;
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
     RestorationTileLimits limits = av1_get_rest_tile_limits(
-        tile_idx, nhtiles, nvtiles, tile_width, tile_height, width, height);
+        tile_idx, nhtiles, nvtiles, tile_width, tile_height, width,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+        height, plane != AOM_PLANE_Y ? cm->subsampling_y : 0);
+#else
+        height);
+#endif
     err = sse_restoration_tile(src, cm->frame_to_show, cm, limits.h_start,
                                limits.h_end - limits.h_start, limits.v_start,
                                limits.v_end - limits.v_start, 1 << plane);

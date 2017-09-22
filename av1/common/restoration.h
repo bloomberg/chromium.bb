@@ -26,10 +26,23 @@ extern "C" {
 
 #define RESTORATION_PROC_UNIT_SIZE 64
 
+#if CONFIG_STRIPED_LOOP_RESTORATION
+// Filter tile grid offset upwards compared to the superblock grid
+#define RESTORATION_TILE_OFFSET 8
+#endif
+
+#if CONFIG_STRIPED_LOOP_RESTORATION
+#define SGRPROJ_BORDER_VERT 2  // Vertical border used for Sgr
+#else
 #define SGRPROJ_BORDER_VERT 1  // Vertical border used for Sgr
+#endif
 #define SGRPROJ_BORDER_HORZ 2  // Horizontal border used for Sgr
 
+#if CONFIG_STRIPED_LOOP_RESTORATION
+#define WIENER_BORDER_VERT 2  // Vertical border used for Wiener
+#else
 #define WIENER_BORDER_VERT 1  // Vertical border used for Wiener
+#endif
 #define WIENER_HALFWIN 3
 #define WIENER_BORDER_HORZ (WIENER_HALFWIN)  // Horizontal border for Wiener
 
@@ -48,6 +61,12 @@ extern "C" {
 #define RESTORATION_BORDER_HORZ (WIENER_BORDER_HORZ)
 #endif  // SGRPROJ_BORDER_VERT >= WIENER_BORDER_VERT
 
+#if CONFIG_STRIPED_LOOP_RESTORATION
+// Additional pixels to the left and right in above/below buffers
+// It is RESTORATION_BORDER_HORZ rounded up to get nicer buffer alignment
+#define RESTORATION_EXTRA_HORZ 4
+#endif
+
 // Pad up to 20 more (may be much less is needed)
 #define RESTORATION_PADDING 20
 #define RESTORATION_PROC_UNIT_PELS                             \
@@ -57,9 +76,19 @@ extern "C" {
     RESTORATION_PADDING))
 
 #define RESTORATION_TILESIZE_MAX 256
+#if CONFIG_STRIPED_LOOP_RESTORATION
+#define RESTORATION_TILEPELS_HORZ_MAX \
+  (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_HORZ + 16)
+#define RESTORATION_TILEPELS_VERT_MAX                                \
+  ((RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_VERT + \
+    RESTORATION_TILE_OFFSET))
+#define RESTORATION_TILEPELS_MAX \
+  (RESTORATION_TILEPELS_HORZ_MAX * RESTORATION_TILEPELS_VERT_MAX)
+#else
 #define RESTORATION_TILEPELS_MAX                                           \
   ((RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_HORZ + 16) * \
    (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_VERT))
+#endif
 
 // Two 32-bit buffers needed for the restored versions from two filters
 // TODO(debargha, rupert): Refactor to not need the large tilesize to be stored
@@ -195,6 +224,20 @@ typedef struct {
   int tile_width, tile_height;
   int nhtiles, nvtiles;
   int32_t *tmpbuf;
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  int component;
+  int subsampling_y;
+  uint8_t *stripe_boundary_above[MAX_MB_PLANE];
+  uint8_t *stripe_boundary_below[MAX_MB_PLANE];
+  int stripe_boundary_stride[MAX_MB_PLANE];
+  // Temporary buffers to save/restore 2 lines above/below the restoration
+  // stripe
+  // Allow for filter margin to left and right
+  uint16_t
+      tmp_save_above[2][RESTORATION_TILESIZE_MAX + 2 * RESTORATION_EXTRA_HORZ];
+  uint16_t
+      tmp_save_below[2][RESTORATION_TILESIZE_MAX + 2 * RESTORATION_EXTRA_HORZ];
+#endif
 } RestorationInternal;
 
 static INLINE void set_default_sgrproj(SgrprojInfo *sgrproj_info) {
@@ -236,7 +279,12 @@ typedef struct { int h_start, h_end, v_start, v_end; } RestorationTileLimits;
 
 static INLINE RestorationTileLimits
 av1_get_rest_tile_limits(int tile_idx, int nhtiles, int nvtiles, int tile_width,
-                         int tile_height, int im_width, int im_height) {
+                         int tile_height, int im_width,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+                         int im_height, int subsampling_y) {
+#else
+                         int im_height) {
+#endif
   const int htile_idx = tile_idx % nhtiles;
   const int vtile_idx = tile_idx / nhtiles;
   RestorationTileLimits limits;
@@ -246,6 +294,13 @@ av1_get_rest_tile_limits(int tile_idx, int nhtiles, int nvtiles, int tile_width,
       (htile_idx < nhtiles - 1) ? limits.h_start + tile_width : im_width;
   limits.v_end =
       (vtile_idx < nvtiles - 1) ? limits.v_start + tile_height : im_height;
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  // Offset the tile upwards to align with the restoration processing stripe
+  limits.v_start -= RESTORATION_TILE_OFFSET >> subsampling_y;
+  if (limits.v_start < 0) limits.v_start = 0;
+  if (limits.v_end < im_height)
+    limits.v_end -= RESTORATION_TILE_OFFSET >> subsampling_y;
+#endif
   return limits;
 }
 
@@ -284,6 +339,9 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
                                        int mi_row, int mi_col, BLOCK_SIZE bsize,
                                        int *rcol0, int *rcol1, int *rrow0,
                                        int *rrow1, int *nhtiles);
+
+void av1_loop_restoration_save_boundary_lines(YV12_BUFFER_CONFIG *frame,
+                                              struct AV1Common *cm);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

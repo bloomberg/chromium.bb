@@ -135,6 +135,33 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   aom_free(cm->rst_internal.tmpbuf);
   CHECK_MEM_ERROR(cm, cm->rst_internal.tmpbuf,
                   (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE));
+
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  // Allocate internal storage for the loop restoration stripe boundary lines
+  for (p = 0; p < MAX_MB_PLANE; ++p) {
+    int w = p == 0 ? width : ROUND_POWER_OF_TWO(width, cm->subsampling_x);
+    int align_bits = 5;  // align for efficiency
+    int stride = ALIGN_POWER_OF_TWO(w, align_bits);
+    int num_stripes = (height + 63) / 64;
+    // for each processing stripe: 2 lines above, 2 below
+    int buf_size = num_stripes * 2 * stride;
+    uint8_t *above_buf, *below_buf;
+
+    aom_free(cm->rst_internal.stripe_boundary_above[p]);
+    aom_free(cm->rst_internal.stripe_boundary_below[p]);
+
+#if CONFIG_HIGHBITDEPTH
+    if (cm->use_highbitdepth) buf_size = buf_size * 2;
+#endif
+    CHECK_MEM_ERROR(cm, above_buf,
+                    (uint8_t *)aom_memalign(1 << align_bits, buf_size));
+    CHECK_MEM_ERROR(cm, below_buf,
+                    (uint8_t *)aom_memalign(1 << align_bits, buf_size));
+    cm->rst_internal.stripe_boundary_above[p] = above_buf;
+    cm->rst_internal.stripe_boundary_below[p] = below_buf;
+    cm->rst_internal.stripe_boundary_stride[p] = stride;
+  }
+#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 }
 
 void av1_free_restoration_buffers(AV1_COMMON *cm) {
