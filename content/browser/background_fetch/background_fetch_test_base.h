@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_TEST_BASE_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_TEST_BASE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,62 +13,31 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
+#include "content/browser/background_fetch/background_fetch_test_browser_context.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
-namespace net {
-class HttpResponseHeaders;
-}
-
 namespace content {
 
 class BackgroundFetchRegistrationId;
-class MockDownloadManager;
 class ServiceWorkerRegistration;
 
 // Base class containing common functionality needed in unit tests written for
 // the Background Fetch feature.
 class BackgroundFetchTestBase : public ::testing::Test {
  public:
+  using TestResponse = MockBackgroundFetchDelegate::TestResponse;
+  using TestResponseBuilder = MockBackgroundFetchDelegate::TestResponseBuilder;
+
   BackgroundFetchTestBase();
   ~BackgroundFetchTestBase() override;
 
   // ::testing::Test overrides.
   void SetUp() override;
   void TearDown() override;
-
-  // Structure encapsulating the data for a injected response. Should only be
-  // created by the builder, which also defines the ownership semantics.
-  struct TestResponse {
-    TestResponse();
-    ~TestResponse();
-
-    scoped_refptr<net::HttpResponseHeaders> headers;
-    std::string data;
-  };
-
-  // Builder for creating a TestResponse object with the given data. The faked
-  // download manager will respond to the corresponding request based on this.
-  class TestResponseBuilder {
-   public:
-    explicit TestResponseBuilder(int response_code);
-    ~TestResponseBuilder();
-
-    TestResponseBuilder& AddResponseHeader(const std::string& name,
-                                           const std::string& value);
-    TestResponseBuilder& SetResponseData(std::string data);
-
-    // Finalizes the builder and invalidates the underlying response.
-    std::unique_ptr<TestResponse> Build();
-
-   private:
-    std::unique_ptr<TestResponse> response_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestResponseBuilder);
-  };
 
   // Creates a Background Fetch registration backed by a Service Worker
   // registration for the testing origin. The resulting registration will be
@@ -79,23 +49,20 @@ class BackgroundFetchTestBase : public ::testing::Test {
       WARN_UNUSED_RESULT;
 
   // Creates a ServiceWorkerFetchRequest instance for the given details and
-  // provides a faked |response| with the faked download manager.
+  // provides a faked |response|.
   ServiceWorkerFetchRequest CreateRequestWithProvidedResponse(
       const std::string& method,
-      const std::string& url,
+      const GURL& url,
       std::unique_ptr<TestResponse> response);
 
   // Returns the embedded worker test helper instance, which can be used to
-  // influence the behaviour of the Service Worker events.
+  // influence the behavior of the Service Worker events.
   BackgroundFetchEmbeddedWorkerTestHelper* embedded_worker_test_helper() {
     return &embedded_worker_test_helper_;
   }
 
   // Returns the browser context that should be used for the tests.
   BrowserContext* browser_context() { return &browser_context_; }
-
-  // Returns the download manager used for the tests.
-  MockDownloadManager* download_manager();
 
   // Returns the origin that should be used for Background Fetch tests.
   const url::Origin& origin() const { return origin_; }
@@ -104,11 +71,9 @@ class BackgroundFetchTestBase : public ::testing::Test {
   TestBrowserThreadBundle thread_bundle_;  // Must be first member.
 
  private:
-  class RespondingDownloadManager;
+  BackgroundFetchTestBrowserContext browser_context_;
 
-  TestBrowserContext browser_context_;
-
-  RespondingDownloadManager* download_manager_;  // owned by |browser_context_|
+  MockBackgroundFetchDelegate* delegate_;
 
   BackgroundFetchEmbeddedWorkerTestHelper embedded_worker_test_helper_;
 

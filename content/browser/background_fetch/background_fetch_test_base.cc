@@ -25,11 +25,6 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
-#include "content/public/browser/download_url_parameters.h"
-#include "content/public/test/fake_download_item.h"
-#include "content/public/test/mock_download_manager.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -67,147 +62,11 @@ void DidFindServiceWorkerRegistration(
 
 }  // namespace
 
-// -----------------------------------------------------------------------------
-// TestResponse
-
-BackgroundFetchTestBase::TestResponse::TestResponse() = default;
-
-BackgroundFetchTestBase::TestResponse::~TestResponse() = default;
-
-// -----------------------------------------------------------------------------
-// TestResponseBuilder
-
-BackgroundFetchTestBase::TestResponseBuilder::TestResponseBuilder(
-    int response_code)
-    : response_(base::MakeUnique<BackgroundFetchTestBase::TestResponse>()) {
-  response_->headers = make_scoped_refptr(new net::HttpResponseHeaders(
-      "HTTP/1.1 " + std::to_string(response_code)));
-}
-
-BackgroundFetchTestBase::TestResponseBuilder::~TestResponseBuilder() = default;
-
-BackgroundFetchTestBase::TestResponseBuilder&
-BackgroundFetchTestBase::TestResponseBuilder::AddResponseHeader(
-    const std::string& name,
-    const std::string& value) {
-  DCHECK(response_);
-  response_->headers->AddHeader(name + ": " + value);
-  return *this;
-}
-
-BackgroundFetchTestBase::TestResponseBuilder&
-BackgroundFetchTestBase::TestResponseBuilder::SetResponseData(
-    std::string data) {
-  DCHECK(response_);
-  response_->data.swap(data);
-  return *this;
-}
-
-std::unique_ptr<BackgroundFetchTestBase::TestResponse>
-BackgroundFetchTestBase::TestResponseBuilder::Build() {
-  return std::move(response_);
-}
-
-// -----------------------------------------------------------------------------
-// RespondingDownloadManager
-
-// Faked download manager that will respond to known HTTP requests with a test-
-// defined response. See CreateRequestWithProvidedResponse().
-class BackgroundFetchTestBase::RespondingDownloadManager
-    : public MockDownloadManager {
- public:
-  RespondingDownloadManager() : weak_ptr_factory_(this) {}
-  ~RespondingDownloadManager() override = default;
-
-  // Responds to requests to |url| with the given |response|.
-  void RegisterResponse(const GURL& url,
-                        std::unique_ptr<TestResponse> response) {
-    DCHECK_EQ(registered_responses_.count(url), 0u);
-    registered_responses_[url] = std::move(response);
-  }
-
-  // Called when the Background Fetch system starts a download, all information
-  // for which is contained in the |params|.
-  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override {
-    auto iter = registered_responses_.find(params->url());
-    if (iter == registered_responses_.end())
-      return;
-
-    TestResponse* response = iter->second.get();
-
-    std::unique_ptr<FakeDownloadItem> download_item =
-        base::MakeUnique<FakeDownloadItem>();
-
-    download_item->SetURL(params->url());
-    download_item->SetUrlChain({params->url()});
-    download_item->SetState(DownloadItem::DownloadState::IN_PROGRESS);
-    download_item->SetGuid(params->guid().empty() ? base::GenerateGUID()
-                                                  : params->guid());
-    download_item->SetStartTime(base::Time::Now());
-    download_item->SetResponseHeaders(response->headers);
-
-    // Asynchronously invoke the callback set on the |params|, and then continue
-    // dealing with the response in this class.
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(params->callback(), download_item.get(),
-                       DOWNLOAD_INTERRUPT_REASON_NONE),
-        base::BindOnce(&RespondingDownloadManager::DidStartDownload,
-                       weak_ptr_factory_.GetWeakPtr(), download_item.get()));
-
-    download_items_.push_back(std::move(download_item));
-  }
-
- private:
-  // Called when the download has been "started" by the download manager. This
-  // is where we finish the download by sending a single update.
-  void DidStartDownload(FakeDownloadItem* download_item) {
-    auto iter = registered_responses_.find(download_item->GetURL());
-    DCHECK(iter != registered_responses_.end());
-
-    TestResponse* response = iter->second.get();
-
-    download_item->SetState(DownloadItem::DownloadState::COMPLETE);
-    download_item->SetEndTime(base::Time::Now());
-
-    base::FilePath response_path;
-    if (!temp_directory_.IsValid())
-      ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
-
-    // Write the |response|'s data to a temporary file.
-    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory_.GetPath(),
-                                               &response_path));
-
-    ASSERT_NE(-1 /* error */,
-              base::WriteFile(response_path, response->data.c_str(),
-                              response->data.size()));
-
-    download_item->SetTargetFilePath(response_path);
-    download_item->SetReceivedBytes(response->data.size());
-    download_item->SetMimeType("text/plain");
-
-    // Notify the Job Controller about the download having been updated.
-    download_item->NotifyDownloadUpdated();
-  }
-
-  // Map of URL to the response information associated with that URL.
-  std::map<GURL, std::unique_ptr<TestResponse>> registered_responses_;
-
-  // Only used to guarantee the lifetime of the created FakeDownloadItems.
-  std::vector<std::unique_ptr<FakeDownloadItem>> download_items_;
-
-  // Temporary directory in which successfully downloaded files will be stored.
-  base::ScopedTempDir temp_directory_;
-
-  base::WeakPtrFactory<RespondingDownloadManager> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(RespondingDownloadManager);
-};
-
 BackgroundFetchTestBase::BackgroundFetchTestBase()
     // Using REAL_IO_THREAD would give better coverage for thread safety, but
     // at time of writing EmbeddedWorkerTestHelper didn't seem to support that.
     : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      delegate_(browser_context_.GetBackgroundFetchDelegate()),
       origin_(GURL(kTestOrigin)) {}
 
 BackgroundFetchTestBase::~BackgroundFetchTestBase() {
@@ -216,19 +75,10 @@ BackgroundFetchTestBase::~BackgroundFetchTestBase() {
 }
 
 void BackgroundFetchTestBase::SetUp() {
-  download_manager_ = new RespondingDownloadManager();
-
-  // The |download_manager_| ownership is given to the BrowserContext, and the
-  // BrowserContext will take care of deallocating it.
-  BrowserContext::SetDownloadManagerForTesting(
-      browser_context(), base::WrapUnique(download_manager_));
-
   set_up_called_ = true;
 }
 
 void BackgroundFetchTestBase::TearDown() {
-  EXPECT_CALL(*download_manager_, Shutdown()).Times(1);
-
   service_worker_registrations_.clear();
   tear_down_called_ = true;
 }
@@ -293,20 +143,16 @@ bool BackgroundFetchTestBase::CreateRegistrationId(
 ServiceWorkerFetchRequest
 BackgroundFetchTestBase::CreateRequestWithProvidedResponse(
     const std::string& method,
-    const std::string& url,
+    const GURL& url,
     std::unique_ptr<TestResponse> response) {
   GURL gurl(url);
 
-  // Register the |response| with the faked download manager.
-  download_manager_->RegisterResponse(gurl, std::move(response));
+  // Register the |response| with the faked delegate.
+  delegate_->RegisterResponse(url, std::move(response));
 
   // Create a ServiceWorkerFetchRequest request with the same information.
   return ServiceWorkerFetchRequest(gurl, method, ServiceWorkerHeaderMap(),
                                    Referrer(), false /* is_reload */);
-}
-
-MockDownloadManager* BackgroundFetchTestBase::download_manager() {
-  return download_manager_;
 }
 
 }  // namespace content

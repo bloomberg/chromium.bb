@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/background_fetch/background_fetch_response.h"
+#include "content/public/browser/background_fetch_response.h"
 
 namespace content {
 
@@ -12,6 +12,9 @@ BackgroundFetchResponse::BackgroundFetchResponse(
     : url_chain(url_chain), headers(headers) {}
 
 BackgroundFetchResponse::~BackgroundFetchResponse() {}
+
+BackgroundFetchResult::BackgroundFetchResult(base::Time response_time)
+    : response_time(response_time) {}
 
 BackgroundFetchResult::BackgroundFetchResult(base::Time response_time,
                                              const base::FilePath& path,

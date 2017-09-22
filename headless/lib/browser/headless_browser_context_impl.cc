@@ -252,6 +252,11 @@ content::PermissionManager* HeadlessBrowserContextImpl::GetPermissionManager() {
   return permission_manager_.get();
 }
 
+content::BackgroundFetchDelegate*
+HeadlessBrowserContextImpl::GetBackgroundFetchDelegate() {
+  return nullptr;
+}
+
 content::BackgroundSyncController*
 HeadlessBrowserContextImpl::GetBackgroundSyncController() {
   return nullptr;

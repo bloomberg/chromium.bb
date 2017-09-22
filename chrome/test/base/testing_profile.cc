@@ -964,6 +964,10 @@ content::PermissionManager* TestingProfile::GetPermissionManager() {
   return NULL;
 }
 
+content::BackgroundFetchDelegate* TestingProfile::GetBackgroundFetchDelegate() {
+  return nullptr;
+}
+
 content::BackgroundSyncController*
 TestingProfile::GetBackgroundSyncController() {
   return nullptr;

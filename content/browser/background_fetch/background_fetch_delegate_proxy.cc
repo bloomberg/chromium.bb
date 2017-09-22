@@ -8,9 +8,9 @@
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
-#include "content/browser/background_fetch/background_fetch_delegate.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
-#include "content/browser/background_fetch/background_fetch_response.h"
+#include "content/public/browser/background_fetch_delegate.h"
+#include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -23,11 +23,14 @@ class BackgroundFetchDelegateProxy::Core
     : public BackgroundFetchDelegate::Client {
  public:
   Core(const base::WeakPtr<BackgroundFetchDelegateProxy>& io_parent,
-       base::WeakPtr<BackgroundFetchDelegate> delegate)
+       BackgroundFetchDelegate* delegate)
       : io_parent_(io_parent), delegate_(delegate), weak_ptr_factory_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    delegate_->SetDelegateClient(weak_ptr_factory_.GetWeakPtr());
+    // Some BrowserContext implementations return nullptr for their delegate
+    // implementation and the feature should be disabled in that case.
+    if (delegate_)
+      delegate_->SetDelegateClient(GetWeakPtrOnUI());
   }
 
   ~Core() override { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
@@ -42,6 +45,12 @@ class BackgroundFetchDelegateProxy::Core
                     scoped_refptr<BackgroundFetchRequestInfo> request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(request);
+
+    // TODO(crbug/757760): This can be nullptr, is if the delegate has shut
+    // down, in which case we need to make sure this is retried when the browser
+    // restarts.
+    if (!delegate_)
+      return;
 
     const ServiceWorkerFetchRequest& fetch_request = request->fetch_request();
 
@@ -102,12 +111,15 @@ class BackgroundFetchDelegateProxy::Core
   void OnDownloadStarted(
       const std::string& guid,
       std::unique_ptr<content::BackgroundFetchResponse> response) override;
+  void OnDelegateShutdown() override;
 
  private:
   // Weak reference to the IO thread outer class that owns us.
   base::WeakPtr<BackgroundFetchDelegateProxy> io_parent_;
 
-  base::WeakPtr<BackgroundFetchDelegate> delegate_;
+  // Delegate is owned elsewhere and is valid from construction until
+  // OnDelegateShutDown (if not initially nullptr).
+  BackgroundFetchDelegate* delegate_;
 
   base::WeakPtrFactory<Core> weak_ptr_factory_;
 
@@ -141,8 +153,12 @@ void BackgroundFetchDelegateProxy::Core::OnDownloadStarted(
                      guid, std::move(response)));
 }
 
+void BackgroundFetchDelegateProxy::Core::OnDelegateShutdown() {
+  delegate_ = nullptr;
+}
+
 BackgroundFetchDelegateProxy::BackgroundFetchDelegateProxy(
-    base::WeakPtr<BackgroundFetchDelegate> delegate)
+    BackgroundFetchDelegate* delegate)
     : weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

@@ -42,8 +42,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
     virtual ~Controller() {}
   };
 
-  explicit BackgroundFetchDelegateProxy(
-      base::WeakPtr<BackgroundFetchDelegate> delegate);
+  explicit BackgroundFetchDelegateProxy(BackgroundFetchDelegate* delegate);
 
   ~BackgroundFetchDelegateProxy();
 

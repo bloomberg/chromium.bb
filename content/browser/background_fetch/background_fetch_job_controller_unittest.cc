@@ -16,13 +16,12 @@
 #include "base/run_loop.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
-#include "content/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,7 +45,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   // included |request_data|. Should be wrapped in ASSERT_NO_FATAL_FAILURE().
   void CreateRegistrationForRequests(
       BackgroundFetchRegistrationId* registration_id,
-      std::map<std::string /* url */, std::string /* method */> request_data) {
+      std::map<GURL, std::string /* method */> request_data) {
     DCHECK(registration_id);
 
     ASSERT_TRUE(CreateRegistrationId(kExampleTag, registration_id));
@@ -55,7 +54,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     requests.reserve(request_data.size());
 
     for (const auto& pair : request_data) {
-      requests.emplace_back(GURL(pair.first), pair.second /* method */,
+      requests.emplace_back(pair.first, pair.second /* method */,
                             ServiceWorkerHeaderMap(), Referrer(),
                             false /* is_reload */);
     }
@@ -82,12 +81,11 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   // Creates a new BackgroundFetchJobController instance.
   std::unique_ptr<BackgroundFetchJobController> CreateJobController(
       const BackgroundFetchRegistrationId& registration_id) {
-    delegate_ =
-        base::MakeUnique<BackgroundFetchDelegateImpl>(browser_context());
-    delegate_proxy_ =
-        base::MakeUnique<BackgroundFetchDelegateProxy>(delegate_->GetWeakPtr());
+    delegate_ = browser_context()->GetBackgroundFetchDelegate();
+    DCHECK(delegate_);
+    delegate_proxy_ = std::make_unique<BackgroundFetchDelegateProxy>(delegate_);
 
-    return base::MakeUnique<BackgroundFetchJobController>(
+    return std::make_unique<BackgroundFetchJobController>(
         delegate_proxy_.get(), registration_id, BackgroundFetchOptions(),
         &data_manager_,
         base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
@@ -103,7 +101,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   base::OnceClosure job_completed_closure_;
 
   std::unique_ptr<BackgroundFetchDelegateProxy> delegate_proxy_;
-  std::unique_ptr<BackgroundFetchDelegateImpl> delegate_;
+  BackgroundFetchDelegate* delegate_;
 
  private:
   void DidCreateRegistration(blink::mojom::BackgroundFetchError* out_error,
@@ -135,7 +133,7 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
   BackgroundFetchRegistrationId registration_id;
 
   ASSERT_NO_FATAL_FAILURE(CreateRegistrationForRequests(
-      &registration_id, {{"https://example.com/funny_cat.png", "GET"}}));
+      &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"}}));
 
   std::unique_ptr<BackgroundFetchJobController> controller =
       CreateJobController(registration_id);
@@ -167,11 +165,11 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
   ASSERT_GT(5u, kMaximumBackgroundFetchParallelRequests);
 
   ASSERT_NO_FATAL_FAILURE(CreateRegistrationForRequests(
-      &registration_id, {{"https://example.com/funny_cat.png", "GET"},
-                         {"https://example.com/scary_cat.png", "GET"},
-                         {"https://example.com/crazy_cat.png", "GET"},
-                         {"https://example.com/silly_cat.png", "GET"},
-                         {"https://example.com/happy_cat.png", "GET"}}));
+      &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"},
+                         {GURL("https://example.com/scary_cat.png"), "GET"},
+                         {GURL("https://example.com/crazy_cat.png"), "GET"},
+                         {GURL("https://example.com/silly_cat.png"), "GET"},
+                         {GURL("https://example.com/happy_cat.png"), "GET"}}));
 
   std::unique_ptr<BackgroundFetchJobController> controller =
       CreateJobController(registration_id);
@@ -201,7 +199,7 @@ TEST_F(BackgroundFetchJobControllerTest, AbortJob) {
   BackgroundFetchRegistrationId registration_id;
 
   ASSERT_NO_FATAL_FAILURE(CreateRegistrationForRequests(
-      &registration_id, {{"https://example.com/sad_cat.png", "GET"}}));
+      &registration_id, {{GURL("https://example.com/sad_cat.png"), "GET"}}));
 
   std::unique_ptr<BackgroundFetchJobController> controller =
       CreateJobController(registration_id);

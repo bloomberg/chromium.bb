@@ -140,6 +140,11 @@ content::PermissionManager* CastBrowserContext::GetPermissionManager() {
   return permission_manager_.get();
 }
 
+content::BackgroundFetchDelegate*
+CastBrowserContext::GetBackgroundFetchDelegate() {
+  return nullptr;
+}
+
 content::BackgroundSyncController*
 CastBrowserContext::GetBackgroundSyncController() {
   return nullptr;

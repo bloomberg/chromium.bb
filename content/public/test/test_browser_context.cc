@@ -123,6 +123,10 @@ PermissionManager* TestBrowserContext::GetPermissionManager() {
   return permission_manager_.get();
 }
 
+BackgroundFetchDelegate* TestBrowserContext::GetBackgroundFetchDelegate() {
+  return nullptr;
+}
+
 BackgroundSyncController* TestBrowserContext::GetBackgroundSyncController() {
   if (!background_sync_controller_)
     background_sync_controller_.reset(new MockBackgroundSyncController());
