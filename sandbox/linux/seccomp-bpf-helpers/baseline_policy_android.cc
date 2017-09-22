@@ -75,15 +75,17 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_flock:
     case __NR_fsync:
     case __NR_ftruncate:
-#if defined(__i386__) || defined(__arm__) || defined(__mips__)
+#if defined(__i386__) || defined(__arm__) || defined(__mips32__)
     case __NR_ftruncate64:
 #endif
 #if defined(__x86_64__) || defined(__aarch64__)
     case __NR_newfstatat:
     case __NR_fstatfs:
-#elif defined(__i386__) || defined(__arm__) || defined(__mips__)
+#elif defined(__i386__) || defined(__arm__) || defined(__mips32__)
     case __NR_fstatat64:
     case __NR_fstatfs64:
+#endif
+#if defined(__i386__) || defined(__arm__) || defined(__mips__)
     case __NR_getdents:
 #endif
     case __NR_getdents64:
