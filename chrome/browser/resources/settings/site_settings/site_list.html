@@ -20,7 +20,11 @@
 
 <dom-module id="site-list">
   <template>
-    <style include="settings-shared iron-flex"></style>
+    <style include="settings-shared">
+      .settings-row {
+        flex: 1
+      }
+    </style>
     <div id="category">
       <div class="settings-box first">
         <h2 class="start">[[categoryHeader]]</h2>
@@ -59,7 +63,7 @@
       <div class="list-frame menu-content vertical-list" id="listContainer">
         <template is="dom-repeat" items="[[sites]]">
           <div class="list-item">
-            <div class="settings-row wide"
+            <div class="settings-row"
                 actionable$="[[enableSiteSettings_]]" on-tap="onOriginTap_">
               <div class="favicon-image"
                   style$="[[computeSiteIcon(item.origin)]]">
