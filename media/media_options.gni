@@ -190,7 +190,8 @@ declare_args() {
 
   # Force to host the CDM service in standalone "cdm" service instead of the
   # "media" service hosted in the process specified by "mojo_media_host". Other
-  # mojo media services will not be affected.
+  # mojo media services will not be affected. If true, the "cdm" service must
+  # also be included in "mojo_media_services".
   enable_standalone_cdm_service = false
 
   # Default mojo_media_services and mojo_media_host on various platforms.

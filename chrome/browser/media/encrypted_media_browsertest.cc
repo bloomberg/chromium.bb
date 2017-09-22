@@ -543,15 +543,11 @@ INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey,
                                 Values(SrcType::MSE),
                                 Values(CdmHostType::kPepper)));
 
-// External Clear Key does not work with mojo CDM on Mac yet.
-// See http://crbug.com/736106
-#if !defined(OS_MACOSX)
 INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey_Mojo,
                         EncryptedMediaTest,
                         Combine(Values(kExternalClearKeyKeySystem),
                                 Values(SrcType::MSE),
                                 Values(CdmHostType::kMojo)));
-#endif  // !defined(OS_MACOSX)
 #else   // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // To reduce test time, only run ClearKey SRC tests when we are not running
 // ExternalClearKey SRC tests.
@@ -745,13 +741,9 @@ INSTANTIATE_TEST_CASE_P(Pepper,
                         ECKEncryptedMediaTest,
                         Values(CdmHostType::kPepper));
 
-// External Clear Key does not work with mojo CDM on Mac yet.
-// See http://crbug.com/736106
-#if !defined(OS_MACOSX)
 INSTANTIATE_TEST_CASE_P(Mojo,
                         ECKEncryptedMediaTest,
                         Values(CdmHostType::kMojo));
-#endif  // !defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, InitializeCDMFail) {
   TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem,

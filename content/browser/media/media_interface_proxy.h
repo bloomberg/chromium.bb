@@ -45,10 +45,11 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
                  media::mojom::ContentDecryptionModuleRequest request) final;
 
  private:
-  // Get the |interface_factory_ptr_|.
+  // Get the |interface_factory_ptr_|. Returns null if expected error happened.
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
 
-  // Get the |cdm_interface_factory_ptr_|.
+  // Get the |cdm_interface_factory_ptr_|. Returns null if expected error
+  // happened.
   media::mojom::InterfaceFactory* GetCdmInterfaceFactory(
       const std::string& key_system);
 
