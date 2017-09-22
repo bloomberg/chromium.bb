@@ -20,7 +20,6 @@
 #import "ios/web/public/test/fakes/test_web_client.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/web_test.h"
-#import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/webui/crw_web_ui_page_builder.h"
 #import "ios/web/webui/url_fetcher_block_adapter.h"
@@ -141,11 +140,7 @@ TEST_F(CRWWebUIManagerTest, LoadWebUI) {
   base::string16 html(base::SysNSStringToUTF16(kHtml));
   GURL url(kTestWebUIUrl);
   EXPECT_CALL(*web_state_impl_, LoadWebUIHtml(html, url));
-  std::unique_ptr<web::NavigationContext> context =
-      NavigationContextImpl::CreateNavigationContext(
-          web_state_impl_.get(), url,
-          ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK, true);
-  web_state_impl_->OnNavigationStarted(context.get());
+  [web_ui_manager_ loadWebUIForURL:url];
 }
 
 }  // namespace web
