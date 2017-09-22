@@ -166,8 +166,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     [self promoStateChangedAnimated:NO];
 
     // Create and setup tableview.
-    self.tableView =
+    _tableView =
         [[UITableView alloc] initWithFrame:frame style:UITableViewStylePlain];
+    self.tableView.accessibilityIdentifier = @"bookmarksTableView";
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
     if (@available(iOS 11.0, *)) {

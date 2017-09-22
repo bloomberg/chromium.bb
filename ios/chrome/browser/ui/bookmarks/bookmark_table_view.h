@@ -70,7 +70,7 @@ class PrefRegistrySyncable;
 // If the table is in edit mode.
 @property(nonatomic, assign) BOOL editing;
 // The UITableView to show bookmarks.
-@property(nonatomic, strong) UITableView* tableView;
+@property(nonatomic, strong, readonly) UITableView* tableView;
 // Header view to display the shadow below the app bar. It must be tracking the
 // |tableView|.
 @property(nonatomic, weak) MDCFlexibleHeaderView* headerView;
