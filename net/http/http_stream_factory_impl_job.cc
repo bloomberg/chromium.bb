@@ -425,6 +425,11 @@ SpdySessionKey HttpStreamFactoryImpl::Job::GetSpdySessionKey(
 bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
   DCHECK(!using_quic_);
 
+  if (proxy_info_.is_direct() &&
+      session_->http_server_properties()->RequiresHTTP11(destination_)) {
+    return false;
+  }
+
   // We need to make sure that if a spdy session was created for
   // https://somehost/ that we don't use that session for http://somehost:443/.
   // The only time we can use an existing session is if the request URL is

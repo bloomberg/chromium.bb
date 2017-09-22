@@ -388,6 +388,10 @@ bool HttpAuthController::HaveAuth() const {
   return handler_.get() && !identity_.invalid;
 }
 
+bool HttpAuthController::NeedsHTTP11() const {
+  return handler_ && handler_->is_connection_based();
+}
+
 void HttpAuthController::InvalidateCurrentHandler(
     InvalidateHandlerAction action) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

@@ -224,6 +224,13 @@ void HttpNetworkTransaction::PrepareForAuthRestart(HttpAuth::Target target) {
   DCHECK(HaveAuth(target));
   DCHECK(!stream_request_.get());
 
+  // Authorization schemes incompatible with HTTP/2 are unsupported for proxies.
+  if (target == HttpAuth::AUTH_SERVER &&
+      auth_controllers_[target]->NeedsHTTP11()) {
+    session_->http_server_properties()->SetHTTP11Required(
+        HostPortPair::FromURL(request_->url));
+  }
+
   bool keep_alive = false;
   // Even if the server says the connection is keep-alive, we have to be
   // able to find the end of each response in order to reuse the connection.
