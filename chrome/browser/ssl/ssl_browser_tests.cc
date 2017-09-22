@@ -923,16 +923,16 @@ class SecurityStateWebContentsObserver : public content::WebContentsObserver {
   base::RunLoop run_loop_;
 };
 
-// A WebContentsObserver that allows the user to wait for a same-page
-// navigation. Tests using this observer will fail if a non-same-page navigation
-// completes after calling WaitForSamePageNavigation.
-class SamePageNavigationObserver : public content::WebContentsObserver {
+// A WebContentsObserver that allows the user to wait for a same-document
+// navigation. Tests using this observer will fail if a non-same-document
+// navigation completes after calling WaitForSameDocumentNavigation.
+class SameDocumentNavigationObserver : public content::WebContentsObserver {
  public:
-  explicit SamePageNavigationObserver(content::WebContents* web_contents)
+  explicit SameDocumentNavigationObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents) {}
-  ~SamePageNavigationObserver() override {}
+  ~SameDocumentNavigationObserver() override {}
 
-  void WaitForSamePageNavigation() { run_loop_.Run(); }
+  void WaitForSameDocumentNavigation() { run_loop_.Run(); }
 
   // WebContentsObserver:
   void DidFinishNavigation(
@@ -982,7 +982,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, GoBackToMixedContent) {
 }
 
 // Tests that the mixed content flags are not reset for an in-page navigation.
-IN_PROC_BROWSER_TEST_F(SSLUITest, MixedContentWithSamePageNavigation) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, MixedContentWithSameDocumentNavigation) {
   ASSERT_TRUE(https_server_.Start());
 
   // Navigate to a URL and dynamically load mixed content.
@@ -1000,12 +1000,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MixedContentWithSamePageNavigation) {
   CheckSecurityState(tab, CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 
-  // Initiate a same-page navigation and check that the page is still marked as
-  // having displayed mixed content.
-  SamePageNavigationObserver navigation_observer(tab);
+  // Initiate a same-document navigation and check that the page is still
+  // marked as having displayed mixed content.
+  SameDocumentNavigationObserver navigation_observer(tab);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html#foo"));
-  navigation_observer.WaitForSamePageNavigation();
+  navigation_observer.WaitForSameDocumentNavigation();
   CheckSecurityState(tab, CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 }
@@ -4813,9 +4813,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_RestoreThenNavigateHasSSLState) {
 
 // Simulate the URL changing when the user presses enter in the omnibox. This
 // could happen when the user's login is expired and the server redirects them
-// to a login page. This will be considered a SAME_PAGE navigation but we do
-// want to update the SSL state.
-IN_PROC_BROWSER_TEST_F(SSLUITest, SamePageHasSSLState) {
+// to a login page. This will be considered a same document navigation but we
+// do want to update the SSL state.
+IN_PROC_BROWSER_TEST_F(SSLUITest, SameDocumentHasSSLState) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
