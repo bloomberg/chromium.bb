@@ -445,6 +445,21 @@ TEST_F(EventHandlerTest, ImagesCannotStartSelection) {
                                                                          hit));
 }
 
+TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
+  SetHtmlInnerHTML("<a id='id' href=bala>Anchor Text</a>");
+  Node* const link = GetDocument().body()->firstChild();
+  LayoutPoint location = link->GetLayoutObject()->VisualRect().Center();
+  HitTestResult hit =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+          location);
+  Node* const text = link->firstChild();
+  EXPECT_FALSE(text->CanStartSelection());
+  EXPECT_TRUE(hit.IsOverLink());
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
+                                                                         hit));
+}
+
 // Regression test for http://crbug.com/641403 to verify we use up-to-date
 // layout tree for dispatching "contextmenu" event.
 TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
