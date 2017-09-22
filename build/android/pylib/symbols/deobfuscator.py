@@ -6,14 +6,16 @@ import logging
 import os
 import subprocess
 import threading
+import time
 import uuid
 
 from devil.utils import reraiser_thread
 from pylib import constants
 
 
-_MINIUMUM_TIMEOUT = 5.0  # Large enough to account for process start-up.
+_MINIUMUM_TIMEOUT = 3.0
 _PER_LINE_TIMEOUT = .002  # Should be able to process 500 lines per second.
+_PROCESS_START_TIMEOUT = 10.0
 
 
 class Deobfuscator(object):
@@ -27,6 +29,7 @@ class Deobfuscator(object):
     # Assign to None so that attribute exists if Popen() throws.
     self._proc = None
     # Start process eagerly to hide start-up latency.
+    self._proc_start_time = time.time()
     self._proc = subprocess.Popen(
         cmd, bufsize=1, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
         close_fds=True)
@@ -71,7 +74,7 @@ class Deobfuscator(object):
           break
         out_lines.append(line)
 
-    if not self.IsReady():
+    if self.IsBusy():
       logging.warning('deobfuscator: Having to wait for Java deobfuscation.')
 
     # Allow only one thread to operate at a time.
@@ -92,7 +95,9 @@ class Deobfuscator(object):
         self._proc.stdin.write('\n'.join(lines))
         self._proc.stdin.write('\n{}\n'.format(eof_line))
         self._proc.stdin.flush()
-        timeout = max(_MINIUMUM_TIMEOUT, len(lines) * _PER_LINE_TIMEOUT)
+        time_since_proc_start = time.time() - self._proc_start_time
+        timeout = (max(0, _PROCESS_START_TIMEOUT - time_since_proc_start) +
+                   max(_MINIUMUM_TIMEOUT, len(lines) * _PER_LINE_TIMEOUT))
         reader_thread.join(timeout)
         if self.IsClosed():
           logging.warning(
