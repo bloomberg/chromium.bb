@@ -701,8 +701,13 @@ base::string16 DownloadItemNotification::GetTitle() const {
       }
       break;
     case content::DownloadItem::COMPLETE:
-      title_text = l10n_util::GetStringFUTF16(
-          IDS_DOWNLOAD_STATUS_DOWNLOADED_TITLE, file_name);
+      if (message_center::IsNewStyleNotificationEnabled()) {
+        title_text =
+            l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_COMPLETE_TITLE);
+      } else {
+        title_text = l10n_util::GetStringFUTF16(
+            IDS_DOWNLOAD_STATUS_DOWNLOADED_TITLE, file_name);
+      }
       break;
     case content::DownloadItem::INTERRUPTED:
       title_text = l10n_util::GetStringFUTF16(
@@ -868,6 +873,8 @@ base::string16 DownloadItemNotification::GetSubStatusString() const {
       // If the file has been removed: Removed
       if (item_->GetFileExternallyRemoved())
         return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED);
+      else if (message_center::IsNewStyleNotificationEnabled())
+        return item_->GetFileNameToReportUser().LossyDisplayName();
       else
         return base::string16();
     case content::DownloadItem::CANCELLED:

@@ -1404,6 +1404,10 @@ are declared in build/common.gypi.
                  desc="The title of a download notification: the current download status is failed.">
                  <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph> download unsuccessful
         </message>
+        <message name="IDS_DOWNLOAD_STATUS_COMPLETE_TITLE"
+                 desc="The title of a download notification: the current download status is finished successufully.">
+                 Download complete
+        </message>
         <message name="IDS_DOWNLOAD_NOTIFICATION_STATUS"
                  desc="Size and units downloaded and total, the origin domain, and the current status od download.">
           <ph name="DOWNLOAD_RECEIVED_AND_TOTAL">$1<ex>54/154 MB</ex></ph>, <ph name="SUB_STATUS_TEXT">$2<ex>24 secs remaining</ex></ph>
