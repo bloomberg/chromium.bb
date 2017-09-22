@@ -11,26 +11,26 @@
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
 
-namespace {
-
-content::WebUIDataSource* CreateInterventionsInternalsHTMLSource() {
+InterventionsInternalsUI::InterventionsInternalsUI(content::WebUI* web_ui)
+    : MojoWebUIController(web_ui) {
+  // Set up the chrome://interventions-internals/ source.
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIInterventionsInternalsHost);
-
+  source->AddResourcePath("index.js", IDR_INTERVENTIONS_INTERNALS_INDEX_JS);
+  source->AddResourcePath(
+      "chrome/browser/ui/webui/interventions_internals/"
+      "interventions_internals.mojom.js",
+      IDR_INTERVENTIONS_INTERNALS_MOJO_INDEX_JS);
   source->SetDefaultResource(IDR_INTERVENTIONS_INTERNALS_INDEX_HTML);
   source->UseGzip(std::vector<std::string>());
-  return source;
+
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
-}  // namespace
+InterventionsInternalsUI::~InterventionsInternalsUI() {}
 
-InterventionsInternalsUI::InterventionsInternalsUI(content::WebUI* web_ui)
-    : WebUIController(web_ui) {
-  // Set up the chrome://interventions-internals/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile,
-                                CreateInterventionsInternalsHTMLSource());
-
-  // TODO(thanhdle): Add a previews message handler.
-  // crbug.com/764409
+void InterventionsInternalsUI::BindUIHandler(
+    mojom::InterventionsInternalsPageHandlerRequest request) {
+  page_handler_.reset(
+      new InterventionsInternalsPageHandler(std::move(request)));
 }

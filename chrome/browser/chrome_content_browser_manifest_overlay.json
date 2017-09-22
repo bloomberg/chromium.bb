@@ -84,6 +84,7 @@
 
           // TODO(beng): These should be moved to a separate capability.
 	  "media::mojom::MediaEngagementScoreDetailsProvider",
+          "mojom::InterventionsInternalsPageHandler",
           "mojom::OmniboxPageHandler",
           "mojom::PluginsPageHandler",
           "mojom::SiteEngagementDetailsProvider",
