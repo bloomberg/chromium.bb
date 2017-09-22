@@ -137,8 +137,15 @@ void SingleWebContentsDialogManagerViewsMac::Show() {
           showSheet:sheet_
       forParentView:parent_view];
 
-  if (!widget_->IsVisible())
+  if (!widget_->IsVisible()) {
+    if (was_shown_) {
+      // Disable animations when switching tabs.
+      widget_->SetVisibilityChangedAnimationsEnabled(false);
+    }
     widget_->Show();
+    widget_->SetVisibilityChangedAnimationsEnabled(true);
+    was_shown_ = true;
+  }
 }
 
 void SingleWebContentsDialogManagerViewsMac::Hide() {
@@ -146,12 +153,15 @@ void SingleWebContentsDialogManagerViewsMac::Hide() {
       delegate_->GetWebContents()->GetTopLevelNativeWindow();
   [[ConstrainedWindowSheetController controllerForParentWindow:parent_window]
       hideSheet:sheet_];
+
+  widget_->Hide();
 }
 
 void SingleWebContentsDialogManagerViewsMac::Close() {
   // When the WebContents is destroyed, WebContentsModalDialogManager
   // ::CloseAllDialogs will call this. Close the Widget in the same manner as
   // the dialogs so that codepaths are consistent.
+  widget_->SetVisibilityChangedAnimationsEnabled(false);
   widget_->Close();  // Note: Synchronously calls OnWidgetClosing() below.
 }
 

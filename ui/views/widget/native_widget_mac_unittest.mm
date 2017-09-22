@@ -105,6 +105,11 @@ class BridgedNativeWidgetTestApi {
     bridge_->AcceleratedWidgetSwapCompleted();
   }
 
+  NSAnimation* show_animation() {
+    return base::mac::ObjCCastStrict<NSAnimation>(
+        bridge_->show_animation_.get());
+  }
+
  private:
   BridgedNativeWidget* bridge_;
 
@@ -994,14 +999,23 @@ Widget* ShowChildModalWidgetAndWait(NSWindow* native_parent) {
   EXPECT_FALSE(modal_dialog_widget->IsVisible());
   ScopedSwizzleWaiter show_waiter([ConstrainedWindowAnimationShow class]);
 
+  BridgedNativeWidgetTestApi test_api(modal_dialog_widget->GetNativeWindow());
+  EXPECT_FALSE(test_api.show_animation());
+
   modal_dialog_widget->Show();
   // Visible immediately (although it animates from transparent).
   EXPECT_TRUE(modal_dialog_widget->IsVisible());
+  base::scoped_nsobject<NSAnimation> retained_animation(
+      test_api.show_animation(), base::scoped_policy::RETAIN);
+  EXPECT_TRUE(retained_animation);
+  EXPECT_TRUE([retained_animation isAnimating]);
 
   // Run the animation.
   show_waiter.WaitForMethod();
   EXPECT_TRUE(modal_dialog_widget->IsVisible());
   EXPECT_TRUE(show_waiter.method_called());
+  EXPECT_FALSE([retained_animation isAnimating]);
+  EXPECT_FALSE(test_api.show_animation());
   return modal_dialog_widget;
 }
 
@@ -1068,6 +1082,53 @@ TEST_F(NativeWidgetMacTest, NativeWindowChildModalShowHide) {
     hide_waiter.WaitForMethod();
     EXPECT_TRUE(hide_waiter.method_called());
   }
+}
+
+// Tests that calls to Hide() a Widget cancel any in-progress show animation,
+// and that clients can control the triggering of the animation.
+TEST_F(NativeWidgetMacTest, ShowAnimationControl) {
+  NSWindow* native_parent = MakeNativeParent();
+  Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
+      new ModalDialogDelegate(ui::MODAL_TYPE_CHILD), nullptr,
+      [native_parent contentView]);
+
+  modal_dialog_widget->SetBounds(gfx::Rect(50, 50, 200, 150));
+  EXPECT_FALSE(modal_dialog_widget->IsVisible());
+
+  BridgedNativeWidgetTestApi test_api(modal_dialog_widget->GetNativeWindow());
+  EXPECT_FALSE(test_api.show_animation());
+  modal_dialog_widget->Show();
+
+  EXPECT_TRUE(modal_dialog_widget->IsVisible());
+  base::scoped_nsobject<NSAnimation> retained_animation(
+      test_api.show_animation(), base::scoped_policy::RETAIN);
+  EXPECT_TRUE(retained_animation);
+  EXPECT_TRUE([retained_animation isAnimating]);
+
+  // Hide without waiting for the animation to complete. Animation should cancel
+  // and clear references from BridgedNativeWidget.
+  modal_dialog_widget->Hide();
+  EXPECT_FALSE([retained_animation isAnimating]);
+  EXPECT_FALSE(test_api.show_animation());
+  retained_animation.reset();
+
+  // Disable animations and show again.
+  modal_dialog_widget->SetVisibilityChangedAnimationsEnabled(false);
+  modal_dialog_widget->Show();
+  EXPECT_FALSE(test_api.show_animation());  // No animation this time.
+  modal_dialog_widget->Hide();
+
+  // Test after re-enabling.
+  modal_dialog_widget->SetVisibilityChangedAnimationsEnabled(true);
+  modal_dialog_widget->Show();
+  EXPECT_TRUE(test_api.show_animation());
+  retained_animation.reset(test_api.show_animation(),
+                           base::scoped_policy::RETAIN);
+
+  // Closing should also cancel the animation.
+  EXPECT_TRUE([retained_animation isAnimating]);
+  [native_parent close];
+  EXPECT_FALSE([retained_animation isAnimating]);
 }
 
 // Tests behavior of window-modal dialogs, displayed as sheets.

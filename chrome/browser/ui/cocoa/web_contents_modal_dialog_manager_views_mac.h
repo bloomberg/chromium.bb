@@ -53,6 +53,8 @@ class SingleWebContentsDialogManagerViewsMac
 
   views::Widget* widget_;  // Weak. Deletes |this| when closing.
 
+  bool was_shown_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(SingleWebContentsDialogManagerViewsMac);
 };
 
