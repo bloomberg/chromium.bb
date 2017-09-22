@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class SuggestionMarkerProperties;
+
 // A subclass of StyleableMarker used to store information specific to
 // suggestion markers (used to represent Android SuggestionSpans). In addition
 // to the formatting information StyleableMarker holds, we also store a list of
@@ -19,11 +21,7 @@ class CORE_EXPORT SuggestionMarker final : public StyleableMarker {
  public:
   SuggestionMarker(unsigned start_offset,
                    unsigned end_offset,
-                   const Vector<String>& suggestions,
-                   Color suggestion_highlight_color,
-                   Color underline_color,
-                   Thickness,
-                   Color background_color);
+                   const SuggestionMarkerProperties&);
 
   // DocumentMarker implementations
   MarkerType GetType() const final;

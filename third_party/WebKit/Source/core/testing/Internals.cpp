@@ -68,6 +68,7 @@
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/markers/SpellCheckMarker.h"
+#include "core/editing/markers/SuggestionMarkerProperties.h"
 #include "core/editing/markers/TextMatchMarker.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/IdleSpellCheckCallback.h"
@@ -1193,8 +1194,13 @@ void Internals::addSuggestionMarker(
           const EphemeralRange& range, Color underline_color,
           StyleableMarker::Thickness thickness, Color background_color) {
         document_marker_controller.AddSuggestionMarker(
-            range, suggestions, suggestion_highlight_color, underline_color,
-            thickness, background_color);
+            range, SuggestionMarkerProperties::Builder()
+                       .SetSuggestions(suggestions)
+                       .SetHighlightColor(suggestion_highlight_color)
+                       .SetUnderlineColor(underline_color)
+                       .SetThickness(thickness)
+                       .SetBackgroundColor(background_color)
+                       .Build());
       });
 }
 

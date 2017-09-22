@@ -9,6 +9,7 @@
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/markers/SuggestionMarkerProperties.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/editing/testing/EditingTestBase.h"
 
@@ -60,43 +61,49 @@ TEST_F(TextSuggestionControllerTest, ApplyTextSuggestion) {
   // replace operation.
   GetDocument().Markers().AddSuggestionMarker(
       EphemeralRange(Position(text, 0), Position(text, 5)),
-      Vector<String>({"marker1"}), Color::kBlack, Color::kBlack,
-      StyleableMarker::Thickness::kThick, Color::kBlack);
+      SuggestionMarkerProperties::Builder()
+          .SetSuggestions(Vector<String>({"marker1"}))
+          .Build());
 
   // Add marker on "word1 word2 word3 word4". This marker should *not* be
   // cleared by the replace operation.
   GetDocument().Markers().AddSuggestionMarker(
       EphemeralRange(Position(text, 0), Position(text, 23)),
-      Vector<String>({"marker2"}), Color::kBlack, Color::kBlack,
-      StyleableMarker::Thickness::kThick, Color::kBlack);
+      SuggestionMarkerProperties::Builder()
+          .SetSuggestions(Vector<String>({"marker2"}))
+          .Build());
 
   // Add marker on "word2 word3". This marker should *not* be cleared by the
   // replace operation.
   GetDocument().Markers().AddSuggestionMarker(
       EphemeralRange(Position(text, 6), Position(text, 17)),
-      Vector<String>({"marker3"}), Color::kBlack, Color::kBlack,
-      StyleableMarker::Thickness::kThick, Color::kBlack);
+      SuggestionMarkerProperties::Builder()
+          .SetSuggestions(Vector<String>({"marker3"}))
+          .Build());
 
   // Add marker on "word4". This marker should *not* be cleared by the
   // replace operation.
   GetDocument().Markers().AddSuggestionMarker(
       EphemeralRange(Position(text, 18), Position(text, 23)),
-      Vector<String>({"marker4"}), Color::kBlack, Color::kBlack,
-      StyleableMarker::Thickness::kThick, Color::kBlack);
+      SuggestionMarkerProperties::Builder()
+          .SetSuggestions(Vector<String>({"marker4"}))
+          .Build());
 
   // Add marker on "word1 word2". This marker should be cleared by the
   // replace operation.
   GetDocument().Markers().AddSuggestionMarker(
       EphemeralRange(Position(text, 0), Position(text, 11)),
-      Vector<String>({"marker5"}), Color::kBlack, Color::kBlack,
-      StyleableMarker::Thickness::kThick, Color::kBlack);
+      SuggestionMarkerProperties::Builder()
+          .SetSuggestions(Vector<String>({"marker5"}))
+          .Build());
 
   // Add marker on "word3 word4". This marker should be cleared by the
   // replace operation.
   GetDocument().Markers().AddSuggestionMarker(
       EphemeralRange(Position(text, 12), Position(text, 23)),
-      Vector<String>({"marker6"}), Color::kBlack, Color::kBlack,
-      StyleableMarker::Thickness::kThick, Color::kBlack);
+      SuggestionMarkerProperties::Builder()
+          .SetSuggestions(Vector<String>({"marker6"}))
+          .Build());
 
   // Select immediately before word2.
   GetDocument().GetFrame()->Selection().SetSelection(

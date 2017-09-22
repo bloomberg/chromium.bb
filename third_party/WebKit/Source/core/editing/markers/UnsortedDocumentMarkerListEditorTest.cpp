@@ -7,6 +7,7 @@
 #include "core/editing/markers/MarkerTestUtilities.h"
 #include "core/editing/markers/SuggestionMarker.h"
 #include "core/editing/markers/SuggestionMarkerListImpl.h"
+#include "core/editing/markers/SuggestionMarkerProperties.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -14,10 +15,8 @@ namespace blink {
 class UnsortedDocumentMarkerListEditorTest : public ::testing::Test {
  protected:
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new SuggestionMarker(start_offset, end_offset, Vector<String>(),
-                                Color::kTransparent, Color::kTransparent,
-                                StyleableMarker::Thickness::kThin,
-                                Color::kTransparent);
+    return new SuggestionMarker(start_offset, end_offset,
+                                SuggestionMarkerProperties());
   }
 
   PersistentHeapVector<Member<DocumentMarker>> marker_list_;

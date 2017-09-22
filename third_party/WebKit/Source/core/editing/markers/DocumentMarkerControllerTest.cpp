@@ -37,6 +37,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/markers/SuggestionMarker.h"
+#include "core/editing/markers/SuggestionMarkerProperties.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
@@ -318,9 +319,8 @@ TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByTag) {
   Node* text = div->firstChild();
 
   MarkerController().AddSuggestionMarker(
-      EphemeralRange(Position(text, 0), Position(text, 1)), Vector<String>(),
-      Color::kBlack, Color::kBlack, StyleableMarker::Thickness::kThick,
-      Color::kBlack);
+      EphemeralRange(Position(text, 0), Position(text, 1)),
+      SuggestionMarkerProperties());
 
   ASSERT_EQ(1u, MarkerController().Markers().size());
   const SuggestionMarker& marker =
@@ -463,13 +463,11 @@ TEST_F(DocumentMarkerControllerTest, SuggestionMarkersHaveUniqueTags) {
   Node* text = div->firstChild();
 
   MarkerController().AddSuggestionMarker(
-      EphemeralRange(Position(text, 0), Position(text, 1)), Vector<String>(),
-      Color::kBlack, Color::kBlack, StyleableMarker::Thickness::kThick,
-      Color::kBlack);
+      EphemeralRange(Position(text, 0), Position(text, 1)),
+      SuggestionMarkerProperties());
   MarkerController().AddSuggestionMarker(
-      EphemeralRange(Position(text, 0), Position(text, 1)), Vector<String>(),
-      Color::kBlack, Color::kBlack, StyleableMarker::Thickness::kThick,
-      Color::kBlack);
+      EphemeralRange(Position(text, 0), Position(text, 1)),
+      SuggestionMarkerProperties());
 
   EXPECT_EQ(2u, MarkerController().Markers().size());
   EXPECT_NE(ToSuggestionMarker(MarkerController().Markers()[0])->Tag(),
