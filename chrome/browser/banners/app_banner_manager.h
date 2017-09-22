@@ -152,6 +152,10 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual int GetIdealPrimaryIconSizeInPx();
   virtual int GetMinimumPrimaryIconSizeInPx();
 
+  // Returns true if |has_sufficient_engagement_| is true or IsDebugMode()
+  // returns true.
+  bool HasSufficientEngagement() const;
+
   // Returns true if |triggered_by_devtools_| is true or the
   // kBypassAppBannerEngagementChecks flag is set.
   virtual bool IsDebugMode() const;

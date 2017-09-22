@@ -171,6 +171,10 @@ int AppBannerManager::GetMinimumPrimaryIconSizeInPx() {
   return InstallableManager::GetMinimumIconSizeInPx();
 }
 
+bool AppBannerManager::HasSufficientEngagement() const {
+  return has_sufficient_engagement_ || IsDebugMode();
+}
+
 bool AppBannerManager::IsDebugMode() const {
   return triggered_by_devtools_ ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -251,7 +255,7 @@ void AppBannerManager::OnDidPerformInstallableCheck(
   // we don't have enough engagement yet. If that's the case, return here but
   // don't call Stop(). We wait for OnEngagementIncreased to tell us that we
   // should trigger.
-  if (!has_sufficient_engagement_) {
+  if (!HasSufficientEngagement()) {
     UpdateState(State::PENDING_ENGAGEMENT);
     return;
   }
@@ -386,11 +390,9 @@ void AppBannerManager::DidFinishLoad(
   load_finished_ = true;
   validated_url_ = validated_url;
 
-  // If the bypass flag is on, or if we require no engagement to trigger the
-  // banner, the rest of the banner pipeline should operate as if the engagement
-  // threshold has been met.
-  // Additionally, if the page already has enough engagement, trigger the
-  // pipeline immediately.
+  // If we already have enough engagement, or require no engagement to trigger
+  // the banner, the rest of the banner pipeline should operate as if the
+  // engagement threshold has been met.
   if (AppBannerSettingsHelper::HasSufficientEngagement(0) ||
       AppBannerSettingsHelper::HasSufficientEngagement(
           GetSiteEngagementService()->GetScore(validated_url))) {
