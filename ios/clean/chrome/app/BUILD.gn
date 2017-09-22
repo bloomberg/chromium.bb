@@ -50,7 +50,10 @@ ios_app_bundle("chrome_clean_skeleton") {
     "//ios/chrome/app:tests_fake_hook",
   ]
 
-  bundle_deps = [ "//ios/chrome/app/resources" ]
+  bundle_deps = [
+    "//ios/chrome/app/resources",
+    ios_application_icons_target,
+  ]
 
   extra_substitutions = [
     "CONTENT_WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.ContentTodayExtension",

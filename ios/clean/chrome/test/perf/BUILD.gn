@@ -6,6 +6,7 @@ import("//build/config/ios/rules.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
+import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//ios/third_party/earl_grey/ios_eg_test.gni")
 
 tweak_info_plist("info_plist") {
@@ -52,7 +53,10 @@ ios_eg_test("ios_clean_skeleton_perf_egtests") {
     "//ios/testing/perf:startup",
   ]
 
-  bundle_deps = [ "//ios/chrome/app/resources" ]
+  bundle_deps = [
+    "//ios/chrome/app/resources",
+    ios_application_icons_target,
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 

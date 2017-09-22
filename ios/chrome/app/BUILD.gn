@@ -6,6 +6,7 @@ import("//build/config/ios/rules.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
+import("//ios/public/provider/chrome/browser/build_config.gni")
 
 source_set("app") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -253,12 +254,17 @@ ios_app_bundle("chrome") {
   entitlements_target = ":entitlements"
   info_plist_target = ":info_plist"
 
+  bundle_deps = [ "//ios/chrome/app/resources" ]
+  if (!is_chrome_branded || ios_chrome_app_variants == []) {
+    bundle_deps += [ ios_application_icons_target ]
+  } else {
+    variants = ios_chrome_app_variants
+  }
+
   deps = [
     ":main",
     ":tests_fake_hook",
   ]
-
-  bundle_deps = [ "//ios/chrome/app/resources" ]
 
   if (current_toolchain == default_toolchain) {
     if (ios_enable_search_widget_extension) {

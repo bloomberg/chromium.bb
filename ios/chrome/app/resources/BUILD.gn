@@ -16,7 +16,6 @@ group("resources") {
     ":launchscreen_xib",
     ":quick_action_icons",
     ":system_strings",
-    ios_application_icons_target,
     ios_packed_resources_target,
   ]
 }
