@@ -58,6 +58,11 @@
       "expect_staple": true,
       "include_subdomains_for_expect_staple": true,
       "expect_staple_report_uri": "https://report.badssl.com/staple-upload"
+    }, {
+      // Keep this a simple entry in the context of TrieWriter::IsSimpleEntry().
+      "name": "simple-entry.example.com",
+      "mode": "force-https",
+      "include_subdomains": true
     }
   ]
 }
