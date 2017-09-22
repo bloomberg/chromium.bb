@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<span id="expectedOffsetParent" style="position:relative;">
+    <div id="elm"></div>
+</span>
+
+<script>
+test(function() {
+    var expectedOffsetParent = document.getElementById("expectedOffsetParent");
+    var actualOffsetParent = document.getElementById("elm").offsetParent;
+
+    assert_true(actualOffsetParent == expectedOffsetParent);
+}, 'offsetParent is correct for a block inside an inline.');
+</script>
