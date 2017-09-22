@@ -17,6 +17,7 @@
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/remoting_view_controller.h"
 #import "remoting/ios/app/user_status_presenter.h"
+#import "remoting/ios/app/view_utils.h"
 #import "remoting/ios/app/web_view_controller.h"
 #import "remoting/ios/facade/remoting_oauth_authentication.h"
 
@@ -140,7 +141,7 @@ static NSString* const kFAQsUrl =
 - (void)presentHelpCenter {
   UINavigationController* navController = [[UINavigationController alloc]
       initWithRootViewController:[[HelpViewController alloc] init]];
-  [AppDelegate.topPresentingVC presentViewController:navController
+  [remoting::TopPresentingVC() presentViewController:navController
                                             animated:YES
                                           completion:nil];
 }
@@ -158,19 +159,6 @@ static NSString* const kFAQsUrl =
 - (void)presentSignInFlow {
   DCHECK(_appViewController);
   [_appViewController presentSignInFlow];
-}
-
-#pragma mark - Private
-
-+ (UIViewController*)topPresentingVC {
-  UIViewController* topController =
-      UIApplication.sharedApplication.keyWindow.rootViewController;
-
-  while (topController.presentedViewController) {
-    topController = topController.presentedViewController;
-  }
-
-  return topController;
 }
 
 @end
