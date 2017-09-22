@@ -27,6 +27,9 @@ class WebStateImpl;
 // Designated initializer.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;
 
+// Starts loading WebUI for the given URL.
+- (void)loadWebUIForURL:(const GURL&)URL;
+
 @end
 
 @interface CRWWebUIManager (UsedOnlyForTesting)  // Testing API.

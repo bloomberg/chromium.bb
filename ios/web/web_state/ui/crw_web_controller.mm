@@ -1474,7 +1474,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   context->SetIsSameDocument(sameDocumentNavigation);
 
   _webStateImpl->SetIsLoading(true);
-  _webStateImpl->OnNavigationStarted(context.get());
+  [_webUIManager loadWebUIForURL:requestURL];
   return context;
 }
 
@@ -1721,6 +1721,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)loadNativeViewWithSuccess:(BOOL)loadSuccess
                 navigationContext:(web::NavigationContextImpl*)context {
+  _webStateImpl->OnNavigationStarted(context);
   const GURL currentURL([self currentURL]);
   [self didStartLoadingURL:currentURL];
   _loadPhase = web::PAGE_LOADED;
@@ -1953,6 +1954,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
                          referrer:self.currentNavItemReferrer
                        transition:ui::PageTransition::PAGE_TRANSITION_RELOAD
            sameDocumentNavigation:NO];
+    _webStateImpl->OnNavigationStarted(navigationContext.get());
     [self didStartLoadingURL:url];
     [self.nativeController reload];
     _webStateImpl->OnNavigationFinished(navigationContext.get());
@@ -4383,6 +4385,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
       _lastRegisteredRequestURL = webViewURL;
     }
+    _webStateImpl->OnNavigationStarted(context);
     return;
   }
 
@@ -4419,6 +4422,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   std::unique_ptr<web::NavigationContextImpl> navigationContext =
       [self registerLoadRequestForURL:webViewURL sameDocumentNavigation:NO];
+  _webStateImpl->OnNavigationStarted(navigationContext.get());
   [_navigationStates setContext:std::move(navigationContext)
                   forNavigation:navigation];
   DCHECK(self.loadPhase == web::LOAD_REQUESTED);
@@ -5034,13 +5038,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self setDocumentURL:newURL];
 
   if (!_changingHistoryState) {
-    [self didStartLoadingURL:_documentURL];
-
     // Pass either newly created context (if it exists) or context that already
     // existed before.
     web::NavigationContextImpl* navigationContext = newNavigationContext.get();
     if (!navigationContext)
       navigationContext = [self contextForPendingNavigationWithURL:newURL];
+    DCHECK(navigationContext->IsSameDocument());
+    _webStateImpl->OnNavigationStarted(navigationContext);
+    [self didStartLoadingURL:_documentURL];
     _webStateImpl->OnNavigationFinished(navigationContext);
 
     [self updateSSLStatusForCurrentNavigationItem];

@@ -94,24 +94,22 @@ const char kScriptCommandPrefix[] = "webui";
   [self resetWebState];
 }
 
-#pragma mark - CRWWebStateObserver Methods
-
-- (void)webState:(web::WebState*)webState
-    didStartNavigation:(web::NavigationContext*)navigation {
-  DCHECK(webState == _webState);
+- (void)loadWebUIForURL:(const GURL&)URL {
   // If URL is not an application specific URL, ignore the navigation.
-  GURL URL(navigation->GetUrl());
-  if (!web::GetWebClient()->IsAppSpecificURL(URL))
+  GURL URLCopy(URL);
+  if (!web::GetWebClient()->IsAppSpecificURL(URLCopy))
     return;
 
   __weak CRWWebUIManager* weakSelf = self;
-  [self loadWebUIPageForURL:URL completionHandler:^(NSString* HTML) {
+  [self loadWebUIPageForURL:URLCopy completionHandler:^(NSString* HTML) {
     web::WebStateImpl* webState = [weakSelf webState];
     if (webState) {
-      webState->LoadWebUIHtml(base::SysNSStringToUTF16(HTML), URL);
+      webState->LoadWebUIHtml(base::SysNSStringToUTF16(HTML), URLCopy);
     }
   }];
 }
+
+#pragma mark - CRWWebStateObserver Methods
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(webState, _webState);
