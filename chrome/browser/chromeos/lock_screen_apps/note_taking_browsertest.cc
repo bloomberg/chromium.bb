@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "apps/launcher.h"
+#include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
@@ -28,6 +29,7 @@ class LockScreenNoteTakingTest : public ExtensionBrowserTest {
   void SetUpCommandLine(base::CommandLine* cmd_line) override {
     cmd_line->AppendSwitchASCII(extensions::switches::kWhitelistedExtensionID,
                                 kTestAppId);
+    cmd_line->AppendSwitch(ash::switches::kAshForceEnableStylusTools);
 
     ExtensionBrowserTest::SetUpCommandLine(cmd_line);
   }

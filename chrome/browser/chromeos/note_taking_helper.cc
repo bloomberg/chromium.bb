@@ -204,10 +204,16 @@ NoteTakingAppInfos NoteTakingHelper::GetAvailableApps(Profile* profile) {
 
 std::unique_ptr<NoteTakingAppInfo> NoteTakingHelper::GetPreferredChromeAppInfo(
     Profile* profile) {
-  const std::string preferred_app_id =
+  if (!ash::palette_utils::HasStylusInput())
+    return nullptr;
+
+  std::string preferred_app_id =
       profile->GetPrefs()->GetString(prefs::kNoteTakingAppId);
   if (LooksLikeAndroidPackageName(preferred_app_id))
     return nullptr;
+
+  if (preferred_app_id.empty())
+    preferred_app_id = kProdKeepExtensionId;
 
   const extensions::Extension* preferred_app =
       extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
