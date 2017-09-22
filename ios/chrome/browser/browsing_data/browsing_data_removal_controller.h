@@ -16,27 +16,9 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-// A protocol required by delegates of the BrowsingDataRemovalController.
-@protocol BrowsingDataRemovalControllerDelegate
-@required
-// Removes files received from other applications by |browserState|.
-// |completionHandler| is called when the files have been removed.
-- (void)removeExternalFilesForBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                         completionHandler:(ProceduralBlock)completionHandler;
-// TODO(crbug.com/543213): Add a method here to inform the delegate when there
-// are no pending removal operations associated with a BrowserState.
-@end
-
 // This class is responsible for removing browsing data associated with a
 // ChromeBrowserState.
 @interface BrowsingDataRemovalController : NSObject
-
-- (instancetype)initWithDelegate:
-    (id<BrowsingDataRemovalControllerDelegate>)delegate
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
 
 // Removes browsing data from |browserState| for datatypes in |mask|.
 // |mask| is obtained from IOSChromeBrowsingDataRemover::RemoveDataMask.
