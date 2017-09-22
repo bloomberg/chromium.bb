@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/fake-vr-displays.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/vr_service.mojom.js"></script>
+<script src="../resources/mock-vr-service.js"></script>
+<script src="../resources/test-constants.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+vr_test( (t) => {
+  return navigator.vr.getDevices().then( (devices) => {
+    t.step( () => {
+      assert_true(devices != null);
+      assert_equals(devices.length, 2);
+    }, "getVRDisplays returned correct results");
+    let pixel = devices[0];
+    let fake = devices[1];
+    t.step( () => {
+      assert_equals(pixel.deviceName, 'Google, Inc. Daydream View');
+      assert_false(pixel.isExternal);
+    }, "Pixel attributes are correct");
+    t.step( () => {
+      assert_equals(fake.deviceName, 'FakeVRDisplay');
+      assert_false(fake.isExternal);
+    }, "Fake device attributes are correct");
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("getDevices rejected");
+    });
+  }).then( () => {
+    t.done();
+  });
+}, [fakeDisplays["Pixel"], fakeDisplays["FakeMagicWindowOnly"]],
+"navigator.vr.getDevices properly returns two devices");
+</script>
+
