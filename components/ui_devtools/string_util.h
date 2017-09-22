@@ -56,6 +56,8 @@ class StringUtil {
   static void builderAppend(StringBuilder& builder, const char* s, size_t len) {
     builder.append(s, len);
   }
+  static void builderAppendQuotedString(StringBuilder& builder,
+                                        const String& str);
   static void builderReserve(StringBuilder& builder, unsigned capacity) {
     builder.reserveCapacity(capacity);
   }

@@ -6,6 +6,8 @@
 
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/devtools/protocol/protocol.h"
 
@@ -142,6 +144,16 @@ void StringBuilder::append(char c) {
 
 void StringBuilder::append(const char* characters, size_t length) {
   string_.append(characters, length);
+}
+
+// static
+void StringUtil::builderAppendQuotedString(StringBuilder& builder,
+                                           const String& str) {
+  builder.append('"');
+  base::string16 str16 = base::UTF8ToUTF16(str);
+  escapeWideStringForJSON(reinterpret_cast<const uint16_t*>(&str16[0]),
+                          str16.length(), &builder);
+  builder.append('"');
 }
 
 std::string StringBuilder::toString() {
