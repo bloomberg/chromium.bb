@@ -222,6 +222,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // Returns true if a modal window is active in the current root window chain.
   bool IsModalWindowActive() const;
 
+  // Called whenever the HWND resizes or moves, to see if the nearest HMONITOR
+  // has changed, and, if so, inform the aura::WindowTreeHost.
+  void CheckForMonitorChange();
+
+  HMONITOR last_monitor_from_window_ = nullptr;
+
   std::unique_ptr<HWNDMessageHandler> message_handler_;
   std::unique_ptr<aura::client::FocusClient> focus_client_;
 
