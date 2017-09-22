@@ -384,6 +384,8 @@ public class LocationBarPhone extends LocationBarLayout {
 
             @Override
             public void onSheetContentChanged(BottomSheetContent newContent) {
+                if (newContent == null) return;
+
                 @ContentType
                 int type = newContent.getType();
                 if (type != BottomSheetContentController.TYPE_AUXILIARY_CONTENT) {

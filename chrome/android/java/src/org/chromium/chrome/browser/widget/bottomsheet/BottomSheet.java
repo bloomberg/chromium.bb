@@ -221,6 +221,7 @@ public class BottomSheet
     private ChromeFullscreenManager mFullscreenManager;
 
     /** A handle to the content being shown by the sheet. */
+    @Nullable
     private BottomSheetContent mSheetContent;
 
     /** A handle to the toolbar control container. */
@@ -962,21 +963,27 @@ public class BottomSheet
 
     /**
      * Show content in the bottom sheet's content area.
-     * @param content The {@link BottomSheetContent} to show.
+     * @param content The {@link BottomSheetContent} to show, or null if no content should be shown.
      */
-    public void showContent(final BottomSheetContent content) {
+    public void showContent(@Nullable final BottomSheetContent content) {
         // If an animation is already running, end it.
         if (mContentSwapAnimatorSet != null) mContentSwapAnimatorSet.end();
 
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
+        View oldContent = mSheetContent != null ? mSheetContent.getContentView() : null;
+        if (content == null) {
+            onSheetContentChanged(null);
+            ((ViewGroup) oldContent.getParent()).removeView(oldContent);
+            return;
+        }
+
         View newToolbar =
                 content.getToolbarView() != null ? content.getToolbarView() : mDefaultToolbarView;
         View oldToolbar = mSheetContent != null && mSheetContent.getToolbarView() != null
                 ? mSheetContent.getToolbarView()
                 : mDefaultToolbarView;
-        View oldContent = mSheetContent != null ? mSheetContent.getContentView() : null;
 
         List<Animator> animators = new ArrayList<>();
         mContentSwapAnimatorSet = new AnimatorSet();
@@ -985,12 +992,7 @@ public class BottomSheet
             public void onAnimationEnd(Animator animation) {
                 if (mIsDestroyed) return;
 
-                mSheetContent = content;
-                for (BottomSheetObserver o : mObservers) {
-                    o.onSheetContentChanged(content);
-                }
-                updateHandleTint();
-                mToolbarHolder.setBackgroundColor(Color.TRANSPARENT);
+                onSheetContentChanged(content);
                 mContentSwapAnimatorSet = null;
             }
         });
@@ -1456,8 +1458,11 @@ public class BottomSheet
         return mSettleAnimator != null;
     }
 
+    /**
+     * @return The current sheet content, or null if there is no content.
+     */
     @VisibleForTesting
-    public BottomSheetContent getCurrentSheetContent() {
+    public @Nullable BottomSheetContent getCurrentSheetContent() {
         return mSheetContent;
     }
 
@@ -1681,5 +1686,18 @@ public class BottomSheet
                 R.dimen.bottom_sheet_help_bubble_inset);
         helpBubble.setInsetPx(0, inset, 0, inset);
         helpBubble.show();
+    }
+
+    /**
+     * Called when the sheet content has changed, to update dependent state and notify observers.
+     * @param content The new sheet content, or null if the sheet has no content.
+     */
+    private void onSheetContentChanged(@Nullable final BottomSheetContent content) {
+        mSheetContent = content;
+        for (BottomSheetObserver o : mObservers) {
+            o.onSheetContentChanged(content);
+        }
+        updateHandleTint();
+        mToolbarHolder.setBackgroundColor(Color.TRANSPARENT);
     }
 }

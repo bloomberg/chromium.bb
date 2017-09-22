@@ -1011,10 +1011,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             if (isActivityDestroyed()) return;
             ForcedSigninProcessor.checkCanSignIn(ChromeActivity.this);
         });
-        DeferredStartupHandler.getInstance().addDeferredTask(() -> {
-            if (isActivityDestroyed() || mBottomSheetContentController == null) return;
-            mBottomSheetContentController.initializeDefaultContent();
-        });
     }
 
     /**
