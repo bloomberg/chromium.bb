@@ -53,3 +53,24 @@ TEST_F('SelectToSpeakUnitTest', 'RectFromPoints', function() {
       JSON.stringify(rect),
       JSON.stringify(rectFromPoints(60, 80, 10, 20)));
 });
+
+TEST_F('SelectToSpeakUnitTest', 'GetNodeVisibilityState', function() {
+  let nodeWithoutRoot1 = {root: null};
+  let nodeWithoutRoot2 = {root: null, state: {invisible: true}};
+  assertEquals(getNodeState(nodeWithoutRoot1), NodeState.NODE_STATE_INVALID);
+  assertEquals(getNodeState(nodeWithoutRoot2), NodeState.NODE_STATE_INVALID);
+    
+  let invisibleNode1 = {root: {}, parent: {role: ''}, state: {invisible: true}};
+  // Currently nodes aren't actually marked 'invisible', so we need to navigate up their tree.
+  let invisibleNode2 = {root: {}, parent: {role: 'window', state: {invisible: true}}, state: {}};
+  let invisibleNode3 = {root: {}, parent: invisibleNode2, state: {}};
+  let invisibleNode4 = {root: {}, parent: invisibleNode3, state: {}};
+  assertEquals(getNodeState(invisibleNode1), NodeState.NODE_STATE_INVISIBLE);
+  assertEquals(getNodeState(invisibleNode2), NodeState.NODE_STATE_INVISIBLE);
+  assertEquals(getNodeState(invisibleNode3), NodeState.NODE_STATE_INVISIBLE);
+
+  let normalNode1 = {root: {}, parent: {role: 'window', state: {}}, state: {}};
+  let normalNode2 = {root: {}, parent: {normalNode1}, state: {}};
+  assertEquals(getNodeState(normalNode1), NodeState.NODE_STATE_NORMAL);
+  assertEquals(getNodeState(normalNode2), NodeState.NODE_STATE_NORMAL);
+});
