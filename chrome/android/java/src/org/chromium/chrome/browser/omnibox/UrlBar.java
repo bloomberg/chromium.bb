@@ -96,6 +96,12 @@ public class UrlBar extends AutocompleteEditText {
     private boolean mFocused;
     private boolean mAllowFocus = true;
 
+    private boolean mPendingScrollTLD;
+    private int mPreviousWidth;
+    private String mPreviousTldScrollText;
+    private int mPreviousTldScrollViewWidth;
+    private int mPreviousTldScrollResultXPosition;
+
     private final int mDarkHintColor;
     private final int mDarkDefaultTextColor;
     private final int mDarkHighlightColor;
@@ -304,7 +310,10 @@ public class UrlBar extends AutocompleteEditText {
             if (mOmniboxLivenessListener != null) mOmniboxLivenessListener.onOmniboxFocused();
         }
 
-        if (focused) StartupMetrics.getInstance().recordFocusedOmnibox();
+        if (focused) {
+            StartupMetrics.getInstance().recordFocusedOmnibox();
+            mPendingScrollTLD = false;
+        }
 
         fixupTextDirection();
     }
@@ -606,9 +615,9 @@ public class UrlBar extends AutocompleteEditText {
         Editable previousText = getEditableText();
         setText(formattedUrl);
 
-        if (!isFocused()) scrollToTLD();
-
-        return !TextUtils.equals(previousText, getEditableText());
+        boolean textChanged = !TextUtils.equals(previousText, getEditableText());
+        if (textChanged && !isFocused()) scrollToTLD();
+        return textChanged;
     }
 
     /**
@@ -616,6 +625,17 @@ public class UrlBar extends AutocompleteEditText {
      * @return Whether the TLD was discovered and successfully scrolled to.
      */
     public boolean scrollToTLD() {
+        if (isLayoutRequested()) {
+            mPendingScrollTLD = true;
+            return true;
+        } else {
+            return scrollToTLDInternal();
+        }
+    }
+
+    private boolean scrollToTLDInternal() {
+        if (mFocused) return false;
+
         Editable url = getText();
         if (url == null || url.length() < 1) return false;
         String urlString = url.toString();
@@ -634,17 +654,62 @@ public class UrlBar extends AutocompleteEditText {
             }
         }
 
-        // We want to bring the end of the domain into view. But since we want
-        // to bias towards displaying the beginning of the URL as well, first
-        // we bring the beginning into view. We can't use offset 0, because
-        // this TextView is in force-LTR mode, and for RTL domains, offset 0 is
-        // outside the RTL-extent that contains the domain. crbug.com/723100
-        if (urlComponents.first.length() > 1) {
-            bringPointIntoView(1);
+        int measuredWidth = getMeasuredWidth();
+        if (TextUtils.equals(url, mPreviousTldScrollText)
+                && measuredWidth == mPreviousTldScrollViewWidth) {
+            scrollTo(mPreviousTldScrollResultXPosition, getScrollY());
+            return true;
         }
-        setSelection(urlComponents.first.length());
+
+        assert getLayout().getLineCount() == 1;
+        float endPointX = getLayout().getPrimaryHorizontal(urlComponents.first.length());
+        // Using 1 instead of 0 as zero does not return a valid value in RTL (always returns 0
+        // instead of the valid scroll position).
+        float startPointX = url.length() == 1 ? 0 : getLayout().getPrimaryHorizontal(1);
+
+        float scrollPos;
+        if (startPointX < endPointX) {
+            // LTR
+            scrollPos = Math.max(0, endPointX - measuredWidth);
+        } else {
+            float width = getLayout().getPaint().measureText(urlComponents.first);
+            // RTL
+            if (width < measuredWidth) {
+                scrollPos = Math.max(0, endPointX + width - measuredWidth);
+            } else {
+                scrollPos = endPointX + measuredWidth;
+            }
+        }
+        scrollTo((int) scrollPos, getScrollY());
+
+        mPreviousTldScrollText = url.toString();
+        mPreviousTldScrollViewWidth = measuredWidth;
+        mPreviousTldScrollResultXPosition = (int) scrollPos;
 
         return true;
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+
+        if (mPendingScrollTLD) {
+            scrollToTLDInternal();
+            mPendingScrollTLD = false;
+        } else if (mPreviousWidth != (right - left)) {
+            scrollToTLDInternal();
+            mPreviousWidth = right - left;
+        }
+    }
+
+    @Override
+    public boolean bringPointIntoView(int offset) {
+        // TextView internally attempts to keep the selection visible, but in the unfocused state
+        // this class ensures that the TLD is visible.
+        if (!mFocused) return false;
+        assert !mPendingScrollTLD;
+
+        return super.bringPointIntoView(offset);
     }
 
     @Override
