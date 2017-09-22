@@ -2373,6 +2373,22 @@ ShadowRoot* Element::createShadowRoot(const ScriptState* script_state,
   return CreateShadowRootInternal(ShadowRootType::V0, exception_state);
 }
 
+bool Element::CanAttachShadowRoot() const {
+  const AtomicString& tag_name = localName();
+  return IsV0CustomElement() ||
+         GetCustomElementState() != CustomElementState::kUncustomized ||
+         tag_name == HTMLNames::articleTag || tag_name == HTMLNames::asideTag ||
+         tag_name == HTMLNames::blockquoteTag ||
+         tag_name == HTMLNames::bodyTag || tag_name == HTMLNames::divTag ||
+         tag_name == HTMLNames::footerTag || tag_name == HTMLNames::h1Tag ||
+         tag_name == HTMLNames::h2Tag || tag_name == HTMLNames::h3Tag ||
+         tag_name == HTMLNames::h4Tag || tag_name == HTMLNames::h5Tag ||
+         tag_name == HTMLNames::h6Tag || tag_name == HTMLNames::headerTag ||
+         tag_name == HTMLNames::navTag || tag_name == HTMLNames::mainTag ||
+         tag_name == HTMLNames::pTag || tag_name == HTMLNames::sectionTag ||
+         tag_name == HTMLNames::spanTag;
+}
+
 ShadowRoot* Element::attachShadow(const ScriptState* script_state,
                                   const ShadowRootInit& shadow_root_init_dict,
                                   ExceptionState& exception_state) {
@@ -2380,20 +2396,7 @@ ShadowRoot* Element::attachShadow(const ScriptState* script_state,
       script_state, GetDocument(),
       HostsUsingFeatures::Feature::kElementAttachShadow);
 
-  const AtomicString& tag_name = localName();
-  bool tag_name_is_supported =
-      IsV0CustomElement() ||
-      GetCustomElementState() != CustomElementState::kUncustomized ||
-      tag_name == HTMLNames::articleTag || tag_name == HTMLNames::asideTag ||
-      tag_name == HTMLNames::blockquoteTag || tag_name == HTMLNames::bodyTag ||
-      tag_name == HTMLNames::divTag || tag_name == HTMLNames::footerTag ||
-      tag_name == HTMLNames::h1Tag || tag_name == HTMLNames::h2Tag ||
-      tag_name == HTMLNames::h3Tag || tag_name == HTMLNames::h4Tag ||
-      tag_name == HTMLNames::h5Tag || tag_name == HTMLNames::h6Tag ||
-      tag_name == HTMLNames::headerTag || tag_name == HTMLNames::navTag ||
-      tag_name == HTMLNames::mainTag || tag_name == HTMLNames::pTag ||
-      tag_name == HTMLNames::sectionTag || tag_name == HTMLNames::spanTag;
-  if (!tag_name_is_supported) {
+  if (!CanAttachShadowRoot()) {
     exception_state.ThrowDOMException(
         kNotSupportedError, "This element does not support attachShadow");
     return nullptr;
@@ -2406,8 +2409,6 @@ ShadowRoot* Element::attachShadow(const ScriptState* script_state,
     return nullptr;
   }
 
-  GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV1);
-
   ShadowRootType type = ShadowRootType::V0;
   if (shadow_root_init_dict.hasMode())
     type = shadow_root_init_dict.mode() == "open" ? ShadowRootType::kOpen
@@ -2418,22 +2419,22 @@ ShadowRoot* Element::attachShadow(const ScriptState* script_state,
   else if (type == ShadowRootType::kOpen)
     UseCounter::Count(GetDocument(), WebFeature::kElementAttachShadowOpen);
 
-  ShadowRoot* shadow_root = CreateShadowRootInternal(type, exception_state);
-
-  if (shadow_root_init_dict.hasDelegatesFocus()) {
-    shadow_root->SetDelegatesFocus(shadow_root_init_dict.delegatesFocus());
-    UseCounter::Count(GetDocument(), WebFeature::kShadowRootDelegatesFocus);
+  if (!AreAuthorShadowsAllowed()) {
+    exception_state.ThrowDOMException(
+        kHierarchyRequestError,
+        "Author-created shadow roots are disabled for this element.");
+    return nullptr;
   }
 
-  return shadow_root;
+  DCHECK(!shadow_root_init_dict.hasMode() || !GetShadowRoot());
+  bool delegateFocus = shadow_root_init_dict.hasDelegatesFocus() &&
+                       shadow_root_init_dict.delegatesFocus();
+  return &AttachShadowRootInternal(type, delegateFocus);
 }
 
 ShadowRoot* Element::CreateShadowRootInternal(ShadowRootType type,
                                               ExceptionState& exception_state) {
   DCHECK(!ClosedShadowRoot());
-
-  if (AlwaysCreateUserAgentShadowRoot())
-    EnsureUserAgentShadowRoot();
 
   // Some elements make assumptions about what kind of layoutObjects they allow
   // as children so we can't allow author shadows on them for now.
@@ -2444,7 +2445,27 @@ ShadowRoot* Element::CreateShadowRootInternal(ShadowRootType type,
     return nullptr;
   }
 
+  if (AlwaysCreateUserAgentShadowRoot())
+    EnsureUserAgentShadowRoot();
+
   return &EnsureShadow().AddShadowRoot(*this, type);
+}
+
+ShadowRoot& Element::AttachShadowRootInternal(ShadowRootType type,
+                                              const bool delegate_focus) {
+  DCHECK(CanAttachShadowRoot());
+  DCHECK(AreAuthorShadowsAllowed());
+  DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed)
+      << type;
+  DCHECK(!AlwaysCreateUserAgentShadowRoot());
+
+  GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV1);
+
+  ShadowRoot& shadow_root = EnsureShadow().AddShadowRoot(*this, type);
+
+  shadow_root.SetDelegatesFocus(delegate_focus);
+
+  return shadow_root;
 }
 
 ShadowRoot* Element::GetShadowRoot() const {

@@ -480,6 +480,8 @@ class CORE_EXPORT Element : public ContainerNode {
                            const ShadowRootInit&,
                            ExceptionState&);
   ShadowRoot* CreateShadowRootInternal(ShadowRootType, ExceptionState&);
+  ShadowRoot& AttachShadowRootInternal(ShadowRootType,
+                                       bool delegate_focus = false);
 
   ShadowRoot* OpenShadowRoot() const;
   ShadowRoot* ClosedShadowRoot() const;
@@ -887,6 +889,8 @@ class CORE_EXPORT Element : public ContainerNode {
       delete;  // This will catch anyone doing an unnecessary check.
   bool IsDocumentNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
+
+  bool CanAttachShadowRoot() const;
 
   void StyleAttributeChanged(const AtomicString& new_style_string,
                              AttributeModificationReason);
