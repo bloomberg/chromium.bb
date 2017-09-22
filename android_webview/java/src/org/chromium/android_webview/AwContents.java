@@ -1048,10 +1048,19 @@ public class AwContents implements SmartClipProvider {
      * ^^^^^^^^^  See the native class declaration for more details on relative object lifetimes.
      */
     private void setNewAwContents(long newAwContentsPtr) {
-        // Move the text classifier to the new ContentViewCore.
-        TextClassifier textClassifier =
-                mContentViewCore == null ? null : mContentViewCore.getCustomTextClassifier();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            setNewAwContentsPreO(newAwContentsPtr);
+        } else {
+            // Move the TextClassifier to the new ContentViewCore.
+            TextClassifier textClassifier =
+                    mContentViewCore == null ? null : mContentViewCore.getCustomTextClassifier();
+            setNewAwContentsPreO(newAwContentsPtr);
+            if (textClassifier != null) mContentViewCore.setTextClassifier(textClassifier);
+        }
+    }
 
+    // Helper for setNewAwContents containing everything which applies to pre-O.
+    private void setNewAwContentsPreO(long newAwContentsPtr) {
         if (mNativeAwContents != 0) {
             destroyNatives();
             mContentViewCore = null;
@@ -1083,8 +1092,6 @@ public class AwContents implements SmartClipProvider {
         installWebContentsObserver();
         mSettings.setWebContents(webContents);
         if (mAutofillProvider != null) mAutofillProvider.setWebContents(webContents);
-
-        if (textClassifier != null) mContentViewCore.setTextClassifier(textClassifier);
 
         final float dipScale = mWindowAndroid.getWindowAndroid().getDisplay().getDipScale();
         mDisplayObserver.onDIPScaleChanged(dipScale);
