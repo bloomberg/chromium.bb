@@ -475,7 +475,7 @@ void OfflinePageBridge::GetPagesByRequestOrigin(
                                  j_callback_ref));
 }
 
-void OfflinePageBridge::GetPagesForNamespace(
+void OfflinePageBridge::GetPagesByNamespace(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_result_obj,
