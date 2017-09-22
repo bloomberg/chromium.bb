@@ -325,11 +325,7 @@ bool OfflinePageUtils::GetCachedOfflinePageSizeBetween(
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
   if (!offline_page_model || begin_time > end_time)
     return false;
-  OfflinePageModelQueryBuilder builder;
-  builder.RequireRemovedOnCacheReset(
-      OfflinePageModelQuery::Requirement::INCLUDE_MATCHING);
-  offline_page_model->GetPagesMatchingQuery(
-      builder.Build(offline_page_model->GetPolicyController()),
+  offline_page_model->GetPagesRemovedOnCacheReset(
       base::Bind(&DoCalculateSizeBetween, callback, begin_time, end_time));
   return true;
 }

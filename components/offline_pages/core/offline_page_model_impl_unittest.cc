@@ -1460,35 +1460,102 @@ TEST_F(OfflinePageModelImplTest, StoreLoadFailurePersists) {
   EXPECT_EQ(SavePageResult::STORE_FAILURE, result.first);
 }
 
-TEST_F(OfflinePageModelImplTest, GetPagesMatchingQuery) {
-  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
-      kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
-  SavePageWithArchiverAsync(kTestUrl, kTestClientId1, kTestUrl2, "",
-                            std::move(archiver));
-  PumpLoop();
-
-  std::vector<ClientId> client_ids{kTestClientId1};
-  OfflinePageModelQueryBuilder builder;
-  builder.SetClientIds(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
-                       client_ids);
+TEST_F(OfflinePageModelImplTest, GetPagesByNamespace) {
+  SavePage(kTestUrl, ClientId(kCCTNamespace, "123"));
+  SavePage(kTestUrl, ClientId(kDownloadNamespace, "456"));
+  base::FilePath archive_path(last_archiver_path());
+  SavePage(kTestUrl, ClientId(kNTPSuggestionsNamespace, "789"));
 
   MultipleOfflinePageItemResult offline_pages;
-  model()->GetPagesMatchingQuery(
-      builder.Build(model()->GetPolicyController()),
+  model()->GetPagesByNamespace(
+      kDownloadNamespace,
       base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
                  AsWeakPtr(), base::Unretained(&offline_pages)));
   PumpLoop();
 
   ASSERT_EQ(1UL, offline_pages.size());
   EXPECT_EQ(kTestUrl, offline_pages[0].url);
-  EXPECT_EQ(kTestClientId1.id, offline_pages[0].client_id.id);
-  EXPECT_EQ(kTestClientId1.name_space, offline_pages[0].client_id.name_space);
-  EXPECT_EQ(last_archiver_path(), offline_pages[0].file_path);
+  EXPECT_EQ("456", offline_pages[0].client_id.id);
+  EXPECT_EQ(kDownloadNamespace, offline_pages[0].client_id.name_space);
+  EXPECT_EQ(archive_path, offline_pages[0].file_path);
   EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
   EXPECT_EQ(0, offline_pages[0].access_count);
   EXPECT_EQ(0, offline_pages[0].flags);
   EXPECT_EQ(kTestTitle, offline_pages[0].title);
-  EXPECT_EQ(kTestUrl2, offline_pages[0].original_url);
+  EXPECT_EQ(GURL(), offline_pages[0].original_url);
+  EXPECT_EQ("", offline_pages[0].request_origin);
+}
+
+TEST_F(OfflinePageModelImplTest, GetPagesRemovedOnCacheReset) {
+  SavePage(kTestUrl, ClientId(kCCTNamespace, "123"));
+  base::FilePath archive_path(last_archiver_path());
+  SavePage(kTestUrl, ClientId(kDownloadNamespace, "456"));
+  SavePage(kTestUrl, ClientId(kNTPSuggestionsNamespace, "789"));
+
+  MultipleOfflinePageItemResult offline_pages;
+  model()->GetPagesRemovedOnCacheReset(
+      base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
+                 AsWeakPtr(), base::Unretained(&offline_pages)));
+  PumpLoop();
+
+  ASSERT_EQ(1UL, offline_pages.size());
+  EXPECT_EQ(kTestUrl, offline_pages[0].url);
+  EXPECT_EQ("123", offline_pages[0].client_id.id);
+  EXPECT_EQ(kCCTNamespace, offline_pages[0].client_id.name_space);
+  EXPECT_EQ(archive_path, offline_pages[0].file_path);
+  EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
+  EXPECT_EQ(0, offline_pages[0].access_count);
+  EXPECT_EQ(0, offline_pages[0].flags);
+  EXPECT_EQ(kTestTitle, offline_pages[0].title);
+  EXPECT_EQ(GURL(), offline_pages[0].original_url);
+  EXPECT_EQ("", offline_pages[0].request_origin);
+}
+
+TEST_F(OfflinePageModelImplTest, GetPagesSupportedByDownloads) {
+  SavePage(kTestUrl, ClientId(kCCTNamespace, "123"));
+  SavePage(kTestUrl, ClientId(kDownloadNamespace, "456"));
+  base::FilePath download_archive_path(last_archiver_path());
+  SavePage(kTestUrl, ClientId(kNTPSuggestionsNamespace, "789"));
+  base::FilePath ntp_suggestions_archive_path(last_archiver_path());
+
+  MultipleOfflinePageItemResult offline_pages;
+  model()->GetPagesSupportedByDownloads(
+      base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
+                 AsWeakPtr(), base::Unretained(&offline_pages)));
+  PumpLoop();
+
+  ASSERT_EQ(2UL, offline_pages.size());
+  int download_index = 0;
+  int ntp_suggestions_index = 1;
+  if (offline_pages[0].client_id.name_space != kDownloadNamespace) {
+    download_index = 1;
+    ntp_suggestions_index = 0;
+  }
+
+  EXPECT_EQ(kTestUrl, offline_pages[download_index].url);
+  EXPECT_EQ("456", offline_pages[download_index].client_id.id);
+  EXPECT_EQ(kDownloadNamespace,
+            offline_pages[download_index].client_id.name_space);
+  EXPECT_EQ(download_archive_path, offline_pages[download_index].file_path);
+  EXPECT_EQ(kTestFileSize, offline_pages[download_index].file_size);
+  EXPECT_EQ(0, offline_pages[download_index].access_count);
+  EXPECT_EQ(0, offline_pages[download_index].flags);
+  EXPECT_EQ(kTestTitle, offline_pages[download_index].title);
+  EXPECT_EQ(GURL(), offline_pages[download_index].original_url);
+  EXPECT_EQ("", offline_pages[download_index].request_origin);
+
+  EXPECT_EQ(kTestUrl, offline_pages[ntp_suggestions_index].url);
+  EXPECT_EQ("789", offline_pages[ntp_suggestions_index].client_id.id);
+  EXPECT_EQ(kNTPSuggestionsNamespace,
+            offline_pages[ntp_suggestions_index].client_id.name_space);
+  EXPECT_EQ(ntp_suggestions_archive_path,
+            offline_pages[ntp_suggestions_index].file_path);
+  EXPECT_EQ(kTestFileSize, offline_pages[ntp_suggestions_index].file_size);
+  EXPECT_EQ(0, offline_pages[ntp_suggestions_index].access_count);
+  EXPECT_EQ(0, offline_pages[ntp_suggestions_index].flags);
+  EXPECT_EQ(kTestTitle, offline_pages[ntp_suggestions_index].title);
+  EXPECT_EQ(GURL(), offline_pages[ntp_suggestions_index].original_url);
+  EXPECT_EQ("", offline_pages[ntp_suggestions_index].request_origin);
 }
 
 TEST(CommandLineFlagsTest, OfflineBookmarks) {

@@ -10,8 +10,10 @@
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/offline_pages/core/client_policy_controller.h"
 
 using offline_pages::ClientId;
+using offline_pages::ClientPolicyController;
 using offline_pages::MultipleOfflinePageItemCallback;
 using offline_pages::OfflinePageItem;
 using offline_pages::StubOfflinePageModel;
@@ -26,12 +28,24 @@ FakeOfflinePageModel::FakeOfflinePageModel() {
 
 FakeOfflinePageModel::~FakeOfflinePageModel() = default;
 
-void FakeOfflinePageModel::GetPagesMatchingQuery(
-    std::unique_ptr<offline_pages::OfflinePageModelQuery> query,
+void FakeOfflinePageModel::GetPagesByNamespace(
+    const std::string& name_space,
     const MultipleOfflinePageItemCallback& callback) {
   MultipleOfflinePageItemResult filtered_result;
   for (auto& item : items_) {
-    if (query->Matches(item)) {
+    if (item.client_id.name_space == name_space) {
+      filtered_result.emplace_back(item);
+    }
+  }
+  callback.Run(filtered_result);
+}
+
+void FakeOfflinePageModel::GetPagesSupportedByDownloads(
+    const MultipleOfflinePageItemCallback& callback) {
+  ClientPolicyController controller;
+  MultipleOfflinePageItemResult filtered_result;
+  for (auto& item : items_) {
+    if (controller.IsSupportedByDownload(item.client_id.name_space)) {
       filtered_result.emplace_back(item);
     }
   }

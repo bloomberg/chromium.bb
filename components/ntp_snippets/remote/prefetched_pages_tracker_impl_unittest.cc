@@ -31,17 +31,8 @@ class MockOfflinePageModel : public offline_pages::StubOfflinePageModel {
  public:
   ~MockOfflinePageModel() override = default;
 
-  // GMock does not support movable-only types (unique_ptr in this case).
-  // Therefore, the call is redirected to a mock method without movable-only
-  // types.
-  void GetPagesMatchingQuery(
-      std::unique_ptr<OfflinePageModelQuery> query,
-      const MultipleOfflinePageItemCallback& callback) override {
-    GetPagesMatchingQuery(query.get(), callback);
-  }
-
-  MOCK_METHOD2(GetPagesMatchingQuery,
-               void(OfflinePageModelQuery* query,
+  MOCK_METHOD2(GetPagesByNamespace,
+               void(const std::string& name_space,
                     const MultipleOfflinePageItemCallback& callback));
 };
 
@@ -170,7 +161,9 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldReportAsNotInitializedBeforeInitialization) {
-  EXPECT_CALL(*mock_offline_page_model(), GetPagesMatchingQuery(_, _));
+  EXPECT_CALL(
+      *mock_offline_page_model(),
+      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _));
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
   EXPECT_FALSE(tracker.IsInitialized());
 }
@@ -178,7 +171,9 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldReportAsInitializedAfterInitialization) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(*mock_offline_page_model(), GetPagesMatchingQuery(_, _))
+  EXPECT_CALL(
+      *mock_offline_page_model(),
+      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
       .WillOnce(SaveArg<1>(&offline_pages_callback));
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
 
@@ -189,7 +184,9 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 
 TEST_F(PrefetchedPagesTrackerImplTest, ShouldCallCallbackAfterInitialization) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(*mock_offline_page_model(), GetPagesMatchingQuery(_, _))
+  EXPECT_CALL(
+      *mock_offline_page_model(),
+      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
       .WillOnce(SaveArg<1>(&offline_pages_callback));
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
 
@@ -204,7 +201,9 @@ TEST_F(PrefetchedPagesTrackerImplTest, ShouldCallCallbackAfterInitialization) {
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldCallMultipleCallbacksAfterInitialization) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(*mock_offline_page_model(), GetPagesMatchingQuery(_, _))
+  EXPECT_CALL(
+      *mock_offline_page_model(),
+      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
       .WillOnce(SaveArg<1>(&offline_pages_callback));
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
 
@@ -223,7 +222,9 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldCallCallbackImmediatelyIfAlreadyInitialiazed) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(*mock_offline_page_model(), GetPagesMatchingQuery(_, _))
+  EXPECT_CALL(
+      *mock_offline_page_model(),
+      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
       .WillOnce(SaveArg<1>(&offline_pages_callback));
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
   offline_pages_callback.Run(std::vector<OfflinePageItem>());

@@ -9,19 +9,10 @@
 
 using offline_pages::OfflinePageItem;
 using offline_pages::OfflinePageModel;
-using offline_pages::OfflinePageModelQuery;
-using offline_pages::OfflinePageModelQueryBuilder;
 
 namespace ntp_snippets {
 
 namespace {
-
-std::unique_ptr<OfflinePageModelQuery> BuildPrefetchedPagesQuery(
-    OfflinePageModel* model) {
-  OfflinePageModelQueryBuilder builder;
-  builder.RequireNamespace(offline_pages::kSuggestedArticlesNamespace);
-  return builder.Build(model->GetPolicyController());
-}
 
 bool IsOfflineItemPrefetchedPage(const OfflinePageItem& offline_page_item) {
   return offline_page_item.client_id.name_space ==
@@ -44,8 +35,8 @@ PrefetchedPagesTrackerImpl::PrefetchedPagesTrackerImpl(
   DCHECK(offline_page_model_);
   // If Offline Page model is not loaded yet, it will process our query
   // once it has finished loading.
-  offline_page_model_->GetPagesMatchingQuery(
-      BuildPrefetchedPagesQuery(offline_page_model),
+  offline_page_model_->GetPagesByNamespace(
+      offline_pages::kSuggestedArticlesNamespace,
       base::Bind(&PrefetchedPagesTrackerImpl::Initialize,
                  weak_ptr_factory_.GetWeakPtr()));
 }

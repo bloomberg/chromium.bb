@@ -17,8 +17,11 @@ class FakeOfflinePageModel : public offline_pages::StubOfflinePageModel {
   FakeOfflinePageModel();
   ~FakeOfflinePageModel() override;
 
-  void GetPagesMatchingQuery(
-      std::unique_ptr<offline_pages::OfflinePageModelQuery> query,
+  void GetPagesByNamespace(
+      const std::string& name_space,
+      const offline_pages::MultipleOfflinePageItemCallback& callback) override;
+
+  void GetPagesSupportedByDownloads(
       const offline_pages::MultipleOfflinePageItemCallback& callback) override;
 
   void GetAllPages(
