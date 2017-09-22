@@ -151,10 +151,13 @@ class DnsRequest {
     }
 
     info.set_allow_cached_response(data_provider_->ConsumeBool());
-    return host_resolver_->Resolve(
+    int rv = host_resolver_->Resolve(
         info, priority, &address_list_,
         base::Bind(&DnsRequest::OnCallback, base::Unretained(this)), &request_,
         net::NetLogWithSource());
+    if (rv == net::ERR_IO_PENDING)
+      is_running_ = true;
+    return rv;
   }
 
   // Waits until the request is done, if it isn't done already.
@@ -209,11 +212,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     host_resolver.SetDnsClientEnabled(data_provider.ConsumeBool());
 
     std::vector<std::unique_ptr<DnsRequest>> dns_requests;
-    while (true) {
+    bool done = false;
+    while (!done) {
       switch (data_provider.ConsumeInt32InRange(0, 3)) {
         case 0:
           // Quit on 0, or when no data is left.
-          return 0;
+          done = true;
+          break;
         case 1:
           DnsRequest::CreateRequest(&host_resolver, &data_provider,
                                     &dns_requests);
