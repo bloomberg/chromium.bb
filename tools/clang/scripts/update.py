@@ -684,6 +684,8 @@ def UpdateClang(args):
              [LLVM_DIR if sys.platform == 'win32' else COMPILER_RT_DIR],
              msvc_arch='x86', env=deployment_env)
   RunCommand(['ninja', 'compiler-rt'], msvc_arch='x86')
+  if sys.platform != 'win32':
+    RunCommand(['ninja', 'fuzzer'])
 
   # Copy select output to the main tree.
   # TODO(hans): Make this (and the .gypi and .isolate files) version number
