@@ -1043,9 +1043,9 @@ Status ExecuteAddCookie(Session* session,
   std::string name;
   std::string cookie_value;
   if (!cookie->GetString("name", &name))
-    return Status(kUnknownError, "missing 'name'");
+    return Status(kInvalidArgument, "missing 'name'");
   if (!cookie->GetString("value", &cookie_value))
-    return Status(kUnknownError, "missing 'value'");
+    return Status(kInvalidArgument, "missing 'value'");
   std::string url;
   Status status = GetUrl(web_view, session->GetCurrentFrameId(), &url);
   if (status.IsError())
