@@ -49,10 +49,10 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   virtual void SessionDestroyed(content::DevToolsAgentHost* agent_host,
                                 int session_id);
 
-  // Result ownership is passed to the caller.
-  virtual base::DictionaryValue* HandleCommand(DevToolsAgentHost* agent_host,
-                                               int session_id,
-                                               base::DictionaryValue* command);
+  // Returns true if the command has been handled, false otherwise.
+  virtual bool HandleCommand(DevToolsAgentHost* agent_host,
+                             int session_id,
+                             base::DictionaryValue* command);
 
   using CommandCallback =
       base::Callback<void(std::unique_ptr<base::DictionaryValue> response)>;
