@@ -350,6 +350,7 @@ EXPERIMENT_LIST="
     obu
     amvr
     lpf_sb
+    opt_ref_mv
 "
 CONFIG_LIST="
     dependency_tracking
