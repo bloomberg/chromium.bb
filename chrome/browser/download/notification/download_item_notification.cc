@@ -420,6 +420,7 @@ void DownloadItemNotification::UpdateNotificationData(
   if (message_center::IsNewStyleNotificationEnabled()) {
     notification_->set_message(GetSubStatusString());
     notification_->set_progress_status(GetStatusString());
+    notification_->set_use_image_as_icon(true);
   } else {
     notification_->set_message(GetStatusString());
   }
