@@ -50,8 +50,8 @@ TEST(SandboxTypeTest, Utility) {
   EXPECT_EQ(SANDBOX_TYPE_NETWORK, SandboxTypeFromCommandLine(command_line2));
 
   base::CommandLine command_line3(command_line);
-  SetCommandLineFlagsForSandboxType(&command_line3, SANDBOX_TYPE_WIDEVINE);
-  EXPECT_EQ(SANDBOX_TYPE_WIDEVINE, SandboxTypeFromCommandLine(command_line3));
+  SetCommandLineFlagsForSandboxType(&command_line3, SANDBOX_TYPE_CDM);
+  EXPECT_EQ(SANDBOX_TYPE_CDM, SandboxTypeFromCommandLine(command_line3));
 
   base::CommandLine command_line4(command_line);
   SetCommandLineFlagsForSandboxType(&command_line4, SANDBOX_TYPE_NO_SANDBOX);

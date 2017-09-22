@@ -41,7 +41,7 @@ enum SandboxType {
   SANDBOX_TYPE_NETWORK,
 
   // The CDM service process.
-  SANDBOX_TYPE_WIDEVINE,
+  SANDBOX_TYPE_CDM,
 
   SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };

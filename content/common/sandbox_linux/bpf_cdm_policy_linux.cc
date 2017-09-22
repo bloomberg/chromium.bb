@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_linux/bpf_widevine_policy_linux.h"
+#include "content/common/sandbox_linux/bpf_cdm_policy_linux.h"
 
 #include <errno.h>
 
@@ -20,10 +20,10 @@ using sandbox::bpf_dsl::ResultExpr;
 
 namespace content {
 
-WidevineProcessPolicy::WidevineProcessPolicy() {}
-WidevineProcessPolicy::~WidevineProcessPolicy() {}
+CdmProcessPolicy::CdmProcessPolicy() {}
+CdmProcessPolicy::~CdmProcessPolicy() {}
 
-ResultExpr WidevineProcessPolicy::EvaluateSyscall(int sysno) const {
+ResultExpr CdmProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
     case __NR_ioctl:
       return sandbox::RestrictIoctl();
