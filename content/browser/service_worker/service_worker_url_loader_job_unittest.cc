@@ -398,11 +398,6 @@ std::unique_ptr<ResourceResponseHead> CreateResponseInfoFromServiceWorker() {
   head->url_list_via_service_worker = std::vector<GURL>();
   head->response_type_via_service_worker =
       network::mojom::FetchResponseType::kDefault;
-  // TODO(falken): start and ready time should be set, and we'll need
-  // a different way of comparing expectation to actual since we don't know
-  // the actual time.
-  head->service_worker_start_time = base::TimeTicks();
-  head->service_worker_ready_time = base::TimeTicks();
   head->is_in_cache_storage = false;
   head->cache_storage_cache_name = std::string();
   head->did_service_worker_navigation_preload = false;
