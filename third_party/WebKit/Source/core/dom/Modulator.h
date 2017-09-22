@@ -142,7 +142,17 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual Vector<ModuleRequest> ModuleRequestsFromScriptModule(
       ScriptModule) = 0;
 
-  virtual void ExecuteModule(const ModuleScript*) = 0;
+  // ExecuteModule implements #run-a-module-script HTML spec algorithm.
+  // https://html.spec.whatwg.org/multipage/webappapis.html#run-a-module-script
+  // Note: "rethrow errors" flag in the spec corresponds to capture_error being
+  // CaptureEvalErrorFlag::kCapture. Here we rely on caller to handle the
+  // exception. The current only caller is
+  // DynamicImportTreeClinet::NotifyModuleTreeLoadFinished, which catches
+  // the exception immediately, so just returning the exception value here is
+  // more convenient and optimal.
+  virtual ScriptValue ExecuteModule(
+      const ModuleScript*,
+      CaptureEvalErrorFlag = CaptureEvalErrorFlag::kReport) = 0;
 
   virtual ModuleScriptFetcher* CreateModuleScriptFetcher() = 0;
 

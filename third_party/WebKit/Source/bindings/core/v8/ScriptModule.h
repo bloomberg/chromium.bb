@@ -27,6 +27,14 @@ class ExceptionState;
 using ScriptModuleState = v8::Module::Status;
 const char* ScriptModuleStateToString(ScriptModuleState);
 
+// CaptureEvalErrorFlag is used to implement "rethrow errors" parameter in
+// run-a-module-script. When "rethrow errors" is to be set, use kCapture for
+// ScriptModule::Evaluate()/Modulator::EvaluateModule(), and rethrow the
+// returned exception (if any) in the caller of these methods. When "rethrow
+// errors" is not to be set, use kReport, and Evaluate()/EvaluateModule()
+// "report the error".
+enum class CaptureEvalErrorFlag : bool { kReport, kCapture };
+
 // ScriptModule wraps a handle to a v8::Module for use in core.
 //
 // Using ScriptModules needs a ScriptState and its scope to operate in. You
@@ -55,7 +63,9 @@ class CORE_EXPORT ScriptModule final {
   // Returns exception, if any.
   ScriptValue Instantiate(ScriptState*);
 
-  void Evaluate(ScriptState*) const;
+  // Returns exception if CaptureEvalErrorFlag::kCapture is specified.
+  // Otherwise, "report the error" to console.
+  ScriptValue Evaluate(ScriptState*, CaptureEvalErrorFlag) const;
   static void ReportException(ScriptState*, v8::Local<v8::Value> exception);
 
   Vector<String> ModuleRequests(ScriptState*);
