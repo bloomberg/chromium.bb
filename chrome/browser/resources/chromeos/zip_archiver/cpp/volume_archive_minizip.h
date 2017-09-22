@@ -213,6 +213,9 @@ class VolumeArchiveMinizip : public VolumeArchive {
 
   // True if VolumeArchiveMinizip::DecompressData failed.
   bool decompressed_error_;
+
+  // The password cache to access password protected files.
+  std::unique_ptr<std::string> password_cache_;
 };
 
 #endif  // CHROME_BROWSER_RESOURCES_CHROMEOS_ZIP_ARCHIVER_CPP_VOLUME_ARCHIVE_MINIZIP_H_

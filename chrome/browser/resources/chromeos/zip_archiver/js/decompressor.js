@@ -296,6 +296,8 @@ unpacker.Decompressor.prototype.readChunk_ = function(data, requestId) {
 unpacker.Decompressor.prototype.readPassphrase_ = function(data, requestId) {
   this.passphraseManager.getPassphrase()
       .then(function(passphrase) {
+        // Update remembered password
+        unpacker.app.updateState([this.fileSystemId_]);
         this.naclModule_.postMessage(
             unpacker.request.createReadPassphraseDoneResponse(
                 this.fileSystemId_, requestId, passphrase));

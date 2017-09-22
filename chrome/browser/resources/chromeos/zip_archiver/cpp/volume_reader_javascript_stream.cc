@@ -218,14 +218,15 @@ void VolumeReaderJavaScriptStream::SetRequestId(const std::string& request_id) {
   request_id_ = request_id;
 }
 
-const char* VolumeReaderJavaScriptStream::Passphrase() {
+std::unique_ptr<std::string> VolumeReaderJavaScriptStream::Passphrase() {
+  std::unique_ptr<std::string> result;
   // The error is not recoverable. Once passphrase fails to be provided, it is
   // never asked again. Note, that still users are able to retry entering the
   // password, unless they click Cancel.
   pthread_mutex_lock(&shared_state_lock_);
   if (passphrase_error_) {
     pthread_mutex_unlock(&shared_state_lock_);
-    return nullptr;
+    return result;
   }
   pthread_mutex_unlock(&shared_state_lock_);
 
@@ -235,9 +236,10 @@ const char* VolumeReaderJavaScriptStream::Passphrase() {
   pthread_mutex_lock(&shared_state_lock_);
   // Wait for the passphrase from JavaScript.
   pthread_cond_wait(&available_passphrase_cond_, &shared_state_lock_);
-  const char* result = nullptr;
+
   if (!passphrase_error_)
-    result = strdup(available_passphrase_.c_str());
+    result.reset(new std::string(available_passphrase_));
+
   pthread_mutex_unlock(&shared_state_lock_);
 
   return result;

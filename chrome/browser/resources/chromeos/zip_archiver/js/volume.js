@@ -12,7 +12,6 @@
  */
 function DateFromTimeT(timestamp) {
   var local = new Date(1000 * timestamp);
-  console.info(local.getHours());
   return new Date(local.getTime() + (local.getTimezoneOffset() * 60000));
 }
 

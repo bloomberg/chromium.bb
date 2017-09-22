@@ -245,7 +245,7 @@ unpacker.app = {
    * @param {!Object<!unpacker.types.RequestId,
    *                 !unpacker.types.OpenFileRequestedOptions>}
    *     openedFiles Previously opened files before a suspend.
-   * @param {string} passphrase Previously used passphrase before a suspend.
+   * @param {?string} passphrase Previously used passphrase before a suspend.
    * @return {!Promise} Promise fulfilled on success and rejected on failure.
    * @private
    */
@@ -509,6 +509,16 @@ unpacker.app = {
       compressor.archiveFileEntry.remove();
 
     delete unpacker.app.compressors[compressorId];
+  },
+
+  /**
+   * Updates the state in case of restarts, event page suspend, crashes, etc.
+   * Use this method to update or save the state out side of the object in case
+   * when password changes, etc.
+   * @param {!Array<!unpacker.types.FileSystemId>} fileSystemIdsArray
+   */
+  updateState: function(fileSystemIdsArray) {
+    unpacker.app.saveState_(fileSystemIdsArray);
   },
 
   /**
@@ -796,7 +806,7 @@ unpacker.app = {
                   };
 
                   var loadPromise = unpacker.app.loadVolume_(
-                      fileSystemId, entry, {}, '' /* passphrase */);
+                      fileSystemId, entry, {}, null /* passphrase */);
                   loadPromise
                       .then(function() {
                         // Mount the volume and save its information in local

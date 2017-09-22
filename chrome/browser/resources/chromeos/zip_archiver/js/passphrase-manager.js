@@ -29,7 +29,7 @@ unpacker.PassphraseManager.prototype.getPassphrase = function() {
   return new Promise(function(fulfill, reject) {
     // For the first passphrase request try the init passphrase (which may be
     // incorrect though, so do it only once).
-    if (this.initPassphrase_) {
+    if (this.initPassphrase_ != null) {
       fulfill(this.initPassphrase_);
       this.initPassphrase_ = null;
       return;

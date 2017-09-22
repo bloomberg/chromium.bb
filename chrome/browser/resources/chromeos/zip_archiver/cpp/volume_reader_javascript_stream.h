@@ -66,7 +66,7 @@ class VolumeReaderJavaScriptStream : public VolumeReader {
   // See volume_reader.h for description. The method blocks on
   // available_passphrase_cond_. SetPassphraseAndSignal should unblock it from
   // another thread.
-  virtual const char* Passphrase();
+  virtual std::unique_ptr<std::string> Passphrase();
 
   virtual int64_t offset() { return offset_; }
 
