@@ -160,6 +160,38 @@ TEST_F(TextSuggestionControllerTest, ApplyTextSuggestion) {
   EXPECT_EQ(13, selection.End().ComputeOffsetInContainerNode());
 }
 
+TEST_F(TextSuggestionControllerTest,
+       ApplyingMisspellingTextSuggestionClearsMarker) {
+  SetBodyContent(
+      "<div contenteditable>"
+      "mispelled"
+      "</div>");
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+
+  // Add marker on "mispelled". This marker should be cleared by the replace
+  // operation.
+  GetDocument().Markers().AddSuggestionMarker(
+      EphemeralRange(Position(text, 0), Position(text, 9)),
+      SuggestionMarkerProperties::Builder()
+          .SetType(SuggestionMarker::SuggestionType::kMisspelling)
+          .SetSuggestions(Vector<String>({"misspelled"}))
+          .Build());
+
+  // Select immediately before "mispelled".
+  GetDocument().GetFrame()->Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(Position(text, 0), Position(text, 0))
+          .Build());
+
+  // Replace "mispelled" with "misspelled".
+  GetDocument().GetFrame()->GetTextSuggestionController().ApplyTextSuggestion(
+      1, 0);
+
+  EXPECT_EQ(0u, GetDocument().Markers().MarkersFor(text).size());
+  EXPECT_EQ("misspelled", text->textContent());
+}
+
 TEST_F(TextSuggestionControllerTest, DeleteActiveSuggestionRange_DeleteAtEnd) {
   SetBodyContent(
       "<div contenteditable>"
