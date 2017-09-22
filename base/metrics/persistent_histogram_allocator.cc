@@ -733,8 +733,7 @@ PersistentHistogramAllocator::GetOrCreateStatisticsRecorderHistogram(
   // FactoryGet() which will create the histogram in the global persistent-
   // histogram allocator if such is set.
   base::Pickle pickle;
-  if (!histogram->SerializeInfo(&pickle))
-    return nullptr;
+  histogram->SerializeInfo(&pickle);
   PickleIterator iter(pickle);
   existing = DeserializeHistogramInfo(&iter);
   if (!existing)

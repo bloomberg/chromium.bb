@@ -247,7 +247,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
             HistogramSamples::Metadata* logged_meta);
 
   // HistogramBase implementation:
-  bool SerializeInfoImpl(base::Pickle* pickle) const override;
+  void SerializeInfoImpl(base::Pickle* pickle) const override;
 
   // Method to override to skip the display of the i'th bucket if it's empty.
   virtual bool PrintEmptyBucket(uint32_t index) const;
@@ -541,7 +541,7 @@ class BASE_EXPORT CustomHistogram : public Histogram {
                   HistogramSamples::Metadata* logged_meta);
 
   // HistogramBase implementation:
-  bool SerializeInfoImpl(base::Pickle* pickle) const override;
+  void SerializeInfoImpl(base::Pickle* pickle) const override;
 
   double GetBucketSize(Count current, uint32_t i) const override;
 

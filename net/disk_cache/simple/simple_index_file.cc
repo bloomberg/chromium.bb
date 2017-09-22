@@ -255,13 +255,11 @@ void SimpleIndexFile::IndexMetadata::Serialize(base::Pickle* pickle) const {
 }
 
 // static
-bool SimpleIndexFile::SerializeFinalData(base::Time cache_modified,
+void SimpleIndexFile::SerializeFinalData(base::Time cache_modified,
                                          base::Pickle* pickle) {
-  if (!pickle->WriteInt64(cache_modified.ToInternalValue()))
-    return false;
+  pickle->WriteInt64(cache_modified.ToInternalValue());
   SimpleIndexFile::PickleHeader* header_p = pickle->headerT<PickleHeader>();
   header_p->crc = CalculatePickleCRC(*pickle);
-  return true;
 }
 
 bool SimpleIndexFile::IndexMetadata::Deserialize(base::PickleIterator* it) {

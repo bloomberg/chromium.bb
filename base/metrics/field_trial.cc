@@ -65,25 +65,19 @@ const char kAllocatorName[] = "FieldTrialAllocator";
 const size_t kFieldTrialAllocationSize = 128 << 10;  // 128 KiB
 
 // Writes out string1 and then string2 to pickle.
-bool WriteStringPair(Pickle* pickle,
+void WriteStringPair(Pickle* pickle,
                      const StringPiece& string1,
                      const StringPiece& string2) {
-  if (!pickle->WriteString(string1))
-    return false;
-  if (!pickle->WriteString(string2))
-    return false;
-  return true;
+  pickle->WriteString(string1);
+  pickle->WriteString(string2);
 }
 
 // Writes out the field trial's contents (via trial_state) to the pickle. The
 // format of the pickle looks like:
 // TrialName, GroupName, ParamKey1, ParamValue1, ParamKey2, ParamValue2, ...
 // If there are no parameters, then it just ends at GroupName.
-bool PickleFieldTrial(const FieldTrial::State& trial_state, Pickle* pickle) {
-  if (!WriteStringPair(pickle, *trial_state.trial_name,
-                       *trial_state.group_name)) {
-    return false;
-  }
+void PickleFieldTrial(const FieldTrial::State& trial_state, Pickle* pickle) {
+  WriteStringPair(pickle, *trial_state.trial_name, *trial_state.group_name);
 
   // Get field trial params.
   std::map<std::string, std::string> params;
@@ -91,11 +85,8 @@ bool PickleFieldTrial(const FieldTrial::State& trial_state, Pickle* pickle) {
       *trial_state.trial_name, *trial_state.group_name, &params);
 
   // Write params to pickle.
-  for (const auto& param : params) {
-    if (!WriteStringPair(pickle, param.first, param.second))
-      return false;
-  }
-  return true;
+  for (const auto& param : params)
+    WriteStringPair(pickle, param.first, param.second);
 }
 
 // Created a time value based on |year|, |month| and |day_of_month| parameters.
@@ -1358,10 +1349,7 @@ void FieldTrialList::AddToAllocatorWhileLocked(
     return;
 
   Pickle pickle;
-  if (!PickleFieldTrial(trial_state, &pickle)) {
-    NOTREACHED();
-    return;
-  }
+  PickleFieldTrial(trial_state, &pickle);
 
   size_t total_size = sizeof(FieldTrial::FieldTrialEntry) + pickle.size();
   FieldTrial::FieldTrialRef ref = allocator->Allocate(

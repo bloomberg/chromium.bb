@@ -66,8 +66,7 @@ std::unique_ptr<content::NavigationEntry> CreateNavigationEntry() {
 
 TEST(AndroidWebViewStateSerializerTest, TestHeaderSerialization) {
   base::Pickle pickle;
-  bool result = internal::WriteHeaderToPickle(&pickle);
-  EXPECT_TRUE(result);
+  internal::WriteHeaderToPickle(&pickle);
 
   base::PickleIterator iterator(pickle);
   uint32_t version = internal::RestoreHeaderFromPickle(&iterator);
@@ -76,9 +75,7 @@ TEST(AndroidWebViewStateSerializerTest, TestHeaderSerialization) {
 
 TEST(AndroidWebViewStateSerializerTest, TestLegacyVersionHeaderSerialization) {
   base::Pickle pickle;
-  bool result = internal::WriteHeaderToPickle(
-      internal::AW_STATE_VERSION_INITIAL, &pickle);
-  EXPECT_TRUE(result);
+  internal::WriteHeaderToPickle(internal::AW_STATE_VERSION_INITIAL, &pickle);
 
   base::PickleIterator iterator(pickle);
   uint32_t version = internal::RestoreHeaderFromPickle(&iterator);
@@ -88,8 +85,7 @@ TEST(AndroidWebViewStateSerializerTest, TestLegacyVersionHeaderSerialization) {
 TEST(AndroidWebViewStateSerializerTest,
      TestUnsupportedVersionHeaderSerialization) {
   base::Pickle pickle;
-  bool result = internal::WriteHeaderToPickle(20000101, &pickle);
-  EXPECT_TRUE(result);
+  internal::WriteHeaderToPickle(20000101, &pickle);
 
   base::PickleIterator iterator(pickle);
   uint32_t version = internal::RestoreHeaderFromPickle(&iterator);
@@ -106,13 +102,13 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   std::unique_ptr<content::NavigationEntry> entry(CreateNavigationEntry());
 
   base::Pickle pickle;
-  bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
-  EXPECT_TRUE(result);
+  internal::WriteNavigationEntryToPickle(*entry, &pickle);
 
   std::unique_ptr<content::NavigationEntry> copy(
       content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
-  result = internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
+  bool result =
+      internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
   EXPECT_TRUE(result);
 
   EXPECT_EQ(entry->GetURL(), copy->GetURL());
@@ -143,14 +139,13 @@ TEST(AndroidWebViewStateSerializerTest,
   std::unique_ptr<content::NavigationEntry> entry(CreateNavigationEntry());
 
   base::Pickle pickle;
-  bool result = internal::WriteNavigationEntryToPickle(
-      internal::AW_STATE_VERSION_INITIAL, *entry, &pickle);
-  EXPECT_TRUE(result);
+  internal::WriteNavigationEntryToPickle(internal::AW_STATE_VERSION_INITIAL,
+                                         *entry, &pickle);
 
   std::unique_ptr<content::NavigationEntry> copy(
       content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
-  result = internal::RestoreNavigationEntryFromPickle(
+  bool result = internal::RestoreNavigationEntryFromPickle(
       internal::AW_STATE_VERSION_INITIAL, &iterator, copy.get());
   EXPECT_TRUE(result);
 
@@ -183,13 +178,13 @@ TEST(AndroidWebViewStateSerializerTest, TestEmptyDataURLSerialization) {
   EXPECT_FALSE(entry->GetDataURLAsString());
 
   base::Pickle pickle;
-  bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
-  EXPECT_TRUE(result);
+  internal::WriteNavigationEntryToPickle(*entry, &pickle);
 
   std::unique_ptr<content::NavigationEntry> copy(
       content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
-  result = internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
+  bool result =
+      internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
   EXPECT_TRUE(result);
   EXPECT_FALSE(entry->GetDataURLAsString());
 }
@@ -212,13 +207,13 @@ TEST(AndroidWebViewStateSerializerTest, TestHugeDataURLSerialization) {
   }
 
   base::Pickle pickle;
-  bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
-  EXPECT_TRUE(result);
+  internal::WriteNavigationEntryToPickle(*entry, &pickle);
 
   std::unique_ptr<content::NavigationEntry> copy(
       content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
-  result = internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
+  bool result =
+      internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
   EXPECT_TRUE(result);
   EXPECT_EQ(huge_data_url, copy->GetDataURLAsString()->data());
 }

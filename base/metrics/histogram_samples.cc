@@ -214,11 +214,9 @@ void HistogramSamples::Subtract(const HistogramSamples& other) {
   DCHECK(success);
 }
 
-bool HistogramSamples::Serialize(Pickle* pickle) const {
-  if (!pickle->WriteInt64(sum()))
-    return false;
-  if (!pickle->WriteInt(redundant_count()))
-    return false;
+void HistogramSamples::Serialize(Pickle* pickle) const {
+  pickle->WriteInt64(sum());
+  pickle->WriteInt(redundant_count());
 
   HistogramBase::Sample min;
   int64_t max;
@@ -226,12 +224,10 @@ bool HistogramSamples::Serialize(Pickle* pickle) const {
   for (std::unique_ptr<SampleCountIterator> it = Iterator(); !it->Done();
        it->Next()) {
     it->Get(&min, &max, &count);
-    if (!pickle->WriteInt(min) || !pickle->WriteInt64(max) ||
-        !pickle->WriteInt(count)) {
-      return false;
-    }
+    pickle->WriteInt(min);
+    pickle->WriteInt64(max);
+    pickle->WriteInt(count);
   }
-  return true;
 }
 
 bool HistogramSamples::AccumulateSingleSample(HistogramBase::Sample value,

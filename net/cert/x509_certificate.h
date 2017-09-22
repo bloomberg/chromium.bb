@@ -346,7 +346,7 @@ class NET_EXPORT X509Certificate
 
   // Writes a single certificate to |pickle| in DER form. Returns false on
   // failure.
-  static bool WriteOSCertHandleToPickle(OSCertHandle handle,
+  static void WriteOSCertHandleToPickle(OSCertHandle handle,
                                         base::Pickle* pickle);
 
   // The subject of the certificate.

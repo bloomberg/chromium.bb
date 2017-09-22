@@ -46,8 +46,8 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferStr) {
   uint32_t v1 = std::numeric_limits<uint32_t>::max() - 1;
   int v2 = 666;
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
-  EXPECT_TRUE(m.WriteInt(v1));
-  EXPECT_TRUE(m.WriteInt(v2));
+  m.WriteInt(v1);
+  m.WriteInt(v2);
 
   base::PickleIterator iter(m);
   std::string vs;
@@ -59,8 +59,8 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferStr16) {
   uint32_t v1 = std::numeric_limits<uint32_t>::max() - 1;
   int v2 = 777;
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
-  EXPECT_TRUE(m.WriteInt(v1));
-  EXPECT_TRUE(m.WriteInt(v2));
+  m.WriteInt(v1);
+  m.WriteInt(v2);
 
   base::PickleIterator iter(m);
   base::string16 vs;
@@ -70,8 +70,8 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferStr16) {
 TEST(IPCMessageIntegrity, ReadBytesBadIterator) {
   // This was BUG 1035467.
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
-  EXPECT_TRUE(m.WriteInt(1));
-  EXPECT_TRUE(m.WriteInt(2));
+  m.WriteInt(1);
+  m.WriteInt(2);
 
   base::PickleIterator iter(m);
   const char* data = NULL;
@@ -83,10 +83,10 @@ TEST(IPCMessageIntegrity, ReadVectorNegativeSize) {
   // has a specialized template which is not vulnerable to this bug. So here
   // try to hit the non-specialized case vector<P>.
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
-  EXPECT_TRUE(m.WriteInt(-1));   // This is the count of elements.
-  EXPECT_TRUE(m.WriteInt(1));
-  EXPECT_TRUE(m.WriteInt(2));
-  EXPECT_TRUE(m.WriteInt(3));
+  m.WriteInt(-1);  // This is the count of elements.
+  m.WriteInt(1);
+  m.WriteInt(2);
+  m.WriteInt(3);
 
   std::vector<double> vec;
   base::PickleIterator iter(m);
@@ -102,9 +102,9 @@ TEST(IPCMessageIntegrity, MAYBE_ReadVectorTooLarge1) {
   // This was BUG 1006367. This is the large but positive length case. Again
   // we try to hit the non-specialized case vector<P>.
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
-  EXPECT_TRUE(m.WriteInt(0x21000003));   // This is the count of elements.
-  EXPECT_TRUE(m.WriteInt64(1));
-  EXPECT_TRUE(m.WriteInt64(2));
+  m.WriteInt(0x21000003);  // This is the count of elements.
+  m.WriteInt64(1);
+  m.WriteInt64(2);
 
   std::vector<int64_t> vec;
   base::PickleIterator iter(m);
@@ -116,9 +116,9 @@ TEST(IPCMessageIntegrity, ReadVectorTooLarge2) {
   // integer overflow when computing the actual byte size. Again we try to hit
   // the non-specialized case vector<P>.
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
-  EXPECT_TRUE(m.WriteInt(0x71000000));   // This is the count of elements.
-  EXPECT_TRUE(m.WriteInt64(1));
-  EXPECT_TRUE(m.WriteInt64(2));
+  m.WriteInt(0x71000000);  // This is the count of elements.
+  m.WriteInt64(1);
+  m.WriteInt64(2);
 
   std::vector<int64_t> vec;
   base::PickleIterator iter(m);

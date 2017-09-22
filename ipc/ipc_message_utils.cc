@@ -1020,7 +1020,8 @@ bool ParamTraits<Message>::Read(const base::Pickle* m,
     return false;
 
   r->SetHeaderValues(static_cast<int32_t>(routing_id), type, flags);
-  return r->WriteBytes(payload, payload_size);
+  r->WriteBytes(payload, payload_size);
+  return true;
 }
 
 void ParamTraits<Message>::Log(const Message& p, std::string* l) {

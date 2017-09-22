@@ -627,10 +627,7 @@ std::unique_ptr<IPC::Message> BrowserPluginGuest::UpdateInstanceIdIfNecessary(
   bool read_success = iter.ReadBytes(&data, remaining_bytes);
   CHECK(read_success)
       << "Unexpected failure reading remaining IPC::Message payload.";
-  bool write_success = new_msg->WriteBytes(data, remaining_bytes);
-  CHECK(write_success)
-      << "Unexpected failure writing remaining IPC::Message payload.";
-
+  new_msg->WriteBytes(data, remaining_bytes);
   return new_msg;
 }
 

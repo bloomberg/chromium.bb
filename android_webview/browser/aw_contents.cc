@@ -941,12 +941,9 @@ base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetOpaqueState(
     return ScopedJavaLocalRef<jbyteArray>();
 
   base::Pickle pickle;
-  if (!WriteToPickle(*web_contents_, &pickle)) {
-    return ScopedJavaLocalRef<jbyteArray>();
-  } else {
-    return base::android::ToJavaByteArray(
-        env, reinterpret_cast<const uint8_t*>(pickle.data()), pickle.size());
-  }
+  WriteToPickle(*web_contents_, &pickle);
+  return base::android::ToJavaByteArray(
+      env, reinterpret_cast<const uint8_t*>(pickle.data()), pickle.size());
 }
 
 jboolean AwContents::RestoreFromOpaqueState(

@@ -295,18 +295,10 @@ void X509Certificate::Persist(base::Pickle* pickle) {
     NOTREACHED();
     return;
   }
-  if (!pickle->WriteInt(
-          static_cast<int>(intermediate_ca_certs_.size() + 1)) ||
-      !WriteOSCertHandleToPickle(cert_handle_, pickle)) {
-    NOTREACHED();
-    return;
-  }
-  for (size_t i = 0; i < intermediate_ca_certs_.size(); ++i) {
-    if (!WriteOSCertHandleToPickle(intermediate_ca_certs_[i], pickle)) {
-      NOTREACHED();
-      return;
-    }
-  }
+  pickle->WriteInt(static_cast<int>(intermediate_ca_certs_.size() + 1));
+  WriteOSCertHandleToPickle(cert_handle_, pickle);
+  for (size_t i = 0; i < intermediate_ca_certs_.size(); ++i)
+    WriteOSCertHandleToPickle(intermediate_ca_certs_[i], pickle);
 }
 
 void X509Certificate::GetDNSNames(std::vector<std::string>* dns_names) const {

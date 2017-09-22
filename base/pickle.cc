@@ -288,28 +288,24 @@ Pickle& Pickle::operator=(const Pickle& other) {
   return *this;
 }
 
-bool Pickle::WriteString(const StringPiece& value) {
-  if (!WriteInt(static_cast<int>(value.size())))
-    return false;
-
-  return WriteBytes(value.data(), static_cast<int>(value.size()));
+void Pickle::WriteString(const StringPiece& value) {
+  WriteInt(static_cast<int>(value.size()));
+  WriteBytes(value.data(), static_cast<int>(value.size()));
 }
 
-bool Pickle::WriteString16(const StringPiece16& value) {
-  if (!WriteInt(static_cast<int>(value.size())))
-    return false;
-
-  return WriteBytes(value.data(),
-                    static_cast<int>(value.size()) * sizeof(char16));
+void Pickle::WriteString16(const StringPiece16& value) {
+  WriteInt(static_cast<int>(value.size()));
+  WriteBytes(value.data(), static_cast<int>(value.size()) * sizeof(char16));
 }
 
-bool Pickle::WriteData(const char* data, int length) {
-  return length >= 0 && WriteInt(length) && WriteBytes(data, length);
+void Pickle::WriteData(const char* data, int length) {
+  CHECK_GE(length, 0);
+  WriteInt(length);
+  WriteBytes(data, length);
 }
 
-bool Pickle::WriteBytes(const void* data, int length) {
+void Pickle::WriteBytes(const void* data, int length) {
   WriteBytesCommon(data, length);
-  return true;
 }
 
 void Pickle::Reserve(size_t length) {

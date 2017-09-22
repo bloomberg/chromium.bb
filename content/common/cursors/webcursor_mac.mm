@@ -360,14 +360,6 @@ void WebCursor::InitPlatformData() {
   return;
 }
 
-bool WebCursor::SerializePlatformData(base::Pickle* pickle) const {
-  return true;
-}
-
-bool WebCursor::DeserializePlatformData(base::PickleIterator* iter) {
-  return true;
-}
-
 bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
   return true;
 }
