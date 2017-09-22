@@ -432,6 +432,28 @@ TEST_F(EventHandlerTest, InputFieldsCanStartSelection) {
                                                                          hit));
 }
 
+TEST_F(EventHandlerTest, ReadOnlyInputDoesNotInheritUserSelect) {
+  SetHtmlInnerHTML(
+      "<div style='user-select: none'>"
+      "<input readonly value='blabla'>"
+      "</div>");
+  Element* const field =
+      ToElement(GetDocument().body()->firstChild()->firstChild());
+  ShadowRoot* const shadow_root = field->UserAgentShadowRoot();
+
+  Element* const text = shadow_root->getElementById("inner-editor");
+  LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
+  HitTestResult hit =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+          location);
+  EXPECT_TRUE(text->CanStartSelection());
+
+  // TODO(crbug.com/764661): Show I-beam because field is selectable.
+  // EXPECT_TRUE(
+  //   GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(field,
+  //                                                                      hit));
+}
+
 TEST_F(EventHandlerTest, ImagesCannotStartSelection) {
   SetHtmlInnerHTML("<img>");
   Element* const img = ToElement(GetDocument().body()->firstChild());
