@@ -177,7 +177,8 @@ void WriteNavigationEntryToPickle(uint32_t state_version,
   if (state_version >= internal::AW_STATE_VERSION_DATA_URL) {
     const char* data = nullptr;
     size_t size = 0;
-    scoped_refptr<const base::RefCountedString> s = entry.GetDataURLAsString();
+    const scoped_refptr<const base::RefCountedString>& s =
+        entry.GetDataURLAsString();
     if (s) {
       data = s->front_as<char>();
       size = s->size();

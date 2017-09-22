@@ -103,7 +103,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
 #if defined(OS_ANDROID)
   void SetDataURLAsString(
       scoped_refptr<base::RefCountedString> data_url) override;
-  const scoped_refptr<const base::RefCountedString> GetDataURLAsString()
+  const scoped_refptr<const base::RefCountedString>& GetDataURLAsString()
       const override;
 #endif
   void SetReferrer(const Referrer& referrer) override;

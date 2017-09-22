@@ -311,10 +311,10 @@ void NavigationEntryImpl::SetDataURLAsString(
     DCHECK(base::StartsWith(data_url->front_as<char>(), url::kDataScheme,
                             base::CompareCase::SENSITIVE));
   }
-  data_url_as_string_ = data_url;
+  data_url_as_string_ = std::move(data_url);
 }
 
-const scoped_refptr<const base::RefCountedString>
+const scoped_refptr<const base::RefCountedString>&
 NavigationEntryImpl::GetDataURLAsString() const {
   return data_url_as_string_;
 }
