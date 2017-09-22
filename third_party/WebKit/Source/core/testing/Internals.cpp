@@ -1194,13 +1194,15 @@ void Internals::addSuggestionMarker(
           const EphemeralRange& range, Color underline_color,
           StyleableMarker::Thickness thickness, Color background_color) {
         document_marker_controller.AddSuggestionMarker(
-            range, SuggestionMarkerProperties::Builder()
-                       .SetSuggestions(suggestions)
-                       .SetHighlightColor(suggestion_highlight_color)
-                       .SetUnderlineColor(underline_color)
-                       .SetThickness(thickness)
-                       .SetBackgroundColor(background_color)
-                       .Build());
+            range,
+            SuggestionMarkerProperties::Builder()
+                .SetType(SuggestionMarker::SuggestionType::kNotMisspelling)
+                .SetSuggestions(suggestions)
+                .SetHighlightColor(suggestion_highlight_color)
+                .SetUnderlineColor(underline_color)
+                .SetThickness(thickness)
+                .SetBackgroundColor(background_color)
+                .Build());
       });
 }
 

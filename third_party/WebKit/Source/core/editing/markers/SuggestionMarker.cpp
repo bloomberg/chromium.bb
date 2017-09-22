@@ -20,6 +20,7 @@ SuggestionMarker::SuggestionMarker(unsigned start_offset,
                       properties.BackgroundColor()),
       tag_(NextTag()),
       suggestions_(properties.Suggestions()),
+      suggestion_type_(properties.Type()),
       suggestion_highlight_color_(properties.HighlightColor()) {
   DCHECK_GT(tag_, 0);
 }
@@ -34,6 +35,10 @@ DocumentMarker::MarkerType SuggestionMarker::GetType() const {
 
 const Vector<String>& SuggestionMarker::Suggestions() const {
   return suggestions_;
+}
+
+bool SuggestionMarker::IsMisspelling() const {
+  return suggestion_type_ == SuggestionType::kMisspelling;
 }
 
 Color SuggestionMarker::SuggestionHighlightColor() const {

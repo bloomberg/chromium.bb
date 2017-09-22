@@ -512,6 +512,7 @@ void InputMethodController::AddImeTextSpans(
       GetDocument().Markers().AddSuggestionMarker(
           ephemeral_line_range,
           SuggestionMarkerProperties::Builder()
+              .SetType(SuggestionMarker::SuggestionType::kNotMisspelling)
               .SetSuggestions(ime_text_span.Suggestions())
               .SetHighlightColor(ime_text_span.SuggestionHighlightColor())
               .SetUnderlineColor(ime_text_span.UnderlineColor())
