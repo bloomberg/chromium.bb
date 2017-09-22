@@ -460,21 +460,18 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       }
 
       if (level > NUM_BASE_LEVELS) {
-        int idx;
         int ctx;
         ctx = get_br_ctx(qcoeff, scan[c], bwl, height);
 #if BR_NODE
         int base_range = level - 1 - NUM_BASE_LEVELS;
         if (base_range < COEFF_BASE_RANGE) {
           cost += coeff_costs->lps_cost[ctx][base_range];
-          continue;
         } else {
           cost += coeff_costs->lps_cost[ctx][COEFF_BASE_RANGE];
         }
 
-        idx = COEFF_BASE_RANGE;
 #else
-        for (idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
+        for (int idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
           if (level == (idx + 1 + NUM_BASE_LEVELS)) {
             cost += coeff_costs->lps_cost[ctx][1];
             break;
@@ -482,7 +479,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
           cost += coeff_costs->lps_cost[ctx][0];
         }
 #endif
-        if (idx >= COEFF_BASE_RANGE) {
+        if (level >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
           // residual cost
           int r = level - COEFF_BASE_RANGE - NUM_BASE_LEVELS;
           int ri = r;
