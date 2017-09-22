@@ -167,9 +167,10 @@ stage_install_common() {
     "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}-sandbox"
 
   # l10n paks
-  cp -a "${BUILDDIR}/locales" "${STAGEDIR}/${INSTALLDIR}/"
+  install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/locales/"
+  find "${BUILDDIR}/locales" -type f -name '*.pak' -exec \
+    cp -a '{}' "${STAGEDIR}/${INSTALLDIR}/locales/" \;
   find "${STAGEDIR}/${INSTALLDIR}/locales" -type f -exec chmod 644 '{}' \;
-  find "${STAGEDIR}/${INSTALLDIR}/locales" -type d -exec chmod 755 '{}' \;
 
   # Widevine CDM.
   if [ -f "${BUILDDIR}/libwidevinecdmadapter.so" ]; then
