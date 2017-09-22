@@ -101,18 +101,6 @@ MessageCenterSettingsController::MessageCenterSettingsController(
     : current_notifier_group_(0),
       profile_attributes_storage_(profile_attributes_storage),
       weak_factory_(this) {
-  // The following events all represent changes that may need to be reflected in
-  // the profile selector context menu, so listen for them all.  We'll just
-  // rebuild the list when we get any of them.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_ADDED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   profile_attributes_storage_.AddObserver(this);
   RebuildNotifierGroups(false);
 
@@ -281,34 +269,23 @@ void MessageCenterSettingsController::ActiveUserChanged(
 }
 #endif
 
-void MessageCenterSettingsController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  // GetOffTheRecordProfile() may create a new off-the-record profile, but that
-  // doesn't need to rebuild the groups.
-  if (type == chrome::NOTIFICATION_PROFILE_CREATED &&
-      content::Source<Profile>(source).ptr()->IsOffTheRecord()) {
-    return;
-  }
-
-  RebuildNotifierGroups(true);
-}
-
 void MessageCenterSettingsController::OnProfileAdded(
     const base::FilePath& profile_path) {
   RebuildNotifierGroups(true);
 }
+
 void MessageCenterSettingsController::OnProfileWasRemoved(
     const base::FilePath& profile_path,
     const base::string16& profile_name) {
   RebuildNotifierGroups(true);
 }
+
 void MessageCenterSettingsController::OnProfileNameChanged(
     const base::FilePath& profile_path,
     const base::string16& old_profile_name) {
   RebuildNotifierGroups(true);
 }
+
 void MessageCenterSettingsController::OnProfileAuthInfoChanged(
     const base::FilePath& profile_path) {
   RebuildNotifierGroups(true);
