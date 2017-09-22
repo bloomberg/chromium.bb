@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/FlexibleHeader/src/MDCFlexibleHeaderView.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -91,8 +92,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   std::set<const bookmarks::BookmarkNode*> _editNodes;
 }
 
-// The UITableView to show bookmarks.
-@property(nonatomic, strong) UITableView* tableView;
 // The model holding bookmark data.
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
 // The browser state.
@@ -121,9 +120,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 @implementation BookmarkTableView
 
+@synthesize tableView = _tableView;
+@synthesize headerView = _headerView;
 @synthesize bookmarkModel = _bookmarkModel;
 @synthesize browserState = _browserState;
-@synthesize tableView = _tableView;
 @synthesize delegate = _delegate;
 @synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
 @synthesize spinnerView = _spinnerView;
@@ -170,6 +170,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
         [[UITableView alloc] initWithFrame:frame style:UITableViewStylePlain];
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
+    if (@available(iOS 11.0, *)) {
+      self.tableView.contentInsetAdjustmentBehavior =
+          UIScrollViewContentInsetAdjustmentNever;
+    }
     // Use iOS8's self sizing feature to compute row height. However,
     // this reduces the row height of bookmarks section from 56 to 45
     // TODO(crbug.com/695749): Fix the bookmark section row height to 56.
@@ -965,6 +969,37 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   }
   _editingFolderNode = NULL;
   [self refreshContents];
+}
+
+#pragma mark UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  if (scrollView == self.headerView.trackingScrollView) {
+    [self.headerView trackingScrollViewDidScroll];
+  }
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
+  if (scrollView == self.headerView.trackingScrollView) {
+    [self.headerView trackingScrollViewDidEndDecelerating];
+  }
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
+                  willDecelerate:(BOOL)decelerate {
+  if (scrollView == self.headerView.trackingScrollView) {
+    [self.headerView trackingScrollViewDidEndDraggingWillDecelerate:decelerate];
+  }
+}
+
+- (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
+                     withVelocity:(CGPoint)velocity
+              targetContentOffset:(inout CGPoint*)targetContentOffset {
+  if (scrollView == self.headerView.trackingScrollView) {
+    [self.headerView
+        trackingScrollViewWillEndDraggingWithVelocity:velocity
+                                  targetContentOffset:targetContentOffset];
+  }
 }
 
 @end
