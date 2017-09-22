@@ -427,7 +427,12 @@ public class CompositorViewHolder extends FrameLayout
 
     private Tab getCurrentTab() {
         if (mLayoutManager == null || mTabModelSelector == null) return null;
-        return mTabModelSelector.getCurrentTab();
+        Tab currentTab = mTabModelSelector.getCurrentTab();
+
+        // If the tab model selector doesn't know of a current tab, use the last visible one.
+        if (currentTab == null) currentTab = mTabVisible;
+
+        return currentTab;
     }
 
     private View getActiveView() {
