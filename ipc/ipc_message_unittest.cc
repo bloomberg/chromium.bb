@@ -40,9 +40,9 @@ TEST(IPCMessageTest, BasicMessageTest) {
   base::string16 v3(base::ASCIIToUTF16("hello world"));
 
   IPC::Message m(0, 1, IPC::Message::PRIORITY_NORMAL);
-  EXPECT_TRUE(m.WriteInt(v1));
-  EXPECT_TRUE(m.WriteString(v2));
-  EXPECT_TRUE(m.WriteString16(v3));
+  m.WriteInt(v1);
+  m.WriteString(v2);
+  m.WriteString16(v3);
 
   base::PickleIterator iter(m);
 
@@ -124,8 +124,8 @@ TEST(IPCMessageTest, DictionaryValue) {
 
 TEST(IPCMessageTest, FindNext) {
   IPC::Message message;
-  EXPECT_TRUE(message.WriteString("Goooooooogle"));
-  EXPECT_TRUE(message.WriteInt(111));
+  message.WriteString("Goooooooogle");
+  message.WriteInt(111);
 
   std::vector<char> message_data(message.size() + 7);
   memcpy(message_data.data(), message.data(), message.size());
@@ -173,8 +173,8 @@ TEST(IPCMessageTest, FindNext) {
 
 TEST(IPCMessageTest, FindNextOverflow) {
   IPC::Message message;
-  EXPECT_TRUE(message.WriteString("Data"));
-  EXPECT_TRUE(message.WriteInt(777));
+  message.WriteString("Data");
+  message.WriteInt(777);
 
   const char* data_start = reinterpret_cast<const char*>(message.data());
   const char* data_end = data_start + message.size();

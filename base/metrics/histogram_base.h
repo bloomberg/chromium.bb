@@ -179,7 +179,7 @@ class BASE_EXPORT HistogramBase {
   // Serialize the histogram info into |pickle|.
   // Note: This only serializes the construction arguments of the histogram, but
   // does not serialize the samples.
-  bool SerializeInfo(base::Pickle* pickle) const;
+  void SerializeInfo(base::Pickle* pickle) const;
 
   // Try to find out data corruption from histogram and the samples.
   // The returned value is a combination of Inconsistency enum.
@@ -231,7 +231,7 @@ class BASE_EXPORT HistogramBase {
   enum ReportActivity { HISTOGRAM_CREATED, HISTOGRAM_LOOKUP };
 
   // Subclasses should implement this function to make SerializeInfo work.
-  virtual bool SerializeInfoImpl(base::Pickle* pickle) const = 0;
+  virtual void SerializeInfoImpl(base::Pickle* pickle) const = 0;
 
   // Writes information about the construction parameters in |params|.
   virtual void GetParameters(DictionaryValue* params) const = 0;

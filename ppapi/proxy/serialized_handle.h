@@ -127,7 +127,7 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   // Write/Read a Header, which contains all the data except the handle. This
   // allows us to write the handle in a platform-specific way, as is necessary
   // in NaClIPCAdapter to share handles with NaCl from Windows.
-  static bool WriteHeader(const Header& hdr, base::Pickle* pickle);
+  static void WriteHeader(const Header& hdr, base::Pickle* pickle);
   static bool ReadHeader(base::PickleIterator* iter, Header* hdr);
 
  private:

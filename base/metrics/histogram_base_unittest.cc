@@ -50,7 +50,7 @@ TEST_F(HistogramBaseTest, DeserializeHistogram) {
       HistogramBase::kIPCSerializationSourceFlag));
 
   Pickle pickle;
-  ASSERT_TRUE(histogram->SerializeInfo(&pickle));
+  histogram->SerializeInfo(&pickle);
 
   PickleIterator iter(pickle);
   HistogramBase* deserialized = DeserializeHistogramInfo(&iter);
@@ -75,7 +75,7 @@ TEST_F(HistogramBaseTest, DeserializeLinearHistogram) {
       HistogramBase::kIPCSerializationSourceFlag);
 
   Pickle pickle;
-  ASSERT_TRUE(histogram->SerializeInfo(&pickle));
+  histogram->SerializeInfo(&pickle);
 
   PickleIterator iter(pickle);
   HistogramBase* deserialized = DeserializeHistogramInfo(&iter);
@@ -97,7 +97,7 @@ TEST_F(HistogramBaseTest, DeserializeBooleanHistogram) {
       "TestHistogram", HistogramBase::kIPCSerializationSourceFlag);
 
   Pickle pickle;
-  ASSERT_TRUE(histogram->SerializeInfo(&pickle));
+  histogram->SerializeInfo(&pickle);
 
   PickleIterator iter(pickle);
   HistogramBase* deserialized = DeserializeHistogramInfo(&iter);
@@ -124,7 +124,7 @@ TEST_F(HistogramBaseTest, DeserializeCustomHistogram) {
       "TestHistogram", ranges, HistogramBase::kIPCSerializationSourceFlag);
 
   Pickle pickle;
-  ASSERT_TRUE(histogram->SerializeInfo(&pickle));
+  histogram->SerializeInfo(&pickle);
 
   PickleIterator iter(pickle);
   HistogramBase* deserialized = DeserializeHistogramInfo(&iter);
@@ -146,7 +146,7 @@ TEST_F(HistogramBaseTest, DeserializeSparseHistogram) {
       "TestHistogram", HistogramBase::kIPCSerializationSourceFlag);
 
   Pickle pickle;
-  ASSERT_TRUE(histogram->SerializeInfo(&pickle));
+  histogram->SerializeInfo(&pickle);
 
   PickleIterator iter(pickle);
   HistogramBase* deserialized = DeserializeHistogramInfo(&iter);

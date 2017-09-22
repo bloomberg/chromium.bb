@@ -202,7 +202,7 @@ TEST_F(SimpleIndexFileTest, Serialize) {
       WrappedSimpleIndexFile::Serialize(index_metadata, entries);
   EXPECT_TRUE(pickle.get() != NULL);
   base::Time now = base::Time::Now();
-  EXPECT_TRUE(WrappedSimpleIndexFile::SerializeFinalData(now, pickle.get()));
+  WrappedSimpleIndexFile::SerializeFinalData(now, pickle.get());
   base::Time when_index_last_saw_cache;
   SimpleIndexLoadResult deserialize_result;
   WrappedSimpleIndexFile::Deserialize(static_cast<const char*>(pickle->data()),
@@ -244,7 +244,7 @@ TEST_F(SimpleIndexFileTest, ReadV7Format) {
       WrappedSimpleIndexFile::Serialize(v7_metadata, entries);
   ASSERT_TRUE(pickle.get() != NULL);
   base::Time now = base::Time::Now();
-  ASSERT_TRUE(WrappedSimpleIndexFile::SerializeFinalData(now, pickle.get()));
+  WrappedSimpleIndexFile::SerializeFinalData(now, pickle.get());
 
   // Now read it back. We should get the sizes rounded, and 0 for mem entries.
   base::Time when_index_last_saw_cache;

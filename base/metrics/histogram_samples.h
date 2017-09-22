@@ -144,7 +144,7 @@ class BASE_EXPORT HistogramSamples {
   virtual void Subtract(const HistogramSamples& other);
 
   virtual std::unique_ptr<SampleCountIterator> Iterator() const = 0;
-  virtual bool Serialize(Pickle* pickle) const;
+  virtual void Serialize(Pickle* pickle) const;
 
   // Accessor fuctions.
   uint64_t id() const { return meta_->id; }

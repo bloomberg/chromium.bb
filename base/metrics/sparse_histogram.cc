@@ -169,8 +169,9 @@ void SparseHistogram::WriteAscii(std::string* output) const {
   WriteAsciiImpl(true, "\n", output);
 }
 
-bool SparseHistogram::SerializeInfoImpl(Pickle* pickle) const {
-  return pickle->WriteString(histogram_name()) && pickle->WriteInt(flags());
+void SparseHistogram::SerializeInfoImpl(Pickle* pickle) const {
+  pickle->WriteString(histogram_name());
+  pickle->WriteInt(flags());
 }
 
 SparseHistogram::SparseHistogram(const std::string& name)

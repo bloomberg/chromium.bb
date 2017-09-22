@@ -59,7 +59,7 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
 
  protected:
   // HistogramBase implementation:
-  bool SerializeInfoImpl(base::Pickle* pickle) const override;
+  void SerializeInfoImpl(base::Pickle* pickle) const override;
 
  private:
   // Clients should always use FactoryGet to create SparseHistogram.

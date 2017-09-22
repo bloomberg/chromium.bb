@@ -125,23 +125,20 @@ string QuicServerInfo::Serialize() {
 }
 
 string QuicServerInfo::SerializeInner() const {
-  base::Pickle p(sizeof(base::Pickle::Header));
+  if (state_.certs.size() > std::numeric_limits<uint32_t>::max())
+    return std::string();
 
-  if (!p.WriteInt(kQuicCryptoConfigVersion) ||
-      !p.WriteString(state_.server_config) ||
-      !p.WriteString(state_.source_address_token) ||
-      !p.WriteString(state_.cert_sct) || !p.WriteString(state_.chlo_hash) ||
-      !p.WriteString(state_.server_config_sig) ||
-      state_.certs.size() > std::numeric_limits<uint32_t>::max() ||
-      !p.WriteUInt32(state_.certs.size())) {
-    return string();
-  }
+  base::Pickle p;
+  p.WriteInt(kQuicCryptoConfigVersion);
+  p.WriteString(state_.server_config);
+  p.WriteString(state_.source_address_token);
+  p.WriteString(state_.cert_sct);
+  p.WriteString(state_.chlo_hash);
+  p.WriteString(state_.server_config_sig);
+  p.WriteUInt32(state_.certs.size());
 
-  for (size_t i = 0; i < state_.certs.size(); i++) {
-    if (!p.WriteString(state_.certs[i])) {
-      return string();
-    }
-  }
+  for (size_t i = 0; i < state_.certs.size(); i++)
+    p.WriteString(state_.certs[i]);
 
   return string(reinterpret_cast<const char*>(p.data()), p.size());
 }

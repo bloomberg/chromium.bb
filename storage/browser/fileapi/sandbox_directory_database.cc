@@ -29,7 +29,7 @@
 
 namespace {
 
-bool PickleFromFileInfo(const storage::SandboxDirectoryDatabase::FileInfo& info,
+void PickleFromFileInfo(const storage::SandboxDirectoryDatabase::FileInfo& info,
                         base::Pickle* pickle) {
   DCHECK(pickle);
   std::string data_path;
@@ -41,14 +41,10 @@ bool PickleFromFileInfo(const storage::SandboxDirectoryDatabase::FileInfo& info,
   data_path = storage::FilePathToString(info.data_path);
   name = storage::FilePathToString(base::FilePath(info.name));
 
-  if (pickle->WriteInt64(info.parent_id) &&
-      pickle->WriteString(data_path) &&
-      pickle->WriteString(name) &&
-      pickle->WriteInt64(time.ToInternalValue()))
-    return true;
-
-  NOTREACHED();
-  return false;
+  pickle->WriteInt64(info.parent_id);
+  pickle->WriteString(data_path);
+  pickle->WriteString(name);
+  pickle->WriteInt64(time.ToInternalValue());
 }
 
 bool FileInfoFromPickle(const base::Pickle& pickle,
@@ -637,8 +633,7 @@ bool SandboxDirectoryDatabase::UpdateModificationTime(
     return false;
   info.modification_time = modification_time;
   base::Pickle pickle;
-  if (!PickleFromFileInfo(info, &pickle))
-    return false;
+  PickleFromFileInfo(info, &pickle);
   leveldb::Status status = db_->Put(
       leveldb::WriteOptions(),
       GetFileLookupKey(file_id),
@@ -669,8 +664,7 @@ bool SandboxDirectoryDatabase::OverwritingMoveFile(
   if (!RemoveFileInfoHelper(src_file_id, &batch))
     return false;
   base::Pickle pickle;
-  if (!PickleFromFileInfo(dest_file_info, &pickle))
-    return false;
+  PickleFromFileInfo(dest_file_info, &pickle);
   batch.Put(
       GetFileLookupKey(dest_file_id),
       leveldb::Slice(reinterpret_cast<const char *>(pickle.data()),
@@ -917,8 +911,7 @@ bool SandboxDirectoryDatabase::AddFileInfoHelper(
     batch->Put(child_key, id_string);
   }
   base::Pickle pickle;
-  if (!PickleFromFileInfo(info, &pickle))
-    return false;
+  PickleFromFileInfo(info, &pickle);
   batch->Put(
       id_string,
       leveldb::Slice(reinterpret_cast<const char *>(pickle.data()),

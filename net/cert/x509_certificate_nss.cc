@@ -391,11 +391,10 @@ X509Certificate::OSCertHandle X509Certificate::ReadOSCertHandleFromPickle(
 }
 
 // static
-bool X509Certificate::WriteOSCertHandleToPickle(OSCertHandle cert_handle,
+void X509Certificate::WriteOSCertHandleToPickle(OSCertHandle cert_handle,
                                                 base::Pickle* pickle) {
-  return pickle->WriteData(
-      reinterpret_cast<const char*>(cert_handle->derCert.data),
-      cert_handle->derCert.len);
+  pickle->WriteData(reinterpret_cast<const char*>(cert_handle->derCert.data),
+                    cert_handle->derCert.len);
 }
 
 // static

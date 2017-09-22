@@ -143,7 +143,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   // performed on a thread accessing the disk. It is not combined with the main
   // serialization path to avoid extra thread hops or copying the pickle to the
   // worker thread.
-  static bool SerializeFinalData(base::Time cache_modified,
+  static void SerializeFinalData(base::Time cache_modified,
                                  base::Pickle* pickle);
 
   // Given the contents of an index file |data| of length |data_len|, returns

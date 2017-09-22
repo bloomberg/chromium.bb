@@ -86,18 +86,14 @@ void SerializedHandle::Close() {
 }
 
 // static
-bool SerializedHandle::WriteHeader(const Header& hdr, base::Pickle* pickle) {
-  if (!pickle->WriteInt(hdr.type))
-    return false;
+void SerializedHandle::WriteHeader(const Header& hdr, base::Pickle* pickle) {
+  pickle->WriteInt(hdr.type);
   if (hdr.type == SHARED_MEMORY) {
-    if (!pickle->WriteUInt32(hdr.size))
-      return false;
+    pickle->WriteUInt32(hdr.size);
+  } else if (hdr.type == FILE) {
+    pickle->WriteInt(hdr.open_flags);
+    pickle->WriteInt(hdr.file_io);
   }
-  if (hdr.type == FILE) {
-    if (!pickle->WriteInt(hdr.open_flags) || !pickle->WriteInt(hdr.file_io))
-      return false;
-  }
-  return true;
 }
 
 // static

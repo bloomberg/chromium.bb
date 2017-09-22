@@ -36,13 +36,13 @@ using content::WebContents;
 
 namespace {
 
-bool WriteStateHeaderToPickle(bool off_the_record,
+void WriteStateHeaderToPickle(bool off_the_record,
                               int entry_count,
                               int current_entry_index,
                               base::Pickle* pickle) {
-  return pickle->WriteBool(off_the_record) &&
-      pickle->WriteInt(entry_count) &&
-      pickle->WriteInt(current_entry_index);
+  pickle->WriteBool(off_the_record);
+  pickle->WriteInt(entry_count);
+  pickle->WriteInt(current_entry_index);
 }
 
 // Migrates a pickled SerializedNavigationEntry from Android tab version 0 to
@@ -316,12 +316,8 @@ ScopedJavaLocalRef<jobject> WebContentsState::WriteNavigationsAsByteBuffer(
     const std::vector<content::NavigationEntry*>& navigations,
     int current_entry) {
   base::Pickle pickle;
-  if (!WriteStateHeaderToPickle(is_off_the_record, navigations.size(),
-                                current_entry, &pickle)) {
-    LOG(ERROR) << "Failed to serialize tab state (entry count=" <<
-        navigations.size() << ").";
-    return ScopedJavaLocalRef<jobject>();
-  }
+  WriteStateHeaderToPickle(is_off_the_record, navigations.size(),
+                           current_entry, &pickle);
 
   // Write out all of the NavigationEntrys.
   for (size_t i = 0; i < navigations.size(); ++i) {

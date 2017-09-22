@@ -1133,12 +1133,8 @@ GlobalActivityTracker::ModuleInfoRecord::CreateFrom(
     const GlobalActivityTracker::ModuleInfo& info,
     PersistentMemoryAllocator* allocator) {
   Pickle pickler;
-  bool okay =
-      pickler.WriteString(info.file) && pickler.WriteString(info.debug_file);
-  if (!okay) {
-    NOTREACHED();
-    return nullptr;
-  }
+  pickler.WriteString(info.file);
+  pickler.WriteString(info.debug_file);
   size_t required_size = offsetof(ModuleInfoRecord, pickle) + pickler.size();
   ModuleInfoRecord* record = allocator->New<ModuleInfoRecord>(required_size);
   if (!record)

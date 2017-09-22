@@ -454,9 +454,9 @@ X509Certificate::OSCertHandle X509Certificate::ReadOSCertHandleFromPickle(
 }
 
 // static
-bool X509Certificate::WriteOSCertHandleToPickle(OSCertHandle cert_handle,
+void X509Certificate::WriteOSCertHandleToPickle(OSCertHandle cert_handle,
                                                 base::Pickle* pickle) {
-  return pickle->WriteData(
+  pickle->WriteData(
       reinterpret_cast<const char*>(CRYPTO_BUFFER_data(cert_handle)),
       CRYPTO_BUFFER_len(cert_handle));
 }
