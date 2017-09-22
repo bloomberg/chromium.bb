@@ -82,7 +82,7 @@ GLImplementation GetNamedGLImplementation(const std::string& name) {
 }
 
 GLImplementation GetSoftwareGLImplementation() {
-#if defined(OS_WIN)
+#if (defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)))
   return kGLImplementationSwiftShaderGL;
 #else
   return kGLImplementationOSMesaGL;
