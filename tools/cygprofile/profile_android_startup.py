@@ -203,8 +203,7 @@ class AndroidProfileTool(object):
   # TEST_URL must be a url in the WPR_ARCHIVE.
   _TEST_URL = 'https://www.google.com/#hl=en&q=science'
   _WPR_ARCHIVE = os.path.join(
-      constants.DIR_SOURCE_ROOT, 'tools', 'perf', 'page_sets', 'data',
-      'top_10_mobile_002.wpr')
+      os.path.dirname(__file__), 'top_10_mobile_002.wpr')
 
   # TODO(jbudorick): Make host_cyglog_dir mandatory after updating
   # downstream clients. See crbug.com/639831 for context.
