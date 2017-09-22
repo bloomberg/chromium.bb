@@ -65,15 +65,15 @@ static const CGFloat kHostCardIconSize = 45.f;
 
   _titleLabel = [[UILabel alloc] init];
   _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  _titleLabel.font = [MDCTypography titleFont];
-  _titleLabel.alpha = [MDCTypography titleFontOpacity];
+  _titleLabel.font = [MDCTypography boldFontFromFont:MDCTypography.subheadFont];
+  _titleLabel.alpha = MDCTypography.subheadFontOpacity;
   _titleLabel.textColor = [UIColor colorWithWhite:0 alpha:0.87f];
   [_labelView addSubview:_titleLabel];
 
   _statusLabel = [[UILabel alloc] init];
   _statusLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  _statusLabel.font = [MDCTypography captionFont];
-  _statusLabel.alpha = [MDCTypography captionFontOpacity];
+  _statusLabel.font = MDCTypography.captionFont;
+  _statusLabel.alpha = MDCTypography.captionFontOpacity;
   _statusLabel.textColor = [UIColor colorWithWhite:0 alpha:0.60f];
   [_labelView addSubview:_statusLabel];
 
