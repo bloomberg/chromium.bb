@@ -295,9 +295,6 @@ WebNotificationTray::WebNotificationTray(Shelf* shelf,
   OnMessageCenterTrayChanged();
 
   tray_container()->SetMargin(kTrayMainAxisInset, kTrayCrossAxisInset);
-
-  if (!drag_controller())
-    set_drag_controller(base::MakeUnique<TrayDragController>(shelf));
 }
 
 WebNotificationTray::~WebNotificationTray() {

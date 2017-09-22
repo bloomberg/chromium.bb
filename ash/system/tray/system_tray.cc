@@ -251,9 +251,6 @@ SystemTray::SystemTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   // horizontal shelf and that is sufficient to indicate separation, no
   // separator is required.
   set_separator_visibility(false);
-
-  if (!drag_controller())
-    set_drag_controller(base::MakeUnique<TrayDragController>(shelf));
 }
 
 SystemTray::~SystemTray() {

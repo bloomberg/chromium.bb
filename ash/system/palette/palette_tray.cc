@@ -186,9 +186,6 @@ PaletteTray::PaletteTray(Shelf* shelf)
 
   Shell::Get()->AddShellObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
-
-  if (!drag_controller())
-    set_drag_controller(base::MakeUnique<TrayDragController>(shelf));
 }
 
 PaletteTray::~PaletteTray() {
