@@ -1,6 +1,6 @@
 Name: Brotli
 URL: https://github.com/google/brotli
-Version: 19dc934e391752b78f78eca60c2c1ca5f6ac647b
+Version: c60563591a9a86196f19987c81dde4384a088861
 License: MIT
 License File: LICENSE
 Security Critical: yes
@@ -14,8 +14,7 @@ Local Modifications:
 - This only includes the contents of c/ directory, the README.md and the LICENSE
   files.
 - Auxiliary fuzzer runners removed from fuzz/
-- Line 19 of enc/cluster_inc.h was modified to eliminate build error on Windows.
-- Line 700 of tools/brotli.c was modified to eliminate build error on Windows.
 - common/dictionary.bin: Removed.
+- enc/hash_longest_match_quickly_inc.h:223: calm down MSVC
 - BUILD.gn: Added.
 - brotli.gni: Added.

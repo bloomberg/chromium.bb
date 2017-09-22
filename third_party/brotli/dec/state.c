@@ -83,11 +83,12 @@ void BrotliDecoderStateInitWithCustomAllocators(BrotliDecoderState* s,
   s->distance_hgroup.codes = NULL;
   s->distance_hgroup.htrees = NULL;
 
-  s->custom_dict = NULL;
-  s->custom_dict_size = 0;
-
   s->is_last_metablock = 0;
+  s->is_uncompressed = 0;
+  s->is_metadata = 0;
   s->should_wrap_ringbuffer = 0;
+  s->canny_ringbuffer_allocation = 1;
+
   s->window_bits = 0;
   s->max_distance = 0;
   s->dist_rb[0] = 16;
