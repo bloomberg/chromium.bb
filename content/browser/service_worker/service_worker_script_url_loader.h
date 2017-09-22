@@ -105,12 +105,11 @@ class CONTENT_EXPORT ServiceWorkerScriptURLLoader
   void OnNetworkDataAvailable(MojoResult);
 
   // Writes the given data into the service worker script storage.
-  void WriteData(scoped_refptr<net::IOBuffer> buffer,
-                 size_t available_bytes,
-                 scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer);
+  void WriteData(scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer,
+                 uint32_t bytes_available);
   void OnWriteDataComplete(
-      size_t bytes_written,
       scoped_refptr<network::MojoToNetPendingBuffer> pending_buffer,
+      uint32_t bytes_written,
       net::Error error);
 
   // This is the last method that is called on this class. Notifies the final
