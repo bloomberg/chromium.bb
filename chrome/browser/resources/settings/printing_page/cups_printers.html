@@ -92,7 +92,9 @@
         $i18n{printerAddedSuccessfulMessage}
       </div>
       <div class="center" id="addPrinterErrorMessage" hidden>
-        <span>$i18n{printerAddedFailedMessage}</span>
+        <span id="addPrinterFailedMessage">
+          $i18n{printerAddedFailedMessage}
+        </span>
         <a is="action-link" on-tap="onAddPrinterTap_">
           $i18n{printerAddedTryAgainMessage}
         </a>
