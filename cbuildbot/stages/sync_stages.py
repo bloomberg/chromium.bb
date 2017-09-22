@@ -1619,24 +1619,24 @@ class PreCQLauncherStage(SyncStage):
 
     Args:
       change: GerritPatch instance to process.
-      progress_map: As returned by clactions.GetCLPreCQProgress a dict mapping
-                    each change in |changes| to a dict mapping config names
-                    to (status, timestamp) tuples for the configs under test.
+      progress_map: See return type of clactions.GetPreCQProgressMap.
       pool: The current validation pool.
       current_time: datetime.datetime timestamp giving current database time.
     """
     timeout_statuses = (constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED,
                         constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT)
     config_progress = progress_map[change]
-    for config, (config_status, timestamp, _) in config_progress.iteritems():
-      if not config_status in timeout_statuses:
+    for config, pre_cq_progress_tuple in config_progress.iteritems():
+      if not pre_cq_progress_tuple.status in timeout_statuses:
         continue
-      launched = config_status == constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED
+      launched = (pre_cq_progress_tuple.status ==
+                  constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
       timeout = self.LAUNCH_TIMEOUT if launched else self.INFLIGHT_TIMEOUT
       msg = (PRECQ_LAUNCH_TIMEOUT_MSG if launched
              else PRECQ_INFLIGHT_TIMEOUT_MSG) % (config, timeout)
 
-      if self._HasTimedOut(timestamp, current_time, timeout):
+      if self._HasTimedOut(pre_cq_progress_tuple.timestamp, current_time,
+                           timeout):
         pool.SendNotification(change, '%(details)s', details=msg)
         pool.RemoveReady(change, reason=config)
         pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_FAILED)
@@ -1927,7 +1927,7 @@ class PreCQLauncherStage(SyncStage):
 
     for change in inflight:
       if status_map[change] != constants.CL_STATUS_INFLIGHT:
-        build_ids = [x for _, _, x in progress_map[change].values()]
+        build_ids = [x.build_id for x in progress_map[change].values()]
         # Change the status to inflight.
         self.UpdateChangeStatuses([change], constants.CL_STATUS_INFLIGHT)
         build_dicts = db.GetBuildStatuses(build_ids)

@@ -1233,8 +1233,9 @@ pre-cq-configs: link-pre-cq
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
     build_ids_per_config = {}
     for change, change_status_dict in progress_map.iteritems():
-      for config, (status, _, _) in change_status_dict.iteritems():
-        if status == constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED:
+      for config, pre_cq_progress_tuple in change_status_dict.iteritems():
+        if (pre_cq_progress_tuple.status ==
+            constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED):
           if not config in build_ids_per_config:
             build_ids_per_config[config] = self.fake_db.InsertBuild(
                 config, waterfall.WATERFALL_TRYBOT, 1, config, config)
