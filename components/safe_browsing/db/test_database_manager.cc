@@ -102,12 +102,6 @@ bool TestSafeBrowsingDatabaseManager::MatchMalwareIP(
   return true;
 }
 
-bool TestSafeBrowsingDatabaseManager::MatchModuleWhitelistString(
-    const std::string& str) {
-  NOTIMPLEMENTED();
-  return true;
-}
-
 safe_browsing::ThreatSource TestSafeBrowsingDatabaseManager::GetThreatSource()
     const {
   NOTIMPLEMENTED();

@@ -21,7 +21,6 @@
 #include "components/safe_browsing/db/v4_feature_list.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "crypto/sha2.h"
 
 using content::BrowserThread;
 using base::TimeTicks;
@@ -40,7 +39,8 @@ const char* const kV3Suffix = ".V3.";
 // The list of the name of any store files that are no longer used and can be
 // safely deleted from the disk. There's no overlap allowed between the files
 // on this list and the list returned by GetListInfos().
-const char* const kStoreFileNamesToDelete[] = {"AnyIpMalware.store"};
+const char* const kStoreFileNamesToDelete[] = {
+    "AnyIpMalware.store", "ChromeFilenameClientIncident.store"};
 
 ListInfos GetListInfos() {
 // NOTE(vakh): When adding a store here, add the corresponding store-specific
@@ -62,8 +62,6 @@ ListInfos GetListInfos() {
   return ListInfos({
       ListInfo(kSyncOnlyOnChromeBuilds, "CertCsdDownloadWhitelist.store",
                GetCertCsdDownloadWhitelistId(), SB_THREAT_TYPE_UNUSED),
-      ListInfo(kSyncOnlyOnChromeBuilds, "ChromeFilenameClientIncident.store",
-               GetChromeFilenameClientIncidentId(), SB_THREAT_TYPE_UNUSED),
       ListInfo(kSyncAlways, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdDownloadWhitelist.store",
@@ -464,22 +462,6 @@ bool V4LocalDatabaseManager::MatchMalwareIP(const std::string& ip_address) {
 
   return HandleHashSynchronously(hashed_encoded_ip,
                                  StoresToCheck({GetIpMalwareId()}));
-}
-
-bool V4LocalDatabaseManager::MatchModuleWhitelistString(
-    const std::string& str) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  StoresToCheck stores_to_check({GetChromeFilenameClientIncidentId()});
-  if (!AreAllStoresAvailableNow(stores_to_check)) {
-    // Fail open: Whitelist everything.  This has the effect of marking
-    // all DLLs as safe until the DB is synced and loaded.
-    return true;
-  }
-
-  // str is the module's filename.  Convert to hash.
-  FullHash hash = crypto::SHA256HashString(str);
-  return HandleHashSynchronously(hash, stores_to_check);
 }
 
 ThreatSource V4LocalDatabaseManager::GetThreatSource() const {

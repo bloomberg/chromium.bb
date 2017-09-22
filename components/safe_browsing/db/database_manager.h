@@ -193,12 +193,6 @@ class SafeBrowsingDatabaseManager
   // IP blacklist.
   virtual bool MatchMalwareIP(const std::string& ip_address) = 0;
 
-  // Check if |str|, a lowercase DLL file name, matches any of the full-length
-  // hashes from the module whitelist.  Returns true if there was a match and
-  // false otherwise.  To make sure we are conservative we will return true if
-  // an error occurs.  This method must be called on the IO thread.
-  virtual bool MatchModuleWhitelistString(const std::string& str) = 0;
-
   //
   // Methods to check the config of the DatabaseManager.
   //

@@ -104,10 +104,6 @@ ListIdentifier GetChromeUrlApiId() {
   return ListIdentifier(CHROME_PLATFORM, URL, API_ABUSE);
 }
 
-ListIdentifier GetChromeFilenameClientIncidentId() {
-  return ListIdentifier(CHROME_PLATFORM, FILENAME, CLIENT_INCIDENT);
-}
-
 ListIdentifier GetChromeUrlClientIncidentId() {
   return ListIdentifier(CHROME_PLATFORM, URL, CLIENT_INCIDENT);
 }
