@@ -79,8 +79,13 @@ base::FilePath GetDataPath() {
 }
 
 void InitLogging() {
-  const base::FilePath log_path =
-      GetDataPath().Append(FILE_PATH_LITERAL("app_shell.log"));
+  base::FilePath log_path;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kLogFile)) {
+    log_path = base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+        switches::kLogFile);
+  } else {
+    log_path = GetDataPath().Append(FILE_PATH_LITERAL("app_shell.log"));
+  }
 
   // Set up log initialization settings.
   logging::LoggingSettings settings;
