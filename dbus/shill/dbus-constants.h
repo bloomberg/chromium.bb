@@ -175,8 +175,6 @@ const char kForceWakeToScanTimerProperty[] = "ForceWakeToScanTimer";
 const char kInterfaceProperty[] = "Interface";
 const char kSelectedServiceProperty[] = "SelectedService";
 const char kIPConfigsProperty[] = "IPConfigs";
-// TODO(crbug.com/749161): remove this after switching
-const char kMACAddressRandomizationProperty[] = "MACAddressRandomization";
 const char kMACAddressRandomizationSupportedProperty[] =
     "MACAddressRandomizationSupported";
 const char kMACAddressRandomizationEnabledProperty[] =
