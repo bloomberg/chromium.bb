@@ -79,6 +79,7 @@ void LayoutTextControl::AdjustInnerEditorStyle(
   // element.
   text_block_style.SetDirection(Style()->Direction());
   text_block_style.SetUnicodeBidi(Style()->GetUnicodeBidi());
+  text_block_style.SetUserSelect(EUserSelect::kText);
 
   UpdateUserModifyProperty(*GetTextControlElement(), text_block_style);
 }
