@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/device_capability_manager.h"
+#include "components/cryptauth/device_capability_manager_impl.h"
 
 #include <stddef.h>
 
@@ -51,11 +51,11 @@ CreateExternalDeviceInfosForRemoteDevices(
 
 }  // namespace
 
-class DeviceCapabilityManagerTest
+class DeviceCapabilityManagerImplTest
     : public testing::Test,
       public MockCryptAuthClientFactory::Observer {
  public:
-  DeviceCapabilityManagerTest()
+  DeviceCapabilityManagerImplTest()
       : all_test_external_device_infos_(
             CreateExternalDeviceInfosForRemoteDevices(
                 cryptauth::GenerateTestRemoteDevices(5))),
@@ -72,20 +72,22 @@ class DeviceCapabilityManagerTest
         base::MakeUnique<MockCryptAuthClientFactory>(
             MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS);
     mock_cryptauth_client_factory_->AddObserver(this);
-    device_capability_manager_ = base::MakeUnique<DeviceCapabilityManager>(
+    device_capability_manager_ = base::MakeUnique<DeviceCapabilityManagerImpl>(
         mock_cryptauth_client_factory_.get());
   }
 
   void OnCryptAuthClientCreated(MockCryptAuthClient* client) override {
     ON_CALL(*client, ToggleEasyUnlock(_, _, _))
-        .WillByDefault(
-            Invoke(this, &DeviceCapabilityManagerTest::MockToggleEasyUnlock));
+        .WillByDefault(Invoke(
+            this, &DeviceCapabilityManagerImplTest::MockToggleEasyUnlock));
     ON_CALL(*client, FindEligibleUnlockDevices(_, _, _))
         .WillByDefault(Invoke(
-            this, &DeviceCapabilityManagerTest::MockFindEligibleUnlockDevices));
+            this,
+            &DeviceCapabilityManagerImplTest::MockFindEligibleUnlockDevices));
     ON_CALL(*client, FindEligibleForPromotion(_, _, _))
         .WillByDefault(Invoke(
-            this, &DeviceCapabilityManagerTest::MockFindEligibleForPromotion));
+            this,
+            &DeviceCapabilityManagerImplTest::MockFindEligibleForPromotion));
   }
 
   // Mock CryptAuthClient::ToggleEasyUnlock() implementation.
@@ -160,37 +162,37 @@ class DeviceCapabilityManagerTest
     result_ineligible_devices_.clear();
   }
 
-  void SetCapabilityEnabled(DeviceCapabilityManager::Capability capability,
+  void SetCapabilityEnabled(DeviceCapabilityManagerImpl::Capability capability,
                             const ExternalDeviceInfo& device_info,
                             bool enable) {
     device_capability_manager_->SetCapabilityEnabled(
         device_info.public_key(), capability, enable,
-        base::Bind(&DeviceCapabilityManagerTest::
+        base::Bind(&DeviceCapabilityManagerImplTest::
                        TestSuccessSetCapabilityKeyUnlockCallback,
                    base::Unretained(this)),
-        base::Bind(&DeviceCapabilityManagerTest::TestErrorCallback,
+        base::Bind(&DeviceCapabilityManagerImplTest::TestErrorCallback,
                    base::Unretained(this)));
   }
 
   void FindEligibleDevicesForCapability(
-      DeviceCapabilityManager::Capability capability) {
+      DeviceCapabilityManagerImpl::Capability capability) {
     device_capability_manager_->FindEligibleDevicesForCapability(
-        DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
-        base::Bind(&DeviceCapabilityManagerTest::
+        DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
+        base::Bind(&DeviceCapabilityManagerImplTest::
                        TestSuccessFindEligibleUnlockDevicesCallback,
                    base::Unretained(this)),
-        base::Bind(&DeviceCapabilityManagerTest::TestErrorCallback,
+        base::Bind(&DeviceCapabilityManagerImplTest::TestErrorCallback,
                    base::Unretained(this)));
   }
 
-  void IsPromotableDevice(DeviceCapabilityManager::Capability capability,
+  void IsPromotableDevice(DeviceCapabilityManagerImpl::Capability capability,
                           const std::string& public_key) {
     device_capability_manager_->IsCapabilityPromotable(
         public_key, capability,
-        base::Bind(&DeviceCapabilityManagerTest::
+        base::Bind(&DeviceCapabilityManagerImplTest::
                        TestSuccessFindEligibleForPromotionDeviceCallback,
                    base::Unretained(this)),
-        base::Bind(&DeviceCapabilityManagerTest::TestErrorCallback,
+        base::Bind(&DeviceCapabilityManagerImplTest::TestErrorCallback,
                    base::Unretained(this)));
   }
 
@@ -265,7 +267,7 @@ class DeviceCapabilityManagerTest
   const std::vector<ExternalDeviceInfo> test_ineligible_external_devices_infos_;
 
   std::unique_ptr<MockCryptAuthClientFactory> mock_cryptauth_client_factory_;
-  std::unique_ptr<cryptauth::DeviceCapabilityManager>
+  std::unique_ptr<cryptauth::DeviceCapabilityManagerImpl>
       device_capability_manager_;
   CryptAuthClient::ToggleEasyUnlockCallback toggle_easy_unlock_callback_;
   CryptAuthClient::FindEligibleUnlockDevicesCallback
@@ -287,24 +289,26 @@ class DeviceCapabilityManagerTest
   bool result_eligible_for_promotion_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceCapabilityManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(DeviceCapabilityManagerImplTest);
 };
 
-TEST_F(DeviceCapabilityManagerTest, TestOrderUponMultipleRequests) {
+TEST_F(DeviceCapabilityManagerImplTest, TestOrderUponMultipleRequests) {
   SetCapabilityEnabled(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
       test_eligible_external_devices_infos_[0], true /* enable */);
   FindEligibleDevicesForCapability(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY);
-  IsPromotableDevice(DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
-                     test_eligible_external_devices_infos_[0].public_key());
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY);
+  IsPromotableDevice(
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
+      test_eligible_external_devices_infos_[0].public_key());
   SetCapabilityEnabled(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
       test_eligible_external_devices_infos_[1], true /* enable */);
   FindEligibleDevicesForCapability(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY);
-  IsPromotableDevice(DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
-                     test_eligible_external_devices_infos_[1].public_key());
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY);
+  IsPromotableDevice(
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
+      test_eligible_external_devices_infos_[1].public_key());
 
   InvokeSetCapabilityKeyUnlockCallback();
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
@@ -331,15 +335,15 @@ TEST_F(DeviceCapabilityManagerTest, TestOrderUponMultipleRequests) {
   EXPECT_TRUE(GetEligibleForPromotionAndReset());
 }
 
-TEST_F(DeviceCapabilityManagerTest, TestMultipleSetUnlocksRequests) {
+TEST_F(DeviceCapabilityManagerImplTest, TestMultipleSetUnlocksRequests) {
   SetCapabilityEnabled(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
       test_eligible_external_devices_infos_[0], true /* enable */);
   SetCapabilityEnabled(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
       test_eligible_external_devices_infos_[1], true /* enable */);
   SetCapabilityEnabled(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
       test_eligible_external_devices_infos_[2], true /* enable */);
 
   InvokeErrorCallback();
@@ -352,14 +356,14 @@ TEST_F(DeviceCapabilityManagerTest, TestMultipleSetUnlocksRequests) {
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
 }
 
-TEST_F(DeviceCapabilityManagerTest,
+TEST_F(DeviceCapabilityManagerImplTest,
        TestMultipleFindEligibleForUnlockDevicesRequests) {
   FindEligibleDevicesForCapability(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY);
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY);
   FindEligibleDevicesForCapability(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY);
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY);
   FindEligibleDevicesForCapability(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY);
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY);
 
   InvokeFindEligibleUnlockDevicesCallback(
       CreateFindEligibleUnlockDevicesResponse());
@@ -375,13 +379,16 @@ TEST_F(DeviceCapabilityManagerTest,
   VerifyDeviceEligibility();
 }
 
-TEST_F(DeviceCapabilityManagerTest, TestMultipleIsPromotableRequests) {
-  IsPromotableDevice(DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
-                     test_eligible_external_devices_infos_[0].public_key());
-  IsPromotableDevice(DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
-                     test_eligible_external_devices_infos_[1].public_key());
-  IsPromotableDevice(DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
-                     test_eligible_external_devices_infos_[2].public_key());
+TEST_F(DeviceCapabilityManagerImplTest, TestMultipleIsPromotableRequests) {
+  IsPromotableDevice(
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
+      test_eligible_external_devices_infos_[0].public_key());
+  IsPromotableDevice(
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
+      test_eligible_external_devices_infos_[1].public_key());
+  IsPromotableDevice(
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
+      test_eligible_external_devices_infos_[2].public_key());
 
   InvokeFindEligibleForPromotionCallback(true /*eligible*/);
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
@@ -395,14 +402,15 @@ TEST_F(DeviceCapabilityManagerTest, TestMultipleIsPromotableRequests) {
   EXPECT_EQ(kErrorFindEligibleForPromotion, GetResultAndReset());
 }
 
-TEST_F(DeviceCapabilityManagerTest, TestOrderViaMultipleErrors) {
+TEST_F(DeviceCapabilityManagerImplTest, TestOrderViaMultipleErrors) {
   SetCapabilityEnabled(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
       test_eligible_external_devices_infos_[0], true /* enable */);
   FindEligibleDevicesForCapability(
-      DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY);
-  IsPromotableDevice(DeviceCapabilityManager::Capability::CAPABILITY_UNLOCK_KEY,
-                     test_eligible_external_devices_infos_[0].public_key());
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY);
+  IsPromotableDevice(
+      DeviceCapabilityManagerImpl::Capability::CAPABILITY_UNLOCK_KEY,
+      test_eligible_external_devices_infos_[0].public_key());
 
   InvokeErrorCallback();
   EXPECT_EQ(kErrorOnToggleEasyUnlockResult, GetResultAndReset());

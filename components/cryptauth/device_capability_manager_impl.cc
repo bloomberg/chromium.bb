@@ -2,21 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/device_capability_manager.h"
+#include "components/cryptauth/device_capability_manager_impl.h"
 
 #include "base/logging.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
 
-DeviceCapabilityManager::DeviceCapabilityManager(
+// static
+DeviceCapabilityManagerImpl::Factory*
+    DeviceCapabilityManagerImpl::Factory::factory_instance_ = nullptr;
+
+// static
+std::unique_ptr<DeviceCapabilityManager>
+DeviceCapabilityManagerImpl::Factory::NewInstance(
+    CryptAuthClientFactory* cryptauth_client_factory) {
+  if (!factory_instance_) {
+    factory_instance_ = new Factory();
+  }
+  return factory_instance_->BuildInstance(cryptauth_client_factory);
+}
+
+void DeviceCapabilityManagerImpl::Factory::SetInstanceForTesting(
+    Factory* factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<DeviceCapabilityManager>
+DeviceCapabilityManagerImpl::Factory::BuildInstance(
+    CryptAuthClientFactory* cryptauth_client_factory) {
+  return base::WrapUnique(
+      new DeviceCapabilityManagerImpl(cryptauth_client_factory));
+}
+
+DeviceCapabilityManagerImpl::DeviceCapabilityManagerImpl(
     CryptAuthClientFactory* cryptauth_client_factory)
     : crypt_auth_client_factory_(cryptauth_client_factory),
       weak_ptr_factory_(this) {}
 
-DeviceCapabilityManager::~DeviceCapabilityManager() {}
+DeviceCapabilityManagerImpl::~DeviceCapabilityManagerImpl() {}
 
-void DeviceCapabilityManager::SetCapabilityEnabled(
+void DeviceCapabilityManagerImpl::SetCapabilityEnabled(
     const std::string& public_key,
     Capability capability,
     bool enabled,
@@ -28,7 +54,7 @@ void DeviceCapabilityManager::SetCapabilityEnabled(
   ProcessRequestQueue();
 }
 
-void DeviceCapabilityManager::FindEligibleDevicesForCapability(
+void DeviceCapabilityManagerImpl::FindEligibleDevicesForCapability(
     Capability capability,
     const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                               const std::vector<IneligibleDevice>&)>&
@@ -40,7 +66,7 @@ void DeviceCapabilityManager::FindEligibleDevicesForCapability(
   ProcessRequestQueue();
 }
 
-void DeviceCapabilityManager::IsCapabilityPromotable(
+void DeviceCapabilityManagerImpl::IsCapabilityPromotable(
     const std::string& public_key,
     Capability capability,
     const base::Callback<void(bool)>& success_callback,
@@ -51,7 +77,7 @@ void DeviceCapabilityManager::IsCapabilityPromotable(
   ProcessRequestQueue();
 }
 
-DeviceCapabilityManager::Request::Request(
+DeviceCapabilityManagerImpl::Request::Request(
     RequestType request_type,
     Capability capability,
     std::string public_key,
@@ -65,7 +91,7 @@ DeviceCapabilityManager::Request::Request(
       set_capability_callback(set_capability_callback),
       enabled(enabled) {}
 
-DeviceCapabilityManager::Request::Request(
+DeviceCapabilityManagerImpl::Request::Request(
     RequestType request_type,
     Capability capability,
     const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
@@ -77,7 +103,7 @@ DeviceCapabilityManager::Request::Request(
       capability(capability),
       find_eligible_devices_callback(find_eligible_devices_callback) {}
 
-DeviceCapabilityManager::Request::Request(
+DeviceCapabilityManagerImpl::Request::Request(
     RequestType request_type,
     Capability capability,
     std::string public_key,
@@ -89,29 +115,29 @@ DeviceCapabilityManager::Request::Request(
       public_key(public_key),
       is_device_promotable_callback(is_device_promotable_callback) {}
 
-DeviceCapabilityManager::Request::~Request() {}
+DeviceCapabilityManagerImpl::Request::~Request() {}
 
-void DeviceCapabilityManager::CreateNewCryptAuthClient() {
+void DeviceCapabilityManagerImpl::CreateNewCryptAuthClient() {
   DCHECK(!current_cryptauth_client_);
   current_cryptauth_client_ = crypt_auth_client_factory_->CreateInstance();
 }
 
-void DeviceCapabilityManager::ProcessSetCapabilityEnabledRequest() {
+void DeviceCapabilityManagerImpl::ProcessSetCapabilityEnabledRequest() {
   DCHECK(current_request_->capability == Capability::CAPABILITY_UNLOCK_KEY);
   SetUnlockKeyCapability();
 }
 
-void DeviceCapabilityManager::ProcessFindEligibleDevicesForCapability() {
+void DeviceCapabilityManagerImpl::ProcessFindEligibleDevicesForCapability() {
   DCHECK(current_request_->capability == Capability::CAPABILITY_UNLOCK_KEY);
   FindEligibleUnlockDevices();
 }
 
-void DeviceCapabilityManager::ProcessIsCapabilityPromotableRequest() {
+void DeviceCapabilityManagerImpl::ProcessIsCapabilityPromotableRequest() {
   DCHECK(current_request_->capability == Capability::CAPABILITY_UNLOCK_KEY);
   IsDeviceUnlockPromotable();
 }
 
-void DeviceCapabilityManager::SetUnlockKeyCapability() {
+void DeviceCapabilityManagerImpl::SetUnlockKeyCapability() {
   CreateNewCryptAuthClient();
 
   ToggleEasyUnlockRequest request;
@@ -121,24 +147,25 @@ void DeviceCapabilityManager::SetUnlockKeyCapability() {
 
   current_cryptauth_client_->ToggleEasyUnlock(
       request,
-      base::Bind(&DeviceCapabilityManager::OnToggleEasyUnlockResponse,
+      base::Bind(&DeviceCapabilityManagerImpl::OnToggleEasyUnlockResponse,
                  weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&DeviceCapabilityManager::OnErrorResponse,
+      base::Bind(&DeviceCapabilityManagerImpl::OnErrorResponse,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DeviceCapabilityManager::FindEligibleUnlockDevices() {
+void DeviceCapabilityManagerImpl::FindEligibleUnlockDevices() {
   CreateNewCryptAuthClient();
 
   current_cryptauth_client_->FindEligibleUnlockDevices(
       FindEligibleUnlockDevicesRequest(),
-      base::Bind(&DeviceCapabilityManager::OnFindEligibleUnlockDevicesResponse,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&DeviceCapabilityManager::OnErrorResponse,
+      base::Bind(
+          &DeviceCapabilityManagerImpl::OnFindEligibleUnlockDevicesResponse,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&DeviceCapabilityManagerImpl::OnErrorResponse,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DeviceCapabilityManager::IsDeviceUnlockPromotable() {
+void DeviceCapabilityManagerImpl::IsDeviceUnlockPromotable() {
   CreateNewCryptAuthClient();
 
   FindEligibleForPromotionRequest request;
@@ -146,13 +173,14 @@ void DeviceCapabilityManager::IsDeviceUnlockPromotable() {
 
   current_cryptauth_client_->FindEligibleForPromotion(
       request,
-      base::Bind(&DeviceCapabilityManager::OnIsDeviceUnlockPromotableResponse,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&DeviceCapabilityManager::OnErrorResponse,
+      base::Bind(
+          &DeviceCapabilityManagerImpl::OnIsDeviceUnlockPromotableResponse,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&DeviceCapabilityManagerImpl::OnErrorResponse,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DeviceCapabilityManager::OnToggleEasyUnlockResponse(
+void DeviceCapabilityManagerImpl::OnToggleEasyUnlockResponse(
     const ToggleEasyUnlockResponse& response) {
   current_cryptauth_client_.reset();
   current_request_->set_capability_callback.Run();
@@ -160,7 +188,7 @@ void DeviceCapabilityManager::OnToggleEasyUnlockResponse(
   ProcessRequestQueue();
 }
 
-void DeviceCapabilityManager::OnFindEligibleUnlockDevicesResponse(
+void DeviceCapabilityManagerImpl::OnFindEligibleUnlockDevicesResponse(
     const FindEligibleUnlockDevicesResponse& response) {
   current_cryptauth_client_.reset();
   current_request_->find_eligible_devices_callback.Run(
@@ -172,7 +200,7 @@ void DeviceCapabilityManager::OnFindEligibleUnlockDevicesResponse(
   ProcessRequestQueue();
 }
 
-void DeviceCapabilityManager::OnIsDeviceUnlockPromotableResponse(
+void DeviceCapabilityManagerImpl::OnIsDeviceUnlockPromotableResponse(
     const FindEligibleForPromotionResponse& response) {
   current_cryptauth_client_.reset();
   current_request_->is_device_promotable_callback.Run(
@@ -181,14 +209,14 @@ void DeviceCapabilityManager::OnIsDeviceUnlockPromotableResponse(
   ProcessRequestQueue();
 }
 
-void DeviceCapabilityManager::OnErrorResponse(const std::string& response) {
+void DeviceCapabilityManagerImpl::OnErrorResponse(const std::string& response) {
   current_cryptauth_client_.reset();
   current_request_->error_callback.Run(response);
   current_request_.reset();
   ProcessRequestQueue();
 }
 
-void DeviceCapabilityManager::ProcessRequestQueue() {
+void DeviceCapabilityManagerImpl::ProcessRequestQueue() {
   if (current_request_ || pending_requests_.empty())
     return;
 
