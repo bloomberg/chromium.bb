@@ -120,6 +120,7 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   // Indicates whether to check WebAPK compatibility.
   bool check_webapk_compatibility_;
   bool is_waiting_for_web_application_info_;
+  bool is_waiting_for_manifest_;
 
   base::WeakPtrFactory<AddToHomescreenDataFetcher> weak_ptr_factory_;
 

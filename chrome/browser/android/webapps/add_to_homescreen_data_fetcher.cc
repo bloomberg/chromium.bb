@@ -59,9 +59,14 @@ InstallableParams ParamsToPerformManifestAndIconFetch(
 }
 
 InstallableParams ParamsToPerformInstallableCheck(
+    int ideal_icon_size_in_px,
+    int minimum_icon_size_in_px,
     bool check_webapk_compatibility) {
   InstallableParams params;
+  params.ideal_primary_icon_size_in_px = ideal_icon_size_in_px;
+  params.minimum_primary_icon_size_in_px = minimum_icon_size_in_px;
   params.check_installable = check_webapk_compatibility;
+  params.fetch_valid_primary_icon = check_webapk_compatibility;
   return params;
 }
 
@@ -122,6 +127,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       data_timeout_ms_(data_timeout_ms),
       check_webapk_compatibility_(check_webapk_compatibility),
       is_waiting_for_web_application_info_(true),
+      is_waiting_for_manifest_(true),
       weak_ptr_factory_(this) {
   DCHECK(minimum_icon_size_in_px <= ideal_icon_size_in_px);
   DCHECK(minimum_splash_image_size_in_px <= ideal_splash_image_size_in_px);
@@ -214,6 +220,21 @@ void AddToHomescreenDataFetcher::OnDataTimedout() {
   if (!web_contents())
     return;
 
+  if (is_waiting_for_manifest_) {
+    // Explicitly trigger a GetData call with a no-op callback to complete the
+    // installability check. This is so we can accurately record whether or not
+    // a site is a PWA, assuming that the check finishes prior to a reset
+    // operation. If it does not complete, an "UNKNOWN" will be recorded.
+    installable_manager_->RecordAddToHomescreenManifestAndIconTimeout();
+    installable_manager_->GetData(
+        ParamsToPerformInstallableCheck(ideal_icon_size_in_px_,
+                                        minimum_icon_size_in_px_,
+                                        check_webapk_compatibility_),
+        InstallableCallback());
+  } else {
+    installable_manager_->RecordAddToHomescreenInstallabilityTimeout();
+  }
+
   if (check_webapk_compatibility_)
     observer_->OnDidDetermineWebApkCompatibility(false);
   observer_->OnUserTitleAvailable(shortcut_info_.user_title,
@@ -226,6 +247,8 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
     const InstallableData& data) {
   if (!web_contents())
     return;
+
+  is_waiting_for_manifest_ = false;
 
   if (!data.manifest.IsEmpty()) {
     base::RecordAction(base::UserMetricsAction("webapps.AddShortcut.Manifest"));
@@ -241,6 +264,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
     observer_->OnUserTitleAvailable(shortcut_info_.user_title,
                                     shortcut_info_.url);
     data_timeout_timer_.Stop();
+    installable_manager_->RecordAddToHomescreenNoTimeout();
     FetchFavicon();
     return;
   }
@@ -263,7 +287,9 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
   }
 
   installable_manager_->GetData(
-      ParamsToPerformInstallableCheck(check_webapk_compatibility_),
+      ParamsToPerformInstallableCheck(ideal_icon_size_in_px_,
+                                      minimum_icon_size_in_px_,
+                                      check_webapk_compatibility_),
       base::Bind(&AddToHomescreenDataFetcher::OnDidPerformInstallableCheck,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -274,6 +300,8 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
 
   if (!web_contents())
     return;
+
+  installable_manager_->RecordAddToHomescreenNoTimeout();
 
   bool webapk_compatible = false;
   if (check_webapk_compatibility_) {

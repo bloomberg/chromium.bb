@@ -66,8 +66,13 @@ class InstallableManager
   // is opened on Android.
   void RecordMenuOpenHistogram();
   void RecordMenuItemAddToHomescreenHistogram();
-  void RecordQueuedMetricsOnTaskCompletion(const InstallableParams& params,
-                                           bool check_passed);
+
+  // Called via AddToHomescreenDataFetcher to record metrics on how often the
+  // installable check is completed before timing out when a user is shown the
+  // add to homescreen dialog for a shortcut or PWA on Android.
+  void RecordAddToHomescreenNoTimeout();
+  void RecordAddToHomescreenManifestAndIconTimeout();
+  void RecordAddToHomescreenInstallabilityTimeout();
 
  protected:
   // For mocking in tests.
@@ -158,6 +163,8 @@ class InstallableManager
   // Returns true if |params| requires no more work to be done.
   bool IsComplete(const InstallableParams& params) const;
 
+  void ResolveMetrics(const InstallableParams& params, bool check_passed);
+
   // Resets members to empty and removes all queued tasks.
   // Called when navigating to a new page or if the WebContents is destroyed
   // whilst waiting for a callback.
@@ -198,6 +205,7 @@ class InstallableManager
   bool is_installable() const;
 
   InstallableTaskQueue task_queue_;
+  std::unique_ptr<InstallableMetrics> metrics_;
 
   // Installable properties cached on this object.
   std::unique_ptr<ManifestProperty> manifest_;
@@ -208,19 +216,6 @@ class InstallableManager
   // Owned by the storage partition attached to the content::WebContents which
   // this object is scoped to.
   content::ServiceWorkerContext* service_worker_context_;
-
-  // Whether or not the current page is a PWA. This is reset per navigation and
-  // is independent of the caching mechanism, i.e. if a PWA check is run
-  // multiple times for one page, this will be set on the first check.
-  InstallabilityCheckStatus page_status_;
-
-  // Counts for the number of queued requests of the menu and add to homescreen
-  // menu item there have been whilst the installable check is awaiting
-  // completion. Used for metrics recording.
-  int menu_open_count_;
-  int menu_item_add_to_homescreen_count_;
-
-  bool is_pwa_check_complete_;
 
   base::WeakPtrFactory<InstallableManager> weak_factory_;
 

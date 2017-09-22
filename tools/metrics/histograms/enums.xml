@@ -492,6 +492,20 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="The user saw the dialog but closed it without adding an engine"/>
 </enum>
 
+<enum name="AddToHomescreenTimeoutStatus">
+  <int value="0" label="No timeout, site is not a PWA"/>
+  <int value="1" label="No timeout, site is a PWA"/>
+  <int value="2" label="Timeout during manifest/icon fetch, site is not a PWA"/>
+  <int value="3" label="Timeout during manifest/icon fetch, site is a PWA"/>
+  <int value="4"
+      label="Timeout during manifest/icon fetch, site status unknown"/>
+  <int value="5"
+      label="Timeout during installability check, site is not a PWA"/>
+  <int value="6" label="Timeout during installability check , site is a PWA"/>
+  <int value="7"
+      label="Timeout during installability check, site status unknown"/>
+</enum>
+
 <enum name="AdSamplerTriggerAction">
   <int value="0" label="The trigger was activated"/>
   <int value="1" label="An ad was found and data was collected"/>
