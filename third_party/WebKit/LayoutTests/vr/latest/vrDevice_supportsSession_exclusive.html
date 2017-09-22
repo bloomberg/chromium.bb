@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/fake-vr-displays.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/vr_service.mojom.js"></script>
+<script src="../resources/mock-vr-service.js"></script>
+<script src="../resources/test-constants.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test( (t) => {
+  return navigator.vr.getDevices().then( (devices) => {
+    let pixel = devices[0];
+    let magicWindowOnly = devices[1];
+
+    return pixel.supportsSession({ exclusive: true }).then( () => {
+      // Expected result
+    }).catch( () => {
+      t.step( () => {
+        assert_unreached("supportsSession unexpectedly rejected exclusive");
+      });
+    }).then( () => {
+      return magicWindowOnly.supportsSession({ exclusive: true }).then( () => {
+        t.step( () => {
+          assert_unreached("supportsSession unexpectedly allowed exclusive");
+        });
+      }).catch( () => {
+        // Expected result
+      });
+    });
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("getDevices rejected");
+    });
+  }).then( () => {
+    t.done();
+  });
+}, [fakeDisplays["Pixel"], fakeDisplays["FakeMagicWindowOnly"]],
+"supportsSession properly identifies supported exclusive sessions");
+
+</script>

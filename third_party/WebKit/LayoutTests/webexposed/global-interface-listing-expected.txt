@@ -7173,6 +7173,17 @@ interface VR : EventTarget
     method getDevices
     setter ondeviceconnect
     setter ondevicedisconnect
+interface VRDevice : EventTarget
+    attribute @@toStringTag
+    getter deviceName
+    getter isExternal
+    method constructor
+    method requestSession
+    method supportsSession
+interface VRDeviceEvent : Event
+    attribute @@toStringTag
+    getter device
+    method constructor
 interface VRDisplay : EventTarget
     attribute @@toStringTag
     getter capabilities

@@ -9,7 +9,11 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
+#include "modules/vr/latest/VRDevice.h"
+#include "modules/vr/latest/VRDeviceEvent.h"
 #include "platform/feature_policy/FeaturePolicy.h"
+#include "public/platform/InterfaceProvider.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -27,7 +31,23 @@ const char kCrossOriginSubframeBlocked[] =
 
 }  // namespace
 
-VR::VR(LocalFrame& frame) : ContextLifecycleObserver(frame.GetDocument()) {}
+VR::VR(LocalFrame& frame)
+    : ContextLifecycleObserver(frame.GetDocument()),
+      devices_synced_(false),
+      binding_(this) {
+  frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
+  service_.set_connection_error_handler(
+      ConvertToBaseCallback(WTF::Bind(&VR::Dispose, WrapWeakPersistent(this))));
+
+  device::mojom::blink::VRServiceClientPtr client;
+  binding_.Bind(mojo::MakeRequest(&client));
+
+  // Setting the client kicks off a request for the details of any connected
+  // VRDevices.
+  service_->SetClient(std::move(client),
+                      ConvertToBaseCallback(WTF::Bind(&VR::OnDevicesSynced,
+                                                      WrapPersistent(this))));
+}
 
 ExecutionContext* VR::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
@@ -62,21 +82,86 @@ ScriptPromise VR::getDevices(ScriptState* script_state) {
         DOMException::Create(kSecurityError, kCrossOriginSubframeBlocked));
   }
 
+  // If we're still waiting for a previous call to resolve return that promise
+  // again.
+  if (pending_devices_resolver_) {
+    return pending_devices_resolver_->Promise();
+  }
+
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // Until we can return an accurate list of devices arbitrarily resolve with an
-  // empty array.
-  v8::Local<v8::Array> empty_array =
-      v8::Array::New(script_state->GetIsolate(), 0);
-  resolver->Resolve(empty_array);
+  // If we've previously synced the VRDevices or no longer have a valid service
+  // connection just return the current list. In the case of the service being
+  // disconnected this will be an empty array.
+  if (!service_ || devices_synced_) {
+    resolver->Resolve(devices_);
+    return promise;
+  }
+
+  // Otherwise wait for the full list of devices to be populated and resolve
+  // when onDevicesSynced is called.
+  pending_devices_resolver_ = resolver;
 
   return promise;
 }
 
-void VR::ContextDestroyed(ExecutionContext*) {}
+// Each time a new VRDevice is connected we'll recieve a VRDisplayPtr for it
+// here. Upon calling SetClient in the constructor we should receive one call
+// for each VRDevice that was already connected at the time.
+void VR::OnDisplayConnected(
+    device::mojom::blink::VRDisplayPtr display,
+    device::mojom::blink::VRDisplayClientRequest client_request,
+    device::mojom::blink::VRDisplayInfoPtr display_info) {
+  VRDevice* vr_device =
+      new VRDevice(this, std::move(display), std::move(client_request),
+                   std::move(display_info));
+
+  devices_.push_back(vr_device);
+
+  DispatchEvent(
+      VRDeviceEvent::Create(EventTypeNames::deviceconnect, vr_device));
+}
+
+// Called when the VRService has called OnDevicesConnected for all active
+// VRDevices.
+void VR::OnDevicesSynced() {
+  devices_synced_ = true;
+  OnGetDevices();
+}
+
+// Called when details for every connected VRDevice has been received.
+void VR::OnGetDevices() {
+  if (pending_devices_resolver_) {
+    pending_devices_resolver_->Resolve(devices_);
+    pending_devices_resolver_ = nullptr;
+  }
+}
+
+void VR::ContextDestroyed(ExecutionContext*) {
+  Dispose();
+}
+
+void VR::Dispose() {
+  // If the document context was destroyed, shut down the client connection
+  // and never call the mojo service again.
+  service_.reset();
+  binding_.Close();
+
+  // Shutdown all devices' message pipe
+  for (const auto& device : devices_)
+    device->Dispose();
+
+  devices_.clear();
+
+  // Ensure that any outstanding getDevices promises are resolved. They will
+  // receive an empty array of devices.
+  OnGetDevices();
+}
 
 DEFINE_TRACE(VR) {
+  visitor->Trace(devices_);
+  visitor->Trace(pending_devices_resolver_);
   ContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
