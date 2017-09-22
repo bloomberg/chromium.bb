@@ -255,10 +255,11 @@ def main():
                  'lib/libBlinkGCPlugin.' + so_ext,
                  ])
   if sys.platform == 'darwin':
-    want.extend([# Copy only the OSX and iossim (ASan and profile) runtime
-                 # libraries:
+    want.extend([# Copy only the OSX and iossim (ASan, fuzzer and profile)
+                 # runtime libraries:
                  'lib/clang/*/lib/darwin/*asan_osx*',
                  'lib/clang/*/lib/darwin/*asan_iossim*',
+                 'lib/clang/*/lib/darwin/*fuzzer*',
                  'lib/clang/*/lib/darwin/*profile_osx*',
                  'lib/clang/*/lib/darwin/*profile_iossim*',
                  # And the OSX and ios builtin libraries (iossim is lipo'd into
@@ -271,10 +272,11 @@ def main():
     want.append('bin/llvm-ar')
     want.append('bin/lld')
     # Copy only
-    # lib/clang/*/lib/linux/libclang_rt.{[atm]san,san,ubsan,profile}-*.a ,
+    # lib/clang/*/lib/linux/libclang_rt.{[atm]san,san,ubsan,fuzzer,profile}-*.a,
     # but not dfsan.
     want.extend(['lib/clang/*/lib/linux/*[atm]san*',
                  'lib/clang/*/lib/linux/*ubsan*',
+                 'lib/clang/*/lib/linux/*libclang_rt.fuzzer*',
                  'lib/clang/*/lib/linux/*libclang_rt.san*',
                  'lib/clang/*/lib/linux/*profile*',
                  'lib/clang/*/msan_blacklist.txt',
