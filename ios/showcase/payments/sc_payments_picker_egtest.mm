@@ -81,58 +81,42 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
   [super tearDown];
 }
 
-- (void)scrollToTop {
-  // Scroll to the top, starting at the center of the screen.
-  [[EarlGrey selectElementWithMatcher:grey_kindOfClass([UITableView class])]
-      performAction:grey_scrollToContentEdgeWithStartPoint(kGREYContentEdgeTop,
-                                                           0.5f, 0.5f)];
-}
-
-- (void)assertSection:(NSString*)label visible:(BOOL)visible {
-  [[[EarlGrey selectElementWithMatcher:SectionWithTitle(label)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
-      onElementWithMatcher:grey_kindOfClass([UITableView class])]
-      assertWithMatcher:visible ? grey_notNil() : grey_nil()];
-
-  // Return to top, to ensure we are in the same state before every search,
-  // as each search action may scroll down, thereby making it impossible for
-  // the next search action to work properly, as we only scroll down when
-  // searching.
-  [self scrollToTop];
-}
-
-- (void)assertRow:(NSString*)label
-         selected:(BOOL)selected
-          visible:(BOOL)visible {
-  [[[EarlGrey selectElementWithMatcher:RowWithLabel(label, selected)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
-      onElementWithMatcher:grey_kindOfClass([UITableView class])]
-      assertWithMatcher:visible ? grey_notNil() : grey_nil()];
-
-  // Return to top, to ensure we are in the same state before every search,
-  // as each search action may scroll down, thereby making it impossible for
-  // the next search action to work properly, as we only scroll down when
-  // searching.
-  [self scrollToTop];
-}
-
 // Tests if all the expected rows and sections are present and the expected row
 // is selected.
 - (void)testVerifyRowsAndSection {
-  [self assertSection:@"B" visible:YES];
-  [self assertRow:@"Belgium" selected:NO visible:YES];
-  [self assertRow:@"Brazil" selected:NO visible:YES];
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"B")]
+      assertWithMatcher:grey_notNil()];
 
-  [self assertSection:@"C" visible:YES];
-  [self assertRow:@"Canada" selected:NO visible:YES];
-  [self assertRow:@"Chile" selected:NO visible:YES];
-  [self assertRow:@"China" selected:YES visible:YES];
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Belgium", NO)]
+      assertWithMatcher:grey_notNil()];
 
-  [self assertSection:@"E" visible:YES];
-  [self assertRow:@"España" selected:NO visible:YES];
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Brazil", NO)]
+      assertWithMatcher:grey_notNil()];
 
-  [self assertSection:@"M" visible:YES];
-  [self assertRow:@"México" selected:NO visible:YES];
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"C")]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Canada", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Chile", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  // 'China' is selected.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"China", YES)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"E")]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"España", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"M")]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"México", NO)]
+      assertWithMatcher:grey_notNil()];
 }
 
 // Tests if filtering works.
@@ -143,28 +127,49 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
     EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
   }
 
-  [self scrollToTop];
-
   // Type 'c' in the search bar.
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID(kPaymentRequestPickerSearchBarAccessibilityID)]
       performAction:grey_typeText(@"c")];
 
-  [self assertSection:@"B" visible:NO];
-  [self assertRow:@"Belgium" selected:NO visible:NO];
-  [self assertRow:@"Brazil" selected:NO visible:NO];
+  // Section 'B' should not be visible.
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"B")]
+      assertWithMatcher:grey_nil()];
 
-  [self assertSection:@"C" visible:YES];
-  [self assertRow:@"Canada" selected:NO visible:YES];
-  [self assertRow:@"Chile" selected:NO visible:YES];
-  [self assertRow:@"China" selected:YES visible:YES];
+  // 'Belgium' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Belgium", NO)]
+      assertWithMatcher:grey_nil()];
 
-  [self assertSection:@"E" visible:NO];
-  [self assertRow:@"España" selected:NO visible:NO];
+  // 'Brazil' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Brazil", NO)]
+      assertWithMatcher:grey_nil()];
 
-  [self assertSection:@"M" visible:YES];
-  [self assertRow:@"México" selected:NO visible:YES];
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"C")]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Canada", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Chile", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"China", YES)]
+      assertWithMatcher:grey_notNil()];
+
+  // Section 'E' should not be visible.
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"E")]
+      assertWithMatcher:grey_nil()];
+
+  // 'España' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"España", NO)]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"M")]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"México", NO)]
+      assertWithMatcher:grey_notNil()];
 
   // Type 'hi' in the search bar. So far we have typed "chi".
   [[EarlGrey
@@ -172,20 +177,46 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
           grey_accessibilityID(kPaymentRequestPickerSearchBarAccessibilityID)]
       performAction:grey_typeText(@"hi")];
 
-  [self assertSection:@"B" visible:NO];
-  [self assertRow:@"Belgium" selected:NO visible:NO];
-  [self assertRow:@"Brazil" selected:NO visible:NO];
+  // Section 'B' should not be visible.
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"B")]
+      assertWithMatcher:grey_nil()];
 
-  [self assertSection:@"C" visible:YES];
-  [self assertRow:@"Canada" selected:NO visible:NO];
-  [self assertRow:@"Chile" selected:NO visible:YES];
-  [self assertRow:@"China" selected:YES visible:YES];
+  // 'Belgium' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Belgium", NO)]
+      assertWithMatcher:grey_nil()];
 
-  [self assertSection:@"E" visible:NO];
-  [self assertRow:@"España" selected:NO visible:NO];
+  // 'Brazil' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Brazil", NO)]
+      assertWithMatcher:grey_nil()];
 
-  [self assertSection:@"M" visible:NO];
-  [self assertRow:@"México" selected:NO visible:NO];
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"C")]
+      assertWithMatcher:grey_notNil()];
+
+  // 'Canada' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Canada", NO)]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Chile", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"China", YES)]
+      assertWithMatcher:grey_notNil()];
+
+  // Section 'E' should not be visible.
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"E")]
+      assertWithMatcher:grey_nil()];
+
+  // 'España' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"España", NO)]
+      assertWithMatcher:grey_nil()];
+
+  // Section 'M' should not be visible.
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"M")]
+      assertWithMatcher:grey_nil()];
+
+  // 'México' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"México", NO)]
+      assertWithMatcher:grey_nil()];
 
   // Type 'l' in the search bar. So far we have typed "chil".
   [[EarlGrey
@@ -193,41 +224,90 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
           grey_accessibilityID(kPaymentRequestPickerSearchBarAccessibilityID)]
       performAction:grey_typeText(@"l")];
 
-  [self assertSection:@"B" visible:NO];
-  [self assertRow:@"Belgium" selected:NO visible:NO];
-  [self assertRow:@"Brazil" selected:NO visible:NO];
+  // Section 'B' should not be visible.
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"B")]
+      assertWithMatcher:grey_nil()];
 
-  [self assertSection:@"C" visible:YES];
-  [self assertRow:@"Canada" selected:NO visible:NO];
-  [self assertRow:@"Chile" selected:NO visible:YES];
-  [self assertRow:@"China" selected:YES visible:NO];
+  // 'Belgium' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Belgium", NO)]
+      assertWithMatcher:grey_nil()];
 
-  [self assertSection:@"E" visible:NO];
-  [self assertRow:@"España" selected:NO visible:NO];
+  // 'Brazil' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Brazil", NO)]
+      assertWithMatcher:grey_nil()];
 
-  [self assertSection:@"M" visible:NO];
-  [self assertRow:@"México" selected:NO visible:NO];
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"C")]
+      assertWithMatcher:grey_notNil()];
+
+  // 'Canada' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Canada", NO)]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Chile", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  // 'China' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"China", YES)]
+      assertWithMatcher:grey_nil()];
+
+  // Section 'E' should not be visible.
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"E")]
+      assertWithMatcher:grey_nil()];
+
+  // 'España' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"España", NO)]
+      assertWithMatcher:grey_nil()];
+
+  // Section 'M' should not be visible.
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"M")]
+      assertWithMatcher:grey_nil()];
+
+  // 'México' should not be visible.
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"México", NO)]
+      assertWithMatcher:grey_nil()];
 
   // Cancel filtering the text in the search bar.
   [[EarlGrey selectElementWithMatcher:CancelButton()] performAction:grey_tap()];
 
-  [self assertSection:@"B" visible:YES];
-  [self assertRow:@"Belgium" selected:NO visible:YES];
-  [self assertRow:@"Brazil" selected:NO visible:YES];
-  [self assertSection:@"C" visible:YES];
-  [self assertRow:@"Canada" selected:NO visible:YES];
-  [self assertRow:@"Chile" selected:NO visible:YES];
-  [self assertRow:@"China" selected:YES visible:YES];
-  [self assertSection:@"E" visible:YES];
-  [self assertRow:@"España" selected:NO visible:YES];
-  [self assertSection:@"M" visible:YES];
-  [self assertRow:@"México" selected:NO visible:YES];
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"B")]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Belgium", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Brazil", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"C")]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Canada", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Chile", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"China", YES)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"E")]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"España", NO)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:SectionWithTitle(@"M")]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"México", NO)]
+      assertWithMatcher:grey_notNil()];
 }
 
 // Tests that tapping a row should make it the selected row.
 - (void)testVerifySelection {
   // 'China' is selected.
-  [self assertRow:@"China" selected:YES visible:YES];
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"China", YES)]
+      assertWithMatcher:grey_notNil()];
 
   // 'Canada' is not selected. Tap it.
   [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Canada", NO)]
@@ -243,7 +323,8 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
       performAction:grey_tap()];
 
   // 'China' is not selected anymore.
-  [self assertRow:@"China" selected:NO visible:YES];
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"China", NO)]
+      assertWithMatcher:grey_notNil()];
 
   // Now 'Canada' is selected. Tap it again.
   [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Canada", YES)]
@@ -259,10 +340,12 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
       performAction:grey_tap()];
 
   // 'China' is still not selected.
-  [self assertRow:@"China" selected:NO visible:YES];
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"China", NO)]
+      assertWithMatcher:grey_notNil()];
 
   // 'Canada' is still selected.
-  [self assertRow:@"Canada" selected:YES visible:YES];
+  [[EarlGrey selectElementWithMatcher:RowWithLabel(@"Canada", YES)]
+      assertWithMatcher:grey_notNil()];
 }
 
 @end
