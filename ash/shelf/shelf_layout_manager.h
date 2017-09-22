@@ -339,7 +339,7 @@ class ASH_EXPORT ShelfLayoutManager
   Shelf* shelf_;
 
   // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
-  bool window_overlaps_shelf_;
+  bool window_overlaps_shelf_ = false;
 
   // Whether the app list is visible. This is maintained by
   // OnAppListVisibilityChanged.
@@ -349,7 +349,7 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Whether the mouse was over the shelf when the auto hide timer started.
   // False when neither the auto hide timer nor the timer task are running.
-  bool mouse_over_shelf_when_auto_hide_timer_started_;
+  bool mouse_over_shelf_when_auto_hide_timer_started_ = false;
 
   base::ObserverList<ShelfLayoutManagerObserver> observers_;
 
@@ -366,17 +366,20 @@ class ASH_EXPORT ShelfLayoutManager
     GESTURE_DRAG_APPLIST_IN_PROGRESS,
   };
 
-  GestureDragStatus gesture_drag_status_;
+  GestureDragStatus gesture_drag_status_ = GESTURE_DRAG_NONE;
 
   // Tracks the amount of the drag. The value is only valid when
   // |gesture_drag_status_| is set to GESTURE_DRAG_IN_PROGRESS.
-  float gesture_drag_amount_;
+  float gesture_drag_amount_ = 0.f;
+
+  // Tracks the amount of launcher that above the shelf bottom during dragging.
+  float launcher_above_shelf_bottom_amount_ = 0.f;
 
   // Manage the auto-hide state during the gesture.
-  ShelfAutoHideState gesture_drag_auto_hide_state_;
+  ShelfAutoHideState gesture_drag_auto_hide_state_ = SHELF_AUTO_HIDE_SHOWN;
 
   // Used to delay updating shelf background.
-  UpdateShelfObserver* update_shelf_observer_;
+  UpdateShelfObserver* update_shelf_observer_ = nullptr;
 
   // The bounds of the keyboard.
   gfx::Rect keyboard_bounds_;
@@ -387,17 +390,23 @@ class ASH_EXPORT ShelfLayoutManager
 
   // The height of the ChromeVox panel at the top of the screen, which
   // needs to be removed from the available work area.
-  int chromevox_panel_height_;
+  int chromevox_panel_height_ = 0;
 
   // The show hide animation duration override or 0 for default.
-  int duration_override_in_ms_;
+  int duration_override_in_ms_ = 0;
 
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;
 
   // The current shelf background. Should not be assigned to directly, use
   // MaybeUpdateShelfBackground() instead.
-  ShelfBackgroundType shelf_background_type_;
+  ShelfBackgroundType shelf_background_type_ = SHELF_BACKGROUND_OVERLAP;
+
+  // Shelf will become transparent if launcher is opened. Stores the shelf
+  // background type before open the launcher when start to drag the launcher
+  // from shelf.
+  ShelfBackgroundType shelf_background_type_before_drag_ =
+      SHELF_BACKGROUND_OVERLAP;
 
   ScopedObserver<keyboard::KeyboardController,
                  keyboard::KeyboardControllerObserver>

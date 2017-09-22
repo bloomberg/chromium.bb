@@ -85,6 +85,9 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
+  // Gets the alpha value of |background_type|.
+  int GetBackgroundAlphaValue(ShelfBackgroundType background_type) const;
+
  protected:
   // ShelfObserver:
   void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
