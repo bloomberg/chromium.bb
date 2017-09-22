@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -40,6 +41,10 @@
 #include "components/url_formatter/url_fixer.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_util.h"
+
+#if defined(OS_WIN)
+#include "ui/base/win/osk_display_manager.h"
+#endif
 
 using bookmarks::BookmarkModel;
 using metrics::OmniboxEventProto;
@@ -901,6 +906,9 @@ void OmniboxEditModel::OnKillFocus() {
   last_omnibox_focus_ = base::TimeTicks();
   paste_state_ = NONE;
   control_key_state_ = UP;
+#if defined(OS_WIN)
+  ui::OnScreenKeyboardDisplayManager::GetInstance()->DismissVirtualKeyboard();
+#endif
 }
 
 bool OmniboxEditModel::WillHandleEscapeKey() const {
