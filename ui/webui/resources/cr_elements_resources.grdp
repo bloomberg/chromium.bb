@@ -151,6 +151,12 @@
   <structure name="IDR_CR_ELEMENTS_CR_POLICY_PREF_INDICATOR_HTML"
              file="../../webui/resources/cr_elements/policy/cr_policy_pref_indicator.html"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_TOGGLE_HTML"
+             file="../../webui/resources/cr_elements/cr_toggle/cr_toggle.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_TOGGLE_JS"
+             file="../../webui/resources/cr_elements/cr_toggle/cr_toggle.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_TOOLTIP_ICON_HTML"
              file="../../webui/resources/cr_elements/policy/cr_tooltip_icon.html"
              type="chrome_html" />

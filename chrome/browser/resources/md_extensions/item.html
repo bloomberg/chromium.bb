@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_toggle_style_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -18,12 +18,12 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://extensions/navigation_helper.html">
 
 <dom-module id="extensions-item">
   <template>
-    <style include="iron-flex cr-hidden-style cr-icons action-link paper-button-style paper-toggle-style">
+    <style include=
+        "iron-flex cr-hidden-style cr-icons action-link paper-button-style">
       #icon-wrapper {
         align-self: flex-start;
         display: flex;
@@ -146,9 +146,8 @@
         display: block;
       }
 
-      paper-toggle-button {
+      cr-toggle {
         -webkit-margin-end: 8px;  /* Avoid ripple from overlapping container. */
-        cursor: pointer;
       }
 
       .action-button {
@@ -255,11 +254,11 @@
             hidden$="[[!isTerminated_(data.state)]]">
           $i18n{itemReload}
         </paper-button>
-        <paper-toggle-button id="enable-toggle" class="action-button"
+        <cr-toggle id="enable-toggle" class="action-button"
             checked="[[isEnabled_(data.state)]]" on-change="onEnableChange_"
             disabled="[[!isEnableToggleEnabled_(data.*)]]"
             hidden$="[[!showEnableToggle_(data.*)]]">
-        </paper-toggle-button>
+        </cr-toggle>
       </div>
     </div>
   </template>

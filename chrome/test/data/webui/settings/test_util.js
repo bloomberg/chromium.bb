@@ -39,7 +39,10 @@ cr.define('test_util', function() {
    */
   function eventToPromise(eventType, target) {
     return new Promise(function(resolve, reject) {
-      target.addEventListener(eventType, resolve);
+      target.addEventListener(eventType, function f(e) {
+        target.removeEventListener(eventType, f);
+        resolve(e);
+      });
     });
   }
 
