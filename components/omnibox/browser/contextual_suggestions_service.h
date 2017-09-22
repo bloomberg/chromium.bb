@@ -94,7 +94,7 @@ class ContextualSuggestionsService : public KeyedService {
       const std::string& current_url,
       const TemplateURLService* template_url_service) const;
 
-  // Upon succesfull creation of an HTTP GET request for default contextual
+  // Upon succesful creation of an HTTP GET request for default contextual
   // suggestions, the |callback| function is run with the HTTP GET request as a
   // parameter.
   //
@@ -105,7 +105,7 @@ class ContextualSuggestionsService : public KeyedService {
                             net::URLFetcherDelegate* fetcher_delegate,
                             ContextualSuggestionsCallback callback);
 
-  // Upon succesfull creation of an HTTP POST request for default contextual
+  // Upon succesful creation of an HTTP POST request for experimental contextual
   // suggestions, the |callback| function is run with the HTTP POST request as a
   // parameter.
   //
