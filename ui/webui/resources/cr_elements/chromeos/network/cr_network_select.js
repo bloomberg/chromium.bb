@@ -56,6 +56,9 @@ Polymer({
     },
   },
 
+  /** @type {string} */
+  defaultStateGuid_: '',
+
   focus: function() {
     this.$.networkList.focus();
   },
@@ -163,7 +166,10 @@ Polymer({
                             CrOnc.ConnectionState.CONNECTED) ?
         this.networkStateList_[0] :
         null;
-    this.defaultNetworkChanged_(defaultState);
+    if (defaultState.GUID != this.defaultStateGuid_) {
+      this.defaultStateGuid_ = defaultState.GUID;
+      this.fire('default-network-changed', defaultState);
+    }
   },
 
   /**
@@ -196,14 +202,7 @@ Polymer({
    * @private
    */
   onNetworkConnected_: function(e) {
-    this.defaultNetworkChanged_(e.detail);
-  },
-
-  /**
-   * @param {?CrOnc.NetworkStateProperties} state
-   * @private
-   */
-  defaultNetworkChanged_: function(state) {
-    this.fire('default-network-changed', state);
+    if (e.detail && e.detail.GUID != this.defaultStateGuid_)
+      this.refreshNetworks();
   },
 });
