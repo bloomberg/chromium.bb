@@ -125,7 +125,6 @@
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/external_file_controller.h"
-#import "ios/chrome/browser/ui/external_file_remover.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
@@ -279,11 +278,6 @@ const CGFloat kVoiceSearchBarHeight = 59.0;
 const CGFloat kSearchByImageMaxImageArea = 90000.0;
 const CGFloat kSearchByImageMaxImageWidth = 600.0;
 const CGFloat kSearchByImageMaxImageHeight = 400.0;
-
-// The delay, in seconds, after startup before cleaning up the files received
-// from other applications that are not bookmarked nor referenced by an open or
-// recently closed tab.
-const int kExternalFilesCleanupDelaySeconds = 60;
 
 enum HeaderBehaviour {
   // The header moves completely out of the screen.
@@ -521,9 +515,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
   // The controller that shows the bookmarking UI after the user taps the star
   // button.
   BookmarkInteractionController* _bookmarkInteractionController;
-
-  // Used to remove unreferenced external files.
-  std::unique_ptr<ExternalFileRemover> _externalFileRemover;
 
   // The currently displayed "Rate This App" dialog, if one exists.
   id<AppRatingPrompt> _rateThisAppDialog;
@@ -1800,8 +1791,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.tabStripCoordinator = nil;
   self.tabStripView = nil;
 
-  // The file remover needs the browser state, so needs to be destroyed now.
-  _externalFileRemover = nil;
   _browserState = nullptr;
   [_dispatcher stopDispatchingToTarget:self];
   _dispatcher = nil;
@@ -2441,24 +2430,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
       [tab.webController setOverlayPreviewMode:NO];
     }
   }
-}
-
-#pragma mark - External files
-
-- (void)removeExternalFilesImmediately:(BOOL)immediately
-                     completionHandler:(ProceduralBlock)completionHandler {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  DCHECK(!_isOffTheRecord);
-  _externalFileRemover =
-      std::make_unique<ExternalFileRemover>(self.browserState);
-  // Delay the cleanup of the unreferenced files received from other apps
-  // to not impact startup performance.
-  int delay = immediately ? 0 : kExternalFilesCleanupDelaySeconds;
-  _externalFileRemover->RemoveAfterDelay(
-      base::TimeDelta::FromSeconds(delay),
-      base::BindBlockArc(completionHandler ? completionHandler
-                                           : ^{
-                                             }));
 }
 
 - (UIView<TabStripFoldAnimation>*)tabStripPlaceholderView {

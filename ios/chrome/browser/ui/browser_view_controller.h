@@ -143,12 +143,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // Dismisses all presented views then calls |completion|.
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion;
 
-// Removes files received from other applications. If |immediately| is YES,
-// initiates the removal of files immediately. |completionHandler| is called
-// when files have been removed.
-- (void)removeExternalFilesImmediately:(BOOL)immediately
-                     completionHandler:(ProceduralBlock)completionHandler;
-
 // Returns a tab strip placeholder view created from the current state of the
 // tab strip. It is used to animate the transition from the browser view
 // controller to the tab switcher.
