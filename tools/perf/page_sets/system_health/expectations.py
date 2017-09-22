@@ -125,8 +125,8 @@ class V8BrowsingDesktopExpecations(expectations.StoryExpectations):
                       'crbug.com/676336')
     self.DisableStory('browse:news:reddit', [expectations.ALL_DESKTOP],
                       'crbug.com/759777')
-    self.DisableStory('browse:news:cnn',
-                      [expectations.ALL_MAC], 'crbug.com/728576')
+    self.DisableStory('browse:news:cnn', [expectations.ALL_DESKTOP],
+                      'mac:crbug.com/728576, all:crbug.com/759777')
     self.DisableStory('browse:tools:earth', [expectations.ALL_DESKTOP],
                       'crbug.com/708590')
     self.DisableStory('browse:tools:maps', [expectations.ALL_DESKTOP],
