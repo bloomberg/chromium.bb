@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.support.test.filters.SmallTest;
+import android.view.View;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -69,6 +70,7 @@ public class BottomSheetContentControllerTest {
         assertTrue(mBottomSheet.getCurrentSheetContent() instanceof HistorySheetContent);
         assertEquals(
                 R.id.action_history, mBottomSheetContentController.getSelectedItemIdForTests());
+        assertEquals(View.INVISIBLE, mBottomSheet.getDefaultToolbarView().getVisibility());
 
         mBottomSheetTestRule.setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
         mObserver.mClosedCallbackHelper.waitForCallback(closedCount, 1);
@@ -76,6 +78,7 @@ public class BottomSheetContentControllerTest {
         assertEquals(openedCount, mObserver.mOpenedCallbackHelper.getCallCount());
         assertEquals(null, mBottomSheet.getCurrentSheetContent());
         assertEquals(0, mBottomSheetContentController.getSelectedItemIdForTests());
+        assertEquals(View.VISIBLE, mBottomSheet.getDefaultToolbarView().getVisibility());
     }
 
     @Test

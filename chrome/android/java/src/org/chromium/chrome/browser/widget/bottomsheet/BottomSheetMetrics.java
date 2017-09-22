@@ -96,7 +96,7 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
         // Return early if the sheet content is being set during initialization (previous content
         // is null) or while the sheet is closed (sheet content being reset), so that we only
         // record actions when the user explicitly takes an action.
-        if (mLastContent == null || !mIsSheetOpen) {
+        if (mLastContent == null || !mIsSheetOpen || newContent == null) {
             mLastContent = newContent;
             return;
         }
