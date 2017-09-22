@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/objects_movable.h"
@@ -21,15 +21,15 @@ using namespace test::api::objects_movable_json;
 
 TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
   {
-    auto strings = base::MakeUnique<base::ListValue>();
+    auto strings = std::make_unique<base::ListValue>();
     strings->AppendString("one");
     strings->AppendString("two");
-    auto info_value = base::MakeUnique<base::DictionaryValue>();
+    auto info_value = std::make_unique<base::DictionaryValue>();
     info_value->Set("strings", std::move(strings));
     info_value->SetInteger("integer", 5);
     info_value->SetBoolean("boolean", true);
 
-    auto params_value = base::MakeUnique<base::ListValue>();
+    auto params_value = std::make_unique<base::ListValue>();
     params_value->Append(std::move(info_value));
     std::unique_ptr<ObjectParam::Params> params(
         ObjectParam::Params::Create(*params_value));
@@ -41,14 +41,14 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
     EXPECT_TRUE(params->info.boolean);
   }
   {
-    auto strings = base::MakeUnique<base::ListValue>();
+    auto strings = std::make_unique<base::ListValue>();
     strings->AppendString("one");
     strings->AppendString("two");
-    auto info_value = base::MakeUnique<base::DictionaryValue>();
+    auto info_value = std::make_unique<base::DictionaryValue>();
     info_value->Set("strings", std::move(strings));
     info_value->SetInteger("integer", 5);
 
-    auto params_value = base::MakeUnique<base::ListValue>();
+    auto params_value = std::make_unique<base::ListValue>();
     params_value->Append(std::move(info_value));
     std::unique_ptr<ObjectParam::Params> params(
         ObjectParam::Params::Create(*params_value));
