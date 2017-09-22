@@ -212,23 +212,21 @@ class WebVrLatencyTest(object):
       logging.warning('No output file set, not saving results to file')
       return
 
-    correlation_string = self._device_name + '_correlation'
-    latency_string = self._device_name + '_latency'
     charts = {
-        correlation_string: {
+        'correlation': {
             'summary': {
                 'improvement_direction': 'up',
-                'name': correlation_string,
+                'name': 'correlation',
                 'std': 0.0,
                 'type': 'list_of_scalar_values',
                 'units': '',
                 'values': [],
             }
         },
-        latency_string: {
+        'latency': {
             'summary': {
                 'improvement_direction': 'down',
-                'name': latency_string,
+                'name': 'latency',
                 'std': 0.0,
                 'type': 'list_of_scalar_values',
                 'units': 'ms',
@@ -237,28 +235,28 @@ class WebVrLatencyTest(object):
         }
     }
     for url, results in self._test_results.iteritems():
-      charts[correlation_string][url] = {
+      charts['correlation'][url] = {
           'improvement_direction': 'up',
-          'name': correlation_string,
+          'name': 'correlation',
           'std': results['std_correlation'],
           'type': 'list_of_scalar_values',
           'units': '',
           'values': results['correlations'],
       }
 
-      charts[correlation_string]['summary']['values'].extend(
+      charts['correlation']['summary']['values'].extend(
           results['correlations'])
 
-      charts[latency_string][url] = {
+      charts['latency'][url] = {
           'improvement_direction': 'down',
-          'name': latency_string,
+          'name': 'latency',
           'std': results['std_latency'],
           'type': 'list_of_scalar_values',
           'units': 'ms',
           'values': results['latencies'],
       }
 
-      charts[latency_string]['summary']['values'].extend(results['latencies'])
+      charts['latency']['summary']['values'].extend(results['latencies'])
 
     results = {
       'format_version': '1.0',
