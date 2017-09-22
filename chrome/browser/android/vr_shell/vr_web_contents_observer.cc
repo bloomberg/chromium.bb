@@ -13,10 +13,11 @@
 
 namespace vr_shell {
 
-VrWebContentsObserver::VrWebContentsObserver(content::WebContents* web_contents,
-                                             VrShell* vr_shell,
-                                             vr::UiInterface* ui_interface,
-                                             vr::ToolbarHelper* toolbar)
+VrWebContentsObserver::VrWebContentsObserver(
+    content::WebContents* web_contents,
+    VrShell* vr_shell,
+    vr::BrowserUiInterface* ui_interface,
+    vr::ToolbarHelper* toolbar)
     : WebContentsObserver(web_contents),
       vr_shell_(vr_shell),
       ui_interface_(ui_interface),
@@ -26,7 +27,8 @@ VrWebContentsObserver::VrWebContentsObserver(content::WebContents* web_contents,
 
 VrWebContentsObserver::~VrWebContentsObserver() {}
 
-void VrWebContentsObserver::SetUiInterface(vr::UiInterface* ui_interface) {
+void VrWebContentsObserver::SetUiInterface(
+    vr::BrowserUiInterface* ui_interface) {
   ui_interface_ = ui_interface;
 }
 

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/simple_textured_element.h"
 #include "chrome/browser/vr/ui_interface.h"
@@ -77,7 +78,7 @@ class ExitPrompt;
 //
 // TODO(vollick): The above hierarchy is complex, brittle, and would be easier
 // to manage if it were specified in a declarative format.
-class UiSceneManager {
+class UiSceneManager : public UiInterface, public BrowserUiInterface {
  public:
   UiSceneManager(UiBrowserInterface* browser,
                  UiScene* scene,
@@ -85,35 +86,36 @@ class UiSceneManager {
                  bool in_cct,
                  bool in_web_vr,
                  bool web_vr_autopresentation_expected);
-  ~UiSceneManager();
+
+  ~UiSceneManager() override;
 
   base::WeakPtr<UiSceneManager> GetWeakPtr();
 
-  void SetFullscreen(bool fullscreen);
-  void SetIncognito(bool incognito);
-  void SetToolbarState(const ToolbarState& state);
-  void SetWebVrSecureOrigin(bool secure);
-  void SetWebVrMode(bool web_vr, bool show_toast);
-  void SetLoading(bool loading);
-  void SetLoadProgress(float progress);
-  void SetIsExiting();
-  void SetVideoCapturingIndicator(bool enabled);
-  void SetScreenCapturingIndicator(bool enabled);
-  void SetAudioCapturingIndicator(bool enabled);
-  void SetLocationAccessIndicator(bool enabled);
-  void SetBluetoothConnectedIndicator(bool enabled);
+  // UiBrowserInterface.
+  void SetFullscreen(bool fullscreen) override;
+  void SetIncognito(bool incognito) override;
+  void SetToolbarState(const ToolbarState& state) override;
+  void SetWebVrSecureOrigin(bool secure) override;
+  void SetWebVrMode(bool web_vr, bool show_toast) override;
+  void SetLoading(bool loading) override;
+  void SetLoadProgress(float progress) override;
+  void SetIsExiting() override;
+  void SetVideoCapturingIndicator(bool enabled) override;
+  void SetScreenCapturingIndicator(bool enabled) override;
+  void SetAudioCapturingIndicator(bool enabled) override;
+  void SetLocationAccessIndicator(bool enabled) override;
+  void SetBluetoothConnectedIndicator(bool enabled) override;
+  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
 
-  // These methods are currently stubbed.
-  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
+  // UiInterface.
+  void OnGlInitialized(unsigned int content_texture_id) override;
+  void OnAppButtonClicked() override;
+  void OnAppButtonGesturePerformed(UiInterface::Direction direction) override;
+  void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
+  void OnWebVrFrameAvailable() override;
+  void OnWebVrTimedOut() override;
 
-  void OnGlInitialized(unsigned int content_texture_id);
-  void OnAppButtonClicked();
-  void OnAppButtonGesturePerformed(UiInterface::Direction direction);
-  void OnWebVrFrameAvailable();
-  void OnWebVrTimedOut();
-  void OnProjMatrixChanged(const gfx::Transform& proj_matrix);
-
-  void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason);
+  void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) override;
 
   void OnSecurityIconClickedForTesting();
   void OnExitPromptChoiceForTesting(bool chose_exit);

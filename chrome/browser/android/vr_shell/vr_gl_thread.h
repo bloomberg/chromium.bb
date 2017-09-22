@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr_shell/gl_browser_interface.h"
+#include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -29,7 +30,7 @@ class VrShellGl;
 class VrGLThread : public base::android::JavaHandlerThread,
                    public GlBrowserInterface,
                    public vr::UiBrowserInterface,
-                   public vr::UiInterface {
+                   public vr::BrowserUiInterface {
  public:
   VrGLThread(
       const base::WeakPtr<VrShell>& weak_vr_shell,
@@ -42,23 +43,17 @@ class VrGLThread : public base::android::JavaHandlerThread,
       bool daydream_support);
 
   ~VrGLThread() override;
-  base::WeakPtr<VrShellGl> GetVrShellGl() { return weak_vr_shell_gl_; }
+  base::WeakPtr<VrShellGl> GetVrShellGl();
 
-  // GlBrowserInterface implementation (VrShellGl calling out to UI/VrShell).
+  // vr::GlBrowserInterface implementation (GL calling to VrShell).
   void ContentSurfaceChanged(jobject surface) override;
   void GvrDelegateReady(gvr::ViewerType viewer_type) override;
   void UpdateGamepadData(device::GvrGamepadData) override;
-  void AppButtonClicked() override;
-  void AppButtonGesturePerformed(vr::UiInterface::Direction direction) override;
   void ProcessContentGesture(
       std::unique_ptr<blink::WebInputEvent> event) override;
   void ForceExitVr() override;
   void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;
-  void OnGlInitialized(unsigned int content_texture_id) override;
-  void OnWebVrFrameAvailable() override;
-  void OnWebVrTimedOut() override;
-  void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
 
   // vr::UiBrowserInterface implementation (UI calling to VrShell).
   void ExitPresent() override;
@@ -70,21 +65,21 @@ class VrGLThread : public base::android::JavaHandlerThread,
                             vr::ExitVrPromptChoice choice) override;
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) override;
 
-  // vr::UiInterface implementation (VrShell and GL calling to the UI).
-  void SetFullscreen(bool enabled) override;
-  void SetIncognito(bool incognito) override;
-  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
-  void SetLoadProgress(float progress) override;
-  void SetLoading(bool loading) override;
-  void SetToolbarState(const vr::ToolbarState& state) override;
+  // vr::BrowserUiInterface implementation (Browser calling to UI).
   void SetWebVrMode(bool enabled, bool show_toast) override;
+  void SetFullscreen(bool enabled) override;
+  void SetToolbarState(const vr::ToolbarState& state) override;
+  void SetIncognito(bool incognito) override;
   void SetWebVrSecureOrigin(bool secure) override;
+  void SetLoading(bool loading) override;
+  void SetLoadProgress(float progress) override;
+  void SetIsExiting() override;
+  void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
   void SetVideoCapturingIndicator(bool enabled) override;
   void SetScreenCapturingIndicator(bool enabled) override;
   void SetAudioCapturingIndicator(bool enabled) override;
   void SetBluetoothConnectedIndicator(bool enabled) override;
   void SetLocationAccessIndicator(bool enabled) override;
-  void SetIsExiting() override;
   void SetExitVrPromptEnabled(bool enabled,
                               vr::UiUnsupportedMode reason) override;
 
@@ -93,15 +88,19 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void CleanUp() override;
 
  private:
+  bool OnMainThread() const;
+  bool OnGlThread() const;
+
   // Created on GL thread.
   std::unique_ptr<vr::UiScene> scene_;
   std::unique_ptr<vr::UiSceneManager> scene_manager_;
-  base::WeakPtr<vr::UiSceneManager> weak_scene_manager_;
   std::unique_ptr<VrShellGl> vr_shell_gl_;
+
+  base::WeakPtr<VrShell> weak_vr_shell_;
   base::WeakPtr<VrShellGl> weak_vr_shell_gl_;
+  base::WeakPtr<BrowserUiInterface> browser_ui_;
 
   // This state is used for initializing vr_shell_gl_.
-  base::WeakPtr<VrShell> weak_vr_shell_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   gvr_context* gvr_api_;
   bool initially_web_vr_;

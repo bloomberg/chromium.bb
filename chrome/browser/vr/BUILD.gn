@@ -16,6 +16,7 @@ static_library("vr_common") {
   sources = [
     "animation_player.cc",
     "animation_player.h",
+    "browser_ui_interface.h",
     "color_scheme.cc",
     "color_scheme.h",
     "databinding/binding.h",

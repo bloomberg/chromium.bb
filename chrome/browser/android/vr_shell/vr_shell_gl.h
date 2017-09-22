@@ -50,6 +50,7 @@ struct MailboxHolder;
 namespace vr {
 class FPSMeter;
 class SlidingAverage;
+class UiInterface;
 class UiScene;
 class VrShellRenderer;
 }  // namespace vr
@@ -86,6 +87,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   void Initialize();
   void InitializeGl(gfx::AcceleratedWidget window);
+
+  void set_ui(vr::UiInterface* ui) { ui_ = ui; }
 
   void OnTriggerEvent();
   void OnPause();
@@ -249,6 +252,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   mojo::Binding<device::mojom::VRPresentationProvider> binding_;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
 
+  vr::UiInterface* ui_;
   GlBrowserInterface* browser_;
 
   vr::UiScene* scene_ = nullptr;

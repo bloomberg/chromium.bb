@@ -19,7 +19,8 @@ constexpr int kMaxURLDisplayChars = 1024;
 
 }  // namespace
 
-ToolbarHelper::ToolbarHelper(UiInterface* ui, ToolbarModelDelegate* delegate)
+ToolbarHelper::ToolbarHelper(BrowserUiInterface* ui,
+                             ToolbarModelDelegate* delegate)
     : ui_(ui),
       toolbar_model_(
           base::MakeUnique<ToolbarModelImpl>(delegate, kMaxURLDisplayChars)) {}
