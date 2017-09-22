@@ -64,7 +64,7 @@ class DummyModulator : public Modulator {
   ScriptModuleState GetRecordStatus(ScriptModule) override;
   ScriptValue GetError(const ModuleScript*) override;
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
-  void ExecuteModule(const ModuleScript*) override;
+  ScriptValue ExecuteModule(const ModuleScript*, CaptureEvalErrorFlag) override;
   ModuleScriptFetcher* CreateModuleScriptFetcher() override;
 
   Member<ScriptModuleResolver> resolver_;

@@ -236,7 +236,8 @@ TEST(ScriptModuleTest, instantiateError) {
   module_failure.Instantiate(scope.GetScriptState());
   ASSERT_EQ(ScriptModuleState::kInstantiated,
             module_failure.Status(scope.GetScriptState()));
-  module_failure.Evaluate(scope.GetScriptState());
+  module_failure.Evaluate(scope.GetScriptState(),
+                          CaptureEvalErrorFlag::kReport);
   ASSERT_EQ(ScriptModuleState::kErrored,
             module_failure.Status(scope.GetScriptState()));
   v8::Local<v8::Value> error =
@@ -276,7 +277,7 @@ TEST(ScriptModuleTest, Evaluate) {
   ScriptValue exception = module.Instantiate(scope.GetScriptState());
   ASSERT_TRUE(exception.IsEmpty());
 
-  module.Evaluate(scope.GetScriptState());
+  module.Evaluate(scope.GetScriptState(), CaptureEvalErrorFlag::kReport);
   v8::Local<v8::Value> value = scope.GetFrame()
                                    .GetScriptController()
                                    .ExecuteScriptInMainWorldAndReturnValue(
@@ -294,6 +295,27 @@ TEST(ScriptModuleTest, Evaluate) {
           ->Get(scope.GetContext(), V8String(scope.GetIsolate(), "a"))
           .ToLocalChecked();
   EXPECT_EQ(42.0, exported_value->NumberValue(scope.GetContext()).ToChecked());
+}
+
+TEST(ScriptModuleTest, EvaluateCaptureError) {
+  V8TestingScope scope;
+
+  auto modulator = new ScriptModuleTestModulator();
+  Modulator::SetModulator(scope.GetScriptState(), modulator);
+
+  ScriptModule module = ScriptModule::Compile(
+      scope.GetIsolate(), "throw 'bar';", "foo.js", kSharableCrossOrigin,
+      WebURLRequest::kFetchCredentialsModeOmit, "", kParserInserted,
+      TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+  ASSERT_FALSE(module.IsNull());
+  ScriptValue exception = module.Instantiate(scope.GetScriptState());
+  ASSERT_TRUE(exception.IsEmpty());
+
+  ScriptValue error =
+      module.Evaluate(scope.GetScriptState(), CaptureEvalErrorFlag::kCapture);
+  ASSERT_TRUE(error.V8Value()->IsString());
+  EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(error.V8Value())));
+  EXPECT_EQ(ScriptModuleState::kErrored, module.Status(scope.GetScriptState()));
 }
 
 }  // namespace

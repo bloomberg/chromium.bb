@@ -186,7 +186,9 @@ ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
   return requests;
 }
 
-void ModulatorImplBase::ExecuteModule(const ModuleScript* module_script) {
+ScriptValue ModulatorImplBase::ExecuteModule(
+    const ModuleScript* module_script,
+    CaptureEvalErrorFlag capture_error) {
   // https://html.spec.whatwg.org/#run-a-module-script
 
   // We ensure module-related code is not executed without the flag.
@@ -199,7 +201,7 @@ void ModulatorImplBase::ExecuteModule(const ModuleScript* module_script) {
   // Step 2. "Check if we can run script with settings.
   //          If this returns "do not run" then abort these steps." [spec text]
   if (!GetExecutionContext()->CanExecuteScripts(kAboutToExecuteScript))
-    return;
+    return ScriptValue();
 
   // Step 4. "Prepare to run script given settings." [spec text]
   // This is placed here to also cover ScriptModule::ReportException().
@@ -210,7 +212,7 @@ void ModulatorImplBase::ExecuteModule(const ModuleScript* module_script) {
   if (module_script->IsErrored()) {
     ScriptValue error = GetError(module_script);
     ScriptModule::ReportException(script_state_.Get(), error.V8Value());
-    return;
+    return ScriptValue();
   }
 
   // Step 5. "Let record be s's module record." [spec text]
@@ -218,11 +220,21 @@ void ModulatorImplBase::ExecuteModule(const ModuleScript* module_script) {
   CHECK(!record.IsNull());
 
   // Step 6. "Let evaluationStatus be record.ModuleEvaluation()." [spec text]
-  record.Evaluate(script_state_.Get());
+  ScriptValue eval_error = record.Evaluate(script_state_.Get(), capture_error);
+  // Step 7. "If evaluationStatus is an abrupt completion, then:" [spec text]
+  if (capture_error == CaptureEvalErrorFlag::kCapture) {
+    // Step 7.1. "If rethrow errors is true, rethrow the exception given by
+    // evaluationStatus.[[Value]] for s." [spec text]
+    return eval_error;
+  }
+  DCHECK(eval_error.IsEmpty());
 
-  // Step 7. "If evaluationStatus is an abrupt completion, then report the
-  // exception given by evaluationStatus.[[Value]] for s." [spec text]
-  // TODO(kouhei): Implement this.
+  // Step 7.2. "Otherwise, report the exception given by
+  // evaluationStatus.[[Value]] for script." [spec text]
+  // This is done inside ScriptModule::EvaluateScript if capture_error ==
+  // kReport.
+
+  return ScriptValue();
 
   // Step 8. "Clean up after running script with settings." [spec text]
   // Implemented as the ScriptState::Scope destructor.
