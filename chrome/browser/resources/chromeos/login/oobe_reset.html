@@ -70,6 +70,7 @@
             hidden="[[!tpmFirmwareUpdateAvailable_]]">
           <paper-checkbox id="tpmFirmwareUpdateCheckbox"
               checked="{{tpmFirmwareUpdateChecked_}}"
+              disabled="{{!tpmFirmwareUpdateEditable_}}"
               on-change="onTPMFirmwareUpdateChanged_">
             <div id="tpmFirmwareUpdateContainer">
               <span i18n-content="resetTPMFirmwareUpdate"></span>

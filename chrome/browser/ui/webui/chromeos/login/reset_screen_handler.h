@@ -11,8 +11,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
 
-class PrefRegistrySimple;
-
 namespace chromeos {
 
 // WebUI implementation of ResetScreenActor.
@@ -32,9 +30,6 @@ class ResetScreenHandler : public ResetView,
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
-
-  // Registers Local State preferences.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   ResetScreen* screen_ = nullptr;
