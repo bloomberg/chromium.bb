@@ -22,6 +22,7 @@
 #include "ui/views/widget/widget.h"
 
 @class BridgedContentView;
+@class ModalShowAnimationWithLayer;
 @class ViewsNSWindowDelegate;
 
 namespace ui {
@@ -169,6 +170,10 @@ class VIEWS_EXPORT BridgedNativeWidget
   // Called by NativeWidgetMac when the window size constraints change.
   void OnSizeConstraintsChanged();
 
+  // Called by the window show animation when it completes and wants to destroy
+  // itself.
+  void OnShowAnimationComplete();
+
   // See widget.h for documentation.
   ui::InputMethod* GetInputMethod();
 
@@ -211,6 +216,9 @@ class VIEWS_EXPORT BridgedNativeWidget
   bool target_fullscreen_state() const { return target_fullscreen_state_; }
   bool window_visible() const { return window_visible_; }
   bool wants_to_be_visible() const { return wants_to_be_visible_; }
+
+  bool animate() const { return animate_; }
+  void set_animate(bool animate) { animate_ = animate; }
 
   // Overridden from ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* key) override;
@@ -294,6 +302,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   base::scoped_nsobject<NSWindow> window_;
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
   base::scoped_nsobject<BridgedContentView> bridged_view_;
+  base::scoped_nsobject<ModalShowAnimationWithLayer> show_animation_;
   std::unique_ptr<ui::InputMethod> input_method_;
   std::unique_ptr<CocoaMouseCapture> mouse_capture_;
   std::unique_ptr<CocoaWindowMoveLoop> window_move_loop_;
@@ -329,6 +338,9 @@ class VIEWS_EXPORT BridgedNativeWidget
   // If true, the window is either visible, or wants to be visible but is
   // currently hidden due to having a hidden parent.
   bool wants_to_be_visible_;
+
+  // Whether to animate the window (when it is appropriate to do so).
+  bool animate_ = true;
 
   // If true, the window has been made visible or changed shape and the window
   // shadow needs to be invalidated when a frame is received for the new shape.
