@@ -20,6 +20,7 @@
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
 #include "cc/tiles/tiling_set_eviction_queue.h"
+#include "cc/trees/image_animation_controller.h"
 
 namespace cc {
 
@@ -27,8 +28,10 @@ class AppendQuadsData;
 class MicroBenchmarkImpl;
 class Tile;
 
-class CC_EXPORT PictureLayerImpl : public LayerImpl,
-                                   public PictureLayerTilingClient {
+class CC_EXPORT PictureLayerImpl
+    : public LayerImpl,
+      public PictureLayerTilingClient,
+      public ImageAnimationController::AnimationDriver {
  public:
   static std::unique_ptr<PictureLayerImpl>
   Create(LayerTreeImpl* tree_impl, int id, Layer::LayerMaskType mask_type) {
@@ -62,6 +65,9 @@ class CC_EXPORT PictureLayerImpl : public LayerImpl,
   bool HasValidTilePriorities() const override;
   bool RequiresHighResToDraw() const override;
   gfx::Rect GetEnclosingRectInTargetSpace() const override;
+
+  // ImageAnimationController::AnimationDriver overrides.
+  bool ShouldAnimate(PaintImage::Id paint_image_id) const override;
 
   void set_gpu_raster_max_texture_size(gfx::Size gpu_raster_max_texture_size) {
     gpu_raster_max_texture_size_ = gpu_raster_max_texture_size;
@@ -107,6 +113,8 @@ class CC_EXPORT PictureLayerImpl : public LayerImpl,
 
   bool RasterSourceUsesLCDTextForTesting() const { return can_use_lcd_text_; }
 
+  const Region& InvalidationForTesting() const { return invalidation_; }
+
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl,
                    int id,
@@ -135,6 +143,9 @@ class CC_EXPORT PictureLayerImpl : public LayerImpl,
   void UpdateIdealScales();
   float MaximumTilingContentsScale() const;
   std::unique_ptr<PictureLayerTilingSet> CreatePictureLayerTilingSet();
+
+  void RegisterAnimatedImages();
+  void UnregisterAnimatedImages();
 
   PictureLayerImpl* twin_layer_;
 

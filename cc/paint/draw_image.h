@@ -25,11 +25,13 @@ class CC_PAINT_EXPORT DrawImage {
             const SkIRect& src_rect,
             SkFilterQuality filter_quality,
             const SkMatrix& matrix,
+            base::Optional<size_t> frame_index = base::nullopt,
             const base::Optional<gfx::ColorSpace>& color_space = base::nullopt);
   // Constructs a DrawImage from |other| by adjusting its scale and setting a
   // new color_space.
   DrawImage(const DrawImage& other,
             float scale_adjustment,
+            size_t frame_index,
             const gfx::ColorSpace& color_space);
   DrawImage(const DrawImage& other);
   DrawImage(DrawImage&& other);
@@ -50,7 +52,11 @@ class CC_PAINT_EXPORT DrawImage {
     return *target_color_space_;
   }
   PaintImage::FrameKey frame_key() const {
-    return paint_image_.GetKeyForFrame(paint_image_.frame_index());
+    return paint_image_.GetKeyForFrame(frame_index());
+  }
+  size_t frame_index() const {
+    DCHECK(frame_index_.has_value());
+    return frame_index_.value();
   }
 
  private:
@@ -59,6 +65,7 @@ class CC_PAINT_EXPORT DrawImage {
   SkFilterQuality filter_quality_;
   SkSize scale_;
   bool matrix_is_decomposable_;
+  base::Optional<size_t> frame_index_;
   base::Optional<gfx::ColorSpace> target_color_space_;
 };
 

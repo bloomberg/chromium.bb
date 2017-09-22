@@ -228,7 +228,8 @@ int kDefaultTimeoutSeconds = 10;
 DrawImage CreateDiscardableDrawImage(gfx::Size size) {
   return DrawImage(CreateDiscardablePaintImage(size),
                    SkIRect::MakeWH(size.width(), size.height()),
-                   kNone_SkFilterQuality, SkMatrix::I(), gfx::ColorSpace());
+                   kNone_SkFilterQuality, SkMatrix::I(),
+                   PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
 }
 
 class ImageControllerTest : public testing::Test {
@@ -317,12 +318,13 @@ TEST_F(ImageControllerTest, QueueImageDecodeNonLazy) {
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(1, 1);
-  DrawImage image = DrawImage(PaintImageBuilder()
-                                  .set_id(PaintImage::GetNextId())
-                                  .set_image(SkImage::MakeFromBitmap(bitmap))
-                                  .TakePaintImage(),
-                              SkIRect::MakeWH(1, 1), kNone_SkFilterQuality,
-                              SkMatrix::I(), gfx::ColorSpace());
+  DrawImage image =
+      DrawImage(PaintImageBuilder()
+                    .set_id(PaintImage::GetNextId())
+                    .set_image(SkImage::MakeFromBitmap(bitmap))
+                    .TakePaintImage(),
+                SkIRect::MakeWH(1, 1), kNone_SkFilterQuality, SkMatrix::I(),
+                PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
 
   ImageController::ImageDecodeRequestId expected_id =
       controller()->QueueImageDecode(
