@@ -520,3 +520,17 @@ def ConstructViceroySuiteDetailsURL(job_id=None, build_id=None):
     return _LINK + 'job_id=%d' % int(job_id)
   else:
     return _LINK + 'build_id=%d' % int(build_id)
+
+
+def ConstructGoldenEyeBuildDetailsURL(build_id):
+  """Return the dashboard (goldeneye) URL for this run.
+
+  Args:
+    build_id: CIDB id for the build.
+
+  Returns:
+    The fully formed URL.
+  """
+  _LINK = ('http://go/goldeneye/'
+           'chromeos/healthmonitoring/buildDetails?id=%(build_id)s')
+  return _LINK % {'build_id': build_id}

@@ -250,10 +250,25 @@ def GenerateBlameLink(old_version, new_version):
   """
   if (CROSLAND_VERSION_RE.match(old_version) and
       CROSLAND_VERSION_RE.match(new_version)):
-    return 'https://crosland.corp.google.com/log/%s..%s' % (old_version,
-                                                            new_version)
+    return 'http://go/crosland/log/%s..%s' % (old_version, new_version)
   else:
     return None
+
+
+def GenerateCompareBuildsLink(build_ids, siblings):
+  """Return the URL to compare siblings for this build.
+
+  Args:
+    build_ids: list of CIDB id for the builds.
+    siblings: boolean indicating whether sibling builds should be included.
+
+  Returns:
+    The fully formed URL.
+  """
+  params = ['buildIds=%s' % ','.join([str(b) for b in build_ids])]
+  if siblings:
+    params.append('includeSiblings=true')
+  return 'http://go/buildCompare?%s' % '&'.join(params)
 
 
 def SummarizeHistory(build, db):
@@ -276,21 +291,29 @@ def SummarizeHistory(build, db):
   history = sorted(history, key=lambda s: s['build_number'], reverse=True)
 
   # Count how many times the current status happened consecutively.
-  consecutive = 0
+  ids = []
   for h in history:
     if h['status'] != build['status']:
       break
-    consecutive += 1
+    ids.append(h['id'])
 
   # Determine histogram of last N builds.
   last_n, frequencies = SummarizeStatuses(history[:MAX_LAST_N_BUILDS])
 
   # Generate string.
   notes = []
-  note = 'History of %s: %d %s build(s) in a row' % (
-      build['builder_name'], consecutive, MapCIDBToSOMStatus(build['status']))
+  compare_link = ''
+  if build['status'] != constants.BUILDER_STATUS_PASSED and len(ids) > 1:
+    compare_link = ' \\[[compare](%s)\\]' % GenerateCompareBuildsLink(ids,
+                                                                      False)
+  note = 'History of %s: %d %s build(s) in a row%s' % (
+      build['builder_name'], len(ids),
+      MapCIDBToSOMStatus(build['status']), compare_link)
   if len(frequencies) > 1:
-    note += '; Last %d builds: %s' % (MAX_LAST_N_BUILDS, last_n)
+    ids = [h['id'] for h in history[:MAX_LAST_N_BUILDS]]
+    note += '; Last %d builds: %s \\[[compare](%s)\\]' % (
+        MAX_LAST_N_BUILDS, last_n,
+        GenerateCompareBuildsLink(ids, False))
   notes.append(note)
 
   # Look for transition from most recent passing build.
@@ -302,10 +325,9 @@ def SummarizeHistory(build, db):
         blame_link = GenerateBlameLink(h['platform_version'],
                                        failure['platform_version'])
         if blame_link:
-          note = ('Diff from last passed (%s:%d) to first failure (%s:%d): %s' %
-                  (h['builder_name'], h['build_number'],
-                   failure['builder_name'], failure['build_number'],
-                   blame_link))
+          note = ('[Diff](%s) from last passed (%s:%d) to first failure (%s:%d)'
+                  % (blame_link, h['builder_name'], h['build_number'],
+                     failure['builder_name'], failure['build_number']))
           notes.append(note)
         break
       failure = h
@@ -378,7 +400,9 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
                                                     build['builder_name'],
                                                     build['build_number'])
   links = [
-      som.Link('build details', dashboard_url),
+      som.Link('build_details', dashboard_url),
+      som.Link('goldeneye',
+               tree_status.ConstructGoldenEyeBuildDetailsURL(build['id'])),
       som.Link('viceroy',
                tree_status.ConstructViceroyBuildDetailsURL(build['id'])),
       som.Link('buildbot',
@@ -389,7 +413,9 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
 
   notes = SummarizeHistory(build, db)
   if len(siblings) > 1:
-    notes.append('Siblings: %s' % SummarizeStatuses(siblings)[0])
+    notes.append('Siblings: %s \\[[compare](%s)\\]' %
+                 (SummarizeStatuses(siblings)[0],
+                  GenerateCompareBuildsLink([build['id']], True)))
   notes.extend([
       ('Annotation: %(failure_category)s(%(failure_message)s) '
        '%(blame_url)s %(notes)s') % a for a in annotations
@@ -408,7 +434,6 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
                  build['build_config'])
 
   # TODO: Gather similar failures.
-  # TODO: Report of how many builds failed in a row.
   builders = [som.AlertedBuilder(build['builder_name'], dashboard_url,
                                  ToEpoch(build['finish_time'] or now),
                                  build['build_number'], build['build_number'])]
