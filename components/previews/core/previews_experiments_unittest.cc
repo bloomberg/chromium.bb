@@ -23,6 +23,7 @@ namespace {
 const char kClientSidePreviewsFieldTrial[] = "ClientSidePreviews";
 const char kClientLoFiFieldTrial[] = "PreviewsClientLoFi";
 const char kEnabled[] = "Enabled";
+const char kDisabled[] = "Disabled";
 
 // Verifies that we can enable offline previews via comand line.
 TEST(PreviewsExperimentsTest, TestCommandLineOfflinePage) {
@@ -107,8 +108,8 @@ TEST(PreviewsExperimentsTest, TestClientLoFiDisabledByDefault) {
 TEST(PreviewsExperimentsTest, TestClientLoFiExplicitlyDisabled) {
   base::FieldTrialList field_trial_list(nullptr);
   EXPECT_TRUE(
-      base::FieldTrialList::CreateFieldTrial(kClientLoFiFieldTrial, kEnabled));
-  EXPECT_TRUE(params::IsClientLoFiEnabled());
+      base::FieldTrialList::CreateFieldTrial(kClientLoFiFieldTrial, kDisabled));
+  EXPECT_FALSE(params::IsClientLoFiEnabled());
 }
 
 TEST(PreviewsExperimentsTest, TestClientLoFiEnabled) {
