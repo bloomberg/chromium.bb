@@ -77,6 +77,8 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       title_(new views::Label),
       progress_bar_(new views::ProgressBar),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+  if (features::IsAppListFocusEnabled())
+    SetFocusBehavior(FocusBehavior::ALWAYS);
   if (!is_fullscreen_app_list_enabled_) {
     shadow_animator_.reset(new ImageShadowAnimator(this));
     shadow_animator_->animation()->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
@@ -479,6 +481,14 @@ bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
     SetUIState(UI_STATE_DRAGGING);
   }
   return true;
+}
+
+void AppListItemView::OnFocus() {
+  apps_grid_view_->SetSelectedView(this);
+}
+
+void AppListItemView::OnBlur() {
+  apps_grid_view_->ClearSelectedView(this);
 }
 
 void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {

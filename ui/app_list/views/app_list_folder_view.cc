@@ -8,6 +8,7 @@
 
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/views/app_list_item_view.h"
@@ -50,7 +51,8 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
       view_model_(new views::ViewModel),
       model_(model),
       folder_item_(NULL),
-      hide_for_reparent_(false) {
+      hide_for_reparent_(false),
+      is_app_list_focus_enabled_(features::IsAppListFocusEnabled()) {
   AddChildView(folder_header_view_);
   view_model_->Add(folder_header_view_, kIndexFolderHeader);
 
@@ -128,6 +130,11 @@ void AppListFolderView::Layout() {
 }
 
 bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (is_app_list_focus_enabled_) {
+    // TODO(weidongg/766807) Remove this function when the flag is enabled by
+    // default.
+    return false;
+  }
   // Process TAB if focus should go to header; otherwise, AppsGridView will do
   // the right thing.
   if (event.key_code() == ui::VKEY_TAB) {

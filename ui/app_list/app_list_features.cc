@@ -25,6 +25,8 @@ const base::Feature kEnablePlayStoreAppSearchDefaultOff{
     "EnablePlayStoreAppSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnablePlayStoreAppSearchDefaultOn{
     "EnablePlayStoreAppSearch", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kEnableAppListFocus{"EnableAppListFocus",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -77,6 +79,10 @@ bool IsTouchFriendlySearchResultsPageEnabled() {
 bool IsPlayStoreAppSearchEnabled() {
   // Not using local static variable to allow tests to change this value.
   return base::FeatureList::IsEnabled(GetPlaystoreAppSearchFeature());
+}
+
+bool IsAppListFocusEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAppListFocus);
 }
 
 std::string AnswerServerUrl() {

@@ -78,6 +78,9 @@ class APP_LIST_EXPORT SearchResultPageView
 
   const bool is_fullscreen_app_list_enabled_;
 
+  // Whether the app list focus is enabled.
+  const bool is_app_list_focus_enabled_;
+
   // View containing SearchCardView instances. Owned by view hierarchy.
   views::View* const contents_view_;
 

@@ -625,6 +625,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // True if the fullscreen app list feature is enabled.
   const bool is_fullscreen_app_list_enabled_;
 
+  // Whether the app list focus is enabled.
+  const bool is_app_list_focus_enabled_;
+
   // Delay in milliseconds of when |page_flip_timer_| should fire after user
   // drags an item near the edges.
   int page_flip_delay_in_ms_;

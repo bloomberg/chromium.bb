@@ -143,6 +143,7 @@ class SearchResultPageView::HorizontalSeparator : public views::View {
 SearchResultPageView::SearchResultPageView()
     : selected_index_(0),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
+      is_app_list_focus_enabled_(features::IsAppListFocusEnabled()),
       contents_view_(new views::View) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -213,6 +214,12 @@ void SearchResultPageView::AddSearchResultContainerView(
 }
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (is_app_list_focus_enabled_) {
+    // TODO(weidongg/766810) Add handling of arrow up and down here.
+    return false;
+  }
+  // TODO(weidongg/766807) Remove everything below when the flag is enabled by
+  // default.
   if (HasSelection() &&
       result_container_views_.at(selected_index_)->OnKeyPressed(event)) {
     return true;

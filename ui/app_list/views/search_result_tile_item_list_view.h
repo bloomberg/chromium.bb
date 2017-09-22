@@ -38,6 +38,10 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
+  const std::vector<SearchResultTileItemView*>& tile_views_for_test() const {
+    return tile_views_;
+  }
+
  private:
   // Overridden from SearchResultContainerView:
   int DoUpdate() override;

@@ -74,6 +74,11 @@ void SearchResultListView::UpdateAutoLaunchState() {
 }
 
 bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (features::IsAppListFocusEnabled()) {
+    // TODO(weidongg/766807) Remove this function when the flag is enabled by
+    // default.
+    return false;
+  }
   if (selected_index() >= 0 &&
       results_container_->child_at(selected_index())->OnKeyPressed(event)) {
     return true;

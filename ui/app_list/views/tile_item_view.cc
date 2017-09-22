@@ -63,6 +63,8 @@ TileItemView::TileItemView()
       badge_(nullptr),
       title_(new views::Label),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+  if (features::IsAppListFocusEnabled())
+    SetFocusBehavior(FocusBehavior::ALWAYS);
   // Prevent the icon view from interfering with our mouse events.
   icon_->set_can_process_events_within_subtree(false);
   icon_->SetVerticalAlignment(views::ImageView::LEADING);
@@ -194,6 +196,14 @@ void TileItemView::Layout() {
 
 const char* TileItemView::GetClassName() const {
   return "TileItemView";
+}
+
+void TileItemView::OnFocus() {
+  SetSelected(true);
+}
+
+void TileItemView::OnBlur() {
+  SetSelected(false);
 }
 
 void TileItemView::ImageShadowAnimationProgressed(

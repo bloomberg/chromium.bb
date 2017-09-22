@@ -120,6 +120,9 @@ class AppListFolderView : public views::View,
 
   base::string16 accessible_name_;
 
+  // Whether the app list focus is enabled.
+  const bool is_app_list_focus_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };
 
