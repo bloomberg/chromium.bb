@@ -412,6 +412,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableOverflowIconsForMediaControls(
       base::FeatureList::IsEnabled(media::kOverflowIconsForMediaControls));
 
+  WebRuntimeFeatures::EnableAllowActivationDelegationAttr(
+      base::FeatureList::IsEnabled(features::kAllowActivationDelegationAttr));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   for (const std::string& feature :
