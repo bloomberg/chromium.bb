@@ -26,3 +26,7 @@
 ; https://crbug.com/515280
 (if (param-true? elcap-or-later)
   (allow file-read* (subpath "/System/Library/Extensions")))
+
+; Needed for VideoToolbox usage - https://crbug.com/767037
+(if (param-true? macos-1013)
+  (allow mach-lookup (global-name "com.apple.coremedia.videodecoder")))
