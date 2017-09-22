@@ -9,10 +9,11 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_stop_reason.h"
 
 namespace arc {
+
+class ArcBridgeService;
 
 // Starts the ARC instance and bootstraps the bridge connection.
 // Clients should implement the Delegate to be notified upon communications
@@ -31,7 +32,9 @@ class ArcSession {
 
     // Called when ARC instance is stopped. This is called exactly once
     // per instance which is Start()ed.
-    virtual void OnSessionStopped(ArcStopReason reason) = 0;
+    // |was_running| is true, if the stopped instance was fully set up
+    // and running.
+    virtual void OnSessionStopped(ArcStopReason reason, bool was_running) = 0;
 
    protected:
     virtual ~Observer() = default;
@@ -60,6 +63,14 @@ class ArcSession {
   // login screen.
   // The completion is notified via OnSessionStopped() of the Observer.
   virtual void Stop() = 0;
+
+  // Returns true if this instance is fully set up successfully, and running.
+  // Currently, this means, this is a fully functional instance, and
+  // Mojo connection is already connected successfully.
+  virtual bool IsRunning() = 0;
+
+  // Returns true if Stop() has been called already.
+  virtual bool IsStopRequested() = 0;
 
   // Called when Chrome is in shutdown state. This is called when the message
   // loop is already stopped, and the instance will soon be deleted. Caller

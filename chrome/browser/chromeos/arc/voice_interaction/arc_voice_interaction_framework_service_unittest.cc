@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/arc/test/fake_voice_interaction_framework_instance.h"

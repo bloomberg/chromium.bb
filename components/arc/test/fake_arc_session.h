@@ -23,7 +23,9 @@ class FakeArcSession : public ArcSession {
   void StartForLoginScreen() override;
   bool IsForLoginScreen() override;
   void Start() override;
+  bool IsRunning() override;
   void Stop() override;
+  bool IsStopRequested() override;
   void OnShutdown() override;
 
   // To emulate unexpected stop, such as crash.
@@ -49,6 +51,8 @@ class FakeArcSession : public ArcSession {
 
   bool boot_suspended_ = false;
   bool is_for_login_screen_ = false;
+  bool running_ = false;
+  bool stop_requested_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeArcSession);
 };
