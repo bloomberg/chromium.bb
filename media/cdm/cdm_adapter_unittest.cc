@@ -95,7 +95,7 @@ class CdmAdapterTest : public testing::Test {
          media::kSupportExperimentalCdmInterface},
         {});
 
-    CdmModule::GetInstance()->SetCdmPathForTesting(helper_.LibraryPath());
+    CdmModule::GetInstance()->Initialize(helper_.LibraryPath());
   }
 
   ~CdmAdapterTest() override { CdmModule::ResetInstanceForTesting(); }
@@ -260,7 +260,8 @@ TEST_F(CdmAdapterTest, Initialize) {
 }
 
 TEST_F(CdmAdapterTest, BadLibraryPath) {
-  CdmModule::GetInstance()->SetCdmPathForTesting(
+  CdmModule::ResetInstanceForTesting();
+  CdmModule::GetInstance()->Initialize(
       base::FilePath(FILE_PATH_LITERAL("no_library_here")));
   InitializeAndExpect(FAILURE);
 }

@@ -45,6 +45,7 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
   void Create(mojom::MediaServiceRequest request);
 
   // mojom::MediaService implementation.
+  void LoadCdm(const base::FilePath& cdm_path) final;
   void CreateInterfaceFactory(
       mojom::InterfaceFactoryRequest request,
       service_manager::mojom::InterfaceProviderPtr host_interfaces) final;
@@ -61,6 +62,10 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
 
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::MediaService> bindings_;
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  bool is_cdm_loaded_ = false;
+#endif
 };
 
 }  // namespace media

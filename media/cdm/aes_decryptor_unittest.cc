@@ -279,7 +279,7 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
           {});
 
       helper_.reset(new ExternalClearKeyTestHelper());
-      CdmModule::GetInstance()->SetCdmPathForTesting(helper_->LibraryPath());
+      CdmModule::GetInstance()->Initialize(helper_->LibraryPath());
 
       std::unique_ptr<CdmAllocator> allocator(new SimpleCdmAllocator());
       std::unique_ptr<CdmAuxiliaryHelper> cdm_helper(

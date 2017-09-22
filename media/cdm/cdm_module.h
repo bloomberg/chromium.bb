@@ -28,21 +28,18 @@ class MEDIA_EXPORT CdmModule {
                                   GetCdmHostFunc get_cdm_host_func,
                                   void* user_data);
 
-  CreateCdmFunc GetCreateCdmFunc(const std::string& key_system);
+  CreateCdmFunc GetCreateCdmFunc();
 
-  void SetCdmPathForTesting(const base::FilePath& cdm_path) {
-    cdm_path_ = cdm_path;
-  }
+  // Loads the CDM, initialize function pointers and initialize the CDM module.
+  // This must only be called once.
+  void Initialize(const base::FilePath& cdm_path);
+
+  base::FilePath GetCdmPath() const;
 
  private:
   using DeinitializeCdmModuleFunc = void (*)();
 
   CdmModule();
-
-  // Loads the CDM, initialize function pointers and initialize the CDM module.
-  // This should only be called once.
-  // TODO(xhwang): Replace the |key_system| with the path to the CDM.
-  void Initialize(const std::string& key_system);
 
   bool is_initialize_called_ = false;
   base::FilePath cdm_path_;
