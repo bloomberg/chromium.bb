@@ -21,6 +21,13 @@ SuggestionMarkerProperties SuggestionMarkerProperties::Builder::Build() const {
 }
 
 SuggestionMarkerProperties::Builder&
+SuggestionMarkerProperties::Builder::SetType(
+    SuggestionMarker::SuggestionType type) {
+  data_.type_ = type;
+  return *this;
+}
+
+SuggestionMarkerProperties::Builder&
 SuggestionMarkerProperties::Builder::SetSuggestions(
     const Vector<String>& suggestions) {
   data_.suggestions_ = suggestions;

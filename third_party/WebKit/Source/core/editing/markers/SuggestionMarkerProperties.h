@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/markers/StyleableMarker.h"
+#include "core/editing/markers/SuggestionMarker.h"
 
 namespace blink {
 
@@ -21,6 +22,7 @@ class CORE_EXPORT SuggestionMarkerProperties final {
   SuggestionMarkerProperties(const SuggestionMarkerProperties&);
   SuggestionMarkerProperties();
 
+  SuggestionMarker::SuggestionType Type() const { return type_; }
   Vector<String> Suggestions() const { return suggestions_; }
   Color HighlightColor() const { return highlight_color_; }
   Color UnderlineColor() const { return underline_color_; }
@@ -28,6 +30,8 @@ class CORE_EXPORT SuggestionMarkerProperties final {
   StyleableMarker::Thickness Thickness() const { return thickness_; }
 
  private:
+  SuggestionMarker::SuggestionType type_ =
+      SuggestionMarker::SuggestionType::kNotMisspelling;
   Vector<String> suggestions_;
   Color highlight_color_ = Color::kTransparent;
   Color underline_color_ = Color::kTransparent;
@@ -45,6 +49,7 @@ class CORE_EXPORT SuggestionMarkerProperties::Builder final {
 
   SuggestionMarkerProperties Build() const;
 
+  Builder& SetType(SuggestionMarker::SuggestionType);
   Builder& SetSuggestions(const Vector<String>& suggestions);
   Builder& SetHighlightColor(Color);
   Builder& SetUnderlineColor(Color);

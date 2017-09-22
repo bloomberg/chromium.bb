@@ -25,28 +25,32 @@ TEST_F(SuggestionMarkerTest, IsStyleableMarker) {
 
 TEST_F(SuggestionMarkerTest, ConstructorAndGetters) {
   Vector<String> suggestions = {"this", "that"};
-  SuggestionMarker* marker =
-      new SuggestionMarker(0, 1,
-                           SuggestionMarkerProperties::Builder()
-                               .SetSuggestions(suggestions)
-                               .SetHighlightColor(Color::kTransparent)
-                               .SetUnderlineColor(Color::kDarkGray)
-                               .SetThickness(StyleableMarker::Thickness::kThin)
-                               .SetBackgroundColor(Color::kGray)
-                               .Build());
+  SuggestionMarker* marker = new SuggestionMarker(
+      0, 1,
+      SuggestionMarkerProperties::Builder()
+          .SetType(SuggestionMarker::SuggestionType::kNotMisspelling)
+          .SetSuggestions(suggestions)
+          .SetHighlightColor(Color::kTransparent)
+          .SetUnderlineColor(Color::kDarkGray)
+          .SetThickness(StyleableMarker::Thickness::kThin)
+          .SetBackgroundColor(Color::kGray)
+          .Build());
   EXPECT_EQ(suggestions, marker->Suggestions());
+  EXPECT_FALSE(marker->IsMisspelling());
   EXPECT_EQ(Color::kTransparent, marker->SuggestionHighlightColor());
   EXPECT_EQ(Color::kDarkGray, marker->UnderlineColor());
   EXPECT_FALSE(marker->IsThick());
   EXPECT_EQ(Color::kGray, marker->BackgroundColor());
 
-  SuggestionMarker* marker2 =
-      new SuggestionMarker(0, 1,
-                           SuggestionMarkerProperties::Builder()
-                               .SetHighlightColor(Color::kBlack)
-                               .SetThickness(StyleableMarker::Thickness::kThick)
-                               .Build());
+  SuggestionMarker* marker2 = new SuggestionMarker(
+      0, 1,
+      SuggestionMarkerProperties::Builder()
+          .SetType(SuggestionMarker::SuggestionType::kMisspelling)
+          .SetHighlightColor(Color::kBlack)
+          .SetThickness(StyleableMarker::Thickness::kThick)
+          .Build());
   EXPECT_TRUE(marker2->IsThick());
+  EXPECT_TRUE(marker2->IsMisspelling());
   EXPECT_EQ(marker2->SuggestionHighlightColor(), Color::kBlack);
 }
 
