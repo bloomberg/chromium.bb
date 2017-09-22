@@ -40,6 +40,9 @@ void TransferConsumer(
 template <class Key, class T, class Value>
 bool RemoveValueFromMap(std::map<Key, T>* map, const Value& value) {
   bool removed = false;
+  // This is a bandaid fix for crbug/732232 that requires further investigation.
+  if (!map || map->empty())
+    return removed;
   for (auto i = map->begin(); i != map->end();) {
     if (i->second == value) {
       map->erase(i++);
