@@ -70,6 +70,7 @@ SPECIAL_TESTS = {
     'cli/cros/cros_debug_unittest': INSIDE,
     'cli/cros/cros_payload_unittest': INSIDE,
     'cli/cros/lint_unittest': INSIDE,
+    'cli/cros/lint_autotest_unittest': INSIDE,
     'cli/deploy_unittest': INSIDE,
     'lib/alerts_unittest': INSIDE,
     'lib/androidbuild_unittest': INSIDE,
