@@ -9841,9 +9841,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Hide password
       </message>
 
-      <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE" desc="The title of the auto-signin toast.">
-        Signing in as <ph name="username">$1<ex>chef@google.com</ex></ph>
-      </message>
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_TITLE_MD" desc="The title of the auto-signin toast in Material Design mode.">
         Signing in as
       </message>

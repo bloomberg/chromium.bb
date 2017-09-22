@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AutoSigninSnackbarController_jni.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,4 +32,3 @@ void ShowAutoSigninPrompt(content::WebContents* web_contents,
   Java_AutoSigninSnackbarController_showSnackbar(env, tab->GetJavaObject(),
                                                  java_message);
 }
-
