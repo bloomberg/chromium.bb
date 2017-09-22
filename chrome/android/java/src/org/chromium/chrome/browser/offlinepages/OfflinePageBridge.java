@@ -640,6 +640,17 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Queries the model for offline content that's been added since the given timestamp.
+     * @param timestamp Returned content must be newer than |timestamp|, a date represented as the
+     * number of millis since the Java epoch.
+     * @return A string representing the source host of some fresh content, or null if none exists.
+     */
+    public void checkForNewOfflineContent(long freshnessTimeMillis, Callback<String> callback) {
+        // TODO(dewittj): Implement this check on the native side.
+        callback.onResult("www.example.com");
+    }
+
+    /**
      * Allows setting the offline bookmarks feature as enabled or disabled for testing. This is
      * required for tests that don't load the native binary otherwise UnsatisfiedLinkError sadness
      * will occur.

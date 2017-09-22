@@ -42,12 +42,26 @@ public class PrefetchedPagesNotifier {
 
     public static final int NOTIFICATION_ACTION_COUNT = 4;
 
+    private static PrefetchedPagesNotifier sInstance;
+
+    public static PrefetchedPagesNotifier getInstance() {
+        if (sInstance == null) {
+            sInstance = new PrefetchedPagesNotifier();
+        }
+        return sInstance;
+    }
+
+    static void setInstanceForTest(PrefetchedPagesNotifier notifier) {
+        sInstance = notifier;
+    }
+
     /**
      * Opens the Downloads Home when the notification is tapped.
      */
     public static class ClickReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(final Context context, Intent intent) {
+            PrefetchPrefs.setIgnoredNotificationCounter(0);
             recordNotificationActionWhenChromeLoadsNative(NOTIFICATION_ACTION_CLICKED);
 
             // TODO(dewittj): Handle the case where we somehow get this broadcast but the Chrome
@@ -75,10 +89,17 @@ public class PrefetchedPagesNotifier {
     /**
      * Shows the prefetching notification.
      *
+     * This requires the native library to have already been loaded. Depending on the invocation,
+     * this can be called from Java or Native.
+     *
      * @param origin A string representing the origin of a relevant prefetched page.
      */
     @CalledByNative
-    private static void showNotification(String origin) {
+    static void showDebuggingNotification(String origin) {
+        getInstance().showNotification(origin);
+    }
+
+    void showNotification(String origin) {
         Context context = ContextUtils.getApplicationContext();
 
         // TODO(dewittj): Use unique notification IDs, allowing multiple to appear in the
@@ -111,6 +132,10 @@ public class PrefetchedPagesNotifier {
         NotificationManager manager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.notify(NOTIFICATION_TAG, notificationId, builder.build());
+
+        // Increment ignored notification counter.  This will be reset on click.
+        PrefetchPrefs.setIgnoredNotificationCounter(
+                PrefetchPrefs.getIgnoredNotificationCounter() + 1);
 
         // Metrics tracking
         recordNotificationAction(NOTIFICATION_ACTION_SHOWN);
