@@ -595,7 +595,8 @@ IntPoint VisualViewport::ClampDocumentOffsetAtScale(const IntPoint& offset,
 
   IntSize visual_viewport_max =
       FlooredIntSize(FloatSize(ContentsSize()) - scaled_size);
-  IntSize max = view->MaximumScrollOffsetInt() + visual_viewport_max;
+  IntSize max = view->LayoutViewportScrollableArea()->MaximumScrollOffsetInt() +
+                visual_viewport_max;
   IntSize min =
       view->MinimumScrollOffsetInt();  // VisualViewportMin should be (0, 0)
 

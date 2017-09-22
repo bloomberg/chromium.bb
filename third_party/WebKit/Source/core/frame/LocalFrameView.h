@@ -154,7 +154,7 @@ class CORE_EXPORT LocalFrameView final
 
   Scrollbar* CreateScrollbar(ScrollbarOrientation);
 
-  void SetContentsSize(const IntSize&);
+  void SetLayoutOverflowSize(const IntSize&);
 
   void UpdateLayout();
   bool DidFirstLayout() const;
@@ -1165,7 +1165,7 @@ class CORE_EXPORT LocalFrameView final
 
   ScrollOffset pending_scroll_delta_;
   ScrollOffset scroll_offset_;
-  IntSize contents_size_;
+  IntSize layout_overflow_size_;
 
   bool scrollbars_suppressed_;
 

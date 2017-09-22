@@ -927,7 +927,8 @@ TEST_P(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
 
   MainFrameView()->UpdateAllLifecyclePhases();
 
-  ScrollableArea* container_scroller = child_frame->View();
+  ScrollableArea* container_scroller =
+      child_frame->View()->LayoutViewportScrollableArea();
 
   EXPECT_FALSE(container_scroller->HorizontalScrollbar());
   EXPECT_FALSE(container_scroller->VerticalScrollbar());

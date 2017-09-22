@@ -58,7 +58,8 @@ TEST_P(PaintInvalidationTest, RecalcOverflowInvalidatesBackground) {
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  ScrollableArea* scrollable_area = GetDocument().View();
+  ScrollableArea* scrollable_area =
+      GetDocument().View()->LayoutViewportScrollableArea();
   ASSERT_EQ(scrollable_area->MaximumScrollOffset().Height(), 0);
   EXPECT_FALSE(GetDocument().GetLayoutView()->MayNeedPaintInvalidation());
 
