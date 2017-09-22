@@ -22,6 +22,7 @@ AndroidAppsHandler::AndroidAppsHandler(Profile* profile)
 AndroidAppsHandler::~AndroidAppsHandler() {}
 
 void AndroidAppsHandler::RegisterMessages() {
+  // Note: requestAndroidAppsInfo must be called before observers will be added.
   web_ui()->RegisterMessageCallback(
       "requestAndroidAppsInfo",
       base::Bind(&AndroidAppsHandler::HandleRequestAndroidAppsInfo,
@@ -82,11 +83,11 @@ AndroidAppsHandler::BuildAndroidAppsInfo() {
 
 void AndroidAppsHandler::HandleRequestAndroidAppsInfo(
     const base::ListValue* args) {
+  AllowJavascript();
   SendAndroidAppsInfo();
 }
 
 void AndroidAppsHandler::SendAndroidAppsInfo() {
-  AllowJavascript();
   std::unique_ptr<base::DictionaryValue> info = BuildAndroidAppsInfo();
   FireWebUIListener("android-apps-info-update", *info);
 }
