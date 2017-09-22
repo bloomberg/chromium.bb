@@ -7,9 +7,7 @@
 
 #include "components/arc/arc_export.h"
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}  // namespace user_prefs
+class PrefRegistrySimple;
 
 namespace arc {
 namespace prefs {
@@ -35,7 +33,7 @@ ARC_EXPORT extern const char kVoiceInteractionEnabled[];
 ARC_EXPORT extern const char kVoiceInteractionContextEnabled[];
 ARC_EXPORT extern const char kVoiceInteractionPrefSynced[];
 
-void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 }  // namespace prefs
 }  // namespace arc

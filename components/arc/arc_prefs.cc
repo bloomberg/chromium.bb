@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 
 namespace arc {
 namespace prefs {
@@ -70,7 +70,7 @@ const char kVoiceInteractionContextEnabled[] =
 const char kVoiceInteractionPrefSynced[] =
     "settings.voice_interaction.context.synced";
 
-void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // TODO(dspaid): Implement a mechanism to allow this to sync on first boot
   // only.
 

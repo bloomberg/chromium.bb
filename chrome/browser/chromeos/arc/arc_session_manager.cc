@@ -39,6 +39,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_data_remover.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
@@ -409,6 +410,10 @@ void ArcSessionManager::Initialize() {
     support_host_ = base::MakeUnique<ArcSupportHost>(profile_);
     support_host_->SetErrorDelegate(this);
   }
+  data_remover_ = std::make_unique<ArcDataRemover>(
+      profile_->GetPrefs(),
+      cryptohome::Identification(
+          multi_user_util::GetAccountIdFromProfile(profile_)));
 
   context_ = base::MakeUnique<ArcAuthContext>(profile_);
 
@@ -426,6 +431,7 @@ void ArcSessionManager::Shutdown() {
   enable_requested_ = false;
   ResetArcState();
   arc_session_runner_->OnShutdown();
+  data_remover_.reset();
   if (support_host_) {
     support_host_->SetErrorDelegate(nullptr);
     support_host_->Close();
@@ -674,6 +680,7 @@ void ArcSessionManager::RequestDisable() {
 void ArcSessionManager::RequestArcDataRemoval() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
+  DCHECK(data_remover_);
 
   // TODO(hidehiko): DCHECK the previous state. This is called for four cases;
   // 1) Supporting managed user initial disabled case (Please see also
@@ -688,11 +695,7 @@ void ArcSessionManager::RequestArcDataRemoval() {
   // STOPPED, then.
   // TODO(hidehiko): Think a way to get rid of 1), too.
 
-  // Just remember the request in persistent data. The actual removal
-  // is done via MaybeStartArcDataRemoval(). On completion (in
-  // OnArcDataRemoved()), this flag should be reset.
-  profile_->GetPrefs()->SetBoolean(prefs::kArcDataRemoveRequested, true);
-
+  data_remover_->Schedule();
   // To support 1) case above, maybe start data removal.
   if (state_ == State::STOPPED) {
     DCHECK(arc_session_runner_->IsStopped());
@@ -938,58 +941,36 @@ void ArcSessionManager::StopArc() {
 void ArcSessionManager::MaybeStartArcDataRemoval() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
+
   // Data removal cannot run in parallel with ARC session.
   // LoginScreen instance does not use data directory, so removing should work.
   DCHECK(arc_session_runner_->IsStopped() ||
          arc_session_runner_->IsLoginScreenInstanceStarting());
   DCHECK_EQ(state_, State::STOPPED);
 
-  // TODO(hidehiko): Extract the implementation of data removal, so that
-  // shutdown can cancel the operation not to call OnArcDataRemoved callback.
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested)) {
-    // ARC data removal is not requested. Just move to the next state.
-    MaybeReenableArc();
-    return;
-  }
-
-  VLOG(1) << "Starting ARC data removal";
   state_ = State::REMOVING_DATA_DIR;
-
-  // Remove Play user ID for Active Directory managed devices.
-  profile_->GetPrefs()->SetString(prefs::kArcActiveDirectoryPlayUserId,
-                                  std::string());
-
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->RemoveArcData(
-      cryptohome::Identification(
-          multi_user_util::GetAccountIdFromProfile(profile_)),
-      base::Bind(&ArcSessionManager::OnArcDataRemoved,
-                 weak_ptr_factory_.GetWeakPtr()));
+  data_remover_->Run(base::BindOnce(&ArcSessionManager::OnArcDataRemoved,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcSessionManager::OnArcDataRemoved(bool success) {
+void ArcSessionManager::OnArcDataRemoved(base::Optional<bool> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // TODO(khmel): Browser tests may shutdown profile by itself. Update browser
-  // tests and remove this check.
-  if (state() == State::NOT_INITIALIZED)
-    return;
-
   DCHECK_EQ(state_, State::REMOVING_DATA_DIR);
   DCHECK(profile_);
-  DCHECK(profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
   state_ = State::STOPPED;
 
-  if (success) {
-    VLOG(1) << "ARC data removal successful";
-  } else {
-    LOG(ERROR) << "Request for ARC user data removal failed. "
-               << "See session_manager logs for more details.";
-  }
-  profile_->GetPrefs()->SetBoolean(prefs::kArcDataRemoveRequested, false);
+  if (result.has_value()) {
+    // Remove Play user ID for Active Directory managed devices.
+    profile_->GetPrefs()->SetString(prefs::kArcActiveDirectoryPlayUserId,
+                                    std::string());
 
-  // Regardless of whether it is successfully done or not, notify observers.
-  for (auto& observer : observer_list_)
-    observer.OnArcDataRemoved();
+    // Regardless of whether it is successfully done or not, notify observers.
+    for (auto& observer : observer_list_)
+      observer.OnArcDataRemoved();
+
+    // Note: Currently, we may re-enable ARC even if data removal fails.
+    // We may have to avoid it.
+  }
 
   MaybeReenableArc();
 }
