@@ -318,8 +318,7 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // Don't sync the note-taking app; it may not be installed on other devices.
   registry->RegisterStringPref(prefs::kNoteTakingAppId, std::string());
-  registry->RegisterBooleanPref(prefs::kNoteTakingAppEnabledOnLockScreen,
-                                false);
+  registry->RegisterBooleanPref(prefs::kNoteTakingAppEnabledOnLockScreen, true);
   registry->RegisterListPref(prefs::kNoteTakingAppsLockScreenWhitelist);
   registry->RegisterBooleanPref(prefs::kRestoreLastLockScreenNote, true);
 
