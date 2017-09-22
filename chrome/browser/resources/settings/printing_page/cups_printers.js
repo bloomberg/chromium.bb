@@ -95,19 +95,53 @@ Polymer({
   },
 
   /**
-   * @param {boolean} success
+   * @param {PrinterSetupResult} result_code
    * @param {string} printerName
    * @private
    */
-  onAddPrinter_: function(success, printerName) {
-    if (success) {
+  onAddPrinter_: function(result_code, printerName) {
+    if (result_code == PrinterSetupResult.SUCCESS) {
       this.updateCupsPrintersList_();
       var message = this.$.addPrinterDoneMessage;
       message.textContent =
           loadTimeData.getStringF('printerAddedSuccessfulMessage', printerName);
     } else {
       var message = this.$.addPrinterErrorMessage;
+      var messageText = this.$.addPrinterFailedMessage;
+      switch (result_code) {
+        case PrinterSetupResult.FATAL_ERROR:
+          messageText.textContent =
+              loadTimeData.getString('printerAddedFatalErrorMessage');
+          break;
+        case PrinterSetupResult.PRINTER_UNREACHABLE:
+          messageText.textContent =
+              loadTimeData.getString('printerAddedPrinterUnreachableMessage');
+          break;
+        case PrinterSetupResult.DBUS_ERROR:
+          // Simply display a generic error message as this error should only
+          // occur when a call to Dbus fails which isn't meaningful to the user.
+          messageText.textContent =
+              loadTimeData.getString('printerAddedFailedmMessage');
+          break;
+        case PrinterSetupResult.PPD_TOO_LARGE:
+          messageText.textContent =
+              loadTimeData.getString('printerAddedPpdTooLargeMessage');
+          break;
+        case PrinterSetupResult.INVALID_PPD:
+          messageText.textContent =
+              loadTimeData.getString('printerAddedInvalidPpdMessage');
+          break;
+        case PrinterSetupResult.PPD_NOT_FOUND:
+          messageText.textContent =
+              loadTimeData.getString('printerAddedPpdNotFoundMessage');
+          break;
+        case PrinterSetupResult.PPD_UNRETRIEVABLE:
+          messageText.textContent =
+              loadTimeData.getString('printerAddedPpdUnretrievableMessage');
+          break;
+      }
     }
+
     message.hidden = false;
     window.setTimeout(function() {
       message.hidden = true;

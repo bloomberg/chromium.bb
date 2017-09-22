@@ -524,7 +524,7 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
     GURL tmp = net::FilePathToFileURL(base::FilePath(printer_ppd_path));
     if (!tmp.is_valid()) {
       LOG(ERROR) << "Invalid ppd path: " << printer_ppd_path;
-      OnAddPrinterError();
+      OnAddPrinterError(PrinterSetupResult::kInvalidPpd);
       return;
     }
     printer.mutable_ppd_reference()->user_supplied_ppd_url = tmp.spec();
@@ -542,7 +542,7 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
     }
     if (!found) {
       LOG(ERROR) << "Failed to get ppd reference";
-      OnAddPrinterError();
+      OnAddPrinterError(PrinterSetupResult::kPpdNotFound);
       return;
     }
 
@@ -566,7 +566,7 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
                           weak_factory_.GetWeakPtr(), printer));
 }
 
-bool CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
+void CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
                                                PrinterSetupResult result_code) {
   UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterSetupResult", result_code,
                             PrinterSetupResult::kMaxValue);
@@ -576,7 +576,7 @@ bool CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
                                 printer.GetProtocol(), Printer::kProtocolMax);
       printers_manager_->PrinterInstalled(printer);
       printers_manager_->UpdateConfiguredPrinter(printer);
-      return true;
+      return;
     case PrinterSetupResult::kPpdNotFound:
       LOG(WARNING) << "Could not locate requested PPD";
       break;
@@ -603,14 +603,14 @@ bool CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
   // Log an event that tells us this printer setup failed, so we can get
   // statistics about which printers are giving users difficulty.
   printers_manager_->RecordSetupAbandoned(printer);
-  return false;
 }
 
 void CupsPrintersHandler::OnAddedDiscoveredPrinter(
     const Printer& printer,
     PrinterSetupResult result_code) {
-  if (OnAddedPrinterCommon(printer, result_code)) {
-    FireWebUIListener("on-add-cups-printer", base::Value(true),
+  OnAddedPrinterCommon(printer, result_code);
+  if (result_code == PrinterSetupResult::kSuccess) {
+    FireWebUIListener("on-add-cups-printer", base::Value(result_code),
                       base::Value(printer.display_name()));
   } else {
     FireWebUIListener("on-manually-add-discovered-printer",
@@ -622,13 +622,14 @@ void CupsPrintersHandler::OnAddedDiscoveredPrinter(
 void CupsPrintersHandler::OnAddedSpecifiedPrinter(
     const Printer& printer,
     PrinterSetupResult result_code) {
-  FireWebUIListener("on-add-cups-printer",
-                    base::Value(OnAddedPrinterCommon(printer, result_code)),
+  OnAddedPrinterCommon(printer, result_code);
+  FireWebUIListener("on-add-cups-printer", base::Value(result_code),
                     base::Value(printer.display_name()));
 }
 
-void CupsPrintersHandler::OnAddPrinterError() {
-  FireWebUIListener("on-add-cups-printer", base::Value(false), base::Value(""));
+void CupsPrintersHandler::OnAddPrinterError(PrinterSetupResult result_code) {
+  FireWebUIListener("on-add-cups-printer", base::Value(result_code),
+                    base::Value(""));
 }
 
 void CupsPrintersHandler::HandleGetCupsPrinterManufacturers(
