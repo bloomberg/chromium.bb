@@ -90,12 +90,16 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
       mojom::MediaStatusObserverPtr observer,
       CreateMediaRouteControllerCallback callback) override;
 
-  // Sets the MediaRouteProvider to forward calls to.
+  // Sets the MediaRouteProvider to forward calls to. Notifies
+  // |request_manager_| that Mojo connections are ready.
   void RegisterMediaRouteProvider(
       mojom::MediaRouteProviderPtr media_route_provider);
 
   // Called when a Mojo connection to the component extension is invalidated.
   void OnMojoConnectionError();
+
+  // Sets the extension ID used by |request_manager_|.
+  void SetExtensionId(const std::string& extension_id);
 
  private:
   // These methods call the corresponding |media_route_provider_| methods.

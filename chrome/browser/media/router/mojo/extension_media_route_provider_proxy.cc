@@ -225,11 +225,17 @@ void ExtensionMediaRouteProviderProxy::RegisterMediaRouteProvider(
   media_route_provider_.set_connection_error_handler(
       base::BindOnce(&ExtensionMediaRouteProviderProxy::OnMojoConnectionError,
                      base::Unretained(this)));
+  request_manager_->OnMojoConnectionsReady();
 }
 
 void ExtensionMediaRouteProviderProxy::OnMojoConnectionError() {
   request_manager_->OnMojoConnectionError();
   media_route_provider_.reset();
+}
+
+void ExtensionMediaRouteProviderProxy::SetExtensionId(
+    const std::string& extension_id) {
+  request_manager_->SetExtensionId(extension_id);
 }
 
 void ExtensionMediaRouteProviderProxy::DoCreateRoute(
