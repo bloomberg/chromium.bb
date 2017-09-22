@@ -792,6 +792,7 @@ def main():
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--bootstrap', action='store_true',
                       help='first build clang with CC, then with itself.')
+  # TODO(phajdan.jr): remove --if-needed after fixing callers. It's no-op.
   parser.add_argument('--if-needed', action='store_true',
                       help="run only if the script thinks clang is needed")
   parser.add_argument('--force-local-build', action='store_true',
@@ -824,12 +825,6 @@ def main():
   if args.lto_lld and not sys.platform.startswith('linux'):
     print '--lto-lld is only effective on Linux. Ignoring the option.'
     args.lto_lld = False
-
-  if args.if_needed:
-    # TODO(thakis): Can probably remove this and --if-needed altogether.
-    if re.search(r'\b(make_clang_dir)=', os.environ.get('GYP_DEFINES', '')):
-      print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
-      return 0
 
   # Get svn if we're going to use it to check the revision or do a local build.
   if (use_head_revision or args.llvm_force_head_revision or
