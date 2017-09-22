@@ -576,10 +576,6 @@ extern const aom_tree_index av1_tx_size_tree[MAX_TX_DEPTH][TREE_SIZE(TX_SIZES)];
 extern const aom_tree_index av1_intra_filter_tree[TREE_SIZE(INTRA_FILTERS)];
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 #if CONFIG_EXT_TX
-extern const aom_tree_index av1_ext_tx_inter_tree[EXT_TX_SETS_INTER]
-                                                 [TREE_SIZE(TX_TYPES)];
-extern const aom_tree_index av1_ext_tx_intra_tree[EXT_TX_SETS_INTRA]
-                                                 [TREE_SIZE(TX_TYPES)];
 extern const aom_tree_index av1_ext_tx_tree[EXT_TX_SET_TYPES]
                                            [TREE_SIZE(TX_TYPES)];
 #else
