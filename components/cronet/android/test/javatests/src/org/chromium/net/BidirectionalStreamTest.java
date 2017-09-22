@@ -14,6 +14,7 @@ import static org.junit.Assert.fail;
 import static org.chromium.base.CollectionUtil.newHashSet;
 import static org.chromium.net.CronetTestRule.SERVER_CERT_PEM;
 import static org.chromium.net.CronetTestRule.SERVER_KEY_PKCS8_PEM;
+import static org.chromium.net.CronetTestRule.assertContains;
 import static org.chromium.net.CronetTestRule.getContext;
 
 import android.os.ConditionVariable;
@@ -222,7 +223,7 @@ public class BidirectionalStreamTest {
         stream.start();
         callback.blockForDone();
         assertTrue(stream.isDone());
-        mTestRule.assertContains("Exception in BidirectionalStream: net::ERR_DISALLOWED_URL_SCHEME",
+        assertContains("Exception in BidirectionalStream: net::ERR_DISALLOWED_URL_SCHEME",
                 callback.mError.getMessage());
         assertEquals(-301, ((NetworkException) callback.mError).getCronetInternalErrorCode());
     }
