@@ -32,6 +32,11 @@ Polymer({
     tpmFirmwareUpdateChecked_: Boolean,
 
     /**
+     * If the checkbox to request a TPM firmware update is editable.
+     */
+    tpmFirmwareUpdateEditable_: Boolean,
+
+    /**
      * Reference to OOBE screen object.
      * @type {!OobeTypes.Screen}
      */

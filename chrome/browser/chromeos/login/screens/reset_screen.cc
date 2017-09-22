@@ -47,6 +47,8 @@ constexpr const char kContextKeyIsTPMFirmwareUpdateAvailable[] =
     "tpm-firmware-update-available";
 constexpr const char kContextKeyIsTPMFirmwareUpdateChecked[] =
     "tpm-firmware-update-checked";
+constexpr const char kContextKeyIsTPMFirmwareUpdateEditable[] =
+    "tpm-firmware-update-editable";
 constexpr const char kContextKeyIsConfirmational[] = "is-confirmational-view";
 constexpr const char kContextKeyIsOfficialBuild[] = "is-official-build";
 constexpr const char kContextKeyScreenState[] = "screen-state";
@@ -69,6 +71,7 @@ ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
   context_.SetBoolean(kContextKeyIsRollbackChecked, false);
   context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable, false);
   context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateChecked, false);
+  context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateEditable, true);
   context_.SetBoolean(kContextKeyIsConfirmational, false);
   context_.SetBoolean(kContextKeyIsOfficialBuild, false);
 #if defined(OFFICIAL_BUILD)
@@ -80,6 +83,13 @@ ResetScreen::~ResetScreen() {
   if (view_)
     view_->Unbind();
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
+}
+
+// static
+void ResetScreen::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
+  registry->RegisterBooleanPref(prefs::kFactoryResetTPMFirmwareUpdateRequested,
+                                false);
 }
 
 void ResetScreen::Show() {
@@ -128,7 +138,17 @@ void ResetScreen::Show() {
   }
 
   PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kFactoryResetRequested, false);
+  bool tpm_firmware_update_requested =
+      prefs->GetBoolean(prefs::kFactoryResetTPMFirmwareUpdateRequested);
+  context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateChecked,
+                            tpm_firmware_update_requested);
+  context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateEditable,
+                            !tpm_firmware_update_requested);
+
+  // Clear prefs so the reset screen isn't triggered again the next time the
+  // device is about to show the login screen.
+  prefs->ClearPref(prefs::kFactoryResetRequested);
+  prefs->ClearPref(prefs::kFactoryResetTPMFirmwareUpdateRequested);
   prefs->CommitPendingWrite();
 }
 
@@ -206,6 +226,7 @@ void ResetScreen::OnPowerwash() {
 void ResetScreen::OnRestart() {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+  prefs->ClearPref(prefs::kFactoryResetTPMFirmwareUpdateRequested);
   prefs->CommitPendingWrite();
 
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
