@@ -3354,6 +3354,7 @@ test("unit_tests") {
     "../browser/subresource_filter/subresource_filter_unittest.cc",
     "../browser/subresource_filter/test_ruleset_publisher.cc",
     "../browser/subresource_filter/test_ruleset_publisher.h",
+    "../browser/sync/chrome_sync_client_unittest.cc",
     "../browser/sync/profile_sync_service_factory_unittest.cc",
     "../browser/sync/sessions/sync_sessions_web_contents_router_unittest.cc",
     "../browser/sync/sync_startup_tracker_unittest.cc",
