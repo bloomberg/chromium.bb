@@ -448,29 +448,6 @@ TEST_F('CrSettingsPeoplePageSyncPageTest', 'All', function() {
 });
 
 /**
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsRtlTest() {}
-
-CrSettingsRtlTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings/settings_ui/settings_ui.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'rtl_tests.js',
-  ]),
-};
-
-TEST_F('CrSettingsRtlTest', 'All', function() {
-  settingsHidePagesByDefaultForTest = true;
-  mocha.run();
-});
-
-/**
  * Test fixture for chrome/browser/resources/settings/reset_page/.
  * @constructor
  * @extends {CrSettingsBrowserTest}
