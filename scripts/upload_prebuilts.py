@@ -26,7 +26,6 @@ import functools
 import glob
 import multiprocessing
 import os
-import sys
 import tempfile
 
 from chromite.lib import constants
@@ -424,14 +423,10 @@ class PrebuiltUploader(object):
   def _ShouldFilterPackage(self, pkg):
     if not self._packages:
       return False
-    pym_path = os.path.abspath(os.path.join(self._build_path, _PYM_PATH))
-    sys.path.insert(0, pym_path)
-    # pylint: disable=F0401
-    import portage.versions
-    cat, pkgname = portage.versions.catpkgsplit(pkg['CPV'])[0:2]
-    cp = '%s/%s' % (cat, pkgname)
+    cpv = portage_util.SplitCPV(pkg['CPV'])
+    cp = '%s/%s' % (cpv.category, cpv.package)
     self._found_packages.add(cp)
-    return pkgname not in self._packages and cp not in self._packages
+    return cpv.package not in self._packages and cp not in self._packages
 
   def _UploadPrebuilt(self, package_path, url_suffix):
     """Upload host or board prebuilt files to Google Storage space.
