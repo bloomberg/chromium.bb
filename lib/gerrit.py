@@ -113,14 +113,21 @@ class GerritHelper(object):
       else:
         gob_util.RemoveReviewers(self.host, change, remove)
 
-  def GetChangeDetail(self, change_num):
+  def GetChangeDetail(self, change_num, verbose=False):
     """Return detailed information about a gerrit change.
 
     Args:
       change_num: A gerrit change number.
+      verbose: (optional) Whether to print more properties of the change
     """
+    if verbose:
+      o_params = ('ALL_REVISIONS', 'ALL_FILES', 'ALL_COMMITS',
+                  'DETAILED_LABELS', 'MESSAGES', 'DOWNLOAD_COMMANDS', 'CHECK')
+    else:
+      o_params = ('CURRENT_REVISION', 'CURRENT_COMMIT')
+
     return gob_util.GetChangeDetail(
-        self.host, change_num, o_params=('CURRENT_REVISION', 'CURRENT_COMMIT'))
+        self.host, change_num, o_params=o_params)
 
   def GrabPatchFromGerrit(self, project, change, commit, must_match=True):
     """Return a cros_patch.GerritPatch representing a gerrit change.
@@ -192,7 +199,8 @@ class GerritHelper(object):
     return results[0]
 
   def Query(self, change=None, sort=None, current_patch=True, options=(),
-            dryrun=False, raw=False, start=None, bypass_cache=True, **kwargs):
+            dryrun=False, raw=False, start=None, bypass_cache=True,
+            verbose=False, **kwargs):
     """Free-form query for gerrit changes.
 
     Args:
@@ -208,6 +216,7 @@ class GerritHelper(object):
           results.  Otherwise, return a list of cros_patch.GerritPatch.
       start: Offset in the result set to start at.
       bypass_cache: Query each change to make sure data is up to date.
+      verbose: Whether to get all revisions and details about a change.
       kwargs: A dict of query parameters, as described here:
         https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
 
@@ -230,7 +239,7 @@ class GerritHelper(object):
         logging.info('Would have run gob_util.GetChangeDetail(%s, %s)',
                      self.host, change)
         return []
-      change = self.GetChangeDetail(change)
+      change = self.GetChangeDetail(change, verbose=verbose)
       if change is None:
         return []
       patch_dict = cros_patch.GerritPatch.ConvertQueryResults(change, self.host)
@@ -282,7 +291,8 @@ class GerritHelper(object):
     # result directly, circumventing the cache.  For reference:
     #   https://code.google.com/p/chromium/issues/detail?id=302072
     if bypass_cache:
-      result = self.GetMultipleChangeDetail([x['_number'] for x in result])
+      result = self.GetMultipleChangeDetail(
+          [x['_number'] for x in result], verbose=verbose)
 
     result = [cros_patch.GerritPatch.ConvertQueryResults(
         x, self.host) for x in result]
@@ -292,18 +302,20 @@ class GerritHelper(object):
       return result
     return [cros_patch.GerritPatch(x, self.remote, url_prefix) for x in result]
 
-  def GetMultipleChangeDetail(self, changes):
+  def GetMultipleChangeDetail(self, changes, verbose=False):
     """Query the gerrit server for multiple changes using GetChangeDetail.
 
     Args:
       changes: A sequence of gerrit change numbers.
+      verbose: (optional) Whether to return more properties of the change
 
     Returns:
       A list of the raw output of GetChangeDetail.
     """
     inputs = [[change] for change in changes]
-    return parallel.RunTasksInProcessPool(self.GetChangeDetail, inputs,
-                                          processes=self._NUM_PROCESSES)
+    return parallel.RunTasksInProcessPool(
+        lambda c: self.GetChangeDetail(c, verbose=verbose),
+        inputs, processes=self._NUM_PROCESSES)
 
   def QueryMultipleCurrentPatchset(self, changes):
     """Query the gerrit server for multiple changes.
