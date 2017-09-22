@@ -71,6 +71,18 @@ Polymer({
 
   sendSimLockEnabled_: false,
 
+  /** @override */
+  detached: function() {
+    if (this.$.enterPinDialog.open)
+      this.$.enterPinDialog.close();
+    if (this.$.changePinDialog.open)
+      this.$.changePinDialog.close();
+    if (this.$.unlockPinDialog.open)
+      this.$.unlockPinDialog.close();
+    if (this.$.unlockPukDialog.open)
+      this.$.unlockPukDialog.close();
+  },
+
   /** @private */
   networkPropertiesChanged_: function() {
     if (!this.networkProperties || !this.networkProperties.Cellular)
@@ -135,6 +147,7 @@ Polymer({
    * @private
    */
   sendEnterPin_: function(event) {
+    event.stopPropagation();
     var guid = (this.networkProperties && this.networkProperties.GUID) || '';
     var pin = this.$.enterPin.value;
     if (!this.validatePin_(pin)) {
@@ -162,9 +175,9 @@ Polymer({
    * @private
    */
   onChangePinTap_: function(event) {
+    event.stopPropagation();
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
-    event.stopPropagation();
     this.error_ = ErrorType.NONE;
     this.$.changePinOld.value = '';
     this.$.changePinNew1.value = '';
@@ -178,6 +191,7 @@ Polymer({
    * @private
    */
   sendChangePin_: function(event) {
+    event.stopPropagation();
     var guid = (this.networkProperties && this.networkProperties.GUID) || '';
     var newPin = this.$.changePinNew1.value;
     if (!this.validatePin_(newPin, this.$.changePinNew2.value))
@@ -219,6 +233,7 @@ Polymer({
    * @private
    */
   sendUnlockPin_: function(event) {
+    event.stopPropagation();
     var guid = (this.networkProperties && this.networkProperties.GUID) || '';
     var pin = this.$.unlockPin.value;
     if (!this.validatePin_(pin))
@@ -257,6 +272,7 @@ Polymer({
    * @private
    */
   sendUnlockPuk_: function(event) {
+    event.stopPropagation();
     var guid = (this.networkProperties && this.networkProperties.GUID) || '';
     var puk = this.$.unlockPuk.value;
     if (!this.validatePuk_(puk))

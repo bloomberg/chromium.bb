@@ -306,4 +306,13 @@ Polymer({
     // Make sure this does not propagate to onDetailsTap_.
     event.stopPropagation();
   },
+
+  /**
+   * Make sure events in embedded components do not propagate to onDetailsTap_.
+   * @param {!Event} event
+   * @private
+   */
+  doNothing_: function(event) {
+    event.stopPropagation();
+  },
 });
