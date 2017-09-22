@@ -197,6 +197,11 @@ ShelfBackgroundType ShelfWidget::GetBackgroundType() const {
   return background_animator_.target_background_type();
 }
 
+int ShelfWidget::GetBackgroundAlphaValue(
+    ShelfBackgroundType background_type) const {
+  return background_animator_.GetBackgroundAlphaValue(background_type);
+}
+
 void ShelfWidget::HideShelfBehindBlackBar(bool hide, int animation_time_ms) {
   if (IsShelfHiddenBehindBlackBar() == hide)
     return;
