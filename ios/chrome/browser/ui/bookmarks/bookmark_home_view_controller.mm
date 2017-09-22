@@ -76,7 +76,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     BookmarkModelBridgeObserver,
     BookmarkPromoControllerDelegate,
     BookmarkTableViewDelegate,
-    ContextBarDelegate>
+    ContextBarDelegate,
+    UIGestureRecognizerDelegate>
 
 // The app bar for the bookmarks.
 @property(nonatomic, strong) MDCAppBar* appBar;
@@ -1040,6 +1041,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)setupNavigationBar {
   self.navigationController.navigationBarHidden = YES;
 
+  self.navigationController.interactivePopGestureRecognizer.delegate = self;
+
   self.appBar = [[MDCAppBar alloc] init];
   [self addChildViewController:_appBar.headerViewController];
   ConfigureAppBarWithCardStyle(self.appBar);
@@ -1497,6 +1500,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   [alert addAction:moveAction];
   [alert addAction:cancelAction];
   return alert;
+}
+
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
+  DCHECK(gestureRecognizer ==
+         self.navigationController.interactivePopGestureRecognizer);
+  return self.navigationController.viewControllers.count > 1;
 }
 
 @end
