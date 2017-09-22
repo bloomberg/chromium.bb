@@ -300,6 +300,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   ctrlAltDelOption.action = ^{
     if ([weakSelf.delegate respondsToSelector:@selector(sendCtrAltDel)]) {
       [weakSelf.delegate sendCtrAltDel];
+      [weakSelf dismissViewControllerAnimated:YES completion:nil];
     }
   };
 
@@ -309,6 +310,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   printScreenOption.action = ^{
     if ([weakSelf.delegate respondsToSelector:@selector(sendPrintScreen)]) {
       [weakSelf.delegate sendPrintScreen];
+      [weakSelf dismissViewControllerAnimated:YES completion:nil];
     }
   };
 
