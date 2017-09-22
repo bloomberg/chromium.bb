@@ -444,7 +444,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 }
 
 - (void)redraw {
-  if (![self updateContainerVisibility])
+  if ([containerView_ isHidden])
     return;  // Container is hidden; no need to update.
 
   std::unique_ptr<ui::NinePartImageIds> highlight;
@@ -622,6 +622,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   [self updateButtonPositions];
   [self updateButtonOpacity];
   [[containerView_ window] invalidateCursorRectsForView:containerView_];
+  [self redraw];
 }
 
 - (void)containerDragStart:(NSNotification*)notification {
