@@ -47,7 +47,10 @@ class VoiceInteractionSelectionObserver
 
   void set_on_selection_done(base::OnceClosure done) {
     on_selection_done_ = std::move(done);
+    delay_timer_.reset();
   }
+
+  bool start_session_pending() const { return delay_timer_.get(); }
 
  private:
   void HandleSelection(const gfx::Rect& rect) override {
@@ -62,6 +65,8 @@ class VoiceInteractionSelectionObserver
     delay_timer_->Reset();
 
     DCHECK(on_selection_done_);
+    // This will disable the metalayer tool, which will result in a synchronous
+    // call to PaletteDelegateChromeOS::HideMetalayer.
     std::move(on_selection_done_).Run();
   }
 
@@ -234,7 +239,23 @@ void PaletteDelegateChromeOS::HideMetalayer() {
       arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile_);
   if (!service)
     return;
-  service->HideMetalayer();
+
+  // ArcVoiceInteractionFrameworkService::HideMetalayer() causes the container
+  // to show a toast-like prompt. This toast is redundant and causes unnecessary
+  // flicker if the full voice interaction UI is about to be displayed soon.
+  // |start_session_pending| is a good signal that the session is about to
+  // start, but it is not guaranteed:
+  // 1) The user might re-enter the metalayer mode before the timer fires.
+  //    In this case the container will keep showing the prompt for the
+  //    metalayer mode.
+  // 2) The session might fail to start due to a peculiar combination of
+  //    failures on the way to the voice interaction UI. This is an open
+  //    problem.
+  // TODO(kaznacheev) Move this logic under ash when fixing crbug/761120.
+
+  DCHECK(highlighter_selection_observer_);
+  if (!highlighter_selection_observer_->start_session_pending())
+    service->HideMetalayer();
 
   ash::Shell::Get()->highlighter_controller()->SetEnabled(false);
 }
