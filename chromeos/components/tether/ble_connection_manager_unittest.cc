@@ -279,7 +279,7 @@ class BleConnectionManagerTest : public testing::Test {
   BleConnectionManagerTest() : test_devices_(CreateTestDevices(4)) {
     // These tests assume a maximum of two concurrent advertisers. Some of the
     // multi-device tests would need to be re-written if this constant changes.
-    EXPECT_EQ(2, kMaxConcurrentAdvertisements);
+    EXPECT_EQ(2u, kMaxConcurrentAdvertisements);
   }
 
   void SetUp() override {

@@ -97,7 +97,7 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestTwoDevices_MoveToEnd) {
 TEST_F(BleAdvertisementDeviceQueueTest, TestThreeDevices) {
   // Note: These tests need to be rewritten if |kMaxConcurrentAdvertisements| is
   // ever changed.
-  ASSERT_GT(3, kMaxConcurrentAdvertisements);
+  ASSERT_GT(3u, kMaxConcurrentAdvertisements);
 
   std::vector<cryptauth::RemoteDevice> devices =
       cryptauth::GenerateTestRemoteDevices(3);
@@ -124,7 +124,7 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestThreeDevices) {
 TEST_F(BleAdvertisementDeviceQueueTest, TestAddingDevices) {
   // Note: These tests need to be rewritten if |kMaxConcurrentAdvertisements| is
   // ever changed.
-  ASSERT_GT(3, kMaxConcurrentAdvertisements);
+  ASSERT_GT(3u, kMaxConcurrentAdvertisements);
 
   std::vector<cryptauth::RemoteDevice> all_devices =
       cryptauth::GenerateTestRemoteDevices(5);
