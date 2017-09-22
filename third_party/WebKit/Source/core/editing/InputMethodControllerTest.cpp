@@ -2319,6 +2319,41 @@ TEST_F(InputMethodControllerTest,
   EXPECT_EQ(25u, GetDocument().Markers().Markers()[2]->EndOffset());
 }
 
+TEST_F(InputMethodControllerTest,
+       CommitNotMisspellingSuggestionMarkerWithSpellCheckingDisabled) {
+  InsertHTMLElement(
+      "<div id='sample' contenteditable spellcheck='false'>text</div>",
+      "sample");
+
+  Vector<ImeTextSpan> ime_text_spans;
+  // Try to commit a non-misspelling suggestion marker.
+  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kSuggestion, 0, 5,
+                                       Color::kTransparent, false,
+                                       Color::kTransparent));
+  Controller().CommitText("hello", ime_text_spans, 1);
+
+  // The marker should have been added.
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+TEST_F(InputMethodControllerTest,
+       CommitMisspellingSuggestionMarkerWithSpellCheckingDisabled) {
+  InsertHTMLElement(
+      "<div id='sample' contenteditable spellcheck='false'>text</div>",
+      "sample");
+
+  Vector<ImeTextSpan> ime_text_spans;
+  // Try to commit a non-misspelling suggestion marker.
+  ime_text_spans.push_back(
+      ImeTextSpan(ImeTextSpan::Type::kMisspellingSuggestion, 0, 5,
+                  Color::kTransparent, false, Color::kTransparent));
+  Controller().CommitText("hello", ime_text_spans, 1);
+
+  // The marker should not have been added since the div has spell checking
+  // disabled.
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+}
+
 // For http://crbug.com/712761
 TEST_F(InputMethodControllerTest, TextInputTypeAtBeforeEditable) {
   GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);

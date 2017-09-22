@@ -41,6 +41,7 @@
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/markers/SuggestionMarkerProperties.h"
+#include "core/editing/spellcheck/SpellChecker.h"
 #include "core/editing/state_machines/BackwardCodePointStateMachine.h"
 #include "core/editing/state_machines/ForwardCodePointStateMachine.h"
 #include "core/events/CompositionEvent.h"
@@ -302,6 +303,12 @@ std::pair<ContainerNode*, PlainTextRange> PlainTextRangeForEphemeralRange(
   return std::make_pair(editable, PlainTextRange::Create(*editable, range));
 }
 
+StyleableMarker::Thickness BoolIsThickToStyleableMarkerThickness(
+    bool is_thick) {
+  return is_thick ? StyleableMarker::Thickness::kThick
+                  : StyleableMarker::Thickness::kThin;
+}
+
 }  // anonymous namespace
 
 InputMethodController* InputMethodController::Create(LocalFrame& frame) {
@@ -502,25 +509,41 @@ void InputMethodController::AddImeTextSpans(
     if (ephemeral_line_range.IsNull())
       continue;
 
-    if (ime_text_span.GetType() == ImeTextSpan::Type::kComposition) {
-      GetDocument().Markers().AddCompositionMarker(
-          ephemeral_line_range, ime_text_span.UnderlineColor(),
-          ime_text_span.Thick() ? StyleableMarker::Thickness::kThick
-                                : StyleableMarker::Thickness::kThin,
-          ime_text_span.BackgroundColor());
-    } else if (ime_text_span.GetType() == ImeTextSpan::Type::kSuggestion) {
-      GetDocument().Markers().AddSuggestionMarker(
-          ephemeral_line_range,
-          SuggestionMarkerProperties::Builder()
-              .SetType(SuggestionMarker::SuggestionType::kNotMisspelling)
-              .SetSuggestions(ime_text_span.Suggestions())
-              .SetHighlightColor(ime_text_span.SuggestionHighlightColor())
-              .SetUnderlineColor(ime_text_span.UnderlineColor())
-              .SetThickness(ime_text_span.Thick()
-                                ? StyleableMarker::Thickness::kThick
-                                : StyleableMarker::Thickness::kThin)
-              .SetBackgroundColor(ime_text_span.BackgroundColor())
-              .Build());
+    switch (ime_text_span.GetType()) {
+      case ImeTextSpan::Type::kComposition:
+        GetDocument().Markers().AddCompositionMarker(
+            ephemeral_line_range, ime_text_span.UnderlineColor(),
+            BoolIsThickToStyleableMarkerThickness(ime_text_span.Thick()),
+            ime_text_span.BackgroundColor());
+        break;
+      case ImeTextSpan::Type::kSuggestion:
+      case ImeTextSpan::Type::kMisspellingSuggestion:
+        const SuggestionMarker::SuggestionType suggestion_type =
+            ime_text_span.GetType() == ImeTextSpan::Type::kMisspellingSuggestion
+                ? SuggestionMarker::SuggestionType::kMisspelling
+                : SuggestionMarker::SuggestionType::kNotMisspelling;
+
+        // If spell-checking is disabled for an element, we ignore suggestion
+        // markers used to mark misspelled words, but allow other ones (e.g.,
+        // markers added by an IME to allow picking between multiple possible
+        // words, none of which is necessarily misspelled).
+        if (suggestion_type == SuggestionMarker::SuggestionType::kMisspelling &&
+            !SpellChecker::IsSpellCheckingEnabledAt(
+                ephemeral_line_range.StartPosition()))
+          continue;
+
+        GetDocument().Markers().AddSuggestionMarker(
+            ephemeral_line_range,
+            SuggestionMarkerProperties::Builder()
+                .SetType(suggestion_type)
+                .SetSuggestions(ime_text_span.Suggestions())
+                .SetHighlightColor(ime_text_span.SuggestionHighlightColor())
+                .SetUnderlineColor(ime_text_span.UnderlineColor())
+                .SetThickness(BoolIsThickToStyleableMarkerThickness(
+                    ime_text_span.Thick()))
+                .SetBackgroundColor(ime_text_span.BackgroundColor())
+                .Build());
+        break;
     }
   }
 }
