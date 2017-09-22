@@ -52,29 +52,10 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
         ['win10', ('intel', 0x1912)], bug=690663)
 
-    # TODO(kbr): re-enable after new baselines gathered. crbug.com/730303
-    # self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
-    #           ['mac', 'linux', 'win', 'android'], bug=735228)
-    # self.Flaky('Pixel_OffscreenCanvasTransferAfterStyleResize',
-    #           ['mac', 'linux', 'win', 'android'], bug=735171)
-    # self.Flaky('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
-    #     ['mac', ('nvidia', 0xfe9), 'debug'], bug=751328)
+    self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
+              ['mac', 'linux', 'win', 'android'], bug=735228)
+    self.Flaky('Pixel_OffscreenCanvasTransferAfterStyleResize',
+              ['mac', 'linux', 'win', 'android'], bug=735171)
 
-    # TODO(kbr): re-enable after new baselines generated.
-    self.Fail('Pixel_2DCanvasWebGL', bug=730303)
-    self.Fail('Pixel_IOSurface2DCanvasWebGL', ['mac'], bug=730303)
-    self.Fail('Pixel_OffscreenCanvasTransferAfterStyleResize', bug=730303)
-    self.Fail('Pixel_OffscreenCanvasTransferBeforeStyleResize', bug=730303)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=730303)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=730303)
-    self.Fail('Pixel_OffscreenCanvasWebglResizeOnWorker', bug=730303)
-    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositing',
-              ['mac', 'linux', 'win'], bug=730303)
-    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
-              ['mac', 'linux', 'win'], bug=730303)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha', bug=730303)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha', bug=730303)
-    self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_AA_Alpha',
-              ['mac'], bug=730303)
-    self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha',
-              ['mac'], bug=730303)
+    self.Flaky('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
+        ['mac', ('nvidia', 0xfe9), 'debug'], bug=751328)
