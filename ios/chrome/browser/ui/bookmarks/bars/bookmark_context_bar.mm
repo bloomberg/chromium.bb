@@ -24,8 +24,8 @@ const CGFloat kHorizontalMargin = 8.0f;
 const CGFloat kToolbarHeight = 48.0f;
 }  // namespace
 
-@interface BookmarkContextBar () {
-}
+@interface BookmarkContextBar ()
+
 // Button at the leading position.
 @property(nonatomic, strong) UIButton* leadingButton;
 // Button at the center position.
@@ -76,7 +76,7 @@ const CGFloat kToolbarHeight = 48.0f;
   [button setTitleColor:disabledColor forState:UIControlStateDisabled];
 }
 
-- (void)initStyleForButton:(UIButton*)button {
+- (void)configureStyleForButton:(UIButton*)button {
   [button setBackgroundColor:[UIColor whiteColor]];
   [button setTitleColor:[[MDCPalette bluePalette] tint500]
                forState:UIControlStateNormal];
@@ -94,7 +94,7 @@ const CGFloat kToolbarHeight = 48.0f;
   if (self) {
     self.accessibilityIdentifier = @"context_bar";
     _leadingButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self initStyleForButton:_leadingButton];
+    [self configureStyleForButton:_leadingButton];
     _leadingButton.contentHorizontalAlignment =
         UseRTLLayout() ? UIControlContentHorizontalAlignmentRight
                        : UIControlContentHorizontalAlignmentLeft;
@@ -104,7 +104,7 @@ const CGFloat kToolbarHeight = 48.0f;
     _leadingButton.accessibilityIdentifier = @"context_bar_leading_button";
 
     _centerButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self initStyleForButton:_centerButton];
+    [self configureStyleForButton:_centerButton];
     _centerButton.contentHorizontalAlignment =
         UIControlContentHorizontalAlignmentCenter;
     [_centerButton addTarget:self
@@ -113,7 +113,7 @@ const CGFloat kToolbarHeight = 48.0f;
     _centerButton.accessibilityIdentifier = @"context_bar_center_button";
 
     _trailingButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self initStyleForButton:_trailingButton];
+    [self configureStyleForButton:_trailingButton];
     _trailingButton.contentHorizontalAlignment =
         UseRTLLayout() ? UIControlContentHorizontalAlignmentLeft
                        : UIControlContentHorizontalAlignmentRight;
@@ -132,20 +132,7 @@ const CGFloat kToolbarHeight = 48.0f;
     [self addSubview:_stackView];
     _stackView.translatesAutoresizingMaskIntoConstraints = NO;
     _stackView.layoutMarginsRelativeArrangement = YES;
-    if (@available(iOS 11.0, *)) {
-      [NSLayoutConstraint activateConstraints:@[
-        [self.safeAreaLayoutGuide.topAnchor
-            constraintEqualToAnchor:_stackView.topAnchor],
-        [self.safeAreaLayoutGuide.leadingAnchor
-            constraintEqualToAnchor:_stackView.leadingAnchor],
-        [self.safeAreaLayoutGuide.trailingAnchor
-            constraintEqualToAnchor:_stackView.trailingAnchor],
-        [self.safeAreaLayoutGuide.bottomAnchor
-            constraintEqualToAnchor:_stackView.bottomAnchor],
-      ]];
-    } else {
-      AddSameConstraints(_stackView, self);
-    }
+    PinToSafeArea(_stackView, self);
     [_stackView.heightAnchor constraintEqualToConstant:kToolbarHeight].active =
         YES;
 
