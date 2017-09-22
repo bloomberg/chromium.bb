@@ -18,8 +18,7 @@
 #include "storage/browser/fileapi/obfuscated_file_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 using storage::FileSystemUsageCache;
 using storage::ObfuscatedFileUtil;
@@ -102,7 +101,7 @@ class QuotaBackendImplTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
     file_util_.reset(ObfuscatedFileUtil::CreateForTesting(
         NULL, data_dir_.GetPath(), in_memory_env_.get(), file_task_runner()));
     backend_.reset(new QuotaBackendImpl(file_task_runner(), file_util_.get(),

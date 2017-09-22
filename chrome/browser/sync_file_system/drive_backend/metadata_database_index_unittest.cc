@@ -16,9 +16,8 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
-#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -70,7 +69,7 @@ std::unique_ptr<DatabaseContents> CreateTestDatabaseContents() {
 class MetadataDatabaseIndexTest : public testing::Test {
  public:
   void SetUp() override {
-    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
     InitializeLevelDB();
 
     contents_ = CreateTestDatabaseContents();

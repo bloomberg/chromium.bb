@@ -28,8 +28,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -106,7 +105,7 @@ class SyncWorkerTest : public testing::Test,
 
   void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
-    in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
+    in_memory_env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
 
     extension_service_.reset(new MockExtensionService);
     std::unique_ptr<drive::DriveServiceInterface> fake_drive_service(

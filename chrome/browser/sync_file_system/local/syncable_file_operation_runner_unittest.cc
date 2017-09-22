@@ -29,8 +29,7 @@
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/test/mock_blob_url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 using storage::FileSystemOperation;
 using storage::FileSystemURL;
@@ -56,7 +55,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   // operations in the tests.
   SyncableFileOperationRunnerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        in_memory_env_(leveldb::NewMemEnv(leveldb::Env::Default())),
+        in_memory_env_(leveldb_chrome::NewMemEnv(leveldb::Env::Default())),
         file_system_(GURL("http://example.com"),
                      in_memory_env_.get(),
                      base::ThreadTaskRunnerHandle::Get().get(),
