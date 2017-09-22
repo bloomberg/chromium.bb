@@ -595,8 +595,13 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
       state = ClientViewError;
       break;
     case SessionClosed:
-      // If the session closes, offer the user to reconnect.
-      state = ClientViewReconnect;
+      // If the session is closed by the host, just go back to the host list and
+      // show a toast.
+      state = ClientViewClosed;
+      [MDCSnackbarManager
+          showMessage:[MDCSnackbarMessage
+                          messageWithText:l10n_util::GetNSString(
+                                              IDS_MESSAGE_SESSION_FINISHED)]];
       break;
     case SessionCancelled:
       state = ClientViewClosed;
