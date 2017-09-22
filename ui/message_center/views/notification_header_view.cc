@@ -18,9 +18,6 @@
 #include "ui/message_center/vector_icons.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
-#include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -63,13 +60,6 @@ constexpr gfx::Insets kExpandIconViewPadding(13, 0, 9, 0);
 
 // Bullet character. The divider symbol between different parts of the header.
 constexpr wchar_t kNotificationHeaderDivider[] = L" \u2022 ";
-
-// Base ink drop color of action buttons.
-const SkColor kInkDropBaseColor = SkColorSetRGB(0x0, 0x0, 0x0);
-// Ripple ink drop opacity of action buttons.
-constexpr float kInkDropRippleVisibleOpacity = 0.08f;
-// Highlight (hover) ink drop opacity of action buttons.
-constexpr float kInkDropHighlightVisibleOpacity = 0.08f;
 
 // base::TimeBase has similar constants, but some of them are missing.
 constexpr int64_t kMinuteInMillis = 60LL * 1000LL;
@@ -172,25 +162,12 @@ NotificationHeaderView::NotificationHeaderView(
     : views::Button(listener) {
   const int kInnerHeaderHeight = kHeaderHeight - kHeaderOuterPadding.height();
 
-  SetInkDropMode(InkDropMode::ON);
-  set_has_ink_drop_action_on_click(true);
-  set_animate_on_state_change(true);
-  set_notify_enter_exit_on_child(true);
-  set_ink_drop_base_color(kInkDropBaseColor);
-  set_ink_drop_visible_opacity(kInkDropRippleVisibleOpacity);
-
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, kHeaderOuterPadding,
                            kHeaderHorizontalSpacing);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   SetLayoutManager(layout);
-
-  ink_drop_container_ = new views::InkDropContainerView();
-  ink_drop_container_->SetPaintToLayer();
-  ink_drop_container_->layer()->SetFillsBoundsOpaquely(false);
-  ink_drop_container_->SetVisible(false);
-  AddChildView(ink_drop_container_);
 
   views::View* app_info_container = new views::View();
   views::BoxLayout* app_info_layout = new views::BoxLayout(
@@ -364,40 +341,6 @@ void NotificationHeaderView::SetAccentColor(SkColor color) {
 
 bool NotificationHeaderView::IsExpandButtonEnabled() {
   return expand_button_->visible();
-}
-
-std::unique_ptr<views::InkDrop> NotificationHeaderView::CreateInkDrop() {
-  auto ink_drop = std::make_unique<views::InkDropImpl>(this, size());
-  ink_drop->SetAutoHighlightMode(
-      views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
-  ink_drop->SetShowHighlightOnHover(false);
-  return ink_drop;
-}
-
-std::unique_ptr<views::InkDropRipple>
-NotificationHeaderView::CreateInkDropRipple() const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropHighlight>
-NotificationHeaderView::CreateInkDropHighlight() const {
-  auto highlight = std::make_unique<views::InkDropHighlight>(
-      size(), kInkDropSmallCornerRadius,
-      gfx::RectF(GetLocalBounds()).CenterPoint(), GetInkDropBaseColor());
-  highlight->set_visible_opacity(kInkDropHighlightVisibleOpacity);
-  return highlight;
-}
-
-void NotificationHeaderView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  ink_drop_container_->AddInkDropLayer(ink_drop_layer);
-  InstallInkDropMask(ink_drop_layer);
-}
-
-void NotificationHeaderView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  ResetInkDropMask();
-  ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {
