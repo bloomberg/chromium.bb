@@ -1296,18 +1296,63 @@ if (enable_java_templates) {
   #
   # Variables:
   #   output: Path to the output jar.
+  #   dex_path: Path to dex()'ed output (optional).
   #   override_build_config: Use a pre-existing .build_config. Must be of type
   #     "apk".
   #   use_interface_jars: Use all dependent interface .jars rather than
   #     implementation .jars.
   #   direct_deps_only: Do not recurse on deps.
   #   data, deps, testonly, visibility: Usual meaning.
+  #   proguard_enabled: Whether to run ProGuard on resulting jar.
+  #   proguard_configs: List of proguard configs.
+  #   proguard_jar_path: The path to proguard.jar you wish to use. If undefined,
+  #     the proguard used will be the checked in one in //third_party/proguard.
+  #   alternative_android_sdk_jar: System jar to use when proguard is enabled.
   #
   # Example
   #   dist_jar("lib_fatjar") {
   #     deps = [ ":my_java_lib" ]
+  #     output = "$root_build_dir/MyLibrary.jar"
   #   }
   template("dist_jar") {
+    forward_variables_from(invoker, [ "testonly" ])
+    _supports_android =
+        !defined(invoker.supports_android) || invoker.supports_android
+    _requires_android =
+        defined(invoker.requires_android) && invoker.requires_android
+    _proguard_enabled =
+        defined(invoker.proguard_enabled) && invoker.proguard_enabled
+    _use_interface_jars =
+        defined(invoker.use_interface_jars) && invoker.use_interface_jars
+    _direct_deps_only =
+        defined(invoker.direct_deps_only) && invoker.direct_deps_only
+    assert(
+        !(_proguard_enabled && _use_interface_jars),
+        "Cannot set both proguard_enabled and use_interface_jars (target=$target_name)")
+    assert(
+        !(_proguard_enabled && _direct_deps_only),
+        "Cannot set both proguard_enabled and direct_deps_only (target=$target_name)")
+
+    _jar_target_name = target_name
+    if (defined(invoker.dex_path)) {
+      if (_proguard_enabled) {
+        _jar_target_name = "${target_name}__proguard"
+      } else {
+        _jar_target_name = "${target_name}__dist_jar"
+      }
+    }
+
+    _deps = []
+    if (defined(invoker.deps)) {
+      _deps = invoker.deps
+    }
+    _enable_build_hooks =
+        _supports_android &&
+        (!defined(invoker.no_build_hooks) || !invoker.no_build_hooks)
+    if (_enable_build_hooks && _requires_android) {
+      _deps += [ "//build/android/buildhooks:build_hooks_android_impl_java" ]
+    }
+
     if (defined(invoker.override_build_config)) {
       _build_config = invoker.override_build_config
     } else {
@@ -1315,59 +1360,103 @@ if (enable_java_templates) {
       _build_config_target_name = "${target_name}__build_config"
 
       write_build_config(_build_config_target_name) {
-        forward_variables_from(invoker, [ "testonly" ])
         type = "dist_jar"
-        if (defined(invoker.deps)) {
-          possible_config_deps = invoker.deps
-        }
+        forward_variables_from(invoker,
+                               [
+                                 "dex_path",
+                                 "proguard_enabled",
+                               ])
+        supports_android = _supports_android
+        requires_android = _requires_android
+        possible_config_deps = _deps
         build_config = _build_config
+        if (_proguard_enabled) {
+          proguard_info = "${invoker.output}.info"
+        }
       }
+
+      _deps += [ ":$_build_config_target_name" ]
     }
 
-    action(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "data",
-                               "deps",
-                               "testonly",
-                               "visibility",
-                             ])
-      script = "//build/android/gyp/create_dist_jar.py"
-      depfile = "$target_gen_dir/$target_name.d"
+    _rebased_build_config = rebase_path(_build_config, root_build_dir)
 
-      inputs = [
-        _build_config,
-      ]
+    if (_proguard_enabled) {
+      proguard(_jar_target_name) {
+        forward_variables_from(invoker,
+                               [
+                                 "alternative_android_sdk_jar",
+                                 "data",
+                                 "proguard_jar_path",
+                               ])
+        deps = _deps
+        inputs = [
+          _build_config,
+        ]
 
-      outputs = [
-        invoker.output,
-      ]
-
-      if (defined(_build_config_target_name)) {
-        deps += [ ":$_build_config_target_name" ]
+        output_jar_path = invoker.output
+        args = [
+          "--proguard-configs=@FileArg($_rebased_build_config:proguard:lib_configs)",
+          "--input-paths=@FileArg($_rebased_build_config:proguard:input_paths)",
+          "--classpath=@FileArg($_rebased_build_config:proguard:lib_paths)",
+        ]
+        if (defined(invoker.proguard_configs)) {
+          _rebased_proguard_configs =
+              rebase_path(invoker.proguard_configs, root_build_dir)
+          args += [ "--proguard-configs=$_rebased_proguard_configs" ]
+        }
+        if (defined(invoker.proguard_config_exclusions)) {
+          _rebased_proguard_config_exclusions =
+              rebase_path(invoker.proguard_config_exclusions, root_build_dir)
+          args += [ "--proguard-config-exclusions=$_rebased_proguard_config_exclusions" ]
+        }
       }
+    } else {
+      action(_jar_target_name) {
+        forward_variables_from(invoker, [ "data" ])
+        script = "//build/android/gyp/create_dist_jar.py"
+        depfile = "$target_gen_dir/$target_name.d"
+        deps = _deps
 
-      args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--output",
-        rebase_path(invoker.output, root_build_dir),
-      ]
+        inputs = [
+          _build_config,
+        ]
 
-      _rebased_build_config = rebase_path(_build_config, root_build_dir)
-      if (defined(invoker.direct_deps_only) && invoker.direct_deps_only) {
-        if (defined(invoker.use_interface_jars) && invoker.use_interface_jars) {
-          args += [ "--inputs=@FileArg($_rebased_build_config:javac:interface_classpath)" ]
+        outputs = [
+          invoker.output,
+        ]
+
+        args = [
+          "--depfile",
+          rebase_path(depfile, root_build_dir),
+          "--output",
+          rebase_path(invoker.output, root_build_dir),
+        ]
+
+        if (_direct_deps_only) {
+          if (_use_interface_jars) {
+            args += [ "--inputs=@FileArg($_rebased_build_config:javac:interface_classpath)" ]
+          } else {
+            args +=
+                [ "--inputs=@FileArg($_rebased_build_config:javac:classpath)" ]
+          }
         } else {
-          args +=
-              [ "--inputs=@FileArg($_rebased_build_config:javac:classpath)" ]
+          if (_use_interface_jars) {
+            args += [ "--inputs=@FileArg($_rebased_build_config:dist_jar:all_interface_jars)" ]
+          } else {
+            args += [ "--inputs=@FileArg($_rebased_build_config:dist_jar:dependency_jars)" ]
+          }
         }
-      } else {
-        if (defined(invoker.use_interface_jars) && invoker.use_interface_jars) {
-          args += [ "--inputs=@FileArg($_rebased_build_config:dist_jar:all_interface_jars)" ]
-        } else {
-          args += [ "--inputs=@FileArg($_rebased_build_config:dist_jar:dependency_jars)" ]
-        }
+      }
+    }
+    if (defined(invoker.dex_path)) {
+      dex(target_name) {
+        deps = [
+          ":$_jar_target_name",
+        ]
+        sources = [
+          invoker.output,
+        ]
+        output = invoker.dex_path
       }
     }
   }
