@@ -8,56 +8,32 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/PerformanceMonitor.h"
 #include "core/frame/VisualViewport.h"
-#include "core/html/HTMLElement.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/LayoutTestHelper.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/DragData.h"
 #include "core/page/DragSession.h"
-#include "core/testing/DummyPageHolder.h"
 #include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
-#include "core/timing/Performance.h"
 #include "platform/DragImage.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class DragControllerTest : public ::testing::Test {
+class DragControllerTest : public RenderingTest {
  protected:
-  DragControllerTest() = default;
-  ~DragControllerTest() override = default;
-
-  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
+  DragControllerTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
   LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }
-  Performance* GetPerformance() const { return performance_; }
-
-  void SetBodyContent(const std::string& body_content) {
-    GetDocument().body()->SetInnerHTMLFromString(
-        String::FromUTF8(body_content.c_str()));
-    UpdateAllLifecyclePhases();
-  }
 
   void UpdateAllLifecyclePhases() {
     GetDocument().View()->UpdateAllLifecyclePhases();
   }
-
- private:
-  void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-    performance_ = Performance::Create(GetDocument().domWindow());
-  }
-
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  Persistent<Performance> performance_;
 };
 
-TEST_F(DragControllerTest, dragImageForSelectionUsesPageScaleFactor) {
-  SetBodyContent(
+TEST_F(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
+  SetBodyInnerHTML(
       "<div>Hello world! This tests that the bitmap for drag image is scaled "
       "by page scale factor</div>");
   GetFrame().GetPage()->GetVisualViewport().SetScale(1);
@@ -127,7 +103,7 @@ TEST_P(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
 }
 
 TEST_F(DragControllerTest, DragImageForSelectionClipsToViewport) {
-  SetBodyContent(
+  SetBodyInnerHTML(
       "<style>"
       "  * { margin: 0; } "
       "  html, body { height: 2000px; }"
