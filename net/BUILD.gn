@@ -1616,6 +1616,7 @@ component("net") {
       "spdy/platform/impl/spdy_ptr_util_impl.h",
       "spdy/platform/impl/spdy_string_impl.h",
       "spdy/platform/impl/spdy_string_piece_impl.h",
+      "spdy/platform/impl/spdy_string_utils_impl.cc",
       "spdy/platform/impl/spdy_string_utils_impl.h",
       "ssl/client_cert_store.h",
       "ssl/client_cert_store_mac.cc",

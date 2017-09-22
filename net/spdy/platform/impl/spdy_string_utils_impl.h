@@ -49,6 +49,17 @@ inline SpdyString SpdyHexDecodeImpl(SpdyStringPiece data) {
   return HexDecode(data);
 }
 
+NET_EXPORT_PRIVATE bool SpdyHexDecodeToUInt32Impl(SpdyStringPiece data,
+                                                  uint32_t* out);
+
+inline SpdyString SpdyHexEncodeImpl(const char* bytes, size_t size) {
+  return base::ToLowerASCII(base::HexEncode(bytes, size));
+}
+
+inline SpdyString SpdyHexEncodeUInt32AndTrimImpl(uint32_t data) {
+  return base::StringPrintf("%x", data);
+}
+
 inline SpdyString SpdyHexDumpImpl(SpdyStringPiece data) {
   return HexDump(data);
 }

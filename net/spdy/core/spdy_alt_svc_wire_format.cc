@@ -76,6 +76,9 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
         !PercentDecode(c, percent_encoded_protocol_id_end, &protocol_id)) {
       return false;
     }
+    // Check for IETF format for advertising QUIC:
+    // hq=":443";quic=51303338;quic=51303334
+    const bool is_ietf_format_quic = (protocol_id.compare("hq") == 0);
     c = percent_encoded_protocol_id_end;
     if (c == value.end()) {
       return false;
@@ -146,7 +149,7 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
         if (!ParsePositiveInteger32(parameter_value_begin, c, &max_age)) {
           return false;
         }
-      } else if (parameter_name.compare("v") == 0) {
+      } else if (!is_ietf_format_quic && parameter_name.compare("v") == 0) {
         // Version is a comma separated list of positive integers enclosed in
         // quotation marks.  Since it can contain commas, which are not
         // delineating alternative service entries, |parameters_end| and |c| can
@@ -177,6 +180,27 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(
             return false;
           }
         }
+      } else if (is_ietf_format_quic && parameter_name.compare("quic") == 0) {
+        // IETF format for advertising QUIC. Version is hex encoding of QUIC
+        // version tag. Hex-encoded string should not include leading "0x" or
+        // leading zeros.
+        // Example for advertising QUIC versions "Q038" and "Q034":
+        // hq=":443";quic=51303338;quic=51303334
+        if (*parameter_value_begin == '0') {
+          return false;
+        }
+        // Versions will be stored as the uint32_t hex decoding of the param
+        // value string. Example: QUIC version "Q038", which is advertised as:
+        // hq=":443";quic=51303338
+        // ... will be stored in |versions| as 0x51303338.
+        uint32_t quic_version;
+        if (!SpdyHexDecodeToUInt32(SpdyStringPiece(parameter_value_begin,
+                                                   c - parameter_value_begin),
+                                   &quic_version) ||
+            quic_version == 0) {
+          return false;
+        }
+        version.push_back(quic_version);
       }
     }
     altsvc_vector->emplace_back(protocol_id, host, port, max_age, version);
@@ -198,6 +222,8 @@ SpdyString SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
     if (!value.empty()) {
       value.push_back(',');
     }
+    // Check for IETF format for advertising QUIC.
+    const bool is_ietf_format_quic = (altsvc.protocol_id.compare("hq") == 0);
     // Percent escape protocol id according to
     // http://tools.ietf.org/html/rfc7230#section-3.2.6.
     for (char c : altsvc.protocol_id) {
@@ -243,15 +269,22 @@ SpdyString SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
       SpdyStringAppendF(&value, "; ma=%d", altsvc.max_age);
     }
     if (!altsvc.version.empty()) {
-      value.append("; v=\"");
-      for (VersionVector::const_iterator it = altsvc.version.begin();
-           it != altsvc.version.end(); ++it) {
-        if (it != altsvc.version.begin()) {
-          value.append(",");
+      if (is_ietf_format_quic) {
+        for (uint32_t quic_version : altsvc.version) {
+          value.append("; quic=");
+          value.append(SpdyHexEncodeUInt32AndTrim(quic_version));
         }
-        SpdyStringAppendF(&value, "%d", *it);
+      } else {
+        value.append("; v=\"");
+        for (VersionVector::const_iterator it = altsvc.version.begin();
+             it != altsvc.version.end(); ++it) {
+          if (it != altsvc.version.begin()) {
+            value.append(",");
+          }
+          SpdyStringAppendF(&value, "%d", *it);
+        }
+        value.append("\"");
       }
-      value.append("\"");
     }
   }
   return value;
