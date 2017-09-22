@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/wm/wm_types.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -26,10 +27,6 @@ class GestureEvent;
 }
 
 namespace ash {
-namespace mojom {
-enum class WindowStateType;
-}
-
 namespace wm {
 
 // WmToplevelWindowEventHandler handles dragging and resizing of top level
@@ -97,7 +94,7 @@ class ASH_EXPORT WmToplevelWindowEventHandler
   // Sets |window|'s state type to |new_state_type|. Called after the drag has
   // been completed for fling gestures.
   void SetWindowStateTypeFromGesture(aura::Window* window,
-                                     mojom::WindowStateType new_state_type);
+                                     wm::WindowStateType new_state_type);
 
   // Invoked from ScopedWindowResizer if the window is destroyed.
   void ResizerWindowDestroyed();

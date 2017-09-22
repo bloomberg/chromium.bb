@@ -9,6 +9,7 @@
 
 #include "ash/shell_observer.h"
 #include "ash/system/accessibility_observer.h"
+#include "ash/wm/wm_types.h"
 #include "base/macros.h"
 
 namespace aura {
@@ -24,9 +25,6 @@ class EventHandler;
 }
 
 namespace ash {
-namespace mojom {
-enum class WindowStateType;
-}
 
 namespace wm {
 class WindowState;
@@ -51,7 +49,7 @@ class BackdropController : public ShellObserver, public AccessibilityObserver {
   void OnChildWindowVisibilityChanged(aura::Window* child, bool visible);
   void OnWindowStackingChanged(aura::Window* window);
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type);
+                                   wm::WindowStateType old_type);
 
   void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);
 

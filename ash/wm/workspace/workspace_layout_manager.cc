@@ -269,10 +269,10 @@ void WorkspaceLayoutManager::OnWindowActivated(ActivationReason reason,
 
 void WorkspaceLayoutManager::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
-    mojom::WindowStateType old_type) {
+    wm::WindowStateType old_type) {
   // Notify observers that fullscreen state may be changing.
   if (window_state->IsFullscreen() ||
-      old_type == mojom::WindowStateType::FULLSCREEN) {
+      old_type == wm::WINDOW_STATE_TYPE_FULLSCREEN) {
     UpdateFullscreenState();
   }
 

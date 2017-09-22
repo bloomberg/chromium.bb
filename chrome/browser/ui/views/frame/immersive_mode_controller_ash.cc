@@ -341,16 +341,15 @@ ImmersiveModeControllerAsh::GetVisibleBoundsInScreen() const {
   return bounds_in_screen;
 }
 
-// TODO(erg): Can we just observer the key change here?
 void ImmersiveModeControllerAsh::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
-    ash::mojom::WindowStateType old_type) {
+    ash::wm::WindowStateType old_type) {
   // Disable immersive fullscreen when the user exits fullscreen without going
   // through FullscreenController::ToggleBrowserFullscreenMode(). This is the
   // case if the user exits fullscreen via the restore button.
   if (controller_->IsEnabled() && !window_state->IsFullscreen() &&
       !window_state->IsMinimized() &&
-      old_type == ash::mojom::WindowStateType::FULLSCREEN) {
+      old_type == ash::wm::WINDOW_STATE_TYPE_FULLSCREEN) {
     browser_view_->FullscreenStateChanged();
   }
 }

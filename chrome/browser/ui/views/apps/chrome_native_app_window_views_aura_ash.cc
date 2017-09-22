@@ -88,9 +88,8 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
   }
 
   // Overridden from ash::wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(
-      ash::wm::WindowState* window_state,
-      ash::mojom::WindowStateType old_type) override {
+  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
+                                   ash::wm::WindowStateType old_type) override {
     // Since the window state might get set by a window manager, it is possible
     // to come here before the application set its |BaseWindow|.
     if (!window_state->IsFullscreen() && !window_state->IsMinimized() &&
