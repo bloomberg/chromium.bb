@@ -75,6 +75,12 @@ void BackgroundFetchJobController::DidStartRequest(
 void BackgroundFetchJobController::DidCompleteRequest(
     const scoped_refptr<BackgroundFetchRequestInfo>& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(state_ == State::FETCHING || state_ == State::ABORTED);
+
+  // TODO(delphick): When ABORT is implemented correctly we should hopefully
+  // never get here and the DCHECK above should only allow FETCHING.
+  if (state_ == State::ABORTED)
+    return;
 
   // The DataManager must acknowledge that it stored the data and that there are
   // no more pending requests to avoid marking this job as completed too early.

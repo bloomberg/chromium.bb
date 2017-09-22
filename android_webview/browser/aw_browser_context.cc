@@ -315,6 +315,13 @@ content::PermissionManager* AwBrowserContext::GetPermissionManager() {
   return permission_manager_.get();
 }
 
+content::BackgroundFetchDelegate*
+AwBrowserContext::GetBackgroundFetchDelegate() {
+  // TODO(crbug.com/766077): Resolve whether to support or disable background
+  // fetch on WebView.
+  return nullptr;
+}
+
 content::BackgroundSyncController*
 AwBrowserContext::GetBackgroundSyncController() {
   return nullptr;

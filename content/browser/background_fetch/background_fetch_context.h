@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,8 +22,6 @@
 
 namespace content {
 
-class BackgroundFetchDelegate;
-class BackgroundFetchDelegateProxy;
 class BackgroundFetchJobController;
 struct BackgroundFetchOptions;
 class BackgroundFetchRegistrationId;
@@ -103,10 +102,7 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   BackgroundFetchDataManager data_manager_;
   BackgroundFetchEventDispatcher event_dispatcher_;
-
-  std::unique_ptr<BackgroundFetchDelegate, BrowserThread::DeleteOnUIThread>
-      delegate_;
-  std::unique_ptr<BackgroundFetchDelegateProxy> delegate_proxy_;
+  BackgroundFetchDelegateProxy delegate_proxy_;
 
   // Map of the Background Fetch fetches that are currently in-progress. Must
   // be destroyed before |data_manager_|.

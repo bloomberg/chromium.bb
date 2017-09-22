@@ -8,15 +8,18 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "content/browser/background_fetch/background_fetch_delegate.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
+#include "content/public/browser/background_fetch_delegate.h"
+#include "content/public/browser/background_fetch_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
+namespace {
+
 class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
  public:
-  FakeBackgroundFetchDelegate() : weak_ptr_factory_(this) {}
+  FakeBackgroundFetchDelegate() {}
 
   void DownloadUrl(const std::string& guid,
                    const std::string& method,
@@ -26,13 +29,13 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
     if (!client())
       return;
 
-    auto response = base::MakeUnique<BackgroundFetchResponse>(
+    auto response = std::make_unique<BackgroundFetchResponse>(
         std::vector<GURL>({url}),
         base::MakeRefCounted<net::HttpResponseHeaders>("200 OK"));
 
     client()->OnDownloadStarted(guid, std::move(response));
     if (complete_downloads_) {
-      auto result = base::MakeUnique<BackgroundFetchResult>(
+      auto result = std::make_unique<BackgroundFetchResult>(
           base::Time::Now(), base::FilePath(), 10u);
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
@@ -45,14 +48,8 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
     complete_downloads_ = complete_downloads;
   }
 
-  base::WeakPtr<BackgroundFetchDelegate> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
  private:
   bool complete_downloads_ = true;
-
-  base::WeakPtrFactory<FakeBackgroundFetchDelegate> weak_ptr_factory_;
 };
 
 class FakeController : public BackgroundFetchDelegateProxy::Controller {
@@ -77,13 +74,14 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
 
 class BackgroundFetchDelegateProxyTest : public BackgroundFetchTestBase {
  public:
-  BackgroundFetchDelegateProxyTest()
-      : delegate_proxy_(delegate_.GetWeakPtr()) {}
+  BackgroundFetchDelegateProxyTest() : delegate_proxy_(&delegate_) {}
 
  protected:
   FakeBackgroundFetchDelegate delegate_;
   BackgroundFetchDelegateProxy delegate_proxy_;
 };
+
+}  // namespace
 
 TEST_F(BackgroundFetchDelegateProxyTest, SetDelegate) {
   EXPECT_TRUE(delegate_.client().get());

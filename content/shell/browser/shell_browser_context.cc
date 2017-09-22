@@ -223,6 +223,10 @@ PermissionManager* ShellBrowserContext::GetPermissionManager() {
   return permission_manager_.get();
 }
 
+BackgroundFetchDelegate* ShellBrowserContext::GetBackgroundFetchDelegate() {
+  return nullptr;
+}
+
 BackgroundSyncController* ShellBrowserContext::GetBackgroundSyncController() {
   if (!background_sync_controller_)
     background_sync_controller_.reset(new MockBackgroundSyncController());

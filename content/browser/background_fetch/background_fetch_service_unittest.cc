@@ -335,7 +335,7 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
   constexpr int kThirdResponseCode = 200;
 
   requests.push_back(CreateRequestWithProvidedResponse(
-      "GET", "https://example.com/funny_cat.txt",
+      "GET", GURL("https://example.com/funny_cat.txt"),
       TestResponseBuilder(kFirstResponseCode)
           .SetResponseData(
               "This text describes a scenario involving a funny cat.")
@@ -344,7 +344,7 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
           .Build()));
 
   requests.push_back(CreateRequestWithProvidedResponse(
-      "GET", "https://example.com/crazy_cat.txt",
+      "GET", GURL("https://example.com/crazy_cat.txt"),
       TestResponseBuilder(kSecondResponseCode)
           .SetResponseData(
               "This text describes another scenario that involves a crazy cat.")
@@ -352,7 +352,7 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
           .Build()));
 
   requests.push_back(CreateRequestWithProvidedResponse(
-      "GET", "https://chrome.com/accessible_cross_origin_cat.txt",
+      "GET", GURL("https://chrome.com/accessible_cross_origin_cat.txt"),
       TestResponseBuilder(kThirdResponseCode)
           .SetResponseData("This cat originates from another origin.")
           .AddResponseHeader("Access-Control-Allow-Origin", "*")
@@ -444,11 +444,11 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
   constexpr int kSecondResponseCode = 200;
 
   requests.push_back(CreateRequestWithProvidedResponse(
-      "GET", "https://example.com/not_existing_cat.txt",
+      "GET", GURL("https://example.com/not_existing_cat.txt"),
       TestResponseBuilder(kFirstResponseCode).Build()));
 
   requests.push_back(CreateRequestWithProvidedResponse(
-      "GET", "https://chrome.com/inaccessible_cross_origin_cat.txt",
+      "GET", GURL("https://chrome.com/inaccessible_cross_origin_cat.txt"),
       TestResponseBuilder(kSecondResponseCode)
           .SetResponseData(
               "This is a cross-origin response not accessible to the reader.")
@@ -631,7 +631,7 @@ TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
 
   std::vector<ServiceWorkerFetchRequest> requests;
   requests.push_back(CreateRequestWithProvidedResponse(
-      "GET", "https://example.com/funny_cat.txt",
+      "GET", GURL("https://example.com/funny_cat.txt"),
       TestResponseBuilder(kResponseCode)
           .SetResponseData("Random data about a funny cat.")
           .Build()));

@@ -55,6 +55,7 @@ namespace mojom {
 enum class PushDeliveryStatus;
 }
 
+class BackgroundFetchDelegate;
 class BackgroundSyncController;
 class BlobHandle;
 class BrowserPluginGuestManager;
@@ -244,6 +245,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the PermissionManager associated with that context if any, nullptr
   // otherwise.
   virtual PermissionManager* GetPermissionManager() = 0;
+
+  // Returns the BackgroundFetchDelegate associated with that context if any,
+  // nullptr otherwise.
+  virtual BackgroundFetchDelegate* GetBackgroundFetchDelegate() = 0;
 
   // Returns the BackgroundSyncController associated with that context if any,
   // nullptr otherwise.

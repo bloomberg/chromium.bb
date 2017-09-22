@@ -8,7 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "content/browser/background_fetch/background_fetch_response.h"
+#include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "net/http/http_response_headers.h"

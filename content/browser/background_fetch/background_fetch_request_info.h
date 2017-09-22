@@ -16,13 +16,15 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
-#include "content/browser/background_fetch/background_fetch_response.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/download_item.h"
 #include "url/gurl.h"
 
 namespace content {
+
+struct BackgroundFetchResponse;
+struct BackgroundFetchResult;
 
 // Simple class to encapsulate the components of a fetch request.
 // TODO(peter): This can likely change to have a single owner, and thus become
