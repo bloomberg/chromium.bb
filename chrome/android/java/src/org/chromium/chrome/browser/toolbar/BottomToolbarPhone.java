@@ -1030,9 +1030,10 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     protected int getToolbarColorForVisualState(final VisualState visualState) {
-        if (visualState == VisualState.TAB_SWITCHER_INCOGNITO
-                && DeviceClassManager.enableAccessibilityLayout()) {
-            return ApiCompatibilityUtils.getColor(getResources(), R.color.incognito_primary_color);
+        if (visualState == VisualState.TAB_SWITCHER_INCOGNITO) {
+            return ApiCompatibilityUtils.getColor(getResources(),
+                    DeviceClassManager.enableAccessibilityLayout() ? R.color.incognito_primary_color
+                                                                   : R.color.modern_primary_color);
         } else if (visualState == VisualState.NORMAL
                 || visualState == VisualState.TAB_SWITCHER_NORMAL) {
             return ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
