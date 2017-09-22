@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
@@ -26,6 +26,14 @@ class MockAudioManager : public AudioManager {
       base::RepeatingCallback<void(AudioDeviceDescriptions*)>;
   using GetAssociatedOutputDeviceIDCallback =
       base::RepeatingCallback<std::string(const std::string&)>;
+  using MakeOutputStreamCallback =
+      base::RepeatingCallback<media::AudioOutputStream*(
+          const media::AudioParameters& params,
+          const std::string& device_id)>;
+  using MakeInputStreamCallback =
+      base::RepeatingCallback<media::AudioInputStream*(
+          const media::AudioParameters& params,
+          const std::string& device_id)>;
 
   explicit MockAudioManager(std::unique_ptr<AudioThread> audio_thread);
   ~MockAudioManager() override;
@@ -58,6 +66,8 @@ class MockAudioManager : public AudioManager {
   const char* GetName() override;
 
   // Setters to emulate desired in-test behavior.
+  void SetMakeOutputStreamCB(MakeOutputStreamCallback cb);
+  void SetMakeInputStreamCB(MakeInputStreamCallback cb);
   void SetInputStreamParameters(const AudioParameters& params);
   void SetOutputStreamParameters(const AudioParameters& params);
   void SetDefaultOutputStreamParameters(const AudioParameters& params);
@@ -97,6 +107,8 @@ class MockAudioManager : public AudioManager {
   AudioParameters default_output_params_;
   bool has_input_devices_ = true;
   bool has_output_devices_ = true;
+  MakeOutputStreamCallback make_output_stream_cb_;
+  MakeInputStreamCallback make_input_stream_cb_;
   GetDeviceDescriptionsCallback get_input_device_descriptions_cb_;
   GetDeviceDescriptionsCallback get_output_device_descriptions_cb_;
   GetAssociatedOutputDeviceIDCallback get_associated_output_device_id_cb_;

@@ -26,7 +26,7 @@
 #include "media/audio/audio_output_device.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/audio_thread_impl.h"
-#include "media/audio/fake_audio_log_factory.h"
+#include "media/audio/mock_audio_manager.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_switches.h"
@@ -93,54 +93,18 @@ void SyncWithAllThreads() {
   }
 }
 
-class MockAudioManager : public media::AudioManagerBase {
- public:
-  MockAudioManager(std::unique_ptr<media::AudioThread> audio_thread,
-                   media::AudioLogFactory* audio_log_factory)
-      : media::AudioManagerBase(std::move(audio_thread), audio_log_factory) {
-    ON_CALL(*this, HasAudioOutputDevices()).WillByDefault(Return(true));
-  }
-
-  ~MockAudioManager() override = default;
-
-  MOCK_METHOD2(MakeLinearOutputStream,
-               media::AudioOutputStream*(const media::AudioParameters& params,
-                                         const LogCallback& log_callback));
-  MOCK_METHOD3(MakeLowLatencyOutputStream,
-               media::AudioOutputStream*(const media::AudioParameters& params,
-                                         const std::string& device_id,
-                                         const LogCallback& log_callback));
-  MOCK_METHOD3(MakeLinearInputStream,
-               media::AudioInputStream*(const media::AudioParameters& params,
-                                        const std::string& device_id,
-                                        const LogCallback& log_callback));
-  MOCK_METHOD3(MakeLowLatencyInputStream,
-               media::AudioInputStream*(const media::AudioParameters& params,
-                                        const std::string& device_id,
-                                        const LogCallback& log_callback));
-
- protected:
-  MOCK_METHOD0(HasAudioOutputDevices, bool());
-  MOCK_METHOD0(HasAudioInputDevices, bool());
-  MOCK_METHOD0(GetName, const char*());
-  media::AudioParameters GetPreferredOutputStreamParameters(
-      const std::string& device_id,
-      const media::AudioParameters& params) {
-    return GetTestAudioParameters();
-  }
-};
-
 class MockAudioOutputStream : public media::AudioOutputStream,
                               public base::PlatformThread::Delegate {
  public:
-  explicit MockAudioOutputStream(MockAudioManager* audio_manager)
+  MockAudioOutputStream()
       : done_(base::WaitableEvent::ResetPolicy::MANUAL,
-              base::WaitableEvent::InitialState::NOT_SIGNALED),
-        audio_manager_(audio_manager) {}
+              base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   ~MockAudioOutputStream() override {
     base::PlatformThread::Join(thread_handle_);
   }
+
+  void Wait() { done_.Wait(); }
 
   void Start(AudioSourceCallback* callback) override {
     callback_ = callback;
@@ -158,7 +122,7 @@ class MockAudioOutputStream : public media::AudioOutputStream,
   void GetVolume(double* volume) override { *volume = 1; }
   void Close() override {
     Stop();
-    audio_manager_->ReleaseOutputStream(this);
+    delete this;
   }
 
   void ThreadMain() override {
@@ -189,7 +153,6 @@ class MockAudioOutputStream : public media::AudioOutputStream,
   base::OnceClosure sync_closure_;
   base::PlatformThreadHandle thread_handle_;
   base::WaitableEvent done_;
-  MockAudioManager* audio_manager_;
   AudioSourceCallback* callback_;
 };
 
@@ -221,24 +184,20 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
   RendererAudioOutputStreamFactoryIntegrationTest()
       : media_stream_manager_(),
         thread_bundle_(TestBrowserThreadBundle::Options::REAL_IO_THREAD),
-        log_factory_(),
-        audio_manager_(std::make_unique<MockAudioManager>(
-            std::make_unique<media::AudioThreadImpl>(),
-            &log_factory_)),
-        audio_system_(
-            std::make_unique<media::AudioSystemImpl>(audio_manager_.get())) {
+        audio_manager_(std::make_unique<media::AudioThreadImpl>()),
+        audio_system_(&audio_manager_) {
     media_stream_manager_ = std::make_unique<MediaStreamManager>(
-        audio_system_.get(), audio_manager_->GetTaskRunner());
+        &audio_system_, audio_manager_.GetTaskRunner());
   }
 
   ~RendererAudioOutputStreamFactoryIntegrationTest() override {
-    audio_manager_->Shutdown();
+    audio_manager_.Shutdown();
   }
 
   UniqueAudioOutputStreamFactoryPtr CreateAndBindFactory(
       mojom::RendererAudioOutputStreamFactoryRequest request) {
     factory_context_.reset(new RendererAudioOutputStreamFactoryContextImpl(
-        kRenderProcessId, audio_system_.get(), audio_manager_.get(),
+        kRenderProcessId, &audio_system_, &audio_manager_,
         media_stream_manager_.get(), kSalt));
     return RenderFrameAudioOutputStreamFactoryHandle::CreateFactory(
         factory_context_.get(), kRenderFrameId, std::move(request));
@@ -246,9 +205,8 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
 
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   TestBrowserThreadBundle thread_bundle_;
-  media::FakeAudioLogFactory log_factory_;
-  std::unique_ptr<media::AudioManager> audio_manager_;
-  std::unique_ptr<media::AudioSystem> audio_system_;
+  media::MockAudioManager audio_manager_;
+  media::AudioSystemImpl audio_system_;
   std::unique_ptr<RendererAudioOutputStreamFactoryContextImpl,
                   BrowserThread::DeleteOnIOThread>
       factory_context_;
@@ -258,13 +216,23 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
   // Sets up the factory on the IO thread and runs client code on the UI thread.
   // Send a sine wave from the client and makes sure it's received by the output
   // stream.
-  MockAudioOutputStream* stream = new MockAudioOutputStream(
-      static_cast<MockAudioManager*>(audio_manager_.get()));
+  MockAudioOutputStream* stream = new MockAudioOutputStream();
 
   // Make sure the mock audio manager uses our mock stream.
-  EXPECT_CALL(*static_cast<MockAudioManager*>(audio_manager_.get()),
-              MakeLowLatencyOutputStream(_, "", _))
-      .WillOnce(Return(stream));
+  bool create_stream_called = false;
+  audio_manager_.SetMakeOutputStreamCB(base::BindRepeating(
+      [](bool* create_stream_called, media::AudioOutputStream* stream,
+         const media::AudioParameters& params,
+         const std::string& name) -> media::AudioOutputStream* {
+        DCHECK(!*create_stream_called);
+        DCHECK(stream);
+        DCHECK_EQ(name, "default");
+        DCHECK_EQ(params.AsHumanReadableString(),
+                  GetTestAudioParameters().AsHumanReadableString());
+        *create_stream_called = true;
+        return stream;
+      },
+      &create_stream_called, stream));
 
   mojom::RendererAudioOutputStreamFactoryPtr stream_factory;
   auto factory_handle =
@@ -309,7 +277,7 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
   // Wait for stream to start.
   SyncWithAllThreads();
   // Wait for stream to finish. Verifies data.
-  stream->Stop();
+  stream->Wait();
   device->Stop();
 
   // |stream_factory| must be destroyed on the correct thread.
