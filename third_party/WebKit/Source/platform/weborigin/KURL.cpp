@@ -253,11 +253,6 @@ KURL::KURL(const AtomicString& canonical_string,
   InitInnerURL();
 }
 
-KURL::KURL(WTF::HashTableDeletedValueType)
-    : is_valid_(false),
-      protocol_is_in_http_family_(false),
-      string_(WTF::kHashTableDeletedValue) {}
-
 KURL::KURL(const KURL& other)
     : is_valid_(other.is_valid_),
       protocol_is_in_http_family_(other.protocol_is_in_http_family_),

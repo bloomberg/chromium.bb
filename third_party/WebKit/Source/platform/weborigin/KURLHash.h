@@ -55,7 +55,15 @@ struct KURLHash {
 namespace WTF {
 
 template <>
-struct HashTraits<blink::KURL> : SimpleClassHashTraits<blink::KURL> {};
+struct HashTraits<blink::KURL> : SimpleClassHashTraits<blink::KURL> {
+  static bool IsDeletedValue(const blink::KURL& value) {
+    return HashTraits<String>::IsDeletedValue(value.GetString());
+  }
+
+  static void ConstructDeletedValue(blink::KURL& slot, bool zero_value) {
+    HashTraits<String>::ConstructDeletedValue(slot.string_, zero_value);
+  }
+};
 
 }  // namespace WTF
 

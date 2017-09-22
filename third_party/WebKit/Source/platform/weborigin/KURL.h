@@ -31,7 +31,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
 #include "platform/wtf/text/WTFString.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -85,14 +84,9 @@ class PLATFORM_EXPORT KURL {
   // from such. It is usually best to avoid repeatedly parsing a string,
   // unless memory saving outweigh the possible slow-downs.
   KURL(ParsedURLStringTag, const String&);
-  explicit KURL(WTF::HashTableDeletedValueType);
 
   // Creates an isolated URL object suitable for sending to another thread.
   static KURL CreateIsolated(ParsedURLStringTag, const String&);
-
-  bool IsHashTableDeletedValue() const {
-    return GetString().IsHashTableDeletedValue();
-  }
 
   // Resolves the relative URL with the given base URL. If provided, the
   // TextEncoding is used to encode non-ASCII characers. The base URL can be
@@ -219,6 +213,8 @@ class PLATFORM_EXPORT KURL {
   }
 
  private:
+  friend struct WTF::HashTraits<blink::KURL>;
+
   void Init(const KURL& base,
             const String& relative,
             const WTF::TextEncoding* query_encoding);

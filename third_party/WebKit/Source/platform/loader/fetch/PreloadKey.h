@@ -30,12 +30,8 @@ struct PreloadKey final {
   };
 
   PreloadKey() = default;
-  PreloadKey(WTF::HashTableDeletedValueType)
-      : url(WTF::kHashTableDeletedValue) {}
   PreloadKey(const KURL& url, Resource::Type type)
       : url(RemoveFragmentFromUrl(url)), type(type) {}
-
-  bool IsHashTableDeletedValue() const { return url.IsHashTableDeletedValue(); }
 
   bool operator==(const PreloadKey& x) const {
     return url == x.url && type == x.type;
@@ -64,7 +60,15 @@ struct DefaultHash<blink::PreloadKey> {
 
 template <>
 struct HashTraits<blink::PreloadKey>
-    : public SimpleClassHashTraits<blink::PreloadKey> {};
+    : public SimpleClassHashTraits<blink::PreloadKey> {
+  static bool IsDeletedValue(const blink::PreloadKey& value) {
+    return HashTraits<blink::KURL>::IsDeletedValue(value.url);
+  }
+
+  static void ConstructDeletedValue(blink::PreloadKey& slot, bool zero_value) {
+    HashTraits<blink::KURL>::ConstructDeletedValue(slot.url, zero_value);
+  }
+};
 
 }  // namespace WTF
 
