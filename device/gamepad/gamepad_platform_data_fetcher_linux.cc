@@ -140,7 +140,10 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
 
     const char* vendor_id = udev_device_get_sysattr_value(dev, "id/vendor");
     const char* product_id = udev_device_get_sysattr_value(dev, "id/product");
-    mapper = GetGamepadStandardMappingFunction(vendor_id, product_id);
+    const char* version_number =
+        udev_device_get_sysattr_value(dev, "id/version");
+    mapper = GetGamepadStandardMappingFunction(vendor_id, product_id,
+                                               version_number);
 
     // Driver returns utf-8 strings here, so combine in utf-8 first and
     // convert to WebUChar later once we've picked an id string.

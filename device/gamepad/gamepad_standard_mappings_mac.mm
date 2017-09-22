@@ -427,7 +427,8 @@ struct MappingData {
 
 GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
     const base::StringPiece& vendor_id,
-    const base::StringPiece& product_id) {
+    const base::StringPiece& product_id,
+    const base::StringPiece& version_number) {
   for (size_t i = 0; i < arraysize(AvailableMappings); ++i) {
     MappingData& item = AvailableMappings[i];
     if (vendor_id == item.vendor_id && product_id == item.product_id)

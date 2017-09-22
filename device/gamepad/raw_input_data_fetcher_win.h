@@ -47,6 +47,7 @@ struct RawGamepadInfo {
   uint32_t report_id;
   uint32_t vendor_id;
   uint32_t product_id;
+  uint32_t version_number;
 
   wchar_t id[Gamepad::kIdLengthCap];
 

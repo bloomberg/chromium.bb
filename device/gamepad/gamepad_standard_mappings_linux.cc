@@ -102,7 +102,7 @@ void MapperLakeviewResearch(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperPlaystationSixAxis(const Gamepad& input, Gamepad* mapped) {
+void MapperDualshock3SixAxis(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[14];
   mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[13];
@@ -121,6 +121,32 @@ void MapperPlaystationSixAxis(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = input.buttons[7];
   mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] = AxisToButton(input.axes[9]);
   mapped->buttons[BUTTON_INDEX_META] = input.buttons[16];
+
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
+void MapperDualshock3SixAxisNew(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[5];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[2]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[8];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[9];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[12];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = input.buttons[13];
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = input.buttons[14];
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = input.buttons[15];
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] = input.buttons[16];
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[10];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
 
   mapped->buttons_length = BUTTON_INDEX_COUNT;
   mapped->axes_length = AXIS_INDEX_COUNT;
@@ -155,6 +181,33 @@ void MapperDualshock4(const Gamepad& input, Gamepad* mapped) {
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
 
   mapped->buttons_length = DUALSHOCK_BUTTON_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
+void MapperDualshock4New(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[5];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[2]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[8];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[9];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[12];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[10];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
+
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -409,7 +462,7 @@ struct MappingData {
     {"046d", "c21e", MapperXInputStyleGamepad},  // Logitech F510
     {"046d", "c21f", MapperXInputStyleGamepad},  // Logitech F710
     {"04e8", "a000", MapperSamsung_EI_GP20},     // Samsung Gamepad EI-GP20
-    {"054c", "0268", MapperPlaystationSixAxis},  // Playstation SIXAXIS
+    {"054c", "0268", MapperDualshock3SixAxis},   // Dualshock 3 / SIXAXIS
     {"054c", "05c4", MapperDualshock4},          // Playstation Dualshock 4
     {"054c", "09cc", MapperDualshock4},          // Dualshock 4 (PS4 Slim)
     {"054c", "0ba0", MapperDualshock4},          // Dualshock 4 USB receiver
@@ -433,13 +486,27 @@ struct MappingData {
 
 GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
     const base::StringPiece& vendor_id,
-    const base::StringPiece& product_id) {
+    const base::StringPiece& product_id,
+    const base::StringPiece& version_number) {
+  GamepadStandardMappingFunction mapper = nullptr;
   for (size_t i = 0; i < arraysize(AvailableMappings); ++i) {
     MappingData& item = AvailableMappings[i];
-    if (vendor_id == item.vendor_id && product_id == item.product_id)
-      return item.function;
+    if (vendor_id == item.vendor_id && product_id == item.product_id) {
+      mapper = item.function;
+      break;
+    }
   }
-  return NULL;
+
+  // The Linux kernel was updated in version 4.10 to better support Dualshock 4
+  // and Dualshock 3/SIXAXIS gamepads. The driver patches the hardware version
+  // when using the new mapping to allow downstream users to distinguish them.
+  if (mapper == MapperDualshock4 && version_number == "8111") {
+    mapper = MapperDualshock4New;
+  } else if (mapper == MapperDualshock3SixAxis && version_number == "8111") {
+    mapper = MapperDualshock3SixAxisNew;
+  }
+
+  return mapper;
 }
 
 }  // namespace device
