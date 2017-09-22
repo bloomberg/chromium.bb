@@ -90,13 +90,6 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
   if (transform != gfx::OVERLAY_TRANSFORM_NONE && !rotation_prop_.id)
     return false;
 
-// TODO(dcastagna): On rk3399 downscaling by a factor of two is not working
-// correctly. Remove this hack once crbug.com/709105 is fixed.
-#if defined(ARCH_CPU_ARM_FAMILY)
-  if ((src_rect.width() >> 16) / crtc_rect.width() == 2)
-    return false;
-#endif
-
   int plane_set_succeeded =
       drmModeAtomicAddProperty(property_set, plane_id_, crtc_prop_.id,
                                crtc_id) &&
