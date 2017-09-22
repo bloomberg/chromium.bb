@@ -10,6 +10,7 @@
 #include "base/message_loop/message_pump.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -23,6 +24,9 @@ class BASE_EXPORT MessagePumpDefault : public MessagePump {
   void Quit() override;
   void ScheduleWork() override;
   void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
+#if defined(OS_MACOSX)
+  void SetTimerSlack(TimerSlack timer_slack) override;
+#endif
 
  private:
   // This flag is set to false when Run should return.
