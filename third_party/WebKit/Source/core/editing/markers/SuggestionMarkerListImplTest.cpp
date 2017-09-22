@@ -6,6 +6,7 @@
 
 #include "core/editing/markers/MarkerTestUtilities.h"
 #include "core/editing/markers/SuggestionMarker.h"
+#include "core/editing/markers/SuggestionMarkerProperties.h"
 #include "core/editing/markers/SuggestionMarkerReplacementScope.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,10 +19,8 @@ class SuggestionMarkerListImplTest : public ::testing::Test {
       : marker_list_(new SuggestionMarkerListImpl()) {}
 
   SuggestionMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new SuggestionMarker(start_offset, end_offset, Vector<String>(),
-                                Color::kTransparent, Color::kTransparent,
-                                StyleableMarker::Thickness::kThin,
-                                Color::kTransparent);
+    return new SuggestionMarker(start_offset, end_offset,
+                                SuggestionMarkerProperties());
   }
 
   Persistent<SuggestionMarkerListImpl> marker_list_;

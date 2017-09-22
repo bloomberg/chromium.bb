@@ -4,25 +4,23 @@
 
 #include "core/editing/markers/SuggestionMarker.h"
 
+#include "core/editing/markers/SuggestionMarkerProperties.h"
+
 namespace blink {
 
 int32_t SuggestionMarker::current_tag_ = 0;
 
 SuggestionMarker::SuggestionMarker(unsigned start_offset,
                                    unsigned end_offset,
-                                   const Vector<String>& suggestions,
-                                   Color suggestion_highlight_color,
-                                   Color underline_color,
-                                   Thickness thickness,
-                                   Color background_color)
+                                   const SuggestionMarkerProperties& properties)
     : StyleableMarker(start_offset,
                       end_offset,
-                      underline_color,
-                      thickness,
-                      background_color),
+                      properties.UnderlineColor(),
+                      properties.Thickness(),
+                      properties.BackgroundColor()),
       tag_(NextTag()),
-      suggestions_(suggestions),
-      suggestion_highlight_color_(suggestion_highlight_color) {
+      suggestions_(properties.Suggestions()),
+      suggestion_highlight_color_(properties.HighlightColor()) {
   DCHECK_GT(tag_, 0);
 }
 

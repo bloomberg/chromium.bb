@@ -241,6 +241,8 @@ blink_core_sources("editing") {
     "markers/SuggestionMarker.h",
     "markers/SuggestionMarkerListImpl.cpp",
     "markers/SuggestionMarkerListImpl.h",
+    "markers/SuggestionMarkerProperties.cpp",
+    "markers/SuggestionMarkerProperties.h",
     "markers/SuggestionMarkerReplacementScope.cpp",
     "markers/SuggestionMarkerReplacementScope.h",
     "markers/TextMatchMarker.cpp",

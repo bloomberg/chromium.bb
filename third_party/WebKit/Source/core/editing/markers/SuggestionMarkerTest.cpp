@@ -4,6 +4,7 @@
 
 #include "core/editing/markers/SuggestionMarker.h"
 
+#include "core/editing/markers/SuggestionMarkerProperties.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -11,42 +12,51 @@ namespace blink {
 class SuggestionMarkerTest : public ::testing::Test {};
 
 TEST_F(SuggestionMarkerTest, MarkerType) {
-  DocumentMarker* marker = new SuggestionMarker(
-      0, 1, Vector<String>(), Color::kTransparent, Color::kTransparent,
-      StyleableMarker::Thickness::kThin, Color::kTransparent);
+  DocumentMarker* marker =
+      new SuggestionMarker(0, 1, SuggestionMarkerProperties());
   EXPECT_EQ(DocumentMarker::kSuggestion, marker->GetType());
 }
 
 TEST_F(SuggestionMarkerTest, IsStyleableMarker) {
-  DocumentMarker* marker = new SuggestionMarker(
-      0, 1, Vector<String>(), Color::kTransparent, Color::kTransparent,
-      StyleableMarker::Thickness::kThin, Color::kTransparent);
+  DocumentMarker* marker =
+      new SuggestionMarker(0, 1, SuggestionMarkerProperties());
   EXPECT_TRUE(IsStyleableMarker(*marker));
 }
 
 TEST_F(SuggestionMarkerTest, ConstructorAndGetters) {
   Vector<String> suggestions = {"this", "that"};
-  SuggestionMarker* marker = new SuggestionMarker(
-      0, 1, suggestions, Color::kTransparent, Color::kDarkGray,
-      StyleableMarker::Thickness::kThin, Color::kGray);
+  SuggestionMarker* marker =
+      new SuggestionMarker(0, 1,
+                           SuggestionMarkerProperties::Builder()
+                               .SetSuggestions(suggestions)
+                               .SetHighlightColor(Color::kTransparent)
+                               .SetUnderlineColor(Color::kDarkGray)
+                               .SetThickness(StyleableMarker::Thickness::kThin)
+                               .SetBackgroundColor(Color::kGray)
+                               .Build());
   EXPECT_EQ(suggestions, marker->Suggestions());
   EXPECT_EQ(Color::kTransparent, marker->SuggestionHighlightColor());
   EXPECT_EQ(Color::kDarkGray, marker->UnderlineColor());
   EXPECT_FALSE(marker->IsThick());
   EXPECT_EQ(Color::kGray, marker->BackgroundColor());
 
-  SuggestionMarker* marker2 = new SuggestionMarker(
-      0, 1, Vector<String>(), Color::kBlack, Color::kDarkGray,
-      StyleableMarker::Thickness::kThick, Color::kGray);
+  SuggestionMarker* marker2 =
+      new SuggestionMarker(0, 1,
+                           SuggestionMarkerProperties::Builder()
+                               .SetHighlightColor(Color::kBlack)
+                               .SetThickness(StyleableMarker::Thickness::kThick)
+                               .Build());
   EXPECT_TRUE(marker2->IsThick());
   EXPECT_EQ(marker2->SuggestionHighlightColor(), Color::kBlack);
 }
 
 TEST_F(SuggestionMarkerTest, SetSuggestion) {
   Vector<String> suggestions = {"this", "that"};
-  SuggestionMarker* marker = new SuggestionMarker(
-      0, 1, suggestions, Color::kTransparent, Color::kDarkGray,
-      StyleableMarker::Thickness::kThin, Color::kGray);
+  SuggestionMarker* marker =
+      new SuggestionMarker(0, 1,
+                           SuggestionMarkerProperties::Builder()
+                               .SetSuggestions(suggestions)
+                               .Build());
 
   marker->SetSuggestion(1, "these");
 
