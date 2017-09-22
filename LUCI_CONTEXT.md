@@ -69,6 +69,7 @@ provide.
 message LocalAuth {
   message Account {
     string id = 1;
+    string email = 2;
   }
 
   int rpc_port = 1;
@@ -83,6 +84,12 @@ message LocalAuth {
 
 The returned tokens MUST have expiration duration longer than 150 sec. Clients
 of the protocol rely on this.
+
+...
+
+The email may be a special string `"-"` which means tokens produced by the auth
+server are not associated with any particular known email. This may happen when
+using tokens that don't have `userinfo.email` OAuth scope.
 
 ...
 
