@@ -240,7 +240,7 @@ SmoothScrollSequencer* PaintLayerScrollableArea::GetSmoothScrollSequencer()
 GraphicsLayer* PaintLayerScrollableArea::LayerForScrolling() const {
   return Layer()->HasCompositedLayerMapping()
              ? Layer()->GetCompositedLayerMapping()->ScrollingContentsLayer()
-             : 0;
+             : nullptr;
 }
 
 GraphicsLayer* PaintLayerScrollableArea::LayerForHorizontalScrollbar() const {
@@ -251,7 +251,7 @@ GraphicsLayer* PaintLayerScrollableArea::LayerForHorizontalScrollbar() const {
              ? Layer()
                    ->GetCompositedLayerMapping()
                    ->LayerForHorizontalScrollbar()
-             : 0;
+             : nullptr;
 }
 
 GraphicsLayer* PaintLayerScrollableArea::LayerForVerticalScrollbar() const {
@@ -260,7 +260,7 @@ GraphicsLayer* PaintLayerScrollableArea::LayerForVerticalScrollbar() const {
 
   return Layer()->HasCompositedLayerMapping()
              ? Layer()->GetCompositedLayerMapping()->LayerForVerticalScrollbar()
-             : 0;
+             : nullptr;
 }
 
 GraphicsLayer* PaintLayerScrollableArea::LayerForScrollCorner() const {
@@ -269,7 +269,7 @@ GraphicsLayer* PaintLayerScrollableArea::LayerForScrollCorner() const {
 
   return Layer()->HasCompositedLayerMapping()
              ? Layer()->GetCompositedLayerMapping()->LayerForScrollCorner()
-             : 0;
+             : nullptr;
 }
 
 bool PaintLayerScrollableArea::ShouldUseIntegerScrollOffset() const {
