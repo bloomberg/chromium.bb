@@ -2269,8 +2269,21 @@ STDMETHODIMP AXPlatformNodeWin::get_nCharacters(LONG* n_characters) {
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_caretOffset(LONG* offset) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CARET_OFFSET);
   COM_OBJECT_VALIDATE_1_ARG(offset);
-  *offset = static_cast<LONG>(GetIntAttribute(AX_ATTR_TEXT_SEL_END));
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+  *offset = 0;
+
+  if (!HasCaret())
+    return S_FALSE;
+
+  int selection_start, selection_end;
+  GetSelectionOffsets(&selection_start, &selection_end);
+  // The caret is always at the end of the selection.
+  *offset = selection_end;
+  if (*offset < 0)
+    return S_FALSE;
+
   return S_OK;
 }
 
@@ -3638,7 +3651,7 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
   if (*offset == IA2_TEXT_OFFSET_LENGTH) {
     *offset = static_cast<LONG>(GetText().length());
   } else if (*offset == IA2_TEXT_OFFSET_CARET) {
-    get_caretOffset(offset);
+    *offset = static_cast<LONG>(GetIntAttribute(AX_ATTR_TEXT_SEL_END));
   }
 }
 

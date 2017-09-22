@@ -238,25 +238,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_nCharacters(LONG* n_characters) {
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_caretOffset(LONG* offset) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CARET_OFFSET);
-  AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!owner())
-    return E_FAIL;
-
-  if (!offset)
-    return E_INVALIDARG;
-
-  if (!owner()->HasCaret())
-    return S_FALSE;
-
-  int selection_start, selection_end;
-  GetSelectionOffsets(&selection_start, &selection_end);
-  // The caret is always at the end of the selection.
-  *offset = selection_end;
-  if (*offset < 0)
-    return S_FALSE;
-
-  return S_OK;
+  return AXPlatformNodeWin::get_caretOffset(offset);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_characterExtents(
