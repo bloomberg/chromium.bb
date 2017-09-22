@@ -413,6 +413,7 @@ class CORE_EXPORT EventHandler final
                            ShadowChildCanOverrideUserSelectText);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, InputFieldsCanStartSelection);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, ImagesCannotStartSelection);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, AnchorTextCannotStartSelection);
 };
 
 }  // namespace blink
