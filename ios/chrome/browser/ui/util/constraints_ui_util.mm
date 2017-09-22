@@ -133,6 +133,23 @@ void AddSameConstraints(UIView* view1, UIView* view2) {
   ]];
 }
 
+void PinToSafeArea(UIView* innerView, UIView* outerView) {
+  if (@available(iOS 11.0, *)) {
+    [NSLayoutConstraint activateConstraints:@[
+      [innerView.topAnchor
+          constraintEqualToAnchor:outerView.safeAreaLayoutGuide.topAnchor],
+      [innerView.leadingAnchor
+          constraintEqualToAnchor:outerView.safeAreaLayoutGuide.leadingAnchor],
+      [innerView.trailingAnchor
+          constraintEqualToAnchor:outerView.safeAreaLayoutGuide.trailingAnchor],
+      [innerView.bottomAnchor
+          constraintEqualToAnchor:outerView.safeAreaLayoutGuide.bottomAnchor],
+    ]];
+  } else {
+    AddSameConstraints(innerView, outerView);
+  }
+}
+
 UILayoutGuide* SafeAreaLayoutGuideForView(UIView* view) {
   if (@available(iOS 11, *)) {
     return view.safeAreaLayoutGuide;

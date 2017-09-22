@@ -196,20 +196,8 @@ typedef NS_ENUM(NSInteger, ButtonPositioning) { Leading, Centered, Trailing };
 
     [self addSubview:_stackView];
     _stackView.translatesAutoresizingMaskIntoConstraints = NO;
-    if (@available(iOS 11.0, *)) {
-      [NSLayoutConstraint activateConstraints:@[
-        [_stackView.topAnchor
-            constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor],
-        [_stackView.leadingAnchor
-            constraintEqualToAnchor:self.safeAreaLayoutGuide.leadingAnchor],
-        [_stackView.trailingAnchor
-            constraintEqualToAnchor:self.safeAreaLayoutGuide.trailingAnchor],
-        [_stackView.bottomAnchor
-            constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor],
-      ]];
-    } else {
-      AddSameConstraints(_stackView, self);
-    }
+
+    PinToSafeArea(_stackView, self);
     _heightConstraint = [_stackView.heightAnchor
         constraintEqualToConstant:kToolbarNormalHeight];
     _heightConstraint.active = YES;
