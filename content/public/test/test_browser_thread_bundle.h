@@ -112,10 +112,9 @@ class TestBrowserThreadBundle {
   enum Options {
     DEFAULT = 0,
     IO_MAINLOOP = 1 << 0,
-    REAL_DB_THREAD = 1 << 1,
-    REAL_FILE_THREAD = 1 << 2,
-    REAL_IO_THREAD = 1 << 3,
-    DONT_CREATE_BROWSER_THREADS = 1 << 4,
+    REAL_FILE_THREAD = 1 << 1,
+    REAL_IO_THREAD = 1 << 2,
+    DONT_CREATE_BROWSER_THREADS = 1 << 3,
   };
 
   TestBrowserThreadBundle();
@@ -132,11 +131,8 @@ class TestBrowserThreadBundle {
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<TestBrowserThread> ui_thread_;
-  std::unique_ptr<TestBrowserThread> db_thread_;
   std::unique_ptr<TestBrowserThread> file_thread_;
-  std::unique_ptr<TestBrowserThread> file_user_blocking_thread_;
   std::unique_ptr<TestBrowserThread> process_launcher_thread_;
-  std::unique_ptr<TestBrowserThread> cache_thread_;
   std::unique_ptr<TestBrowserThread> io_thread_;
 
   int options_;
