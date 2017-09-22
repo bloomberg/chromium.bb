@@ -16,7 +16,8 @@ using OfflineItemProgressUnit =
 namespace offline_pages {
 
 OfflineItem OfflineItemConversions::CreateOfflineItem(
-    const OfflinePageItem& page) {
+    const OfflinePageItem& page,
+    bool is_suggested) {
   OfflineItem item;
   item.id = ContentId(kOfflinePageNamespace, page.client_id.id);
   item.title = base::UTF16ToUTF8(page.title);
@@ -32,6 +33,7 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
   item.progress.value = 100;
   item.progress.max = 100;
   item.progress.unit = OfflineItemProgressUnit::PERCENTAGE;
+  item.is_suggested = is_suggested;
 
   return item;
 }

@@ -21,7 +21,8 @@ class SavePageRequest;
 // collection representation (for displaying in UI).
 class OfflineItemConversions {
  public:
-  static OfflineItem CreateOfflineItem(const OfflinePageItem& page);
+  static OfflineItem CreateOfflineItem(const OfflinePageItem& page,
+                                       bool is_suggested);
   static OfflineItem CreateOfflineItem(const SavePageRequest& request);
 
  private:
