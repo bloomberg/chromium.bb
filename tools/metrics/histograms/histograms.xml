@@ -102049,8 +102049,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="DownloadWhitelist"/>
   <suffix name="ExtensionBlacklist"/>
   <suffix name="IPBlacklist"/>
+  <suffix name="InclusionWhitelist"/>
   <suffix name="ModuleWhitelist"/>
   <suffix name="ResourceBlacklist"/>
+  <suffix name="Side-EffectFreeWhitelist"/>
   <suffix name="UwSList"/>
   <suffix name="UwSListPrefixSet"/>
   <affected-histogram name="SafeBrowsing.V4UnusedStoreFileExists.V3"/>
