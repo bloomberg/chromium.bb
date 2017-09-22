@@ -129,7 +129,6 @@ public class BottomSheetContentController extends BottomNavigationView
                 // TODO(bauerb): Implement support for destroying the home sheet after a delay.
                 mSelectedItemId = NO_CONTENT_ID;
                 mBottomSheet.showContent(null);
-                clearBottomSheetContents(true);
             } else {
                 if (mSelectedItemId != NO_CONTENT_ID && mSelectedItemId != R.id.action_home) {
                     showBottomSheetContent(R.id.action_home);
@@ -160,7 +159,7 @@ public class BottomSheetContentController extends BottomNavigationView
             }
 
             if (mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK) {
-                clearBottomSheetContents(false);
+                clearBottomSheetContents(mBottomSheet.getCurrentSheetContent() == null);
             }
         }
 

@@ -971,47 +971,53 @@ public class BottomSheet
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
-        View oldContent = mSheetContent != null ? mSheetContent.getContentView() : null;
-        if (content == null) {
-            onSheetContentChanged(null);
-            ((ViewGroup) oldContent.getParent()).removeView(oldContent);
-            return;
-        }
-
-        View newToolbar =
-                content.getToolbarView() != null ? content.getToolbarView() : mDefaultToolbarView;
-        View oldToolbar = mSheetContent != null && mSheetContent.getToolbarView() != null
-                ? mSheetContent.getToolbarView()
-                : mDefaultToolbarView;
-
         List<Animator> animators = new ArrayList<>();
         mContentSwapAnimatorSet = new AnimatorSet();
         mContentSwapAnimatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (mIsDestroyed) return;
-
-                onSheetContentChanged(content);
-                mContentSwapAnimatorSet = null;
+                onContentSwapAnimationEnd(content);
             }
         });
 
-        View contentView = content.getContentView();
-        if (content.applyDefaultTopPadding()) {
-            contentView.setPadding(contentView.getPaddingLeft(), mToolbarHolder.getHeight(),
-                    contentView.getPaddingRight(), contentView.getPaddingBottom());
+        // Add an animator for the toolbar transition if needed.
+        View newToolbar = content != null && content.getToolbarView() != null
+                ? content.getToolbarView()
+                : mDefaultToolbarView;
+        View oldToolbar = mSheetContent != null && mSheetContent.getToolbarView() != null
+                ? mSheetContent.getToolbarView()
+                : mDefaultToolbarView;
+        if (newToolbar != oldToolbar) {
+            // For the toolbar transition, make sure we don't detach the default toolbar view.
+            animators.add(getViewTransitionAnimator(
+                    newToolbar, oldToolbar, mToolbarHolder, mDefaultToolbarView != oldToolbar));
         }
 
-        // For the toolbar transition, make sure we don't detach the default toolbar view.
-        animators.add(getViewTransitionAnimator(
-                newToolbar, oldToolbar, mToolbarHolder, mDefaultToolbarView != oldToolbar));
-        animators.add(getViewTransitionAnimator(
-                contentView, oldContent, mBottomSheetContentContainer, true));
+        // Add an animator for the content transition if needed.
+        View oldContent = mSheetContent != null ? mSheetContent.getContentView() : null;
+        if (content == null) {
+            if (oldContent != null) mBottomSheetContentContainer.removeView(oldContent);
+        } else {
+            View contentView = content.getContentView();
+            if (content.applyDefaultTopPadding()) {
+                contentView.setPadding(contentView.getPaddingLeft(), mToolbarHolder.getHeight(),
+                        contentView.getPaddingRight(), contentView.getPaddingBottom());
+            }
+            animators.add(getViewTransitionAnimator(
+                    contentView, oldContent, mBottomSheetContentContainer, true));
+        }
+
+        // Return early if there are no animators to run.
+        if (animators.isEmpty()) {
+            onContentSwapAnimationEnd(content);
+            return;
+        }
 
         // Temporarily make the background of the toolbar holder a solid color so the transition
         // doesn't appear to show a hole in the toolbar.
-        int colorId = content.isIncognitoThemedContent() ? R.color.incognito_primary_color
-                                                         : R.color.modern_primary_color;
+        int colorId = content == null || !content.isIncognitoThemedContent()
+                ? R.color.modern_primary_color
+                : R.color.incognito_primary_color;
         if (!mIsSheetOpen || content.isIncognitoThemedContent()
                 || (mSheetContent != null && mSheetContent.isIncognitoThemedContent())) {
             // If the sheet is closed, the bottom sheet content container is invisible, so
@@ -1031,6 +1037,17 @@ public class BottomSheet
         if (mSheetContent == null || mDefaultToolbarView.isInTabSwitcherMode()) {
             mContentSwapAnimatorSet.end();
         }
+    }
+
+    /**
+     * Called when the animation to swap BottomSheetContent ends.
+     * @param content The BottomSheetContent showing at the end of the animation.
+     */
+    private void onContentSwapAnimationEnd(BottomSheetContent content) {
+        if (mIsDestroyed) return;
+
+        onSheetContentChanged(content);
+        mContentSwapAnimatorSet = null;
     }
 
     /**
@@ -1699,5 +1716,13 @@ public class BottomSheet
         }
         updateHandleTint();
         mToolbarHolder.setBackgroundColor(Color.TRANSPARENT);
+    }
+
+    /**
+     * @return The default toolbar view.
+     */
+    @VisibleForTesting
+    public @Nullable View getDefaultToolbarView() {
+        return mDefaultToolbarView;
     }
 }
