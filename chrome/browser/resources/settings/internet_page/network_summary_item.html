@@ -46,8 +46,8 @@
         </div>
       </div>
 
-      <template is="dom-if" if="[[showSimInfo_(deviceState)]]">
-        <network-siminfo editable
+      <template is="dom-if" if="[[showSimInfo_(deviceState)]]" restamp>
+        <network-siminfo editable on-tap="doNothing_"
             network-properties="[[getCellularState_(deviceState)]]"
             networking-private="[[networkingPrivate]]">
         </network-siminfo>
@@ -55,7 +55,8 @@
 
       <template is="dom-if" if="[[showPolicyIndicator_(activeNetworkState)]]">
         <cr-policy-indicator indicator-type="[[getIndicatorTypeForSource(
-            activeNetworkState.Source)]]">
+            activeNetworkState.Source)]]"
+            on-tap="doNothing_">
         </cr-policy-indicator>
       </template>
 
