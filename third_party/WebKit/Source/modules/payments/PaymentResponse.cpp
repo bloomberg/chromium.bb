@@ -15,15 +15,13 @@ namespace blink {
 
 PaymentResponse::PaymentResponse(
     payments::mojom::blink::PaymentResponsePtr response,
+    PaymentAddress* shipping_address,
     PaymentCompleter* payment_completer,
     const String& requestId)
     : requestId_(requestId),
       method_name_(response->method_name),
       stringified_details_(response->stringified_details),
-      shipping_address_(
-          response->shipping_address
-              ? new PaymentAddress(std::move(response->shipping_address))
-              : nullptr),
+      shipping_address_(shipping_address),
       shipping_option_(response->shipping_option),
       payer_name_(response->payer_name),
       payer_email_(response->payer_email),

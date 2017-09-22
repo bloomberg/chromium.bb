@@ -55,13 +55,14 @@ TEST(PaymentResponseTest, DataCopiedOver) {
   MockPaymentCompleter* complete_callback = new MockPaymentCompleter;
 
   PaymentResponse* output =
-      new PaymentResponse(std::move(input), complete_callback, "");
+      new PaymentResponse(std::move(input), nullptr, complete_callback, "id");
 
   EXPECT_EQ("foo", output->methodName());
   EXPECT_EQ("standardShippingOption", output->shippingOption());
   EXPECT_EQ("Jon Doe", output->payerName());
   EXPECT_EQ("abc@gmail.com", output->payerEmail());
   EXPECT_EQ("0123", output->payerPhone());
+  EXPECT_EQ("id", output->requestId());
 
   ScriptValue details =
       output->details(scope.GetScriptState(), scope.GetExceptionState());
@@ -85,7 +86,7 @@ TEST(PaymentResponseTest, PaymentResponseDetailsJSONObject) {
   input->stringified_details = "transactionId";
   MockPaymentCompleter* complete_callback = new MockPaymentCompleter;
   PaymentResponse* output =
-      new PaymentResponse(std::move(input), complete_callback, "");
+      new PaymentResponse(std::move(input), nullptr, complete_callback, "id");
 
   ScriptValue details =
       output->details(scope.GetScriptState(), scope.GetExceptionState());
@@ -101,7 +102,7 @@ TEST(PaymentResponseTest, CompleteCalledWithSuccess) {
   input->stringified_details = "{\"transactionId\": 123}";
   MockPaymentCompleter* complete_callback = new MockPaymentCompleter;
   PaymentResponse* output =
-      new PaymentResponse(std::move(input), complete_callback, "");
+      new PaymentResponse(std::move(input), nullptr, complete_callback, "id");
 
   EXPECT_CALL(*complete_callback,
               Complete(scope.GetScriptState(), PaymentCompleter::kSuccess));
@@ -117,7 +118,7 @@ TEST(PaymentResponseTest, CompleteCalledWithFailure) {
   input->stringified_details = "{\"transactionId\": 123}";
   MockPaymentCompleter* complete_callback = new MockPaymentCompleter;
   PaymentResponse* output =
-      new PaymentResponse(std::move(input), complete_callback, "");
+      new PaymentResponse(std::move(input), nullptr, complete_callback, "id");
 
   EXPECT_CALL(*complete_callback,
               Complete(scope.GetScriptState(), PaymentCompleter::kFail));
@@ -142,9 +143,11 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
   input->shipping_address->address_line.push_back("340 Main St");
   input->shipping_address->address_line.push_back("BIN1");
   input->shipping_address->address_line.push_back("First floor");
+  PaymentAddress* address =
+      new PaymentAddress(std::move(input->shipping_address));
 
-  PaymentResponse* output =
-      new PaymentResponse(std::move(input), new MockPaymentCompleter, "");
+  PaymentResponse* output = new PaymentResponse(std::move(input), address,
+                                                new MockPaymentCompleter, "id");
   ScriptValue json_object = output->toJSONForBinding(scope.GetScriptState());
   EXPECT_TRUE(json_object.IsObject());
 
@@ -154,7 +157,7 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
           .ToLocalChecked(),
       kDoNotExternalize);
   String expected =
-      "{\"requestId\":\"\",\"methodName\":\"foo\",\"details\":{"
+      "{\"requestId\":\"id\",\"methodName\":\"foo\",\"details\":{"
       "\"transactionId\":123},"
       "\"shippingAddress\":{\"country\":\"US\",\"addressLine\":[\"340 Main "
       "St\","
