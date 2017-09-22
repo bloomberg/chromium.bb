@@ -34,16 +34,17 @@ void ShowNotification(const base::DictionaryValue* message,
   const char kNotificationId[] = "chrome://network/sms";
   std::unique_ptr<message_center::Notification> notification;
 
-  notification = base::MakeUnique<message_center::Notification>(
+  notification = system_notifier::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId + std::to_string(message_id),
       base::ASCIIToUTF16(message_number), base::ASCIIToUTF16(message_text),
-      gfx::Image(gfx::CreateVectorIcon(
-          ash::kSystemMenuSmsIcon, ash::kMenuIconSize, ash::kMenuIconColor)),
+      gfx::Image(gfx::CreateVectorIcon(kSystemMenuSmsIcon, kMenuIconSize,
+                                       kMenuIconColor)),
       base::string16(), GURL(),
       message_center::NotifierId(message_center::NotifierId::APPLICATION,
-                                 ash::system_notifier::kNotifierSms),
-      message_center::RichNotificationData(), nullptr);
+                                 system_notifier::kNotifierSms),
+      message_center::RichNotificationData(), nullptr, kNotificationSmsSyncIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
   message_center->AddNotification(std::move(notification));
 }
 
