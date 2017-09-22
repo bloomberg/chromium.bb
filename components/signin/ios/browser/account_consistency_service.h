@@ -18,8 +18,8 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/ios/browser/active_state_manager.h"
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
-#include "ios/web/public/active_state_manager.h"
 
 namespace web {
 class BrowserState;
@@ -41,7 +41,7 @@ class SigninClient;
 class AccountConsistencyService : public KeyedService,
                                   public GaiaCookieManagerService::Observer,
                                   public SigninManagerBase::Observer,
-                                  public web::ActiveStateManager::Observer {
+                                  public ActiveStateManager::Observer {
  public:
   // Name of the preference property that persists the domains that have a
   // CHROME_CONNECTED cookie set by this service.

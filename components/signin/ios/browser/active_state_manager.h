@@ -2,19 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_ACTIVE_STATE_MANAGER_H_
-#define IOS_WEB_PUBLIC_ACTIVE_STATE_MANAGER_H_
+#ifndef COMPONENTS_SIGNIN_IOS_BROWSER_ACTIVE_STATE_MANAGER_H_
+#define COMPONENTS_SIGNIN_IOS_BROWSER_ACTIVE_STATE_MANAGER_H_
 
 #include "base/macros.h"
 
 namespace web {
-
 class BrowserState;
+}  // namespace web
 
 // Manages the active state associated with a particular BrowserState. Not
 // thread safe. Must be used only on the main thread.
 class ActiveStateManager {
  public:
+  // Returns whether |browser_state| has an associated ActiveStateManager.
+  // Must only be accessed from main thread.
+  static bool ExistsForBrowserState(web::BrowserState* browser_state);
+
+  // Returns the ActiveStateManager associated with |browser_state.|
+  // Lazily creates one if an ActiveStateManager is not already associated with
+  // the |browser_state|. |browser_state| cannot be a nullptr.  Must be accessed
+  // only from the main thread.
+  static ActiveStateManager* FromBrowserState(web::BrowserState* browser_state);
+
   // Sets the active state of the ActiveStateManager. At most one
   // ActiveStateManager can be active at any given time in the app. A
   // ActiveStateManager must be made inactive before it is destroyed. It is
@@ -44,6 +54,4 @@ class ActiveStateManager {
   virtual ~ActiveStateManager(){};
 };
 
-}  // namespace web
-
-#endif  // IOS_WEB_PUBLIC_ACTIVE_STATE_MANAGER_H_
+#endif  // COMPONENTS_SIGNIN_IOS_BROWSER_ACTIVE_STATE_MANAGER_H_

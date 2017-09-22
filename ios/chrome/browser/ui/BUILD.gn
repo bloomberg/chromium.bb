@@ -263,6 +263,7 @@ source_set("ui_internal") {
     "//components/reading_list/core",
     "//components/search_engines",
     "//components/sessions",
+    "//components/signin/ios/browser:active_state_manager",
     "//components/strings",
     "//components/toolbar",
     "//components/url_formatter",

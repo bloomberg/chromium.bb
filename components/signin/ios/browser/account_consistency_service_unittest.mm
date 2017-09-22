@@ -123,7 +123,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
+    ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(true);
     AccountConsistencyService::RegisterPrefs(prefs_.registry());
     AccountTrackerService::RegisterPrefs(prefs_.registry());
     content_settings::CookieSettings::RegisterProfilePrefs(prefs_.registry());
@@ -146,7 +146,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
   void TearDown() override {
     account_consistency_service_->Shutdown();
     settings_map_->ShutdownOnUIThread();
-    web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
+    ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(false);
     PlatformTest::TearDown();
   }
 
@@ -222,7 +222,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
 // inactive.
 TEST_F(AccountConsistencyServiceTest, OnInactive) {
   [[GetMockWKWebView() expect] stopLoading];
-  web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
+  ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(false);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }
 
@@ -265,9 +265,9 @@ TEST_F(AccountConsistencyServiceTest, ApplyOnActive) {
   [[GetMockWKWebView() expect] setNavigationDelegate:[OCMArg isNotNil]];
   AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
   AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
-  web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
+  ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(false);
   SignIn();
-  web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
+  ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(true);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }
 
@@ -282,8 +282,8 @@ TEST_F(AccountConsistencyServiceTest, CancelOnInactiveReApplyOnActive) {
   AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
   AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
   SignIn();
-  web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
-  web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(true);
+  ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(false);
+  ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(true);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }
 

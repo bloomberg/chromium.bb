@@ -19,6 +19,7 @@ source_set("browser") {
   ]
 
   deps = [
+    ":active_state_manager",
     "//base",
     "//components/content_settings/core/browser",
     "//components/google/core/browser",
@@ -30,6 +31,20 @@ source_set("browser") {
     "//google_apis",
     "//ios/web",
     "//net",
+  ]
+}
+
+source_set("active_state_manager") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "active_state_manager.h",
+    "active_state_manager_impl.h",
+    "active_state_manager_impl.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/web",
   ]
 }
 
@@ -53,10 +68,12 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "account_consistency_service_unittest.mm",
+    "active_state_manager_impl_unittest.mm",
     "profile_oauth2_token_service_ios_delegate_unittest.mm",
   ]
 
   deps = [
+    ":active_state_manager",
     ":test_support",
     "//components/prefs:test_support",
     "//components/signin/core/browser",

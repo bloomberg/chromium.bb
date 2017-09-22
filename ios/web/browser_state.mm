@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
-#include "ios/web/active_state_manager_impl.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/service_manager_connection.h"
 #include "ios/web/public/service_names.mojom.h"
@@ -37,7 +36,6 @@ const char kBrowserStateIdentifierKey[] = "BrowserStateIdentifierKey";
 
 // Data key names.
 const char kCertificatePolicyCacheKeyName[] = "cert_policy_cache";
-const char kActiveStateManagerKeyName[] = "active_state_manager";
 const char kMojoWasInitialized[] = "mojo-was-initialized";
 const char kServiceManagerConnection[] = "service-manager-connection";
 const char kServiceUserId[] = "service-user-id";
@@ -116,29 +114,6 @@ scoped_refptr<CertificatePolicyCache> BrowserState::GetCertificatePolicyCache(
       static_cast<CertificatePolicyCacheHandle*>(
           browser_state->GetUserData(kCertificatePolicyCacheKeyName));
   return handle->policy_cache;
-}
-
-// static
-bool BrowserState::HasActiveStateManager(BrowserState* browser_state) {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
-  return browser_state->GetUserData(kActiveStateManagerKeyName) != nullptr;
-}
-
-// static
-ActiveStateManager* BrowserState::GetActiveStateManager(
-    BrowserState* browser_state) {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
-  DCHECK(browser_state);
-
-  ActiveStateManagerImpl* active_state_manager =
-      static_cast<ActiveStateManagerImpl*>(
-          browser_state->GetUserData(kActiveStateManagerKeyName));
-  if (!active_state_manager) {
-    active_state_manager = new ActiveStateManagerImpl(browser_state);
-    browser_state->SetUserData(kActiveStateManagerKeyName,
-                               base::WrapUnique(active_state_manager));
-  }
-  return active_state_manager;
 }
 
 BrowserState::BrowserState() : url_data_manager_ios_backend_(nullptr) {

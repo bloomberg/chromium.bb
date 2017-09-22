@@ -221,7 +221,7 @@ AccountConsistencyService::AccountConsistencyService(
       applying_cookie_requests_(false) {
   gaia_cookie_manager_service_->AddObserver(this);
   signin_manager_->AddObserver(this);
-  web::BrowserState::GetActiveStateManager(browser_state_)->AddObserver(this);
+  ActiveStateManager::FromBrowserState(browser_state_)->AddObserver(this);
   LoadFromPrefs();
   if (signin_manager_->IsAuthenticated()) {
     AddChromeConnectedCookies();
@@ -307,8 +307,7 @@ void AccountConsistencyService::LoadFromPrefs() {
 void AccountConsistencyService::Shutdown() {
   gaia_cookie_manager_service_->RemoveObserver(this);
   signin_manager_->RemoveObserver(this);
-  web::BrowserState::GetActiveStateManager(browser_state_)
-      ->RemoveObserver(this);
+  ActiveStateManager::FromBrowserState(browser_state_)->RemoveObserver(this);
   ResetWKWebView();
   web_state_handlers_.clear();
 }
@@ -322,7 +321,7 @@ void AccountConsistencyService::ApplyCookieRequests() {
   if (cookie_requests_.empty()) {
     return;
   }
-  if (!web::BrowserState::GetActiveStateManager(browser_state_)->IsActive()) {
+  if (!ActiveStateManager::FromBrowserState(browser_state_)->IsActive()) {
     // Web view usage isn't active for now, ignore cookie requests for now and
     // wait to be notified that it became active again.
     return;
@@ -389,7 +388,7 @@ void AccountConsistencyService::FinishedApplyingCookieRequest(bool success) {
 }
 
 WKWebView* AccountConsistencyService::GetWKWebView() {
-  if (!web::BrowserState::GetActiveStateManager(browser_state_)->IsActive()) {
+  if (!ActiveStateManager::FromBrowserState(browser_state_)->IsActive()) {
     // |browser_state_| is not active, WKWebView linked to this browser state
     // should not exist or be created.
     return nil;

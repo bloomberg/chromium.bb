@@ -60,7 +60,7 @@ class GaiaAuthFetcherIOSTest : public PlatformTest {
   GaiaAuthFetcherIOSTest() {
     browser_state_ = TestChromeBrowserState::Builder().Build();
 
-    web::BrowserState::GetActiveStateManager(browser_state())->SetActive(true);
+    ActiveStateManager::FromBrowserState(browser_state())->SetActive(true);
     gaia_auth_fetcher_.reset(new GaiaAuthFetcherIOS(&consumer_, std::string(),
                                                     nullptr, browser_state()));
     gaia_auth_fetcher_->bridge_.reset(new FakeGaiaAuthFetcherIOSBridge(
@@ -69,7 +69,7 @@ class GaiaAuthFetcherIOSTest : public PlatformTest {
 
   ~GaiaAuthFetcherIOSTest() override {
     gaia_auth_fetcher_.reset();
-    web::BrowserState::GetActiveStateManager(browser_state())->SetActive(false);
+    ActiveStateManager::FromBrowserState(browser_state())->SetActive(false);
   }
 
   GaiaAuthFetcherIOSBridge* GetBridge() {
@@ -162,7 +162,7 @@ TEST_F(GaiaAuthFetcherIOSTest, StartGetCheckConnectionInfo) {
 // inactive.
 TEST_F(GaiaAuthFetcherIOSTest, OnInactive) {
   [[GetMockWKWebView() expect] stopLoading];
-  web::BrowserState::GetActiveStateManager(browser_state())->SetActive(false);
+  ActiveStateManager::FromBrowserState(browser_state())->SetActive(false);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }
 
@@ -178,9 +178,9 @@ TEST_F(GaiaAuthFetcherIOSTest, FetchOnActive) {
     GetBridge()->URLFetchSuccess("data");
   }]) loadRequest:[OCMArg any]];
 
-  web::BrowserState::GetActiveStateManager(browser_state())->SetActive(false);
+  ActiveStateManager::FromBrowserState(browser_state())->SetActive(false);
   gaia_auth_fetcher_->StartMergeSession("uber_token", "");
-  web::BrowserState::GetActiveStateManager(browser_state())->SetActive(true);
+  ActiveStateManager::FromBrowserState(browser_state())->SetActive(true);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }
 
@@ -198,7 +198,7 @@ TEST_F(GaiaAuthFetcherIOSTest, StopOnInactiveReFetchOnActive) {
   }]) loadRequest:[OCMArg any]];
 
   gaia_auth_fetcher_->StartMergeSession("uber_token", "");
-  web::BrowserState::GetActiveStateManager(browser_state())->SetActive(false);
-  web::BrowserState::GetActiveStateManager(browser_state())->SetActive(true);
+  ActiveStateManager::FromBrowserState(browser_state())->SetActive(false);
+  ActiveStateManager::FromBrowserState(browser_state())->SetActive(true);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
 }
