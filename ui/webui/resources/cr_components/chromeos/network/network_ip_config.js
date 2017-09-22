@@ -85,22 +85,20 @@ Polymer({
     if (!this.networkProperties)
       return;
 
+    var properties = this.networkProperties;
     if (newValue.GUID != (oldValue && oldValue.GUID))
       this.savedStaticIp_ = undefined;
 
     // Update the 'automatic' property.
-    if (this.networkProperties.IPAddressConfigType) {
-      var ipConfigType =
-          CrOnc.getActiveValue(this.networkProperties.IPAddressConfigType);
+    if (properties.IPAddressConfigType) {
+      var ipConfigType = CrOnc.getActiveValue(properties.IPAddressConfigType);
       this.automatic_ = (ipConfigType != CrOnc.IPConfigType.STATIC);
     }
 
-    if (this.networkProperties.IPConfigs) {
+    if (properties.IPConfigs || properties.StaticIPConfig) {
       // Update the 'ipConfig' property.
-      var ipv4 =
-          CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
-      var ipv6 =
-          CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV6);
+      var ipv4 = CrOnc.getIPConfigForType(properties, CrOnc.IPType.IPV4);
+      var ipv6 = CrOnc.getIPConfigForType(properties, CrOnc.IPType.IPV6);
       this.ipConfig_ = {
         ipv4: this.getIPConfigUIProperties_(ipv4),
         ipv6: this.getIPConfigUIProperties_(ipv6)

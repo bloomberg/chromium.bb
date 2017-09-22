@@ -105,7 +105,7 @@ Polymer({
      * The network IP Address.
      * @private
      */
-    IPAddress_: {
+    ipAddress_: {
       type: String,
       value: '',
     },
@@ -219,7 +219,7 @@ Polymer({
     // Set the IPAddress property to the IPV4 Address.
     var ipv4 =
         CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
-    this.IPAddress_ = (ipv4 && ipv4.IPAddress) || '';
+    this.ipAddress_ = (ipv4 && ipv4.IPAddress) || '';
 
     // Update the detail page title.
     this.parentNode.pageTitle = CrOnc.getNetworkName(this.networkProperties);
@@ -1013,6 +1013,16 @@ Polymer({
   showCellularSim_: function(networkProperties) {
     return networkProperties.Type == CrOnc.Type.CELLULAR &&
         this.get('Cellular.Family', this.networkProperties) != 'CDMA';
+  },
+
+  /**
+   * @param {string} ipAddress
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
+  showIpAddress_: function(ipAddress, networkProperties) {
+    return !!ipAddress && this.isConnectedState_(networkProperties);
   },
 
   /**
