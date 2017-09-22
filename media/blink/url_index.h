@@ -261,7 +261,6 @@ class MEDIA_BLINK_EXPORT UrlIndex {
 
   ResourceFetchContext* fetch_context_;
   using UrlDataMap = std::map<UrlData::KeyType, scoped_refptr<UrlData>>;
-  UrlDataMap unindexed_data_;
   UrlDataMap indexed_data_;
   scoped_refptr<MultiBuffer::GlobalLRU> lru_;
 
