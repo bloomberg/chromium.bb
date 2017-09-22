@@ -346,6 +346,14 @@ void WindowTreeHost::OnHostWorkspaceChanged() {
     observer.OnHostWorkspaceChanged(this);
 }
 
+void WindowTreeHost::OnHostDisplayChanged() {
+  if (!compositor_)
+    return;
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window());
+  compositor_->SetDisplayColorSpace(display.color_space());
+}
+
 void WindowTreeHost::OnHostCloseRequested() {
   for (WindowTreeHostObserver& observer : observers_)
     observer.OnHostCloseRequested(this);

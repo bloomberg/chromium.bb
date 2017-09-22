@@ -796,11 +796,13 @@ void DesktopWindowTreeHostWin::HandleEndWMSizeMove() {
 }
 
 void DesktopWindowTreeHostWin::HandleMove() {
+  CheckForMonitorChange();
   native_widget_delegate_->OnNativeWidgetMove();
   OnHostMovedInPixels(GetBoundsInPixels().origin());
 }
 
 void DesktopWindowTreeHostWin::HandleWorkAreaChanged() {
+  CheckForMonitorChange();
   GetWidget()->widget_delegate()->OnWorkAreaChanged();
 }
 
@@ -814,11 +816,13 @@ void DesktopWindowTreeHostWin::HandleVisibilityChanged(bool visible) {
 
 void DesktopWindowTreeHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
+  CheckForMonitorChange();
   if (dispatcher())
     OnHostResizedInPixels(new_size);
 }
 
 void DesktopWindowTreeHostWin::HandleFrameChanged() {
+  CheckForMonitorChange();
   SetWindowTransparency();
   // Replace the frame and layout the contents.
   GetWidget()->non_client_view()->UpdateFrame();
@@ -995,6 +999,15 @@ bool DesktopWindowTreeHostWin::IsModalWindowActive() const {
       return true;
   }
   return false;
+}
+
+void DesktopWindowTreeHostWin::CheckForMonitorChange() {
+  HMONITOR monitor_from_window =
+      ::MonitorFromWindow(GetHWND(), MONITOR_DEFAULTTOPRIMARY);
+  if (monitor_from_window == last_monitor_from_window_)
+    return;
+  last_monitor_from_window_ = monitor_from_window;
+  OnHostDisplayChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
