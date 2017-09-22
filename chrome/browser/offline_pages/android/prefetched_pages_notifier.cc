@@ -15,7 +15,7 @@ namespace offline_pages {
 
 void ShowPrefetchedContentNotification(const GURL& page_url) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PrefetchedPagesNotifier_showNotification(
+  Java_PrefetchedPagesNotifier_showDebuggingNotification(
       env, base::android::ConvertUTF8ToJavaString(env, page_url.host()));
 }
 
