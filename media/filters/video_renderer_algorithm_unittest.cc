@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "media/base/media_log.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame_pool.h"
@@ -1334,7 +1335,9 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFramesCadence) {
 }
 
 // Test runs too slowly on debug builds.
-#if defined(NDEBUG)
+// TODO(fuchsia): Also runs too slowly on Fuchsia, this should be investigated,
+// see https://crbug.com/767166.
+#if defined(NDEBUG) && !defined(OS_FUCHSIA)
 TEST_F(VideoRendererAlgorithmTest, CadenceBasedTest) {
   // Common display rates.
   const double kDisplayRates[] = {
@@ -1362,7 +1365,7 @@ TEST_F(VideoRendererAlgorithmTest, CadenceBasedTest) {
     }
   }
 }
-#endif
+#endif  // defined(NDEBUG) && !defined(OS_FUCHSIA)
 
 // Rotate through various playback rates and ensure algorithm adapts correctly.
 TEST_F(VideoRendererAlgorithmTest, VariablePlaybackRateCadence) {
