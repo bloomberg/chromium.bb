@@ -397,9 +397,6 @@ class ChromeLauncherController
   // The binding this instance uses to implment mojom::ShelfObserver
   mojo::AssociatedBinding<ash::mojom::ShelfObserver> observer_binding_;
 
-  // True if Ash and Chrome should synchronize separate ShelfModel instances.
-  bool should_synchronize_shelf_models_ = false;
-
   // True when applying changes from the remote ShelfModel owned by Ash.
   // Changes to the local ShelfModel should not be reported during this time.
   bool applying_remote_shelf_model_changes_ = false;
