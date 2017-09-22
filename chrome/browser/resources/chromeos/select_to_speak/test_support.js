@@ -13,3 +13,13 @@ chrome.automation = {};
  * Stub
  */
 chrome.automation.getDesktop = function() {};
+
+/**
+ * Set necessary constants.
+ */
+chrome.automation.RoleType = {
+  WINDOW: 'window'
+};
+chrome.automation.StateType = {
+  INVISIBLE: 'invisible'
+};
