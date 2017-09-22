@@ -19,7 +19,7 @@ void FakeArcSession::StartForLoginScreen() {
   is_for_login_screen_ = true;
   if (boot_failure_emulation_enabled_) {
     for (auto& observer : observer_list_)
-      observer.OnSessionStopped(boot_failure_reason_);
+      observer.OnSessionStopped(boot_failure_reason_, false);
   }
 }
 
@@ -31,14 +31,20 @@ void FakeArcSession::Start() {
   is_for_login_screen_ = false;
   if (boot_failure_emulation_enabled_) {
     for (auto& observer : observer_list_)
-      observer.OnSessionStopped(boot_failure_reason_);
+      observer.OnSessionStopped(boot_failure_reason_, false);
   } else if (!boot_suspended_) {
+    running_ = true;
     for (auto& observer : observer_list_)
       observer.OnSessionReady();
   }
 }
 
+bool FakeArcSession::IsRunning() {
+  return running_;
+}
+
 void FakeArcSession::Stop() {
+  stop_requested_ = true;
   StopWithReason(ArcStopReason::SHUTDOWN);
 }
 
@@ -46,9 +52,15 @@ void FakeArcSession::OnShutdown() {
   StopWithReason(ArcStopReason::SHUTDOWN);
 }
 
+bool FakeArcSession::IsStopRequested() {
+  return stop_requested_;
+}
+
 void FakeArcSession::StopWithReason(ArcStopReason reason) {
+  bool was_mojo_connected = running_;
+  running_ = false;
   for (auto& observer : observer_list_)
-    observer.OnSessionStopped(reason);
+    observer.OnSessionStopped(reason, was_mojo_connected);
 }
 
 void FakeArcSession::EnableBootFailureEmulation(ArcStopReason reason) {

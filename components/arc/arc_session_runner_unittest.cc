@@ -180,6 +180,7 @@ TEST_F(ArcSessionRunnerTest, StopMidStartup) {
 
   arc_session_runner()->RequestStop(false);
   EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(restarting());
 }
 
 // If the boot procedure is failed, then restarting mechanism should not
@@ -193,6 +194,7 @@ TEST_F(ArcSessionRunnerTest, BootFailure) {
   arc_session_runner()->RequestStart();
   EXPECT_EQ(ArcStopReason::GENERIC_BOOT_FAILURE, stop_reason());
   EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_FALSE(restarting());
 }
 
 // Does the same with the mini instance for login screen.
@@ -244,41 +246,20 @@ TEST_F(ArcSessionRunnerTest, Restart) {
   ASSERT_TRUE(arc_session());
   arc_session()->StopWithReason(ArcStopReason::CRASH);
   EXPECT_TRUE(arc_session_runner()->IsStopped());
+  EXPECT_TRUE(restarting());
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(restarting_called());
   EXPECT_TRUE(arc_session_runner()->IsRunning());
 
   arc_session_runner()->RequestStop(false);
   EXPECT_TRUE(arc_session_runner()->IsStopped());
 }
 
-// Makes sure OnSessionStopped is called on stop.
-TEST_F(ArcSessionRunnerTest, OnSessionStopped) {
+TEST_F(ArcSessionRunnerTest, GracefulStop) {
   arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
   EXPECT_TRUE(arc_session_runner()->IsStopped());
 
   arc_session_runner()->RequestStart();
-  EXPECT_TRUE(arc_session_runner()->IsRunning());
-
-  // Simulate boot failure.
-  ASSERT_TRUE(arc_session());
-  arc_session()->StopWithReason(ArcStopReason::GENERIC_BOOT_FAILURE);
-  EXPECT_EQ(ArcStopReason::GENERIC_BOOT_FAILURE, stop_reason());
-  EXPECT_TRUE(restarting());
-  EXPECT_FALSE(restarting_called());
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(restarting_called());
-  EXPECT_TRUE(arc_session_runner()->IsRunning());
-
-  // Simulate crash.
-  ASSERT_TRUE(arc_session());
-  arc_session()->StopWithReason(ArcStopReason::CRASH);
-  EXPECT_EQ(ArcStopReason::CRASH, stop_reason());
-  EXPECT_TRUE(restarting());
-  EXPECT_FALSE(restarting_called());
-  EXPECT_TRUE(arc_session_runner()->IsStopped());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(restarting_called());
   EXPECT_TRUE(arc_session_runner()->IsRunning());
 
   // Graceful stop.

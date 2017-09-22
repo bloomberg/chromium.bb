@@ -5,7 +5,6 @@
 #include "components/arc/arc_session_runner.h"
 
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_util.h"
@@ -25,6 +24,40 @@ chromeos::SessionManagerClient* GetSessionManagerClient() {
       !chromeos::DBusThreadManager::Get()->GetSessionManagerClient())
     return nullptr;
   return chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+}
+
+// Returns true if restart is needed for given conditions.
+bool IsRestartNeeded(bool run_requested,
+                     ArcStopReason stop_reason,
+                     bool was_running) {
+  if (!run_requested) {
+    // The request to run ARC is canceled by the caller. No need to restart.
+    return false;
+  }
+
+  switch (stop_reason) {
+    case ArcStopReason::SHUTDOWN:
+      // This is a part of stop requested by ArcSessionRunner.
+      // If ARC is re-requested to start, restart is necessary.
+      // This case happens, e.g., RequestStart() -> RequestStop() ->
+      // RequestStart(), case. If the second RequestStart() is called before
+      // the instance previously running is stopped, then just |run_requested|
+      // flag is set. On completion, restart is needed.
+      return true;
+    case ArcStopReason::GENERIC_BOOT_FAILURE:
+    case ArcStopReason::LOW_DISK_SPACE:
+      // These two are errors on starting. To prevent failure loop, do not
+      // restart.
+      return false;
+    case ArcStopReason::CRASH:
+      // ARC instance is crashed unexpectedly, so automatically restart.
+      // However, to avoid crash loop, do not restart if it is not successfully
+      // started yet. So, check |was_running|.
+      return was_running;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace
@@ -64,23 +97,23 @@ void ArcSessionRunner::RequestStart() {
   if (run_requested_)
     return;
 
-  VLOG(1) << "Session started";
+  VLOG(1) << "Session start requested";
   run_requested_ = true;
   // Here |run_requested_| transitions from false to true. So, |restart_timer_|
   // must be stopped (either not even started, or has been cancelled in
   // previous RequestStop() call).
   DCHECK(!restart_timer_.IsRunning());
 
-  if (arc_session_ && state_ >= State::STARTING) {
-    // In this case, RequestStop() was called, and before |arc_session_| had
-    // finished stopping, RequestStart() was called. Do nothing in that case,
-    // since when |arc_session_| does actually stop, OnSessionStopped() will
-    // be called, where it should automatically restart.
-    DCHECK_EQ(state_, State::STOPPING);
-  } else {
-    DCHECK_LE(state_, State::STARTING_FOR_LOGIN_SCREEN);
-    StartArcSession();
+  if (arc_session_ && arc_session_->IsStopRequested()) {
+    // This is the case where RequestStop() was called, but before
+    // |arc_session_| had finshed stopping, RequestStart() is called.
+    // Do nothing in the that case, since when |arc_session_| does actually
+    // stop, OnSessionStopped() will be called, where it should automatically
+    // restart.
+    return;
   }
+
+  StartArcSession();
 }
 
 void ArcSessionRunner::RequestStop(bool always_stop_session) {
@@ -93,28 +126,22 @@ void ArcSessionRunner::RequestStop(bool always_stop_session) {
       return;
   }
 
-  VLOG(1) << "Session ended";
+  VLOG(1) << "Session stop requested";
   run_requested_ = false;
 
   if (arc_session_) {
-    // The |state_| could be either STARTING*, RUNNING or STOPPING.
-    DCHECK_NE(state_, State::STOPPED);
-
-    if (state_ == State::STOPPING) {
-      // STOPPING is found in the senario of "RequestStart() -> RequestStop()
-      // -> RequestStart() -> RequestStop()" case.
-      // In the first RequestStop() call, |state_| is set to STOPPING,
-      // and in the second RequestStop() finds it (so this is the second call).
-      // In that case, ArcSession::Stop() is already called, so do nothing.
-      return;
-    }
-    state_ = State::STOPPING;
+    // If |arc_session_| is running, stop it.
+    // Note that |arc_session_| may be already in the process of stopping or
+    // be stopped.
+    // E.g. RequestStart() -> RequestStop() -> RequestStart() -> RequestStop()
+    // case. If the second RequestStop() is called before the first
+    // RequestStop() is not yet completed for the instance, Stop() of the
+    // instance is called again, but it is no-op as expected.
     arc_session_->Stop();
-  } else {
-    DCHECK_EQ(state_, State::STOPPED);
-    // In case restarting is in progress, cancel it.
-    restart_timer_.Stop();
   }
+
+  // In case restarting is in progress, cancel it.
+  restart_timer_.Stop();
 }
 
 void ArcSessionRunner::OnShutdown() {
@@ -123,39 +150,40 @@ void ArcSessionRunner::OnShutdown() {
   VLOG(1) << "OnShutdown";
   run_requested_ = false;
   restart_timer_.Stop();
-  if (arc_session_) {
-    DCHECK_NE(state_, State::STOPPED);
-    state_ = State::STOPPING;
+  if (arc_session_)
     arc_session_->OnShutdown();
-  }
   // ArcSession::OnShutdown() invokes OnSessionStopped() synchronously.
   // In the observer method, |arc_session_| should be destroyed.
   DCHECK(!arc_session_);
 }
 
+// TODO(hidehiko,lhchavez,yusukes): Revisit following state accessors.
 bool ArcSessionRunner::IsRunning() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return state_ == State::RUNNING;
+  // For historical reason, exclude "stopping" instance phase.
+  return arc_session_ && arc_session_->IsRunning() &&
+         !arc_session_->IsStopRequested();
 }
 
 bool ArcSessionRunner::IsStopped() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return state_ == State::STOPPED;
+  return !arc_session_;
 }
 
 bool ArcSessionRunner::IsStopping() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return state_ == State::STOPPING;
+  return arc_session_ && arc_session_->IsStopRequested();
 }
 
 bool ArcSessionRunner::IsLoginScreenInstanceStarting() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return state_ == State::STARTING_FOR_LOGIN_SCREEN;
+  return arc_session_ && arc_session_->IsForLoginScreen() &&
+         !arc_session_->IsStopRequested();
 }
 
 void ArcSessionRunner::SetRestartDelayForTesting(
     const base::TimeDelta& restart_delay) {
-  DCHECK_EQ(state_, State::STOPPED);
+  DCHECK(!arc_session_);
   DCHECK(!restart_timer_.IsRunning());
   restart_delay_ = restart_delay;
 }
@@ -166,13 +194,11 @@ void ArcSessionRunner::StartArcSession() {
 
   VLOG(1) << "Starting ARC instance";
   if (!arc_session_) {
-    DCHECK_EQ(state_, State::STOPPED);
     arc_session_ = factory_.Run();
     arc_session_->AddObserver(this);
   } else {
-    DCHECK_EQ(state_, State::STARTING_FOR_LOGIN_SCREEN);
+    DCHECK(arc_session_->IsForLoginScreen());
   }
-  state_ = State::STARTING;
   arc_session_->Start();
 }
 
@@ -186,17 +212,14 @@ void ArcSessionRunner::RestartArcSession() {
 
 void ArcSessionRunner::OnSessionReady() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(state_, State::STARTING);
   DCHECK(arc_session_);
   DCHECK(!restart_timer_.IsRunning());
-
   VLOG(0) << "ARC ready";
-  state_ = State::RUNNING;
 }
 
-void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason) {
+void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason,
+                                        bool was_running) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_NE(state_, State::STOPPED);
   DCHECK(arc_session_);
   DCHECK(!restart_timer_.IsRunning());
 
@@ -209,21 +232,9 @@ void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason) {
   arc_session_->RemoveObserver(this);
   arc_session_.reset();
 
-  // If RUNNING, ARC instance unexpectedly crashed so we need to restart it
-  // automatically.
-  // If STOPPING, at least once RequestStop() is called. If |session_started_|
-  // is true, RequestStart() is following so schedule to restart ARC session.
-  // Otherwise, do nothing.
-  // If STARTING, ARC instance has not been booted properly, so do not
-  // restart it automatically.
-  const bool restarting = (state_ == State::RUNNING ||
-                           (state_ == State::STOPPING && run_requested_));
+  const bool restarting =
+      IsRestartNeeded(run_requested_, stop_reason, was_running);
   if (restarting) {
-    // This check is for RUNNING case. In RUNNING case |run_requested_| should
-    // be always true, because if once RequestStop() is called, the state_
-    // will be set to STOPPING.
-    DCHECK(run_requested_);
-
     // There was a previous invocation and it crashed for some reason. Try
     // starting ARC instance later again.
     // Note that even |restart_delay_| is 0 (for testing), it needs to
@@ -234,7 +245,6 @@ void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason) {
                                     weak_ptr_factory_.GetWeakPtr()));
   }
 
-  state_ = State::STOPPED;
   if (notify_observers) {
     for (auto& observer : observer_list_)
       observer.OnSessionStopped(stop_reason, restarting);
@@ -251,10 +261,8 @@ void ArcSessionRunner::EmitLoginPromptVisibleCalled() {
   // container may depend on such as cras, EmitLoginPromptVisibleCalled() is the
   // safe place to start the container for login screen.
   DCHECK(!arc_session_);
-  DCHECK_EQ(state_, State::STOPPED);
   arc_session_ = factory_.Run();
   arc_session_->AddObserver(this);
-  state_ = State::STARTING_FOR_LOGIN_SCREEN;
   arc_session_->StartForLoginScreen();
 }
 
