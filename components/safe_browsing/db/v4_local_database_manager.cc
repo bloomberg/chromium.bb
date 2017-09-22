@@ -144,10 +144,19 @@ StoresToCheck CreateStoresToCheckFromSBThreatTypeSet(
 }
 
 const char* const kPVer3FileNameSuffixesToDelete[] = {
-    "Bloom",        "Bloom Prefix Set",   "Csd Whitelist",
-    "Download",     "Download Whitelist", "Extension Blacklist",
-    "IP Blacklist", "Module Whitelist",   "Resource Blacklist",
-    "UwS List",     "UwS List Prefix Set"};
+    "Bloom",
+    "Bloom Prefix Set",
+    "Csd Whitelist",
+    "Download",
+    "Download Whitelist",
+    "Extension Blacklist",
+    "IP Blacklist",
+    "Inclusion Whitelist",
+    "Module Whitelist",
+    "Resource Blacklist",
+    "Side-Effect Free Whitelist",
+    "UwS List",
+    "UwS List Prefix Set"};
 
 std::string GetUmaSuffixForPVer3FileNameSuffix(const std::string& suffix) {
   DCHECK(!suffix.empty());
