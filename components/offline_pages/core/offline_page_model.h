@@ -145,10 +145,6 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
                                       const DeletePageCallback& callback) = 0;
 
-  virtual void GetPagesMatchingQuery(
-      std::unique_ptr<OfflinePageModelQuery> query,
-      const MultipleOfflinePageItemCallback& callback) = 0;
-
   // Retrieves all pages associated with any of |client_ids|.
   virtual void GetPagesByClientIds(
       const std::vector<ClientId>& client_ids,
@@ -188,6 +184,19 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual void GetPagesByURL(
       const GURL& url,
       URLSearchMode url_search_mode,
+      const MultipleOfflinePageItemCallback& callback) = 0;
+
+  // Returns the offline pages that are removed when cache is reset.
+  virtual void GetPagesRemovedOnCacheReset(
+      const MultipleOfflinePageItemCallback& callback) = 0;
+
+  // Returns the offline pages that belong in |name_space|.
+  virtual void GetPagesByNamespace(
+      const std::string& name_space,
+      const MultipleOfflinePageItemCallback& callback) = 0;
+
+  // Returns the offline pages that are visible in download manager UI.
+  virtual void GetPagesSupportedByDownloads(
       const MultipleOfflinePageItemCallback& callback) = 0;
 
   // Returns the policy controller.

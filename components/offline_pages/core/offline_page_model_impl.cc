@@ -495,14 +495,6 @@ void OfflinePageModelImpl::DeletePages(
   DoDeletePagesByOfflineId(offline_ids, callback);
 }
 
-void OfflinePageModelImpl::GetPagesMatchingQuery(
-    std::unique_ptr<OfflinePageModelQuery> query,
-    const MultipleOfflinePageItemCallback& callback) {
-  RunWhenLoaded(base::Bind(
-      &OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
-      weak_ptr_factory_.GetWeakPtr(), base::Passed(&query), callback));
-}
-
 void OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone(
     std::unique_ptr<OfflinePageModelQuery> query,
     const MultipleOfflinePageItemCallback& callback) {
@@ -665,6 +657,39 @@ void OfflinePageModelImpl::GetPagesByURL(
   builder.SetUrls(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
                   std::vector<GURL>({url}), url_search_mode,
                   true /* strip_fragment */);
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(builder.Build(GetPolicyController())), callback));
+}
+
+void OfflinePageModelImpl::GetPagesRemovedOnCacheReset(
+    const MultipleOfflinePageItemCallback& callback) {
+  OfflinePageModelQueryBuilder builder;
+  builder.RequireRemovedOnCacheReset(
+      OfflinePageModelQuery::Requirement::INCLUDE_MATCHING);
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(builder.Build(GetPolicyController())), callback));
+}
+
+void OfflinePageModelImpl::GetPagesByNamespace(
+    const std::string& name_space,
+    const MultipleOfflinePageItemCallback& callback) {
+  OfflinePageModelQueryBuilder builder;
+  builder.RequireNamespace(name_space);
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(builder.Build(GetPolicyController())), callback));
+}
+
+void OfflinePageModelImpl::GetPagesSupportedByDownloads(
+    const MultipleOfflinePageItemCallback& callback) {
+  OfflinePageModelQueryBuilder builder;
+  builder.RequireSupportedByDownload(
+      OfflinePageModelQuery::Requirement::INCLUDE_MATCHING);
   RunWhenLoaded(
       base::Bind(&OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
                  weak_ptr_factory_.GetWeakPtr(),

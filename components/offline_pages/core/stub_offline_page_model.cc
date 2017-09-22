@@ -24,9 +24,6 @@ void StubOfflinePageModel::DeletePagesByOfflineId(
 void StubOfflinePageModel::DeletePagesByClientIds(
     const std::vector<ClientId>& client_ids,
     const DeletePageCallback& callback) {}
-void StubOfflinePageModel::GetPagesMatchingQuery(
-    std::unique_ptr<OfflinePageModelQuery> query,
-    const MultipleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::GetPagesByClientIds(
     const std::vector<ClientId>& client_ids,
     const MultipleOfflinePageItemCallback& callback) {}
@@ -50,6 +47,13 @@ void StubOfflinePageModel::GetPagesByURL(
     const MultipleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::GetPagesByRequestOrigin(
     const std::string& origin,
+    const MultipleOfflinePageItemCallback& callback) {}
+void StubOfflinePageModel::GetPagesRemovedOnCacheReset(
+    const MultipleOfflinePageItemCallback& callback) {}
+void StubOfflinePageModel::GetPagesByNamespace(
+    const std::string& name_space,
+    const MultipleOfflinePageItemCallback& callback) {}
+void StubOfflinePageModel::GetPagesSupportedByDownloads(
     const MultipleOfflinePageItemCallback& callback) {}
 ClientPolicyController* StubOfflinePageModel::GetPolicyController() {
   return &policy_controller_;
