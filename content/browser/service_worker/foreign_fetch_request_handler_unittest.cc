@@ -382,11 +382,11 @@ TEST_F(ForeignFetchRequestHandlerTest,
 
   // Make sure worker has a non-zero timeout.
   version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+                       base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
   version->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::ACTIVATE,
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback),
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback),
       base::TimeDelta::FromSeconds(10), ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
   // Advance clock by a couple seconds.

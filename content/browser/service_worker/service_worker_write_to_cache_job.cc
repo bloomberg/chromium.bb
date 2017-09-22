@@ -5,7 +5,6 @@
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -366,8 +365,8 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(net::URLRequest* request,
           new net::HttpResponseInfo(net_request_->response_info()));
   net::Error error = cache_writer_->MaybeWriteHeaders(
       info_buffer.get(),
-      base::Bind(&ServiceWorkerWriteToCacheJob::OnWriteHeadersComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceWorkerWriteToCacheJob::OnWriteHeadersComplete,
+                     weak_factory_.GetWeakPtr()));
   if (error == net::ERR_IO_PENDING)
     return;
   OnWriteHeadersComplete(error);
@@ -440,8 +439,8 @@ int ServiceWorkerWriteToCacheJob::HandleNetData(int bytes_read) {
   io_buffer_bytes_ = bytes_read;
   net::Error error = cache_writer_->MaybeWriteData(
       io_buffer_.get(), bytes_read,
-      base::Bind(&ServiceWorkerWriteToCacheJob::OnWriteDataComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceWorkerWriteToCacheJob::OnWriteDataComplete,
+                     weak_factory_.GetWeakPtr()));
 
   // In case of ERR_IO_PENDING, this logic is done in OnWriteDataComplete.
   if (error != net::ERR_IO_PENDING && bytes_read == 0) {

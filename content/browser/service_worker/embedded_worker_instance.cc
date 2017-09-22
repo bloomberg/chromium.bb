@@ -337,11 +337,11 @@ class EmbeddedWorkerInstance::StartTask {
   }
 
   void Start(std::unique_ptr<EmbeddedWorkerStartParams> params,
-             const StatusCallback& callback) {
+             StatusCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(instance_->context_);
     state_ = ProcessAllocationState::ALLOCATING;
-    start_callback_ = callback;
+    start_callback_ = std::move(callback);
     is_installed_ = params->is_installed;
 
     if (!GetContentClient()->browser()->IsBrowserStartupComplete())
@@ -372,9 +372,9 @@ class EmbeddedWorkerInstance::StartTask {
     TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "INITIALIZING_ON_RENDERER",
                                     task, "Status",
                                     ServiceWorkerStatusToString(status));
-    StatusCallback callback = task->start_callback_;
+    StatusCallback callback = std::move(task->start_callback_);
     task->start_callback_.Reset();
-    callback.Run(status);
+    std::move(callback).Run(status);
     // |task| may be destroyed.
   }
 
@@ -392,9 +392,9 @@ class EmbeddedWorkerInstance::StartTask {
       TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ALLOCATING_PROCESS",
                                       this, "Error",
                                       ServiceWorkerStatusToString(status));
-      StatusCallback callback = start_callback_;
+      StatusCallback callback = std::move(start_callback_);
       start_callback_.Reset();
-      instance_->OnStartFailed(callback, status);
+      instance_->OnStartFailed(std::move(callback), status);
       // |this| may be destroyed.
       return;
     }
@@ -426,9 +426,9 @@ class EmbeddedWorkerInstance::StartTask {
 
     status = instance_->SendStartWorker(std::move(params));
     if (status != SERVICE_WORKER_OK) {
-      StatusCallback callback = start_callback_;
+      StatusCallback callback = std::move(start_callback_);
       start_callback_.Reset();
-      instance_->OnStartFailed(callback, status);
+      instance_->OnStartFailed(std::move(callback), status);
       // |this| may be destroyed.
     }
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
@@ -477,10 +477,10 @@ void EmbeddedWorkerInstance::Start(
     ProviderInfoGetter provider_info_getter,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   restart_count_++;
   if (!context_) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    std::move(callback).Run(SERVICE_WORKER_ERROR_ABORT);
     // |this| may be destroyed by the callback.
     return;
   }
@@ -512,7 +512,7 @@ void EmbeddedWorkerInstance::Start(
 
   inflight_start_task_.reset(
       new StartTask(this, params->script_url, std::move(request)));
-  inflight_start_task_->Start(std::move(params), callback);
+  inflight_start_task_->Start(std::move(params), std::move(callback));
 }
 
 void EmbeddedWorkerInstance::Stop() {
@@ -907,12 +907,12 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   thread_id_ = kInvalidEmbeddedWorkerThreadId;
 }
 
-void EmbeddedWorkerInstance::OnStartFailed(const StatusCallback& callback,
+void EmbeddedWorkerInstance::OnStartFailed(StatusCallback callback,
                                            ServiceWorkerStatusCode status) {
   EmbeddedWorkerStatus old_status = status_;
   ReleaseProcess();
   base::WeakPtr<EmbeddedWorkerInstance> weak_this = weak_factory_.GetWeakPtr();
-  callback.Run(status);
+  std::move(callback).Run(status);
   if (weak_this && old_status != EmbeddedWorkerStatus::STOPPED) {
     for (auto& observer : weak_this->listener_list_)
       observer.OnStopped(old_status);

@@ -790,7 +790,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
                      this, worker, message, source_origin, sent_message_ports,
                      ExtendableMessageEventSource(source_info), timeout,
                      callback),
-      base::Bind(
+      base::BindOnce(
           &ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent<
               SourceInfo>,
           this, sent_message_ports, source_info, callback));

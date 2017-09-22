@@ -28,7 +28,7 @@ class ServiceWorkerInternalsUI
     : public WebUIController,
       public base::SupportsWeakPtr<ServiceWorkerInternalsUI> {
  public:
-  typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
+  using StatusCallback = base::OnceCallback<void(ServiceWorkerStatusCode)>;
 
   explicit ServiceWorkerInternalsUI(WebUI* web_ui);
 
@@ -59,10 +59,10 @@ class ServiceWorkerInternalsUI
 
   void StopWorkerWithId(scoped_refptr<ServiceWorkerContextWrapper> context,
                         int64_t version_id,
-                        const StatusCallback& callback);
+                        StatusCallback callback);
   void UnregisterWithScope(scoped_refptr<ServiceWorkerContextWrapper> context,
                            const GURL& scope,
-                           const StatusCallback& callback) const;
+                           StatusCallback callback) const;
 
   std::unordered_map<uintptr_t, std::unique_ptr<PartitionObserver>> observers_;
   int next_partition_id_;

@@ -85,7 +85,7 @@ void UnregisterServiceWorkerCallback(bool* called,
 void DispatchSyncSuccessfulCallback(
     int* count,
     const scoped_refptr<ServiceWorkerVersion>& active_version,
-    const ServiceWorkerVersion::StatusCallback& callback) {
+    const ServiceWorkerVersion::LegacyStatusCallback& callback) {
   *count += 1;
   callback.Run(SERVICE_WORKER_OK);
 }
@@ -93,16 +93,16 @@ void DispatchSyncSuccessfulCallback(
 void DispatchSyncFailedCallback(
     int* count,
     const scoped_refptr<ServiceWorkerVersion>& active_version,
-    const ServiceWorkerVersion::StatusCallback& callback) {
+    const ServiceWorkerVersion::LegacyStatusCallback& callback) {
   *count += 1;
   callback.Run(SERVICE_WORKER_ERROR_FAILED);
 }
 
 void DispatchSyncDelayedCallback(
     int* count,
-    ServiceWorkerVersion::StatusCallback* out_callback,
+    ServiceWorkerVersion::LegacyStatusCallback* out_callback,
     const scoped_refptr<ServiceWorkerVersion>& active_version,
-    const ServiceWorkerVersion::StatusCallback& callback) {
+    const ServiceWorkerVersion::LegacyStatusCallback& callback) {
   *count += 1;
   *out_callback = callback;
 }
@@ -447,7 +447,7 @@ class BackgroundSyncManagerTest : public testing::Test {
       callback_registrations_;
   ServiceWorkerStatusCode callback_sw_status_code_ = SERVICE_WORKER_OK;
   int sync_events_called_ = 0;
-  ServiceWorkerVersion::StatusCallback sync_fired_callback_;
+  ServiceWorkerVersion::LegacyStatusCallback sync_fired_callback_;
 };
 
 TEST_F(BackgroundSyncManagerTest, Register) {

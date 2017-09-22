@@ -397,8 +397,8 @@ void ServiceWorkerRegistration::ContinueActivation(
       ServiceWorkerMetrics::EventType::ACTIVATE,
       base::BindOnce(&ServiceWorkerRegistration::DispatchActivateEvent, this,
                      activating_version),
-      base::Bind(&ServiceWorkerRegistration::OnActivateEventFinished, this,
-                 activating_version));
+      base::BindOnce(&ServiceWorkerRegistration::OnActivateEventFinished, this,
+                     activating_version));
 }
 
 void ServiceWorkerRegistration::DeleteVersion(
