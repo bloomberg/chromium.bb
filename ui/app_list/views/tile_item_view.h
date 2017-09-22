@@ -58,6 +58,8 @@ class APP_LIST_EXPORT TileItemView : public views::Button,
   // Overridden from views::View:
   void Layout() override;
   const char* GetClassName() const override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // Overridden from ImageShadowAnimator::Delegate:
   void ImageShadowAnimationProgressed(ImageShadowAnimator* animator) override;
@@ -80,6 +82,7 @@ class APP_LIST_EXPORT TileItemView : public views::Button,
   void set_is_recommendation(bool is_recommendation) {
     is_recommendation_ = is_recommendation;
   }
+  bool is_recommendation() const { return is_recommendation_; }
 
  private:
   void UpdateBackgroundColor();

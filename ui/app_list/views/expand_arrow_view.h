@@ -45,6 +45,8 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // Overridden from views::InkDropHost:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;

@@ -142,6 +142,8 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // AppListItemObserver overrides:
   void ItemIconChanged() override;

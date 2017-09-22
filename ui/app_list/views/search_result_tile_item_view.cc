@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/pagination_model.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/app_list/views/search_result_container_view.h"
@@ -45,12 +46,14 @@ constexpr SkColor kSearchRatingStarColor =
 SearchResultTileItemView::SearchResultTileItemView(
     SearchResultContainerView* result_container,
     AppListViewDelegate* view_delegate,
+    PaginationModel* pagination_model,
     bool is_suggested_app,
     bool is_fullscreen_app_list_enabled,
     bool is_play_store_search_enabled)
     : is_suggested_app_(is_suggested_app),
       result_container_(result_container),
       view_delegate_(view_delegate),
+      pagination_model_(pagination_model),
       is_fullscreen_app_list_enabled_(is_fullscreen_app_list_enabled) {
   // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
   // non-null item makes the tile visible.
@@ -218,6 +221,15 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   return false;
+}
+
+void SearchResultTileItemView::OnFocus() {
+  if (pagination_model_ && is_recommendation() &&
+      view_delegate_->GetModel()->state() == AppListModel::STATE_APPS) {
+    // Go back to first page when app in suggestions container is focused.
+    pagination_model_->SelectPage(0, false);
+  }
+  TileItemView::OnFocus();
 }
 
 void SearchResultTileItemView::OnIconChanged() {

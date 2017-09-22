@@ -30,6 +30,8 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
  public:
   explicit SearchAnswerContainerView(AppListViewDelegate* view_delegate)
       : Button(this), view_delegate_(view_delegate) {
+    if (features::IsAppListFocusEnabled())
+      SetFocusBehavior(FocusBehavior::ALWAYS);
     // Center the card horizontally in the container.
     views::BoxLayout* answer_container_layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal,

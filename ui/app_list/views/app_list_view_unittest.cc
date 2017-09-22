@@ -24,20 +24,28 @@
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
 #include "ui/app_list/views/app_list_folder_view.h"
+#include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/expand_arrow_view.h"
 #include "ui/app_list/views/search_box_view.h"
+#include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
+#include "ui/app_list/views/search_result_tile_item_list_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
+#include "ui/app_list/views/search_result_view.h"
 #include "ui/app_list/views/start_page_view.h"
+#include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/app_list/views/test/app_list_view_test_api.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/app_list/views/tile_item_view.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/view_model.h"
 
 namespace app_list {
 namespace test {
@@ -296,7 +304,249 @@ class AppListViewFullscreenTest : public AppListViewTest {
   DISALLOW_COPY_AND_ASSIGN(AppListViewFullscreenTest);
 };
 
+// TODO(weidongg/766807) Remove all old focus tests after the flag is enabled
+// by default.
+class AppListViewFocusTest : public views::ViewsTestBase {
+ public:
+  AppListViewFocusTest() = default;
+  ~AppListViewFocusTest() override = default;
+
+  // testing::Test
+  void SetUp() override {
+    views::ViewsTestBase::SetUp();
+
+    // Enable app list focus.
+    scoped_feature_list_.InitAndEnableFeature(features::kEnableAppListFocus);
+
+    // Initialize app list view.
+    delegate_.reset(new AppListTestViewDelegate);
+    view_ = new AppListView(delegate_.get());
+    view_->Initialize(GetContext(), 0, false, false);
+    test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
+
+    // Add suggestion apps and app list items.
+    const int kSuggestionAppNum = 5;
+    const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
+    AppListTestModel* model = delegate_->GetTestModel();
+    for (size_t i = 0; i < kSuggestionAppNum; i++)
+      model->results()->Add(base::MakeUnique<TestStartPageSearchResult>());
+    model->PopulateApps(kAppListItemNum);
+    apps_grid_view()->ResetForShowApps();
+
+    // Disable animation timer.
+    view_->GetWidget()->GetLayer()->GetAnimator()->set_disable_timer_for_test(
+        true);
+  }
+
+  void TearDown() override {
+    view_->GetWidget()->Close();
+    views::ViewsTestBase::TearDown();
+  }
+
+  void SetAppListState(AppListView::AppListState state) {
+    if (state == AppListView::CLOSED) {
+      view_->Dismiss();
+      return;
+    }
+    view_->SetState(state);
+  }
+
+  void Show() { view_->ShowWhenReady(); }
+
+  void SimulateKeyPress(ui::KeyboardCode key_code, bool shift_down) {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, key_code,
+                           shift_down ? ui::EF_SHIFT_DOWN : ui::EF_NONE);
+    view_->GetWidget()->OnKeyEvent(&key_event);
+  }
+
+  // Add search results for test on focus movement.
+  void SetUpSearchResults(int tile_results_num, int list_results_num) {
+    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
+    result_types.push_back(
+        std::make_pair(SearchResult::DISPLAY_TILE, tile_results_num));
+    result_types.push_back(
+        std::make_pair(SearchResult::DISPLAY_LIST, list_results_num));
+
+    AppListModel::SearchResults* results = delegate_->GetTestModel()->results();
+    results->DeleteAll();
+    double relevance = result_types.size();
+    for (const auto& data : result_types) {
+      // Set the relevance of the results in each group in decreasing order (so
+      // the earlier groups have higher relevance, and therefore appear first).
+      relevance -= 1.0;
+      for (int i = 0; i < data.second; ++i) {
+        std::unique_ptr<TestSearchResult> result =
+            base::MakeUnique<TestSearchResult>();
+        result->set_display_type(data.first);
+        result->set_relevance(relevance);
+        results->Add(std::move(result));
+      }
+    }
+
+    // Adding results will schedule Update().
+    RunPendingMessages();
+  }
+
+  AppListView* app_list_view() { return view_; }
+
+  AppListMainView* main_view() { return view_->app_list_main_view(); }
+
+  ContentsView* contents_view() {
+    return view_->app_list_main_view()->contents_view();
+  }
+
+  AppsGridView* apps_grid_view() {
+    return main_view()
+        ->contents_view()
+        ->apps_container_view()
+        ->apps_grid_view();
+  }
+
+  SuggestionsContainerView* suggestions_container_view() {
+    return apps_grid_view()->suggestions_container_for_test();
+  }
+
+  SearchBoxView* search_box_view() { return main_view()->search_box_view(); }
+
+  views::View* focused_view() {
+    return view_->GetWidget()->GetFocusManager()->GetFocusedView();
+  }
+
+ private:
+  AppListView* view_ = nullptr;  // Owned by native widget.
+  std::unique_ptr<AppListTestViewDelegate> delegate_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<AppsGridViewTestApi> test_api_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
+};
+
 }  // namespace
+
+// Tests that the initial focus is on search box.
+TEST_F(AppListViewFocusTest, InitialFocus) {
+  Show();
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+}
+
+// Tests the focus traversal triggered by tab in peeking state.
+TEST_F(AppListViewFocusTest, FocusTraversalInPeekingState) {
+  Show();
+  SetAppListState(AppListView::PEEKING);
+
+  // Move focus along suggestion apps.
+  for (views::View* v : suggestions_container_view()->tile_views()) {
+    SimulateKeyPress(ui::VKEY_TAB, false);
+    EXPECT_EQ(v, focused_view());
+  }
+
+  // Move focus on expand arrow.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  EXPECT_EQ(apps_grid_view()->expand_arrow_view_for_test(), focused_view());
+
+  // Move focus back to search box.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+}
+
+// Tests the focus traversal triggered by tab in fullscreen all apps state.
+TEST_F(AppListViewFocusTest, FocusTraversalInFullscreenAllAppsState) {
+  Show();
+  SetAppListState(AppListView::FULLSCREEN_ALL_APPS);
+
+  // Move focus along suggestion apps.
+  for (views::View* v : suggestions_container_view()->tile_views()) {
+    SimulateKeyPress(ui::VKEY_TAB, false);
+    EXPECT_EQ(v, focused_view());
+  }
+
+  // Move focus along app list items.
+  const views::ViewModelT<AppListItemView>* view_model =
+      apps_grid_view()->view_model_for_test();
+  for (int i = 0; i < view_model->view_size(); ++i) {
+    SimulateKeyPress(ui::VKEY_TAB, false);
+    EXPECT_EQ(view_model->view_at(i), focused_view());
+  }
+
+  // Move focus back to search box.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+}
+
+// Tests the focus traversal triggered by tab in half state with opened search
+// box.
+TEST_F(AppListViewFocusTest, FocusTraversalInHalfState) {
+  Show();
+
+  // Type something in search box to transition to HALF state and populate
+  // fake search results.
+  search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
+  EXPECT_EQ(app_list_view()->app_list_state(), AppListView::HALF);
+  const int kTileResults = 3;
+  const int kListResults = 2;
+  SetUpSearchResults(kTileResults, kListResults);
+
+  // Move focus to close button.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  EXPECT_EQ(search_box_view()->close_button(), focused_view());
+
+  // Move focus along the search results.
+  const std::vector<SearchResultTileItemView*>& tile_views =
+      contents_view()
+          ->search_result_tile_item_list_view_for_test()
+          ->tile_views_for_test();
+  for (int i = 0; i < kTileResults; ++i) {
+    SimulateKeyPress(ui::VKEY_TAB, false);
+    EXPECT_EQ(tile_views[i], focused_view());
+  }
+  const views::View* results_container =
+      contents_view()
+          ->search_result_list_view_for_test()
+          ->results_container_for_test();
+  for (int i = 0; i < kListResults; ++i) {
+    SimulateKeyPress(ui::VKEY_TAB, false);
+    EXPECT_EQ(results_container->child_at(i), focused_view());
+  }
+
+  // Move focus back to search box.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+}
+
+// Tests that the focus is set back onto search box after state transition.
+TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
+  Show();
+
+  // Type something in search box to transition to HALF state and populate
+  // fake search results.
+  search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
+  const int kTileResults = 3;
+  const int kListResults = 2;
+  SetUpSearchResults(kTileResults, kListResults);
+  EXPECT_EQ(app_list_view()->app_list_state(), AppListView::HALF);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+
+  // Move focus to the first search result, then transition to PEEKING state.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  SetAppListState(AppListView::PEEKING);
+  EXPECT_EQ(app_list_view()->app_list_state(), AppListView::PEEKING);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+
+  // Move focus to the first suggestion app, then transition to
+  // FULLSCREEN_ALL_APPS state.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  SetAppListState(AppListView::FULLSCREEN_ALL_APPS);
+  EXPECT_EQ(app_list_view()->app_list_state(),
+            AppListView::FULLSCREEN_ALL_APPS);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+
+  // Move focus to the first suggestion app, then transition to PEEKING state.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  SetAppListState(AppListView::PEEKING);
+  EXPECT_EQ(app_list_view()->app_list_state(), AppListView::PEEKING);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+}
 
 // Tests that opening the app list opens in peeking mode by default.
 TEST_F(AppListViewFullscreenTest, ShowPeekingByDefault) {

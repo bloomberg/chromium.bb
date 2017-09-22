@@ -73,7 +73,8 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
       is_fullscreen_app_list_enabled_
           ? nullptr
           : new AllAppsTileItemView(app_list_main_view_->contents_view(),
-                                    app_list_view));
+                                    app_list_view),
+      nullptr);
 
   search_box_spacer_view_->SetPreferredSize(gfx::Size(
       is_fullscreen_app_list_enabled_ ? kStartPageSearchBoxWidthFullscreen

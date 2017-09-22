@@ -67,7 +67,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
       }
 
       SearchResultTileItemView* tile_item = new SearchResultTileItemView(
-          this, view_delegate, false /* Not a suggested app */,
+          this, view_delegate, nullptr, false /* Not a suggested app */,
           is_fullscreen_app_list_enabled_, is_play_store_app_search_enabled_);
       tile_item->SetParentBackgroundColor(kCardBackgroundColorFullscreen);
       tile_views_.push_back(tile_item);
@@ -79,7 +79,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
         kBetweenTileSpacing));
     for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
       SearchResultTileItemView* tile_item = new SearchResultTileItemView(
-          this, view_delegate, false /* Not a suggested app */,
+          this, view_delegate, nullptr, false /* Not a suggested app */,
           is_fullscreen_app_list_enabled_, is_play_store_app_search_enabled_);
       tile_item->SetParentBackgroundColor(kCardBackgroundColor);
       tile_item->SetBorder(
@@ -181,6 +181,11 @@ void SearchResultTileItemListView::UpdateSelectedIndex(int old_selected,
 }
 
 bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (features::IsAppListFocusEnabled()) {
+    // TODO(weidongg/766807) Remove this function when the flag is enabled by
+    // default.
+    return false;
+  }
   int selection_index = selected_index();
   // Also count the separator when Play Store app search feature is enabled.
   const int child_index = is_play_store_app_search_enabled_

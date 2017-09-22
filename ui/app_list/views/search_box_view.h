@@ -160,6 +160,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Returns selected view in contents view.
   views::View* GetSelectedViewInContentsView() const;
 
+  bool selected() { return selected_; }
+  void SetSelected(bool selected);
+
  private:
   // Updates model text and selection model with current Textfield info.
   void UpdateModel();
@@ -217,9 +220,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
 
   void SetDefaultBorder();
 
-  bool selected() { return selected_; }
-  void SetSelected(bool selected);
-
   SearchBoxViewDelegate* delegate_;     // Not owned.
   AppListViewDelegate* view_delegate_;  // Not owned.
   AppListModel* model_ = nullptr;       // Owned by the profile-keyed service.
@@ -240,6 +240,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
 
   // Whether the fullscreen app list feature is enabled.
   const bool is_fullscreen_app_list_enabled_;
+
+  // Whether the app list focus is enabled.
+  const bool is_app_list_focus_enabled_;
 
   SearchBoxFocus focused_view_;  // Which element has TAB'd focus.
 

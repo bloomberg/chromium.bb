@@ -61,6 +61,8 @@ class APP_LIST_EXPORT SearchResultListView : public gfx::AnimationDelegate,
   int GetYSize() override;
   views::View* GetSelectedView() const override;
 
+  views::View* results_container_for_test() const { return results_container_; }
+
  private:
   friend class test::SearchResultListViewTest;
 

@@ -1158,6 +1158,13 @@ void AppListView::SetState(AppListState new_state) {
   if (new_state_override == CLOSED) {
     return;
   }
+
+  // Reset the focus to initially focused view. This should be done before
+  // updating visibility of views, because setting focused view invisible
+  // automatically moves focus to next focusable view, which potentially causes
+  // bugs.
+  GetInitiallyFocusedView()->RequestFocus();
+
   // Updates the visibility of app list items according to the change of
   // |app_list_state_|.
   app_list_main_view_->contents_view()

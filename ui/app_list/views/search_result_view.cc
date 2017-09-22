@@ -95,7 +95,10 @@ SearchResultView::SearchResultView(SearchResultListView* list_view)
       badge_icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
       progress_bar_(new views::ProgressBar),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
+      is_app_list_focus_enabled_(features::IsAppListFocusEnabled()) {
+  if (is_app_list_focus_enabled_)
+    SetFocusBehavior(FocusBehavior::ALWAYS);
   icon_->set_can_process_events_within_subtree(false);
   badge_icon_->set_can_process_events_within_subtree(false);
 
@@ -333,7 +336,6 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect content_rect(rect);
-  const bool selected = list_view_->IsResultViewSelected(this);
   const bool hover = state() == STATE_HOVERED || state() == STATE_PRESSED;
 
   if (!is_fullscreen_app_list_enabled_)
@@ -362,7 +364,8 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Possibly call FillRect a second time (these colours are partially
   // transparent, so the previous FillRect is not redundant).
-  if (selected) {
+  if (is_app_list_focus_enabled_ ? selected()
+                                 : list_view_->IsResultViewSelected(this)) {
     canvas->FillRect(content_rect, is_fullscreen_app_list_enabled_
                                        ? kRowSelectedColor
                                        : kSelectedColor);
@@ -405,6 +408,14 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
     title_text_->SetDisplayRect(centered_title_rect);
     title_text_->Draw(canvas);
   }
+}
+
+void SearchResultView::OnFocus() {
+  SetSelected(true);
+}
+
+void SearchResultView::OnBlur() {
+  SetSelected(false);
 }
 
 void SearchResultView::ButtonPressed(views::Button* sender,
@@ -494,6 +505,13 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
   DCHECK_LT(index, result_->actions().size());
 
   list_view_->SearchResultActionActivated(this, index, event_flags);
+}
+
+void SearchResultView::SetSelected(bool selected) {
+  if (selected_ == selected)
+    return;
+  selected_ = selected;
+  SchedulePaint();
 }
 
 void SearchResultView::ShowContextMenuForView(views::View* source,

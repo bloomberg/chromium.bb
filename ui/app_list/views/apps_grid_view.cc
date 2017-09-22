@@ -306,6 +306,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       contents_view_(contents_view),
       bounds_animator_(this),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
+      is_app_list_focus_enabled_(features::IsAppListFocusEnabled()),
       page_flip_delay_in_ms_(is_fullscreen_app_list_enabled_
                                  ? kPageFlipDelayInMsFullscreen
                                  : kPageFlipDelayInMs) {
@@ -317,8 +318,8 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
   layer()->SetFillsBoundsOpaquely(false);
 
   if (is_fullscreen_app_list_enabled_ && !folder_delegate_) {
-    suggestions_container_ =
-        new SuggestionsContainerView(contents_view_, nullptr);
+    suggestions_container_ = new SuggestionsContainerView(
+        contents_view_, nullptr, &pagination_model_);
     AddChildView(suggestions_container_);
     UpdateSuggestions();
 
@@ -943,6 +944,12 @@ void AppsGridView::UpdateControlVisibility(
 }
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (is_app_list_focus_enabled_) {
+    // TODO(weidongg/766810) Add handling of arrow up and down here.
+    return false;
+  }
+  // TODO(weidongg/766807) Remove everything below when the flag is enabled by
+  // default.
   bool handled = false;
   if (suggestions_container_ &&
       suggestions_container_->selected_index() != -1) {
@@ -1016,6 +1023,11 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 bool AppsGridView::OnKeyReleased(const ui::KeyEvent& event) {
+  if (is_app_list_focus_enabled_) {
+    // TODO(weidongg/766807) Remove this function when the flag is enabled by
+    // default.
+    return false;
+  }
   bool handled = false;
   if (selected_view_)
     handled = selected_view_->OnKeyReleased(event);
