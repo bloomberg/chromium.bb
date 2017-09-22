@@ -9,18 +9,24 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 
 namespace content {
 
-KeyboardLockServiceImpl::KeyboardLockServiceImpl() = default;
+KeyboardLockServiceImpl::KeyboardLockServiceImpl(
+    RenderFrameHost* render_frame_host)
+    : web_contents_(WebContents::FromRenderFrameHost(render_frame_host)) {
+  DCHECK(web_contents_);
+}
 
 KeyboardLockServiceImpl::~KeyboardLockServiceImpl() = default;
 
 // static
 void KeyboardLockServiceImpl::CreateMojoService(
+    RenderFrameHost* render_frame_host,
     blink::mojom::KeyboardLockServiceRequest request) {
   mojo::MakeStrongBinding(
-        base::MakeUnique<KeyboardLockServiceImpl>(),
+        base::MakeUnique<KeyboardLockServiceImpl>(render_frame_host),
         std::move(request));
 }
 

@@ -11,19 +11,26 @@
 
 namespace content {
 
+class RenderFrameHost;
+class WebContents;
+
 class CONTENT_EXPORT KeyboardLockServiceImpl
     : public blink::mojom::KeyboardLockService {
  public:
-  KeyboardLockServiceImpl();
+  explicit KeyboardLockServiceImpl(RenderFrameHost* render_frame_host);
   ~KeyboardLockServiceImpl() override;
 
   static void CreateMojoService(
+      RenderFrameHost* render_frame_host,
       blink::mojom::KeyboardLockServiceRequest request);
 
   // blink::mojom::KeyboardLockService implementations.
   void RequestKeyboardLock(const std::vector<std::string>& key_codes,
                            RequestKeyboardLockCallback callback) override;
   void CancelKeyboardLock() override;
+
+ private:
+  WebContents* const web_contents_;
 };
 
 }  // namespace
