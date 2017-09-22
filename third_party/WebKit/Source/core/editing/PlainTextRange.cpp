@@ -39,6 +39,8 @@ namespace blink {
 
 PlainTextRange::PlainTextRange() : start_(kNotFound), end_(kNotFound) {}
 
+PlainTextRange::PlainTextRange(const PlainTextRange&) = default;
+
 PlainTextRange::PlainTextRange(int location)
     : start_(location), end_(location) {
   DCHECK_GE(location, 0);
