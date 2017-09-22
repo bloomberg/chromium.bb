@@ -103,7 +103,8 @@ class AV1IntraPredTest
         *error_count += ref_dst_[x + y * stride_] != dst_[x + y * stride_];
         if (*error_count == 1) {
           ASSERT_EQ(ref_dst_[x + y * stride_], dst_[x + y * stride_])
-              << " Failed on Test Case Number " << test_case_number;
+              << " Failed on Test Case Number " << test_case_number
+              << " location: x = " << x << " y = " << y;
         }
       }
     }
@@ -223,6 +224,21 @@ const IntraPredFunc<IntraPred> LowbdIntraPredTestVector[] = {
 
 INSTANTIATE_TEST_CASE_P(SSE2, LowbdIntraPredTest,
                         ::testing::ValuesIn(LowbdIntraPredTestVector));
+
+#endif  // HAVE_SSE2
+
+#if HAVE_AVX2
+const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorAvx2[] = {
+  lowbd_entry(dc, 32, 32, avx2),      lowbd_entry(dc_top, 32, 32, avx2),
+  lowbd_entry(dc_left, 32, 32, avx2), lowbd_entry(dc_128, 32, 32, avx2),
+  lowbd_entry(v, 32, 32, avx2),       lowbd_entry(h, 32, 32, avx2),
+  lowbd_entry(dc, 32, 16, avx2),      lowbd_entry(dc_top, 32, 16, avx2),
+  lowbd_entry(dc_left, 32, 16, avx2), lowbd_entry(dc_128, 32, 16, avx2),
+  lowbd_entry(v, 32, 16, avx2),
+};
+
+INSTANTIATE_TEST_CASE_P(AVX2, LowbdIntraPredTest,
+                        ::testing::ValuesIn(LowbdIntraPredTestVectorAvx2));
 
 #endif  // HAVE_SSE2
 
