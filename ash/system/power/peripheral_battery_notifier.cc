@@ -155,7 +155,7 @@ NotificationParams GetStylusNotificationParams() {
       IDR_AURA_NOTIFICATION_STYLUS_BATTERY_LOW,
       system_notifier::kNotifierStylusBattery,
       GURL(),
-      &kNotificationBatteryCriticalIcon};
+      &kNotificationStylusBatteryWarningIcon};
 }
 
 }  // namespace
