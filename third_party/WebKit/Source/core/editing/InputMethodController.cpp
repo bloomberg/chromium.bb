@@ -291,6 +291,16 @@ Element* RootEditableElementOfSelection(const FrameSelection& frameSelection) {
   return RootEditableElementOf(visibleSeleciton.Start());
 }
 
+std::pair<ContainerNode*, PlainTextRange> PlainTextRangeForEphemeralRange(
+    const EphemeralRange& range) {
+  if (range.IsNull())
+    return {};
+  ContainerNode* const editable =
+      RootEditableElementOrTreeScopeRootNodeOf(range.StartPosition());
+  DCHECK(editable);
+  return std::make_pair(editable, PlainTextRange::Create(*editable, range));
+}
+
 }  // anonymous namespace
 
 InputMethodController* InputMethodController::Create(LocalFrame& frame) {
@@ -407,15 +417,8 @@ bool InputMethodController::FinishComposingText(
     return true;
   }
 
-  Element* root_editable_element =
-      GetFrame()
-          .Selection()
-          .ComputeVisibleSelectionInDOMTreeDeprecated()
-          .RootEditableElement();
-  if (!root_editable_element)
-    return false;
   PlainTextRange composition_range =
-      PlainTextRange::Create(*root_editable_element, *composition_range_);
+      PlainTextRangeForEphemeralRange(CompositionEphemeralRange()).second;
   if (composition_range.IsNull())
     return false;
 
@@ -741,11 +744,11 @@ void InputMethodController::SetComposition(
     return;
   }
 
-  ContainerNode* root_editable_element = RootEditableElement(*base_node);
-  const PlainTextRange composition_plain_text_range =
-      PlainTextRange::Create(*root_editable_element, *composition_range_);
-  AddImeTextSpans(ime_text_spans, root_editable_element,
-                  composition_plain_text_range.Start());
+  const std::pair<ContainerNode*, PlainTextRange>&
+      root_element_and_plain_text_range =
+          PlainTextRangeForEphemeralRange(CompositionEphemeralRange());
+  AddImeTextSpans(ime_text_spans, root_element_and_plain_text_range.first,
+                  root_element_and_plain_text_range.second.Start());
 }
 
 PlainTextRange InputMethodController::CreateSelectionRangeForSetComposition(
@@ -817,12 +820,7 @@ String InputMethodController::ComposingText() const {
 PlainTextRange InputMethodController::GetSelectionOffsets() const {
   EphemeralRange range = FirstEphemeralRangeOf(
       GetFrame().Selection().ComputeVisibleSelectionInDOMTreeDeprecated());
-  if (range.IsNull())
-    return PlainTextRange();
-  ContainerNode* const editable = RootEditableElementOrTreeScopeRootNodeOf(
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTree().Base());
-  DCHECK(editable);
-  return PlainTextRange::Create(*editable, range);
+  return PlainTextRangeForEphemeralRange(range).second;
 }
 
 EphemeralRange InputMethodController::EphemeralRangeForOffsets(
@@ -1123,22 +1121,19 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
 
   EphemeralRange first_range = FirstEphemeralRangeOf(
       GetFrame().Selection().ComputeVisibleSelectionInDOMTreeDeprecated());
-  if (first_range.IsNotNull()) {
-    PlainTextRange plain_text_range(
-        PlainTextRange::Create(*element, first_range));
-    if (plain_text_range.IsNotNull()) {
-      info.selection_start = plain_text_range.Start();
-      info.selection_end = plain_text_range.End();
-    }
+  PlainTextRange selection_plain_text_range =
+      PlainTextRangeForEphemeralRange(first_range).second;
+  if (selection_plain_text_range.IsNotNull()) {
+    info.selection_start = selection_plain_text_range.Start();
+    info.selection_end = selection_plain_text_range.End();
   }
 
   EphemeralRange range = CompositionEphemeralRange();
-  if (range.IsNotNull()) {
-    PlainTextRange plain_text_range(PlainTextRange::Create(*element, range));
-    if (plain_text_range.IsNotNull()) {
-      info.composition_start = plain_text_range.Start();
-      info.composition_end = plain_text_range.End();
-    }
+  PlainTextRange composition_plain_text_range =
+      PlainTextRangeForEphemeralRange(range).second;
+  if (composition_plain_text_range.IsNotNull()) {
+    info.composition_start = composition_plain_text_range.Start();
+    info.composition_end = composition_plain_text_range.End();
   }
 
   return info;
