@@ -52,9 +52,11 @@ static int CollapsedSpaceLength(LayoutText* layout_text, int text_end) {
 static int MaxOffsetIncludingCollapsedSpaces(Node* node) {
   int offset = CaretMaxOffset(node);
 
-  if (node->GetLayoutObject() && node->GetLayoutObject()->IsText())
+  if (node->GetLayoutObject() && node->GetLayoutObject()->IsText()) {
     offset +=
-        CollapsedSpaceLength(ToLayoutText(node->GetLayoutObject()), offset);
+        CollapsedSpaceLength(ToLayoutText(node->GetLayoutObject()), offset) +
+        ToLayoutText(node->GetLayoutObject())->TextStartOffset();
+  }
 
   return offset;
 }
@@ -244,7 +246,7 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::HandleTextNode() {
     return true;
 
   position_end_offset_ = offset_;
-  offset_ = start_offset + offset_in_node;
+  offset_ = start_offset;
   position_node_ = node_;
   position_start_offset_ = offset_;
 
@@ -279,17 +281,21 @@ LayoutText* SimplifiedBackwardsTextIteratorAlgorithm<
   LayoutTextFragment* fragment = ToLayoutTextFragment(layout_object);
   int offset_after_first_letter = fragment->Start();
   if (start_offset >= offset_after_first_letter) {
+    // We'll stop in remaining part.
     DCHECK(!should_handle_first_letter_);
     offset_in_node = offset_after_first_letter;
     return layout_object;
   }
 
   if (!should_handle_first_letter_ && offset_after_first_letter < offset_) {
+    // Enter into remaining part
     should_handle_first_letter_ = true;
     offset_in_node = offset_after_first_letter;
+    start_offset = offset_after_first_letter;
     return layout_object;
   }
 
+  // Enter into first-letter part
   should_handle_first_letter_ = false;
   offset_in_node = 0;
 
@@ -303,8 +309,12 @@ LayoutText* SimplifiedBackwardsTextIteratorAlgorithm<
   LayoutText* first_letter_layout_object =
       ToLayoutText(pseudo_element_layout_object->SlowFirstChild());
 
-  offset_ = first_letter_layout_object->CaretMaxOffset();
-  offset_ += CollapsedSpaceLength(first_letter_layout_object, offset_);
+  const int end_offset =
+      end_node_ == node_ && end_offset_ < offset_after_first_letter
+          ? end_offset_
+          : first_letter_layout_object->CaretMaxOffset();
+  offset_ =
+      end_offset + CollapsedSpaceLength(first_letter_layout_object, end_offset);
 
   return first_letter_layout_object;
 }
