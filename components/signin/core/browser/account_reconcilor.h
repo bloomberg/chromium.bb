@@ -111,6 +111,7 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, SigninManagerRegistration);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, Reauth);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, ProfileAlreadyConnected);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestDice, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, EnabledWithDice);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileWhithoutSignin);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileNoop);
