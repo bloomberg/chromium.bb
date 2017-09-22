@@ -6301,8 +6301,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth2) {
   EXPECT_TRUE(data3.AllWriteDataConsumed());
 }
 
-// NTLM is not supported over HTTP/2, therefore the server requests a downgrade,
-// and the request is retried on an HTTP/1.1 connection.
+// Server requests NTLM authentication, which is not supported over HTTP/2.
+// Subsequent request with authorization header should be sent over HTTP/1.1.
 TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
   HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGenerateRandom1,
                                                     MockGetHostName);
@@ -6324,23 +6324,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyResponseHeaders(
       1, std::move(response_headers0), true));
 
-  // Stream 1 is closed.
-  spdy_util_.UpdateWithStreamDestruction(1);
-
-  // Retry with authorization header.
-  SpdyHeaderBlock request_headers1(spdy_util_.ConstructGetHeaderBlock(kUrl));
-  request_headers1["authorization"] =
-      "NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA=";
-  SpdySerializedFrame request1(spdy_util_.ConstructSpdyHeaders(
-      3, std::move(request_headers1), LOWEST, true));
-
-  SpdySerializedFrame rst(
-      spdy_util_.ConstructSpdyRstStream(3, ERROR_CODE_HTTP_1_1_REQUIRED));
-
-  MockWrite writes0[] = {
-      CreateMockWrite(request0, 0), CreateMockWrite(request1, 2),
-  };
-  MockRead reads0[] = {CreateMockRead(resp, 1), CreateMockRead(rst, 3)};
+  MockWrite writes0[] = {CreateMockWrite(request0, 0)};
+  MockRead reads0[] = {CreateMockRead(resp, 1), MockRead(ASYNC, 0, 2)};
 
   // Retry yet again using HTTP/1.1.
   MockWrite writes1[] = {
