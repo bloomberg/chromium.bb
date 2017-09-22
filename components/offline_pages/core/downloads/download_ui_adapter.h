@@ -116,7 +116,9 @@ class DownloadUIAdapter : public OfflineContentProvider,
   enum class State { NOT_LOADED, LOADING_PAGES, LOADING_REQUESTS, LOADED };
 
   struct ItemInfo {
-    ItemInfo(const OfflinePageItem& page, bool temporarily_hidden);
+    ItemInfo(const OfflinePageItem& page,
+             bool temporarily_hidden,
+             bool is_suggested);
     ItemInfo(const SavePageRequest& request, bool temporarily_hidden);
     ~ItemInfo();
 

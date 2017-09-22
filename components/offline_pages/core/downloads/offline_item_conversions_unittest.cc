@@ -36,7 +36,7 @@ TEST(OfflineItemConversionsTest, OfflinePageItemConversion) {
   offline_page_item.last_access_time = last_access_time;
 
   OfflineItem offline_item =
-      OfflineItemConversions::CreateOfflineItem(offline_page_item);
+      OfflineItemConversions::CreateOfflineItem(offline_page_item, true);
 
   EXPECT_EQ(ContentId(kOfflinePageNamespace, guid), offline_item.id);
   EXPECT_EQ(url, offline_item.page_url);
@@ -52,6 +52,7 @@ TEST(OfflineItemConversionsTest, OfflinePageItemConversion) {
   EXPECT_TRUE(offline_item.progress.max.has_value());
   EXPECT_EQ(100, offline_item.progress.max.value());
   EXPECT_EQ(OfflineItemProgressUnit::PERCENTAGE, offline_item.progress.unit);
+  EXPECT_TRUE(offline_item.is_suggested);
 }
 
 TEST(OfflineItemConversionsTest, SavePageRequestConversion) {
@@ -81,6 +82,7 @@ TEST(OfflineItemConversionsTest, SavePageRequestConversion) {
   EXPECT_EQ(0, offline_item.progress.value);
   EXPECT_FALSE(offline_item.progress.max.has_value());
   EXPECT_EQ(OfflineItemProgressUnit::PERCENTAGE, offline_item.progress.unit);
+  EXPECT_FALSE(offline_item.is_suggested);
 }
 
 }  // namespace offline_pages

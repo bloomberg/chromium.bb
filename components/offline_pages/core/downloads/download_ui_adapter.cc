@@ -60,9 +60,10 @@ void DownloadUIAdapter::AttachToOfflinePageModel(
 }
 
 DownloadUIAdapter::ItemInfo::ItemInfo(const OfflinePageItem& page,
-                                      bool temporarily_hidden)
+                                      bool temporarily_hidden,
+                                      bool is_suggested)
     : ui_item(base::MakeUnique<OfflineItem>(
-          OfflineItemConversions::CreateOfflineItem(page))),
+          OfflineItemConversions::CreateOfflineItem(page, is_suggested))),
       is_request(false),
       offline_id(page.offline_id),
       client_id(page.client_id),
@@ -143,7 +144,10 @@ void DownloadUIAdapter::OfflinePageAdded(OfflinePageModel* model,
 
   bool temporarily_hidden =
       delegate_->IsTemporarilyHiddenInUI(added_page.client_id);
-  AddItemHelper(base::MakeUnique<ItemInfo>(added_page, temporarily_hidden));
+  bool is_suggested = model->GetPolicyController()->IsSuggested(
+      added_page.client_id.name_space);
+  AddItemHelper(
+      base::MakeUnique<ItemInfo>(added_page, temporarily_hidden, is_suggested));
 }
 
 void DownloadUIAdapter::OfflinePageDeleted(
@@ -370,8 +374,10 @@ void DownloadUIAdapter::OnOfflinePagesLoaded(
       DCHECK(items_.find(guid) == items_.end());
       bool temporarily_hidden =
           delegate_->IsTemporarilyHiddenInUI(page.client_id);
+      bool is_suggested =
+          model_->GetPolicyController()->IsSuggested(page.client_id.name_space);
       std::unique_ptr<ItemInfo> item =
-          base::MakeUnique<ItemInfo>(page, temporarily_hidden);
+          base::MakeUnique<ItemInfo>(page, temporarily_hidden, is_suggested);
       items_[guid] = std::move(item);
     }
   }
