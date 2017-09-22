@@ -1984,7 +1984,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #endif
   int64_t rd1, rd2, rd;
   RD_STATS this_rd_stats;
-#if CONFIG_DIST_8X8
+#if CONFIG_DIST_8X8 || !DISABLE_TRELLISQ_SEARCH
   int sub8x8tx_in_gte8x8blk_in_plane0 =
       plane == 0 && plane_bsize >= BLOCK_8X8 &&
       (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4);
