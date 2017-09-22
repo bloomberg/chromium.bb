@@ -44,11 +44,28 @@ void AddVariationHeaders(std::unique_ptr<net::URLFetcher>& fetcher) {
   }
 }
 
-std::string FormatRequestBodyExperimentalService(const std::string& url) {
+// Returns API request body. The final result depends on the following input
+// variables:
+//     * <current_url>: The current url visited by the user.
+//     * <experiment_id>: the experiment id associated with the current field
+//       trial group.
+//
+// The format of the request body is:
+//
+//     urls: {
+//       url : <current_url>
+//     }
+//     // stream_type = 1 corresponds to zero suggest suggestions.
+//     stream_type: 1
+//     // experiment_id is only set when <experiment_id> is well defined.
+//     experiment_id: <experiment_id>
+//
+std::string FormatRequestBodyExperimentalService(
+    const std::string& current_url) {
   auto request = base::MakeUnique<base::DictionaryValue>();
   auto url_list = base::MakeUnique<base::ListValue>();
   auto url_entry = base::MakeUnique<base::DictionaryValue>();
-  url_entry->SetString("url", url);
+  url_entry->SetString("url", current_url);
   url_list->Append(std::move(url_entry));
   request->Set("urls", std::move(url_list));
   // stream_type = 1 corresponds to zero suggest suggestions.
@@ -158,6 +175,57 @@ GURL ContextualSuggestionsService::ExperimentalContextualSuggestionsUrl(
   return suggest_url;
 }
 
+void ContextualSuggestionsService::CreateDefaultRequest(
+    const std::string& current_url,
+    const TemplateURLService* template_url_service,
+    net::URLFetcherDelegate* fetcher_delegate,
+    ContextualSuggestionsCallback callback) {
+  const GURL suggest_url =
+      ContextualSuggestionsUrl(current_url, template_url_service);
+  DCHECK(suggest_url.is_valid());
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("omnibox_zerosuggest", R"(
+        semantics {
+          sender: "Omnibox"
+          description:
+            "When the user focuses the omnibox, Chrome can provide search or "
+            "navigation suggestions from the default search provider in the "
+            "omnibox dropdown, based on the current page URL.\n"
+            "This is limited to users whose default search engine is Google, "
+            "as no other search engines currently support this kind of "
+            "suggestion."
+          trigger: "The omnibox receives focus."
+          data: "The URL of the current page."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting:
+            "Users can control this feature via the 'Use a prediction service "
+            "to help complete searches and URLs typed in the address bar' "
+            "settings under 'Privacy'. The feature is enabled by default."
+          chrome_policy {
+            SearchSuggestEnabled {
+                policy_options {mode: MANDATORY}
+                SearchSuggestEnabled: false
+            }
+          }
+        })");
+  const int kFetcherID = 1;
+  std::unique_ptr<net::URLFetcher> fetcher =
+      net::URLFetcher::Create(kFetcherID, suggest_url, net::URLFetcher::GET,
+                              fetcher_delegate, traffic_annotation);
+  fetcher->SetRequestContext(request_context_);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher.get(), data_use_measurement::DataUseUserData::OMNIBOX);
+  AddVariationHeaders(fetcher);
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+
+  std::move(callback).Run(std::move(fetcher));
+}
+
 void ContextualSuggestionsService::CreateExperimentalRequest(
     const std::string& current_url,
     const GURL& suggest_url,
@@ -165,7 +233,7 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
     ContextualSuggestionsCallback callback) {
   DCHECK(suggest_url.is_valid());
 
-  // This traffic annotation is nearly identic to the annotation for
+  // This traffic annotation is nearly identical to the annotation for
   // `omnibox_zerosuggest`. The main difference is that the experimental traffic
   // is not allowed cookies.
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -229,57 +297,6 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
       base::BindOnce(&ContextualSuggestionsService::AccessTokenAvailable,
                      base::Unretained(this), std::move(fetcher),
                      std::move(callback)));
-}
-
-void ContextualSuggestionsService::CreateDefaultRequest(
-    const std::string& current_url,
-    const TemplateURLService* template_url_service,
-    net::URLFetcherDelegate* fetcher_delegate,
-    ContextualSuggestionsCallback callback) {
-  const GURL suggest_url =
-      ContextualSuggestionsUrl(current_url, template_url_service);
-  DCHECK(suggest_url.is_valid());
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("omnibox_zerosuggest", R"(
-        semantics {
-          sender: "Omnibox"
-          description:
-            "When the user focuses the omnibox, Chrome can provide search or "
-            "navigation suggestions from the default search provider in the "
-            "omnibox dropdown, based on the current page URL.\n"
-            "This is limited to users whose default search engine is Google, "
-            "as no other search engines currently support this kind of "
-            "suggestion."
-          trigger: "The omnibox receives focus."
-          data: "The URL of the current page."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "user"
-          setting:
-            "Users can control this feature via the 'Use a prediction service "
-            "to help complete searches and URLs typed in the address bar' "
-            "settings under 'Privacy'. The feature is enabled by default."
-          chrome_policy {
-            SearchSuggestEnabled {
-                policy_options {mode: MANDATORY}
-                SearchSuggestEnabled: false
-            }
-          }
-        })");
-  const int kFetcherID = 1;
-  std::unique_ptr<net::URLFetcher> fetcher =
-      net::URLFetcher::Create(kFetcherID, suggest_url, net::URLFetcher::GET,
-                              fetcher_delegate, traffic_annotation);
-  fetcher->SetRequestContext(request_context_);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher.get(), data_use_measurement::DataUseUserData::OMNIBOX);
-  AddVariationHeaders(fetcher);
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
-
-  std::move(callback).Run(std::move(fetcher));
 }
 
 void ContextualSuggestionsService::AccessTokenAvailable(
