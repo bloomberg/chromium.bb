@@ -324,7 +324,7 @@ void SplitViewController::OnWindowDestroying(aura::Window* window) {
 
 void SplitViewController::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
-    ash::mojom::WindowStateType old_type) {
+    ash::wm::WindowStateType old_type) {
   DCHECK(IsSplitViewModeActive());
 
   if (window_state->IsFullscreen() || window_state->IsMinimized() ||

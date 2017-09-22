@@ -111,7 +111,7 @@ class WmToplevelWindowEventHandler::ScopedWindowResizer
 
   // WindowStateObserver overrides:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                                  mojom::WindowStateType type) override;
+                                  wm::WindowStateType type) override;
 
  private:
   WmToplevelWindowEventHandler* handler_;
@@ -152,7 +152,7 @@ bool WmToplevelWindowEventHandler::ScopedWindowResizer::IsMove() const {
 
 void WmToplevelWindowEventHandler::ScopedWindowResizer::
     OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                               mojom::WindowStateType old) {
+                               wm::WindowStateType old) {
   handler_->CompleteDrag(DragResult::SUCCESS);
 }
 
@@ -342,20 +342,18 @@ void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
       }
 
       if (event->details().velocity_y() > kMinVertVelocityForWindowMinimize) {
-        SetWindowStateTypeFromGesture(target,
-                                      mojom::WindowStateType::MINIMIZED);
+        SetWindowStateTypeFromGesture(target, wm::WINDOW_STATE_TYPE_MINIMIZED);
       } else if (event->details().velocity_y() <
                  -kMinVertVelocityForWindowMinimize) {
-        SetWindowStateTypeFromGesture(target,
-                                      mojom::WindowStateType::MAXIMIZED);
+        SetWindowStateTypeFromGesture(target, wm::WINDOW_STATE_TYPE_MAXIMIZED);
       } else if (event->details().velocity_x() >
                  kMinHorizVelocityForWindowSwipe) {
         SetWindowStateTypeFromGesture(target,
-                                      mojom::WindowStateType::RIGHT_SNAPPED);
+                                      wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED);
       } else if (event->details().velocity_x() <
                  -kMinHorizVelocityForWindowSwipe) {
         SetWindowStateTypeFromGesture(target,
-                                      mojom::WindowStateType::LEFT_SNAPPED);
+                                      wm::WINDOW_STATE_TYPE_LEFT_SNAPPED);
       }
       event->StopPropagation();
       return;
@@ -369,17 +367,15 @@ void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
       CompleteDrag(DragResult::SUCCESS);
 
       if (event->details().swipe_down()) {
-        SetWindowStateTypeFromGesture(target,
-                                      mojom::WindowStateType::MINIMIZED);
+        SetWindowStateTypeFromGesture(target, wm::WINDOW_STATE_TYPE_MINIMIZED);
       } else if (event->details().swipe_up()) {
-        SetWindowStateTypeFromGesture(target,
-                                      mojom::WindowStateType::MAXIMIZED);
+        SetWindowStateTypeFromGesture(target, wm::WINDOW_STATE_TYPE_MAXIMIZED);
       } else if (event->details().swipe_right()) {
         SetWindowStateTypeFromGesture(target,
-                                      mojom::WindowStateType::RIGHT_SNAPPED);
+                                      wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED);
       } else {
         SetWindowStateTypeFromGesture(target,
-                                      mojom::WindowStateType::LEFT_SNAPPED);
+                                      wm::WINDOW_STATE_TYPE_LEFT_SNAPPED);
       }
       event->StopPropagation();
       return;
@@ -536,33 +532,33 @@ void WmToplevelWindowEventHandler::HandleCaptureLost(ui::LocatedEvent* event) {
 
 void WmToplevelWindowEventHandler::SetWindowStateTypeFromGesture(
     aura::Window* window,
-    mojom::WindowStateType new_state_type) {
+    wm::WindowStateType new_state_type) {
   wm::WindowState* window_state = GetWindowState(window);
   // TODO(oshima): Move extra logic (set_unminimize_to_restore_bounds,
   // SetRestoreBoundsInParent) that modifies the window state
   // into WindowState.
   switch (new_state_type) {
-    case mojom::WindowStateType::MINIMIZED:
+    case wm::WINDOW_STATE_TYPE_MINIMIZED:
       if (window_state->CanMinimize()) {
         window_state->Minimize();
         window_state->set_unminimize_to_restore_bounds(true);
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
       }
       break;
-    case mojom::WindowStateType::MAXIMIZED:
+    case wm::WINDOW_STATE_TYPE_MAXIMIZED:
       if (window_state->CanMaximize()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
         window_state->Maximize();
       }
       break;
-    case mojom::WindowStateType::LEFT_SNAPPED:
+    case wm::WINDOW_STATE_TYPE_LEFT_SNAPPED:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
         const wm::WMEvent event(wm::WM_EVENT_SNAP_LEFT);
         window_state->OnWMEvent(&event);
       }
       break;
-    case mojom::WindowStateType::RIGHT_SNAPPED:
+    case wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
         const wm::WMEvent event(wm::WM_EVENT_SNAP_RIGHT);

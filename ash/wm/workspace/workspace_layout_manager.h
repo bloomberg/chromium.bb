@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
+#include "ash/wm/wm_types.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/layout_manager.h"
@@ -86,7 +87,7 @@ class ASH_EXPORT WorkspaceLayoutManager
 
   // WindowStateObserver overrides:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override;
+                                   wm::WindowStateType old_type) override;
 
   // display::DisplayObserver overrides:
   void OnDisplayMetricsChanged(const display::Display& display,

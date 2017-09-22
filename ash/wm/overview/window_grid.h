@@ -138,7 +138,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override;
+                                   wm::WindowStateType old_type) override;
 
  private:
   friend class WindowSelectorTest;

@@ -1660,13 +1660,13 @@ class TestObserver : public wm::WindowStateObserver {
 
   // wm::WindowStateObserver:
   void OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                                  mojom::WindowStateType old_type) override {
+                                  wm::WindowStateType old_type) override {
     pre_count_++;
     last_old_state_ = old_type;
   }
 
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   mojom::WindowStateType old_type) override {
+                                   wm::WindowStateType old_type) override {
     post_count_++;
     EXPECT_EQ(last_old_state_, old_type);
   }
@@ -1683,16 +1683,16 @@ class TestObserver : public wm::WindowStateObserver {
     return r;
   }
 
-  mojom::WindowStateType GetLastOldStateAndReset() {
-    mojom::WindowStateType r = last_old_state_;
-    last_old_state_ = mojom::WindowStateType::DEFAULT;
+  wm::WindowStateType GetLastOldStateAndReset() {
+    wm::WindowStateType r = last_old_state_;
+    last_old_state_ = wm::WINDOW_STATE_TYPE_DEFAULT;
     return r;
   }
 
  private:
   int pre_count_ = 0;
   int post_count_ = 0;
-  mojom::WindowStateType last_old_state_ = mojom::WindowStateType::DEFAULT;
+  wm::WindowStateType last_old_state_ = wm::WINDOW_STATE_TYPE_DEFAULT;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -1725,27 +1725,27 @@ TEST_F(TabletModeWindowManagerTest, StateTypeChange) {
   window_state->OnWMEvent(&fullscreen_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED,
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_MAXIMIZED,
             observer.GetLastOldStateAndReset());
 
   window_state->OnWMEvent(&maximize_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::FULLSCREEN,
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_FULLSCREEN,
             observer.GetLastOldStateAndReset());
 
   wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
   window_state->OnWMEvent(&minimize_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::MAXIMIZED,
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_MAXIMIZED,
             observer.GetLastOldStateAndReset());
 
   wm::WMEvent restore_event(wm::WM_EVENT_NORMAL);
   window_state->OnWMEvent(&restore_event);
   EXPECT_EQ(1, observer.GetPreCountAndReset());
   EXPECT_EQ(1, observer.GetPostCountAndReset());
-  EXPECT_EQ(mojom::WindowStateType::MINIMIZED,
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_MINIMIZED,
             observer.GetLastOldStateAndReset());
 
   window_state->RemoveObserver(&observer);

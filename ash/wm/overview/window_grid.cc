@@ -249,8 +249,8 @@ views::Widget* CreateBackgroundWidget(aura::Window* root_window,
   return widget;
 }
 
-bool IsMinimizedStateType(mojom::WindowStateType type) {
-  return type == mojom::WindowStateType::MINIMIZED;
+bool IsMinimizedStateType(wm::WindowStateType type) {
+  return type == wm::WINDOW_STATE_TYPE_MINIMIZED;
 }
 
 }  // namespace
@@ -633,13 +633,13 @@ void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
 }
 
 void WindowGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                             mojom::WindowStateType old_type) {
+                                             wm::WindowStateType old_type) {
   // During preparation, window state can change, e.g. updating shelf
   // visibility may show the temporarily hidden (minimized) panels.
   if (!prepared_for_overview_)
     return;
 
-  mojom::WindowStateType new_type = window_state->GetStateType();
+  wm::WindowStateType new_type = window_state->GetStateType();
   if (IsMinimizedStateType(old_type) == IsMinimizedStateType(new_type))
     return;
 
