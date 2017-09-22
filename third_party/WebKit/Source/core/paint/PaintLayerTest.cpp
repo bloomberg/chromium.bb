@@ -1120,4 +1120,12 @@ TEST_P(PaintLayerTest, NeedsRepaintOnRemovingStackedLayer) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
+TEST_P(PaintLayerTest, FrameViewContentSize) {
+  bool rls = RuntimeEnabledFeatures::RootLayerScrollingEnabled();
+  SetBodyInnerHTML(
+      "<style> body { width: 1200px; height: 900px; margin: 0 } </style>");
+  EXPECT_EQ(rls ? IntSize(800, 600) : IntSize(1200, 900),
+            GetDocument().View()->ContentsSize());
+}
+
 }  // namespace blink

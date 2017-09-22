@@ -964,7 +964,11 @@ int Element::scrollHeight() {
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().View())
-      return AdjustForAbsoluteZoom(GetDocument().View()->ContentsHeight(),
+      return AdjustForAbsoluteZoom(GetDocument()
+                                       .View()
+                                       ->LayoutViewportScrollableArea()
+                                       ->ContentsSize()
+                                       .Height(),
                                    GetDocument().GetFrame()->PageZoomFactor());
     return 0;
   }
