@@ -13,12 +13,12 @@
 #include <stddef.h>  // For size_t.
 
 // Distinguish mips32.
-#if defined(__mips__) && (_MIPS_SIM == _ABIO32)
+#if defined(__mips__) && (_MIPS_SIM == _ABIO32) && !defined(__mips32__)
 #define __mips32__
 #endif
 
 // Distinguish mips64.
-#if defined(__mips__) && (_MIPS_SIM == _ABI64)
+#if defined(__mips__) && (_MIPS_SIM == _ABI64) && !defined(__mips64__)
 #define __mips64__
 #endif
 
