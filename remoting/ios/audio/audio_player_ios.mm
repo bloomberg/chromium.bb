@@ -49,6 +49,8 @@ AudioPlayerIos::AudioPlayerIos(
 
 AudioPlayerIos::~AudioPlayerIos() {
   DCHECK(audio_task_runner_->BelongsToCurrentThread());
+  DCHECK(!audio_stream_consumer_)
+      << "Invalidate() must be called once on the UI thread.";
   StopOnAudioThread();
   // Disposing of an audio queue also disposes of its resources, including its
   // buffers.
@@ -56,6 +58,10 @@ AudioPlayerIos::~AudioPlayerIos() {
   for (uint32_t i = 0; i < kOutputBuffers; i++) {
     output_buffers_[i] = nullptr;
   }
+}
+
+void AudioPlayerIos::Invalidate() {
+  audio_stream_consumer_.release();
 }
 
 base::WeakPtr<AudioStreamConsumer> AudioPlayerIos::GetAudioStreamConsumer() {

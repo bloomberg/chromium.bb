@@ -51,7 +51,9 @@ AudioStreamConsumerProxy::AudioStreamConsumerProxy(
       core_(std::move(core)),
       weak_factory_(this) {}
 
-AudioStreamConsumerProxy::~AudioStreamConsumerProxy() {}
+AudioStreamConsumerProxy::~AudioStreamConsumerProxy() {
+  audio_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+}
 
 void AudioStreamConsumerProxy::AddAudioPacket(
     std::unique_ptr<AudioPacket> packet) {

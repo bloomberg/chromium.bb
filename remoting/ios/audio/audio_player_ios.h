@@ -35,8 +35,16 @@ class AudioPlayerIos {
   AudioPlayerIos(std::unique_ptr<AudioStreamConsumer> audio_stream_consumer,
                  std::unique_ptr<AsyncAudioFrameSupplier> audio_frame_supplier,
                  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner);
+
   // Call on the audio thread.
   ~AudioPlayerIos();
+
+  // Must be called once on the UI thread before destroying the object on
+  // audio thread.
+  // TODO(yuweih): This is a dirty fix for thread safety issue. The cleaner fix
+  // could be turn AudioPlayerIos into shell-core model then invalidate UI
+  // resources in the shell.
+  void Invalidate();
 
   base::WeakPtr<AudioStreamConsumer> GetAudioStreamConsumer();
   void Start();
