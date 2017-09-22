@@ -234,8 +234,8 @@ void CalculatePageLayoutFromPrintParams(
   int content_height = params.content_size.height();
   // Scale the content to its normal size for purpose of computing page layout.
   // Otherwise we will get negative margins.
-  if (scale_factor >= PrintRenderFrameHelper::kEpsilon &&
-      (fit_to_page || params.print_to_pdf)) {
+  bool scale = fit_to_page || params.print_to_pdf;
+  if (scale && scale_factor >= PrintRenderFrameHelper::kEpsilon) {
     content_width =
         static_cast<int>(static_cast<double>(content_width) * scale_factor);
     content_height =
@@ -474,7 +474,8 @@ PrintMsg_Print_Params CalculatePrintParamsForCss(
 
   PrintMsg_Print_Params result_params = css_params;
   // If not printing a pdf or fitting to page, scale the page size.
-  double page_scaling = params.print_to_pdf ? 1.0f : *scale_factor;
+  bool scale = !params.print_to_pdf;
+  double page_scaling = scale ? *scale_factor : 1.0f;
   if (!fit_to_page) {
     result_params.page_size =
         ScaleAndRoundSize(result_params.page_size, page_scaling);
@@ -508,7 +509,7 @@ PrintMsg_Print_Params CalculatePrintParamsForCss(
     if (fit_to_page) {
       double factor = FitPrintParamsToPage(params, &result_params);
       if (scale_factor)
-        *scale_factor = (*scale_factor) * factor;
+        *scale_factor *= factor;
     } else {
       // Already scaled the page, need to also scale the CSS margins since they
       // are begin applied
@@ -1729,11 +1730,8 @@ bool PrintRenderFrameHelper::InitPrintSettings(bool fit_to_paper_size) {
   settings.pages.clear();
 
   settings.params.print_scaling_option =
-      blink::kWebPrintScalingOptionSourceSize;
-  if (fit_to_paper_size) {
-    settings.params.print_scaling_option =
-        blink::kWebPrintScalingOptionFitToPrintableArea;
-  }
+      fit_to_paper_size ? blink::kWebPrintScalingOptionFitToPrintableArea
+                        : blink::kWebPrintScalingOptionSourceSize;
 
   SetPrintPagesParams(settings);
   return result;
