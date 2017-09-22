@@ -30,6 +30,7 @@ class MODULES_EXPORT PaymentResponse final
 
  public:
   PaymentResponse(payments::mojom::blink::PaymentResponsePtr,
+                  PaymentAddress* shipping_address_,
                   PaymentCompleter*,
                   const String& requestId);
   virtual ~PaymentResponse();
