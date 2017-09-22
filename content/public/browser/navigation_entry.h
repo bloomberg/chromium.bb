@@ -65,8 +65,8 @@ class NavigationEntry {
   // of GURLs for compatibility with legacy Android WebView apps.
   virtual void SetDataURLAsString(
       scoped_refptr<base::RefCountedString> data_url) = 0;
-  virtual const scoped_refptr<const base::RefCountedString> GetDataURLAsString()
-      const = 0;
+  virtual const scoped_refptr<const base::RefCountedString>&
+  GetDataURLAsString() const = 0;
 #endif
 
   // The referring URL. Can be empty.
