@@ -755,6 +755,10 @@ def _GetRunEnvironment(options, build_config):
   # Look up the buildbot waterfall.
   wfall = os.environ.get('BUILDBOT_MASTERNAME', '')
 
+  # Insert the override waterfall for swarming.
+  if os.environ.get('SWARMING_BOT_ID', ''):
+    wfall = waterfall.WATERFALL_SWARMING
+
   if not wfall:
     return _ENVIRONMENT_STANDALONE
 

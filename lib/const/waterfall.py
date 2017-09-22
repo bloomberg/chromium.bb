@@ -12,6 +12,8 @@ WATERFALL_RELEASE = 'chromeos_release'
 WATERFALL_BRANCH = 'chromeos.branch'
 WATERFALL_CHROMIUM = 'chromiumos.chromium'
 WATERFALL_CHROME = 'chromeos.chrome'
+# Used for all swarming builds.
+WATERFALL_SWARMING = 'chromeos.swarming'
 
 # These waterfalls should send email reports regardless of cidb connection.
 EMAIL_WATERFALLS = (
@@ -19,6 +21,7 @@ EMAIL_WATERFALLS = (
     WATERFALL_EXTERNAL,
     WATERFALL_RELEASE,
     WATERFALL_BRANCH,
+    WATERFALL_SWARMING,
 )
 
 # URLs to the various waterfalls.
