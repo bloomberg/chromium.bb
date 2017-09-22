@@ -216,8 +216,6 @@ UrlIndex::~UrlIndex() {
     DCHECK(entry.second->HasOneRef());
   };
   std::for_each(indexed_data_.begin(), indexed_data_.end(), dcheck_has_one_ref);
-  std::for_each(unindexed_data_.begin(), unindexed_data_.end(),
-                dcheck_has_one_ref);
 #endif
 }
 
@@ -227,8 +225,6 @@ void UrlIndex::RemoveUrlData(const scoped_refptr<UrlData>& url_data) {
   auto i = indexed_data_.find(url_data->key());
   if (i != indexed_data_.end() && i->second == url_data)
     indexed_data_.erase(i);
-
-  unindexed_data_.erase(url_data->key());
 }
 
 scoped_refptr<UrlData> UrlIndex::GetByUrl(const GURL& gurl,
@@ -238,9 +234,7 @@ scoped_refptr<UrlData> UrlIndex::GetByUrl(const GURL& gurl,
     return i->second;
   }
 
-  scoped_refptr<UrlData> new_data = NewUrlData(gurl, cors_mode);
-  unindexed_data_[new_data->key()] = new_data;
-  return new_data;
+  return NewUrlData(gurl, cors_mode);
 }
 
 scoped_refptr<UrlData> UrlIndex::NewUrlData(const GURL& url,
@@ -288,7 +282,6 @@ scoped_refptr<UrlData> UrlIndex::TryInsert(
     // If valid and not already indexed, index it.
     if (url_data->Valid()) {
       indexed_data_.insert(iter, std::make_pair(url_data->key(), url_data));
-      unindexed_data_.erase(url_data->key());
     }
     return url_data;
   }
@@ -305,7 +298,6 @@ scoped_refptr<UrlData> UrlIndex::TryInsert(
   if (IsNewDataForSameResource(url_data, iter->second)) {
     if (url_data->Valid()) {
       iter->second = url_data;
-      unindexed_data_.erase(url_data->key());
     }
     return url_data;
   }
@@ -314,7 +306,6 @@ scoped_refptr<UrlData> UrlIndex::TryInsert(
     if ((!iter->second->Valid() ||
          url_data->CachedSize() > iter->second->CachedSize())) {
       iter->second = url_data;
-      unindexed_data_.erase(url_data->key());
     } else {
       iter->second->MergeFrom(url_data);
     }
