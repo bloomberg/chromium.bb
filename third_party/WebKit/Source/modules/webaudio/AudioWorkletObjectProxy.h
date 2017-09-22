@@ -6,14 +6,13 @@
 #define AudioWorkletObjectProxy_h
 
 #include "core/workers/ThreadedWorkletObjectProxy.h"
-#include "modules/ModulesExport.h"
 
 namespace blink {
 
 class AudioWorkletGlobalScope;
 class AudioWorkletMessagingProxy;
 
-class MODULES_EXPORT AudioWorkletObjectProxy final
+class AudioWorkletObjectProxy final
     : public ThreadedWorkletObjectProxy {
  public:
   AudioWorkletObjectProxy(AudioWorkletMessagingProxy*,
