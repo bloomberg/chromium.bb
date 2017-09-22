@@ -316,7 +316,13 @@ void TextSuggestionController::ApplyTextSuggestion(int32_t marker_tag,
     SuggestionMarkerReplacementScope scope;
     ReplaceRangeWithText(range_to_replace, replacement);
   }
-  marker->SetSuggestion(suggestion_index, new_suggestion);
+
+  if (marker->IsMisspelling()) {
+    GetFrame().GetDocument()->Markers().RemoveSuggestionMarkerByTag(
+        marker_text_node, marker->Tag());
+  } else {
+    marker->SetSuggestion(suggestion_index, new_suggestion);
+  }
 
   OnSuggestionMenuClosed();
 }
