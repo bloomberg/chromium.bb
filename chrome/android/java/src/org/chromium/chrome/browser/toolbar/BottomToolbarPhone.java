@@ -13,14 +13,15 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.SystemClock;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -36,6 +37,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObse
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -65,16 +67,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 // content description. If the content description is changed while the view is
                 // focused, the new content description is read immediately.
                 if (hasFocus() && !urlHasFocus()) mBottomSheet.requestFocus();
-                updateContentDescription();
             }
         }
 
         @Override
         public void onSheetClosed(@StateChangeReason int reason) {
             onPrimaryColorChanged(true);
-
             updateMenuButtonClickableState();
-            updateContentDescription();
         }
 
         @Override
@@ -95,7 +94,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
             boolean buttonsClickable = heightFraction == 0.f;
             mToggleTabStackButton.setClickable(buttonsClickable);
             updateMenuButtonClickableState();
-            if (!mUseToolbarHandle) mExpandButton.setClickable(buttonsClickable);
+            mExpandButton.setClickable(buttonsClickable);
         }
 
         @Override
@@ -175,6 +174,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
     /** Whether the menu button should be shown while the sheet is open. */
     private boolean mShowMenuButtonWhenSheetOpen;
 
+    /** The height of the location bar background. */
+    private float mLocationBarBackgroundHeight;
+
     /**
      * The float used to inset the rect returned by {@link #getLocationBarContentRect(Rect)}.
      * This extra vertical inset is needed to ensure the anonymize layer doesn't draw outside of the
@@ -227,7 +229,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mLocationBarExtraFocusedLeftMargin =
                 res.getDimensionPixelSize(R.dimen.bottom_toolbar_background_focused_left_margin);
 
-        mUseToolbarHandle = true;
         mToolbarShadowPermanentlyHidden = true;
         mToolbarButtonVisibilityPercent = 1.f;
         mToolbarButtonAnimationIterpolator = BakedBezierInterpolator.FADE_OUT_CURVE;
@@ -294,6 +295,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mBottomToolbarTopShadow.setImageDrawable(mBottomToolbarTopShadowDrawable);
     }
 
+    /**
+     * @param activity The {@link ChromeActivity} displaying this toolbar.
+     */
     public void setActivity(ChromeActivity activity) {
         mActivity = activity;
     }
@@ -303,6 +307,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
      */
     public View getExpandButton() {
         return mExpandButton;
+    }
+
+    /**
+     * @return Whether the expand button is currently being used.
+     */
+    public boolean isUsingExpandButton() {
+        return !mUseToolbarHandle;
     }
 
     /**
@@ -357,20 +368,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
     protected void setTabSwitcherMode(boolean inTabSwitcherMode, boolean showToolbar,
             boolean delayAnimation, boolean animate) {
         super.setTabSwitcherMode(inTabSwitcherMode, showToolbar, delayAnimation, animate);
-        if (!mUseToolbarHandle) mExpandButton.setClickable(!inTabSwitcherMode);
-        updateContentDescription();
+        mExpandButton.setClickable(!inTabSwitcherMode);
 
         // Reset top shadow drawable state.
         if (inTabSwitcherMode) {
             mBottomToolbarTopShadowDrawable.getDrawable(0).setAlpha(255);
             mBottomToolbarTopShadowDrawable.getDrawable(1).setAlpha(0);
         }
-    }
-
-    @Override
-    protected void onTabSwitcherTransitionFinished() {
-        super.onTabSwitcherTransitionFinished();
-        updateContentDescription();
     }
 
     @Override
@@ -541,7 +545,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
     @Override
     protected int getLocationBarBackgroundVerticalMargin(float expansion) {
-        return mLocationBarVerticalMargin;
+        return (int) ((mLocationBar.getHeight() - mLocationBarBackgroundHeight) / 2);
     }
 
     @Override
@@ -614,6 +618,27 @@ public class BottomToolbarPhone extends ToolbarPhone {
         super.onFinishInflate();
 
         mExpandButton = (TintedImageButton) findViewById(R.id.expand_sheet_button);
+        mExpandButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mBottomSheet != null && mTabSwitcherState == STATIC_TAB) {
+                    mBottomSheet.onExpandButtonPressed();
+                }
+            }
+        });
+        mExpandButton.setAccessibilityDelegate(new AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+
+                AccessibilityNodeInfoCompat infoCompat = new AccessibilityNodeInfoCompat(info);
+                infoCompat.setClickable(true);
+                infoCompat.addAction(new AccessibilityNodeInfoCompat.AccessibilityActionCompat(
+                        AccessibilityNodeInfoCompat.ACTION_CLICK,
+                        getResources().getString(
+                                R.string.bottom_sheet_expand_button_accessibility)));
+            }
+        });
 
         // Add extra top margin to the URL bar to compensate for the change to location bar's
         // vertical margin in the constructor.
@@ -625,27 +650,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mBrowsingModeViews.remove(mLocationBar);
 
         updateToolbarTopMargin();
-
-        mLocationBar.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                // TODO(twellington): remove this after we have decided whether to use the expand
-                // button or the pull handle and the location bar background is a predictable
-                // height.
-                setLocationBarBackgroundCornerRadius();
-
-                mLocationBar.removeOnLayoutChangeListener(this);
-            }
-        });
     }
 
     @Override
     protected void initLocationBarBackground() {
         Resources res = getResources();
-        mLocationBarVerticalMargin =
-                res.getDimensionPixelOffset(R.dimen.bottom_location_bar_vertical_margin);
-
+        mLocationBarBackgroundHeight =
+                res.getDimensionPixelSize(R.dimen.modern_toolbar_background_size);
         mLocationBarBackground =
                 ApiCompatibilityUtils.getDrawable(res, R.drawable.modern_toolbar_background);
         mLocationBarBackground.getPadding(mLocationBarBackgroundPadding);
@@ -698,6 +709,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mToolbarHandleView = (ImageView) getRootView().findViewById(R.id.toolbar_handle);
         mToolbarHandleView.setImageDrawable(mHandleDark);
 
+        setUseToolbarHandle();
+
         initBottomToolbarTopShadow();
 
         if (mToolbarShadowPermanentlyHidden) mToolbarShadow.setVisibility(View.GONE);
@@ -707,52 +720,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
 
-        mUseToolbarHandle = !FeatureUtilities.isChromeHomeExpandButtonEnabled();
-
-        if (!mUseToolbarHandle) {
-            initExpandButton();
-        } else {
-            updateContentDescription();
-        }
-
+        setUseToolbarHandle();
         mNewTabButton.setIsModern();
-    }
-
-    /**
-     * Initialize the "expand" button if it is being used.
-     */
-    private void initExpandButton() {
-        mLocationBarVerticalMargin =
-                getResources().getDimensionPixelOffset(R.dimen.location_bar_vertical_margin);
-
-        mToolbarHandleView.setVisibility(View.GONE);
-
-        mExpandButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mBottomSheet != null && mTabSwitcherState == STATIC_TAB) {
-                    mBottomSheet.onExpandButtonPressed();
-                }
-            }
-        });
-
-        mExpandButton.setVisibility(View.VISIBLE);
-
-        updateToolbarTopMargin();
-
-        // Recalculate the corner radius since the location bar vertical margin has changed.
-        setLocationBarBackgroundCornerRadius();
-    }
-
-    private void setLocationBarBackgroundCornerRadius() {
-        // Programatically set the corner radius based on the actual location bar height so
-        // that its edges are perfectly round.
-        float locationBarBackgroundHeight = mLocationBar.getBottom()
-                - (mLocationBarVerticalMargin * 2) - mLocationBar.getTop();
-        mLocationBarBackgroundCornerRadius = (int) (locationBarBackgroundHeight / 2);
-        mLocationBarBackground.mutate();
-        ((GradientDrawable) mLocationBarBackground).setCornerRadius(
-                locationBarBackgroundHeight / 2);
     }
 
     @Override
@@ -926,6 +895,30 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 ApiCompatibilityUtils.getPaddingStart(otherToolbar),
                 otherToolbar.getPaddingTop() + extraTopMargin,
                 ApiCompatibilityUtils.getPaddingEnd(otherToolbar), otherToolbar.getPaddingBottom());
+    }
+
+    @Override
+    protected void onAccessibilityStatusChanged(boolean enabled) {
+        setUseToolbarHandle();
+    }
+
+    /**
+     * Sets whether or not the toolbar handle is used and updates the handle view and expand button
+     * accordingly.
+     */
+    private void setUseToolbarHandle() {
+        mUseToolbarHandle = !AccessibilityUtil.isAccessibilityEnabled()
+                && !FeatureUtilities.isChromeHomeExpandButtonEnabled();
+
+        // This method may be called due to an accessibility state change. Return early if the
+        // needed views are null.
+        if (mToolbarHandleView == null || mExpandButton == null) return;
+
+        mToolbarHandleView.setVisibility(mUseToolbarHandle ? View.VISIBLE : View.GONE);
+        mExpandButton.setVisibility(mUseToolbarHandle ? View.GONE : View.VISIBLE);
+
+        updateToolbarTopMargin();
+        updateVisualsForToolbarState();
     }
 
     /**
@@ -1148,19 +1141,5 @@ public class BottomToolbarPhone extends ToolbarPhone {
     private void updateMenuButtonClickableState() {
         mMenuButton.setClickable(
                 !urlHasFocus() && (!mBottomSheet.isSheetOpen() || mBottomSheet.isShowingNewTab()));
-    }
-
-    private void updateContentDescription() {
-        if (!mUseToolbarHandle) return;
-
-        if (isInTabSwitcherMode()) {
-            setContentDescription(null);
-        } else if (mBottomSheet.isSheetOpen()) {
-            setContentDescription(
-                    getResources().getString(R.string.bottom_sheet_open_accessibility_toolbar));
-        } else {
-            setContentDescription(
-                    getResources().getString(R.string.bottom_sheet_accessibility_toolbar));
-        }
     }
 }

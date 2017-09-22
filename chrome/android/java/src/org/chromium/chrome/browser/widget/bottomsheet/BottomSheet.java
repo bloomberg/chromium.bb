@@ -34,7 +34,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
@@ -1125,12 +1124,6 @@ public class BottomSheet
         for (BottomSheetObserver o : mObservers) o.onSheetOpened(reason);
         mActivity.addViewObscuringAllTabs(this);
 
-        setFocusable(true);
-        setFocusableInTouchMode(true);
-        setContentDescription(
-                getResources().getString(R.string.bottom_sheet_accessibility_description));
-        if (getFocusedChild() == null) requestFocus();
-
         Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
         tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED);
     }
@@ -1433,10 +1426,18 @@ public class BottomSheet
 
         mCurrentState = state;
 
-        if (mCurrentState == SHEET_STATE_HALF) {
-            announceForAccessibility(getResources().getString(R.string.bottom_sheet_opened_half));
-        } else if (mCurrentState == SHEET_STATE_FULL) {
-            announceForAccessibility(getResources().getString(R.string.bottom_sheet_opened_full));
+        if (mCurrentState == SHEET_STATE_HALF || mCurrentState == SHEET_STATE_FULL) {
+            announceForAccessibility(mCurrentState == SHEET_STATE_FULL
+                            ? getResources().getString(R.string.bottom_sheet_opened_full)
+                            : getResources().getString(R.string.bottom_sheet_opened_half));
+
+            // TalkBack will announce the content description if it has changed, so wait to set the
+            // content description until after announcing full/half height.
+            setFocusable(true);
+            setFocusableInTouchMode(true);
+            setContentDescription(
+                    getResources().getString(R.string.bottom_sheet_accessibility_description));
+            if (getFocusedChild() == null) requestFocus();
         }
 
         for (BottomSheetObserver o : mObservers) {
@@ -1653,8 +1654,7 @@ public class BottomSheet
                 tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_HOME_EXPAND_FEATURE);
         if (!fromMenu && !notifyDismissed) return;
 
-        boolean showExpandButtonHelpBubble =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_EXPAND_BUTTON);
+        boolean showExpandButtonHelpBubble = mDefaultToolbarView.isUsingExpandButton();
 
         View anchorView = showExpandButtonHelpBubble
                 ? mControlContainer.findViewById(R.id.expand_sheet_button)
@@ -1664,7 +1664,7 @@ public class BottomSheet
                 : R.string.bottom_sheet_help_bubble_message;
         int accessibilityStringId = showExpandButtonHelpBubble
                 ? R.string.bottom_sheet_accessibility_expand_button_help_bubble_message
-                : R.string.bottom_sheet_accessibility_help_bubble_message;
+                : stringId;
 
         ViewAnchoredTextBubble helpBubble = new ViewAnchoredTextBubble(
                 getContext(), anchorView, stringId, accessibilityStringId);
