@@ -446,18 +446,6 @@
       ]
     },
     {
-      "name": "fizz",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "fizz",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "gale",
       "configs": [
         {
@@ -1526,6 +1514,30 @@
         {
           "board_name": "coral",
           "name": "whitetip2",
+          "cq_test_enabled": false
+        }
+      ]
+    },
+    {
+      "name": "fizz",
+      "reference_board_name": "fizz",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": false,
+      "models": [
+        {
+          "board_name": "fizz",
+          "name": "fizz",
+          "cq_test_enabled": false
+        },
+        {
+          "board_name": "fizz",
+          "name": "sion",
+          "cq_test_enabled": false
+        },
+        {
+          "board_name": "fizz",
+          "name": "teemo",
           "cq_test_enabled": false
         }
       ]
