@@ -40,6 +40,7 @@ static_library("bootstrap_freetype_for_harfbuzz") {
   defines = []
 
   sources = [
+    "include/freetype-custom-config/ftconfig.h",
     "include/freetype-custom-config/ftmodule.h",
     "include/freetype-custom-config/ftoption.h",
     "src/src/base/ftbase.c",
@@ -82,6 +83,7 @@ static_library("bootstrap_freetype_for_harfbuzz") {
     # GN currently does not escape '<' and '>' when generating xml based Visual
     # Studio project files. As a result, use quotes instead of pointy brackets
     # in these defines.
+    "FT_CONFIG_CONFIG_H=\"freetype-custom-config/ftconfig.h\"",
     "FT_CONFIG_MODULES_H=\"freetype-custom-config/ftmodule.h\"",
     "FT_CONFIG_OPTIONS_H=\"freetype-custom-config/ftoption.h\"",
   ]
@@ -107,6 +109,7 @@ component("freetype") {
   defines = []
 
   sources = [
+    "include/freetype-custom-config/ftconfig.h",
     "include/freetype-custom-config/ftmodule.h",
     "include/freetype-custom-config/ftoption.h",
     "src/src/autofit/autofit.c",

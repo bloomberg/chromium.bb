@@ -408,9 +408,62 @@ FT_BEGIN_HEADER
 #endif /* !FT_BASE_DEF */
 
 
+  /*   When compiling FreeType as a DLL, some systems/compilers need a     */
+  /*   special attribute in front OR after the return type of function     */
+  /*   declarations.                                                       */
+  /*                                                                       */
+  /*   Two macros are used within the FreeType source code to define       */
+  /*   exported library functions: FT_EXPORT and FT_EXPORT_DEF.            */
+  /*                                                                       */
+  /*     FT_EXPORT( return_type )                                          */
+  /*                                                                       */
+  /*       is used in a function declaration, as in                        */
+  /*                                                                       */
+  /*         FT_EXPORT( FT_Error )                                         */
+  /*         FT_Init_FreeType( FT_Library*  alibrary );                    */
+  /*                                                                       */
+  /*                                                                       */
+  /*     FT_EXPORT_DEF( return_type )                                      */
+  /*                                                                       */
+  /*       is used in a function definition, as in                         */
+  /*                                                                       */
+  /*         FT_EXPORT_DEF( FT_Error )                                     */
+  /*         FT_Init_FreeType( FT_Library*  alibrary )                     */
+  /*         {                                                             */
+  /*           ... some code ...                                           */
+  /*           return FT_Err_Ok;                                           */
+  /*         }                                                             */
+  /*                                                                       */
+  /*   You can provide your own implementation of FT_EXPORT and            */
+  /*   FT_EXPORT_DEF here if you want.                                     */
+  /*                                                                       */
+#if defined(_WIN32)
+
+#if defined(FT2_BUILD_DLL)
+#if defined(FT2_BUILD_LIBRARY)
+#define FT_EXPORT(x)     __declspec(dllexport) x
+#define FT_EXPORT_DEF(x) __declspec(dllexport) x
+#else
+#define FT_EXPORT(x)     __declspec(dllimport) x
+#define FT_EXPORT_DEF(x) __declspec(dllimport) x
+#endif
+#endif
+
+#else
+#if !defined(MAC_RESTRICT_VISIBILITY)
+#define FT_EXPORT(x)     __attribute__((visibility ("default"))) x
+#define FT_EXPORT_DEF(x) __attribute__((visibility ("default"))) x
+#else
+#define FT_EXPORT(x)     x
+#define FT_EXPORT_DEF(x) x
+#endif
+#endif
+
 #ifndef FT_EXPORT
 
-#ifdef __cplusplus
+#if defined( _DLL )
+#define FT_EXPORT( x )  __declspec(dllexport)  x
+#elif defined( __cplusplus )
 #define FT_EXPORT( x )  extern "C"  x
 #else
 #define FT_EXPORT( x )  extern  x
@@ -421,7 +474,9 @@ FT_BEGIN_HEADER
 
 #ifndef FT_EXPORT_DEF
 
-#ifdef __cplusplus
+#if defined( _DLL )
+#define FT_EXPORT_DEF( x )  __declspec(dllexport)  x
+#elif defined( __cplusplus )
 #define FT_EXPORT_DEF( x )  extern "C"  x
 #else
 #define FT_EXPORT_DEF( x )  extern  x
