@@ -86,6 +86,8 @@ aggregate_vector_icons("ash_vector_icons") {
     "notification_screenshare.1x.icon",
     "notification_screenshare.icon",
     "notification_settings.icon",
+    "notification_sms_sync.1x.icon",
+    "notification_sms_sync.icon",
     "notification_supervised.icon",
     "notification_timer.icon",
     "palette_action_capture_region.1x.icon",
