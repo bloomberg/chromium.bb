@@ -253,12 +253,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
   InitializeRenderer();
 
-  // TODO(vollick): this is really going to the UI, not the browser. It would be
-  // nice to hold a pointer to a, possibly limited, UI interface that could be
-  // invoked synchronously on this thread (cf the post tasking to the current
-  // thread in VrGlThread). I.e., we could probably split GlBrowserInterface
-  // into parts.
-  browser_->OnGlInitialized(content_texture_id_);
+  ui_->OnGlInitialized(content_texture_id_);
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 
@@ -393,7 +388,7 @@ void VrShellGl::OnWebVRFrameAvailable() {
   TRACE_EVENT1("gpu", "VrShellGl::OnWebVRFrameAvailable", "frame", frame_index);
   pending_frames_.pop();
 
-  browser_->OnWebVrFrameAvailable();
+  ui_->OnWebVrFrameAvailable();
 
   DrawFrame(frame_index);
   if (web_vr_mode_) {
@@ -420,7 +415,7 @@ void VrShellGl::ScheduleWebVrFrameTimeout() {
 }
 
 void VrShellGl::OnWebVrFrameTimedOut() {
-  browser_->OnWebVrTimedOut();
+  ui_->OnWebVrTimedOut();
 }
 
 void VrShellGl::GvrInit(gvr_context* gvr_api) {
@@ -723,11 +718,17 @@ void VrShellGl::HandleControllerAppButtonActivity(
       if (fabs(gesture_xz_angle) > kMinAppButtonGestureAngleRad) {
         direction = gesture_xz_angle < 0 ? vr::UiInterface::LEFT
                                          : vr::UiInterface::RIGHT;
-        browser_->AppButtonGesturePerformed(direction);
+        // Post a task, rather than calling the UI directly, so as not to modify
+        // UI state in the midst of frame rendering.
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::Bind(&vr::UiInterface::OnAppButtonGesturePerformed,
+                                  base::Unretained(ui_), direction));
       }
     }
     if (direction == vr::UiInterface::NONE)
-      browser_->AppButtonClicked();
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&vr::UiInterface::OnAppButtonClicked,
+                                base::Unretained(ui_)));
   }
 }
 
@@ -863,7 +864,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
                  &render_info_primary_);
 
   // Measure projected content size and bubble up if delta exceeds threshold.
-  browser_->OnProjMatrixChanged(render_info_primary_.left_eye_info.proj_matrix);
+  ui_->OnProjMatrixChanged(render_info_primary_.left_eye_info.proj_matrix);
 
   // At this point, we draw non-WebVR content that could, potentially, fill the
   // viewport.  NB: this is not just 2d browsing stuff, we may have a splash

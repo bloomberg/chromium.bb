@@ -10,8 +10,8 @@
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
+#include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/toolbar_state.h"
-#include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_manager.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -41,6 +41,10 @@ VrGLThread::~VrGLThread() {
   Stop();
 }
 
+base::WeakPtr<VrShellGl> VrGLThread::GetVrShellGl() {
+  return vr_shell_gl_->GetWeakPtr();
+}
+
 void VrGLThread::Init() {
   scene_ = base::MakeUnique<vr::UiScene>();
   vr_shell_gl_ = base::MakeUnique<VrShellGl>(this, gvr_api_, initially_web_vr_,
@@ -49,9 +53,14 @@ void VrGLThread::Init() {
   scene_manager_ = base::MakeUnique<vr::UiSceneManager>(
       this, scene_.get(), vr_shell_gl_.get(), in_cct_, initially_web_vr_,
       web_vr_autopresentation_expected_);
+  // TODO(cjgrant): Alleviate this circular initialization dependency by moving
+  // ownership of all UI components into a single UI object that can manage its
+  // own initialization.
+  vr_shell_gl_->set_ui(scene_manager_.get());
 
   weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
-  weak_scene_manager_ = scene_manager_->GetWeakPtr();
+  browser_ui_ = scene_manager_->GetWeakPtr();
+
   vr_shell_gl_->Initialize();
 }
 
@@ -62,207 +71,213 @@ void VrGLThread::CleanUp() {
 }
 
 void VrGLThread::ContentSurfaceChanged(jobject surface) {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VrShell::ContentSurfaceChanged, weak_vr_shell_, surface));
 }
 
 void VrGLThread::GvrDelegateReady(gvr::ViewerType viewer_type) {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VrShell::GvrDelegateReady, weak_vr_shell_, viewer_type));
 }
 
 void VrGLThread::UpdateGamepadData(device::GvrGamepadData pad) {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::UpdateGamepadData, weak_vr_shell_, pad));
 }
 
-void VrGLThread::AppButtonClicked() {
-  task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&vr::UiSceneManager::OnAppButtonClicked, weak_scene_manager_));
-}
-
-void VrGLThread::AppButtonGesturePerformed(
-    vr::UiInterface::Direction direction) {
-  task_runner()->PostTask(
-      FROM_HERE, base::Bind(&vr::UiSceneManager::OnAppButtonGesturePerformed,
-                            weak_scene_manager_, direction));
-}
-
 void VrGLThread::ProcessContentGesture(
     std::unique_ptr<blink::WebInputEvent> event) {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::ProcessContentGesture, weak_vr_shell_,
                             base::Passed(std::move(event))));
 }
 
 void VrGLThread::ForceExitVr() {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::ForceExitVr, weak_vr_shell_));
 }
 
 void VrGLThread::ExitPresent() {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::ExitPresent, weak_vr_shell_));
 }
 
 void VrGLThread::ExitFullscreen() {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::ExitFullscreen, weak_vr_shell_));
 }
 
 void VrGLThread::OnContentPaused(bool enabled) {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VrShell::OnContentPaused, weak_vr_shell_, enabled));
 }
 
 void VrGLThread::NavigateBack() {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::NavigateBack, weak_vr_shell_));
 }
 
 void VrGLThread::ExitCct() {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::ExitCct, weak_vr_shell_));
 }
 
 void VrGLThread::ToggleCardboardGamepad(bool enabled) {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VrShell::ToggleCardboardGamepad, weak_vr_shell_, enabled));
 }
 
-void VrGLThread::OnGlInitialized(unsigned int content_texture_id) {
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&vr::UiSceneManager::OnGlInitialized,
-                                     weak_scene_manager_, content_texture_id));
-}
-
 void VrGLThread::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::OnUnsupportedMode, weak_vr_shell_, mode));
 }
 
 void VrGLThread::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
                                       vr::ExitVrPromptChoice choice) {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::OnExitVrPromptResult, weak_vr_shell_,
                             reason, choice));
 }
 
 void VrGLThread::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {
+  DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::OnContentScreenBoundsChanged,
                             weak_vr_shell_, bounds));
 }
 
 void VrGLThread::SetFullscreen(bool enabled) {
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&vr::UiSceneManager::SetFullscreen,
-                                     weak_scene_manager_, enabled));
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&vr::BrowserUiInterface::SetFullscreen, browser_ui_, enabled));
 }
 
 void VrGLThread::SetIncognito(bool incognito) {
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&vr::UiSceneManager::SetIncognito,
-                                     weak_scene_manager_, incognito));
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&vr::BrowserUiInterface::SetIncognito, browser_ui_,
+                            incognito));
 }
 
 void VrGLThread::SetHistoryButtonsEnabled(bool can_go_back,
                                           bool can_go_forward) {
+  DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::Bind(&vr::UiSceneManager::SetHistoryButtonsEnabled,
-                            weak_scene_manager_, can_go_back, can_go_forward));
+      FROM_HERE, base::Bind(&vr::BrowserUiInterface::SetHistoryButtonsEnabled,
+                            browser_ui_, can_go_back, can_go_forward));
 }
 
 void VrGLThread::SetLoadProgress(float progress) {
+  DCHECK(OnMainThread());
   task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&vr::UiSceneManager::SetLoadProgress,
-                                     weak_scene_manager_, progress));
+                          base::Bind(&vr::BrowserUiInterface::SetLoadProgress,
+                                     browser_ui_, progress));
 }
 
 void VrGLThread::SetLoading(bool loading) {
-  task_runner()->PostTask(FROM_HERE, base::Bind(&vr::UiSceneManager::SetLoading,
-                                                weak_scene_manager_, loading));
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&vr::BrowserUiInterface::SetLoading, browser_ui_, loading));
 }
 
 void VrGLThread::SetToolbarState(const vr::ToolbarState& state) {
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&vr::UiSceneManager::SetToolbarState,
-                                     weak_scene_manager_, state));
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&vr::BrowserUiInterface::SetToolbarState, browser_ui_, state));
 }
 
 void VrGLThread::SetWebVrMode(bool enabled, bool show_toast) {
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&vr::UiSceneManager::SetWebVrMode,
-                                     weak_scene_manager_, enabled, show_toast));
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&vr::BrowserUiInterface::SetWebVrMode, browser_ui_,
+                            enabled, show_toast));
 }
 
 void VrGLThread::SetWebVrSecureOrigin(bool secure) {
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&vr::UiSceneManager::SetWebVrSecureOrigin,
-                                     weak_scene_manager_, secure));
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&vr::BrowserUiInterface::SetWebVrSecureOrigin,
+                            browser_ui_, secure));
 }
 
 void VrGLThread::SetAudioCapturingIndicator(bool enabled) {
+  DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::Bind(&vr::UiSceneManager::SetAudioCapturingIndicator,
-                            weak_scene_manager_, enabled));
+      FROM_HERE, base::Bind(&vr::BrowserUiInterface::SetAudioCapturingIndicator,
+                            browser_ui_, enabled));
 }
 
 void VrGLThread::SetLocationAccessIndicator(bool enabled) {
+  DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::Bind(&vr::UiSceneManager::SetLocationAccessIndicator,
-                            weak_scene_manager_, enabled));
+      FROM_HERE, base::Bind(&vr::BrowserUiInterface::SetLocationAccessIndicator,
+                            browser_ui_, enabled));
 }
 
 void VrGLThread::SetVideoCapturingIndicator(bool enabled) {
+  DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::Bind(&vr::UiSceneManager::SetVideoCapturingIndicator,
-                            weak_scene_manager_, enabled));
+      FROM_HERE, base::Bind(&vr::BrowserUiInterface::SetVideoCapturingIndicator,
+                            browser_ui_, enabled));
 }
 
 void VrGLThread::SetScreenCapturingIndicator(bool enabled) {
+  DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::Bind(&vr::UiSceneManager::SetScreenCapturingIndicator,
-                            weak_scene_manager_, enabled));
+      FROM_HERE,
+      base::Bind(&vr::BrowserUiInterface::SetScreenCapturingIndicator,
+                 browser_ui_, enabled));
 }
 
 void VrGLThread::SetBluetoothConnectedIndicator(bool enabled) {
+  DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::Bind(&vr::UiSceneManager::SetBluetoothConnectedIndicator,
-                            weak_scene_manager_, enabled));
+      FROM_HERE,
+      base::Bind(&vr::BrowserUiInterface::SetBluetoothConnectedIndicator,
+                 browser_ui_, enabled));
 }
 
 void VrGLThread::SetIsExiting() {
+  DCHECK(OnMainThread());
   task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&vr::UiSceneManager::SetIsExiting, weak_scene_manager_));
-}
-
-void VrGLThread::OnWebVrFrameAvailable() {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-  scene_manager_->OnWebVrFrameAvailable();
-}
-
-void VrGLThread::OnWebVrTimedOut() {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-  scene_manager_->OnWebVrTimedOut();
-}
-
-void VrGLThread::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
-  DCHECK(task_runner()->BelongsToCurrentThread());
-  scene_manager_->OnProjMatrixChanged(proj_matrix);
+      base::Bind(&vr::BrowserUiInterface::SetIsExiting, browser_ui_));
 }
 
 void VrGLThread::SetExitVrPromptEnabled(bool enabled,
                                         vr::UiUnsupportedMode reason) {
+  DCHECK(OnMainThread());
   task_runner()->PostTask(
-      FROM_HERE, base::Bind(&vr::UiSceneManager::SetExitVrPromptEnabled,
-                            weak_scene_manager_, enabled, reason));
+      FROM_HERE, base::Bind(&vr::BrowserUiInterface::SetExitVrPromptEnabled,
+                            browser_ui_, enabled, reason));
+}
+
+bool VrGLThread::OnMainThread() const {
+  return main_thread_task_runner_->BelongsToCurrentThread();
+}
+
+bool VrGLThread::OnGlThread() const {
+  return task_runner()->BelongsToCurrentThread();
 }
 
 }  // namespace vr_shell
