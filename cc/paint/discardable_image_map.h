@@ -30,7 +30,7 @@ class PaintOpBuffer;
 // rect and get back a list of DrawImages in that rect.
 class CC_PAINT_EXPORT DiscardableImageMap {
  public:
-  struct CC_PAINT_EXPORT AnimatedImageMetadata {
+  struct AnimatedImageMetadata {
     AnimatedImageMetadata(PaintImage::Id paint_image_id,
                           PaintImage::CompletionState completion_state,
                           std::vector<FrameMetadata> frames,

@@ -29,10 +29,4 @@ gfx::ColorSpace FakeTileManagerClient::GetRasterColorSpace() const {
   return gfx::ColorSpace();
 }
 
-size_t FakeTileManagerClient::GetFrameIndexForImage(
-    const PaintImage& paint_image,
-    WhichTree tree) const {
-  return paint_image.frame_index();
-}
-
 }  // namespace cc

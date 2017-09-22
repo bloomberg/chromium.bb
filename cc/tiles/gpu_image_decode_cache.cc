@@ -121,8 +121,7 @@ gfx::Size CalculateSizeForMipLevel(const DrawImage& draw_image, int mip_level) {
 // if not, decodes to a compatible temporary pixmap and then converts that into
 // the |target_pixmap|.
 bool DrawAndScaleImage(const DrawImage& draw_image, SkPixmap* target_pixmap) {
-  sk_sp<SkImage> image =
-      draw_image.paint_image().GetSkImageForFrame(draw_image.frame_index());
+  const SkImage* image = draw_image.paint_image().GetSkImage().get();
   if (image->dimensions() == target_pixmap->bounds().size() ||
       target_pixmap->info().colorType() == kN32_SkColorType) {
     // If no scaling is occurring, or if the target colortype is already N32,
@@ -211,7 +210,7 @@ class ImageDecodeTaskImpl : public TileTask {
     TRACE_EVENT2("cc", "ImageDecodeTaskImpl::RunOnWorkerThread", "mode", "gpu",
                  "source_prepare_tiles_id", tracing_info_.prepare_tiles_id);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
-        &image_.paint_image(),
+        image_.paint_image().GetSkImage().get(),
         devtools_instrumentation::ScopedImageDecodeTask::kGpu,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type));
     cache_->DecodeImage(image_, tracing_info_.task_type);
@@ -1179,8 +1178,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
         // TODO(crbug.com/649167): Params should not have changed since initial
         // sizing. Somehow this still happens. We should investigate and re-add
         // DCHECKs here to enforce this.
-        sk_sp<SkImage> image = draw_image.paint_image().GetSkImageForFrame(
-            draw_image.frame_index());
+        SkImage* image = draw_image.paint_image().GetSkImage().get();
         if (!image->getDeferredTextureImageData(
                 *context_threadsafe_proxy_.get(), &image_data->upload_params, 1,
                 backing_memory->data(), nullptr, color_type_)) {
@@ -1285,8 +1283,7 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   auto params = SkImage::DeferredTextureImageUsageParams(
       SkMatrix::I(), CalculateDesiredFilterQuality(draw_image),
       upload_scale_mip_level);
-  sk_sp<SkImage> image =
-      draw_image.paint_image().GetSkImageForFrame(draw_image.frame_index());
+  SkImage* image = draw_image.paint_image().GetSkImage().get();
   size_t data_size = image->getDeferredTextureImageData(
       *context_threadsafe_proxy_.get(), &params, 1, nullptr, nullptr,
       color_type_);

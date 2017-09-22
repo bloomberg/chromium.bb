@@ -20,7 +20,6 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/solid_color_layer_impl.h"
-#include "cc/paint/display_item_list.h"
 #include "cc/tiles/tile_manager.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -120,9 +119,6 @@ PictureLayerImpl::~PictureLayerImpl() {
   if (twin_layer_)
     twin_layer_->twin_layer_ = nullptr;
   layer_tree_impl()->UnregisterPictureLayerImpl(this);
-
-  // Unregister for all images on the current raster source.
-  UnregisterAnimatedImages();
 }
 
 void PictureLayerImpl::SetLayerMaskType(Layer::LayerMaskType mask_type) {
@@ -602,26 +598,10 @@ void PictureLayerImpl::UpdateRasterSource(
       << " bounds " << bounds().ToString() << " pile "
       << raster_source->GetSize().ToString();
 
-  // We have an updated recording if the DisplayItemList in the new RasterSource
-  // is different.
-  const bool recording_updated =
-      !raster_source_ || raster_source_->GetDisplayItemList() !=
-                             raster_source->GetDisplayItemList();
-
-  // Unregister for all images on the current raster source, if the recording
-  // was updated.
-  if (recording_updated)
-    UnregisterAnimatedImages();
-
   // The |raster_source_| is initially null, so have to check for that for the
   // first frame.
   bool could_have_tilings = raster_source_.get() && CanHaveTilings();
   raster_source_.swap(raster_source);
-
-  // Register images from the new raster source, if the recording was updated.
-  // TODO(khushalsagar): UMA the number of animated images in layer?
-  if (recording_updated)
-    RegisterAnimatedImages();
 
   // The |new_invalidation| must be cleared before updating tilings since they
   // access the invalidation through the PictureLayerTilingClient interface.
@@ -764,26 +744,6 @@ bool PictureLayerImpl::RequiresHighResToDraw() const {
 
 gfx::Rect PictureLayerImpl::GetEnclosingRectInTargetSpace() const {
   return GetScaledEnclosingRectInTargetSpace(MaximumTilingContentsScale());
-}
-
-bool PictureLayerImpl::ShouldAnimate(PaintImage::Id paint_image_id) const {
-  DCHECK(raster_source_);
-
-  // Only animate images for layers which HasValidTilePriorities. This check is
-  // important for 2 reasons:
-  // 1) It avoids doing additional work for layers we don't plan to rasterize
-  //    and/or draw. The updated state will be pulled by the animation system
-  //    if the draw properties change.
-  // 2) It eliminates considering layers on the recycle tree. Once the pending
-  //    tree is activated, the layers on the recycle tree remain registered as
-  //    animation drivers, but should not drive animations since they don't have
-  //    updated draw properties.
-  //
-  //  Additionally only animate images which are on-screen, animations are
-  //  paused once they are not visible.
-  return HasValidTilePriorities() &&
-         raster_source_->GetRectForImage(paint_image_id)
-             .Intersects(visible_layer_rect());
 }
 
 gfx::Size PictureLayerImpl::CalculateTileSize(
@@ -1540,40 +1500,6 @@ void PictureLayerImpl::InvalidateRegionForImages(
   SetNeedsPushProperties();
   TRACE_EVENT_END1("cc", "PictureLayerImpl::InvalidateRegionForImages",
                    "Invalidation", invalidation.ToString());
-}
-
-void PictureLayerImpl::RegisterAnimatedImages() {
-  if (!raster_source_ || !raster_source_->GetDisplayItemList())
-    return;
-
-  auto* controller = layer_tree_impl()->image_animation_controller();
-  if (!controller)
-    return;
-
-  const auto& metadata = raster_source_->GetDisplayItemList()
-                             ->discardable_image_map()
-                             .animated_images_metadata();
-  for (const auto& data : metadata) {
-    // Only update the metadata from updated recordings received from a commit.
-    if (layer_tree_impl()->IsSyncTree())
-      controller->UpdateAnimatedImage(data);
-    controller->RegisterAnimationDriver(data.paint_image_id, this);
-  }
-}
-
-void PictureLayerImpl::UnregisterAnimatedImages() {
-  if (!raster_source_ || !raster_source_->GetDisplayItemList())
-    return;
-
-  auto* controller = layer_tree_impl()->image_animation_controller();
-  if (!controller)
-    return;
-
-  const auto& metadata = raster_source_->GetDisplayItemList()
-                             ->discardable_image_map()
-                             .animated_images_metadata();
-  for (const auto& data : metadata)
-    controller->UnregisterAnimationDriver(data.paint_image_id, this);
 }
 
 }  // namespace cc

@@ -45,9 +45,8 @@ DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
 
 PaintImage CreateAnimatedImage(
     const gfx::Size& size,
-    std::vector<FrameMetadata> frames,
-    int repetition_count = kAnimationLoopInfinite,
-    size_t frame_index = PaintImage::kDefaultFrameIndex);
+    std::vector<FrameMetadata> frames = {FrameMetadata()},
+    int repetition_count = kAnimationLoopInfinite);
 
 }  // namespace cc
 

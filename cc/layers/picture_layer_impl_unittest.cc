@@ -29,7 +29,6 @@
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
-#include "cc/test/skia_common.h"
 #include "cc/test/test_layer_tree_host_base.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -85,7 +84,6 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
     settings.create_low_res_tiling = true;
     settings.resource_settings.buffer_to_texture_target_map =
         viz::DefaultBufferToTextureTargetMapForTesting();
-    settings.enable_image_animations = true;
     return settings;
   }
 
@@ -5199,60 +5197,6 @@ TEST_F(PictureLayerImplTest, ChangeRasterTranslationNukeActiveLayerTiles) {
     for (auto* tile : tiling->AllTilesForTesting())
       EXPECT_EQ(tile->raster_transform(), tiling->raster_transform());
   }
-}
-
-TEST_F(PictureLayerImplTest, AnimatedImages) {
-  gfx::Size layer_bounds(1000, 1000);
-
-  // Set up a raster source with 2 animated images.
-  auto recording_source = FakeRecordingSource::CreateRecordingSource(
-      gfx::Rect(layer_bounds), layer_bounds);
-  std::vector<FrameMetadata> frames = {
-      FrameMetadata(true, base::TimeDelta::FromMilliseconds(1)),
-      FrameMetadata(true, base::TimeDelta::FromMilliseconds(1))};
-  PaintImage image1 = CreateAnimatedImage(gfx::Size(200, 200), frames);
-  PaintImage image2 = CreateAnimatedImage(gfx::Size(200, 200), frames);
-  recording_source->add_draw_image(image1, gfx::Point(100, 100));
-  recording_source->add_draw_image(image2, gfx::Point(500, 500));
-  recording_source->Rerecord();
-  scoped_refptr<RasterSource> raster_source =
-      recording_source->CreateRasterSource();
-
-  // All images should be registered on the pending layer.
-  SetupPendingTree(raster_source, gfx::Size(), Region(gfx::Rect(layer_bounds)));
-  auto* controller = host_impl()->image_animation_controller();
-  EXPECT_EQ(controller->GetDriversForTesting(image1.stable_id())
-                .count(pending_layer()),
-            1u);
-  EXPECT_EQ(controller->GetDriversForTesting(image2.stable_id())
-                .count(pending_layer()),
-            1u);
-
-  // Make only the first image visible and verify that only this image is
-  // animated.
-  gfx::Rect visible_rect(0, 0, 300, 300);
-  pending_layer()->set_visible_layer_rect(visible_rect);
-  EXPECT_TRUE(pending_layer()->ShouldAnimate(image1.stable_id()));
-  EXPECT_FALSE(pending_layer()->ShouldAnimate(image2.stable_id()));
-
-  // Now activate and make sure the active layer is registered as well.
-  ActivateTree();
-  active_layer()->set_visible_layer_rect(visible_rect);
-  EXPECT_EQ(controller->GetDriversForTesting(image1.stable_id())
-                .count(active_layer()),
-            1u);
-  EXPECT_EQ(controller->GetDriversForTesting(image2.stable_id())
-                .count(active_layer()),
-            1u);
-
-  // Once activated, only the active layer should drive animations for these
-  // images. Since DrawProperties are not updated on the recycle tree, it has
-  // stale state for visibility of images.
-  ASSERT_EQ(old_pending_layer()->visible_layer_rect(), visible_rect);
-  EXPECT_FALSE(old_pending_layer()->ShouldAnimate(image1.stable_id()));
-  EXPECT_FALSE(old_pending_layer()->ShouldAnimate(image2.stable_id()));
-  EXPECT_TRUE(active_layer()->ShouldAnimate(image1.stable_id()));
-  EXPECT_FALSE(active_layer()->ShouldAnimate(image2.stable_id()));
 }
 
 }  // namespace

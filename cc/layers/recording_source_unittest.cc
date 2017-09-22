@@ -111,8 +111,7 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
     std::vector<const DrawImage*> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 0, 128, 128),
                                               &images);
-    DrawImage image(*images[0], scale, PaintImage::kDefaultFrameIndex,
-                    DefaultColorSpace());
+    DrawImage image(*images[0], scale, DefaultColorSpace());
     EXPECT_EQ(1u, images.size());
     EXPECT_FLOAT_EQ(scale, image.scale().width());
     EXPECT_FLOAT_EQ(scale, image.scale().height());
