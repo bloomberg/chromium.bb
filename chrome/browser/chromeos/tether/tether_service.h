@@ -120,7 +120,14 @@ class TetherService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
                            TestBleAdvertisingSupportedButIncorrectlyRecorded);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestScreenLock);
-  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestFeatureFlagEnabled);
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
+                           TestFeatureFlagDisabled_CommandLineDisabled);
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
+                           TestFeatureFlagDisabled_CommandLineEnabled);
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
+                           TestFeatureFlagEnabled_CommandLineDisabled);
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
+                           TestFeatureFlagEnabled_CommandLineEnabled);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestNoTetherHosts);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestProhibitedByPolicy);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestIsBluetoothPowered);

@@ -67,7 +67,9 @@ void TetherService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 // static
 bool TetherService::IsFeatureFlagEnabled() {
-  return base::FeatureList::IsEnabled(features::kInstantTethering);
+  return base::FeatureList::IsEnabled(features::kInstantTethering) &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kEnableInstantTethering);
 }
 
 // static.
