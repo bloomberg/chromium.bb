@@ -1139,7 +1139,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Sets the NavigationState on the DocumentState based on
   // the value of |pending_navigation_params_|.
   void UpdateNavigationState(DocumentState* document_state,
-                             bool was_within_same_page,
+                             bool was_within_same_document,
                              bool content_initiated);
 
 #if BUILDFLAG(ENABLE_PLUGINS)

@@ -3473,7 +3473,7 @@ void RenderFrameImpl::DidCreateDocumentLoader(
 
   // The rest of RenderView assumes that a WebDocumentLoader will always have a
   // non-null NavigationState.
-  UpdateNavigationState(document_state, false /* was_within_same_page */,
+  UpdateNavigationState(document_state, false /* was_within_same_document */,
                         content_initiated);
 
   NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
@@ -4106,7 +4106,7 @@ void RenderFrameImpl::DidNavigateWithinPage(
                "id", routing_id_);
   DocumentState* document_state =
       DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-  UpdateNavigationState(document_state, true /* was_within_same_page */,
+  UpdateNavigationState(document_state, true /* was_within_same_document */,
                         content_initiated);
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(true);
@@ -6717,7 +6717,7 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
 }
 
 void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state,
-                                            bool was_within_same_page,
+                                            bool was_within_same_document,
                                             bool content_initiated) {
   // If this was a browser-initiated navigation, then there could be pending
   // navigation params, so use them. Otherwise, just reset the document state
@@ -6733,9 +6733,9 @@ void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state,
   document_state->set_navigation_state(CreateNavigationStateFromPending());
 
   // The |set_was_load_data_with_base_url_request| state should not change for
-  // an in-page navigation, so skip updating it from the in-page navigation
-  // params in this case.
-  if (!was_within_same_page) {
+  // same document navigation, so skip updating it from the same document
+  // navigation params in this case.
+  if (!was_within_same_document) {
     const CommonNavigationParams& common_params =
         pending_navigation_params_->common_params;
     bool load_data = !common_params.base_url_for_data_url.is_empty() &&
