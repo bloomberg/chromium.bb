@@ -40,9 +40,10 @@ enum class UseSingleSharedQuadState { YES, NO };
 
 class CCSerializationPerfTest : public testing::Test {
  protected:
-  static bool ReadMessage(const IPC::Message* msg, CompositorFrame* frame) {
+  static void ReadMessage(const IPC::Message* msg, CompositorFrame* frame) {
     base::PickleIterator iter(*msg);
-    return IPC::ParamTraits<CompositorFrame>::Read(msg, &iter, frame);
+    bool success = IPC::ParamTraits<CompositorFrame>::Read(msg, &iter, frame);
+    CHECK(success);
   }
 
   static void RunDeserializationTestParamTraits(
@@ -230,6 +231,7 @@ class CCSerializationPerfTest : public testing::Test {
 
   static void RunComplexCompositorFrameTest(const std::string& test_name) {
     CompositorFrame frame;
+    frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
 
     std::vector<viz::TransferableResource>& resource_list = frame.resource_list;
     for (uint32_t i = 0; i < 80; ++i) {
@@ -396,6 +398,7 @@ class CCSerializationPerfTest : public testing::Test {
                                      uint32_t num_passes,
                                      UseSingleSharedQuadState single_sqs) {
     CompositorFrame frame;
+    frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
 
     for (uint32_t i = 0; i < num_passes; ++i) {
       std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
