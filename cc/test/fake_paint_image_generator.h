@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_STUB_PAINT_IMAGE_GENERATOR_H_
-#define CC_TEST_STUB_PAINT_IMAGE_GENERATOR_H_
+#ifndef CC_TEST_FAKE_PAINT_IMAGE_GENERATOR_H_
+#define CC_TEST_FAKE_PAINT_IMAGE_GENERATOR_H_
 
+#include "base/containers/flat_set.h"
 #include "cc/paint/paint_image_generator.h"
 
 namespace cc {
 
-class StubPaintImageGenerator : public PaintImageGenerator {
+class FakePaintImageGenerator : public PaintImageGenerator {
  public:
-  explicit StubPaintImageGenerator(const SkImageInfo& info)
-      : PaintImageGenerator(info) {}
+  explicit FakePaintImageGenerator(const SkImageInfo& info,
+                                   std::vector<FrameMetadata> frames = {
+                                       FrameMetadata()});
+  ~FakePaintImageGenerator() override;
 
   sk_sp<SkData> GetEncodedData() const override;
   bool GetPixels(const SkImageInfo& info,
@@ -26,8 +29,18 @@ class StubPaintImageGenerator : public PaintImageGenerator {
                      void* planes[3],
                      size_t frame_index,
                      uint32_t lazy_pixel_ref) override;
+
+  const base::flat_set<size_t>& frames_decoded() const {
+    return frames_decoded_;
+  }
+  void reset_frames_decoded() { frames_decoded_.clear(); }
+
+ private:
+  std::vector<uint8_t> image_backing_memory_;
+  SkPixmap image_pixmap_;
+  base::flat_set<size_t> frames_decoded_;
 };
 
 }  // namespace cc
 
-#endif  // CC_TEST_STUB_PAINT_IMAGE_GENERATOR_H_
+#endif  // CC_TEST_FAKE_PAINT_IMAGE_GENERATOR_H_

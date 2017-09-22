@@ -67,6 +67,7 @@
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/frame_rate_counter.h"
+#include "cc/trees/image_animation_controller.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -270,6 +271,16 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       settings.top_controls_hide_threshold);
 
   tile_manager_.SetDecodedImageTracker(&decoded_image_tracker_);
+
+  if (settings_.enable_image_animations) {
+    // It is safe to use base::Unretained here since we will outlive the
+    // ImageAnimationController.
+    base::Closure invalidation_callback =
+        base::Bind(&LayerTreeHostImpl::RequestInvalidationForAnimatedImages,
+                   base::Unretained(this));
+    image_animation_controller_.emplace(GetTaskRunner(),
+                                        std::move(invalidation_callback));
+  }
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
@@ -344,9 +355,6 @@ void LayerTreeHostImpl::CommitComplete() {
 }
 
 void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
-  sync_tree()->InvalidateRegionForImages(
-      tile_manager_.TakeImagesToInvalidateOnSyncTree());
-
   if (CommitToActiveTree()) {
     active_tree_->HandleScrollbarShowRequestsFromMain();
 
@@ -382,6 +390,20 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   // layer can or cannot use lcd text.  So, this is the cleanup pass to
   // determine if lcd state needs to switch due to draw properties.
   sync_tree()->UpdateCanUseLCDText();
+
+  // Defer invalidating images until UpdateDrawProperties is performed since
+  // that updates whether an image should be animated based on its visibility
+  // and the updated data for the image from the main frame.
+  PaintImageIdFlatSet images_to_invalidate =
+      tile_manager_.TakeImagesToInvalidateOnSyncTree();
+  if (image_animation_controller_.has_value()) {
+    const auto& animated_images =
+        image_animation_controller_.value().AnimateForSyncTree(
+            CurrentBeginFrameArgs().frame_time);
+    images_to_invalidate.insert(animated_images.begin(), animated_images.end());
+  }
+  sync_tree()->InvalidateRegionForImages(images_to_invalidate);
+
   // Start working on newly created tiles immediately if needed.
   // TODO(vmpstr): Investigate always having PrepareTiles issue
   // NotifyReadyToActivate, instead of handling it here.
@@ -1406,6 +1428,15 @@ void LayerTreeHostImpl::RequestImplSideInvalidationForCheckerImagedTiles() {
   client_->NeedsImplSideInvalidation(needs_first_draw_on_activation);
 }
 
+size_t LayerTreeHostImpl::GetFrameIndexForImage(const PaintImage& paint_image,
+                                                WhichTree tree) const {
+  if (!paint_image.ShouldAnimate() || !image_animation_controller_.has_value())
+    return paint_image.frame_index();
+
+  return image_animation_controller_.value().GetFrameIndexForImage(
+      paint_image.stable_id(), tree);
+}
+
 void LayerTreeHostImpl::NotifyReadyToActivate() {
   pending_tree_raster_duration_timer_.reset();
   client_->NotifyReadyToActivate();
@@ -2206,8 +2237,17 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
   UpdateViewportContainerSizes();
 
+  // Inform the ImageAnimationController and TileManager before dirtying tile
+  // priorities. Since these components cache tree specific state, these should
+  // be updated before DidModifyTilePriorities which can synchronously issue a
+  // PrepareTiles.
+  if (image_animation_controller_)
+    image_animation_controller_->DidActivate();
+  tile_manager_.DidActivateSyncTree();
+
   active_tree_->DidBecomeActive();
   client_->RenewTreePriority();
+
   // If we have any picture layers, then by activating we also modified tile
   // priorities.
   if (!active_tree_->picture_layers().empty())
@@ -4498,6 +4538,15 @@ void LayerTreeHostImpl::ShowScrollbarsForImplScroll(ElementId element_id) {
   if (ScrollbarAnimationController* animation_controller =
           ScrollbarAnimationControllerForElementId(element_id))
     animation_controller->DidScrollUpdate();
+}
+
+void LayerTreeHostImpl::RequestInvalidationForAnimatedImages() {
+  DCHECK(image_animation_controller_);
+
+  // If we are animating an image, we want at least one draw of the active tree
+  // before a new tree is activated.
+  bool needs_first_draw_on_activation = true;
+  client_->NeedsImplSideInvalidation(needs_first_draw_on_activation);
 }
 
 }  // namespace cc
