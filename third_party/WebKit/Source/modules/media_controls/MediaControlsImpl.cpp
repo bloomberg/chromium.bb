@@ -98,15 +98,6 @@ constexpr int kMinHeightForOverlayPlayButton = kOverlayPlayButtonHeight +
 // LayoutTests/media/media-controls.js.
 const double kTimeWithoutMouseMovementBeforeHidingMediaControls = 3;
 
-const char* kStateCSSClasses[6] = {
-    "phase-pre-ready state-no-source",    // kNoSource
-    "phase-pre-ready state-no-metadata",  // kNotLoaded
-    "state-loading-metadata",             // kLoadingMetadata
-    "phase-ready state-stopped",          // kStopped
-    "phase-ready state-playing",          // kPlaying
-    "phase-ready state-buffering",        // kBuffering
-};
-
 bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
   // Unconditionally allow the user to exit fullscreen if we are in it
   // now.  Especially on android, when we might not yet know if
@@ -476,9 +467,6 @@ void MediaControlsImpl::InitializeControls() {
   overflow_list_->AppendChild(
       toggle_closed_captions_button_->CreateOverflowElement(
           new MediaControlToggleClosedCaptionsButtonElement(*this)));
-
-  // Set the default CSS classes.
-  UpdateCSSClassFromState();
 }
 
 Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
@@ -509,34 +497,6 @@ Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
     element_mutation_callback_ = new MediaElementMutationCallback(this);
 
   return HTMLDivElement::InsertedInto(root);
-}
-
-void MediaControlsImpl::UpdateCSSClassFromState() {
-  const char* classes = kStateCSSClasses[State()];
-  if (getAttribute("class") != classes)
-    setAttribute("class", classes);
-}
-
-MediaControlsImpl::ControlsState MediaControlsImpl::State() const {
-  switch (MediaElement().getNetworkState()) {
-    case HTMLMediaElement::kNetworkEmpty:
-    case HTMLMediaElement::kNetworkNoSource:
-      return ControlsState::kNoSource;
-    case HTMLMediaElement::kNetworkLoading:
-      if (MediaElement().getReadyState() == HTMLMediaElement::kHaveNothing)
-        return ControlsState::kLoadingMetadata;
-      if (!MediaElement().paused())
-        return ControlsState::kBuffering;
-      break;
-    case HTMLMediaElement::kNetworkIdle:
-      if (MediaElement().getReadyState() == HTMLMediaElement::kHaveNothing)
-        return ControlsState::kNotLoaded;
-      break;
-  }
-
-  if (!MediaElement().paused())
-    return ControlsState::kPlaying;
-  return ControlsState::kStopped;
 }
 
 void MediaControlsImpl::RemovedFrom(ContainerNode*) {
@@ -1029,15 +989,12 @@ void MediaControlsImpl::OnPlay() {
 
   if (download_iph_manager_)
     download_iph_manager_->SetIsPlaying(true);
-
-  UpdateCSSClassFromState();
 }
 
 void MediaControlsImpl::OnPlaying() {
   timeline_->OnPlaying();
 
   StartHideMediaControlsTimer();
-  UpdateCSSClassFromState();
 }
 
 void MediaControlsImpl::OnPause() {
@@ -1050,8 +1007,6 @@ void MediaControlsImpl::OnPause() {
 
   if (download_iph_manager_)
     download_iph_manager_->SetIsPlaying(false);
-
-  UpdateCSSClassFromState();
 }
 
 void MediaControlsImpl::OnTextTracksAddedOrRemoved() {
@@ -1068,14 +1023,12 @@ void MediaControlsImpl::OnError() {
   // TODO(mlamouri): we should only change the aspects of the control that need
   // to be changed.
   Reset();
-  UpdateCSSClassFromState();
 }
 
 void MediaControlsImpl::OnLoadedMetadata() {
   // TODO(mlamouri): we should only change the aspects of the control that need
   // to be changed.
   Reset();
-  UpdateCSSClassFromState();
 }
 
 void MediaControlsImpl::OnEnteredFullscreen() {
@@ -1290,8 +1243,6 @@ void MediaControlsImpl::NetworkStateChanged() {
   // source or no longer have a source.
   download_button_->SetIsWanted(
       download_button_->ShouldDisplayDownloadButton());
-
-  UpdateCSSClassFromState();
 }
 
 bool MediaControlsImpl::OverflowMenuVisible() {
@@ -1334,10 +1285,6 @@ void MediaControlsImpl::DidDismissDownloadInProductHelp() {
 
 MediaDownloadInProductHelpManager* MediaControlsImpl::DownloadInProductHelp() {
   return download_iph_manager_;
-}
-
-void MediaControlsImpl::OnWaiting() {
-  UpdateCSSClassFromState();
 }
 
 DEFINE_TRACE(MediaControlsImpl) {
