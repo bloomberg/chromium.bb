@@ -4,7 +4,6 @@
 
 #include "tools/json_schema_compiler/test/enums.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/test_util.h"
@@ -74,8 +73,8 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
 TEST(JsonSchemaCompilerEnumsTest, EnumsArrayAsType) {
   {
     base::ListValue params_value;
-    params_value.Append(List(base::MakeUnique<base::Value>("one"),
-                             base::MakeUnique<base::Value>("two")));
+    params_value.Append(List(std::make_unique<base::Value>("one"),
+                             std::make_unique<base::Value>("two")));
     std::unique_ptr<TakesEnumArrayAsType::Params> params(
         TakesEnumArrayAsType::Params::Create(params_value));
     ASSERT_TRUE(params);
@@ -85,7 +84,7 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsArrayAsType) {
   }
   {
     base::ListValue params_value;
-    params_value.Append(List(base::MakeUnique<base::Value>("invalid")));
+    params_value.Append(List(std::make_unique<base::Value>("invalid")));
     std::unique_ptr<TakesEnumArrayAsType::Params> params(
         TakesEnumArrayAsType::Params::Create(params_value));
     EXPECT_FALSE(params);
@@ -165,8 +164,8 @@ TEST(JsonSchemaCompilerEnumsTest, TakesEnumParamsCreate) {
 TEST(JsonSchemaCompilerEnumsTest, TakesEnumArrayParamsCreate) {
   {
     base::ListValue params_value;
-    params_value.Append(List(base::MakeUnique<base::Value>("one"),
-                             base::MakeUnique<base::Value>("two")));
+    params_value.Append(List(std::make_unique<base::Value>("one"),
+                             std::make_unique<base::Value>("two")));
     std::unique_ptr<TakesEnumArray::Params> params(
         TakesEnumArray::Params::Create(params_value));
     ASSERT_TRUE(params);
@@ -176,7 +175,7 @@ TEST(JsonSchemaCompilerEnumsTest, TakesEnumArrayParamsCreate) {
   }
   {
     base::ListValue params_value;
-    params_value.Append(List(base::MakeUnique<base::Value>("invalid")));
+    params_value.Append(List(std::make_unique<base::Value>("invalid")));
     std::unique_ptr<TakesEnumArray::Params> params(
         TakesEnumArray::Params::Create(params_value));
     EXPECT_FALSE(params);

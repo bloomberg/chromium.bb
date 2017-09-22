@@ -4,7 +4,8 @@
 
 #include "tools/json_schema_compiler/test/simple_api.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,7 +80,7 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsCreate) {
 TEST(JsonSchemaCompilerSimpleTest, OptionalParamsTakingNull) {
   {
     std::unique_ptr<base::ListValue> params_value(new base::ListValue());
-    params_value->Append(base::MakeUnique<base::Value>());
+    params_value->Append(std::make_unique<base::Value>());
     std::unique_ptr<OptionalString::Params> params(
         OptionalString::Params::Create(*params_value));
     EXPECT_TRUE(params.get());
@@ -100,7 +101,7 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsWrongType) {
 TEST(JsonSchemaCompilerSimpleTest, OptionalBeforeRequired) {
   {
     std::unique_ptr<base::ListValue> params_value(new base::ListValue());
-    params_value->Append(base::MakeUnique<base::Value>());
+    params_value->Append(std::make_unique<base::Value>());
     params_value->AppendString("asdf");
     std::unique_ptr<OptionalBeforeRequired::Params> params(
         OptionalBeforeRequired::Params::Create(*params_value));

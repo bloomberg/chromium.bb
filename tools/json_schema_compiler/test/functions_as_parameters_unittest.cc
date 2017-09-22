@@ -4,7 +4,8 @@
 
 #include "tools/json_schema_compiler/test/functions_as_parameters.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
