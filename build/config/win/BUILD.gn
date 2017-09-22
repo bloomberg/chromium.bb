@@ -267,8 +267,10 @@ config("cfi_linker") {
   # turned on either.
   # TODO(thakis): Turn this on with lld once supported, https://crbug.com/693709
   if (!is_debug && !use_lld) {
-    # Turn on CFG in msvc linker, regardless of compiler used.
-    ldflags = [ "/guard:cf" ]
+    # Turn on CFG in msvc linker, regardless of compiler used. Turn off CFG for
+    # longjmp (new in VS 2017) because it relies on compiler support which we do
+    # not have enabled.
+    ldflags = [ "/guard:cf,nolongjmp" ]
   }
 }
 
