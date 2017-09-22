@@ -15,8 +15,6 @@
 #include "components/user_manager/user_manager.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
-#include <queue>
-
 class PrefRegistrySimple;
 class PrefService;
 
