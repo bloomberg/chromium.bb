@@ -434,8 +434,9 @@ if (gen_policy_templates_android && is_android) {
   }
 
   create_bundle("chrome_manifest_bundle") {
-    bundle_root_dir = "$root_out_dir/$chrome_mac_bundle_id.manifest/Contents"
-    bundle_resources_dir = "$bundle_root_dir/Resources"
+    bundle_root_dir = "$root_out_dir/$chrome_mac_bundle_id.manifest"
+    bundle_contents_dir = "$bundle_root_dir/Contents"
+    bundle_resources_dir = "$bundle_contents_dir/Resources"
 
     deps = [
       ":manifest_bundle_data",

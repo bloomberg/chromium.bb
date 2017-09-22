@@ -586,7 +586,7 @@ if (is_win) {
     ]
 
     outputs = [
-      "{{bundle_root_dir}}/XPCServices/{{source_file_part}}",
+      "{{bundle_contents_dir}}/XPCServices/{{source_file_part}}",
     ]
 
     public_deps = [
@@ -737,7 +737,7 @@ if (is_win) {
       ]
 
       outputs = [
-        "{{bundle_root_dir}}/Helpers/{{source_file_part}}",
+        "{{bundle_contents_dir}}/Helpers/{{source_file_part}}",
       ]
     }
   }
@@ -748,7 +748,7 @@ if (is_win) {
       "$root_out_dir/$chrome_helper_name.app",
     ]
     outputs = [
-      "{{bundle_root_dir}}/Versions/$chrome_version_full/{{source_file_part}}",
+      "{{bundle_contents_dir}}/Versions/$chrome_version_full/{{source_file_part}}",
     ]
     public_deps = [
       ":chrome_helper_app",
@@ -846,7 +846,7 @@ if (is_win) {
     ]
 
     outputs = [
-      "{{bundle_root_dir}}/Helpers/{{source_file_part}}",
+      "{{bundle_contents_dir}}/Helpers/{{source_file_part}}",
     ]
 
     public_deps = [
@@ -949,7 +949,7 @@ if (is_win) {
     bundle_data("chrome_framework_plugins") {
       sources = []
       outputs = [
-        "{{bundle_root_dir}}/Internet Plug-Ins/{{source_file_part}}",
+        "{{bundle_contents_dir}}/Internet Plug-Ins/{{source_file_part}}",
       ]
       public_deps = []
 
@@ -979,7 +979,7 @@ if (is_win) {
         "$root_out_dir/libwidevinecdm.dylib",
       ]
       outputs = [
-        "{{bundle_root_dir}}/Libraries/$widevine_cdm_path/{{source_file_part}}",
+        "{{bundle_contents_dir}}/Libraries/$widevine_cdm_path/{{source_file_part}}",
       ]
       public_deps = [
         # Need this intermediate dependency because "widevinecdm" is a
@@ -1021,7 +1021,7 @@ if (is_win) {
         "$root_out_dir/WidevineCdm/manifest.json",
       ]
       outputs = [
-        "{{bundle_root_dir}}/Libraries/WidevineCdm/{{source_file_part}}",
+        "{{bundle_contents_dir}}/Libraries/WidevineCdm/{{source_file_part}}",
       ]
       public_deps = [
         "//third_party/widevine/cdm:widevine_cdm_manifest",
@@ -1061,7 +1061,7 @@ if (is_win) {
     bundle_data("widevine_resources_plist_bundle_data") {
       sources = get_target_outputs(":widevine_resources_plist")
       outputs = [
-        "{{bundle_root_dir}}/Info.plist",
+        "{{bundle_contents_dir}}/Info.plist",
       ]
       public_deps = [
         ":widevine_resources_plist",
@@ -1084,8 +1084,9 @@ if (is_win) {
 
     create_bundle("widevine_resources_bundle") {
       output_name = "Widevine Resources.bundle"
-      bundle_root_dir = "$root_build_dir/$output_name/Contents"
-      bundle_resources_dir = bundle_root_dir + "/Resources"
+      bundle_root_dir = "$root_build_dir/$output_name"
+      bundle_contents_dir = "$bundle_root_dir/Contents"
+      bundle_resources_dir = "$bundle_contents_dir/Resources"
 
       deps = [
         ":framework_widevine_signature",
@@ -1611,7 +1612,7 @@ if (is_chrome_branded && !is_android) {
       ]
     } else {
       outputs = [
-        "{{bundle_root_dir}}/Default Apps/{{source_file_part}}",
+        "{{bundle_contents_dir}}/Default Apps/{{source_file_part}}",
       ]
     }
 

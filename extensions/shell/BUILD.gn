@@ -433,7 +433,7 @@ if (is_mac) {
       "$root_out_dir/App Shell Helper.app",
     ]
     outputs = [
-      "{{bundle_root_dir}}/Frameworks/{{source_file_part}}",
+      "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}",
     ]
     public_deps = [
       ":app_shell_framework+link",

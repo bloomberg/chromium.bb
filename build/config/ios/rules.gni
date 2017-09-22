@@ -221,7 +221,6 @@ template("create_signed_bundle") {
   }
 
   _bundle_extension = invoker.bundle_extension
-  _bundle_root_dir = "$root_out_dir/$_output_name$_bundle_extension"
 
   if (!defined(invoker.entitlements_target)) {
     _entitlements_path = "//build/config/ios/entitlements.plist"
@@ -259,10 +258,11 @@ template("create_signed_bundle") {
                              "xcode_test_application_name",
                            ])
 
-    bundle_root_dir = _bundle_root_dir
-    bundle_resources_dir = _bundle_root_dir
-    bundle_executable_dir = _bundle_root_dir
-    bundle_plugins_dir = "$_bundle_root_dir/PlugIns"
+    bundle_root_dir = "$root_out_dir/$_output_name$_bundle_extension"
+    bundle_contents_dir = bundle_root_dir
+    bundle_resources_dir = bundle_contents_dir
+    bundle_executable_dir = bundle_contents_dir
+    bundle_plugins_dir = "$bundle_contents_dir/PlugIns"
 
     if (!defined(public_deps)) {
       public_deps = []
@@ -290,18 +290,19 @@ template("create_signed_bundle") {
       _entitlements_path,
       _bundle_binary_path,
     ]
-    code_signing_outputs = [ "$_bundle_root_dir/$_output_name" ]
+    code_signing_outputs = [ "$bundle_contents_dir/$_output_name" ]
     if (_enable_code_signing) {
       code_signing_outputs +=
-          [ "$_bundle_root_dir/_CodeSignature/CodeResources" ]
+          [ "$bundle_contents_dir/_CodeSignature/CodeResources" ]
     }
     if (ios_code_signing_identity != "" && !use_ios_simulator) {
-      code_signing_outputs += [ "$_bundle_root_dir/embedded.mobileprovision" ]
+      code_signing_outputs +=
+          [ "$bundle_contents_dir/embedded.mobileprovision" ]
     }
 
     if (defined(invoker.extra_system_frameworks)) {
       foreach(_framework, invoker.extra_system_frameworks) {
-        code_signing_outputs += [ "$bundle_root_dir/Frameworks/" +
+        code_signing_outputs += [ "$bundle_contents_dir/Frameworks/" +
                                   get_path_info(_framework, "file") ]
       }
     }
@@ -342,7 +343,7 @@ template("create_signed_bundle") {
 
       code_signing_sources += _partial_info_plists
       code_signing_sources += [ _plist_compiler_path ]
-      code_signing_outputs += [ "$bundle_root_dir/Info.plist" ]
+      code_signing_outputs += [ "$bundle_contents_dir/Info.plist" ]
 
       code_signing_args +=
           [ "-P=" + rebase_path(_plist_compiler_path, root_build_dir) ]
@@ -996,7 +997,7 @@ template("bundle_data_strings") {
 #     bundle_data("core_teleportation_bundle_data") {
 #       deps = [ ":CoreTeleportation" ]
 #       sources = [ "$root_out_dir/CoreTeleportation.framework" ]
-#       outputs = [ "{{bundle_root_dir}}/Frameworks/{{source_file_part}}" ]
+#       outputs = [ "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}" ]
 #     }
 #
 #     app_bundle("GoatTeleporter") {
@@ -1023,7 +1024,7 @@ template("bundle_data_strings") {
 #     bundle_data("core_teleportation_bundle_data") {
 #       deps = [ ":CoreTeleportation+link" ]
 #       sources = [ "$root_out_dir/CoreTeleportation.framework" ]
-#       outputs = [ "{{bundle_root_dir}}/Frameworks/{{source_file_part}}" ]
+#       outputs = [ "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}" ]
 #     }
 #
 #     app_bundle("GoatTeleporter") {
@@ -1313,7 +1314,7 @@ template("ios_framework_bundle") {
       forward_variables_from(invoker, [ "testonly" ])
       sources = get_target_outputs(":$_info_plist_target")
       outputs = [
-        "{{bundle_root_dir}}/Info.plist",
+        "{{bundle_contents_dir}}/Info.plist",
       ]
       public_deps = [
         ":$_info_plist_target",
@@ -1520,7 +1521,7 @@ template("ios_xctest_bundle") {
 
       sources = get_target_outputs(":$_info_plist_target")
       outputs = [
-        "{{bundle_root_dir}}/Info.plist",
+        "{{bundle_contents_dir}}/Info.plist",
       ]
     }
 
@@ -1772,7 +1773,7 @@ template("ios_xcuitest_test_runner_bundle") {
 
     sources = get_target_outputs(":$_info_plist_target")
     outputs = [
-      "{{bundle_root_dir}}/Info.plist",
+      "{{bundle_contents_dir}}/Info.plist",
     ]
   }
 
@@ -1786,7 +1787,7 @@ template("ios_xcuitest_test_runner_bundle") {
     ]
 
     outputs = [
-      "{{bundle_root_dir}}/PkgInfo",
+      "{{bundle_contents_dir}}/PkgInfo",
     ]
   }
 

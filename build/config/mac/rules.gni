@@ -175,7 +175,7 @@ template("mac_xib_bundle_data") {
 #     bundle_data("core_teleportation_bundle_data") {
 #       deps = [ ":CoreTeleportation" ]
 #       sources = [ "$root_out_dir/CoreTeleportation.framework" ]
-#       outputs = [ "{{bundle_root_dir}}/Frameworks/{{source_file_part}}" ]
+#       outputs = [ "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}" ]
 #     }
 #
 #     app_bundle("GoatTeleporter") {
@@ -202,7 +202,7 @@ template("mac_xib_bundle_data") {
 #     bundle_data("core_teleportation_bundle_data") {
 #       deps = [ ":CoreTeleportation+link" ]
 #       sources = [ "$root_out_dir/CoreTeleportation.framework" ]
-#       outputs = [ "{{bundle_root_dir}}/Frameworks/{{source_file_part}}" ]
+#       outputs = [ "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}" ]
 #     }
 #
 #     app_bundle("GoatTeleporter") {
@@ -421,9 +421,10 @@ template("mac_framework_bundle") {
       ":$_shared_library_bundle_data",
     ]
 
-    bundle_root_dir = _framework_root_dir
-    bundle_resources_dir = "$bundle_root_dir/Resources"
-    bundle_executable_dir = "$bundle_root_dir"
+    bundle_root_dir = _framework_base_dir
+    bundle_contents_dir = _framework_root_dir
+    bundle_resources_dir = "$bundle_contents_dir/Resources"
+    bundle_executable_dir = bundle_contents_dir
   }
 
   group(_target_name + "+link") {
@@ -579,7 +580,7 @@ template("mac_app_bundle") {
     visibility = [ ":$_target_name" ]
     sources = get_target_outputs(":$_info_plist_target")
     outputs = [
-      "{{bundle_root_dir}}/Info.plist",
+      "{{bundle_contents_dir}}/Info.plist",
     ]
     public_deps = [
       ":$_info_plist_target",
@@ -594,7 +595,7 @@ template("mac_app_bundle") {
       visibility = [ ":$_target_name" ]
       sources = get_target_outputs(":$_pkg_info_target")
       outputs = [
-        "{{bundle_root_dir}}/PkgInfo",
+        "{{bundle_contents_dir}}/PkgInfo",
       ]
       public_deps = [
         ":$_pkg_info_target",
@@ -621,10 +622,10 @@ template("mac_app_bundle") {
       deps += [ ":$_pkg_info_bundle_data" ]
     }
     product_type = _product_type
-    bundle_root_dir =
-        "$root_out_dir/${_output_name}.${_output_extension}/Contents"
-    bundle_resources_dir = "$bundle_root_dir/Resources"
-    bundle_executable_dir = "$bundle_root_dir/MacOS"
+    bundle_root_dir = "$root_out_dir/${_output_name}.${_output_extension}"
+    bundle_contents_dir = "$bundle_root_dir/Contents"
+    bundle_resources_dir = "$bundle_contents_dir/Resources"
+    bundle_executable_dir = "$bundle_contents_dir/MacOS"
   }
 }
 
@@ -686,7 +687,8 @@ template("mac_plugin_bundle") {
     }
     deps += [ ":$_loadable_module_bundle_data" ]
 
-    bundle_root_dir = "$root_out_dir/$_output_name.plugin/Contents"
-    bundle_executable_dir = "$bundle_root_dir/MacOS"
+    bundle_root_dir = "$root_out_dir/$_output_name.plugin"
+    bundle_contents_dir = "$bundle_root_dir/Contents"
+    bundle_executable_dir = "$bundle_contents_dir/MacOS"
   }
 }
