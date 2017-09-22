@@ -299,7 +299,7 @@ void Pickle::WriteString16(const StringPiece16& value) {
 }
 
 void Pickle::WriteData(const char* data, int length) {
-  CHECK_GE(length, 0);
+  DCHECK_GE(length, 0);
   WriteInt(length);
   WriteBytes(data, length);
 }
