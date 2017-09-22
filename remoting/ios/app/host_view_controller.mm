@@ -14,6 +14,7 @@
 #import "remoting/ios/app/physical_keyboard_detector.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/remoting_settings_view_controller.h"
+#import "remoting/ios/app/view_utils.h"
 #import "remoting/ios/client_gestures.h"
 #import "remoting/ios/client_keyboard.h"
 #import "remoting/ios/display/eagl_view.h"
@@ -54,7 +55,7 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   BOOL _hasPhysicalKeyboard;
   NSLayoutConstraint* _keyboardHeightConstraint;
 
-  // Identical to self.view. Just casted to EAGLView.
+  // Subview of self.view. Adjusted frame for safe area.
   EAGLView* _hostView;
 
   // A placeholder view for anchoring views and calculating visible area.
@@ -98,19 +99,31 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 
 #pragma mark - UIViewController
 
-- (void)loadView {
-  _hostView = [[EAGLView alloc] initWithFrame:CGRectZero];
-  self.view = _hostView;
-}
-
 - (void)viewDidLoad {
   [super viewDidLoad];
+  _hostView = [[EAGLView alloc] initWithFrame:CGRectZero];
+  _hostView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view addSubview:_hostView];
+
+  UILayoutGuide* safeAreaLayoutGuide =
+      remoting::SafeAreaLayoutGuideForView(self.view);
+
+  [NSLayoutConstraint activateConstraints:@[
+    [_hostView.topAnchor constraintEqualToAnchor:safeAreaLayoutGuide.topAnchor],
+    [_hostView.bottomAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.bottomAnchor],
+    [_hostView.leadingAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor],
+    [_hostView.trailingAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.trailingAnchor],
+  ]];
+
   _hostView.displayTaskRunner =
       remoting::ChromotingClientRuntime::GetInstance()->display_task_runner();
 
   _keyboardPlaceholderView = [[UIView alloc] initWithFrame:CGRectZero];
   _keyboardPlaceholderView.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.view addSubview:_keyboardPlaceholderView];
+  [_hostView addSubview:_keyboardPlaceholderView];
   [NSLayoutConstraint activateConstraints:@[
     [_keyboardPlaceholderView.leadingAnchor
         constraintEqualToAnchor:self.view.leadingAnchor],
@@ -139,7 +152,7 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                                    primaryImage:RemotingTheme.menuIcon
                                     activeImage:RemotingTheme.closeIcon];
   [_floatingButton addSubview:_actionImageView];
-  [_hostView addSubview:_floatingButton];
+  [self.view addSubview:_floatingButton];
 
   [self applyInputMode];
 
@@ -147,20 +160,12 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   _clientKeyboard.delegate = self;
   [_hostView addSubview:_clientKeyboard];
 
-  NSDictionary* views = @{@"fab" : _floatingButton};
-  NSDictionary* metrics = @{ @"inset" : @(kFabInset) };
-
-  _fabLeftConstraints = [NSLayoutConstraint
-      constraintsWithVisualFormat:@"H:|-(inset)-[fab]"
-                          options:NSLayoutFormatDirectionLeftToRight
-                          metrics:metrics
-                            views:views];
-
-  _fabRightConstraints = [NSLayoutConstraint
-      constraintsWithVisualFormat:@"H:[fab]-(inset)-|"
-                          options:NSLayoutFormatDirectionLeftToRight
-                          metrics:metrics
-                            views:views];
+  _fabLeftConstraints = @[ [_floatingButton.leftAnchor
+      constraintEqualToAnchor:_hostView.leftAnchor
+                     constant:kFabInset] ];
+  _fabRightConstraints = @[ [_floatingButton.rightAnchor
+      constraintEqualToAnchor:_hostView.rightAnchor
+                     constant:-kFabInset] ];
   [_floatingButton.bottomAnchor
       constraintEqualToAnchor:_keyboardPlaceholderView.topAnchor
                      constant:-kFabInset]
@@ -385,9 +390,10 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
       viewSize.height - _keyboardPlaceholderView.frame.size.height;
   CALayer* kbPlaceholderLayer =
       [_keyboardPlaceholderView.layer presentationLayer];
+  CGRect viewKeyboardIntersection =
+      CGRectIntersection(kbPlaceholderLayer.frame, _hostView.frame);
   CGFloat currentVisibleHeight =
-      viewSize.height - kbPlaceholderLayer.frame.size.height;
-
+      _hostView.frame.size.height - viewKeyboardIntersection.size.height;
   _client.gestureInterpreter->OnSurfaceSizeChanged(viewSize.width,
                                                    currentVisibleHeight);
   if (currentVisibleHeight == targetVisibleHeight) {

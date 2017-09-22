@@ -10,6 +10,7 @@
 
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "remoting/ios/app/remoting_theme.h"
+#import "remoting/ios/app/view_utils.h"
 
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -37,13 +38,19 @@ static const CGFloat kBottomPadding = 6.f;
   titleLabel.textColor = RemotingTheme.setupListTextColor;
   [self addSubview:titleLabel];
   titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+
+  UILayoutGuide* safeAreaLayoutGuide =
+      remoting::SafeAreaLayoutGuideForView(self);
   [NSLayoutConstraint activateConstraints:@[
-    [titleLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
-                                             constant:kSetupTitleInset],
-    [titleLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor
-                                              constant:-kSetupTitleInset],
-    [titleLabel.bottomAnchor constraintEqualToAnchor:self.bottomAnchor
-                                            constant:-kBottomPadding],
+    [titleLabel.leadingAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor
+                       constant:kSetupTitleInset],
+    [titleLabel.trailingAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.trailingAnchor
+                       constant:-kSetupTitleInset],
+    [titleLabel.bottomAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.bottomAnchor
+                       constant:-kBottomPadding],
   ]];
 }
 

@@ -11,6 +11,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "remoting/ios/app/view_utils.h"
 
 // Applied on the left and right of the label.
 static const float kTitleMargin = 12.f;
@@ -33,13 +34,17 @@ static const float kTitleMargin = 12.f;
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_titleLabel];
 
+    UILayoutGuide* safeAreaLayoutGuide =
+        remoting::SafeAreaLayoutGuideForView(self);
+
     [NSLayoutConstraint activateConstraints:@[
-      [[_titleLabel leadingAnchor] constraintEqualToAnchor:[self leadingAnchor]
-                                                  constant:kTitleMargin],
-      [[_titleLabel centerYAnchor]
-          constraintEqualToAnchor:[self centerYAnchor]],
-      [[_titleLabel trailingAnchor]
-          constraintEqualToAnchor:[self trailingAnchor]
+      [_titleLabel.leadingAnchor
+          constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor
+                         constant:kTitleMargin],
+      [_titleLabel.centerYAnchor
+          constraintEqualToAnchor:safeAreaLayoutGuide.centerYAnchor],
+      [_titleLabel.trailingAnchor
+          constraintEqualToAnchor:safeAreaLayoutGuide.trailingAnchor
                          constant:-kTitleMargin],
     ]];
   }
