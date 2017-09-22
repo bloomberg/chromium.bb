@@ -195,7 +195,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     }
 
     @Test
-    public void testMediaMetadataPersistsAfterSamePageNavigation() throws Throwable {
+    public void testMediaMetadataPersistsAfterSameDocumentNavigation() throws Throwable {
         mTabHolder.simulateNavigation("https://example.com/", false);
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateMediaSessionMetadataChanged(new MediaMetadata("title2", "", ""));
