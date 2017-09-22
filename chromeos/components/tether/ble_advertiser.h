@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "components/cryptauth/foreground_eid_generator.h"
 #include "components/cryptauth/remote_device.h"
@@ -36,6 +37,14 @@ class ErrorTolerantBleAdvertisement;
 // advertisement.
 class BleAdvertiser {
  public:
+  class Observer {
+   public:
+    virtual void OnAllAdvertisementsUnregistered() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   BleAdvertiser(scoped_refptr<device::BluetoothAdapter> adapter,
                 cryptauth::LocalDeviceDataProvider* local_device_data_provider,
                 cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
@@ -45,6 +54,14 @@ class BleAdvertiser {
       const cryptauth::RemoteDevice& remote_device);
   virtual bool StopAdvertisingToDevice(
       const cryptauth::RemoteDevice& remote_device);
+
+  bool AreAdvertisementsRegistered();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+ protected:
+  void NotifyAllAdvertisementsUnregistered();
 
  private:
   friend class BleAdvertiserTest;
@@ -82,6 +99,8 @@ class BleAdvertiser {
   std::array<std::unique_ptr<ErrorTolerantBleAdvertisement>,
              kMaxConcurrentAdvertisements>
       advertisements_;
+
+  base::ObserverList<Observer> observer_list_;
 
   base::WeakPtrFactory<BleAdvertiser> weak_ptr_factory_;
 

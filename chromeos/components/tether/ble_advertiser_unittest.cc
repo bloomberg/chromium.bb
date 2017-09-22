@@ -97,6 +97,24 @@ class FakeErrorTolerantBleAdvertisementFactory
   size_t num_created_ = 0;
 };
 
+class TestObserver : public BleAdvertiser::Observer {
+ public:
+  TestObserver() {}
+  ~TestObserver() override {}
+
+  size_t num_times_all_advertisements_unregistered() {
+    return num_times_all_advertisements_unregistered_;
+  }
+
+  // BleAdvertiser::Observer:
+  void OnAllAdvertisementsUnregistered() override {
+    ++num_times_all_advertisements_unregistered_;
+  }
+
+ private:
+  size_t num_times_all_advertisements_unregistered_ = 0;
+};
+
 }  // namespace
 
 class BleAdvertiserTest : public testing::Test {
@@ -138,13 +156,17 @@ class BleAdvertiserTest : public testing::Test {
     ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(
         fake_advertisement_factory_.get());
 
+    test_observer_ = base::WrapUnique(new TestObserver());
+
     ble_advertiser_ = base::MakeUnique<BleAdvertiser>(
         mock_adapter_, mock_local_data_provider_.get(),
         mock_seed_fetcher_.get());
     ble_advertiser_->SetEidGeneratorForTest(std::move(eid_generator));
+    ble_advertiser_->AddObserver(test_observer_.get());
   }
 
   void TearDown() override {
+    ble_advertiser_->RemoveObserver(test_observer_.get());
     ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(nullptr);
   }
 
@@ -175,6 +197,8 @@ class BleAdvertiserTest : public testing::Test {
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
       mock_local_data_provider_;
 
+  std::unique_ptr<TestObserver> test_observer_;
+
   std::unique_ptr<FakeErrorTolerantBleAdvertisementFactory>
       fake_advertisement_factory_;
 
@@ -188,18 +212,21 @@ TEST_F(BleAdvertiserTest, TestCannotFetchPublicKey) {
   mock_local_data_provider_->SetPublicKey(nullptr);
   EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(0u, fake_advertisement_factory_->num_created());
+  EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
 TEST_F(BleAdvertiserTest, EmptyPublicKey) {
   mock_local_data_provider_->SetPublicKey(base::MakeUnique<std::string>(""));
   EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(0u, fake_advertisement_factory_->num_created());
+  EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
 TEST_F(BleAdvertiserTest, NoBeaconSeeds) {
   mock_seed_fetcher_->SetSeedsForDevice(fake_devices_[0], nullptr);
   EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(0u, fake_advertisement_factory_->num_created());
+  EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
 TEST_F(BleAdvertiserTest, EmptyBeaconSeeds) {
@@ -208,12 +235,14 @@ TEST_F(BleAdvertiserTest, EmptyBeaconSeeds) {
 
   EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(0u, fake_advertisement_factory_->num_created());
+  EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
 TEST_F(BleAdvertiserTest, CannotGenerateAdvertisement) {
   mock_eid_generator_->set_advertisement(nullptr);
   EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(0u, fake_advertisement_factory_->num_created());
+  EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
 TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully) {
@@ -223,9 +252,12 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully) {
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(1u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
+  EXPECT_TRUE(ble_advertiser_->AreAdvertisementsRegistered());
+  EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 
   // Now, unregister.
   EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_TRUE(ble_advertiser_->AreAdvertisementsRegistered());
 
   // The advertisement should have been stopped, but it should not yet have
   // been removed.
@@ -237,6 +269,8 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully) {
   InvokeAdvertisementStoppedCallback(0u /* index */,
                                      fake_devices_[0].GetDeviceId());
   EXPECT_EQ(0u, fake_advertisement_factory_->active_advertisements().size());
+  EXPECT_FALSE(ble_advertiser_->AreAdvertisementsRegistered());
+  EXPECT_EQ(1u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
 TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
@@ -246,6 +280,8 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(1u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
+  EXPECT_TRUE(ble_advertiser_->AreAdvertisementsRegistered());
+  EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 
   // Register device 1.
   mock_eid_generator_->set_advertisement(
@@ -253,6 +289,8 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[1]));
   EXPECT_EQ(2u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(2u, fake_advertisement_factory_->active_advertisements().size());
+  EXPECT_TRUE(ble_advertiser_->AreAdvertisementsRegistered());
+  EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 
   // Unregister device 0.
   EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]));
@@ -260,6 +298,8 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   InvokeAdvertisementStoppedCallback(0u /* index */,
                                      fake_devices_[0].GetDeviceId());
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
+  EXPECT_TRUE(ble_advertiser_->AreAdvertisementsRegistered());
+  EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 
   // Unregister device 1.
   EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[1]));
@@ -267,6 +307,8 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   InvokeAdvertisementStoppedCallback(0u /* index */,
                                      fake_devices_[1].GetDeviceId());
   EXPECT_EQ(0u, fake_advertisement_factory_->active_advertisements().size());
+  EXPECT_FALSE(ble_advertiser_->AreAdvertisementsRegistered());
+  EXPECT_EQ(1u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
 TEST_F(BleAdvertiserTest, TooManyDevicesRegistered) {

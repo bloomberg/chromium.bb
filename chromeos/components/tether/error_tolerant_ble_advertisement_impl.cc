@@ -110,9 +110,9 @@ void ErrorTolerantBleAdvertisementImpl::SetFakeTimerForTest(
 }
 
 void ErrorTolerantBleAdvertisementImpl::UpdateRegistrationStatus() {
-  if (!advertisement_ && stop_callback_.is_null())
+  if (!advertisement_)
     AttemptRegistration();
-  else if (advertisement_ && !stop_callback_.is_null())
+  else if (advertisement_ && HasBeenStopped())
     AttemptUnregistration();
 }
 
@@ -124,8 +124,7 @@ void ErrorTolerantBleAdvertisementImpl::RetryUpdateAfterTimer() {
 }
 
 void ErrorTolerantBleAdvertisementImpl::AttemptRegistration() {
-  // Should never attempt to register after Stop() has been called.
-  DCHECK(stop_callback_.is_null() && !unregistration_in_progress_);
+  DCHECK(!unregistration_in_progress_);
 
   if (registration_in_progress_)
     return;
