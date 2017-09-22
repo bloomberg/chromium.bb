@@ -19,7 +19,7 @@ from measurements import media
 import page_sets
 
 
-# TODO(rnephew): Revist the re-enabled benchmarks on Wed, Aug 8 2017.
+# TODO(rnephew): Revisit the re-enabled benchmarks on Wed, Aug 8 2017.
 # See tr.v.Numeric.getSummarizedScalarNumericsWithNames()
 # https://github.com/catapult-project/catapult/blob/master/tracing/tracing/value/numeric.html#L323
 _IGNORED_STATS_RE = re.compile(
