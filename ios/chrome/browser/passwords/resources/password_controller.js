@@ -93,6 +93,35 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   };
 
   /**
+   * If |form| has no submit elements and exactly 1 button that button
+   * is assumed to be a submit button. This function adds onSubmitButtonClick_
+   * as a handler for touchend event of this button. Touchend event is used as
+   * a proxy for onclick event because onclick handling might be prevented by
+   * the site JavaScript.
+   */
+  var addSubmitButtonTouchEndHandler_ = function(form) {
+    if (form.querySelector('input[type=submit]'))
+      return;
+    var buttons = form.querySelectorAll('button');
+    if (buttons.length != 1)
+      return;
+    buttons[0].addEventListener('touchend', onSubmitButtonTouchEnd_);
+   };
+
+   /**
+    * Click handler for the submit button. It sends to the host
+    * form.submitButtonClick command.
+    */
+   var onSubmitButtonTouchEnd_ = function(evt) {
+       var form = evt.currentTarget.form;
+       var formData = __gCrWeb.getPasswordFormData(form);
+       if (!formData)
+         return;
+       formData["command"] = 'passwordForm.submitButtonClick';
+       __gCrWeb.message.invokeOnHost(formData);
+    };
+
+  /**
    * Returns the password form with the given |name| as a JSON string.
    * @param {string} name The name of the form to extract.
    * @return {string} The password form.
@@ -412,6 +441,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       var formData = __gCrWeb.getPasswordFormData(forms[i]);
       if (formData) {
         formDataList.push(formData);
+        addSubmitButtonTouchEndHandler_(forms[i]);
       }
     }
 
