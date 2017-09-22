@@ -298,12 +298,6 @@ bool RemoteSafeBrowsingDatabaseManager::MatchMalwareIP(
   return false;
 }
 
-bool RemoteSafeBrowsingDatabaseManager::MatchModuleWhitelistString(
-    const std::string& str) {
-  NOTREACHED();
-  return true;
-}
-
 safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()
     const {
   return safe_browsing::ThreatSource::REMOTE;

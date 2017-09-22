@@ -283,8 +283,6 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
         new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* unwanted_software_store =
         new SafeBrowsingStoreFile(task_runner_);
-    SafeBrowsingStoreFile* module_whitelist_store =
-        new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* resource_blacklist_store =
         new SafeBrowsingStoreFile(task_runner_);
     database_.reset(new SafeBrowsingDatabaseNew(
@@ -296,7 +294,6 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
         extension_blacklist_store,
         ip_blacklist_store,
         unwanted_software_store,
-        module_whitelist_store,
         resource_blacklist_store));
     database_->Init(database_filename_);
   }
@@ -459,17 +456,13 @@ TEST_F(SafeBrowsingDatabaseTest, ListNames) {
   database_->InsertChunks(kUnwantedUrlList, chunks);
 
   chunks.clear();
-  chunks.push_back(AddChunkPrefixValue(9, "chrome.dll"));
-  database_->InsertChunks(kModuleWhitelist, chunks);
-
-  chunks.clear();
-  chunks.push_back(AddChunkPrefixValue(10, "foo.com/script.js"));
+  chunks.push_back(AddChunkPrefixValue(9, "foo.com/script.js"));
   database_->InsertChunks(kResourceBlacklist, chunks);
 
   database_->UpdateFinished(true);
 
   GetListsInfo(&lists);
-  ASSERT_EQ(10U, lists.size());
+  ASSERT_EQ(9U, lists.size());
   EXPECT_EQ(kMalwareList, lists[0].name);
   EXPECT_EQ("1", lists[0].adds);
   EXPECT_TRUE(lists[0].subs.empty());
@@ -494,12 +487,9 @@ TEST_F(SafeBrowsingDatabaseTest, ListNames) {
   EXPECT_EQ(kUnwantedUrlList, lists[7].name);
   EXPECT_EQ("8", lists[7].adds);
   EXPECT_TRUE(lists[7].subs.empty());
-  EXPECT_EQ(kModuleWhitelist, lists[8].name);
+  EXPECT_EQ(kResourceBlacklist, lists[8].name);
   EXPECT_EQ("9", lists[8].adds);
   EXPECT_TRUE(lists[8].subs.empty());
-  EXPECT_EQ(kResourceBlacklist, lists[9].name);
-  EXPECT_EQ("10", lists[9].adds);
-  EXPECT_TRUE(lists[9].subs.empty());
 
   database_.reset();
 }
@@ -1181,8 +1171,8 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   database_.reset();
   base::MessageLoop loop;
   SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile(task_runner_);
-  database_.reset(new SafeBrowsingDatabaseNew(
-      task_runner_, store, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  database_.reset(new SafeBrowsingDatabaseNew(task_runner_, store, NULL, NULL,
+                                              NULL, NULL, NULL, NULL, NULL));
   database_->Init(database_filename_);
 
   // This will cause an empty database to be created.
@@ -1370,12 +1360,6 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
     using TestListContainsWhitelistedString =
         bool (SafeBrowsingDatabase::*)(const std::string& str);
 
-    // Returns true if urls should be tested in this test case (i.e.
-    // |test_list_contains_whitelisted_url| is not null).
-    bool TestUrls() const {
-      return test_list_contains_whitelisted_url != nullptr;
-    }
-
     // Returns true if strings should be tested in this test case (i.e.
     // |test_list_contains_whitelisted_string| is not null).
     bool TestStrings() const {
@@ -1393,24 +1377,20 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
       {kDownloadWhiteList,
        &SafeBrowsingDatabase::ContainsDownloadWhitelistedUrl,
        &SafeBrowsingDatabase::ContainsDownloadWhitelistedString},
-      {kModuleWhitelist, nullptr,
-       &SafeBrowsingDatabase::ContainsModuleWhitelistedString},
   };
 
   // If the whitelist is disabled everything should match the whitelist.
   database_.reset(new SafeBrowsingDatabaseNew(
       task_runner_, new SafeBrowsingStoreFile(task_runner_), NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL));
+      NULL, NULL, NULL, NULL));
   database_->Init(database_filename_);
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(std::string("Tested list at fault => ") +
                  test_case.test_list_name);
 
-    if (test_case.TestUrls()) {
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://www.phishing.com/"))));
-    }
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://www.phishing.com/"))));
     if (test_case.TestStrings()) {
       EXPECT_TRUE(
           (database_.get()->*test_case.test_list_contains_whitelisted_string)(
@@ -1437,100 +1417,83 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
     const char kGoodString[] = "good_string";
 
     // Nothing should be whitelisted before the database receives the chunks.
-    if (test_case.TestUrls()) {
-      EXPECT_FALSE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood1Host)));
-      EXPECT_FALSE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood1Url1)));
-      EXPECT_FALSE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood1Url2)));
-      EXPECT_FALSE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood2Url1)));
-      EXPECT_FALSE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood3Url1)));
-    }
+    EXPECT_FALSE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood1Host)));
+    EXPECT_FALSE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood1Url1)));
+    EXPECT_FALSE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood1Url2)));
+    EXPECT_FALSE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood2Url1)));
+    EXPECT_FALSE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood3Url1)));
     if (test_case.TestStrings()) {
-      if (test_case.test_list_name == kModuleWhitelist) {
-        // For the module whitelist, everything should be whitelisted before
-        // the database receives the chunks.
-        EXPECT_TRUE(
-            (database_.get()->*test_case.test_list_contains_whitelisted_string)(
-                kGoodString));
-        EXPECT_TRUE(
-            (database_.get()->*test_case.test_list_contains_whitelisted_string)(
-                "asdf"));
-      } else {
-        EXPECT_FALSE(
-            (database_.get()->*test_case.test_list_contains_whitelisted_string)(
-                kGoodString));
-      }
+      EXPECT_FALSE(
+          (database_.get()->*test_case.test_list_contains_whitelisted_string)(
+              kGoodString));
     }
 
     std::vector<std::unique_ptr<SBChunkData>> chunks;
 
     // Add a few test chunks to the whitelist under test.
-    if (test_case.TestUrls()) {
-      chunks.push_back(AddChunkFullHash2Value(1, kGood1Url1, kGood1Url2));
-      chunks.push_back(AddChunkFullHashValue(2, kGood2Url1));
-      chunks.push_back(AddChunkFullHashValue(4, kGood3Url1));
-    }
+    chunks.push_back(AddChunkFullHash2Value(1, kGood1Url1, kGood1Url2));
+    chunks.push_back(AddChunkFullHashValue(2, kGood2Url1));
     if (test_case.TestStrings())
       chunks.push_back(AddChunkFullHashValue(3, kGoodString));
+    chunks.push_back(AddChunkFullHashValue(4, kGood3Url1));
 
     std::vector<SBListChunkRanges> lists;
     ASSERT_TRUE(database_->UpdateStarted(&lists));
     database_->InsertChunks(test_case.test_list_name, chunks);
     database_->UpdateFinished(true);
 
-    if (test_case.TestUrls()) {
-      EXPECT_FALSE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood1Host)));
+    EXPECT_FALSE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood1Host)));
 
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood1Url1)));
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood1Url1 + "?a=b")));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood1Url1)));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood1Url1 + "?a=b")));
 
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood1Url2)));
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood1Url2 + "/c.html")));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood1Url2)));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood1Url2 + "/c.html")));
 
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("https://") + kGood1Url2 + "/c.html")));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("https://") + kGood1Url2 + "/c.html")));
 
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood2Url1 + "/c")));
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood2Url1 + "/c?bla")));
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood2Url1 + "/c/bla")));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood2Url1 + "/c")));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood2Url1 + "/c?bla")));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood2Url1 + "/c/bla")));
 
-      EXPECT_FALSE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://www.google.com/"))));
+    EXPECT_FALSE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://www.google.com/"))));
 
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://") + kGood3Url1 + "a/b/c/d/e/f/g/")));
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://a.b.") + kGood3Url1)));
-    }
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://") + kGood3Url1 + "a/b/c/d/e/f/g/")));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://a.b.") + kGood3Url1)));
 
     if (test_case.TestStrings()) {
       EXPECT_FALSE(
@@ -1577,17 +1540,15 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
       EXPECT_TRUE(database_->IsMalwareIPMatchKillSwitchOn());
     }
 
-    if (test_case.TestUrls()) {
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("https://") + kGood1Url2 + "/c.html")));
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://www.google.com/"))));
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://www.phishing_url.com/"))));
-    }
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("https://") + kGood1Url2 + "/c.html")));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://www.google.com/"))));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://www.phishing_url.com/"))));
 
     if (test_case.TestStrings()) {
       EXPECT_TRUE(
@@ -1616,23 +1577,21 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
       EXPECT_FALSE(database_->IsMalwareIPMatchKillSwitchOn());
       EXPECT_FALSE(database_->IsCsdWhitelistKillSwitchOn());
     }
-    if (test_case.TestUrls()) {
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("https://") + kGood1Url2 + "/c.html")));
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("https://") + kGood2Url1 + "/c/bla")));
-      EXPECT_TRUE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("https://") + kGood3Url1)));
-      EXPECT_FALSE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://www.google.com/"))));
-      EXPECT_FALSE(
-          (database_.get()->*test_case.test_list_contains_whitelisted_url)(
-              GURL(std::string("http://www.phishing_url.com/"))));
-    }
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("https://") + kGood1Url2 + "/c.html")));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("https://") + kGood2Url1 + "/c/bla")));
+    EXPECT_TRUE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("https://") + kGood3Url1)));
+    EXPECT_FALSE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://www.google.com/"))));
+    EXPECT_FALSE(
+        (database_.get()->*test_case.test_list_contains_whitelisted_url)(
+            GURL(std::string("http://www.phishing_url.com/"))));
     if (test_case.TestStrings()) {
       EXPECT_TRUE(
           (database_.get()->*test_case.test_list_contains_whitelisted_string)(

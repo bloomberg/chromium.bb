@@ -118,12 +118,10 @@ extern const char kExtensionBlacklist[];
 extern const char kIPBlacklist[];
 // SafeBrowsing unwanted URL list.
 extern const char kUnwantedUrlList[];
-// SafeBrowsing module whitelist list name.
-extern const char kModuleWhitelist[];
 // Blacklisted resource URLs list name.
 extern const char kResourceBlacklist[];
 /// This array must contain all Safe Browsing lists.
-extern const char* kAllLists[10];
+extern const char* kAllLists[9];
 
 enum ListType {
   INVALID = -1,
@@ -147,7 +145,7 @@ enum ListType {
   // See above comment.  Leave 15 available.
   // Obsolete INCLUSIONWHITELIST = 16,
   // See above comment.  Leave 17 available.
-  MODULEWHITELIST = 18,
+  // Obsolete MODULEWHITELIST = 18,
   // See above comment. Leave 19 available.
   RESOURCEBLACKLIST = 20,
   // See above comment.  Leave 21 available.
