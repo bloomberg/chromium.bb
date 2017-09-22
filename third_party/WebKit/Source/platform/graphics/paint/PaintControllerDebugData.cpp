@@ -170,7 +170,9 @@ void PaintController::ShowDebugDataInternal(bool show_paint_records) const {
                     current_paint_artifact_.GetDisplayItemList(),
                     current_cached_subsequences_,
                     current_paint_artifact_.PaintChunks(), flags)
-                    .ToString();
+                    .ToString()
+                    .Utf8()
+                    .data();
 
   // DebugName() and ClientCacheIsValid() can only be called on a live client,
   // so only output it for new_display_item_list_, in which we are sure the
@@ -180,7 +182,9 @@ void PaintController::ShowDebugDataInternal(bool show_paint_records) const {
                     new_display_item_list_, new_cached_subsequences_,
                     new_paint_chunks_.PaintChunks(),
                     flags | DisplayItemList::kShowClientDebugName)
-                    .ToString();
+                    .ToString()
+                    .Utf8()
+                    .data();
 }
 
 void PaintController::ShowDebugData() const {

@@ -925,7 +925,7 @@ String RecordAsDebugString(const PaintRecord* record, const SkRect& bounds) {
 }
 
 void ShowPaintRecord(const PaintRecord* record, const SkRect& bounds) {
-  DLOG(INFO) << RecordAsDebugString(record, bounds);
+  DLOG(INFO) << RecordAsDebugString(record, bounds).Utf8().data();
 }
 #endif
 
