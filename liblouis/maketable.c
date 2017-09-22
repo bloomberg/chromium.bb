@@ -299,6 +299,7 @@ static int find_matching_rules(widechar *text,
 			case CTO_NoCross:
 				memset(data, '0', rule->charslen - 1);
 				debug("%s", data); }
+			free(data_save);
 			return 1;
 			
 		  next_rule:
