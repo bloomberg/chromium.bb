@@ -26,10 +26,7 @@ OzonePlatform::OzonePlatform() {
   g_platform_initialized_gpu = false;
 }
 
-OzonePlatform::~OzonePlatform() {
-  DCHECK_EQ(instance_, this);
-  instance_ = NULL;
-}
+OzonePlatform::~OzonePlatform() = default;
 
 // static
 void OzonePlatform::InitializeForUI(const InitParams& args) {
@@ -54,8 +51,9 @@ void OzonePlatform::InitializeForGPU(const InitParams& args) {
 
 // static
 void OzonePlatform::Shutdown() {
-  delete instance_;
-  // Destructor resets pointer.
+  auto* tmp = instance_;
+  instance_ = nullptr;
+  delete tmp;
 }
 
 // static
