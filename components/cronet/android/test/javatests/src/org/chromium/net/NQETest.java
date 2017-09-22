@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
@@ -43,12 +42,11 @@ import java.util.concurrent.ThreadFactory;
  * Test Network Quality Estimator.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-@JNINamespace("cronet")
 public class NQETest {
+    private static final String TAG = NQETest.class.getSimpleName();
+
     @Rule
     public final CronetTestRule mTestRule = new CronetTestRule();
-
-    private static final String TAG = NQETest.class.getSimpleName();
 
     private EmbeddedTestServer mTestServer;
     private String mUrl;
@@ -93,6 +91,7 @@ public class NQETest {
     @Test
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testNotEnabled() throws Exception {
         ExperimentalCronetEngine.Builder cronetEngineBuilder =
                 new ExperimentalCronetEngine.Builder(getContext());
@@ -127,6 +126,7 @@ public class NQETest {
     @Test
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testListenerRemoved() throws Exception {
         ExperimentalCronetEngine.Builder cronetEngineBuilder =
                 new ExperimentalCronetEngine.Builder(getContext());
@@ -164,6 +164,7 @@ public class NQETest {
     @Test
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testQuicDisabled() throws Exception {
         ExperimentalCronetEngine.Builder cronetEngineBuilder =
                 new ExperimentalCronetEngine.Builder(getContext());
@@ -334,6 +335,7 @@ public class NQETest {
     @Test
     @SmallTest
     @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     public void testQuicDisabledWithParams() throws Exception {
         ExperimentalCronetEngine.Builder cronetEngineBuilder =
                 new ExperimentalCronetEngine.Builder(getContext());

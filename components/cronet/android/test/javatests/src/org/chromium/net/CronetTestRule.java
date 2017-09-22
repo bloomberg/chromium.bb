@@ -14,15 +14,12 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.Log;
 import org.chromium.net.CronetTestCommon.CronetTestCommonCallback;
 import org.chromium.net.impl.CronetEngineBase;
-import org.chromium.net.impl.JavaCronetEngine;
-import org.chromium.net.impl.UserAgent;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.net.URL;
 import java.net.URLStreamHandlerFactory;
 
 /**
@@ -130,11 +127,6 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
                     base.evaluate();
                     // Use Cronet's implementation, and run the same test.
                     mTestCommon.setTestingSystemHttpURLConnection(false);
-                    URL.setURLStreamHandlerFactory(mTestCommon.getSteamHandlerFactory());
-                    base.evaluate();
-                } else if (desc.getAnnotation(OnlyRunCronetHttpURLConnection.class) != null) {
-                    // Run only with Cronet's implementation.
-                    URL.setURLStreamHandlerFactory(mTestCommon.getSteamHandlerFactory());
                     base.evaluate();
                 } else {
                     // For all other tests.
@@ -147,15 +139,6 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
             try {
                 base.evaluate();
                 if (desc.getAnnotation(OnlyRunNativeCronet.class) == null) {
-                    if (mTestCommon.getCronetTestFramework() != null) {
-                        ExperimentalCronetEngine.Builder builder = createJavaEngineBuilder();
-                        builder.setUserAgent(UserAgent.from(getContext()));
-                        mTestCommon.getCronetTestFramework().mCronetEngine =
-                                (CronetEngineBase) builder.build();
-                        // Make sure that the instantiated engine is JavaCronetEngine.
-                        assert mTestCommon.getCronetTestFramework().mCronetEngine.getClass()
-                                == JavaCronetEngine.class;
-                    }
                     mTestCommon.setTestingJavaImpl(true);
                     base.evaluate();
                 }
