@@ -9,7 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "ios/web/public/active_state_manager.h"
+#include "components/signin/ios/browser/active_state_manager.h"
 
 class GaiaAuthFetcherIOS;
 class GURL;
@@ -24,7 +24,7 @@ class BrowserState;
 
 // Bridge between the GaiaAuthFetcherIOS and the webview (and its navigation
 // delegate) used to actually do the network fetch.
-class GaiaAuthFetcherIOSBridge : web::ActiveStateManager::Observer {
+class GaiaAuthFetcherIOSBridge : ActiveStateManager::Observer {
  public:
   GaiaAuthFetcherIOSBridge(GaiaAuthFetcherIOS* fetcher,
                            web::BrowserState* browser_state);

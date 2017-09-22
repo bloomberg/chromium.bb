@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/active_state_manager_impl.h"
+#include "components/signin/ios/browser/active_state_manager_impl.h"
 
-#include "ios/web/public/active_state_manager.h"
+#include "components/signin/ios/browser/active_state_manager.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -17,11 +17,8 @@
 #error "This file requires ARC support."
 #endif
 
-namespace web {
-namespace {
-
 // A test fixture to test ActiveStateManagerImpl.
-typedef WebTest ActiveStateManagerImplTest;
+typedef web::WebTest ActiveStateManagerImplTest;
 
 // An ActiveStateManager::Observer used for testing purposes.
 class ActiveStateManagerObserver : public ActiveStateManager::Observer {
@@ -35,13 +32,11 @@ class ActiveStateManagerObserver : public ActiveStateManager::Observer {
   MOCK_METHOD0(WillBeDestroyed, void());
 };
 
-}  // namespace
-
 // Tests that an ActiveStateManagerImpl is successfully created with a
 // BrowserState and that it can be made active/inactive.
 TEST_F(ActiveStateManagerImplTest, ActiveState) {
   ActiveStateManager* active_state_manager =
-      BrowserState::GetActiveStateManager(GetBrowserState());
+      ActiveStateManager::FromBrowserState(GetBrowserState());
   ASSERT_TRUE(active_state_manager);
 
   active_state_manager->SetActive(true);
@@ -59,12 +54,12 @@ TEST_F(ActiveStateManagerImplTest, ActiveState) {
 // Tests that ActiveStateManager::Observer are notified correctly.
 TEST_F(ActiveStateManagerImplTest, ObserverMethod) {
   // |GetBrowserState()| already has its ActiveStateManager be active.
-  BrowserState::GetActiveStateManager(GetBrowserState())->SetActive(false);
+  ActiveStateManager::FromBrowserState(GetBrowserState())->SetActive(false);
 
   ActiveStateManagerObserver observer;
-  TestBrowserState browser_state;
+  web::TestBrowserState browser_state;
   ActiveStateManager* active_state_manager =
-      BrowserState::GetActiveStateManager(&browser_state);
+      ActiveStateManager::FromBrowserState(&browser_state);
 
   active_state_manager->AddObserver(&observer);
 
@@ -78,5 +73,3 @@ TEST_F(ActiveStateManagerImplTest, ObserverMethod) {
   // |active_state_manager| goes away -- which happens when |browser_state| goes
   // away.
 }
-
-}  // namespace web

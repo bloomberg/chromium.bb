@@ -49,8 +49,6 @@ source_set("web") {
   ]
 
   sources = [
-    "active_state_manager_impl.h",
-    "active_state_manager_impl.mm",
     "browser_state.mm",
     "browser_url_rewriter_impl.h",
     "browser_url_rewriter_impl.mm",
@@ -114,7 +112,6 @@ source_set("web") {
     "net/web_http_protocol_handler_delegate.h",
     "net/web_http_protocol_handler_delegate.mm",
     "payments/payment_request.cc",
-    "public/active_state_manager.h",
     "public/block_types.h",
     "public/browser_state.h",
     "public/browser_url_rewriter.h",
@@ -453,7 +450,6 @@ source_set("ios_web_general_unittests") {
   ]
 
   sources = [
-    "active_state_manager_impl_unittest.mm",
     "browser_state_unittest.cc",
     "history_state_util_unittest.mm",
     "payments/payment_request_unittest.cc",

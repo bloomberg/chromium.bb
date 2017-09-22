@@ -22,6 +22,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/ios/browser/active_state_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_impl.h"
@@ -39,7 +40,6 @@
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
-#include "ios/web/public/active_state_manager.h"
 
 namespace {
 
@@ -114,16 +114,15 @@ ChromeBrowserStateManagerImpl::ChromeBrowserStateManagerImpl() {}
 ChromeBrowserStateManagerImpl::~ChromeBrowserStateManagerImpl() {
   for (const auto& pair : browser_states_) {
     ChromeBrowserStateImpl* browser_state = pair.second.get();
-    web::BrowserState::GetActiveStateManager(browser_state)->SetActive(false);
+    ActiveStateManager::FromBrowserState(browser_state)->SetActive(false);
     if (!browser_state->HasOffTheRecordChromeBrowserState())
       continue;
 
     web::BrowserState* otr_browser_state =
         browser_state->GetOffTheRecordChromeBrowserState();
-    if (!web::BrowserState::HasActiveStateManager(otr_browser_state))
+    if (!ActiveStateManager::ExistsForBrowserState(otr_browser_state))
       continue;
-    web::BrowserState::GetActiveStateManager(otr_browser_state)
-        ->SetActive(false);
+    ActiveStateManager::FromBrowserState(otr_browser_state)->SetActive(false);
   }
 }
 

@@ -51,6 +51,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service_helper.h"
+#include "components/signin/ios/browser/active_state_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/toolbar_model_impl.h"
 #include "ios/chrome/app/tests_hook.h"
@@ -192,7 +193,6 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
-#include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer_util.h"
@@ -1075,8 +1075,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 
   if (_browserState) {
-    web::ActiveStateManager* active_state_manager =
-        web::BrowserState::GetActiveStateManager(_browserState);
+    ActiveStateManager* active_state_manager =
+        ActiveStateManager::FromBrowserState(_browserState);
     active_state_manager->SetActive(active);
   }
 
