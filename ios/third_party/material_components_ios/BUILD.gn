@@ -298,7 +298,7 @@ foreach(locale, _locales) {
       "src/components/Collections/src/MaterialCollections.bundle/Resources/$locale.lproj/MaterialCollections.strings",
     ]
     outputs = [
-      "{{bundle_root_dir}}/MaterialCollections.bundle/Resources/$locale.lproj/{{source_file_part}}",
+      "{{bundle_resources_dir}}/MaterialCollections.bundle/Resources/$locale.lproj/{{source_file_part}}",
     ]
   }
 

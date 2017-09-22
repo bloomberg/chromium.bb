@@ -653,7 +653,7 @@ if (is_mac) {
       ]
 
       outputs = [
-        "{{bundle_root_dir}}/{{source_file_part}}",
+        "{{bundle_contents_dir}}/{{source_file_part}}",
       ]
 
       public_deps = [
@@ -769,7 +769,7 @@ if (is_mac) {
       "$root_out_dir/$content_shell_helper_name.app",
     ]
     outputs = [
-      "{{bundle_root_dir}}/Frameworks/{{source_file_part}}",
+      "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}",
     ]
     public_deps = [
       ":content_shell_framework+link",
