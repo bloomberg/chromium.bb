@@ -121,8 +121,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_packets_based_cc, true)
 // When enabled, ack frame uses a deque internally instead of a set.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_frames_deque2, false)
 
-// If true, enable QUIC v41.
-QUIC_FLAG(bool, FLAGS_quic_enable_version_41, false)
+// If true, enable QUIC v42.
+QUIC_FLAG(bool, FLAGS_quic_enable_version_42, false)
 
 // Small optimization for QuicSentPacketManager::HandleAckForSentPackets.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_handle_acks, true)
