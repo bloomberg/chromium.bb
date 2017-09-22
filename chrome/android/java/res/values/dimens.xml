@@ -266,7 +266,6 @@
     <dimen name="bottom_toolbar_top_margin">2dp</dimen>
     <dimen name="bottom_toolbar_url_bar_top_margin">3.5dp</dimen>
     <dimen name="bottom_toolbar_background_focused_left_margin">6dp</dimen>
-    <dimen name="bottom_location_bar_vertical_margin">9dp</dimen>
     <dimen name="bottom_location_bar_content_lateral_inset">8dp</dimen>
     <dimen name="bottom_location_bar_content_vertical_inset">4dp</dimen>
 

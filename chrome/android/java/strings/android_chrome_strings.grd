@@ -3160,23 +3160,17 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_BOTTOM_SHEET_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the bottom navigation sheet prompting users to pull the sheet up to see their bookmarks and other content.">
         Pull up to see bookmarks and more
       </message>
-      <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the bottom navigation sheet prompting users to pull the sheet up to see their bookmarks and other content when accessibility is enabled.">
-        Pull up on the address bar with two fingers to see bookmarks, downloads, and history
-      </message>
-      <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_TOOLBAR" desc="Accessibilty string read when the bottom toolbar, containing the adddress bar and some buttons, is focused. Informs users that they can pull up on the address bar to see their bookmarks and other content.">
-        Address bar. Pull up with two fingers to see bookmarks, downloads, and history.
-      </message>
-      <message name="IDS_BOTTOM_SHEET_OPEN_ACCESSIBILITY_TOOLBAR" desc="Accessibilty string read when the bottom toolbar, containing the adddress bar and some buttons, is focused and the Chrome Home navigation panel is open. Informs users that they can pull down on the address bar to close the navigation panel.">
-        Address bar. Pull down with two fingers to close navigation panel.
-      </message>
       <message name="IDS_BOTTOM_SHEET_EXPAND_BUTTON_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the toolbar expand button prompting users to tap the button to see their bookmarks and other content.">
         Tap to see bookmarks and more
       </message>
       <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_EXPAND_BUTTON_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the toolbar expand button prompting users to tap the button to see their bookmarks and other content when accessibility is enabled.">
         Tap to see bookmarks, downloads, and history
       </message>
-     <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_DESCRIPTION" desc="Accessibility string read when the navigation panel is focused.">
-        Navigation panel
+      <message name="IDS_BOTTOM_SHEET_EXPAND_BUTTON_ACCESSIBILITY" desc="Part of the accessibility string read when the expand button is tapped informing users that tapping button will show bookmarks, downloads, and history. TalkBack will read 'Expand button. Double tap to see bookmarks, downloads, and history'.">
+        see bookmarks, downloads, and history.
+      </message>
+     <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_DESCRIPTION" desc="Accessibility string read when the navigation panel is focused informing the user that the panel can be closed by swiping down.">
+        Navigation panel. Swipe down to close.
       </message>
       <message name="IDS_BOTTOM_SHEET_OPENED_HALF" desc="Accessibility string read when the bottom navigation panel is opened at half height. The navigation panel will occupy the bottom half the screen.">
         Navigation panel opened at half height
