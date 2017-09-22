@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -359,12 +360,13 @@ class QuicStreamFactory::Job {
   size_t EstimateMemoryUsage() const;
 
   void AddRequest(QuicStreamRequest* request) {
+    CHECK(request->server_id() == key_.server_id());
     stream_requests_.insert(request);
   }
 
   void RemoveRequest(QuicStreamRequest* request) {
     auto request_iter = stream_requests_.find(request);
-    DCHECK(request_iter != stream_requests_.end());
+    CHECK(request_iter != stream_requests_.end());
     stream_requests_.erase(request_iter);
   }
 
@@ -380,8 +382,9 @@ class QuicStreamFactory::Job {
     STATE_CONNECT,
     STATE_CONNECT_COMPLETE,
   };
-  IoState io_state_;
 
+  bool in_loop_;  // Temporary to investigate crbug.com/750271.
+  IoState io_state_;
   QuicStreamFactory* factory_;
   QuicVersion quic_version_;
   HostResolver* host_resolver_;
@@ -409,7 +412,8 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             bool was_alternative_service_recently_broken,
                             int cert_verify_flags,
                             const NetLogWithSource& net_log)
-    : io_state_(STATE_RESOLVE_HOST),
+    : in_loop_(false),
+      io_state_(STATE_RESOLVE_HOST),
       factory_(factory),
       quic_version_(quic_version),
       host_resolver_(host_resolver),
@@ -437,7 +441,8 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
 
 QuicStreamFactory::Job::~Job() {
   net_log_.EndEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB);
-  DCHECK(callback_.is_null());
+  CHECK(!in_loop_);
+  CHECK(callback_.is_null());
 }
 
 int QuicStreamFactory::Job::Run(const CompletionCallback& callback) {
@@ -450,6 +455,9 @@ int QuicStreamFactory::Job::Run(const CompletionCallback& callback) {
 
 int QuicStreamFactory::Job::DoLoop(int rv) {
   TRACE_EVENT0(kNetTracingCategory, "QuicStreamFactory::Job::DoLoop");
+  CHECK(!in_loop_);
+  base::AutoReset<bool> auto_reset_in_loop(&in_loop_, true);
+
   do {
     IoState state = io_state_;
     io_state_ = STATE_NONE;
@@ -478,8 +486,10 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
 
 void QuicStreamFactory::Job::OnIOComplete(int rv) {
   rv = DoLoop(rv);
-  if (rv != ERR_IO_PENDING && !callback_.is_null())
+  if (rv != ERR_IO_PENDING && !callback_.is_null()) {
+    CHECK(!in_loop_);
     base::ResetAndReturn(&callback_).Run(rv);
+  }
 }
 
 void QuicStreamFactory::Job::PopulateNetErrorDetails(
@@ -1109,6 +1119,7 @@ void QuicStreamFactory::OnBlackholeAfterHandshakeConfirmed(
 
 void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
   auto job_iter = active_jobs_.find(request->server_id());
+  CHECK(job_iter != active_jobs_.end());
   job_iter->second->RemoveRequest(request);
 }
 
