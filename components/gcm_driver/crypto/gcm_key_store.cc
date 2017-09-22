@@ -130,8 +130,8 @@ void GCMKeyStore::CreateKeysAfterInitialize(
       << "Instance ID tokens cannot share an app_id with a non-InstanceID GCM "
          "registration";
 
-  std::string private_key, public_key_x509, public_key;
-  if (!CreateP256KeyPair(&private_key, &public_key_x509, &public_key)) {
+  std::string private_key, public_key;
+  if (!CreateP256KeyPair(&private_key, &public_key)) {
     NOTREACHED() << "Unable to initialize a P-256 key pair.";
 
     callback.Run(KeyPair(), std::string() /* auth_secret */);
@@ -155,7 +155,6 @@ void GCMKeyStore::CreateKeysAfterInitialize(
   KeyPair* pair = encryption_data.add_keys();
   pair->set_type(KeyPair::ECDH_P256);
   pair->set_private_key(private_key);
-  pair->set_public_key_x509(public_key_x509);
   pair->set_public_key(public_key);
 
   // Write them immediately to our cache, so subsequent calls to

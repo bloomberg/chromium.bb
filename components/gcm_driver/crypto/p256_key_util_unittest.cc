@@ -46,38 +46,32 @@ const char kBobCarolSharedSecret[] =
 TEST(P256KeyUtilTest, UniqueKeyPairGeneration) {
   // Canary for determining that no key repetitions are found in few iterations.
   std::set<std::string> seen_private_keys;
-  std::set<std::string> seen_public_keys_x509;
   std::set<std::string> seen_public_keys;
 
   for (int iteration = 0; iteration < 10; ++iteration) {
     SCOPED_TRACE(iteration);
 
-    std::string private_key, public_key_x509, public_key;
-    ASSERT_TRUE(CreateP256KeyPair(&private_key, &public_key_x509, &public_key));
+    std::string private_key, public_key;
+    ASSERT_TRUE(CreateP256KeyPair(&private_key, &public_key));
 
     EXPECT_NE(private_key, public_key);
     EXPECT_GT(private_key.size(), 0u);
-    EXPECT_GT(public_key_x509.size(), 0u);
     EXPECT_EQ(public_key.size(), kUncompressedPointBytes);
 
     EXPECT_EQ(0u, seen_private_keys.count(private_key));
-    EXPECT_EQ(0u, seen_public_keys_x509.count(public_key_x509));
     EXPECT_EQ(0u, seen_public_keys.count(public_key));
 
     seen_private_keys.insert(private_key);
-    seen_public_keys_x509.insert(public_key_x509);
     seen_public_keys.insert(public_key);
   }
 }
 
 TEST(P256KeyUtilTest, SharedSecretCalculation) {
-  std::string bob_private_key, bob_public_key_x509, bob_public_key;
-  std::string alice_private_key, alice_public_key_x509, alice_public_key;
+  std::string bob_private_key, bob_public_key;
+  std::string alice_private_key, alice_public_key;
 
-  ASSERT_TRUE(CreateP256KeyPair(
-      &bob_private_key, &bob_public_key_x509, &bob_public_key));
-  ASSERT_TRUE(CreateP256KeyPair(
-      &alice_private_key, &alice_public_key_x509, &alice_public_key));
+  ASSERT_TRUE(CreateP256KeyPair(&bob_private_key, &bob_public_key));
+  ASSERT_TRUE(CreateP256KeyPair(&alice_private_key, &alice_public_key));
   ASSERT_NE(bob_private_key, alice_private_key);
 
   std::string bob_shared_secret, alice_shared_secret;
@@ -100,14 +94,13 @@ TEST(P256KeyUtilTest, SharedSecretCalculation) {
 
 TEST(P256KeyUtilTest, SharedSecretWithPreExistingKey) {
   std::string bob_private_key, bob_public_key;
-  std::string alice_private_key, alice_public_key_x509, alice_public_key;
+  std::string alice_private_key, alice_public_key;
 
   ASSERT_TRUE(base::Base64Decode(kBobPrivateKey, &bob_private_key));
   ASSERT_TRUE(base::Base64Decode(kBobPublicKey, &bob_public_key));
 
   // First verify against a newly created, ephemeral key-pair.
-  ASSERT_TRUE(CreateP256KeyPair(
-      &alice_private_key, &alice_public_key_x509, &alice_public_key));
+  ASSERT_TRUE(CreateP256KeyPair(&alice_private_key, &alice_public_key));
 
   std::string bob_shared_secret, alice_shared_secret;
   ASSERT_TRUE(ComputeSharedP256Secret(bob_private_key, alice_public_key,

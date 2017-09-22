@@ -34,7 +34,6 @@ const size_t kUncompressedPointBytes = 1 + 2 * kFieldBytes;
 }  // namespace
 
 bool CreateP256KeyPair(std::string* out_private_key,
-                       std::string* out_public_key_x509,
                        std::string* out_public_key) {
   DCHECK(out_private_key);
   DCHECK(out_public_key);
@@ -67,21 +66,8 @@ bool CreateP256KeyPair(std::string* out_private_key,
     return false;
   }
 
-  std::vector<uint8_t> public_key_x509;
-
-  // Export the public key to an X.509 SubjectPublicKeyInfo for enabling NSS to
-  // import the key material when computing a shared secret.
-  if (!key_pair->ExportPublicKey(&public_key_x509)) {
-    DLOG(ERROR) << "Unable to export the public key as an X.509 "
-                << "SubjectPublicKeyInfo block.";
-    return false;
-  }
-
   out_private_key->assign(reinterpret_cast<const char*>(private_key.data()),
                           private_key.size());
-  out_public_key_x509->assign(
-      reinterpret_cast<const char*>(public_key_x509.data()),
-      public_key_x509.size());
 
   // Concatenate the leading 0x04 byte and the two uncompressed points.
   out_public_key->reserve(kUncompressedPointBytes);
