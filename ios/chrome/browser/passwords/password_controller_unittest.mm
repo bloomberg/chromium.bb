@@ -161,7 +161,7 @@ class PasswordControllerTest : public web::WebTestWithWebState {
   void SetUp() override {
     web::WebTestWithWebState::SetUp();
     passwordController_ =
-        CreatePasswordController(web_state(), store_.get(), nullptr);
+        CreatePasswordController(web_state(), store_.get(), &weak_client_);
     @autoreleasepool {
       // Make sure the temporary array is released after SetUp finishes,
       // otherwise [passwordController_ suggestionProvider] will be retained
@@ -247,6 +247,8 @@ class PasswordControllerTest : public web::WebTestWithWebState {
   PasswordController* passwordController_;
 
   scoped_refptr<password_manager::MockPasswordStore> store_;
+
+  MockPasswordManagerClient* weak_client_;
 };
 
 struct PasswordFormTestData {
@@ -1420,4 +1422,36 @@ TEST_F(PasswordControllerTest, SendingToStoreDynamicallyAddedFormsOnFocus) {
   base::test::ios::WaitUntilCondition(^bool() {
     return *p_get_logins_called;
   });
+}
+
+// Tests that a touchend event from a button which contains in a password form
+// works as a submission indicator for this password form.
+TEST_F(PasswordControllerTest, TouchendAsSubmissionIndicator) {
+  LoadHtml(
+      @"<html><body>"
+       "<form name='login_form' id='login_form'>"
+       "  <input type='text' name='username'>"
+       "  <input type='password' name='password'>"
+       "  <button id='submit_button' value='Submit'>"
+       "</form>"
+       "</body></html>");
+  // Use a mock LogManager to detect that OnPasswordFormSubmitted has been
+  // called. TODO(crbug.com/598672): this is a hack, we should modularize the
+  // code better to allow proper unit-testing.
+  MockLogManager log_manager;
+  EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
+  const char kExpectedMessage[] =
+      "Message: \"PasswordManager::ProvisionallySavePassword\"\n";
+  EXPECT_CALL(log_manager, LogSavePasswordProgress(kExpectedMessage));
+  EXPECT_CALL(log_manager,
+              LogSavePasswordProgress(testing::Ne(kExpectedMessage)))
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(*weak_client_, GetLogManager())
+      .WillRepeatedly(Return(&log_manager));
+
+  ExecuteJavaScript(
+      @"document.getElementsByName('username')[0].value = 'user1';"
+       "document.getElementsByName('password')[0].value = 'password1';"
+       "var e = new UIEvent('touchend');"
+       "document.getElementsByTagName('button')[0].dispatchEvent(e);");
 }
