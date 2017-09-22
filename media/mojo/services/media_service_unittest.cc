@@ -107,7 +107,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
   void InitializeCdm(const std::string& key_system,
                      bool expected_result,
                      int cdm_id) {
-    interface_factory_->CreateCdm(mojo::MakeRequest(&cdm_));
+    interface_factory_->CreateCdm(key_system, mojo::MakeRequest(&cdm_));
 
     EXPECT_CALL(*this, OnCdmInitializedInternal(expected_result, cdm_id))
         .Times(Exactly(1))

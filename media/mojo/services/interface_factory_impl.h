@@ -36,7 +36,8 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
   void CreateVideoDecoder(mojom::VideoDecoderRequest request) final;
   void CreateRenderer(const std::string& audio_device_id,
                       mojom::RendererRequest request) final;
-  void CreateCdm(mojom::ContentDecryptionModuleRequest request) final;
+  void CreateCdm(const std::string& key_system,
+                 mojom::ContentDecryptionModuleRequest request) final;
 
  private:
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)

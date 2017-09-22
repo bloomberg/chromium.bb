@@ -68,16 +68,17 @@ void MediaInterfaceFactory::CreateRenderer(
 }
 
 void MediaInterfaceFactory::CreateCdm(
+    const std::string& key_system,
     media::mojom::ContentDecryptionModuleRequest request) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaInterfaceFactory::CreateCdm, weak_this_,
-                                  std::move(request)));
+                                  key_system, std::move(request)));
     return;
   }
 
-  DVLOG(1) << __func__;
-  GetMediaInterfaceFactory()->CreateCdm(std::move(request));
+  DVLOG(1) << __func__ << ": key_system = " << key_system;
+  GetMediaInterfaceFactory()->CreateCdm(key_system, std::move(request));
 }
 
 media::mojom::InterfaceFactory*
