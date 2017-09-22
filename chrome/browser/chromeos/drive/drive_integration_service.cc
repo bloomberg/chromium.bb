@@ -255,7 +255,8 @@ DriveIntegrationService::DriveIntegrationService(
 
   logger_.reset(new EventLogger);
   blocking_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+       base::WithBaseSyncPrimitives()});
 
   ProfileOAuth2TokenService* oauth_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
