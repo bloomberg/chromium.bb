@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/offline_store_utils.h"
 #include "components/offline_pages/core/offline_time_utils.h"
 #include "sql/connection.h"
@@ -98,6 +99,44 @@ ReadResult ReadPagesByClientIdsSync(const std::vector<ClientId>& client_ids,
     while (statement.Step())
       result.pages.emplace_back(MakeOfflinePageItem(&statement));
   }
+
+  if (!transaction.Commit()) {
+    result.pages.clear();
+    return result;
+  }
+
+  result.success = true;
+  return result;
+}
+
+void ReadPagesByNamespaceSync(sql::Connection* db,
+                              const std::string& name_space,
+                              ReadResult* result) {
+  DCHECK(db);
+  DCHECK(result);
+
+  static const char kSql[] = "SELECT " OFFLINE_PAGE_PROJECTION
+                             " FROM offlinepages_v1"
+                             " WHERE client_namespace = ?";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindString(0, name_space);
+  while (statement.Step())
+    result->pages.emplace_back(MakeOfflinePageItem(&statement));
+}
+
+ReadResult ReadPagesByMultipleNamespacesSync(
+    const std::vector<std::string>& namespaces,
+    sql::Connection* db) {
+  ReadResult result;
+  if (!db)
+    return result;
+
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return result;
+
+  for (auto name_space : namespaces)
+    ReadPagesByNamespaceSync(db, name_space, &result);
 
   if (!transaction.Commit()) {
     result.pages.clear();
@@ -226,6 +265,43 @@ std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingClientIds(
   // a OnceClosure. It will then be used to execute.
   return std::unique_ptr<GetPagesTask>(new GetPagesTask(
       store, base::BindOnce(&ReadPagesByClientIdsSync, client_ids), callback));
+}
+
+// static
+std::unique_ptr<GetPagesTask> GetPagesTask::CreateTaskMatchingNamespace(
+    OfflinePageMetadataStoreSQL* store,
+    const MultipleOfflinePageItemCallback& callback,
+    const std::string& name_space) {
+  std::vector<std::string> namespaces = {name_space};
+  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
+      store, base::BindOnce(&ReadPagesByMultipleNamespacesSync, namespaces),
+      callback));
+}
+
+// static
+std::unique_ptr<GetPagesTask>
+GetPagesTask::CreateTaskMatchingPagesRemovedOnCacheReset(
+    OfflinePageMetadataStoreSQL* store,
+    ClientPolicyController* policy_controller,
+    const MultipleOfflinePageItemCallback& callback) {
+  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
+      store,
+      base::BindOnce(&ReadPagesByMultipleNamespacesSync,
+                     policy_controller->GetNamespacesRemovedOnCacheReset()),
+      callback));
+}
+
+// static
+std::unique_ptr<GetPagesTask>
+GetPagesTask::CreateTaskMatchingPagesSupportedByDownloads(
+    OfflinePageMetadataStoreSQL* store,
+    ClientPolicyController* policy_controller,
+    const MultipleOfflinePageItemCallback& callback) {
+  return std::unique_ptr<GetPagesTask>(new GetPagesTask(
+      store,
+      base::BindOnce(&ReadPagesByMultipleNamespacesSync,
+                     policy_controller->GetNamespacesSupportedByDownload()),
+      callback));
 }
 
 // static

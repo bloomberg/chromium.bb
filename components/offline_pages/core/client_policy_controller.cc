@@ -127,6 +127,19 @@ bool ClientPolicyController::IsSupportedByDownload(
 }
 
 const std::vector<std::string>&
+ClientPolicyController::GetNamespacesRemovedOnCacheReset() const {
+  if (cache_reset_namespace_cache_)
+    return *cache_reset_namespace_cache_;
+
+  cache_reset_namespace_cache_ = base::MakeUnique<std::vector<std::string>>();
+  for (const auto& policy_item : policies_) {
+    if (policy_item.second.feature_policy.is_removed_on_cache_reset)
+      cache_reset_namespace_cache_->emplace_back(policy_item.first);
+  }
+  return *cache_reset_namespace_cache_;
+}
+
+const std::vector<std::string>&
 ClientPolicyController::GetNamespacesSupportedByDownload() const {
   if (download_namespace_cache_)
     return *download_namespace_cache_;

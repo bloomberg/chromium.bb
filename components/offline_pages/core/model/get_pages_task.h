@@ -18,6 +18,7 @@
 class GURL;
 
 namespace offline_pages {
+class ClientPolicyController;
 
 // Gets offline pages that match the list of client IDs.
 class GetPagesTask : public Task {
@@ -45,6 +46,28 @@ class GetPagesTask : public Task {
       OfflinePageMetadataStoreSQL* store,
       const MultipleOfflinePageItemCallback& callback,
       const std::vector<ClientId>& client_ids);
+
+  // Creates |GetPagesTask| reading pages belonging to provided |name_space|
+  // from DB.
+  static std::unique_ptr<GetPagesTask> CreateTaskMatchingNamespace(
+      OfflinePageMetadataStoreSQL* store,
+      const MultipleOfflinePageItemCallback& callback,
+      const std::string& name_space);
+
+  // Creates |GetPagesTask| reading pages removed on cache reset from DB.
+  static std::unique_ptr<GetPagesTask>
+  CreateTaskMatchingPagesRemovedOnCacheReset(
+      OfflinePageMetadataStoreSQL* store,
+      ClientPolicyController* policy_controller,
+      const MultipleOfflinePageItemCallback& callback);
+
+  // Creates |GetPagesTask| reading pages in namespaces supported by downloads
+  // from DB.
+  static std::unique_ptr<GetPagesTask>
+  CreateTaskMatchingPagesSupportedByDownloads(
+      OfflinePageMetadataStoreSQL* store,
+      ClientPolicyController* policy_controller,
+      const MultipleOfflinePageItemCallback& callback);
 
   // Creates |GetPagesTask| reading pages matching provided |request_origin|
   // from DB.

@@ -218,4 +218,18 @@ TEST_F(ClientPolicyControllerTest, CheckSuggestedArticlesDefined) {
   ExpectDisabledWhenPrefetchDisabled(kSuggestedArticlesNamespace, true);
 }
 
+TEST_F(ClientPolicyControllerTest, GetNamespacesRemovedOnCacheReset) {
+  std::vector<std::string> all_namespaces = controller()->GetAllNamespaces();
+  const std::vector<std::string>& cache_reset_namespaces_list =
+      controller()->GetNamespacesRemovedOnCacheReset();
+  std::set<std::string> cache_reset_namespaces(
+      cache_reset_namespaces_list.begin(), cache_reset_namespaces_list.end());
+  for (auto name_space : cache_reset_namespaces) {
+    if (cache_reset_namespaces.count(name_space) > 0)
+      EXPECT_TRUE(controller()->IsRemovedOnCacheReset(name_space));
+    else
+      EXPECT_FALSE(controller()->IsRemovedOnCacheReset(name_space));
+  }
+}
+
 }  // namespace offline_pages
