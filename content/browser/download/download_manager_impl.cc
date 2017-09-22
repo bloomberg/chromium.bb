@@ -86,6 +86,38 @@ scoped_refptr<URLLoaderFactoryGetter> GetURLLoaderFactoryGetter(
   return partition->url_loader_factory_getter();
 }
 
+bool CanRequestURLFromRenderer(int render_process_id, GURL url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Check if the renderer is permitted to request the requested URL.
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          render_process_id, url)) {
+    DVLOG(1) << "Denied unauthorized download request for "
+             << url.possibly_invalid_spec();
+    return false;
+  }
+  return true;
+}
+
+void CreateInterruptedDownload(
+    DownloadUrlParameters* params,
+    DownloadInterruptReason reason,
+    base::WeakPtr<DownloadManagerImpl> download_manager) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::unique_ptr<DownloadCreateInfo> failed_created_info(
+      new DownloadCreateInfo(base::Time::Now(), net::NetLogWithSource(),
+                             base::WrapUnique(new DownloadSaveInfo)));
+  failed_created_info->url_chain.push_back(params->url());
+  failed_created_info->result = reason;
+  std::unique_ptr<ByteStreamReader> empty_byte_stream;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&DownloadManager::StartDownload, download_manager,
+                     std::move(failed_created_info),
+                     base::MakeUnique<DownloadManager::InputStream>(
+                         std::move(empty_byte_stream)),
+                     params->callback()));
+}
+
 std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
     std::unique_ptr<DownloadUrlParameters> params,
     content::ResourceContext* resource_context,
@@ -120,19 +152,7 @@ std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
       return nullptr;
 
     // Otherwise, create an interrupted download.
-    std::unique_ptr<DownloadCreateInfo> failed_created_info(
-        new DownloadCreateInfo(base::Time::Now(), net::NetLogWithSource(),
-                               base::WrapUnique(new DownloadSaveInfo)));
-    failed_created_info->url_chain.push_back(params->url());
-    failed_created_info->result = reason;
-    std::unique_ptr<ByteStreamReader> empty_byte_stream;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&DownloadManager::StartDownload, download_manager,
-                       std::move(failed_created_info),
-                       base::MakeUnique<DownloadManager::InputStream>(
-                           std::move(empty_byte_stream)),
-                       params->callback()));
+    CreateInterruptedDownload(params.get(), reason, download_manager);
     return nullptr;
   }
 
@@ -150,6 +170,16 @@ BeginResourceDownload(
     uint32_t download_id,
     base::WeakPtr<DownloadManagerImpl> download_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Check if the renderer is permitted to request the requested URL.
+  if (params->render_process_host_id() >= 0 &&
+      !CanRequestURLFromRenderer(params->render_process_host_id(),
+                                 params->url())) {
+    CreateInterruptedDownload(params.get(),
+                              DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
+                              download_manager);
+    return nullptr;
+  }
 
   return std::unique_ptr<ResourceDownloader, BrowserThread::DeleteOnIOThread>(
       ResourceDownloader::BeginDownload(download_manager, std::move(params),
@@ -612,12 +642,8 @@ DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
   const GURL& url = url_request->original_url();
 
   // Check if the renderer is permitted to request the requested URL.
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-          render_process_id, url)) {
-    DVLOG(1) << "Denied unauthorized download request for "
-             << url.possibly_invalid_spec();
+  if (!CanRequestURLFromRenderer(render_process_id, url))
     return DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
-  }
 
   const net::URLRequestContext* request_context = url_request->context();
   if (!request_context->job_factory()->IsHandledProtocol(url.scheme())) {
