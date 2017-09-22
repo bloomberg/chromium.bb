@@ -29,6 +29,8 @@ class FakeTileManagerClient : public TileManagerClient {
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override {}
   gfx::ColorSpace GetRasterColorSpace() const override;
   void RequestImplSideInvalidationForCheckerImagedTiles() override {}
+  size_t GetFrameIndexForImage(const PaintImage& paint_image,
+                               WhichTree tree) const override;
 };
 
 }  // namespace cc

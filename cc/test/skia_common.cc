@@ -11,37 +11,13 @@
 #include "cc/paint/draw_image.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_image_builder.h"
-#include "cc/test/stub_paint_image_generator.h"
+#include "cc/test/fake_paint_image_generator.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
-
-namespace {
-
-class TestImageGenerator : public StubPaintImageGenerator {
- public:
-  explicit TestImageGenerator(const SkImageInfo& info)
-      : StubPaintImageGenerator(info),
-        image_backing_memory_(info.getSafeSize(info.minRowBytes()), 0),
-        image_pixmap_(info, image_backing_memory_.data(), info.minRowBytes()) {}
-
-  bool GetPixels(const SkImageInfo& info,
-                 void* pixels,
-                 size_t rowBytes,
-                 size_t frame_index,
-                 uint32_t lazy_pixel_ref) override {
-    return image_pixmap_.readPixels(info, pixels, rowBytes, 0, 0);
-  }
-
- private:
-  std::vector<uint8_t> image_backing_memory_;
-  SkPixmap image_pixmap_;
-};
-
-}  // anonymous namespace
 
 void DrawDisplayList(unsigned char* buffer,
                      const gfx::Rect& layer_rect,
@@ -71,15 +47,18 @@ bool AreDisplayListDrawingResultsSame(const gfx::Rect& layer_rect,
 }
 
 sk_sp<PaintImageGenerator> CreatePaintImageGenerator(const gfx::Size& size) {
-  return sk_make_sp<TestImageGenerator>(
+  return sk_make_sp<FakePaintImageGenerator>(
       SkImageInfo::MakeN32Premul(size.width(), size.height()));
 }
 
 PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
                                        sk_sp<SkColorSpace> color_space) {
+  if (!color_space)
+    color_space = SkColorSpace::MakeSRGB();
+
   return PaintImageBuilder()
       .set_id(PaintImage::GetNextId())
-      .set_paint_image_generator(sk_make_sp<TestImageGenerator>(
+      .set_paint_image_generator(sk_make_sp<FakePaintImageGenerator>(
           SkImageInfo::MakeN32Premul(size.width(), size.height(), color_space)))
       .TakePaintImage();
 }
@@ -98,13 +77,16 @@ DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
 
 PaintImage CreateAnimatedImage(const gfx::Size& size,
                                std::vector<FrameMetadata> frames,
-                               int repetition_count) {
+                               int repetition_count,
+                               size_t frame_index) {
   return PaintImageBuilder()
       .set_id(PaintImage::GetNextId())
-      .set_paint_image_generator(sk_make_sp<TestImageGenerator>(
-          SkImageInfo::MakeN32Premul(size.width(), size.height())))
+      .set_paint_image_generator(sk_make_sp<FakePaintImageGenerator>(
+          SkImageInfo::MakeN32Premul(size.width(), size.height()),
+          std::move(frames)))
       .set_animation_type(PaintImage::AnimationType::ANIMATED)
       .set_repetition_count(repetition_count)
+      .set_frame_index(frame_index)
       .TakePaintImage();
 }
 

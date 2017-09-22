@@ -111,6 +111,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerTreeResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
   ImageDecodeCache* image_decode_cache() const;
+  ImageAnimationController* image_animation_controller() const;
   FrameRateCounter* frame_rate_counter() const;
   MemoryHistory* memory_history() const;
   gfx::Size device_viewport_size() const;

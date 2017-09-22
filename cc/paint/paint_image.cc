@@ -18,6 +18,9 @@ base::AtomicSequenceNumber s_next_id_;
 base::AtomicSequenceNumber s_next_content_id_;
 }  // namespace
 
+const int PaintImage::kNonLazyStableId = -1;
+const size_t PaintImage::kDefaultFrameIndex = 0u;
+
 PaintImage::PaintImage() = default;
 PaintImage::PaintImage(const PaintImage& other) = default;
 PaintImage::PaintImage(PaintImage&& other) = default;
@@ -118,7 +121,8 @@ SkImageInfo PaintImage::CreateDecodeImageInfo(const SkISize& size,
 
 bool PaintImage::Decode(void* memory,
                         SkImageInfo* info,
-                        sk_sp<SkColorSpace> color_space) const {
+                        sk_sp<SkColorSpace> color_space,
+                        size_t frame_index) const {
   // We only support decode to supported decode size.
   DCHECK(info->dimensions() == GetSupportedDecodeSize(info->dimensions()));
 
@@ -129,13 +133,15 @@ bool PaintImage::Decode(void* memory,
   // requested size into the space of the original image. For now, fallback to
   // DecodeFromSkImage().
   if (paint_image_generator_ && subset_rect_.IsEmpty())
-    return DecodeFromGenerator(memory, info, std::move(color_space));
-  return DecodeFromSkImage(memory, info, std::move(color_space));
+    return DecodeFromGenerator(memory, info, std::move(color_space),
+                               frame_index);
+  return DecodeFromSkImage(memory, info, std::move(color_space), frame_index);
 }
 
 bool PaintImage::DecodeFromGenerator(void* memory,
                                      SkImageInfo* info,
-                                     sk_sp<SkColorSpace> color_space) const {
+                                     sk_sp<SkColorSpace> color_space,
+                                     size_t frame_index) const {
   DCHECK(subset_rect_.IsEmpty());
 
   // First convert the info to have the requested color space, since the decoder
@@ -151,7 +157,7 @@ bool PaintImage::DecodeFromGenerator(void* memory,
 
     bool result = paint_image_generator_->GetPixels(n32info, n32memory.get(),
                                                     n32info.minRowBytes(),
-                                                    frame_index(), unique_id());
+                                                    frame_index, unique_id());
     if (!result)
       return false;
 
@@ -172,13 +178,14 @@ bool PaintImage::DecodeFromGenerator(void* memory,
   }
 
   return paint_image_generator_->GetPixels(*info, memory, info->minRowBytes(),
-                                           frame_index(), unique_id());
+                                           frame_index, unique_id());
 }
 
 bool PaintImage::DecodeFromSkImage(void* memory,
                                    SkImageInfo* info,
-                                   sk_sp<SkColorSpace> color_space) const {
-  auto image = GetSkImage();
+                                   sk_sp<SkColorSpace> color_space,
+                                   size_t frame_index) const {
+  auto image = GetSkImageForFrame(frame_index);
   DCHECK(image);
   if (color_space) {
     image =
@@ -196,7 +203,7 @@ bool PaintImage::DecodeFromSkImage(void* memory,
 
 bool PaintImage::ShouldAnimate() const {
   return animation_type_ == AnimationType::ANIMATED &&
-         repetition_count_ != kAnimationNone;
+         repetition_count_ != kAnimationNone && FrameCount() > 1;
 }
 
 PaintImage::FrameKey PaintImage::GetKeyForFrame(size_t frame_index) const {
@@ -228,6 +235,19 @@ size_t PaintImage::FrameCount() const {
   return paint_image_generator_
              ? paint_image_generator_->GetFrameMetadata().size()
              : 1u;
+}
+
+sk_sp<SkImage> PaintImage::GetSkImageForFrame(size_t index) const {
+  DCHECK_LT(index, FrameCount());
+
+  if (index == frame_index_)
+    return GetSkImage();
+
+  sk_sp<SkImage> image = SkImage::MakeFromGenerator(
+      base::MakeUnique<SkiaPaintImageGenerator>(paint_image_generator_, index));
+  if (!subset_rect_.IsEmpty())
+    image = image->makeSubset(gfx::RectToSkIRect(subset_rect_));
+  return image;
 }
 
 std::string PaintImage::ToString() const {

@@ -130,6 +130,7 @@ class CC_EXPORT CheckerImageTracker {
     SkFilterQuality filter_quality = kNone_SkFilterQuality;
     SkSize scale = SkSize::MakeEmpty();
     gfx::ColorSpace color_space;
+    size_t frame_index = PaintImage::kDefaultFrameIndex;
   };
 
   // Wrapper to unlock an image decode requested from the ImageController on

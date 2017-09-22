@@ -145,6 +145,9 @@ class CC_EXPORT LayerTreeSettings {
   // Whether to use out of process raster.  If true, whenever gpu raster
   // would have been used, out of process gpu raster will be used instead.
   bool enable_oop_rasterization = false;
+
+  // Whether images should be animated in the compositor.
+  bool enable_image_animations = false;
 };
 
 }  // namespace cc
