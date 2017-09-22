@@ -68,8 +68,7 @@ using InstallOnBlockingTaskRunnerCompleteCallback =
 CrxInstaller::Result DoInstallOnBlockingTaskRunner(
     const base::FilePath& unpack_path,
     const std::string& fingerprint,
-    const scoped_refptr<CrxInstaller>& installer,
-    InstallOnBlockingTaskRunnerCompleteCallback callback) {
+    const scoped_refptr<CrxInstaller>& installer) {
   if (static_cast<int>(fingerprint.size()) !=
       base::WriteFile(
           unpack_path.Append(FILE_PATH_LITERAL("manifest.fingerprint")),
@@ -91,8 +90,8 @@ void InstallOnBlockingTaskRunner(
     const scoped_refptr<CrxInstaller>& installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
   DCHECK(base::DirectoryExists(unpack_path));
-  const auto result = DoInstallOnBlockingTaskRunner(unpack_path, fingerprint,
-                                                    installer, callback);
+  const auto result =
+      DoInstallOnBlockingTaskRunner(unpack_path, fingerprint, installer);
   base::DeleteFile(unpack_path, true);
 
   const ErrorCategory error_category =
