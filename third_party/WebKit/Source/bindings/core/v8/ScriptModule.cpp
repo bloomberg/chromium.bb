@@ -38,13 +38,6 @@ ScriptModule::ScriptModule() {
   CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
 }
 
-ScriptModule::ScriptModule(WTF::HashTableDeletedValueType)
-    : module_(WTF::kHashTableDeletedValue) {
-  // We ensure module-related code is not executed without the flag.
-  // https://crbug.com/715376
-  CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
-}
-
 ScriptModule::ScriptModule(v8::Isolate* isolate, v8::Local<v8::Module> module)
     : module_(SharedPersistent<v8::Module>::Create(module, isolate)),
       identity_hash_(static_cast<unsigned>(module->GetIdentityHash())) {
