@@ -28,10 +28,6 @@
 
 
 vars = {
-  # By default, do not check out src-internal. This can be overridden e.g. with
-  # custom_vars.
-  'checkout_src_internal': 'False',
-
   'chromium_git': 'https://chromium.googlesource.com',
   'swiftshader_git': 'https://swiftshader.googlesource.com',
   'pdfium_git': 'https://pdfium.googlesource.com',
@@ -121,7 +117,6 @@ vars = {
 allowed_hosts = [
   'android.googlesource.com',
   'boringssl.googlesource.com',
-  'chrome-internal.googlesource.com',
   'chromium.googlesource.com',
   'pdfium.googlesource.com',
   'skia.googlesource.com',
@@ -130,11 +125,6 @@ allowed_hosts = [
 ]
 
 deps = {
-  'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a10bd7dbe86ec3230cf7b42bb3a5b247ac778082',
-    'condition': 'checkout_src_internal',
-  },
-
   'src/breakpad/src':
     Var('chromium_git') + '/breakpad/breakpad/src.git' + '@' + '6b59fc07474c9338e7727c52a6d8a92010a105ad',
 
