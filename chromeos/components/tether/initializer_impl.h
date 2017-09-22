@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_clock.h"
+#include "chromeos/components/tether/ble_advertiser.h"
 #include "chromeos/components/tether/ble_scanner.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/initializer.h"
@@ -38,7 +39,6 @@ namespace tether {
 
 class ActiveHost;
 class ActiveHostNetworkStateUpdater;
-class BleAdvertiser;
 class BleAdvertisementDeviceQueue;
 class BleConnectionManager;
 class CrashRecoveryManager;
@@ -66,6 +66,7 @@ class WifiHotspotDisconnector;
 
 // Initializes the Tether Chrome OS component.
 class InitializerImpl : public Initializer,
+                        public BleAdvertiser::Observer,
                         public BleScanner::Observer,
                         public DisconnectTetheringRequestSender::Observer {
  public:
@@ -116,6 +117,9 @@ class InitializerImpl : public Initializer,
  protected:
   // Initializer:
   void RequestShutdown() override;
+
+  // BleAdvertiser::Observer:
+  void OnAllAdvertisementsUnregistered() override;
 
   // BleScanner::Observer:
   void OnDiscoverySessionStateChanged(bool discovery_session_active) override;

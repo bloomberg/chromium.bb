@@ -111,6 +111,28 @@ bool BleAdvertiser::StopAdvertisingToDevice(
   return false;
 }
 
+bool BleAdvertiser::AreAdvertisementsRegistered() {
+  for (const auto& advertisement : advertisements_) {
+    if (advertisement)
+      return true;
+  }
+
+  return false;
+}
+
+void BleAdvertiser::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void BleAdvertiser::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void BleAdvertiser::NotifyAllAdvertisementsUnregistered() {
+  for (auto& observer : observer_list_)
+    observer.OnAllAdvertisementsUnregistered();
+}
+
 void BleAdvertiser::SetEidGeneratorForTest(
     std::unique_ptr<cryptauth::ForegroundEidGenerator> test_eid_generator) {
   eid_generator_ = std::move(test_eid_generator);
@@ -149,6 +171,10 @@ void BleAdvertiser::UpdateAdvertisements() {
 void BleAdvertiser::OnAdvertisementStopped(size_t index) {
   DCHECK(advertisements_[index] && advertisements_[index]->HasBeenStopped());
   advertisements_[index].reset();
+
+  if (!AreAdvertisementsRegistered())
+    NotifyAllAdvertisementsUnregistered();
+
   UpdateAdvertisements();
 }
 
