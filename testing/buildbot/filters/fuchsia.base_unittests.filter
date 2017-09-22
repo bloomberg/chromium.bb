@@ -55,7 +55,3 @@
 
 # https://crbug.com/751894
 -ConditionVariableTest.LargeFastTaskTest
-
-# https://crbug.com/767082.
--ProcessTest.CurrentProcessIsRunning
--ProcessTest.ChildProcessIsRunning
