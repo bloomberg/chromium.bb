@@ -153,7 +153,8 @@ bool Process::WaitForExit(int* exit_code) const {
 }
 
 bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
-  DCHECK(!is_current_process_);
+  if (is_current_process_)
+    return false;
 
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedProcessWaitActivity process_activity(this);
@@ -174,7 +175,6 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
 
   // TODO(scottmg): Make these LOGs into DLOGs after https://crbug.com/750756 is
   // fixed.
-  *exit_code = -1;
   if (status != ZX_OK && status != ZX_ERR_TIMED_OUT) {
     LOG(ERROR) << "zx_object_wait_one failed, status=" << status;
     return false;
@@ -192,10 +192,14 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
                               sizeof(proc_info), nullptr, nullptr);
   if (status != ZX_OK) {
     LOG(ERROR) << "zx_object_get_info failed, status=" << status;
+    if (exit_code)
+      *exit_code = -1;
     return false;
   }
 
-  *exit_code = proc_info.return_code;
+  if (exit_code)
+    *exit_code = proc_info.return_code;
+
   return true;
 }
 
