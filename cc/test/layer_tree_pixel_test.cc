@@ -59,8 +59,8 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
       std::make_unique<viz::TestLayerTreeFrameSink>(
           compositor_context_provider, std::move(worker_context_provider),
           shared_bitmap_manager(), gpu_memory_buffer_manager(),
-          viz::RendererSettings(), ImplThreadTaskRunner(),
-          synchronous_composite, disable_display_vsync, refresh_rate);
+          renderer_settings, ImplThreadTaskRunner(), synchronous_composite,
+          disable_display_vsync, refresh_rate);
   delegating_output_surface->SetEnlargePassTextureAmount(
       enlarge_texture_amount_);
   return delegating_output_surface;
