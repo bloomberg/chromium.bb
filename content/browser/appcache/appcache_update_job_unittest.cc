@@ -1527,6 +1527,70 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // Start update after data write completes asynchronously.
   }
 
+  void UpgradeLoadFromNewestCacheReuseVaryHeaderTest() {
+    ASSERT_TRUE(base::MessageLoopForIO::IsCurrent());
+
+    MakeService();
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/manifest1"),
+                               service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 42);
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    host->AssociateCompleteCache(cache);
+
+    // Give the newest cache an entry that is in storage.
+    response_writer_.reset(
+        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+    cache->AddEntry(MockHttpServer::GetMockUrl("files/explicit1"),
+                    AppCacheEntry(AppCacheEntry::EXPLICIT,
+                                  response_writer_->response_id()));
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    expect_old_cache_ = cache;
+    expect_response_ids_.insert(std::map<GURL, int64_t>::value_type(
+        MockHttpServer::GetMockUrl("files/explicit1"),
+        response_writer_->response_id()));
+    tested_manifest_ = MANIFEST1;
+    MockFrontend::HostIds ids(1, host->host_id());
+    frontend->AddExpectedEvent(ids, APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(ids, APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(ids, APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(ids, APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(ids, APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(ids, APPCACHE_UPDATE_READY_EVENT);
+
+    // Seed storage with expected http response info for an entry
+    // with a vary header for which we allow reuse.
+    const char data[] =
+        "HTTP/1.1 200 OK\0"
+        "Cache-Control: max-age=8675309\0"
+        "Vary: origin, accept-encoding\0"
+        "\0";
+    net::HttpResponseHeaders* headers =
+        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
+    response_info->request_time = base::Time::Now();
+    response_info->response_time = base::Time::Now();
+    response_info->headers = headers;  // adds ref to headers
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
+        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
+    response_writer_->WriteInfo(
+        io_buffer.get(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
+
+    // Start update after data write completes asynchronously.
+  }
+
   void UpgradeSuccessMergedTypesTest() {
     ASSERT_TRUE(base::MessageLoopForIO::IsCurrent());
 
@@ -3862,6 +3926,11 @@ TEST_P(AppCacheUpdateJobTest, UpgradeNoLoadFromNewestCache) {
 TEST_P(AppCacheUpdateJobTest, UpgradeLoadFromNewestCacheVaryHeader) {
   RunTestOnIOThread(
       &AppCacheUpdateJobTest::UpgradeLoadFromNewestCacheVaryHeaderTest);
+}
+
+TEST_P(AppCacheUpdateJobTest, UpgradeLoadFromNewestCacheReuseVaryHeader) {
+  RunTestOnIOThread(
+      &AppCacheUpdateJobTest::UpgradeLoadFromNewestCacheReuseVaryHeaderTest);
 }
 
 TEST_P(AppCacheUpdateJobTest, UpgradeSuccessMergedTypes) {

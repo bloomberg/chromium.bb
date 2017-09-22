@@ -65,6 +65,30 @@ bool IsEvictableError(AppCacheUpdateJob::ResultType result,
   }
 }
 
+bool CanUseExistingResource(const net::HttpResponseInfo* http_info) {
+  // Check HTTP caching semantics based on max-age and expiration headers.
+  if (!http_info->headers || http_info->headers->RequiresValidation(
+                                 http_info->request_time,
+                                 http_info->response_time, base::Time::Now())) {
+    return false;
+  }
+
+  // Responses with a "vary" header generally get treated as expired,
+  // but we special case the "Origin" header since we know it's invariant.
+  // Also, content decoding is handled by the network library, the appcache
+  // stores decoded response bodies, so we can safely ignore varying on
+  // the "Accept-Encoding" header.
+  std::string value;
+  size_t iter = 0;
+  while (http_info->headers->EnumerateHeader(&iter, "vary", &value)) {
+    if (!base::EqualsCaseInsensitiveASCII(value, "Accept-Encoding") &&
+        !base::EqualsCaseInsensitiveASCII(value, "Origin")) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void EmptyCompletionCallback(int result) {}
 
 }  // namespace
@@ -1221,36 +1245,25 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
 
   if (!http_info) {
     LoadFromNewestCacheFailed(url, NULL);  // no response found
+  } else if (!CanUseExistingResource(http_info)) {
+    LoadFromNewestCacheFailed(url, response_info);
   } else {
-    // Check if response can be re-used according to HTTP caching semantics.
-    // Responses with a "vary" header get treated as expired.
-    const std::string name = "vary";
-    std::string value;
-    size_t iter = 0;
-    if (!http_info->headers.get() ||
-        http_info->headers->RequiresValidation(http_info->request_time,
-                                               http_info->response_time,
-                                               base::Time::Now()) ||
-        http_info->headers->EnumerateHeader(&iter, name, &value)) {
-      LoadFromNewestCacheFailed(url, response_info);
-    } else {
-      DCHECK(group_->newest_complete_cache());
-      AppCacheEntry* copy_me = group_->newest_complete_cache()->GetEntry(url);
-      DCHECK(copy_me);
-      DCHECK(copy_me->response_id() == response_id);
+    DCHECK(group_->newest_complete_cache());
+    AppCacheEntry* copy_me = group_->newest_complete_cache()->GetEntry(url);
+    DCHECK(copy_me);
+    DCHECK_EQ(copy_me->response_id(), response_id);
 
-      AppCache::EntryMap::iterator it = url_file_list_.find(url);
-      DCHECK(it != url_file_list_.end());
-      AppCacheEntry& entry = it->second;
-      entry.set_response_id(response_id);
-      entry.set_response_size(copy_me->response_size());
-      inprogress_cache_->AddOrModifyEntry(url, entry);
-      NotifyAllProgress(url);
-      ++url_fetches_completed_;
-    }
+    AppCache::EntryMap::iterator it = url_file_list_.find(url);
+    DCHECK(it != url_file_list_.end());
+    AppCacheEntry& entry = it->second;
+    entry.set_response_id(response_id);
+    entry.set_response_size(copy_me->response_size());
+    inprogress_cache_->AddOrModifyEntry(url, entry);
+    NotifyAllProgress(url);
+    ++url_fetches_completed_;
   }
-  loading_responses_.erase(found);
 
+  loading_responses_.erase(found);
   MaybeCompleteUpdate();
 }
 
