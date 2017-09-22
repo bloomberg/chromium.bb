@@ -103,6 +103,7 @@ set(AOM_UNIT_TEST_ENCODER_SOURCES
     "${AOM_ROOT}/test/encode_test_driver.h"
     "${AOM_ROOT}/test/error_resilience_test.cc"
     "${AOM_ROOT}/test/i420_video_source.h"
+    "${AOM_ROOT}/test/resize_test.cc"
     "${AOM_ROOT}/test/y4m_test.cc"
     "${AOM_ROOT}/test/y4m_video_source.h"
     "${AOM_ROOT}/test/yuv_video_source.h")
