@@ -96,7 +96,13 @@ PasswordForm::PasswordForm()
 
 PasswordForm::PasswordForm(const PasswordForm& other) = default;
 
+PasswordForm::PasswordForm(PasswordForm&& other) = default;
+
 PasswordForm::~PasswordForm() = default;
+
+PasswordForm& PasswordForm::operator=(const PasswordForm& form) = default;
+
+PasswordForm& PasswordForm::operator=(PasswordForm&& form) = default;
 
 bool PasswordForm::IsPossibleChangePasswordForm() const {
   return !new_password_element.empty() &&
