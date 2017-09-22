@@ -1080,6 +1080,7 @@ bool IsTabDetachingInFullscreenEnabled() {
     [[self fullscreenToolbarController] revealToolbarForWebContents:newContents
                                                        inForeground:YES];
   }
+  [self invalidateTouchBar];
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
