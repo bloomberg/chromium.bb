@@ -30,8 +30,9 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="base/test/android/junit/src"/>
     <classpathentry kind="src" path="chrome/android/java/src"/>
     <classpathentry kind="src" path="chrome/android/javatests/src"/>
-    <classpathentry kind="src" path="chrome/android/sync_shell/javatests/src"/>
     <classpathentry kind="src" path="chrome/android/junit/src"/>
+    <classpathentry kind="src" path="chrome/android/sync_shell/javatests/src"/>
+    <classpathentry kind="src" path="chrome/android/third_party/widget_bottomsheet_base/java/src/" />
     <classpathentry kind="src" path="chrome/android/webapk/libs/client/junit/src"/>
     <classpathentry kind="src" path="chrome/android/webapk/libs/client/src"/>
     <classpathentry kind="src" path="chrome/android/webapk/libs/common/src"/>

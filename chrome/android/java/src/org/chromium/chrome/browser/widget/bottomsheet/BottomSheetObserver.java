@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
@@ -76,7 +78,7 @@ public interface BottomSheetObserver {
 
     /**
      * An event for when the sheet content changes.
-     * @param newContent The new {@link BottomSheetContent}.
+     * @param newContent The new {@link BottomSheetContent}, or null if the sheet has no content.
      */
-    void onSheetContentChanged(BottomSheetContent newContent);
+    void onSheetContentChanged(@Nullable BottomSheetContent newContent);
 }

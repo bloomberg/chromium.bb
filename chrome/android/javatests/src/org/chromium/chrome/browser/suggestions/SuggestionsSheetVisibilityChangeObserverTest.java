@@ -9,7 +9,6 @@ import static org.junit.Assert.assertEquals;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event.Hidden;
 import static org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event.InitialReveal;
-import static org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event.Shown;
 import static org.chromium.chrome.browser.suggestions.SuggestionsSheetVisibilityChangeObserverTest.TestVisibilityChangeObserver.Event.StateChange;
 import static org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.TYPE_SUGGESTIONS;
 
@@ -155,7 +154,7 @@ public class SuggestionsSheetVisibilityChangeObserverTest {
         Espresso.pressBack();
         waitForWindowUpdates();
 
-        mObserver.expectEvents(Shown, StateChange);
+        mObserver.expectEvents(InitialReveal, StateChange);
         assertEquals(BottomSheet.SHEET_STATE_FULL, mActivityRule.getBottomSheet().getSheetState());
         mEventReporter.surfaceOpenedHelper.waitForCallback();
         mEventReporter.surfaceOpenedHelper.verifyCallCount();

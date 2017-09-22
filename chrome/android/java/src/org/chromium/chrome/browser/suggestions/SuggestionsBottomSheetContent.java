@@ -261,6 +261,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         mSuggestionsUiDelegate.onDestroy();
         mTileGroupDelegate.destroy();
         TemplateUrlService.getInstance().removeObserver(this);
+        mSheet.getNewTabController().removeObserver(this);
     }
 
     @Override

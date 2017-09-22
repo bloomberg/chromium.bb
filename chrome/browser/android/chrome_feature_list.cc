@@ -58,6 +58,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
     &kChromeHomeFeature,
+    &kChromeHomeDestroySuggestions,
     &kChromeHomeDoodle,
     &kChromeHomeExpandButton,
     &kChromeHomeSwipeLogic,
@@ -160,6 +161,9 @@ const base::Feature kCCTRedirectPreconnect{"CCTRedirectPreconnect",
 
 const base::Feature kChromeHomeFeature{"ChromeHome",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kChromeHomeDestroySuggestions{
+    "ChromeHomeDestroySuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeHomeDoodle{"ChromeHomeDoodle",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

@@ -23,6 +23,7 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
 import org.chromium.chrome.browser.download.DownloadSheetContent;
 import org.chromium.chrome.browser.history.HistorySheetContent;
@@ -70,6 +71,9 @@ public class BottomSheetContentController extends BottomNavigationView
     // content with this type, the back button will close the sheet.
     public static final int TYPE_AUXILIARY_CONTENT = 5;
 
+    // Used if there is no bottom sheet content.
+    private static final int NO_CONTENT_ID = 0;
+
     // R.id.action_home is overloaded, so an invalid ID is used to reference the incognito version
     // of the home content.
     private static final int INCOGNITO_HOME_ID = -1;
@@ -102,8 +106,6 @@ public class BottomSheetContentController extends BottomNavigationView
 
         @Override
         public void onSheetOpened(@StateChangeReason int reason) {
-            initializeDefaultContent();
-
             if (reason == StateChangeReason.OMNIBOX_FOCUS) {
                 // If the omnibox is being focused, show the placeholder.
                 mBottomSheet.showContent(mPlaceholderContent);
@@ -113,6 +115,8 @@ public class BottomSheetContentController extends BottomNavigationView
                 return;
             }
 
+            if (mSelectedItemId == NO_CONTENT_ID) showBottomSheetContent(R.id.action_home);
+
             if (mHighlightItemId != null) {
                 mHighlightedView = mActivity.findViewById(mHighlightItemId);
                 ViewHighlighter.turnOnHighlight(mHighlightedView, false);
@@ -121,16 +125,23 @@ public class BottomSheetContentController extends BottomNavigationView
 
         @Override
         public void onSheetClosed(@StateChangeReason int reason) {
-            if (mSelectedItemId != 0 && mSelectedItemId != R.id.action_home) {
-                showBottomSheetContent(R.id.action_home);
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_DESTROY_SUGGESTIONS)) {
+                // TODO(bauerb): Implement support for destroying the home sheet after a delay.
+                mSelectedItemId = NO_CONTENT_ID;
+                mBottomSheet.showContent(null);
+                clearBottomSheetContents(true);
             } else {
-                clearBottomSheetContents(false);
+                if (mSelectedItemId != NO_CONTENT_ID && mSelectedItemId != R.id.action_home) {
+                    showBottomSheetContent(R.id.action_home);
+                } else {
+                    clearBottomSheetContents(false);
+                }
             }
+
             // The keyboard should be hidden when the sheet is closed in case it was made visible by
             // sheet content.
-            UiUtils.hideKeyboard((View) BottomSheetContentController.this);
-            // TODO(twellington): determine a policy for destroying the
-            //                    SuggestionsBottomSheetContent.
+            UiUtils.hideKeyboard(BottomSheetContentController.this);
+
             ViewHighlighter.turnOffHighlight(mHighlightedView);
             mHighlightedView = null;
             mHighlightItemId = null;
@@ -164,7 +175,6 @@ public class BottomSheetContentController extends BottomNavigationView
     private SnackbarManager mSnackbarManager;
     private float mDistanceBelowToolbarPx;
     private int mSelectedItemId;
-    private boolean mDefaultContentInitialized;
     private ChromeActivity mActivity;
     private boolean mShouldOpenSheetOnNextContentChange;
     private PlaceholderSheetContent mPlaceholderContent;
@@ -263,16 +273,6 @@ public class BottomSheetContentController extends BottomNavigationView
     private void updateMenuItemSpacing() {
         getMenuView().updateMenuItemSpacingForMinWidth(
                 mBottomSheet.getWidth(), mBottomSheet.getHeight());
-    }
-
-    /**
-     * Initialize the default {@link BottomSheetContent}.
-     */
-    public void initializeDefaultContent() {
-        if (mDefaultContentInitialized) return;
-        createAndCacheContentForId(R.id.action_home);
-        if (!mOmniboxHasFocus) showBottomSheetContent(R.id.action_home);
-        mDefaultContentInitialized = true;
     }
 
     /**
@@ -389,7 +389,7 @@ public class BottomSheetContentController extends BottomNavigationView
     }
 
     private void showBottomSheetContent(int navItemId) {
-        // There are some bugs related to programatically selecting menu items that are fixed in
+        // There are some bugs related to programmatically selecting menu items that are fixed in
         // newer support library versions.
         // TODO(twellington): remove this after the support library is rolled.
         if (mSelectedItemId > 0) getMenu().findItem(mSelectedItemId).setChecked(false);
