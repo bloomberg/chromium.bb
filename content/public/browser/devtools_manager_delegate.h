@@ -42,9 +42,10 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   // Creates new inspectable target given the |url|.
   virtual scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url);
 
+  // Called when a new session is created/destroyed. Note that |session_id| is
+  // globally unique.
   virtual void SessionCreated(content::DevToolsAgentHost* agent_host,
                               int session_id);
-
   virtual void SessionDestroyed(content::DevToolsAgentHost* agent_host,
                                 int session_id);
 

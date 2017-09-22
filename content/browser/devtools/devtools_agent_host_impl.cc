@@ -45,6 +45,7 @@ const char DevToolsAgentHost::kTypeBrowser[] = "browser";
 const char DevToolsAgentHost::kTypeGuest[] = "webview";
 const char DevToolsAgentHost::kTypeOther[] = "other";
 int DevToolsAgentHostImpl::s_force_creation_count_ = 0;
+int DevToolsAgentHostImpl::s_last_session_id_ = 0;
 
 // static
 std::string DevToolsAgentHost::GetProtocolVersion() {
@@ -116,8 +117,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
       ->GetDevToolsAgentHostForWorker(worker_process_id, worker_route_id);
 }
 
-DevToolsAgentHostImpl::DevToolsAgentHostImpl(const std::string& id)
-    : id_(id), last_session_id_(0) {
+DevToolsAgentHostImpl::DevToolsAgentHostImpl(const std::string& id) : id_(id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -161,7 +161,7 @@ DevToolsSession* DevToolsAgentHostImpl::SessionByClient(
 void DevToolsAgentHostImpl::InnerAttachClient(DevToolsAgentHostClient* client) {
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   DevToolsSession* session =
-      new DevToolsSession(this, client, ++last_session_id_);
+      new DevToolsSession(this, client, ++s_last_session_id_);
   int session_id = session->session_id();
   sessions_.insert(session);
   session_by_id_[session_id] = session;
