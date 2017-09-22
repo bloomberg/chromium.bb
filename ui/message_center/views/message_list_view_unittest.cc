@@ -6,11 +6,8 @@
 #include <memory>
 #include <utility>
 
-#include "ash/message_center/message_list_view.h"
-#include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,22 +15,18 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_list_view.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/views/test/views_test_base.h"
 
 using ::testing::ElementsAre;
-using message_center::MessageCenterController;
-using message_center::Notification;
-using message_center::NotificationView;
-using message_center::NotifierId;
-using message_center::NOTIFICATION_TYPE_SIMPLE;
 
-namespace ash {
+namespace message_center {
+
+static const char* kNotificationId1 = "notification id 1";
+static const char* kNotificationId2 = "notification id 2";
 
 namespace {
-
-const char* kNotificationId1 = "notification id 1";
-const char* kNotificationId2 = "notification id 2";
 
 /* Types **********************************************************************/
 
@@ -92,11 +85,11 @@ void MockNotificationView::Layout() {
   NotificationView::Layout();
 }
 
-}  // namespace
+}  // anonymous namespace
 
 /* Test fixture ***************************************************************/
 
-class MessageListViewTest : public AshTestBase,
+class MessageListViewTest : public views::ViewsTestBase,
                             public MockNotificationView::Test,
                             public MessageListView::Observer,
                             public MessageCenterController {
@@ -106,14 +99,15 @@ class MessageListViewTest : public AshTestBase,
   ~MessageListViewTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    views::ViewsTestBase::SetUp();
 
     message_list_view_.reset(new MessageListView());
     message_list_view_->AddObserver(this);
     message_list_view_->set_owned_by_client();
 
     widget_.reset(new views::Widget());
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+    views::Widget::InitParams params =
+        CreateParams(views::Widget::InitParams::TYPE_POPUP);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(50, 50, 650, 650);
     widget_->Init(params);
@@ -130,7 +124,7 @@ class MessageListViewTest : public AshTestBase,
     message_list_view_->RemoveObserver(this);
     message_list_view_.reset();
 
-    AshTestBase::TearDown();
+    views::ViewsTestBase::TearDown();
   }
 
  protected:
@@ -158,10 +152,8 @@ class MessageListViewTest : public AshTestBase,
   }
 
   void RunPendingAnimations() {
-    while (animator().IsAnimating()) {
-      base::RunLoop run_loop;
-      run_loop.RunUntilIdle();
-    }
+    while (animator().IsAnimating())
+      RunPendingMessages();
   }
 
  private:
@@ -497,4 +489,4 @@ TEST_F(MessageListViewTest, RemoveWhileClearAll) {
   EXPECT_EQ(0, message_list_view()->child_count());
 }
 
-}  // namespace ash
+}  // namespace

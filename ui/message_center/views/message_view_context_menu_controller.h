@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/message_center/message_center_export.h"
 #include "ui/views/context_menu_controller.h"
 
 namespace ui {
@@ -24,8 +23,7 @@ class MenuRunner;
 namespace message_center {
 class MessageCenterController;
 
-class MESSAGE_CENTER_EXPORT MessageViewContextMenuController
-    : public views::ContextMenuController {
+class MessageViewContextMenuController : public views::ContextMenuController {
  public:
   explicit MessageViewContextMenuController(
       MessageCenterController* controller);

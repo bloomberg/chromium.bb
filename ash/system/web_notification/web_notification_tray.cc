@@ -5,7 +5,6 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 
 #include "ash/accessibility_delegate.h"
-#include "ash/message_center/message_center_bubble.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -19,6 +18,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
+#include "ash/system/web_notification/message_center_bubble.h"
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
@@ -83,7 +83,7 @@ class WebNotificationBubbleWrapper {
     init_params.min_width = width;
     init_params.max_width = width;
     init_params.max_height = bubble->max_height();
-    init_params.bg_color = SkColorSetRGB(0xe7, 0xe7, 0xe7);
+    init_params.bg_color = message_center::kBackgroundDarkColor;
 
     views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
     bubble_view->set_anchor_view_insets(anchor_tray->GetBubbleAnchorInsets());

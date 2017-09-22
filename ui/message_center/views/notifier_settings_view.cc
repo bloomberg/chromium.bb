@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/notifier_settings_view.h"
+#include "ui/message_center/views/notifier_settings_view.h"
 
 #include <stddef.h>
 
@@ -10,8 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/message_center/message_center_view.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,7 +25,9 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/views/message_center_view.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -45,24 +45,11 @@
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
-
-using message_center::Notifier;
-using message_center::NotifierGroup;
-using message_center::NotifierId;
-using message_center::NotifierSettingsProvider;
+namespace message_center {
 
 namespace {
 
-constexpr SkColor kEntrySeparatorColor = SkColorSetARGB(0.1 * 255, 0, 0, 0);
-const int kEntryHeight = 45;
-const int kEntrySeparatorHeight = 1;
-const int kHorizontalMargin = 10;
-const int kTopMargin = 20;
-const int kEntryIconSize = 16;
-const int kDescriptionToSwitcherSpace = 15;
-const int kInternalHorizontalSpacing = 10;
-const int kCheckboxSizeWithPadding = 24;
+// Additional views-specific parameters.
 
 // The width of the settings pane in pixels.
 const int kWidth = 360;
@@ -98,28 +85,30 @@ const int kInnateCheckboxRightPadding = 2;
 // Spec defines the checkbox size; the innate padding throws this measurement
 // off so we need to compute a slightly different area for the checkbox to
 // inhabit.
-constexpr int kComputedCheckboxSize =
-    kCheckboxSizeWithPadding - kInnateCheckboxRightPadding;
+const int kComputedCheckboxSize =
+    settings::kCheckboxSizeWithPadding - kInnateCheckboxRightPadding;
 
 // The spec doesn't include the bottom blank area of the title bar or the innate
 // blank area in the description label, so we'll use this as the space between
 // the title and description.
-constexpr int kComputedTitleBottomMargin = kDescriptionToSwitcherSpace -
-                                           kInnateTitleBottomMargin -
-                                           kInnateDescriptionTopMargin;
+const int kComputedTitleBottomMargin = settings::kDescriptionToSwitcherSpace -
+                                       kInnateTitleBottomMargin -
+                                       kInnateDescriptionTopMargin;
 
 // The blank space above the title needs to be adjusted by the amount of blank
 // space included in the title label.
-constexpr int kComputedTitleTopMargin = kTopMargin - kInnateTitleTopMargin;
+const int kComputedTitleTopMargin =
+    settings::kTopMargin - kInnateTitleTopMargin;
 
 // The switcher has a lot of blank space built in so we should include that when
 // spacing the title area vertically.
-constexpr int kComputedTitleElementSpacing = kDescriptionToSwitcherSpace - 6;
+const int kComputedTitleElementSpacing =
+    settings::kDescriptionToSwitcherSpace - 6;
 
 // A function to create a focus border.
 std::unique_ptr<views::Painter> CreateFocusPainter() {
-  return views::Painter::CreateSolidFocusPainter(
-      message_center::kFocusBorderColor, gfx::Insets(1, 2, 3, 2));
+  return views::Painter::CreateSolidFocusPainter(kFocusBorderColor,
+                                                 gfx::Insets(1, 2, 3, 2));
 }
 
 // EntryView ------------------------------------------------------------------
@@ -166,7 +155,7 @@ void EntryView::Layout() {
 gfx::Size EntryView::CalculatePreferredSize() const {
   DCHECK_EQ(1, child_count());
   gfx::Size size = child_at(0)->GetPreferredSize();
-  size.SetToMax(gfx::Size(kWidth, kEntryHeight));
+  size.SetToMax(gfx::Size(kWidth, settings::kEntryHeight));
   return size;
 }
 
@@ -296,7 +285,8 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   UpdateIconImage(notifier_->icon);
 }
 
-NotifierSettingsView::NotifierButton::~NotifierButton() {}
+NotifierSettingsView::NotifierButton::~NotifierButton() {
+}
 
 void NotifierSettingsView::NotifierButton::UpdateIconImage(
     const gfx::Image& icon) {
@@ -305,7 +295,8 @@ void NotifierSettingsView::NotifierButton::UpdateIconImage(
   notifier_->icon = icon;
   if (!icon.IsEmpty()) {
     icon_view_->SetImage(icon.ToImageSkia());
-    icon_view_->SetImageSize(gfx::Size(kEntryIconSize, kEntryIconSize));
+    icon_view_->SetImageSize(
+        gfx::Size(settings::kEntryIconSize, settings::kEntryIconSize));
     has_icon_view = true;
   }
   GridChanged(ShouldHaveLearnMoreButton(), has_icon_view);
@@ -375,29 +366,37 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more,
   ColumnSet* cs = layout->AddColumnSet(0);
   // Add a column for the checkbox.
   cs->AddPaddingColumn(0, kInnateCheckboxRightPadding);
-  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
-                kComputedCheckboxSize, 0);
-  cs->AddPaddingColumn(0, kInternalHorizontalSpacing);
+  cs->AddColumn(GridLayout::CENTER,
+                GridLayout::CENTER,
+                0,
+                GridLayout::FIXED,
+                kComputedCheckboxSize,
+                0);
+  cs->AddPaddingColumn(0, settings::kInternalHorizontalSpacing);
 
   if (has_icon_view) {
     // Add a column for the icon.
-    cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
-                  kEntryIconSize, 0);
-    cs->AddPaddingColumn(0, kInternalHorizontalSpacing);
+    cs->AddColumn(GridLayout::CENTER,
+                  GridLayout::CENTER,
+                  0,
+                  GridLayout::FIXED,
+                  settings::kEntryIconSize,
+                  0);
+    cs->AddPaddingColumn(0, settings::kInternalHorizontalSpacing);
   }
 
   // Add a column for the name.
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
+  cs->AddColumn(
+      GridLayout::LEADING, GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
 
   // Add a padding column which contains expandable blank space.
   cs->AddPaddingColumn(1, 0);
 
   // Add a column for the learn more button if necessary.
   if (has_learn_more) {
-    cs->AddPaddingColumn(0, kInternalHorizontalSpacing);
-    cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                  GridLayout::USE_PREF, 0, 0);
+    cs->AddPaddingColumn(0, settings::kInternalHorizontalSpacing);
+    cs->AddColumn(
+        GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
   }
 
   layout->StartRow(0, 0);
@@ -410,6 +409,7 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more,
 
   Layout();
 }
+
 
 // NotifierSettingsView -------------------------------------------------------
 
@@ -424,12 +424,11 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
     provider_->AddObserver(this);
 
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  SetBackground(
-      views::CreateSolidBackground(MessageCenterView::kBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kMessageCenterBackgroundColor));
   SetPaintToLayer();
 
   title_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SETTINGS_TITLE),
+      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL),
       views::style::CONTEXT_DIALOG_TITLE);
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
@@ -440,7 +439,7 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   AddChildView(title_label_);
 
   scroller_ = new views::ScrollView();
-  scroller_->SetBackgroundColor(MessageCenterView::kBackgroundColor);
+  scroller_->SetBackgroundColor(kMessageCenterBackgroundColor);
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
   AddChildView(scroller_);
@@ -465,7 +464,8 @@ bool NotifierSettingsView::IsScrollable() {
 void NotifierSettingsView::UpdateIconImage(const NotifierId& notifier_id,
                                            const gfx::Image& icon) {
   for (std::set<NotifierButton*>::iterator iter = buttons_.begin();
-       iter != buttons_.end(); ++iter) {
+       iter != buttons_.end();
+       ++iter) {
     if ((*iter)->notifier().notifier_id == notifier_id) {
       (*iter)->UpdateIconImage(icon);
       return;
@@ -489,31 +489,34 @@ void NotifierSettingsView::UpdateContentsView(
   buttons_.clear();
 
   views::View* contents_view = new views::View();
-  contents_view->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, gfx::Insets(0, kHorizontalMargin)));
+  contents_view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           gfx::Insets(0, settings::kHorizontalMargin)));
 
   views::View* contents_title_view = new views::View();
   contents_title_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(),
                            kComputedTitleElementSpacing));
 
-  views::Label* top_label = new views::Label(l10n_util::GetStringUTF16(
-      IDS_ASH_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
+  bool need_account_switcher =
+      provider_ && provider_->GetNotifierGroupCount() > 1;
+  int top_label_resource_id =
+      need_account_switcher ? IDS_MESSAGE_CENTER_SETTINGS_DESCRIPTION_MULTIUSER
+                            : IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION;
+
+  views::Label* top_label =
+      new views::Label(l10n_util::GetStringUTF16(top_label_resource_id));
   top_label->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(0, kTitleMargin - kHorizontalMargin)));
+      gfx::Insets(0, kTitleMargin - settings::kHorizontalMargin)));
   top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   top_label->SetMultiLine(true);
 
   contents_title_view->AddChildView(top_label);
 
-  // TODO(estade): remove this; there's only ever one notifier group in ash.
-  bool need_account_switcher =
-      provider_ && provider_->GetNotifierGroupCount() > 1;
   if (need_account_switcher) {
     const NotifierGroup& active_group = provider_->GetActiveNotifierGroup();
-    base::string16 notifier_group_text = active_group.login_info.empty()
-                                             ? active_group.name
-                                             : active_group.login_info;
+    base::string16 notifier_group_text = active_group.login_info.empty() ?
+        active_group.name : active_group.login_info;
     notifier_group_model_.reset(new NotifierGroupComboboxModel(provider_));
     notifier_group_combobox_ = new views::Combobox(notifier_group_model_.get());
     notifier_group_combobox_->set_listener(this);
@@ -543,10 +546,12 @@ void NotifierSettingsView::UpdateContentsView(
     // border on the last notifier, as the spec leaves a space for it.
     std::unique_ptr<views::Border> entry_border;
     if (i == notifier_count - 1) {
-      entry_border = views::CreateEmptyBorder(0, 0, kEntrySeparatorHeight, 0);
+      entry_border =
+          views::CreateEmptyBorder(0, 0, settings::kEntrySeparatorHeight, 0);
     } else {
-      entry_border = views::CreateSolidSidedBorder(0, 0, kEntrySeparatorHeight,
-                                                   0, kEntrySeparatorColor);
+      entry_border =
+          views::CreateSolidSidedBorder(0, 0, settings::kEntrySeparatorHeight,
+                                        0, settings::kEntrySeparatorColor);
     }
     entry->SetBorder(std::move(entry_border));
     entry->SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -631,4 +636,4 @@ void NotifierSettingsView::OnPerformAction(views::Combobox* combobox) {
   center_view->OnSettingsChanged();
 }
 
-}  // namespace ash
+}  // namespace message_center

@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/message_center/message_center_bubble.h"
+#include "ash/system/web_notification/message_center_bubble.h"
 
-#include "ash/message_center/message_center_view.h"
 #include "base/macros.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/views/message_center_view.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
 using message_center::MessageCenter;
 using message_center::MessageCenterTray;
+using message_center::MessageCenterView;
 
 namespace ash {
 
