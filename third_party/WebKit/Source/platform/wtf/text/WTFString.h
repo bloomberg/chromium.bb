@@ -498,6 +498,8 @@ class WTF_EXPORT String {
 
   // Hash table deleted values, which are only constructed and never copied or
   // destroyed.
+  // TODO(tzik): Remove this after updating callsites of this to use
+  // HashTraits<String>::{ConstructDeletedValue,IsHashTableDeletedValue}.
   String(WTF::HashTableDeletedValueType) : impl_(WTF::kHashTableDeletedValue) {}
   bool IsHashTableDeletedValue() const {
     return impl_.IsHashTableDeletedValue();
@@ -509,6 +511,8 @@ class WTF_EXPORT String {
 #endif
 
  private:
+  friend struct HashTraits<String>;
+
   template <typename CharacterType>
   void AppendInternal(CharacterType);
 

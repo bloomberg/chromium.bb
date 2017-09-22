@@ -23,6 +23,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 
