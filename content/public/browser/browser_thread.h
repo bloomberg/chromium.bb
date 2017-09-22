@@ -67,9 +67,6 @@ class CONTENT_EXPORT BrowserThread {
     // The main thread in the browser.
     UI,
 
-    // This is the thread that interacts with the database.
-    DB,
-
     // This is the thread that interacts with the file system.
     // DEPRECATED: prefer base/task_scheduler/post_task.h for new classes
     // requiring a background file I/O task runner, i.e.:
@@ -80,23 +77,11 @@ class CONTENT_EXPORT BrowserThread {
     //         is visible but non-blocking to the user.
     FILE,
 
-    // Used for file system operations that block user interactions.
-    // Responsiveness of this thread affect users.
-    // DEPRECATED: prefer base/task_scheduler/post_task.h for new classes
-    // requiring a user-blocking file I/O task runner, i.e.:
-    //   base::CreateSequencedTaskRunnerWithTraits(
-    //       {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
-    FILE_USER_BLOCKING,
-
     // Used to launch and terminate Chrome processes.
     PROCESS_LAUNCHER,
 
-    // This is the thread to handle slow HTTP cache operations.
-    CACHE,
-
     // This is the thread that processes non-blocking IO, i.e. IPC and network.
-    // Blocking IO should happen on other threads like DB, FILE,
-    // FILE_USER_BLOCKING and CACHE depending on the usage.
+    // Blocking IO should happen in TaskScheduler.
     IO,
 
     // NOTE: do not add new threads here that are only used by a small number of
@@ -286,7 +271,6 @@ class CONTENT_EXPORT BrowserThread {
   struct DeleteOnUIThread : public DeleteOnThread<UI> { };
   struct DeleteOnIOThread : public DeleteOnThread<IO> { };
   struct DeleteOnFileThread : public DeleteOnThread<FILE> { };
-  struct DeleteOnDBThread : public DeleteOnThread<DB> { };
 
   // Returns an appropriate error message for when DCHECK_CURRENTLY_ON() fails.
   static std::string GetDCheckCurrentlyOnErrorMessage(ID expected);
