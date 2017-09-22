@@ -938,6 +938,8 @@ split_static_library("ui") {
       "omnibox/chrome_omnibox_navigation_observer.h",
       "omnibox/clipboard_utils.cc",
       "omnibox/clipboard_utils.h",
+      "overlay/overlay_surface_embedder.cc",
+      "overlay/overlay_surface_embedder.h",
       "overlay/overlay_window.h",
       "page_info/page_info_dialog.cc",
       "page_info/page_info_dialog.h",
