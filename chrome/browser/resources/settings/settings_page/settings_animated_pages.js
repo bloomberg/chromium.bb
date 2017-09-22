@@ -150,13 +150,19 @@ Polymer({
 
     if (oldRoute) {
       if (oldRoute.isSubpage() && newRoute.depth > oldRoute.depth) {
-        // Slide left for a deeper subpage.
-        this.$.animatedPages.exitAnimation = 'slide-left-animation';
-        this.$.animatedPages.entryAnimation = 'slide-from-right-animation';
+        var isRtl = loadTimeData.getString('textdirection') == 'rtl';
+        var exit = isRtl ? 'right' : 'left';
+        var entry = isRtl ? 'left' : 'right';
+        this.$.animatedPages.exitAnimation = 'slide-' + exit + '-animation';
+        this.$.animatedPages.entryAnimation =
+            'slide-from-' + entry + '-animation';
       } else if (oldRoute.depth > newRoute.depth) {
-        // Slide right for a shallower subpage.
-        this.$.animatedPages.exitAnimation = 'slide-right-animation';
-        this.$.animatedPages.entryAnimation = 'slide-from-left-animation';
+        var isRtl = loadTimeData.getString('textdirection') == 'rtl';
+        var exit = isRtl ? 'left' : 'right';
+        var entry = isRtl ? 'right' : 'left';
+        this.$.animatedPages.exitAnimation = 'slide-' + exit + '-animation';
+        this.$.animatedPages.entryAnimation =
+            'slide-from-' + entry + '-animation';
       } else {
         // The old route is not a subpage or is at the same level, so just fade.
         this.$.animatedPages.exitAnimation = 'settings-fade-out-animation';
