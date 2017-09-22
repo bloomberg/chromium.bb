@@ -152,6 +152,9 @@ class V8BrowsingMobileExpecations(expectations.StoryExpectations):
     self.DisableStory('browse:chrome:newtab',
                       [expectations.ANDROID_WEBVIEW],
                       'Webview does not have NTP')
+    self.DisableStory('browse:news:cnn',
+                      [expectations.ANDROID_WEBVIEW],
+                      'Crash: crbug.com/767595')
 
 
 class SystemHealthWebviewStartupExpectations(expectations.StoryExpectations):
