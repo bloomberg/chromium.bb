@@ -4,7 +4,7 @@
 
 paper-button {
   border-color: var(--oobe-text-button-border-color, transparent);
-  border-radius: 2px;
+  border-radius: 4px;
   border-style: solid;
   border-width: 2px;
   height: 32px; /* = 28px + 2 * 2px border */
