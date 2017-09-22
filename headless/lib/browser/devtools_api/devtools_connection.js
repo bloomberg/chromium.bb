@@ -21,10 +21,16 @@ chromium.DevTools.Connection = class {
   /**
    * @param {!Object} transport The API providing transport for devtools
    *     commands.
+   * @param {function(string, Object=): undefined =} opt_validator An
+   *     optional function which performs checks before sending any DevTools
+   *     messages.  It should throw an error if validation fails.
    */
-  constructor(transport) {
+  constructor(transport, opt_validator) {
     /** @private {!Object} */
     this.transport_ = transport;
+
+    /** @private {function(string, Object=): undefined|undefined} */
+    this.validator_ = opt_validator;
 
     /** @private {number} */
     this.commandId_ = 1;
@@ -148,6 +154,9 @@ chromium.DevTools.Connection = class {
     // OnProtocolMessage easily distinguish between C++ and JS generated
     // commands and route the response accordingly.
     this.commandId_ += 2;
+    if (this.validator_) {
+      this.validator_(method, params);
+    }
     // Note the names are in quotes to prevent closure compiler name mangling.
     this.transport_.send(
         JSON.stringify({'method': method, 'id': id, 'params': params}));
