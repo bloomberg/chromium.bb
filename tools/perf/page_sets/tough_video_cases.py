@@ -31,14 +31,17 @@ _PAGE_TAGS_LIST = [
 ]
 
 
+# TODO(crouleau): Make a class for each of the page actions: regular, seeking,
+# and background. This will simplify page declarations.
 class ToughVideoCasesPage(page_module.Page):
 
-  def __init__(self, url, page_set, tags):
+  def __init__(self, url, page_set, tags, extra_browser_args=None):
     if tags:
       for t in tags:
         assert t in _PAGE_TAGS_LIST
     super(ToughVideoCasesPage, self).__init__(
-        url=url, page_set=page_set, tags=tags, name=url.split('/')[-1])
+        url=url, page_set=page_set, tags=tags, name=url.split('/')[-1],
+        extra_browser_args=extra_browser_args)
 
   def PlayAction(self, action_runner):
     # Play the media until it has finished or it times out.
@@ -71,13 +74,6 @@ class ToughVideoCasesPage(page_module.Page):
     # 1. Play a video
     # 2. Open new tab overtop to obscure the video
     # 3. Close the tab to go back to the tab that is playing the video.
-    # This test case will work differently depending on whether the platform is
-    # desktop or Android and whether the video has sound or not. For example,
-    # the current Chrome video implementation (as of July 2017) pauses video on
-    # Android when the tab is backgrounded, but on desktop the video is not
-    # paused.
-    # TODO(crouleau): Use --disable-media-suspend flag to enable Android to
-    # play video in the background.
     # The motivation for this test case is crbug.com/678663.
     action_runner.PlayMedia(
         playing_event_timeout_in_seconds=60)
@@ -421,7 +417,11 @@ class Page37(ToughVideoCasesPage):
     super(Page37, self).__init__(
       url='file://tough_video_cases/video.html?src=tulip2.vp9.webm&background',
       page_set=page_set,
-      tags=['vp9', 'opus', 'audio_video', 'background'])
+      tags=['vp9', 'opus', 'audio_video', 'background'],
+      # disable-media-suspend is required since for Android background playback
+      # gets suspended. This flag makes Android work the same way as desktop and
+      # not turn off video playback in the background.
+      extra_browser_args=['--disable-media-suspend'])
 
     self.skip_basic_metrics = True
 
