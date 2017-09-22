@@ -192,8 +192,10 @@ float ComputePhysicalPixelWidth(const gfx::Transform& view_proj_matrix,
   return 0.5 * physical_width * surface_texture_size.width();
 }
 
-#define SHADER(Src) #Src
-#define OEIE_SHADER(Src) "#extension GL_OES_EGL_image_external : require\n" #Src
+#define SHADER(Src) "#version 100\n" #Src
+#define OEIE_SHADER(Src) \
+  "#version 100\n#extension GL_OES_EGL_image_external : require\n" #Src
+
 #define VOID_OFFSET(x) reinterpret_cast<void*>(x)
 
 /* clang-format off */
