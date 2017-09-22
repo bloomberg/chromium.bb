@@ -553,13 +553,31 @@ TEST_F(TetherServiceTest, TestScreenLock) {
       TetherService::TetherFeatureState::SCREEN_LOCKED);
 }
 
-TEST_F(TetherServiceTest, TestFeatureFlagDisabled) {
+TEST_F(TetherServiceTest, TestFeatureFlagDisabled_CommandLineDisabled) {
   EXPECT_FALSE(TetherService::Get(profile_.get()));
 }
 
-TEST_F(TetherServiceTest, TestFeatureFlagEnabled) {
+TEST_F(TetherServiceTest, TestFeatureFlagDisabled_CommandLineEnabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kEnableInstantTethering);
+
+  EXPECT_FALSE(TetherService::Get(profile_.get()));
+}
+
+TEST_F(TetherServiceTest, TestFeatureFlagEnabled_CommandLineDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kInstantTethering);
+
+  TetherService* tether_service = TetherService::Get(profile_.get());
+  ASSERT_FALSE(tether_service);
+}
+
+TEST_F(TetherServiceTest, TestFeatureFlagEnabled_CommandLineEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kInstantTethering);
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kEnableInstantTethering);
 
   TetherService* tether_service = TetherService::Get(profile_.get());
   ASSERT_TRUE(tether_service);

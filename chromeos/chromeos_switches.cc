@@ -284,6 +284,9 @@ const char kEnableFileManagerTouchMode[] = "enable-file-manager-touch-mode";
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 
+// Enables Instant Tethering.
+const char kEnableInstantTethering[] = "enable-instant-tethering";
+
 // Enables action handler apps (e.g. creating new notes) on lock screen.
 const char kDisableLockScreenApps[] = "disable-lock-screen-apps";
 
