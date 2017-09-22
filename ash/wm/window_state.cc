@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/screen_util.h"
 #include "ash/wm/default_state.h"
 #include "ash/wm/window_animations.h"
@@ -114,44 +116,44 @@ void WindowState::SetDelegate(std::unique_ptr<WindowStateDelegate> delegate) {
   delegate_ = std::move(delegate);
 }
 
-WindowStateType WindowState::GetStateType() const {
+mojom::WindowStateType WindowState::GetStateType() const {
   return current_state_->GetType();
 }
 
 bool WindowState::IsMinimized() const {
-  return GetStateType() == WINDOW_STATE_TYPE_MINIMIZED;
+  return GetStateType() == mojom::WindowStateType::MINIMIZED;
 }
 
 bool WindowState::IsMaximized() const {
-  return GetStateType() == WINDOW_STATE_TYPE_MAXIMIZED;
+  return GetStateType() == mojom::WindowStateType::MAXIMIZED;
 }
 
 bool WindowState::IsFullscreen() const {
-  return GetStateType() == WINDOW_STATE_TYPE_FULLSCREEN;
+  return GetStateType() == mojom::WindowStateType::FULLSCREEN;
 }
 
 bool WindowState::IsMaximizedOrFullscreenOrPinned() const {
-  return GetStateType() == WINDOW_STATE_TYPE_MAXIMIZED ||
-         GetStateType() == WINDOW_STATE_TYPE_FULLSCREEN || IsPinned();
+  return GetStateType() == mojom::WindowStateType::MAXIMIZED ||
+         GetStateType() == mojom::WindowStateType::FULLSCREEN || IsPinned();
 }
 
 bool WindowState::IsSnapped() const {
-  return GetStateType() == WINDOW_STATE_TYPE_LEFT_SNAPPED ||
-         GetStateType() == WINDOW_STATE_TYPE_RIGHT_SNAPPED;
+  return GetStateType() == mojom::WindowStateType::LEFT_SNAPPED ||
+         GetStateType() == mojom::WindowStateType::RIGHT_SNAPPED;
 }
 
 bool WindowState::IsPinned() const {
-  return GetStateType() == WINDOW_STATE_TYPE_PINNED ||
-         GetStateType() == WINDOW_STATE_TYPE_TRUSTED_PINNED;
+  return GetStateType() == mojom::WindowStateType::PINNED ||
+         GetStateType() == mojom::WindowStateType::TRUSTED_PINNED;
 }
 
 bool WindowState::IsTrustedPinned() const {
-  return GetStateType() == WINDOW_STATE_TYPE_TRUSTED_PINNED;
+  return GetStateType() == mojom::WindowStateType::TRUSTED_PINNED;
 }
 
 bool WindowState::IsNormalStateType() const {
-  return GetStateType() == WINDOW_STATE_TYPE_NORMAL ||
-         GetStateType() == WINDOW_STATE_TYPE_DEFAULT;
+  return GetStateType() == mojom::WindowStateType::NORMAL ||
+         GetStateType() == mojom::WindowStateType::DEFAULT;
 }
 
 bool WindowState::IsNormalOrSnapped() const {
@@ -393,9 +395,9 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
     return;
   gfx::Rect maximized_bounds =
       ScreenUtil::GetMaximizedWindowBoundsInParent(window_);
-  if (GetStateType() == WINDOW_STATE_TYPE_LEFT_SNAPPED)
+  if (GetStateType() == mojom::WindowStateType::LEFT_SNAPPED)
     bounds->set_x(maximized_bounds.x());
-  else if (GetStateType() == WINDOW_STATE_TYPE_RIGHT_SNAPPED)
+  else if (GetStateType() == mojom::WindowStateType::RIGHT_SNAPPED)
     bounds->set_x(maximized_bounds.right() - bounds->width());
   bounds->set_y(maximized_bounds.y());
   bounds->set_height(maximized_bounds.height());
@@ -409,11 +411,16 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
     window_->SetProperty(aura::client::kShowStateKey, new_window_state);
   }
 
+  if (GetStateType() != window_->GetProperty(kWindowStateTypeKey)) {
+    base::AutoReset<bool> resetter(&ignore_property_change_, true);
+    window_->SetProperty(kWindowStateTypeKey, GetStateType());
+  }
+
   // sync up current window show state with PinType property.
   ash::mojom::WindowPinType pin_type = ash::mojom::WindowPinType::NONE;
-  if (GetStateType() == WINDOW_STATE_TYPE_PINNED)
+  if (GetStateType() == mojom::WindowStateType::PINNED)
     pin_type = ash::mojom::WindowPinType::PINNED;
-  else if (GetStateType() == WINDOW_STATE_TYPE_TRUSTED_PINNED)
+  else if (GetStateType() == mojom::WindowStateType::TRUSTED_PINNED)
     pin_type = ash::mojom::WindowPinType::TRUSTED_PINNED;
   if (pin_type != GetPinType()) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
@@ -422,13 +429,13 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
 }
 
 void WindowState::NotifyPreStateTypeChange(
-    WindowStateType old_window_state_type) {
+    mojom::WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPreWindowStateTypeChange(this, old_window_state_type);
 }
 
 void WindowState::NotifyPostStateTypeChange(
-    WindowStateType old_window_state_type) {
+    mojom::WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPostWindowStateTypeChange(this, old_window_state_type);
 }
@@ -538,6 +545,13 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     if (!ignore_property_change_) {
       WMEvent event(WMEventTypeFromWindowPinType(GetPinType()));
       OnWMEvent(&event);
+    }
+    return;
+  }
+  if (key == kWindowStateTypeKey) {
+    if (!ignore_property_change_) {
+      // This change came from somewhere else. Revert it.
+      window->SetProperty(kWindowStateTypeKey, GetStateType());
     }
     return;
   }

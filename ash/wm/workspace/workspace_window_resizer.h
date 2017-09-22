@@ -151,7 +151,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Returns true if |bounds_in_parent| are valid bounds for snapped state type
   // |snapped_type|.
-  bool AreBoundsValidSnappedBounds(wm::WindowStateType snapped_type,
+  bool AreBoundsValidSnappedBounds(mojom::WindowStateType snapped_type,
                                    const gfx::Rect& bounds_in_parent) const;
 
   wm::WindowState* window_state() { return window_state_; }

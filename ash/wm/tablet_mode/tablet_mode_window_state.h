@@ -42,7 +42,7 @@ class TabletModeWindowState : public wm::WindowState::State {
   void OnWMEvent(wm::WindowState* window_state,
                  const wm::WMEvent* event) override;
 
-  wm::WindowStateType GetType() const override;
+  mojom::WindowStateType GetType() const override;
   void AttachState(wm::WindowState* window_state,
                    wm::WindowState::State* previous_state) override;
   void DetachState(wm::WindowState* window_state) override;
@@ -53,21 +53,21 @@ class TabletModeWindowState : public wm::WindowState::State {
   // change, only the bounds will be changed. If |animate| is set, the bound
   // change get animated.
   void UpdateWindow(wm::WindowState* window_state,
-                    wm::WindowStateType new_state_type,
+                    mojom::WindowStateType new_state_type,
                     bool animate);
 
   // Depending on the capabilities of the window we either return
-  // |WINDOW_STATE_TYPE_MAXIMIZED| or |WINDOW_STATE_TYPE_NORMAL|.
-  wm::WindowStateType GetMaximizedOrCenteredWindowType(
+  // |WindowStateType::MAXIMIZED| or |WindowStateType::NORMAL|.
+  mojom::WindowStateType GetMaximizedOrCenteredWindowType(
       wm::WindowState* window_state);
 
   // If |target_state| is LEFT/RIGHT_SNAPPED and the window can be snapped,
   // returns |target_state|. Otherwise depending on the capabilities of the
-  // window either returns |WINDOW_STATE_TYPE_MAXIMIZED| or
-  // |WINDOW_STATE_TYPE_NORMAL|.
-  wm::WindowStateType GetSnappedWindowStateType(
+  // window either returns |WindowStateType::MAXIMIZED| or
+  // |WindowStateType::NORMAL|.
+  mojom::WindowStateType GetSnappedWindowStateType(
       wm::WindowState* window_state,
-      wm::WindowStateType target_state);
+      mojom::WindowStateType target_state);
 
   // Updates the bounds to the maximum possible bounds according to the current
   // window state. If |animated| is set we animate the change.
@@ -84,7 +84,7 @@ class TabletModeWindowState : public wm::WindowState::State {
 
   // The current state type. Due to the nature of this state, this can only be
   // WM_STATE_TYPE{NORMAL, MINIMIZED, MAXIMIZED}.
-  wm::WindowStateType current_state_type_;
+  mojom::WindowStateType current_state_type_;
 
   // If true, do not update bounds.
   bool defer_bounds_updates_;

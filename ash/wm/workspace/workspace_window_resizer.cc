@@ -424,7 +424,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
       if (details().window_component == HTCAPTION ||
           !AreBoundsValidSnappedBounds(window_state()->GetStateType(),
                                        GetTarget()->bounds())) {
-        // Set the window to WINDOW_STATE_TYPE_NORMAL but keep the
+        // Set the window to WindowStateType::NORMAL but keep the
         // window at the bounds that the user has moved/resized the
         // window to.
         window_state()->SaveCurrentBoundsForRestore();
@@ -956,13 +956,13 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
 }
 
 bool WorkspaceWindowResizer::AreBoundsValidSnappedBounds(
-    wm::WindowStateType snapped_type,
+    mojom::WindowStateType snapped_type,
     const gfx::Rect& bounds_in_parent) const {
-  DCHECK(snapped_type == wm::WINDOW_STATE_TYPE_LEFT_SNAPPED ||
-         snapped_type == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED);
+  DCHECK(snapped_type == mojom::WindowStateType::LEFT_SNAPPED ||
+         snapped_type == mojom::WindowStateType::RIGHT_SNAPPED);
   gfx::Rect snapped_bounds =
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(GetTarget());
-  if (snapped_type == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED)
+  if (snapped_type == mojom::WindowStateType::RIGHT_SNAPPED)
     snapped_bounds.set_x(snapped_bounds.right() - bounds_in_parent.width());
   snapped_bounds.set_width(bounds_in_parent.width());
   return bounds_in_parent == snapped_bounds;

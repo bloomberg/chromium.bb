@@ -20,6 +20,7 @@ namespace ash {
 
 namespace mojom {
 enum class WindowPinType;
+enum class WindowStateType;
 }
 
 // Shell-specific window property keys for use by ash and its clients.
@@ -42,6 +43,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
 // mode and Alt + Tab.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kShowInOverviewKey;
+
+// A property key to indicate ash's extended window state.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    mojom::WindowStateType>* const kWindowStateTypeKey;
 
 // A property key to store ash::WindowPinType for a window.
 // When setting this property to PINNED or TRUSTED_PINNED, the window manager

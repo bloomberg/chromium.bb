@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
@@ -43,28 +44,27 @@ ActiveWindowStateType GetActiveWindowState() {
   wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
   if (active_window_state) {
     switch (active_window_state->GetStateType()) {
-      case wm::WINDOW_STATE_TYPE_MAXIMIZED:
+      case mojom::WindowStateType::MAXIMIZED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_MAXIMIZED;
         break;
-      case wm::WINDOW_STATE_TYPE_FULLSCREEN:
+      case mojom::WindowStateType::FULLSCREEN:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_FULLSCREEN;
         break;
-      case wm::WINDOW_STATE_TYPE_LEFT_SNAPPED:
-      case wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED:
+      case mojom::WindowStateType::LEFT_SNAPPED:
+      case mojom::WindowStateType::RIGHT_SNAPPED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_SNAPPED;
         break;
-      case wm::WINDOW_STATE_TYPE_PINNED:
+      case mojom::WindowStateType::PINNED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_PINNED;
         break;
-      case wm::WINDOW_STATE_TYPE_TRUSTED_PINNED:
+      case mojom::WindowStateType::TRUSTED_PINNED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_TRUSTED_PINNED;
         break;
-      case wm::WINDOW_STATE_TYPE_DEFAULT:
-      case wm::WINDOW_STATE_TYPE_NORMAL:
-      case wm::WINDOW_STATE_TYPE_MINIMIZED:
-      case wm::WINDOW_STATE_TYPE_INACTIVE:
-      case wm::WINDOW_STATE_TYPE_END:
-      case wm::WINDOW_STATE_TYPE_AUTO_POSITIONED:
+      case mojom::WindowStateType::DEFAULT:
+      case mojom::WindowStateType::NORMAL:
+      case mojom::WindowStateType::MINIMIZED:
+      case mojom::WindowStateType::INACTIVE:
+      case mojom::WindowStateType::AUTO_POSITIONED:
         // TODO: We probably want to recorde PINNED state.
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_OTHER;
         break;

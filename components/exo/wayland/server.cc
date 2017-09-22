@@ -36,6 +36,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
@@ -1188,7 +1189,7 @@ void HandleShellSurfaceCloseCallback(wl_resource* resource) {
 uint32_t HandleShellSurfaceConfigureCallback(
     wl_resource* resource,
     const gfx::Size& size,
-    ash::wm::WindowStateType state_type,
+    ash::mojom::WindowStateType state_type,
     bool resizing,
     bool activated,
     const gfx::Vector2d& origin_offset) {
@@ -1719,15 +1720,15 @@ uint32_t HandleXdgToplevelV6ConfigureCallback(
     wl_resource* resource,
     wl_resource* surface_resource,
     const gfx::Size& size,
-    ash::wm::WindowStateType state_type,
+    ash::mojom::WindowStateType state_type,
     bool resizing,
     bool activated,
     const gfx::Vector2d& origin_offset) {
   wl_array states;
   wl_array_init(&states);
-  if (state_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED)
+  if (state_type == ash::mojom::WindowStateType::MAXIMIZED)
     AddXdgToplevelV6State(&states, ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED);
-  if (state_type == ash::wm::WINDOW_STATE_TYPE_FULLSCREEN)
+  if (state_type == ash::mojom::WindowStateType::FULLSCREEN)
     AddXdgToplevelV6State(&states, ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN);
   if (resizing)
     AddXdgToplevelV6State(&states, ZXDG_TOPLEVEL_V6_STATE_RESIZING);
@@ -1857,15 +1858,15 @@ void AddXdgSurfaceV5State(wl_array* states, xdg_surface_state state) {
 uint32_t HandleXdgSurfaceV5ConfigureCallback(
     wl_resource* resource,
     const gfx::Size& size,
-    ash::wm::WindowStateType state_type,
+    ash::mojom::WindowStateType state_type,
     bool resizing,
     bool activated,
     const gfx::Vector2d& origin_offset) {
   wl_array states;
   wl_array_init(&states);
-  if (state_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED)
+  if (state_type == ash::mojom::WindowStateType::MAXIMIZED)
     AddXdgSurfaceV5State(&states, XDG_SURFACE_STATE_MAXIMIZED);
-  if (state_type == ash::wm::WINDOW_STATE_TYPE_FULLSCREEN)
+  if (state_type == ash::mojom::WindowStateType::FULLSCREEN)
     AddXdgSurfaceV5State(&states, XDG_SURFACE_STATE_FULLSCREEN);
   if (resizing)
     AddXdgSurfaceV5State(&states, XDG_SURFACE_STATE_RESIZING);
@@ -2496,25 +2497,25 @@ void HandleRemoteSurfaceCloseCallback(wl_resource* resource) {
 
 void HandleRemoteSurfaceStateChangedCallback(
     wl_resource* resource,
-    ash::wm::WindowStateType old_state_type,
-    ash::wm::WindowStateType new_state_type) {
+    ash::mojom::WindowStateType old_state_type,
+    ash::mojom::WindowStateType new_state_type) {
   DCHECK_NE(old_state_type, new_state_type);
 
   uint32_t state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_NORMAL;
   switch (new_state_type) {
-    case ash::wm::WINDOW_STATE_TYPE_MINIMIZED:
+    case ash::mojom::WindowStateType::MINIMIZED:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_MINIMIZED;
       break;
-    case ash::wm::WINDOW_STATE_TYPE_MAXIMIZED:
+    case ash::mojom::WindowStateType::MAXIMIZED:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_MAXIMIZED;
       break;
-    case ash::wm::WINDOW_STATE_TYPE_FULLSCREEN:
+    case ash::mojom::WindowStateType::FULLSCREEN:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_FULLSCREEN;
       break;
-    case ash::wm::WINDOW_STATE_TYPE_PINNED:
+    case ash::mojom::WindowStateType::PINNED:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_PINNED;
       break;
-    case ash::wm::WINDOW_STATE_TYPE_TRUSTED_PINNED:
+    case ash::mojom::WindowStateType::TRUSTED_PINNED:
       state_type = ZCR_REMOTE_SHELL_V1_STATE_TYPE_TRUSTED_PINNED;
       break;
     default:
@@ -2528,7 +2529,7 @@ void HandleRemoteSurfaceStateChangedCallback(
 uint32_t HandleRemoteSurfaceConfigureCallback(
     wl_resource* resource,
     const gfx::Size& size,
-    ash::wm::WindowStateType state_type,
+    ash::mojom::WindowStateType state_type,
     bool resizing,
     bool activated,
     const gfx::Vector2d& origin_offset) {

@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_resizer.h"
@@ -1029,15 +1030,15 @@ gfx::Size ShellSurface::GetMinimumSize() const {
 
 void ShellSurface::OnPreWindowStateTypeChange(
     ash::wm::WindowState* window_state,
-    ash::wm::WindowStateType old_type) {
-  ash::wm::WindowStateType new_type = window_state->GetStateType();
-  if (old_type == ash::wm::WINDOW_STATE_TYPE_MINIMIZED ||
-      new_type == ash::wm::WINDOW_STATE_TYPE_MINIMIZED) {
+    ash::mojom::WindowStateType old_type) {
+  ash::mojom::WindowStateType new_type = window_state->GetStateType();
+  if (old_type == ash::mojom::WindowStateType::MINIMIZED ||
+      new_type == ash::mojom::WindowStateType::MINIMIZED) {
     return;
   }
 
-  if (ash::wm::IsMaximizedOrFullscreenOrPinnedWindowStateType(old_type) ||
-      ash::wm::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
+  if (ash::IsMaximizedOrFullscreenOrPinnedWindowStateType(old_type) ||
+      ash::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
     // When transitioning in/out of maximized or fullscreen mode we need to
     // make sure we have a configure callback before we allow the default
     // cross-fade animations. The configure callback provides a mechanism for
@@ -1061,10 +1062,9 @@ void ShellSurface::OnPreWindowStateTypeChange(
 
 void ShellSurface::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
-    ash::wm::WindowStateType old_type) {
-  ash::wm::WindowStateType new_type = window_state->GetStateType();
-  if (ash::wm::IsMaximizedOrFullscreenOrPinnedWindowStateType(old_type) ||
-      ash::wm::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
+    ash::mojom::WindowStateType old_type) {
+  ash::mojom::WindowStateType new_type = window_state->GetStateType();
+  if (ash::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
     Configure();
   }
 
@@ -1415,9 +1415,9 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   window_state->set_allow_set_bounds_direct(bounds_mode_ == BoundsMode::CLIENT);
 
   // Notify client of initial state if different than normal.
-  if (window_state->GetStateType() != ash::wm::WINDOW_STATE_TYPE_NORMAL &&
+  if (window_state->GetStateType() != ash::mojom::WindowStateType::NORMAL &&
       !state_changed_callback_.is_null()) {
-    state_changed_callback_.Run(ash::wm::WINDOW_STATE_TYPE_NORMAL,
+    state_changed_callback_.Run(ash::mojom::WindowStateType::NORMAL,
                                 window_state->GetStateType());
   }
 
@@ -1477,8 +1477,8 @@ void ShellSurface::Configure() {
           IsResizing(), widget_->IsActive(), origin_offset);
     } else {
       serial = configure_callback_.Run(gfx::Size(),
-                                       ash::wm::WINDOW_STATE_TYPE_NORMAL, false,
-                                       false, origin_offset);
+                                       ash::mojom::WindowStateType::NORMAL,
+                                       false, false, origin_offset);
     }
   }
 
