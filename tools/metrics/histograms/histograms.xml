@@ -88600,6 +88600,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout"
+    enum="AddToHomescreenTimeoutStatus">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records whether or not the check that a site is or isn't a Progressive Web
+    App (PWA) completes before the add to homescreen dialog on Android forcibly
+    times out and falls back to generating an icon.
+  </summary>
+</histogram>
+
 <histogram name="Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen"
     enum="InstallabilityCheckStatus">
   <owner>dominickn@chromium.org</owner>
