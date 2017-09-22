@@ -15,8 +15,6 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_proxy.h"
-#include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -65,6 +63,7 @@ MediaRouterMojoImpl::MediaSinksQuery::~MediaSinksQuery() = default;
 MediaRouterMojoImpl::MediaRouterMojoImpl(content::BrowserContext* context)
     : instance_id_(base::GenerateGUID()),
       availability_(mojom::MediaRouter::SinkAvailability::UNAVAILABLE),
+      binding_(this),
       context_(context),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -72,16 +71,11 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(content::BrowserContext* context)
 
 MediaRouterMojoImpl::~MediaRouterMojoImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (dial_media_sink_service_proxy_) {
-    dial_media_sink_service_proxy_->Stop();
-    dial_media_sink_service_proxy_->ClearObserver(
-        cast_media_sink_service_.get());
-  }
-  if (cast_media_sink_service_)
-    cast_media_sink_service_->Stop();
 }
 
-void MediaRouterMojoImpl::OnConnectionError() {}
+void MediaRouterMojoImpl::OnConnectionError() {
+  binding_.Close();
+}
 
 void MediaRouterMojoImpl::RegisterMediaRouteProvider(
     mojom::MediaRouteProviderPtr media_route_provider_ptr,
@@ -284,11 +278,7 @@ void MediaRouterMojoImpl::SendRouteBinaryMessage(
                                                 std::move(callback));
 }
 
-void MediaRouterMojoImpl::OnUserGesture() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (cast_media_sink_service_)
-    cast_media_sink_service_->ForceDiscovery();
-}
+void MediaRouterMojoImpl::OnUserGesture() {}
 
 void MediaRouterMojoImpl::SearchSinks(
     const MediaSink::Id& sink_id,
@@ -606,37 +596,6 @@ void MediaRouterMojoImpl::SyncStateToMediaRouteProvider() {
   // Route messages.
   for (const auto& it : message_observers_)
     media_route_provider_->StartListeningForRouteMessages(it.first);
-
-  StartDiscovery();
-}
-
-void MediaRouterMojoImpl::StartDiscovery() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG_WITH_INSTANCE(1) << "StartDiscovery";
-
-  if (media_router::CastDiscoveryEnabled()) {
-    if (!cast_media_sink_service_) {
-      cast_media_sink_service_ = new CastMediaSinkService(
-          base::Bind(&MediaRouterMojoImpl::ProvideSinks,
-                     weak_factory_.GetWeakPtr(), "cast"),
-          context_,
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO));
-    }
-    cast_media_sink_service_->Start();
-  }
-
-  if (media_router::DialLocalDiscoveryEnabled()) {
-    if (!dial_media_sink_service_proxy_) {
-      dial_media_sink_service_proxy_ = new DialMediaSinkServiceProxy(
-          base::Bind(&MediaRouterMojoImpl::ProvideSinks,
-                     weak_factory_.GetWeakPtr(), "dial"),
-          context_);
-      dial_media_sink_service_proxy_->SetObserver(
-          cast_media_sink_service_.get());
-    }
-    dial_media_sink_service_proxy_->Start();
-  }
 }
 
 void MediaRouterMojoImpl::UpdateMediaSinks(
@@ -663,6 +622,13 @@ void MediaRouterMojoImpl::OnMediaControllerCreated(
   DVLOG_WITH_INSTANCE(1) << "OnMediaControllerCreated: " << route_id
                          << (success ? " was successful." : " failed.");
   MediaRouterMojoMetrics::RecordMediaRouteControllerCreationResult(success);
+}
+
+void MediaRouterMojoImpl::BindToMojoRequest(
+    mojo::InterfaceRequest<mojom::MediaRouter> request) {
+  binding_.Bind(std::move(request));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &MediaRouterMojoImpl::OnConnectionError, base::Unretained(this)));
 }
 
 void MediaRouterMojoImpl::OnMediaRemoterCreated(

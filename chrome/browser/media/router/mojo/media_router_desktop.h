@@ -18,7 +18,8 @@ class Extension;
 }
 
 namespace media_router {
-class EventPageRequestManager;
+class CastMediaSinkService;
+class DialMediaSinkServiceProxy;
 
 // MediaRouter implementation that uses the MediaRouteProvider implemented in
 // the component extension.
@@ -86,6 +87,9 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   void BindToMojoRequest(mojo::InterfaceRequest<mojom::MediaRouter> request,
                          const extensions::Extension& extension);
 
+  // Starts browser side sink discovery.
+  void StartDiscovery();
+
 #if defined(OS_WIN)
   // Ensures that mDNS discovery is enabled in the MRPM extension. This can be
   // called many times but the MRPM will only be called once per registration
@@ -98,19 +102,15 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   void OnFirewallCheckComplete(bool firewall_can_use_local_ports);
 #endif
 
-  // Request manager responsible for waking the component extension and calling
-  // the requests to it.
-  // TODO(takumif): Remove this. Delegate calls to |extension_provider_|
-  // instead.
-  EventPageRequestManager* const request_manager_;
-
   // MediaRouteProvider proxy that forwards calls to the MRPM in the component
   // extension.
   ExtensionMediaRouteProviderProxy extension_provider_;
 
-  // Binds |this| to a Mojo connection stub for mojom::MediaRouter.
-  // TODO(takumif): Move this to MediaRouterMojoImpl.
-  mojo::Binding<mojom::MediaRouter> binding_;
+  // Media sink service for DIAL devices.
+  scoped_refptr<DialMediaSinkServiceProxy> dial_media_sink_service_proxy_;
+
+  // Media sink service for CAST devices.
+  scoped_refptr<CastMediaSinkService> cast_media_sink_service_;
 
   // A flag to ensure that we record the provider version once, during the
   // initial event page wakeup attempt.

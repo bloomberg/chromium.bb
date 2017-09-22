@@ -37,8 +37,6 @@ class BrowserContext;
 namespace media_router {
 
 enum class MediaRouteProviderWakeReason;
-class CastMediaSinkService;
-class DialMediaSinkServiceProxy;
 
 // MediaRouter implementation that delegates calls to a MediaRouteProvider.
 class MediaRouterMojoImpl : public MediaRouterBase,
@@ -120,6 +118,11 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // Callback called by MRP's CreateMediaRouteController().
   void OnMediaControllerCreated(const MediaRoute::Id& route_id, bool success);
+
+  // Binds |this| to a Mojo interface request.
+  void BindToMojoRequest(mojo::InterfaceRequest<mojom::MediaRouter> request);
+
+  content::BrowserContext* context() const { return context_; }
 
   // Mojo proxy object for the Media Route Provider Manager.
   // Set to null initially, and later set to the Provider Manager proxy object
@@ -268,9 +271,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                              const base::Optional<std::string>& error_text,
                              RouteRequestResult::ResultCode result_code);
 
-  // Start browser side sink discovery.
-  void StartDiscovery();
-
   // Invalidates and removes controllers from |route_controllers_| whose media
   // routes do not appear in |routes|.
   void RemoveInvalidRouteControllers(const std::vector<MediaRoute>& routes);
@@ -293,13 +293,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // The last reported sink availability from the media route provider manager.
   mojom::MediaRouter::SinkAvailability availability_;
 
-  // Media sink service for DIAL devices.
-  // TODO(takumif): Move this to MediaRouterDesktop.
-  scoped_refptr<DialMediaSinkServiceProxy> dial_media_sink_service_proxy_;
-
-  // Media sink service for CAST devices.
-  // TODO(takumif): Move this to MediaRouterDesktop.
-  scoped_refptr<CastMediaSinkService> cast_media_sink_service_;
+  // Binds |this| to a Mojo connection stub for mojom::MediaRouter.
+  mojo::Binding<mojom::MediaRouter> binding_;
 
   content::BrowserContext* const context_;
 
