@@ -37,7 +37,7 @@ class ServiceWorkerResponseWriter;
 // for comments about this.
 class CONTENT_EXPORT ServiceWorkerCacheWriter {
  public:
-  using OnWriteCompleteCallback = base::Callback<void(net::Error)>;
+  using OnWriteCompleteCallback = base::OnceCallback<void(net::Error)>;
 
   // The |compare_reader| may be null, in which case this instance will
   // unconditionally write back data supplied to |MaybeWriteHeaders| and
@@ -57,7 +57,7 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   // equivalent to the existing cached data. See the source of this function for
   // details about how this function drives the state machine.
   net::Error MaybeWriteHeaders(HttpResponseInfoIOBuffer* headers,
-                               const OnWriteCompleteCallback& callback);
+                               OnWriteCompleteCallback callback);
 
   // Writes the supplied body data |data| back to the cache. Returns
   // ERR_IO_PENDING if the write will complete asynchronously, in which case
@@ -68,7 +68,7 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   // function for details about how this function drives the state machine.
   net::Error MaybeWriteData(net::IOBuffer* buf,
                             size_t buf_size,
-                            const OnWriteCompleteCallback& callback);
+                            OnWriteCompleteCallback callback);
 
   // Returns a count of bytes written back to the cache.
   size_t bytes_written() const { return bytes_written_; }

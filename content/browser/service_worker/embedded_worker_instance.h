@@ -54,7 +54,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     : public mojom::EmbeddedWorkerInstanceHost {
  public:
   class DevToolsProxy;
-  typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
+  using StatusCallback = base::OnceCallback<void(ServiceWorkerStatusCode)>;
 
   // This enum is used in UMA histograms. Append-only.
   enum StartingPhase {
@@ -137,7 +137,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
              ProviderInfoGetter provider_info_getter,
              mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
              mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
-             const StatusCallback& callback);
+             StatusCallback callback);
 
   // Stops the worker. It is invalid to call this when the worker is not in
   // STARTING or RUNNING status.
@@ -291,8 +291,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Called back from StartTask when the startup sequence failed. Calls
   // ReleaseProcess() and invokes |callback| with |status|. May destroy |this|.
-  void OnStartFailed(const StatusCallback& callback,
-                     ServiceWorkerStatusCode status);
+  void OnStartFailed(StatusCallback callback, ServiceWorkerStatusCode status);
 
   // Returns the time elapsed since |step_time_| and updates |step_time_|
   // to the current time.

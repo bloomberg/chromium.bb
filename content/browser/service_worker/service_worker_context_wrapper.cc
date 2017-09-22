@@ -65,7 +65,7 @@ void StartActiveWorkerOnIO(
     // |registration| is 1, it will be deleted after WorkerStarted is called.
     registration->active_version()->StartWorker(
         ServiceWorkerMetrics::EventType::UNKNOWN,
-        base::Bind(WorkerStarted, callback));
+        base::BindOnce(WorkerStarted, callback));
     return;
   }
   BrowserThread::PostTask(
@@ -113,7 +113,7 @@ void FoundReadyRegistrationForStartActiveWorker(
         ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST,
         base::BindOnce(&DidStartWorker, active_version,
                        std::move(info_callback)),
-        base::Bind(&DidFailStartWorker, base::Passed(&failure_callback)));
+        base::BindOnce(&DidFailStartWorker, std::move(failure_callback)));
   } else {
     std::move(failure_callback).Run();
   }
@@ -1012,7 +1012,7 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForNavigationHint(
 
   registration->active_version()->StartWorker(
       ServiceWorkerMetrics::EventType::NAVIGATION_HINT,
-      base::Bind(
+      base::BindOnce(
           &ServiceWorkerContextWrapper::DidStartServiceWorkerForNavigationHint,
           this, registration->pattern(), base::Passed(std::move(callback))));
 }

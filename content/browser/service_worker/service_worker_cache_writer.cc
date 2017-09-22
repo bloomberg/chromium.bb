@@ -131,11 +131,11 @@ ServiceWorkerCacheWriter::~ServiceWorkerCacheWriter() {}
 
 net::Error ServiceWorkerCacheWriter::MaybeWriteHeaders(
     HttpResponseInfoIOBuffer* headers,
-    const OnWriteCompleteCallback& callback) {
+    OnWriteCompleteCallback callback) {
   DCHECK(!io_pending_);
 
   headers_to_write_ = headers;
-  pending_callback_ = callback;
+  pending_callback_ = std::move(callback);
   DCHECK_EQ(state_, STATE_START);
   int result = DoLoop(net::OK);
 
@@ -159,12 +159,12 @@ net::Error ServiceWorkerCacheWriter::MaybeWriteHeaders(
 net::Error ServiceWorkerCacheWriter::MaybeWriteData(
     net::IOBuffer* buf,
     size_t buf_size,
-    const OnWriteCompleteCallback& callback) {
+    OnWriteCompleteCallback callback) {
   DCHECK(!io_pending_);
 
   data_to_write_ = buf;
   len_to_write_ = buf_size;
-  pending_callback_ = callback;
+  pending_callback_ = std::move(callback);
 
   if (comparing_)
     state_ = STATE_READ_DATA_FOR_COMPARE;
@@ -493,11 +493,11 @@ void ServiceWorkerCacheWriter::AsyncDoLoop(int result) {
   // If the result is ERR_IO_PENDING, the pending callback will be run by a
   // later invocation of AsyncDoLoop.
   if (result != net::ERR_IO_PENDING) {
-    OnWriteCompleteCallback callback = pending_callback_;
+    OnWriteCompleteCallback callback = std::move(pending_callback_);
     pending_callback_.Reset();
     net::Error error = result >= 0 ? net::OK : static_cast<net::Error>(result);
     io_pending_ = false;
-    callback.Run(error);
+    std::move(callback).Run(error);
   }
 }
 

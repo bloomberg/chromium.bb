@@ -199,8 +199,8 @@ void BackgroundFetchEventDispatcher::StartActiveWorkerForDispatch(
       base::BindOnce(&BackgroundFetchEventDispatcher::DispatchEvent, event,
                      finished_closure, loaded_callback,
                      make_scoped_refptr(service_worker_version)),
-      base::Bind(&BackgroundFetchEventDispatcher::DidDispatchEvent, event,
-                 finished_closure, DispatchPhase::STARTING));
+      base::BindOnce(&BackgroundFetchEventDispatcher::DidDispatchEvent, event,
+                     finished_closure, DispatchPhase::STARTING));
 }
 
 void BackgroundFetchEventDispatcher::DispatchEvent(
@@ -210,8 +210,8 @@ void BackgroundFetchEventDispatcher::DispatchEvent(
     scoped_refptr<ServiceWorkerVersion> service_worker_version) {
   int request_id = service_worker_version->StartRequest(
       event,
-      base::Bind(&BackgroundFetchEventDispatcher::DidDispatchEvent, event,
-                 std::move(finished_closure), DispatchPhase::DISPATCHING));
+      base::BindOnce(&BackgroundFetchEventDispatcher::DidDispatchEvent, event,
+                     std::move(finished_closure), DispatchPhase::DISPATCHING));
 
   loaded_callback.Run(std::move(service_worker_version), request_id);
 }

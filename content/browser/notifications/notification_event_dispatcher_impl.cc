@@ -208,7 +208,7 @@ void DispatchNotificationClickEventOnWorker(
     const NotificationDatabaseData& notification_database_data,
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply,
-    const ServiceWorkerVersion::StatusCallback& callback) {
+    const ServiceWorkerVersion::LegacyStatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int request_id = service_worker->StartRequest(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK, callback);
@@ -231,7 +231,7 @@ void DoDispatchNotificationClickEvent(
     const scoped_refptr<PlatformNotificationContext>& notification_context,
     const ServiceWorkerRegistration* service_worker_registration,
     const NotificationDatabaseData& notification_database_data) {
-  ServiceWorkerVersion::StatusCallback status_callback = base::Bind(
+  ServiceWorkerVersion::LegacyStatusCallback status_callback = base::Bind(
       &ServiceWorkerNotificationEventFinished, dispatch_complete_callback);
   service_worker_registration->active_version()->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK,
@@ -280,7 +280,7 @@ void DeleteNotificationDataFromDatabase(
 void DispatchNotificationCloseEventOnWorker(
     const scoped_refptr<ServiceWorkerVersion>& service_worker,
     const NotificationDatabaseData& notification_database_data,
-    const ServiceWorkerVersion::StatusCallback& callback) {
+    const ServiceWorkerVersion::LegacyStatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int request_id = service_worker->StartRequest(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLOSE, callback);
@@ -300,7 +300,7 @@ void DoDispatchNotificationCloseEvent(
     const scoped_refptr<PlatformNotificationContext>& notification_context,
     const ServiceWorkerRegistration* service_worker_registration,
     const NotificationDatabaseData& notification_database_data) {
-  const ServiceWorkerVersion::StatusCallback dispatch_event_callback =
+  const ServiceWorkerVersion::LegacyStatusCallback dispatch_event_callback =
       base::Bind(&DeleteNotificationDataFromDatabase, notification_id,
                  notification_database_data.origin, notification_context,
                  dispatch_complete_callback);

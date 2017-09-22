@@ -552,7 +552,7 @@ TEST_F(ServiceWorkerURLRequestJobTest,
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   base::HistogramTester histogram_tester;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        base::Bind(&SaveStatusCallback, &status));
+                        base::BindOnce(&SaveStatusCallback, &status));
   base::RunLoop().RunUntilIdle();
   helper->CompleteStartWorker();
   base::RunLoop().RunUntilIdle();

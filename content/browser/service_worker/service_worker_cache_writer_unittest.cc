@@ -375,8 +375,8 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
   }
 
   ServiceWorkerCacheWriter::OnWriteCompleteCallback CreateWriteCallback() {
-    return base::Bind(&ServiceWorkerCacheWriterTest::OnWriteComplete,
-                      base::Unretained(this));
+    return base::BindOnce(&ServiceWorkerCacheWriterTest::OnWriteComplete,
+                          base::Unretained(this));
   }
 
   void OnWriteComplete(net::Error error) {

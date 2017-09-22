@@ -484,8 +484,8 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
       GetEventType(),
       base::BindOnce(&ServiceWorkerFetchDispatcher::DidStartWorker,
                      weak_factory_.GetWeakPtr()),
-      base::Bind(&ServiceWorkerFetchDispatcher::DidFailToStartWorker,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceWorkerFetchDispatcher::DidFailToStartWorker,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerFetchDispatcher::DidStartWorker() {
@@ -519,23 +519,23 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   if (timeout_) {
     fetch_event_id = version_->StartRequestWithCustomTimeout(
         GetEventType(),
-        base::Bind(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
-                   weak_factory_.GetWeakPtr(),
-                   base::Passed(&response_callback)),
+        base::BindOnce(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
+                       weak_factory_.GetWeakPtr(),
+                       std::move(response_callback)),
         *timeout_, ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
     event_finish_id = version_->StartRequestWithCustomTimeout(
         FetchTypeToWaitUntilEventType(request_->fetch_type),
-        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback), *timeout_,
+        base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback), *timeout_,
         ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
   } else {
     fetch_event_id = version_->StartRequest(
         GetEventType(),
-        base::Bind(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
-                   weak_factory_.GetWeakPtr(),
-                   base::Passed(&response_callback)));
+        base::BindOnce(&ServiceWorkerFetchDispatcher::DidFailToDispatch,
+                       weak_factory_.GetWeakPtr(),
+                       std::move(response_callback)));
     event_finish_id = version_->StartRequest(
         FetchTypeToWaitUntilEventType(request_->fetch_type),
-        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+        base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   }
 
   response_callback_rawptr->set_fetch_event_id(fetch_event_id);

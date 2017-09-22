@@ -445,8 +445,8 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
       ServiceWorkerMetrics::EventType::INSTALL,
       base::BindOnce(&ServiceWorkerRegisterJob::DispatchInstallEvent,
                      weak_factory_.GetWeakPtr()),
-      base::Bind(&ServiceWorkerRegisterJob::OnInstallFailed,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceWorkerRegisterJob::OnInstallFailed,
+                     weak_factory_.GetWeakPtr()));
 
   // A subsequent registration job may terminate our installing worker. It can
   // only do so after we've started the worker and dispatched the install

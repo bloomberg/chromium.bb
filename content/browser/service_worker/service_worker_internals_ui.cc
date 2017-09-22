@@ -492,9 +492,9 @@ void ServiceWorkerInternalsUI::StopWorker(const ListValue* args) {
     return;
   }
 
-  base::Callback<void(ServiceWorkerStatusCode)> callback =
+  base::OnceCallback<void(ServiceWorkerStatusCode)> callback =
       base::Bind(OperationCompleteCallback, AsWeakPtr(), callback_id);
-  StopWorkerWithId(context, version_id, callback);
+  StopWorkerWithId(context, version_id, std::move(callback));
 }
 
 void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
@@ -566,47 +566,50 @@ void ServiceWorkerInternalsUI::StartWorker(const ListValue* args) {
 void ServiceWorkerInternalsUI::StopWorkerWithId(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     int64_t version_id,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ServiceWorkerInternalsUI::StopWorkerWithId,
-                       base::Unretained(this), context, version_id, callback));
+                       base::Unretained(this), context, version_id,
+                       std::move(callback)));
     return;
   }
 
   scoped_refptr<ServiceWorkerVersion> version =
       context->GetLiveVersion(version_id);
   if (!version.get()) {
-    callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND);
+    std::move(callback).Run(SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
   }
 
   // ServiceWorkerVersion::StopWorker() takes a base::OnceClosure for argument,
   // so bind SERVICE_WORKER_OK to callback here.
-  version->StopWorker(base::BindOnce(callback, SERVICE_WORKER_OK));
+  version->StopWorker(base::BindOnce(std::move(callback), SERVICE_WORKER_OK));
 }
 
 void ServiceWorkerInternalsUI::UnregisterWithScope(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     const GURL& scope,
-    const ServiceWorkerInternalsUI::StatusCallback& callback) const {
+    ServiceWorkerInternalsUI::StatusCallback callback) const {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ServiceWorkerInternalsUI::UnregisterWithScope,
-                       base::Unretained(this), context, scope, callback));
+                       base::Unretained(this), context, scope,
+                       std::move(callback)));
     return;
   }
 
   if (!context->context()) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    std::move(callback).Run(SERVICE_WORKER_ERROR_ABORT);
     return;
   }
 
   // ServiceWorkerContextWrapper::UnregisterServiceWorker doesn't work here
   // because that reduces a status code to boolean.
-  context->context()->UnregisterServiceWorker(scope, callback);
+  context->context()->UnregisterServiceWorker(
+      scope, base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
 }  // namespace content

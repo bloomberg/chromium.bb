@@ -143,11 +143,11 @@ void BrowserSideControllerServiceWorker::DispatchFetchEvent(
       base::BindOnce(
           &BrowserSideControllerServiceWorker::DispatchFetchEventInternal,
           weak_factory_.GetWeakPtr(), internal_fetch_event_id, request,
-          base::Passed(&response_callback)),
-      base::Bind(
+          std::move(response_callback)),
+      base::BindOnce(
           &BrowserSideControllerServiceWorker::DidFailToStartWorker,
           weak_factory_.GetWeakPtr(),
-          base::Bind(
+          base::BindOnce(
               &BrowserSideControllerServiceWorker::DidFailToDispatchFetch,
               weak_factory_.GetWeakPtr(), internal_fetch_event_id, nullptr)));
 }
@@ -165,14 +165,15 @@ void BrowserSideControllerServiceWorker::DispatchFetchEventInternal(
   // TODO(kinuko): No timeout support for now; support timeout.
   int fetch_event_id = receiver_version_->StartRequest(
       ServiceWorkerMetrics::EventType::FETCH_SUB_RESOURCE,
-      base::Bind(&BrowserSideControllerServiceWorker::DidFailToDispatchFetch,
-                 weak_factory_.GetWeakPtr(), internal_fetch_event_id,
-                 base::Passed(&response_callback)));
+      base::BindOnce(
+          &BrowserSideControllerServiceWorker::DidFailToDispatchFetch,
+          weak_factory_.GetWeakPtr(), internal_fetch_event_id,
+          std::move(response_callback)));
   int event_finish_id = receiver_version_->StartRequest(
       ServiceWorkerMetrics::EventType::FETCH_WAITUNTIL,
       // NoOp as the same error callback should be handled by the other
       // StartRequest above.
-      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
 
   response_callback_rawptr->set_fetch_event_id(fetch_event_id);
 
@@ -185,7 +186,7 @@ void BrowserSideControllerServiceWorker::DispatchFetchEventInternal(
 }
 
 void BrowserSideControllerServiceWorker::DidFailToStartWorker(
-    const StatusCallback& callback,
+    StatusCallback callback,
     ServiceWorkerStatusCode status) {
   // TODO(kinuko): Should log the failures.
   DCHECK_NE(SERVICE_WORKER_OK, status);
