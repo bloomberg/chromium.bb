@@ -26,6 +26,7 @@ import android.graphics.drawable.TransitionDrawable;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Property;
 import android.util.TypedValue;
@@ -187,6 +188,10 @@ public class ToolbarPhone extends ToolbarLayout
     @ViewDebug.ExportedProperty(category = "chrome")
     protected float mUrlExpansionPercent;
     private AnimatorSet mUrlFocusLayoutAnimator;
+
+    private CharSequence mUrlTextPreFocus;
+    private int mUrlScrollXPositionPreFocus;
+
     protected boolean mDisableLocationBarRelayout;
     protected boolean mLayoutLocationBarInFocusedMode;
     protected int mUnfocusedLocationBarLayoutWidth;
@@ -1884,7 +1889,9 @@ public class ToolbarPhone extends ToolbarLayout
         boolean isLocationBarRtl = ApiCompatibilityUtils.isLayoutRtl(mLocationBar);
         if (!isLocationBarRtl || mUrlBar.getLayout() != null) {
             int urlBarStartScrollX = 0;
-            if (isLocationBarRtl) {
+            if (TextUtils.equals(mUrlBar.getText(), mUrlTextPreFocus)) {
+                urlBarStartScrollX = mUrlScrollXPositionPreFocus;
+            } else if (isLocationBarRtl) {
                 urlBarStartScrollX = (int) mUrlBar.getLayout().getPrimaryHorizontal(0);
                 urlBarStartScrollX -= mUrlBar.getWidth();
             }
@@ -1929,8 +1936,12 @@ public class ToolbarPhone extends ToolbarLayout
         List<Animator> animators = new ArrayList<>();
         if (hasFocus) {
             populateUrlFocusingAnimatorSet(animators);
+            mUrlTextPreFocus = mUrlBar.getText();
+            mUrlScrollXPositionPreFocus = mUrlBar.getScrollX();
         } else {
             populateUrlClearFocusingAnimatorSet(animators);
+            mUrlTextPreFocus = null;
+            mUrlScrollXPositionPreFocus = 0;
         }
         mUrlFocusLayoutAnimator = new AnimatorSet();
         mUrlFocusLayoutAnimator.playTogether(animators);
