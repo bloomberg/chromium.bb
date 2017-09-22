@@ -67906,6 +67906,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.V4UnusedStoreFileExists.V3" enum="BooleanExists">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Track the presence of Safe Browsing list files used for PVer3, which has
+    been deprecated. Logged once per startup.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.V4Update.Network.Result"
     enum="CombinedHttpResponseAndNetErrorCode">
   <owner>vakh@chromium.org</owner>
@@ -101996,6 +102004,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="SafeBrowsing.V4ReadFromDisk.DecodeAdditions.Time"/>
   <affected-histogram name="SafeBrowsing.V4ReadFromDisk.MergeUpdate.Time"/>
   <affected-histogram name="SafeBrowsing.V4UnusedStoreFileExists"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SafeBrowsing.V4Store.V3.Metrics" separator=".">
+  <suffix name="Bloom"/>
+  <suffix name="BloomPrefixSet"/>
+  <suffix name="CsdWhitelist"/>
+  <suffix name="Download"/>
+  <suffix name="DownloadWhitelist"/>
+  <suffix name="ExtensionBlacklist"/>
+  <suffix name="IPBlacklist"/>
+  <suffix name="ModuleWhitelist"/>
+  <suffix name="ResourceBlacklist"/>
+  <suffix name="UwSList"/>
+  <suffix name="UwSListPrefixSet"/>
+  <affected-histogram name="SafeBrowsing.V4UnusedStoreFileExists.V3"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SafeBrowsingLists" separator=".">
