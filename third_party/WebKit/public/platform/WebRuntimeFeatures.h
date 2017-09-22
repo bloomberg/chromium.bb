@@ -74,6 +74,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static bool IsOriginTrialsEnabled();
 
   BLINK_PLATFORM_EXPORT static void EnableAccelerated2dCanvas(bool);
+  BLINK_PLATFORM_EXPORT static void EnableAllowActivationDelegationAttr(bool);
   BLINK_PLATFORM_EXPORT static void EnableAudioOutputDevices(bool);
   BLINK_PLATFORM_EXPORT static void EnableCanvas2dImageChromium(bool);
   BLINK_PLATFORM_EXPORT static void EnableCSSHexAlphaColor(bool);
