@@ -105,6 +105,7 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #endif
 
 static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data);
+
 #if !CONFIG_OBU || CONFIG_EXT_TILE
 static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
                        const uint32_t data_size, const uint32_t max_tile_size,
@@ -3888,7 +3889,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   const int have_tiles = tile_cols * tile_rows > 1;
   struct aom_write_bit_buffer wb = { dst, 0 };
   const int n_log2_tiles = cm->log2_tile_rows + cm->log2_tile_cols;
-  uint32_t comp_hdr_size;
+  uint32_t compressed_hdr_size;
   // Fixed size tile groups for the moment
   const int num_tg_hdrs = cm->num_tg;
   const int tg_size =
@@ -3903,7 +3904,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   int tile_size_bytes = 4;
   int tile_col_size_bytes;
   uint32_t uncompressed_hdr_size = 0;
-  struct aom_write_bit_buffer comp_hdr_len_wb;
   struct aom_write_bit_buffer tg_params_wb;
   struct aom_write_bit_buffer tile_size_bytes_wb;
   uint32_t saved_offset;
@@ -4026,14 +4026,22 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       aom_wb_overwrite_literal(&wb, (1 << n_log2_tiles) - 1, n_log2_tiles);
     }
 
-    /* Write a placeholder for the compressed header length */
-    comp_hdr_len_wb = wb;
-    aom_wb_write_literal(&wb, 0, 16);
+    if (!use_compressed_header(cm)) {
+      uncompressed_hdr_size = aom_wb_bytes_written(&wb);
+      compressed_hdr_size = 0;
+    } else {
+      /* Write a placeholder for the compressed header length */
+      struct aom_write_bit_buffer comp_hdr_len_wb = wb;
+      aom_wb_write_literal(&wb, 0, 16);
 
-    uncompressed_hdr_size = aom_wb_bytes_written(&wb);
-    comp_hdr_size = write_compressed_header(cpi, dst + uncompressed_hdr_size);
-    aom_wb_overwrite_literal(&comp_hdr_len_wb, (int)(comp_hdr_size), 16);
-    hdr_size = uncompressed_hdr_size + comp_hdr_size;
+      uncompressed_hdr_size = aom_wb_bytes_written(&wb);
+      compressed_hdr_size =
+          write_compressed_header(cpi, dst + uncompressed_hdr_size);
+      aom_wb_overwrite_literal(&comp_hdr_len_wb, (int)(compressed_hdr_size),
+                               16);
+    }
+
+    hdr_size = uncompressed_hdr_size + compressed_hdr_size;
     total_size += hdr_size;
 
     for (tile_row = 0; tile_row < tile_rows; tile_row++) {
@@ -4077,7 +4085,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
             // Copy compressed header
             memmove(dst + old_total_size + uncompressed_hdr_size,
                     dst + uncompressed_hdr_size,
-                    comp_hdr_size * sizeof(uint8_t));
+                    compressed_hdr_size * sizeof(uint8_t));
             total_size += hdr_size;
             tile_count = 1;
             curr_tg_data_size = hdr_size + tile_size + 4;
@@ -4096,7 +4104,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
             // Copy compressed header
             memmove(dst + total_size + uncompressed_hdr_size,
                     dst + uncompressed_hdr_size,
-                    comp_hdr_size * sizeof(uint8_t));
+                    compressed_hdr_size * sizeof(uint8_t));
             total_size += hdr_size;
             tile_count = 0;
             curr_tg_data_size = hdr_size;
@@ -4166,11 +4174,13 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
     // Remux if possible. TODO (Thomas Davies): do this for more than one tile
     // group
     if (have_tiles && tg_count == 1) {
-      int data_size = total_size - (uncompressed_hdr_size + comp_hdr_size);
-      data_size = remux_tiles(cm, dst + uncompressed_hdr_size + comp_hdr_size,
-                              data_size, *max_tile_size, *max_tile_col_size,
-                              &tile_size_bytes, &tile_col_size_bytes);
-      total_size = data_size + uncompressed_hdr_size + comp_hdr_size;
+      int data_size =
+          total_size - (uncompressed_hdr_size + compressed_hdr_size);
+      data_size =
+          remux_tiles(cm, dst + uncompressed_hdr_size + compressed_hdr_size,
+                      data_size, *max_tile_size, *max_tile_col_size,
+                      &tile_size_bytes, &tile_col_size_bytes);
+      total_size = data_size + uncompressed_hdr_size + compressed_hdr_size;
       aom_wb_overwrite_literal(&tile_size_bytes_wb, tile_size_bytes - 1, 2);
     }
 
@@ -5457,9 +5467,8 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
 static uint32_t write_frame_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   AV1_COMMON *const cm = &cpi->common;
   struct aom_write_bit_buffer wb = { dst, 0 };
-  struct aom_write_bit_buffer compr_hdr_len_wb;
   uint32_t total_size = 0;
-  uint32_t compr_hdr_size, uncompressed_hdr_size;
+  uint32_t compressed_hdr_size, uncompressed_hdr_size;
 
   write_uncompressed_header_obu(cpi, &wb);
 
@@ -5471,15 +5480,21 @@ static uint32_t write_frame_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   // write the tile length code  (Always 4 bytes for now)
   aom_wb_write_literal(&wb, 3, 2);
 
-  // placeholder for the compressed header length
-  compr_hdr_len_wb = wb;
-  aom_wb_write_literal(&wb, 0, 16);
+  if (!use_compressed_header(cm)) {
+    uncompressed_hdr_size = aom_wb_bytes_written(&wb);
+    compressed_hdr_size = 0;
+  } else {
+    // placeholder for the compressed header length
+    struct aom_write_bit_buffer compr_hdr_len_wb = wb;
+    aom_wb_write_literal(&wb, 0, 16);
 
-  uncompressed_hdr_size = aom_wb_bytes_written(&wb);
-  compr_hdr_size = write_compressed_header(cpi, dst + uncompressed_hdr_size);
-  aom_wb_overwrite_literal(&compr_hdr_len_wb, (int)(compr_hdr_size), 16);
+    uncompressed_hdr_size = aom_wb_bytes_written(&wb);
+    compressed_hdr_size =
+        write_compressed_header(cpi, dst + uncompressed_hdr_size);
+    aom_wb_overwrite_literal(&compr_hdr_len_wb, (int)(compressed_hdr_size), 16);
+  }
 
-  total_size = uncompressed_hdr_size + compr_hdr_size;
+  total_size = uncompressed_hdr_size + compressed_hdr_size;
   return total_size;
 }
 
@@ -5728,8 +5743,8 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   uint32_t data_size;
 #if CONFIG_EXT_TILE
   AV1_COMMON *const cm = &cpi->common;
-  uint32_t compressed_header_size = 0;
-  uint32_t uncompressed_header_size;
+  uint32_t compressed_hdr_size = 0;
+  uint32_t uncompressed_hdr_size;
   struct aom_write_bit_buffer saved_wb;
   struct aom_write_bit_buffer wb = { data, 0 };
   const int have_tiles = cm->tile_cols * cm->tile_rows > 1;
@@ -5811,17 +5826,21 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
       // Number of bytes in tile size - 1
       aom_wb_write_literal(&wb, 0, 2);
     }
-    // Size of compressed header
-    aom_wb_write_literal(&wb, 0, 16);
 
-    uncompressed_header_size = (uint32_t)aom_wb_bytes_written(&wb);
-    data += uncompressed_header_size;
-
-    aom_clear_system_state();
-
-    // Write the compressed header
-    compressed_header_size = write_compressed_header(cpi, data);
-    data += compressed_header_size;
+    if (!use_compressed_header(cm)) {
+      uncompressed_hdr_size = (uint32_t)aom_wb_bytes_written(&wb);
+      aom_clear_system_state();
+      compressed_hdr_size = 0;
+    } else {
+      // Size of compressed header
+      aom_wb_write_literal(&wb, 0, 16);
+      uncompressed_hdr_size = (uint32_t)aom_wb_bytes_written(&wb);
+      aom_clear_system_state();
+      // Write the compressed header
+      compressed_hdr_size =
+          write_compressed_header(cpi, data + uncompressed_hdr_size);
+    }
+    data += uncompressed_hdr_size + compressed_hdr_size;
 
     // Write the encoded tile data
     data_size = write_tiles(cpi, data, &max_tile_size, &max_tile_col_size);
@@ -5851,9 +5870,9 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
       assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
       aom_wb_write_literal(&saved_wb, tile_size_bytes - 1, 2);
     }
-    // TODO(jbb): Figure out what to do if compressed_header_size > 16 bits.
-    assert(compressed_header_size <= 0xffff);
-    aom_wb_write_literal(&saved_wb, compressed_header_size, 16);
+    // TODO(jbb): Figure out what to do if compressed_hdr_size > 16 bits.
+    assert(compressed_hdr_size <= 0xffff);
+    aom_wb_write_literal(&saved_wb, compressed_hdr_size, 16);
   } else {
 #endif  // CONFIG_EXT_TILE
     data += data_size;

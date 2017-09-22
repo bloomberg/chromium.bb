@@ -5071,11 +5071,14 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
 
   read_tile_info(pbi, rb);
-  sz = aom_rb_read_literal(rb, 16);
-
-  if (sz == 0)
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Invalid header size");
+  if (use_compressed_header(cm)) {
+    sz = aom_rb_read_literal(rb, 16);
+    if (sz == 0)
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Invalid header size");
+  } else {
+    sz = 0;
+  }
   return sz;
 }
 
@@ -5194,6 +5197,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
   return aom_reader_has_error(&r);
 }
+
 #ifdef NDEBUG
 #define debug_check_frame_counts(cm) (void)0
 #else  // !NDEBUG
@@ -5419,16 +5423,17 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_INTRABC
 
-  if (!first_partition_size) {
+  if (cm->show_existing_frame) {
     // showing a frame directly
     *p_data_end = data + aom_rb_bytes_read(&rb);
     return;
   }
 
   data += aom_rb_bytes_read(&rb);
-  if (!read_is_valid(data, first_partition_size, data_end))
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Truncated packet or corrupt header length");
+  if (first_partition_size)
+    if (!read_is_valid(data, first_partition_size, data_end))
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Truncated packet or corrupt header length");
 
   cm->setup_mi(cm);
 
@@ -5495,10 +5500,12 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   av1_zero(cm->counts);
 
   xd->corrupted = 0;
-  new_fb->corrupted = read_compressed_header(pbi, data, first_partition_size);
-  if (new_fb->corrupted)
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Decode failed. Frame data header is corrupted.");
+  if (first_partition_size) {
+    new_fb->corrupted = read_compressed_header(pbi, data, first_partition_size);
+    if (new_fb->corrupted)
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Decode failed. Frame data header is corrupted.");
+  }
 
 #if CONFIG_LOOP_RESTORATION
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
@@ -5711,16 +5718,17 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_HIGHBITDEPTH
 #endif  // CONFIG_INTRABC
 
-  if (!first_partition_size) {
+  if (cm->show_existing_frame) {
     // showing a frame directly
     *p_data_end = data + aom_rb_bytes_read(&rb);
     return 0;
   }
 
   data += aom_rb_bytes_read(&rb);
-  if (!read_is_valid(data, first_partition_size, data_end))
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Truncated packet or corrupt header length");
+  if (first_partition_size)
+    if (!read_is_valid(data, first_partition_size, data_end))
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Truncated packet or corrupt header length");
 
   cm->setup_mi(cm);
 
@@ -5787,11 +5795,12 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   av1_zero(cm->counts);
 
   xd->corrupted = 0;
-  new_fb->corrupted = read_compressed_header(pbi, data, first_partition_size);
-  if (new_fb->corrupted)
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Decode failed. Frame data header is corrupted.");
-
+  if (first_partition_size) {
+    new_fb->corrupted = read_compressed_header(pbi, data, first_partition_size);
+    if (new_fb->corrupted)
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Decode failed. Frame data header is corrupted.");
+  }
   return first_partition_size;
 }
 

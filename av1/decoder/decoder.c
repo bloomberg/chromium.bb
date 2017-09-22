@@ -383,7 +383,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   av1_decode_frame(pbi, source, source + size, psource);
 #endif
 #if 1
-  if (av1_decode_frame_headers_and_setup(pbi, source, source + size, psource)) {
+  av1_decode_frame_headers_and_setup(pbi, source, source + size, psource);
+  if (!cm->show_existing_frame) {
     av1_decode_tg_tiles_and_wrapup(pbi, source, source + size, psource, 0,
                                    cm->tile_rows * cm->tile_cols - 1, 1);
   }

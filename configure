@@ -352,6 +352,7 @@ EXPERIMENT_LIST="
     amvr
     lpf_sb
     opt_ref_mv
+    restrict_compressed_hdr
 "
 CONFIG_LIST="
     dependency_tracking
