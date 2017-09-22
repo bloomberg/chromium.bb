@@ -3,22 +3,24 @@
 // found in the LICENSE file.
 
 suite('cr-drawer', function() {
-  var drawer;
-
   setup(function() {
     PolymerTest.clearBody();
+  });
+
+  let createDrawer = (align) => {
     document.body.innerHTML = `
-      <dialog is="cr-drawer" id="drawer">
+      <dialog is="cr-drawer" id="drawer" align="${align}">
         <div class="drawer-header">Test</div>
         <div class="drawer-content">Test content</div>
       </dialog>
     `;
-
-    drawer = document.getElementById('drawer');
-  });
+    Polymer.dom.flush();
+    return document.getElementById('drawer');
+  };
 
   test('open and close', function(done) {
-    drawer.openDrawer();
+    let drawer = createDrawer();
+    drawer.openDrawer('ltr');
     assertTrue(drawer.open);
 
     listenOnce(drawer, 'transitionend', function() {
@@ -41,5 +43,13 @@ suite('cr-drawer', function() {
       // Clicking outside the drawer does close it.
       assertTrue(drawer.classList.contains('closing'));
     });
+  });
+
+  test('align=ltr', function() {
+    assertNotEquals(getComputedStyle(createDrawer('ltr')).left, 'auto');
+  });
+
+  test('align=rtl', function() {
+    assertEquals(getComputedStyle(createDrawer('rtl')).left, 'auto');
   });
 });

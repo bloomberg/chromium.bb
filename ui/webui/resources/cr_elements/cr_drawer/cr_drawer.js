@@ -15,10 +15,10 @@ Polymer({
       notify: true,
     },
 
-    /** The alignment of the drawer on the screen ('left' or 'right'). */
+    /** The alignment of the drawer on the screen ('ltr' or 'rtl'). */
     align: {
       type: String,
-      value: 'left',
+      value: 'ltr',
       reflectToAttribute: true,
     },
   },

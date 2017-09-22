@@ -155,7 +155,6 @@ Polymer({
   /** @private */
   onCrToolbarMenuTap_: function() {
     var drawer = /** @type {!CrDrawerElement} */ (this.$.drawer.get());
-    drawer.align = document.documentElement.dir == 'ltr' ? 'left' : 'right';
     drawer.toggle();
     this.showMenuPromo_ = false;
   },
