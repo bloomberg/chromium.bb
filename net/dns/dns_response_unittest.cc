@@ -161,7 +161,7 @@ TEST(DnsResponseTest, InitParse) {
       0x00, 0x01,  // 1 question
       0x00, 0x02,  // 2 RRs (answers)
       0x00, 0x00,  // 0 authority RRs
-      0x00, 0x00,  // 0 additional RRs
+      0x00, 0x01,  // 1 additional RRs
 
       // Question
       // This part is echoed back from the respective query.
@@ -188,6 +188,16 @@ TEST(DnsResponseTest, InitParse) {
       0x00, 0x35, 0x00, 0x04,  // RDLENGTH is 4 bytes.
       0x4a, 0x7d,              // RDATA is the IP: 74.125.95.121
       0x5f, 0x79,
+
+      // Additional 1
+      0x00,                    // NAME is empty (root domain).
+      0x00, 0x29,              // TYPE is OPT.
+      0x10, 0x00,              // CLASS is max UDP payload size (4096).
+      0x00, 0x00, 0x00, 0x00,  // TTL (4 bytes) is rcode, version and flags.
+      0x00, 0x08,              // RDLENGTH
+      0x00, 0xFF,              // OPT code
+      0x00, 0x04,              // OPT data size
+      0xDE, 0xAD, 0xBE, 0xEF   // OPT data
   };
 
   DnsResponse resp;
@@ -216,6 +226,7 @@ TEST(DnsResponseTest, InitParse) {
   EXPECT_EQ(0x8180, resp.flags());
   EXPECT_EQ(0x0, resp.rcode());
   EXPECT_EQ(2u, resp.answer_count());
+  EXPECT_EQ(1u, resp.additional_answer_count());
 
   // Check question access.
   EXPECT_EQ(query->qname(), resp.qname());
@@ -224,6 +235,8 @@ TEST(DnsResponseTest, InitParse) {
 
   DnsResourceRecord record;
   DnsRecordParser parser = resp.Parser();
+  EXPECT_TRUE(parser.ReadRecord(&record));
+  EXPECT_FALSE(parser.AtEnd());
   EXPECT_TRUE(parser.ReadRecord(&record));
   EXPECT_FALSE(parser.AtEnd());
   EXPECT_TRUE(parser.ReadRecord(&record));
