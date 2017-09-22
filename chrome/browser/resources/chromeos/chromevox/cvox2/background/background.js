@@ -19,6 +19,7 @@ goog.require('FindHandler');
 goog.require('LiveRegions');
 goog.require('MediaAutomationHandler');
 goog.require('NextEarcons');
+goog.require('Notifications');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('PanelCommand');
@@ -182,6 +183,8 @@ Background = function() {
         buckets: 3
       },  // Number of buckets: 0, 1 and overflowing 2.
       useNext ? 1 : 0);
+
+  Notifications.onStartup();
 };
 
 /**

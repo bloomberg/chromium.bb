@@ -207,6 +207,7 @@ CommandHandler.onCommand = function(command) {
       return false;
     case 'showNextUpdatePage':
       (new PanelCommand(PanelCommandType.UPDATE_NOTES)).send();
+      localStorage['notifications_update_notification_shown'] = true;
       return false;
     case 'darkenScreen':
       chrome.accessibilityPrivate.darkenScreen(true);
