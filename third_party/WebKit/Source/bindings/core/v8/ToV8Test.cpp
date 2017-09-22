@@ -41,9 +41,11 @@ void TestToV8(V8TestingScope* scope,
   }
 }
 
-class GarbageCollectedHolder : public GarbageCollected<GarbageCollectedHolder> {
+class GarbageCollectedHolderForToV8Test
+    : public GarbageCollected<GarbageCollectedHolderForToV8Test> {
  public:
-  GarbageCollectedHolder(GarbageCollectedScriptWrappable* script_wrappable)
+  GarbageCollectedHolderForToV8Test(
+      GarbageCollectedScriptWrappable* script_wrappable)
       : script_wrappable_(script_wrappable) {}
 
   DEFINE_INLINE_TRACE() { visitor->Trace(script_wrappable_); }
@@ -66,7 +68,7 @@ TEST(ToV8Test, garbageCollectedScriptWrappable) {
   V8TestingScope scope;
   GarbageCollectedScriptWrappable* object =
       new GarbageCollectedScriptWrappable("world");
-  GarbageCollectedHolder holder(object);
+  GarbageCollectedHolderForToV8Test holder(object);
   OffHeapGarbageCollectedHolder off_heap_holder(object);
 
   TEST_TOV8("world", object);
