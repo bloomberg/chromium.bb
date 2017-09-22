@@ -340,8 +340,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             setUpListPreference(preference, mSite.getPopupPermission());
         } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(key)) {
             setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
-        } else if (PREF_SOUND_PERMISSION.equals(key)
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.SOUND_CONTENT_SETTING)) {
+        } else if (PREF_SOUND_PERMISSION.equals(key)) {
             setUpListPreference(preference, mSite.getSoundPermission());
         }
     }
