@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -116,6 +117,12 @@ void ToggleAdBlocking(bool enabled, content::DevToolsAgentHost* agent_host) {
       client->ToggleForceActivationInCurrentWebContents(enabled);
     }
   }
+}
+
+std::string ToString(std::unique_ptr<base::DictionaryValue> value) {
+  std::string json;
+  base::JSONWriter::Write(*value, &json);
+  return json;
 }
 
 }  // namespace
@@ -347,7 +354,7 @@ void ChromeDevToolsManagerDelegate::Inspect(
   DevToolsWindow::OpenDevToolsWindow(agent_host, nullptr);
 }
 
-base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
+bool ChromeDevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHost* agent_host,
     int session_id,
     base::DictionaryValue* command_dict) {
@@ -355,26 +362,44 @@ base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
   std::string method;
   base::DictionaryValue* params = nullptr;
   if (!DevToolsProtocol::ParseCommand(command_dict, &id, &method, &params))
-    return nullptr;
+    return false;
 
   // Do not actually handle the enable/disable commands, just keep track of the
   // enable state.
-  if (method == chrome::devtools::Page::enable::kName)
+  if (method == chrome::devtools::Page::enable::kName) {
     TogglePageEnable(true /* enable */, agent_host);
-  if (method == chrome::devtools::Page::disable::kName)
+    return false;
+  }
+
+  if (method == chrome::devtools::Page::disable::kName) {
     TogglePageEnable(false /* enable */, agent_host);
+    return false;
+  }
 
-  auto* result = HandleBrowserCommand(id, method, params).release();
-  if (result)
-    return result;
+  auto result = HandleBrowserCommand(id, method, params);
+  if (result) {
+    agent_host->SendProtocolMessageToClient(session_id,
+                                            ToString(std::move(result)));
+    return true;
+  }
 
-  if (method == chrome::devtools::Page::setAdBlockingEnabled::kName)
-    return SetAdBlockingEnabled(agent_host, id, params).release();
+  if (method == chrome::devtools::Page::setAdBlockingEnabled::kName) {
+    result = SetAdBlockingEnabled(agent_host, id, params);
+    DCHECK(result);
+    agent_host->SendProtocolMessageToClient(session_id,
+                                            ToString(std::move(result)));
+    return true;
+  }
 
-  if (method == chrome::devtools::Target::setRemoteLocations::kName)
-    return SetRemoteLocations(agent_host, id, params).release();
+  if (method == chrome::devtools::Target::setRemoteLocations::kName) {
+    result = SetRemoteLocations(agent_host, id, params);
+    DCHECK(result);
+    agent_host->SendProtocolMessageToClient(session_id,
+                                            ToString(std::move(result)));
+    return true;
+  }
 
-  return nullptr;
+  return false;
 }
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(
