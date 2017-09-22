@@ -41792,6 +41792,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicNetworkDegradingDurationTillDisconnected" units="ms">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    The time from QUIC detecting network performance degradation to network
+    disconnection.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicNetworkDegradingDurationTillNewNetworkMadeDefault"
+    units="ms">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    The time from QUIC detecting network performance degradation to an
+    alternative network becoming default.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicNetworkDisconnectionDuration" units="ms">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    The time from network disconnection to an alternative network becoming
+    default.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicNumSentClientHellos">
   <owner>rch@chromium.org</owner>
   <summary>The number of client hello messages sent.</summary>

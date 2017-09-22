@@ -524,6 +524,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   QuicTime::Delta ping_timeout_;
   QuicTime::Delta reduced_ping_timeout_;
 
+  base::TimeTicks most_recent_path_degrading_timestamp_;
+  base::TimeTicks most_recent_network_disconnected_timestamp_;
+
   // If more than |yield_after_packets_| packets have been read or more than
   // |yield_after_duration_| time has passed, then
   // QuicChromiumPacketReader::StartReading() yields by doing a PostTask().
