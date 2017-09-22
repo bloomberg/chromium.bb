@@ -370,7 +370,7 @@ void TestIntraPred32(const char *block_name, AvxPredFunc const *pred_funcs) {
 #define INTRA_PRED_TEST(arch, test_func, blk, dc, dc_left, dc_top, dc_128, v, \
                         h, d45e, d135, d117, d153, d207e, d63e, tm, smooth,   \
                         smooth_v, smooth_h)                                   \
-  TEST(arch, test_func) {                                                     \
+  TEST(arch, DISABLED_##test_func) {                                          \
     static const AvxPredFunc aom_intra_pred[] = {                             \
       dc,   dc_left, dc_top, dc_128, v,  h,      d45e,     d135,              \
       d117, d153,    d207e,  d63e,   tm, smooth, smooth_v, smooth_h           \
@@ -431,8 +431,9 @@ INTRA_PRED_TEST(SSE2_1, TestIntraPred4, "intra4x4", aom_dc_predictor_4x4_sse2,
                 NULL, NULL, NULL, NULL)
 INTRA_PRED_TEST(SSE2_2, TestIntraPred4, "intra4x8", aom_dc_predictor_4x8_sse2,
                 aom_dc_left_predictor_4x8_sse2, aom_dc_top_predictor_4x8_sse2,
-                aom_dc_128_predictor_4x8_sse2, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+                aom_dc_128_predictor_4x8_sse2, aom_v_predictor_4x8_sse2,
+                aom_h_predictor_4x8_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL)
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3
@@ -531,12 +532,14 @@ INTRA_PRED_TEST(SSE2_1, TestIntraPred8, "intra8x8", aom_dc_predictor_8x8_sse2,
                 NULL, NULL, NULL, NULL)
 INTRA_PRED_TEST(SSE2_2, TestIntraPred8, "intra8x4", aom_dc_predictor_8x4_sse2,
                 aom_dc_left_predictor_8x4_sse2, aom_dc_top_predictor_8x4_sse2,
-                aom_dc_128_predictor_8x4_sse2, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+                aom_dc_128_predictor_8x4_sse2, aom_v_predictor_8x4_sse2,
+                aom_h_predictor_8x4_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL)
 INTRA_PRED_TEST(SSE2_3, TestIntraPred8, "intra8x16", aom_dc_predictor_8x16_sse2,
                 aom_dc_left_predictor_8x16_sse2, aom_dc_top_predictor_8x16_sse2,
-                aom_dc_128_predictor_8x16_sse2, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+                aom_dc_128_predictor_8x16_sse2, aom_v_predictor_8x16_sse2,
+                aom_h_predictor_8x16_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL)
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3
@@ -637,18 +640,14 @@ INTRA_PRED_TEST(SSE2_1, TestIntraPred16, "intra16x16",
 INTRA_PRED_TEST(SSE2_2, TestIntraPred16, "intra16x8",
                 aom_dc_predictor_16x8_sse2, aom_dc_left_predictor_16x8_sse2,
                 aom_dc_top_predictor_16x8_sse2, aom_dc_128_predictor_16x8_sse2,
-                // aom_v_predictor_16x8_sse2,
-                // aom_h_predictor_16x8_sse2,
-                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL)
+                aom_v_predictor_16x8_sse2, aom_h_predictor_16x8_sse2, NULL,
+                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 INTRA_PRED_TEST(SSE2_3, TestIntraPred16, "intra16x32",
                 aom_dc_predictor_16x32_sse2, aom_dc_left_predictor_16x32_sse2,
                 aom_dc_top_predictor_16x32_sse2,
-                aom_dc_128_predictor_16x32_sse2,
-                // aom_v_predictor_16x32_sse2,
-                // aom_h_predictor_16x32_sse2,
-                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL)
+                aom_dc_128_predictor_16x32_sse2, aom_v_predictor_16x32_sse2,
+                aom_h_predictor_16x32_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL)
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3
@@ -732,11 +731,9 @@ INTRA_PRED_TEST(SSE2_1, TestIntraPred32, "intra32x32",
 INTRA_PRED_TEST(SSE2_2, TestIntraPred32, "intra32x16",
                 aom_dc_predictor_32x16_sse2, aom_dc_left_predictor_32x16_sse2,
                 aom_dc_top_predictor_32x16_sse2,
-                aom_dc_128_predictor_32x16_sse2,
-                // aom_v_predictor_32x16_sse2,
-                // aom_h_predictor_32x16_sse2,
-                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL)
+                aom_dc_128_predictor_32x16_sse2, aom_v_predictor_32x16_sse2,
+                aom_h_predictor_32x16_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL)
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3
@@ -1056,7 +1053,7 @@ void TestHighbdIntraPred32(const char *block_name,
 #define HIGHBD_INTRA_PRED_TEST(arch, test_func, block_size, dc, dc_left,     \
                                dc_top, dc_128, v, h, d45e, d135, d117, d153, \
                                d207e, d63e, tm, smooth, smooth_v, smooth_h)  \
-  TEST(arch, test_func) {                                                    \
+  TEST(arch, DISABLED_##test_func) {                                         \
     static const AvxHighbdPredFunc aom_intra_pred[] = {                      \
       dc,   dc_left, dc_top, dc_128, v,  h,      d45e,     d135,             \
       d117, d153,    d207e,  d63e,   tm, smooth, smooth_v, smooth_h          \

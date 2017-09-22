@@ -216,8 +216,9 @@ INSTANTIATE_TEST_CASE_P(SSE2_TO_C_12, HighbdIntraPredTest,
 
 #if HAVE_SSE2
 const IntraPredFunc<IntraPred> LowbdIntraPredTestVector[] = {
-  lowbd_intrapred(dc, sse2), lowbd_intrapred(dc_top, sse2),
+  lowbd_intrapred(dc, sse2),      lowbd_intrapred(dc_top, sse2),
   lowbd_intrapred(dc_left, sse2), lowbd_intrapred(dc_128, sse2),
+  lowbd_intrapred(v, sse2),       lowbd_intrapred(h, sse2),
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2, LowbdIntraPredTest,
