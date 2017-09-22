@@ -31,7 +31,6 @@
 import sys
 
 import argparse
-import collections
 import ConfigParser
 import json
 import os
@@ -82,6 +81,17 @@ class _FileLineCoverageReport(object):
         'executed': executed_lines
     }
     self._coverage[path] = summary
+
+  def ContainsFile(self, path):
+    """Returns True if the path is in the report.
+
+    Args:
+      path: path to the file.
+
+    Returns:
+      True if the path is in the report.
+    """
+    return path in self._coverage
 
   def GetCoverageForFile(self, path):
     """Returns tuple representing coverage for a file.
@@ -143,46 +153,48 @@ class _FileLineCoverageReport(object):
 class _DirectoryLineCoverageReport(object):
   """Encapsulates coverage calculations for directories."""
 
-  def __init__(self, file_line_coverage_report):
+  def __init__(self, file_line_coverage_report, top_level_dir):
     """Initializes DirectoryLineCoverageReport object."""
     self._coverage = {}
-    self._subpaths = {}
+    self._CalculateCoverageForDirectory(top_level_dir, self._coverage,
+                                        file_line_coverage_report)
 
-    # Get line coverage data and list of sub-directories or files
-    # for each directory.
-    per_dir_line_coverage_report = collections.defaultdict(
-        lambda: collections.defaultdict(lambda: 0))
-    per_dir_subpaths = collections.defaultdict(set)
+  def _CalculateCoverageForDirectory(self, path, line_coverage_result,
+                                     file_line_coverage_report):
+    """Recursively calculate the line coverage for a directory.
 
-    # Imagine all dirctories and files are nodes in a tree, and files are the
-    # leaves. The following algorithm visits all nodes (including interior
-    # directories) in a layer-to-layer fashion from bottom to top.
-    paths_to_visit = collections.deque()
-    paths_to_visit.extend(file_line_coverage_report.GetListOfFiles())
-    visited = set()
+    Args:
+      path: path to the directory.
+      line_coverage_result: per directory line coverage result with format:
+                            dict => A dictionary containing line coverage data.
+                            -- dir_path: dict => Line coverage summary.
+                            ---- total: int => total number of lines.
+                            ---- executed: int => executed number of lines.
+      file_line_coverage_report: a FileLineCoverageReport object.
+    """
+    if path in line_coverage_result:
+      return
 
-    while paths_to_visit:
-      # Paths maybe added to the queue multiple times, skip if already visited.
-      path = paths_to_visit.popleft()
-      if path in visited:
-        continue
+    sum_total_lines = 0
+    sum_executed_lines = 0
+    for sub_name in os.listdir(path):
+      sub_path = os.path.join(path, sub_name)
+      if os.path.isdir(sub_path):
+        # Calculate coverage for sub-directories recursively.
+        self._CalculateCoverageForDirectory(sub_path, line_coverage_result,
+                                            file_line_coverage_report)
 
-      visited.add(path)
-      if os.path.isfile(path):
-        total, executed = file_line_coverage_report.GetCoverageForFile(path)
-      else:
-        total = per_dir_line_coverage_report[path]['total']
-        executed = per_dir_line_coverage_report[path]['executed']
+      if os.path.isdir(sub_path):
+        sum_total_lines += line_coverage_result[sub_path]['total']
+        sum_executed_lines += line_coverage_result[sub_path]['executed']
+      elif file_line_coverage_report.ContainsFile(sub_path):
+        total_lines, executed_lines = (
+            file_line_coverage_report.GetCoverageForFile(sub_path))
+        sum_total_lines += total_lines
+        sum_executed_lines += executed_lines
 
-      dir_path = os.path.dirname(path)
-      per_dir_line_coverage_report[dir_path]['total'] += total
-      per_dir_line_coverage_report[dir_path]['executed'] += executed
-      per_dir_subpaths[dir_path].add(path)
-
-      paths_to_visit.append(dir_path)
-
-    self._coverage = per_dir_line_coverage_report
-    self._subpaths = per_dir_subpaths
+    line_coverage_result[path] = {'total': sum_total_lines,
+                                  'executed': sum_executed_lines}
 
   def GetCoverageForDirectory(self, path):
     """Returns tuple representing coverage for a directory.
@@ -768,13 +780,15 @@ def Main():
   file_line_coverage_report.FilterFiles(include_sources, exclude_sources)
   file_line_coverage_report.ExcludeTestFiles()
 
-  dir_line_coverage_report = _DirectoryLineCoverageReport(
-      file_line_coverage_report)
-
-  print '\nLine Coverage Report for: ' + str(args.top_level_dir)
   # ios/chrome and ios/chrome/ refer to the same directory.
-  norm_path = os.path.normpath(args.top_level_dir)
-  total, executed = dir_line_coverage_report.GetCoverageForDirectory(norm_path)
+  top_level_dir = os.path.normpath(args.top_level_dir)
+
+  dir_line_coverage_report = _DirectoryLineCoverageReport(
+      file_line_coverage_report, top_level_dir)
+
+  print '\nLine Coverage Report for: ' + top_level_dir
+  total, executed = dir_line_coverage_report.GetCoverageForDirectory(
+      top_level_dir)
   _PrintLineCoverageStats(total, executed)
 
 
