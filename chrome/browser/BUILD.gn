@@ -4064,7 +4064,6 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorFactory.java",
       "../android/java/src/org/chromium/chrome/browser/download/service/DownloadBackgroundTask.java",
       "../android/java/src/org/chromium/chrome/browser/download/service/DownloadTaskScheduler.java",
-      "../android/java/src/org/chromium/chrome/browser/download/ui/ThumbnailProviderImpl.java",
       "../android/java/src/org/chromium/chrome/browser/engagement/SiteEngagementService.java",
       "../android/java/src/org/chromium/chrome/browser/favicon/FaviconHelper.java",
       "../android/java/src/org/chromium/chrome/browser/favicon/LargeIconBridge.java",
@@ -4207,6 +4206,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/webapps/WebApkUpdateDataFetcher.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/WebApkUpdateManager.java",
       "../android/java/src/org/chromium/chrome/browser/webapps/WebappRegistry.java",
+      "../android/java/src/org/chromium/chrome/browser/widget/ThumbnailProviderImpl.java",
     ]
 
     # Used for testing only, should not be shipped to end users.

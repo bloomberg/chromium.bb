@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.download.ui;
+package org.chromium.chrome.browser.widget;
 
 import android.graphics.Bitmap;
 import android.support.test.filters.MediumTest;
@@ -21,7 +21,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.download.ui.ThumbnailProvider.ThumbnailRequest;
+import org.chromium.chrome.browser.widget.ThumbnailProvider.ThumbnailRequest;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
