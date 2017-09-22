@@ -38,6 +38,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
 #include "content/public/common/sandbox_type.h"
+#include "gpu/config/gpu_info.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
@@ -45,6 +46,7 @@
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/services/yama.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 
 #if defined(ANY_OF_AMTLU_SANITIZER)
 #include <sanitizer/common_interface_defs.h>
@@ -280,16 +282,18 @@ bool LinuxSandbox::StartSeccompBPF(const std::string& process_type,
                                    const gpu::GPUInfo* gpu_info) {
   CHECK(!seccomp_bpf_started_);
   CHECK(pre_initialized_);
-  if (seccomp_bpf_supported()) {
-    seccomp_bpf_started_ = SandboxSeccompBPF::StartSandbox(
-        process_type, OpenProc(proc_fd_), gpu_info);
-  }
+  if (!seccomp_bpf_supported())
+    return false;
 
-  if (seccomp_bpf_started_) {
-    LogSandboxStarted("seccomp-bpf");
-  }
+  SandboxSeccompBPF::Options opts;
+  opts.use_amd_specific_policies =
+      gpu_info && angle::IsAMD(gpu_info->active_gpu().vendor_id);
+  if (!SandboxSeccompBPF::StartSandbox(process_type, OpenProc(proc_fd_), opts))
+    return false;
 
-  return seccomp_bpf_started_;
+  seccomp_bpf_started_ = true;
+  LogSandboxStarted("seccomp-bpf");
+  return true;
 }
 
 bool LinuxSandbox::InitializeSandboxImpl(const gpu::GPUInfo* gpu_info) {

@@ -39,7 +39,6 @@
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
-#include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 
 using sandbox::BaselinePolicy;
 using sandbox::SandboxBPF;
@@ -168,14 +167,14 @@ void RunSandboxSanityChecks(SandboxType sandbox_type) {
 }
 
 std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox(
-    const gpu::GPUInfo* gpu_info) {
+    bool use_amd_specific_policies) {
   if (IsChromeOS()) {
     if (IsArchitectureArm()) {
       return std::make_unique<CrosArmGpuProcessPolicy>(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kGpuSandboxAllowSysVShm));
     }
-    if (gpu_info && angle::IsAMD(gpu_info->active_gpu().vendor_id))
+    if (use_amd_specific_policies)
       return std::make_unique<CrosAmdGpuProcessPolicy>();
   }
   return std::make_unique<GpuProcessPolicy>();
@@ -184,11 +183,11 @@ std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox(
 // Initialize the seccomp-bpf sandbox.
 bool StartBPFSandbox(SandboxType sandbox_type,
                      base::ScopedFD proc_fd,
-                     const gpu::GPUInfo* gpu_info) {
+                     const SandboxSeccompBPF::Options& options) {
   std::unique_ptr<SandboxBPFBasePolicy> policy;
   switch (sandbox_type) {
     case SANDBOX_TYPE_GPU:
-      policy = GetGpuProcessSandbox(gpu_info);
+      policy = GetGpuProcessSandbox(options.use_amd_specific_policies);
       break;
     case SANDBOX_TYPE_RENDERER:
       policy = std::make_unique<RendererProcessPolicy>();
@@ -259,7 +258,7 @@ bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
 
 bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
                                      base::ScopedFD proc_fd,
-                                     const gpu::GPUInfo* gpu_info) {
+                                     const Options& options) {
 #if BUILDFLAG(USE_SECCOMP_BPF)
   if (IsSeccompBPFDesired() &&  // Global switches policy.
       ShouldEnableSeccompBPF(process_type) &&  // Process-specific policy.
@@ -268,7 +267,7 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
     // should enable it, enable it or die.
     CHECK(StartBPFSandbox(
         SandboxTypeFromCommandLine(*base::CommandLine::ForCurrentProcess()),
-        std::move(proc_fd), gpu_info));
+        std::move(proc_fd), options));
     return true;
   }
 #endif
