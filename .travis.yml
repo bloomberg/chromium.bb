@@ -10,6 +10,11 @@ language: c
 services:
   - docker
 
+env:
+  global:
+    # COVERITY_SCAN_TOKEN
+    - secure: "k2AM90pXF/IqX8CRSUPD3dkMktu9IUtFafDVvA1iC4p7hMfwOM4UIC/0E5Dqxwv4ULc7yqbWVchZwHMqteEqcJX8xbxsGqt4s1LtNosV2xjikbGmXVl3cp0qqv3exVcUaxtzxDs2Ee379sTUpVDK314M9oH5ky4N2L+971c1v84="
+
 matrix:
   include:
     - compiler: gcc
@@ -33,6 +38,7 @@ before_install:
     else
         source .travis/before_install/gcc.sh;
     fi
+  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 
 script:
   - cd $TRAVIS_BUILD_DIR
@@ -58,7 +64,12 @@ after_success:
 notifications:
    irc: "irc.oftc.net#liblouis"
 
-# do not build on the following branches
-branches:
-  except:
-    - ikiwiki_ctl
+addons:
+  coverity_scan:
+    project:
+      name: "liblouis/liblouis"
+      description: "Build submitted via Travis CI"
+    notification_email: liblouis-liblouisxml@freelists.org
+    build_command_prepend: "./autogen.sh && ./configure && make clean"
+    build_command:   "make"
+    branch_pattern: coverity_scan
