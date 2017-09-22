@@ -145,47 +145,43 @@ template("write_build_config") {
       rebase_path(build_config, root_build_dir),
     ]
 
-    is_java = type == "java_library" || type == "java_binary" ||
-              type == "java_prebuilt"
     is_apk = type == "android_apk"
     is_android_assets = type == "android_assets"
     is_android_resources = type == "android_resources"
     is_deps_dex = type == "deps_dex"
     is_group = type == "group"
 
-    supports_android = is_apk || is_android_assets || is_android_resources ||
-                       is_deps_dex || is_group ||
-                       (is_java && defined(invoker.supports_android) &&
-                        invoker.supports_android)
+    supports_android =
+        is_apk || is_android_assets || is_android_resources || is_deps_dex ||
+        is_group ||
+        (defined(invoker.supports_android) && invoker.supports_android)
     requires_android =
         is_apk || is_android_assets || is_android_resources || is_deps_dex ||
-        (is_java && defined(invoker.requires_android) &&
-         invoker.requires_android)
+        (defined(invoker.requires_android) && invoker.requires_android)
 
     assert(!requires_android || supports_android,
            "requires_android requires" + " supports_android")
 
     # Mark these variables as used.
-    assert(is_java || true)
     assert(is_apk || true)
     assert(is_android_resources || true)
     assert(is_deps_dex || true)
     assert(is_group || true)
 
-    if (is_java || is_apk) {
+    if (defined(invoker.jar_path)) {
       args += [
         "--jar-path",
         rebase_path(invoker.jar_path, root_build_dir),
       ]
     }
 
-    if (is_java && defined(invoker.java_resources_jar)) {
+    if (defined(invoker.java_resources_jar)) {
       args += [
         "--java-resources-jar-path",
         rebase_path(invoker.java_resources_jar, root_build_dir),
       ]
     }
-    if (is_apk || is_deps_dex || (is_java && supports_android)) {
+    if (defined(invoker.dex_path)) {
       args += [
         "--dex-path",
         rebase_path(invoker.dex_path, root_build_dir),
@@ -291,14 +287,6 @@ template("write_build_config") {
         ]
       }
 
-      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
-        args += [
-          "--proguard-enabled",
-          "--proguard-info",
-          rebase_path(invoker.proguard_info, root_build_dir),
-        ]
-      }
-
       if (defined(invoker.apk_path)) {
         _rebased_apk_path = rebase_path(invoker.apk_path, root_build_dir)
         _rebased_incremental_apk_path =
@@ -343,6 +331,13 @@ template("write_build_config") {
       _rebased_input_jars_paths =
           rebase_path(invoker.input_jars_paths, root_build_dir)
       args += [ "--extra-classpath-jars=$_rebased_input_jars_paths" ]
+    }
+    if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
+      args += [
+        "--proguard-enabled",
+        "--proguard-info",
+        rebase_path(invoker.proguard_info, root_build_dir),
+      ]
     }
     if (defined(invoker.proguard_configs)) {
       _rebased_proguard_configs =
@@ -855,8 +850,9 @@ if (enable_java_templates) {
       set_sources_assignment_filter([])
       forward_variables_from(invoker,
                              [
-                               "deps",
+                               "data",
                                "data_deps",
+                               "deps",
                                "public_deps",
                                "testonly",
                              ])
@@ -2612,17 +2608,7 @@ if (enable_java_templates) {
         } else {
           type = "java_library"
         }
-        if (defined(invoker.deps)) {
-          possible_config_deps = invoker.deps
-          if (_enable_build_hooks) {
-            possible_config_deps +=
-                [ "//build/android/buildhooks:build_hooks_java" ]
-          }
-          if (_enable_build_hooks_android) {
-            possible_config_deps +=
-                [ "//build/android/buildhooks:build_hooks_android_java" ]
-          }
-        }
+        possible_config_deps = _accumulated_deps
         supports_android = _supports_android
         requires_android = _requires_android
         bypass_platform_checks = defined(invoker.bypass_platform_checks) &&

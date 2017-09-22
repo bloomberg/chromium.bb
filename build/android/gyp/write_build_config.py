@@ -449,7 +449,7 @@ def main(argv):
       all_java_sources.append(options.java_sources_file)
     config['jni']['all_source'] = all_java_sources
 
-  if (options.type in ('java_binary', 'java_library')):
+  if (options.type in ('java_binary', 'java_library', 'dist_jar')):
     deps_info['requires_android'] = options.requires_android
     deps_info['supports_android'] = options.supports_android
 
@@ -640,12 +640,14 @@ def main(argv):
     deps_info['proguard_configs'] = (
         build_utils.ParseGnList(options.proguard_configs))
 
-  if options.type == 'android_apk':
+  if options.type in ('android_apk', 'dist_jar'):
     deps_info['proguard_enabled'] = options.proguard_enabled
     deps_info['proguard_info'] = options.proguard_info
     config['proguard'] = {}
     proguard_config = config['proguard']
-    proguard_config['input_paths'] = [options.jar_path] + java_full_classpath
+    proguard_config['input_paths'] = list(java_full_classpath)
+    if options.jar_path:
+      proguard_config['input_paths'].insert(0, options.jar_path)
     extra_jars = set()
     lib_configs = set()
     for c in all_library_deps:
