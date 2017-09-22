@@ -50,7 +50,6 @@ class CORE_EXPORT ScriptModule final {
 
   // TODO(kouhei): Remove copy ctor
   ScriptModule();
-  ScriptModule(WTF::HashTableDeletedValueType);
   ~ScriptModule();
 
   // Returns exception, if any.
@@ -67,26 +66,7 @@ class CORE_EXPORT ScriptModule final {
   // Should only be used via ModulatorImpl::GetError()
   v8::Local<v8::Value> ErrorCompletion(ScriptState*);
 
-  bool IsHashTableDeletedValue() const {
-    return module_.IsHashTableDeletedValue();
-  }
-
-  bool operator==(const blink::ScriptModule& other) const {
-    if (IsHashTableDeletedValue() && other.IsHashTableDeletedValue())
-      return true;
-
-    if (IsHashTableDeletedValue() || other.IsHashTableDeletedValue())
-      return false;
-
-    blink::SharedPersistent<v8::Module>* left = module_.Get();
-    blink::SharedPersistent<v8::Module>* right = other.module_.Get();
-    if (left == right)
-      return true;
-    if (!left || !right)
-      return false;
-    return *left == *right;
-  }
-
+  inline bool operator==(const blink::ScriptModule& other) const;
   bool operator!=(const blink::ScriptModule& other) const {
     return !(*this == other);
   }
@@ -115,6 +95,7 @@ class CORE_EXPORT ScriptModule final {
   unsigned identity_hash_ = 0;
 
   friend struct ScriptModuleHash;
+  friend struct WTF::HashTraits<blink::ScriptModule>;
 };
 
 struct ScriptModuleHash {
@@ -144,8 +125,41 @@ struct DefaultHash<blink::ScriptModule> {
 
 template <>
 struct HashTraits<blink::ScriptModule>
-    : public SimpleClassHashTraits<blink::ScriptModule> {};
+    : public SimpleClassHashTraits<blink::ScriptModule> {
+  static bool IsDeletedValue(const blink::ScriptModule& value) {
+    return HashTraits<RefPtr<blink::SharedPersistent<v8::Module>>>::
+        IsDeletedValue(value.module_);
+  }
+
+  static void ConstructDeletedValue(blink::ScriptModule& slot,
+                                    bool zero_value) {
+    HashTraits<RefPtr<blink::SharedPersistent<v8::Module>>>::
+        ConstructDeletedValue(slot.module_, zero_value);
+  }
+};
 
 }  // namespace WTF
+
+namespace blink {
+
+inline bool ScriptModule::operator==(const ScriptModule& other) const {
+  if (HashTraits<ScriptModule>::IsDeletedValue(*this) &&
+      HashTraits<ScriptModule>::IsDeletedValue(other))
+    return true;
+
+  if (HashTraits<ScriptModule>::IsDeletedValue(*this) ||
+      HashTraits<ScriptModule>::IsDeletedValue(other))
+    return false;
+
+  blink::SharedPersistent<v8::Module>* left = module_.Get();
+  blink::SharedPersistent<v8::Module>* right = other.module_.Get();
+  if (left == right)
+    return true;
+  if (!left || !right)
+    return false;
+  return *left == *right;
+}
+
+}  // namespace blink
 
 #endif  // ScriptModule_h
