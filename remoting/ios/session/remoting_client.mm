@@ -171,6 +171,7 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
   _displayHandler = nil;
 
   if (_audioPlayer) {
+    _audioPlayer->Invalidate();
     _runtime->audio_task_runner()->DeleteSoon(FROM_HERE,
                                               _audioPlayer.release());
   }
