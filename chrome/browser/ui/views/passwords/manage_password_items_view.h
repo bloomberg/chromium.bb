@@ -23,7 +23,8 @@ class ManagePasswordsBubbleModel;
 std::unique_ptr<views::Label> GenerateUsernameLabel(
     const autofill::PasswordForm& form);
 std::unique_ptr<views::Label> GeneratePasswordLabel(
-    const autofill::PasswordForm& form);
+    const autofill::PasswordForm& form,
+    bool is_password_visible);
 std::unique_ptr<views::Textfield> GenerateUsernameEditable(
     const autofill::PasswordForm& form);
 

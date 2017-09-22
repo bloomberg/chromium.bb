@@ -233,14 +233,19 @@ std::unique_ptr<views::ToggleImageButton> GeneratePasswordViewButton(
 }
 
 // Creates a dropdown from the other possible passwords.
-// The items are made of '*'s.
+// The items are made of '*'s if not visible.
 std::unique_ptr<views::Combobox> GeneratePasswordDropdownView(
-    const autofill::PasswordForm& form) {
+    const autofill::PasswordForm& form,
+    bool visible) {
   DCHECK(!form.other_possible_passwords.empty());
   std::vector<base::string16> passwords;
-  for (const base::string16& possible_password :
-       form.other_possible_passwords) {
-    passwords.push_back(base::string16(possible_password.length(), '*'));
+  if (visible) {
+    passwords = form.other_possible_passwords;
+  } else {
+    for (const base::string16& possible_password :
+         form.other_possible_passwords) {
+      passwords.push_back(base::string16(possible_password.length(), '*'));
+    }
   }
   std::unique_ptr<views::Combobox> combobox = std::make_unique<views::Combobox>(
       std::make_unique<ui::SimpleComboboxModel>(passwords));
@@ -420,20 +425,27 @@ class ManagePasswordsBubbleView::PendingView : public views::View,
   ~PendingView() override;
 
  private:
-  void CreateAndSetLayout();
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // View:
   gfx::Size CalculatePreferredSize() const override;
+
+  void CreateAndSetLayout();
+  void CreatePasswordField();
+  void TogglePasswordVisibility();
+  void UpdateUsernameAndPasswordInModel();
 
   ManagePasswordsBubbleView* parent_;
 
   views::Button* save_button_;
   views::Button* never_button_;
-  // Those views can be recreated, thus they are owned by the client.
-  std::unique_ptr<views::View> username_field_;
+  views::View* username_field_;
+  views::ToggleImageButton* password_view_button_;
+  // Can be recreated, thus owned by the client.
   std::unique_ptr<views::View> password_field_;
-  std::unique_ptr<views::ToggleImageButton> password_view_button_;
+
+  bool password_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingView);
 };
@@ -444,99 +456,43 @@ ManagePasswordsBubbleView::PendingView::PendingView(
       save_button_(nullptr),
       never_button_(nullptr),
       username_field_(nullptr),
-      password_field_(nullptr),
-      password_view_button_(nullptr) {
+      password_view_button_(nullptr),
+      password_visible_(false) {
+  // Create credentials row.
+  const autofill::PasswordForm& password_form =
+      parent_->model()->pending_password();
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnableUsernameCorrection)) {
+    username_field_ = GenerateUsernameEditable(password_form).release();
+  } else {
+    username_field_ = GenerateUsernameLabel(password_form).release();
+  }
+
+  CreatePasswordField();
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordSelection)) {
+    password_view_button_ = GeneratePasswordViewButton(this).release();
+  }
+
+  // Create buttons.
+  save_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
+  never_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this,
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
+
   CreateAndSetLayout();
   parent_->set_initially_focused_view(save_button_);
 }
 
-void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout() {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
-  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
-
-  // Create buttons.
-  if (!save_button_) {
-    save_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
-        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-  }
-  if (!never_button_) {
-    never_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this, l10n_util::GetStringUTF16(
-                  IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
-  }
-
-  // Credentials row.
-  const autofill::PasswordForm& password_form =
-      parent_->model()->pending_password();
-  DCHECK(!username_field_);
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kEnableUsernameCorrection)) {
-    username_field_ = GenerateUsernameEditable(password_form);
-  } else {
-    username_field_ = GenerateUsernameLabel(password_form);
-  }
-  username_field_->set_owned_by_client();
-
-  DCHECK(!password_field_);
-  const bool enable_password_selection = base::FeatureList::IsEnabled(
-      password_manager::features::kEnablePasswordSelection);
-  if (enable_password_selection &&
-      password_form.other_possible_passwords.size() > 1) {
-    password_field_ = GeneratePasswordDropdownView(password_form);
-  } else {
-    password_field_ = GeneratePasswordLabel(password_form);
-  }
-  password_field_->set_owned_by_client();
-
-  DCHECK(!password_view_button_);
-  if (enable_password_selection) {
-    password_view_button_ = GeneratePasswordViewButton(this);
-    password_view_button_->set_owned_by_client();
-  }
-
-  BuildCredentialRow(layout, username_field_.get(), password_field_.get(),
-                     password_view_button_.get());
-  layout->AddPaddingRow(
-      0, ChromeLayoutProvider::Get()->GetDistanceMetric(
-             views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL));
-
-  // Button row.
-  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRow(0, DOUBLE_BUTTON_COLUMN_SET);
-  layout->AddView(save_button_);
-  layout->AddView(never_button_);
-}
-
-ManagePasswordsBubbleView::PendingView::~PendingView() {
-}
+ManagePasswordsBubbleView::PendingView::~PendingView() = default;
 
 void ManagePasswordsBubbleView::PendingView::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
   if (sender == save_button_) {
-    const bool username_editable = base::FeatureList::IsEnabled(
-        password_manager::features::kEnableUsernameCorrection);
-    const bool password_editable = base::FeatureList::IsEnabled(
-        password_manager::features::kEnablePasswordSelection);
-    if (username_editable || password_editable) {
-      base::string16 new_username =
-          parent_->model()->pending_password().username_value;
-      base::string16 new_password =
-          parent_->model()->pending_password().password_value;
-      if (username_editable) {
-        new_username =
-            static_cast<views::Textfield*>(username_field_.get())->text();
-      }
-      if (password_editable &&
-          parent_->model()->pending_password().other_possible_passwords.size() >
-              1) {
-        new_password =
-            parent_->model()->pending_password().other_possible_passwords.at(
-                static_cast<views::Combobox*>(password_field_.get())
-                    ->selected_index());
-      }
-      parent_->model()->OnCredentialEdited(new_username, new_password);
-    }
+    UpdateUsernameAndPasswordInModel();
     parent_->model()->OnSaveClicked();
     if (parent_->model()->ReplaceToShowPromotionIfNeeded()) {
       parent_->Refresh();
@@ -544,8 +500,8 @@ void ManagePasswordsBubbleView::PendingView::ButtonPressed(
     }
   } else if (sender == never_button_) {
     parent_->model()->OnNeverForThisSiteClicked();
-  } else if (sender == password_view_button_.get()) {
-    // TODO(https://crbug.com/753806): Implement making passwords visible logic.
+  } else if (sender == password_view_button_) {
+    TogglePasswordVisibility();
     return;
   } else {
     NOTREACHED();
@@ -559,6 +515,75 @@ gfx::Size ManagePasswordsBubbleView::PendingView::CalculatePreferredSize()
   return gfx::Size(kDesiredBubbleWidth,
                    GetLayoutManager()->GetPreferredHeightForWidth(
                        this, kDesiredBubbleWidth));
+}
+
+void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout() {
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
+
+  BuildCredentialRow(layout, username_field_, password_field_.get(),
+                     password_view_button_);
+  layout->AddPaddingRow(
+      0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+             views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL));
+
+  // Button row.
+  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
+  layout->StartRow(0, DOUBLE_BUTTON_COLUMN_SET);
+  layout->AddView(save_button_);
+  layout->AddView(never_button_);
+}
+
+void ManagePasswordsBubbleView::PendingView::CreatePasswordField() {
+  const bool enable_password_selection = base::FeatureList::IsEnabled(
+      password_manager::features::kEnablePasswordSelection);
+  const autofill::PasswordForm& password_form =
+      parent_->model()->pending_password();
+  if (enable_password_selection &&
+      password_form.other_possible_passwords.size() > 1) {
+    password_field_ =
+        GeneratePasswordDropdownView(password_form, password_visible_);
+  } else {
+    password_field_ = GeneratePasswordLabel(password_form, password_visible_);
+  }
+  password_field_->set_owned_by_client();
+}
+
+void ManagePasswordsBubbleView::PendingView::TogglePasswordVisibility() {
+  UpdateUsernameAndPasswordInModel();
+  password_visible_ = !password_visible_;
+  password_view_button_->SetToggled(password_visible_);
+  password_field_.reset();
+  CreatePasswordField();
+  CreateAndSetLayout();
+  Layout();
+  parent_->SizeToContents();
+}
+
+void ManagePasswordsBubbleView::PendingView::
+    UpdateUsernameAndPasswordInModel() {
+  const bool username_editable = base::FeatureList::IsEnabled(
+      password_manager::features::kEnableUsernameCorrection);
+  const bool password_editable = base::FeatureList::IsEnabled(
+      password_manager::features::kEnablePasswordSelection);
+  if (!username_editable && !password_editable)
+    return;
+  base::string16 new_username =
+      parent_->model()->pending_password().username_value;
+  base::string16 new_password =
+      parent_->model()->pending_password().password_value;
+  if (username_editable) {
+    new_username = static_cast<views::Textfield*>(username_field_)->text();
+  }
+  if (password_editable &&
+      parent_->model()->pending_password().other_possible_passwords.size() >
+          1) {
+    new_password =
+        parent_->model()->pending_password().other_possible_passwords.at(
+            static_cast<views::Combobox*>(password_field_.get())
+                ->selected_index());
+  }
+  parent_->model()->OnCredentialEdited(new_username, new_password);
 }
 
 // ManagePasswordsBubbleView::ManageView --------------------------------------
@@ -832,7 +857,8 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
     const autofill::PasswordForm& password_form =
         parent_->model()->pending_password();
     BuildCredentialRow(layout, GenerateUsernameLabel(password_form).release(),
-                       GeneratePasswordLabel(password_form).release(), nullptr);
+                       GeneratePasswordLabel(password_form, false).release(),
+                       nullptr);
   }
   layout->AddPaddingRow(
       0, layout_provider->GetDistanceMetric(

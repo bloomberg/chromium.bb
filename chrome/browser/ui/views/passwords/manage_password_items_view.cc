@@ -125,7 +125,8 @@ std::unique_ptr<views::Textfield> GenerateUsernameEditable(
 }
 
 std::unique_ptr<views::Label> GeneratePasswordLabel(
-    const autofill::PasswordForm& form) {
+    const autofill::PasswordForm& form,
+    bool is_password_visible) {
   base::string16 text =
       form.federation_origin.unique()
           ? form.password_value
@@ -134,7 +135,7 @@ std::unique_ptr<views::Label> GeneratePasswordLabel(
                 base::UTF8ToUTF16(form.federation_origin.host()));
   auto label = base::MakeUnique<views::Label>(text, CONTEXT_DEPRECATED_SMALL);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  if (form.federation_origin.unique())
+  if (form.federation_origin.unique() && !is_password_visible)
     label->SetObscured(true);
   return label;
 }
@@ -222,7 +223,7 @@ void ManagePasswordItemsView::PasswordFormRow::AddCredentialsRow(
   std::unique_ptr<views::Label> username_label(
       GenerateUsernameLabel(*password_form_));
   std::unique_ptr<views::Label> password_label(
-      GeneratePasswordLabel(*password_form_));
+      GeneratePasswordLabel(*password_form_, false));
   delete_button_ = GenerateDeleteButton(this).release();
   // TODO(https://crbug.com/761767): Remove this workaround once the grid layout
   // bug is fixed.
