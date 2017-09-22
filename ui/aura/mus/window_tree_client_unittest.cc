@@ -2744,6 +2744,18 @@ TEST_F(WindowTreeClientDestructionTest, Shutdown) {
   window2.Init(ui::LAYER_NOT_DRAWN);
 }
 
+TEST_F(WindowTreeClientDestructionTest, WindowsFromOtherConnectionsDeleted) {
+  std::unique_ptr<Window> other_client_window =
+      CreateWindowUsingId(window_tree_client_impl(), 10, nullptr);
+  WindowTracker window_tracker;
+  window_tracker.Add(other_client_window.get());
+  other_client_window.release();
+  DeleteWindowTreeClient();
+  // Deleting WindowTreeClient should delete the Window that was in
+  // |window_tracker|.
+  EXPECT_TRUE(window_tracker.windows().empty());
+}
+
 TEST_F(WindowTreeClientWmTest, ObservedPointerEvents) {
   const gfx::Rect bounds(1, 2, 101, 102);
   std::unique_ptr<DisplayInitParams> display_params =
