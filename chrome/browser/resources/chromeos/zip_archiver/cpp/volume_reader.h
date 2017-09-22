@@ -32,7 +32,7 @@ class VolumeReader {
 
   // Fetches a passphrase for reading. If the passphrase is not available it
   // returns nullptr.
-  virtual const char* Passphrase() = 0;
+  virtual std::unique_ptr<std::string> Passphrase() = 0;
 
   virtual int64_t offset() = 0;
 

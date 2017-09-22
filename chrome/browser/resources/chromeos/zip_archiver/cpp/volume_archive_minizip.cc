@@ -163,9 +163,9 @@ int CustomArchiveError(void* /*opaque*/, void* /*stream*/) {
   return 0;
 }
 
-const char* GetPassphrase(VolumeArchiveMinizip* archive_minizip) {
-  const char* password = archive_minizip->reader()->Passphrase();
-  return password;
+std::unique_ptr<std::string> GetPassphrase(
+    VolumeArchiveMinizip* archive_minizip) {
+  return archive_minizip->reader()->Passphrase();
 }
 
 }  // namespace volume_archive_functions
@@ -336,8 +336,24 @@ bool VolumeArchiveMinizip::SeekHeader(const std::string& path_name) {
   // If the archive is encrypted, the lowest bit of raw_file_info.flag is set.
   // Directories cannot be encrypted with the basic zip encrytion algorithm.
   if (((raw_file_info.flag & 1) != 0) && !is_directory) {
-    const char* password = volume_archive_functions::GetPassphrase(this);
-    open_result = unzOpenCurrentFilePassword(zip_file_, password);
+    do {
+      if (password_cache_ == nullptr) {
+        // Save passphrase for upcoming file requests.
+        password_cache_ = volume_archive_functions::GetPassphrase(this);
+        // check if |password_cache_| is nullptr in case when user clicks Cancel
+        if (password_cache_ == nullptr) {
+          return false;
+        }
+      }
+
+      open_result =
+          unzOpenCurrentFilePassword(zip_file_, password_cache_.get()->c_str());
+
+      // If password is incorrect then password cache ought to be reseted.
+      if (open_result == UNZ_BADPASSWORD && password_cache_ != nullptr)
+        password_cache_.reset();
+
+    } while (open_result == UNZ_BADPASSWORD);
   } else {
     open_result = unzOpenCurrentFile(zip_file_);
   }
@@ -446,6 +462,7 @@ bool VolumeArchiveMinizip::Cleanup() {
     }
   }
   zip_file_ = nullptr;
+  password_cache_.reset();
 
   CleanupReader();
 
