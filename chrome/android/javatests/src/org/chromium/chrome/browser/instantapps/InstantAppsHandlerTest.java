@@ -13,7 +13,7 @@ import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.provider.Browser;
 import android.support.test.InstrumentationRegistry;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -246,10 +246,9 @@ public class InstantAppsHandlerTest {
         }
 
         @Override
-        protected boolean startCheckForInstantApps(
+        protected void maybeShowInstantAppBanner(
                 Context context, String url, Uri referrer, Tab tab) {
             mStartedAsyncCall = true;
-            return false;
         }
     }
 }

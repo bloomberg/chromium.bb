@@ -284,14 +284,23 @@ public class InstantAppsHandler {
         if (InstantAppsSettings.isInstantAppDefault(tab.getWebContents(), url)) {
             return launchInstantAppForNavigation(context, url, referrer);
         }
-        return startCheckForInstantApps(context, url, referrer, tab);
+        maybeShowInstantAppBanner(context, url, referrer, tab);
+        return false;
     }
 
     /**
      * Checks if an Instant App banner should be shown for the page we are loading.
      */
+    @Deprecated
     protected boolean startCheckForInstantApps(Context context, String url, Uri referrer, Tab tab) {
         return false;
+    }
+
+    /**
+     * Shows an Instant App banner if necessary for the page we're loading.
+     */
+    protected void maybeShowInstantAppBanner(Context context, String url, Uri referrer, Tab tab) {
+        startCheckForInstantApps(context, url, referrer, tab);
     }
 
     /**
