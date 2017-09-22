@@ -96,6 +96,11 @@ UIColor* BackgroundColorIncognito() {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  // Respect the safe area on iOS 11 to support iPhone X.
+  if (@available(iOS 11, *)) {
+    self.tableView.insetsContentViewsToSafeArea = YES;
+  }
+
   // Initialize the same size as the parent view, autoresize will correct this.
   [self.view setFrame:CGRectZero];
   if (_incognito) {
