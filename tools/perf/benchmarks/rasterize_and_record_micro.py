@@ -69,6 +69,10 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
         self.DisableStory(
             'file://static_top_25/wikipedia.html', [story.expectations.ALL],
             'crbug.com/764543')
+        self.DisableStory(
+            'file://static_top_25/espn.html', [story.expectations.ANDROID_ONE],
+            'crbug.com/768010')
+
     return StoryExpectations()
 
 
