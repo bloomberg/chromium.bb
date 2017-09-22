@@ -95,8 +95,15 @@ class GnGenerator(object):
     args.append(('enable_stripping', 'enable_dsyms'))
     args.append(('is_official_build', self._config == 'Official'))
     args.append(('is_chrome_branded', 'is_official_build'))
-    args.append(('use_xcode_clang', 'is_official_build'))
     args.append(('ios_enable_coverage', self._config == 'Coverage'))
+
+    # TODO(crbug.com/75794): the version of llvm-cov used for code coverage is
+    # tied to the version of clang used. As no copy of llvm-cov is shipped with
+    # the Chrome's clang, the version shipped with Xcode is used, thus code
+    # needs to be compiled with Xcode's clang when enabling code coverage.
+    # Remove this once llvm-cov is shipped with Chrome's clang.
+    args.append(('use_xcode_clang', 'is_official_build || ios_enable_coverage'))
+
     if os.environ.get('FORCE_MAC_TOOLCHAIN', '0') == '1':
       args.append(('use_system_xcode', False))
 
