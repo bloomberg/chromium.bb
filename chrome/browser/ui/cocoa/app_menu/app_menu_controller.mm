@@ -315,6 +315,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
       [buttonViewController_ toolbarActionsOverflowItem];
   BrowserActionsContainerView* containerView =
       [buttonViewController_ overflowActionsContainerView];
+  [containerView setHidden:[browserActionsController_ buttonCount] == 0];
 
   // Find the preferred container size for the menu width.
   int menuWidth = [[self menu] size].width;
