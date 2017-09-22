@@ -16,5 +16,5 @@ enum WindowPinType {
   TRUSTED_PINNED,
 };
 
-// The window's pin type. Maps to ash::aura::kWindowPinTypeKey.
+// The window's pin type. Maps to ash::kWindowPinTypeKey.
 const string kWindowPinType_Property = "ash:window-pin-type";

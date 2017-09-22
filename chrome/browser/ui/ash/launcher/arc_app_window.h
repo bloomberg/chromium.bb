@@ -28,7 +28,7 @@ class Widget;
 class ArcAppWindow : public ui::BaseWindow, public ImageDecoder::ImageRequest {
  public:
   // TODO(khmel): use a bool set to false by default, or use an existing enum,
-  // like ash::wm::WindowStateType.
+  // like ash::mojom::WindowStateType.
   enum class FullScreenMode {
     NOT_DEFINED,  // Fullscreen mode was not defined.
     ACTIVE,       // Fullscreen is activated for an app.

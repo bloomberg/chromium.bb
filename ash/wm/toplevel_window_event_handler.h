@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/wm_toplevel_window_event_handler.h"
-#include "ash/wm/wm_types.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/event_handler.h"

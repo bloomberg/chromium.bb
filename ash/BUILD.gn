@@ -861,8 +861,6 @@ component("ash") {
     "wm/wm_snap_to_pixel_layout_manager.h",
     "wm/wm_toplevel_window_event_handler.cc",
     "wm/wm_toplevel_window_event_handler.h",
-    "wm/wm_types.cc",
-    "wm/wm_types.h",
     "wm/wm_window_animations.cc",
     "wm/wm_window_animations.h",
     "wm/workspace/backdrop_controller.cc",

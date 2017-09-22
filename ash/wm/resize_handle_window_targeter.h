@@ -31,7 +31,7 @@ class ResizeHandleWindowTargeter : public wm::WindowStateObserver,
  private:
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   wm::WindowStateType old_type) override;
+                                   mojom::WindowStateType old_type) override;
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 

@@ -480,7 +480,7 @@ void PanelLayoutManager::OnWindowPropertyChanged(Window* window,
 
 void PanelLayoutManager::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
-    wm::WindowStateType old_type) {
+    mojom::WindowStateType old_type) {
   // If the shelf is currently hidden then windows will not actually be shown
   // but the set to restore when the shelf becomes visible is updated.
   if (restore_windows_on_shelf_visible_) {

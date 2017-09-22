@@ -130,7 +130,7 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   wm::WindowStateType old_type) override {
+                                   mojom::WindowStateType old_type) override {
     if (Shell::Get()->tablet_mode_controller() &&
         Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars()) {
       DCHECK(immersive_fullscreen_controller_);
