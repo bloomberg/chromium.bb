@@ -250,7 +250,7 @@ size_t QuicFramer::GetStreamIdSize(QuicStreamId stream_id) {
 // static
 size_t QuicFramer::GetStreamOffsetSize(QuicVersion version,
                                        QuicStreamOffset offset) {
-  if (version < QUIC_VERSION_40) {
+  if (version < QUIC_VERSION_41) {
     // 0 is a special case.
     if (offset == 0) {
       return 0;
@@ -1005,9 +1005,9 @@ bool QuicFramer::ProcessFrameData(QuicDataReader* reader,
 
     if (frame_type & kQuicFrameTypeSpecialMask) {
       // Stream Frame
-      if ((quic_version_ < QUIC_VERSION_40 &&
+      if ((quic_version_ < QUIC_VERSION_41 &&
            (frame_type & kQuicFrameTypeStreamMask_Pre40)) ||
-          (quic_version_ >= QUIC_VERSION_40 &&
+          (quic_version_ >= QUIC_VERSION_41 &&
            ((frame_type & kQuicFrameTypeStreamMask) ==
             kQuicFrameTypeStreamMask))) {
         QuicStreamFrame frame;
@@ -1024,9 +1024,9 @@ bool QuicFramer::ProcessFrameData(QuicDataReader* reader,
       }
 
       // Ack Frame
-      if ((quic_version_ < QUIC_VERSION_40 &&
+      if ((quic_version_ < QUIC_VERSION_41 &&
            (frame_type & kQuicFrameTypeAckMask_Pre40)) ||
-          (quic_version_ >= QUIC_VERSION_40 &&
+          (quic_version_ >= QUIC_VERSION_41 &&
            ((frame_type & kQuicFrameTypeSpecialMask) ==
             kQuicFrameTypeAckMask))) {
         QuicAckFrame frame;
@@ -1204,7 +1204,7 @@ bool QuicFramer::ProcessStreamFrame(QuicDataReader* reader,
   uint8_t stream_id_length = 0;
   uint8_t offset_length = 4;
   bool has_data_length = true;
-  if (quic_version_ < QUIC_VERSION_40) {
+  if (quic_version_ < QUIC_VERSION_41) {
     stream_flags &= ~kQuicFrameTypeStreamMask_Pre40;
 
     // Read from right to left: StreamID, Offset, Data Length, Fin.
@@ -1293,7 +1293,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
                                  uint8_t frame_type,
                                  QuicAckFrame* ack_frame) {
   bool has_ack_blocks =
-      ExtractBit(frame_type, quic_version_ < QUIC_VERSION_40
+      ExtractBit(frame_type, quic_version_ < QUIC_VERSION_41
                                  ? kQuicHasMultipleAckBlocksOffset_Pre40
                                  : kQuicHasMultipleAckBlocksOffset);
   uint8_t num_ack_blocks = 0;
@@ -1874,7 +1874,7 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
       if (frame.stream_frame == nullptr) {
         QUIC_BUG << "Failed to append STREAM frame with no stream_frame.";
       }
-      if (quic_version_ < QUIC_VERSION_40) {
+      if (quic_version_ < QUIC_VERSION_41) {
         // Fin bit.
         type_byte |= frame.stream_frame->fin ? kQuicStreamFinMask_Pre40 : 0;
 
@@ -2062,7 +2062,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
   // Whether there are multiple ack blocks.
   uint8_t type_byte = 0;
   SetBit(&type_byte, new_ack_info.num_ack_blocks != 0,
-         quic_version_ < QUIC_VERSION_40 ? kQuicHasMultipleAckBlocksOffset_Pre40
+         quic_version_ < QUIC_VERSION_41 ? kQuicHasMultipleAckBlocksOffset_Pre40
                                          : kQuicHasMultipleAckBlocksOffset);
 
   SetBits(&type_byte, GetPacketNumberFlags(largest_acked_length),
@@ -2071,7 +2071,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
   SetBits(&type_byte, GetPacketNumberFlags(ack_block_length),
           kQuicSequenceNumberLengthNumBits, kActBlockLengthOffset);
 
-  if (quic_version_ < QUIC_VERSION_40) {
+  if (quic_version_ < QUIC_VERSION_41) {
     type_byte |= kQuicFrameTypeAckMask_Pre40;
   } else {
     type_byte |= kQuicFrameTypeAckMask;

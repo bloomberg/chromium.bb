@@ -32,13 +32,13 @@ QuicVersionVector FilterSupportedVersions(QuicVersionVector versions) {
   for (QuicVersion version : versions) {
     if (version == QUIC_VERSION_42) {
       if (GetQuicFlag(FLAGS_quic_enable_version_42) &&
-          FLAGS_quic_reloadable_flag_quic_enable_version_40 &&
+          FLAGS_quic_reloadable_flag_quic_enable_version_41 &&
           FLAGS_quic_reloadable_flag_quic_enable_version_39 &&
           FLAGS_quic_reloadable_flag_quic_enable_version_38) {
         filtered_versions.push_back(version);
       }
-    } else if (version == QUIC_VERSION_40) {
-      if (FLAGS_quic_reloadable_flag_quic_enable_version_40 &&
+    } else if (version == QUIC_VERSION_41) {
+      if (FLAGS_quic_reloadable_flag_quic_enable_version_41 &&
           FLAGS_quic_reloadable_flag_quic_enable_version_39 &&
           FLAGS_quic_reloadable_flag_quic_enable_version_38) {
         filtered_versions.push_back(version);
@@ -80,8 +80,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '3', '8');
     case QUIC_VERSION_39:
       return MakeQuicTag('Q', '0', '3', '9');
-    case QUIC_VERSION_40:
-      return MakeQuicTag('Q', '0', '4', '0');
+    case QUIC_VERSION_41:
+      return MakeQuicTag('Q', '0', '4', '1');
     case QUIC_VERSION_42:
       return MakeQuicTag('Q', '0', '4', '2');
     default:
@@ -114,7 +114,7 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_37);
     RETURN_STRING_LITERAL(QUIC_VERSION_38);
     RETURN_STRING_LITERAL(QUIC_VERSION_39);
-    RETURN_STRING_LITERAL(QUIC_VERSION_40);
+    RETURN_STRING_LITERAL(QUIC_VERSION_41);
     RETURN_STRING_LITERAL(QUIC_VERSION_42);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
