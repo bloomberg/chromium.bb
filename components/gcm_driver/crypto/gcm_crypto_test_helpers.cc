@@ -24,10 +24,10 @@ bool CreateEncryptedPayloadForTesting(const base::StringPiece& payload,
                                       IncomingMessage* message) {
   DCHECK(message);
 
-  std::string private_key, public_key_x509, public_key;
+  std::string private_key, public_key;
 
   // Create an ephemeral key-pair for the sender.
-  if (!CreateP256KeyPair(&private_key, &public_key_x509, &public_key))
+  if (!CreateP256KeyPair(&private_key, &public_key))
     return false;
 
   std::string shared_secret;
