@@ -736,7 +736,8 @@ bool IsInternalURL(const GURL& url) {
     yPos = [self setYPositionOfView:permissionsView_ to:yPos];
   }
 
-  yPos = [self layoutViewAtRTLStart:siteSettingsButton_ withYPosition:yPos];
+  yPos = [self layoutViewAtRTLStart:siteSettingsButton_
+                      withYPosition:yPos + kSectionVerticalPadding];
 
   // Resize the height based on contents.
   [self setHeightOfView:siteSettingsSectionView_
@@ -1309,8 +1310,6 @@ bool IsInternalURL(const GURL& url) {
                                              atPoint:controlOrigin];
       controlOrigin.y = rowBottomRight.y;
     }
-
-    controlOrigin.y += kPermissionsVerticalSpacing;
   }
 
   [permissionsView_ setFrameSize:NSMakeSize(NSWidth([permissionsView_ frame]),
