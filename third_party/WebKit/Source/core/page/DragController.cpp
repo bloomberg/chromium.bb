@@ -986,11 +986,8 @@ static IntPoint DragLocationForDHTMLDrag(const IntPoint& mouse_dragged_point,
 }
 
 FloatRect DragController::ClippedSelection(const LocalFrame& frame) {
-  Page* page = frame.GetPage();
-  if (!page)
-    return FloatRect();
-  return Intersection(FloatRect(frame.Selection().UnclippedBounds()),
-                      page->GetVisualViewport().VisibleRectInDocument());
+  return DataTransfer::ClipByVisualViewport(
+      FloatRect(frame.Selection().UnclippedBounds()), frame);
 }
 
 static IntPoint DragLocationForSelectionDrag(const LocalFrame& frame) {
