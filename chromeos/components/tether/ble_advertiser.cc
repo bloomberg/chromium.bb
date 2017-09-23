@@ -24,12 +24,12 @@ BleAdvertiser::AdvertisementMetadata::AdvertisementMetadata(
 BleAdvertiser::AdvertisementMetadata::~AdvertisementMetadata() {}
 
 BleAdvertiser::BleAdvertiser(
-    scoped_refptr<device::BluetoothAdapter> adapter,
     cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-    cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher)
-    : bluetooth_adapter_(adapter),
-      remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),
+    cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
+    BleAdvertisementSynchronizer* ble_advertisement_synchronizer)
+    : remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),
       local_device_data_provider_(local_device_data_provider),
+      ble_advertisement_synchronizer_(ble_advertisement_synchronizer),
       eid_generator_(base::MakeUnique<cryptauth::ForegroundEidGenerator>()),
       weak_ptr_factory_(this) {}
 
@@ -153,8 +153,8 @@ void BleAdvertiser::UpdateAdvertisements() {
               *metadata->service_data);
       advertisements_[i] =
           ErrorTolerantBleAdvertisementImpl::Factory::NewInstance(
-              metadata->device_id, bluetooth_adapter_,
-              std::move(service_data_copy));
+              metadata->device_id, std::move(service_data_copy),
+              ble_advertisement_synchronizer_);
       continue;
     }
 

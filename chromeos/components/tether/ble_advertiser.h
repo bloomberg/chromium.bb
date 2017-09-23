@@ -16,7 +16,6 @@
 #include "chromeos/components/tether/ble_constants.h"
 #include "components/cryptauth/foreground_eid_generator.h"
 #include "components/cryptauth/remote_device.h"
-#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
 namespace cryptauth {
@@ -28,6 +27,7 @@ namespace chromeos {
 
 namespace tether {
 
+class BleAdvertisementSynchronizer;
 class ErrorTolerantBleAdvertisement;
 
 // Advertises to a given device. When StartAdvertisingToDevice() is called, a
@@ -45,9 +45,9 @@ class BleAdvertiser {
     virtual ~Observer() {}
   };
 
-  BleAdvertiser(scoped_refptr<device::BluetoothAdapter> adapter,
-                cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-                cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
+  BleAdvertiser(cryptauth::LocalDeviceDataProvider* local_device_data_provider,
+                cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
+                BleAdvertisementSynchronizer* ble_advertisement_synchronizer_);
   virtual ~BleAdvertiser();
 
   virtual bool StartAdvertisingToDevice(
@@ -82,9 +82,9 @@ class BleAdvertiser {
   void UpdateAdvertisements();
   void OnAdvertisementStopped(size_t index);
 
-  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher_;
   cryptauth::LocalDeviceDataProvider* local_device_data_provider_;
+  BleAdvertisementSynchronizer* ble_advertisement_synchronizer_;
 
   std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator_;
 

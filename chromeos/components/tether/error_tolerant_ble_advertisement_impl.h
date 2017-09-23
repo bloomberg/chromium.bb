@@ -10,18 +10,15 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "chromeos/components/tether/error_tolerant_ble_advertisement.h"
 #include "components/cryptauth/foreground_eid_generator.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
-namespace device {
-class BluetoothAdapter;
-}  // namespace device
-
 namespace chromeos {
 
 namespace tether {
+
+class BleAdvertisementSynchronizer;
 
 // Concrete ErrorTolerantBleAdvertisement implementation.
 class ErrorTolerantBleAdvertisementImpl
@@ -32,16 +29,16 @@ class ErrorTolerantBleAdvertisementImpl
    public:
     static std::unique_ptr<ErrorTolerantBleAdvertisement> NewInstance(
         const std::string& device_id,
-        scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-        std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data);
+        std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+        BleAdvertisementSynchronizer* ble_advertisement_synchronizer);
 
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
     virtual std::unique_ptr<ErrorTolerantBleAdvertisement> BuildInstance(
         const std::string& device_id,
-        scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-        std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data);
+        std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+        BleAdvertisementSynchronizer* ble_advertisement_synchronizer);
 
     virtual ~Factory();
 
@@ -51,8 +48,8 @@ class ErrorTolerantBleAdvertisementImpl
 
   ErrorTolerantBleAdvertisementImpl(
       const std::string& device_id,
-      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-      std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data);
+      std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+      BleAdvertisementSynchronizer* ble_advertisement_synchronizer);
   ~ErrorTolerantBleAdvertisementImpl() override;
 
   // ErrorTolerantBleAdvertisement:
@@ -71,10 +68,7 @@ class ErrorTolerantBleAdvertisementImpl
     return *advertisement_data_;
   }
 
-  void SetFakeTimerForTest(std::unique_ptr<base::Timer> test_timer);
-
   void UpdateRegistrationStatus();
-  void RetryUpdateAfterTimer();
   void AttemptRegistration();
   void AttemptUnregistration();
 
@@ -93,10 +87,8 @@ class ErrorTolerantBleAdvertisementImpl
       device::BluetoothAdvertisement::ErrorCode error_code);
 
   std::string device_id_;
-  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data_;
-
-  std::unique_ptr<base::Timer> timer_;
+  BleAdvertisementSynchronizer* ble_advertisement_synchronizer_;
 
   bool registration_in_progress_ = false;
   bool unregistration_in_progress_ = false;
