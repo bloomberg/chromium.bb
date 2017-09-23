@@ -827,17 +827,17 @@ group("content_shell_crash_test") {
   }
   if (is_posix && !is_android) {
     data_deps += [
-      "//breakpad:dump_syms($host_toolchain)",
-      "//breakpad:minidump_stackwalk($host_toolchain)",
+      "//third_party/breakpad:dump_syms($host_toolchain)",
+      "//third_party/breakpad:minidump_stackwalk($host_toolchain)",
     ]
   }
   if (is_android) {
     data_deps += [
-      "//breakpad:dump_syms",
-      "//breakpad:microdump_stackwalk",
-      "//breakpad:minidump_dump",
-      "//breakpad:minidump_stackwalk",
-      "//breakpad:symupload",
+      "//third_party/breakpad:dump_syms",
+      "//third_party/breakpad:microdump_stackwalk",
+      "//third_party/breakpad:minidump_dump",
+      "//third_party/breakpad:minidump_stackwalk",
+      "//third_party/breakpad:symupload",
       "//tools/android/forwarder2",
     ]
   }

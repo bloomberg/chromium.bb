@@ -32,8 +32,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/pe_image.h"
 #include "base/win/win_util.h"
-#include "breakpad/src/client/windows/common/ipc_protocol.h"
-#include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "components/crash/content/app/crash_keys_win.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/hard_error_handler_win.h"
@@ -41,6 +39,8 @@
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sidestep/preamble_patcher.h"
+#include "third_party/breakpad/breakpad/src/client/windows/common/ipc_protocol.h"
+#include "third_party/breakpad/breakpad/src/client/windows/handler/exception_handler.h"
 
 #pragma intrinsic(_AddressOfReturnAddress)
 #pragma intrinsic(_ReturnAddress)

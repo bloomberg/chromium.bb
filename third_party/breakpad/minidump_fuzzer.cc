@@ -6,9 +6,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <streambuf>
 #include <istream>
 #include <memory>
+#include <streambuf>
 
 #include "base/memory/free_deleter.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
