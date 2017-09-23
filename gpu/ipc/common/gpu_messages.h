@@ -237,7 +237,9 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SignalQuery,
                     uint32_t /* signal_id */)
 
 // Response to SignalSyncPoint, SignalSyncToken, and SignalQuery.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SignalAck, uint32_t /* signal_id */)
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SignalAck,
+                    uint32_t /* signal_id */,
+                    gpu::CommandBuffer::State /* state */)
 
 // Create an image from an existing gpu memory buffer. The id that can be
 // used to identify the image from a command buffer.
