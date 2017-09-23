@@ -1144,6 +1144,8 @@ bool DragController::StartDrag(LocalFrame* src,
   const KURL& link_url = hit_test_result.AbsoluteLinkURL();
   const KURL& image_url = hit_test_result.AbsoluteImageURL();
 
+  // TODO(pdr): This code shouldn't be necessary because drag_origin is already
+  // in the coordinate space of the view's contents.
   IntPoint mouse_dragged_point = src->View()->RootFrameToContents(
       FlooredIntPoint(drag_event.PositionInRootFrame()));
 
@@ -1185,7 +1187,8 @@ bool DragController::StartDrag(LocalFrame* src,
       IntSize image_size_in_pixels = image_rect.Size();
       // TODO(oshima): Remove this scaling and simply pass imageRect to
       // dragImageForImage once all platforms are migrated to use zoom for dsf.
-      image_size_in_pixels.Scale(src->GetPage()->DeviceScaleFactorDeprecated());
+      image_size_in_pixels.Scale(src->GetPage()->DeviceScaleFactorDeprecated() *
+                                 src->GetPage()->GetVisualViewport().Scale());
 
       float screen_device_scale_factor =
           src->GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
@@ -1253,16 +1256,14 @@ void DragController::DoSystemDrag(DragImage* image,
   did_initiate_drag_ = true;
   drag_initiator_ = frame->GetDocument();
 
-  LocalFrameView* main_frame_view = frame->LocalFrameRoot().View();
-  IntPoint adjusted_drag_location = main_frame_view->RootFrameToContents(
-      frame->View()->ContentsToRootFrame(drag_location));
-  IntPoint adjusted_event_pos = main_frame_view->RootFrameToContents(
-      frame->View()->ContentsToRootFrame(event_pos));
+  IntPoint adjusted_drag_location =
+      frame->View()->ContentsToViewport(drag_location);
+  IntPoint adjusted_event_pos = frame->View()->ContentsToViewport(event_pos);
+  IntSize offset_size(adjusted_event_pos - adjusted_drag_location);
+  WebPoint offset_point(offset_size.Width(), offset_size.Height());
   WebDragData drag_data = data_transfer->GetDataObject()->ToWebDragData();
   WebDragOperationsMask drag_operation_mask =
       static_cast<WebDragOperationsMask>(data_transfer->SourceOperation());
-  IntSize offset_size(adjusted_event_pos - adjusted_drag_location);
-  WebPoint offset_point(offset_size.Width(), offset_size.Height());
   WebImage drag_image;
 
   if (image) {

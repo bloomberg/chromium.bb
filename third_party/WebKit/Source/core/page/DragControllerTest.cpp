@@ -5,6 +5,7 @@
 #include "core/page/DragController.h"
 
 #include "core/clipboard/DataObject.h"
+#include "core/clipboard/DataTransfer.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -13,6 +14,7 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/DragData.h"
 #include "core/page/DragSession.h"
+#include "core/page/DragState.h"
 #include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
@@ -22,14 +24,38 @@
 
 namespace blink {
 
+class DragMockChromeClient : public EmptyChromeClient {
+ public:
+  DragMockChromeClient() {}
+
+  void StartDragging(LocalFrame*,
+                     const WebDragData&,
+                     WebDragOperationsMask,
+                     const WebImage& drag_image,
+                     const WebPoint& drag_image_offset) {
+    last_drag_image_size = drag_image.Size();
+    last_drag_image_offset = drag_image_offset;
+  }
+
+  WebSize last_drag_image_size;
+  WebPoint last_drag_image_offset;
+};
+
 class DragControllerTest : public RenderingTest {
  protected:
-  DragControllerTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+  DragControllerTest()
+      : RenderingTest(SingleChildLocalFrameClient::Create()),
+        chrome_client_(new DragMockChromeClient) {}
   LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }
+  ChromeClient& GetChromeClient() const override { return *chrome_client_; }
+  DragMockChromeClient& ChromeClient() const { return *chrome_client_; }
 
   void UpdateAllLifecyclePhases() {
     GetDocument().View()->UpdateAllLifecyclePhases();
   }
+
+ private:
+  Persistent<DragMockChromeClient> chrome_client_;
 };
 
 TEST_F(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
@@ -325,6 +351,44 @@ TEST_F(DragControllerTest,
   expected_image_size = IntSize(RoundedIntSize(expected_selection.Size()));
   expected_image_size.Scale(page_scale_factor);
   EXPECT_EQ(expected_image_size, selection_image->Size());
+}
+
+TEST_F(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  * { margin: 0; } "
+      "  div {"
+      "    width: 50px;"
+      "    height: 40px;"
+      "    font-size: 30px;"
+      "    overflow: hidden;"
+      "  }"
+      "</style>"
+      "<div id='drag'>abcdefg<br>abcdefg<br>abcdefg</div>");
+  const int page_scale_factor = 2;
+  GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
+  GetFrame().Selection().SelectAll();
+
+  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+                            WebInputEvent::kNoModifiers,
+                            WebInputEvent::kTimeStampForTesting);
+  mouse_event.button = WebMouseEvent::Button::kRight;
+  mouse_event.SetPositionInWidget(5, 10);
+
+  auto& drag_state = GetFrame().GetPage()->GetDragController().GetDragState();
+  drag_state.drag_type_ = kDragSourceActionSelection;
+  drag_state.drag_src_ = GetDocument().getElementById("drag");
+  drag_state.drag_data_transfer_ = DataTransfer::Create(
+      DataTransfer::kDragAndDrop, kDataTransferWritable, DataObject::Create());
+  GetFrame().GetPage()->GetDragController().StartDrag(
+      &GetFrame(), drag_state, mouse_event, IntPoint(5, 10));
+
+  IntSize expected_image_size = IntSize(50, 40);
+  expected_image_size.Scale(page_scale_factor);
+  EXPECT_EQ(expected_image_size, IntSize(ChromeClient().last_drag_image_size));
+  IntPoint expected_offset = IntPoint(5, 10);
+  expected_offset.Scale(page_scale_factor, page_scale_factor);
+  EXPECT_EQ(expected_offset, IntPoint(ChromeClient().last_drag_image_offset));
 }
 
 }  // namespace blink
