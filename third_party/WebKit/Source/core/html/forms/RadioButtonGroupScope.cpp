@@ -21,6 +21,7 @@
 #include "core/html/forms/RadioButtonGroupScope.h"
 
 #include "core/InputTypeNames.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/html/HTMLInputElement.h"
 #include "platform/wtf/HashMap.h"
 
