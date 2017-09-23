@@ -134,6 +134,10 @@ class CORE_EXPORT DataTransfer final
 
   DataObject* GetDataObject() const;
 
+  // Clip to the visible area of the visual viewport.
+  static FloatRect ClipByVisualViewport(const FloatRect& rect_in_frame,
+                                        const LocalFrame&);
+
   // Returns the rect with device scale factor and page scale factor applied.
   static FloatRect DeviceSpaceRect(const FloatRect css_rect, const LocalFrame&);
   static std::unique_ptr<DragImage> CreateDragImageForFrame(

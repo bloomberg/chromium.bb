@@ -85,7 +85,7 @@ class CORE_EXPORT DragController final
   static std::unique_ptr<DragImage> DragImageForSelection(const LocalFrame&,
                                                           float);
 
-  // Return the selection in document coords, clipped to the visual viewport.
+  // Return the selection in the frame's coords, clipped to the visual viewport.
   static FloatRect ClippedSelection(const LocalFrame&);
 
   DECLARE_TRACE();

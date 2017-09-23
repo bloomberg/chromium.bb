@@ -351,6 +351,15 @@ void DataTransfer::SetDragImageElement(Node* node, const IntPoint& loc) {
   setDragImage(0, node, loc);
 }
 
+FloatRect DataTransfer::ClipByVisualViewport(const FloatRect& rect_in_frame,
+                                             const LocalFrame& frame) {
+  IntRect viewport_in_root_frame =
+      IntRect(frame.GetPage()->GetVisualViewport().VisibleRect());
+  FloatRect viewport_in_frame =
+      frame.View()->RootFrameToContents(viewport_in_root_frame);
+  return Intersection(viewport_in_frame, rect_in_frame);
+}
+
 // static
 // Converts from bounds in CSS space to device space based on the given frame.
 FloatRect DataTransfer::DeviceSpaceRect(const FloatRect css_rect,
@@ -375,11 +384,8 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
   float device_scale_factor = frame.GetPage()->DeviceScaleFactorDeprecated();
   float page_scale_factor = frame.GetPage()->GetVisualViewport().Scale();
 
-  // Exclude content not in the visual viewport.
-  auto viewport = frame.GetPage()->GetVisualViewport().VisibleRectInDocument();
-  FloatRect clipped_rect = Intersection(css_rect, viewport);
-
-  FloatRect device_rect = DeviceSpaceRect(clipped_rect, frame);
+  FloatRect rect_in_visual_viewport = ClipByVisualViewport(css_rect, frame);
+  FloatRect device_rect = DeviceSpaceRect(rect_in_visual_viewport, frame);
 
   AffineTransform transform;
   transform.Translate(-device_rect.X(), -device_rect.Y());
