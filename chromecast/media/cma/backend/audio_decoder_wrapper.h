@@ -6,19 +6,21 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_WRAPPER_H_
 
 #include "base/macros.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
 namespace chromecast {
 namespace media {
 
 enum class AudioContentType;
-class MediaPipelineBackendManager;
 
 class AudioDecoderWrapper : public MediaPipelineBackend::AudioDecoder {
  public:
-  AudioDecoderWrapper(MediaPipelineBackendManager* backend_manager,
-                      MediaPipelineBackend::AudioDecoder* decoder,
-                      AudioContentType type);
+  AudioDecoderWrapper(
+      MediaPipelineBackendManager* backend_manager,
+      MediaPipelineBackend::AudioDecoder* decoder,
+      AudioContentType type,
+      MediaPipelineBackendManager::BufferDelegate* buffer_delegate);
   ~AudioDecoderWrapper() override;
 
   void SetGlobalVolumeMultiplier(float multiplier);
@@ -37,6 +39,9 @@ class AudioDecoderWrapper : public MediaPipelineBackend::AudioDecoder {
   MediaPipelineBackendManager* const backend_manager_;
   MediaPipelineBackend::AudioDecoder* const decoder_;
   const AudioContentType content_type_;
+
+  MediaPipelineBackendManager::BufferDelegate* const buffer_delegate_;
+  bool delegate_active_;
 
   float global_volume_multiplier_;
   float stream_volume_multiplier_;

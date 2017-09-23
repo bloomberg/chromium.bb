@@ -22,8 +22,8 @@
 namespace chromecast {
 namespace media {
 
-enum class AudioContentType;
 class AudioDecoderWrapper;
+enum class AudioContentType;
 
 // This class tracks all created media backends, tracking whether or not volume
 // feedback sounds should be enabled based on the currently active backends.
@@ -37,6 +37,29 @@ class MediaPipelineBackendManager {
 
    protected:
     virtual ~AllowVolumeFeedbackObserver() = default;
+  };
+
+  // Delegate which can process Audio buffers sent to us.
+  class BufferDelegate {
+   public:
+    // Returns |true| if the delegate is accepting buffers.
+    virtual bool IsActive() = 0;
+
+    // If |IsActive| returns true, the media stream's audio buffers will be sent
+    // to the delegate and the media stream's volume will be set to 0.
+    //
+    // The client may only assume the buffer is in scope during the callback.
+    // If the client needs to use the buffer out of scope of the callback (e.g.
+    // posted onto a different thread), it must make a copy.
+    virtual void OnPushBuffer(const CastDecoderBuffer* buffer) = 0;
+
+    // Called when the media stream's audio config changes. After this call, all
+    // subsequent buffers will have the new config. This method will be called
+    // regardless if |IsActive| returs true or false.
+    virtual void OnSetConfig(const AudioConfig& config) = 0;
+
+   protected:
+    virtual ~BufferDelegate() = default;
   };
 
   enum DecoderType {
@@ -77,6 +100,13 @@ class MediaPipelineBackendManager {
   // The default multiplier is 1.0. May be called on any thread.
   void SetGlobalVolumeMultiplier(AudioContentType type, float multiplier);
 
+  // |buffer_delegate| will get notified for all buffers on the media stream.
+  // |buffer_delegate| must outlive |this|.
+  // Can only be set once.
+  void SetBufferDelegate(BufferDelegate* buffer_delegate);
+
+  BufferDelegate* buffer_delegate() const { return buffer_delegate_; }
+
  private:
   friend class MediaPipelineBackendWrapper;
   friend class AudioDecoderWrapper;
@@ -105,6 +135,8 @@ class MediaPipelineBackendManager {
 
   base::flat_set<AudioDecoderWrapper*> audio_decoders_;
   base::flat_map<AudioContentType, float> global_volume_multipliers_;
+
+  BufferDelegate* buffer_delegate_;
 
   base::WeakPtrFactory<MediaPipelineBackendManager> weak_factory_;
 

@@ -27,6 +27,7 @@ source_set("backend") {
   deps = [
     "//base",
     "//chromecast:chromecast_features",
+    "//chromecast/media/cma/base",
   ]
 
   if (is_android) {
