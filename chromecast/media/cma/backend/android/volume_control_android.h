@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -20,29 +19,6 @@
 namespace chromecast {
 namespace media {
 
-// TODO(ckuiper): This logic is similar to the one in alsa/volume_control.cc.
-// Consolidate it.
-class VolumeMap {
- public:
-  struct LevelToDb {
-    float level;
-    float db;
-  };
-
-  VolumeMap();
-  ~VolumeMap();
-
-  float VolumeToDbFS(float volume);
-  float DbFSToVolume(float db);
-
- private:
-  std::vector<LevelToDb> volume_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(VolumeMap);
-};
-
-// TODO(ckuiper): This logic is similar to the one in alsa/volume_control.cc.
-// Consolidate it.
 class VolumeControlAndroid {
  public:
   VolumeControlAndroid();
@@ -75,9 +51,6 @@ class VolumeControlAndroid {
   void ReportMuteChangeOnThread(AudioContentType type, bool muted);
 
   base::android::ScopedJavaGlobalRef<jobject> j_volume_control_;
-
-  base::FilePath storage_path_;
-  base::DictionaryValue stored_values_;
 
   base::Lock volume_lock_;
   std::map<AudioContentType, float> volumes_;

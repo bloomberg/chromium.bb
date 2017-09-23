@@ -52,6 +52,10 @@ generate_jni("audio_track_jni_headers") {
     "java/src/org/chromium/chromecast/cma/backend/android/VolumeControl.java",
   ]
 
+  if (enable_volume_tables_access) {
+    sources += [ "java/src/org/chromium/chromecast/cma/backend/android/VolumeMap.java" ]
+  }
+
   jni_package = "audio_track"
 }
 
@@ -61,6 +65,10 @@ android_library("audio_track_java") {
     "java/src/org/chromium/chromecast/cma/backend/android/VolumeControl.java",
   ]
 
+  if (enable_volume_tables_access) {
+    java_files += [ "java/src/org/chromium/chromecast/cma/backend/android/VolumeMap.java" ]
+  }
+
   srcjar_deps = [ "//chromecast/public:java_enums_volume_control" ]
 
   deps = [
@@ -69,4 +77,8 @@ android_library("audio_track_java") {
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/android_tools:android_support_v13_java",
   ]
+
+  if (enable_volume_tables_access) {
+    deps += [ "//chromecast/internal/android/prebuilt/things:system_support_lib_java" ]
+  }
 }

@@ -56,6 +56,8 @@ declare_args() {
   # Currently android things libraries live in internal.
   # TODO(njeff): change this when Android Things API is moved to public.
   enable_athings_loopback = is_android_things && chromecast_branding != "public"
+  enable_volume_tables_access =
+      is_android_things && chromecast_branding != "public"
 }
 
 declare_args() {
