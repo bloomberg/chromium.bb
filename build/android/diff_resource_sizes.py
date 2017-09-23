@@ -135,12 +135,20 @@ def main():
     base_args = shared_args + ['--output-dir', base_dir, args.base_apk]
     if args.out_dir_base:
       base_args += ['--chromium-output-directory', args.out_dir_base]
-    subprocess.check_output(base_args, stderr=subprocess.STDOUT)
+    try:
+      subprocess.check_output(base_args, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+      print e.output
+      raise
 
     diff_args = shared_args + ['--output-dir', diff_dir, args.diff_apk]
     if args.out_dir_diff:
       base_args += ['--chromium-output-directory', args.out_dir_diff]
-    subprocess.check_output(diff_args, stderr=subprocess.STDOUT)
+    try:
+      subprocess.check_output(diff_args, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+      print e.output
+      raise
 
     # Combine the separate results
     base_file = os.path.join(base_dir, _RESULTS_FILENAME)
