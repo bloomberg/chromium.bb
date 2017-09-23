@@ -31,6 +31,24 @@
 #include "ui/gfx/font_fallback_linux.h"
 #include "ui/gfx/font_render_params.h"
 
+namespace {
+
+void WriteTimeStruct(base::Pickle* pickle, const struct tm* time) {
+  pickle->WriteInt(time->tm_sec);
+  pickle->WriteInt(time->tm_min);
+  pickle->WriteInt(time->tm_hour);
+  pickle->WriteInt(time->tm_mday);
+  pickle->WriteInt(time->tm_mon);
+  pickle->WriteInt(time->tm_year);
+  pickle->WriteInt(time->tm_wday);
+  pickle->WriteInt(time->tm_yday);
+  pickle->WriteInt(time->tm_isdst);
+  pickle->WriteInt(time->tm_gmtoff);
+  pickle->WriteString(time->tm_zone);
+}
+
+}  // namespace
+
 namespace content {
 
 namespace {
@@ -318,7 +336,8 @@ void SandboxIPCHandler::HandleLocaltime(
     int fd,
     base::PickleIterator iter,
     const std::vector<base::ScopedFD>& fds) {
-  // The other side of this call is in zygote_main_linux.cc
+  // The other side of this call is in |ProxyLocaltimeCallToBrowser|, in
+  // zygote_main_linux.cc.
 
   std::string time_string;
   if (!iter.ReadString(&time_string) || time_string.size() != sizeof(time_t))
@@ -326,21 +345,18 @@ void SandboxIPCHandler::HandleLocaltime(
 
   time_t time;
   memcpy(&time, time_string.data(), sizeof(time));
-  // We use localtime here because we need the tm_zone field to be filled
+  // We use |localtime| here because we need the |tm_zone| field to be filled
   // out. Since we are a single-threaded process, this is safe.
   const struct tm* expanded_time = localtime(&time);
 
-  std::string result_string;
-  const char* time_zone_string = "";
-  if (expanded_time) {
-    result_string = std::string(reinterpret_cast<const char*>(expanded_time),
-                                sizeof(struct tm));
-    time_zone_string = expanded_time->tm_zone;
-  }
-
   base::Pickle reply;
-  reply.WriteString(result_string);
-  reply.WriteString(time_zone_string);
+  if (expanded_time) {
+    WriteTimeStruct(&reply, expanded_time);
+  } else {
+    // The {} constructor ensures the struct is 0-initialized.
+    struct tm zeroed_time = {};
+    WriteTimeStruct(&reply, &zeroed_time);
+  }
   SendRendererReply(fds, reply, -1);
 }
 
