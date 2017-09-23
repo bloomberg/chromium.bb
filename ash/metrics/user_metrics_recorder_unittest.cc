@@ -139,9 +139,8 @@ TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
 
   // Make sure the shelf contains the app list launcher button.
   ShelfModel* shelf_model = Shell::Get()->shelf_model();
-  ASSERT_EQ(2u, shelf_model->items().size());
+  ASSERT_EQ(1u, shelf_model->items().size());
   ASSERT_EQ(TYPE_APP_LIST, shelf_model->items()[0].type);
-  ASSERT_EQ(TYPE_BROWSER_SHORTCUT, shelf_model->items()[1].type);
 
   ShelfItem shelf_item;
   shelf_item.type = ash::TYPE_PINNED_APP;
@@ -155,11 +154,13 @@ TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
   shelf_model->Add(shelf_item);
   shelf_item.id = ShelfID("app_id_4");
   shelf_model->Add(shelf_item);
+  shelf_item.id = ShelfID("app_id_5");
+  shelf_model->Add(shelf_item);
 
   test_api().RecordPeriodicMetrics();
   histograms().ExpectBucketCount(kAsh_Shelf_NumberOfItems, 5, 1);
-  histograms().ExpectBucketCount(kAsh_Shelf_NumberOfPinnedItems, 3, 1);
-  histograms().ExpectBucketCount(kAsh_Shelf_NumberOfUnpinnedItems, 2, 1);
+  histograms().ExpectBucketCount(kAsh_Shelf_NumberOfPinnedItems, 2, 1);
+  histograms().ExpectBucketCount(kAsh_Shelf_NumberOfUnpinnedItems, 3, 1);
 }
 
 }  // namespace ash
