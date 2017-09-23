@@ -319,10 +319,9 @@ ImageData* ImageData::Create(NotShared<DOMUint8ClampedArray> data,
 }
 
 bool ColorManagementEnabled(const ImageDataColorSettings& color_settings) {
-  if (CanvasColorParams::ColorCorrectRenderingInAnyColorSpace())
+  if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
     return true;
-  if (CanvasColorParams::ColorCorrectRenderingInSRGBOnly() &&
-      color_settings.colorSpace() == kSRGBCanvasColorSpaceName)
+  if (color_settings.colorSpace() == kSRGBCanvasColorSpaceName)
     return true;
   return false;
 }
