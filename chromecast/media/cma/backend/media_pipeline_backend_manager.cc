@@ -15,6 +15,17 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_wrapper.h"
 #include "chromecast/public/volume_control.h"
 
+#define RUN_ON_MEDIA_THREAD(method, ...)                              \
+  media_task_runner_->PostTask(                                       \
+      FROM_HERE, base::BindOnce(&MediaPipelineBackendManager::method, \
+                                weak_factory_.GetWeakPtr(), ##__VA_ARGS__));
+
+#define MAKE_SURE_MEDIA_THREAD(method, ...)            \
+  if (!media_task_runner_->BelongsToCurrentThread()) { \
+    RUN_ON_MEDIA_THREAD(method, ##__VA_ARGS__)         \
+    return;                                            \
+  }
+
 namespace chromecast {
 namespace media {
 namespace {
@@ -35,7 +46,9 @@ MediaPipelineBackendManager::MediaPipelineBackendManager(
                                   {AudioContentType::kAlarm, 1.0f},
                                   {AudioContentType::kCommunication, 1.0f}},
                                  base::KEEP_FIRST_OF_DUPES),
+      buffer_delegate_(nullptr),
       weak_factory_(this) {
+  DCHECK(media_task_runner_);
   for (int i = 0; i < NUM_DECODER_TYPES; ++i) {
     decoder_count_[i] = 0;
   }
@@ -68,7 +81,7 @@ bool MediaPipelineBackendManager::IncrementDecoderCount(DecoderType type) {
 void MediaPipelineBackendManager::DecrementDecoderCount(DecoderType type) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(type < NUM_DECODER_TYPES);
-  DCHECK(decoder_count_[type] > 0);
+  DCHECK_GT(decoder_count_[type], 0);
 
   decoder_count_[type]--;
 }
@@ -115,14 +128,7 @@ void MediaPipelineBackendManager::LogicalResume(MediaPipelineBackend* backend) {
 void MediaPipelineBackendManager::SetGlobalVolumeMultiplier(
     AudioContentType type,
     float multiplier) {
-  if (!media_task_runner_->BelongsToCurrentThread()) {
-    media_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&MediaPipelineBackendManager::SetGlobalVolumeMultiplier,
-                   weak_factory_.GetWeakPtr(), type, multiplier));
-    return;
-  }
-
+  MAKE_SURE_MEDIA_THREAD(SetGlobalVolumeMultiplier, type, multiplier);
   DCHECK_GE(multiplier, 0.0f);
   global_volume_multipliers_[type] = multiplier;
   for (auto* a : audio_decoders_) {
@@ -130,6 +136,14 @@ void MediaPipelineBackendManager::SetGlobalVolumeMultiplier(
       a->SetGlobalVolumeMultiplier(multiplier);
     }
   }
+}
+
+void MediaPipelineBackendManager::SetBufferDelegate(
+    BufferDelegate* buffer_delegate) {
+  MAKE_SURE_MEDIA_THREAD(SetBufferDelegate, buffer_delegate);
+  DCHECK(buffer_delegate);
+  DCHECK(!buffer_delegate_);
+  buffer_delegate_ = buffer_delegate;
 }
 
 void MediaPipelineBackendManager::AddAudioDecoder(

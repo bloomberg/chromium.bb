@@ -9,6 +9,7 @@
 #include "chromecast/media/cma/backend/audio_decoder_wrapper.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/cast_media_shlib.h"
+#include "chromecast/public/volume_control.h"
 
 namespace chromecast {
 namespace media {
@@ -21,9 +22,8 @@ MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
     : backend_(base::WrapUnique(
           media::CastMediaShlib::CreateMediaPipelineBackend(params))),
       backend_manager_(backend_manager),
+      audio_stream_type_(params.audio_type),
       content_type_(params.content_type),
-      sfx_backend_(params.audio_type ==
-                   media::MediaPipelineDeviceParams::kAudioStreamSoundEffects),
       have_video_decoder_(false),
       playing_(false) {
   DCHECK(backend_);
@@ -33,13 +33,13 @@ MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
 MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
   if (audio_decoder_)
     backend_manager_->DecrementDecoderCount(
-        sfx_backend_ ? DecoderType::SFX_DECODER : DecoderType::AUDIO_DECODER);
+        IsSfx() ? DecoderType::SFX_DECODER : DecoderType::AUDIO_DECODER);
   if (have_video_decoder_)
     backend_manager_->DecrementDecoderCount(DecoderType::VIDEO_DECODER);
 
   if (playing_) {
     LOG(WARNING) << "Destroying media backend while still in 'playing' state";
-    if (audio_decoder_ && !sfx_backend_) {
+    if (audio_decoder_ && !IsSfx()) {
       backend_manager_->UpdatePlayingAudioCount(-1);
     }
   }
@@ -58,15 +58,24 @@ MediaPipelineBackendWrapper::CreateAudioDecoder() {
   DCHECK(!audio_decoder_);
 
   if (!backend_manager_->IncrementDecoderCount(
-          sfx_backend_ ? DecoderType::SFX_DECODER : DecoderType::AUDIO_DECODER))
+          IsSfx() ? DecoderType::SFX_DECODER : DecoderType::AUDIO_DECODER))
     return nullptr;
   MediaPipelineBackend::AudioDecoder* real_decoder =
       backend_->CreateAudioDecoder();
   if (!real_decoder) {
     return nullptr;
   }
+
+  MediaPipelineBackendManager::BufferDelegate* delegate = nullptr;
+  // Only set delegate for the primary media stream.
+  if (content_type_ == media::AudioContentType::kMedia &&
+      audio_stream_type_ ==
+          media::MediaPipelineDeviceParams::kAudioStreamNormal) {
+    delegate = backend_manager_->buffer_delegate();
+  }
+
   audio_decoder_ = base::MakeUnique<AudioDecoderWrapper>(
-      backend_manager_, real_decoder, content_type_);
+      backend_manager_, real_decoder, content_type_, delegate);
   return audio_decoder_.get();
 }
 
@@ -127,7 +136,7 @@ void MediaPipelineBackendWrapper::SetPlaying(bool playing) {
     return;
   }
   playing_ = playing;
-  if (audio_decoder_ && !sfx_backend_) {
+  if (audio_decoder_ && !IsSfx()) {
     backend_manager_->UpdatePlayingAudioCount(playing_ ? 1 : -1);
   }
 }
