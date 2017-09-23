@@ -19,6 +19,7 @@
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -967,6 +968,28 @@ TEST(SimpleFeatureUnitTest, TestAvailableToEnvironment) {
 
   // Note: if we wanted, we could add a ScopedCurrentPlatform() and add
   // platform-test restrictions?
+}
+
+TEST(SimpleFeatureUnitTest, TestExperimentalExtensionApisSwitch) {
+  ScopedCurrentChannel current_channel(Channel::STABLE);
+
+  auto test_feature = []() {
+    SimpleFeature feature;
+    feature.set_channel(version_info::Channel::UNKNOWN);
+    return feature.IsAvailableToEnvironment().result();
+  };
+
+  {
+    base::test::ScopedCommandLine scoped_command_line;
+    EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL, test_feature());
+  }
+
+  {
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitch(
+        switches::kEnableExperimentalExtensionApis);
+    EXPECT_EQ(Feature::IS_AVAILABLE, test_feature());
+  }
 }
 
 }  // namespace extensions
