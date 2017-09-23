@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
+#include "chromeos/components/tether/fake_ble_advertisement_synchronizer.h"
 #include "chromeos/components/tether/fake_error_tolerant_ble_advertisement.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
 #include "components/cryptauth/mock_local_device_data_provider.h"
@@ -70,9 +71,8 @@ class FakeErrorTolerantBleAdvertisementFactory
   // ErrorTolerantBleAdvertisementImpl::Factory:
   std::unique_ptr<ErrorTolerantBleAdvertisement> BuildInstance(
       const std::string& device_id,
-      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-      std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data)
-      override {
+      std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+      BleAdvertisementSynchronizer* ble_advertisement_synchronizer) override {
     FakeErrorTolerantBleAdvertisement* fake_advertisement =
         new FakeErrorTolerantBleAdvertisement(
             device_id, base::Bind(&FakeErrorTolerantBleAdvertisementFactory::
@@ -151,6 +151,9 @@ class BleAdvertiserTest : public testing::Test {
     mock_local_data_provider_->SetPublicKey(
         base::MakeUnique<std::string>(kFakePublicKey));
 
+    fake_ble_advertisement_synchronizer_ =
+        base::MakeUnique<FakeBleAdvertisementSynchronizer>();
+
     fake_advertisement_factory_ =
         base::WrapUnique(new FakeErrorTolerantBleAdvertisementFactory());
     ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(
@@ -159,8 +162,8 @@ class BleAdvertiserTest : public testing::Test {
     test_observer_ = base::WrapUnique(new TestObserver());
 
     ble_advertiser_ = base::MakeUnique<BleAdvertiser>(
-        mock_adapter_, mock_local_data_provider_.get(),
-        mock_seed_fetcher_.get());
+        mock_local_data_provider_.get(), mock_seed_fetcher_.get(),
+        fake_ble_advertisement_synchronizer_.get());
     ble_advertiser_->SetEidGeneratorForTest(std::move(eid_generator));
     ble_advertiser_->AddObserver(test_observer_.get());
   }
@@ -196,6 +199,8 @@ class BleAdvertiserTest : public testing::Test {
   std::unique_ptr<cryptauth::MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
       mock_local_data_provider_;
+  std::unique_ptr<FakeBleAdvertisementSynchronizer>
+      fake_ble_advertisement_synchronizer_;
 
   std::unique_ptr<TestObserver> test_observer_;
 

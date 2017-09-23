@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/components/tether/ble_advertisement_synchronizer.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "device/bluetooth/bluetooth_adapter.h"
 
 namespace chromeos {
 
@@ -20,7 +20,6 @@ namespace tether {
 namespace {
 
 const uint8_t kInvertedConnectionFlag = 0x01;
-const size_t kTimeBetweenAttemptsMs = 200u;
 
 }  // namespace
 
@@ -32,13 +31,13 @@ ErrorTolerantBleAdvertisementImpl::Factory*
 std::unique_ptr<ErrorTolerantBleAdvertisement>
 ErrorTolerantBleAdvertisementImpl::Factory::NewInstance(
     const std::string& device_id,
-    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-    std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data) {
+    std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+    BleAdvertisementSynchronizer* ble_advertisement_synchronizer) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
 
-  return factory_instance_->BuildInstance(device_id, bluetooth_adapter,
-                                          std::move(advertisement_data));
+  return factory_instance_->BuildInstance(
+      device_id, std::move(advertisement_data), ble_advertisement_synchronizer);
 }
 
 // static
@@ -50,22 +49,21 @@ void ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(
 std::unique_ptr<ErrorTolerantBleAdvertisement>
 ErrorTolerantBleAdvertisementImpl::Factory::BuildInstance(
     const std::string& device_id,
-    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-    std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data) {
+    std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+    BleAdvertisementSynchronizer* ble_advertisement_synchronizer) {
   return base::MakeUnique<ErrorTolerantBleAdvertisementImpl>(
-      device_id, bluetooth_adapter, std::move(advertisement_data));
+      device_id, std::move(advertisement_data), ble_advertisement_synchronizer);
 }
 
 ErrorTolerantBleAdvertisementImpl::Factory::~Factory() {}
 
 ErrorTolerantBleAdvertisementImpl::ErrorTolerantBleAdvertisementImpl(
     const std::string& device_id,
-    scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-    std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data)
+    std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+    BleAdvertisementSynchronizer* ble_advertisement_synchronizer)
     : ErrorTolerantBleAdvertisement(device_id),
-      bluetooth_adapter_(bluetooth_adapter),
       advertisement_data_(std::move(advertisement_data)),
-      timer_(base::MakeUnique<base::OneShotTimer>()),
+      ble_advertisement_synchronizer_(ble_advertisement_synchronizer),
       weak_ptr_factory_(this) {
   UpdateRegistrationStatus();
 }
@@ -104,23 +102,11 @@ void ErrorTolerantBleAdvertisementImpl::AdvertisementReleased(
   UpdateRegistrationStatus();
 }
 
-void ErrorTolerantBleAdvertisementImpl::SetFakeTimerForTest(
-    std::unique_ptr<base::Timer> test_timer) {
-  timer_ = std::move(test_timer);
-}
-
 void ErrorTolerantBleAdvertisementImpl::UpdateRegistrationStatus() {
   if (!advertisement_)
     AttemptRegistration();
   else if (advertisement_ && HasBeenStopped())
     AttemptUnregistration();
-}
-
-void ErrorTolerantBleAdvertisementImpl::RetryUpdateAfterTimer() {
-  timer_->Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeBetweenAttemptsMs),
-      base::Bind(&ErrorTolerantBleAdvertisementImpl::UpdateRegistrationStatus,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ErrorTolerantBleAdvertisementImpl::AttemptRegistration() {
@@ -138,7 +124,7 @@ void ErrorTolerantBleAdvertisementImpl::AttemptRegistration() {
   advertisement_data->set_service_uuids(CreateServiceUuids());
   advertisement_data->set_service_data(CreateServiceData());
 
-  bluetooth_adapter_->RegisterAdvertisement(
+  ble_advertisement_synchronizer_->RegisterAdvertisement(
       std::move(advertisement_data),
       base::Bind(&ErrorTolerantBleAdvertisementImpl::OnAdvertisementRegistered,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -159,7 +145,8 @@ void ErrorTolerantBleAdvertisementImpl::AttemptUnregistration() {
 
   unregistration_in_progress_ = true;
 
-  advertisement_->Unregister(
+  ble_advertisement_synchronizer_->UnregisterAdvertisement(
+      advertisement_,
       base::Bind(
           &ErrorTolerantBleAdvertisementImpl::OnAdvertisementUnregistered,
           weak_ptr_factory_.GetWeakPtr()),
@@ -218,9 +205,7 @@ void ErrorTolerantBleAdvertisementImpl::OnErrorRegisteringAdvertisement(
                 << "\", Service data: " << advertisement_data_->DataInHex()
                 << ", Error code: " << error_code;
 
-  // Try again, but wait kTimeBetweenAttemptsMs to avoid spamming the Bluetooth
-  // controller.
-  RetryUpdateAfterTimer();
+  UpdateRegistrationStatus();
 }
 
 void ErrorTolerantBleAdvertisementImpl::OnAdvertisementUnregistered() {
@@ -242,9 +227,7 @@ void ErrorTolerantBleAdvertisementImpl::OnErrorUnregisteringAdvertisement(
                 << "\", Service data: " << advertisement_data_->DataInHex()
                 << ", Error code: " << error_code;
 
-  // Try again, but wait kTimeBetweenAttemptsMs to avoid spamming the Bluetooth
-  // controller.
-  RetryUpdateAfterTimer();
+  UpdateRegistrationStatus();
 }
 
 }  // namespace tether
