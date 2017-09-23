@@ -107,7 +107,7 @@ class ASH_EXPORT PanelLayoutManager
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
-                                   wm::WindowStateType old_type) override;
+                                   mojom::WindowStateType old_type) override;
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(
