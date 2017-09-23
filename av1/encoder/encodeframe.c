@@ -1887,6 +1887,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
             && mbmi->motion_mode == SIMPLE_TRANSLATION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
             ) {
+#if CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
 #if CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
           if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
 #endif
@@ -1897,6 +1898,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #if CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
           }
 #endif
+#endif  // CONFIG_WEDGE || CONFIG_COMPOUND_SEGMENT
         }
 #endif  // CONFIG_EXT_INTER
       }
